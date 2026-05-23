@@ -169,7 +169,35 @@ type RateLimitStatus = {
 
 // Dev2 rate-limit-gate computes and provides
 // Dev2 passes in EngineSnapshot.rateLimitStatus
-// Dev3 engine uses for computeAvailableActions()
+// Dev3 engine uses for computeAvailableActions(```
+
+### LlmConfig & PersonaConfig
+
+```typescript
+// Dev3 defines in packages/shared/src/agent/agent.types.ts
+type LlmConfig = {
+  providerType: 'local_uncensored' | 'freellmapi' | 'mock';
+  baseUrl: string;                 // e.g. 'http://localhost:8000/v1', 'http://localhost:8080/v1', 'http://localhost:11434/v1', or 'http://localhost:3001/v1'
+  apiKey?: string;                 // Unified key for FreeLLMAPI, or empty/omitted for local runtimes
+  modelName: string;               // e.g., 'Qwen/Qwen3-8B', 'qwen3:8b', 'auto', or a FreeLLMAPI model id
+  temperature: number;
+  maxTokens?: number;
+  timeoutMs?: number;
+  extraBody?: Record<string, unknown>; // Provider-specific options, e.g. Qwen3 enable_thinking=false when supported
+};
+
+type PersonaConfig = {
+  id: string;
+  name: string;
+  archetype: string;
+  writingStyle: {
+    tone: string;
+    rules: string[];
+    styleExamples: string[];
+  };
+  relationshipBiases: Record<string, string>;
+  llmConfig: LlmConfig;            // per-agent provider config for local/FreeLLMAPI A/B testing
+};
 ```
 
 ### AgentRuntimeInput Assembly
@@ -401,7 +429,7 @@ type IChannelRepository = {
 
 | Dev3 | Dev1 | Dev2 |
 |------|------|------|
-| M6-M12: engine modules | M5: anthropic adapter | M5-M8: lifecycle+scheduler |
+| M6-M12: engine modules | M5: openai-compatible adapter | M5-M8: lifecycle+scheduler |
 
 ### Week 5 MVP Integration
 

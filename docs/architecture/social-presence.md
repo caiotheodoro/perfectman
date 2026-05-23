@@ -16,11 +16,13 @@ The behavioral loop is:
 
 ```text
 something happens
-an agent may notice it
+an event is committed
+an agent receives a projected/visible view
 if noticed, the agent interprets it socially
-interpretation creates pressure
+interpretation creates motivation, emotion, and pressure
 pressure competes with inhibition
-if pressure wins, the agent acts
+if pressure wins, the agent proposes an intent
+if the resolver accepts it, a new event is committed
 if pressure loses, the agent lurks, delays, remembers, or ignores
 ```
 
@@ -38,37 +40,44 @@ The real primitive is not `tick`. The real primitive is `urge`.
 
 ```mermaid
 flowchart TD
-    socketChatServer[SocketChatServer] --> eventStream[EventStream]
-    eventStream --> visibilityFilter[VisibilityFilter]
+    commandOrIntent[Command or ActionIntent] --> intentResolver[IntentResolver]
+    intentResolver --> eventLog[Canonical EventLog]
+    eventLog --> projections[Event Projections]
+    projections --> deliveryProjection[DeliveryProjection]
+    projections --> spectatorProjection[SpectatorProjection]
+    projections --> operatorProjection[OperatorProjection]
+    projections --> engineSnapshotProjection[EngineSnapshotProjection]
+    deliveryProjection --> deliveryGateway[DeliveryGateway]
+    engineSnapshotProjection --> visibilityFilter[VisibilityFilter]
     visibilityFilter --> attentionEngine[AttentionEngine]
     attentionEngine --> perceptionPacket[PerceptionPacket]
     perceptionPacket --> socialInterpreter[SocialInterpreter]
     socialInterpreter --> pressureModel[PressureModel]
     pressureModel --> inhibitionModel[InhibitionModel]
-    inhibitionModel --> agentMind[AgentMind]
-    agentMind --> actionIntent[ActionIntent]
-    actionIntent --> actionResolver[ActionResolver]
-    actionResolver --> socketChatServer
-    actionResolver --> memorySystem[MemorySystem]
-    memorySystem --> attentionEngine
-    memorySystem --> socialInterpreter
-    actionResolver --> spectatorLayer[SpectatorLayer]
+    inhibitionModel --> agentMind[AgentRuntime / AgentMind]
+    agentMind --> commandOrIntent
+    eventLog --> memorySystem[MemorySystem]
+    memorySystem --> engineSnapshotProjection
 ```
 
 This is the core system:
 
-- `EventStream`: factual socket chat history.
+- `EventLog`: factual committed history; the durable social reality.
+- `IntentResolver`: validates commands/intents and commits accepted facts.
+- `EventProjections`: derive delivery, spectator, operator, and engine views from committed events.
+- `DeliveryProjection`: surface-ready output for Socket.IO, Discord, stdout, or mock gateways.
+- `SpectatorProjection`: novela view derived from committed events.
+- `OperatorProjection`: debug, errors, blocked intents, metrics, and scheduler health.
+- `EngineSnapshotProjection`: the agent-specific world slice consumed by the pure engine.
 - `VisibilityFilter`: what each agent can actually see.
 - `AttentionEngine`: whether an agent notices something.
 - `PerceptionPacket`: the small context bundle sent to the agent.
 - `SocialInterpreter`: what the event means socially.
 - `PressureModel`: what urges are created.
 - `InhibitionModel`: what prevents the agent from acting.
-- `AgentMind`: the LLM/persona layer.
+- `AgentRuntime / AgentMind`: the LLM/persona layer.
 - `ActionIntent`: what the agent wants to do.
-- `ActionResolver`: what actually happens in socket chat.
 - `MemorySystem`: emotional and social continuity.
-- `SpectatorLayer`: the novela view.
 
 ## Graph Reference
 
@@ -96,16 +105,15 @@ flowchart TD
     emotionEngine --> pressureModel[PressureModel]
     pressureModel --> inhibitionModel[InhibitionModel]
     inhibitionModel --> decisionGate{Pressure beats inhibition?}
-    decisionGate -->|Yes| agentMind[AgentMind]
+    decisionGate -->|Yes| agentRuntime[AgentRuntime / AgentMind]
     decisionGate -->|No| noOp[NoOp]
-    agentMind --> actionIntent[ActionIntent]
-    actionIntent --> actionResolver[ActionResolver]
-    actionResolver --> committedEvent[CommittedEvent]
-    committedEvent --> eventStream[EventStream]
+    agentRuntime --> actionIntent[ActionIntent]
+    actionIntent --> intentResolver[IntentResolver]
+    intentResolver --> committedEvent[CommittedEvent]
+    committedEvent --> eventLog[CanonicalEventLog]
     committedEvent --> memorySystem[MemorySystem]
-    committedEvent --> spectatorLayer[SpectatorLayer]
-    noOp --> memorySystem
-    noOp --> spectatorLayer
+    committedEvent --> spectatorProjection[SpectatorProjection]
+    noOp --> intentResolver
     memorySystem --> initiativeEngine
     memorySystem --> attentionEngine
 ```
@@ -161,8 +169,8 @@ This is the normal reaction path.
 
 ```mermaid
 flowchart TD
-    messageSent[MessageSent] --> eventStream[EventStream]
-    eventStream --> visibilityMask[VisibilityMask]
+    messageSent[MessageSent] --> eventLog[CanonicalEventLog]
+    eventLog --> visibilityMask[VisibilityMask]
     visibilityMask --> agentVisible{Visible to agent?}
     agentVisible -->|No| noAwareness[NoAwareness]
     agentVisible -->|Yes| attentionCheck[AttentionCheck]
@@ -427,7 +435,7 @@ Agents propose. The resolver commits.
 
 ```mermaid
 flowchart TD
-    actionIntent[ActionIntent] --> resolver[ActionResolver]
+    actionIntent[ActionIntent] --> resolver[IntentResolver]
     resolver --> permissionCheck[PermissionCheck]
     resolver --> rateLimitCheck[RateLimitCheck]
     resolver --> visibilityCheck[VisibilityCheck]
@@ -442,10 +450,10 @@ flowchart TD
     resolverOutcome --> delayed[Delayed]
     resolverOutcome --> blocked[Blocked]
     resolverOutcome --> fallback[FallbackCommitted]
-    committed --> eventStream[EventStream]
+    committed --> eventLog[CanonicalEventLog]
     delayed --> pendingIntent[PendingIntent]
     blocked --> operatorEvent[OperatorEvent]
-    fallback --> eventStream
+    fallback --> eventLog
 ```
 
 Resolver rules keep the world coherent:
@@ -489,7 +497,7 @@ The spectator layer turns invisible social dynamics into readable drama.
 
 ```mermaid
 flowchart TD
-    eventStream[EventStream] --> spectatorFilter[SpectatorFilter]
+    eventLog[CanonicalEventLog] --> spectatorFilter[SpectatorFilter]
     memorySystem[MemorySystem] --> spectatorFilter
     noOp[NoOp] --> spectatorFilter
     privateChannelEvent[PrivateChannelEvent] --> spectatorFilter
@@ -525,10 +533,10 @@ sequenceDiagram
     participant Pulse as BackendPulse
     participant Memory as MemorySystem
     participant Initiative as InitiativeEngine
-    participant Agent as AgentMind
-    participant Resolver as ActionResolver
-    participant World as SocketChatWorld
-    participant Spectator as SpectatorLayer
+    participant Agent as AgentRuntime
+    participant Resolver as IntentResolver
+    participant World as EventRuntime
+    participant Spectator as SpectatorProjection
 
     Pulse->>Memory: Check unresolved memories and drift
     Memory-->>Initiative: Boredom high, pending intention exists
@@ -559,10 +567,10 @@ sequenceDiagram
     participant Pulse as BackendPulse
     participant Emotion as EmotionEngine
     participant Motivation as MotivationEngine
-    participant Agent as AgentMind
-    participant Resolver as ActionResolver
+    participant Agent as AgentRuntime
+    participant Resolver as IntentResolver
     participant Channel as ChannelRegistry
-    participant Spectator as SpectatorLayer
+    participant Spectator as SpectatorProjection
 
     Pulse->>Emotion: Public room feels noisy
     Emotion-->>Motivation: Comfort and affinity toward Giovanni rise
@@ -617,9 +625,9 @@ The system should not optimize for:
 - Game-like objective dashboards.
 - Over-explained world physics.
 
-## Event Stream
+## Canonical Event Log
 
-Everything starts as an event. The event stream is the factual record of the socket chat world.
+Everything starts as an event. The canonical event log is the factual record of the socket chat world.
 
 Events include:
 
@@ -642,7 +650,7 @@ agent_typing_started
 agent_typing_cancelled
 ```
 
-The event stream is not the same thing as what agents know. It is the source of truth that later gets filtered per agent.
+The canonical event log is not the same thing as what agents know. It is the source of truth that later gets filtered through projections and visibility masks.
 
 ## One World, Many Views
 
@@ -650,10 +658,10 @@ Private and public channels are not separate universes. They are one socket chat
 
 ```mermaid
 flowchart LR
-    eventStream[EventStream] --> publicView[PublicView]
-    eventStream --> privateView[PrivateChannelView]
-    eventStream --> agentSelfView[AgentSelfView]
-    eventStream --> spectatorView[SpectatorView]
+    eventLog[CanonicalEventLog] --> publicView[PublicView]
+    eventLog --> privateView[PrivateChannelView]
+    eventLog --> agentSelfView[AgentSelfView]
+    eventLog --> spectatorView[SpectatorView]
     publicView --> publicAgents[AgentsInPublic]
     privateView --> invitedAgents[InvitedAgentsOnly]
     agentSelfView --> owningAgent[OwningAgentOnly]
@@ -1309,17 +1317,18 @@ V1 should be small and focused.
 Build:
 
 ```text
-EventStream
+CanonicalEventLog
+EventProjections
 VisibilityFilter
 AttentionEngine
 PerceptionPacketBuilder
 PressureModel
 InhibitionModel
-AgentMind
+AgentRuntime
 ActionIntent schema
-ActionResolver
+IntentResolver
 MemorySystem
-SpectatorRecap
+SpectatorProjection
 ```
 
 Do not start with:
@@ -1414,10 +1423,10 @@ flowchart TD
     snapshotBuilder --> memoryContext[MemoryContext]
     snapshotBuilder --> agentRuntime[AgentRuntime]
     agentRuntime --> intentQueue[IntentQueue]
-    intentQueue --> actionResolver[ActionResolver]
-    actionResolver --> eventLog[EventLog]
+    intentQueue --> intentResolver[IntentResolver]
+    intentResolver --> eventLog[CanonicalEventLog]
     eventLog --> v2PlatformAdapter[V2PlatformAdapter]
-    eventLog --> spectatorLayer[SpectatorLayer]
+    eventLog --> spectatorProjection[SpectatorProjection]
     eventLog --> memorySystem[MemorySystem]
     memorySystem --> autoDream[AutoDream]
     autoDream --> stateShell
@@ -1478,9 +1487,9 @@ intentBundle:
 
 The runtime does not directly mutate socket chat or memory. It only proposes.
 
-### ActionResolver
+### IntentResolver
 
-The `ActionResolver` converts intents into committed events. This is where freedom becomes safe.
+The `IntentResolver` converts intents into committed events. This is where freedom becomes safe.
 
 It validates:
 
@@ -1552,8 +1561,8 @@ sequenceDiagram
     participant Kernel as TimelineKernel
     participant A as AgentA
     participant B as AgentB
-    participant Resolver as ActionResolver
-    participant Log as EventLog
+    participant Resolver as IntentResolver
+    participant Log as CanonicalEventLog
 
     Kernel->>Log: Read committed events through tick 12
     Kernel->>A: Snapshot tick 13
@@ -2124,7 +2133,7 @@ V1 should contain:
 - `DueAgentSelector`
 - `AgentRuntime`
 - `IntentQueue`
-- `ActionResolver`
+- `IntentResolver`
 - `V2PlatformAdapter`
 - `MemorySystem`
 - `AutoDream`
