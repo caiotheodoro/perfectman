@@ -4,7 +4,9 @@
 
 ## Goal
 
-Build persona cognition layer. Receives `AgentRuntimeInput` (assembled by dev2), creates persona prompt using dev3's emotional language translator, calls LLM (mock or Anthropic), validates structured output against dev3's intent schema, tracks token budget, returns `ActionIntent`.
+Build persona cognition layer. Receives `AgentRuntimeInput` (assembled by dev2), combines Dev3's engine-calibration `PersonaConfig` with Dev1-owned `PersonaPromptProfile` and `LlmConfig`, creates the persona prompt using dev3's emotional language translator, calls either a local Qwen3-8B runtime or FreeLLMAPI through one OpenAI-compatible provider interface, validates structured JSON output against dev3's intent schema, tracks token budget, and returns the `ActionIntent`.
+
+Keep the first implementation simple: no standalone LLM router is required. Provider choice comes from `input.llmConfig` or the Dev1 runtime profile resolved for the agent, not from Dev3's `PersonaConfig`.
 
 ## Architecture
 
@@ -12,9 +14,12 @@ Build persona cognition layer. Receives `AgentRuntimeInput` (assembled by dev2),
 AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
   → PersonaLoader (combines dev3 PersonaConfig with dev1 PersonaPromptProfile)
   → PromptBuilder (uses dev3 translate-emotional-state)
-  → LlmProvider: mock | anthropic
-  → IntentParser (validates against dev3 ActionIntent schema)
-  → BudgetTracker
+  → BudgetTracker pre-check
+  → LlmProvider: mock | openai-compatible
+       - local_uncensored: Qwen3-8B via vLLM, llama.cpp, Ollama, or LM Studio
+       - freellmapi: local FreeLLMAPI proxy for hosted-model A/B tests
+  → IntentParser (extracts, repairs narrowly, validates against dev3 ActionIntent schema)
+  → BudgetTracker record usage
   → ActionIntent | safe no_op | delay
   → returned to Dev2 Event Runtime
 ```
@@ -41,7 +46,7 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
 **Consume from dev2 (event runtime):**
 - Event runtime scheduler calls `AgentRuntime.generateIntent(input)` passing assembled `AgentRuntimeInput`
 - Operator projection receives LLM failure events
-- Config provider supplies `LLM_PROVIDER`, model names, budget settings
+- Config provider supplies budget settings and environment secrets; per-agent provider/model choice comes from Dev1-owned `LlmConfig`
 
 **Provide to dev2:**
 - `AgentRuntime.generateIntent(input: AgentRuntimeInput): Promise<AgentRuntimeOutput>`
@@ -73,14 +78,13 @@ packages/server/src/llm/
   llm-config.ts                 # Dev1-owned provider/model/runtime config
   llm-provider.ts               # LlmProvider interface
   mock-llm-provider.ts
-  anthropic-llm-provider.ts
+  openai-compatible-provider.ts # generic client for Qwen local endpoints & FreeLLMAPI
   llm-budget.ts                 # BudgetPriority included
   llm-errors.ts
-  model-selector.ts
   __tests__/
     mock-llm-provider.test.ts
     llm-budget.test.ts
-    anthropic-llm-provider.test.ts
+    openai-compatible-provider.test.ts
 ```
 
 **NOT created by dev1 (resolved overlap):**
@@ -152,14 +156,14 @@ type AgentRuntimeOutput = {
 
 ### 8 Sections
 
-1. **Persona identity**: name, archetype, writing style, relationship biases, style examples, human socket-chat framing
+1. **Persona identity**: name, archetype, writing style, relationship biases, style examples, human channel-chat framing
 2. **What agent noticed**: triggering event, visible surrounding messages, involved people, public/private context
 3. **Social interpretation**: plausible meanings, uncertainty, silence/delay/mention/exclusion signals — from `EngineStepResult.interpretations`
 4. **Subjective emotional state**: natural language only via `translateEmotionalState()` from `@perfectman/engine` — **no raw scores**
 5. **Pressures and inhibitions**: written as felt urges and blocks — **no numeric intensity**
 6. **Relevant memories**: short biased summaries, only agent-visible memories
 7. **Available actions**: action menu from `AgentRuntimeInput.availableActions` — model cannot create unsupported actions
-8. **Output contract**: JSON only, one primary intent, include `privateMotiveSummary`, delay/fallback fields
+8. **Output contract**: JSON only, one primary intent, include `privateMotiveSummary` (required, never empty), `intentType`, and required fields for that intent type, matching the shared `ActionIntent` schema. Use a compact schema example, not chain-of-thought or hidden reasoning.
 
 ### Hard Exclusions (never in prompt)
 
@@ -197,7 +201,7 @@ Mock behavior:
 - Simulates latency with configurable delay
 - Supports budget tests without external API
 
-## Anthropic Adapter
+## OpenAI-Compatible Provider
 
 Same `LlmProvider` interface as mock:
 
@@ -208,14 +212,41 @@ type LlmProvider = {
 ```
 
 Behavior:
-- Uses `ANTHROPIC_API_KEY`
-- Sonnet for agent cognition, Opus for reflection/recap (future scope)
-- Enforces max tokens per call
-- Reports input/output token usage
-- Retries transient API failures with bounded backoff
-- One schema repair retry for invalid JSON
-- Returns safe `no_op` or `delay_response` after repair failure
-- Emits operator event for API failure, refusal, timeout, invalid JSON, budget block
+- Standard fetch client connecting to the OpenAI `/v1/chat/completions` REST endpoint.
+- Instantiated from the agent's `LlmConfig`; no separate router is needed for MVP.
+- Supports local Qwen3-8B endpoints from vLLM, llama.cpp/llama-server, Ollama, or LM Studio when they expose an OpenAI-compatible API.
+- Supports FreeLLMAPI via `baseUrl: "http://localhost:3001/v1"` and a unified `freellmapi-...` API key.
+- Configurable base URL, API key, model name, temperature, max tokens, timeout, and provider-specific `extraBody`.
+- Returns raw assistant content, token usage, latency, and response headers. The provider does **not** own Zod validation.
+- For FreeLLMAPI, capture `X-Routed-Via` and `X-Fallback-Attempts` when present so A/B tests can distinguish requested model from actual routed provider/model.
+- Emits operator events for API failure, timeout, missing API key, rate limit, or upstream refusal. Parser/schema failures are emitted by `IntentParser` / `AgentRuntime`.
+
+## Qwen3-8B Local Runtime Notes
+
+Use local Qwen3-8B for persona/human-simulation calls that should not depend on hosted free-tier availability.
+
+Recommended local serving order:
+
+1. **vLLM** — best first target when an NVIDIA GPU is available. It exposes an OpenAI-compatible API at `/v1/chat/completions` and supports Qwen3 controls such as `chat_template_kwargs: { enable_thinking: false }` through provider-specific `extraBody`.
+2. **llama.cpp / llama-server** — best portable target for GGUF quantized local runs, including CPU, Apple Silicon/Metal, and mixed CPU/GPU setups. It exposes an OpenAI-compatible API at `/v1/`.
+3. **Ollama / LM Studio** — easiest manual developer setup, but JSON mode, extra body fields, and Qwen3 thinking controls must be treated as runtime-specific and verified before relying on them.
+
+Qwen3 mode rules:
+
+- Prefer non-thinking mode for structured `ActionIntent` generation.
+- Do not prompt for chain-of-thought.
+- Defensively strip or reject visible `<think>` / reasoning content before JSON parsing if a runtime exposes it in the assistant content.
+- If a runtime does not support hard thinking disablement, keep prompts short, demand JSON-only output, and let parser fallback handle failures.
+
+## FreeLLMAPI A/B Testing Notes
+
+FreeLLMAPI is useful for experimentation, not as a reliability guarantee. When using it:
+
+- Prefer explicit model names for clean A/B tests.
+- If using `model: "auto"`, record the actual provider/model from response headers when available.
+- Store requested provider/model separately from actual routed provider/model.
+- Log latency, token usage, fallback attempts, parse validity, fallbackApplied, intent type, and resolver outcome.
+- Treat free-tier rate limits, model catalog changes, and provider ToS changes as expected operational risks.
 
 ## Token Budget
 
@@ -251,35 +282,37 @@ Fallback: prefer `delay_response` when social context can wait, `no_op` when uns
 
 ## Implementation Milestones
 
-### M1: Runtime Types + Parser
+### M1: Runtime Types & Interface
 - Import `ActionIntent` and `AgentRuntimeInput` from `@perfectman/shared`
 - Define `BuiltPrompt`, `LlmProvider`, `LlmProviderResult`, `AgentRuntimeOutput`
-- Zod validation wrapping shared intent schema
-- Parse valid/invalid JSON, reject unsupported intent types, reject missing `privateMotiveSummary`
+- Define Dev1-owned `PersonaPromptProfile` and `LlmConfig` in the runtime/LLM layer
+- Do not duplicate or replace Dev3 `PersonaConfig`; it remains engine calibration
 
-### M2: Prompt Builder
-- Build all 8 sections
-- Import `translateEmotionalState` from `@perfectman/engine` for section 4
-- Test: no raw scores, no hidden fields, triggering event present, only allowed actions
+### M2: Zod Schema Parser & Repair
+- Build `IntentParser` to validate raw LLM JSON against the shared Zod schema for `ActionIntent`.
+- Implement narrow JSON formatting repairs only: strip markdown code fences, trim text before/after the first JSON object, and remove trailing commas.
+- Do not invent missing semantic fields during repair; if required fields are absent, fall back safely.
+- Reject intents with invalid targets, unsupported intent types, or empty `privateMotiveSummary` values.
 
-### M3: Mock Provider
-- Deterministic fixture-based responses
-- Token usage + latency simulation
-- All mock outputs validate through parser
+### M3: Prompt Builder
+- Build all 8 sections of the prompt.
+- Section 8 clearly instructs the model to follow the strict structured JSON `ActionIntent` schema contract.
+- Import `translateEmotionalState` from `@perfectman/engine` for Section 4 (subjective emotions).
 
-### M4: Budget Tracker
-- Simulation-level call window + per-agent counts + token accounting
-- `getPriority()` for dev2 scheduler
-- Priority-aware budget decisions
-- Budget-exhausted fallback
+### M4: Mock Provider
+- Deterministic fixture-based responses (using the JSON format matching the schema).
+- Token usage + latency simulation.
+- Verify mock outputs validate cleanly through the Zod intent parser.
 
-### M5: Anthropic Provider
-- Same `LlmProvider` interface as mock
-- Sonnet for cognition, Opus for reflection/recap (future)
-- Timeout, transient retry, schema repair retry, safe fallback
+### M5: OpenAI-Compatible Provider
+- Implement `OpenAiCompatibleProvider` to handle standard OpenAI `/v1/chat/completions` JSON payloads.
+- Support base URLs, API keys, model names, temperatures, max tokens, timeouts, and provider-specific `extraBody`.
+- Select the provider directly from `input.llmConfig.providerType` or the Dev1 runtime profile resolved for the agent.
+- No standalone `LlmRouter` for MVP; add one only if provider selection becomes more complex than runtime config lookup.
 
-### M6: Runtime Orchestration
-- `AgentRuntime.generateIntent()` — pre-check budget → build prompt → call provider → parse → record usage → return
+### M6: Runtime Orchestration & Robust Fallbacks
+- Orchestrate `AgentRuntime.generateIntent()`: pre-check budget → resolve `PersonaPromptProfile` + `LlmConfig` → build prompt → create provider from `LlmConfig` → run provider → parse/repair/validate → record usage → return.
+- Apply fail-safe fallback: connection errors, timeouts, invalid JSON, or schema failures automatically return a safe programmatic fallback (`delay_response` or `no_op`) rather than blocking the scheduler.
 
 ## Verification
 
@@ -288,16 +321,16 @@ pnpm --filter @perfectman/server test -- --grep "agent|llm"
 pnpm build
 ```
 
-Expected: prompt tests pass, parser tests pass, mock adapter tests pass, budget tests pass, Anthropic adapter tests use mocked API (no network in CI).
+Expected: prompt tests pass, parser tests pass, mock adapter tests pass, budget tests pass, OpenAI-compatible provider tests use mocked HTTP responses only (no network in CI).
 
 ## MVP Done Criteria
 
-- Persona configs load for at least Goulart and Bruno
+- Persona configs load for at least Goulart and Bruno, and Dev1 resolves their individual `PersonaPromptProfile` and `LlmConfig` definitions
 - Prompt builder produces natural language subjective state without numbers
-- Mock adapter produces deterministic valid intents
-- Anthropic adapter works behind same interface
+- Mock adapter produces deterministic valid JSON intents matching the `ActionIntent` schema
+- OpenAI-compatible provider works with at least one verified local Qwen3-8B endpoint and FreeLLMAPI behind the same interface
 - Token budget blocks calls cleanly
-- Invalid model output never reaches resolver
-- LLM failures become operator events
+- Output parser cleanly validates JSON structures, applies repairs, and maps them to safe, structured `ActionIntent` payloads
+- LLM failures and timeouts automatically fallback to safe programmatic `delay_response` or `no_op` and emit operator events
 - Runtime can produce: reply, message, reaction, create private channel, delay, memory write proposal, no-op
-- Runtime never mutates event log, channels, memory, or sockets directly
+- Runtime never mutates event log, channels, memory, or delivery gateways directly

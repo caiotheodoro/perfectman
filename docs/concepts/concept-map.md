@@ -96,7 +96,7 @@ The project then explored ticks:
 Useful discoveries:
 
 - One shared world is necessary.
-- Public and private channels should be views over one event stream.
+- Public and private channels should be views over one canonical event log.
 - Agents firing from the same snapshot should not read each other's same-moment outputs.
 - Backend timing is needed for consistency.
 
@@ -125,21 +125,22 @@ The real primitive is urge, not tick.
 
 ```mermaid
 flowchart TD
-    socketChatServer[SocketChatServer] --> eventStream[EventStream]
-    eventStream --> visibilityFilter[VisibilityFilter]
+    commandOrIntent[Command or ActionIntent] --> intentResolver[IntentResolver]
+    intentResolver --> eventLog[Canonical EventLog]
+    eventLog --> projections[Event Projections]
+    projections --> engineView[EngineSnapshotProjection]
+    engineView --> visibilityFilter[VisibilityFilter]
     visibilityFilter --> attentionEngine[AttentionEngine]
     attentionEngine --> perceptionPacket[PerceptionPacket]
     perceptionPacket --> socialInterpreter[SocialInterpreter]
     socialInterpreter --> pressureModel[PressureModel]
     pressureModel --> inhibitionModel[InhibitionModel]
-    inhibitionModel --> agentMind[AgentMind]
-    agentMind --> actionIntent[ActionIntent]
-    actionIntent --> actionResolver[ActionResolver]
-    actionResolver --> socketChatServer
-    actionResolver --> memorySystem[MemorySystem]
+    inhibitionModel --> agentRuntime[AgentRuntime]
+    agentRuntime --> commandOrIntent
+    eventLog --> memorySystem[MemorySystem]
     memorySystem --> attentionEngine
     memorySystem --> socialInterpreter
-    actionResolver --> spectatorLayer[SpectatorLayer]
+    projections --> spectatorProjection[SpectatorProjection]
 ```
 
 Core loop:
@@ -155,9 +156,9 @@ world updates
 memory and spectator story update
 ```
 
-## Concept 1: Event Stream
+## Concept 1: Canonical Event Log
 
-The event stream is the canonical factual history of the socket chat world.
+The event log is the canonical factual history of the socket chat world.
 
 It includes:
 
@@ -181,12 +182,12 @@ It includes:
 Important distinction:
 
 ```text
-event stream = what happened
+event log = what happened
 agent view = what this agent can know
 spectator view = what viewers are allowed to see
 ```
 
-The event stream must be structured enough to support memory, recaps, debugging, and future analytics, but it should not be shown directly as a numeric dashboard.
+The event log must be structured enough to support memory, recaps, debugging, and future analytics, but it should not be shown directly as a numeric dashboard.
 
 ## Concept 2: One World, Many Views
 
@@ -195,7 +196,7 @@ socket chat is not physical space. Agents can exist in public and private channe
 The right model:
 
 ```text
-one event stream
+one canonical event log
 many visibility masks
 many subjective interpretations
 ```
@@ -1331,7 +1332,7 @@ Keep docs separated by purpose:
 Future docs:
 
 - `behavioral-model.md`: pressure, inhibition, attention, masking.
-- `world-model.md`: socket chat event stream, permissions, visibility.
+- `world-model.md`: socket chat event log, permissions, visibility.
 - `memory-model.md`: emotional memory, rumination, drift, reflection.
 - `spectator-layer.md`: narrator, recaps, viewer surfaces.
 - `agent-config.md`: personas, thresholds, objectives, capabilities.

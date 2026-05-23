@@ -59,7 +59,7 @@ packages/server/src/persistence → repository interfaces + SQLite
 
 **Need from dev2:**
 - Event runtime and scheduler call shape confirmation
-- Event projection requirements for engine/spectator/operator/socket views
+- Event projection requirements for engine/spectator/operator/delivery views
 - Operator metric payload requirements
 - Reconnect cursor constraints for event replay
 
@@ -409,6 +409,30 @@ type EmotionalState = {
   coreMood: CoreMood;
   socialEmotions: SocialEmotions;
   relationalStates: Map<string, RelationalState>;
+};
+
+type LlmConfig = {
+  providerType: 'local_uncensored' | 'freellmapi' | 'mock';
+  baseUrl: string;                 // e.g. 'http://localhost:8000/v1', 'http://localhost:8080/v1', 'http://localhost:11434/v1', or 'http://localhost:3001/v1'
+  apiKey?: string;                 // Unified key for FreeLLMAPI, or empty/omitted for local runtimes
+  modelName: string;               // e.g., 'Qwen/Qwen3-8B', 'qwen3:8b', 'auto', or a FreeLLMAPI model id
+  temperature: number;
+  maxTokens?: number;
+  timeoutMs?: number;
+  extraBody?: Record<string, unknown>; // Provider-specific options, e.g. Qwen3 enable_thinking=false when supported
+};
+
+type PersonaConfig = {
+  id: string;
+  name: string;
+  archetype: string;
+  writingStyle: {
+    tone: string;
+    rules: string[];
+    styleExamples: string[];
+  };
+  relationshipBiases: Record<string, string>;
+  llmConfig: LlmConfig;            // per-agent provider config for local/FreeLLMAPI A/B testing
 };
 
 type AgentRuntimeInput = {
@@ -842,7 +866,7 @@ Each fixture includes: simulation, channels, agents, agent states, events, expec
 ### M14: Fixtures + Integration Readiness
 - All 8 fixture builders
 - Export stable EngineSnapshot, EngineStepResult, fixture builders
-- No-I/O boundary test (engine package must not import fs/http/net/socket.io/anthropic/server)
+- No-I/O boundary test (engine package must not import fs/http/net/socket.io/provider SDKs/server)
 - Full `pnpm build` passes
 
 ## Verification
@@ -855,7 +879,7 @@ pnpm --filter @perfectman/server test          # persistence tests pass
 pnpm test                                      # full workspace
 ```
 
-Engine no-I/O boundary test must pass — engine package cannot import `fs`, `http`, `net`, `socket.io`, `better-sqlite3`, `@anthropic-ai/sdk`, or any `packages/server` module.
+Engine no-I/O boundary test must pass — engine package cannot import `fs`, `http`, `net`, `socket.io`, `better-sqlite3`, any LLM provider SDK, or any `packages/server` module.
 
 ## MVP Done Criteria
 
@@ -874,4 +898,4 @@ Engine no-I/O boundary test must pass — engine package cannot import `fs`, `ht
 - Emotional state translation produces natural language without numbers
 - Persistence stores simulations, channels, events, agent states, and memories
 - Fixture scenarios are available for all developers
-- End-to-end MVP can run with mock socket, mock runtime, and real engine for 60 seconds without runaway, flatline, or unhandled errors
+- End-to-end MVP can run with mock delivery gateway, mock runtime, and real engine for 60 seconds without runaway, flatline, or unhandled errors
