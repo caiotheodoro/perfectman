@@ -48,6 +48,9 @@ export * from "./visibility/visibility.types.js";
 // Attention
 export * from "./attention/attention.types.js";
 
+// Prompt
+export type { TranslatedEmotionalState, RelationalFlavor } from "./prompt/prompt.types.js";
+
 // Perception
 export * from "./perception/perception.types.js";
 

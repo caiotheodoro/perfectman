@@ -1,36 +1,36 @@
 /**
  * 15 ActionEmotion → Pressure/Inhibition mappings.
- * Each entry maps an L4 action emotion to the pressure type it generates
- * and optionally an inhibition type it can also activate.
- *
- * Engine reads this table in compute-pressures.ts and compute-inhibitions.ts.
+ * pressureType and inhibitionType use canonical union values from
+ * pressure.types.ts and inhibition.types.ts respectively.
  */
+import type { PressureType } from "../pressure/pressure.types.js";
+import type { InhibitionType } from "../inhibition/inhibition.types.js";
 
 export type ActionPressureEntry = {
-  actionEmotion:     string;    // L4 key from ActionEmotions
-  pressureType:      string;    // key from PressureType
-  visibilityBias:    "public" | "private" | "either";
-  inhibitionType?:   string;    // if this emotion also generates inhibition
-  pressureWeight:    number;    // multiplier on emotion value [0, 2]
-  inhibitionWeight?: number;    // multiplier if inhibition present [0, 2]
+  actionEmotion:     string;
+  pressureType:      PressureType;
+  visibilityBias:    "public" | "private" | "either" | "hidden";
+  inhibitionType?:   InhibitionType;
+  pressureWeight:    number;
+  inhibitionWeight?: number;
 };
 
 export const ACTION_PRESSURE_MAP: readonly ActionPressureEntry[] = [
   {
     actionEmotion:   "warmth",
-    pressureType:    "social_reach",
+    pressureType:    "urge_to_message",
     visibilityBias:  "either",
     pressureWeight:  1.2,
   },
   {
     actionEmotion:   "curiousApproach",
-    pressureType:    "question_ask",
+    pressureType:    "urge_to_message",
     visibilityBias:  "public",
     pressureWeight:  1.0,
   },
   {
     actionEmotion:   "defensiveness",
-    pressureType:    "self_defense",
+    pressureType:    "urge_to_defend_self",
     visibilityBias:  "public",
     inhibitionType:  "conflict_avoidance",
     pressureWeight:  1.3,
@@ -38,23 +38,23 @@ export const ACTION_PRESSURE_MAP: readonly ActionPressureEntry[] = [
   },
   {
     actionEmotion:   "jealousInspection",
-    pressureType:    "monitor_target",
+    pressureType:    "urge_to_invite",
     visibilityBias:  "private",
-    inhibitionType:  "social_cost_awareness",
+    inhibitionType:  "status_protection",
     pressureWeight:  1.1,
     inhibitionWeight: 1.0,
   },
   {
     actionEmotion:   "shameWithdrawal",
-    pressureType:    "withdraw",
-    visibilityBias:  "private",
-    inhibitionType:  "self_censorship",
+    pressureType:    "urge_to_withdraw",
+    visibilityBias:  "hidden",
+    inhibitionType:  "shame_about_desire",
     pressureWeight:  0.9,
     inhibitionWeight: 1.4,
   },
   {
     actionEmotion:   "resentfulColdness",
-    pressureType:    "passive_withdraw",
+    pressureType:    "urge_to_withdraw",
     visibilityBias:  "private",
     inhibitionType:  "conflict_avoidance",
     pressureWeight:  0.8,
@@ -62,21 +62,21 @@ export const ACTION_PRESSURE_MAP: readonly ActionPressureEntry[] = [
   },
   {
     actionEmotion:   "anxiousOverreach",
-    pressureType:    "over_communicate",
+    pressureType:    "urge_to_reply",
     visibilityBias:  "public",
-    inhibitionType:  "embarrassment_risk",
+    inhibitionType:  "performance_anxiety",
     pressureWeight:  1.2,
     inhibitionWeight: 1.3,
   },
   {
     actionEmotion:   "pridefulPerformance",
-    pressureType:    "show_off",
+    pressureType:    "urge_to_show_off",
     visibilityBias:  "public",
     pressureWeight:  1.4,
   },
   {
     actionEmotion:   "vulnerableRetreat",
-    pressureType:    "seek_private",
+    pressureType:    "urge_to_create_private_channel",
     visibilityBias:  "private",
     inhibitionType:  "vulnerability_guard",
     pressureWeight:  0.9,
@@ -84,21 +84,21 @@ export const ACTION_PRESSURE_MAP: readonly ActionPressureEntry[] = [
   },
   {
     actionEmotion:   "contemptuousDismissal",
-    pressureType:    "ignore_target",
+    pressureType:    "urge_to_withdraw",
     visibilityBias:  "either",
-    inhibitionType:  "norm_compliance",
+    inhibitionType:  "contempt_concealment",
     pressureWeight:  1.0,
     inhibitionWeight: 0.7,
   },
   {
     actionEmotion:   "strategicPatience",
-    pressureType:    "delay_action",
+    pressureType:    "urge_to_type",
     visibilityBias:  "private",
     pressureWeight:  0.7,
   },
   {
     actionEmotion:   "impulsiveProvocation",
-    pressureType:    "provoke",
+    pressureType:    "urge_to_provoke",
     visibilityBias:  "public",
     inhibitionType:  "conflict_avoidance",
     pressureWeight:  1.5,
@@ -106,21 +106,21 @@ export const ACTION_PRESSURE_MAP: readonly ActionPressureEntry[] = [
   },
   {
     actionEmotion:   "comfortSeeking",
-    pressureType:    "seek_support",
+    pressureType:    "urge_to_seek_comfort",
     visibilityBias:  "private",
     pressureWeight:  1.1,
   },
   {
     actionEmotion:   "dominanceAssertion",
-    pressureType:    "assert_position",
+    pressureType:    "urge_to_dominate",
     visibilityBias:  "public",
-    inhibitionType:  "social_cost_awareness",
+    inhibitionType:  "status_protection",
     pressureWeight:  1.3,
     inhibitionWeight: 0.8,
   },
   {
     actionEmotion:   "repairImpulse",
-    pressureType:    "repair_relation",
+    pressureType:    "urge_to_repair",
     visibilityBias:  "either",
     pressureWeight:  1.2,
   },

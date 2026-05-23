@@ -38,6 +38,8 @@ function makeAgent(overrides?: Partial<AgentState>): AgentState {
     initiativeAccumulators: [],
     lastProcessedEventId: null,
     lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     createdAt: 1700000000000,
     updatedAt: 1700000000000,
     ...overrides,
@@ -82,6 +84,8 @@ function makeRateLimit(overrides?: Partial<RateLimitStatus>): RateLimitStatus {
     messagesThisMinute: 0,
     privateChannelsCreated: 0,
     lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     blocked: false,
     ...overrides,
   };

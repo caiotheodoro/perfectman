@@ -42,6 +42,8 @@ function makeRateLimit(agentId: string): RateLimitStatus {
     messagesThisMinute: 0,
     privateChannelsCreated: 0,
     lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     blocked: false,
   };
 }
@@ -79,7 +81,7 @@ describe("buildSimulationFixture scenario", () => {
       const snapshot: EngineSnapshot = {
         pulseIndex: 1,
         simulation: fixture.simulation,
-        committedEvents: [],
+        recentEventsWindow: [],
         agentState,
         persona,
         channels: fixture.channels,
@@ -89,6 +91,7 @@ describe("buildSimulationFixture scenario", () => {
         rateLimitStatus: makeRateLimit(persona.id),
         dt: 3,
         rng: createSeededRng(42 + i),
+        now: 1_700_000_000_000,
       };
 
       const result = runEngineStep(snapshot);
@@ -155,7 +158,7 @@ describe("buildFivePersonaSeedFixture scenario", () => {
       const snapshot: EngineSnapshot = {
         pulseIndex: 1,
         simulation,
-        committedEvents: [],
+        recentEventsWindow: [],
         agentState,
         persona,
         channels: [channel],
@@ -165,6 +168,7 @@ describe("buildFivePersonaSeedFixture scenario", () => {
         rateLimitStatus: makeRateLimit(persona.id),
         dt: 3,
         rng: createSeededRng(99),
+        now: 1_700_000_000_000,
       };
 
       const result = runEngineStep(snapshot);
@@ -186,7 +190,7 @@ describe("buildFivePersonaSeedFixture scenario", () => {
           settings: { omniscientSpectatorMode: false, allowPrivateChannels: true, maxPrivateChannelsPerAgent: 3, maxMessagesPerMinutePerAgent: 10, llmCallBudgetPerMinute: 20, pulseIntervalMs: 3000, tokenBudgetPerHour: 50000 },
           seed: 1, createdAt: Date.now(), updatedAt: Date.now(),
         },
-        committedEvents: [],
+        recentEventsWindow: [],
         agentState,
         persona,
         channels: [],
@@ -196,6 +200,7 @@ describe("buildFivePersonaSeedFixture scenario", () => {
         rateLimitStatus: makeRateLimit(persona.id),
         dt: 3,
         rng: createSeededRng(1),
+        now: 1_700_000_000_000,
       };
       return runEngineStep(snapshot).updatedAgentState.coreMood.valence;
     });
@@ -228,7 +233,7 @@ describe("buildGoulartColdStartScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 1,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: s.goulartState,
       persona: s.goulartPersona,
       channels: s.channels,
@@ -238,6 +243,8 @@ describe("buildGoulartColdStartScenario", () => {
       rateLimitStatus: makeRateLimit("goulart"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -276,7 +283,7 @@ describe("buildBrunoCaioExclusionScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 2,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: s.agentStates.bruno,
       persona: s.personas.bruno,
       channels: s.channels,
@@ -286,6 +293,8 @@ describe("buildBrunoCaioExclusionScenario", () => {
       rateLimitStatus: makeRateLimit("bruno"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -303,7 +312,7 @@ describe("buildBrunoCaioExclusionScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 2,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: { ...s.agentStates.bruno, lastProcessedEventId: null },
       persona: s.personas.bruno,
       channels: s.channels,
@@ -313,6 +322,8 @@ describe("buildBrunoCaioExclusionScenario", () => {
       rateLimitStatus: makeRateLimit("bruno"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -337,7 +348,7 @@ describe("buildPrivateChannelMotiveScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 1,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: s.agentStates.mariana,
       persona: s.personas.mariana,
       channels: s.channels,
@@ -347,6 +358,8 @@ describe("buildPrivateChannelMotiveScenario", () => {
       rateLimitStatus: makeRateLimit("mariana"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -365,7 +378,7 @@ describe("buildPrivateChannelMotiveScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 1,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: s.agentStates.mariana,
       persona: s.personas.mariana,
       channels: s.channels,
@@ -375,6 +388,8 @@ describe("buildPrivateChannelMotiveScenario", () => {
       rateLimitStatus: makeRateLimit("mariana"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -401,7 +416,7 @@ describe("buildDelayedReplyScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: s.currentPulseIndex,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: { ...s.agentStates.leo, lastProcessedEventId: null },
       persona: s.personas.leo,
       channels: s.channels,
@@ -415,6 +430,8 @@ describe("buildDelayedReplyScenario", () => {
       rateLimitStatus: makeRateLimit("leo"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -431,7 +448,7 @@ describe("buildDelayedReplyScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: s.currentPulseIndex,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: { ...s.agentStates.leo, lastProcessedEventId: null },
       persona: s.personas.leo,
       channels: s.channels,
@@ -445,6 +462,8 @@ describe("buildDelayedReplyScenario", () => {
       rateLimitStatus: makeRateLimit("leo"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -478,7 +497,7 @@ describe("buildNoOpInhibitionScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 4,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: s.agentStates.bruno,
       persona: s.personas.bruno,
       channels: s.channels,
@@ -492,6 +511,8 @@ describe("buildNoOpInhibitionScenario", () => {
       rateLimitStatus: makeRateLimit("bruno"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -507,7 +528,7 @@ describe("buildNoOpInhibitionScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 4,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: s.agentStates.bruno,
       persona: s.personas.bruno,
       channels: s.channels,
@@ -517,6 +538,8 @@ describe("buildNoOpInhibitionScenario", () => {
       rateLimitStatus: makeRateLimit("bruno"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -553,7 +576,7 @@ describe("buildBiasedMemoryScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 2,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: { ...s.agentStates.goulart, lastProcessedEventId: null },
       persona: s.personas.goulart,
       channels: s.channels,
@@ -563,6 +586,8 @@ describe("buildBiasedMemoryScenario", () => {
       rateLimitStatus: makeRateLimit("goulart"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);
@@ -583,7 +608,7 @@ describe("buildBiasedMemoryScenario", () => {
     const snapshot: EngineSnapshot = {
       pulseIndex: 2,
       simulation: s.simulation,
-      committedEvents: s.committedEvents,
+      recentEventsWindow: s.committedEvents,
       agentState: { ...s.agentStates.goulart, lastProcessedEventId: null },
       persona: s.personas.goulart,
       channels: s.channels,
@@ -593,6 +618,8 @@ describe("buildBiasedMemoryScenario", () => {
       rateLimitStatus: makeRateLimit("goulart"),
       dt: 3,
       rng: createSeededRng(42),
+
+      now: 1_700_000_000_000,
     };
 
     const result = runEngineStep(snapshot);

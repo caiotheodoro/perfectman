@@ -40,7 +40,8 @@ export type WorldSignals = {
 export type EngineSnapshot = {
   pulseIndex: number;
   simulation: Simulation;
-  committedEvents: CommittedEvent[]; // new events since last pulse
+  recentEventsWindow: CommittedEvent[]; // sliding context window — MUST include the event at agentState.lastProcessedEventId
+  now: number; // wall-clock ms at pulse start — pass from scheduler for determinism
   agentState: AgentState;
   persona: PersonaConfig;
   channels: Channel[];

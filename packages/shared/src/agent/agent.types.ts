@@ -31,6 +31,8 @@ export type AgentState = {
   initiativeAccumulators: InitiativeAccumulator[];
   lastProcessedEventId: string | null;
   lastActionAt: number | null;
+  lastRuminationPulse: number | null;
+  arrivalPulse: number | null;       // pulse index when agent joins; null = present from start
   createdAt: number;
   updatedAt: number;
 };

@@ -62,6 +62,8 @@ function makeAgent(overrides?: Partial<AgentState>): AgentState {
     initiativeAccumulators: [],
     lastProcessedEventId: null,
     lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     createdAt: 1700000000000,
     updatedAt: 1700000000000,
     ...overrides,

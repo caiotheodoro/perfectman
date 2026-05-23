@@ -81,6 +81,8 @@ export function makeAgentState(
     initiativeAccumulators: [],
     lastProcessedEventId: null,
     lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     createdAt: Date.now(),
     updatedAt: Date.now(),
   };

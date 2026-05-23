@@ -192,14 +192,14 @@ describe("ACTION_PRESSURE_MAP", () => {
 
   it("all visibility biases valid", () => {
     for (const entry of ACTION_PRESSURE_MAP) {
-      expect(["public", "private", "either"]).toContain(entry.visibilityBias);
+      expect(["public", "private", "either", "hidden"]).toContain(entry.visibilityBias);
     }
   });
 
   it("getActionPressureEntry returns entry for known action emotion", () => {
     const entry = getActionPressureEntry("warmth");
     expect(entry).toBeDefined();
-    expect(entry!.pressureType).toBe("social_reach");
+    expect(entry!.pressureType).toBe("urge_to_message");
   });
 
   it("getActionPressureEntry returns undefined for unknown", () => {

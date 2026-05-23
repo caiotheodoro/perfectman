@@ -94,13 +94,17 @@ export function updateInitiativeAccumulators(
 /**
  * Score initiative candidates — determines if initiative should proceed.
  * Cold-start stagger: agents with arrivalDelayPulses haven't arrived yet.
+ * arrivalPulse: agent must not fire until pulseIndex >= arrivalPulse.
  */
 export function scoreInitiativeCandidates(
   accumulators: InitiativeAccumulator[],
   pulseIndex: number,
   lastActionAt: number | null,
   pulseIntervalMs: number,
+  arrivalPulse: number | null,
 ): InitiativeCandidate[] {
+  const notArrived = arrivalPulse !== null && pulseIndex < arrivalPulse;
+
   return accumulators.map(acc => {
     const cooldownRemaining =
       acc.lastFiredAt !== null
@@ -108,6 +112,7 @@ export function scoreInitiativeCandidates(
         : 0;
 
     const proceed =
+      !notArrived &&
       acc.value > acc.threshold &&
       cooldownRemaining === 0;
 

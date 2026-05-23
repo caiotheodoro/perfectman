@@ -64,6 +64,8 @@ function makeAgent(id: string): AgentState {
     initiativeAccumulators: [],
     lastProcessedEventId: null,
     lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     createdAt: 1700000000000,
     updatedAt: 1700000000000,
   };
@@ -126,6 +128,8 @@ const DEFAULT_RATE_LIMIT: RateLimitStatus = {
   messagesThisMinute: 0,
   privateChannelsCreated: 0,
   lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
   blocked: false,
 };
 
@@ -133,7 +137,7 @@ function makeSnapshot(overrides?: Partial<EngineSnapshot>): EngineSnapshot {
   return {
     pulseIndex: 1,
     simulation: DEFAULT_SIMULATION,
-    committedEvents: [],
+    recentEventsWindow: [],
     agentState: makeAgent("a1"),
     persona: CAIO,
     channels: [makeChannel("ch1")],
@@ -143,6 +147,7 @@ function makeSnapshot(overrides?: Partial<EngineSnapshot>): EngineSnapshot {
     rateLimitStatus: DEFAULT_RATE_LIMIT,
     dt: 3,
     rng: createSeededRng(42),
+    now: 1_700_000_000_000,
     ...overrides,
   };
 }
@@ -185,14 +190,14 @@ describe("runEngineStep", () => {
   });
 
   it("direct mention increases attention dueScore", () => {
-    const noMentionResult = runEngineStep(makeSnapshot({ committedEvents: [] }));
+    const noMentionResult = runEngineStep(makeSnapshot({ recentEventsWindow: [] }));
 
     const mentionEvent = makeEvent("e1", {
       actorId: "a2",
       payload: { mentionedAgentIds: ["a1"] },
       emotionalSalience: "high",
     });
-    const withMentionResult = runEngineStep(makeSnapshot({ committedEvents: [mentionEvent] }));
+    const withMentionResult = runEngineStep(makeSnapshot({ recentEventsWindow: [mentionEvent] }));
 
     expect(withMentionResult.attentionResults.dueScore)
       .toBeGreaterThan(noMentionResult.attentionResults.dueScore);
@@ -200,12 +205,12 @@ describe("runEngineStep", () => {
 
   it("newEvents advances lastProcessedEventId", () => {
     const event = makeEvent("event-100");
-    const result = runEngineStep(makeSnapshot({ committedEvents: [event] }));
+    const result = runEngineStep(makeSnapshot({ recentEventsWindow: [event] }));
     expect(result.updatedAgentState.lastProcessedEventId).toBe("event-100");
   });
 
   it("no events → lastProcessedEventId stays null", () => {
-    const result = runEngineStep(makeSnapshot({ committedEvents: [] }));
+    const result = runEngineStep(makeSnapshot({ recentEventsWindow: [] }));
     expect(result.updatedAgentState.lastProcessedEventId).toBeNull();
   });
 
@@ -228,7 +233,7 @@ describe("runEngineStep", () => {
       payload: { mentionedAgentIds: ["a1"] },
       emotionalSalience: "high",
     });
-    const result = runEngineStep(makeSnapshot({ committedEvents: [mentionEvent] }));
+    const result = runEngineStep(makeSnapshot({ recentEventsWindow: [mentionEvent] }));
     // High salience mention should produce needsLLM=true
     expect(result.decision.needsLLM).toBe(true);
   });
@@ -240,7 +245,7 @@ describe("runEngineStep", () => {
       payload: { mentionedAgentIds: ["a1"] },
       emotionalSalience: "critical",
     });
-    const result = runEngineStep(makeSnapshot({ committedEvents: [mentionEvent] }));
+    const result = runEngineStep(makeSnapshot({ recentEventsWindow: [mentionEvent] }));
     if (result.decision.outcome === "act") {
       expect(result.noOpRecord).toBeNull();
     }
@@ -248,7 +253,7 @@ describe("runEngineStep", () => {
 
   it("noOpRecord is set when decision is no_op", () => {
     // Empty events + no initiative = no_op
-    const result = runEngineStep(makeSnapshot({ committedEvents: [] }));
+    const result = runEngineStep(makeSnapshot({ recentEventsWindow: [] }));
     if (result.decision.outcome === "no_op") {
       expect(result.noOpRecord).not.toBeNull();
       expect(result.noOpRecord!.agentId).toBe("a1");

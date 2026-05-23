@@ -4,6 +4,8 @@ import type {
   RelationalState,
   Pressure,
   Inhibition,
+  TranslatedEmotionalState,
+  RelationalFlavor,
 } from "@perfectman/shared";
 
 /**
@@ -18,23 +20,6 @@ import type {
  *
  * Dev1 imports this for prompt builder sections 4 and 5.
  */
-export type TranslatedEmotionalState = {
-  /** Section 4: subjective mood paragraph */
-  moodDescription:    string;
-  /** Section 4: notable social emotions (empty if nothing salient) */
-  socialContext:      string;
-  /** Section 4: relational flavors for people in scope */
-  relationalFlavors:  RelationalFlavor[];
-  /** Section 5: pressures as felt urges */
-  pressureDescriptions: string[];
-  /** Section 5: inhibitions as felt blocks */
-  inhibitionDescriptions: string[];
-};
-
-export type RelationalFlavor = {
-  targetAgentId: string;
-  description:   string;
-};
 
 export function translateEmotionalState(
   mood: CoreMood,

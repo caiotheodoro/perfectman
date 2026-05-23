@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS agent_states (
   initiative_accumulators TEXT NOT NULL DEFAULT '[]',          -- JSON array
   last_processed_event_id TEXT,
   last_action_at          INTEGER,
+  last_rumination_pulse   INTEGER,
+  arrival_pulse           INTEGER,
   created_at              INTEGER NOT NULL,
   updated_at              INTEGER NOT NULL,
   PRIMARY KEY (agent_id, simulation_id)
