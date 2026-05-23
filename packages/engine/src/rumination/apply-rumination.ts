@@ -15,15 +15,12 @@ import { clamp } from "@perfectman/shared";
  * fearOfExclusion) without creating synthetic evidence.
  * Cooldown prevents runaway.
  *
- * Returns updated relationalStates + modified emotionDelta.
+ * Returns updated relationalStates + modified emotionDelta + lastRuminationPulse.
  */
 
 const RUMINATION_BASE_PROBABILITY = 0.15;
 const RUMINATION_COOLDOWN_PULSES = 4;
 const RUMINATION_INTENSIFY_FACTOR = 1.08; // multiply targeted dimensions by this
-
-/** Tracks last rumination per agent (in-process state, not persisted) */
-const ruminationCooldowns = new Map<string, number>(); // agentId → lastRuminationPulse
 
 export function applyRumination(
   agentState: AgentState,
@@ -35,21 +32,24 @@ export function applyRumination(
 ): {
   updatedRelationalStates: Map<string, RelationalState>;
   emotionDelta: EmotionDelta;
+  lastRuminationPulse: number | null;
 } {
   // No rumination when there are new events to process
   if (hasNewEvents) {
     return {
       updatedRelationalStates: agentState.relationalStates,
       emotionDelta: { ...emotionDelta, ruminationApplied: false },
+      lastRuminationPulse: agentState.lastRuminationPulse,
     };
   }
 
   // Cooldown check
-  const lastRuminated = ruminationCooldowns.get(agentState.agentId) ?? -Infinity;
+  const lastRuminated = agentState.lastRuminationPulse ?? -Infinity;
   if (pulseIndex - lastRuminated < RUMINATION_COOLDOWN_PULSES) {
     return {
       updatedRelationalStates: agentState.relationalStates,
       emotionDelta: { ...emotionDelta, ruminationApplied: false },
+      lastRuminationPulse: agentState.lastRuminationPulse,
     };
   }
 
@@ -70,6 +70,7 @@ export function applyRumination(
     return {
       updatedRelationalStates: agentState.relationalStates,
       emotionDelta: { ...emotionDelta, ruminationApplied: false },
+      lastRuminationPulse: agentState.lastRuminationPulse,
     };
   }
 
@@ -108,10 +109,9 @@ export function applyRumination(
     };
   }
 
-  ruminationCooldowns.set(agentState.agentId, pulseIndex);
-
   return {
     updatedRelationalStates: updated,
     emotionDelta: { ...emotionDelta, ruminationApplied: true },
+    lastRuminationPulse: pulseIndex,
   };
 }

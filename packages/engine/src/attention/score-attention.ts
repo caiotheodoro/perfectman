@@ -46,6 +46,7 @@ export function scoreAttention(
   relationalStates: Map<string, RelationalState>,
   lastActionAt: number | null,
   pulseIntervalMs: number,
+  now: number,
 ): AttentionResult {
   if (agent.presence === "offline") {
     return {
@@ -151,7 +152,7 @@ export function scoreAttention(
 
   // Suppress: recent action cooldown
   if (lastActionAt !== null) {
-    const msSinceAction = Date.now() - lastActionAt;
+    const msSinceAction = now - lastActionAt;
     const cooldownRatio = Math.max(0, 1 - msSinceAction / (pulseIntervalMs * 3));
     dueScore -= cooldownRatio * 0.20;
   }

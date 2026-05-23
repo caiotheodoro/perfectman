@@ -61,7 +61,6 @@ export { checkRateLimitPure } from "./intent/rate-limit-rules.js";
 
 // Emotional State Translation (used by dev1 prompt builder)
 export { translateEmotionalState } from "./prompt/translate-emotional-state.js";
-export type { TranslatedEmotionalState, RelationalFlavor } from "./prompt/translate-emotional-state.js";
 
 // Engine Step (primary entry point)
 export { runEngineStep } from "./step/run-engine-step.js";

@@ -25,6 +25,13 @@ import { SqliteChannelRepository } from "../sqlite/channel-repository.js";
 import { SqliteEventRepository } from "../sqlite/event-repository.js";
 import { SqliteAgentStateRepository } from "../sqlite/agent-state-repository.js";
 import { SqliteMemoryRepository } from "../sqlite/memory-repository.js";
+import {
+  runEventRepositoryContract,
+  runAgentStateRepositoryContract,
+  runMemoryRepositoryContract,
+  runSimulationRepositoryContract,
+  runChannelRepositoryContract,
+} from "./repository-contract.js";
 
 // ── Fixtures ──────────────────────────────────────────────────────────────────
 
@@ -745,3 +752,61 @@ describe("Foreign key cascade", () => {
     expect(after).toHaveLength(0);
   });
 });
+
+// ── Repository Contract Tests (SQLite/:memory: implementations) ───────────────
+
+function makeSqliteFactory<T>(
+  makeRepo: (db: DB) => T,
+  simIds: string[] = ["sim1"],
+): () => Promise<{ repo: T; teardown: () => Promise<void> }> {
+  return async () => {
+    const db = openDatabase(":memory:");
+    const simRepo = new SqliteSimulationRepository(db);
+    for (const id of simIds) {
+      await simRepo.create({
+        id,
+        name: `Test Sim ${id}`,
+        agentIds: ["a1", "a2"],
+        channelIds: ["ch1"],
+        settings: {
+          omniscientSpectatorMode: false,
+          allowPrivateChannels: true,
+          maxPrivateChannelsPerAgent: 3,
+          maxMessagesPerMinutePerAgent: 10,
+          llmCallBudgetPerMinute: 20,
+          pulseIntervalMs: 3000,
+          tokenBudgetPerHour: 50000,
+        },
+        seed: 42,
+      });
+    }
+    return {
+      repo: makeRepo(db),
+      teardown: async () => closeDatabase(db),
+    };
+  };
+}
+
+runEventRepositoryContract(
+  makeSqliteFactory(db => new SqliteEventRepository(db), ["sim1", "simA", "simB"]),
+);
+
+runAgentStateRepositoryContract(
+  makeSqliteFactory(db => new SqliteAgentStateRepository(db), ["sim1", "simA", "simB"]),
+);
+
+runMemoryRepositoryContract(
+  makeSqliteFactory(db => new SqliteMemoryRepository(db), ["sim1", "simA", "simB"]),
+);
+
+runSimulationRepositoryContract(async () => {
+  const db = openDatabase(":memory:");
+  return {
+    repo: new SqliteSimulationRepository(db),
+    teardown: async () => closeDatabase(db),
+  };
+});
+
+runChannelRepositoryContract(
+  makeSqliteFactory(db => new SqliteChannelRepository(db)),
+);

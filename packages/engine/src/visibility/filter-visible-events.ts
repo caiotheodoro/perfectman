@@ -5,6 +5,10 @@ import type {
   SimulationSettings,
 } from "@perfectman/shared";
 
+const AGENT_BLOCKED_TYPES = new Set<string>([
+  "operator_warning", "llm_failure", "stagnation_detected", "private_motive_summary",
+]);
+
 /**
  * Filter committed events visible to a specific agent.
  *
@@ -27,6 +31,9 @@ export function filterVisibleEventsForAgent(
   );
 
   return events.filter(event => {
+    // Exclude operator-internal event types
+    if (AGENT_BLOCKED_TYPES.has(event.type)) return false;
+
     // Must be in the channel
     if (!memberChannelIds.has(event.channelId)) return false;
 

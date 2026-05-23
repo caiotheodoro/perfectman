@@ -3,7 +3,7 @@ import type {
   AgentState,
   Channel,
   Memory,
-  EmotionalState,
+  TranslatedEmotionalState,
   AvailableAction,
   PerceptionPacket,
   AttentionResult,
@@ -35,7 +35,7 @@ export function buildPerceptionPacket(
   triggeringEvent: CommittedEvent | null,
   channels: Channel[],
   attentionResult: AttentionResult,
-  emotionalState: EmotionalState,
+  translatedEmotionalState: TranslatedEmotionalState,
   availableActions: AvailableAction[],
 ): PerceptionPacket {
   // Filter out spectator/operator-only event types
@@ -88,7 +88,7 @@ export function buildPerceptionPacket(
     involvedPeople:        [...involvedPeople],
     relevantChannels,
     relevantMemories,
-    currentEmotionalState: emotionalState,
+    translatedEmotionalState: translatedEmotionalState,
     availableActions,
   };
 }

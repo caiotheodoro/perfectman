@@ -43,6 +43,8 @@ function makeAgent(id = "a1", overrides?: Partial<AgentState>): AgentState {
     initiativeAccumulators: [],
     lastProcessedEventId: null,
     lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     createdAt: 1700000000000,
     updatedAt: 1700000000000,
     ...overrides,
@@ -294,23 +296,28 @@ describe("applyRumination", () => {
   });
 
   it("rumination cooldown prevents back-to-back rumination", () => {
-    const agent = makeAgent("a1", {
+    const baseAgent = makeAgent("a1", {
       coreMood: { ...BASE_MOOD, valence: -0.9, stability: 0.1 },
     });
     // Find a seed that causes rumination
     let ruminatedPulse = -1;
     for (let seed = 0; seed < 30; seed++) {
       const rng = createSeededRng(seed);
-      const result = applyRumination(agent, BRUNO, ZERO_DELTA, rng, seed * 10, false);
+      const result = applyRumination(baseAgent, BRUNO, ZERO_DELTA, rng, seed * 10, false);
       if (result.emotionDelta.ruminationApplied) {
         ruminatedPulse = seed * 10;
         break;
       }
     }
     if (ruminatedPulse >= 0) {
+      // Thread lastRuminationPulse back into agent state (as the engine step would)
+      const agentAfterRumination = makeAgent("a1", {
+        coreMood: { ...BASE_MOOD, valence: -0.9, stability: 0.1 },
+        lastRuminationPulse: ruminatedPulse,
+      });
       // Try again at pulse+1 (within cooldown)
       const rng2 = createSeededRng(0);
-      const result2 = applyRumination(agent, BRUNO, ZERO_DELTA, rng2, ruminatedPulse + 1, false);
+      const result2 = applyRumination(agentAfterRumination, BRUNO, ZERO_DELTA, rng2, ruminatedPulse + 1, false);
       expect(result2.emotionDelta.ruminationApplied).toBe(false);
     }
   });

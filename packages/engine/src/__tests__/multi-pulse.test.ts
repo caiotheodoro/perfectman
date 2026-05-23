@@ -84,7 +84,7 @@ describe("multi-pulse simulation loop", () => {
         const snapshot: EngineSnapshot = {
           pulseIndex: pulse,
           simulation: fixture.simulation,
-          committedEvents: [...allEvents],
+          recentEventsWindow: [...allEvents],
           agentState,
           persona,
           channels: fixture.channels,
@@ -100,6 +100,7 @@ describe("multi-pulse simulation loop", () => {
           },
           dt: 3,
           rng,
+          now: 1_700_000_000_000 + pulse * 3000,
         };
 
         const result = runEngineStep(snapshot);

@@ -102,6 +102,8 @@ function makeAgentState(agentId: string, simulationId = "sim1"): AgentState {
     initiativeAccumulators: [],
     lastProcessedEventId: null,
     lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     createdAt: 1700000000000,
     updatedAt: 1700000000000,
   };
@@ -168,10 +170,10 @@ export function runEventRepositoryContract(factory: EventRepoFactory): void {
       const committed = await repo.append("sim1", events);
 
       expect(committed).toHaveLength(1);
-      expect(committed[0].id).toBeTruthy();
-      expect(committed[0].createdAt).toBeGreaterThan(0);
-      expect(committed[0].pulseIndex).toBeGreaterThan(0);
-      expect(committed[0].simulationId).toBe("sim1");
+      expect(committed[0]!.id).toBeTruthy();
+      expect(committed[0]!.createdAt).toBeGreaterThan(0);
+      expect(committed[0]!.pulseIndex).toBeGreaterThan(0);
+      expect(committed[0]!.simulationId).toBe("sim1");
     });
 
     it("append preserves pre-assigned id and createdAt", async () => {
@@ -184,16 +186,16 @@ export function runEventRepositoryContract(factory: EventRepoFactory): void {
       };
       const committed = await repo.append("sim1", [event]);
 
-      expect(committed[0].id).toBe(preId);
-      expect(committed[0].createdAt).toBe(preTime);
+      expect(committed[0]!.id).toBe(preId);
+      expect(committed[0]!.createdAt).toBe(preTime);
     });
 
     it("getById returns the event that was appended", async () => {
       const committed = await repo.append("sim1", [makeEventInput()]);
-      const found = await repo.getById("sim1", committed[0].id);
+      const found = await repo.getById("sim1", committed[0]!.id);
 
       expect(found).not.toBeNull();
-      expect(found!.id).toBe(committed[0].id);
+      expect(found!.id).toBe(committed[0]!.id);
     });
 
     it("getById returns null for unknown id", async () => {
@@ -207,7 +209,7 @@ export function runEventRepositoryContract(factory: EventRepoFactory): void {
 
       expect(all.length).toBeGreaterThanOrEqual(3);
       for (let i = 1; i < all.length; i++) {
-        expect(all[i].createdAt).toBeGreaterThanOrEqual(all[i - 1].createdAt);
+        expect(all[i]!.createdAt).toBeGreaterThanOrEqual(all[i - 1]!.createdAt);
       }
     });
 
@@ -215,10 +217,10 @@ export function runEventRepositoryContract(factory: EventRepoFactory): void {
       const first = await repo.append("sim1", [makeEventInput()]);
       await repo.append("sim1", [makeEventInput(), makeEventInput()]);
 
-      const after = await repo.getAfter("sim1", first[0].id);
+      const after = await repo.getAfter("sim1", first[0]!.id);
       expect(after.length).toBeGreaterThanOrEqual(2);
       for (const e of after) {
-        expect(e.id).not.toBe(first[0].id);
+        expect(e.id).not.toBe(first[0]!.id);
       }
     });
 
@@ -232,7 +234,7 @@ export function runEventRepositoryContract(factory: EventRepoFactory): void {
       const first = await repo.append("sim1", [makeEventInput()]);
       await repo.append("sim1", [makeEventInput()]);
 
-      const pulse1 = first[0].pulseIndex;
+      const pulse1 = first[0]!.pulseIndex;
       const through = await repo.getCommittedThrough("sim1", pulse1);
       for (const e of through) {
         expect(e.pulseIndex).toBeLessThanOrEqual(pulse1);
@@ -248,7 +250,7 @@ export function runEventRepositoryContract(factory: EventRepoFactory): void {
       const recent = await repo.getRecent("sim1", 3);
       expect(recent.length).toBeLessThanOrEqual(3);
       for (let i = 1; i < recent.length; i++) {
-        expect(recent[i].createdAt).toBeGreaterThanOrEqual(recent[i - 1].createdAt);
+        expect(recent[i]!.createdAt).toBeGreaterThanOrEqual(recent[i - 1]!.createdAt);
       }
     });
 
@@ -256,7 +258,7 @@ export function runEventRepositoryContract(factory: EventRepoFactory): void {
       const first = await repo.append("sim1", [makeEventInput()]);
       const second = await repo.append("sim1", [makeEventInput()]);
 
-      expect(second[0].pulseIndex).toBeGreaterThan(first[0].pulseIndex);
+      expect(second[0]!.pulseIndex).toBeGreaterThan(first[0]!.pulseIndex);
     });
 
     it("append to different simulationIds is isolated", async () => {
@@ -268,7 +270,7 @@ export function runEventRepositoryContract(factory: EventRepoFactory): void {
 
       expect(a).toHaveLength(1);
       expect(b).toHaveLength(1);
-      expect(a[0].id).not.toBe(b[0].id);
+      expect(a[0]!.id).not.toBe(b[0]!.id);
     });
   });
 }
@@ -382,7 +384,7 @@ export function runMemoryRepositoryContract(factory: MemoryRepoFactory): void {
 
       const found = await repo.getByAgent("sim1", "a1");
       expect(found).toHaveLength(1);
-      expect(found[0].id).toBe("m1");
+      expect(found[0]!.id).toBe("m1");
     });
 
     it("upsert updates existing memory", async () => {
@@ -391,8 +393,8 @@ export function runMemoryRepositoryContract(factory: MemoryRepoFactory): void {
       await repo.upsert({ ...mem, summary: "Updated summary", confidence: 0.99 });
 
       const found = await repo.getByAgent("sim1", "a1");
-      expect(found[0].summary).toBe("Updated summary");
-      expect(found[0].confidence).toBeCloseTo(0.99, 3);
+      expect(found[0]!.summary).toBe("Updated summary");
+      expect(found[0]!.confidence).toBeCloseTo(0.99, 3);
     });
 
     it("getBySubject returns memories where agent is a subject", async () => {
@@ -458,7 +460,7 @@ export function runSimulationRepositoryContract(factory: SimulationRepoFactory):
       expect(found).not.toBeNull();
       expect(found!.id).toBe("sim1");
       expect(found!.name).toBe("Sim sim1");
-      expect(found!.status).toBe("running");
+      expect(found!.status).toBe("initializing");
     });
 
     it("get returns null for unknown simulation", async () => {

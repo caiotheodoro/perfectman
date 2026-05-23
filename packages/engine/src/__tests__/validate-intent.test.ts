@@ -30,6 +30,8 @@ function makeAgent(id = "a1"): AgentState {
     presence: "active", coreMood: BASE_MOOD, socialEmotions: ZERO_SOCIAL,
     relationalStates: new Map(), memories: [], initiativeAccumulators: [],
     lastProcessedEventId: null, lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
     createdAt: 1700000000000, updatedAt: 1700000000000,
   };
 }
@@ -195,6 +197,8 @@ describe("checkRateLimitPure", () => {
       messagesThisMinute: 0,
       privateChannelsCreated: 0,
       lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
       blocked: false,
       ...overrides,
     };

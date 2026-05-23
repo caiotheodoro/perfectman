@@ -188,7 +188,7 @@ describe("perceptionPacket does not contain operator-internal events", () => {
         createdAt: 1700000000000,
         updatedAt: 1700000000000,
       },
-      committedEvents: eventOverrides.map((ov, i) => ({
+      recentEventsWindow: eventOverrides.map((ov, i) => ({
         id: `e${i}`,
         simulationId: "sim1",
         channelId: "ch1",
@@ -228,6 +228,8 @@ describe("perceptionPacket does not contain operator-internal events", () => {
         initiativeAccumulators: [],
         lastProcessedEventId: null,
         lastActionAt: null,
+    lastRuminationPulse: null,
+    arrivalPulse: null,
         createdAt: 1700000000000,
         updatedAt: 1700000000000,
       },
@@ -268,6 +270,7 @@ describe("perceptionPacket does not contain operator-internal events", () => {
       },
       dt: 3,
       rng,
+      now: 1_700_000_000_000,
     };
   }
 
@@ -358,7 +361,7 @@ describe("perceptionPacket does not contain operator-internal events", () => {
       },
     };
 
-    snap.committedEvents = [a1visible, a2only];
+    snap.recentEventsWindow = [a1visible, a2only];
     const result = runEngineStep(snap);
 
     // visibleEvents: full filtered set for this agent

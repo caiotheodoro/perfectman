@@ -19,6 +19,8 @@ type AgentStateRow = {
   initiative_accumulators: string;
   last_processed_event_id: string | null;
   last_action_at: number | null;
+  last_rumination_pulse: number | null;
+  arrival_pulse: number | null;
   created_at: number;
   updated_at: number;
 };
@@ -47,6 +49,8 @@ function rowToAgentState(row: AgentStateRow): AgentState {
     initiativeAccumulators: JSON.parse(row.initiative_accumulators),
     lastProcessedEventId: row.last_processed_event_id,
     lastActionAt: row.last_action_at,
+    lastRuminationPulse: row.last_rumination_pulse ?? null,
+    arrivalPulse: row.arrival_pulse ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -72,8 +76,9 @@ export class SqliteAgentStateRepository implements IAgentStateRepository {
            (agent_id, simulation_id, persona_id, presence,
             core_mood, social_emotions, relational_states, memories,
             initiative_accumulators, last_processed_event_id, last_action_at,
+            last_rumination_pulse, arrival_pulse,
             created_at, updated_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(agent_id, simulation_id) DO UPDATE SET
            persona_id                = excluded.persona_id,
            presence                  = excluded.presence,
@@ -84,6 +89,8 @@ export class SqliteAgentStateRepository implements IAgentStateRepository {
            initiative_accumulators   = excluded.initiative_accumulators,
            last_processed_event_id   = excluded.last_processed_event_id,
            last_action_at            = excluded.last_action_at,
+           last_rumination_pulse     = excluded.last_rumination_pulse,
+           arrival_pulse             = excluded.arrival_pulse,
            updated_at                = excluded.updated_at`,
       )
       .run(
@@ -98,6 +105,8 @@ export class SqliteAgentStateRepository implements IAgentStateRepository {
         JSON.stringify(agentState.initiativeAccumulators),
         agentState.lastProcessedEventId,
         agentState.lastActionAt,
+        agentState.lastRuminationPulse,
+        agentState.arrivalPulse,
         agentState.createdAt,
         agentState.updatedAt ?? now,
       );

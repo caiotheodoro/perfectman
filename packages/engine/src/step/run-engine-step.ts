@@ -47,6 +47,9 @@ import { applyRumination } from "../rumination/apply-rumination.js";
 // Available Actions
 import { computeAvailableActions } from "../action/compute-available-actions.js";
 
+// Translate emotional state for LLM
+import { translateEmotionalState } from "../prompt/translate-emotional-state.js";
+
 /**
  * Pure engine step — primary entry point.
  * Dev2 calls this per agent per pulse with an assembled EngineSnapshot.
@@ -71,7 +74,7 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
   const {
     pulseIndex,
     simulation,
-    committedEvents,
+    recentEventsWindow,
     agentState,
     persona,
     channels,
@@ -80,13 +83,12 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     rateLimitStatus,
     dt,
     rng,
+    now,
   } = snapshot;
-
-  const now = Date.now();
 
   // ── 1. Visibility filter ──────────────────────────────────────────────────
   const visibleEvents = filterVisibleEventsForAgent(
-    committedEvents,
+    recentEventsWindow,
     agentState.agentId,
     channels,
     channelMembership,
@@ -121,6 +123,7 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     agentState.relationalStates,
     agentState.lastActionAt,
     simulation.settings.pulseIntervalMs,
+    now,
   );
 
   // ── 5. Interpretation ─────────────────────────────────────────────────────
@@ -191,8 +194,15 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     pulseIndex,
     agentState.lastActionAt,
     simulation.settings.pulseIntervalMs,
+    agentState.arrivalPulse,
   );
   const initiativeProceed = anyInitiativeProceed(initiativeCandidates);
+
+  // Write lastFiredAt for accumulators that fired this pulse
+  const firedSources = new Set(initiativeCandidates.filter(c => c.proceed).map(c => c.source));
+  const finalAccumulators = updatedAccumulators.map(acc =>
+    firedSources.has(acc.source) ? { ...acc, lastFiredAt: pulseIndex } : acc,
+  );
 
   // ── 12. Decision ──────────────────────────────────────────────────────────
   const rawDecision = resolveDecision(
@@ -219,11 +229,13 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     ? newEvents.find(e => e.id === attentionResults.triggeringEventId) ?? null
     : null;
 
-  const emotionalState = {
-    coreMood:        emotionResult.updatedState.coreMood,
-    socialEmotions:  emotionResult.updatedState.socialEmotions,
-    relationalStates: finalRelational,
-  };
+  const translatedEmotionalState = translateEmotionalState(
+    emotionResult.updatedState.coreMood,
+    emotionResult.updatedState.socialEmotions,
+    finalRelational,
+    pressures,
+    inhibitions,
+  );
 
   const perceptionPacket = buildPerceptionPacket(
     agentState,
@@ -231,7 +243,7 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     triggeringEvent,
     channels,
     attentionResults,
-    emotionalState,
+    translatedEmotionalState,
     availableActions,
   );
 
@@ -241,12 +253,14 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
 
   const updatedAgentState: AgentState = {
     ...agentState,
-    coreMood:             emotionResult.updatedState.coreMood,
-    socialEmotions:       emotionResult.updatedState.socialEmotions,
-    relationalStates:     finalRelational,
-    initiativeAccumulators: updatedAccumulators,
-    lastProcessedEventId: newLastProcessedEventId,
-    updatedAt:            now,
+    coreMood:               emotionResult.updatedState.coreMood,
+    socialEmotions:         emotionResult.updatedState.socialEmotions,
+    relationalStates:       finalRelational,
+    initiativeAccumulators: finalAccumulators,
+    lastProcessedEventId:   newLastProcessedEventId,
+    lastRuminationPulse:    ruminationResult.lastRuminationPulse,
+    arrivalPulse:           agentState.arrivalPulse,
+    updatedAt:              now,
   };
 
   // ── 15. No-op record ──────────────────────────────────────────────────────
