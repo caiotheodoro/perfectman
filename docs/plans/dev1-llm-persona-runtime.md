@@ -4,15 +4,15 @@
 
 ## Goal
 
-Build persona cognition layer. Receives `AgentRuntimeInput` (assembled by dev2), reads the agent-specific `LlmConfig` from the persona definition, creates the persona prompt using dev3's emotional language translator, calls either a local Qwen3-8B runtime or FreeLLMAPI through one OpenAI-compatible provider interface, validates structured JSON output against dev3's intent schema, tracks token budget, and returns the `ActionIntent`.
+Build persona cognition layer. Receives `AgentRuntimeInput` (assembled by dev2), combines Dev3's engine-calibration `PersonaConfig` with Dev1-owned `PersonaPromptProfile` and `LlmConfig`, creates the persona prompt using dev3's emotional language translator, calls either a local Qwen3-8B runtime or FreeLLMAPI through one OpenAI-compatible provider interface, validates structured JSON output against dev3's intent schema, tracks token budget, and returns the `ActionIntent`.
 
-Keep the first implementation simple: no standalone LLM router is required. Provider choice comes directly from `input.personaConfig.llmConfig`.
+Keep the first implementation simple: no standalone LLM router is required. Provider choice comes from `input.llmConfig` or the Dev1 runtime profile resolved for the agent, not from Dev3's `PersonaConfig`.
 
 ## Architecture
 
 ```text
 AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
-  → PersonaLoader (reads dev3 shared constants including LlmConfig)
+  → PersonaLoader (combines dev3 PersonaConfig with dev1 PersonaPromptProfile)
   → PromptBuilder (uses dev3 translate-emotional-state)
   → BudgetTracker pre-check
   → LlmProvider: mock | openai-compatible
@@ -33,7 +33,7 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
 **Import from dev3 (do not duplicate):**
 - `ActionIntent`, `IntentType` — intent schema
 - `AgentRuntimeInput` — runtime input type
-- `PersonaConfig`, `AgentSeedState` — persona definitions
+- `PersonaConfig`, `AgentSeedState` — Dev3 engine calibration definitions
 - `CoreMood`, `SocialEmotions`, `RelationalState`, `ActionEmotions` — emotion types
 - `Pressure`, `Inhibition` — pressure/inhibition types
 - `Memory` — memory type
@@ -46,7 +46,7 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
 **Consume from dev2 (event runtime):**
 - Event runtime scheduler calls `AgentRuntime.generateIntent(input)` passing assembled `AgentRuntimeInput`
 - Operator projection receives LLM failure events
-- Config provider supplies budget settings and environment secrets; per-agent provider/model choice comes from `PersonaConfig.llmConfig`
+- Config provider supplies budget settings and environment secrets; per-agent provider/model choice comes from Dev1-owned `LlmConfig`
 
 **Provide to dev2:**
 - `AgentRuntime.generateIntent(input: AgentRuntimeInput): Promise<AgentRuntimeOutput>`
@@ -62,7 +62,8 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
 packages/server/src/agent/
   agent-runtime.ts
   agent-runtime.types.ts        # BuiltPrompt, AgentRuntimeOutput, LlmProviderResult
-  persona-loader.ts             # reads PersonaConfig from @perfectman/shared constants
+  persona-loader.ts             # combines PersonaConfig with PersonaPromptProfile
+  persona-prompt-profile.ts     # Dev1-owned prompt identity, style examples, relationship prose
   prompt-builder.ts             # builds 8-section prompt, imports translateEmotionalState from engine
   intent-parser.ts              # validates LLM JSON output against shared ActionIntent schema
   fixtures/
@@ -74,6 +75,7 @@ packages/server/src/agent/
 
 packages/server/src/llm/
   index.ts
+  llm-config.ts                 # Dev1-owned provider/model/runtime config
   llm-provider.ts               # LlmProvider interface
   mock-llm-provider.ts
   openai-compatible-provider.ts # generic client for Qwen local endpoints & FreeLLMAPI
@@ -87,6 +89,56 @@ packages/server/src/llm/
 
 **NOT created by dev1 (resolved overlap):**
 - ~~`emotional-language.ts`~~ → use `translateEmotionalState` from `@perfectman/engine`
+- ~~replacement `PersonaConfig`~~ → `PersonaConfig` remains Dev3 engine calibration; Dev1 adds `PersonaPromptProfile`
+
+## Persona And LLM Config Boundary
+
+Dev1 must keep prompt/runtime concerns separate from Dev3's engine calibration.
+
+```text
+PersonaConfig
+  owner: dev3
+  purpose: engine calibration, mood baselines, thresholds, sensitivities
+
+PersonaPromptProfile
+  owner: dev1
+  purpose: LLM identity, voice, style examples, relationship prose, language/slang
+
+LlmConfig
+  owner: dev1
+  purpose: provider, model, temperature, max tokens, timeouts, retries, budget defaults
+```
+
+`PersonaLoader` may read Dev3's `PersonaConfig`, but only to translate calibration into natural language hints. It must not mutate, replace, or narrow `PersonaConfig`.
+
+Suggested `PersonaPromptProfile` shape:
+
+```typescript
+type PersonaPromptProfile = {
+  personaId: string;
+  displayName: string;
+  identityFrame: string;
+  voiceGuidelines: string[];
+  styleExamples: string[];
+  relationshipBiases: Record<string, string>;
+  language: "pt-BR" | "en";
+};
+```
+
+Suggested `LlmConfig` shape:
+
+```typescript
+type LlmConfig = {
+  provider: "mock" | "anthropic";
+  cognitionModel: string;
+  reflectionModel?: string;
+  maxInputTokens: number;
+  maxOutputTokens: number;
+  temperature: number;
+  timeoutMs: number;
+  retryCount: number;
+};
+```
 
 ## Runtime Output Contract
 
@@ -231,9 +283,10 @@ Fallback: prefer `delay_response` when social context can wait, `no_op` when uns
 ## Implementation Milestones
 
 ### M1: Runtime Types & Interface
-- Import `ActionIntent`, `AgentRuntimeInput`, and `LlmConfig` from `@perfectman/shared`
+- Import `ActionIntent` and `AgentRuntimeInput` from `@perfectman/shared`
 - Define `BuiltPrompt`, `LlmProvider`, `LlmProviderResult`, `AgentRuntimeOutput`
-- Do not duplicate shared persona/provider types; Dev3 owns `LlmConfig` and `PersonaConfig`
+- Define Dev1-owned `PersonaPromptProfile` and `LlmConfig` in the runtime/LLM layer
+- Do not duplicate or replace Dev3 `PersonaConfig`; it remains engine calibration
 
 ### M2: Zod Schema Parser & Repair
 - Build `IntentParser` to validate raw LLM JSON against the shared Zod schema for `ActionIntent`.
@@ -254,11 +307,11 @@ Fallback: prefer `delay_response` when social context can wait, `no_op` when uns
 ### M5: OpenAI-Compatible Provider
 - Implement `OpenAiCompatibleProvider` to handle standard OpenAI `/v1/chat/completions` JSON payloads.
 - Support base URLs, API keys, model names, temperatures, max tokens, timeouts, and provider-specific `extraBody`.
-- Select the provider directly from `input.personaConfig.llmConfig.providerType`.
-- No standalone `LlmRouter` for MVP; add one only if provider selection becomes more complex than persona config lookup.
+- Select the provider directly from `input.llmConfig.providerType` or the Dev1 runtime profile resolved for the agent.
+- No standalone `LlmRouter` for MVP; add one only if provider selection becomes more complex than runtime config lookup.
 
 ### M6: Runtime Orchestration & Robust Fallbacks
-- Orchestrate `AgentRuntime.generateIntent()`: pre-check budget → build prompt → create provider from `LlmConfig` → run provider → parse/repair/validate → record usage → return.
+- Orchestrate `AgentRuntime.generateIntent()`: pre-check budget → resolve `PersonaPromptProfile` + `LlmConfig` → build prompt → create provider from `LlmConfig` → run provider → parse/repair/validate → record usage → return.
 - Apply fail-safe fallback: connection errors, timeouts, invalid JSON, or schema failures automatically return a safe programmatic fallback (`delay_response` or `no_op`) rather than blocking the scheduler.
 
 ## Verification
@@ -272,7 +325,7 @@ Expected: prompt tests pass, parser tests pass, mock adapter tests pass, budget 
 
 ## MVP Done Criteria
 
-- Persona configs load for at least Goulart and Bruno, including their individual `LlmConfig` definitions
+- Persona configs load for at least Goulart and Bruno, and Dev1 resolves their individual `PersonaPromptProfile` and `LlmConfig` definitions
 - Prompt builder produces natural language subjective state without numbers
 - Mock adapter produces deterministic valid JSON intents matching the `ActionIntent` schema
 - OpenAI-compatible provider works with at least one verified local Qwen3-8B endpoint and FreeLLMAPI behind the same interface

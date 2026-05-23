@@ -26,8 +26,29 @@ All three developer plans reference this document as the single source of truth 
 | In-memory store implementations | Dev2 | `packages/server/src/simulation/in-memory-stores.ts` |
 | Spectator narrative projection (MVP rule-based) | Dev2 | `packages/server/src/simulation/projections/spectator-projection.ts` |
 | Agent runtime, prompt builder | Dev1 | `packages/server/src/agent/` |
+| Persona prompt/runtime profile | Dev1 | `packages/server/src/agent/persona-loader.ts` |
 | LLM providers, budget tracker | Dev1 | `packages/server/src/llm/` |
-| Persona loader (reads dev3 constants) | Dev1 | `packages/server/src/agent/persona-loader.ts` |
+| LLM provider/model config | Dev1 | `packages/server/src/llm/` |
+
+## Persona And LLM Contract Split
+
+Do not overload `PersonaConfig`.
+
+- `PersonaConfig` is Dev3-owned domain calibration data used by the pure engine: mood baselines, emotional reactivity, sensitivity tables, thresholds, and social-behavior math.
+- `PersonaPromptProfile` is Dev1-owned runtime prompt data: identity prose, voice examples, relationship biases expressed for the LLM, language/slang preferences, and system-prompt fragments.
+- `LlmConfig` is Dev1-owned provider/runtime configuration: provider, model names, max tokens, temperature, timeout/retry policy, and budget policy.
+- `AgentRuntimeInput` may carry the Dev3 `PersonaConfig` for calibration context, but Dev1 must translate it into prompt language and combine it with `PersonaPromptProfile`; it must not treat `PersonaConfig` as the full prompt/persona object.
+
+Recommended runtime composition:
+
+```text
+AgentSeedState
+  → PersonaConfig           # Dev3 engine calibration
+  → PersonaPromptProfile    # Dev1 prompt identity and style
+  → LlmConfig               # Dev1 model/provider/runtime settings
+```
+
+If a PR introduces `LlmConfig` or new prompt persona fields, it should add separate types or extend the Dev1 profile/config surface. It should not replace or narrow Dev3's existing `PersonaConfig`.
 
 ## Canonical Event Types (Dev3 defines, all consume)
 
@@ -209,7 +230,9 @@ type PersonaConfig = {
 type AgentRuntimeInput = {
   simulationId: string;
   agentId: string;
-  personaConfig: PersonaConfig;           // from shared constants
+  personaConfig: PersonaConfig;           // Dev3 engine calibration, not the full LLM prompt profile
+  personaPromptProfile?: PersonaPromptProfile; // Dev1 runtime prompt profile, if assembled before call
+  llmConfig?: LlmConfig;                  // Dev1 provider/model config, if assembled before call
   perceptionPacket: PerceptionPacket;     // from EngineStepResult
   emotionalState: EmotionalState;         // from EngineStepResult.updatedAgentState
   activeMotivations: Motivation[];        // from EngineStepResult.motivations
@@ -223,10 +246,11 @@ type AgentRuntimeInput = {
 
 // Dev2 scheduler builds this by:
 // 1. Running engine step → EngineStepResult
-// 2. Looking up PersonaConfig from shared constants
-// 3. Querying dev1 LlmBudget for priority
-// 4. Extracting triggeringReason from attention results
-// 5. Passing assembled input to dev1 AgentRuntime.generateIntent()
+// 2. Looking up Dev3 PersonaConfig from shared constants
+// 3. Attaching Dev1 PersonaPromptProfile / LlmConfig if that assembly is owned by the runtime boundary
+// 4. Querying dev1 LlmBudget for priority
+// 5. Extracting triggeringReason from attention results
+// 6. Passing assembled input to dev1 AgentRuntime.generateIntent()
 ```
 
 ### AvailableAction
