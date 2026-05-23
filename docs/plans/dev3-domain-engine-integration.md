@@ -30,6 +30,13 @@ packages/server/src/persistence → repository interfaces + SQLite
 - `translateEmotionalState()` — pure function in engine
 - Fixture scenarios for testing
 
+**Do not provide to dev1:**
+- LLM provider configuration such as provider, model name, temperature, token limits, timeout, or retry policy
+- Prompt identity/configuration as a replacement for `PersonaConfig`
+- System prompt text or persona voice examples as part of the engine calibration contract
+
+`PersonaConfig` is Dev3-owned engine calibration data. If Dev1 needs LLM-facing persona data, it should use a separate `PersonaPromptProfile`/runtime profile and combine it with `PersonaConfig` at the agent runtime boundary.
+
 **Provide to dev2:**
 - `Simulation`, `SimulationStatus`, `SimulationSettings`
 - `Channel`, `ChannelType`, `ChannelMembership`
@@ -94,6 +101,9 @@ packages/shared/src/
   agent/
     agent.types.ts                            # AgentState, AgentRuntimeInput, AgentSeedState, PresenceMode, BudgetPriority, TriggeringReason, EmotionalState
     agent.schema.ts
+
+  prompt/
+    prompt.types.ts                           # TranslatedEmotionalState and safe prompt helper types, not provider config
 
   visibility/
     visibility.types.ts                       # EventVisibility fields, VisibilityContext
@@ -404,7 +414,7 @@ type EmotionalState = {
 type AgentRuntimeInput = {
   simulationId: string;
   agentId: string;
-  personaConfig: PersonaConfig;
+  personaConfig: PersonaConfig;        // engine calibration only
   perceptionPacket: PerceptionPacket;
   emotionalState: EmotionalState;
   activeMotivations: Motivation[];
@@ -416,6 +426,8 @@ type AgentRuntimeInput = {
   triggeringReason: TriggeringReason;
 };
 ```
+
+Dev3 may define safe prompt helper types such as `TranslatedEmotionalState` because the engine owns numeric-to-subjective translation. Dev3 should not define `LlmConfig`; provider/model/runtime config belongs to Dev1.
 
 ### Emotion Stack (4 layers)
 

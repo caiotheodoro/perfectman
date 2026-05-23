@@ -10,7 +10,7 @@ Build persona cognition layer. Receives `AgentRuntimeInput` (assembled by dev2),
 
 ```text
 AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
-  → PersonaLoader (reads dev3 shared constants)
+  → PersonaLoader (combines dev3 PersonaConfig with dev1 PersonaPromptProfile)
   → PromptBuilder (uses dev3 translate-emotional-state)
   → LlmProvider: mock | anthropic
   → IntentParser (validates against dev3 ActionIntent schema)
@@ -28,7 +28,7 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
 **Import from dev3 (do not duplicate):**
 - `ActionIntent`, `IntentType` — intent schema
 - `AgentRuntimeInput` — runtime input type
-- `PersonaConfig`, `AgentSeedState` — persona definitions
+- `PersonaConfig`, `AgentSeedState` — Dev3 engine calibration definitions
 - `CoreMood`, `SocialEmotions`, `RelationalState`, `ActionEmotions` — emotion types
 - `Pressure`, `Inhibition` — pressure/inhibition types
 - `Memory` — memory type
@@ -57,7 +57,8 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
 packages/server/src/agent/
   agent-runtime.ts
   agent-runtime.types.ts        # BuiltPrompt, AgentRuntimeOutput, LlmProviderResult
-  persona-loader.ts             # reads PersonaConfig from @perfectman/shared constants
+  persona-loader.ts             # combines PersonaConfig with PersonaPromptProfile
+  persona-prompt-profile.ts     # Dev1-owned prompt identity, style examples, relationship prose
   prompt-builder.ts             # builds 8-section prompt, imports translateEmotionalState from engine
   intent-parser.ts              # validates LLM JSON output against shared ActionIntent schema
   fixtures/
@@ -69,6 +70,7 @@ packages/server/src/agent/
 
 packages/server/src/llm/
   index.ts
+  llm-config.ts                 # Dev1-owned provider/model/runtime config
   llm-provider.ts               # LlmProvider interface
   mock-llm-provider.ts
   anthropic-llm-provider.ts
@@ -83,6 +85,56 @@ packages/server/src/llm/
 
 **NOT created by dev1 (resolved overlap):**
 - ~~`emotional-language.ts`~~ → use `translateEmotionalState` from `@perfectman/engine`
+- ~~replacement `PersonaConfig`~~ → `PersonaConfig` remains Dev3 engine calibration; Dev1 adds `PersonaPromptProfile`
+
+## Persona And LLM Config Boundary
+
+Dev1 must keep prompt/runtime concerns separate from Dev3's engine calibration.
+
+```text
+PersonaConfig
+  owner: dev3
+  purpose: engine calibration, mood baselines, thresholds, sensitivities
+
+PersonaPromptProfile
+  owner: dev1
+  purpose: LLM identity, voice, style examples, relationship prose, language/slang
+
+LlmConfig
+  owner: dev1
+  purpose: provider, model, temperature, max tokens, timeouts, retries, budget defaults
+```
+
+`PersonaLoader` may read Dev3's `PersonaConfig`, but only to translate calibration into natural language hints. It must not mutate, replace, or narrow `PersonaConfig`.
+
+Suggested `PersonaPromptProfile` shape:
+
+```typescript
+type PersonaPromptProfile = {
+  personaId: string;
+  displayName: string;
+  identityFrame: string;
+  voiceGuidelines: string[];
+  styleExamples: string[];
+  relationshipBiases: Record<string, string>;
+  language: "pt-BR" | "en";
+};
+```
+
+Suggested `LlmConfig` shape:
+
+```typescript
+type LlmConfig = {
+  provider: "mock" | "anthropic";
+  cognitionModel: string;
+  reflectionModel?: string;
+  maxInputTokens: number;
+  maxOutputTokens: number;
+  temperature: number;
+  timeoutMs: number;
+  retryCount: number;
+};
+```
 
 ## Runtime Output Contract
 
