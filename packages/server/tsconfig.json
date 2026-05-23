@@ -9,7 +9,7 @@
     }
   },
   "include": ["src/**/*"],
-  "exclude": ["dist", "node_modules", "**/*.test.ts"],
+  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/__tests__/**"],
   "references": [
     { "path": "../shared" },
     { "path": "../engine" }

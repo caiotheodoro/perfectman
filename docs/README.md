@@ -27,35 +27,40 @@ Read these in order:
 ## Core Thesis
 
 ```text
-event -> attention -> interpretation -> motivation -> emotion -> pressure -> inhibition -> action or no-op
+event -> visibility -> attention -> interpretation -> motivation -> emotion -> pressure -> inhibition -> intent -> resolver -> committed event
 ```
 
-Agents should not act because it is their turn. They should act because something caught their attention, created human motivation and emotion, and produced enough pressure to overcome inhibition.
+Agents should not act because it is their turn. They should act because something caught their attention, created human motivation and emotion, and produced enough pressure to overcome inhibition. Agents produce structured intents; only the event runtime/resolver commits durable facts.
 
 ## Main Systems
 
 ```mermaid
 flowchart TD
-    socketChatWorld[SocketChatWorld] --> socialPresence[SocialPresenceEngine]
-    socialPresence --> agentMind[AgentMind]
-    agentMind --> continuitySystem[ContinuitySystem]
-    continuitySystem --> spectatorStory[SpectatorStory]
-    spectatorStory --> socketChatWorld
+    commandOrIntent[Command or Agent Intent] --> resolver[IntentResolver]
+    resolver --> eventLog[Canonical EventLog]
+    eventLog --> projections[Audience Projections]
+    projections --> deliveryProjection[DeliveryProjection]
+    projections --> spectatorProjection[SpectatorProjection]
+    projections --> operatorProjection[OperatorProjection]
+    projections --> engineProjection[EngineSnapshotProjection]
+    deliveryProjection --> deliveryGateway[DeliveryGateway]
+    engineProjection --> socialEngine[Pure SocialPresenceEngine]
+    socialEngine --> agentMind[AgentRuntime / Persona Mind]
+    agentMind --> commandOrIntent
 ```
 
-### Socket Chat World
+### Event-Oriented Runtime
 
 The shared online channel reality:
 
-- Event stream.
-- Channels.
+- Canonical append-only event log.
+- Channel registry and membership.
+- Command handlers for human/operator/socket requests.
+- Intent resolver for agent proposals.
 - Public/private permissions.
-- Mentions.
-- Reactions.
-- Channel creation.
-- Role and permission changes.
-- Socket rooms for V1.
-- V2 platform adapter later.
+- Mentions, reactions, channel creation, presence, delay, no-op, and memory events.
+- Projections for delivery gateways, spectators, operators, and engine snapshots.
+- Socket.IO, Discord, stdout, or mock gateways as transport adapters, not the core architecture.
 
 ### Social Presence Engine
 
@@ -95,13 +100,14 @@ The memory and drift layer:
 
 ### Spectator Story
 
-The novela layer:
+The novela layer, implemented as a projection over committed events:
 
 - Motive summaries.
 - Relationship tension hints.
 - Private/public contrast.
 - Turning-point recaps.
 - Spectator-only events.
+- Rule-based MVP projection; LLM narration can be added later without changing the event log.
 
 ## Canonical Design Decisions
 
@@ -138,9 +144,9 @@ The novela layer:
 - Lurking and silence: [`concepts/concept-map.md`](concepts/concept-map.md), [`architecture/social-presence.md`](architecture/social-presence.md)
 - Mood and emotional drift: [`architecture/emotion.md`](architecture/emotion.md), [`notes/design-conversation-history.md`](notes/design-conversation-history.md), [`concepts/concept-map.md`](concepts/concept-map.md)
 
-### Socket Chat World
+### Channel World
 
-- V1 socket runtime: [`architecture/application.md`](architecture/application.md)
+- V1 delivery-agnostic runtime: [`architecture/application.md`](architecture/application.md)
 - Public/private channels: [`architecture/social-presence.md`](architecture/social-presence.md), [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md)
 - Permissions and safety: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
 - Action capabilities: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
@@ -172,27 +178,33 @@ A good V1 should prove these:
 - How should peer-written descriptions become behavioral thresholds?
 - Which symbolic actions are useful and which feel gimmicky?
 - Should background reflection replace AutoDream entirely for V1?
-- What is the minimum socket chat permission set that preserves drama without risking server damage?
+- What is the minimum channel permission set that preserves drama without risking external surface damage?
 
 ## Project Direction
 
-The project should move toward a small V1 that proves social presence:
+The project should move toward a small V1 that proves social presence through an event-oriented runtime:
 
 ```text
-EventStream
+CommandHandlers
+ActionIntent
+IntentResolver
+CommittedEvent
+CanonicalEventLog
+ChannelRegistry
+EventProjections
+DeliveryProjection
+SpectatorProjection
+OperatorProjection
+EngineSnapshotProjection
 VisibilityFilter
-SocketChannelRuntime
 AttentionEngine
 PerceptionPacketBuilder
 MotivationEngine
 EmotionEngine
 PressureModel
 InhibitionModel
-AgentMind
-ActionIntent
-ActionResolver
+AgentRuntime
 MemorySystem
-SpectatorRecap
 ```
 
 Avoid starting with heavy day/night simulation, full RL, large dashboards, mandatory sleep, external platform API complexity, or overbuilt tick scheduling.

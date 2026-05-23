@@ -415,6 +415,10 @@ function buildSpectatorEvent(event: CommittedEvent, context: SpectatorContext): 
 
 Post-MVP: Opus-based narrative generation becomes dev1 scope.
 
+## Concrete Gateway APIs
+
+Concrete surface APIs belong behind `IDeliveryGateway`, not inside the event runtime. Discord-specific gateway details live in [Discord Gateway Plan](./discord-gateway.md). A future WebSocket adapter should follow the same rule: client commands enter as runtime commands, and server output leaves only as already-filtered delivery, spectator, or operator projections.
+
 ## Simulation Lifecycle
 
 Statuses: `initializing` → `running` → `paused` ↔ `running` → `stopped`
