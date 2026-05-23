@@ -52,7 +52,7 @@ Command | Agent Intent
 - `Simulation`, `SimulationStatus`, `SimulationSettings` — simulation types
 - `Channel`, `ChannelType`, `ChannelMembership` — channel types
 - `SimulationEvent`, `CommittedEvent`, `EventVisibility` — event types
-- `AgentState`, `PersonaConfig` — agent types
+- `AgentState`, `PersonaConfig` — agent state and Dev3 engine calibration types
 - `EngineSnapshot`, `EngineStepResult` — engine contract types
 - `AgentRuntimeInput` — runtime input type (dev2 builds instances)
 - `ActionIntent` — intent type
@@ -242,7 +242,7 @@ function buildAgentRuntimeInput(
   return {
     simulationId: stepResult.updatedAgentState.simulationId,
     agentId: stepResult.updatedAgentState.agentId,
-    personaConfig: persona,
+    personaConfig: persona, // Dev3 engine calibration; Dev1 resolves prompt profile/config
     perceptionPacket: stepResult.perceptionPacket,
     emotionalState: {
       coreMood: stepResult.updatedAgentState.coreMood,
