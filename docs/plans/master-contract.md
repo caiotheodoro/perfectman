@@ -16,7 +16,8 @@ All three developer plans reference this document as the single source of truth 
 | Event-oriented simulation runtime | Dev2 | `packages/server/src/simulation/simulation-runtime.ts` |
 | Canonical event log + replay | Dev2 | `packages/server/src/simulation/event-log.ts` |
 | Command handlers | Dev2 | `packages/server/src/simulation/command-handlers.ts` |
-| Socket.IO gateway, rooms, subscriptions | Dev2 | `packages/server/src/socket/` |
+| IDeliveryGateway interface (surface output only) | Dev2 | `packages/server/src/simulation/scheduler-contracts.ts` |
+| Delivery gateway adapters (surface impls) | Optional adapter sub-plans | `packages/server/src/*/` |
 | Event projections | Dev2 | `packages/server/src/simulation/projections/` |
 | Simulation manager, lifecycle, scheduler | Dev2 | `packages/server/src/simulation/` |
 | Intent resolver (stateful orchestration) | Dev2 | `packages/server/src/simulation/intent-resolver.ts` |
@@ -47,7 +48,7 @@ recap_generated, reflection_completed, stagnation_detected
 
 Use these terms consistently across all plans:
 
-- **Command**: request from a human/operator/socket client. Examples: `simulation:start`, `operator:inject_event`, `client:resume_from_cursor`.
+- **Command**: request from a human/operator/control client. Examples: `simulation:start`, `operator:inject_event`, `client:resume_from_cursor`.
 - **Intent**: proposed agent action from Dev1 runtime. Examples: `send_message`, `create_channel`, `delay_response`, `no_op`.
 - **Event**: accepted fact committed by Dev2 resolver/runtime. Examples: `message_sent`, `channel_created`, `intent_blocked`, `no_op_recorded`.
 
@@ -62,11 +63,12 @@ Command | ActionIntent
   → EventLog.append() (dev2 commits accepted facts)
   → Projections (dev2 derives audience-specific views)
       → EngineSnapshotProjection (dev2 assembles EngineSnapshot, dev3 defines type)
-      → SocketProjection (dev2 emits via SocketGateway)
+      → DeliveryProjection (dev2 prepares surface-ready output and calls IDeliveryGateway)
       → SpectatorProjection (dev2 MVP narrative)
       → OperatorProjection (dev2 debug/metrics)
   → RunEngineStep (dev3 pure function)
   → EngineStepResult (dev3 defines)
+      → EngineEventBuilder (dev2 commits memory_written when proposals exist, no_op_recorded when present, and stagnation_detected when thresholds trip)
   → buildAgentRuntimeInput (dev2 assembles from EngineStepResult + persona + budget)
   → AgentRuntimeInput (dev3 defines type, dev2 builds instance)
   → AgentRuntime.generateIntent (dev1)
@@ -74,6 +76,16 @@ Command | ActionIntent
 ```
 
 Only `CommittedEvent[]` are appended to the event log. Commands and intents are requests/proposals; the event log contains accepted facts.
+
+Engine-related facts (`memory_written`, `no_op_recorded`, `stagnation_detected`) are committed before the optional LLM path when their source data exists. Current dev3 `runEngineStep()` emits `noOpRecord` and an empty `memoryProposals[]`; memory proposals may be populated by later dev1/parser work. Resolver-emitted facts (`message_sent`, `reply_sent`, `reaction_sent`, `channel_created`, `intent_delayed`, `intent_blocked`) are committed only after `IntentResolver.resolve()`.
+
+## Runtime / Projection / Delivery Boundary
+
+- **Event runtime** owns canonical facts: lifecycle, scheduling, command handling, intent resolution, state updates, event append, and projection execution.
+- **Projection layer** owns derived views: engine snapshots, spectator events, operator events, and delivery-ready messages/feed items.
+- **Delivery gateway** owns surfaced information only: sending delivery-ready output to Discord, WebSocket, stdout, mocks, or another interface.
+
+Delivery implementations must not validate intents, compute visibility, append events, mutate simulation state, run engine logic, or decide what happened. Platform concerns such as API formatting, external channel IDs, bot identity, rate limits, reconnect cursors, and mock capture stay behind the gateway.
 
 ## Cross-Boundary Contracts
 
@@ -106,7 +118,7 @@ function createSeededRng(seed: number): SeededRng;
 ```typescript
 // Dev3 defines in packages/shared/src/engine/engine.types.ts
 type WorldSignals = {
-  highArousalNearby: boolean;       // any agent in same channel arousal > 0.7
+  highArousalNearby: boolean;       // any agent in channel anchor arousal > 0.7
   averageChannelArousal: number;    // mean arousal of visible agents
   activeAgentCount: number;         // agents with presence != offline
   timeSinceLastPublicMessage: number; // seconds
@@ -115,8 +127,21 @@ type WorldSignals = {
 };
 
 // Dev2 scheduler computes WorldSignals from event log + agent states
+// Channel-scoped fields use a scheduler-provided channel anchor, falling back to defaultPublicChannelId.
 // Dev2 passes in EngineSnapshot.worldSignals
 ```
+
+### AgentState Cursor
+
+```typescript
+// Dev3 defines on AgentState.
+type AgentState = {
+  // ...
+  lastProcessedEventId: string | null; // anti-drift cursor advanced by runEngineStep and persisted by dev2
+};
+```
+
+Dev2 persists `stepResult.updatedAgentState` after each successful engine step. Dev2 passes a channel anchor separately when computing `WorldSignals`.
 
 ### CommittedEvent
 
@@ -215,6 +240,11 @@ function validateIntentPure(
   agentState: AgentState,
   settings: SimulationSettings
 ): IntentValidationResult;
+
+Salience derivation:
+- Engine-emitted events derive salience from emotion delta magnitude or stagnation severity.
+- Resolver-emitted events derive salience locally in the MVP resolver from `actionEmotions` + intent type.
+- Lifecycle events default to `low`.
 
 // Dev2 owns stateful resolver in packages/server/src/simulation/intent-resolver.ts
 type ResolvedIntent = {
@@ -364,8 +394,8 @@ type IChannelRepository = {
 
 | Dev3 | Dev1 | Dev2 |
 |------|------|------|
-| M4: visibility+anti-drift | M3: mock provider | M3: socket server+rooms |
-| M5: attention+perception | M4: budget tracker | M4: broadcast router |
+| M4: visibility+anti-drift | M3: mock provider | M3: event runtime+command handlers |
+| M5: attention+perception | M4: budget tracker | M4: delivery gateway contract+mock |
 
 ### Weeks 3-4
 
@@ -377,6 +407,6 @@ type IChannelRepository = {
 
 | Dev3 | Dev1 | Dev2 |
 |------|------|------|
-| M13-M14: persistence+fixtures | M6: runtime orchestration | M9: spectator+reconnect |
+| M13-M14: persistence+fixtures | M6: runtime orchestration | M9: spectator/operator projection |
 
-**Integration**: scheduler → engine → runtime-input-builder → agent-runtime → intent-resolver → event-log → broadcast. 60-second simulation test.
+**Integration**: scheduler → engine → runtime-input-builder → agent-runtime → intent-resolver → event-log → projections → delivery gateway. 60-second simulation test.

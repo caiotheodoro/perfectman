@@ -4,9 +4,9 @@
 
 This is the canonical application-level architecture for Perfectman.
 
-Perfectman is a socket-channel social simulation where AI personas behave like humans in an online group space. The application should support casual conversation, affection, attraction, boredom, secrecy, gossip, conflict, avoidance, intimacy, private side channels, delayed replies, silence, emotional memory, and spectator narrative.
+Perfectman is a channel-based social simulation where AI personas behave like humans in an online group space. The application should support casual conversation, affection, attraction, boredom, secrecy, gossip, conflict, avoidance, intimacy, private side channels, delayed replies, silence, emotional memory, and spectator narrative.
 
-The first implementation target is a socket-based channel system. External platforms become V2 adapters after the social behavior feels human.
+The first implementation target is an event-driven channel runtime with a delivery-agnostic surface boundary. Concrete delivery surfaces are adapters behind the delivery gateway.
 
 ## Product Thesis
 
@@ -38,7 +38,9 @@ Ticks may exist as backend polling or batching, but they are not part of the pro
 
 ```mermaid
 flowchart TD
-    socketServer[SocketServer] --> eventStream[EventStream]
+    commandSurface[CommandSurface] --> intentResolver[IntentResolver]
+    agentRuntime[AgentRuntime] --> intentResolver
+    intentResolver --> eventStream[EventStream]
     eventStream --> channelRegistry[ChannelRegistry]
     channelRegistry --> visibilityEngine[VisibilityEngine]
     visibilityEngine --> attentionEngine[AttentionEngine]
@@ -49,17 +51,18 @@ flowchart TD
     motivationEngine --> pressureEngine[PressureEngine]
     pressureEngine --> inhibitionEngine[InhibitionEngine]
     inhibitionEngine --> agentRuntime[AgentRuntime]
-    agentRuntime --> intentResolver[IntentResolver]
-    intentResolver --> socketServer
     intentResolver --> memorySystem[MemorySystem]
     intentResolver --> spectatorFeed[SpectatorFeed]
+    eventStream --> projections[Projections]
+    projections --> deliveryGateway[DeliveryGateway]
     memorySystem --> perceptionBuilder
     memorySystem --> emotionEngine
 ```
 
 Primary systems:
 
-- `SocketServer`: realtime transport for simulation, agents, spectators, and operators.
+- `CommandSurface`: operator/control input boundary. Commands request changes but do not become facts until resolved into events.
+- `DeliveryGateway`: output adapter boundary for surfacing projected information to the chosen surface.
 - `ChannelRegistry`: channel and membership model.
 - `EventStream`: canonical event history.
 - `VisibilityEngine`: per-agent and per-viewer reality masks.
@@ -75,20 +78,21 @@ Primary systems:
 - `MemorySystem`: event-based, emotional, biased continuity.
 - `SpectatorFeed`: novela-style observer layer.
 
-## V1 Runtime: Socket Channels
+## V1 Runtime: Delivery-Agnostic Channels
 
-V1 should be built around socket rooms and simulation namespaces.
+V1 should be built around an event-driven runtime, simulation channels, and an injected delivery gateway.
 
 ```text
-socket namespace = one simulation instance
-socket room = channel
-public room = visible to all agents
-private room = visible to selected agents
-spectator room = viewer-only narrative feed
-operator room = debug/admin feed
+simulation instance = one social world
+channel = public/private agent-visible space
+event runtime = validates commands/intents and commits canonical facts
+projection = derives audience-specific views from committed facts
+delivery gateway = surfaces projected information to ws/discord/mock/stdout/etc.
+spectator feed = viewer-only narrative feed
+operator feed = debug/admin feed
 ```
 
-The socket runtime exists so the team can iterate on behavior before external platform permissions, rate limits, bot scopes, and API constraints dominate the work.
+The event runtime is not the delivery gateway. The runtime owns simulation state, event commits, scheduling, resolver behavior, and projection rules. The delivery gateway owns only the final surfacing of projected information to an external or test-facing surface.
 
 ### Simulation Instance
 
@@ -161,9 +165,9 @@ channel:
 
 `createdForMotives` matters because private channels should not be treated as only conflict artifacts.
 
-### Socket Event Types
+### Runtime Event Types
 
-Application-level socket events:
+Application-level simulation events:
 
 ```text
 message_sent
@@ -676,7 +680,7 @@ Interpretation:
 
 ### Layer 2: Social Emotions
 
-Social emotions are the socket chat engine.
+Social emotions are the chat engine.
 
 ```text
 jealousy:
@@ -1119,22 +1123,22 @@ Agents never see spectator narration.
 Spectators never need raw model chain-of-thought.
 ```
 
-## Future V2 Platform Adapter
+## Platform Adapters
 
-External chat platforms should be later adapters.
+External chat platforms are adapters behind the delivery gateway.
 
 Mapping:
 
 ```text
-socket namespace -> external platform server or experiment instance
-socket room -> external platform channel
-socket private room -> permission-scoped external platform channel
-socket event -> external platform message, reaction, channel, or role event
+simulation instance -> external platform server or experiment instance
+channel -> external platform channel
+private channel -> permission-scoped external platform channel
+simulation event -> external platform message, reaction, channel, or role event
 spectator feed -> web dashboard
 operator feed -> admin dashboard/log stream
 ```
 
-Keep domain names independent from external platform API names so the socket simulation can stay portable.
+Keep domain names independent from external platform API names so the simulation can stay portable.
 
 ### Adapter Responsibilities
 
@@ -1180,15 +1184,15 @@ Define schemas:
 - Action intent.
 - Spectator event.
 
-### Phase 2: Socket Runtime
+### Phase 2: Event Runtime
 
 Build:
 
-- Socket server.
-- Simulation namespace.
+- Delivery gateway contract.
+- Mock delivery gateway.
 - Channel registry.
-- Room membership.
-- Event broadcast.
+- Channel membership.
+- Event projections.
 - Spectator feed.
 - Operator feed.
 
@@ -1227,9 +1231,9 @@ Build:
 - Background reflection.
 - Spectator recap generation.
 
-### Phase 6: V2 Platform Adapter
+### Phase 6: Platform Adapter Hardening
 
-Build only after socket V1 feels human:
+Build after the delivery-agnostic V1 feels human:
 
 - External platform event ingestion.
 - External platform action execution.
@@ -1239,7 +1243,7 @@ Build only after socket V1 feels human:
 
 ## Final Position
 
-Perfectman should be built as a socket-based social world first.
+Perfectman should be built as a delivery-agnostic social world first.
 
 The first question is never:
 
