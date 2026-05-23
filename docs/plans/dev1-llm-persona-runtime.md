@@ -100,7 +100,7 @@ type AgentRuntimeOutput = {
 
 ### 8 Sections
 
-1. **Persona identity**: name, archetype, writing style, relationship biases, style examples, human socket-chat framing
+1. **Persona identity**: name, archetype, writing style, relationship biases, style examples, human channel-chat framing
 2. **What agent noticed**: triggering event, visible surrounding messages, involved people, public/private context
 3. **Social interpretation**: plausible meanings, uncertainty, silence/delay/mention/exclusion signals — from `EngineStepResult.interpretations`
 4. **Subjective emotional state**: natural language only via `translateEmotionalState()` from `@perfectman/engine` — **no raw scores**
@@ -248,4 +248,4 @@ Expected: prompt tests pass, parser tests pass, mock adapter tests pass, budget 
 - Invalid model output never reaches resolver
 - LLM failures become operator events
 - Runtime can produce: reply, message, reaction, create private channel, delay, memory write proposal, no-op
-- Runtime never mutates event log, channels, memory, or sockets directly
+- Runtime never mutates event log, channels, memory, or delivery gateways directly
