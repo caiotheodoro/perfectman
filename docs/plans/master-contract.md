@@ -13,13 +13,17 @@ All three developer plans reference this document as the single source of truth 
 | Intent validation (pure rules) | Dev3 | `packages/engine/src/intent/validate-intent.ts` |
 | Available action computation (pure) | Dev3 | `packages/engine/src/action/compute-available-actions.ts` |
 | Rate limit rules (pure) | Dev3 | `packages/engine/src/intent/rate-limit-rules.ts` |
-| Socket.IO server, rooms, broadcast | Dev2 | `packages/server/src/socket/` |
+| Event-oriented simulation runtime | Dev2 | `packages/server/src/simulation/simulation-runtime.ts` |
+| Canonical event log + replay | Dev2 | `packages/server/src/simulation/event-log.ts` |
+| Command handlers | Dev2 | `packages/server/src/simulation/command-handlers.ts` |
+| Socket.IO gateway, rooms, subscriptions | Dev2 | `packages/server/src/socket/` |
+| Event projections | Dev2 | `packages/server/src/simulation/projections/` |
 | Simulation manager, lifecycle, scheduler | Dev2 | `packages/server/src/simulation/` |
 | Intent resolver (stateful orchestration) | Dev2 | `packages/server/src/simulation/intent-resolver.ts` |
 | Rate limit tracking (stateful) | Dev2 | `packages/server/src/simulation/rate-limit-gate.ts` |
 | AgentRuntimeInput assembly | Dev2 | `packages/server/src/simulation/runtime-input-builder.ts` |
 | In-memory store implementations | Dev2 | `packages/server/src/simulation/in-memory-stores.ts` |
-| Spectator narrative (MVP rule-based) | Dev2 | `packages/server/src/simulation/spectator-feed.ts` |
+| Spectator narrative projection (MVP rule-based) | Dev2 | `packages/server/src/simulation/projections/spectator-projection.ts` |
 | Agent runtime, prompt builder | Dev1 | `packages/server/src/agent/` |
 | LLM providers, budget tracker | Dev1 | `packages/server/src/llm/` |
 | Persona loader (reads dev3 constants) | Dev1 | `packages/server/src/agent/persona-loader.ts` |
@@ -39,20 +43,37 @@ recap_generated, reflection_completed, stagnation_detected
 
 23 total. Dev2 and Dev1 consume these — never invent new event types outside shared.
 
+## Command / Intent / Event Split
+
+Use these terms consistently across all plans:
+
+- **Command**: request from a human/operator/socket client. Examples: `simulation:start`, `operator:inject_event`, `client:resume_from_cursor`.
+- **Intent**: proposed agent action from Dev1 runtime. Examples: `send_message`, `create_channel`, `delay_response`, `no_op`.
+- **Event**: accepted fact committed by Dev2 resolver/runtime. Examples: `message_sent`, `channel_created`, `intent_blocked`, `no_op_recorded`.
+
+Only events are durable. Commands and intents may be rejected, delayed, transformed, or committed as one or more events.
+
 ## Key Type Flow
 
 ```
-EngineSnapshot (dev2 assembles, dev3 defines)
+Command | ActionIntent
+  → IntentResolver.resolve (dev2 orchestrates, calls dev3 pure validators)
+  → CommittedEvent[] (dev3 defines type)
+  → EventLog.append() (dev2 commits accepted facts)
+  → Projections (dev2 derives audience-specific views)
+      → EngineSnapshotProjection (dev2 assembles EngineSnapshot, dev3 defines type)
+      → SocketProjection (dev2 emits via SocketGateway)
+      → SpectatorProjection (dev2 MVP narrative)
+      → OperatorProjection (dev2 debug/metrics)
   → RunEngineStep (dev3 pure function)
   → EngineStepResult (dev3 defines)
   → buildAgentRuntimeInput (dev2 assembles from EngineStepResult + persona + budget)
   → AgentRuntimeInput (dev3 defines type, dev2 builds instance)
   → AgentRuntime.generateIntent (dev1)
   → ActionIntent (dev3 defines type, dev1 produces instance)
-  → IntentResolver.resolve (dev2 orchestrates, calls dev3 pure validators)
-  → CommittedEvent (dev3 defines type, dev2 commits to event log)
-  → BroadcastRouter (dev2 fans out with dev3 visibility rules)
 ```
+
+Only `CommittedEvent[]` are appended to the event log. Commands and intents are requests/proposals; the event log contains accepted facts.
 
 ## Cross-Boundary Contracts
 

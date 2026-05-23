@@ -16,6 +16,7 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
   → IntentParser (validates against dev3 ActionIntent schema)
   → BudgetTracker
   → ActionIntent | safe no_op | delay
+  → returned to Dev2 Event Runtime
 ```
 
 ## Ownership Boundary
@@ -37,9 +38,9 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
 - `NoOpReason`, `DelayPreference` — decision types
 - `translateEmotionalState()` — from `@perfectman/engine` (pure function)
 
-**Consume from dev2 (at runtime):**
-- Scheduler calls `AgentRuntime.generateIntent(input)` passing assembled `AgentRuntimeInput`
-- Operator event sink receives LLM failure events
+**Consume from dev2 (event runtime):**
+- Event runtime scheduler calls `AgentRuntime.generateIntent(input)` passing assembled `AgentRuntimeInput`
+- Operator projection receives LLM failure events
 - Config provider supplies `LLM_PROVIDER`, model names, budget settings
 
 **Provide to dev2:**
@@ -177,7 +178,7 @@ type LlmBudget = {
 type BudgetPriority = 'high' | 'normal' | 'low' | 'blocked';
 ```
 
-Dev2 scheduler calls `getPriority()` → passes into `AgentRuntimeInput.budgetPriority`.
+Dev2 event runtime scheduler calls `getPriority()` → passes into `AgentRuntimeInput.budgetPriority`.
 Dev1 checks `canCall()` before LLM invocation.
 
 Budget rules:
@@ -190,7 +191,7 @@ Budget rules:
 
 ## Error Handling
 
-Every failure → safe structured result. Scheduler never crashes from LLM failure.
+Every failure → safe structured result. The event runtime scheduler never crashes from LLM failure.
 
 Failure cases: missing API key, timeout, rate limit, refusal, invalid JSON, schema-invalid JSON, unsupported intent type, hidden target in output, budget exhausted.
 

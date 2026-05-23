@@ -1,35 +1,52 @@
-# Developer 2 Plan: WebSocket / Socket Runtime
+# Developer 2 Plan: Event Runtime / WebSocket Adapter
 
 > Cross-reference: [Master Contract](./master-contract.md) for all shared types, ownership boundaries, and integration flow.
 
 ## Goal
 
-Build socket runtime hosting simulations, managing channels/membership, storing events, routing broadcasts, owning the pulse scheduler that orchestrates dev3 engine + dev1 runtime + intent resolution.
+Build the event-oriented simulation runtime: host simulations, manage channels/membership, commit accepted facts to the canonical event log, derive projections for engine/spectator/operator/socket consumers, and expose WebSocket as the realtime adapter over those projections.
 
 ## Architecture
 
 ```text
-SimulationManager
-  → SocketServer (Socket.IO, rooms, namespaces)
+SimulationRuntime
+  → EventLog (canonical source of truth)
   → ChannelRegistry
-  → EventLog (append-only, replayable)
+  → CommandHandlers
+  → IntentResolver
+      → validates ActionIntent
+      → converts accepted intents into CommittedEvents
+      → appends only committed facts to EventLog
   → PulseScheduler
-      → builds EngineSnapshot (using dev3 types + dev2 state)
+      → reads committed events
+      → builds EngineSnapshotProjection
       → calls dev3 RunEngineStep (pure)
-      → builds AgentRuntimeInput (from EngineStepResult)
+      → builds AgentRuntimeInput
       → calls dev1 AgentRuntime.generateIntent
-      → calls IntentResolver (dev2, uses dev3 pure validators)
-      → appends CommittedEvents
-      → calls BroadcastRouter (uses dev3 visibility rules)
-  → SpectatorFeed (MVP rule-based narrative)
-  → OperatorFeed
+      → sends returned ActionIntent to IntentResolver
+  → Projections
+      → SocketProjection (Socket.IO rooms, replay, client delivery)
+      → SpectatorProjection (MVP rule-based narrative)
+      → OperatorProjection (debug, metrics, failures)
+      → EngineSnapshotProjection (event-log view for dev3 engine)
+```
+
+**Core rule:** WebSocket is an adapter, not the architecture. The event log is the simulation's durable social reality. Every consumer sees a projection of committed events.
+
+```text
+Command | Agent Intent
+  → IntentResolver
+  → CommittedEvent[]
+  → EventLog.append()
+  → Projections
+  → Socket.IO / spectator / operator / engine snapshots
 ```
 
 ## Ownership Boundary
 
 **Own:**
-- `packages/server/src/socket/` — Socket.IO server, rooms, broadcast routing
-- `packages/server/src/simulation/` — simulation manager, lifecycle, channel registry, event log, pulse scheduler, intent resolver (stateful), rate limit gate, spectator/operator feeds, runtime input builder, in-memory stores
+- `packages/server/src/simulation/` — event-oriented runtime, lifecycle, channel registry, event log, command handlers, pulse scheduler, intent resolver, projections, rate limit gate, runtime input builder, in-memory stores
+- `packages/server/src/socket/` — Socket.IO gateway only: rooms, client commands, subscriptions, replay cursor, projection delivery
 
 **Import from dev3 (do not duplicate):**
 - `Simulation`, `SimulationStatus`, `SimulationSettings` — simulation types
@@ -53,7 +70,7 @@ SimulationManager
 - Mock provider for scheduler integration tests
 
 **Provide to dev1:**
-- Scheduler invocation point calling `AgentRuntime.generateIntent`
+- Event runtime scheduler invocation point calling `AgentRuntime.generateIntent`
 - Operator event sink
 - Simulation settings / budget config
 - `RateLimitStatus` per agent (for available action computation)
@@ -61,6 +78,7 @@ SimulationManager
 **Provide to dev3:**
 - Event log append/replay behavior (implementing dev3 repository interfaces)
 - Channel membership runtime state
+- Event projection behavior for engine snapshots
 - `RateLimitStatus` computation
 - `WorldSignals` computation
 - `dt` computation
@@ -70,42 +88,80 @@ SimulationManager
 
 ```
 packages/server/src/socket/
-  socket-server.ts
+  socket-gateway.ts             # WebSocket adapter over event projections
   socket-events.ts              # client↔server event name constants
   socket-auth.ts
   room-names.ts                 # room name helpers
-  broadcast-router.ts           # uses dev3 filterVisibleEvents + visibility types
   replay-cursor.ts
   __tests__/
-    broadcast-router.test.ts
+    socket-gateway.test.ts
+    replay-cursor.test.ts
 
 packages/server/src/simulation/
+  simulation-runtime.ts         # event-oriented composition root
   simulation-manager.ts
   simulation-lifecycle.ts
   channel-registry.ts
   event-log.ts                  # implements dev3 IEventRepository interface
+  command-handlers.ts           # converts client/operator commands into resolver inputs
   pulse-scheduler.ts
   runtime-input-builder.ts      # assembles AgentRuntimeInput from EngineStepResult
   intent-resolver.ts            # stateful resolver, calls dev3 validateIntentPure
   rate-limit-gate.ts            # stateful tracking, provides RateLimitStatus
   world-signals-builder.ts      # computes WorldSignals from event log + agent states
-  spectator-feed.ts             # MVP: rule-based narrative from motive summaries
-  operator-feed.ts
+  projections/
+    socket-projection.ts        # committed events → socket room payloads
+    spectator-projection.ts     # committed events → spectator narrative events
+    operator-projection.ts      # committed events + metrics → operator events
+    engine-snapshot-projection.ts # event log + state → EngineSnapshot
   in-memory-stores.ts           # implements dev3 repository interfaces for MVP
   scheduler-contracts.ts        # injected adapters for engine/runtime/resolver
   __tests__/
     channel-registry.test.ts
     event-log.test.ts
+    command-handlers.test.ts
     simulation-lifecycle.test.ts
     pulse-scheduler.test.ts
     intent-resolver.test.ts
     runtime-input-builder.test.ts
     world-signals-builder.test.ts
+    socket-projection.test.ts
+    spectator-projection.test.ts
+    operator-projection.test.ts
+    engine-snapshot-projection.test.ts
 ```
 
 **NOT created by dev2 (resolved overlap):**
 - ~~`visibility-router.ts`~~ → use `filterVisibleEvents` from `@perfectman/engine`
+- ~~`broadcast-router.ts` as architecture center~~ → use event projections; Socket.IO subscribes to `SocketProjection`
 - ~~persistence store interfaces~~ → import from dev3 `packages/server/src/persistence/repositories.ts`
+
+## Event-Oriented Runtime Rules
+
+Use three different concepts clearly:
+
+- **Command**: a request to do something, usually from a human/operator/socket client. Examples: `simulation:start`, `operator:inject_event`, `channel:join`.
+- **Intent**: an agent's proposed action. Examples: `send_message`, `create_channel`, `delay_response`, `no_op`.
+- **Event**: an accepted fact that happened in the simulation. Examples: `message_sent`, `channel_created`, `intent_blocked`, `no_op_recorded`.
+
+Only events are appended to the event log.
+
+Commands and intents may be rejected, delayed, transformed, or committed. Once committed, events are immutable facts and all views derive from them.
+
+## Projection Model
+
+The event log is the write model. Every reader receives a projection:
+
+- `EngineSnapshotProjection`: builds `EngineSnapshot` from committed events, channel membership, agent state, rate limits, `dt`, and seeded RNG.
+- `SocketProjection`: converts committed events into role-filtered Socket.IO payloads and room emissions.
+- `SpectatorProjection`: converts committed events into public/narrative spectator-safe events.
+- `OperatorProjection`: converts committed events, blocked intents, failures, rate limits, and scheduler metrics into operator events.
+
+Projection invariants:
+- Projections never create canonical facts by themselves.
+- Projections may suppress, sanitize, or reshape fields for their audience.
+- Projection bugs must not mutate the event log.
+- Reconnect/replay uses the event log plus the same projection rules.
 
 ## Pulse Scheduler Detail
 
@@ -117,25 +173,23 @@ async function runPulse(ctx: PulseContext): Promise<PulseResult> {
   // 1. Read new committed events since last pulse
   const newEvents = await ctx.eventRepo.getAfter(ctx.simulationId, ctx.lastEventId);
 
-  // 2. Per agent: build EngineSnapshot, run engine step
+  // 2. Per agent: build EngineSnapshot projection, run engine step
   for (const agent of ctx.agents) {
     const rateLimitStatus = ctx.rateLimitGate.getStatus(agent.id);
     const worldSignals = buildWorldSignals(ctx.eventLog, ctx.agentStates, agent.id);
 
-    const snapshot: EngineSnapshot = {
+    const snapshot = ctx.engineSnapshotProjection.build({
       pulseIndex: ctx.pulseIndex,
       simulation: ctx.simulation,
       committedEvents: newEvents,
-      agentState: agent.state,
-      persona: agent.persona,
+      agent,
       channels: ctx.channels,
-      channelMembership: ctx.membership,
-      relationalStates: agent.state.relationalStates,
+      membership: ctx.membership,
       worldSignals,
       rateLimitStatus,
       dt,
       rng,
-    };
+    });
 
     const stepResult = runEngineStep(snapshot);  // dev3 pure function
 
@@ -148,19 +202,21 @@ async function runPulse(ctx: PulseContext): Promise<PulseResult> {
       // 4. Resolve intent
       const resolved = ctx.intentResolver.resolve(runtimeOutput.intent, agent, ctx);
 
-      // 5. Commit events
+      // 5. Commit accepted facts to the canonical event log
       if (resolved.committedEvents.length > 0) {
         await ctx.eventRepo.append(ctx.simulationId, resolved.committedEvents);
       }
 
-      // 6. Broadcast
+      // 6. Project committed events to socket/spectator/operator consumers
       for (const event of resolved.committedEvents) {
-        ctx.broadcastRouter.broadcast(event, ctx.channels, ctx.membership, ctx.settings);
+        ctx.socketProjection.project(event, ctx.channels, ctx.membership, ctx.settings);
+        ctx.spectatorProjection.project(event, ctx.settings);
+        ctx.operatorProjection.project(event, ctx.settings);
       }
 
       // Emit operator events
       for (const opEvent of [...resolved.operatorEvents, ...runtimeOutput.operatorEvents]) {
-        ctx.operatorFeed.emit(opEvent);
+        ctx.operatorProjection.emit(opEvent);
       }
     }
 
@@ -260,9 +316,9 @@ function buildWorldSignals(
 }
 ```
 
-## Spectator Feed (MVP)
+## SpectatorProjection (MVP)
 
-MVP rule-based transformation — no LLM:
+MVP rule-based event projection — no LLM:
 
 ```typescript
 function buildSpectatorEvent(event: CommittedEvent, context: SpectatorContext): SpectatorEvent | null {
@@ -285,11 +341,11 @@ function buildSpectatorEvent(event: CommittedEvent, context: SpectatorContext): 
 
 Post-MVP: Opus-based narrative generation becomes dev1 scope.
 
-## Socket API
+## SocketGateway API
 
-Client→server: `simulation:create`, `simulation:start`, `simulation:pause`, `simulation:resume`, `simulation:stop`, `simulation:join_as_spectator`, `simulation:join_as_operator`, `channel:join`, `channel:leave`, `operator:inject_event`, `operator:set_setting`, `client:resume_from_cursor`
+Client commands entering the event runtime: `simulation:create`, `simulation:start`, `simulation:pause`, `simulation:resume`, `simulation:stop`, `simulation:join_as_spectator`, `simulation:join_as_operator`, `channel:join`, `channel:leave`, `operator:inject_event`, `operator:set_setting`, `client:resume_from_cursor`
 
-Server→client: `simulation:created`, `simulation:status_changed`, `channel:created`, `channel:membership_changed`, `event:committed`, `spectator:event`, `operator:event`, `operator:metrics`, `error`
+Server projections leaving through Socket.IO: `simulation:created`, `simulation:status_changed`, `channel:created`, `channel:membership_changed`, `event:committed`, `spectator:event`, `operator:event`, `operator:metrics`, `error`
 
 ## Room Model
 
@@ -300,9 +356,9 @@ simulation:{simulationId}:spectator
 simulation:{simulationId}:operator
 ```
 
-## Broadcast Router
+## SocketProjection
 
-Uses dev3 `filterVisibleEvents()` for agent visibility:
+Uses dev3 `filterVisibleEvents()` for agent visibility, then emits through `SocketGateway` rooms:
 
 - **Agent**: public channels + private channels where member + own events. Never: other agents' motive summaries, spectator narration, operator events, raw scores
 - **Spectator**: public chat + narrative events + recaps + motive summaries + private channels only if policy allows
@@ -312,10 +368,10 @@ Uses dev3 `filterVisibleEvents()` for agent visibility:
 
 Statuses: `initializing` → `running` → `paused` ↔ `running` → `stopped`
 
-- **initializing**: create sim, namespace, default #geral, register 5 agents, init event log, accept spectator/operator connections, no scheduler yet
-- **running**: start scheduler, accept commits, append + broadcast events, allow operator pause/stop
-- **paused**: stop scheduler, keep sockets, allow operator inspection, reject/queue commits, broadcast pause event
-- **stopped**: stop scheduler, close namespace, persist final status, broadcast final event, prevent commits
+- **initializing**: create sim, socket namespace, default #geral, register 5 agents, init event log, accept spectator/operator subscriptions, no scheduler yet
+- **running**: start scheduler, accept commits, append events, project events to subscribers, allow operator pause/stop
+- **paused**: stop scheduler, keep sockets, allow operator inspection, reject/queue commits, commit/project pause event
+- **stopped**: stop scheduler, close namespace, persist final status, commit/project final event, prevent commits
 
 ## In-Memory Stores
 
@@ -345,36 +401,44 @@ Provides `RateLimitStatus` to dev3 engine via `EngineSnapshot.rateLimitStatus`.
 - Implement dev3 `IEventRepository` in-memory
 - Append-only, monotonic IDs, `getAfter`, `getCommittedThrough`, replay
 
-### M3: Socket Server + Rooms
-- Socket.IO wrapper, room name helpers, namespace mapping
-- Spectator/operator/agent join, channel join/leave
+### M3: Event Runtime + Command Handlers
+- `SimulationRuntime` composition root
+- Command handlers for simulation lifecycle, operator injection, channel subscription, and replay requests
+- Commands produce resolver inputs or lifecycle transitions; commands do not directly mutate the event log except through the runtime's commit path
 
-### M4: Broadcast Router
-- Import `filterVisibleEvents` from `@perfectman/engine`
-- Fan-out per role with payload filtering
+### M4: SocketGateway + Rooms
+- Socket.IO wrapper, room name helpers, namespace mapping
+- Spectator/operator/agent subscriptions
+- Channel join/leave as subscription commands
+- SocketGateway receives commands and emits projections only
+
+### M5: Projections
+- `EngineSnapshotProjection` builds `EngineSnapshot`
+- `SocketProjection` uses `filterVisibleEvents` from `@perfectman/engine`
+- `SpectatorProjection` produces MVP narrative events
+- `OperatorProjection` produces debug/metrics/failure events
 - P0 tests: private events to members only, motive summaries never to other agents
 
-### M5: Simulation Lifecycle
+### M6: Simulation Lifecycle
 - Create, start, pause, resume, stop
 - Status events broadcast
 
-### M6: Intent Resolver + Rate Limit Gate
+### M7: Intent Resolver + Rate Limit Gate
 - Stateful resolver calling dev3 `validateIntentPure`
 - Rate limit tracking providing `RateLimitStatus`
 - Intent → CommittedEvent conversion
 
-### M7: RuntimeInputBuilder + WorldSignalsBuilder
+### M8: RuntimeInputBuilder + WorldSignalsBuilder
 - Assembly of `AgentRuntimeInput` from `EngineStepResult`
 - Computation of `WorldSignals` from event log + agent states
 
-### M8: Pulse Scheduler
+### M9: Pulse Scheduler
 - Interval runner with injected clock
 - Build `EngineSnapshot` (compute dt, create rng, gather state, compute WorldSignals, get RateLimitStatus)
 - Call dev3 engine → dev2 runtime-input-builder → dev1 agent runtime → dev2 intent resolver
-- Append + broadcast committed events, operator metrics
+- Append committed events → run projections → emit operator metrics
 
-### M9: Spectator Feed + Reconnect/Replay
-- MVP rule-based spectator narrative
+### M10: Reconnect/Replay
 - Client cursor tracking, replay visible events only
 
 ## Verification
@@ -389,13 +453,16 @@ pnpm build
 - Simulation can be created, started, paused, resumed, stopped
 - Default public channel exists
 - Private channels can be created with membership
-- Event log is append-only and replayable
-- Public events broadcast to all allowed agents and spectators
-- Private events broadcast only to member agents and allowed spectators
-- Operator feed receives full debug stream
+- Event log is the canonical append-only source of truth
+- Commands and intents only affect the world through committed events
+- Public event projections reach all allowed agents and spectators
+- Private event projections reach only member agents and allowed spectators
+- Operator projection receives full debug stream
+- WebSocket stays an adapter over projections, not the simulation core
 - Scheduler lives in server, not engine
 - Scheduler can run with mock engine, mock runtime, and mock resolver
 - Intent resolver calls dev3 pure validation + dev2 stateful checks
 - RuntimeInputBuilder correctly maps EngineStepResult → AgentRuntimeInput
 - WorldSignals computed and passed to engine
+- EngineSnapshotProjection derives snapshots from committed events and state
 - Visibility invariants have automated tests

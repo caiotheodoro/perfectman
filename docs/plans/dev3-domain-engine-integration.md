@@ -51,7 +51,8 @@ packages/server/src/persistence → repository interfaces + SQLite
 - Mock LLM output examples for integration fixtures
 
 **Need from dev2:**
-- Scheduler call shape confirmation
+- Event runtime and scheduler call shape confirmation
+- Event projection requirements for engine/spectator/operator/socket views
 - Operator metric payload requirements
 - Reconnect cursor constraints for event replay
 
