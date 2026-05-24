@@ -68,9 +68,25 @@ export function parseDiscordGatewayConfig(
     }
   }
 
-  const setupMode: DiscordSetupMode = managerBotToken
-    ? "manage_channels"
-    : "readonly_existing";
+  let setupMode: DiscordSetupMode;
+  if (
+    raw.setupMode === "readonly_existing" ||
+    raw.setupMode === "manage_channels"
+  ) {
+    setupMode = raw.setupMode;
+  } else if (raw.setupMode !== undefined) {
+    throw new Error(
+      `discord config: setupMode must be "readonly_existing" or "manage_channels"`,
+    );
+  } else {
+    setupMode = managerBotToken ? "manage_channels" : "readonly_existing";
+  }
+
+  if (setupMode === "manage_channels" && !managerBotToken) {
+    throw new Error(
+      "discord config: managerBotToken required for manage_channels mode",
+    );
+  }
 
   return { guildId: raw.guildId, managerBotToken, personaBots, setupMode };
 }

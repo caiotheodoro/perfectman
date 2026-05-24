@@ -126,6 +126,41 @@ describe("DiscordRoleManager", () => {
     });
   });
 
+  describe("ensureOperatorChannel", () => {
+    it("creates channel with @everyone denied", async () => {
+      const dcId = await mgr.ensureOperatorChannel("sim-1", "user-manager");
+      const rec = guild.channels.get(dcId)!;
+      expect(rec.name).toBe("pm-sim-1-operator");
+
+      const everyoneDeny = rec.overwrites.find((o) => o.id === "everyone-role");
+      expect(everyoneDeny?.deny).toContain("ViewChannel");
+    });
+
+    it("grants manager bot ViewChannel + SendMessages + ReadMessageHistory", async () => {
+      const dcId = await mgr.ensureOperatorChannel("sim-1", "user-manager");
+      const rec = guild.channels.get(dcId)!;
+
+      const mgrOw = rec.overwrites.find((o) => o.id === "user-manager");
+      expect(mgrOw?.allow).toContain("ViewChannel");
+      expect(mgrOw?.allow).toContain("SendMessages");
+      expect(mgrOw?.allow).toContain("ReadMessageHistory");
+    });
+
+    it("is idempotent", async () => {
+      const id1 = await mgr.ensureOperatorChannel("sim-1", "user-manager");
+      const id2 = await mgr.ensureOperatorChannel("sim-1", "user-manager");
+      expect(id1).toBe(id2);
+      expect(guild.channels.size).toBe(1);
+    });
+
+    it("works without manager bot (no manager overwrites)", async () => {
+      const dcId = await mgr.ensureOperatorChannel("sim-1");
+      const rec = guild.channels.get(dcId)!;
+      expect(rec.overwrites).toHaveLength(1);
+      expect(rec.overwrites[0].id).toBe("everyone-role");
+    });
+  });
+
   describe("lockAllChannels", () => {
     it("denies SendMessages for private channel roles", async () => {
       await mgr.createPrivateChannel({

@@ -364,6 +364,7 @@ const GATEWAY_FACTORIES: Record<DeliveryGatewayConfig["type"], GatewayFactory> =
         guildId: discordCfg.guildId,
         managerBotTokenEnv: discordCfg.managerBotTokenEnv,
         personaBots: discordCfg.personaBots,
+        setupMode: discordCfg.setupMode,
       });
       validateDiscordGatewayConfig(parsed);
 
@@ -535,6 +536,19 @@ function parseGateways(input: unknown): DeliveryGatewayConfig[] {
           tokenEnv: requiredString(b["tokenEnv"], `deliveryGateways[${index}].personaBots[${bi}].tokenEnv`),
         };
       });
+      const setupModeRaw = optionalString(
+        gateway["setupMode"],
+        `deliveryGateways[${index}].setupMode`,
+      );
+      const setupMode =
+        setupModeRaw === "readonly_existing" || setupModeRaw === "manage_channels"
+          ? setupModeRaw
+          : undefined;
+      if (setupModeRaw !== undefined && setupMode === undefined) {
+        throw new Error(
+          `deliveryGateways[${index}].setupMode must be "readonly_existing" or "manage_channels"`,
+        );
+      }
       return {
         id,
         type,
@@ -544,6 +558,7 @@ function parseGateways(input: unknown): DeliveryGatewayConfig[] {
           gateway["managerBotTokenEnv"],
           `deliveryGateways[${index}].managerBotTokenEnv`,
         ),
+        setupMode,
       };
     }
     throw new Error(`Unsupported deliveryGateways[${index}].type: ${type}`);

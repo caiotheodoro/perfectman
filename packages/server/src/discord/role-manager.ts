@@ -54,12 +54,40 @@ export class DiscordRoleManager {
     });
   }
 
-  async ensureOperatorChannel(simulationId: string): Promise<string> {
-    return this.ensurePublicChannel({
+  async ensureOperatorChannel(
+    simulationId: string,
+    managerBotUserId?: string,
+  ): Promise<string> {
+    const existing = this.channelMap.get(simulationId, "__operator");
+    if (existing) return existing.discordChannelId;
+
+    const overwrites: import("./discord-guild-port.js").PermissionOverwriteInput[] = [
+      { id: this.guild.everyoneRoleId(), deny: ["ViewChannel"] },
+    ];
+
+    if (managerBotUserId) {
+      overwrites.push({
+        id: managerBotUserId,
+        allow: ["ViewChannel", "SendMessages", "ReadMessageHistory"],
+      });
+    }
+
+    const ch = await this.guild.createTextChannel({
+      name: `pm-${simulationId}-operator`,
+      reason: "perfectman operator channel",
+      permissionOverwrites: overwrites,
+    });
+
+    this.channelMap.upsert({
       simulationId,
       channelId: "__operator",
-      channelName: "operator",
+      channelType: "operator_channel",
+      discordGuildId: this.discordGuildId,
+      discordChannelId: ch.id,
+      lastSyncedAt: Date.now(),
     });
+
+    return ch.id;
   }
 
   async createPrivateChannel(opts: {

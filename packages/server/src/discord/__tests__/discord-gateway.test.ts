@@ -195,4 +195,34 @@ describe("DiscordDeliveryGateway", () => {
       "no channel mapping",
     );
   });
+
+  it("sendAgentMessage throws when agent has no persona bot", async () => {
+    await gateway.createChannel("general", "public_channel", []);
+    const msg: DeliveryMessage = {
+      kind: "message",
+      agentId: "charlie",
+      content: "hello",
+      salience: "medium",
+    };
+    await expect(gateway.sendAgentMessage("general", msg)).rejects.toThrow(
+      'no persona bot configured for agent "charlie"',
+    );
+  });
+
+  it("operator channel denies @everyone ViewChannel", async () => {
+    await gateway.createChannel("__operator", "operator_channel", []);
+    const entry = channelMap.get("sim-1", "__operator")!;
+    const overwrites = guildPort.getChannelOverwrites(entry.discordChannelId);
+    const everyoneDeny = overwrites.find((o) => o.id === "everyone-role");
+    expect(everyoneDeny?.deny).toContain("ViewChannel");
+  });
+
+  it("operator channel grants manager bot access", async () => {
+    await gateway.createChannel("__operator", "operator_channel", []);
+    const entry = channelMap.get("sim-1", "__operator")!;
+    const overwrites = guildPort.getChannelOverwrites(entry.discordChannelId);
+    const mgrOw = overwrites.find((o) => o.id === "user-manager");
+    expect(mgrOw?.allow).toContain("ViewChannel");
+    expect(mgrOw?.allow).toContain("SendMessages");
+  });
 });

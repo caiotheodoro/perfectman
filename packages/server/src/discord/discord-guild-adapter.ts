@@ -1,7 +1,6 @@
 import {
   ChannelType,
   PermissionFlagsBits,
-  PermissionsBitField,
   type Guild,
   type GuildMember,
   type TextChannel,
@@ -51,14 +50,7 @@ function wrapTextChannel(channel: TextChannel): DiscordTextChannelPort {
       );
     },
     async editPermissionOverwrite(id, permissions, reason) {
-      const resolved: Partial<Record<string, boolean>> = {};
-      for (const [name, value] of Object.entries(permissions)) {
-        const bit = PERM_MAP[name as PermissionName];
-        if (bit !== undefined) {
-          resolved[bit.toString()] = value;
-        }
-      }
-      await channel.permissionOverwrites.edit(id, resolved, { reason });
+      await channel.permissionOverwrites.edit(id, permissions, { reason });
     },
     async permissionsForMember(userId) {
       const member = await channel.guild.members.fetch(userId);

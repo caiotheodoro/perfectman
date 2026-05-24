@@ -46,6 +46,14 @@ export class DiscordDeliveryGateway implements IDeliveryGateway {
     this.rateLimiter = deps.rateLimiter;
   }
 
+  private getManagerBotUserId(): string | undefined {
+    try {
+      return this.botRegistry.getManagerBot().userId;
+    } catch {
+      return undefined;
+    }
+  }
+
   async sendAgentMessage(
     channelId: string,
     message: DeliveryMessage,
@@ -54,6 +62,13 @@ export class DiscordDeliveryGateway implements IDeliveryGateway {
     if (!entry) {
       throw new Error(
         `discord gateway: no channel mapping for ${this.simulationId}:${channelId}`,
+      );
+    }
+
+    const guildPort = this.guildPortByAgent.get(message.agentId);
+    if (!guildPort) {
+      throw new Error(
+        `discord gateway: no persona bot configured for agent "${message.agentId}"`,
       );
     }
 
@@ -72,8 +87,6 @@ export class DiscordDeliveryGateway implements IDeliveryGateway {
     });
 
     const key = `${message.agentId}:${entry.discordChannelId}`;
-    const guildPort = this.guildPortByAgent.get(message.agentId);
-    if (!guildPort) return;
 
     await this.rateLimiter.flush(
       key,
@@ -92,12 +105,7 @@ export class DiscordDeliveryGateway implements IDeliveryGateway {
   ): Promise<void> {
     switch (type) {
       case "private_channel": {
-        let managerBotUserId: string | undefined;
-        try {
-          managerBotUserId = this.botRegistry.getManagerBot().userId;
-        } catch {
-          // no manager bot
-        }
+        const managerBotUserId = this.getManagerBotUserId();
         await this.roleManager.createPrivateChannel({
           simulationId: this.simulationId,
           channelId,
@@ -118,7 +126,7 @@ export class DiscordDeliveryGateway implements IDeliveryGateway {
         await this.roleManager.ensureSpectatorChannel(this.simulationId);
         break;
       case "operator_channel":
-        await this.roleManager.ensureOperatorChannel(this.simulationId);
+        await this.roleManager.ensureOperatorChannel(this.simulationId, this.getManagerBotUserId());
         break;
     }
   }
@@ -155,6 +163,7 @@ export class DiscordDeliveryGateway implements IDeliveryGateway {
 
     const operatorChannelId = await this.roleManager.ensureOperatorChannel(
       simulationId,
+      this.getManagerBotUserId(),
     );
     const ch = await this.managerGuildPort.fetchTextChannel(operatorChannelId);
     if (ch) {

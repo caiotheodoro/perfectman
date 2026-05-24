@@ -98,6 +98,37 @@ describe("parseDiscordGatewayConfig", () => {
       }),
     ).toThrow('duplicate agentId "alice"');
   });
+
+  it("respects explicit setupMode readonly_existing even with manager token", () => {
+    const result = parseDiscordGatewayConfig({
+      guildId: "123",
+      managerBotTokenEnv: "MANAGER_TOKEN",
+      personaBots: [{ agentId: "alice", tokenEnv: "ALICE_TOKEN" }],
+      setupMode: "readonly_existing",
+    });
+    expect(result.setupMode).toBe("readonly_existing");
+    expect(result.managerBotToken).toBe("tok-manager-secret");
+  });
+
+  it("throws on invalid setupMode value", () => {
+    expect(() =>
+      parseDiscordGatewayConfig({
+        guildId: "123",
+        personaBots: [{ agentId: "alice", tokenEnv: "ALICE_TOKEN" }],
+        setupMode: "invalid_mode",
+      }),
+    ).toThrow('setupMode must be');
+  });
+
+  it("throws when manage_channels requested without manager token", () => {
+    expect(() =>
+      parseDiscordGatewayConfig({
+        guildId: "123",
+        personaBots: [{ agentId: "alice", tokenEnv: "ALICE_TOKEN" }],
+        setupMode: "manage_channels",
+      }),
+    ).toThrow("managerBotToken required");
+  });
 });
 
 describe("validateDiscordGatewayConfig", () => {
