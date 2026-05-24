@@ -1,4 +1,5 @@
 import type { MemoryWriteProposal } from "../memory/memory.types.js";
+import type { ChannelType } from "../channel/channel.types.js";
 
 export type IntentType =
   | "send_message"
@@ -27,6 +28,12 @@ export type ActionIntent = {
   fallbackIfBlocked?: IntentType;
   memoryWrites: MemoryWriteProposal[];
   spectatorSummary?: string;
+  replyToEventId?: string;
+  emoji?: string;
+  targetEventId?: string;
+  channelName?: string;
+  channelType?: ChannelType;
+  invitedAgentIds?: string[];
 };
 
 export type IntentViolation = {

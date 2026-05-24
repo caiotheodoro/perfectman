@@ -6,9 +6,8 @@
 import type {
   SimulationEvent,
   CommittedEvent,
-  EventVisibility,
-  EmotionalSalience,
 } from "@perfectman/shared";
+import { CommittedEventSchema } from "@perfectman/shared";
 import type { IEventRepository } from "../repositories.js";
 import type { DB } from "./database.js";
 
@@ -33,21 +32,24 @@ type EventRow = {
   visibility: string;
 };
 
+type MaxPulseRow = { max_pulse: number | null };
+type EventPivotRow = { created_at: number; id: string };
+
 function rowToCommittedEvent(row: EventRow): CommittedEvent {
-  return {
+  return CommittedEventSchema.parse({
     id: row.id,
     simulationId: row.simulation_id,
     channelId: row.channel_id,
     actorId: row.actor_id,
-    type: row.type as CommittedEvent["type"],
-    payload: JSON.parse(row.payload) as Record<string, unknown>,
+    type: row.type,
+    payload: JSON.parse(row.payload),
     createdAt: row.created_at,
     pulseIndex: row.pulse_index,
     sourceIntentId: row.source_intent_id ?? undefined,
-    sourceEventIds: JSON.parse(row.source_event_ids) as string[],
-    emotionalSalience: row.emotional_salience as EmotionalSalience,
-    visibility: JSON.parse(row.visibility) as EventVisibility,
-  };
+    sourceEventIds: JSON.parse(row.source_event_ids),
+    emotionalSalience: row.emotional_salience,
+    visibility: JSON.parse(row.visibility),
+  });
 }
 
 export class SqliteEventRepository implements IEventRepository {
@@ -68,12 +70,12 @@ export class SqliteEventRepository implements IEventRepository {
 
     // Determine next pulseIndex: max existing + 1, or 1
     const maxRow = this.db
-      .prepare(
+      .prepare<[string], MaxPulseRow>(
         `SELECT MAX(pulse_index) AS max_pulse FROM events WHERE simulation_id = ?`,
       )
-      .get(simulationId) as { max_pulse: number | null };
+      .get(simulationId);
 
-    const pulseIndex = (maxRow.max_pulse ?? 0) + 1;
+    const pulseIndex = (maxRow?.max_pulse ?? 0) + 1;
     const now = Date.now();
 
     const committed: CommittedEvent[] = [];
@@ -98,13 +100,14 @@ export class SqliteEventRepository implements IEventRepository {
           JSON.stringify(evt.visibility),
         ]);
 
-        committed.push({
+        const committedEvent: CommittedEvent = {
           ...evt,
           id,
           simulationId,
           createdAt,
           pulseIndex: evt.pulseIndex ?? pulseIndex,
-        } as CommittedEvent);
+        };
+        committed.push(committedEvent);
       }
     });
 
@@ -115,8 +118,8 @@ export class SqliteEventRepository implements IEventRepository {
 
   getById(simulationId: string, eventId: string): Promise<CommittedEvent | null> {
     const row = this.db
-      .prepare(`SELECT * FROM events WHERE simulation_id = ? AND id = ?`)
-      .get(simulationId, eventId) as EventRow | undefined;
+      .prepare<[string, string], EventRow>(`SELECT * FROM events WHERE simulation_id = ? AND id = ?`)
+      .get(simulationId, eventId);
 
     return Promise.resolve(row ? rowToCommittedEvent(row) : null);
   }
@@ -124,53 +127,53 @@ export class SqliteEventRepository implements IEventRepository {
   getAfter(simulationId: string, afterEventId?: string): Promise<CommittedEvent[]> {
     if (!afterEventId) {
       const rows = this.db
-        .prepare(
+        .prepare<[string], EventRow>(
           `SELECT * FROM events WHERE simulation_id = ? ORDER BY created_at ASC, id ASC`,
         )
-        .all(simulationId) as EventRow[];
+        .all(simulationId);
       return Promise.resolve(rows.map(rowToCommittedEvent));
     }
 
     // Find the createdAt of the pivot event, then return events strictly after it
     const pivot = this.db
-      .prepare(`SELECT created_at, id FROM events WHERE simulation_id = ? AND id = ?`)
-      .get(simulationId, afterEventId) as { created_at: number; id: string } | undefined;
+      .prepare<[string, string], EventPivotRow>(`SELECT created_at, id FROM events WHERE simulation_id = ? AND id = ?`)
+      .get(simulationId, afterEventId);
 
     if (!pivot) return Promise.resolve([]);
 
     const rows = this.db
-      .prepare(
+      .prepare<[string, number, number, string], EventRow>(
         `SELECT * FROM events
          WHERE simulation_id = ?
            AND (created_at > ? OR (created_at = ? AND id > ?))
          ORDER BY created_at ASC, id ASC`,
       )
-      .all(simulationId, pivot.created_at, pivot.created_at, afterEventId) as EventRow[];
+      .all(simulationId, pivot.created_at, pivot.created_at, afterEventId);
 
     return Promise.resolve(rows.map(rowToCommittedEvent));
   }
 
   getCommittedThrough(simulationId: string, pulseIndex: number): Promise<CommittedEvent[]> {
     const rows = this.db
-      .prepare(
+      .prepare<[string, number], EventRow>(
         `SELECT * FROM events
          WHERE simulation_id = ? AND pulse_index <= ?
          ORDER BY created_at ASC, id ASC`,
       )
-      .all(simulationId, pulseIndex) as EventRow[];
+      .all(simulationId, pulseIndex);
 
     return Promise.resolve(rows.map(rowToCommittedEvent));
   }
 
   getRecent(simulationId: string, limit: number): Promise<CommittedEvent[]> {
     const rows = this.db
-      .prepare(
+      .prepare<[string, number], EventRow>(
         `SELECT * FROM events
          WHERE simulation_id = ?
          ORDER BY created_at DESC, id DESC
          LIMIT ?`,
       )
-      .all(simulationId, limit) as EventRow[];
+      .all(simulationId, limit);
 
     // Return in ascending chronological order
     return Promise.resolve(rows.reverse().map(rowToCommittedEvent));
