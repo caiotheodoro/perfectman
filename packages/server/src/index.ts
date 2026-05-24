@@ -23,4 +23,19 @@ export * from "./agent/agent-runtime.types.js";
 export * from "./agent/intent-parser.js";
 export * from "./agent/persona-prompt-profile.js";
 export * from "./agent/persona-loader.js";
+export * from "./agent/agent-config-registry.js";
 export * from "./llm/index.js";
+export * from "./delivery/index.js";
+
+// Dev2 - Simulation Runtime Exports
+export { SimulationRuntime } from "./simulation/simulation-runtime.js";
+export type {
+  ConfiguredInitialChannel,
+  SimulationRuntimeConfig,
+  SimulationRuntimeRepositories,
+} from "./simulation/simulation-runtime.js";
+export type {
+  IDeliveryGateway,
+  DeliveryMessage,
+} from "./simulation/scheduler-contracts.js";
+export type { AgentContext } from "./simulation/pulse-scheduler.js";

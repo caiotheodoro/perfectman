@@ -216,25 +216,25 @@ describe("PromptBuilder", () => {
     expect(prompt.system).toContain("privateMotiveSummary");
   });
 
-  describe("PromptBuilder - PromptPurpose policy", () => {
-  it("action_intent: BuiltPrompt.purpose is 'action_intent'", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+  describe("PromptPurpose policy", () => {
+    it("action_intent: BuiltPrompt.purpose is 'action_intent'", () => {
+      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
-    expect(prompt.purpose).toBe("action_intent");
-  });
+      expect(prompt.purpose).toBe("action_intent");
+    });
 
-  it("action_intent: includes voiceGuidelines and styleExamples", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+    it("action_intent: includes voiceGuidelines and styleExamples", () => {
+      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
-    expect(prompt.system).toContain("Voice Guidelines");
-    expect(prompt.system).toContain("Style Examples");
-    expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.voiceGuidelines[0]!);
-  });
+      expect(prompt.system).toContain("Voice Guidelines");
+      expect(prompt.system).toContain("Style Examples");
+      expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.voiceGuidelines[0]!);
+    });
 
-  it("action_intent: Section 1 preserves the original rendered order", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
-    const section1 = prompt.system.split("\n\n### SECTION 8: OUTPUT CONTRACT & JSON FORMAT")[0]!;
-    const expectedSection1 = `### SECTION 1: YOUR IDENTITY & PERSONA
+    it("action_intent: Section 1 preserves the original rendered order", () => {
+      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+      const section1 = prompt.system.split("\n\n### SECTION 8: OUTPUT CONTRACT & JSON FORMAT")[0]!;
+      const expectedSection1 = `### SECTION 1: YOUR IDENTITY & PERSONA
 You are roleplaying as a highly specific person in an online chat room. You must completely inhabit this character.
 - **Display Name**: ${GOULART_PROMPT_PROFILE.displayName}
 - **Persona Vibe**: ${GOULART_PROMPT_PROFILE.identityFrame}
@@ -251,19 +251,19 @@ ${Object.entries(GOULART_PROMPT_PROFILE.relationshipBiases)
 Style Examples (mimic these natural patterns):
 ${GOULART_PROMPT_PROFILE.styleExamples.map((e) => `"${e}"`).join(", ")}`;
 
-    expect(section1).toBe(expectedSection1);
-  });
+      expect(section1).toBe(expectedSection1);
+    });
 
-  it("reserved purposes are rejected until dedicated builders exist", () => {
-    expect(() =>
-      PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "social_interpretation")
-    ).toThrow("Unsupported prompt purpose: social_interpretation");
-    expect(() =>
-      PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "background_reflection")
-    ).toThrow("Unsupported prompt purpose: background_reflection");
-    expect(() =>
-      PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "spectator_recap")
-    ).toThrow("Unsupported prompt purpose: spectator_recap");
+    it("reserved purposes are rejected until dedicated builders exist", () => {
+      expect(() =>
+        PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "social_interpretation")
+      ).toThrow("Unsupported prompt purpose: social_interpretation");
+      expect(() =>
+        PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "background_reflection")
+      ).toThrow("Unsupported prompt purpose: background_reflection");
+      expect(() =>
+        PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "spectator_recap")
+      ).toThrow("Unsupported prompt purpose: spectator_recap");
+    });
   });
-});
 });

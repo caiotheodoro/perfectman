@@ -6,3 +6,5 @@ packages/*/node_modules/
 *.node
 sample_data/
 .claude/_output/*
+
+config/index.json

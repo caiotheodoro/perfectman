@@ -16,9 +16,13 @@ import { MockLlmProvider } from "../llm/mock-llm-provider.js";
 import { OpenAiCompatibleProvider } from "../llm/openai-compatible-provider.js";
 import type { LlmConfig } from "../llm/llm-config.js";
 import type { LlmProvider } from "../llm/llm-provider.js";
+import type { AgentConfigRegistry } from "./agent-config-registry.js";
 
 export class AgentRuntime {
-  constructor(private readonly configOverrides?: Record<string, Partial<LlmConfig>>) {}
+  constructor(
+    private readonly configOverrides?: Record<string, Partial<LlmConfig>>,
+    private readonly agentConfigRegistry?: AgentConfigRegistry,
+  ) {}
 
   async generateIntent(
     input: AgentRuntimeInput,
@@ -28,8 +32,10 @@ export class AgentRuntime {
     const agentId = input.agentId;
     const simulationId = input.simulationId;
 
-    const profile = PersonaLoader.getProfile(agentId);
-    const llmConfig = PersonaLoader.getLlmConfig(agentId, this.configOverrides?.[agentId]);
+    const profile = this.agentConfigRegistry?.getPromptProfile(agentId) ?? PersonaLoader.getProfile(agentId);
+    const llmConfig =
+      this.agentConfigRegistry?.getLlmConfig(agentId) ??
+      PersonaLoader.getLlmConfig(agentId, this.configOverrides?.[agentId]);
 
     const prompt = PromptBuilder.build(input, profile, "action_intent");
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { DeliveryProjection } from "../projections/delivery-projection.js";
-import { MockDeliveryGateway } from "./mock-delivery-gateway.js";
+import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import type { CommittedEvent, Channel, ChannelMembership, SimulationSettings } from "@perfectman/shared";
 
 const SIM_ID = "sim_1";

@@ -6,7 +6,7 @@
     "build": "pnpm -r build",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
-    "lint": "tsc -b --noEmit"
+    "lint": "pnpm -r typecheck"
   },
   "devDependencies": {
     "typescript": "^5.5.0",

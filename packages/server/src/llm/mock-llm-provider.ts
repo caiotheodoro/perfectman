@@ -37,8 +37,11 @@ export class MockLlmProvider implements LlmProvider {
       emotionDrivers = ["shame"];
       motivationDrivers = ["avoidance"];
     }
-    // Case 2: Mention or direct reply trigger
-    else if (input.triggeringReason === "attention_event") {
+    // Case 2: Mention or direct reply trigger — skipped when social anxiety makes agent prefer private channel
+    else if (
+      input.triggeringReason === "attention_event" &&
+      !input.activeInhibitions.some(i => i.type === "social_anxiety_block")
+    ) {
       const triggeringEvent = input.perceptionPacket.triggeringEvent;
       const triggerActor = triggeringEvent?.actorId || "agent-bruno";
 
@@ -73,13 +76,14 @@ export class MockLlmProvider implements LlmProvider {
         }
       }
     }
-    // Case 3: Private-channel motive
+    // Case 3: Private-channel motive — fires when create_channel is available and attention reply was skipped
+    // (either no attention event, or social anxiety made the agent prefer privacy over public reply)
     else if (createChannelAction && !createChannelAction.blocked && createChannelAction.personTargets.length > 0) {
       intentType = "create_channel";
       personTargets = [createChannelAction.personTargets[0] || "agent-caio"];
       emotionDrivers = ["warmth"];
       motivationDrivers = ["gossip"];
-      
+
       if (actorId.toLowerCase() === "goulart") {
         privateMotiveSummary = "Start a private side channel with Caio to chat about Chelsea matches and avoid main group noise.";
       } else {
