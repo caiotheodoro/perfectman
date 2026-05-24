@@ -28,43 +28,43 @@ describe("MockLlmProvider", () => {
     {
       intentType: "reply_to_message",
       channelTargets: ["general"],
-      personTargets: ["agent-bruno"],
+      personTargets: ["agent-alpha"],
       blocked: false,
     },
     {
       intentType: "create_channel",
       channelTargets: [],
-      personTargets: ["agent-caio"],
+      personTargets: ["agent-alpha"],
       blocked: false,
     },
   ];
 
   const baseInput: AgentRuntimeInput = {
     simulationId: "sim-123",
-    agentId: "goulart",
+    agentId: "agent-beta",
     personaConfig: {
-      id: "goulart",
-      name: "Goulart",
-      archetype: "provocateur",
-      writingStyle: "lowercase blunt",
+      id: "agent-beta",
+      name: "Beta",
+      archetype: "observer",
+      writingStyle: "brief",
       styleExamples: [],
-      baselineValence: 0.1,
-      baselineArousal: 0.65,
-      baselineStability: 0.35,
-      baselineEnergy: 0.70,
-      emotionalReactivity: 1.5,
-      moodInertia: 0.25,
-      maxMoodRotation: 0.8,
-      energyRegen: 0.06,
-      exclusionSensitivity: 0.7,
-      praiseSensitivity: 1.2,
-      conflictSensitivity: 1.8,
-      boredomSensitivity: 1.4,
-      intimacySensitivity: 0.5,
+      baselineValence: 0,
+      baselineArousal: 0.3,
+      baselineStability: 0.7,
+      baselineEnergy: 0.6,
+      emotionalReactivity: 1.0,
+      moodInertia: 0.5,
+      maxMoodRotation: 0.4,
+      energyRegen: 0.04,
+      exclusionSensitivity: 1,
+      praiseSensitivity: 1,
+      conflictSensitivity: 1,
+      boredomSensitivity: 1,
+      intimacySensitivity: 1,
       socialSensitivities: {},
     },
     perceptionPacket: {
-      agentId: "goulart",
+      agentId: "agent-beta",
       triggeringEvent: null,
       visibleContextEvents: [],
       involvedPeople: [],
@@ -108,14 +108,13 @@ describe("MockLlmProvider", () => {
     const parsed1 = JSON.parse(res1.content);
     const parsed2 = JSON.parse(res2.content);
 
-    // Except for generated unique ID, fields must match
     expect(parsed1.actorId).toBe(parsed2.actorId);
     expect(parsed1.intentType).toBe(parsed2.intentType);
     expect(parsed1.visibleContent).toBe(parsed2.visibleContent);
     expect(parsed1.privateMotiveSummary).toBe(parsed2.privateMotiveSummary);
   });
 
-  it("should pick reply_to_message when triggering reason is mention", async () => {
+  it("should pick reply_to_message when triggering reason is attention_event and actor is reachable", async () => {
     const input: AgentRuntimeInput = {
       ...baseInput,
       triggeringReason: "attention_event",
@@ -125,9 +124,9 @@ describe("MockLlmProvider", () => {
           id: "evt-123",
           simulationId: "sim-123",
           channelId: "general",
-          actorId: "agent-bruno",
+          actorId: "agent-alpha",
           type: "message_sent",
-          payload: { content: "@goulart" },
+          payload: { content: "@agent-beta" },
           createdAt: Date.now(),
           pulseIndex: 8,
           sourceEventIds: [],
@@ -141,11 +140,41 @@ describe("MockLlmProvider", () => {
     const parsed = JSON.parse(res.content);
 
     expect(parsed.intentType).toBe("reply_to_message");
-    expect(parsed.personTargets).toContain("agent-bruno");
-    expect(parsed.visibleContent).toContain("tava treinando"); // Goulart sarcasm
-    
-    // Test parser integration
-    const parserResult = IntentParser.parse(res.content, "goulart", availableActions);
+    expect(parsed.personTargets).toContain("agent-alpha");
+    expect(parsed.visibleContent).toBe("oi tudo bem");
+
+    const parserResult = IntentParser.parse(res.content, "agent-beta", availableActions);
+    expect(parserResult.fallbackApplied).toBe(false);
+  });
+
+  it("should fall back to send_message when reply target is not in available personTargets", async () => {
+    const input: AgentRuntimeInput = {
+      ...baseInput,
+      triggeringReason: "attention_event",
+      perceptionPacket: {
+        ...baseInput.perceptionPacket,
+        triggeringEvent: {
+          id: "evt-456",
+          simulationId: "sim-123",
+          channelId: "general",
+          actorId: "agent-unknown",
+          type: "message_sent",
+          payload: { content: "hello" },
+          createdAt: Date.now(),
+          pulseIndex: 8,
+          sourceEventIds: [],
+          emotionalSalience: "high",
+          visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "" },
+        },
+      },
+    };
+
+    const res = await provider.generateIntent(input, context, prompt);
+    const parsed = JSON.parse(res.content);
+
+    expect(parsed.intentType).toBe("send_message");
+
+    const parserResult = IntentParser.parse(res.content, "agent-beta", availableActions);
     expect(parserResult.fallbackApplied).toBe(false);
   });
 
@@ -155,7 +184,7 @@ describe("MockLlmProvider", () => {
       activeInhibitions: [
         {
           id: "inh-1",
-          agentId: "goulart",
+          agentId: "agent-beta",
           type: "fear_of_looking_needy",
           strength: "high",
           reason: "extremely high hesitation",
@@ -169,12 +198,11 @@ describe("MockLlmProvider", () => {
     expect(parsed.intentType).toBe("no_op");
     expect(parsed.privateMotiveSummary).toContain("hesitations are holding me back");
 
-    // Test parser integration
-    const parserResult = IntentParser.parse(res.content, "goulart", availableActions);
+    const parserResult = IntentParser.parse(res.content, "agent-beta", availableActions);
     expect(parserResult.fallbackApplied).toBe(false);
   });
 
-  it("should pick create_channel when private channel action is available and no other triggers stand out", async () => {
+  it("should pick create_channel when it is the best available action", async () => {
     const noSendMessageActions = availableActions.filter(a => a.intentType !== "send_message");
     const input: AgentRuntimeInput = {
       ...baseInput,
@@ -189,10 +217,9 @@ describe("MockLlmProvider", () => {
     const parsed = JSON.parse(res.content);
 
     expect(parsed.intentType).toBe("create_channel");
-    expect(parsed.personTargets).toContain("agent-caio");
+    expect(parsed.personTargets).toContain("agent-alpha");
 
-    // Test parser integration
-    const parserResult = IntentParser.parse(res.content, "goulart", noSendMessageActions);
+    const parserResult = IntentParser.parse(res.content, "agent-beta", noSendMessageActions);
     expect(parserResult.fallbackApplied).toBe(false);
   });
 
@@ -211,8 +238,8 @@ describe("MockLlmProvider", () => {
     const parsed = JSON.parse(res.content);
 
     expect(parsed.intentType).toBe("send_message");
-    expect(parsed.visibleContent).toContain("Chelsea");
-    expect(parsed.privateMotiveSummary).toContain("Chelsea");
+    expect(parsed.visibleContent).toBe("pois é");
+    expect(parsed.privateMotiveSummary).toContain("silence");
   });
 
   it("should report tokens usage and latency", async () => {

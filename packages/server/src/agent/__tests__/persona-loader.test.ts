@@ -2,24 +2,22 @@ import { describe, it, expect } from "vitest";
 import { PersonaLoader } from "../persona-loader.js";
 
 describe("PersonaLoader", () => {
-  it("should successfully resolve Goulart profile by ID", () => {
+  it("always returns a generic profile with the given personaId", () => {
     const profile = PersonaLoader.getProfile("goulart");
     expect(profile).toBeDefined();
+    expect(profile.personaId).toBe("goulart");
     expect(profile.displayName).toBe("Goulart");
-    expect(profile.identityFrame).toContain("Provocateur");
-    expect(profile.language).toBe("pt-BR");
-    expect(profile.voiceGuidelines.length).toBeGreaterThan(0);
+    expect(profile.language).toBe("en");
+    expect(profile.identityFrame).toContain("standard chat room participant");
   });
 
-  it("should successfully resolve Bruno profile by ID (case-insensitive)", () => {
+  it("capitalises the displayName from the personaId", () => {
     const profile = PersonaLoader.getProfile("BRUNO");
-    expect(profile).toBeDefined();
-    expect(profile.displayName).toBe("Bruno");
-    expect(profile.identityFrame).toContain("Observer");
-    expect(profile.language).toBe("pt-BR");
+    expect(profile.displayName).toBe("BRUNO");
+    expect(profile.personaId).toBe("BRUNO");
   });
 
-  it("should safely fall back to a generic profile for an unknown persona ID", () => {
+  it("returns a generic profile for any unknown persona ID", () => {
     const profile = PersonaLoader.getProfile("unknown-persona");
     expect(profile).toBeDefined();
     expect(profile.personaId).toBe("unknown-persona");
