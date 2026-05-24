@@ -86,17 +86,21 @@ function buildDelayEvent(
   delayUntilPulse: number,
   ctx: ResolveContext,
 ): SimulationEvent {
+  const payload: SimulationEvent["payload"] = {
+    intentType: intent.intentType,
+    intentId: intent.id,
+    delayUntilPulse,
+  };
+  if (intent.preferredDelay !== undefined) {
+    payload["preferredDelay"] = intent.preferredDelay;
+  }
+
   return {
     simulationId: ctx.simulationId,
     channelId: ctx.channelId,
     actorId: intent.actorId,
     type: "intent_delayed",
-    payload: {
-      intentType: intent.intentType,
-      intentId: intent.id,
-      delayUntilPulse,
-      preferredDelay: intent.preferredDelay,
-    },
+    payload,
     sourceEventIds: [],
     emotionalSalience: "low",
     pulseIndex: ctx.pulseIndex,
@@ -140,7 +144,7 @@ function buildReplyEvent(
   ctx: ResolveContext,
 ): SimulationEvent {
   const channelId = intent.channelTarget ?? ctx.channelId;
-  const replyToEventId = (intent as ActionIntent & { replyToEventId?: string }).replyToEventId;
+  const replyToEventId = intent.replyToEventId;
   return {
     simulationId: ctx.simulationId,
     channelId,
@@ -166,18 +170,17 @@ function buildReactionEvent(
   ctx: ResolveContext,
 ): SimulationEvent {
   const channelId = intent.channelTarget ?? ctx.channelId;
-  const extIntent = intent as ActionIntent & { emoji?: string; targetEventId?: string };
   return {
     simulationId: ctx.simulationId,
     channelId,
     actorId: intent.actorId,
     type: "reaction_sent",
     payload: {
-      emoji: extIntent.emoji ?? "👍",
-      targetEventId: extIntent.targetEventId ?? "",
+      emoji: intent.emoji ?? "👍",
+      targetEventId: intent.targetEventId ?? "",
     },
     sourceIntentId: intent.id,
-    sourceEventIds: extIntent.targetEventId ? [extIntent.targetEventId] : [],
+    sourceEventIds: intent.targetEventId ? [intent.targetEventId] : [],
     emotionalSalience: salience,
     pulseIndex: ctx.pulseIndex,
     visibility: {
@@ -193,16 +196,15 @@ function buildChannelCreatedEvent(
   intent: ActionIntent,
   ctx: ResolveContext,
 ): SimulationEvent {
-  const extIntent = intent as ActionIntent & { channelName?: string; channelType?: string; invitedAgentIds?: string[] };
   return {
     simulationId: ctx.simulationId,
     channelId: intent.channelTarget ?? createId(),
     actorId: intent.actorId,
     type: "channel_created",
     payload: {
-      channelName: extIntent.channelName ?? "private",
-      channelType: extIntent.channelType ?? "private_channel",
-      invitedAgentIds: extIntent.invitedAgentIds ?? intent.personTargets,
+      channelName: intent.channelName ?? "private",
+      channelType: intent.channelType ?? "private_channel",
+      invitedAgentIds: intent.invitedAgentIds ?? intent.personTargets,
     },
     sourceIntentId: intent.id,
     sourceEventIds: [],

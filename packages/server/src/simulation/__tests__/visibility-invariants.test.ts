@@ -20,6 +20,7 @@ import type {
   SimulationSettings,
   SpectatorEvent,
   OperatorEvent,
+  EventPayload,
 } from "@perfectman/shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -357,7 +358,7 @@ function makeEvent(
   type: CommittedEvent["type"],
   channelId: string,
   actorId: string,
-  payload: Record<string, unknown> = {},
+  payload: EventPayload = {},
   pulseIndex = 1,
 ): CommittedEvent {
   return {

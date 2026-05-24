@@ -23,6 +23,7 @@ import type {
   SimulationSettings,
   SpectatorEvent,
   OperatorEvent,
+  EventPayload,
 } from "@perfectman/shared";
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -190,7 +191,7 @@ const MEMBERSHIP: ChannelMembership[] = [
 
 function makeEvent(
   type: CommittedEvent["type"],
-  payload: Record<string, unknown> = {},
+  payload: EventPayload = {},
 ): CommittedEvent {
   return {
     id: `fanout-evt-${type}`,

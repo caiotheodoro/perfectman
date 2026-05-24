@@ -2,16 +2,17 @@ import type {
   Simulation,
   SimulationStatus,
   SimulationEvent,
+  EventVisibility,
 } from "@perfectman/shared";
 import type { ISimulationRepository } from "../persistence/repositories.js";
 import type { EventLog } from "./event-log.js";
 
-const LIFECYCLE_VISIBILITY = {
-  visibleToAgents: [] as string[],
+const LIFECYCLE_VISIBILITY: EventVisibility = {
+  visibleToAgents: [],
   visibleToSpectators: true,
   visibleToOperators: true,
   visibilityReason: "lifecycle",
-} as const;
+};
 
 export class SimulationLifecycle {
   constructor(

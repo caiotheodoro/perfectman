@@ -11,10 +11,10 @@ import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "./mock-delivery-gateway.js";
 import type { AgentContext, AgentRuntime, LlmBudget } from "../pulse-scheduler.js";
-import type { AgentState, PersonaConfig, Simulation, SimulationSettings } from "@perfectman/shared";
+import type { AgentState, CommittedEvent, PersonaConfig, Simulation, SimulationSettings } from "@perfectman/shared";
 
 vi.mock("@perfectman/engine", () => ({
-  filterVisibleEventsForAgent: (events: unknown[]) => events,
+  filterVisibleEventsForAgent: (events: CommittedEvent[]) => events,
   computeStagnationMetrics: () => ({ level: "normal" }),
   runEngineStep: (snapshot: { agentState: AgentState }) => ({
     visibleEvents: [],

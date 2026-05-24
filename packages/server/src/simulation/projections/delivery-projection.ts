@@ -7,6 +7,7 @@ import type {
 } from "@perfectman/shared";
 import { filterVisibleEventsForAgent } from "@perfectman/engine";
 import type { IDeliveryGateway, DeliveryMessage } from "../scheduler-contracts.js";
+import { payloadChannelType, payloadString, payloadStringArray } from "../payload-readers.js";
 
 export class DeliveryProjection {
   constructor(private readonly gateway: IDeliveryGateway) {}
@@ -21,7 +22,7 @@ export class DeliveryProjection {
 
     switch (event.type) {
       case "message_sent": {
-        const content = (event.payload["content"] as string | undefined) ?? "";
+        const content = payloadString(event.payload, "content");
         for (const agentId of memberAgentIds) {
           const visible = filterVisibleEventsForAgent([event], agentId, channels, membership);
           if (visible.length === 0) continue;
@@ -36,8 +37,8 @@ export class DeliveryProjection {
         break;
       }
       case "reply_sent": {
-        const content = (event.payload["content"] as string | undefined) ?? "";
-        const replyToEventId = (event.payload["replyToEventId"] as string | undefined) ?? "";
+        const content = payloadString(event.payload, "content");
+        const replyToEventId = payloadString(event.payload, "replyToEventId");
         for (const agentId of memberAgentIds) {
           const visible = filterVisibleEventsForAgent([event], agentId, channels, membership);
           if (visible.length === 0) continue;
@@ -53,8 +54,8 @@ export class DeliveryProjection {
         break;
       }
       case "reaction_sent": {
-        const emoji = (event.payload["emoji"] as string | undefined) ?? "👍";
-        const targetEventId = (event.payload["targetEventId"] as string | undefined) ?? "";
+        const emoji = payloadString(event.payload, "emoji", "👍");
+        const targetEventId = payloadString(event.payload, "targetEventId");
         for (const agentId of memberAgentIds) {
           const visible = filterVisibleEventsForAgent([event], agentId, channels, membership);
           if (visible.length === 0) continue;
@@ -70,17 +71,17 @@ export class DeliveryProjection {
         break;
       }
       case "channel_created": {
-        const channelType = (event.payload["channelType"] as string | undefined) ?? "public_channel";
-        const invitedAgentIds = (event.payload["invitedAgentIds"] as string[] | undefined) ?? [];
+        const channelType = payloadChannelType(event.payload, "channelType", "public_channel");
+        const invitedAgentIds = payloadStringArray(event.payload, "invitedAgentIds");
         await this.safeGatewayCall(event, "createChannel", () => this.gateway.createChannel(
           event.channelId,
-          channelType as Channel["type"],
+          channelType,
           [event.actorId, ...invitedAgentIds],
         ));
         break;
       }
       case "agent_invited": {
-        const invitedAgentId = (event.payload["invitedAgentId"] as string | undefined) ?? "";
+        const invitedAgentId = payloadString(event.payload, "invitedAgentId");
         await this.safeGatewayCall(event, "addMember", () => this.gateway.addMember(event.channelId, invitedAgentId));
         break;
       }

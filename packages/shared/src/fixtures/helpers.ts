@@ -10,6 +10,7 @@ import type {
   RelationalState,
   CommittedEvent,
   EventVisibility,
+  EventPayload,
   Channel,
   ChannelMembership,
   Simulation,
@@ -125,7 +126,7 @@ export function makeCommittedEvent(
   channelId: string,
   actorId: string,
   type: CommittedEvent["type"],
-  payload: Record<string, unknown> = {},
+  payload: EventPayload = {},
   pulseIndex = 1,
   visibilityOverride?: Partial<EventVisibility>,
 ): CommittedEvent {

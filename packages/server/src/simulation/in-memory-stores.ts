@@ -30,13 +30,16 @@ export class InMemoryEventRepository implements IEventRepository {
     if (events.length === 0) return Promise.resolve([]);
     const log = this.events.get(simulationId) ?? [];
     const now = Date.now();
-    const committed: CommittedEvent[] = events.map(evt => ({
-      ...evt,
-      id: evt.id ?? generateEventId(),
-      createdAt: evt.createdAt ?? now,
-      pulseIndex: evt.pulseIndex ?? 0,
-      simulationId,
-    } as CommittedEvent));
+    const committed: CommittedEvent[] = events.map((evt) => {
+      const committedEvent: CommittedEvent = {
+        ...evt,
+        id: evt.id ?? generateEventId(),
+        createdAt: evt.createdAt ?? now,
+        pulseIndex: evt.pulseIndex ?? 0,
+        simulationId,
+      };
+      return committedEvent;
+    });
     this.events.set(simulationId, [...log, ...committed]);
     return Promise.resolve(committed);
   }

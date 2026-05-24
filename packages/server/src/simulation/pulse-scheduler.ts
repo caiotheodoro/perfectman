@@ -30,11 +30,18 @@ export type AgentContext = {
   persona: PersonaConfig;
 };
 
+export type RuntimeTokenUsage = {
+  inputTokens?: number;
+  outputTokens?: number;
+  totalTokens?: number;
+  model?: string;
+};
+
 // Minimal dev1 interface — concrete impl injected
 export type AgentRuntime = {
   generateIntent(input: import("@perfectman/shared").AgentRuntimeInput): Promise<{
     intent: ActionIntent;
-    tokenUsage: unknown;
+    tokenUsage: RuntimeTokenUsage;
     latencyMs: number;
     fallbackApplied: boolean;
     operatorEvents: import("@perfectman/shared").OperatorEvent[];
@@ -347,13 +354,18 @@ export class PulseScheduler {
   }
 
   private schedulerError(detail: string, err: unknown, agentId?: string, eventId?: string): OperatorEvent {
+    const data: NonNullable<OperatorEvent["data"]> = { reason: this.errorReason(err) };
+    if (eventId !== undefined) {
+      data["eventId"] = eventId;
+    }
+
     return {
       type: "scheduler_error",
       simulationId: this.config.simulation.id,
       agentId,
       pulseIndex: this.pulseIndex,
       detail,
-      data: { reason: this.errorReason(err), eventId },
+      data,
       createdAt: Date.now(),
     };
   }

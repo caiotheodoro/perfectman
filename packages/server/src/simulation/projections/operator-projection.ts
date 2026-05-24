@@ -1,9 +1,11 @@
 import type {
   CommittedEvent,
+  EventPayload,
   OperatorEvent,
   SimulationSettings,
 } from "@perfectman/shared";
 import type { IDeliveryGateway } from "../scheduler-contracts.js";
+import { payloadString } from "../payload-readers.js";
 
 export class OperatorProjection {
   constructor(private readonly gateway: IDeliveryGateway) {}
@@ -24,43 +26,49 @@ export class OperatorProjection {
 
   private toOperatorEvent(event: CommittedEvent): OperatorEvent | null {
     switch (event.type) {
-      case "intent_blocked":
+      case "intent_blocked": {
+        const intentType = payloadString(event.payload, "intentType", "unknown");
         return {
           type: "intent_blocked",
           simulationId: event.simulationId,
           agentId: event.actorId,
           pulseIndex: event.pulseIndex,
-          detail: `Intent blocked: ${String(event.payload["intentType"] ?? "unknown")}`,
-          data: { violations: event.payload["violations"] },
+          detail: `Intent blocked: ${intentType}`,
+          data: { violations: event.payload["violations"] ?? [] },
           createdAt: event.createdAt,
         };
-      case "intent_delayed":
+      }
+      case "intent_delayed": {
+        const intentType = payloadString(event.payload, "intentType", "unknown");
         return {
           type: "intent_delayed",
           simulationId: event.simulationId,
           agentId: event.actorId,
           pulseIndex: event.pulseIndex,
-          detail: `Intent delayed: ${String(event.payload["intentType"] ?? "unknown")}`,
-          data: { delayUntilPulse: event.payload["delayUntilPulse"] },
+          detail: `Intent delayed: ${intentType}`,
+          data: { delayUntilPulse: event.payload["delayUntilPulse"] ?? 0 },
           createdAt: event.createdAt,
         };
-      case "stagnation_detected":
+      }
+      case "stagnation_detected": {
+        const level = payloadString(event.payload, "level", "unknown");
         return {
           type: "stagnation_warning",
           simulationId: event.simulationId,
           pulseIndex: event.pulseIndex,
-          detail: `Stagnation detected: ${String(event.payload["level"] ?? "unknown")}`,
-          data: { metrics: event.payload["metrics"] },
+          detail: `Stagnation detected: ${level}`,
+          data: { metrics: event.payload["metrics"] ?? {} },
           createdAt: event.createdAt,
         };
+      }
       case "llm_failure":
         return {
           type: "llm_failure",
           simulationId: event.simulationId,
           agentId: event.actorId,
           pulseIndex: event.pulseIndex,
-          detail: String(event.payload["reason"] ?? "LLM failure"),
-          data: event.payload,
+          detail: payloadString(event.payload, "reason", "LLM failure"),
+          data: event.payload satisfies EventPayload,
           createdAt: event.createdAt,
         };
       default:

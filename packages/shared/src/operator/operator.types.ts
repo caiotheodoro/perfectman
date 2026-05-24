@@ -1,3 +1,5 @@
+import type { EventPayload } from "../event/event.types.js";
+
 export type OperatorEventType =
   | "llm_failure"
   | "llm_budget_exceeded"
@@ -15,7 +17,7 @@ export type OperatorEvent = {
   agentId?: string;
   pulseIndex: number;
   detail: string;
-  data?: Record<string, unknown>;
+  data?: EventPayload;
   createdAt: number;
 };
 

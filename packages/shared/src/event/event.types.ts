@@ -25,6 +25,10 @@ export type EventType =
 
 export type EmotionalSalience = "low" | "medium" | "high" | "critical";
 
+export type EventPayloadPrimitive = string | number | boolean | null;
+export type EventPayloadValue = EventPayloadPrimitive | EventPayloadValue[] | { [key: string]: EventPayloadValue };
+export type EventPayload = Record<string, EventPayloadValue>;
+
 export type EventVisibility = {
   visibleToAgents: string[]; // agent IDs, empty = all in channel
   visibleToSpectators: boolean;
@@ -38,7 +42,7 @@ export type SimulationEvent = {
   channelId: string;
   actorId: string;
   type: EventType;
-  payload: Record<string, unknown>;
+  payload: EventPayload;
   createdAt?: number; // assigned on commit
   pulseIndex?: number; // assigned on commit
   sourceIntentId?: string;

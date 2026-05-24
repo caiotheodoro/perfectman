@@ -6,6 +6,7 @@ import type {
 } from "@perfectman/shared";
 import { filterVisibleEventsForSpectator } from "@perfectman/engine";
 import type { IDeliveryGateway } from "../scheduler-contracts.js";
+import { payloadString } from "../payload-readers.js";
 
 function sanitize(event: CommittedEvent): Omit<SpectatorEvent, "narrativeHint"> {
   return {
@@ -13,25 +14,24 @@ function sanitize(event: CommittedEvent): Omit<SpectatorEvent, "narrativeHint"> 
     simulationId: event.simulationId,
     actorId: event.actorId,
     channelId: event.channelId,
-    visibleContent: (event.payload["content"] as string | undefined),
+    visibleContent: payloadString(event.payload, "content"),
     createdAt: event.createdAt,
     pulseIndex: event.pulseIndex,
   };
 }
 
-function sanitizeMotiveSummary(summary: unknown): string {
-  if (typeof summary !== "string") return "[internal]";
+function sanitizeMotiveSummary(summary: string): string {
   // Truncate private details — keep to a safe length
   return summary.slice(0, 80);
 }
 
 function summarizeDelay(event: CommittedEvent): string {
-  const intentType = (event.payload["intentType"] as string | undefined) ?? "action";
+  const intentType = payloadString(event.payload, "intentType", "action");
   return `Agent delayed a ${intentType}`;
 }
 
 function summarizeBlockedIntent(event: CommittedEvent): string {
-  const intentType = (event.payload["intentType"] as string | undefined) ?? "action";
+  const intentType = payloadString(event.payload, "intentType", "action");
   return `Agent blocked from ${intentType}`;
 }
 
@@ -73,7 +73,7 @@ export class SpectatorProjection {
           simulationId: event.simulationId,
           actorId: event.actorId,
           channelId: event.channelId,
-          visibleContent: sanitizeMotiveSummary(event.payload["privateMotiveSummary"]),
+          visibleContent: sanitizeMotiveSummary(payloadString(event.payload, "privateMotiveSummary", "[internal]")),
           narrativeHint: null,
           createdAt: event.createdAt,
           pulseIndex: event.pulseIndex,
@@ -107,7 +107,7 @@ export class SpectatorProjection {
           type: "motive_reveal",
           simulationId: event.simulationId,
           actorId: event.actorId,
-          summary: (event.payload["summary"] as string | undefined) ?? "",
+          summary: payloadString(event.payload, "summary"),
           createdAt: event.createdAt,
           pulseIndex: event.pulseIndex,
         };
