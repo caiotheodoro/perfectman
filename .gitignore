@@ -4,4 +4,5 @@ packages/*/dist/
 packages/*/node_modules/
 *.tsbuildinfo
 *.node
+sample_data/
 .claude/_output/*

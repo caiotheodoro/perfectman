@@ -35,7 +35,8 @@ All three developer plans reference this document as the single source of truth 
 Do not overload `PersonaConfig`.
 
 - `PersonaConfig` is Dev3-owned domain calibration data used by the pure engine: mood baselines, emotional reactivity, sensitivity tables, thresholds, and social-behavior math.
-- `PersonaPromptProfile` is Dev1-owned runtime prompt data: identity prose, voice examples, relationship biases expressed for the LLM, language/slang preferences, and system-prompt fragments.
+- `PersonaPromptProfile` is Dev1-owned runtime prompt data: compact identity prose, voice examples, relationship biases expressed for the LLM, language/slang preferences, and system-prompt fragments. It is a compiled prompt artifact, not the full biography, questionnaire, or testimonial store.
+- Persona source material may live in committed Markdown docs using real names and sanitized/paraphrased examples by default. Source material should distinguish self-perception, peer perception, and observed chat evidence before being summarized into `PersonaPromptProfile`.
 - `LlmConfig` is Dev1-owned provider/runtime configuration: provider, model names, max tokens, temperature, timeout/retry policy, and budget policy.
 - `AgentRuntimeInput` may carry the Dev3 `PersonaConfig` for calibration context, but Dev1 must translate it into prompt language and combine it with `PersonaPromptProfile`; it must not treat `PersonaConfig` as the full prompt/persona object.
 
@@ -44,7 +45,7 @@ Recommended runtime composition:
 ```text
 AgentSeedState
   → PersonaConfig           # Dev3 engine calibration
-  → PersonaPromptProfile    # Dev1 prompt identity and style
+  → PersonaPromptProfile    # Dev1 compiled prompt identity and style
   → LlmConfig               # Dev1 model/provider/runtime settings
 ```
 
@@ -190,35 +191,39 @@ type RateLimitStatus = {
 
 // Dev2 rate-limit-gate computes and provides
 // Dev2 passes in EngineSnapshot.rateLimitStatus
-// Dev3 engine uses for computeAvailableActions(```
+// Dev3 engine uses for computeAvailableActions
+```
 
-### LlmConfig & PersonaConfig
+### PersonaPromptProfile, LlmConfig & PersonaConfig
 
 ```typescript
-// Dev3 defines in packages/shared/src/agent/agent.types.ts
+// Dev1 defines in packages/server/src/agent/persona-prompt-profile.ts
+type PersonaPromptProfile = {
+  personaId: string;
+  displayName: string;
+  identityFrame: string;
+  voiceGuidelines: string[];
+  styleExamples: string[];
+  relationshipBiases: Record<string, string>;
+  language: 'pt-BR' | 'en';
+};
+
+// Dev1 defines in packages/server/src/llm/llm-config.ts
 type LlmConfig = {
   providerType: 'local_uncensored' | 'freellmapi' | 'mock';
-  baseUrl: string;                 // e.g. 'http://localhost:8000/v1', 'http://localhost:8080/v1', 'http://localhost:11434/v1', or 'http://localhost:3001/v1'
-  apiKey?: string;                 // Unified key for FreeLLMAPI, or empty/omitted for local runtimes
-  modelName: string;               // e.g., 'Qwen/Qwen3-8B', 'qwen3:8b', 'auto', or a FreeLLMAPI model id
+  baseUrl?: string;                // required for OpenAI-compatible providers
+  apiKeyEnv?: string;              // environment variable name; never commit API keys
+  modelName: string;               // e.g. 'Qwen/Qwen3-8B', 'qwen3:8b', 'auto', or a FreeLLMAPI model id
   temperature: number;
-  maxTokens?: number;
-  timeoutMs?: number;
+  maxInputTokens: number;
+  maxOutputTokens: number;
+  timeoutMs: number;
+  retryCount: number;
   extraBody?: Record<string, unknown>; // Provider-specific options, e.g. Qwen3 enable_thinking=false when supported
 };
 
-type PersonaConfig = {
-  id: string;
-  name: string;
-  archetype: string;
-  writingStyle: {
-    tone: string;
-    rules: string[];
-    styleExamples: string[];
-  };
-  relationshipBiases: Record<string, string>;
-  llmConfig: LlmConfig;            // per-agent provider config for local/FreeLLMAPI A/B testing
-};
+// Dev3 defines PersonaConfig in packages/shared/src/agent/agent.types.ts.
+// It remains engine calibration only; do not add LLM provider config or prompt prose to it.
 ```
 
 ### AgentRuntimeInput Assembly
@@ -231,10 +236,8 @@ type AgentRuntimeInput = {
   simulationId: string;
   agentId: string;
   personaConfig: PersonaConfig;           // Dev3 engine calibration, not the full LLM prompt profile
-  personaPromptProfile?: PersonaPromptProfile; // Dev1 runtime prompt profile, if assembled before call
-  llmConfig?: LlmConfig;                  // Dev1 provider/model config, if assembled before call
-  perceptionPacket: PerceptionPacket;     // from EngineStepResult
-  emotionalState: EmotionalState;         // from EngineStepResult.updatedAgentState
+  perceptionPacket: PerceptionPacket;     // from EngineStepResult; includes translatedEmotionalState for prompt text
+  emotionalState: EmotionalState;         // raw state from EngineStepResult.updatedAgentState; do not leak into prompt text
   activeMotivations: Motivation[];        // from EngineStepResult.motivations
   activePressures: Pressure[];            // from EngineStepResult.pressures
   activeInhibitions: Inhibition[];        // from EngineStepResult.inhibitions
@@ -247,10 +250,10 @@ type AgentRuntimeInput = {
 // Dev2 scheduler builds this by:
 // 1. Running engine step → EngineStepResult
 // 2. Looking up Dev3 PersonaConfig from shared constants
-// 3. Attaching Dev1 PersonaPromptProfile / LlmConfig if that assembly is owned by the runtime boundary
-// 4. Querying dev1 LlmBudget for priority
-// 5. Extracting triggeringReason from attention results
-// 6. Passing assembled input to dev1 AgentRuntime.generateIntent()
+// 3. Querying dev1 LlmBudget for priority
+// 4. Extracting triggeringReason from attention results
+// 5. Passing assembled input to dev1 AgentRuntime.generateIntent()
+// Dev1 AgentRuntime resolves PersonaPromptProfile + LlmConfig by personaId/agentId unless a later integration explicitly adds a wrapper input type.
 ```
 
 ### AvailableAction
@@ -318,9 +321,14 @@ type ResolvedIntent = {
 
 ```typescript
 // Dev1 defines in packages/server/src/agent/agent-runtime.types.ts
+type AgentRuntimeContext = {
+  pulseIndex: number;
+  now: number;                      // deterministic wall-clock ms supplied by scheduler
+};
+
 type AgentRuntimeOutput = {
   intent: ActionIntent;             // validated intent or safe fallback
-  tokenUsage: LlmUsage;
+  llmUsage: LlmUsage | null;        // null when no provider call happened
   latencyMs: number;
   fallbackApplied: boolean;
   operatorEvents: OperatorEvent[];

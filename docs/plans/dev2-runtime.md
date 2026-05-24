@@ -78,7 +78,7 @@ Delivery adapters may have platform-specific concerns such as rate limits, forma
 - Repository interfaces — from `packages/server/src/persistence/repositories.ts` (dev3)
 
 **Consume from dev1 (at runtime):**
-- `AgentRuntime.generateIntent(input: AgentRuntimeInput): Promise<AgentRuntimeOutput>`
+- `AgentRuntime.generateIntent(input: AgentRuntimeInput, context: AgentRuntimeContext): Promise<AgentRuntimeOutput>`
 - `LlmBudget.canCall()`, `.recordUsage()`, `.getStatus()`, `.getPriority()`
 - Mock provider for scheduler integration tests
 
@@ -263,7 +263,10 @@ async function runPulse(ctx: PulseContext): Promise<PulseResult> {
     if (stepResult.decision.needsLLM || stepResult.decision.initiativeProceed) {
       const budgetPriority = ctx.llmBudget.getPriority(ctx.simulationId, agent.id);
       const runtimeInput = buildAgentRuntimeInput(stepResult, agent.persona, budgetPriority);
-      const runtimeOutput = await ctx.agentRuntime.generateIntent(runtimeInput);
+      const runtimeOutput = await ctx.agentRuntime.generateIntent(runtimeInput, {
+        pulseIndex,
+        now: ctx.clock.now(),
+      });
 
       // 5. Resolve intent
       const resolved = ctx.intentResolver.resolve(runtimeOutput.intent, agent, ctx);
