@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { EventPayloadValue } from "./event.types.js";
 
 export const EventTypeSchema = z.enum([
   "message_sent",
@@ -35,13 +36,24 @@ export const EventVisibilitySchema = z.object({
   visibilityReason: z.string(),
 });
 
+export const EventPayloadValueSchema: z.ZodType<EventPayloadValue> = z.lazy(() =>
+  z.union([
+    z.string(),
+    z.number(),
+    z.boolean(),
+    z.null(),
+    z.array(EventPayloadValueSchema),
+    z.record(EventPayloadValueSchema),
+  ]),
+);
+
 export const SimulationEventSchema = z.object({
   id: z.string().optional(),
   simulationId: z.string().min(1),
   channelId: z.string().min(1),
   actorId: z.string().min(1),
   type: EventTypeSchema,
-  payload: z.record(z.unknown()),
+  payload: z.record(EventPayloadValueSchema),
   createdAt: z.number().int().positive().optional(),
   pulseIndex: z.number().int().nonnegative().optional(),
   sourceIntentId: z.string().optional(),
