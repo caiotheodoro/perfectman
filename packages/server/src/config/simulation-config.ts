@@ -86,7 +86,15 @@ export type DebugConfig = {
 
 export type DeliveryGatewayConfig =
   | { id: string; type: "mock" }
-  | { id: string; type: "stdout"; debug?: boolean };
+  | { id: string; type: "stdout"; debug?: boolean }
+  | {
+      id: string;
+      type: "discord";
+      guildId: string;
+      personaBots: Array<{ agentId: string; tokenEnv: string }>;
+      managerBotTokenEnv?: string;
+      setupMode?: "readonly_existing" | "manage_channels";
+    };
 
 export type InitialChannelConfig = {
   id: string;
@@ -254,7 +262,7 @@ export async function buildConfiguredSimulation(
 ): Promise<ConfiguredSimulationHandle> {
   const simulationId = config.simulation.id ?? createId();
   const persistence = createRepositories(config.persistence);
-  const gateways = createGateways(config);
+  const gateways = await createGateways(config);
   const delivery = new CompositeDeliveryGateway(Object.values(gateways));
   const configuredAgents = config.agents.map<ConfiguredAgent>((agent) => ({
     id: agent.id,
@@ -336,7 +344,7 @@ function createRepositories(config: PersistenceConfig): {
 type GatewayFactory = (
   cfg: DeliveryGatewayConfig,
   debug: DebugConfig | undefined,
-) => IDeliveryGateway;
+) => IDeliveryGateway | Promise<IDeliveryGateway>;
 
 const GATEWAY_FACTORIES: Record<DeliveryGatewayConfig["type"], GatewayFactory> =
   {
@@ -347,14 +355,77 @@ const GATEWAY_FACTORIES: Record<DeliveryGatewayConfig["type"], GatewayFactory> =
           debug?.operatorEvents ??
           false,
       ),
+    discord: async (cfg) => {
+      const discordCfg = cfg as Extract<DeliveryGatewayConfig, { type: "discord" }>;
+      const { parseDiscordGatewayConfig, validateDiscordGatewayConfig } = await import(
+        "../discord/discord-config.js"
+      );
+      const parsed = parseDiscordGatewayConfig({
+        guildId: discordCfg.guildId,
+        managerBotTokenEnv: discordCfg.managerBotTokenEnv,
+        personaBots: discordCfg.personaBots,
+        setupMode: discordCfg.setupMode,
+      });
+      validateDiscordGatewayConfig(parsed);
+
+      const { BotRegistry } = await import("../discord/bot-registry.js");
+      const { DiscordJsGuildAdapter } = await import("../discord/discord-guild-adapter.js");
+      const { ChannelMap } = await import("../discord/channel-map.js");
+      const { DiscordRoleManager } = await import("../discord/role-manager.js");
+      const { DiscordRateLimiter } = await import("../discord/discord-rate-limiter.js");
+      const { DiscordDeliveryGateway } = await import("../discord/discord-gateway.js");
+
+      const registry = new BotRegistry(parsed.guildId);
+      for (const bot of parsed.personaBots) {
+        await registry.startPersonaBot(bot.agentId, bot.token);
+      }
+      if (parsed.managerBotToken) {
+        await registry.startManagerBot(parsed.managerBotToken);
+      }
+
+      const managerOrFirst = (() => {
+        try { return registry.getManagerBot(); }
+        catch { return registry.get(parsed.personaBots[0]!.agentId); }
+      })();
+
+      const managerGuildPort = new DiscordJsGuildAdapter(managerOrFirst.guild);
+      const guildPortByAgent = new Map(
+        registry.allAgentIds().map((id) => [
+          id,
+          new DiscordJsGuildAdapter(registry.get(id).guild),
+        ]),
+      );
+
+      const channelMap = new ChannelMap();
+      const botUserIdByAgentId = new Map(
+        registry.allAgentIds().map((id) => [id, registry.getUserId(id)]),
+      );
+      const roleManager = new DiscordRoleManager({
+        guild: managerGuildPort,
+        channelMap,
+        botUserIdByAgentId,
+        discordGuildId: parsed.guildId,
+      });
+
+      return new DiscordDeliveryGateway({
+        simulationId: discordCfg.id,
+        config: parsed,
+        botRegistry: registry,
+        managerGuildPort,
+        guildPortByAgent,
+        channelMap,
+        roleManager,
+        rateLimiter: new DiscordRateLimiter(),
+      });
+    },
   };
 
-function createGateways(
+async function createGateways(
   config: SimulationAppConfig,
-): Record<string, IDeliveryGateway> {
+): Promise<Record<string, IDeliveryGateway>> {
   const result: Record<string, IDeliveryGateway> = {};
   for (const gateway of config.deliveryGateways) {
-    result[gateway.id] = GATEWAY_FACTORIES[gateway.type](gateway, config.debug);
+    result[gateway.id] = await GATEWAY_FACTORIES[gateway.type](gateway, config.debug);
   }
   if (
     config.debug?.stdoutDelivery &&
@@ -448,6 +519,46 @@ function parseGateways(input: unknown): DeliveryGatewayConfig[] {
           gateway["debug"],
           `deliveryGateways[${index}].debug`,
         ),
+      };
+    }
+    if (type === "discord") {
+      const guildId = requiredString(
+        gateway["guildId"],
+        `deliveryGateways[${index}].guildId`,
+      );
+      const personaBots = asArray(
+        gateway["personaBots"],
+        `deliveryGateways[${index}].personaBots`,
+      ).map((bot, bi) => {
+        const b = asRecord(bot, `deliveryGateways[${index}].personaBots[${bi}]`);
+        return {
+          agentId: requiredString(b["agentId"], `deliveryGateways[${index}].personaBots[${bi}].agentId`),
+          tokenEnv: requiredString(b["tokenEnv"], `deliveryGateways[${index}].personaBots[${bi}].tokenEnv`),
+        };
+      });
+      const setupModeRaw = optionalString(
+        gateway["setupMode"],
+        `deliveryGateways[${index}].setupMode`,
+      );
+      const setupMode =
+        setupModeRaw === "readonly_existing" || setupModeRaw === "manage_channels"
+          ? setupModeRaw
+          : undefined;
+      if (setupModeRaw !== undefined && setupMode === undefined) {
+        throw new Error(
+          `deliveryGateways[${index}].setupMode must be "readonly_existing" or "manage_channels"`,
+        );
+      }
+      return {
+        id,
+        type,
+        guildId,
+        personaBots,
+        managerBotTokenEnv: optionalString(
+          gateway["managerBotTokenEnv"],
+          `deliveryGateways[${index}].managerBotTokenEnv`,
+        ),
+        setupMode,
       };
     }
     throw new Error(`Unsupported deliveryGateways[${index}].type: ${type}`);
