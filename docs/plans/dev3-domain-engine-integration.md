@@ -411,28 +411,16 @@ type EmotionalState = {
   relationalStates: Map<string, RelationalState>;
 };
 
-type LlmConfig = {
-  providerType: 'local_uncensored' | 'freellmapi' | 'mock';
-  baseUrl: string;                 // e.g. 'http://localhost:8000/v1', 'http://localhost:8080/v1', 'http://localhost:11434/v1', or 'http://localhost:3001/v1'
-  apiKey?: string;                 // Unified key for FreeLLMAPI, or empty/omitted for local runtimes
-  modelName: string;               // e.g., 'Qwen/Qwen3-8B', 'qwen3:8b', 'auto', or a FreeLLMAPI model id
-  temperature: number;
-  maxTokens?: number;
-  timeoutMs?: number;
-  extraBody?: Record<string, unknown>; // Provider-specific options, e.g. Qwen3 enable_thinking=false when supported
-};
+// Dev3 does not define LlmConfig or prompt-persona prose.
+// Those belong to Dev1's runtime/LLM layer and are resolved at the AgentRuntime boundary.
 
 type PersonaConfig = {
   id: string;
   name: string;
   archetype: string;
-  writingStyle: {
-    tone: string;
-    rules: string[];
-    styleExamples: string[];
-  };
-  relationshipBiases: Record<string, string>;
-  llmConfig: LlmConfig;            // per-agent provider config for local/FreeLLMAPI A/B testing
+  writingStyle: string;
+  styleExamples: string[];
+  // plus mood baselines, emotional reactivity, sensitivity tables, and other engine calibration fields
 };
 
 type AgentRuntimeInput = {
@@ -621,8 +609,9 @@ type RateLimitStatus = {
 - Returns `needsLLM` only for meaningful events
 
 ### Perception Packet
-- `buildPerceptionPacket(agent, visibleEvents, channels, memories, emotionalState, availableActions)` → PerceptionPacket
+- `buildPerceptionPacket(agent, visibleEvents, triggeringEvent, channels, attentionResult, translatedEmotionalState, availableActions)` → PerceptionPacket
 - No hidden channel content, no spectator/operator events, no raw numeric scores
+- Carries `translatedEmotionalState` so Dev1 prompt building consumes natural language rather than recomputing from raw scores
 
 ### Programmatic Interpretation
 - Detect: mention-ignored, reply-latency, public-silence, public/private-asymmetry, reaction-instead-of-text
@@ -670,7 +659,7 @@ type RateLimitStatus = {
 ### Emotional State Translation
 - `translateEmotionalState(mood, social, relational, pressures, inhibitions)` → natural language strings
 - Short subjective sentences, preserves ambiguity, never leaks numbers, never spectator-style narration
-- Dev1 imports this for prompt builder sections 4 and 5
+- `runEngineStep()` calls this before building `PerceptionPacket`; Dev1 consumes `perceptionPacket.translatedEmotionalState` for prompt sections 4 and 5
 
 ### Intent Validation (Pure)
 - `validateIntentPure(intent, availableActions, agentState, settings)` → IntentValidationResult
