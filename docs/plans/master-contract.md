@@ -17,7 +17,7 @@ All three developer plans reference this document as the single source of truth 
 | Canonical event log + replay | Dev2 | `packages/server/src/simulation/event-log.ts` |
 | Command handlers | Dev2 | `packages/server/src/simulation/command-handlers.ts` |
 | IDeliveryGateway interface (surface output only) | Dev2 | `packages/server/src/simulation/scheduler-contracts.ts` |
-| Delivery gateway adapters (surface impls) | Optional adapter sub-plans | `packages/server/src/*/` |
+| Delivery gateway adapters (surface impls) | Optional adapter | `packages/server/src/delivery/` |
 | Event projections | Dev2 | `packages/server/src/simulation/projections/` |
 | Simulation manager, lifecycle, scheduler | Dev2 | `packages/server/src/simulation/` |
 | Intent resolver (stateful orchestration) | Dev2 | `packages/server/src/simulation/intent-resolver.ts` |
@@ -27,8 +27,12 @@ All three developer plans reference this document as the single source of truth 
 | Spectator narrative projection (MVP rule-based) | Dev2 | `packages/server/src/simulation/projections/spectator-projection.ts` |
 | Agent runtime, prompt builder | Dev1 | `packages/server/src/agent/` |
 | Persona prompt/runtime profile | Dev1 | `packages/server/src/agent/persona-loader.ts` |
+| AgentConfigRegistry (id → persona + promptProfile + llmConfig) | Dev1 | `packages/server/src/agent/agent-config-registry.ts` |
 | LLM providers, budget tracker | Dev1 | `packages/server/src/llm/` |
 | LLM provider/model config | Dev1 | `packages/server/src/llm/` |
+| Simulation config type + parser + wiring (`buildConfiguredSimulation`) | Config layer | `packages/server/src/config/simulation-config.ts` |
+| CLI process entrypoint (`pnpm simulation`) | CLI | `packages/server/src/cli/run-simulation.ts` |
+| Full-stack E2E test harness | E2E | `packages/server/src/__e2e__/` |
 
 ## Persona And LLM Contract Split
 

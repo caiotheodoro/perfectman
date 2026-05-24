@@ -196,7 +196,8 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     simulation.settings.pulseIntervalMs,
     agentState.arrivalPulse,
   );
-  const initiativeProceed = anyInitiativeProceed(initiativeCandidates);
+  const isOffline = agentState.presence === "offline";
+  const initiativeProceed = !isOffline && anyInitiativeProceed(initiativeCandidates);
 
   // Write lastFiredAt for accumulators that fired this pulse
   const firedSources = new Set(initiativeCandidates.filter(c => c.proceed).map(c => c.source));
@@ -205,6 +206,12 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
   );
 
   // ── 12. Decision ──────────────────────────────────────────────────────────
+  // Mask initiative candidates for offline agents — prevents cold_start_bootstrap
+  // from overriding strategic delay when the agent hasn't joined yet.
+  const decisionCandidates = isOffline
+    ? initiativeCandidates.map(c => ({ ...c, proceed: false }))
+    : initiativeCandidates;
+
   const rawDecision = resolveDecision(
     pressures,
     inhibitions,
@@ -213,6 +220,7 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     hasNewEvents,
     initiativeProceed,
     pulseIndex,
+    decisionCandidates,
   );
 
   // If attention says needsLLM but decision doesn't (due to low pressures),

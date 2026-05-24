@@ -1,6 +1,5 @@
 import type { LlmConfig } from "../llm/llm-config.js";
 import {
-  INITIAL_PROFILES,
   GENERIC_PROMPT_PROFILE,
   type PersonaPromptProfile
 } from "./persona-prompt-profile.js";
@@ -16,21 +15,12 @@ export const DEFAULT_MOCK_CONFIG: LlmConfig = {
 };
 
 export class PersonaLoader {
-  /**
-   * Resolves a PersonaPromptProfile by personaId.
-   * If the personaId is not registered in INITIAL_PROFILES, it falls back to a safe generic profile.
-   */
   static getProfile(personaId: string): PersonaPromptProfile {
-    const profile = INITIAL_PROFILES[personaId.toLowerCase()];
-    if (!profile) {
-      // Fallback safely to generic profile but with custom displayName matching ID
-      return {
-        ...GENERIC_PROMPT_PROFILE,
-        personaId: personaId,
-        displayName: personaId.charAt(0).toUpperCase() + personaId.slice(1),
-      };
-    }
-    return profile;
+    return {
+      ...GENERIC_PROMPT_PROFILE,
+      personaId,
+      displayName: personaId.charAt(0).toUpperCase() + personaId.slice(1),
+    };
   }
 
   /**

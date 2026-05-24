@@ -1,0 +1,58 @@
+{
+  "simulation": {
+    "id": "fixture-sim",
+    "name": "Fixture Simulation",
+    "seed": 1,
+    "settings": {
+      "omniscientSpectatorMode": false,
+      "allowPrivateChannels": true,
+      "maxPrivateChannelsPerAgent": 3,
+      "maxMessagesPerMinutePerAgent": 30,
+      "llmCallBudgetPerMinute": 100,
+      "pulseIntervalMs": 1000,
+      "tokenBudgetPerHour": 1000000
+    }
+  },
+  "persistence": { "type": "memory" },
+  "deliveryGateways": [{ "id": "mock", "type": "mock" }],
+  "channels": [
+    {
+      "id": "general",
+      "type": "public_channel",
+      "name": "general",
+      "default": true,
+      "memberAgentIds": ["ana"]
+    }
+  ],
+  "agents": [
+    {
+      "id": "ana",
+      "presence": "active",
+      "persona": {
+        "id": "ana",
+        "name": "Ana",
+        "archetype": "observer",
+        "writingStyle": "brief and careful",
+        "styleExamples": ["oi", "entendi"]
+      },
+      "promptProfile": {
+        "personaId": "ana",
+        "displayName": "Ana",
+        "identityFrame": "You are Ana.",
+        "voiceGuidelines": ["Keep it short."],
+        "styleExamples": ["oi"],
+        "relationshipBiases": {},
+        "language": "pt-BR"
+      },
+      "llm": {
+        "providerType": "mock",
+        "modelName": "mock-model",
+        "maxInputTokens": 2048,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "timeoutMs": 5000,
+        "retryCount": 1
+      }
+    }
+  ]
+}

@@ -205,7 +205,7 @@ export class PulseScheduler {
         eventsCommitted += await this.appendAndProject(engineEvents, channels, membership);
       }
 
-      if (stepResult.decision.needsLLM || stepResult.decision.initiativeProceed) {
+      if (stepResult.decision.needsLLM) {
         agentsCalled += 1;
         const budgetPriority = this.config.llmBudget.getPriority(sim.id, agent.id);
         const runtimeInput = buildAgentRuntimeInput(stepResult, agent.persona, budgetPriority);
