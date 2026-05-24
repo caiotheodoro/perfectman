@@ -23,6 +23,7 @@ import type { OperatorProjection } from "./projections/operator-projection.js";
 import type { EngineEventBuilder } from "./engine-event-builder.js";
 import { buildAgentRuntimeInput } from "./runtime-input-builder.js";
 import { buildWorldSignals } from "./world-signals-builder.js";
+import type { AgentRuntimeContext, AgentRuntimeOutput } from "../agent/agent-runtime.types.js";
 
 export type AgentContext = {
   id: string;
@@ -30,22 +31,12 @@ export type AgentContext = {
   persona: PersonaConfig;
 };
 
-export type RuntimeTokenUsage = {
-  inputTokens?: number;
-  outputTokens?: number;
-  totalTokens?: number;
-  model?: string;
-};
-
 // Minimal dev1 interface — concrete impl injected
 export type AgentRuntime = {
-  generateIntent(input: import("@perfectman/shared").AgentRuntimeInput): Promise<{
-    intent: ActionIntent;
-    tokenUsage: RuntimeTokenUsage;
-    latencyMs: number;
-    fallbackApplied: boolean;
-    operatorEvents: import("@perfectman/shared").OperatorEvent[];
-  }>;
+  generateIntent(
+    input: import("@perfectman/shared").AgentRuntimeInput,
+    context: AgentRuntimeContext
+  ): Promise<AgentRuntimeOutput>;
 };
 
 export type LlmBudget = {
@@ -218,7 +209,10 @@ export class PulseScheduler {
         agentsCalled += 1;
         const budgetPriority = this.config.llmBudget.getPriority(sim.id, agent.id);
         const runtimeInput = buildAgentRuntimeInput(stepResult, agent.persona, budgetPriority);
-        const runtimeOutput = await this.config.agentRuntime.generateIntent(runtimeInput).catch(async (err) => {
+        const runtimeOutput = await this.config.agentRuntime.generateIntent(runtimeInput, {
+          pulseIndex: this.pulseIndex,
+          now,
+        }).catch(async (err) => {
           const failureEvent = this.llmFailureEvent(agent.id, channelAnchorId, err);
           eventsCommitted += await this.appendAndProject([failureEvent], channels, membership);
           return null;

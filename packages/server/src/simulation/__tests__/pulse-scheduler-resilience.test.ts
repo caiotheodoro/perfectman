@@ -209,7 +209,7 @@ describe("PulseScheduler resilience", () => {
         motivationDrivers: [],
         memoryWrites: [],
       },
-      tokenUsage: {},
+      llmUsage: null,
       latencyMs: 10,
       fallbackApplied: false,
       operatorEvents: [],

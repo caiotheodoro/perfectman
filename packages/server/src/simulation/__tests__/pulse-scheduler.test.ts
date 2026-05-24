@@ -108,7 +108,7 @@ describe("PulseScheduler", () => {
   const mockAgentRuntime: AgentRuntime = {
     generateIntent: vi.fn().mockResolvedValue({
       intent: makeNoOpIntent("agent_1"),
-      tokenUsage: {},
+      llmUsage: null,
       latencyMs: 10,
       fallbackApplied: false,
       operatorEvents: [],

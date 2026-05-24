@@ -139,8 +139,8 @@ export class AgentRuntime {
       data: {
         model: providerResult.model || llmConfig.modelName,
         requestedModel: providerResult.requestedModel || llmConfig.modelName,
-        routedModel: providerResult.routedModel,
-        fallbackAttempts: providerResult.fallbackAttempts,
+        routedModel: providerResult.routedModel ?? null,
+        fallbackAttempts: providerResult.fallbackAttempts ?? null,
         latencyMs: providerResult.latencyMs,
         inputTokens: providerResult.usage.inputTokens,
         outputTokens: providerResult.usage.outputTokens,
@@ -156,10 +156,10 @@ export class AgentRuntime {
         detail: `LLM parsing or target constraint validation failed for agent ${agentId}: ${parseResult.errorDetail}`,
         createdAt: context.now,
         data: {
-          errorDetail: parseResult.errorDetail,
+          errorDetail: parseResult.errorDetail ?? null,
           requestedModel: providerResult.requestedModel || llmConfig.modelName,
-          routedModel: providerResult.routedModel,
-          fallbackAttempts: providerResult.fallbackAttempts,
+          routedModel: providerResult.routedModel ?? null,
+          fallbackAttempts: providerResult.fallbackAttempts ?? null,
         },
       });
     }
