@@ -106,6 +106,7 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.llmUsage!.agentId).toBe("goulart");
     expect(output.llmUsage!.simulationId).toBe("sim-123");
     expect(output.llmUsage!.pulseIndex).toBe(42);
+    expect(output.llmUsage!.callType).toBe("cognition");
     expect(output.operatorEvents).toHaveLength(1);
     expect(output.operatorEvents[0]!.type).toBe("pulse_metrics");
     expect(output.operatorEvents[0]!.data!.model).toBe("mock-model");

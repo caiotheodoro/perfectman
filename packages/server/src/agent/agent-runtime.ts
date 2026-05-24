@@ -1,7 +1,8 @@
 import type { 
   AgentRuntimeInput, 
   LlmUsage, 
-  OperatorEvent 
+  OperatorEvent,
+  PromptPurpose
 } from "@perfectman/shared";
 import type { 
   AgentRuntimeContext, 
@@ -30,7 +31,7 @@ export class AgentRuntime {
     const profile = PersonaLoader.getProfile(agentId);
     const llmConfig = PersonaLoader.getLlmConfig(agentId, this.configOverrides?.[agentId]);
 
-    const prompt = PromptBuilder.build(input, profile, llmConfig);
+    const prompt = PromptBuilder.build(input, profile, llmConfig, "action_intent");
 
     // Budget pre-check using the actual built prompt's estimated tokens
     const budgetDecision = llmBudget.canCall({
@@ -118,7 +119,7 @@ export class AgentRuntime {
       inputTokens: providerResult.usage.inputTokens,
       outputTokens: providerResult.usage.outputTokens,
       latencyMs: providerResult.latencyMs,
-      callType: "cognition",
+      callType: purposeToCallType(prompt.purpose),
       pulseIndex: context.pulseIndex,
       createdAt: context.now,
     };
@@ -171,5 +172,14 @@ export class AgentRuntime {
       fallbackApplied: parseResult.fallbackApplied,
       operatorEvents,
     };
+  }
+}
+
+function purposeToCallType(purpose: PromptPurpose): LlmUsage["callType"] {
+  switch (purpose) {
+    case "action_intent":         return "cognition";
+    case "social_interpretation": return "interpretation";
+    case "background_reflection": return "reflection";
+    case "spectator_recap":       return "recap";
   }
 }

@@ -49,7 +49,7 @@ export * from "./visibility/visibility.types.js";
 export * from "./attention/attention.types.js";
 
 // Prompt
-export type { TranslatedEmotionalState, RelationalFlavor } from "./prompt/prompt.types.js";
+export type { TranslatedEmotionalState, RelationalFlavor, PromptPurpose } from "./prompt/prompt.types.js";
 
 // Perception
 export * from "./perception/perception.types.js";

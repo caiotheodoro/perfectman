@@ -226,4 +226,77 @@ describe("PromptBuilder", () => {
     expect(prompt.system).toContain("DO NOT include any chain-of-thought");
     expect(prompt.system).toContain("privateMotiveSummary");
   });
+describe("PromptBuilder - PromptPurpose field gating", () => {
+  it("action_intent: BuiltPrompt.purpose is 'action_intent'", () => {
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "action_intent");
+
+    expect(prompt.purpose).toBe("action_intent");
+  });
+
+  it("action_intent: includes voiceGuidelines and styleExamples", () => {
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "action_intent");
+
+    expect(prompt.system).toContain("Voice Guidelines");
+    expect(prompt.system).toContain("Style Examples");
+    expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.voiceGuidelines[0]!);
+  });
+
+  it("action_intent: Section 1 preserves the original rendered order", () => {
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "action_intent");
+    const section1 = prompt.system.split("\n\n### SECTION 8: OUTPUT CONTRACT & JSON FORMAT")[0]!;
+    const expectedSection1 = `### SECTION 1: YOUR IDENTITY & PERSONA
+You are roleplaying as a highly specific person in an online chat room. You must completely inhabit this character.
+- **Display Name**: ${GOULART_PROMPT_PROFILE.displayName}
+- **Persona Vibe**: ${GOULART_PROMPT_PROFILE.identityFrame}
+- **Primary Language**: Portuguese (pt-BR)
+
+Voice Guidelines:
+${GOULART_PROMPT_PROFILE.voiceGuidelines.map((g) => `- ${g}`).join("\n")}
+
+Relationship Biases & Interpersonal Views:
+${Object.entries(GOULART_PROMPT_PROFILE.relationshipBiases)
+  .map(([peer, bias]) => `- **${peer}**: ${bias}`)
+  .join("\n")}
+
+Style Examples (mimic these natural patterns):
+${GOULART_PROMPT_PROFILE.styleExamples.map((e) => `"${e}"`).join(", ")}`;
+
+    expect(section1).toBe(expectedSection1);
+  });
+
+  it("default purpose is identical to explicit action_intent", () => {
+    const explicit = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "action_intent");
+    const implicit = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig);
+
+    expect(explicit.system).toBe(implicit.system);
+    expect(explicit.user).toBe(implicit.user);
+    expect(explicit.purpose).toBe(implicit.purpose);
+  });
+
+  // Infrastructure smoke-test: verifies field-gating logic compiles and gates correctly.
+  // Does not test social_interpretation as a real LLM path, only field exclusion.
+  it("non-action_intent purpose: voiceGuidelines and styleExamples are excluded", () => {
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "social_interpretation");
+
+    expect(prompt.system).not.toContain("Voice Guidelines");
+    expect(prompt.system).not.toContain("Style Examples");
+    expect(prompt.system).not.toContain(GOULART_PROMPT_PROFILE.voiceGuidelines[0]!);
+    expect(prompt.purpose).toBe("social_interpretation");
+  });
+
+  it("non-action_intent purpose: identityFrame and relationshipBiases are still present", () => {
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "social_interpretation");
+
+    expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.identityFrame);
+    expect(prompt.system).toContain("Relationship Biases");
+  });
+
+  it("spectator_recap purpose: identityFrame and relationshipBiases are excluded", () => {
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "spectator_recap");
+
+    expect(prompt.system).not.toContain(GOULART_PROMPT_PROFILE.identityFrame);
+    expect(prompt.system).not.toContain("Relationship Biases");
+    expect(prompt.system).not.toContain(GOULART_PROMPT_PROFILE.relationshipBiases.bruno);
+  });
+});
 });

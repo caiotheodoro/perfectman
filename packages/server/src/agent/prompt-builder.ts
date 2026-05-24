@@ -1,4 +1,4 @@
-import type { AgentRuntimeInput, CommittedEvent, Memory } from "@perfectman/shared";
+import type { AgentRuntimeInput, CommittedEvent, Memory, PromptPurpose } from "@perfectman/shared";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 import type { LlmConfig } from "../llm/llm-config.js";
 import type { BuiltPrompt } from "./agent-runtime.types.js";
@@ -12,29 +12,37 @@ export class PromptBuilder {
   static build(
     input: AgentRuntimeInput,
     profile: PersonaPromptProfile,
-    config: LlmConfig
+    config: LlmConfig,
+    purpose: PromptPurpose = "action_intent"
   ): BuiltPrompt {
     const { perceptionPacket } = input;
     const { translatedEmotionalState } = perceptionPacket;
 
     // --- SECTION 1: Persona Identity (System) ---
     const systemSections: string[] = [];
+    const identityLines = [
+      `- **Display Name**: ${profile.displayName}`,
+      purpose !== "spectator_recap" ? `- **Persona Vibe**: ${profile.identityFrame}` : null,
+      `- **Primary Language**: ${profile.language === "pt-BR" ? "Portuguese (pt-BR)" : "English"}`,
+    ].filter((line): line is string => line !== null).join("\n");
+
+    const voiceGuidelinesBlock = purpose === "action_intent"
+      ? `\n\nVoice Guidelines:\n${profile.voiceGuidelines.map((g) => `- ${g}`).join("\n")}`
+      : "";
+
+    const styleExamplesBlock = purpose === "action_intent"
+      ? `\n\nStyle Examples (mimic these natural patterns):\n${profile.styleExamples.map((e) => `"${e}"`).join(", ")}`
+      : "";
+
+    const relationshipBlock = purpose !== "spectator_recap" && Object.keys(profile.relationshipBiases).length > 0
+      ? `\n\nRelationship Biases & Interpersonal Views:\n${Object.entries(profile.relationshipBiases)
+        .map(([peer, bias]) => `- **${peer}**: ${bias}`)
+        .join("\n")}`
+      : "";
+
     systemSections.push(`### SECTION 1: YOUR IDENTITY & PERSONA
 You are roleplaying as a highly specific person in an online chat room. You must completely inhabit this character.
-- **Display Name**: ${profile.displayName}
-- **Persona Vibe**: ${profile.identityFrame}
-- **Primary Language**: ${profile.language === "pt-BR" ? "Portuguese (pt-BR)" : "English"}
-
-Voice Guidelines:
-${profile.voiceGuidelines.map((g) => `- ${g}`).join("\n")}
-
-Relationship Biases & Interpersonal Views:
-${Object.entries(profile.relationshipBiases)
-  .map(([peer, bias]) => `- **${peer}**: ${bias}`)
-  .join("\n")}
-
-Style Examples (mimic these natural patterns):
-${profile.styleExamples.map((e) => `"${e}"`).join(", ")}`);
+${identityLines}${voiceGuidelinesBlock}${relationshipBlock}${styleExamplesBlock}`);
 
     // --- SECTION 8: Output Contract (System) ---
     systemSections.push(`### SECTION 8: OUTPUT CONTRACT & JSON FORMAT
@@ -156,6 +164,7 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
       system: systemPrompt,
       user: userPrompt,
       inputTokensEstimate,
+      purpose,
     };
   }
 

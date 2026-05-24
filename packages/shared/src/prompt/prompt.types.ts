@@ -20,3 +20,16 @@ export type TranslatedEmotionalState = {
   /** Section 5: inhibitions as felt blocks */
   inhibitionDescriptions: string[];
 };
+
+/**
+ * PromptPurpose gates which PersonaPromptProfile fields are injected into a
+ * built prompt. Each value maps to a distinct LLM call surface.
+ *
+ * Only "action_intent" is active in V1. Future values are reserved and must
+ * not be passed to PromptBuilder until their build paths are implemented.
+ */
+export type PromptPurpose =
+  | "action_intent"           // Full persona + voice + style + output contract
+  | "social_interpretation"   // Identity + relationship context only (reserved)
+  | "background_reflection"   // Identity + relationship + memory only (reserved)
+  | "spectator_recap";        // Narrator style only (reserved)
