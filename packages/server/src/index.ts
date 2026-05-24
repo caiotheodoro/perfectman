@@ -16,3 +16,11 @@ export type {
   IChannelRepository,
   CreateSimulationInput,
 } from "./persistence/repositories.js";
+
+// Dev1 - Agent Runtime & LLM Cognition Exports
+export * from "./agent/agent-runtime.js";
+export * from "./agent/agent-runtime.types.js";
+export * from "./agent/intent-parser.js";
+export * from "./agent/persona-prompt-profile.js";
+export * from "./agent/persona-loader.js";
+export * from "./llm/index.js";
