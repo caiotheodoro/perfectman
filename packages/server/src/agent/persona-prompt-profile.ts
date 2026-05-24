@@ -71,7 +71,3 @@ export const GENERIC_PROMPT_PROFILE: PersonaPromptProfile = {
   language: "en"
 };
 
-export const INITIAL_PROFILES: Record<string, PersonaPromptProfile> = {
-  goulart: GOULART_PROMPT_PROFILE,
-  bruno: BRUNO_PROMPT_PROFILE,
-};

@@ -162,9 +162,7 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
     };
   }
 
-  /**
-   * Helper to format a CommittedEvent into a highly readable line in the prompt log.
-   */
+  // Event content is LLM-generated (agent outputs), not untrusted user input — no sanitization needed.
   private static formatEvent(event: CommittedEvent): string {
     const actor = event.actorId;
     const type = event.type;

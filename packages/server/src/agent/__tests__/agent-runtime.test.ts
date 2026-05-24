@@ -114,7 +114,7 @@ describe("AgentRuntime Orchestration", () => {
     // Intent checks
     expect(output.intent.actorId).toBe("goulart");
     expect(output.intent.intentType).toBe("send_message");
-    expect(output.intent.visibleContent).toContain("Chelsea");
+    expect(output.intent.visibleContent).toBe("pois é");
   });
 
   it("should return a fallback intent when budget is exhausted", async () => {

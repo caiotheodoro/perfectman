@@ -23,6 +23,8 @@ Read these in order:
 - [`architecture/`](architecture/) - canonical system designs and runtime specifications.
 - [`concepts/`](concepts/) - product thesis, concept synthesis, and experiment framing.
 - [`notes/`](notes/) - raw source notes, transcripts, and meeting material.
+- [`implementation/`](implementation/) - post-merge implementation notes per dev stream.
+- [`plans/`](plans/) - cross-boundary contracts and per-dev implementation plans.
 
 ## Core Thesis
 
@@ -170,6 +172,24 @@ A good V1 should prove these:
 - An agent reacts with emoji instead of text.
 - An agent stores a biased memory.
 - A recap explains the hidden social shift.
+
+## Running A Simulation
+
+The server package has a CLI entrypoint that wires all layers from a JSON config file.
+
+```bash
+# auto-discovers config/index.json walking up from CWD
+pnpm --filter @perfectman/server simulation
+
+# explicit path
+pnpm --filter @perfectman/server simulation --config path/to/config.json
+```
+
+Config format: see [`../examples/simulation.config.example.json`](../examples/simulation.config.example.json).
+
+`buildConfiguredSimulation` in `packages/server/src/config/simulation-config.ts` is the composition root — it validates the config, wires repositories (in-memory or SQLite), delivery gateways (mock, stdout, or composite), `AgentConfigRegistry`, `AgentRuntime`, and `SimulationRuntime`.
+
+`config/index.json` is gitignored. Copy the example, fill in your agents, and set the appropriate API key env vars if not using `providerType: "mock"`.
 
 ## Current Open Questions
 

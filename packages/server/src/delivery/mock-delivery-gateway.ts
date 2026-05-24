@@ -1,5 +1,9 @@
-import type { IDeliveryGateway, DeliveryMessage } from "../scheduler-contracts.js";
-import type { ChannelType, SpectatorEvent, OperatorEvent } from "@perfectman/shared";
+import type {
+  ChannelType,
+  OperatorEvent,
+  SpectatorEvent,
+} from "@perfectman/shared";
+import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 
 export class MockDeliveryGateway implements IDeliveryGateway {
   readonly agentMessages: Array<{ channelId: string; message: DeliveryMessage }> = [];

@@ -3,7 +3,7 @@ import { SimulationManager } from "../simulation-manager.js";
 import { InMemorySimulationRepository, InMemoryChannelRepository, InMemoryEventRepository } from "../in-memory-stores.js";
 import { ChannelRegistry } from "../channel-registry.js";
 import { EventLog } from "../event-log.js";
-import { MockDeliveryGateway } from "./mock-delivery-gateway.js";
+import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import type { SimulationSettings } from "@perfectman/shared";
 
 const SETTINGS: SimulationSettings = {

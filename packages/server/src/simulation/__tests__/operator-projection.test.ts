@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { OperatorProjection } from "../projections/operator-projection.js";
-import { MockDeliveryGateway } from "./mock-delivery-gateway.js";
+import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import type { CommittedEvent, SimulationSettings } from "@perfectman/shared";
 
 const SIM_ID = "sim_1";

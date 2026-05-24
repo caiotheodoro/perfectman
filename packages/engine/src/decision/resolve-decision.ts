@@ -8,6 +8,7 @@ import type {
   NoOpReason,
   PressureIntensity,
   InhibitionStrength,
+  InitiativeCandidate,
 } from "@perfectman/shared";
 
 const INTENSITY_RANK: Record<PressureIntensity, number> = {
@@ -37,7 +38,19 @@ export function resolveDecision(
   hasNewEvents: boolean,
   initiativeProceed: boolean,
   pulseIndex: number,
+  initiativeCandidates: InitiativeCandidate[] = [],
 ): Decision {
+  // cold_start_bootstrap overrides a strategic delay only when it is the sole
+  // proceeding accumulator — if a "real" accumulator (boredom, curiosity, etc.)
+  // is also above threshold, the agent has genuine motivation and strategic
+  // patience should hold normally.
+  const coldStartFired = initiativeCandidates.some(
+    c => c.source === "cold_start_bootstrap" && c.proceed,
+  );
+  const otherInitiativeFired = initiativeCandidates.some(
+    c => c.source !== "cold_start_bootstrap" && c.proceed,
+  );
+  const coldStartOnly = coldStartFired && !otherInitiativeFired;
   // No pressures at all
   if (pressures.length === 0) {
     if (initiativeProceed) {
@@ -94,6 +107,16 @@ export function resolveDecision(
     ];
 
     if (delayFavoring.includes(topInhibition.type)) {
+      // cold_start_bootstrap overrides a strategic delay — the agent has been silent
+      // long enough that waiting longer serves nothing.
+      if (coldStartOnly) {
+        return {
+          outcome:           "act",
+          needsLLM:          true,
+          initiativeProceed: true,
+          privateMotiveSeed: `initiative-override-${topInhibition.type}`,
+        };
+      }
       return {
         outcome:           "delay",
         needsLLM:          false,
