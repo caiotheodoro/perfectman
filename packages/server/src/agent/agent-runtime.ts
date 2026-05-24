@@ -31,7 +31,7 @@ export class AgentRuntime {
     const profile = PersonaLoader.getProfile(agentId);
     const llmConfig = PersonaLoader.getLlmConfig(agentId, this.configOverrides?.[agentId]);
 
-    const prompt = PromptBuilder.build(input, profile, llmConfig, "action_intent");
+    const prompt = PromptBuilder.build(input, profile, "action_intent");
 
     // Budget pre-check using the actual built prompt's estimated tokens
     const budgetDecision = llmBudget.canCall({

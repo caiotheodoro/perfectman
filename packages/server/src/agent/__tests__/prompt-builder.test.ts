@@ -2,19 +2,8 @@ import { describe, it, expect } from "vitest";
 import { PromptBuilder } from "../prompt-builder.js";
 import { GOULART_PROMPT_PROFILE } from "../persona-prompt-profile.js";
 import type { AgentRuntimeInput, CommittedEvent } from "@perfectman/shared";
-import type { LlmConfig } from "../../llm/llm-config.js";
 
 describe("PromptBuilder", () => {
-  const llmConfig: LlmConfig = {
-    providerType: "mock",
-    modelName: "test-model",
-    maxInputTokens: 2048,
-    maxOutputTokens: 512,
-    temperature: 0.7,
-    timeoutMs: 5000,
-    retryCount: 2,
-  };
-
   const triggeringEvent: CommittedEvent = {
     id: "evt-111",
     simulationId: "sim-123",
@@ -168,7 +157,7 @@ describe("PromptBuilder", () => {
   };
 
   it("should successfully build a prompt with system and user properties", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig);
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
     expect(prompt).toBeDefined();
     expect(typeof prompt.system).toBe("string");
@@ -177,7 +166,7 @@ describe("PromptBuilder", () => {
   });
 
   it("should verify that the prompt contains all required sections", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig);
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
     const combined = prompt.system + "\n\n" + prompt.user;
 
     expect(combined).toContain("SECTION 1: YOUR IDENTITY");
@@ -191,7 +180,7 @@ describe("PromptBuilder", () => {
   });
 
   it("should verify that the prompt includes the triggering event and context", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig);
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
     
     expect(prompt.user).toContain("o Goulart tá sumido hoje né");
     expect(prompt.user).toContain("verdade, deve tá na academia");
@@ -200,7 +189,7 @@ describe("PromptBuilder", () => {
   });
 
   it("should verify that the prompt includes available actions and target options", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig);
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
     expect(prompt.user).toContain("send_message");
     expect(prompt.user).toContain("reply_to_message");
@@ -208,7 +197,7 @@ describe("PromptBuilder", () => {
   });
 
   it("should verify that the prompt completely excludes raw numeric scores", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig);
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
     const combined = prompt.system + "\n\n" + prompt.user;
 
     // Verify exclusions
@@ -220,21 +209,22 @@ describe("PromptBuilder", () => {
   });
 
   it("should verify that the prompt demands strict JSON output without thinking frames", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig);
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
     expect(prompt.system).toContain("SINGLE valid JSON object");
     expect(prompt.system).toContain("DO NOT include any chain-of-thought");
     expect(prompt.system).toContain("privateMotiveSummary");
   });
-describe("PromptBuilder - PromptPurpose field gating", () => {
+
+  describe("PromptBuilder - PromptPurpose policy", () => {
   it("action_intent: BuiltPrompt.purpose is 'action_intent'", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "action_intent");
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
     expect(prompt.purpose).toBe("action_intent");
   });
 
   it("action_intent: includes voiceGuidelines and styleExamples", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "action_intent");
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
     expect(prompt.system).toContain("Voice Guidelines");
     expect(prompt.system).toContain("Style Examples");
@@ -242,7 +232,7 @@ describe("PromptBuilder - PromptPurpose field gating", () => {
   });
 
   it("action_intent: Section 1 preserves the original rendered order", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "action_intent");
+    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
     const section1 = prompt.system.split("\n\n### SECTION 8: OUTPUT CONTRACT & JSON FORMAT")[0]!;
     const expectedSection1 = `### SECTION 1: YOUR IDENTITY & PERSONA
 You are roleplaying as a highly specific person in an online chat room. You must completely inhabit this character.
@@ -264,39 +254,16 @@ ${GOULART_PROMPT_PROFILE.styleExamples.map((e) => `"${e}"`).join(", ")}`;
     expect(section1).toBe(expectedSection1);
   });
 
-  it("default purpose is identical to explicit action_intent", () => {
-    const explicit = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "action_intent");
-    const implicit = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig);
-
-    expect(explicit.system).toBe(implicit.system);
-    expect(explicit.user).toBe(implicit.user);
-    expect(explicit.purpose).toBe(implicit.purpose);
-  });
-
-  // Infrastructure smoke-test: verifies field-gating logic compiles and gates correctly.
-  // Does not test social_interpretation as a real LLM path, only field exclusion.
-  it("non-action_intent purpose: voiceGuidelines and styleExamples are excluded", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "social_interpretation");
-
-    expect(prompt.system).not.toContain("Voice Guidelines");
-    expect(prompt.system).not.toContain("Style Examples");
-    expect(prompt.system).not.toContain(GOULART_PROMPT_PROFILE.voiceGuidelines[0]!);
-    expect(prompt.purpose).toBe("social_interpretation");
-  });
-
-  it("non-action_intent purpose: identityFrame and relationshipBiases are still present", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "social_interpretation");
-
-    expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.identityFrame);
-    expect(prompt.system).toContain("Relationship Biases");
-  });
-
-  it("spectator_recap purpose: identityFrame and relationshipBiases are excluded", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, llmConfig, "spectator_recap");
-
-    expect(prompt.system).not.toContain(GOULART_PROMPT_PROFILE.identityFrame);
-    expect(prompt.system).not.toContain("Relationship Biases");
-    expect(prompt.system).not.toContain(GOULART_PROMPT_PROFILE.relationshipBiases.bruno);
+  it("reserved purposes are rejected until dedicated builders exist", () => {
+    expect(() =>
+      PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "social_interpretation")
+    ).toThrow("Unsupported prompt purpose: social_interpretation");
+    expect(() =>
+      PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "background_reflection")
+    ).toThrow("Unsupported prompt purpose: background_reflection");
+    expect(() =>
+      PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "spectator_recap")
+    ).toThrow("Unsupported prompt purpose: spectator_recap");
   });
 });
 });
