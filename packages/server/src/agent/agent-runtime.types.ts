@@ -1,4 +1,4 @@
-import type { ActionIntent, LlmUsage, OperatorEvent } from "@perfectman/shared";
+import type { ActionIntent, LlmUsage, OperatorEvent, PromptPurpose } from "@perfectman/shared";
 
 export type AgentRuntimeContext = {
   pulseIndex: number;
@@ -9,6 +9,7 @@ export type BuiltPrompt = {
   system: string;
   user: string;
   inputTokensEstimate: number;
+  purpose: PromptPurpose;
 };
 
 export type AgentRuntimeOutput = {
