@@ -152,6 +152,7 @@ const ZERO_SOCIAL: SocialEmotions = {
 
 const DEFAULT_SOCIAL_SENSITIVITY = 1;
 
+// To be reviewed
 const DEFAULT_PERSONA_CALIBRATION: Omit<PersonaConfig, keyof ConfigPersona> = {
   baselineValence: 0,
   baselineArousal: 0.3,
@@ -332,22 +333,32 @@ function createRepositories(config: PersistenceConfig): {
   };
 }
 
+type GatewayFactory = (
+  cfg: DeliveryGatewayConfig,
+  debug: DebugConfig | undefined,
+) => IDeliveryGateway;
+
+const GATEWAY_FACTORIES: Record<DeliveryGatewayConfig["type"], GatewayFactory> =
+  {
+    mock: () => new MockDeliveryGateway(),
+    stdout: (cfg, debug) =>
+      new StdoutDeliveryGateway(
+        (cfg as Extract<DeliveryGatewayConfig, { type: "stdout" }>).debug ??
+          debug?.operatorEvents ??
+          false,
+      ),
+  };
+
 function createGateways(
   config: SimulationAppConfig,
 ): Record<string, IDeliveryGateway> {
   const result: Record<string, IDeliveryGateway> = {};
   for (const gateway of config.deliveryGateways) {
-    if (gateway.type === "mock") {
-      result[gateway.id] = new MockDeliveryGateway();
-    } else {
-      result[gateway.id] = new StdoutDeliveryGateway(
-        gateway.debug ?? config.debug?.operatorEvents ?? false,
-      );
-    }
+    result[gateway.id] = GATEWAY_FACTORIES[gateway.type](gateway, config.debug);
   }
   if (
     config.debug?.stdoutDelivery &&
-    !Object.values(config.deliveryGateways).some((g) => g.type === "stdout")
+    !config.deliveryGateways.some((g) => g.type === "stdout")
   ) {
     result["stdout-debug"] = new StdoutDeliveryGateway(
       config.debug.operatorEvents ?? false,
