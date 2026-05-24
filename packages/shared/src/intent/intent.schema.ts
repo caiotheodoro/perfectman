@@ -14,6 +14,13 @@ export const IntentTypeSchema = z.enum([
   "no_op",
 ]);
 
+export const IntentChannelTypeSchema = z.enum([
+  "public_channel",
+  "private_channel",
+  "spectator_channel",
+  "operator_channel",
+]);
+
 export const MemoryWriteProposalSchema = z.object({
   type: z.enum([
     "episodic",
@@ -44,4 +51,10 @@ export const ActionIntentSchema = z.object({
   fallbackIfBlocked: IntentTypeSchema.optional(),
   memoryWrites: z.array(MemoryWriteProposalSchema),
   spectatorSummary: z.string().optional(),
+  replyToEventId: z.string().optional(),
+  emoji: z.string().optional(),
+  targetEventId: z.string().optional(),
+  channelName: z.string().optional(),
+  channelType: IntentChannelTypeSchema.optional(),
+  invitedAgentIds: z.array(z.string()).optional(),
 });
