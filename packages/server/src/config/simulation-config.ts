@@ -751,7 +751,7 @@ function parseLlmConfig(input: unknown, path: string): LlmConfig {
   );
   if (
     providerType !== "mock" &&
-    providerType !== "local_uncensored" &&
+    providerType !== "qwen3_8b" &&
     providerType !== "freellmapi"
   ) {
     throw new Error(`${path}.providerType is unsupported: ${providerType}`);

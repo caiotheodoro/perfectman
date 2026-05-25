@@ -214,7 +214,7 @@ type PersonaPromptProfile = {
 
 // Dev1 defines in packages/server/src/llm/llm-config.ts
 type LlmConfig = {
-  providerType: 'local_uncensored' | 'freellmapi' | 'mock';
+  providerType: 'qwen3_8b' | 'freellmapi' | 'mock';
   baseUrl?: string;                // required for OpenAI-compatible providers
   apiKeyEnv?: string;              // environment variable name; never commit API keys
   modelName: string;               // e.g. 'Qwen/Qwen3-8B', 'qwen3:8b', 'auto', or a FreeLLMAPI model id

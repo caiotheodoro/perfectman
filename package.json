@@ -5,6 +5,7 @@
   "scripts": {
     "build": "pnpm -r build",
     "freellm:dev": "docker compose -f docker/freellmapi/freellmapi.compose.yml up --build",
+    "qwen:dev": "docker compose -f docker/qwen3/qwen3.compose.yml up",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "lint": "pnpm -r typecheck"

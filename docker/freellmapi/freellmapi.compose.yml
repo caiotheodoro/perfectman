@@ -1,3 +1,5 @@
+name: perfectman
+
 services:
   freellmapi:
     build:
@@ -13,7 +15,7 @@ services:
       - "3001:3001"
       - "5173:5173"
     volumes:
-      - ../../sample_data/freellmapi:/opt/freellmapi/server/data
+      - freellmapi-data:/opt/freellmapi/server/data
     healthcheck:
       test:
         [
@@ -24,3 +26,6 @@ services:
       timeout: 3s
       retries: 6
       start_period: 20s
+
+volumes:
+  freellmapi-data:
