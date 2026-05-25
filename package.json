@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
-    "freellm:dev": "docker compose -f docker/freellmapi/freellmapi.compose.yml up --build",
+    "freellm:dev": "docker compose --env-file .env -f docker/freellmapi/freellmapi.compose.yml up",
     "qwen:dev": "docker compose -f docker/qwen3/qwen3.compose.yml up",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
