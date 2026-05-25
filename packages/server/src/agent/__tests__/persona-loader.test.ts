@@ -1,24 +1,30 @@
 import { describe, it, expect } from "vitest";
 import { PersonaLoader } from "../persona-loader.js";
+import { BRUNO_PROMPT_PROFILE, GOULART_PROMPT_PROFILE } from "../persona-prompt-profile.js";
 
 describe("PersonaLoader", () => {
-  it("always returns a generic profile with the given personaId", () => {
+  it("resolves the Goulart prompt profile from the registry", () => {
     const profile = PersonaLoader.getProfile("goulart");
-    expect(profile).toBeDefined();
+
+    expect(profile).toBe(GOULART_PROMPT_PROFILE);
     expect(profile.personaId).toBe("goulart");
     expect(profile.displayName).toBe("Goulart");
-    expect(profile.language).toBe("en");
-    expect(profile.identityFrame).toContain("standard chat room participant");
+    expect(profile.language).toBe("pt-BR");
+    expect(profile.identityFrame).not.toContain("standard chat room participant");
   });
 
-  it("capitalises the displayName from the personaId", () => {
+  it("resolves the Bruno prompt profile from the registry case-insensitively", () => {
     const profile = PersonaLoader.getProfile("BRUNO");
-    expect(profile.displayName).toBe("BRUNO");
-    expect(profile.personaId).toBe("BRUNO");
+
+    expect(profile).toBe(BRUNO_PROMPT_PROFILE);
+    expect(profile.personaId).toBe("bruno");
+    expect(profile.displayName).toBe("Bruno");
+    expect(profile.language).toBe("pt-BR");
   });
 
-  it("returns a generic profile for any unknown persona ID", () => {
+  it("returns a generic fallback profile for any unknown persona ID", () => {
     const profile = PersonaLoader.getProfile("unknown-persona");
+
     expect(profile).toBeDefined();
     expect(profile.personaId).toBe("unknown-persona");
     expect(profile.displayName).toBe("Unknown-persona");

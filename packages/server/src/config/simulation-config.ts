@@ -720,26 +720,149 @@ function parsePromptProfile(
   if (language !== "pt-BR" && language !== "en") {
     throw new Error(`${path}.language must be pt-BR or en`);
   }
+
   return {
     personaId: requiredString(profile["personaId"], `${path}.personaId`),
     displayName: requiredString(profile["displayName"], `${path}.displayName`),
+    language,
     identityFrame: requiredString(
       profile["identityFrame"],
       `${path}.identityFrame`,
+    ),
+    coreTraits: optionalStringArray(profile["coreTraits"], `${path}.coreTraits`),
+    valuesAndMotivations: optionalStringArray(
+      profile["valuesAndMotivations"],
+      `${path}.valuesAndMotivations`,
+    ),
+    socialPresence: optionalStringArray(
+      profile["socialPresence"],
+      `${path}.socialPresence`,
+    ),
+    cognitiveStyle: optionalStringArray(
+      profile["cognitiveStyle"],
+      `${path}.cognitiveStyle`,
+    ),
+    emotionalPatterns: optionalStringArray(
+      profile["emotionalPatterns"],
+      `${path}.emotionalPatterns`,
+    ),
+    conflictStyle: optionalStringArray(
+      profile["conflictStyle"],
+      `${path}.conflictStyle`,
+    ),
+    affectionStyle: optionalStringArray(
+      profile["affectionStyle"],
+      `${path}.affectionStyle`,
+    ),
+    publicPrivateDelta: optionalStringArray(
+      profile["publicPrivateDelta"],
+      `${path}.publicPrivateDelta`,
     ),
     voiceGuidelines: asStringArray(
       profile["voiceGuidelines"],
       `${path}.voiceGuidelines`,
     ),
-    styleExamples: asStringArray(
+    styleExamples: parsePromptStyleExamples(
       profile["styleExamples"],
       `${path}.styleExamples`,
     ),
-    relationshipBiases: asStringRecord(
+    privateMotivePatterns: optionalStringArray(
+      profile["privateMotivePatterns"],
+      `${path}.privateMotivePatterns`,
+    ),
+    hardAvoids: optionalStringArray(profile["hardAvoids"], `${path}.hardAvoids`),
+    relationshipBiases: parsePromptRelationshipBiases(
       profile["relationshipBiases"] ?? {},
       `${path}.relationshipBiases`,
     ),
-    language,
+    sourceRefs: parsePromptSourceRefs(
+      profile["sourceRefs"] ?? { assessmentIds: [], lastCompiledAt: "manual-config" },
+      `${path}.sourceRefs`,
+    ),
+  };
+}
+
+function optionalStringArray(value: unknown, path: string): string[] {
+  if (value === undefined) return [];
+  return asStringArray(value, path);
+}
+
+function parsePromptStyleExamples(
+  value: unknown,
+  path: string,
+): PersonaPromptProfile["styleExamples"] {
+  if (Array.isArray(value)) {
+    return {
+      default: asStringArray(value, path),
+      animated: [],
+      dryOrLowEnergy: [],
+      conflict: [],
+    };
+  }
+
+  const examples = asRecord(value, path);
+  return {
+    default: optionalStringArray(examples["default"], `${path}.default`),
+    animated: optionalStringArray(examples["animated"], `${path}.animated`),
+    dryOrLowEnergy: optionalStringArray(
+      examples["dryOrLowEnergy"],
+      `${path}.dryOrLowEnergy`,
+    ),
+    conflict: optionalStringArray(examples["conflict"], `${path}.conflict`),
+  };
+}
+
+function parsePromptRelationshipBiases(
+  value: unknown,
+  path: string,
+): PersonaPromptProfile["relationshipBiases"] {
+  const record = asRecord(value, path);
+  const result: PersonaPromptProfile["relationshipBiases"] = {};
+  for (const [key, item] of Object.entries(record)) {
+    if (typeof item === "string") {
+      result[key] = {
+        view: item,
+        warmth: "medium",
+        trust: "medium",
+        likelyBehaviors: [],
+        triggers: [],
+      };
+      continue;
+    }
+
+    const bias = asRecord(item, `${path}.${key}`);
+    const warmth = requiredString(bias["warmth"], `${path}.${key}.warmth`);
+    const trust = requiredString(bias["trust"], `${path}.${key}.trust`);
+    if (warmth !== "low" && warmth !== "medium" && warmth !== "high") {
+      throw new Error(`${path}.${key}.warmth must be low, medium, or high`);
+    }
+    if (trust !== "low" && trust !== "medium" && trust !== "high") {
+      throw new Error(`${path}.${key}.trust must be low, medium, or high`);
+    }
+
+    result[key] = {
+      view: requiredString(bias["view"], `${path}.${key}.view`),
+      warmth,
+      trust,
+      likelyBehaviors: optionalStringArray(
+        bias["likelyBehaviors"],
+        `${path}.${key}.likelyBehaviors`,
+      ),
+      triggers: optionalStringArray(bias["triggers"], `${path}.${key}.triggers`),
+    };
+  }
+  return result;
+}
+
+function parsePromptSourceRefs(
+  value: unknown,
+  path: string,
+): PersonaPromptProfile["sourceRefs"] {
+  const refs = asRecord(value, path);
+  return {
+    assessmentIds: optionalStringArray(refs["assessmentIds"], `${path}.assessmentIds`),
+    notesPath: optionalString(refs["notesPath"], `${path}.notesPath`),
+    lastCompiledAt: requiredString(refs["lastCompiledAt"], `${path}.lastCompiledAt`),
   };
 }
 

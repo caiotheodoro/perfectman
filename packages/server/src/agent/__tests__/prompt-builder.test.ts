@@ -223,35 +223,47 @@ describe("PromptBuilder", () => {
       expect(prompt.purpose).toBe("action_intent");
     });
 
-    it("action_intent: includes voiceGuidelines and styleExamples", () => {
+    it("action_intent: includes voice guidelines and grouped style examples", () => {
       const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
-      expect(prompt.system).toContain("Voice Guidelines");
-      expect(prompt.system).toContain("Style Examples");
+      expect(prompt.system).toContain("Voice guidelines");
+      expect(prompt.system).toContain("Style examples");
       expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.voiceGuidelines[0]!);
+      expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.styleExamples.default[0]!);
+      expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.styleExamples.dryOrLowEnergy[0]!);
     });
 
-    it("action_intent: Section 1 preserves the original rendered order", () => {
+    it("action_intent: Section 1 renders the richer persona profile compactly", () => {
       const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
       const section1 = prompt.system.split("\n\n### SECTION 8: OUTPUT CONTRACT & JSON FORMAT")[0]!;
-      const expectedSection1 = `### SECTION 1: YOUR IDENTITY & PERSONA
-You are roleplaying as a highly specific person in an online chat room. You must completely inhabit this character.
-- **Display Name**: ${GOULART_PROMPT_PROFILE.displayName}
-- **Persona Vibe**: ${GOULART_PROMPT_PROFILE.identityFrame}
-- **Primary Language**: Portuguese (pt-BR)
 
-Voice Guidelines:
-${GOULART_PROMPT_PROFILE.voiceGuidelines.map((g) => `- ${g}`).join("\n")}
+      expect(section1).toContain("SECTION 1: YOUR IDENTITY & PERSONA");
+      expect(section1).toContain(`- **Display Name**: ${GOULART_PROMPT_PROFILE.displayName}`);
+      expect(section1).toContain("Core traits");
+      expect(section1).toContain("Values and motivations");
+      expect(section1).toContain("Social presence");
+      expect(section1).toContain("Thought process");
+      expect(section1).toContain("Conflict and repair style");
+      expect(section1).toContain("Hard avoids");
+      expect(section1).toContain("Relationship-specific views");
+    });
 
-Relationship Biases & Interpersonal Views:
-${Object.entries(GOULART_PROMPT_PROFILE.relationshipBiases)
-  .map(([peer, bias]) => `- **${peer}**: ${bias}`)
-  .join("\n")}
+    it("action_intent: Section 1 includes cognitive style and hard avoids", () => {
+      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
 
-Style Examples (mimic these natural patterns):
-${GOULART_PROMPT_PROFILE.styleExamples.map((e) => `"${e}"`).join(", ")}`;
+      expect(prompt.system).toContain("You think in scenarios, trade-offs, and likely consequences before acting.");
+      expect(prompt.system).toContain("Do not sound overly warm, sentimental, or artificially therapeutic.");
+    });
 
-      expect(section1).toBe(expectedSection1);
+    it("action_intent: Section 1 does not render source refs, raw transcripts, or assessment scores", () => {
+      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+
+      expect(prompt.system).not.toContain("sourceRefs");
+      expect(prompt.system).not.toContain("assessmentIds");
+      expect(prompt.system).not.toContain("goulart-self-assessment-2026-05-24");
+      expect(prompt.system).not.toContain("transcript");
+      expect(prompt.system).not.toContain("5/5");
+      expect(prompt.system).not.toContain("0.65");
     });
 
     it("reserved purposes are rejected until dedicated builders exist", () => {

@@ -7,4 +7,12 @@ packages/*/node_modules/
 sample_data/
 .claude/_output/*
 
+# Local runtime config and generated state
 config/index.json
+packages/server/config/
+packages/server/data/
+packages/server/index.json
+
+# Local tooling / OS noise
+freellmapi/
+.DS_Store
