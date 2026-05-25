@@ -8,4 +8,4 @@ sample_data/
 .claude/_output/*
 
 config/index.json
-.env/
+.env
