@@ -7,11 +7,15 @@ packages/*/node_modules/
 sample_data/
 .claude/_output/*
 
-# Local runtime config and generated state
+# Local runtime config, generated state, and private persona evidence
 config/index.json
 packages/server/config/
 packages/server/data/
 packages/server/index.json
+docs/personas/
+transcript_*.md
+*_assessment.json
+*_asessment.json
 
 # Local tooling / OS noise
 freellmapi/
