@@ -19,10 +19,11 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@perfectman/shared": "workspace:*",
     "@perfectman/engine": "workspace:*",
+    "@perfectman/shared": "workspace:*",
     "better-sqlite3": "^11.0.0",
-    "discord.js": "^14.18.0"
+    "discord.js": "^14.18.0",
+    "dotenv": "^17.4.2"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",

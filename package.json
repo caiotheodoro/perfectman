@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "build": "pnpm -r build",
+    "freellm:dev": "docker compose -f docker/freellmapi/freellmapi.compose.yml up --build",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "lint": "pnpm -r typecheck"

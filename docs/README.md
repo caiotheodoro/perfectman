@@ -191,6 +191,14 @@ Config format: see [`../examples/simulation.config.example.json`](../examples/si
 
 `config/index.json` is gitignored. Copy the example, fill in your agents, and set the appropriate API key env vars if not using `providerType: "mock"`.
 
+For the FreeLLMAPI config, run the local proxy first:
+
+```bash
+pnpm freellm:dev
+```
+
+The script builds the FreeLLMAPI container from `https://github.com/tashfeenahmed/freellmapi`, reads this repo's `.env`, exposes the API on `http://localhost:3001/v1`, and exposes the dashboard on `http://localhost:5173`. Set `FREELLMAPI_ENCRYPTION_KEY` in `.env` before first run so FreeLLMAPI can store provider keys. Use the dashboard to add provider keys and create the unified key, then store that value in `.env` as `FREELLMAPI_KEY`.
+
 ## Current Open Questions
 
 - How much private-channel visibility should spectators get?
