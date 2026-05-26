@@ -50,9 +50,9 @@
         "archetype": "observer",
         "writingStyle": "brief, careful, warm but guarded",
         "styleExamples": [
-          "oi gente",
-          "entendi",
-          "vou pensar um pouco"
+          "hey everyone",
+          "got it",
+          "i need to think for a bit"
         ]
       },
       "promptProfile": {
@@ -64,14 +64,14 @@
           "Sound natural and slightly guarded."
         ],
         "styleExamples": [
-          "oi gente",
-          "entendi",
-          "vou pensar um pouco"
+          "hey everyone",
+          "got it",
+          "i need to think for a bit"
         ],
         "relationshipBiases": {
           "example-peer": "You think Example Peer is quiet but worth checking on."
         },
-        "language": "pt-BR"
+        "language": "en-US"
       },
       "llm": {
         "providerType": "mock",
@@ -113,7 +113,7 @@
         "relationshipBiases": {
           "ana": "You trust Ana more than most people in the room."
         },
-        "language": "pt-BR"
+        "language": "en-US"
       },
       "llm": {
         "providerType": "mock",

@@ -1,54 +1,54 @@
 # Persona Notes Template
 
-Alvo:
-Entrevistado:
-Tipo: amigo | autoentrevista
-Data:
-Sensibilidade: safe | review_before_prompt | exclude_from_prompt
+Target:
+Interviewee:
+Type: friend | self-interview
+Date:
+Sensitivity: safe | review_before_prompt | exclude_from_prompt
 
-## Resumo em 3-5 bullets
-
--
-
-## Valores e motivações
+## 3–5 bullet summary
 
 -
 
-## Energia social e atenção
+## Values and motivations
 
 -
 
-## Afeto, cuidado e vínculo
+## Social energy and attention
 
 -
 
-## Conflito, reparo e gatilhos
+## Affection, care, and attachment
 
 -
 
-## Público vs. privado
+## Conflict, repair, and triggers
 
 -
 
-## Relações específicas
+## Public vs. private
 
 -
 
-## Manifestação no chat
-
-- Manias de escrita:
-- Frases/paráfrases úteis:
-- O que a IA nunca deve dizer/fazer:
-
-## Notas para PersonaPromptProfile
+## Specific relationships
 
 -
 
-## Notas para runtime persona config
+## Chat manifestation
+
+- Writing habits:
+- Useful paraphrased phrases:
+- What the AI must never say/do:
+
+## Notes for PersonaPromptProfile
 
 -
 
-## Privacidade
+## Notes for runtime persona config
 
-- Material excluído do prompt:
-- Pendências de anonimização:
+-
+
+## Privacy
+
+- Material excluded from the prompt:
+- Anonymization follow-ups:

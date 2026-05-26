@@ -189,7 +189,7 @@ pnpm --filter @perfectman/server simulation
 pnpm --filter @perfectman/server simulation --config path/to/config.json
 ```
 
-Config format: see [`../examples/simulation.config.example.json`](../examples/simulation.config.example.json). For local friend-group personas stored outside git, see [`../examples/simulation.config.persona-file.example.json`](../examples/simulation.config.persona-file.example.json) and [`personas/README.md`](personas/README.md).
+Config format: see [`../examples/simulations/mock.inline-personas.example.json`](../examples/simulations/mock.inline-personas.example.json). For local friend-group personas stored outside git, see [`../examples/simulations/mock.persona-file.example.json`](../examples/simulations/mock.persona-file.example.json), [`../examples/personas/`](../examples/personas/), and [`personas/README.md`](personas/README.md).
 
 `buildConfiguredSimulation` in `packages/server/src/config/simulation-config.ts` is the composition root — it validates the config, wires repositories (in-memory or SQLite), delivery gateways (mock, stdout, or composite), `AgentConfigRegistry`, `AgentRuntime`, and `SimulationRuntime`.
 
@@ -199,9 +199,9 @@ Config format: see [`../examples/simulation.config.example.json`](../examples/si
 
 ```bash
 mkdir -p config/personas config/persona-notes
-cp examples/persona-setup.config.example.json config/persona-setup.local.json
-cp examples/persona.local.example.json config/personas/ana.persona.json
-cp examples/simulation.config.persona-file.example.json config/index.json
+cp examples/personas/setup/persona-setup.config.example.json config/persona-setup.local.json
+cp examples/personas/compiled/ana.persona.example.json config/personas/ana.persona.json
+cp examples/simulations/mock.persona-file.example.json config/index.json
 ```
 
 Then edit:

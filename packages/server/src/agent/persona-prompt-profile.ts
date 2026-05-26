@@ -198,7 +198,7 @@ export const EXAMPLE_PROMPT_PROFILE: PersonaPromptProfile = {
   },
   sourceRefs: {
     assessmentIds: ["example-template"],
-    notesPath: "examples/persona.local.example.json",
+    notesPath: "examples/personas/compiled/ana.persona.example.json",
     lastCompiledAt: "example"
   }
 };

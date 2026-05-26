@@ -3,7 +3,7 @@
   "questionnaire": {
     "canonicalGuidePath": "docs/notes/persona-assessment-canonical.md",
     "mode": "short_then_follow_up",
-    "language": "pt-BR"
+    "language": "en-US"
   },
   "privacy": {
     "useAliasesByDefault": true,
@@ -21,7 +21,7 @@
     ]
   },
   "outputs": {
-    "rawNotesDir": "config/persona-notes",
+    "rawNotesDir": "docs/personas/<agent-id>",
     "compiledPersonaDir": "config/personas",
     "compiledPersonaFilePattern": "<agent-id>.persona.json",
     "simulationConfigPath": "config/index.json"
@@ -43,5 +43,5 @@
       "outputPersonaFile": "config/personas/ana.persona.json"
     }
   ],
-  "agentInstructions": "Use the canonical questionnaire to collect behavioral patterns for each target. Ask for concrete examples, paraphrase sensitive material, label risky notes as exclude_from_prompt, and compile only safe behavioral summaries into the output persona JSON."
+  "agentInstructions": "Use the canonical English questionnaire to collect behavioral patterns for each target. Ask for concrete examples, paraphrase sensitive material, label risky notes as exclude_from_prompt, and compile only safe behavioral summaries into the runtime persona JSON."
 }
