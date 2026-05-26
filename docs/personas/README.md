@@ -27,12 +27,12 @@ The repository is intentionally split into versioned setup material and local pr
 
 ## Plug-and-play workflow
 
-1. Copy `examples/persona-setup.config.example.json` to `config/persona-setup.local.json` and replace fake names with your friend group.
+1. Copy `examples/personas/setup/persona-setup.config.example.json` to `config/persona-setup.local.json` and replace fake names with your friend group.
 2. Optional but recommended: use the local-only helper prompt at `docs/personas/local-questionnaire-agent.md` to guide the interview and synthesis work. This file is intentionally local-only; if it is missing, recreate it from the section below.
 3. Run interviews using `docs/notes/persona-assessment-canonical.md` as the source questionnaire.
 4. Save raw notes locally under `config/persona-notes/<agent-id>/` or `docs/personas/<agent-id>/`.
-5. Compile each person into a local runtime file by copying `examples/persona.local.example.json` to `config/personas/<agent-id>.persona.json`.
-6. Copy `examples/simulation.config.persona-file.example.json` to `config/index.json` and set each agent's `personaFile` to `personas/<agent-id>.persona.json`.
+5. Compile each person into a local runtime file by copying `examples/personas/compiled/example-friend.persona.example.json` to `config/personas/<agent-id>.persona.json`.
+6. Copy `examples/simulations/mock.persona-file.example.json` to `config/index.json` and set each agent's `personaFile` to `personas/<agent-id>.persona.json`.
 7. Make sure each channel in `config/index.json` includes the right `memberAgentIds`.
 8. Run:
 
@@ -40,16 +40,16 @@ The repository is intentionally split into versioned setup material and local pr
 pnpm --filter @perfectman/server simulation
 ```
 
-`personaFile` paths are resolved relative to the simulation config file, so `personas/ana.persona.json` inside `config/index.json` points to `config/personas/ana.persona.json`.
+`personaFile` paths are resolved relative to the simulation config file, so `personas/example-friend.persona.json` inside `config/index.json` points to `config/personas/example-friend.persona.json`.
 
 Before committing, verify local persona material is ignored:
 
 ```bash
 git check-ignore -v \
   config/persona-setup.local.json \
-  config/personas/ana.persona.json \
-  config/persona-notes/ana/raw.md \
-  docs/personas/ana/README.md \
+  config/personas/example-friend.persona.json \
+  config/persona-notes/example-friend/raw.md \
+  docs/personas/example-friend/README.md \
   docs/personas/local-questionnaire-agent.md
 ```
 
@@ -117,7 +117,7 @@ Output a local-only synthesis with these sections:
 - notes for runtime persona config
 - privacy exclusions
 
-Then compile the safe material into config/personas/<agent-id>.persona.json using the template in examples/persona.local.example.json.
+Then compile the safe material into config/personas/<agent-id>.persona.json using the template in examples/personas/compiled/example-friend.persona.example.json.
 ```
 
 ## Compiling questionnaire answers

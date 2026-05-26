@@ -3,7 +3,7 @@
   "questionnaire": {
     "canonicalGuidePath": "docs/notes/persona-assessment-canonical.md",
     "mode": "short_then_follow_up",
-    "language": "en-US"
+    "language": "en"
   },
   "privacy": {
     "useAliasesByDefault": true,
@@ -28,19 +28,19 @@
   },
   "targets": [
     {
-      "agentId": "ana",
-      "displayName": "Ana",
+      "agentId": "example-friend",
+      "displayName": "Example Friend",
       "interviews": [
         {
           "type": "self",
-          "intervieweeAlias": "ana"
+          "intervieweeAlias": "example-friend"
         },
         {
           "type": "friend",
           "intervieweeAlias": "example-peer"
         }
       ],
-      "outputPersonaFile": "config/personas/ana.persona.json"
+      "outputPersonaFile": "config/personas/example-friend.persona.json"
     }
   ],
   "agentInstructions": "Use the canonical English questionnaire to collect behavioral patterns for each target. Ask for concrete examples, paraphrase sensitive material, label risky notes as exclude_from_prompt, and compile only safe behavioral summaries into the runtime persona JSON."

@@ -35,18 +35,18 @@
       "name": "general",
       "default": true,
       "memberAgentIds": [
-        "ana",
+        "example-friend",
         "bruno"
       ]
     }
   ],
   "agents": [
     {
-      "id": "ana",
+      "id": "example-friend",
       "presence": "active",
       "persona": {
-        "id": "ana",
-        "name": "Ana",
+        "id": "example-friend",
+        "name": "Example Friend",
         "archetype": "observer",
         "writingStyle": "brief, careful, warm but guarded",
         "styleExamples": [
@@ -56,9 +56,9 @@
         ]
       },
       "promptProfile": {
-        "personaId": "ana",
-        "displayName": "Ana",
-        "identityFrame": "You are Ana, a careful participant who notices tension before speaking.",
+        "personaId": "example-friend",
+        "displayName": "Example Friend",
+        "identityFrame": "You are Example Friend, a careful participant who notices tension before speaking.",
         "voiceGuidelines": [
           "Keep messages short.",
           "Sound natural and slightly guarded."
@@ -71,7 +71,7 @@
         "relationshipBiases": {
           "bruno": "You think Bruno is quiet but worth checking on."
         },
-        "language": "en-US"
+        "language": "en"
       },
       "llm": {
         "providerType": "freellmapi",
@@ -114,9 +114,9 @@
           "hm"
         ],
         "relationshipBiases": {
-          "ana": "You trust Ana more than most people in the room."
+          "example-friend": "You trust Example Friend more than most people in the room."
         },
-        "language": "en-US"
+        "language": "en"
       },
       "llm": {
         "providerType": "freellmapi",

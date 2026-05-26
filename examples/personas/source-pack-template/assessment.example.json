@@ -5,7 +5,7 @@
     "interviewerName": "Interviewer",
     "respondentName": "Example Person",
     "sourceTranscript": "transcript-YYYY-MM-DD.md",
-    "language": "en-US",
+    "language": "en",
     "privacy": "local-only source evidence; do not commit raw transcript or assessment"
   },
   "selectedMode": "long",

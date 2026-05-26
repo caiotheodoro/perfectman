@@ -200,7 +200,7 @@ Config format: see [`../examples/simulations/mock.inline-personas.example.json`]
 ```bash
 mkdir -p config/personas config/persona-notes
 cp examples/personas/setup/persona-setup.config.example.json config/persona-setup.local.json
-cp examples/personas/compiled/ana.persona.example.json config/personas/ana.persona.json
+cp examples/personas/compiled/example-friend.persona.example.json config/personas/example-friend.persona.json
 cp examples/simulations/mock.persona-file.example.json config/index.json
 ```
 
@@ -216,7 +216,7 @@ Before committing, check that real persona files are ignored:
 
 ```bash
 git status --ignored --short docs/personas config
-git check-ignore -v config/index.json config/personas/ana.persona.json config/persona-notes/ana/raw.md docs/personas/local-questionnaire-agent.md
+git check-ignore -v config/index.json config/personas/example-friend.persona.json config/persona-notes/example-friend/raw.md docs/personas/local-questionnaire-agent.md
 ```
 
 ## Current Open Questions
