@@ -1,0 +1,47 @@
+{
+  "setupId": "example-friend-group-persona-setup",
+  "questionnaire": {
+    "canonicalGuidePath": "docs/notes/persona-assessment-canonical.md",
+    "mode": "short_then_follow_up",
+    "language": "pt-BR"
+  },
+  "privacy": {
+    "useAliasesByDefault": true,
+    "paraphraseSensitiveExamples": true,
+    "forbiddenData": [
+      "passwords or credentials",
+      "private screenshots or raw DMs",
+      "medical, legal, financial, or document data",
+      "trauma, sexuality, family secrets, or other invasive material unless explicitly allowed and necessary"
+    ],
+    "sensitiveLabels": [
+      "safe",
+      "review_before_prompt",
+      "exclude_from_prompt"
+    ]
+  },
+  "outputs": {
+    "rawNotesDir": "config/persona-notes",
+    "compiledPersonaDir": "config/personas",
+    "compiledPersonaFilePattern": "<agent-id>.persona.json",
+    "simulationConfigPath": "config/index.json"
+  },
+  "targets": [
+    {
+      "agentId": "ana",
+      "displayName": "Ana",
+      "interviews": [
+        {
+          "type": "self",
+          "intervieweeAlias": "ana"
+        },
+        {
+          "type": "friend",
+          "intervieweeAlias": "example-peer"
+        }
+      ],
+      "outputPersonaFile": "config/personas/ana.persona.json"
+    }
+  ],
+  "agentInstructions": "Use the canonical questionnaire to collect behavioral patterns for each target. Ask for concrete examples, paraphrase sensitive material, label risky notes as exclude_from_prompt, and compile only safe behavioral summaries into the output persona JSON."
+}

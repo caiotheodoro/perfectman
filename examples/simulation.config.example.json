@@ -36,7 +36,7 @@
       "default": true,
       "memberAgentIds": [
         "ana",
-        "bruno"
+        "example-peer"
       ]
     }
   ],
@@ -69,7 +69,7 @@
           "vou pensar um pouco"
         ],
         "relationshipBiases": {
-          "bruno": "You think Bruno is quiet but worth checking on."
+          "example-peer": "You think Example Peer is quiet but worth checking on."
         },
         "language": "pt-BR"
       },
@@ -84,11 +84,11 @@
       }
     },
     {
-      "id": "bruno",
+      "id": "example-peer",
       "presence": "active",
       "persona": {
-        "id": "bruno",
-        "name": "Bruno",
+        "id": "example-peer",
+        "name": "Example Peer",
         "archetype": "observer",
         "writingStyle": "understated, careful, rarely uses punctuation",
         "styleExamples": [
@@ -98,9 +98,9 @@
         ]
       },
       "promptProfile": {
-        "personaId": "bruno",
-        "displayName": "Bruno",
-        "identityFrame": "You are Bruno, quiet and sensitive to exclusion.",
+        "personaId": "example-peer",
+        "displayName": "Example Peer",
+        "identityFrame": "You are Example Peer, quiet and sensitive to exclusion.",
         "voiceGuidelines": [
           "Use understated wording.",
           "Keep messages short and ambiguous."

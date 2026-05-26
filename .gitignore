@@ -9,13 +9,27 @@ sample_data/
 
 # Local runtime config, generated state, and private persona evidence
 config/index.json
+config/persona-setup*.json
+config/personas/
+config/persona-notes/
+config/persona-questionnaire-agent*.md
+config/local-questionnaire-agent*.md
+config/persona-notes-template*.md
 packages/server/config/
 packages/server/data/
 packages/server/index.json
-docs/personas/
+docs/personas/*
+!docs/personas/README.md
+!docs/personas/templates/
+!docs/personas/templates/**
 transcript_*.md
 *_assessment.json
 *_asessment.json
+*_assesment.json
+assessment_*.json
+asessment_*.json
+assesment_*.json
+docs/persona-*.html
 
 # Local tooling / OS noise
 freellmapi/

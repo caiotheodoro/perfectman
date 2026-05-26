@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { existsSync, mkdirSync } from "node:fs";
-import { dirname, join, parse } from "node:path";
+import { dirname, isAbsolute, join, parse, resolve } from "node:path";
 import type {
   AgentState,
   ChannelType,
@@ -226,7 +226,68 @@ export async function loadSimulationConfig(
       `Invalid simulation config JSON at ${path}: ${errorMessage(err)}`,
     );
   }
-  return parseSimulationConfig(parsed);
+  const hydrated = await hydrateAgentPersonaFiles(parsed, path);
+  return parseSimulationConfig(hydrated);
+}
+
+async function hydrateAgentPersonaFiles(
+  input: unknown,
+  configPath: string,
+): Promise<unknown> {
+  const root = asRecord(input, "config");
+  const agents = root["agents"];
+  if (!Array.isArray(agents)) return input;
+
+  const configDir = dirname(configPath);
+  const hydratedAgents = await Promise.all(
+    agents.map(async (value, index) => {
+      const agent = asRecord(value, `agents[${index}]`);
+      const personaFile = optionalString(
+        agent["personaFile"],
+        `agents[${index}].personaFile`,
+      );
+      if (!personaFile) return value;
+      if (agent["persona"] !== undefined || agent["promptProfile"] !== undefined) {
+        throw new Error(
+          `agents[${index}] cannot define personaFile together with inline persona or promptProfile`,
+        );
+      }
+
+      const personaPath = isAbsolute(personaFile)
+        ? personaFile
+        : resolve(configDir, personaFile);
+      let rawPersona: string;
+      try {
+        rawPersona = await readFile(personaPath, "utf8");
+      } catch (err) {
+        throw new Error(
+          `Unable to read agents[${index}].personaFile at ${personaPath}: ${errorMessage(err)}`,
+        );
+      }
+
+      let parsedPersona: unknown;
+      try {
+        parsedPersona = JSON.parse(rawPersona);
+      } catch (err) {
+        throw new Error(
+          `Invalid personaFile JSON at ${personaPath}: ${errorMessage(err)}`,
+        );
+      }
+
+      const localPersona = asRecord(parsedPersona, `agents[${index}].personaFile`);
+      return {
+        ...localPersona,
+        ...agent,
+        persona: localPersona["persona"],
+        promptProfile: localPersona["promptProfile"],
+      };
+    }),
+  );
+
+  return {
+    ...root,
+    agents: hydratedAgents,
+  };
 }
 
 export function parseSimulationConfig(input: unknown): SimulationAppConfig {

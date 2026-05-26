@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { PromptBuilder } from "../prompt-builder.js";
-import { GOULART_PROMPT_PROFILE } from "../persona-prompt-profile.js";
+import { EXAMPLE_PROMPT_PROFILE } from "../persona-prompt-profile.js";
 import type { AgentRuntimeInput, CommittedEvent } from "@perfectman/shared";
 
 describe("PromptBuilder", () => {
@@ -8,9 +8,9 @@ describe("PromptBuilder", () => {
     id: "evt-111",
     simulationId: "sim-123",
     channelId: "general",
-    actorId: "agent-bruno",
+    actorId: "agent-peer",
     type: "message_sent",
-    payload: { content: "o Goulart tá sumido hoje né" },
+    payload: { content: "o Example Friend tá sumido hoje né" },
     createdAt: Date.now(),
     pulseIndex: 12,
     sourceEventIds: [],
@@ -27,9 +27,9 @@ describe("PromptBuilder", () => {
     id: "evt-222",
     simulationId: "sim-123",
     channelId: "general",
-    actorId: "agent-caio",
+    actorId: "agent-peer",
     type: "reply_sent",
-    payload: { content: "verdade, deve tá na academia" },
+    payload: { content: "verdade, deve tá ocupado" },
     createdAt: Date.now(),
     pulseIndex: 13,
     sourceEventIds: ["evt-111"],
@@ -44,11 +44,11 @@ describe("PromptBuilder", () => {
 
   const input: AgentRuntimeInput = {
     simulationId: "sim-123",
-    agentId: "goulart",
+    agentId: "example-friend",
     personaConfig: {
-      id: "goulart",
-      name: "Goulart",
-      archetype: "provocateur",
+      id: "example-friend",
+      name: "Example Friend",
+      archetype: "careful-observer",
       writingStyle: "lowercase blunt",
       styleExamples: ["calmae"],
       baselineValence: 0.1,
@@ -67,20 +67,20 @@ describe("PromptBuilder", () => {
       socialSensitivities: {},
     },
     perceptionPacket: {
-      agentId: "goulart",
+      agentId: "example-friend",
       triggeringEvent: triggeringEvent,
       visibleContextEvents: [triggeringEvent, contextEvent],
-      involvedPeople: ["agent-bruno", "agent-caio"],
+      involvedPeople: ["agent-peer", "agent-peer"],
       relevantChannels: ["general"],
       relevantMemories: [
         {
           id: "mem-999",
-          agentId: "goulart",
+          agentId: "example-friend",
           simulationId: "sim-123",
           type: "relationship",
-          subjectAgentIds: ["agent-bruno"],
+          subjectAgentIds: ["agent-peer"],
           sourceEventIds: [],
-          summary: "Bruno is often quiet and passive aggressive",
+          summary: "This friend is often quiet and indirect",
           emotionalTone: "suspicion",
           confidence: 0.8,
           unresolved: true,
@@ -90,14 +90,14 @@ describe("PromptBuilder", () => {
       ],
       translatedEmotionalState: {
         moodDescription: "You feel excited, energized, and ready to stir up some chat.",
-        socialContext: "Bruno mentioned you in general channel.",
+        socialContext: "A friend mentioned you in general channel.",
         relationalFlavors: [
           {
-            targetAgentId: "agent-bruno",
-            description: "You find Bruno a bit annoying but you like poking him.",
+            targetAgentId: "agent-peer",
+            description: "You find this friend ambiguous but worth checking on.",
           },
         ],
-        pressureDescriptions: ["You feel a strong urge to reply to Bruno's tease."],
+        pressureDescriptions: ["You feel a strong urge to reply to the tease."],
         inhibitionDescriptions: ["You feel slightly hesitant to look too eager, but your excitement beats it."],
       },
       availableActions: [
@@ -110,7 +110,7 @@ describe("PromptBuilder", () => {
         {
           intentType: "reply_to_message",
           channelTargets: ["general"],
-          personTargets: ["agent-bruno"],
+          personTargets: ["agent-peer"],
           blocked: false,
         },
       ],
@@ -148,7 +148,7 @@ describe("PromptBuilder", () => {
       {
         intentType: "reply_to_message",
         channelTargets: ["general"],
-        personTargets: ["agent-bruno"],
+        personTargets: ["agent-peer"],
         blocked: false,
       },
     ],
@@ -157,7 +157,7 @@ describe("PromptBuilder", () => {
   };
 
   it("should successfully build a prompt with system and user properties", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
     expect(prompt).toBeDefined();
     expect(typeof prompt.system).toBe("string");
@@ -166,7 +166,7 @@ describe("PromptBuilder", () => {
   });
 
   it("should verify that the prompt contains all required sections", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
     const combined = prompt.system + "\n\n" + prompt.user;
 
     expect(combined).toContain("SECTION 1: YOUR IDENTITY");
@@ -180,24 +180,24 @@ describe("PromptBuilder", () => {
   });
 
   it("should verify that the prompt includes the triggering event and context", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
     
-    expect(prompt.user).toContain("o Goulart tá sumido hoje né");
-    expect(prompt.user).toContain("verdade, deve tá na academia");
-    expect(prompt.user).toContain("agent-bruno");
-    expect(prompt.user).toContain("agent-caio");
+    expect(prompt.user).toContain("o Example Friend tá sumido hoje né");
+    expect(prompt.user).toContain("verdade, deve tá ocupado");
+    expect(prompt.user).toContain("agent-peer");
+    expect(prompt.user).toContain("agent-peer");
   });
 
   it("should verify that the prompt includes available actions and target options", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
     expect(prompt.user).toContain("send_message");
     expect(prompt.user).toContain("reply_to_message");
-    expect(prompt.user).toContain("agent-bruno");
+    expect(prompt.user).toContain("agent-peer");
   });
 
   it("should verify that the prompt completely excludes raw numeric scores", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
     const combined = prompt.system + "\n\n" + prompt.user;
 
     // Verify exclusions
@@ -209,7 +209,7 @@ describe("PromptBuilder", () => {
   });
 
   it("should verify that the prompt demands strict JSON output without thinking frames", () => {
-    const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
     expect(prompt.system).toContain("SINGLE valid JSON object");
     expect(prompt.system).toContain("DO NOT include any chain-of-thought");
@@ -218,27 +218,27 @@ describe("PromptBuilder", () => {
 
   describe("PromptPurpose policy", () => {
     it("action_intent: BuiltPrompt.purpose is 'action_intent'", () => {
-      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+      const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
       expect(prompt.purpose).toBe("action_intent");
     });
 
     it("action_intent: includes voice guidelines and grouped style examples", () => {
-      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+      const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
       expect(prompt.system).toContain("Voice guidelines");
       expect(prompt.system).toContain("Style examples");
-      expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.voiceGuidelines[0]!);
-      expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.styleExamples.default[0]!);
-      expect(prompt.system).toContain(GOULART_PROMPT_PROFILE.styleExamples.dryOrLowEnergy[0]!);
+      expect(prompt.system).toContain(EXAMPLE_PROMPT_PROFILE.voiceGuidelines[0]!);
+      expect(prompt.system).toContain(EXAMPLE_PROMPT_PROFILE.styleExamples.default[0]!);
+      expect(prompt.system).toContain(EXAMPLE_PROMPT_PROFILE.styleExamples.dryOrLowEnergy[0]!);
     });
 
     it("action_intent: Section 1 renders the richer persona profile compactly", () => {
-      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+      const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
       const section1 = prompt.system.split("\n\n### SECTION 8: OUTPUT CONTRACT & JSON FORMAT")[0]!;
 
       expect(section1).toContain("SECTION 1: YOUR IDENTITY & PERSONA");
-      expect(section1).toContain(`- **Display Name**: ${GOULART_PROMPT_PROFILE.displayName}`);
+      expect(section1).toContain(`- **Display Name**: ${EXAMPLE_PROMPT_PROFILE.displayName}`);
       expect(section1).toContain("Core traits");
       expect(section1).toContain("Values and motivations");
       expect(section1).toContain("Social presence");
@@ -249,18 +249,18 @@ describe("PromptBuilder", () => {
     });
 
     it("action_intent: Section 1 includes cognitive style and hard avoids", () => {
-      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+      const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
-      expect(prompt.system).toContain("You think in scenarios, trade-offs, and likely consequences before acting.");
+      expect(prompt.system).toContain("You compare context, timing, and likely consequences before acting.");
       expect(prompt.system).toContain("Do not sound overly warm, sentimental, or artificially therapeutic.");
     });
 
     it("action_intent: Section 1 does not render source refs, raw transcripts, or assessment scores", () => {
-      const prompt = PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "action_intent");
+      const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
       expect(prompt.system).not.toContain("sourceRefs");
       expect(prompt.system).not.toContain("assessmentIds");
-      expect(prompt.system).not.toContain("goulart-self-assessment-2026-05-24");
+      expect(prompt.system).not.toContain("real-person-assessment");
       expect(prompt.system).not.toContain("transcript");
       expect(prompt.system).not.toContain("5/5");
       expect(prompt.system).not.toContain("0.65");
@@ -268,13 +268,13 @@ describe("PromptBuilder", () => {
 
     it("reserved purposes are rejected until dedicated builders exist", () => {
       expect(() =>
-        PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "social_interpretation")
+        PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "social_interpretation")
       ).toThrow("Unsupported prompt purpose: social_interpretation");
       expect(() =>
-        PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "background_reflection")
+        PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "background_reflection")
       ).toThrow("Unsupported prompt purpose: background_reflection");
       expect(() =>
-        PromptBuilder.build(input, GOULART_PROMPT_PROFILE, "spectator_recap")
+        PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "spectator_recap")
       ).toThrow("Unsupported prompt purpose: spectator_recap");
     });
   });

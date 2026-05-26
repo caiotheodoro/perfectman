@@ -40,7 +40,7 @@ JSON Schema:
 }
 
 Ensure:
-- "privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring Caio to make him chase me after he ignored my previous message", "I want to gossip with Giovanni in private to build an alliance against Bruno").
+- "privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").
 - Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`);
 
     const systemPrompt = systemSections.join("\n\n");
