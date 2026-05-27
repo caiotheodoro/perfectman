@@ -1,6 +1,7 @@
 import type { LlmConfig } from "../llm/llm-config.js";
 import {
   GENERIC_PROMPT_PROFILE,
+  PERSONA_PROFILES,
   type PersonaPromptProfile
 } from "./persona-prompt-profile.js";
 
@@ -16,6 +17,10 @@ export const DEFAULT_MOCK_CONFIG: LlmConfig = {
 
 export class PersonaLoader {
   static getProfile(personaId: string): PersonaPromptProfile {
+    const normalizedPersonaId = personaId.toLowerCase();
+    const profile = PERSONA_PROFILES[normalizedPersonaId];
+    if (profile) return profile;
+
     return {
       ...GENERIC_PROMPT_PROFILE,
       personaId,

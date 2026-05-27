@@ -20,17 +20,17 @@ describe("AgentRuntime Orchestration", () => {
     {
       intentType: "reply_to_message",
       channelTargets: ["general"],
-      personTargets: ["agent-bruno"],
+      personTargets: ["agent-peer"],
       blocked: false,
     },
   ];
 
   const baseInput: AgentRuntimeInput = {
     simulationId: "sim-123",
-    agentId: "goulart",
+    agentId: "example-friend",
     personaConfig: {
-      id: "goulart",
-      name: "Goulart",
+      id: "example-friend",
+      name: "Example Friend",
       archetype: "provocateur",
       writingStyle: "lowercase blunt",
       styleExamples: [],
@@ -50,7 +50,7 @@ describe("AgentRuntime Orchestration", () => {
       socialSensitivities: {},
     },
     perceptionPacket: {
-      agentId: "goulart",
+      agentId: "example-friend",
       triggeringEvent: null,
       visibleContextEvents: [],
       involvedPeople: [],
@@ -103,7 +103,7 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.fallbackApplied).toBe(false);
     expect(output.latencyMs).toBeGreaterThan(0);
     expect(output.llmUsage).not.toBeNull();
-    expect(output.llmUsage!.agentId).toBe("goulart");
+    expect(output.llmUsage!.agentId).toBe("example-friend");
     expect(output.llmUsage!.simulationId).toBe("sim-123");
     expect(output.llmUsage!.pulseIndex).toBe(42);
     expect(output.llmUsage!.callType).toBe("cognition");
@@ -112,7 +112,7 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.operatorEvents[0]!.data!.model).toBe("mock-model");
 
     // Intent checks
-    expect(output.intent.actorId).toBe("goulart");
+    expect(output.intent.actorId).toBe("example-friend");
     expect(output.intent.intentType).toBe("send_message");
     expect(output.intent.visibleContent).toBe("pois é");
   });
@@ -133,14 +133,14 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.intent.privateMotiveSummary).toContain("LLM budget exceeded");
     expect(output.operatorEvents).toHaveLength(1);
     expect(output.operatorEvents[0]!.type).toBe("llm_budget_exceeded");
-    expect(output.operatorEvents[0]!.agentId).toBe("goulart");
+    expect(output.operatorEvents[0]!.agentId).toBe("example-friend");
     expect(output.operatorEvents[0]!.pulseIndex).toBe(42);
   });
 
   it("should catch provider errors and return a fallback intent and failure operator event", async () => {
     // Register an OpenAI-compatible config but with a missing baseUrl, which throws LlmConfigurationError!
     const runtime = new AgentRuntime({
-      goulart: {
+      "example-friend": {
         providerType: "local_uncensored",
         baseUrl: "", // Will throw LlmConfigurationError!
         modelName: "test-model",
@@ -160,7 +160,7 @@ describe("AgentRuntime Orchestration", () => {
 
   it("should record token usage and emit an operator event when provider succeeds but parsing/validation fails", async () => {
     const runtime = new AgentRuntime({
-      goulart: {
+      "example-friend": {
         providerType: "local_uncensored",
         baseUrl: "http://localhost:11434/v1",
         modelName: "test-model",

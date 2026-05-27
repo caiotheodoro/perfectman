@@ -16,27 +16,7 @@ export class ActionIntentPromptBuilder {
 
     // --- SECTION 1: Persona Identity (System) ---
     const systemSections: string[] = [];
-    const identityLines = [
-      `- **Display Name**: ${profile.displayName}`,
-      `- **Persona Vibe**: ${profile.identityFrame}`,
-      `- **Primary Language**: ${profile.language === "pt-BR" ? "Portuguese (pt-BR)" : "English"}`,
-    ].join("\n");
-
-    const voiceGuidelinesBlock =
-      `\n\nVoice Guidelines:\n${profile.voiceGuidelines.map((g) => `- ${g}`).join("\n")}`;
-
-    const styleExamplesBlock =
-      `\n\nStyle Examples (mimic these natural patterns):\n${profile.styleExamples.map((e) => `"${e}"`).join(", ")}`;
-
-    const relationshipBlock = Object.keys(profile.relationshipBiases).length > 0
-      ? `\n\nRelationship Biases & Interpersonal Views:\n${Object.entries(profile.relationshipBiases)
-        .map(([peer, bias]) => `- **${peer}**: ${bias}`)
-        .join("\n")}`
-      : "";
-
-    systemSections.push(`### SECTION 1: YOUR IDENTITY & PERSONA
-You are roleplaying as a highly specific person in an online chat room. You must completely inhabit this character.
-${identityLines}${voiceGuidelinesBlock}${relationshipBlock}${styleExamplesBlock}`);
+    systemSections.push(this.renderPersonaSection(profile));
 
     // --- SECTION 8: Output Contract (System) ---
     systemSections.push(`### SECTION 8: OUTPUT CONTRACT & JSON FORMAT
@@ -60,7 +40,7 @@ JSON Schema:
 }
 
 Ensure:
-- "privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring Caio to make him chase me after he ignored my previous message", "I want to gossip with Giovanni in private to build an alliance against Bruno").
+- "privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").
 - Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`);
 
     const systemPrompt = systemSections.join("\n\n");
@@ -160,6 +140,77 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
       inputTokensEstimate,
       purpose: "action_intent",
     };
+  }
+
+  private static renderPersonaSection(profile: PersonaPromptProfile): string {
+    const language = profile.language === "pt-BR" ? "Portuguese (pt-BR)" : "English";
+    const blocks = [
+      `### SECTION 1: YOUR IDENTITY & PERSONA\nYou are roleplaying as a specific person in an online chat room. Stay inside this compact runtime profile; do not mention source notes, assessments, or hidden profile metadata.`,
+      [
+        "Identity:",
+        `- **Display Name**: ${profile.displayName}`,
+        `- **Primary Language**: ${language}`,
+        `- **Frame**: ${profile.identityFrame}`,
+      ].join("\n"),
+      this.renderListBlock("Core traits", profile.coreTraits),
+      this.renderListBlock("Values and motivations", profile.valuesAndMotivations),
+      this.renderListBlock("Social presence", profile.socialPresence),
+      this.renderListBlock("Thought process", profile.cognitiveStyle),
+      this.renderListBlock("Emotional patterns", profile.emotionalPatterns),
+      this.renderListBlock("Conflict and repair style", profile.conflictStyle),
+      this.renderListBlock("Affection style", profile.affectionStyle),
+      this.renderListBlock("Public/private difference", profile.publicPrivateDelta),
+      this.renderListBlock("Voice guidelines", profile.voiceGuidelines),
+      this.renderStyleExamples(profile),
+      this.renderListBlock("Private motive patterns", profile.privateMotivePatterns),
+      this.renderListBlock("Hard avoids", profile.hardAvoids),
+      this.renderRelationshipBiases(profile),
+    ];
+
+    return blocks.filter((block) => block.length > 0).join("\n\n");
+  }
+
+  private static renderListBlock(title: string, items: string[]): string {
+    if (items.length === 0) return "";
+    return `${title}:\n${items.map((item) => `- ${item}`).join("\n")}`;
+  }
+
+  private static renderStyleExamples(profile: PersonaPromptProfile): string {
+    const { styleExamples } = profile;
+    const groups = [
+      ["default", styleExamples.default],
+      ["animated", styleExamples.animated],
+      ["dry/low-energy", styleExamples.dryOrLowEnergy],
+      ["conflict", styleExamples.conflict],
+    ] as const;
+
+    const renderedGroups = groups
+      .filter(([, examples]) => examples.length > 0)
+      .map(([label, examples]) => `- ${label}: ${examples.map((example) => `"${example}"`).join(", ")}`);
+
+    if (renderedGroups.length === 0) return "";
+    return `Style examples (mimic these natural patterns):\n${renderedGroups.join("\n")}`;
+  }
+
+  private static renderRelationshipBiases(profile: PersonaPromptProfile): string {
+    const entries = Object.entries(profile.relationshipBiases);
+    if (entries.length === 0) return "";
+
+    const rendered = entries.map(([peer, bias]) => {
+      const lines = [
+        `- **${peer}**: ${bias.view}`,
+        `  - warmth/trust: ${bias.warmth}/${bias.trust}`,
+      ];
+      if (bias.likelyBehaviors.length > 0) {
+        lines.push(`  - likely behaviors: ${bias.likelyBehaviors.join("; ")}`);
+      }
+      if (bias.triggers.length > 0) {
+        lines.push(`  - triggers: ${bias.triggers.join("; ")}`);
+      }
+      return lines.join("\n");
+    });
+
+    return `Relationship-specific views:\n${rendered.join("\n")}`;
   }
 
   // Event content is LLM-generated (agent outputs), not untrusted user input — no sanitization needed.
