@@ -204,7 +204,7 @@ describe("OpenAiCompatibleProvider", () => {
     vi.stubGlobal("fetch", fetchSpy);
 
     const provider = new OpenAiCompatibleProvider({
-      providerType: "local_uncensored",
+      providerType: "qwen3_8b",
       baseUrl: "http://localhost:11434/v1",
       modelName: "qwen3:8b",
       temperature: 0.7,

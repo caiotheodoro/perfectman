@@ -173,7 +173,7 @@ type AgentRuntimeOutput = {
 
 ```ts
 type LlmConfig = {
-  providerType: "mock" | "local_uncensored" | "freellmapi";
+  providerType: "mock" | "qwen3_8b" | "freellmapi";
   baseUrl?: string;
   apiKeyEnv?: string;
   modelName: string;

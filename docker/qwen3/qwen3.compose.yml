@@ -1,0 +1,36 @@
+name: perfectman
+
+services:
+  qwen3:
+    image: ollama/ollama:latest
+    container_name: perfectman-qwen3
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-30m}
+    ports:
+      - "11434:11434"
+    volumes:
+      - qwen3-ollama-data:/root/.ollama
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        ollama serve &
+        server_pid=$$!
+        until ollama list >/dev/null 2>&1; do
+          sleep 1
+        done
+        ollama pull qwen3:8b
+        wait "$$server_pid"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "ollama list | grep -q 'qwen3:8b'"
+        ]
+      interval: 20s
+      timeout: 10s
+      retries: 30
+      start_period: 30s
+
+volumes:
+  qwen3-ollama-data:

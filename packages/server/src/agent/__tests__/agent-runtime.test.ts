@@ -141,7 +141,7 @@ describe("AgentRuntime Orchestration", () => {
     // Register an OpenAI-compatible config but with a missing baseUrl, which throws LlmConfigurationError!
     const runtime = new AgentRuntime({
       "example-friend": {
-        providerType: "local_uncensored",
+        providerType: "qwen3_8b",
         baseUrl: "", // Will throw LlmConfigurationError!
         modelName: "test-model",
       },
@@ -161,7 +161,7 @@ describe("AgentRuntime Orchestration", () => {
   it("should record token usage and emit an operator event when provider succeeds but parsing/validation fails", async () => {
     const runtime = new AgentRuntime({
       "example-friend": {
-        providerType: "local_uncensored",
+        providerType: "qwen3_8b",
         baseUrl: "http://localhost:11434/v1",
         modelName: "test-model",
       },
