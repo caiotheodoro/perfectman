@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { existsSync, mkdirSync } from "node:fs";
-import { dirname, join, parse } from "node:path";
+import { dirname, isAbsolute, join, parse, resolve } from "node:path";
 import type {
   AgentState,
   ChannelType,
@@ -226,7 +226,68 @@ export async function loadSimulationConfig(
       `Invalid simulation config JSON at ${path}: ${errorMessage(err)}`,
     );
   }
-  return parseSimulationConfig(parsed);
+  const hydrated = await hydrateAgentPersonaFiles(parsed, path);
+  return parseSimulationConfig(hydrated);
+}
+
+async function hydrateAgentPersonaFiles(
+  input: unknown,
+  configPath: string,
+): Promise<unknown> {
+  const root = asRecord(input, "config");
+  const agents = root["agents"];
+  if (!Array.isArray(agents)) return input;
+
+  const configDir = dirname(configPath);
+  const hydratedAgents = await Promise.all(
+    agents.map(async (value, index) => {
+      const agent = asRecord(value, `agents[${index}]`);
+      const personaFile = optionalString(
+        agent["personaFile"],
+        `agents[${index}].personaFile`,
+      );
+      if (!personaFile) return value;
+      if (agent["persona"] !== undefined || agent["promptProfile"] !== undefined) {
+        throw new Error(
+          `agents[${index}] cannot define personaFile together with inline persona or promptProfile`,
+        );
+      }
+
+      const personaPath = isAbsolute(personaFile)
+        ? personaFile
+        : resolve(configDir, personaFile);
+      let rawPersona: string;
+      try {
+        rawPersona = await readFile(personaPath, "utf8");
+      } catch (err) {
+        throw new Error(
+          `Unable to read agents[${index}].personaFile at ${personaPath}: ${errorMessage(err)}`,
+        );
+      }
+
+      let parsedPersona: unknown;
+      try {
+        parsedPersona = JSON.parse(rawPersona);
+      } catch (err) {
+        throw new Error(
+          `Invalid personaFile JSON at ${personaPath}: ${errorMessage(err)}`,
+        );
+      }
+
+      const localPersona = asRecord(parsedPersona, `agents[${index}].personaFile`);
+      return {
+        ...localPersona,
+        ...agent,
+        persona: localPersona["persona"],
+        promptProfile: localPersona["promptProfile"],
+      };
+    }),
+  );
+
+  return {
+    ...root,
+    agents: hydratedAgents,
+  };
 }
 
 export function parseSimulationConfig(input: unknown): SimulationAppConfig {
@@ -720,26 +781,149 @@ function parsePromptProfile(
   if (language !== "pt-BR" && language !== "en") {
     throw new Error(`${path}.language must be pt-BR or en`);
   }
+
   return {
     personaId: requiredString(profile["personaId"], `${path}.personaId`),
     displayName: requiredString(profile["displayName"], `${path}.displayName`),
+    language,
     identityFrame: requiredString(
       profile["identityFrame"],
       `${path}.identityFrame`,
+    ),
+    coreTraits: optionalStringArray(profile["coreTraits"], `${path}.coreTraits`),
+    valuesAndMotivations: optionalStringArray(
+      profile["valuesAndMotivations"],
+      `${path}.valuesAndMotivations`,
+    ),
+    socialPresence: optionalStringArray(
+      profile["socialPresence"],
+      `${path}.socialPresence`,
+    ),
+    cognitiveStyle: optionalStringArray(
+      profile["cognitiveStyle"],
+      `${path}.cognitiveStyle`,
+    ),
+    emotionalPatterns: optionalStringArray(
+      profile["emotionalPatterns"],
+      `${path}.emotionalPatterns`,
+    ),
+    conflictStyle: optionalStringArray(
+      profile["conflictStyle"],
+      `${path}.conflictStyle`,
+    ),
+    affectionStyle: optionalStringArray(
+      profile["affectionStyle"],
+      `${path}.affectionStyle`,
+    ),
+    publicPrivateDelta: optionalStringArray(
+      profile["publicPrivateDelta"],
+      `${path}.publicPrivateDelta`,
     ),
     voiceGuidelines: asStringArray(
       profile["voiceGuidelines"],
       `${path}.voiceGuidelines`,
     ),
-    styleExamples: asStringArray(
+    styleExamples: parsePromptStyleExamples(
       profile["styleExamples"],
       `${path}.styleExamples`,
     ),
-    relationshipBiases: asStringRecord(
+    privateMotivePatterns: optionalStringArray(
+      profile["privateMotivePatterns"],
+      `${path}.privateMotivePatterns`,
+    ),
+    hardAvoids: optionalStringArray(profile["hardAvoids"], `${path}.hardAvoids`),
+    relationshipBiases: parsePromptRelationshipBiases(
       profile["relationshipBiases"] ?? {},
       `${path}.relationshipBiases`,
     ),
-    language,
+    sourceRefs: parsePromptSourceRefs(
+      profile["sourceRefs"] ?? { assessmentIds: [], lastCompiledAt: "manual-config" },
+      `${path}.sourceRefs`,
+    ),
+  };
+}
+
+function optionalStringArray(value: unknown, path: string): string[] {
+  if (value === undefined) return [];
+  return asStringArray(value, path);
+}
+
+function parsePromptStyleExamples(
+  value: unknown,
+  path: string,
+): PersonaPromptProfile["styleExamples"] {
+  if (Array.isArray(value)) {
+    return {
+      default: asStringArray(value, path),
+      animated: [],
+      dryOrLowEnergy: [],
+      conflict: [],
+    };
+  }
+
+  const examples = asRecord(value, path);
+  return {
+    default: optionalStringArray(examples["default"], `${path}.default`),
+    animated: optionalStringArray(examples["animated"], `${path}.animated`),
+    dryOrLowEnergy: optionalStringArray(
+      examples["dryOrLowEnergy"],
+      `${path}.dryOrLowEnergy`,
+    ),
+    conflict: optionalStringArray(examples["conflict"], `${path}.conflict`),
+  };
+}
+
+function parsePromptRelationshipBiases(
+  value: unknown,
+  path: string,
+): PersonaPromptProfile["relationshipBiases"] {
+  const record = asRecord(value, path);
+  const result: PersonaPromptProfile["relationshipBiases"] = {};
+  for (const [key, item] of Object.entries(record)) {
+    if (typeof item === "string") {
+      result[key] = {
+        view: item,
+        warmth: "medium",
+        trust: "medium",
+        likelyBehaviors: [],
+        triggers: [],
+      };
+      continue;
+    }
+
+    const bias = asRecord(item, `${path}.${key}`);
+    const warmth = requiredString(bias["warmth"], `${path}.${key}.warmth`);
+    const trust = requiredString(bias["trust"], `${path}.${key}.trust`);
+    if (warmth !== "low" && warmth !== "medium" && warmth !== "high") {
+      throw new Error(`${path}.${key}.warmth must be low, medium, or high`);
+    }
+    if (trust !== "low" && trust !== "medium" && trust !== "high") {
+      throw new Error(`${path}.${key}.trust must be low, medium, or high`);
+    }
+
+    result[key] = {
+      view: requiredString(bias["view"], `${path}.${key}.view`),
+      warmth,
+      trust,
+      likelyBehaviors: optionalStringArray(
+        bias["likelyBehaviors"],
+        `${path}.${key}.likelyBehaviors`,
+      ),
+      triggers: optionalStringArray(bias["triggers"], `${path}.${key}.triggers`),
+    };
+  }
+  return result;
+}
+
+function parsePromptSourceRefs(
+  value: unknown,
+  path: string,
+): PersonaPromptProfile["sourceRefs"] {
+  const refs = asRecord(value, path);
+  return {
+    assessmentIds: optionalStringArray(refs["assessmentIds"], `${path}.assessmentIds`),
+    notesPath: optionalString(refs["notesPath"], `${path}.notesPath`),
+    lastCompiledAt: requiredString(refs["lastCompiledAt"], `${path}.lastCompiledAt`),
   };
 }
 

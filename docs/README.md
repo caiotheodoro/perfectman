@@ -14,9 +14,10 @@ Read these in order:
 2. [`architecture/emotion.md`](architecture/emotion.md) - complete 4-layer emotion model (Russell's Circumplex), initiative engine with cold-start bootstrapping, stagnation detection, breaking mechanisms, and personality mutation.
 3. [`concepts/concept-map.md`](concepts/concept-map.md) - complete concept synthesis across all Perfectman notes.
 4. [`architecture/social-presence.md`](architecture/social-presence.md) - social presence architecture, backend timing, initiative paths, and intent resolution.
-5. [`concepts/experiment-brief.md`](concepts/experiment-brief.md) - initial concise experiment setup.
-6. [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md) - raw meeting synthesis covering objectives, personas, actions, mood, socket chat permissions, spectator stance, and open risks.
-7. [`notes/design-conversation-history.md`](notes/design-conversation-history.md) - raw design conversation history, gap analysis, mood/AutoDream research, and timeline brainstorms.
+5. [`personas/README.md`](personas/README.md) - plug-and-play persona setup workflow, local-only persona paths, and interview-agent instructions.
+6. [`concepts/experiment-brief.md`](concepts/experiment-brief.md) - initial concise experiment setup.
+7. [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md) - raw meeting synthesis covering objectives, personas, actions, mood, socket chat permissions, spectator stance, and open risks.
+8. [`notes/design-conversation-history.md`](notes/design-conversation-history.md) - raw design conversation history, gap analysis, mood/AutoDream research, and timeline brainstorms.
 
 ## Folder Structure
 
@@ -25,6 +26,7 @@ Read these in order:
 - [`notes/`](notes/) - raw source notes, transcripts, and meeting material.
 - [`implementation/`](implementation/) - post-merge implementation notes per dev stream.
 - [`plans/`](plans/) - cross-boundary contracts and per-dev implementation plans.
+- [`personas/`](personas/) - generic persona setup docs and templates only. Real/person-specific subfolders are local-only and gitignored.
 
 ## Core Thesis
 
@@ -145,6 +147,8 @@ The novela layer, implemented as a projection over committed events:
 - Masking: [`concepts/concept-map.md`](concepts/concept-map.md), [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md)
 - Lurking and silence: [`concepts/concept-map.md`](concepts/concept-map.md), [`architecture/social-presence.md`](architecture/social-presence.md)
 - Mood and emotional drift: [`architecture/emotion.md`](architecture/emotion.md), [`notes/design-conversation-history.md`](notes/design-conversation-history.md), [`concepts/concept-map.md`](concepts/concept-map.md)
+- Persona setup workflow: [`personas/README.md`](personas/README.md)
+- Personality/persona questionnaires: [`notes/persona-assessment-canonical.md`](notes/persona-assessment-canonical.md), [`notes/personality-assessment-research.md`](notes/personality-assessment-research.md), [`notes/friend-questionnaire.md`](notes/friend-questionnaire.md), [`notes/solo-questionnaire.md`](notes/solo-questionnaire.md)
 
 ### Channel World
 
@@ -185,11 +189,35 @@ pnpm --filter @perfectman/server simulation
 pnpm --filter @perfectman/server simulation --config path/to/config.json
 ```
 
-Config format: see [`../examples/simulation.config.example.json`](../examples/simulation.config.example.json).
+Config format: see [`../examples/simulations/mock.inline-personas.example.json`](../examples/simulations/mock.inline-personas.example.json). For local friend-group personas stored outside git, see [`../examples/simulations/mock.persona-file.example.json`](../examples/simulations/mock.persona-file.example.json), [`../examples/personas/`](../examples/personas/), and [`personas/README.md`](personas/README.md).
 
 `buildConfiguredSimulation` in `packages/server/src/config/simulation-config.ts` is the composition root — it validates the config, wires repositories (in-memory or SQLite), delivery gateways (mock, stdout, or composite), `AgentConfigRegistry`, `AgentRuntime`, and `SimulationRuntime`.
 
-`config/index.json` is gitignored. Copy the example, fill in your agents, and set the appropriate API key env vars if not using `providerType: "mock"`.
+`config/index.json` is gitignored. Copy the example, fill in your agents, and set the appropriate API key env vars if not using `providerType: "mock"`. To keep real people out of git, put compiled persona files in `config/personas/*.persona.json` and reference them from `config/index.json` using `personaFile`.
+
+### Local friend-group persona quickstart
+
+```bash
+mkdir -p config/personas config/persona-notes
+cp examples/personas/setup/persona-setup.config.example.json config/persona-setup.local.json
+cp examples/personas/compiled/example-friend.persona.example.json config/personas/example-friend.persona.json
+cp examples/simulations/mock.persona-file.example.json config/index.json
+```
+
+Then edit:
+
+- `config/persona-setup.local.json` — who you are interviewing and which aliases/agent ids to use.
+- `config/personas/<agent-id>.persona.json` — compiled runtime persona and prompt profile.
+- `config/index.json` — local simulation config; each agent should use `"personaFile": "personas/<agent-id>.persona.json"`.
+
+Optional local helper: create/use `docs/personas/local-questionnaire-agent.md` to guide an AI agent through the interview and synthesis process. That file is intentionally gitignored.
+
+Before committing, check that real persona files are ignored:
+
+```bash
+git status --ignored --short docs/personas config
+git check-ignore -v config/index.json config/personas/example-friend.persona.json config/persona-notes/example-friend/raw.md docs/personas/local-questionnaire-agent.md
+```
 
 For the FreeLLMAPI config, run the local proxy first:
 

@@ -1,0 +1,58 @@
+{
+  "simulation": {
+    "id": "local-persona-file-dev",
+    "name": "Local Persona File Dev Simulation",
+    "seed": 42,
+    "settings": {
+      "omniscientSpectatorMode": false,
+      "allowPrivateChannels": true,
+      "maxPrivateChannelsPerAgent": 3,
+      "maxMessagesPerMinutePerAgent": 30,
+      "llmCallBudgetPerMinute": 100,
+      "pulseIntervalMs": 3000,
+      "tokenBudgetPerHour": 1000000
+    }
+  },
+  "persistence": {
+    "type": "memory"
+  },
+  "debug": {
+    "operatorEvents": true,
+    "pulseMetrics": true,
+    "stdoutDelivery": true
+  },
+  "deliveryGateways": [
+    {
+      "id": "stdout",
+      "type": "stdout",
+      "debug": true
+    }
+  ],
+  "channels": [
+    {
+      "id": "general",
+      "type": "public_channel",
+      "name": "general",
+      "default": true,
+      "memberAgentIds": [
+        "example-friend"
+      ]
+    }
+  ],
+  "agents": [
+    {
+      "id": "example-friend",
+      "presence": "active",
+      "personaFile": "personas/example-friend.persona.json",
+      "llm": {
+        "providerType": "mock",
+        "modelName": "mock-model",
+        "maxInputTokens": 2048,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "timeoutMs": 5000,
+        "retryCount": 1
+      }
+    }
+  ]
+}

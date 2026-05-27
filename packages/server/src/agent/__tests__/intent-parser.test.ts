@@ -3,7 +3,7 @@ import { IntentParser } from "../intent-parser.js";
 import type { AvailableAction } from "@perfectman/shared";
 
 describe("IntentParser", () => {
-  const actorId = "agent-bruno";
+  const actorId = "agent-peer";
 
   const availableActions: AvailableAction[] = [
     {
@@ -15,13 +15,13 @@ describe("IntentParser", () => {
     {
       intentType: "reply_to_message",
       channelTargets: ["general-id"],
-      personTargets: ["agent-caio", "agent-goulart"],
+      personTargets: ["agent-peer", "example-friend"],
       blocked: false,
     },
     {
       intentType: "create_channel",
       channelTargets: [],
-      personTargets: ["agent-caio"],
+      personTargets: ["agent-peer"],
       blocked: true,
       blockReason: "Rate limited on private channel creation",
     },
@@ -56,12 +56,12 @@ Here is my response:
 \`\`\`json
 {
   "id": "intent-456",
-  "actorId": "agent-bruno",
+  "actorId": "agent-peer",
   "intentType": "reply_to_message",
   "channelTarget": "general-id",
-  "personTargets": ["agent-caio"],
+  "personTargets": ["agent-peer"],
   "visibleContent": "Sure, let's do it.",
-  "privateMotiveSummary": "Agree with Caio",
+  "privateMotiveSummary": "Agree with Agent Peer",
   "emotionDrivers": [],
   "motivationDrivers": [],
   "memoryWrites": []
@@ -75,15 +75,15 @@ Hope you like it!
     expect(result.fallbackApplied).toBe(false);
     expect(result.intent.id).toBe("intent-456");
     expect(result.intent.intentType).toBe("reply_to_message");
-    expect(result.intent.personTargets).toContain("agent-caio");
-    expect(result.intent.privateMotiveSummary).toBe("Agree with Caio");
+    expect(result.intent.personTargets).toContain("agent-peer");
+    expect(result.intent.privateMotiveSummary).toBe("Agree with Agent Peer");
   });
 
   it("should successfully repair stray trailing commas", () => {
     const rawText = `
     {
       "id": "intent-comma",
-      "actorId": "agent-bruno",
+      "actorId": "agent-peer",
       "intentType": "send_message",
       "channelTarget": "general-id",
       "personTargets": [],
@@ -155,7 +155,7 @@ Hope you like it!
       actorId: actorId,
       intentType: "reply_to_message",
       channelTarget: "general-id",
-      personTargets: ["agent-unauthorized"], // not caio or goulart
+      personTargets: ["agent-unauthorized"], // not agent-peer or example-friend
       visibleContent: "Who are you?",
       privateMotiveSummary: "Attempt to talk to stranger",
       emotionDrivers: [],
@@ -175,7 +175,7 @@ Hope you like it!
       id: "intent-blocked",
       actorId: actorId,
       intentType: "create_channel", // blocked in availableActions
-      personTargets: ["agent-caio"],
+      personTargets: ["agent-peer"],
       privateMotiveSummary: "Force channel creation",
       emotionDrivers: [],
       motivationDrivers: [],

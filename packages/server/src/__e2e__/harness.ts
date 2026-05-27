@@ -23,6 +23,7 @@ import type {
 import type { AgentConfigRegistry } from "../agent/agent-config-registry.js";
 import { AgentRuntime } from "../agent/agent-runtime.js";
 import { DEFAULT_MOCK_CONFIG } from "../agent/persona-loader.js";
+import { GENERIC_PROMPT_PROFILE } from "../agent/persona-prompt-profile.js";
 import {
   buildConfiguredSimulation,
   type AgentConfig,
@@ -272,15 +273,19 @@ function agentContextToConfig(agent: AgentContext): AgentConfig {
     presence: agent.state.presence,
     persona: agent.persona,
     promptProfile: {
+      ...GENERIC_PROMPT_PROFILE,
       personaId: agent.persona.id,
       displayName: agent.persona.name,
+      language: "pt-BR",
       identityFrame: `You are ${agent.persona.name}, a ${agent.persona.archetype}. ${agent.persona.writingStyle}`,
       voiceGuidelines: [
         agent.persona.writingStyle,
       ],
-      styleExamples: agent.persona.styleExamples,
+      styleExamples: {
+        ...GENERIC_PROMPT_PROFILE.styleExamples,
+        default: agent.persona.styleExamples,
+      },
       relationshipBiases: {},
-      language: "pt-BR",
     },
     llm: DEFAULT_MOCK_CONFIG,
     initialCoreMood: agent.state.coreMood,

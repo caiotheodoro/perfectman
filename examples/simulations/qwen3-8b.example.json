@@ -1,16 +1,16 @@
 {
   "simulation": {
-    "id": "local-dev",
-    "name": "Local Dev Simulation",
+    "id": "qwen3-8b-llm",
+    "name": "Qwen3 8B LLM Simulation",
     "seed": 42,
     "settings": {
       "omniscientSpectatorMode": false,
       "allowPrivateChannels": true,
       "maxPrivateChannelsPerAgent": 3,
       "maxMessagesPerMinutePerAgent": 30,
-      "llmCallBudgetPerMinute": 100,
+      "llmCallBudgetPerMinute": 20,
       "pulseIntervalMs": 3000,
-      "tokenBudgetPerHour": 1000000
+      "tokenBudgetPerHour": 200000
     }
   },
   "persistence": {
@@ -35,52 +35,54 @@
       "name": "general",
       "default": true,
       "memberAgentIds": [
-        "ana",
+        "example-friend",
         "bruno"
       ]
     }
   ],
   "agents": [
     {
-      "id": "ana",
+      "id": "example-friend",
       "presence": "active",
       "persona": {
-        "id": "ana",
-        "name": "Ana",
+        "id": "example-friend",
+        "name": "Example Friend",
         "archetype": "observer",
         "writingStyle": "brief, careful, warm but guarded",
         "styleExamples": [
-          "oi gente",
-          "entendi",
-          "vou pensar um pouco"
+          "hey everyone",
+          "got it",
+          "i need to think for a bit"
         ]
       },
       "promptProfile": {
-        "personaId": "ana",
-        "displayName": "Ana",
-        "identityFrame": "You are Ana, a careful participant who notices tension before speaking.",
+        "personaId": "example-friend",
+        "displayName": "Example Friend",
+        "identityFrame": "You are Example Friend, a careful participant who notices tension before speaking.",
         "voiceGuidelines": [
           "Keep messages short.",
           "Sound natural and slightly guarded."
         ],
         "styleExamples": [
-          "oi gente",
-          "entendi",
-          "vou pensar um pouco"
+          "hey everyone",
+          "got it",
+          "i need to think for a bit"
         ],
         "relationshipBiases": {
           "bruno": "You think Bruno is quiet but worth checking on."
         },
-        "language": "pt-BR"
+        "language": "en"
       },
       "llm": {
-        "providerType": "mock",
-        "modelName": "mock-model",
-        "maxInputTokens": 2048,
+        "providerType": "qwen3_8b",
+        "baseUrl": "http://localhost:11434/v1",
+        "modelName": "qwen3:8b",
+        "maxInputTokens": 4096,
         "maxOutputTokens": 512,
         "temperature": 0.7,
-        "timeoutMs": 5000,
-        "retryCount": 1
+        "timeoutMs": 30000,
+        "retryCount": 2,
+        "responseFormatJson": true
       }
     },
     {
@@ -111,18 +113,20 @@
           "hm"
         ],
         "relationshipBiases": {
-          "ana": "You trust Ana more than most people in the room."
+          "example-friend": "You trust Example Friend more than most people in the room."
         },
-        "language": "pt-BR"
+        "language": "en"
       },
       "llm": {
-        "providerType": "mock",
-        "modelName": "mock-model",
-        "maxInputTokens": 2048,
+        "providerType": "qwen3_8b",
+        "baseUrl": "http://localhost:11434/v1",
+        "modelName": "qwen3:8b",
+        "maxInputTokens": 4096,
         "maxOutputTokens": 512,
         "temperature": 0.7,
-        "timeoutMs": 5000,
-        "retryCount": 1
+        "timeoutMs": 30000,
+        "retryCount": 2,
+        "responseFormatJson": true
       }
     }
   ]

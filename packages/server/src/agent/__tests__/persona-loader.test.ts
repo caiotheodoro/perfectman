@@ -1,33 +1,29 @@
 import { describe, it, expect } from "vitest";
 import { PersonaLoader } from "../persona-loader.js";
+import { GENERIC_PROMPT_PROFILE } from "../persona-prompt-profile.js";
 
 describe("PersonaLoader", () => {
-  it("always returns a generic profile with the given personaId", () => {
-    const profile = PersonaLoader.getProfile("goulart");
-    expect(profile).toBeDefined();
-    expect(profile.personaId).toBe("goulart");
-    expect(profile.displayName).toBe("Goulart");
-    expect(profile.language).toBe("en");
-    expect(profile.identityFrame).toContain("standard chat room participant");
-  });
-
-  it("capitalises the displayName from the personaId", () => {
-    const profile = PersonaLoader.getProfile("BRUNO");
-    expect(profile.displayName).toBe("BRUNO");
-    expect(profile.personaId).toBe("BRUNO");
-  });
-
-  it("returns a generic profile for any unknown persona ID", () => {
+  it("returns a generic fallback profile for any persona ID not supplied by local config", () => {
     const profile = PersonaLoader.getProfile("unknown-persona");
+
     expect(profile).toBeDefined();
+    expect(profile).not.toBe(GENERIC_PROMPT_PROFILE);
     expect(profile.personaId).toBe("unknown-persona");
     expect(profile.displayName).toBe("Unknown-persona");
     expect(profile.language).toBe("en");
     expect(profile.identityFrame).toContain("standard chat room participant");
   });
 
+  it("does not ship versioned real-person profiles by persona ID", () => {
+    const profile = PersonaLoader.getProfile("real-person-id");
+
+    expect(profile.personaId).toBe("real-person-id");
+    expect(profile.displayName).toBe("Real-person-id");
+    expect(profile.identityFrame).toContain("standard chat room participant");
+  });
+
   it("should default LlmConfig to mock settings", () => {
-    const config = PersonaLoader.getLlmConfig("bruno");
+    const config = PersonaLoader.getLlmConfig("example-friend");
     expect(config).toBeDefined();
     expect(config.providerType).toBe("mock");
     expect(config.modelName).toBe("mock-model");
@@ -40,7 +36,7 @@ describe("PersonaLoader", () => {
       modelName: "qwen-3-special",
       temperature: 0.9,
     };
-    const config = PersonaLoader.getLlmConfig("goulart", overrides);
+    const config = PersonaLoader.getLlmConfig("example-friend", overrides);
     expect(config).toBeDefined();
     expect(config.providerType).toBe("qwen3_8b");
     expect(config.modelName).toBe("qwen-3-special");
