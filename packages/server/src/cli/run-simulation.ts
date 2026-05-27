@@ -1,13 +1,16 @@
 import {
-  DEFAULT_SIMULATION_CONFIG_FILENAME,
   buildConfiguredSimulation,
-  findDefaultSimulationConfigPath,
   loadSimulationConfig,
 } from "../config/simulation-config.js";
+import { getConfigPath } from "./config-path.js";
+import { loadEnvFile } from "./env.js";
+import { assertRequiredLlmServicesAvailable } from "./llm-health-check.js";
 
 async function main(): Promise<void> {
+  loadEnvFile();
   const configPath = getConfigPath(process.argv.slice(2));
   const config = await loadSimulationConfig(configPath);
+  await assertRequiredLlmServicesAvailable(config);
   const handle = await buildConfiguredSimulation(config);
 
   const shutdown = async (signal: string): Promise<void> => {
@@ -25,31 +28,6 @@ async function main(): Promise<void> {
 
   await handle.runtime.start(handle.simulationId);
   process.stdout.write(`simulation_started ${handle.simulationId}\n`);
-}
-
-function getConfigPath(args: string[]): string {
-  const configIndex = args.indexOf("--config");
-  if (configIndex !== -1) {
-    const value = args[configIndex + 1];
-    if (!value) throw new Error("--config requires a path");
-    return value;
-  }
-
-  const shortIndex = args.indexOf("-c");
-  if (shortIndex !== -1) {
-    const value = args[shortIndex + 1];
-    if (!value) throw new Error("-c requires a path");
-    return value;
-  }
-
-  if (args.length === 0) {
-    return findDefaultSimulationConfigPath();
-  }
-
-  throw new Error(
-    `Usage: pnpm --filter @perfectman/server run simulation -- [--config path/to/config.json]\n` +
-      `Default config path: ${DEFAULT_SIMULATION_CONFIG_FILENAME}`,
-  );
 }
 
 main().catch((err) => {

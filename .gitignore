@@ -7,6 +7,7 @@ packages/*/node_modules/
 sample_data/
 .claude/_output/*
 
+.env
 # Local runtime config, generated state, and private persona evidence
 config/index.json
 config/persona-setup*.json
