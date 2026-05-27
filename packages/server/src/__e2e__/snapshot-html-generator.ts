@@ -1,16 +1,18 @@
 /**
- * snapshot-html-generator — generates a self-contained single-file HTML replay viewer.
+ * snapshot-html-generator — self-contained single-file HTML replay viewer.
  *
- * Features:
- * - Pulse-by-pulse timeline navigation
- * - Channel tabs with perspective filtering (who sees what)
- * - Per-agent panels: emotion circumplex, social emotion bars, thinking, dreaming
- * - No external dependencies — pure HTML/CSS/JS
+ * Layout: story-first vertical feed (story-col ~70%) + compact agent panel (~30%)
+ * Each pulse section shows messages → inline thinking → dreaming asides for silent agents.
+ * No external dependencies — system fonts only.
  */
 import type { SimulationReplay } from "./simulation-recorder.js";
 
 export function generateHtml(replay: SimulationReplay): string {
   const dataJson = JSON.stringify(replay, null, 0);
+
+  const agentOptions = replay.agentIds
+    .map(id => `<option value="${escapeHtml(id)}">${escapeHtml(replay.agentNames[id] ?? id)}</option>`)
+    .join("\n        ");
 
   return `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -25,37 +27,27 @@ ${CSS}
 <body>
 
 <header class="top-bar">
-  <div class="sim-title">${escapeHtml(replay.simulationName)}</div>
-  <div class="pulse-nav">
-    <button class="nav-btn" id="btn-prev" onclick="prevPulse()">◀</button>
-    <div class="timeline" id="timeline"></div>
-    <button class="nav-btn" id="btn-next" onclick="nextPulse()">▶</button>
+  <div class="top-bar-row1">
+    <div class="sim-title">[REPLAY] ${escapeHtml(replay.simulationName)}</div>
+    <button class="nav-btn" onclick="prevPulse()">◀</button>
+    <div class="scrubber" id="scrubber"></div>
+    <button class="nav-btn" onclick="nextPulse()">▶</button>
   </div>
-  <div class="pulse-label">Pulso <span id="pulse-display">0</span> / ${replay.pulses.length - 1}</div>
+  <div class="top-bar-row2">
+    <div class="ch-tabs" id="ch-tabs"></div>
+    <div class="perspective-wrap">
+      <span>POV</span>
+      <select id="perspective-select" onchange="setPerspective(this.value)">
+        <option value="omniscient">⊕ onisciente</option>
+        ${agentOptions}
+      </select>
+    </div>
+  </div>
 </header>
 
 <div class="main-layout">
-
-  <!-- Left: channels + chat -->
-  <div class="left-panel">
-    <div class="channel-tabs" id="channel-tabs"></div>
-    <div class="perspective-row">
-      <label>Perspectiva:</label>
-      <select id="perspective-select" onchange="setPerspective(this.value)">
-        <option value="omniscient">👁 Onisciente</option>
-        ${replay.agentIds.map(id =>
-          `<option value="${id}">${escapeHtml(replay.agentNames[id] ?? id)}</option>`
-        ).join("\n        ")}
-      </select>
-    </div>
-    <div class="chat-feed" id="chat-feed"></div>
-  </div>
-
-  <!-- Right: agent cards -->
-  <div class="right-panel">
-    <div class="agent-grid" id="agent-grid"></div>
-  </div>
-
+  <div class="story-col" id="story-col"></div>
+  <div class="agent-panel" id="agent-panel"></div>
 </div>
 
 <script id="REPLAY_DATA" type="application/json">
@@ -85,628 +77,707 @@ const CSS = `
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --bg: #0d0d1a;
-  --bg2: #13131f;
-  --bg3: #1a1a2e;
-  --border: #2a2a4a;
-  --text: #e0e0f0;
-  --text2: #8888aa;
-  --text3: #5555aa;
-  --accent: #7c5cfc;
-  --pulse-active: #7c5cfc;
-  --ana:   #5bc8f5;
-  --bruno: #7ee78e;
-  --carla: #f5765a;
-  --diego: #f0c060;
-  --ana-dim:   #1a3e52;
-  --bruno-dim: #1a3d22;
-  --carla-dim: #3d1e16;
-  --diego-dim: #3d3010;
+  --bg:       #06060f;
+  --surface:  #0d0d1c;
+  --surface2: #12122a;
+  --border:   #1e1e3c;
+  --text:     #d0d0f0;
+  --text2:    #7070a8;
+  --text3:    #3a3a78;
+  --accent:   #5050c8;
+  --ana:      #4da8ff;
+  --bruno:    #4ddb88;
+  --carla:    #ff5540;
+  --diego:    #ffaa30;
+  --font-mono: 'Courier New', 'Consolas', 'Lucida Console', monospace;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', sans-serif;
 }
 
 html, body {
-  height: 100%;
+  height: 100%; width: 100%;
   background: var(--bg);
   color: var(--text);
-  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-family: var(--font-mono);
   font-size: 13px;
   overflow: hidden;
 }
 
-/* ── Top bar ── */
+body { display: flex; flex-direction: column; }
+
+/* ── TOP BAR ── */
 .top-bar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  background: var(--bg2);
+  display: flex; flex-direction: column;
+  background: var(--surface);
   border-bottom: 1px solid var(--border);
-  height: 52px;
   flex-shrink: 0;
 }
-.sim-title { font-weight: 600; font-size: 14px; color: var(--text); white-space: nowrap; }
-.pulse-nav { display: flex; align-items: center; gap: 6px; flex: 1; min-width: 0; }
-.nav-btn {
-  background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
-  border-radius: 4px; padding: 3px 8px; cursor: pointer; flex-shrink: 0;
+.top-bar-row1 {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 14px; height: 44px;
 }
-.nav-btn:hover { border-color: var(--accent); color: var(--text); }
-.timeline {
-  display: flex; gap: 4px; overflow-x: auto; flex: 1;
-  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
+.top-bar-row2 {
+  display: flex; align-items: center; gap: 0;
+  padding: 0 14px 6px;
 }
-.timeline::-webkit-scrollbar { height: 4px; }
-.timeline::-webkit-scrollbar-track { background: transparent; }
-.timeline::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
-.pulse-btn {
-  background: var(--bg3); border: 1px solid var(--border); color: var(--text2);
-  border-radius: 4px; padding: 3px 8px; cursor: pointer; white-space: nowrap;
-  font-size: 11px; flex-shrink: 0; min-width: 32px;
-}
-.pulse-btn:hover { border-color: var(--accent); color: var(--text); }
-.pulse-btn.active { background: var(--pulse-active); border-color: var(--pulse-active); color: #fff; }
-.pulse-label { font-size: 12px; color: var(--text2); white-space: nowrap; }
 
-/* ── Main layout ── */
-body { display: flex; flex-direction: column; }
+.sim-title {
+  font-family: var(--font-mono);
+  font-weight: 700; font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.1em; text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Scrubber / heatmap */
+.scrubber {
+  display: flex; gap: 2px; flex: 1; align-items: center;
+}
+.scrubber-tick {
+  flex: 1; height: 20px; border-radius: 2px;
+  cursor: pointer; border: 1px solid transparent;
+  transition: border-color 0.1s; position: relative;
+  min-width: 14px;
+}
+.scrubber-tick:hover { border-color: var(--text2); }
+.scrubber-tick.active { border-color: var(--text) !important; }
+.scrubber-tick-label {
+  position: absolute; bottom: 1px; left: 50%;
+  transform: translateX(-50%);
+  font-size: 8px; color: rgba(255,255,255,0.45);
+  font-family: var(--font-mono); pointer-events: none;
+}
+
+.nav-btn {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text2); border-radius: 3px;
+  padding: 3px 9px; cursor: pointer;
+  font-family: var(--font-mono); font-size: 11px;
+  flex-shrink: 0;
+}
+.nav-btn:hover { color: var(--text); border-color: var(--accent); }
+
+/* Channel tabs */
+.ch-tabs { display: flex; gap: 1px; }
+.ch-tab {
+  padding: 4px 12px;
+  font-family: var(--font-mono); font-size: 11px;
+  color: var(--text3); background: transparent;
+  border: 1px solid transparent;
+  border-bottom: 2px solid transparent;
+  cursor: pointer; letter-spacing: 0.03em;
+}
+.ch-tab:hover { color: var(--text2); }
+.ch-tab.active { color: var(--text); border-bottom-color: var(--accent); }
+
+/* Perspective dropdown */
+.perspective-wrap {
+  margin-left: auto;
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; color: var(--text3);
+}
+.perspective-wrap select {
+  background: var(--surface2); border: 1px solid var(--border);
+  color: var(--text); border-radius: 3px;
+  padding: 2px 6px;
+  font-family: var(--font-mono); font-size: 10px;
+}
+
+/* ── MAIN LAYOUT ── */
 .main-layout {
   display: flex; flex: 1; min-height: 0; overflow: hidden;
 }
 
-/* ── Left panel ── */
-.left-panel {
-  width: 380px; min-width: 280px; max-width: 420px;
-  display: flex; flex-direction: column;
+/* ── STORY COLUMN ── */
+.story-col {
+  flex: 7; overflow-y: auto;
   border-right: 1px solid var(--border);
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.story-col::-webkit-scrollbar { width: 5px; }
+.story-col::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+/* Pulse section */
+.pulse-section { border-bottom: 1px solid var(--border); }
+.pulse-section.focused { background: rgba(80,80,200,0.025); }
+
+.pulse-divider {
+  display: flex; align-items: center; gap: 10px;
+  padding: 7px 14px 5px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 10;
+}
+.pulse-divider-label {
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--accent); letter-spacing: 0.12em;
+  white-space: nowrap;
+}
+.pulse-divider-line { flex: 1; height: 1px; background: var(--border); }
+.pulse-event-count {
+  font-family: var(--font-mono); font-size: 9px;
+  color: var(--text3); white-space: nowrap;
+}
+
+.pulse-body { padding: 4px 0 8px; }
+
+/* Message row */
+.msg-row { padding: 5px 14px 1px; }
+.msg-row.hidden-by-channel,
+.msg-row.hidden-by-perspective { display: none; }
+
+.msg-line {
+  display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap;
+}
+.msg-sigil { font-size: 11px; flex-shrink: 0; width: 14px; text-align: center; }
+.msg-sender {
+  font-family: var(--font-mono); font-weight: 700; font-size: 11px;
   flex-shrink: 0;
 }
-.channel-tabs {
-  display: flex; gap: 2px; padding: 6px 8px 0;
-  background: var(--bg2); border-bottom: 1px solid var(--border);
-}
-.ch-tab {
-  padding: 5px 10px; border-radius: 6px 6px 0 0; cursor: pointer;
-  font-size: 11px; color: var(--text2); background: var(--bg3);
-  border: 1px solid transparent; border-bottom: none;
-}
-.ch-tab:hover { color: var(--text); }
-.ch-tab.active {
-  background: var(--bg); color: var(--text);
-  border-color: var(--border); border-bottom-color: var(--bg);
-  margin-bottom: -1px; z-index: 1; position: relative;
-}
-.perspective-row {
-  display: flex; align-items: center; gap: 8px;
-  padding: 6px 10px; background: var(--bg2); border-bottom: 1px solid var(--border);
-  font-size: 11px; color: var(--text2);
-}
-.perspective-row select {
-  background: var(--bg3); border: 1px solid var(--border); color: var(--text);
-  border-radius: 4px; padding: 2px 6px; font-size: 11px;
-}
-.chat-feed {
-  flex: 1; overflow-y: auto; padding: 10px;
-  display: flex; flex-direction: column; gap: 6px;
-  scrollbar-width: thin; scrollbar-color: var(--border) transparent;
-}
-.chat-feed::-webkit-scrollbar { width: 5px; }
-.chat-feed::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+.msg-sender.ana   { color: var(--ana); }
+.msg-sender.bruno { color: var(--bruno); }
+.msg-sender.carla { color: var(--carla); }
+.msg-sender.diego { color: var(--diego); }
 
-.msg-bubble {
-  display: flex; gap: 8px; align-items: flex-start;
-  padding: 6px 8px; border-radius: 8px; background: var(--bg2);
-  border-left: 3px solid var(--border);
+.msg-channel-tag {
+  font-size: 9px; color: var(--text3);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 2px; padding: 0 4px; flex-shrink: 0;
 }
-.msg-bubble.ana   { border-left-color: var(--ana);   background: var(--ana-dim); }
-.msg-bubble.bruno { border-left-color: var(--bruno); background: var(--bruno-dim); }
-.msg-bubble.carla { border-left-color: var(--carla); background: var(--carla-dim); }
-.msg-bubble.diego { border-left-color: var(--diego); background: var(--diego-dim); }
-.msg-bubble.system { border-left-color: var(--text3); opacity: 0.7; }
+.msg-content {
+  font-family: var(--font-sans); font-size: 12px;
+  color: var(--text); line-height: 1.5; word-break: break-word;
+}
+.msg-type-tag { font-size: 9px; color: var(--text3); font-style: italic; flex-shrink: 0; }
 
-.msg-avatar {
-  width: 22px; height: 22px; border-radius: 50%; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 10px; font-weight: 700;
+/* Inline thought bubble */
+.thought-line {
+  display: flex; align-items: flex-start; gap: 7px;
+  padding: 2px 14px 5px 35px;
 }
-.msg-avatar.ana   { background: var(--ana);   color: #000; }
-.msg-avatar.bruno { background: var(--bruno); color: #000; }
-.msg-avatar.carla { background: var(--carla); color: #000; }
-.msg-avatar.diego { background: var(--diego); color: #000; }
-.msg-body { flex: 1; min-width: 0; }
-.msg-meta {
-  display: flex; gap: 6px; align-items: baseline; margin-bottom: 2px;
+.thought-line.hidden-by-channel,
+.thought-line.hidden-by-perspective { display: none; }
+.thought-sigil { font-size: 10px; flex-shrink: 0; color: var(--text3); margin-top: 1px; }
+.thought-body { flex: 1; }
+.thought-text {
+  font-family: var(--font-sans); font-size: 11px;
+  color: var(--text2); font-style: italic; line-height: 1.4;
 }
-.msg-name { font-weight: 600; font-size: 11px; }
-.msg-name.ana   { color: var(--ana); }
-.msg-name.bruno { color: var(--bruno); }
-.msg-name.carla { color: var(--carla); }
-.msg-name.diego { color: var(--diego); }
-.msg-pulse { font-size: 10px; color: var(--text3); }
-.msg-text { font-size: 12px; line-height: 1.4; word-break: break-word; }
-.msg-channel-badge {
-  font-size: 9px; color: var(--text3); background: var(--bg3);
-  border-radius: 3px; padding: 1px 4px; white-space: nowrap;
+.thought-drivers { display: flex; gap: 3px; flex-wrap: wrap; margin-top: 3px; }
+.driver-tag {
+  font-size: 9px; padding: 0 4px; border-radius: 2px;
+  font-family: var(--font-mono); font-style: normal;
 }
-.msg-type-badge {
-  font-size: 9px; color: var(--text3); font-style: italic;
+.driver-tag.emo { border: 1px solid #818cf8; color: #818cf8; }
+.driver-tag.mot { border: 1px solid #4ade80; color: #4ade80; }
+
+/* Dreaming aside (silent agents) */
+.dream-aside { padding: 3px 14px 3px 35px; }
+.dream-aside.hidden-by-perspective { display: none; }
+.dream-line { display: flex; align-items: baseline; gap: 6px; }
+.dream-sigil { font-size: 10px; color: var(--text3); flex-shrink: 0; }
+.dream-agent-name {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 700; flex-shrink: 0;
 }
-.empty-state {
-  color: var(--text3); text-align: center; padding: 20px; font-style: italic;
+.dream-agent-name.ana   { color: #2a6499; }
+.dream-agent-name.bruno { color: #2a7050; }
+.dream-agent-name.carla { color: #7a2e26; }
+.dream-agent-name.diego { color: #7a5820; }
+.dream-text-content {
+  font-family: var(--font-sans); font-size: 11px;
+  color: var(--text3); font-style: italic;
 }
 
-/* ── Right panel (agent grid) ── */
-.right-panel { flex: 1; overflow-y: auto; padding: 10px; min-width: 0; }
-.agent-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 10px;
+.pulse-empty {
+  padding: 8px 14px;
+  font-size: 11px; color: var(--text3); font-style: italic;
 }
 
-/* ── Agent card ── */
-.agent-card {
-  background: var(--bg2); border: 1px solid var(--border);
-  border-radius: 10px; overflow: hidden;
+/* ── AGENT PANEL ── */
+.agent-panel {
+  flex: 3; display: flex; flex-direction: column;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+  min-width: 200px; max-width: 340px;
 }
-.agent-card-header {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 12px; font-weight: 600; font-size: 13px;
-  border-bottom: 1px solid var(--border);
+.agent-panel::-webkit-scrollbar { width: 4px; }
+.agent-panel::-webkit-scrollbar-thumb { background: var(--border); }
+
+.agent-mini-card { border-bottom: 1px solid var(--border); padding: 8px 10px; }
+
+.agent-mini-header {
+  display: flex; align-items: center; gap: 5px; margin-bottom: 6px;
 }
-.agent-dot { width: 10px; height: 10px; border-radius: 50%; }
+.agent-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
 .agent-dot.ana   { background: var(--ana); }
 .agent-dot.bruno { background: var(--bruno); }
 .agent-dot.carla { background: var(--carla); }
 .agent-dot.diego { background: var(--diego); }
-.agent-name.ana   { color: var(--ana); }
-.agent-name.bruno { color: var(--bruno); }
-.agent-name.carla { color: var(--carla); }
-.agent-name.diego { color: var(--diego); }
-.agent-archetype { font-size: 10px; color: var(--text3); font-weight: 400; }
-.agent-action-badge {
-  margin-left: auto; font-size: 10px; padding: 2px 6px;
-  border-radius: 4px; background: var(--bg3); color: var(--text2);
+.agent-mini-name {
+  font-family: var(--font-mono); font-size: 11px; font-weight: 700;
+}
+.agent-mini-name.ana   { color: var(--ana); }
+.agent-mini-name.bruno { color: var(--bruno); }
+.agent-mini-name.carla { color: var(--carla); }
+.agent-mini-name.diego { color: var(--diego); }
+.agent-mini-arch { font-size: 9px; color: var(--text3); }
+.agent-mini-action {
+  margin-left: auto; font-size: 9px; color: var(--text2);
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 2px; padding: 1px 4px;
 }
 
-.agent-card-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
+.agent-mini-body { display: flex; gap: 8px; align-items: flex-start; margin-bottom: 5px; }
 
-/* Circumplex */
-.circumplex-wrap { display: flex; gap: 10px; align-items: flex-start; }
-.circumplex-container { flex-shrink: 0; }
-.circumplex-svg { display: block; }
-.mood-labels { font-size: 9px; color: var(--text3); display: flex; flex-direction: column; gap: 2px; }
-.mood-label-row { display: flex; gap: 4px; }
-.mood-val { color: var(--text2); font-variant-numeric: tabular-nums; }
-
-/* Social emotion bars */
-.section-label {
-  font-size: 10px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px;
-  margin-bottom: 4px;
+/* Mini circumplex */
+.mini-emo-bars { flex: 1; display: flex; flex-direction: column; gap: 3px; }
+.mini-emo-row { display: flex; align-items: center; gap: 4px; }
+.mini-emo-name {
+  width: 68px; font-size: 9px; color: var(--text3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  text-align: right;
 }
-.emo-bars { display: flex; flex-direction: column; gap: 3px; }
-.emo-row { display: flex; align-items: center; gap: 6px; }
-.emo-name { width: 90px; font-size: 10px; color: var(--text2); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.emo-bar-track { flex: 1; height: 6px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
-.emo-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
-.emo-bar-fill.positive { background: #4ade80; }
-.emo-bar-fill.negative { background: #f87171; }
-.emo-bar-fill.neutral  { background: #818cf8; }
-.emo-val { width: 32px; font-size: 10px; color: var(--text3); font-variant-numeric: tabular-nums; text-align: right; }
+.mini-emo-track {
+  flex: 1; height: 4px; background: var(--surface2);
+  border-radius: 2px; overflow: hidden;
+}
+.mini-emo-fill { height: 100%; border-radius: 2px; }
+.mini-emo-fill.positive { background: #4ade80; }
+.mini-emo-fill.negative { background: #f87171; }
+.mini-emo-fill.neutral  { background: #818cf8; }
 
-/* Thinking panel */
-.thinking-panel {
-  background: var(--bg3); border-radius: 6px; padding: 8px 10px;
+/* Mini thinking */
+.agent-mini-thinking {
+  padding: 4px 6px;
+  background: var(--surface2);
   border-left: 2px solid var(--accent);
+  border-radius: 0 3px 3px 0;
+  font-family: var(--font-sans);
+  font-size: 10px; color: var(--text2);
+  font-style: italic; line-height: 1.4;
+  min-height: 20px;
 }
-.panel-title { font-size: 10px; color: var(--text3); margin-bottom: 4px; }
-.thinking-text { font-size: 11px; color: var(--text); line-height: 1.5; font-style: italic; }
-.thinking-drivers { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 4px; }
-.driver-tag {
-  font-size: 9px; padding: 1px 5px; border-radius: 3px;
-  background: var(--bg); color: var(--text3); border: 1px solid var(--border);
-}
-.driver-tag.emotion { border-color: #818cf8; color: #818cf8; }
-.driver-tag.motivation { border-color: #4ade80; color: #4ade80; }
-.thinking-idle { color: var(--text3); font-style: italic; font-size: 11px; }
-
-/* Dreaming panel */
-.dream-panel {
-  background: var(--bg3); border-radius: 6px; padding: 8px 10px;
-  border-left: 2px solid #818cf8;
-}
-.dream-text { font-size: 11px; color: var(--text2); line-height: 1.5; }
-.dream-accumulators { margin-top: 6px; display: flex; flex-direction: column; gap: 3px; }
-.acc-row { display: flex; align-items: center; gap: 6px; }
-.acc-name { width: 110px; font-size: 10px; color: var(--text3); text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.acc-track { flex: 1; height: 5px; background: var(--bg); border-radius: 3px; overflow: hidden; }
-.acc-fill { height: 100%; background: #818cf8; border-radius: 3px; transition: width 0.3s; }
-.acc-threshold { position: relative; }
-
-/* Relations */
-.relations-row { display: flex; gap: 6px; flex-wrap: wrap; }
-.rel-chip {
-  display: flex; align-items: center; gap: 4px;
-  background: var(--bg3); border: 1px solid var(--border);
-  border-radius: 12px; padding: 2px 8px; font-size: 10px;
-}
-.rel-name { color: var(--text2); }
-.rel-trust { font-variant-numeric: tabular-nums; }
-.trust-pos { color: #4ade80; }
-.trust-neg { color: #f87171; }
-.trust-neu { color: var(--text3); }
-
-/* Scrollbar global */
-::-webkit-scrollbar { width: 5px; height: 5px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 `;
 
-// ── JavaScript ────────────────────────────────────────────────────────────────
+// ── JS ────────────────────────────────────────────────────────────────────────
 
 const JS = `
-// ── Load replay data ────────────────────────────────────────────────────────
-const REPLAY = JSON.parse(document.getElementById('REPLAY_DATA').textContent);
-const AGENT_IDS = REPLAY.agentIds;
-const AGENT_NAMES = REPLAY.agentNames;
-const AGENT_ARCHETYPES = REPLAY.agentArchetypes;
-const CHANNELS = REPLAY.channels;
-const PULSES = REPLAY.pulses;
+const DATA = JSON.parse(document.getElementById('REPLAY_DATA').textContent);
+const PULSES = DATA.pulses;
+const AGENT_IDS = DATA.agentIds;
+const AGENT_NAMES = DATA.agentNames;
+const AGENT_ARCHETYPES = DATA.agentArchetypes;
+const CHANNELS = DATA.channels;
 
-// ── State ────────────────────────────────────────────────────────────────────
-let currentPulse = 0;
-let currentChannel = CHANNELS[0]?.id ?? 'general';
+const AGENT_COLORS = {ana:'#4da8ff',bruno:'#4ddb88',carla:'#ff5540',diego:'#ffaa30'};
+const POSITIVE_EMOS = new Set(['pride','affection','admiration','desireForIntimacy']);
+const NEGATIVE_EMOS = new Set(['jealousy','envy','humiliation','shame','resentment','suspicion','contempt','neediness','socialAnxiety','fearOfExclusion']);
+
+let focusedPulse = 0;
+let currentChannel = 'all';
 let perspective = 'omniscient';
+let scrollObserver = null;
 
-// ── Colour map ───────────────────────────────────────────────────────────────
-function agentColor(id) {
-  const COLORS = { ana: '#5bc8f5', bruno: '#7ee78e', carla: '#f5765a', diego: '#f0c060' };
-  return COLORS[id] ?? '#8888aa';
-}
-function agentInitial(id) {
-  return (AGENT_NAMES[id] ?? id)[0].toUpperCase();
+function escHtml(s) {
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-// ── INIT ─────────────────────────────────────────────────────────────────────
+// ── Init ──────────────────────────────────────────────────────────────────────
+
 function init() {
-  buildTimeline();
+  buildScrubber();
   buildChannelTabs();
-  buildAgentGrid();
-  renderPulse(0);
+  buildAgentPanel();
+  renderStory();
+  setupScrollObserver();
+  updateAgentPanel(0);
+  focusPulse(0, false);
 }
 
-function buildTimeline() {
-  const tl = document.getElementById('timeline');
-  PULSES.forEach((p, i) => {
-    const btn = document.createElement('button');
-    btn.className = 'pulse-btn' + (i === 0 ? ' active' : '');
-    btn.id = 'tlbtn-' + i;
-    btn.textContent = String(i);
-    btn.onclick = () => goToPulse(i);
-    tl.appendChild(btn);
+// ── Scrubber ──────────────────────────────────────────────────────────────────
+
+function buildScrubber() {
+  const el = document.getElementById('scrubber');
+  const counts = PULSES.map(f =>
+    f.committedEvents.filter(e => e.type === 'message_sent' || e.type === 'reply_sent').length
+  );
+  const maxCount = Math.max(1, ...counts);
+
+  PULSES.forEach((_, i) => {
+    const tick = document.createElement('div');
+    tick.className = 'scrubber-tick' + (i === 0 ? ' active' : '');
+    tick.id = 'stk-' + i;
+    tick.title = 'Pulso ' + i + ' — ' + counts[i] + ' evento(s)';
+
+    const t = counts[i] / maxCount;
+    const r = Math.round(12 + t * 68);
+    const g = Math.round(12 + t * 68);
+    const b = Math.round(26 + t * 174);
+    tick.style.background = 'rgb(' + r + ',' + g + ',' + b + ')';
+    tick.innerHTML = '<span class="scrubber-tick-label">' + i + '</span>';
+    tick.onclick = () => focusPulse(i, true);
+    el.appendChild(tick);
   });
 }
 
+// ── Channel tabs ──────────────────────────────────────────────────────────────
+
 function buildChannelTabs() {
-  const tabs = document.getElementById('channel-tabs');
-  CHANNELS.forEach((ch, i) => {
+  const tabs = document.getElementById('ch-tabs');
+
+  const allBtn = document.createElement('button');
+  allBtn.className = 'ch-tab active';
+  allBtn.id = 'chtab-all';
+  allBtn.textContent = '# todos';
+  allBtn.onclick = () => setChannel('all');
+  tabs.appendChild(allBtn);
+
+  CHANNELS.forEach(ch => {
     const btn = document.createElement('button');
-    btn.className = 'ch-tab' + (i === 0 ? ' active' : '');
+    btn.className = 'ch-tab';
     btn.id = 'chtab-' + ch.id;
-    btn.textContent = ch.name;
-    btn.title = ch.type === 'private_channel' ? '🔒 ' + ch.memberAgentIds.join(', ') : '🌐 ' + ch.memberAgentIds.join(', ');
+    btn.textContent = (ch.type === 'private_channel' ? '🔒 ' : '# ') + (ch.name || ch.id);
     btn.onclick = () => setChannel(ch.id);
     tabs.appendChild(btn);
   });
 }
 
-function buildAgentGrid() {
-  const grid = document.getElementById('agent-grid');
-  AGENT_IDS.forEach(id => {
-    const card = document.createElement('div');
-    card.className = 'agent-card';
-    card.id = 'card-' + id;
-    card.innerHTML = agentCardHtml(id);
-    grid.appendChild(card);
+function setChannel(id) {
+  document.querySelectorAll('.ch-tab').forEach(t => t.classList.remove('active'));
+  (document.getElementById('chtab-' + id) || document.getElementById('chtab-all'))?.classList.add('active');
+  currentChannel = id;
+  applyFilters();
+}
+
+function setPerspective(val) {
+  perspective = val;
+  applyFilters();
+}
+
+// ── Filter application ────────────────────────────────────────────────────────
+
+function applyFilters() {
+  document.querySelectorAll('.msg-row, .thought-line').forEach(el => {
+    const chId = el.dataset.channelId || '';
+    let visibleTo = [];
+    try { visibleTo = JSON.parse(el.dataset.visibleTo || '[]'); } catch(e){}
+
+    const channelOk = (currentChannel === 'all') || (chId === currentChannel);
+    const perspOk = (perspective === 'omniscient') ||
+      (visibleTo.length === 0 || visibleTo.includes(perspective));
+
+    el.classList.toggle('hidden-by-channel', !channelOk);
+    el.classList.toggle('hidden-by-perspective', !perspOk);
+  });
+
+  document.querySelectorAll('.dream-aside').forEach(el => {
+    const silentAgent = el.dataset.silentAgent || '';
+    const ok = (perspective === 'omniscient') || (silentAgent === perspective);
+    el.classList.toggle('hidden-by-perspective', !ok);
   });
 }
 
-// ── Navigation ───────────────────────────────────────────────────────────────
-function goToPulse(i) {
-  document.getElementById('tlbtn-' + currentPulse)?.classList.remove('active');
-  currentPulse = Math.max(0, Math.min(i, PULSES.length - 1));
-  document.getElementById('tlbtn-' + currentPulse)?.classList.add('active');
-  document.getElementById('tlbtn-' + currentPulse)?.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-  renderPulse(currentPulse);
-  document.getElementById('pulse-display').textContent = currentPulse;
-}
-function prevPulse() { goToPulse(currentPulse - 1); }
-function nextPulse() { goToPulse(currentPulse + 1); }
-function setChannel(id) {
-  document.getElementById('chtab-' + currentChannel)?.classList.remove('active');
-  currentChannel = id;
-  document.getElementById('chtab-' + id)?.classList.add('active');
-  renderChat();
-}
-function setPerspective(val) {
-  perspective = val;
-  renderChat();
-}
+// ── Story rendering ───────────────────────────────────────────────────────────
 
-// ── Render ───────────────────────────────────────────────────────────────────
-function renderPulse(idx) {
-  renderChat();
-  AGENT_IDS.forEach(id => updateAgentCard(id, idx));
-}
+function renderStory() {
+  const col = document.getElementById('story-col');
+  col.innerHTML = '';
 
-function renderChat() {
-  const feed = document.getElementById('chat-feed');
-  // Collect all messages up to and including currentPulse
-  const msgs = [];
-  for (let pi = 0; pi <= currentPulse; pi++) {
-    const frame = PULSES[pi];
-    if (!frame) continue;
+  PULSES.forEach((frame, pi) => {
+    const section = document.createElement('div');
+    section.className = 'pulse-section';
+    section.id = 'pulse-section-' + pi;
+    section.dataset.pulse = String(pi);
+
+    // Count meaningful events
+    const visibleEvts = frame.committedEvents.filter(
+      e => e.type === 'message_sent' || e.type === 'reply_sent' || e.type === 'channel_created'
+    );
+
+    // ── Divider ──
+    const divider = document.createElement('div');
+    divider.className = 'pulse-divider';
+    divider.innerHTML =
+      '<span class="pulse-divider-label">PULSO ' + pi + '</span>' +
+      '<span class="pulse-divider-line"></span>' +
+      '<span class="pulse-event-count">' + visibleEvts.length + ' evento' + (visibleEvts.length !== 1 ? 's' : '') + '</span>';
+    section.appendChild(divider);
+
+    // ── Body ──
+    const body = document.createElement('div');
+    body.className = 'pulse-body';
+
+    const actedAgents = new Set();
+    let hasContent = false;
+
     for (const evt of frame.committedEvents) {
-      if (evt.channelId !== currentChannel) continue;
-      if (!isVisible(evt)) continue;
-      if (evt.type === 'message_sent' || evt.type === 'reply_sent') {
-        msgs.push({ evt, pulseIndex: pi });
-      } else if (evt.type === 'channel_created') {
-        msgs.push({ evt, pulseIndex: pi });
+      if (evt.type !== 'message_sent' && evt.type !== 'reply_sent' && evt.type !== 'channel_created') continue;
+
+      const agentId = evt.actorId || '';
+      const agentName = AGENT_NAMES[agentId] || agentId;
+      const thinking = frame.agentThinking ? frame.agentThinking[agentId] : null;
+      const ch = CHANNELS.find(c => c.id === evt.channelId);
+      const isPrivate = ch && ch.type === 'private_channel';
+      const members = ch ? (ch.memberAgentIds || []) : AGENT_IDS;
+      const visibleTo = (evt.visibility && evt.visibility.visibleToAgents && evt.visibility.visibleToAgents.length > 0)
+        ? evt.visibility.visibleToAgents
+        : members;
+
+      // ── Message row ──
+      const msgRow = document.createElement('div');
+      msgRow.className = 'msg-row';
+      msgRow.dataset.channelId = evt.channelId || '';
+      msgRow.dataset.visibleTo = JSON.stringify(visibleTo);
+
+      const sigil = evt.type === 'reply_sent' ? '↩' : (evt.type === 'channel_created' ? '📢' : '💬');
+      const content = (evt.payload && (evt.payload.content || evt.payload.channelName)) || '';
+      const typeTag = evt.type === 'reply_sent'
+        ? '<span class="msg-type-tag">↳reply</span>'
+        : (evt.type === 'channel_created' ? '<span class="msg-type-tag">canal criado</span>' : '');
+      const channelTag = isPrivate
+        ? '<span class="msg-channel-tag">🔒 ' + escHtml(ch.name || ch.id) + '</span>'
+        : '';
+
+      msgRow.innerHTML =
+        '<div class="msg-line">' +
+          '<span class="msg-sigil">' + sigil + '</span>' +
+          '<span class="msg-sender ' + escHtml(agentId) + '">' + escHtml(agentName) + '</span>' +
+          channelTag + typeTag +
+          '<span class="msg-content">' + escHtml(String(content)) + '</span>' +
+        '</div>';
+      body.appendChild(msgRow);
+      actedAgents.add(agentId);
+      hasContent = true;
+
+      // ── Inline thought bubble ──
+      if (thinking && thinking.privateMotiveSummary) {
+        const thoughtRow = document.createElement('div');
+        thoughtRow.className = 'thought-line';
+        thoughtRow.dataset.channelId = evt.channelId || '';
+        thoughtRow.dataset.visibleTo = JSON.stringify(visibleTo);
+
+        const emoTags = (thinking.emotionDrivers || []).map(d =>
+          '<span class="driver-tag emo">' + escHtml(d) + '</span>'
+        ).join('');
+        const motTags = (thinking.motivationDrivers || []).map(d =>
+          '<span class="driver-tag mot">' + escHtml(d) + '</span>'
+        ).join('');
+        const driversHtml = (emoTags || motTags)
+          ? '<div class="thought-drivers">' + emoTags + motTags + '</div>'
+          : '';
+
+        thoughtRow.innerHTML =
+          '<span class="thought-sigil">💭</span>' +
+          '<div class="thought-body">' +
+            '<div class="thought-text">' + escHtml(thinking.privateMotiveSummary) + '</div>' +
+            driversHtml +
+          '</div>';
+        body.appendChild(thoughtRow);
       }
     }
-  }
-  if (msgs.length === 0) {
-    feed.innerHTML = '<div class="empty-state">Nenhuma mensagem visível neste canal</div>';
-    return;
-  }
-  feed.innerHTML = msgs.map(({ evt, pulseIndex }) => renderMsgBubble(evt, pulseIndex)).join('');
-  feed.scrollTop = feed.scrollHeight;
+
+    // ── Dreaming asides for silent agents ──
+    for (const agentId of AGENT_IDS) {
+      if (actedAgents.has(agentId)) continue;
+
+      const state = frame.agentStates ? frame.agentStates[agentId] : null;
+      if (!state) continue;
+
+      const accs = (state.initiativeAccumulators || [])
+        .filter(a => a.value > 0.15)
+        .sort((a, b) => (b.value / b.threshold) - (a.value / a.threshold));
+
+      const topAcc = accs[0];
+      if (!topAcc) continue;
+
+      const pct = Math.min(100, Math.round((topAcc.value / topAcc.threshold) * 100));
+      const accLabel = topAcc.source.replace(/_accumulator$/, '').replace(/_/g, ' ');
+
+      let topEmoStr = '';
+      const se = state.socialEmotions;
+      if (se) {
+        let topKey = null, topVal = 0;
+        for (const [k, v] of Object.entries(se)) {
+          if (v > topVal) { topKey = k; topVal = v; }
+        }
+        if (topKey && topVal > 0.15) {
+          topEmoStr = topKey.replace(/([A-Z])/g, ' $1').toLowerCase().trim();
+        }
+      }
+
+      const agentName = AGENT_NAMES[agentId] || agentId;
+      let dreamText = 'permanece em silêncio — ' + accLabel + ' crescendo (' + pct + '%).';
+      if (topEmoStr) dreamText += ' Um ' + topEmoStr + ' silencioso.';
+
+      const aside = document.createElement('div');
+      aside.className = 'dream-aside';
+      aside.dataset.silentAgent = agentId;
+      aside.innerHTML =
+        '<div class="dream-line">' +
+          '<span class="dream-sigil">🌙</span>' +
+          '<span class="dream-agent-name ' + escHtml(agentId) + '">' + escHtml(agentName) + '</span>' +
+          '<span class="dream-text-content">' + escHtml(dreamText) + '</span>' +
+        '</div>';
+      body.appendChild(aside);
+      hasContent = true;
+    }
+
+    if (!hasContent) {
+      body.innerHTML = '<div class="pulse-empty">— sem eventos visíveis —</div>';
+    }
+
+    section.appendChild(body);
+    col.appendChild(section);
+  });
+
+  applyFilters();
 }
 
-function isVisible(evt) {
-  if (perspective === 'omniscient') return true;
-  const vis = evt.visibility;
-  if (!vis) return true;
-  if (vis.visibleToAgents && vis.visibleToAgents.length > 0) {
-    return vis.visibleToAgents.includes(perspective);
-  }
-  // empty means visible to all members of the channel
-  const ch = CHANNELS.find(c => c.id === evt.channelId);
-  return ch ? ch.memberAgentIds.includes(perspective) : true;
+// ── Agent panel ───────────────────────────────────────────────────────────────
+
+function buildAgentPanel() {
+  const panel = document.getElementById('agent-panel');
+  AGENT_IDS.forEach(id => {
+    const card = document.createElement('div');
+    card.className = 'agent-mini-card';
+    card.id = 'mini-card-' + id;
+    const name = AGENT_NAMES[id] || id;
+    const arch = AGENT_ARCHETYPES ? (AGENT_ARCHETYPES[id] || '') : '';
+    const color = AGENT_COLORS[id] || '#8888aa';
+
+    card.innerHTML =
+      '<div class="agent-mini-header">' +
+        '<div class="agent-dot ' + id + '"></div>' +
+        '<span class="agent-mini-name ' + id + '">' + escHtml(name) + '</span>' +
+        '<span class="agent-mini-arch">' + escHtml(arch) + '</span>' +
+        '<span class="agent-mini-action" id="mini-action-' + id + '">—</span>' +
+      '</div>' +
+      '<div class="agent-mini-body">' +
+        '<svg width="52" height="52" viewBox="0 0 52 52" style="flex-shrink:0">' +
+          '<rect width="52" height="52" fill="var(--surface2)" rx="3"/>' +
+          '<line x1="26" y1="3" x2="26" y2="49" stroke="var(--border)" stroke-width="1"/>' +
+          '<line x1="3" y1="26" x2="49" y2="26" stroke="var(--border)" stroke-width="1"/>' +
+          '<circle cx="26" cy="26" r="16" fill="none" stroke="var(--border)" stroke-width="0.5"/>' +
+          '<circle cx="26" cy="26" r="5" id="mini-cdot-' + id + '" fill="' + color + '" opacity="0.85"/>' +
+        '</svg>' +
+        '<div class="mini-emo-bars" id="mini-emo-' + id + '"></div>' +
+      '</div>' +
+      '<div class="agent-mini-thinking" id="mini-thinking-' + id + '">—</div>';
+    panel.appendChild(card);
+  });
 }
 
-function renderMsgBubble(evt, pulseIndex) {
-  const id = evt.actorId;
-  const cls = id in AGENT_NAMES ? id : 'system';
-  const name = AGENT_NAMES[id] ?? id;
-  const initial = agentInitial(id);
-  const content = evt.payload?.content ?? evt.payload?.channelName ?? '';
-  const typeLabel = evt.type === 'reply_sent' ? '↩ reply' : (evt.type === 'channel_created' ? '📢 channel created' : '');
-  const ch = CHANNELS.find(c => c.id === evt.channelId);
-  const chBadge = ch && ch.type === 'private_channel' ? \`<span class="msg-channel-badge">🔒 \${ch.name}</span>\` : '';
-  return \`
-  <div class="msg-bubble \${cls}">
-    <div class="msg-avatar \${cls}">\${initial}</div>
-    <div class="msg-body">
-      <div class="msg-meta">
-        <span class="msg-name \${cls}">\${escHtml(name)}</span>
-        <span class="msg-pulse">P\${pulseIndex}</span>
-        \${chBadge}
-        \${typeLabel ? \`<span class="msg-type-badge">\${typeLabel}</span>\` : ''}
-      </div>
-      <div class="msg-text">\${escHtml(String(content))}</div>
-    </div>
-  </div>\`;
-}
-
-// ── Agent cards ───────────────────────────────────────────────────────────────
-function agentCardHtml(id) {
-  const name = AGENT_NAMES[id] ?? id;
-  const arch = AGENT_ARCHETYPES[id] ?? '';
-  return \`
-  <div class="agent-card-header">
-    <div class="agent-dot \${id}"></div>
-    <span class="agent-name \${id}">\${escHtml(name)}</span>
-    <span class="agent-archetype">\${escHtml(arch)}</span>
-    <span class="agent-action-badge" id="action-badge-\${id}">—</span>
-  </div>
-  <div class="agent-card-body">
-    <div class="circumplex-wrap">
-      <div class="circumplex-container">
-        <svg class="circumplex-svg" width="90" height="90" id="circ-\${id}" viewBox="0 0 90 90">
-          <!-- grid -->
-          <rect x="0" y="0" width="90" height="90" fill="#13131f" rx="6"/>
-          <line x1="45" y1="5" x2="45" y2="85" stroke="#2a2a4a" stroke-width="1"/>
-          <line x1="5" y1="45" x2="85" y2="45" stroke="#2a2a4a" stroke-width="1"/>
-          <circle cx="45" cy="45" r="30" fill="none" stroke="#2a2a4a" stroke-width="0.5"/>
-          <circle cx="45" cy="45" r="15" fill="none" stroke="#2a2a4a" stroke-width="0.5"/>
-          <!-- axis labels -->
-          <text x="47" y="10" fill="#5555aa" font-size="7">excited</text>
-          <text x="47" y="82" fill="#5555aa" font-size="7">calm</text>
-          <text x="5"  y="43" fill="#5555aa" font-size="7">−</text>
-          <text x="79" y="43" fill="#5555aa" font-size="7">+</text>
-          <!-- agent dot -->
-          <circle cx="45" cy="45" r="5" id="cdot-\${id}" fill="${{ana:'#5bc8f5',bruno:'#7ee78e',carla:'#f5765a',diego:'#f0c060'}}" opacity="0.9"/>
-        </svg>
-      </div>
-      <div class="mood-labels" id="moodlabels-\${id}">
-        <div class="mood-label-row"><span class="mood-val" style="color:#aaa">v</span>&nbsp;<span class="mood-val" id="mv-\${id}">—</span></div>
-        <div class="mood-label-row"><span class="mood-val" style="color:#aaa">a</span>&nbsp;<span class="mood-val" id="ma-\${id}">—</span></div>
-        <div class="mood-label-row"><span class="mood-val" style="color:#aaa">s</span>&nbsp;<span class="mood-val" id="ms-\${id}">—</span></div>
-        <div class="mood-label-row"><span class="mood-val" style="color:#aaa">e</span>&nbsp;<span class="mood-val" id="me-\${id}">—</span></div>
-      </div>
-    </div>
-    <div>
-      <div class="section-label">Emoções Sociais</div>
-      <div class="emo-bars" id="emobars-\${id}"></div>
-    </div>
-    <div class="thinking-panel">
-      <div class="panel-title">💭 Pensamentos</div>
-      <div id="thinking-\${id}"><span class="thinking-idle">Sem chamada LLM neste pulso</span></div>
-    </div>
-    <div class="dream-panel">
-      <div class="panel-title">🌙 Devaneios</div>
-      <div id="dream-\${id}"></div>
-    </div>
-    <div>
-      <div class="section-label">Relações</div>
-      <div class="relations-row" id="rels-\${id}"></div>
-    </div>
-  </div>\`;
-}
-
-const AGENT_COLORS = {ana:'#5bc8f5',bruno:'#7ee78e',carla:'#f5765a',diego:'#f0c060'};
-
-function updateAgentCard(id, pulseIdx) {
+function updateAgentPanel(pulseIdx) {
   const frame = PULSES[pulseIdx];
   if (!frame) return;
-  const state = frame.agentStates[id];
-  const thinking = frame.agentThinking[id];
 
-  // action badge
-  const badge = document.getElementById('action-badge-' + id);
-  if (badge) {
-    const actEvt = frame.committedEvents.find(e => e.actorId === id && (e.type === 'message_sent' || e.type === 'reply_sent' || e.type === 'create_channel'));
-    const noOp = frame.committedEvents.find(e => e.actorId === id && e.type === 'no_op_recorded');
-    badge.textContent = actEvt ? (actEvt.type === 'message_sent' ? '💬 message' : actEvt.type === 'reply_sent' ? '↩ reply' : '📢 channel') : (noOp ? '🤫 no-op' : '—');
-  }
+  AGENT_IDS.forEach(id => {
+    const state = frame.agentStates ? frame.agentStates[id] : null;
+    const thinking = frame.agentThinking ? frame.agentThinking[id] : null;
 
-  if (!state) return;
-
-  // Circumplex
-  const mood = state.coreMood;
-  const dot = document.getElementById('cdot-' + id);
-  if (dot) {
-    // valence [-1,1] → x [10,80], arousal [0,1] → y [80,10] (inverted)
-    const x = 10 + ((mood.valence + 1) / 2) * 70;
-    const y = 80 - (mood.arousal * 70);
-    dot.setAttribute('cx', String(x.toFixed(1)));
-    dot.setAttribute('cy', String(y.toFixed(1)));
-    const color = AGENT_COLORS[id] ?? '#8888aa';
-    dot.setAttribute('fill', color);
-  }
-  const mvEl = document.getElementById('mv-' + id);
-  const maEl = document.getElementById('ma-' + id);
-  const msEl = document.getElementById('ms-' + id);
-  const meEl = document.getElementById('me-' + id);
-  if (mvEl) mvEl.textContent = mood.valence.toFixed(2);
-  if (maEl) maEl.textContent = mood.arousal.toFixed(2);
-  if (msEl) msEl.textContent = mood.stability.toFixed(2);
-  if (meEl) meEl.textContent = mood.energy.toFixed(2);
-
-  // Social emotions
-  const barsEl = document.getElementById('emobars-' + id);
-  if (barsEl) {
-    const POSITIVE_EMOS = new Set(['pride','affection','admiration','desireForIntimacy']);
-    const NEGATIVE_EMOS = new Set(['jealousy','envy','humiliation','shame','resentment','suspicion','contempt','neediness','socialAnxiety','fearOfExclusion']);
-    const se = state.socialEmotions;
-    const entries = Object.entries(se).sort(([,a],[,b]) => b - a).slice(0, 7);
-    barsEl.innerHTML = entries.map(([k, v]) => {
-      const cls = POSITIVE_EMOS.has(k) ? 'positive' : NEGATIVE_EMOS.has(k) ? 'negative' : 'neutral';
-      const label = k.replace(/([A-Z])/g, ' $1').toLowerCase();
-      return \`<div class="emo-row">
-        <span class="emo-name">\${label}</span>
-        <div class="emo-bar-track"><div class="emo-bar-fill \${cls}" style="width:\${(v*100).toFixed(1)}%"></div></div>
-        <span class="emo-val">\${(v).toFixed(2)}</span>
-      </div>\`;
-    }).join('');
-  }
-
-  // Thinking
-  const thinkEl = document.getElementById('thinking-' + id);
-  if (thinkEl) {
-    if (thinking) {
-      const driversHtml = [
-        ...(thinking.emotionDrivers.map(d => \`<span class="driver-tag emotion">\${escHtml(d)}</span>\`)),
-        ...(thinking.motivationDrivers.map(d => \`<span class="driver-tag motivation">\${escHtml(d)}</span>\`)),
-      ].join('');
-      thinkEl.innerHTML = \`
-        <div class="thinking-text">\${escHtml(thinking.privateMotiveSummary)}</div>
-        \${driversHtml ? \`<div class="thinking-drivers">\${driversHtml}</div>\` : ''}
-      \`;
-    } else {
-      thinkEl.innerHTML = '<span class="thinking-idle">Sem chamada LLM neste pulso</span>';
+    // Action badge
+    const badge = document.getElementById('mini-action-' + id);
+    if (badge) {
+      const actEvt = frame.committedEvents.find(e =>
+        e.actorId === id && (e.type === 'message_sent' || e.type === 'reply_sent' || e.type === 'channel_created')
+      );
+      const noOpEvt = frame.committedEvents.find(e => e.actorId === id && e.type === 'no_op_recorded');
+      badge.textContent = actEvt
+        ? (actEvt.type === 'message_sent' ? '💬' : actEvt.type === 'reply_sent' ? '↩' : '📢')
+        : (noOpEvt ? '🤫' : '—');
     }
-  }
 
-  // Dreaming — from initiativeAccumulators
-  const dreamEl = document.getElementById('dream-' + id);
-  if (dreamEl) {
-    const accs = (state.initiativeAccumulators ?? [])
-      .filter(a => a.value > 0.05)
-      .sort((a, b) => (b.value / b.threshold) - (a.value / a.threshold))
-      .slice(0, 4);
-    const topAcc = accs[0];
-    const topEmo = topSocialEmotion(state.socialEmotions);
-    const topRel = topRelation(state.relationalStates);
-    const name = AGENT_NAMES[id] ?? id;
-    let narrative = '';
-    if (topAcc && topAcc.value > 0.1) {
-      const pct = Math.min(100, Math.round((topAcc.value / topAcc.threshold) * 100));
-      const accLabel = topAcc.source.replace(/_/g, ' ');
-      narrative = \`<span style="color:#a0a0cc">\${escHtml(name)}</span> permanece em silêncio, com <em>\${accLabel}</em> crescendo (\${pct}% do limiar).\`;
-      if (topEmo) narrative += \` Há um <span style="color:#818cf8">\${topEmo.key.replace(/([A-Z])/g,' $1').toLowerCase()}</span> silencioso no ar.\`;
-      if (topRel) narrative += \` A presença de \${escHtml(AGENT_NAMES[topRel.id] ?? topRel.id)} pesa sobre seus pensamentos.\`;
-    } else {
-      narrative = \`A mente de \${escHtml(name)} está quieta — nenhum impulso forte por enquanto.\`;
+    if (!state) return;
+
+    // Circumplex dot
+    const dot = document.getElementById('mini-cdot-' + id);
+    if (dot && state.coreMood) {
+      const x = 5 + ((state.coreMood.valence + 1) / 2) * 42;
+      const y = 47 - (state.coreMood.arousal * 42);
+      dot.setAttribute('cx', x.toFixed(1));
+      dot.setAttribute('cy', y.toFixed(1));
     }
-    const accBars = accs.map(a => {
-      const pct = Math.min(100, (a.value / a.threshold) * 100);
-      return \`<div class="acc-row">
-        <span class="acc-name">\${a.source.replace(/_/g,' ')}</span>
-        <div class="acc-track"><div class="acc-fill" style="width:\${pct.toFixed(1)}%"></div></div>
-        <span class="emo-val">\${a.value.toFixed(2)}</span>
-      </div>\`;
-    }).join('');
-    dreamEl.innerHTML = \`<div class="dream-text">\${narrative}</div>\${accs.length > 0 ? '<div class="dream-accumulators">' + accBars + '</div>' : ''}\`;
-  }
 
-  // Relations
-  const relsEl = document.getElementById('rels-' + id);
-  if (relsEl) {
-    const rels = Object.values(state.relationalStates ?? {});
-    if (rels.length === 0) {
-      relsEl.innerHTML = '<span style="color:var(--text3);font-size:10px">Nenhuma relação ainda</span>';
-    } else {
-      relsEl.innerHTML = rels.map(r => {
-        const trust = r.trust;
-        const cls = trust > 0.2 ? 'trust-pos' : trust < -0.2 ? 'trust-neg' : 'trust-neu';
-        const name = AGENT_NAMES[r.targetAgentId] ?? r.targetAgentId;
-        return \`<div class="rel-chip">
-          <span class="rel-name">\${escHtml(name)}</span>
-          <span class="rel-trust \${cls}">\${trust >= 0 ? '+' : ''}\${trust.toFixed(2)}</span>
-        </div>\`;
+    // Top 3 emotion bars
+    const emoBarsEl = document.getElementById('mini-emo-' + id);
+    if (emoBarsEl && state.socialEmotions) {
+      const top3 = Object.entries(state.socialEmotions)
+        .sort(([,a],[,b]) => b - a).slice(0, 3);
+      emoBarsEl.innerHTML = top3.map(([k, v]) => {
+        const cls = POSITIVE_EMOS.has(k) ? 'positive' : NEGATIVE_EMOS.has(k) ? 'negative' : 'neutral';
+        const label = k.replace(/([A-Z])/g, ' $1').toLowerCase();
+        return '<div class="mini-emo-row">' +
+          '<span class="mini-emo-name">' + label + '</span>' +
+          '<div class="mini-emo-track"><div class="mini-emo-fill ' + cls + '" style="width:' + (v*100).toFixed(0) + '%"></div></div>' +
+        '</div>';
       }).join('');
     }
-  }
+
+    // Mini thinking
+    const thinkEl = document.getElementById('mini-thinking-' + id);
+    if (thinkEl) {
+      thinkEl.textContent = thinking ? thinking.privateMotiveSummary : '—';
+    }
+  });
 }
 
-function topSocialEmotion(se) {
-  if (!se) return null;
-  let best = null;
-  for (const [k, v] of Object.entries(se)) {
-    if (!best || v > best.val) best = { key: k, val: v };
+// ── Focus / navigation ────────────────────────────────────────────────────────
+
+function focusPulse(i, scroll) {
+  document.getElementById('stk-' + focusedPulse)?.classList.remove('active');
+  focusedPulse = Math.max(0, Math.min(i, PULSES.length - 1));
+  const tick = document.getElementById('stk-' + focusedPulse);
+  if (tick) {
+    tick.classList.add('active');
+    tick.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
-  return best && best.val > 0.05 ? best : null;
-}
-function topRelation(rels) {
-  if (!rels) return null;
-  let best = null;
-  for (const [id, r] of Object.entries(rels)) {
-    const strength = Math.abs(r.trust) + r.affection + r.resentment;
-    if (!best || strength > best.strength) best = { id, strength };
+
+  document.querySelectorAll('.pulse-section').forEach(s => s.classList.remove('focused'));
+  const section = document.getElementById('pulse-section-' + focusedPulse);
+  if (section) {
+    section.classList.add('focused');
+    if (scroll) section.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  return best;
+
+  updateAgentPanel(focusedPulse);
 }
 
-function escHtml(s) {
-  if (typeof s !== 'string') s = String(s ?? '');
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+function prevPulse() { focusPulse(focusedPulse - 1, true); }
+function nextPulse() { focusPulse(focusedPulse + 1, true); }
+
+// ── IntersectionObserver: sync panel when user scrolls ────────────────────────
+
+function setupScrollObserver() {
+  const col = document.getElementById('story-col');
+  scrollObserver = new IntersectionObserver(entries => {
+    // Find the topmost intersecting section
+    let topEntry = null;
+    for (const e of entries) {
+      if (e.isIntersecting) {
+        if (!topEntry || e.boundingClientRect.top < topEntry.boundingClientRect.top) {
+          topEntry = e;
+        }
+      }
+    }
+    if (topEntry) {
+      const pi = parseInt(topEntry.target.dataset.pulse || '0', 10);
+      if (pi !== focusedPulse) {
+        focusPulse(pi, false);
+      }
+    }
+  }, { root: col, threshold: 0.3 });
+
+  document.querySelectorAll('.pulse-section').forEach(s => scrollObserver.observe(s));
 }
 
-// keyboard nav
+// ── Keyboard ──────────────────────────────────────────────────────────────────
+
 document.addEventListener('keydown', e => {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextPulse();
-  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   prevPulse();
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); nextPulse(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); prevPulse(); }
 });
 
 init();
