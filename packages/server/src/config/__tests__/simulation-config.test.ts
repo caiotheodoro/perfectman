@@ -1,7 +1,11 @@
+import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { describe, expect, it } from "vitest";
 import {
   buildConfiguredSimulation,
   findDefaultSimulationConfigPath,
+  loadSimulationConfig,
   parseSimulationConfig,
   type SimulationAppConfig,
 } from "../simulation-config.js";
@@ -115,6 +119,58 @@ describe("simulation config", () => {
       expect(events.map(event => event.type)).toContain("simulation_stopped");
     } finally {
       await handle.close();
+    }
+  });
+
+  it("loads an agent persona and prompt profile from a local personaFile", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "perfectman-config-"));
+    try {
+      const personaPath = join(dir, "ana.persona.json");
+      const configPath = join(dir, "simulation.config.json");
+      await writeFile(
+        personaPath,
+        JSON.stringify({ persona, promptProfile }, null, 2),
+      );
+      await writeFile(
+        configPath,
+        JSON.stringify({
+          simulation: {
+            id: "persona_file_test",
+            name: "Persona File Test",
+            seed: 42,
+            settings: {
+              omniscientSpectatorMode: false,
+              allowPrivateChannels: true,
+              maxPrivateChannelsPerAgent: 3,
+              maxMessagesPerMinutePerAgent: 30,
+              llmCallBudgetPerMinute: 100,
+              pulseIntervalMs: 1000,
+              tokenBudgetPerHour: 1_000_000,
+            },
+          },
+          persistence: { type: "memory" },
+          deliveryGateways: [{ id: "mock", type: "mock" }],
+          channels: [{
+            id: "general",
+            type: "public_channel",
+            name: "general",
+            default: true,
+            memberAgentIds: ["ana"],
+          }],
+          agents: [{
+            id: "ana",
+            personaFile: "ana.persona.json",
+            llm,
+          }],
+        }, null, 2),
+      );
+
+      const config = await loadSimulationConfig(configPath);
+
+      expect(config.agents[0]?.persona).toEqual(persona);
+      expect(config.agents[0]?.promptProfile.displayName).toBe("Ana");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
     }
   });
 

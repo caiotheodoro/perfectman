@@ -1,0 +1,26 @@
+{
+  "metadata": {
+    "assessmentDate": "YYYY-MM-DD",
+    "targetName": "Example Person",
+    "interviewerName": "Interviewer",
+    "respondentName": "Example Person",
+    "sourceTranscript": "transcript-YYYY-MM-DD.md",
+    "language": "en",
+    "privacy": "local-only source evidence; do not commit raw transcript or assessment"
+  },
+  "selectedMode": "long",
+  "selfInterview": true,
+  "ratings": {},
+  "writtenAnswers": {
+    "example_0": "Replace this with a concrete, paraphrased behavioral answer."
+  },
+  "computedScores": {
+    "scores": {},
+    "overall": null,
+    "answeredRatings": 0,
+    "totalRatings": 0
+  },
+  "generalSummary": "Write a reviewed synthesis of the person's behavior, values, chat voice, conflict style, and privacy constraints.",
+  "generatedSummary": "Optional machine-generated summary from ratings and written answers.",
+  "exportedAt": "YYYY-MM-DDTHH:mm:ss.sssZ"
+}
