@@ -134,7 +134,7 @@ describe("HTML Snapshot: 4-persona simulation", () => {
       writeFileSync(HTML_OUTPUT, html, "utf-8");
       console.log(`\n✅ HTML written to: ${HTML_OUTPUT}\n`);
     },
-    60_000,
+    600_000, // 10 min — real LLM (Qwen3 8B) needs ~30s/call × 4 agents × 15 pulses
   );
 
   afterAll(async () => {

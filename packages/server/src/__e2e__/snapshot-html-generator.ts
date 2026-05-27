@@ -13,11 +13,11 @@ export function generateHtml(replay: SimulationReplay): string {
   const dataJson = JSON.stringify(replay, null, 0);
 
   return `<!DOCTYPE html>
-<html lang="en">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>${escapeHtml(replay.simulationName)} — Simulation Replay</title>
+<title>${escapeHtml(replay.simulationName)} — Replay da Simulação</title>
 <style>
 ${CSS}
 </style>
@@ -31,7 +31,7 @@ ${CSS}
     <div class="timeline" id="timeline"></div>
     <button class="nav-btn" id="btn-next" onclick="nextPulse()">▶</button>
   </div>
-  <div class="pulse-label">Pulse <span id="pulse-display">0</span> / ${replay.pulses.length - 1}</div>
+  <div class="pulse-label">Pulso <span id="pulse-display">0</span> / ${replay.pulses.length - 1}</div>
 </header>
 
 <div class="main-layout">
@@ -40,9 +40,9 @@ ${CSS}
   <div class="left-panel">
     <div class="channel-tabs" id="channel-tabs"></div>
     <div class="perspective-row">
-      <label>Perspective:</label>
+      <label>Perspectiva:</label>
       <select id="perspective-select" onchange="setPerspective(this.value)">
-        <option value="omniscient">👁 Omniscient</option>
+        <option value="omniscient">👁 Onisciente</option>
         ${replay.agentIds.map(id =>
           `<option value="${id}">${escapeHtml(replay.agentNames[id] ?? id)}</option>`
         ).join("\n        ")}
@@ -455,7 +455,7 @@ function renderChat() {
     }
   }
   if (msgs.length === 0) {
-    feed.innerHTML = '<div class="empty-state">No visible messages in this channel</div>';
+    feed.innerHTML = '<div class="empty-state">Nenhuma mensagem visível neste canal</div>';
     return;
   }
   feed.innerHTML = msgs.map(({ evt, pulseIndex }) => renderMsgBubble(evt, pulseIndex)).join('');
@@ -536,19 +536,19 @@ function agentCardHtml(id) {
       </div>
     </div>
     <div>
-      <div class="section-label">Social Emotions</div>
+      <div class="section-label">Emoções Sociais</div>
       <div class="emo-bars" id="emobars-\${id}"></div>
     </div>
     <div class="thinking-panel">
-      <div class="panel-title">💭 Thinking</div>
-      <div id="thinking-\${id}"><span class="thinking-idle">No LLM call this pulse</span></div>
+      <div class="panel-title">💭 Pensamentos</div>
+      <div id="thinking-\${id}"><span class="thinking-idle">Sem chamada LLM neste pulso</span></div>
     </div>
     <div class="dream-panel">
-      <div class="panel-title">🌙 Dreaming</div>
+      <div class="panel-title">🌙 Devaneios</div>
       <div id="dream-\${id}"></div>
     </div>
     <div>
-      <div class="section-label">Relations</div>
+      <div class="section-label">Relações</div>
       <div class="relations-row" id="rels-\${id}"></div>
     </div>
   </div>\`;
@@ -624,7 +624,7 @@ function updateAgentCard(id, pulseIdx) {
         \${driversHtml ? \`<div class="thinking-drivers">\${driversHtml}</div>\` : ''}
       \`;
     } else {
-      thinkEl.innerHTML = '<span class="thinking-idle">No LLM call this pulse</span>';
+      thinkEl.innerHTML = '<span class="thinking-idle">Sem chamada LLM neste pulso</span>';
     }
   }
 
@@ -643,11 +643,11 @@ function updateAgentCard(id, pulseIdx) {
     if (topAcc && topAcc.value > 0.1) {
       const pct = Math.min(100, Math.round((topAcc.value / topAcc.threshold) * 100));
       const accLabel = topAcc.source.replace(/_/g, ' ');
-      narrative = \`<span style="color:#a0a0cc">\${escHtml(name)}</span> lingers in silence, \${accLabel} building (\${pct}% of threshold).\`;
-      if (topEmo) narrative += \` There's a quiet <span style="color:#818cf8">\${topEmo.key.replace(/([A-Z])/g,' $1').toLowerCase()}</span> in the air.\`;
-      if (topRel) narrative += \` \${escHtml(AGENT_NAMES[topRel.id] ?? topRel.id)}'s presence weighs on them.\`;
+      narrative = \`<span style="color:#a0a0cc">\${escHtml(name)}</span> permanece em silêncio, com <em>\${accLabel}</em> crescendo (\${pct}% do limiar).\`;
+      if (topEmo) narrative += \` Há um <span style="color:#818cf8">\${topEmo.key.replace(/([A-Z])/g,' $1').toLowerCase()}</span> silencioso no ar.\`;
+      if (topRel) narrative += \` A presença de \${escHtml(AGENT_NAMES[topRel.id] ?? topRel.id)} pesa sobre seus pensamentos.\`;
     } else {
-      narrative = \`\${escHtml(name)}'s mind is quiet — no strong pulls right now.\`;
+      narrative = \`A mente de \${escHtml(name)} está quieta — nenhum impulso forte por enquanto.\`;
     }
     const accBars = accs.map(a => {
       const pct = Math.min(100, (a.value / a.threshold) * 100);
@@ -665,7 +665,7 @@ function updateAgentCard(id, pulseIdx) {
   if (relsEl) {
     const rels = Object.values(state.relationalStates ?? {});
     if (rels.length === 0) {
-      relsEl.innerHTML = '<span style="color:var(--text3);font-size:10px">No relationships yet</span>';
+      relsEl.innerHTML = '<span style="color:var(--text3);font-size:10px">Nenhuma relação ainda</span>';
     } else {
       relsEl.innerHTML = rels.map(r => {
         const trust = r.trust;

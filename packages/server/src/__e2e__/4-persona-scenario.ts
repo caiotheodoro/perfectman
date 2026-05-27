@@ -12,9 +12,29 @@
  */
 
 import type { CoreMood, SocialEmotions } from "@perfectman/shared";
+import type { LlmConfig } from "../llm/llm-config.js";
 import type { SimulationAppConfig } from "../config/simulation-config.js";
 import { GENERIC_PROMPT_PROFILE } from "../agent/persona-prompt-profile.js";
 import { DEFAULT_MOCK_CONFIG } from "../agent/persona-loader.js";
+
+// ── LLM provider selection ────────────────────────────────────────────────────
+// Set PERFECTMAN_LLM=mock (or leave unset) to use the deterministic mock.
+// Set PERFECTMAN_LLM=qwen3 to use Qwen3 8B via Ollama (requires docker compose up qwen3).
+const USE_REAL_LLM = process.env["PERFECTMAN_LLM"] === "qwen3";
+
+const QWEN3_CONFIG: LlmConfig = {
+  providerType: "qwen3_8b",
+  baseUrl: process.env["QWEN3_BASE_URL"] ?? "http://localhost:11434/v1",
+  modelName: "qwen3:8b",
+  maxInputTokens: 4096,
+  maxOutputTokens: 512,
+  temperature: 0.7,
+  timeoutMs: 60000,
+  retryCount: 1,
+  responseFormatJson: true,
+};
+
+export const AGENT_LLM_CONFIG: LlmConfig = USE_REAL_LLM ? QWEN3_CONFIG : DEFAULT_MOCK_CONFIG;
 
 // ── Seed moods ────────────────────────────────────────────────────────────────
 
@@ -145,7 +165,7 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
         },
         sourceRefs: { assessmentIds: [], lastCompiledAt: "snapshot-test" },
       },
-      llm: DEFAULT_MOCK_CONFIG,
+      llm: AGENT_LLM_CONFIG,
       initialCoreMood: ANA_MOOD,
       initialSocialEmotions: ANA_SOCIAL,
     },
@@ -180,7 +200,7 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
         },
         sourceRefs: { assessmentIds: [], lastCompiledAt: "snapshot-test" },
       },
-      llm: DEFAULT_MOCK_CONFIG,
+      llm: AGENT_LLM_CONFIG,
       initialCoreMood: BRUNO_MOOD,
       initialSocialEmotions: BRUNO_SOCIAL,
     },
@@ -215,7 +235,7 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
         },
         sourceRefs: { assessmentIds: [], lastCompiledAt: "snapshot-test" },
       },
-      llm: DEFAULT_MOCK_CONFIG,
+      llm: AGENT_LLM_CONFIG,
       initialCoreMood: CARLA_MOOD,
       initialSocialEmotions: CARLA_SOCIAL,
     },
@@ -250,7 +270,7 @@ export const FOUR_PERSONA_CONFIG: SimulationAppConfig = {
         },
         sourceRefs: { assessmentIds: [], lastCompiledAt: "snapshot-test" },
       },
-      llm: DEFAULT_MOCK_CONFIG,
+      llm: AGENT_LLM_CONFIG,
       initialCoreMood: DIEGO_MOOD,
       initialSocialEmotions: DIEGO_SOCIAL,
     },
