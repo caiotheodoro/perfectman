@@ -227,7 +227,7 @@ describe("PromptBuilder", () => {
       const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
       expect(prompt.system).toContain("Voice guidelines");
-      expect(prompt.system).toContain("Style examples");
+      expect(prompt.system).toContain("Tonal/register guide");
       expect(prompt.system).toContain(EXAMPLE_PROMPT_PROFILE.voiceGuidelines[0]!);
       expect(prompt.system).toContain(EXAMPLE_PROMPT_PROFILE.styleExamples.default[0]!);
       expect(prompt.system).toContain(EXAMPLE_PROMPT_PROFILE.styleExamples.dryOrLowEnergy[0]!);

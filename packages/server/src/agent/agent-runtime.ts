@@ -14,6 +14,7 @@ import { IntentParser } from "./intent-parser.js";
 import { llmBudget } from "../llm/llm-budget.js";
 import { MockLlmProvider } from "../llm/mock-llm-provider.js";
 import { OpenAiCompatibleProvider } from "../llm/openai-compatible-provider.js";
+import { OllamaProvider } from "../llm/ollama-provider.js";
 import type { LlmConfig } from "../llm/llm-config.js";
 import type { LlmProvider } from "../llm/llm-provider.js";
 import type { AgentConfigRegistry } from "./agent-config-registry.js";
@@ -76,6 +77,8 @@ export class AgentRuntime {
     let provider: LlmProvider;
     if (llmConfig.providerType === "mock") {
       provider = new MockLlmProvider();
+    } else if (llmConfig.providerType === "ollama") {
+      provider = new OllamaProvider(llmConfig);
     } else {
       provider = new OpenAiCompatibleProvider(llmConfig);
     }

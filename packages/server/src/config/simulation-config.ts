@@ -5,6 +5,7 @@ import type {
   AgentState,
   ChannelType,
   CoreMood,
+  Memory,
   PersonaConfig,
   PresenceMode,
   RelationalState,
@@ -72,6 +73,8 @@ export type SimulationAppConfig = {
   deliveryGateways: DeliveryGatewayConfig[];
   channels: InitialChannelConfig[];
   agents: AgentConfig[];
+  /** If set, a synthetic host message is injected into the default channel before pulse 0. */
+  hostStartingMessage?: string;
 };
 
 export type PersistenceConfig =
@@ -108,6 +111,10 @@ export type InitialChannelConfig = {
   createdForMotives?: string[];
 };
 
+export type InitialMemory = Pick<Memory, "type" | "subjectAgentIds" | "summary" | "emotionalTone"> & {
+  confidence?: number;
+};
+
 export type AgentConfig = {
   id: string;
   presence?: PresenceMode;
@@ -118,6 +125,7 @@ export type AgentConfig = {
   initialSocialEmotions?: SocialEmotions;
   relationalStates?: Record<string, RelationalState>;
   arrivalPulse?: number | null;
+  initialMemories?: InitialMemory[];
 };
 
 export type ConfiguredSimulationHandle = {
@@ -522,7 +530,20 @@ function makeAgentState(agent: AgentConfig, simulationId: string): AgentState {
     },
     socialEmotions: agent.initialSocialEmotions ?? { ...ZERO_SOCIAL },
     relationalStates: new Map(Object.entries(agent.relationalStates ?? {})),
-    memories: [],
+    memories: (agent.initialMemories ?? []).map((m): Memory => ({
+      id: createId(),
+      agentId: agent.id,
+      simulationId,
+      type: m.type,
+      subjectAgentIds: m.subjectAgentIds,
+      sourceEventIds: [],
+      summary: m.summary,
+      emotionalTone: m.emotionalTone,
+      confidence: m.confidence ?? 0.8,
+      unresolved: false,
+      createdAt: now - 1,
+      lastReinforcedAt: now - 1,
+    })),
     initiativeAccumulators: [],
     lastProcessedEventId: null,
     lastActionAt: null,
@@ -936,6 +957,7 @@ function parseLlmConfig(input: unknown, path: string): LlmConfig {
   if (
     providerType !== "mock" &&
     providerType !== "qwen3_8b" &&
+    providerType !== "ollama" &&
     providerType !== "freellmapi"
   ) {
     throw new Error(`${path}.providerType is unsupported: ${providerType}`);

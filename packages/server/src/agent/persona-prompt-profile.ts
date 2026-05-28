@@ -1,3 +1,12 @@
+export type ScenarioContextBlock = {
+  roomContext: string;
+  startingMood: string;
+  introBehaviorInstruction: string;
+  firstMoveGuidance?: string;
+  customNotes?: string[];
+  hostStartingMessage?: string;
+};
+
 export type RelationshipPromptBias = {
   view: string;
   warmth: "low" | "medium" | "high";
@@ -31,6 +40,7 @@ export type PersonaPromptProfile = {
   privateMotivePatterns: string[];
   hardAvoids: string[];
   relationshipBiases: Record<string, RelationshipPromptBias>;
+  scenarioContext?: ScenarioContextBlock;
   sourceRefs: {
     assessmentIds: string[];
     notesPath?: string;

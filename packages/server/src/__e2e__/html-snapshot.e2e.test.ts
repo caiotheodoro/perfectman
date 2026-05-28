@@ -20,7 +20,7 @@ import type { SimulationReplay } from "./simulation-recorder.js";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const DOCS_DIR = resolve(__dirname, "../../../../docs");
 const HTML_OUTPUT = resolve(DOCS_DIR, "simulation-snapshot.html");
-const PULSE_COUNT = 15;
+const PULSE_COUNT = parseInt(process.env["PULSE_COUNT"] ?? "15", 10);
 
 // ── Normalisation (strips volatile fields before snapshot assertion) ──────────
 
@@ -134,7 +134,7 @@ describe("HTML Snapshot: 4-persona simulation", () => {
       writeFileSync(HTML_OUTPUT, html, "utf-8");
       console.log(`\n✅ HTML written to: ${HTML_OUTPUT}\n`);
     },
-    600_000, // 10 min — real LLM (Qwen3 8B) needs ~30s/call × 4 agents × 15 pulses
+    1_800_000, // 30 min — real LLM (Qwen3 1.7B) needs ~165s/call × 4 agents × pulses
   );
 
   afterAll(async () => {

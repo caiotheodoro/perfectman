@@ -13,6 +13,7 @@ import type {
   OperatorEvent,
   RelationalState,
   ActionIntent,
+  SimulationEvent,
 } from "@perfectman/shared";
 import type { PulseResult } from "../simulation/pulse-scheduler.js";
 import type {
@@ -88,6 +89,41 @@ export class SimulationRecorder {
     }
     this.gateway = gw;
     this.gateway.reset();
+
+    if (this.config.hostStartingMessage) {
+      const defaultChannel = this.config.channels.find((c) => c.default) ?? this.config.channels[0];
+      if (defaultChannel) {
+        await this.injectHostMessage(this.config.hostStartingMessage, defaultChannel.id);
+      }
+    }
+  }
+
+  private async injectHostMessage(message: string, channelId: string): Promise<void> {
+    const allAgentIds = this.config.agents.map((a) => a.id);
+    const event: SimulationEvent = {
+      simulationId: this.handle.simulationId,
+      channelId,
+      actorId: "host",
+      type: "message_sent",
+      payload: { content: message },
+      sourceIntentId: "host-seed",
+      sourceEventIds: [],
+      emotionalSalience: "low",
+      pulseIndex: -1,
+      visibility: {
+        visibleToAgents: allAgentIds,
+        visibleToSpectators: true,
+        visibleToOperators: true,
+        visibilityReason: "public",
+      },
+    };
+    const committed = await this.handle.repositories.eventRepo.append(
+      this.handle.simulationId,
+      [event],
+    );
+    if (committed.length > 0) {
+      this.lastEventId = committed[committed.length - 1]!.id;
+    }
   }
 
   async runPulses(n: number): Promise<void> {
