@@ -1,5 +1,5 @@
 export type LlmConfig = {
-  providerType: "mock" | "qwen3_8b" | "freellmapi";
+  providerType: "mock" | "qwen3" | "freellmapi";
   baseUrl?: string;
   apiKeyEnv?: string;
   modelName: string;

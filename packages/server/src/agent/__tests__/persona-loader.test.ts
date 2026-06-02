@@ -32,13 +32,13 @@ describe("PersonaLoader", () => {
 
   it("should apply custom overrides to resolved LlmConfig", () => {
     const overrides = {
-      providerType: "qwen3_8b" as const,
+      providerType: "qwen3" as const,
       modelName: "qwen-3-special",
       temperature: 0.9,
     };
     const config = PersonaLoader.getLlmConfig("example-friend", overrides);
     expect(config).toBeDefined();
-    expect(config.providerType).toBe("qwen3_8b");
+    expect(config.providerType).toBe("qwen3");
     expect(config.modelName).toBe("qwen-3-special");
     expect(config.temperature).toBe(0.9);
     expect(config.timeoutMs).toBe(5000); // kept default from base mock

@@ -98,6 +98,26 @@ describe("simulation config", () => {
     })).toThrow("env field names only");
   });
 
+  it("accepts the generic qwen3 provider type", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      agents: [{
+        ...config.agents[0],
+        llm: {
+          ...llm,
+          providerType: "qwen3",
+          baseUrl: "http://localhost:11434/v1",
+          modelName: "qwen3:1.7b",
+          extraBody: { stream: false },
+        },
+      }],
+    });
+
+    expect(parsed.agents[0]?.llm.providerType).toBe("qwen3");
+    expect(parsed.agents[0]?.llm.modelName).toBe("qwen3:1.7b");
+  });
+
   it("rejects simulation calibration fields in persona config", () => {
     const config = baseConfig();
     expect(() => parseSimulationConfig({
