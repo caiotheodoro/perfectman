@@ -228,3 +228,184 @@ export const PRIVATE_CHANNEL_SEED: ScenarioConfig = {
     "Suspeita sobre alianças é natural neste contexto.",
   ],
 };
+
+// ── 10 pre-determined scenario presets ───────────────────────────────────────
+
+export const CHURRASCO_DO_SABADO: ScenarioConfig = {
+  id: "churrasco_do_sabado",
+  name: "O Churrasco do Sábado",
+  relationshipMode: "established_friends",
+  roomContext:
+    "Este é um grupo de amigos que se viu no último sábado num churrasco. O evento terminou de forma tensa — algo foi dito que não deveria ter sido. O grupo reabre agora.",
+  startingMood: "casual mas levemente tenso, como depois de uma briga não resolvida",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  firstMoveGuidance:
+    "Abra com algo neutro — não mencione o conflito diretamente a menos que alguém mais abra.",
+  customNotes: [
+    "Você sabe o que aconteceu no sábado. Não explique para o leitor — apenas reaja.",
+    "Não mencione o conflito diretamente até que alguém abra o assunto.",
+    "Mensagens curtas e vagas são válidas aqui — silêncio relativo é realista.",
+    "Quando falar, diga ALGO CONCRETO — uma pergunta real, uma observação, uma reação. Nunca mande uma mensagem vaga só para 'marcar presença'.",
+  ],
+  hostStartingMessage: "oi gente. todo mundo bem?",
+};
+
+export const PROMOCAO_DESIGUAL: ScenarioConfig = {
+  id: "promocao_desigual",
+  name: "A Promoção",
+  relationshipMode: "established_friends",
+  roomContext:
+    "O grupo recebeu hoje a notícia de que Larissa foi promovida para uma vaga que ela e Tiago disputavam. O email foi enviado pela empresa. O grupo sabe.",
+  startingMood: "levemente festivo para uns, tenso para outros",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  customNotes: [
+    "Você sabe da promoção da Larissa. Tiago também concorria.",
+    "Parabenizar alguém nessa situação é complicado. Reaja de acordo com quem você é.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "ei larissa, soube da novidade 👀",
+};
+
+export const TERMINO_NO_GRUPO: ScenarioConfig = {
+  id: "termino_no_grupo",
+  name: "O Término",
+  relationshipMode: "established_friends",
+  roomContext:
+    "Pedro e Clara terminaram há 3 dias depois de 2 anos juntos. Ambos ainda estão no grupo. Ninguém abordou o assunto diretamente.",
+  startingMood: "neutro na superfície, carregado por baixo",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  customNotes: [
+    "Pedro e Clara terminaram recentemente. Ambos estão no grupo.",
+    "Ninguém falou sobre o assunto ainda. A tensão é latente.",
+    "Escolha as palavras com cuidado — qualquer coisa pode ser lida de mais de uma forma.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "boa tarde galera",
+};
+
+export const O_VAZAMENTO: ScenarioConfig = {
+  id: "o_vazamento",
+  name: "O Vazamento",
+  relationshipMode: "established_friends",
+  roomContext:
+    "Um screenshot de uma conversa deste grupo privado foi parar em outro grupo. Todos sabem. Ninguém confessou. A suspeita recai sobre Marcos.",
+  startingMood: "tenso, desconfiado, com a sensação de que algo foi violado",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  customNotes: [
+    "Alguém neste grupo vazou um screenshot. Todos sabem. Ninguém confessou.",
+    "A desconfiança está no ar. Cuidado com o que você diz — pode ser usado contra você.",
+    "Accountability e lealdade estão em conflito direto aqui.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "a gente precisa conversar sobre o que aconteceu",
+};
+
+export const CONVITE_PERDIDO: ScenarioConfig = {
+  id: "convite_perdido",
+  name: "O Convite Perdido",
+  relationshipMode: "established_friends",
+  roomContext:
+    "Três membros do grupo foram num show na última sexta sem chamar o quarto. Postaram stories. Ele viu. Agora está de volta no grupo, em silêncio.",
+  startingMood: "superficialmente normal, com uma mágoa latente",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  customNotes: [
+    "Nando viu os stories do show. Não foi chamado. Não vai mencionar diretamente.",
+    "Não faça drama explícito — a tensão é nas entrelinhas.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "eai galera, fim de semana bom?",
+};
+
+export const CRUSH_REVELADO: ScenarioConfig = {
+  id: "crush_revelado",
+  name: "O Crush Revelado",
+  relationshipMode: "established_friends",
+  roomContext:
+    "Kaue mandou uma mensagem pra um amigo em comum confessando sentimentos por Lina. O amigo fez screenshot e mandou pro grupo. Todo mundo viu. Kaue acabou de abrir o chat.",
+  startingMood: "divertido para uns, constrangedor para outros",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  customNotes: [
+    "Todo mundo viu o screenshot. Kaue sabe que viram.",
+    "Lina ainda não se posicionou. Kaue está tentando gerenciar o dano.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "então... alguém vai falar ou não?",
+};
+
+export const PLANO_DIVIDIDO: ScenarioConfig = {
+  id: "plano_dividido",
+  name: "O Plano Dividido",
+  relationshipMode: "established_friends",
+  roomContext:
+    "O grupo está planejando uma viagem de 4 dias. Há duas propostas na mesa há uma semana: praia (Mari + André) vs. serra (Cris + Felipe). Ambos fizeram reservas tentativas. O prazo é amanhã.",
+  startingMood: "produtivo tentando ser, mas frustrado por baixo",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  customNotes: [
+    "A viagem precisa ser decidida hoje. Duas opções incompatíveis na mesa.",
+    "Mari e Cris têm posições firmes. André quer que todo mundo fique feliz. Felipe só quer que acabe.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "amanhã é o prazo. precisamos decidir hoje.",
+};
+
+export const A_AUSENCIA: ScenarioConfig = {
+  id: "a_ausencia",
+  name: "A Ausência",
+  relationshipMode: "established_friends",
+  roomContext:
+    "Renata sumiu do grupo por 3 semanas — sem responder nada, sem reagir, sem sinal de vida. Agora ela ficou online. Todo mundo pode ver. Ninguém mandou mensagem ainda.",
+  startingMood: "aliviado mas contido, com perguntas não ditas",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  firstMoveGuidance:
+    "Quem falar primeiro está quebrando 3 semanas de silêncio. Cada palavra vai ter peso.",
+  customNotes: [
+    "Renata sumiu por 3 semanas. Ela acabou de ficar online.",
+    "Ninguém sabe o motivo. Não invente — apenas reaja de acordo com quem você é.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "oi sumida 👀",
+};
+
+export const OPINIAO_POLEMICA: ScenarioConfig = {
+  id: "opiniao_polemica",
+  name: "A Opinião Polêmica",
+  relationshipMode: "established_friends",
+  roomContext:
+    "Zé postou algo controverso no Twitter ontem — uma opinião sobre um tema que o grupo tem posições fortes. O screenshot está no grupo desde a noite passada. Zé não recuou.",
+  startingMood: "tenso, com posições divergentes prestes a emergir",
+  visibleIntro: "none",
+  agentIntroBehavior: "do_not_introduce_yourself_formally",
+  customNotes: [
+    "Todos viram o post do Zé. Ninguém sabe exatamente como os outros reagiram.",
+    "Esse é um debate de valores. Não tem resposta certa.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "zé, vi o post. vai explicar?",
+};
+
+export const O_NOVO: ScenarioConfig = {
+  id: "o_novo",
+  name: "O Novo",
+  relationshipMode: "mixed",
+  roomContext:
+    "Leo adicionou Edu no grupo — um amigo de amigo que só conhece o Leo. Os outros ainda estão conhecendo Edu agora.",
+  startingMood: "receptivo mas avaliativo",
+  visibleIntro: "host_prompt",
+  agentIntroBehavior: "introduce_only_to_unknowns",
+  firstMoveGuidance:
+    "Edu acabou de entrar no grupo. Leo o está apresentando. Os outros estão formando uma primeira impressão.",
+  customNotes: [
+    "Edu é novo aqui. Só conhece o Leo.",
+    "Os outros estão avaliando Edu — consciente ou inconscientemente.",
+    "Quando falar, diga ALGO CONCRETO — não mande mensagem genérica.",
+  ],
+  hostStartingMessage: "gente, esse é o edu que falei. edu, seja bem-vindo 👋",
+};
