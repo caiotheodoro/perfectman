@@ -7,6 +7,9 @@ services:
     environment:
       OLLAMA_HOST: 0.0.0.0:11434
       OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-30m}
+      OLLAMA_MODEL: ${OLLAMA_MODEL:-qwen3:1.7b}
+      OLLAMA_FLASH_ATTENTION: ${OLLAMA_FLASH_ATTENTION:-1}
+      OLLAMA_KV_CACHE_TYPE: ${OLLAMA_KV_CACHE_TYPE:-q8_0}
     ports:
       - "11434:11434"
     deploy:
@@ -26,13 +29,13 @@ services:
         until ollama list >/dev/null 2>&1; do
           sleep 1
         done
-        ollama pull qwen3:8b
+        ollama pull "$${OLLAMA_MODEL:-qwen3:1.7b}"
         wait "$$server_pid"
     healthcheck:
       test:
         [
           "CMD-SHELL",
-          "ollama list | grep -q 'qwen3:8b'"
+          "ollama list | grep -q \"$${OLLAMA_MODEL:-qwen3:1.7b}\""
         ]
       interval: 20s
       timeout: 10s

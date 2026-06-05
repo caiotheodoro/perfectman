@@ -227,13 +227,13 @@ pnpm freellm:dev
 
 The script builds the FreeLLMAPI container from `https://github.com/tashfeenahmed/freellmapi`, reads this repo's `.env`, exposes the API on `http://localhost:3001/v1`, and exposes the dashboard on `http://localhost:5173`. Set `FREELLMAPI_ENCRYPTION_KEY` in `.env` before first run so FreeLLMAPI can store provider keys. Use the dashboard to add provider keys and create the unified key, then store that value in `.env` as `FREELLMAPI_KEY`.
 
-For the local Qwen3 8B config, run the Ollama container first:
+For the local Qwen3 config, run the Ollama container first:
 
 ```bash
 pnpm qwen:dev
 ```
 
-The script starts `ollama/ollama`, pulls `qwen3:8b` into a Docker-managed volume, and exposes the OpenAI-compatible API on `http://localhost:11434/v1`. Use it with `config/qwen3_8b.json`.
+The script starts `ollama/ollama`, pulls `qwen3:1.7b` by default into a Docker-managed volume, and exposes the OpenAI-compatible API on `http://localhost:11434/v1`. Use it with `config/index.json` copied from `examples/simulations/qwen3-local.example.json`. For the 8B model, run `pnpm qwen:dev:8b` and use a config with `modelName: "qwen3:8b"`.
 
 ## Current Open Questions
 
