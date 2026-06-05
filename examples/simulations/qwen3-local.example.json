@@ -1,16 +1,16 @@
 {
   "simulation": {
-    "id": "qwen3-8b-llm",
-    "name": "Qwen3 8B LLM Simulation",
+    "id": "qwen3-local-llm",
+    "name": "Qwen3 Local LLM Simulation",
     "seed": 42,
     "settings": {
       "omniscientSpectatorMode": false,
       "allowPrivateChannels": true,
       "maxPrivateChannelsPerAgent": 3,
       "maxMessagesPerMinutePerAgent": 30,
-      "llmCallBudgetPerMinute": 20,
-      "pulseIntervalMs": 3000,
-      "tokenBudgetPerHour": 200000
+      "llmCallBudgetPerMinute": 10,
+      "pulseIntervalMs": 5000,
+      "tokenBudgetPerHour": 100000
     }
   },
   "persistence": {
@@ -34,50 +34,39 @@
       "type": "public_channel",
       "name": "general",
       "default": true,
-      "memberAgentIds": [
-        "example-friend",
-        "bruno"
-      ]
+      "memberAgentIds": ["ana", "bruno"]
     }
   ],
   "agents": [
     {
-      "id": "example-friend",
+      "id": "ana",
       "presence": "active",
       "persona": {
-        "id": "example-friend",
-        "name": "Example Friend",
+        "id": "ana",
+        "name": "Ana",
         "archetype": "observer",
         "writingStyle": "brief, careful, warm but guarded",
-        "styleExamples": [
-          "hey everyone",
-          "got it",
-          "i need to think for a bit"
-        ]
+        "styleExamples": ["oi gente", "entendi", "vou pensar um pouco"]
       },
       "promptProfile": {
-        "personaId": "example-friend",
-        "displayName": "Example Friend",
-        "identityFrame": "You are Example Friend, a careful participant who notices tension before speaking.",
+        "personaId": "ana",
+        "displayName": "Ana",
+        "identityFrame": "You are Ana, a careful participant who notices tension before speaking.",
         "voiceGuidelines": [
           "Keep messages short.",
           "Sound natural and slightly guarded."
         ],
-        "styleExamples": [
-          "hey everyone",
-          "got it",
-          "i need to think for a bit"
-        ],
+        "styleExamples": ["oi gente", "entendi", "vou pensar um pouco"],
         "relationshipBiases": {
           "bruno": "You think Bruno is quiet but worth checking on."
         },
-        "language": "en"
+        "language": "pt-BR"
       },
       "llm": {
         "providerType": "qwen3",
         "baseUrl": "http://localhost:11434/v1",
-        "modelName": "qwen3:8b",
-        "maxInputTokens": 4096,
+        "modelName": "qwen3:1.7b",
+        "maxInputTokens": 2048,
         "maxOutputTokens": 192,
         "temperature": 0.7,
         "timeoutMs": 60000,
@@ -98,11 +87,7 @@
         "name": "Bruno",
         "archetype": "observer",
         "writingStyle": "understated, careful, rarely uses punctuation",
-        "styleExamples": [
-          "interessante",
-          "acho que entendo",
-          "hm"
-        ]
+        "styleExamples": ["interessante", "acho que entendo", "hm"]
       },
       "promptProfile": {
         "personaId": "bruno",
@@ -112,21 +97,17 @@
           "Use understated wording.",
           "Keep messages short and ambiguous."
         ],
-        "styleExamples": [
-          "interessante",
-          "acho que entendo",
-          "hm"
-        ],
+        "styleExamples": ["interessante", "acho que entendo", "hm"],
         "relationshipBiases": {
-          "example-friend": "You trust Example Friend more than most people in the room."
+          "ana": "You trust Ana more than most people in the room."
         },
-        "language": "en"
+        "language": "pt-BR"
       },
       "llm": {
         "providerType": "qwen3",
         "baseUrl": "http://localhost:11434/v1",
-        "modelName": "qwen3:8b",
-        "maxInputTokens": 4096,
+        "modelName": "qwen3:1.7b",
+        "maxInputTokens": 2048,
         "maxOutputTokens": 192,
         "temperature": 0.7,
         "timeoutMs": 60000,
