@@ -9,7 +9,7 @@ import type { ScenarioConfig } from "../scenario-presets.js";
 import { DEFAULT_MOCK_CONFIG } from "../../agent/persona-loader.js";
 import { INTRO_BEHAVIOR_INSTRUCTION } from "../scenario-presets.js";
 
-const USE_REAL_LLM = process.env["PERFECTMAN_LLM"] === "qwen3";
+const LLM_PROVIDER = process.env["PERFECTMAN_LLM"] ?? "mock";
 
 const QWEN3_CONFIG: LlmConfig = {
   providerType: "ollama",
@@ -27,7 +27,25 @@ const QWEN3_CONFIG: LlmConfig = {
   },
 };
 
-export const AGENT_LLM_CONFIG: LlmConfig = USE_REAL_LLM ? QWEN3_CONFIG : DEFAULT_MOCK_CONFIG;
+const DEEPSEEK_CONFIG: LlmConfig = {
+  providerType: "deepseek",
+  baseUrl: process.env["DEEPSEEK_BASE_URL"] ?? "https://api.deepseek.com/v1",
+  apiKeyEnv: "DEEPSEEK_API_KEY",
+  modelName: process.env["DEEPSEEK_MODEL"] ?? "deepseek-chat",
+  maxInputTokens: 4096,
+  maxOutputTokens: 512,
+  temperature: 0.7,
+  timeoutMs: 60_000,
+  retryCount: 1,
+  responseFormatJson: true,
+};
+
+export const AGENT_LLM_CONFIG: LlmConfig =
+  LLM_PROVIDER === "qwen3"
+    ? QWEN3_CONFIG
+    : LLM_PROVIDER === "deepseek"
+      ? DEEPSEEK_CONFIG
+      : DEFAULT_MOCK_CONFIG;
 
 export const DEFAULT_SIMULATION_SETTINGS: SimulationSettings = {
   omniscientSpectatorMode: true,

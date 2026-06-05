@@ -149,10 +149,6 @@ export class PulseScheduler {
       return this.finishPulse(eventsCommitted, agentsCalled);
     }
 
-    // Snapshot the event cursor before the agent loop so each agent can see
-    // events committed by prior agents within this same pulse.
-    const pulseStartEventId = this.lastCommittedEventId;
-
     const agentStates = new Map<string, AgentState>();
     for (const agent of this.config.agents) {
       try {
@@ -165,14 +161,18 @@ export class PulseScheduler {
     }
 
     for (const agent of this.config.agents) {
-      // Refresh event window so this agent sees actions taken by prior agents this pulse.
+      const agentState = agentStates.get(agent.id) ?? agent.state;
+
+      // Refresh the visible event window for each agent. Do not pre-slice by the
+      // agent cursor here: runEngineStep's anti-drift layer needs the cursor
+      // event present in the window, otherwise it treats the boundary as stale
+      // and returns no new events. Refreshing the full log also lets earlier
+      // agents see events committed after their turn in prior pulses.
       try {
-        newEvents = await this.config.eventRepo.getAfter(sim.id, pulseStartEventId);
+        newEvents = await this.config.eventRepo.getAfter(sim.id);
       } catch {
         // Keep the stale newEvents from pulse start — non-fatal
       }
-
-      const agentState = agentStates.get(agent.id) ?? agent.state;
       const rateLimitStatus = this.config.rateLimitGate.getStatus(agent.id);
 
       const channelAnchorId =
@@ -231,6 +231,7 @@ export class PulseScheduler {
 
         if (!runtimeOutput) {
           await this.safeUpsertAgentState(stepResult.updatedAgentState);
+          agentStates.set(agent.id, stepResult.updatedAgentState);
           continue;
         }
 
@@ -251,6 +252,7 @@ export class PulseScheduler {
 
         if (!resolved) {
           await this.safeUpsertAgentState(stepResult.updatedAgentState);
+          agentStates.set(agent.id, stepResult.updatedAgentState);
           continue;
         }
 
@@ -264,6 +266,7 @@ export class PulseScheduler {
       }
 
       await this.safeUpsertAgentState(stepResult.updatedAgentState);
+      agentStates.set(agent.id, stepResult.updatedAgentState);
     }
 
     // Every 10 pulses: compute stagnation metrics

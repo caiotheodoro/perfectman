@@ -136,8 +136,10 @@ export class SimulationRecorder {
     // Snapshot operator event count before this pulse
     const preOpCount = this.gateway.operatorEvents.length;
 
-    // Reset last intents so we can detect which agents were called this pulse
-    const agentIdsBefore = new Set(this.personaRuntime.lastIntents.keys());
+    // Snapshot last intents so we only render thinking generated during this pulse.
+    // Reusing older intents makes the HTML look like agents are looping/repeating
+    // thoughts even when the engine did not call them.
+    const previousIntents = new Map(this.personaRuntime.lastIntents);
 
     const result = await this.handle.runtime.runPulse(this.handle.simulationId);
 
@@ -162,11 +164,12 @@ export class SimulationRecorder {
       }
     }
 
-    // ── Capture thinking (intents that changed this pulse) ────────────────────
+    // ── Capture thinking (intents generated this pulse only) ──────────────────
     const agentThinking: Record<string, AgentThinking> = {};
     for (const [agentId, intent] of this.personaRuntime.lastIntents.entries()) {
-      // Include thinking for all agents that have a recorded intent
-      agentThinking[agentId] = intentToThinking(agentId, intent);
+      if (previousIntents.get(agentId) !== intent) {
+        agentThinking[agentId] = intentToThinking(agentId, intent);
+      }
     }
 
     // ── Collect operator events since last pulse ───────────────────────────────

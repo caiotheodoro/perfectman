@@ -27,7 +27,8 @@ import {
 // ── LLM provider selection ────────────────────────────────────────────────────
 // Set PERFECTMAN_LLM=mock (or leave unset) to use the deterministic mock.
 // Set PERFECTMAN_LLM=qwen3 to use Qwen3 8B via Ollama (requires docker compose up qwen3).
-const USE_REAL_LLM = process.env["PERFECTMAN_LLM"] === "qwen3";
+// Set PERFECTMAN_LLM=deepseek to use DeepSeek's OpenAI-compatible API.
+const LLM_PROVIDER = process.env["PERFECTMAN_LLM"] ?? "mock";
 
 const QWEN3_CONFIG: LlmConfig = {
   providerType: "ollama",
@@ -45,7 +46,25 @@ const QWEN3_CONFIG: LlmConfig = {
   },
 };
 
-export const AGENT_LLM_CONFIG: LlmConfig = USE_REAL_LLM ? QWEN3_CONFIG : DEFAULT_MOCK_CONFIG;
+const DEEPSEEK_CONFIG: LlmConfig = {
+  providerType: "deepseek",
+  baseUrl: process.env["DEEPSEEK_BASE_URL"] ?? "https://api.deepseek.com/v1",
+  apiKeyEnv: "DEEPSEEK_API_KEY",
+  modelName: process.env["DEEPSEEK_MODEL"] ?? "deepseek-chat",
+  maxInputTokens: 4096,
+  maxOutputTokens: 512,
+  temperature: 0.7,
+  timeoutMs: 60_000,
+  retryCount: 1,
+  responseFormatJson: true,
+};
+
+export const AGENT_LLM_CONFIG: LlmConfig =
+  LLM_PROVIDER === "qwen3"
+    ? QWEN3_CONFIG
+    : LLM_PROVIDER === "deepseek"
+      ? DEEPSEEK_CONFIG
+      : DEFAULT_MOCK_CONFIG;
 
 // ── Scenario ──────────────────────────────────────────────────────────────────
 

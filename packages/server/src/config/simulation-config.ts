@@ -956,9 +956,11 @@ function parseLlmConfig(input: unknown, path: string): LlmConfig {
   );
   if (
     providerType !== "mock" &&
+    providerType !== "qwen3" &&
     providerType !== "qwen3_8b" &&
     providerType !== "ollama" &&
-    providerType !== "freellmapi"
+    providerType !== "freellmapi" &&
+    providerType !== "deepseek"
   ) {
     throw new Error(`${path}.providerType is unsupported: ${providerType}`);
   }

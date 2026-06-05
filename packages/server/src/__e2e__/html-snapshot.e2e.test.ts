@@ -115,12 +115,29 @@ describe(`HTML Snapshot: ${SCENARIO_ID} simulation`, () => {
       );
       expect(thinkingCount).toBeGreaterThan(0);
 
+      // Thinking panels must only show agents called in that pulse; stale cached
+      // intents make the replay look like agents are looping when they are idle.
+      for (const frame of replay.pulses) {
+        expect(Object.keys(frame.agentThinking).length).toBeLessThanOrEqual(frame.result.agentsCalled);
+      }
+
       // At least one agent must act across the entire run
       const trajectory = normalizeReplay(replay) as ReturnType<typeof normalizeReplay>;
       const anyAgentActed = (trajectory as any).perPulseEventSummary.some(
         (p: any) => Object.keys(p.byActor).length > 0,
       );
       expect(anyAgentActed).toBe(true);
+
+      // After the opening pulse, the conversation should remain multi-agent.
+      // This guards against cursor drift where earlier agents never see events
+      // committed after their previous turn, causing one-sided monologues.
+      const actorsAfterOpening = new Set(
+        replay.pulses
+          .slice(1)
+          .flatMap((frame) => frame.committedEvents.map((event) => event.actorId))
+          .filter((actorId) => agentIds.includes(actorId)),
+      );
+      expect(actorsAfterOpening.size).toBeGreaterThanOrEqual(Math.min(2, agentCount));
 
       // ── HTML output ───────────────────────────────────────────────────────
       const html = generateHtml(replay);

@@ -1,0 +1,113 @@
+{
+  "simulation": {
+    "id": "deepseek-dev",
+    "name": "DeepSeek Dev Simulation",
+    "seed": 42,
+    "scenario": {
+      "preset": "friends_cold_open"
+    },
+    "settings": {
+      "omniscientSpectatorMode": false,
+      "allowPrivateChannels": true,
+      "maxPrivateChannelsPerAgent": 3,
+      "maxMessagesPerMinutePerAgent": 30,
+      "llmCallBudgetPerMinute": 100,
+      "pulseIntervalMs": 3000,
+      "tokenBudgetPerHour": 1000000
+    }
+  },
+  "persistence": {
+    "type": "memory"
+  },
+  "debug": {
+    "operatorEvents": true,
+    "pulseMetrics": true,
+    "stdoutDelivery": true
+  },
+  "deliveryGateways": [
+    {
+      "id": "stdout",
+      "type": "stdout",
+      "debug": true
+    }
+  ],
+  "channels": [
+    {
+      "id": "general",
+      "type": "public_channel",
+      "name": "general",
+      "default": true,
+      "memberAgentIds": ["example-friend", "example-peer"]
+    }
+  ],
+  "agents": [
+    {
+      "id": "example-friend",
+      "presence": "active",
+      "persona": {
+        "id": "example-friend",
+        "name": "Example Friend",
+        "archetype": "observer",
+        "writingStyle": "brief, careful, warm but guarded",
+        "styleExamples": ["hey", "got it", "wait what"]
+      },
+      "promptProfile": {
+        "personaId": "example-friend",
+        "displayName": "Example Friend",
+        "identityFrame": "You are Example Friend, a careful participant who already knows this friend group.",
+        "voiceGuidelines": ["Keep messages short.", "Sound natural and slightly guarded."],
+        "styleExamples": ["hey", "got it", "wait what"],
+        "relationshipBiases": {
+          "example-peer": "You already know Example Peer and trust them more than most people in the room."
+        },
+        "language": "en"
+      },
+      "llm": {
+        "providerType": "deepseek",
+        "baseUrl": "https://api.deepseek.com/v1",
+        "apiKeyEnv": "DEEPSEEK_API_KEY",
+        "modelName": "deepseek-chat",
+        "maxInputTokens": 8192,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "timeoutMs": 30000,
+        "retryCount": 2,
+        "responseFormatJson": true
+      }
+    },
+    {
+      "id": "example-peer",
+      "presence": "active",
+      "persona": {
+        "id": "example-peer",
+        "name": "Example Peer",
+        "archetype": "observer",
+        "writingStyle": "understated, careful, rarely uses punctuation",
+        "styleExamples": ["hm", "yeah", "makes sense"]
+      },
+      "promptProfile": {
+        "personaId": "example-peer",
+        "displayName": "Example Peer",
+        "identityFrame": "You are Example Peer, quiet and sensitive to exclusion in an existing friend group.",
+        "voiceGuidelines": ["Use understated wording.", "Keep messages short and ambiguous."],
+        "styleExamples": ["hm", "yeah", "makes sense"],
+        "relationshipBiases": {
+          "example-friend": "You already know Example Friend and read them as careful but warm."
+        },
+        "language": "en"
+      },
+      "llm": {
+        "providerType": "deepseek",
+        "baseUrl": "https://api.deepseek.com/v1",
+        "apiKeyEnv": "DEEPSEEK_API_KEY",
+        "modelName": "deepseek-chat",
+        "maxInputTokens": 8192,
+        "maxOutputTokens": 512,
+        "temperature": 0.7,
+        "timeoutMs": 30000,
+        "retryCount": 2,
+        "responseFormatJson": true
+      }
+    }
+  ]
+}
