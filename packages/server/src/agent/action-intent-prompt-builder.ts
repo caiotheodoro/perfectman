@@ -1,5 +1,5 @@
 import type { AgentRuntimeInput, CommittedEvent } from "@perfectman/shared";
-import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
+import type { PersonaPromptProfile, ScenarioContextBlock } from "./persona-prompt-profile.js";
 import type { BuiltPrompt } from "./agent-runtime.types.js";
 
 export class ActionIntentPromptBuilder {
@@ -167,6 +167,10 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
       this.renderRelationshipBiases(profile),
     ];
 
+    if (profile.scenarioContext) {
+      blocks.push(this.renderScenarioContext(profile.scenarioContext));
+    }
+
     return blocks.filter((block) => block.length > 0).join("\n\n");
   }
 
@@ -189,7 +193,7 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
       .map(([label, examples]) => `- ${label}: ${examples.map((example) => `"${example}"`).join(", ")}`);
 
     if (renderedGroups.length === 0) return "";
-    return `Style examples (mimic these natural patterns):\n${renderedGroups.join("\n")}`;
+    return `Tonal/register guide — these show HOW you express yourself (voice, rhythm, brevity), NOT phrases to repeat literally. Always say something substantive:\n${renderedGroups.join("\n")}`;
   }
 
   private static renderRelationshipBiases(profile: PersonaPromptProfile): string {
@@ -211,6 +215,24 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
     });
 
     return `Relationship-specific views:\n${rendered.join("\n")}`;
+  }
+
+  private static renderScenarioContext(ctx: ScenarioContextBlock): string {
+    const lines = [
+      `### CONTEXTO SOCIAL`,
+      ctx.roomContext,
+      `Humor inicial da sala: ${ctx.startingMood}`,
+      ctx.introBehaviorInstruction,
+    ];
+    if (ctx.firstMoveGuidance) lines.push(ctx.firstMoveGuidance);
+    if (ctx.hostStartingMessage) {
+      lines.push(`Mensagem do anfitrião: "${ctx.hostStartingMessage}"`);
+    }
+    if (ctx.customNotes?.length) {
+      lines.push("Regras de comportamento nesta cena:");
+      for (const note of ctx.customNotes) lines.push(`- ${note}`);
+    }
+    return lines.join("\n");
   }
 
   // Event content is LLM-generated (agent outputs), not untrusted user input — no sanitization needed.

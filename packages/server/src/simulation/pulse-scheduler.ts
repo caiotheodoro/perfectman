@@ -149,6 +149,10 @@ export class PulseScheduler {
       return this.finishPulse(eventsCommitted, agentsCalled);
     }
 
+    // Snapshot the event cursor before the agent loop so each agent can see
+    // events committed by prior agents within this same pulse.
+    const pulseStartEventId = this.lastCommittedEventId;
+
     const agentStates = new Map<string, AgentState>();
     for (const agent of this.config.agents) {
       try {
@@ -161,6 +165,13 @@ export class PulseScheduler {
     }
 
     for (const agent of this.config.agents) {
+      // Refresh event window so this agent sees actions taken by prior agents this pulse.
+      try {
+        newEvents = await this.config.eventRepo.getAfter(sim.id, pulseStartEventId);
+      } catch {
+        // Keep the stale newEvents from pulse start — non-fatal
+      }
+
       const agentState = agentStates.get(agent.id) ?? agent.state;
       const rateLimitStatus = this.config.rateLimitGate.getStatus(agent.id);
 

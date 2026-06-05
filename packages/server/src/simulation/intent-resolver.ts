@@ -195,28 +195,53 @@ function buildReactionEvent(
 function buildChannelCreatedEvent(
   intent: ActionIntent,
   ctx: ResolveContext,
-): SimulationEvent {
-  return {
+): SimulationEvent[] {
+  const channelId = intent.channelTarget ?? createId();
+  const invitedIds = (intent.invitedAgentIds ?? intent.personTargets) || [];
+  const allMembers = [intent.actorId, ...invitedIds];
+
+  const createEvent: SimulationEvent = {
     simulationId: ctx.simulationId,
-    channelId: intent.channelTarget ?? createId(),
+    channelId,
     actorId: intent.actorId,
     type: "channel_created",
     payload: {
       channelName: intent.channelName ?? "private",
       channelType: intent.channelType ?? "private_channel",
-      invitedAgentIds: intent.invitedAgentIds ?? intent.personTargets,
+      invitedAgentIds: invitedIds,
     },
     sourceIntentId: intent.id,
     sourceEventIds: [],
     emotionalSalience: "medium",
     pulseIndex: ctx.pulseIndex,
     visibility: {
-      visibleToAgents: [intent.actorId, ...intent.personTargets],
+      visibleToAgents: allMembers,
       visibleToSpectators: false,
       visibleToOperators: true,
       visibilityReason: "private_channel_members_only",
     },
   };
+
+  // Emit an agent_invited event per invitee so their channel anchor shifts immediately.
+  const inviteEvents: SimulationEvent[] = invitedIds.map((invitedAgentId) => ({
+    simulationId: ctx.simulationId,
+    channelId,
+    actorId: intent.actorId,
+    type: "agent_invited",
+    payload: { invitedAgentId },
+    sourceIntentId: intent.id,
+    sourceEventIds: [],
+    emotionalSalience: "medium",
+    pulseIndex: ctx.pulseIndex,
+    visibility: {
+      visibleToAgents: allMembers,
+      visibleToSpectators: false,
+      visibleToOperators: true,
+      visibilityReason: "invite_parties",
+    },
+  }));
+
+  return [createEvent, ...inviteEvents];
 }
 
 function buildNoOpEvent(
@@ -320,7 +345,7 @@ export class IntentResolver {
       case "react":
         return [buildReactionEvent(intent, salience, ctx)];
       case "create_channel":
-        return [buildChannelCreatedEvent(intent, ctx)];
+        return buildChannelCreatedEvent(intent, ctx);
       case "no_op":
       case "delay_response":
         return [buildNoOpEvent(intent, ctx)];

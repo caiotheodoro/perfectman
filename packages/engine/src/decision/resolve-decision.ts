@@ -40,17 +40,13 @@ export function resolveDecision(
   pulseIndex: number,
   initiativeCandidates: InitiativeCandidate[] = [],
 ): Decision {
-  // cold_start_bootstrap overrides a strategic delay only when it is the sole
-  // proceeding accumulator — if a "real" accumulator (boredom, curiosity, etc.)
-  // is also above threshold, the agent has genuine motivation and strategic
-  // patience should hold normally.
+  // cold_start_bootstrap can break strategic patience regardless of whether other
+  // accumulators also fired — the agent has been silent long enough that waiting
+  // longer serves nothing. It cannot override deeper inhibitions (fear_of_rejection,
+  // social_anxiety_block, etc.) which remain fully blocking.
   const coldStartFired = initiativeCandidates.some(
     c => c.source === "cold_start_bootstrap" && c.proceed,
   );
-  const otherInitiativeFired = initiativeCandidates.some(
-    c => c.source !== "cold_start_bootstrap" && c.proceed,
-  );
-  const coldStartOnly = coldStartFired && !otherInitiativeFired;
   // No pressures at all
   if (pressures.length === 0) {
     if (initiativeProceed) {
@@ -107,9 +103,11 @@ export function resolveDecision(
     ];
 
     if (delayFavoring.includes(topInhibition.type)) {
-      // cold_start_bootstrap overrides a strategic delay — the agent has been silent
-      // long enough that waiting longer serves nothing.
-      if (coldStartOnly) {
+      // cold_start_bootstrap overrides strategic delays when others are actively
+      // talking — the agent is being left out of a live conversation, so patience
+      // serves nothing. When the channel is empty (no new events), strategic
+      // patience holds normally.
+      if (coldStartFired && hasNewEvents) {
         return {
           outcome:           "act",
           needsLLM:          true,
