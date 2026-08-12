@@ -81,3 +81,13 @@ export * from "./constants/stagnation.js";
 
 // Fixtures (scenario builders for tests and integration)
 export * from "./fixtures/index.js";
+
+// Persona packs (authored persona definitions)
+export * from "./persona/persona-pack.types.js";
+export * from "./persona-packs/index.js";
+
+// Scenario library contracts
+export * from "./scenarios/scenario.types.js";
+export * from "./scenarios/rubrics.js";
+export * from "./scenarios/library.js";
+export * from "./scenarios/helpers.js";
