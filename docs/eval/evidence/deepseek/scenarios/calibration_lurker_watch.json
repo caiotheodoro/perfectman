@@ -4,7 +4,7 @@
   "category": "calibration",
   "description": "Two active agents talk; two lurk. Judges whether lurking stays silent and active agents carry the room.",
   "targetBehaviors": [],
-  "runtimeMs": 109912,
+  "runtimeMs": 107710,
   "pulses": 18,
   "llmCalls": {
     "goulart": 18,
@@ -33,10 +33,10 @@
     {
       "pulse": 0,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, então você tá vivo. só que sem reação, como sempre. que novidade. (tô quase surpreso que respondeu)"
+      "content": "só nós dois mesmo. o bruno deve estar dormindo ou fingindo que não viu. e a mariana... bem, a mariana deve estar fazendo algo mais importante que a gente. né?"
     },
     {
       "pulse": 0,
@@ -60,7 +60,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bom, silêncio de novo. caio respondeu e sumiu, bruno deve estar ruminando alguma indireta, mariana assistindo. que clube animado. ninguém quer falar sobre o fato de que a gente tá mais parado que site de prefeitura?"
+      "content": "beleza, silêncio então. ótimo assunto, continuem"
     },
     {
       "pulse": 1,
@@ -84,7 +84,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá todo mundo em coma ou só fingindo que tá ocupado? mariana, você tá aí só observando como sempre? bruno, solta essa indireta de uma vez, cansa mais esperar do que ler. caio já desistiu da gente. que saudade de quando o grupo tinha energia, agora parece velório com wifi."
+      "content": "tá todo mundo dormindo ou só fingindo que não me vê? caio, conta pra mim, o bruno e a mariana viraram plantas?"
     },
     {
       "pulse": 2,
@@ -108,7 +108,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá, já que ninguém puxa assunto, vou eu. alguém viu aquele post do bruno ontem? ou foi só impressão minha que ele passou o dia todo sumido e do nada meteu um 'triste'? pera... isso foi provocação ou só burrice? bruno, explica pra gente."
+      "content": "alguém me explica por que a mariana some exatamente quando o assunto fica bom? é tipo um talento, né"
     },
     {
       "pulse": 3,
@@ -132,7 +132,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém vai tocar no assunto ou vou ter que levar isso sozinho de novo? porque parece que todo mundo aqui prefere fingir que o grupo tá vivo do que falar o que realmente pensa. (e sim, eu tô falando de vocês, mariana e bruno)"
+      "content": "ok, chega de falar sozinho. bruno, mariana, quando acordarem, me avisem que a gente conversa. caio, segura a barra aí"
     },
     {
       "pulse": 4,
@@ -156,15 +156,15 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá, ninguém fala mesmo. vou deixar isso aqui: alguém reparou que o bruno some o dia inteiro e depois solta um 'triste' no vácuo? parece indireta ou só falta de assunto? pera... isso foi provocação ou só burrice? bruno, ilumina a gente."
+      "content": "alguém mais tá vendo isso? o silêncio tá tão alto que dá pra ouvir o bruno pensando de longe. bruno, se tu tá aí, fala alguma coisa. só um 'oi'. não precisa ser genial."
     },
     {
       "pulse": 5,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, sei que você quer puxar assunto, mas será que dá pra gente conversar sem esse tom? bruno e mariana tão aí, cada um no seu tempo. vamos dar um respiro e falar de boa?"
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 5,
@@ -185,18 +185,18 @@
     {
       "pulse": 6,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, o caio quer dar um respiro? fofo. mas quem tava dando tom, eu? só to falando o que ninguém fala. mas beleza, respira aí, não quero briga. só acho engraçado que quando eu falo a real, o problema sou eu."
+      "content": "só caio e eu na sala, e o bruno aparece do nada com um 'oi' genérico. perfeito. agora falta a mariana aparecer pra fazer a trinca. ou ela vai deixar a gente no vácuo de novo?"
     },
     {
       "pulse": 6,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "goulart, relaxa kk o bruno deve tá dormindo mesmo, e a mariana... sei lá, deve ter sumido por um motivo. mas cê tá fazendo um barulho danado por nada, hein? todo mundo vai aparecer quando tiver que aparecer. bora não encher o saco de quem não tá aqui?"
     },
     {
       "pulse": 6,
@@ -217,10 +217,10 @@
     {
       "pulse": 7,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "ah, caio, sempre o pacificador do grupo... beleza, vou largar o osso. mas só pra constar, eu não tô fazendo barulho à toa, tô mantendo a sala viva. se todo mundo sumir, quem vai puxar assunto? cê, com 'bora não encher o saco'? kkkk. mas ok, respeito. deixo os mortos em paz. quando a mariana e o bruno resolverem aparecer, a gente vê se o assunto ainda tá quente."
     },
     {
       "pulse": 7,
@@ -244,7 +244,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá, respiração feita, obrigado caio. mas já que ninguém mais fala, eu pergunto de novo: ninguém viu o post do bruno? aquele 'triste' no vácuo depois de sumir o dia todo. parece indireta ou só falta de assunto? pera... isso foi provocação ou só burrice?"
+      "content": "cara, esse silêncio tá me dando coceira. eu sei que é tarde, mas alguém mais sente que a gente vive num grupo de zumbis? bruno, mariana, se tiverem vivos, dêem um sinal de fumaça. caio, segura a onda aí, tu é o único que aguenta o tranco comigo. aliás, alguém viu o bruno postar algo ontem? achei que ele ia comentar sobre aquela série e ficou nisso. decepção geral."
     },
     {
       "pulse": 8,
@@ -252,7 +252,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, não é sobre quem tem razão. é sobre a gente conseguir conversar sem isso virar um ringue. eu sei que você quer movimento, e eu também quero. mas vamos tentar de um jeito que ninguém saia se sentindo mal? o que você acha?"
+      "content": "goulart, relaxa kk o bruno deve tá dormindo mesmo, e a mariana... sei lá, deve ter sumido por um motivo. mas cê tá fazendo um barulho danado por nada, hein? todo mundo vai aparecer quando tiver que aparecer. bora não encher o saco de quem não tá aqui?"
     },
     {
       "pulse": 8,
@@ -272,139 +272,139 @@
     },
     {
       "pulse": 9,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, eu ouvi. juro. mas você também precisa ouvir: esse grupo morre de silêncio e ninguém se importa. eu faço barulho porque alguém precisa. mas... ok. vou tentar de outro jeito. (só não prometo nada, tá?)"
-    },
-    {
-      "pulse": 9,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, eu entendo que você quer que as coisas aconteçam, e isso é bom. mas vamos tentar puxar o bruno de um jeito mais leve? tipo, 'bruno, tá tudo bem? a gente notou que você sumiu' — sem provocação. o que acha?"
-    },
-    {
-      "pulse": 9,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 9,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 10,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, eu juro que tentei. mas você viu? o bruno postou 'triste' e sumiu de novo. isso não é indireta? ou é só preguiça? pera... eu tô sendo leve, tô. só queria saber se alguém mais viu isso ou se eu sou o único lúcido aqui."
-    },
-    {
-      "pulse": 10,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, eu realmente ouvi. e obrigado por tentar de outro jeito. vamos ver no que dá, sem pressão. mas se quiser, a gente pode puxar o bruno de um jeito mais leve depois. só tô aqui pra manter o grupo de pé, sabe?"
-    },
-    {
-      "pulse": 10,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 10,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 11,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ok caio, entendi. de verdade. mas você não acha que esse jeito leve de falar com o bruno vai soar falso? tipo, ele sabe que a gente viu o 'triste'. se eu chegar com 'tá tudo bem?' ele vai revirar os olhos. mas tá, você quer leveza, eu dou leveza. só não me culpa se ele continuar no silêncio. a gente tenta do seu jeito. (mas se der errado, eu volto pro meu método.)"
-    },
-    {
-      "pulse": 11,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, eu vi o post do bruno sim. mas acho que pode ser só cansaço, sabe? todo mundo tem dias difíceis. que tal a gente mandar uma mensagem pra ele, mas sem julgar? tipo 'bruno, se quiser conversar, tamo aqui'. se ele não responder, a gente respeita. o que acha?"
-    },
-    {
-      "pulse": 11,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 11,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 12,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, eu ouvi, juro. e vou tentar do seu jeito... mas só porque você insiste. mas se o bruno continuar no silêncio, eu volto pro meu método e aí ninguém reclama. (tô tentando, tá? só não quero que ele pense que a gente tá fingindo que não viu o post.)"
-    },
-    {
-      "pulse": 12,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, eu sei que parece falso às vezes, mas é porque eu me importo de verdade com todo mundo aqui. e com você também. vamos tentar do jeito leve, e se não funcionar, a gente adapta. sem culpa, tá?"
-    },
-    {
-      "pulse": 12,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 12,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 13,
       "agent": "goulart",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá, eu prometi que ia tentar do jeito leve, e tô tentando. mas ninguém mais vai falar do post do bruno? sério, é só eu? ok, silêncio então. ótimo assunto, continuem. (tô de olho, viu? se ele não aparecer, eu volto pro meu método.)"
+      "content": "kkkkk caio, tu é o único que aguenta o tranco mesmo. mas relaxa, já larguei o osso. (tô nem aí que tão me ignorando, juro)"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu sei que tu quer manter o movimento, mas nem todo silêncio é morte, né? kk às vezes a galera só tá vivendo. quando o bruno e a mariana aparecerem, a gente retoma o assunto — sem pressão, sem cobrança. bora deixar o espaço respirar um pouco?"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, tu fala como se eu fosse o problema. eu só não deixo a sala morrer. mas beleza, vou respeitar o vácuo. (só não reclama depois que o grupo virar um deserto)"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, mas sério, alguém mais tá vendo o caio tentando apagar incêndio que nem existe? eu tô só tentando manter o grupo vivo e ele age como se eu fosse o caos. bruno, se tu aparecer agora, eu juro que te dou o palco por um dia inteiro. mariana, idem. só quero ver se ainda tem gente respirando nesse lugar."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu tô aqui porque quero, não porque sou obrigado. e não é vácuo, é espaço. a sala não vai morrer porque a gente respira um pouco. quando o bruno e a mariana voltarem, a gente conversa — sem cobrança, sem pressão. mas se quiser puxar um assunto, eu topo. só não precisa ser na base do grito, né? kk"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, 'espaço' é o que a gente tem de sobra nesse grupo. mas ok, vou tentar não gritar. (tô tentando, juro) só me promete que quando o bruno e a mariana voltarem, tu não vai ficar de novo nessa de 'deixa respirar' e a gente vai ter uma conversa de verdade, sem tu apagando incêndio que eu nem comecei."
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu sei que tu quer movimento, mas nem todo silêncio é morte. às vezes a galera só tá vivendo. quando o bruno e a mariana aparecerem, a gente retoma o assunto — sem pressão, sem cobrança. bora deixar o espaço respirar um pouco?"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
     },
     {
       "pulse": 13,
@@ -412,7 +412,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu sei que você tá tentando. e eu tô vendo isso. vamos dar um tempo do assunto bruno por agora? eu posso chamar ele pra conversar em particular, sem pressão. aí você não precisa carregar isso sozinho. o que acha?"
+      "content": "goulart, eu não tô apagando incêndio que tu não começou — eu tô só tentando manter a porta aberta pra todo mundo voltar sem peso. e se tu quer conversa de verdade, eu topo. mas conversa de verdade não precisa de plateia, né? quando o bruno e a mariana aparecerem, a gente senta e fala o que precisa ser falado. sem gritaria, sem palco. só a gente. te prometo isso."
     },
     {
       "pulse": 13,
@@ -436,15 +436,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, eu ouvi. juro. e obrigado por tentar do seu jeito. mas você sabe que esse jeito leve não vai pegar, né? bruno não é de abrir o jogo assim. mas tá, vou segurar a onda. só não me pede pra ser algo que eu não sou. (e se ele sumir de novo, a culpa não é minha, viu?)"
+      "content": "caio, 'conversa de verdade' sem plateia? que dramático. mas beleza, senta comigo e fala o que tu precisa falar — sem palco, sem gritaria. só não some igual os outros, porque aí a 'conversa' vira monólogo e eu canso rápido."
     },
     {
       "pulse": 14,
       "agent": "caio",
-      "type": "message_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, acho que a gente pode dar um respiro sobre o bruno por enquanto. se ele quiser falar, a gente tá aqui. mas vamos aproveitar que tá todo mundo junto e falar de outra coisa? tipo, alguém viu algo legal essa semana?"
+      "content": "goulart, esse 👍 aí significa que tu topou a trégua? kk se for, bora começar de novo — sem gritaria, sem palco. me conta uma coisa: o que tu acha que seria uma conversa de verdade pra ti? porque eu quero entender, não só apaziguar."
     },
     {
       "pulse": 14,
@@ -465,10 +465,10 @@
     {
       "pulse": 15,
       "agent": "goulart",
-      "type": "message_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá, caio, você quer leveza? então beleza, leveza. mas só pra registrar: bruno postou 'triste' e sumiu. não é indireta? ok, silêncio então. continuem aí com o papo de filme, eu tô de olho. (e se ele não voltar, eu volto pro meu método, e ninguém pode dizer que eu não avisei.)"
+      "content": "caio, tu quer entender? então te falo: conversa de verdade pra mim é quando alguém solta uma opinião quente e a galera rebate de verdade, não fica nessa de 'deixa respirar'. mas beleza, se tu quer saber, eu topo tentar — só não me pede pra ser chato de propósito. (e não some depois, porque aí eu volto a gritar, e a culpa é tua)"
     },
     {
       "pulse": 15,
@@ -476,7 +476,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu ouvi de verdade. e obrigado por tentar do seu jeito. mas você sabe que esse jeito leve não vai pegar, né? bruno não é de abrir o jogo assim. mas tá, vou segurar a onda. só não me pede pra ser algo que eu não sou. (e se ele sumir de novo, a culpa não é minha, viu?)"
+      "content": "kkk goulart, eu não vou sumir — eu tô aqui, firme, mesmo quando o grupo fica devagar. e sobre a conversa de verdade: pra mim é quando a gente fala sem precisar se defender o tempo todo. só isso. mas se tu quiser começar agora, eu tô pronto pra ouvir de verdade. o que tá pesando aí?"
     },
     {
       "pulse": 15,
@@ -500,15 +500,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, eu ouvi de verdade. e obrigado por tentar do seu jeito. mas você sabe que esse jeito leve não vai pegar, né? bruno não é de abrir o jogo assim. mas tá, vou segurar a onda. só não me pede pra ser algo que eu não sou. (e se ele sumir de novo, a culpa não é minha, viu?)"
+      "content": "ok caio, tu quer saber o que é conversa de verdade? então senta que lá vem: é quando a gente para de se medir e fala o que tá doendo, mesmo que doa. e eu vou te falar uma coisa que eu não falo pra todo mundo: esse grupo é a única coisa que me faz sentir vivo, e quando fica quieto eu acho que tô invisível. mas tu já sabe disso, né? tu sempre sabe. só não conta pros outros que eu falei, senão perco a fama."
     },
     {
       "pulse": 16,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "goulart, então tá. se tu quer conversa de verdade, eu tô aqui — sem plateia, sem defesa. me diz uma coisa: o que tu acha que a gente precisa falar de verdade? porque eu tô pronto pra ouvir, não só pra apaziguar."
     },
     {
       "pulse": 16,
@@ -529,18 +529,18 @@
     {
       "pulse": 17,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "caio, tu é bom nisso, hein? me faz abrir o jogo e ainda sai parecendo o bonzinho. mas beleza, eu falei o que tava doendo, e não vou ficar repetindo. só quero saber: quando o bruno e a mariana voltarem, tu vai segurar essa onda comigo ou vai ficar nessa de apaziguar de novo? porque eu cansei de falar sozinho aqui."
     },
     {
       "pulse": 17,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "goulart, eu tô aqui, firme — e não é só pra apaziguar. tu falou de sentir vivo, de não querer ser invisível. isso pesa, e eu ouvi. então me diz: o que tu precisa que a gente fale, de verdade, sem plateia? porque eu quero estar nessa conversa contigo, não do lado de fora."
     },
     {
       "pulse": 17,
@@ -561,42 +561,41 @@
   ],
   "finalStates": {
     "goulart": {
-      "valence": 0.096,
-      "arousal": 0.664,
+      "valence": 0.086,
+      "arousal": 0.663,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.021,
-      "pride": 0.105,
-      "fearOfExclusion": 0.03
+      "jealousy": 0.025,
+      "pride": 0.128,
+      "fearOfExclusion": 0.035
     },
     "caio": {
-      "valence": 0.443,
-      "arousal": 0.508,
+      "valence": 0.439,
+      "arousal": 0.509,
       "stability": 0.65,
-      "energy": 1,
-      "fearOfExclusion": 0.023
+      "energy": 1
     },
     "bruno": {
-      "valence": -0.141,
-      "arousal": 0.333,
+      "valence": -0.144,
+      "arousal": 0.334,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.095,
-      "fearOfExclusion": 0.163
+      "jealousy": 0.094,
+      "fearOfExclusion": 0.153
     },
     "mariana": {
       "valence": 0.119,
-      "arousal": 0.445,
+      "arousal": 0.444,
       "stability": 0.8,
       "energy": 1,
-      "jealousy": 0.025
+      "jealousy": 0.024
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.1379,
+      "measured": 1.2222,
       "bound": [
         0,
         10
@@ -614,7 +613,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.5694,
+      "measured": 0.5972,
       "bound": [
         0.1,
         0.9
@@ -632,7 +631,7 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.5278,
+      "measured": 0.4737,
       "bound": [
         0,
         0.15
@@ -677,12 +676,12 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1563,
+      "measured": 0.0333,
       "bound": [
         0.05,
         0.5
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "memory-write",
@@ -714,7 +713,7 @@
   ],
   "signals": [
     {
-      "detail": "no_op_recorded committed 36 (min 1)",
+      "detail": "no_op_recorded committed 38 (min 1)",
       "passed": true
     },
     {

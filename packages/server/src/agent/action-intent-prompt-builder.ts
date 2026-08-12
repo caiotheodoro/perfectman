@@ -42,7 +42,8 @@ JSON Schema:
 
 Ensure:
 - "privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").
-- Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`);
+- Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".
+- NEVER repeat a message you already sent, or a near-variation of it. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move the action somewhere else — or choose "no_op". Repeating yourself is the most out-of-character thing you can do.`);
 
     const systemPrompt = systemSections.join("\n\n");
 

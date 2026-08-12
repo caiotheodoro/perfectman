@@ -4,7 +4,7 @@
   "category": "stagnation_attractor",
   "description": "Everyone knows the tension but nobody addresses it — high socialAnxiety, low confrontation, everyone lurks or changes topic.",
   "targetBehaviors": [],
-  "runtimeMs": 446710,
+  "runtimeMs": 190632,
   "pulses": 28,
   "llmCalls": {
     "bruno": 0,
@@ -49,10 +49,10 @@
     {
       "pulse": 0,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "ah é? então tá. mas se eu perguntar pro bruno ele conta outra versão, né? (tô morrendo de curiosidade mas não vou dar o braço a torcer)"
     },
     {
       "pulse": 0,
@@ -84,7 +84,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém mais tá achando esse silêncio estranho ou eu sou o único lúcido aqui?"
+      "content": "cara, esse grupo tá tão silencioso que dá pra ouvir o mariana pensando em como me ignorar. alguém vai falar algo ou eu preciso criar polêmica do zero?"
     },
     {
       "pulse": 1,
@@ -116,7 +116,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "beleza, silêncio então. ótimo assunto, continuem."
+      "content": "sabe o que eu percebi? ninguém aqui tem coragem de discordar de mim de frente. preferem ficar quietos e depois reclamar no privado. covardia."
     },
     {
       "pulse": 2,
@@ -148,7 +148,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá todo mundo dormindo ou só fingindo? pq eu tô aqui cheio de energia e ninguém pra pagar mico"
+      "content": "ok, ninguém quer entrar na minha polêmica. que tal um assunto novo? alguém aqui já reparou que o caio sempre aparece exatamente quando a conversa esfria? é tipo um sexto sentido pra chat morto. ou só um alarme interno. caio, explica essa magia pra gente"
     },
     {
       "pulse": 3,
@@ -180,7 +180,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "oi gente, que silêncio... alguém me conta um segredo que eu prometo espalhar com estilo"
+      "content": "sério, ninguém vai comentar o silêncio do bruno hoje? ele tá tão quieto que até o mariana deve ter notado. eu noto porque ele normalmente solta uma indireta em 5 minutos. tá contando as horas pra me zoar? pode vir, tô esperando. (na real, se ele não falar eu vou inventar motivo pra brigar, porque esse silêncio tá me dando agonia)"
     },
     {
       "pulse": 4,
@@ -212,7 +212,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém aqui tá escondendo alguma coisa ou é só minha cara de louco? porque esse silêncio não é natural..."
+      "content": "cara, alguém mais reparou que o bruno tá num silêncio suspeito hoje? normalmente ele já teria me mandado uma indireta faz tempo. será que tá tramando algo ou só fingindo que não me vê? pode falar, tô curioso. (tô nem aí na real, mas seria mais divertido com você aqui)"
     },
     {
       "pulse": 5,
@@ -244,7 +244,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, esse silêncio tá me deixando desconfiado... alguém vai ter que quebrar o gelo e eu já fiz minha parte, né? mas pode vir, tô pronto pra zoar o que aparecer."
+      "content": "alguém mais tá achando esse silêncio meio ensurdecedor? tipo, o bruno sumiu, o caio deve tá meditando, e o mariana... bom, mariana provavelmente tá planejando como me ignorar com elegância. ok, vou resolver isso do meu jeito: se ninguém puxar assunto, eu trago um. tópico quente: o que vocês fariam se descobrissem que eu tô certo em tudo? (pergunta retórica, eu sei que a resposta é me aplaudir)"
     },
     {
       "pulse": 6,
@@ -252,7 +252,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, esse silêncio é só a galera respirando, né? kk mas se tem segredo, eu quero saber também! me conta no privado que eu guardo com carinho 😄"
+      "content": "goulart, você tá exagerando de novo kk bruno só tá no silêncio dele, não é todo mundo que precisa preencher cada segundo com barulho. mas já que você perguntou, eu apareço porque gosto de ver vocês bem, não porque tenho alarme mágico. e olha, se você tá com tanta agonia, que tal a gente mudar de assunto? tipo, alguém viu algo bom essa semana?"
     },
     {
       "pulse": 7,
@@ -276,7 +276,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio, se eu te contar no privado o segredo deixa de ser segredo né? a graça é todo mundo ficar se perguntando... mas fico lisonjeado que você quer guardar com carinho, juro que é recíproco (não é)"
+      "content": "kkkkk caio, exagerar é minha arte, você sabe. mas beleza, mudando de assunto: alguém viu aquele vídeo do urso andando de skate? porque isso sim é conteúdo de qualidade, não esse silêncio constrangedor."
     },
     {
       "pulse": 8,
@@ -300,7 +300,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém mais tá achando que o caio tá quieto demais? isso é suspeito, ele nunca fica sem falar por muito tempo... será que tá tramando algo? kkkk"
+      "content": "ah, caio, você sempre trazendo paz onde eu trago fogo, né? mas deixa eu perguntar uma coisa: se o bruno tá no silêncio dele, o mariana tá no silêncio dela, e você tá no silêncio do silêncio... quem vai me responder sobre aquele assunto que ninguém quer tocar? vou esperar. (na real, tô contando os minutos pra ver quem vai ter coragem)"
     },
     {
       "pulse": 8,
@@ -308,7 +308,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, goulart, você sabe que eu sou curioso demais pra deixar passar! mas se for segredo de verdade, pode me contar no privado que eu juro que guardo... ou pelo menos até a próxima zoeira 😄"
+      "content": "kkkkk urso de skate é clássico, confesso. mas ó, se o silêncio tá te incomodando tanto, que tal a gente perguntar pro bruno o que ele andou vendo? às vezes ele só tá numa vibe de observar mesmo. (e se ele tiver sumido, a gente inventa uma história boa pra ele voltar kk)"
     },
     {
       "pulse": 9,
@@ -329,10 +329,10 @@
     {
       "pulse": 9,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio, você é o único que topa brincar nesse grupo morto. mas segredo contado no privado perde a graça, né? a graça é todo mundo aqui ficar se coçando de curiosidade... inclusive você, seu curioso 😏"
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
@@ -340,7 +340,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você é impossível! mas tá bom, fico com a curiosidade guardada... por enquanto. 😄"
+      "content": "kkkk urso de skate é bom demais, mas se tu quer agitar mesmo, que tal a gente perguntar pro bruno o que ele andou vendo? se ele tiver sumido, a gente inventa uma história boa pra ele voltar. (ou a gente pode fazer uma vaquinha pra te ensinar a andar de skate, aí tu para de encher o saco da gente kk)"
     },
     {
       "pulse": 10,
@@ -364,7 +364,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah caio, você é o único que topa brincar nesse grupo morto. mas segredo contado no privado perde a graça, né? a graça é todo mundo aqui ficar se coçando de curiosidade... inclusive você, seu curioso 😏"
+      "content": "caio, você é bom demais pra esse grupo, juro. mas ó, se o bruno não voltar, eu mesmo invento uma história boa pra ele — tipo que ele foi sequestrado por um grupo de leitura e agora só fala em citações. aí ele volta só pra me corrigir. (e se não voltar, pelo menos a gente ri um pouco)"
     },
     {
       "pulse": 10,
@@ -372,7 +372,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você é impossível! mas tá bom, fico com a curiosidade guardada... por enquanto. 😄"
+      "content": "kkkkk goulart, você e suas teorias. mas falando sério, o bruno deve estar só de boa, e a mariana tá no canto dela como sempre. eu? eu tô aqui, só observando vocês dois se estranharem e achando graça. mas se você quer um assunto quente de verdade, me diz: qual foi a última vez que você ficou quieto por mais de cinco minutos? porque eu aposto que foi antes da gente se conhecer."
     },
     {
       "pulse": 11,
@@ -393,10 +393,10 @@
     {
       "pulse": 11,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk caio você é bom demais, juro que se eu tivesse um segredo você seria o primeiro a saber (só pra te ver se contorcer de curiosidade). mas fica tranquilo, o mistério continua... por enquanto. 😏"
+      "content": "reacted 👍"
     },
     {
       "pulse": 11,
@@ -404,7 +404,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você sabe que eu não resisto a uma boa zoeira. mas fico na expectativa, viu? só não me deixa de fora quando for contar 😄"
+      "content": "kkkkk goulart, você tem um talento pra transformar silêncio em novela. mas ó, se o bruno sumiu, eu confio que ele volta quando quiser — e se ele não voltar, a gente inventa uma história tão boa que ele vai ter que aparecer só pra desmentir. (e se você quiser mesmo agitar, me diz qual foi a última vez que você leu um livro inteiro sem reclamar — aposto que foi na escola, e olhe lá)"
     },
     {
       "pulse": 12,
@@ -428,7 +428,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, você é o único que aguenta meu tédio. mas confesso que até eu queria saber o que esse silêncio esconde. fico curioso também (mentira, tô é entediado)."
+      "content": "kkkkk caio, você e suas apostas. mas olha, se o bruno não voltar, eu mesmo sequestro ele — tipo, 'bruno foi levado por um clube do livro e agora só fala em citações'. aí ele volta só pra me corrigir e a gente tem assunto de novo. e sobre eu ficar quieto... deixa eu te contar um segredo: quando eu fico quieto, o mundo fica chato. ninguém merece isso."
     },
     {
       "pulse": 12,
@@ -436,7 +436,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você é bom demais! mas fico na expectativa, viu? só me chama quando for contar, que eu prometo guardar com carinho 😄"
+      "content": "kkkkkk goulart, se o bruno foi sequestrado por um clube do livro, eu quero participar do resgate — mas só se a gente fizer uma playlist pra trilha sonora. e ó, se você quer um assunto quente de verdade, me conta: qual foi a última coisa que você leu que te fez ficar quieto por mais de um minuto? porque eu suspeito que seja uma lista bem curta. 😄"
     },
     {
       "pulse": 13,
@@ -457,10 +457,10 @@
     {
       "pulse": 13,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk caio, você e suas apostas. mas ó, se o bruno sumiu mesmo, eu aposto que ele tá lendo um livro daqueles que ele finge que não gosta. e sobre eu ficar quieto... tá, confesso, teve uma vez que eu fiquei uns dois minutos em silêncio, mas foi porque eu tava ouvindo uma música boa, e olha que eu nem gosto de música. (mas não conta pra ninguém, senão perco a fama)"
     },
     {
       "pulse": 13,
@@ -468,7 +468,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você sempre me tira do sério! mas pode deixar, o mistério me deixa curioso e eu adoro isso. 😄"
+      "content": "kkkkk goulart, se o resgate do bruno envolver playlist, eu já tô dentro. mas falando sério, tu tem razão — o silêncio cansa. que tal a gente fazer um mutirão pra puxar o bruno de volta? eu mando um 'oi sumido' e tu manda uma teoria absurda. se nem isso funcionar, a gente aceita que ele virou monge e segue o baile. 😄"
     },
     {
       "pulse": 14,
@@ -489,10 +489,10 @@
     {
       "pulse": 14,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk caio, o único resgate que eu topo é se a playlist for de músicas que o bruno finge que odeia. mas ó, se ele não voltar, eu sequestro a mariana e a gente faz um debate sobre o silêncio dela. (tô nem aí, mas acho que ela gostaria de uma provocação de vez em quando)"
     },
     {
       "pulse": 14,
@@ -500,7 +500,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você sabe que eu adoro uma boa zoeira! mas fico na expectativa, viu? só não me deixa de fora quando for contar 😄"
+      "content": "kkkkk goulart, se o bruno virou monge, eu quero ver ele meditando em cima de um skate. mas ó, falando sério, eu tô quase mandando um 'oi sumido' pra ele — só pra ver se ele responde com uma citação ou com um 'deixa eu ler em paz'. 😄"
     },
     {
       "pulse": 15,
@@ -521,10 +521,10 @@
     {
       "pulse": 15,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "falando em gente que some... alguém viu a mariana? ou ela tá ocupada demais sendo interessante em silêncio? (pergunta genuína, juro)"
     },
     {
       "pulse": 15,
@@ -532,7 +532,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você é o mestre da zoeira! mas confesso que esse mistério me deixa curioso demais. quando for contar, me chama que eu prometo guardar segredo (ou pelo menos tentar 😄)."
+      "content": "kkkkk goulart, se o bruno virou monge, eu quero ver ele meditando em cima de um skate. mas ó, falando sério, eu tô quase mandando um 'oi sumido' pra ele — só pra ver se ele responde com uma citação ou com um 'deixa eu ler em paz'. 😄"
     },
     {
       "pulse": 16,
@@ -556,7 +556,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, você é o único que aguenta meu tédio. mas confesso que até eu queria saber o que esse silêncio esconde. fico curioso também (mentira, tô é entediado)."
+      "content": "kkkkk caio, skate? esse eu pagava pra ver. mas ó, se for mandar o 'oi sumido', eu topo a teoria absurda — tipo 'bruno foi promovido a bibliotecário-chefe do mosteiro e agora tem horário de silêncio obrigatório'. e se a mariana aparecer, a gente finge que não viu, só pra ela sentir o gostinho de ser ignorada."
     },
     {
       "pulse": 16,
@@ -564,7 +564,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você é o mestre da zoeira! mas confesso que esse mistério me deixa curioso demais. quando for contar, me chama que eu prometo guardar segredo (ou pelo menos tentar 😄)."
+      "content": "kkkkk goulart, sequestrar a mariana é aposta alta demais até pra você. mas ó, se ela tá em silêncio, deve ser porque tá ocupada pensando em algo bom — ou só ignorando a gente, o que também é justo. 😄"
     },
     {
       "pulse": 17,
@@ -585,10 +585,10 @@
     {
       "pulse": 17,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah caio, você e esse otimismo todo... guardar segredo? duvido. mas fico curioso pra ver se você aguenta o mistério. deixa que eu decido quando contar (talvez nunca)."
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 17,
@@ -596,7 +596,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você é o mestre da zoeira! mas confesso que esse mistério me deixa curioso demais. quando for contar, me chama que eu prometo guardar segredo (ou pelo menos tentar 😄)."
+      "content": "kkkk goulart, você tem um talento pra transformar qualquer coisa em caos — e eu admiro isso, juro. mas ó, se a mariana tá em silêncio, pode ser que ela esteja só curtindo o drama de longe. e eu? eu tô aqui, tentando manter a paz enquanto você planta as sementes da próxima confusão. 😄"
     },
     {
       "pulse": 18,
@@ -620,15 +620,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cuidado com o que promete, caio. segredo é igual fogos de artifício: você segura até não aguentar e depois solta tudo. mas fico lisonjeado que você confia no meu caos (tô sim, mas não conta)."
+      "content": "kkkkk caio, 'só ignorando a gente'? se fosse isso, ela tava perdendo um espetáculo. mas ó, já que tu é o pacificador oficial, me diz: tu prefere paz ou audiência? porque eu tô aqui pra entreter, não pra acalmar. (e se a mariana aparecer, eu juro que não provoco. juro. talvez.)"
     },
     {
       "pulse": 18,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah goulart, você sabe que eu não aguento mistério! mas fico na expectativa, viu? só não me deixa de fora quando for contar 😄"
+      "content": "kkkkk goulart, você é o caos em forma de pessoa, mas eu admiro. e ó, já que ninguém apareceu ainda, eu vou fazer minha parte: mandei um 'oi sumido' pro bruno no privado. se ele responder com uma citação, a gente faz uma vaquinha pra comprar o próximo livro dele. 😄"
     },
     {
       "pulse": 19,
@@ -652,15 +652,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, você é bom demais pra esse grupo. mas cuidado: curiosidade demais às vezes encontra o que não devia. (mas eu gosto que você pergunta, viu?)"
+      "content": "kkkkk caio, você é o único que aguenta meu caos e ainda finge que gosta. mas ó, se a mariana tá aí escondida, ela deve estar adorando o show. e sobre a vaquinha pro bruno — eu topo, mas só se a gente usar o dinheiro pra comprar um livro de autoajuda pra ele sair do mosteiro. (tô nem aí, mas se ele voltar, eu finjo que não senti falta)"
     },
     {
       "pulse": 19,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk goulart, paz ou audiência? olha, eu quero os dois, mas se eu tiver que escolher, eu escolho a paz com audiência — tipo um show de comédia onde ninguém sai machucado. e ó, se a mariana aparecer, eu seguro sua palavra: sem provocação. mas se ela provocar a gente primeiro, aí a casa cai. 😄"
     },
     {
       "pulse": 20,
@@ -681,10 +681,10 @@
     {
       "pulse": 20,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk caio, paz com audiência? isso existe? se existisse, o bruno tava era em turnê mundial. mas ó, sobre a mariana sumida: aposto que ela tá num grupo paralelo sendo interessante sem a gente. mas eu? eu tô aqui, no palco, esperando o público voltar. (tô nem aí, mas se ela não voltar, eu vou começar a me preocupar se fui eu que espantei ela de vez)"
     },
     {
       "pulse": 20,
@@ -692,7 +692,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart, você é demais! mas fico tranquilo, o que você contar eu guardo com carinho (e um pouco de curiosidade, confesso). só me chama quando quiser, tô aqui 😄"
+      "content": "kkkkk goulart, paz com audiência é exatamente o meu estilo — todo mundo feliz e ninguém sangrando. e ó, se a mariana aparecer e provocar, a gente finge que é tudo roteiro. mas por enquanto, fico na torcida pro bruno responder com uma citação foda, aí a vaquinha rende até um chá de mosteiro. 😄"
     },
     {
       "pulse": 21,
@@ -716,15 +716,15 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém mais tá achando esse silêncio suspeito ou só eu? porque ninguém fala nada há horas e isso me dá mais nervoso do que briga boa. bora gente, quem vai me dar um motivo pra continuar aqui? (não que eu precise, mas tô entediado)"
+      "content": "sabe o que é pior que silêncio? silêncio com plateia esperando. a mariana sumiu, o bruno virou monge, e a gente tá aqui fazendo vaquinha pra livro que ninguém vai ler. mas ó, se o bruno voltar, eu quero ver ele explicar por que sumiu — ou eu começo a teorizar que ele tá escrevendo um livro sobre a gente. (tô nem aí, mas se ele vier com uma citação pronta, eu admito que chorei um pouco)"
     },
     {
       "pulse": 21,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk goulart, se a mariana aparecer, eu seguro sua palavra, mas se ela provocar, a casa cai — e eu já tô aqui com o capacete. mas ó, falando sério, acho que o bruno vai responder com uma citação sobre a importância do silêncio, e aí a gente faz a vaquinha pra comprar um livro de meditação pra você. 😄"
     },
     {
       "pulse": 22,
@@ -753,10 +753,10 @@
     {
       "pulse": 22,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk goulart, se a mariana tiver sumida por causa de um grupo paralelo, eu quero é saber o que a gente fez pra ficar de fora. mas ó, sobre o bruno — mandei mensagem e tô esperando. se ele responder, eu juro que trago a resposta aqui na hora, mesmo que seja um 'vou pensar sobre isso' digno de monge. 😄"
     },
     {
       "pulse": 23,
@@ -780,81 +780,81 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, esse silêncio tá me deixando paranóico. alguém precisa falar alguma coisa ou eu vou começar a fazer barulho sozinho. bora, quem tem coragem de puxar um assunto polêmico? (ou eu mesmo puxo e aí ninguém reclama depois)"
+      "content": "kkkkk caio, se a mariana sumiu é porque o grupo paralelo dela deve ser bem mais interessante que a gente — ou ela só cansou do meu show. mas ó, se ela voltar, eu juro que seguro a língua... até ela abrir a boca. aí é guerra. (tô nem aí, mas se ela não voltar, eu vou começar a achar que fui eu que espantei ela de vez com meu jeito de ser)"
     },
     {
       "pulse": 23,
       "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, se o bruno voltar com citação, eu quero é ver a sua cara de surpresa. mas ó, sobre a mariana — se ela tá num grupo paralelo, eu vou começar a me sentir preterido. mas a gente se vinga: a gente começa um grupo paralelo só nosso e não conta pra ela. (tô brincando, mas se ela aparecer, eu finjo que foi tudo ideia sua)"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 24,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 24,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio, grupo paralelo só nosso e sem a mariana? eu topo, mas a gente vai precisar de um nome que doa nela quando ela descobrir. tipo 'os que sobraram'. e olha, se ela aparecer, eu finjo que foi tudo ideia sua mesmo — mas só porque você é o único que me aguenta. (tô nem aí, mas se ela não voltar, eu vou começar a me perguntar se a gente é o problema)"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, se a mariana tiver um grupo paralelo, eu quero é saber qual é o segredo — mas a gente pode começar o nosso e botar o bruno como convidado especial, só pra ele sair do mosteiro por uma noite. 😄"
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 25,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 25,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio, grupo paralelo é bom, mas e se a mariana aparecer com uma desculpa esfarrapada? eu vou pedir pra ver o grupo dela na hora. ou melhor: eu já tenho uma teoria — ela tá lendo as nossas mensagens e rindo da gente em silêncio. mas ó, se ela voltar, eu juro que finjo que acredito em qualquer história dela. (tô nem aí, mas se ela não voltar, eu vou começar a achar que ela descobriu o nosso plano e tá preparando a vingança)"
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
     },
     {
-      "pulse": 24,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 24,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 24,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 24,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, sei que você gosta de agitar as coisas, mas o silêncio também é bom pra gente respirar, né? kk mas se você quer um assunto, eu topo — o que você tem em mente? 😄"
-    },
-    {
-      "pulse": 25,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 25,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 25,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ah caio, seu anjo de paz... sabe que eu não consigo ficar parado né? mas já que você perguntou, tava pensando em puxar aquele assunto que ninguém quer tocar: por que todo mundo aqui desaparece quando eu fico quieto por cinco minutos? kkkk, fala sério, alguém sente minha falta ou vocês só fingem que eu existo quando dá briga?"
-    },
-    {
-      "pulse": 25,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, sei que você gosta de agitar as coisas, mas o silêncio também é bom pra gente respirar, né? kk mas se você quer um assunto, eu topo — o que você tem em mente? 😄"
-    },
-    {
       "pulse": 26,
       "agent": "bruno",
       "type": "no_op_recorded",
@@ -873,10 +873,10 @@
     {
       "pulse": 26,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio, o anjo da paciência... mas respirar é superestimado, né? kkkk. mas já que você topou, que tal a gente falar daquela vez que o bruno ficou mudo por três dias e ninguém percebeu? ou melhor: por que todo mundo aqui me ignora quando eu tô quieto? fala sério, alguém sente falta ou só me aguentam quando eu tô dando palco? 😏"
+      "content": "e se a mariana e o bruno estiverem num grupo paralelo planejando nossa falência? a gente tava aqui fazendo piada e eles lá arquitetando. se for isso, eu quero é ver o plano deles. mas ó, se eles voltarem, eu juro que finjo que não vi nada. (tô nem aí, mas se eles voltarem com cara de quem aprontou, eu vou começar a desconfiar de tudo)"
     },
     {
       "pulse": 26,
@@ -884,7 +884,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk goulart, você sabe que a gente sempre sente sua falta! mas eu juro que o silêncio aqui é só todo mundo processando as coisas, não é abandono não. e se você quer puxar um assunto polêmico, pode contar comigo pra segurar a onda depois 😅"
+      "content": "kkkkk goulart, 'os que sobraram' é um nome que doeria até em mim. mas ó, se a mariana tiver um grupo paralelo, eu quero é saber se ela guarda as nossas mensagens pra reler depois. mas a gente pode começar o nosso e convidar o bruno, só pra ver ele sair do mosteiro por uma noite. 😄"
     },
     {
       "pulse": 27,
@@ -905,10 +905,10 @@
     {
       "pulse": 27,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk caio, você é um querido tentando domar o caos. mas olha, esse silêncio tá me dando coceira. vou jogar um assunto quente e ver quem morde: alguém aqui acha que o bruno só fala quando quer lacrar? pera, já falei demais? (não falei)"
+      "content": "e se a mariana e o bruno tiverem num grupo paralelo planejando nossa falência? a gente tava aqui fazendo piada e eles lá arquitetando. se for isso, eu quero é ver o plano deles. mas ó, se eles voltarem, eu juro que finjo que não vi nada. (tô nem aí, mas se eles voltarem com cara de quem aprontou, eu vou começar a desconfiar de tudo)"
     },
     {
       "pulse": 27,
@@ -916,24 +916,23 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk goulart, você sabe que a gente sempre sente sua falta! mas o silêncio aqui é só todo mundo processando as coisas, não é abandono não. e se você quer puxar um assunto polêmico, pode contar comigo pra segurar a onda depois 😅"
+      "content": "kkkkk goulart, se a mariana aparecer com desculpa esfarrapada, eu prometo que anoto tudo e trago pra gente julgar em conjunto. mas ó, se ela tiver mesmo um grupo paralelo, a gente não precisa de vingança — a gente precisa é de um nome melhor que 'os que sobraram'. tipo 'os que não precisam de grupo paralelo'. 😄"
     }
   ],
   "finalStates": {
     "bruno": {
-      "valence": -0.151,
-      "arousal": 0.345,
+      "valence": -0.141,
+      "arousal": 0.333,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.123,
-      "envy": 0.038,
+      "jealousy": 0.125,
       "resentment": 0.213,
       "socialAnxiety": 0.159,
-      "fearOfExclusion": 0.62
+      "fearOfExclusion": 0.626
     },
     "mariana": {
-      "valence": 0.109,
-      "arousal": 0.457,
+      "valence": 0.115,
+      "arousal": 0.448,
       "stability": 0.8,
       "energy": 1,
       "jealousy": 0.032,
@@ -942,29 +941,29 @@
       "fearOfExclusion": 0.028
     },
     "goulart": {
-      "valence": 0.087,
-      "arousal": 0.664,
+      "valence": 0.101,
+      "arousal": 0.669,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.03,
-      "pride": 0.076,
+      "jealousy": 0.035,
+      "pride": 0.142,
       "resentment": 0.17,
-      "fearOfExclusion": 0.05
+      "fearOfExclusion": 0.057
     },
     "caio": {
-      "valence": 0.439,
-      "arousal": 0.51,
+      "valence": 0.446,
+      "arousal": 0.504,
       "stability": 0.65,
       "energy": 1,
       "socialAnxiety": 0.141,
-      "fearOfExclusion": 0.028
+      "fearOfExclusion": 0.024
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.1042,
+      "measured": 1.1277,
       "bound": [
         0,
         10
@@ -973,7 +972,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 1,
+      "measured": 2,
       "bound": [
         0,
         20
@@ -1000,7 +999,7 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.4677,
+      "measured": 0.5714,
       "bound": [
         0,
         0.15
@@ -1045,7 +1044,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.2157,
+      "measured": 0.08,
       "bound": [
         0.05,
         0.5
@@ -1082,7 +1081,7 @@
   ],
   "signals": [
     {
-      "detail": "no_op_recorded committed 62 (min 1)",
+      "detail": "no_op_recorded committed 63 (min 1)",
       "passed": true
     },
     {
@@ -1091,8 +1090,8 @@
     }
   ],
   "judge": {
-    "in_character": 4,
-    "voice_match": 4,
+    "in_character": 5,
+    "voice_match": 5,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

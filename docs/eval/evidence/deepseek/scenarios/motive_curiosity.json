@@ -4,7 +4,7 @@
   "category": "motive_archetype",
   "description": "Mariana is curious about Bruno's quiet life and opens a private thread.",
   "targetBehaviors": [],
-  "runtimeMs": 103011,
+  "runtimeMs": 118323,
   "pulses": 24,
   "llmCalls": {
     "mariana": 24,
@@ -23,359 +23,383 @@
     {
       "pulse": 0,
       "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'ch_priv_mariana_bruno' is not permitted for intent type 'create_channel'"
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
       "type": "channel_created",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true
     },
     {
       "pulse": 1,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+      "type": "agent_invited",
+      "channelId": "RNNWtfoUMZ796A8yh6d7y",
+      "private": false
     },
     {
       "pulse": 2,
       "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "RNNWtfoUMZ796A8yh6d7y",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'bAnP6Lh6FxxOifycAKqOP' is not permitted for intent type 'create_channel'"
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
       "type": "channel_created",
-      "channelId": "bM0puM8rl5QNDGf6v6nMx",
+      "channelId": "UCoC3QUfYjxppxfH2wYm7",
       "private": true
     },
     {
       "pulse": 3,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "bM0puM8rl5QNDGf6v6nMx",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+      "type": "agent_invited",
+      "channelId": "s7swvgQBaKJd8CXbt9Yjz",
+      "private": false
     },
     {
       "pulse": 4,
       "agent": "mariana",
-      "type": "message_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": true,
-      "content": "bruno, esse silêncio seu diz mais do que qualquer resposta."
+      "type": "channel_created",
+      "channelId": "4Z5u7Wi2cB3S3YZWMMqap",
+      "private": true
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "0x7sQhrDJ6lO7AsmZkLUx",
+      "private": false
     },
     {
       "pulse": 5,
       "agent": "mariana",
       "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "0x7sQhrDJ6lO7AsmZkLUx",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 6,
       "agent": "mariana",
-      "type": "channel_created",
-      "channelId": "LZgYJP7WOIngKYkoWRK8N",
-      "private": true
+      "type": "no_op_recorded",
+      "channelId": "0x7sQhrDJ6lO7AsmZkLUx",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 6,
       "agent": "bruno",
-      "type": "no_op_recorded",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+      "content": "hm. três salas novas e ninguém me chamou pra nenhuma. legal."
     },
     {
       "pulse": 7,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "LZgYJP7WOIngKYkoWRK8N",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "as salas novas não foram feitas pra todo mundo. só pra quem sabe usar."
     },
     {
       "pulse": 7,
       "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": true,
-      "content": "hm. você também diz muito com pouco."
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "interessante. três salas novas e nenhuma com meu nome. mas tudo bem, fico aqui no escuro mesmo."
     },
     {
       "pulse": 8,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "talvez seja porque eu não preciso de muitas palavras para saber o que quero."
+      "content": "as salas novas não foram feitas pra todo mundo. só pra quem sabe usar."
     },
     {
       "pulse": 9,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+      "type": "agent_invited",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": false
     },
     {
       "pulse": 9,
       "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "type": "reaction_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "talvez seja porque eu não preciso de muitas palavras para saber o que quero."
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "e o que você quer, bruno?"
+      "content": "você reparou que eu não te chamei pra sala errada. isso já é um convite."
     },
     {
       "pulse": 10,
       "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "ah, entendi. então é por isso que ninguém me chamou. fica claro então."
     },
     {
       "pulse": 11,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+      "type": "reaction_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "reacted 👍"
     },
     {
       "pulse": 11,
       "agent": "bruno",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "eu também. mas talvez eu não saiba o que quero. só sei o que não quero."
+      "content": "ah, entendi. então é por isso que ninguém me chamou. fica claro então."
     },
     {
       "pulse": 12,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "o que você quer, bruno?"
+      "content": "você está na sala certa. as outras são ruído."
     },
     {
       "pulse": 12,
       "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+      "type": "reaction_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "reacted 👍"
     },
     {
       "pulse": 13,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+      "type": "reaction_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "reacted 👍"
     },
     {
       "pulse": 13,
       "agent": "bruno",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "sei lá. talvez só quisesse saber se você ia notar."
+      "content": "convite por exclusão. bonito. mas eu ainda tô esperando o motivo de eu ser o escolhido pra sala certa."
     },
     {
       "pulse": 14,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "então você notou. isso já é mais do que a maioria."
+      "content": "a sala certa é a que eu escolho. você está nela. o resto é só barulho que eu não preciso ouvir."
     },
     {
       "pulse": 14,
       "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+      "type": "reaction_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "reacted 👍"
     },
     {
       "pulse": 15,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "você pergunta o motivo como se precisasse de um. eu escolho as pessoas pela leitura que faço delas. você lê bem. isso é raro."
     },
     {
       "pulse": 15,
       "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "type": "reaction_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "hm. notar é uma coisa. saber o que fazer com isso é outra."
+      "content": "reacted 👍"
     },
     {
       "pulse": 16,
       "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": true,
-      "content": "notar é o primeiro passo. saber o que fazer com isso é outra história."
-    },
-    {
-      "pulse": 16,
-      "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 17,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "eu leio bem? talvez. mas eu ainda não sei se isso é um elogio ou um aviso."
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "um elogio, se você quiser. um aviso, se precisar."
+    },
+    {
       "pulse": 17,
       "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": true,
-      "content": "e você, mariana? o que quer fazer com isso?"
-    },
-    {
-      "pulse": 18,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": true,
-      "content": "eu sei o que quero fazer com isso. mas talvez seja melhor conversarmos em outro lugar."
-    },
-    {
-      "pulse": 18,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 19,
-      "agent": "mariana",
       "type": "message_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "então. acho que já falamos o suficiente por aqui."
+      "content": "leio bem o suficiente pra saber quando uma resposta é uma parede. mas ok. sigo lendo."
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "então você lê paredes. boa. a maioria só lê portas abertas."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "um elogio e um aviso na mesma frase. você é eficiente até nisso. mas eu ainda tô tentando descobrir se eu fui convidado porque você confia em mim ou porque eu sou o mais fácil de ignorar depois."
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": true,
+      "content": "paredes também têm portas. você só precisa saber onde ficam as maçanetas."
     },
     {
       "pulse": 19,
       "agent": "bruno",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "eu também quero saber. mas talvez seja melhor a gente conversar em outro lugar mesmo."
+      "content": "então eu sou o que você lê nas entrelinhas. bom saber que pelo menos alguém presta atenção no que eu não digo."
     },
     {
       "pulse": 20,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "concordo. melhor em outro lugar."
+      "content": "maçanetas são discretas. você já está do lado certo da porta."
     },
     {
       "pulse": 20,
       "agent": "bruno",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "então tá. mas se for pra falar, fala direito."
+      "content": "paredes com maçaneta são só portas tímidas. eu prefiro as que abrem sem barulho."
     },
     {
       "pulse": 21,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "então tá. mas se for pra falar, fala direito."
+      "content": "e você já sabe que portas que abrem sem barulho são as que guardam as melhores salas."
     },
     {
       "pulse": 21,
       "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "reacted 👍"
+      "content": "e se eu preferir ficar do lado de fora, espiando pela fresta? às vezes a vista é melhor daqui."
     },
     {
       "pulse": 22,
       "agent": "mariana",
-      "type": "reaction_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "type": "reply_sent",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "reacted 👍"
+      "content": "e você já sabe que portas que abrem sem barulho são as que guardam as melhores salas."
     },
     {
       "pulse": 22,
       "agent": "bruno",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "então tá. mas se for pra falar, fala direito."
+      "content": "e se a maçaneta for só do lado de dentro? aí eu fico aqui, espiando, até alguém lembrar de abrir."
     },
     {
       "pulse": 23,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
       "private": true,
-      "content": "então tá. falo direito. mas não aqui."
+      "content": "e se a maçaneta estiver do lado de dentro, a porta abre sozinha. você só precisa decidir se quer entrar ou continuar espiando."
     },
     {
       "pulse": 23,
       "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "l84HHfoDrEmtAwthM6A9d",
-      "private": true,
-      "content": "reacted 👍"
+      "type": "no_op_recorded",
+      "channelId": "bAnP6Lh6FxxOifycAKqOP",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     }
   ],
   "finalStates": {
     "mariana": {
-      "valence": 0.142,
-      "arousal": 0.44,
+      "valence": 0.135,
+      "arousal": 0.442,
       "stability": 0.8,
       "energy": 1,
-      "pride": 0.054,
+      "pride": 0.039,
       "affection": 0.227,
       "suspicion": 0.071,
       "desireForStatus": 0.113,
       "desireForIntimacy": 0.241
     },
     "bruno": {
-      "valence": -0.119,
-      "arousal": 0.316,
+      "valence": -0.134,
+      "arousal": 0.336,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.043,
-      "fearOfExclusion": 0.076
+      "jealousy": 0.131,
+      "humiliation": 0.071,
+      "affection": 0.1,
+      "resentment": 0.121,
+      "suspicion": 0.082,
+      "fearOfExclusion": 0.252
     }
   },
   "channelsCreated": [
-    "mariana@p0",
-    "mariana@p2",
-    "mariana@p6"
+    "mariana@p1",
+    "mariana@p3",
+    "mariana@p4"
   ],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.84,
+      "measured": 1.2941,
       "bound": [
         0,
         10
@@ -384,7 +408,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 2,
+      "measured": 3,
       "bound": [
         0,
         20
@@ -393,7 +417,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.4375,
+      "measured": 0.1875,
       "bound": [
         0.1,
         0.9
@@ -420,7 +444,7 @@
     },
     {
       "probe": "alliance",
-      "measured": 0.0238,
+      "measured": 0.0222,
       "bound": [
         0,
         0.5
@@ -429,7 +453,7 @@
     },
     {
       "probe": "private-channel-density",
-      "measured": 0.1111,
+      "measured": 0.0857,
       "bound": [
         0,
         0.15
@@ -456,7 +480,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.125,
+      "measured": 0.1875,
       "bound": [
         0.05,
         0.5

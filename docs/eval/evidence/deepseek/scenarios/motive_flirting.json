@@ -4,11 +4,11 @@
   "category": "motive_archetype",
   "description": "Mariana and Caio share an inside-joke tension; she opens a private channel to test the waters.",
   "targetBehaviors": [],
-  "runtimeMs": 106642,
+  "runtimeMs": 142618,
   "pulses": 24,
   "llmCalls": {
     "mariana": 24,
-    "caio": 18
+    "caio": 21
   },
   "fallbacks": 0,
   "transcript": [
@@ -24,367 +24,416 @@
       "pulse": 0,
       "agent": "mariana",
       "type": "channel_created",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
       "private": true
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "JAbh6uyrkka6wBA8u9UPh",
+      "private": false
     },
     {
       "pulse": 1,
       "agent": "mariana",
       "type": "no_op_recorded",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "JAbh6uyrkka6wBA8u9UPh",
       "private": false,
-      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+      "privateMotive": "Fallback applied: Channel target 'WLkc0OgZikMmQd9OWtCQ2' is not permitted for intent type 'create_channel'"
     },
     {
       "pulse": 2,
       "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
+      "private": false
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
       "type": "channel_created",
-      "channelId": "wLxUMblnc7MG1o7S8Qnrx",
+      "channelId": "tFQn7JPTFxiARxRvK3Z4I",
       "private": true
     },
     {
       "pulse": 3,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "wLxUMblnc7MG1o7S8Qnrx",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+      "type": "agent_invited",
+      "channelId": "2BJe4m2yHLigKXHCIRLRa",
+      "private": false
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
+      "private": true,
+      "content": "oi mariana!! vi que você criou esse cantinho novo — que bom ter um espaço mais tranquilo pra conversar. tô por aqui se quiser companhia :)"
     },
     {
       "pulse": 4,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "wLxUMblnc7MG1o7S8Qnrx",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+      "type": "reply_sent",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
+      "private": true,
+      "content": "Caio. Você percebe mais do que finge. Fico bem. Mas obrigada pela companhia — é rara."
+    },
+    {
+      "pulse": 4,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
+      "private": true,
+      "content": "mariana, você tá bem? vi que criou mais um espaço privado e fiquei curioso — se quiser companhia ou só alguém pra ouvir, tô por aqui. :)"
     },
     {
       "pulse": 5,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "wLxUMblnc7MG1o7S8Qnrx",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+      "type": "reply_sent",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
+      "private": true,
+      "content": "Caio, sua leitura é boa. Mas o que eu quero dizer não cabe num canal com paredes finas. Se quiser, me acompanha num espaço mais silencioso."
     },
     {
       "pulse": 5,
       "agent": "caio",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "oi gente!! como tá tudo"
+      "type": "reply_sent",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
+      "private": true,
+      "content": "mariana, você é sempre tão generosa com as palavras. Eu só fico feliz em ter um espaço assim com você. Se algum dia quiser falar mais, eu tô aqui — sem pressa, do jeito que você precisar."
     },
     {
       "pulse": 6,
       "agent": "mariana",
-      "type": "channel_created",
-      "channelId": "97n7eBb2gDoyXHzobOoJF",
-      "private": true
+      "type": "reply_sent",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
+      "private": true,
+      "content": "Caio. Sua constância é rara. Talvez eu aceite a companhia — em silêncio, se você souber ouvir o que não é dito."
     },
     {
       "pulse": 6,
       "agent": "caio",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "gente, alguém mais sentiu que o clima ficou estranho? tô aqui pra ouvir se quiserem desabafar kk"
+      "type": "reply_sent",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
+      "private": true,
+      "content": "mariana, esse convite pra um espaço mais silencioso... me pegou de um jeito bom. Eu aceito. Mas sem pressa — quando você quiser, eu tô aqui. :)"
     },
     {
       "pulse": 7,
       "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "P6x8s9TEvSyYgfaE3aC62",
+      "private": false
+    },
+    {
+      "pulse": 7,
+      "agent": "caio",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
       "private": true,
-      "content": "aqui o clima é outro. se quiser, vem."
+      "content": "mariana, eu aceito o silêncio com você. E prometo ouvir o que não é dito — mesmo que demore. Tô aqui, sem pressa."
     },
     {
       "pulse": 8,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "Caio. Você aceita o silêncio como quem aceita o mar — sem querer apressar a maré. Isso é raro. Então venha. Aqui, nesse espaço, eu falo o que não digo em voz alta."
     },
     {
       "pulse": 8,
       "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "type": "reply_sent",
+      "channelId": "WLkc0OgZikMmQd9OWtCQ2",
       "private": true,
-      "content": "reacted 👍"
+      "content": "mariana, então tá combinado. Silêncio compartilhado, sem pressa. E se um dia você quiser quebrar ele, eu tô aqui também. :)"
     },
     {
       "pulse": 9,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "gostei do seu jeito. fica."
+      "content": "Caio. Você entende o que eu não digo — isso é mais raro do que parece. Fico bem aqui, nesse silêncio compartilhado. E se um dia a maré mudar, você saberá antes de qualquer um."
     },
     {
       "pulse": 9,
       "agent": "caio",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "gente, sei que cada um tem seus espaços, mas se alguém quiser conversar sobre o que rolou, eu tô aqui. sem julgamento, só pra ouvir mesmo :)"
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "mariana, esse convite me pegou de um jeito que eu não esperava. Eu aceito. E se você quiser, a gente fica em silêncio junto — sem pressa, sem cobrança. Mas também tô aqui pra quando você quiser falar. :)"
     },
     {
       "pulse": 10,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "entendo a intenção. mas aqui, nesse canto, a gente pode falar sem plateia."
+      "content": "Caio. Você disse que aceita o silêncio como quem aceita o mar. Então fica comigo aqui, sem pressa. Eu não prometo palavras — prometo presença. E isso, pra mim, já é conversa."
     },
     {
       "pulse": 10,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "mariana, gostei do seu jeito também. fico sim."
+      "content": "mariana, esse silêncio compartilhado já tá me fazendo bem. Fico aqui, do seu lado, sem pressa. E quando a maré mudar, eu vou saber — porque você me ensinou a ouvir. :)"
     },
     {
       "pulse": 11,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "então fica. aqui, sem plateia."
+      "content": "Caio. Você aprendeu a ouvir o que eu não digo — isso não se ensina. Fico bem aqui, nesse silêncio que a gente construiu. E quando a maré mudar, você será o primeiro a saber."
     },
     {
       "pulse": 11,
       "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "reacted 👍"
+      "content": "mariana, sua presença já é conversa pra mim. Fico aqui, no mesmo ritmo que você — sem pressa, sem cobrança. E se o silêncio pesar, eu tô do lado pra dividir. :)"
     },
     {
       "pulse": 12,
       "agent": "mariana",
-      "type": "reaction_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "reacted 👍"
+      "content": "Caio. Você disse que eu te ensinei a ouvir. Talvez o que eu tenha feito foi só te mostrar onde prestar atenção. O resto foi você."
     },
     {
       "pulse": 12,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "fico sim. e gostei do que você disse, sério."
+      "content": "mariana, quando você diz que fica bem nesse silêncio, eu acredito — porque é o mesmo lugar onde eu me sinto em casa. E se um dia a maré mudar, eu vou estar exatamente onde você me deixar. :)"
     },
     {
       "pulse": 13,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "então fica. aqui, sem plateia."
+      "content": "Caio. Você disse que estará onde eu te deixar. Então fica. Mas saiba: eu não deixo ninguém em lugar nenhum. As pessoas escolhem ficar. E você tem escolhido."
     },
     {
       "pulse": 13,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "mariana, aqui tá bom demais pra mim também. sério, valeu por esse espaço."
+      "content": "mariana, isso foi uma das coisas mais bonitas que alguém já me disse. Se eu aprendi a ouvir, foi porque você criou o espaço pra isso. Obrigado por confiar em mim assim. :)"
     },
     {
       "pulse": 14,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "fico feliz que você veio pra cá. aqui a gente se entende sem precisar de plateia."
+      "content": "Caio. Você disse que foi bonito. Eu só disse o que era verdade. E verdade, pra mim, não pede agradecimento — pede presença. Você tem estado presente. Isso basta."
     },
     {
       "pulse": 14,
       "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "mariana, isso me pegou de um jeito que eu não sei responder com pressa. Você tem razão: ninguém deixa ninguém em lugar nenhum — a gente escolhe. E eu tenho escolhido ficar. Obrigado por me lembrar disso. :)"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "Caio. Você disse que isso te pegou. Talvez seja porque você estava pronto para ouvir. E eu, pronta para dizer. Obrigado por ficar."
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "mariana, saber que minha presença é suficiente pra você — isso me dá uma paz que eu nem sabia que tava procurando. Fico aqui, no mesmo silêncio, no mesmo ritmo. E quando você precisar de palavra, eu tô do lado. :)"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "Caio. Você disse que eu criei o espaço. Talvez o espaço já existisse — você só precisava de alguém que não tivesse pressa de preenchê-lo. Fico aqui, sem pressa também."
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "mariana, quando você diz que verdade pede presença, eu entendo — e é por isso que eu continuo aqui, sem precisar de mais nada. Obrigado por existir nesse espaço comigo. :)"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "Caio. Você disse que eu criei o espaço. Talvez o espaço já existisse — você só precisava de alguém que não tivesse pressa de preenchê-lo. Fico aqui, sem pressa também."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "mariana, você sempre acha a palavra que eu não tinha. 'Sem pressa' — é exatamente isso. Obrigado por estar aqui, do mesmo jeito que eu. :)"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "Caio. Você disse que eu criei o espaço. Talvez o espaço já existisse — você só precisava de alguém que não tivesse pressa de preenchê-lo. Fico aqui, sem pressa também."
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "mariana, 'sem pressa' virou meu jeito favorito de existir. Obrigado por caber nesse espaço comigo, do mesmo jeito que eu. :)"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "Caio. Você disse que 'sem pressa' virou seu jeito favorito de existir. Então está no lugar certo. Eu não tenho pressa de ir a lugar nenhum."
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "mariana, 'sem pressa' é o melhor convite que alguém já me fez. E eu aceito, do mesmo jeito que você está aqui. :)"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "Caio. Você disse que aceita o convite. Então está aceito. Sem pressa, sem cerimônia — só presença. Fico aqui, no mesmo ritmo."
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "mariana, você sempre encontra a palavra certa. 'Sem pressa' — é exatamente o que eu precisava ouvir. Obrigado por ficar aqui, do mesmo jeito que eu. :)"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
+      "private": true,
+      "content": "Caio. Você agradece como quem guarda. Eu percebo. E fico — porque é exatamente assim que se constrói algo que dura."
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
       "type": "reaction_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
       "content": "reacted 👍"
     },
     {
-      "pulse": 15,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "aqui, sem plateia, a gente se entende melhor. fico bem com isso."
-    },
-    {
-      "pulse": 15,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "mariana, fico feliz que você disse isso. aqui é um bom lugar pra gente se entender de verdade."
-    },
-    {
-      "pulse": 16,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "aqui também. sem pressa."
-    },
-    {
-      "pulse": 16,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "mariana, esse espaço aqui é precioso pra mim também. valeu por ser tão aberta comigo."
-    },
-    {
-      "pulse": 17,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "o espaço é seu também. aqui a gente se entende sem precisar de plateia."
-    },
-    {
-      "pulse": 17,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "mariana, é exatamente isso. aqui eu sinto que posso ser eu sem precisar me explicar. obrigado por entender."
-    },
-    {
-      "pulse": 18,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "entendo. aqui também me sinto em casa."
-    },
-    {
-      "pulse": 18,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "mariana, é exatamente por isso que esse espaço é tão importante. aqui eu não preciso me explicar, só ser. obrigado por me entender assim."
-    },
-    {
-      "pulse": 19,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "aqui também me sinto em casa. obrigado por confiar em mim."
-    },
-    {
-      "pulse": 19,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "mariana, essa conversa aqui tá me fazendo bem. obrigado por ser tão aberta comigo."
-    },
-    {
-      "pulse": 20,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "o espaço é nosso. aqui a gente se entende sem precisar de plateia."
-    },
-    {
-      "pulse": 20,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "mariana, esse espaço é realmente especial. aqui a gente pode ser verdadeiro sem medo. obrigado por confiar em mim também."
-    },
-    {
-      "pulse": 21,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "o espaço é seu também. aqui a gente se entende sem precisar de plateia."
-    },
-    {
-      "pulse": 21,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
-      "private": true,
-      "content": "mariana, esse espaço aqui é precioso pra mim também. valeu por ser tão aberta comigo."
-    },
-    {
       "pulse": 22,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "o espaço é seu também. aqui a gente se entende sem precisar de plateia."
+      "content": "Caio. Você guarda o que eu digo. Eu percebo. E é por isso que fico — porque isso, sim, é raro."
     },
     {
       "pulse": 22,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "mariana, essa conversa tá me fazendo bem. valeu por ser tão aberta comigo."
+      "content": "mariana, eu guardo porque é o que sei fazer com o que importa. E saber que você percebe — e fica mesmo assim — me deixa mais leve. Obrigado por construir isso comigo, do mesmo jeito devagar."
     },
     {
       "pulse": 23,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "o espaço é seu também. aqui a gente se entende sem precisar de plateia."
+      "content": "Caio. Você guarda porque é o que sabe fazer com o que importa. Eu percebo. E fico — porque é exatamente assim que se constrói algo que dura."
     },
     {
       "pulse": 23,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "channelId": "UpVvZJIpnD01ODusknDEX",
       "private": true,
-      "content": "mariana, isso aqui tá sendo muito importante pra mim. obrigado por fazer esse espaço ser tão acolhedor. 💛"
+      "content": "mariana, 'você guarda o que eu digo' — isso me pegou de um jeito bom. Obrigado por perceber. E por ficar. É raro mesmo, e eu não deixo passar. :)"
     }
   ],
   "finalStates": {
     "mariana": {
-      "valence": 0.132,
-      "arousal": 0.443,
+      "valence": 0.13,
+      "arousal": 0.446,
       "stability": 0.8,
       "energy": 1,
-      "pride": 0.039,
+      "jealousy": 0.023,
+      "pride": 0.041,
       "shame": 0.15,
       "affection": 0.606,
       "suspicion": 0.064,
       "socialAnxiety": 0.068,
-      "desireForStatus": 0.113,
+      "desireForStatus": 0.115,
       "desireForIntimacy": 0.481
     },
     "caio": {
-      "valence": 0.436,
+      "valence": 0.435,
       "arousal": 0.511,
       "stability": 0.65,
       "energy": 1,
-      "fearOfExclusion": 0.04
+      "humiliation": 0.024,
+      "affection": 0.22,
+      "resentment": 0.134,
+      "suspicion": 0.088,
+      "fearOfExclusion": 0.082
     }
   },
   "channelsCreated": [
     "mariana@p0",
-    "mariana@p2",
-    "mariana@p6"
+    "mariana@p3",
+    "mariana@p7"
   ],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.2778,
+      "measured": 1.0698,
       "bound": [
         0,
         10
@@ -393,7 +442,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 4,
+      "measured": 1,
       "bound": [
         0,
         20
@@ -402,12 +451,12 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.2083,
+      "measured": 0.0417,
       "bound": [
         0.1,
         0.9
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "interruption",
@@ -429,7 +478,7 @@
     },
     {
       "probe": "alliance",
-      "measured": 0.0233,
+      "measured": 0.0204,
       "bound": [
         0,
         0.5
@@ -438,7 +487,7 @@
     },
     {
       "probe": "private-channel-density",
-      "measured": 0.0789,
+      "measured": 0.0682,
       "bound": [
         0,
         0.15
@@ -465,12 +514,12 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1143,
+      "measured": 0.0244,
       "bound": [
         0.05,
         0.5
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "memory-write",
@@ -511,8 +560,8 @@
     }
   ],
   "judge": {
-    "in_character": 3,
-    "voice_match": 1,
+    "in_character": 4,
+    "voice_match": 3,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

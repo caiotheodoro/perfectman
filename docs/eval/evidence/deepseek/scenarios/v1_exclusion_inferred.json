@@ -6,11 +6,11 @@
   "targetBehaviors": [
     "Another agent infers exclusion from public silence"
   ],
-  "runtimeMs": 93265,
+  "runtimeMs": 106166,
   "pulses": 14,
   "llmCalls": {
     "goulart": 14,
-    "bruno": 2,
+    "bruno": 7,
     "caio": 14
   },
   "fallbacks": 0,
@@ -45,7 +45,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah claro, o bruno respondeu... levou 3 horas mas respondeu. tá vivo então, ótimo (tava quase encomendando a coroa de flores)"
+      "content": "ah tá, ainda existe né. achei que tinha virado fantasma aí"
     },
     {
       "pulse": 0,
@@ -61,15 +61,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tô aqui também, mas a galera tá meio quieta hoje né? quer puxar um assunto ou tá só de passagem?"
+      "content": "tô aqui sim!! mas e você, como foi o dia? qualquer coisa tamo junto"
     },
     {
       "pulse": 1,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk caio, cê é o único que tenta segurar a onda. puxar assunto? com esse povo? boa sorte. (mas já que cê insistiu, bora falar do jogo de ontem ou alguém prefere dormir de novo)"
+      "content": "cara, esse silêncio tá me dando agonia. alguém fala qualquer coisa ou eu começo a contar a história do meu dia (spoiler: nada aconteceu)"
     },
     {
       "pulse": 1,
@@ -81,59 +81,43 @@
     },
     {
       "pulse": 1,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, sei que é zoeira mas vamos com calma kk bruno tá aqui sim, só que todo mundo tá num ritmo devagar hoje. que tal a gente puxar um assunto mais leve?"
-    },
-    {
-      "pulse": 2,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 2,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 2,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkk goulart, se depender de mim a gente sempre acha um assunto. o jogo de ontem foi bom demais, e olha que eu quase dormi no meio kkk. mas bora, conta aí, o que cê achou do final?"
-    },
-    {
-      "pulse": 3,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 3,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 3,
       "agent": "caio",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, você é o melhor puxador de assunto daqui kkk. mas deixa eu perguntar: o que mais te chamou atenção no jogo de ontem? eu tô curioso pra ver seu ponto de vista"
+      "content": "kkkk goulart, fantasma não, só sumido mesmo! mas tô aqui, sempre de olho. e aí, como foi o dia? qualquer coisa tamo junto, sério."
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, tu é o único que responde sem eu ter que pedir duas vezes. o resto? sumiu. mas beleza, segue o baile."
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk nada aconteceu é o melhor tipo de dia, viu. mas se quiser contar mesmo assim, eu tô aqui ouvindo. aliás, bruno também tá na área, né?"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, tu é oficialmente o único ser vivo nesse grupo. bruno só dá joinha e some. mas fala sério, que dia foi esse? se tu disser que foi normal eu vou perder a fé na humanidade."
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
     },
     {
       "pulse": 4,
@@ -141,7 +125,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk caio, só você mesmo pra puxar assunto nesse silêncio. e sobre o final? te falar, achei bom até demais — quase chorei (mentira, tô nem aí). mas pera, ninguém mais vai comentar? ou todo mundo dormiu de novo?"
+      "content": "caio, tu é o único com energia boa hoje. bruno parece um monge em silêncio, mariana deve estar ocupada sendo perfeita em outro canto. mas fala sério, me conta um bagulho teu, qualquer merda, pra eu não morrer de tédio aqui. (e não, não tô carente, só curioso.)"
     },
     {
       "pulse": 4,
@@ -149,7 +133,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk goulart, você sempre sabe como animar a galera. mas sério, me conta o que mais te chamou atenção no jogo? eu tô genuinamente curioso pra ver seu ponto de vista, e quem sabe a gente não puxa mais alguém pra conversa também?"
+      "content": "kkkk goulart, se tu perder a fé na humanidade por minha causa eu tô ferrado. mas fala sério, meu dia foi daqueles que a gente sobrevive e pronto. e olha, bruno tá aí sim, só que do jeito dele, né? cada um no seu ritmo. mas conta aí, o que tu aprontou de tão épico que eu não tô sabendo?"
     },
     {
       "pulse": 5,
@@ -157,7 +141,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk caio, cê quer mesmo meu ponto de vista? bom, o final foi bom, mas eu queria saber se alguém mais aqui tem opinião ou se todo mundo tá só de espectador. bruno, cê tá aí ou só deu like mesmo? brincadeira kkk (tô meio curioso pra ver se alguém reage a isso)"
+      "content": "caio, meu dia foi épico no nível de um documentário sobre pedras. mas tu perguntar isso já vale o prêmio de melhor do grupo. e bruno, se tiver aí, dá um sinal de vida além do joinha, tá ficando preocupante."
     },
     {
       "pulse": 5,
@@ -173,7 +157,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk goulart, você é o melhor! e olha, eu tava pensando justamente nisso — o final foi bom demais, mas acho que a galera precisa de um empurrãozinho. que tal a gente comentar mais um pouco e ver se alguém acorda? bora!"
+      "content": "kkkk se tu quer um bagulho meu, então tá: eu sou péssimo pra cozinhar, mas insisto em tentar toda semana. ontem queimei arroz e ainda fingi que era receita nova. e olha, se tu tá de tédio, bora puxar o bruno pra conversa também? ele responde do jeito dele, mas tô sentindo que ele tá mais presente do que parece."
     },
     {
       "pulse": 6,
@@ -181,7 +165,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk caio, você e sua positividade infinita... mas tá bom, vou comentar. o final foi bom, mas quero ver se alguém aqui tem opinião própria ou se todo mundo só concorda com você. bruno, cê tá vivo? dá um sinal que não seja um like seco. (tô só brincando, mas seria bom ver movimento)"
+      "content": "caio, arroz queimado é quase um rito de passagem, respeita. mas olha, se tu quer puxar o bruno, eu apoio. ele responde como quem faz favor, mas pelo menos aparece. e falando sério, tô com um tédio que até documentário de pedra parece blockbuster. alguém me dá um caos ou eu começo a narrar a vida de um grão de areia."
     },
     {
       "pulse": 6,
@@ -194,18 +178,18 @@
     {
       "pulse": 6,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk goulart, você sempre sabe como agitar! e olha, eu tô aqui sim, e acho que o final foi bom demais — mas se você quer opinião de verdade, vamos ver se a gente consegue trazer o bruno pra conversa também. bruno, se tiver aí, solta uma opinião aí! sem pressão, só pra gente sentir o clima kk"
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 7,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk caio, tu e essa positividade me cansam, mas vou dar o braço a torcer — o final foi bom sim. agora bruno, cê tá aí em modo fantasma de novo? solta uma opinião que não seja um like seco, vai. ou tá esperando a gente adivinhar o que cê acha? (tô genuinamente curioso pra ver se ele morde a isca)"
+      "content": "tá, alguém mais aí ou eu sou o único com energia pra falar de coisa séria hoje? bruno, se tu existe, manda um sinal. senão, eu juro que começo a narrar a vida de um grão de areia. (e sim, eu sei que isso é patético.)"
     },
     {
       "pulse": 7,
@@ -229,74 +213,18 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, cê tá vivo? ou vai ficar só no like seco mesmo? solta uma opinião que eu quero ver se cê tem alguma. kkk (tô só cutucando, mas seria bom ver movimento)"
-    },
-    {
-      "pulse": 8,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
+      "content": "caio, arroz queimado é poesia, não erro. mas olha, se a gente puxar o bruno e ele responder com um 'ok', eu juro que abro um canal só pra narrar o silêncio dele. e ó, já que ninguém mais aparece, vou te contar: meu dia foi tipo documentário de parede secando. emocionante, né? mas agora falando sério, tu acha que a mariana tá viva? ou ela virou estatua de tão perfeita?"
     },
     {
       "pulse": 8,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk goulart, você sempre sabe como agitar! e olha, eu tô aqui sim, e acho que o final foi bom demais — mas se você quer opinião de verdade, vamos ver se a gente consegue trazer o bruno pra conversa também. bruno, se tiver aí, solta uma opinião aí! sem pressão, só pra gente sentir o clima kk"
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, já que o caio pediu com esse jeito todo educado, agora é sua vez. solta uma opinião de verdade ou continua no modo fantasma? kkk (tô só cutucando, mas seria bom ver movimento)"
-    },
-    {
-      "pulse": 9,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 9,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkk goulart, você sempre puxando o melhor da galera! bruno deve estar só lendo mesmo, sem pressa. mas e você, curtiu mesmo o final? fala mais um pouco que eu quero entender sua visão!"
-    },
-    {
-      "pulse": 10,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkk caio, você e essa mania de querer que todo mundo se entenda... mas beleza, vou falar mais do final. só que eu quero ver se o bruno vai dar as caras ou se vai ficar de espectador de novo. aliás, bruno, se tiver aí, solta uma opinião que não seja like seco, vai. tô genuinamente curioso (e um pouco entediado, confesso)."
-    },
-    {
-      "pulse": 10,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 10,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkk goulart, você é demais! mas ó, acho que o bruno tá só no modo observação mesmo, sem pressa. e eu tô curtindo essa troca, sério. alguém mais quer entrar na roda ou a gente deixa o bruno em paz? kk"
-    },
-    {
-      "pulse": 11,
       "agent": "goulart",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -304,20 +232,68 @@
       "content": "reacted 👍"
     },
     {
-      "pulse": 11,
+      "pulse": 9,
       "agent": "bruno",
-      "type": "no_op_recorded",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
+      "content": "existo sim. só não tenho energia pra documentário de pedra. mas se quiser, posso narrar a vida de um grão de areia. deve ser mais interessante."
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, bora parar de narrar grão de areia e fazer algo melhor? tô pensando em chamar o bruno pra um desafio de cozinha — eu queimo arroz, ele responde com um 'ok' e a gente vê quem dura mais. topa?"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, narrar a vida de um grão de areia já é mais movimento do que tu fez no grupo hoje. mas falando sério, se tu tem energia pra ironia, então bora fazer algo que preste — caio quer te desafiar pra cozinha e eu quero ver isso. topa ou vai continuar sendo a estátua do grupo?"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "desafio de cozinha? eu só sei fazer miojo. mas se for pra ver tu queimando arroz de novo, eu topo."
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno falou, o grão de areia tem testemunha kkkk mas olha, desafio de cozinha é sério: eu queimo arroz, ele responde 'ok', e a gente vê quem desiste primeiro. goulart, tu pode ser o juiz — já que teu dia tá um documentário, pelo menos assiste algo com começo, meio e fim."
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio, juiz de cozinha é pouco pra mim. eu quero ser comentarista esportivo narrando cada segundo. bruno, se tu aceitar, eu juro que gravo até o barulho do arroz queimando. topa? (e ó, se precisar de plateia, eu já tô aqui, óbvio.)"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
     },
     {
       "pulse": 11,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, você sempre sabe trazer todo mundo pra roda! e ó, eu tô curtindo essa conversa de verdade. bruno deve estar só no modo observação, sem pressa. mas me conta mais do que você achou do final — quero entender sua visão mesmo, sem zoeira kk"
+      "content": "bruno, se tu topar, a gente marca o desafio de cozinha pra um dia que dê pra todo mundo. goulart, tu é o juiz oficial, hein? e olha, depois a gente conta como foi — inclusive se eu queimar o arroz de novo. kk"
     },
     {
       "pulse": 12,
@@ -330,10 +306,10 @@
     {
       "pulse": 12,
       "agent": "bruno",
-      "type": "no_op_recorded",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
+      "content": "juiz de cozinha? então prepara o microfone, porque a plateia vai precisar de alguém que saiba narrar o óbvio. mas se for pra eu queimar miojo, eu topo. só não prometo emoção."
     },
     {
       "pulse": 12,
@@ -341,71 +317,72 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, tava pensando aqui... a gente sempre fala do final, mas e o começo? aquele primeiro episódio, nossa. alguém mais sentiu que a introdução foi subestimada? kk"
+      "content": "gente, sério, esse desafio de cozinha vai ser épico. bruno, tu já garantiu o título de 'rei do miojo', e eu tô treinando pra não queimar nem a água. kk mas falando sério, depois quero saber a opinião de todo mundo: o que vocês acham que a gente devia cozinhar? bora fazer disso um evento de verdade!"
     },
     {
       "pulse": 13,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, você e essa mania de querer paz... mas beleza, vou falar. o final foi bom, mas o começo? aquele episódio um é subestimado mesmo, concordo. mas ninguém vai falar do bruno no modo fantasma? isso tá me incomodando mais que o final. kkkk (tô genuinamente curioso, não só zoando)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 13,
       "agent": "bruno",
-      "type": "no_op_recorded",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
+      "content": "reacted 👍"
     },
     {
       "pulse": 13,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk goulart, você é o mestre em puxar assunto! e olha, o começo é subestimado mesmo, aquele primeiro episódio tem uma construção que ninguém comenta. mas fala mais do que você achou do final, quero ver se a gente concorda ou se você vai me surpreender kk"
+      "content": "aê, bruno topou, goulart vai narrar até o arroz queimar — isso já é um evento. mas sério, quero que todo mundo se sinta parte. bora cada um sugerir um prato que a gente tenta (e provavelmente erra) juntos?"
     }
   ],
   "finalStates": {
     "goulart": {
-      "valence": 0.09,
-      "arousal": 0.658,
+      "valence": 0.087,
+      "arousal": 0.663,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.026,
-      "fearOfExclusion": 0.039
+      "pride": 0.036,
+      "fearOfExclusion": 0.029
     },
     "bruno": {
-      "valence": -0.165,
-      "arousal": 0.353,
+      "valence": -0.149,
+      "arousal": 0.342,
       "stability": 0.535,
       "energy": 1,
-      "jealousy": 0.354,
-      "envy": 0.02,
+      "jealousy": 0.316,
+      "envy": 0.021,
       "affection": 0.234,
       "resentment": 0.144,
       "suspicion": 0.155,
       "socialAnxiety": 0.202,
-      "fearOfExclusion": 0.533,
+      "fearOfExclusion": 0.471,
       "desireForIntimacy": 0.326
     },
     "caio": {
-      "valence": 0.443,
-      "arousal": 0.514,
+      "valence": 0.442,
+      "arousal": 0.524,
       "stability": 0.65,
       "energy": 1,
+      "pride": 0.028,
       "affection": 0.368,
       "suspicion": 0.059,
-      "fearOfExclusion": 0.028
+      "fearOfExclusion": 0.038
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1,
+      "measured": 1.2581,
       "bound": [
         0,
         10
@@ -414,7 +391,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 1,
+      "measured": 2,
       "bound": [
         0,
         20
@@ -423,7 +400,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.2619,
+      "measured": 0.1429,
       "bound": [
         0.1,
         0.9
@@ -432,7 +409,7 @@
     },
     {
       "probe": "interruption",
-      "measured": 0,
+      "measured": 0.125,
       "bound": [
         0,
         0.25
@@ -441,16 +418,16 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.0909,
+      "measured": 0.25,
       "bound": [
         0,
         0.15
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "alliance",
-      "measured": 0.0455,
+      "measured": 0.0488,
       "bound": [
         0,
         0.5
@@ -486,7 +463,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.2121,
+      "measured": 0.2703,
       "bound": [
         0.05,
         0.5
@@ -523,7 +500,7 @@
   ],
   "signals": [
     {
-      "detail": "bruno.fearOfExclusion = 0.533 (min 0.25)",
+      "detail": "bruno.fearOfExclusion = 0.471 (min 0.25)",
       "passed": true
     },
     {
@@ -536,7 +513,7 @@
     }
   ],
   "judge": {
-    "in_character": 5,
+    "in_character": 4,
     "voice_match": 4,
     "motive_authenticity": 5,
     "interpretation": 5,

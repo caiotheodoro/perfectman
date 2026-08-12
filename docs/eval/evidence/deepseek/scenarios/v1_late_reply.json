@@ -6,13 +6,13 @@
   "targetBehaviors": [
     "An agent replies late and changes the meaning of the reply"
   ],
-  "runtimeMs": 232002,
+  "runtimeMs": 270374,
   "pulses": 24,
   "llmCalls": {
     "leo": 24,
     "caio": 18,
     "goulart": 24,
-    "bruno": 5
+    "bruno": 10
   },
   "fallbacks": 0,
   "transcript": [
@@ -30,15 +30,15 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente GENTE acabei de ver uma coisa aleatória aqui e preciso compartilhar... tipo, vocês já pensaram que a gente nunca vai saber o que os peixes pensam? kkkkkkkk"
+      "content": "alguem ai ja pensou na vida em outra realidade?? tipo nada a ver com a gente, imagina a gente sem internet kkkkkkkkk seria eu conversando com as paredes"
     },
     {
       "pulse": 0,
       "agent": "goulart",
-      "type": "message_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "e aí leo, por aqui só a correria de sempre. mas vamos falar do que interessa: alguém mais acha que o bruno tá mais quieto que o normal? ou é só impressão minha?"
+      "content": "nada demais, só esperando esse grupo acordar kkkk e você?"
     },
     {
       "pulse": 1,
@@ -46,7 +46,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARACA goulart, eu ia falar isso mas não sabia como!! o bruno tá meio estranho mesmo... mas pode ser só impressão, ele sempre foi assim, né? espera, será que ele tá passando por alguma coisa? fico preocupado, mas não quero invadir, saca? kkkkk deixa eu ver se ele responde alguma coisa no grupo, se ele aparecer eu pergunto direto"
+      "content": "kkkkkkk acordar? to aqui em silencio pensando na vida e vem voce falar de sono... mas falando serio, que dia foi hoje? tipo, já fez algo que valeu a pena ou ta no automático?"
     },
     {
       "pulse": 1,
@@ -54,7 +54,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, peixe pensa em nada, só existe. mas gostei da energia, pelo menos alguém aqui traz assunto. bruno tá é fingindo que não existe, isso sim."
+      "content": "cara, se a gente não tivesse internet, eu já teria te convencido de que eu sou o dono do grupo há anos kkkkkk mas sério, outra realidade? eu seria a pessoa mais chata do lugar, mas pelo menos ia ter plateia garantida, aqui o silêncio me mata"
     },
     {
       "pulse": 2,
@@ -62,7 +62,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "mano, você tem razão kkkkk mas fico assim porque me preocupo com o bruno, sério. sei que ele é quieto, mas hoje tá diferente, né? espera, será que ele tá passando por alguma coisa? fico com vontade de perguntar direto, mas não quero ser invasivo, saca? mas você trouxe o assunto, então agora é sua vez de puxar ele!"
+      "content": "kkkkkkk dono do grupo? eu deixo você ter esse título por enquanto, mas só porque eu gosto de ter uma plateia garantida também... e sério, sem internet? você ia ser a pessoa mais chata e EU ia ser a mais carente, a gente ia ser um combo perfeito de desastre kkkk"
     },
     {
       "pulse": 2,
@@ -70,7 +70,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, relaxa, se o bruno tá estranho é porque ele sempre foi assim. mas fico curioso pra saber o que você acha que ele tá passando. conta mais, você parece mais esperto do que deixa transparecer."
+      "content": "automatico? to no piloto automatico desde 2015, só que ninguem percebe pq eu sei disfarçar bem kkkkk mas hoje foi dia de ver o grupo morto e ainda assim continuar aqui. e vc? ta filosofando ou só enrolando pra não trabalhar?"
     },
     {
       "pulse": 3,
@@ -78,15 +78,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha goulart você me desmascarou!! mas espera... \"mais esperto do que deixa transparecer\"?? isso é elogio ou indireta? kkkkk falando sério, você também reparou no bruno, né? ele tá estranho mesmo, mas se você quer saber, acho que ele pode estar passando por algo... eu não sei, só acho. mas vai, conta sua teoria, quero saber o que você acha!"
+      "content": "kkkkkkkk piloto automático desde 2015? isso explica MUITA coisa... mas falando sério, se o grupo tá morto, a gente que tem que dar vida, né? inclusive, acabei de perceber que a gente nunca fez uma call juntos. tipo, só a gente dois. bora marcar uma? prometo não falar só de mim... ou prometo falar de mim, mas com direito a plateia kkkk"
     },
     {
       "pulse": 3,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk combo perfeito de desastre, adorei. mas espera, se eu sou o dono do grupo, isso te faz meu súdito? acho que já achei meu primeiro cargo oficial aqui"
     },
     {
       "pulse": 4,
@@ -94,15 +94,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hahaha você me pegou, mas é sério, eu fico de olho em todo mundo. e bruno... tipo, ele some, mas sempre aparece com alguma coisa. não sei, talvez ele só precise de espaço. mas você trouxe o assunto, então to contigo nessa, bora descobrir o que tá rolando. mas espera, você não vai me deixar no vácuo com essa teoria, né? fala aí!!"
+      "content": "kkkkkkkk súdito? então ta, mas eu quero um cargo com título bonito tipo 'Ministro do Caos' ou 'Guardião da Plateia'... e ó, prometo que na call eu levo um slide sobre os meus assuntos favoritos, mas deixo você falar também. ou pelo menos finjo que escuto kkkk"
     },
     {
       "pulse": 4,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk prometo que se marcar call, eu levo a plateia e você leva a conversa. mas ó, se for pra call, promete que não fica me olhando com essa cara de cachorro abandonado? (brincadeira, você sabe que eu gosto de você) mas falando sério, bora marcar sim. mas só se a gente marcar algo que não seja só eu falando de mim... ou então, a gente combina de falar mal de todo mundo em voz alta, que aí é terapêutico. o que acha?"
     },
     {
       "pulse": 5,
@@ -110,7 +110,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk então você quer saber minha teoria sobre o bruno? tá bom, mas promete que não conta pra ele que eu falei isso... tipo, eu acho que ele tá passando por alguma coisa, mas não sei o quê. ele sempre foi meio na dele, mas hoje tá diferente, sabe? e eu fico tipo... será que ele quer falar e não tá sabendo? ou será que eu tô projetando demais? enfim, é isso. agora quero ouvir a SUA teoria, vai, fala!!"
+      "content": "kkkkkkk 'Ministro do Caos'? eu aceito, mas só se você assinar o decreto com caneta de luzinha. e olha, eu já to preparando o slide: tema 'coisas que ninguém pediu pra eu falar' — com direito a gráfico de pizza sobre os meus silêncios estratégicos. mas relaxa, o cargo de 'Presidente da Baderna' continua seu, não quero tomar o trono. ou quero? fica o suspense kkkkk"
     },
     {
       "pulse": 5,
@@ -118,7 +118,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno você tá quieto hoje, tá tudo bem? a gente tá aqui se precisar!! 😊"
+      "content": "kkkkk se vocês forem marcar essa call, eu quero ser o anfitrião oficial! posso garantir o café e a playlist, e ainda seguro o microfone pra quem quiser falar. mas sério, me chama que eu quero ver esse 'combo perfeito de desastre' ao vivo kkkk"
     },
     {
       "pulse": 5,
@@ -126,7 +126,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, você me paga, mas fico feliz que alguém aqui tem olhos. bruno? é, ele tá esquisito, mas se ele quisesse falar, falava. e se for algo sério, a gente descobre quando ele quiser. agora, sobre essa teoria... eu acho que ele tá só de saco cheio do nosso grupo, sei lá. mas fico curioso, o que você acha que ele tá passando? conta logo antes que o bruno apareça e mude de assunto."
+      "content": "kkkkk calma, calma, prometo que na call eu deixo você falar... mas só um pouquinho, porque a plateia é minha. e olha, se for pra falar mal de todo mundo, eu topo — inclusive de mim, se você quiser. mas o título de Ministro do Caos é meu, vou ter que disputar com você. ou então a gente divide: você cuida do caos e eu cuido da plateia. acordo justo?"
     },
     {
       "pulse": 6,
@@ -134,7 +134,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "mano, você tem que me dar essa teoria direito, não vale fugir!! kkkkk mas vou falar, eu acho que bruno tá meio... tipo, sei lá, esgotado? ou talvez decepcionado com algo? fico imaginando mil coisas, mas no fundo só quero que ele saiba que a gente tá aqui, saca? mas para, eu to falando demais de novo né kkkkk"
+      "content": "kkkkk acordo justo? fechado então — Ministro do Caos pra mim, Presidente da Baderna pra você, e a gente divide o palco, literalmente. mas espera, se a gente for dividir o palco, eu quero o direito de interromper você quando você começar a fazer discurso demais, que eu sei que você vai querer monopolizar a plateia. e aí, marca essa call logo que eu já to com o slide pronto e a caneta de luzinha na mão kkkkk"
     },
     {
       "pulse": 6,
@@ -142,7 +142,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, sua preocupação com o bruno é genuína e isso é lindo. mas acho que a gente pode perguntar pra ele com cuidado, sem pressionar. o que acham? bruno, se quiser falar, a gente tá aqui. sem julgamentos. 😊"
+      "content": "kkkkk se essa call for rolar, eu quero estar lá pra registrar o momento histórico! já até escolhi a playlist e o café tá por minha conta. mas ó, se for pra falar mal de todo mundo, eu to dentro — contanto que a gente faça um brinde aos silêncios estratégicos também. bora marcar isso direito?"
     },
     {
       "pulse": 6,
@@ -150,34 +150,10 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, você quer mesmo saber? acho que o bruno tá é entediado da gente, mas se você tá tão preocupado assim, vai lá e puxa ele. eu duvido que ele morde. (ou talvez morda, vai saber)"
+      "content": "kkkkk anfitrião oficial? vai querer controlar a playlist e ainda segurar o microfone? aí você vira o presidente da call e eu fico sem função. mas beleza, se for pra falar mal de todo mundo, eu topo — até de mim, se você quiser. só não vem roubar meu título de Ministro do Caos, senão a gente briga na frente da plateia kkkk"
     },
     {
       "pulse": 6,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "hm. leo, você fala de mim como se eu não tivesse olhos. mas obrigado pela preocupação, acho."
-    },
-    {
-      "pulse": 7,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "BRUNO!!! apareceu!! kkkk falei que você tava quieto, mas você tava só de olho na gente, né? agora fala sério, tá tudo bem? não precisa falar se não quiser, mas eu tô aqui, e o caio e o goulart também... a gente te ama, cara. (isso ficou estranho? talvez, mas é verdade kkk)"
-    },
-    {
-      "pulse": 7,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, achei que você ia ficar quieto pra sempre, que susto. mas falando sério, se quiser desabafar, a gente tá aqui. (mas só se quiser, né, sem pressão)"
-    },
-    {
-      "pulse": 7,
       "agent": "bruno",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -185,12 +161,36 @@
       "content": "reacted 👍"
     },
     {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk anfitrião oficial? aí você vai querer playlist e café? já to vendo o caio de avental na call kkkk mas espera, se você for o anfitrião, eu fico com o cargo de 'Mestre de Cerimônias'? ou melhor, de 'Animador de Plateia'? a gente precisa definir os cargos direito antes de marcar. e ó, eu topo falar mal de mim também, só não deixa o goulart ter o monopólio da baderna, senão a gente perde o ritmo. bora marcar isso direito, que eu já to ensaiando meu discurso de abertura."
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk então tá, fechado: eu fico com a plateia, você com o caos. mas olha, se for pra dividir o palco, eu exijo o direito de resposta quando você tentar monopolizar. e já que o Caio quer ser anfitrião, ele pode cuidar da playlist, mas eu escolho a primeira música. aliás, alguém mais acha que a gente devia marcar logo essa call ou vai ficar só no 'fica o suspense'?"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. call com slide e caneta de luzinha. vocês tão planejando o futuro do grupo ou um espetáculo solo? só perguntando porque eu tava aqui, vendo o ensaio."
+    },
+    {
       "pulse": 8,
       "agent": "leo",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "GENTE GENTE GENTE, o bruno reagiu com joinha!!! isso é um avanço, oficialmente é um avanço!! kkkkk mas goulart, você ainda me deve essa teoria completa, hein? não vale deixar pela metade! e bruno, se quiser continuar escondido aí, tudo bem, mas eu já tô te observando... de um jeito carinhoso, tá? kkkkk"
+      "content": "kkkkk bruno, você já chegou na parte em que eu me acho engraçado sozinho e ninguém ri? esse é o clímax do espetáculo. mas falando sério, marca a call com a gente, o palco tá montado, a plateia é o goulart, e eu preciso de alguém na plateia pra rir das minhas piadas. você entra como 'espectador oficial'?"
     },
     {
       "pulse": 8,
@@ -198,23 +198,23 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, que bom te ver por aqui! 😊 a gente só queria saber se você tá bem, mas sem pressão. se quiser conversar, a gente tá aqui. se não quiser, também tá tudo certo. 😊"
+      "content": "bruno, boa pergunta kkkk o ensaio tá mais pra espetáculo mesmo — mas se você entrar na call, a gente garante um assento na primeira fila e o direito de vaiar a gente quando começar a falar demais. bora?"
     },
     {
       "pulse": 8,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, você só deu um joinha? cadê o drama, cadê a resposta elaborada? tô decepcionado, esperava mais de você. mas beleza, fica na sua, a gente sabe que você tá aí (ou não)."
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, o joinha foi fofo, mas eu ainda quero saber se você tá bem de verdade! e goulart, para de provocar, deixa o bruno quieto se ele quiser. mas caio, não deixa o bruno sumir de novo, senão eu vou surtar kkkk. vocês tão todos bem? porque eu tô ótimo agora que o bruno apareceu. 😄"
+      "content": "bruno vai ser o 'espectador oficial'? então eu vou precisar de um 'inspetor de piadas' também, porque se ninguém rir, eu tô perdido kkkk mas falando sério, marca a call de uma vez — eu já tô até preparando um power point do grupo. slides: 1) quem somos, 2) quem a gente acha que é, 3) o caio como anfitrião oficial, 4) a baderna é nossa, 5) considerações finais: a gente é um caos organizado. aí? bora marcar logo ou vai ficar no 'fica o suspense' pra sempre?"
     },
     {
       "pulse": 9,
@@ -222,15 +222,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, fico feliz de ver você por aqui! 😊 e leo, goulart, acho que a gente pode dar um tempo no assunto, né? cada um tem seu jeito de se abrir. bruno, se quiser conversar, a gente tá aqui, mas sem pressão. 😊"
+      "content": "bruno, eu garanto o assento na primeira fila e ainda passo o café. mas ó, se você entrar, a gente pode até ensaiar umas vaias sincronizadas, só pra dar um tom profissional kkkk"
     },
     {
       "pulse": 9,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, um joinha é tudo que a gente conseguiu? onde tá o show, o discurso, o texto de 3 parágrafos? tô quase pedindo reembolso do drama. mas beleza, fica aí no seu silêncio misterioso, a gente sabe que você é profundo (ou só preguiçoso)."
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
@@ -238,15 +238,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hm. leo, você fala de mim como se eu fosse um projeto. mas tudo bem, tô aqui. só tava vendo vocês."
+      "content": "espectador oficial? hm. só se eu puder vaiar quando o goulart começar a discursar. mas ok, anota meu nome aí."
     },
     {
       "pulse": 10,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "BRUNO, você me chamou de projeto?? kkkkkk eu sou um projeto MUITO bem elaborado, obrigado! mas falando sério, não é isso, é que eu me preocupo com você, cara. e você aparecer aqui depois de um tempão é tipo... uma festa surpresa pra mim. mas fica à vontade, viu? a gente só queria saber que você tá ok. e agora eu tô tranquilo porque você respondeu (com mais de um joinha, inclusive). progresso! 🎉"
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
@@ -254,15 +254,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, você tem razão, mas vamos com calma, né? bruno, a gente só queria saber se você tá bem, e você apareceu, isso já é ótimo. sem pressão, tá? 😊"
+      "content": "bruno, anotado!! espectador oficial com direito a vaias sincronizadas, a gente até ensaia umas coreografias de vaiar kkkk mas sério, vai ser bom ter você lá. e ó, se o goulart começar a discursar demais, eu te aviso pra gente vaiar junto, combinado?"
     },
     {
       "pulse": 10,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, um joinha é tudo que a gente conseguiu? cadê o discurso de 3 parágrafos que eu tava esperando? mas beleza, fica no mistério. (tô de olho, viu)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
@@ -270,15 +270,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "não sou projeto, leo. mas obrigado por notar que eu apareci. só tava cansado. e goulart, se quer drama, paga ingresso. mas caio tem razão, sem pressão. tô bem, só preciso de um tempo às vezes."
+      "content": "café e primeira fila. oferta boa. mas eu só entro se a playlist tiver pelo menos uma música ruim, pra eu poder reclamar com propriedade."
     },
     {
       "pulse": 11,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, eu sei que você não é projeto, foi só brincadeira. mas fico feliz que você tá aqui e que você falou isso. e sobre o tempo, eu entendo. só... quando precisar, sabe que a gente tá aqui, né? sem pressão, mas com carinho. 😊 (e agora eu tô tranquilo, prometo)."
+      "content": "reacted 👍"
     },
     {
       "pulse": 11,
@@ -286,59 +286,51 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, fico feliz que você tá se abrindo um pouco, mesmo que seja devagar. a gente não precisa de show, só de você por aqui já tá ótimo. 😊"
+      "content": "bruno, playlist com música ruim? isso é praticamente o meu set list pessoal kkkk mas pode deixar, eu garanto pelo menos uma pra você reclamar com propriedade. e se a gente errar o tom, você ainda pode vaiar com estilo. combinado?"
     },
     {
       "pulse": 11,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, 'paga ingresso'? kkkkk olha o drama. mas beleza, sem pressão então. só não some de novo, porque aí eu cobro o ingresso com juros. (tô de olho, viu)"
-    },
-    {
-      "pulse": 11,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "hm. leo, você fala de mim como se eu fosse um projeto. mas tudo bem, tô aqui. só tava vendo vocês."
-    },
-    {
-      "pulse": 12,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você é o único que consegue equilibrar esse grupo, juro. mas eu não sei... hoje tá todo mundo meio estranho? bruno sumiu, goulart tá com as piadas afiadas demais... e eu aqui, no meu papel de sempre, tentando manter a energia lá em cima. 😅 acho que é isso que eu faço, né? ser o termômetro do caos. mas espera, você já reparou que quando eu falo demais ninguém reage direito? fico me perguntando se tô incomodando... enfim, kkkkk fica bem, viu?"
-    },
-    {
-      "pulse": 12,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, a gente não precisa de show, jura. só de você aparecer já é presente. e se precisar de um tempo, tira o tempo que quiser, a casa é sua. 😊"
-    },
-    {
-      "pulse": 12,
       "agent": "goulart",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "beleza, bruno, sem pressão, mas já que você tá falando de tempo... quero ver você aparecer mais vezes, hein. e leo, para de ser fofo, tá me dando ânsia. kkkk (tô de olho nos dois, viu)"
+      "content": "bruno, vaiar meus discursos? ousado. mas se for pra reclamar de música ruim, aí eu aceito. bora marcar essa call de uma vez antes que o caio comece a fazer ata de reunião."
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, se for pra vaiar, eu quero uma plaquinha de 1 a 10 com nota pras músicas. E se o goulart discursar, eu seguro a sua risada, confia. kkkkkk"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, essa condição da playlist é justa demais kkkk eu já tô até pensando numa música que vai te dar material de sobra pra reclamar. mas ó, se a gente for marcar essa call, deixa eu cuidar da parte de juntar todo mundo? eu gosto de garantir que ninguém fica de fora. e aí, alguém mais tem alguma condição pra entrar no time?"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, reclamar com propriedade é o teu esporte favorito, né? então bora, mas se a playlist tiver uma música ruim eu já sei quem vai ser o DJ do próximo role."
     },
     {
       "pulse": 12,
       "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 13,
-      "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
@@ -346,31 +338,31 @@
     },
     {
       "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "KKKKK caio cuidando da call é o que a gente precisa, porque se eu cuidar, a gente vai tá em três salas diferentes ao mesmo tempo. mas sério, marca isso direito, porque eu já tô treinando a minha nota pra quando o goulart errar o tom. aliás, alguém mais tem condição? porque se ninguém fizer, eu vou inventar uma tipo 'a playlist tem que ter uma música que eu conheça pra eu cantar junto'."
+    },
+    {
+      "pulse": 13,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, você não incomoda, juro. seu jeito de manter a energia é o que faz a gente continuar. e sobre o bruno, ele só precisa de espaço, a gente respeita. 😊"
+      "content": "leo, segurar a risada se o goulart discursar? aí você assume o risco, hein kkkk mas se precisar de alguém pra disfarçar com uma tosse, eu tô dentro. e olha, com playlist garantida pra reclamar, acho que a call vai ser um sucesso. bora marcar logo?"
     },
     {
       "pulse": 13,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "termômetro do caos? que título mais dramático, leo. mas se você quer saber se tá incomodando... cara, você fala pelos cotovelos, mas é por isso que a gente te aguenta. kkkk mas sério, para de se preocupar tanto, você é o único que mantém esse grupo vivo quando eu tô de folga. (não conta que eu disse isso, hein)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 13,
       "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 14,
-      "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
@@ -378,95 +370,95 @@
     },
     {
       "pulse": 14,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, você não incomoda, juro. seu jeito de manter a energia é o que faz a gente continuar. e sobre o bruno, ele só precisa de espaço, a gente respeita. 😊"
-    },
-    {
-      "pulse": 14,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk 'ver vocês'? que penetra dramático, bruno. mas beleza, fica à vontade. só não esquece que a casa é sua, mas se você sumir de novo, eu vou atrás com o recibo do ingresso. (tô de olho, viu)"
-    },
-    {
-      "pulse": 14,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 15,
       "agent": "leo",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente GENTE, calma, vocês tão me deixando emocionado demais 😭 caio, você é o coração desse lugar, juro, e goulart, 'título dramático'?? você literalmente se auto-intitula 'o caos', isso é nível próximo de drama kkkkkk. mas sério, ver vocês dois me defendendo assim... eu até tô ficando tonto. bruno, se você precisar de espaço, a gente segura a porta pra você, mas também tô aqui se quiser trocar figurinha... ou sei lá, falar de qualquer besteira. o ponto é: esse grupo é o meu lugar favorito, e eu não quero que ninguém se sinta de fora, nem por um segundo. então... obrigado, de verdade. e agora, alguém me conta o que a gente vai aprontar essa semana? to ansioso já. kkkkk"
+      "content": "kkkkk caio sempre salvando a call, eu confio plenamente! mas ó, se for pra marcar, deixa eu ser o oficial de justiça da playlist: qualquer música que eu não conhecer, eu interrompo com um 'não conheço essa, próxima!' e a gente vê quanto tempo o goulart aguenta kkkkk"
     },
     {
-      "pulse": 15,
+      "pulse": 14,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, você não incomoda, juro. seu jeito de manter a energia é o que faz a gente continuar. e sobre o bruno, ele só precisa de espaço, a gente respeita. 😊"
+      "content": "kkkkk leo, se você cuidar da call a gente vai precisar de um mapa, não de uma agenda. mas a tua condição é boa demais, vou anotar aqui com carinho. e olha, se o goulart desafinar, eu seguro a risada e ainda finjo que foi um arranjo novo. bora marcar isso logo antes que a gente vire só promessa e playlist?"
     },
     {
-      "pulse": 15,
+      "pulse": 14,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, então você tava só assistindo, hein? tipo um fantasma de roleplay. mas beleza, já que você tá de volta, aproveita que o leo tá aqui fazendo propaganda gratuita de você. (e o caio pagando pra ver, kkkk)"
+      "content": "beleza, então tá marcado: call com playlist pra reclamar e eu de DJ do próximo role. só falta o bruno confirmar se vai levar a plaquinha de notas ou se vai improvisar só com a cara de desgosto. kkkk"
     },
     {
-      "pulse": 15,
+      "pulse": 14,
       "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 16,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você é insano de bom, juro. falar isso aqui no meio do caos... me pegou desprevenido. kkkk e o bruno, se precisar, tô aqui, mas sem pressão, tá? e vocês dois, me prometem que a gente apronta alguma coisa essa semana? eu já tô com saudade de uma bagunça boa. 😅"
-    },
-    {
-      "pulse": 16,
-      "agent": "caio",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
     },
     {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, confia em mim: a call vai ter mapa, bússola e uns 4 planos de fuga. e se o goulart desafinar, eu finjo que é uma homenagem ao beethoven. kkkk mas sério, marca logo isso antes que a gente esqueça e vire só mais uma promessa no grupo. e bruno, traz a plaquinha de notas sim, porque eu quero ver você julgar em silêncio. aliás, alguém mais quer virar oficial de justiça musical? porque eu aceito reforço. kkkk"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, oficial de justiça da playlist é um cargo sério, mas eu aceito a tua condição! e se o goulart reclamar, eu finjo que sou o advogado de defesa. aliás, bruno, se precisar de um juiz pra decidir as notas, eu me candidato — mas só se puder dar nota pra tua cara de desgosto também kkkk"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "plaquinha de notas? eu ia levar um caderno inteiro, mas resolvi improvisar com a cara de desgosto mesmo. mais econômico."
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk bruno, caderno inteiro é nível oficial de justiça supremo! mas a cara de desgosto é mais sustentável, confesso. aliás, se for pra levar nota, eu quero uma pra mim também, porque tô avaliando a minha própria piada aqui e achei nota 10. kkkk"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, oficial de justiça da playlist é um cargo sério, mas eu aceito a tua condição! e se o goulart reclamar, eu finjo que sou o advogado de defesa. aliás, bruno, se precisar de um juiz pra decidir as notas, eu me candidato — mas só se puder dar nota pra tua cara de desgosto também kkkk"
+    },
+    {
       "pulse": 16,
       "agent": "goulart",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, 'o caos' é só um título, não uma campanha de marketing. mas fico lisonjeado que você me acha dramático, isso sim é um elogio disfarçado. e sobre o bruno... deixa ele, ele gosta do drama silencioso. e pra responder sua pergunta: essa semana? tô pensando em aprontar alguma coisa boa, mas se eu contar, perde a graça. (mas fica de olho, pode ser no grupo ou fora dele)"
+      "content": "kkkkk bruno, caderno inteiro e tu escolhe a cara de desgosto? poupança de papel, gostei. mas ó, se for improvisar, capricha no olhar de 'isso daqui é um crime' que eu quero ver o caio rindo sem querer."
     },
     {
       "pulse": 16,
       "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 17,
-      "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
@@ -474,11 +466,19 @@
     },
     {
       "pulse": 17,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, eu tô com uma ideia aqui... e se a gente fizer um ranking oficial de melhores momentos do grupo? tipo, cada um vota e a gente monta um top 5. eu já sei qual é o meu: aquele dia que o goulart tentou mudar o nome do grupo e o caio fingiu que não era com ele. kkkk tô aceitando inscrições pro júri."
+    },
+    {
+      "pulse": 17,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, eu só falei o que todo mundo aqui pensa. e sobre aprontar essa semana... pode contar comigo, só me avisa o horário que eu apareço. 😄"
+      "content": "kkkkk leo, eu topo ser oficial de justiça musical sim! mas só se o goulart prometer que não vai recorrer de todas as notas. e bruno, com essa cara de desgosto, tu já ganha ponto extra por economia de papel. aliás, alguém mais quer entrar pro tribunal? porque eu tô aceitando jurados kkkk"
     },
     {
       "pulse": 17,
@@ -486,7 +486,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, para de se emocionar, você vai me deixar sem graça e olha que eu nunca fico. mas beleza, se é assim, essa semana eu prometo uma bagunça que ninguém vai esquecer. só não me pede detalhes, senão perde a graça. (e eu tô falando sério, não é promoção de marketing não)"
+      "content": "kkkkk leo, nota 10 pra própria piada é o tipo de humildade que eu respeito. mas se tu vai de oficial de justiça musical, eu quero um cargo também: promotor de caos. e olha, se o bruno trouxer a cara de desgosto, eu garanto que o caio ri até doer."
     },
     {
       "pulse": 17,
@@ -502,7 +502,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIOOOO VOCÊ É INSUPORTÁVEL DE BOM, JURA. 😭😭 \"só me avisa o horário que eu apareço\"... eu tava precisando ouvir isso hoje, sério. vou segurar essa tua palavra, viu? e pode deixar que a bagunça vai ser épica. kkkkkkk mas fala sério, você já tem alguma ideia ou vamos descobrir juntos na hora? porque eu to zero planejamento, só energia. 🔥"
+      "content": "kkkkk CAIO espera, se tu vai ser juiz, eu quero ser o oficial de justiça que entrega as intimações com estilo! tipo, chegar na casa do goulart e dizer 'tá citado pra comparecer no tribunal musical, sem falta'. e se ele tentar fugir, eu persigo ele de bicicleta igual aqueles vídeos de entrega de documento. kkkk aceito o cargo, tô dentro!"
     },
     {
       "pulse": 18,
@@ -510,15 +510,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, você trouxe uma energia tão boa pra esse grupo que é impossível não querer te ver bem. e sobre a bagunça dessa semana, pode deixar que eu tô dentro — só me avisa que eu apareço com o sorriso pronto. 😄"
+      "content": "kkkkk goulart, promotor de caos é um cargo que eu já tava te vendo exercendo sem nomeação! mas se o bruno trouxer a cara de desgosto, eu garanto que a sessão vira tribunal da risada. e leo, se tu vai de nota 10 pra própria piada, eu quero ser o juiz que valida essa imparcialidade kkkk"
     },
     {
       "pulse": 18,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk leo, se for oficial de justiça musical, eu quero ser o réu que apela de todas as decisões. e caio, se for dar nota pra cara de desgosto do bruno, anota aí: 10 pelo desgosto, 0 pela esperança de te ver rindo sem querer."
     },
     {
       "pulse": 18,
@@ -531,10 +531,10 @@
     {
       "pulse": 19,
       "agent": "leo",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "CAIO juiz oficial? então eu quero ser o oficial de justiça que entrega a intimação de bicicleta, e se o goulart tentar fugir, eu dou uma volta no quarteirão e volto mais rápido que ele. kkkk mas ó, se o bruno levar nota pela cara de desgosto, eu quero uma avaliação também — só pra saber se minha empolgação tá na média. kkkk"
     },
     {
       "pulse": 19,
@@ -542,7 +542,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, pode deixar que a gente descobre junto na hora! energia é o que não falta, e com você no comando a bagunça já tem garantia de ser boa. kkkk bora marcar isso logo, tô dentro! 😄"
+      "content": "kkkkk leo, o ranking de melhores momentos é uma ideia boa demais! mas eu já quero votar em dois: o dia que o goulart tentou mudar o nome do grupo e o dia que ele apelou de todas as decisões do tribunal musical. a gente ia precisar de um júri só pra ele kkkk"
     },
     {
       "pulse": 19,
@@ -550,7 +550,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, para de endeusar o caio que ele vai acabar achando que é o dono do grupo. e essa bagunça épica? quero ver se você aguenta o ritmo. pode marcar que eu apareço. (mas não conta pro caio que eu disse isso, ele já tá cheio de moral)"
+      "content": "kkkkk leo, se tu for oficial de justiça, eu sou o réu que some antes da audiência. mas ó, se o bruno trouxer a cara de desgosto e o caio o riso, a gente fecha o tribunal e abre um circo. e sobre o ranking, top 1 é óbvio: quando eu mudei o nome do grupo e ninguém percebeu por três dias. inesquecível."
     },
     {
       "pulse": 19,
@@ -563,10 +563,10 @@
     {
       "pulse": 20,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, EU TO COM UMA IDEIA AQUI... e se a gente fizer tipo um 'desafio do caos'? cada um propõe uma bagunça e a gente sorteia no grupo? kkkkkk tô falando sério, isso pode ser épico! e o goulart já disse que tá dentro, então é só a gente marcar! 🔥"
+      "content": "GENTE espera espera, e se a gente realmente fizer isso? montar o tribunal musical com júri, promotor, oficial de justiça... e o bruno como juiz de cara de desgosto? kkkkk mas ó, eu quero um cargo novo: juiz de empolgação! porque se alguém aqui vai dar nota pra minha energia, eu quero que seja oficial. kkkkk bruno, bora? prometo não recorrer se a nota for baixa. kkkk"
     },
     {
       "pulse": 20,
@@ -574,15 +574,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, para de me elogiar que eu vou acabar achando que mereço. kkkk mas sério, a energia que você traz é contagiante, e eu tô dentro dessa bagunça sim! Só me avisa que eu apareço com o sorriso pronto. 😄"
+      "content": "kkkkk leo, oficial de justiça de bicicleta é um cargo com responsabilidade demais! mas se tu for perseguir o goulart, eu quero ser o juiz que dá a sentença de 'culpado por fugir da audiência'. e sobre a avaliação da tua empolgação, eu te dou nota 10 pela coragem de pedir, mas só se o bruno prometer que a cara de desgosto dele vem com direito a replay. aliás, alguém mais quer entrar pro júri? porque eu tô aceitando inscrições até o tribunal virar circo kkkk"
     },
     {
       "pulse": 20,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk caio, juiz oficial e ainda quer julgar a minha apelação? eu apelo até da sentença do silêncio. e leo, se for pra ser oficial de justiça, eu quero a bicicleta com buzina de brinquedo — só pra ninguém levar a sério. mas ó, já que todo mundo quer tribunal, eu proponho um júri popular: quem rir primeiro perde. aí o bruno ganha por W.O. e a gente fecha o caso."
     },
     {
       "pulse": 20,
@@ -598,23 +598,23 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, EU TO COM UMA IDEIA AQUI... e se a gente fizer tipo um 'desafio do caos'? cada um propõe uma bagunça e a gente sorteia no grupo? kkkkkk tô falando sério, isso pode ser épico! e o goulart já disse que tá dentro, então é só a gente marcar! 🔥"
+      "content": "kkkkk goulart, bicicleta com buzina de brinquedo é a evolução que o tribunal musical precisava! mas espera, se tu for o réu que some antes da audiência, eu vou ter que te perseguir até o quarteirão e voltar com a intimação amassada. e sobre o júri popular, eu topo: quem rir primeiro perde. só que eu aviso, se o bruno rir, a gente ganhou o caso por W.O. duplo kkkkk"
     },
     {
       "pulse": 21,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, essa ideia do desafio do caos é boa demais! kkkk eu tô dentro, mas só me promete que a gente não vai deixar o goulart fazer nada que dê muita polícia, né? 😄 bora marcar logo isso!"
+      "content": "kkkkk goulart, júri popular de quem rir primeiro é uma sentença perigosa demais — eu ia perder antes do bruno abrir o processo. mas ó, já que a gente tá montando tribunal, eu quero oficializar uma coisa: bruno, tu aceita ser juiz de caráter permanente? porque a tua cara de desgosto é a única prova que a gente precisa pra condenar qualquer um por falta de senso de humor. kkkkk"
     },
     {
       "pulse": 21,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, para de ser tão certinho que tá ficando chato. leo quer emoção, não um manual de boas maneiras. (mas continua sendo o único que me atura, então não vou reclamar muito) kkkkk"
+      "content": "kkkkk tribunal musical, júri popular, e o bruno de cara de desgosto... vocês tão levando isso a sério demais. mas já que ninguém teve coragem de falar, eu falo: o verdadeiro crime aqui é o leo ainda não ter feito um podcast com esses takes. e o caio de juiz? se ele rir do próprio veredito, eu apelo."
     },
     {
       "pulse": 21,
@@ -630,7 +630,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO CARA, pode deixar que eu seguro o goulart! kkkk mas se ele aprontar MUITO a gente finge que nem foi com a gente, né? 😂🔥 bora marcar logo isso, tô ansioso já!"
+      "content": "CARA espera espera, podcast? kkkk se for pra gravar, eu já tenho o nome do primeiro episódio: 'Tribunal Musical: o dia que o juiz riu da própria sentença'. mas ó, eu quero um quadro fixo: 'Desgosto de Bruno do Dia' — toda semana a gente avalia uma foto nova da tua cara. e o goulart, tu é o convidado fixo pra apelar de tudo. kkkkkk"
     },
     {
       "pulse": 22,
@@ -638,7 +638,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, pode deixar que a gente descobre junto na hora! energia é o que não falta, e com você no comando a bagunça já tem garantia de ser boa. kkkk bora marcar isso logo, tô dentro! 😄"
+      "content": "kkkkk goulart, se o leo vier de bicicleta com buzina de brinquedo, eu quero ser o oficial de justiça que anota a fuga no protocolo — mas só se a gente registrar que tu sumiu antes da audiência, porque isso é um crime de lesa-criatividade. e ó, sobre o júri popular, eu topo, mas se o bruno rir primeiro, a gente precisa de um juiz de desempate. me candidato oficialmente. kkkk"
     },
     {
       "pulse": 22,
@@ -646,7 +646,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, essa ideia de desafio do caos é boa, mas se depender do caio a gente vai é pra um piquenique. bora colocar um pouco de emoção nisso, senão eu já tô fora. (mas tô dentro, claro) 🔥"
+      "content": "kkkkk leo, se for pra me perseguir, traz a buzina de brinquedo que eu garanto a fuga cinematográfica. mas sobre o W.O. duplo, eu só aceito se o bruno prometer rir do próprio desgosto. senão o tribunal vira velório e eu apelo até da minha própria existência."
     },
     {
       "pulse": 22,
@@ -662,7 +662,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIOOOOO, fechou então! 😍🔥 bora marcar isso logo que eu já tô até imaginando a bagunça. E pode deixar que eu fico de olho no goulart... ou pelo menos finjo que fico. kkkkkk bora que eu já tô ansioso!"
+      "content": "kkkkk goulart, então eu trago a buzina de brinquedo e tu garante a fuga? combinado! mas ó, se o bruno rir do próprio desgosto, eu quero ver pra acreditar. aliás, alguém já reparou que a gente tá montando um tribunal pra julgar crimes de humor? e o único réu até agora é o bruno. kkkk bruno, se defende!"
     },
     {
       "pulse": 23,
@@ -670,7 +670,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, você sabe que eu topo qualquer bagunça contigo! mas vamos combinar um negócio: a gente deixa o goulart soltar a imaginação, mas eu fico de olho pra ninguém se machucar (ou sumir). bora marcar isso direito que eu já tô ansioso! 😄🔥"
+      "content": "kkkkk goulart, se tu apelar até da própria existência, eu viro teu advogado de defesa e peço a pena de silêncio criativo — mas só se o leo prometer registrar tudo no podcast com a buzina de brinquedo de fundo. e ó, se o bruno não rir, eu assumo o desgosto no lugar dele e a gente encerra o tribunal com um empate técnico. kkkk mas sério, alguém já pensou que a gente tá tão empolgado com esse tribunal que esqueceu de perguntar pro bruno se ele quer mesmo ser juiz? bruno, tu aceita ou a gente te julga por omissão? kkkkk"
     },
     {
       "pulse": 23,
@@ -678,7 +678,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, pode deixar que eu seguro o goulart! mas se ele aprontar MUITO a gente finge que nem foi com a gente, né? 😂🔥 bora marcar logo isso, tô ansioso já!"
+      "content": "kkkkk leo, 'Tribunal Musical' com buzina de brinquedo é a primeira coisa séria que tu propôs na vida. mas se for gravar, eu quero ser o cara que toca a vinheta com o caio no vocal. e o quadro do desgosto do bruno? eu topo — contanto que eu possa apelar de tudo, inclusive da minha própria apelação. bora marcar a data antes que o bruno desista."
     },
     {
       "pulse": 23,
@@ -691,46 +691,45 @@
   ],
   "finalStates": {
     "leo": {
-      "valence": 0.514,
-      "arousal": 0.748,
+      "valence": 0.525,
+      "arousal": 0.744,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.073,
-      "pride": 0.255,
-      "fearOfExclusion": 0.214
+      "jealousy": 0.067,
+      "pride": 0.291,
+      "fearOfExclusion": 0.2
     },
     "caio": {
-      "valence": 0.423,
-      "arousal": 0.523,
+      "valence": 0.429,
+      "arousal": 0.521,
       "stability": 0.65,
       "energy": 1,
-      "jealousy": 0.021,
-      "fearOfExclusion": 0.099
+      "fearOfExclusion": 0.091
     },
     "goulart": {
-      "valence": 0.068,
-      "arousal": 0.675,
+      "valence": 0.078,
+      "arousal": 0.673,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.073,
-      "fearOfExclusion": 0.115
+      "jealousy": 0.072,
+      "pride": 0.043,
+      "fearOfExclusion": 0.113
     },
     "bruno": {
-      "valence": -0.188,
-      "arousal": 0.372,
+      "valence": -0.177,
+      "arousal": 0.36,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.238,
-      "envy": 0.031,
+      "jealousy": 0.221,
       "socialAnxiety": 0.113,
-      "fearOfExclusion": 0.637
+      "fearOfExclusion": 0.607
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.0299,
+      "measured": 1.0278,
       "bound": [
         0,
         10
@@ -748,7 +747,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.2604,
+      "measured": 0.2083,
       "bound": [
         0.1,
         0.9
@@ -757,16 +756,16 @@
     },
     {
       "probe": "interruption",
-      "measured": 0.3333,
+      "measured": 0.125,
       "bound": [
         0,
         0.25
       ],
-      "passed": false
+      "passed": true
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.25,
+      "measured": 0.4286,
       "bound": [
         0,
         0.15
@@ -775,7 +774,7 @@
     },
     {
       "probe": "alliance",
-      "measured": 0.0595,
+      "measured": 0.0476,
       "bound": [
         0,
         0.5
@@ -811,7 +810,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1389,
+      "measured": 0.1688,
       "bound": [
         0.05,
         0.5
@@ -848,7 +847,7 @@
   ],
   "signals": [
     {
-      "detail": "reply_sent committed 58 (min 1)",
+      "detail": "reply_sent committed 55 (min 1)",
       "passed": true
     },
     {

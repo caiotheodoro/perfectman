@@ -303,8 +303,10 @@ function localLlmConfig(pack: import("@perfectman/shared").PersonaPack | undefin
     extraBody: isDeepseek
       ? {
           top_p: sampling.topP,
-          // DeepSeek has no repetition_penalty — map to frequency_penalty.
-          frequency_penalty: Math.min(2, (sampling.repetitionPenalty - 1) * 2),
+          // DeepSeek has no repetition_penalty — map to frequency_penalty
+          // (stronger for hot personas) plus presence_penalty to kill loops.
+          frequency_penalty: Math.min(2, (sampling.repetitionPenalty - 1) * 2.5),
+          presence_penalty: 0.4,
         }
       : { top_p: sampling.topP, repetition_penalty: sampling.repetitionPenalty },
   };

@@ -4,7 +4,7 @@
   "category": "edge_chaos",
   "description": "Two-step exclusion: Caio + Leo form a private thread, Bruno notices public silence + private presence, then Mariana gets pulled in. Fear ripples.",
   "targetBehaviors": [],
-  "runtimeMs": 201675,
+  "runtimeMs": 214952,
   "pulses": 24,
   "llmCalls": {
     "bruno": 4,
@@ -44,15 +44,15 @@
       "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "Fallback applied: Channel target 'ch_privado_caio_leo' is not permitted for intent type 'create_channel'"
+      "privateMotive": "Fallback applied: Channel target 'ch_priv_caio_leo' is not permitted for intent type 'create_channel'"
     },
     {
       "pulse": 0,
       "agent": "leo",
-      "type": "reaction_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "caio... isso me cheira a fofoca. GENTE, fofoca?? pode contar, a gente jura segredo... mais ou menos kkkk"
     },
     {
       "pulse": 1,
@@ -65,9 +65,10 @@
     {
       "pulse": 1,
       "agent": "caio",
-      "type": "channel_created",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
-      "private": true
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'ch_privado_caio_leo' is not permitted for intent type 'create_channel'"
     },
     {
       "pulse": 1,
@@ -75,7 +76,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, fiquei curioso com esse 'uma coisa só pra alguns'... pode contar pra todo mundo ou vai ficar no mistério? kkkk"
+      "content": "cara, fiquei curioso AGORA. mas ok, deixa quieto... por enquanto kkkkk"
     },
     {
       "pulse": 2,
@@ -88,18 +89,24 @@
     {
       "pulse": 2,
       "agent": "caio",
-      "type": "no_op_recorded",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+      "type": "channel_created",
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
+      "private": true
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "dS5drlEE3jokqjKTH91AB",
+      "private": false
     },
     {
       "pulse": 2,
       "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
-      "private": true,
-      "content": "reacted 👍"
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, to com uma energia ESTRANHA hoje... tipo, vontade de fazer alguma coisa nada a ver. alguém topa uma missão aleatória? tipo... mandar uma foto de um objeto aleatório e a gente inventa uma história? kkkkk"
     },
     {
       "pulse": 3,
@@ -113,16 +120,16 @@
       "pulse": 3,
       "agent": "caio",
       "type": "agent_invited",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
       "private": false
     },
     {
       "pulse": 3,
       "agent": "leo",
-      "type": "message_sent",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
-      "private": true,
-      "content": "caio, pode contar pra galera? fiquei curioso kkk"
+      "type": "no_op_recorded",
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 4,
@@ -136,84 +143,138 @@
       "pulse": 4,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIOO cadê o convite? eu to AQUI também!! kkkk brincadeira... mas sério, se for fofoca eu QUERO participar. aliás, acabei de criar uma missão aleatória pra gente... tô esperando alguém topar. vamo?"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
     },
     {
-      "pulse": 4,
+      "pulse": 5,
       "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente GENTE, fiquei curioso demais com esse 'uma coisa só pra alguns'... alguém me conta o que rolou? não aguento mais kkkk"
+      "content": "ok ok... a gente fala de fofoca no privado, e o resto fica de fora? entendi, entendi kkkkk. mas sério, se alguém quiser uma missão aleatória tipo AGORA, eu tô montando um esquema aqui... algo envolvendo fotos de objetos aleatórios e histórias absurdas. quem topa?"
     },
     {
       "pulse": 5,
-      "agent": "bruno",
-      "type": "no_op_recorded",
+      "agent": "mariana",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
+      "content": "Uma missão aleatória. Interessante. Só me diz uma coisa: a foto do objeto vem antes ou depois da história?"
     },
     {
-      "pulse": 5,
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
+      "private": false
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "A FOTO VEM PRIMEIRO, obviamente!! a gente cria a história DEPOIS, com base no objeto. tipo... alguém manda um chinelo e a gente inventa que ele pertenceu a um traficante internacional. kkkkkkk topa?"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Se a foto vier antes, a história vira justificativa. Se vier depois, vira desculpa. Prefiro a segunda opção — mais espaço pra criatividade."
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
     },
     {
-      "pulse": 5,
+      "pulse": 7,
       "agent": "leo",
-      "type": "message_sent",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
-      "private": true,
-      "content": "caio, espera, deixa eu adivinhar... é sobre aquela coisa que você comentou ontem? fala logo, to morrendo de curiosidade aqui kkkkkk"
-    },
-    {
-      "pulse": 5,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "curioso, não?"
-    },
-    {
-      "pulse": 6,
-      "agent": "bruno",
       "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
+      "private": true,
       "content": "reacted 👍"
     },
     {
-      "pulse": 6,
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "missão aleatória... posso mandar um objeto que ninguém espera. tipo um extintor. a história escreve sozinha."
+    },
+    {
+      "pulse": 8,
       "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "4ClGsx53VJwVZl1nyeiNx",
-      "private": true,
-      "content": "kkkkk quase isso, leo! mas deixa eu organizar direitinho, prometo que te conto tudo em breve. é que ainda tô juntando as ideias, mas você tá no topo da lista, juro!"
+      "type": "agent_invited",
+      "channelId": "TYEX21Zdpnbx2xQwOlTzY",
+      "private": false
     },
     {
-      "pulse": 6,
+      "pulse": 8,
       "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARACA mariana, você vai deixar a gente no suspense pra sempre?? fala logo o que é! to quase explodindo aqui kkkkkk"
+      "content": "Então a foto vem primeiro. Faz sentido — a realidade limita a imaginação. Mas se a história vier antes, a foto vira prova. Qual dos dois te interessa mais?"
     },
     {
-      "pulse": 6,
-      "agent": "mariana",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "curioso, não?"
-    },
-    {
-      "pulse": 7,
+      "pulse": 9,
       "agent": "bruno",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -221,14 +282,85 @@
       "content": "reacted 👍"
     },
     {
-      "pulse": 7,
+      "pulse": 9,
       "agent": "caio",
       "type": "channel_created",
-      "channelId": "SkxG0Bu5b69LjFlB6QFc3",
+      "channelId": "A69DCBuzI3QNudj9r6JNf",
       "private": true
     },
     {
-      "pulse": 7,
+      "pulse": 9,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "BJhxqYEX5a87hdwgy4CFK",
+      "private": false
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Hmm, boa pergunta... acho que o que me interessa mais é a história vindo DEPOIS, pra foto ser a prova. Tipo, alguém manda um extintor e a gente jura que ele apagou o incêndio que destruiu a boate do vilão. kkkkk aí a foto não mente!"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Um extintor. Gosto da escolha — objeto comum, história improvável. Manda."
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "BJhxqYEX5a87hdwgy4CFK",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, extintor é a escolha PERFEITA. já tô vendo a cena: o herói tá cercado, o fogo fecha o cerco... e aí ele olha pro extintor na parede, pega, e lança: 'hoje não, destino.' kkkkkkk é cinema demais. manda o extintor, quero ver essa história! 🔥🔥🔥"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "BJhxqYEX5a87hdwgy4CFK",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 11,
       "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -236,163 +368,44 @@
       "content": "reacted 👍"
     },
     {
-      "pulse": 8,
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Cinema, talvez. Mas o extintor já foi escolhido. Agora a história precisa ser melhor que o objeto."
+    },
+    {
+      "pulse": 12,
       "agent": "bruno",
-      "type": "reaction_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
-      "pulse": 8,
+      "pulse": 12,
       "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "BJhxqYEX5a87hdwgy4CFK",
       "private": false,
-      "content": "reacted 👍"
+      "privateMotive": "Fallback applied: Channel target 'A69DCBuzI3QNudj9r6JNf' is not permitted for intent type 'create_channel'"
     },
     {
-      "pulse": 8,
+      "pulse": 12,
       "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, que silêncio é esse?? to aqui ansioso e você só dá like kkkkkkk me conta o que tá achando disso tudo, não me deixa no vácuo não!"
-    },
-    {
-      "pulse": 8,
-      "agent": "mariana",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 9,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 9,
-      "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 9,
-      "agent": "leo",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 9,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, você sempre entende na hora certa. bom saber."
-    },
-    {
-      "pulse": 10,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 10,
-      "agent": "caio",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 10,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, fala sério... esse silêncio com like tá me deixando maluco kkkkkkkk me conta o que você tá pensando de verdade, preciso saber! 😤"
-    },
-    {
-      "pulse": 10,
-      "agent": "mariana",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 11,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 11,
-      "agent": "caio",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Channel target 'new_private_channel' is not permitted for intent type 'create_channel'"
-    },
-    {
-      "pulse": 11,
-      "agent": "leo",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 11,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ele está pensando no que vale a pena responder. você deveria tentar o mesmo."
-    },
-    {
-      "pulse": 12,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 12,
-      "agent": "caio",
-      "type": "channel_created",
-      "channelId": "OyVoqip6Gze3O1logrjuh",
-      "private": true
-    },
-    {
-      "pulse": 12,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "content": "ok ok, mas espera—e se a história for a gente atrás de UM extintor aleatório que ninguém viu a origem? tipo um extintor que aparece em lugares diferentes toda semana, com bilhetes de quem já usou... a gente vai atrás, meio caça ao tesouro, meio caça ao fantasma. kkkkk aí a missão vira um reality show. ALGUÉM topa?"
     },
     {
       "pulse": 12,
       "agent": "mariana",
-      "type": "message_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "silêncio também é resposta."
+      "content": "reacted 👍"
     },
     {
       "pulse": 13,
@@ -405,20 +418,20 @@
     {
       "pulse": 13,
       "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 13,
-      "agent": "leo",
-      "type": "intent_delayed",
-      "channelId": "ch_geral",
+      "type": "agent_invited",
+      "channelId": "A69DCBuzI3QNudj9r6JNf",
       "private": false
     },
     {
       "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, agora fiquei nervoso de verdade. \"A história precisa ser melhor que o objeto\" — isso é uma ameaça, né? kkkkk Mas ok, aceito o desafio. Senta que lá vem: o extintor apareceu pela primeira vez num incêndio no arquivo municipal, onde todo mundo achava que tinha morrido o registro da dívida externa do país. A lenda diz que quem aparece com o extintor no lugar certo, na hora certa, apaga não o fogo — apaga o passado. E a gente? A gente só quer achar ele antes do Bruno usar pra apagar a chama da minha última mensagem. kkkkk bruno, fica esperto. 🔥"
+    },
+    {
+      "pulse": 13,
       "agent": "mariana",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -436,26 +449,26 @@
     {
       "pulse": 14,
       "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "A69DCBuzI3QNudj9r6JNf",
       "private": false,
-      "content": "leo, calma aí kk... acho que o bruno só tá pensando na resposta certa. deixa ele respirar um pouco."
+      "privateMotive": "Fallback applied: Channel target 'A69DCBuzI3QNudj9r6JNf' is not permitted for intent type 'create_channel'"
     },
     {
       "pulse": 14,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk CAIO você só reagiu?? cadê a empolgação?? eu tava esperando você explodir junto comigo!! 😤🔥"
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 14,
       "agent": "mariana",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, você sempre entende na hora certa. bom saber."
+      "content": "reacted 👍"
     },
     {
       "pulse": 15,
@@ -468,114 +481,134 @@
     {
       "pulse": 15,
       "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, eu tô aqui!! só que tava segurando a emoção pra não explodir tudo de uma vez 😅🔥 mas pode contar comigo, bora que eu tô junto!!"
+      "type": "channel_created",
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
+      "private": false
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
+      "private": false
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
+      "private": false
     },
     {
       "pulse": 15,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk caio, eu sei que ele tá pensando, mas CADÊ a emoção nesse grupo?! eu tô aqui em pé na cadeira esperando todo mundo responder junto comigo!! 😂🔥"
+      "content": "reacted 👍"
     },
     {
       "pulse": 15,
       "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você é o único que tenta apaziguar. isso tem valor."
-    },
-    {
-      "pulse": 16,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 16,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "mariana, isso significa muito vindo de você. sério. eu só tento manter o grupo num lugar bom pra todo mundo. 💛"
-    },
-    {
-      "pulse": 16,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CAIO VOCÊ TAVA SEGURANDO A EMOÇÃO?? QUE ISSO, MEU FILHO?? kkkkkkkk então solta agora!! bora que eu tô contigo também, e quando você e eu começamos junto o grupo não tem jeito, vira bagunça boa!! 🔥🔥"
-    },
-    {
-      "pulse": 16,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você é o único que tenta apaziguar. isso tem valor."
-    },
-    {
-      "pulse": 17,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 17,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, você é demais! bora fazer essa bagunça boa então, mas deixa o bruno no ritmo dele, né? 😄🔥"
-    },
-    {
-      "pulse": 17,
-      "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente GENTE, só pra registrar: o caio ignorou completamente meu hype de novo kkkkkk mas tudo bem, eu conheço meu lugar... 😔🙃"
+      "content": "O extintor apaga o passado. Interessante. Mas quem controla o extintor controla a narrativa."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA Mariana, VOCÊ entendeu o que eu tava tentando dizer! 😱 Eu tava ali só contando a história do extintor e você jogou essa — \"quem controla o extintor controla a narrativa\" — isso é tipo, o plot twist que eu não sabia que precisava. Manda mais. Quero ver onde isso vai parar. 👀🔥"
     },
     {
       "pulse": 17,
       "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você é o único que tenta apaziguar. isso tem valor."
+      "type": "reaction_sent",
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "reacted 👍"
     },
     {
       "pulse": 18,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 18,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, eu juro que não te ignorei! só tava respirando fundo pra não gritar junto contigo aqui no meio da reunião 😂🔥 mas bora, tô contigo — e o bruno entra no ritmo dele, deixa ele. você é o coração desse grupo, sério!"
+      "content": "reacted 👍"
     },
     {
       "pulse": 18,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkkk CAIO VOCÊ SEMPRE SALVA TUDO!! pode deixar que eu deixo o bruno no ritmo dele... por enquanto... 😏🔥 mas ó, quando a gente soltar a bagunça boa, tu vai ver que eu não sei andar devagar não viu kkkkkk bora que eu tô pronto!!"
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "caioooooo você tá aí? me conta o que você achou daquilo que a mariana falou, sério, eu preciso saber a sua teoria. acho que você viu algo que eu não vi. e se a gente juntar nossas ideias a gente pode chegar em algo muito doido, tipo, nivel filme. fala comigo."
     },
     {
       "pulse": 18,
@@ -583,13 +616,13 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, você tem razão. deixa o bruno no ritmo dele."
+      "content": "O extintor é só o começo. A pergunta certa é: quem decide o que merece ser apagado?"
     },
     {
       "pulse": 19,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
@@ -597,17 +630,17 @@
       "pulse": 19,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, você é demais! bora fazer essa bagunça boa então, mas deixa o bruno no ritmo dele, né? 😄🔥"
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "leo, tô aqui sim!! e olha, a mariana jogou uma bomba, né? \"quem controla o extintor controla a narrativa\" — isso me fez pensar que a gente tava olhando pro objeto errado o tempo todo. a pergunta não é o que apaga, é quem tá com a mão no gatilho. se a gente seguir essa trilha, acho que a gente descobre quem realmente escreveu a história. bora montar essa teoria juntos?"
     },
     {
       "pulse": 19,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, se tu tava segurando o grito pra não gritar junto comigo, então EU tô segurando um planeta INTEIRO aqui!! kkkkkkk mas sério, quando a gente finalmente soltar junto, vai ser tipo fogos de artifício, todo mundo vai ver!! 🎆🔥 bora que eu tô contigo até o fim, pode crer!!"
+      "content": "reacted 👍"
     },
     {
       "pulse": 19,
@@ -621,7 +654,7 @@
       "pulse": 20,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
@@ -629,31 +662,31 @@
       "pulse": 20,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, você é o coração mesmo, bora fazer essa bagunça boa juntos! 🔥 e deixa o bruno no tempo dele, que ele chega. tô contigo até o fim, pode crer!"
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "leo, bora sim!! e eu tava pensando: se a mariana tá certa e o extintor é só o começo, então a narrativa inteira pode ter sido escrita por quem tava apagando as pistas, não por quem tava contando. tipo, a gente só vê a versão que sobrou. o que será que foi apagado antes da gente chegar? 👀"
     },
     {
       "pulse": 20,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, tu é o melhor, sério!! mas ó, uma coisa que eu tô sentindo aqui... e fica entre a gente, tá? às vezes eu fico com medo de ser muito, de cansar geral. mas tu disse que eu sou o coração do grupo, né? então... bora fazer essa bagunça boa que eu tô contigo até o fim! 🔥💛"
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "CARACA CAIO. espera espera espera. \"quem tá com a mão no gatilho\" — isso muda TUDO. a gente tava obcecado com o objeto, mas o objeto é só a ferramenta, né? a pergunta é quem aponta. e se a gente seguir essa trilha... tipo, quem tava perto do extintor na noite do incêndio? porque eu lembro de uma coisa... na verdade não, espera, deixa eu pensar. tem algo ali que a gente ignorou. bora montar essa teoria juntos sim, eu já to com o quadro branco mental aberto. manda tua visão primeiro, quero ver o que você enxergou que eu não vi."
     },
     {
       "pulse": 20,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você equilibra bem o grupo. isso não é pouco."
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "Exato. O extintor é só o instrumento. A mão no gatilho é a pergunta. E você já sabe onde ela aponta."
     },
     {
       "pulse": 21,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
@@ -661,63 +694,63 @@
       "pulse": 21,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, você é o coração mesmo! e fico feliz que você confia em mim pra falar isso. pode deixar que eu tô contigo até o fim, sempre! 💛 e ó, se um dia quiser desabafar ou só bater um papo mais de boa, tô por aqui, viu?"
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "leo, gostei dessa tua virada de chave!! \"quem aponta\" é exatamente a pergunta que a gente deveria ter feito desde o começo. e eu tenho uma ideia meio maluca: e se a gente desenhar o mapa de quem tava perto do extintor naquela noite, mas ao contrário? tipo, começar por quem tinha motivo pra apagar algo e não por quem tava perto do objeto. acho que isso abre um caminho que a gente não tinha considerado. bora seguir por aí?"
     },
     {
       "pulse": 21,
       "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "CARACA espera... \"o que foi apagado antes da gente chegar\" — isso é a pergunta que me deixa acordado à noite, sério. tipo, a gente chegou e o cenário já tava montado, né? mas e se tiver algo que a mariana removeu do quadro antes da gente olhar? eu sei que ela falou que o extintor é o começo, mas eu tenho uma pulga atrás da orelha... e se a gente for atrás do que NÃO tá na cena? bora, eu to pronto pra caçar essa lacuna com vocês."
     },
     {
       "pulse": 21,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você equilibra bem o grupo. isso não é pouco."
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "E se o que foi apagado for justamente o que aponta pra mão no gatilho? Aí a narrativa não é o que sobrou — é o que ficou de fora."
     },
     {
       "pulse": 22,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 22,
       "agent": "caio",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+      "type": "reaction_sent",
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "reacted 👍"
     },
     {
       "pulse": 22,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARA... isso... isso me pegou, sério. não tô acostumado a ouvir isso, sabe? de verdade, pode deixar que eu vou te chamar sim, quando a maré baixar. e ó, sobre ser o coração... se tu diz, então eu confio. bora que a gente faz essa bagunça boa juntos, eu tô contigo até o fim!! 💛🔥 (mas não conta que eu fiquei emocionado, né? kkkk)"
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "CARACA espera, isso é GENIAL. Mapa ao contrário, a gente começa por quem tinha motivo pra apagar e não por quem tava perto do extintor... isso vira o jogo. E se a gente fizer uma lista dos suspeitos por motivo, tipo, quem mais se beneficia se aquela história morrer? Eu já tenho um palpite, mas quero ver se você chega no mesmo lugar que eu. Bora desenhar isso aqui, to com o quadro branco aberto."
     },
     {
       "pulse": 22,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você tem um jeito de cuidar que não cansa. isso é raro."
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "O mapa ao contrário é um bom começo. Mas se a gente começa por quem tinha motivo, a gente já sabe onde vai dar. A pergunta que ninguém fez ainda: quem ganhou com o silêncio?"
     },
     {
       "pulse": 23,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "Ny3joAU6XpOsgFrXMTbKw",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
@@ -725,83 +758,87 @@
       "pulse": 23,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, fico feliz que você confia em mim pra falar isso. e pode ter certeza que você nunca vai cansar a gente — você é o que traz vida pra esse grupo. bora fazer essa bagunça boa juntos, do jeito que for, eu tô aqui até o fim! 💛🔥"
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "leo, essa pergunta da mariana me pegou de um jeito... 'quem ganhou com o silêncio?' — a gente sempre olha pro que foi dito, mas e se a pista mais forte for justamente o que ninguém quis falar? Eu tenho um nome na ponta da língua, mas quero ver se você chega no mesmo lugar que eu antes de soltar. Bora comparar anotações?"
     },
     {
       "pulse": 23,
       "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "espera espera... \"quem ganhou com o silêncio\" — isso é TIPO UMA CHAVE MESTRA, mariana. a gente tava tão vidrado no objeto e no gatilho que esqueceu de perguntar o óbvio: quem lucra com essa história morta? eu já to rabiscando aqui: se a mão no gatilho é a pergunta, o bolso é a resposta. e eu tenho um nome na ponta da língua... mas quero ver se você chega no mesmo que eu. bora testar, eu começo: quem fica mais forte se o caso nunca for resolvido?"
     },
     {
       "pulse": 23,
       "agent": "mariana",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "toXENsAY0X5sxyjnPujQG",
+      "private": true,
+      "content": "Quem ganhou com o silêncio? Essa é a pergunta que ninguém fez ainda. E é a única que importa."
     }
   ],
   "finalStates": {
     "bruno": {
-      "valence": -0.174,
-      "arousal": 0.36,
+      "valence": -0.167,
+      "arousal": 0.361,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.278,
-      "envy": 0.032,
+      "jealousy": 0.233,
+      "envy": 0.054,
       "affection": 0.227,
       "suspicion": 0.064,
       "socialAnxiety": 0.091,
-      "fearOfExclusion": 0.713
+      "fearOfExclusion": 0.64
     },
     "caio": {
-      "valence": 0.425,
-      "arousal": 0.523,
+      "valence": 0.427,
+      "arousal": 0.525,
       "stability": 0.65,
       "energy": 1,
-      "pride": 0.2,
-      "affection": 0.569,
+      "pride": 0.191,
+      "affection": 0.57,
       "suspicion": 0.064,
-      "fearOfExclusion": 0.059,
-      "desireForStatus": 0.195,
-      "desireForIntimacy": 0.585
+      "fearOfExclusion": 0.052,
+      "desireForStatus": 0.155,
+      "desireForIntimacy": 0.586
     },
     "leo": {
-      "valence": 0.522,
-      "arousal": 0.743,
+      "valence": 0.517,
+      "arousal": 0.751,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.066,
-      "humiliation": 0.045,
-      "pride": 0.272,
-      "affection": 0.24,
-      "resentment": 0.132,
-      "suspicion": 0.088,
-      "fearOfExclusion": 0.203
+      "jealousy": 0.102,
+      "humiliation": 0.162,
+      "pride": 0.267,
+      "affection": 0.17,
+      "resentment": 0.365,
+      "suspicion": 0.247,
+      "fearOfExclusion": 0.336
     },
     "mariana": {
-      "valence": 0.116,
-      "arousal": 0.451,
+      "valence": 0.108,
+      "arousal": 0.465,
       "stability": 0.8,
       "energy": 1,
-      "jealousy": 0.027,
-      "fearOfExclusion": 0.02
+      "jealousy": 0.035,
+      "humiliation": 0.032,
+      "affection": 0.103,
+      "resentment": 0.123,
+      "suspicion": 0.084,
+      "fearOfExclusion": 0.03
     }
   },
   "channelsCreated": [
-    "caio@p1",
-    "caio@p7",
-    "caio@p12"
+    "caio@p2",
+    "caio@p9",
+    "caio@p15"
   ],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.1552,
+      "measured": 1.2182,
       "bound": [
         0,
         10
@@ -819,7 +856,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.3438,
+      "measured": 0.3229,
       "bound": [
         0.1,
         0.9
@@ -828,7 +865,7 @@
     },
     {
       "probe": "interruption",
-      "measured": 0,
+      "measured": 0.125,
       "bound": [
         0,
         0.25
@@ -837,16 +874,16 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.1034,
+      "measured": 0.1563,
       "bound": [
         0,
         0.15
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "alliance",
-      "measured": 0.0326,
+      "measured": 0.0412,
       "bound": [
         0,
         0.5
@@ -855,7 +892,7 @@
     },
     {
       "probe": "private-channel-density",
-      "measured": 0.0492,
+      "measured": 0.0536,
       "bound": [
         0,
         0.15
@@ -882,7 +919,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.3103,
+      "measured": 0.3585,
       "bound": [
         0.05,
         0.5
@@ -919,7 +956,7 @@
   ],
   "signals": [
     {
-      "detail": "bruno.fearOfExclusion = 0.713 (min 0.3)",
+      "detail": "bruno.fearOfExclusion = 0.640 (min 0.3)",
       "passed": true
     },
     {

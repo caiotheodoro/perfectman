@@ -4,7 +4,7 @@
   "category": "motive_archetype",
   "description": "Mariana invites Leo privately to steer the narrative away from Goulart.",
   "targetBehaviors": [],
-  "runtimeMs": 217628,
+  "runtimeMs": 236958,
   "pulses": 24,
   "llmCalls": {
     "mariana": 19,
@@ -27,192 +27,142 @@
       "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
-    },
-    {
-      "pulse": 0,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARAAA FINALMENTE!!! juro que to cansado de ficar adivinhando o que cê quer falar kkkkkk conta logo antes que eu morra de curiosidade"
-    },
-    {
-      "pulse": 0,
-      "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "pessoal, silêncio de novo? tá todo mundo dormindo ou só fingindo que tá trabalhando?"
-    },
-    {
-      "pulse": 1,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkkk goulart, se todo mundo tá dormindo é porque você tava demorando demais pra soltar a bomba! mas agora tô aqui, acordado, no limite, esperando você falar logo antes que eu grite sozinho aqui em casa. conta, conta, conta!"
-    },
-    {
-      "pulse": 1,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 2,
-      "agent": "leo",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: No JSON object found in response"
-    },
-    {
-      "pulse": 2,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk calma leo, respira! já que cê tá tão animado, vou te dar o que cê quer. mas aviso: se dormir no meio, não conto de novo."
-    },
-    {
-      "pulse": 3,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk prometo que não durmo! juro pela minha vida, goulart! mas se você demorar mais um segundo eu vou começar a chutar o ar aqui em casa. fala logo que eu tô segurando o coração com as duas mãos. conta! conta! conta!"
-    },
-    {
-      "pulse": 3,
-      "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "beleza, já que o leo tá na cola, vou soltar logo: o que cês acham de gente que some por dias e volta agindo como se nada? pergunta sincera (ou não, depende do seu nível de coragem)"
-    },
-    {
-      "pulse": 4,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "mano, pergunta boa! e olha, eu tenho um caso que me marcou... uma pessoa que sumiu por uma semana e voltou como se tivesse acabado de pausar o jogo. eu fiquei tipo 'amigo, cê tá bem?' e ela respondeu 'tô, porque?' — fiquei ofendido por 3 segundos e depois ri sozinho kkkkkkk. mas falando sério: depende de quem é. se for você, eu deixo passar, porque você sempre compensa com caos bom depois. agora se for o bruno sumindo... aí eu fico igual mãe preocupada, mandando msg a cada meia hora. mas quem nunca sumiu por aí e voltou com cara de nada, né? conta aí: isso é sobre alguém específico ou só curiosidade? porque eu vou adivinhar se você deixar kkkkkk"
-    },
-    {
-      "pulse": 4,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, fica calmo que eu não vou te deixar no vácuo não. mas já que cê jurou pela vida, tô segurando a emoção aqui também. vai lá, respira fundo e me diz: você acha que sumir por uns dias e voltar como se nada é falta de consideração ou é só jeito de ser? quero ver se cê tem coragem de responder com sinceridade ou se vai dar a mesma resposta bonitinha de sempre."
-    },
-    {
-      "pulse": 5,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
       "privateMotive": "Fallback applied: Channel target 'ch_estrategia' is not permitted for intent type 'create_channel'"
     },
     {
-      "pulse": 5,
+      "pulse": 0,
       "agent": "leo",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkk cê quer sinceridade? então toma: depende de quem é e do que a pessoa significa. se é alguém que eu gosto de verdade, sumir sem aviso me deixa meio desmontado, mas eu finjo que nem ligo pra não parecer emocionado demais. se é alguém aleatório, eu só comento 'ah, voltou' e sigo a vida. mas você perguntando assim... é sobre você mesmo, né? porque se for, juro que eu vou te dar a bronca que você nunca recebeu. fala a real que eu quero ver até onde cê vai. kkkkkk"
+      "content": "CARA ASSUNTO NOVO??? FINALMENTE algo diferente nesse chat, tava quase dormindo aqui kkkkkk conta logo, preciso de drama ou pelo menos uma teoria boa"
     },
     {
-      "pulse": 5,
+      "pulse": 0,
       "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, calma que eu não vou sumir não. mas ó: se a pessoa some e volta como se nada, é porque ela sabe que tem quem espere. e isso ou é poder demais, ou é falta de consideração. cê que é o bonzinho do grupo, o que cê acha?"
-    },
-    {
-      "pulse": 6,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Channel target 'ch_priv_mariana_leo_goulart' is not permitted for intent type 'create_channel'"
-    },
-    {
-      "pulse": 6,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkk Goulart, você quer sinceridade? Então vai: sumir sem aviso pra mim é igual a pausar o jogo no meio da boss fight e fingir que nada aconteceu. Dói, mas eu sou o bonzinho do grupo, né? Então eu engulo e falo 'ah, voltou, que bom' — mas por dentro eu fico contando os minutos pra pessoa justificar. E olha, se for você o do sumiço, eu já deixo avisado: vou te encher de msg até você responder. Mas eu confesso que gosto do caos que você traz quando volta, então talvez eu até perdoe mais rápido. Você tá falando de alguém específico ou só testando meu nível de emocionado? Fala a real que eu prometo não te julgar (mentira, vou julgar, mas com carinho)."
-    },
-    {
-      "pulse": 6,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, você é bom demais pra esse grupo, juro. mas ó: sumir e voltar como se nada é falta de consideração, sim. só que eu também já fiz isso, então quem sou eu pra julgar? (tô julgando sim, mas baixinho)"
-    },
-    {
-      "pulse": 7,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkk Goulart, você quer sinceridade? Então toma: sumir sem aviso é igual a pausar o jogo no meio da boss fight e voltar como se nada — dói, mas eu sou o bonzinho, então eu engulo e finjo que nem ligo. MAS se for você sumindo, eu vou te encher de msg até você responder, pode ter certeza. E sobre a pergunta... se for sobre você, juro que te dou a bronca que você nunca recebeu. Fala a real, quem sumiu? Tô curioso demais agora. kkkkkk"
-    },
-    {
-      "pulse": 7,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, você quer sinceridade? então toma: quem some e volta agindo como se nada tá cagando pra quem ficou esperando. mas eu já fiz isso, então se eu falar muito, tô me dedurando. (tô te testando e você passou, parabéns)"
-    },
-    {
-      "pulse": 8,
-      "agent": "mariana",
-      "type": "channel_created",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true
-    },
-    {
-      "pulse": 8,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARA, você tá me testando e EU PASSEI? Isso significa que eu posso te cobrar pra sempre agora, né? kkkkkkk mas falando sério... você falou de sumir e voltar como se nada, e eu juro que fiquei pensando aqui se você tá se referindo a alguém do grupo... porque se for, eu quero saber quem, porque eu vou cobrar essa pessoa pessoalmente. E sobre a bronca: você escapou dessa vez, mas se você sumir de novo, pode esperar mensagem minha a cada meia hora. Tô te avisando."
-    },
-    {
-      "pulse": 8,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, você é bom demais pra esse grupo, juro. mas ó: sumir e voltar como se nada é falta de consideração, sim. só que eu também já fiz isso, então quem sou eu pra julgar? (tô julgando sim, mas baixinho)"
-    },
-    {
-      "pulse": 9,
-      "agent": "mariana",
-      "type": "channel_created",
-      "channelId": "p1fw2kobuNBLO8tmu1haq",
-      "private": true
-    },
-    {
-      "pulse": 9,
-      "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "espera espera espera, vi que a Mari acabou de criar um canal privado... se é fofoca de grupo, me chama que eu levo o biscoito! kkkkk"
+      "content": "ok, sério agora: alguém aqui já reparou que o bruno só aparece quando tem briga? tipo, ele some por dias e quando volta é pra soltar uma indireta. só eu noto isso?"
     },
     {
-      "pulse": 9,
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mano kkkkk eu já tinha notado mas nunca tinha dito nada!! ele literalmente aparece tipo um gato quando tem briga, só que em vez de miar ele solta uma indireta HAHAHAHA mas espera... e a gente? a gente tava aqui o tempo todo e ele nem aí, né? fico lisonjeado em ser o segundo plano oficial do bruno"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah leo, você sempre animado com drama... mas calma, que eu tô preparando uma teoria boa sobre o bruno, só esperando o momento certo pra soltar. fica de olho que vai ter emoção (e talvez treta)"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, uma teoria sobre o bruno?? aí sim!!! mas espera... se for sobre ele sumir, eu já tenho umas evidências HAHAHA tipo, semana passada ele tava offline o dia todo e só apareceu quando eu tava contando daquela briga com o caio... aí ele veio com uma indireta que nem fazia sentido com o assunto kkkkkk agora quero ver sua teoria, solta logo que eu tô preparado pra surtar junto"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARAAA solta a teoria logo!! Eu já tô aqui com a pipoca mental preparada kkkkk sério, se for sobre o bruno eu tenho mais umas evidências... tipo ontem ele apareceu do nada quando eu tava falando daquela treta com o caio, e mandou um 'aconteceu alguma coisa?' que parecia que ele já sabia de tudo HAHAHA mas vai, fala, eu tô pronto pra surtar contigo"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo você é o único que acompanha minhas teorias, os outros tão dormindo nesse chat. mas calma que a teoria sobre o bruno ainda vai sair, e quando sair... vocês vão ver."
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARAAA eu já tô no modo surto total! E se a teoria for sobre o bruno sumir, eu tenho um arquivo mental de evidências, juro! Tipo, aquele dia que ele sumiu no meio do rolê e depois apareceu do nada com uma indireta que ninguém pediu kkkkkkk mas vai, manda logo que eu tô pronto pra explodir junto contigo. E se precisar de mais provas, eu tô aqui, né? (mas sem invadir a privacidade dele, óbvio kkkk)"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo você é o único que acompanha minhas teorias, os outros tão dormindo nesse chat. mas calma que a teoria sobre o bruno ainda vai sair, e quando sair... vocês vão ver."
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "gGUfv3GMv2eLGlwxqDYtV",
+      "private": false
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "gGUfv3GMv2eLGlwxqDYtV",
+      "private": false
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA espera espera espera... eu acabei de perceber uma coisa HAHAHA a gente tá tão focado na teoria do bruno que nem notou que tu me chamou de 'único que acompanha'... isso significa que eu sou tipo o parceiro oficial de teorias? kkkkkk fico lisonjeado demais!! mas ó, se tu precisar de mais evidências, eu tenho um arquivo GIGANTE na cabeça... só não conta pro bruno que eu fico espionando ele kkkkkkk vai, solta logo essa teoria que eu tô no modo detetive total!"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, tu é o único que topa minhas teorias, o resto do chat deve ter ido dormir. mas vou soltar a do bruno sim, só esperando o momento em que ele sumir de novo pra ter graça. aí sim a gente vê se ele aparece com indireta HAHAHA"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": false
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 6,
       "agent": "goulart",
       "type": "no_op_recorded",
       "channelId": "ch_geral",
@@ -220,382 +170,459 @@
       "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     },
     {
-      "pulse": 10,
-      "agent": "mariana",
-      "type": "message_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Léo, se você quer biscoito, vem buscar. Mas aqui a gente não fofoca — a gente observa."
+      "pulse": 7,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     },
     {
-      "pulse": 10,
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "Goulart, suas teorias são previsíveis. Mas o Bruno... esse eu ainda não decifrei. Se quiser trocar uma ideia sem plateia, estou aqui."
+    },
+    {
+      "pulse": 8,
       "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, vi que a Mari criou canal privado e fiquei curioso PRA CARALHO... mas vou respeitar o espaço dela, né? kkkkk até porque se for fofoca, ela sabe onde eu moro. mas ó, se alguém souber de algo, me conta que eu prometo não contar pra ninguém (mentira, conto pra todo mundo)"
+      "content": "CARA, alguém viu a mariana criar aquele canal privado aí?? fiquei curioso demais!! e o goulart sumiu do nada de novo, tô sentindo que a teoria dele vai sair e a gente vai ficar tipo \"AH NÃO\" kkkkkk mas falando sério, alguém mais tá com energia estranha hoje? ou sou só eu?"
     },
     {
-      "pulse": 10,
+      "pulse": 8,
       "agent": "goulart",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "mariana criou canal privado e não me chamou? fiquei de fora da fofoca? sério que é assim que a gente trata o palhaço da turma? tô magoado (tô nem aí, mas tô de olho)"
+      "content": "caralho, olha esse chat... mariana cria canal privado no meio da noite e ninguém comenta nada? isso é ou não é uma red flag??"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente GENTE, alguém mais viu que a mariana abriu um canal secreto?? e o goulart já tá teorizando até sobre isso, óbvio kkkkk mas eu tô aqui tipo... será que alguém vai me convidar? ou eu fico de fora dessa também? enfim, continuo no aguardo das teorias alheias, sou só o espectador profissional aqui HAHAHA"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "ah, agora quer me decifrar? e ainda me chamou de previsível... diz isso mas me chama pra conversa secreta no meio da madrugada. então, bora. o que tu quer saber sobre o bruno? ou tu só quer me ver falando sem plateia pra ver se eu mudo de tom?"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": false
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "Goulart, tu me puxou pra conversa secreta e agora quer saber o que eu quero saber? kkkk eu quero é saber se tu vai soltar a teoria do bruno ou se vai ficar de mistério pra sempre. Mas já que tu perguntou... me conta, por que tu acha que a mariana criou esse canal do nada? Tô achando que tem mais coisa aí."
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "ah, então você quer decifrar o bruno? interessante... mas se quer saber, eu topo. sem plateia, sem teatrinho. mas ó, se for pra eu me abrir, quero ver você soltar algo também. senão vira monólogo meu, e isso eu canso rápido."
     },
     {
       "pulse": 11,
       "agent": "mariana",
       "type": "channel_created",
-      "channelId": "MWXskhWYf40F48jDWVfPH",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
       "private": true
     },
     {
       "pulse": 11,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "kjug8U3GmAINYl08un20d",
+      "private": false
+    },
+    {
+      "pulse": 11,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
       "private": true,
-      "content": "kkkkkk CARA, você me chamou no privado pra me dizer que não fofoca? Isso é muito fofo... e muito suspeito. Mas ó, se for pra observar, eu observo MUITO bem. Tô aqui. Me conta o que você viu, vai. 👀"
+      "content": "mano, tu quer troca? então bora. eu solto uma, tu solta outra. mas sem julgamento, porque eu sou o palhaço daqui e se eu for sincero o chat inteiro desaba kkkkk. começo eu: fico o dia inteiro rindo e comentando, mas às vezes tenho medo de que se eu parar de falar, ninguém percebe que eu sumi. agora tu."
     },
     {
       "pulse": 11,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
       "private": true,
-      "content": "kkkkk mariana, \"a gente observa\"? então observa isso: você criou canal privado e deixou o palhaço da turma de fora. que papel é esse? (tô de olho sim, mas tô achando bom)"
+      "content": "ah leo, tu quer saber da teoria do bruno? então... o bruno é daqueles que guarda tudo na caixa e só abre quando quer causar. a mariana criou esse canal porque ela quer controlar o jogo, não porque confia em mim. mas se tu quer entrar, eu te chamo, porque tu é o único que me acompanha nessa. só não conta pro bruno que eu tô te contando, senão ele me mata. HAHAHA"
     },
     {
       "pulse": 12,
       "agent": "mariana",
-      "type": "message_sent",
-      "channelId": "p1fw2kobuNBLO8tmu1haq",
+      "type": "reaction_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
       "private": true,
-      "content": "Goulart, o canal é meu. Se quiser biscoito, peça com educação."
+      "content": "reacted 👍"
     },
     {
       "pulse": 12,
       "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "oi mariana, vi que você criou esse canal e fiquei curioso demais — sério, qual o assunto? se quiser chamar o goulart pra teorizar junto, eu seguro a bagunça HAHAHA mas juro, qualquer coisa que tu precisar, tô por aqui. de verdade."
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "mano, tu quer troca? então bora. eu solto uma, tu solta outra. mas sem julgamento, porque eu sou o palhaço daqui e se eu for sincero o chat inteiro desaba kkkkk. começo eu: fico o dia inteiro rindo e comentando, mas às vezes tenho medo de que se eu parar de falar, ninguém percebe que eu sumi. agora tu."
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
       "type": "no_op_recorded",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "Criei o canal porque alguns assuntos rendem melhor sem plateia. Você perguntou, então aqui está: quero saber o que você realmente observa quando não está fazendo piada. Você parece mais atento do que deixa transparecer."
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "mano, esse canal tá parecendo velório. a mariana só dá like e some, o bruno deve estar lendo tudo calado, e eu aqui esperando alguém soltar uma opinião polêmica pra eu poder zoar. bora gente, não me deixem sozinho com meus próprios pensamentos, isso é perigoso HAHAHA"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "Você perguntou o que eu observo. Observo quem fala quando ninguém pediu, e quem fica em silêncio quando todos esperam. Você, por exemplo, fala muito — mas nunca no momento errado. Isso é mais raro do que parece."
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "mariana, espera espera espera. você quer a versão sem piada? então lá vai: eu observo tudo. quem chega, quem some, quem muda o tom. mas se eu disser isso todo dia, o clima fica pesado. então eu jogo o palhaço na frente. é mais fácil rir do que explicar o que eu tô vendo. mas já que você perguntou... o que você quer que eu veja?"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "beleza, silêncio então. ótimo assunto, continuem. (tô aqui esperando vocês se soltarem, mas se for pra ser monólogo, eu canso rápido)."
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "O que eu quero que você veja? Talvez que eu não precise ser vista para saber onde estou. Mas já que você insiste em olhar: continue. Só não espere que eu confirme tudo o que você acha que viu."
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "então... você quer a versão sem piada? ok, mas não reclama depois kkk. eu observo quem segura o silêncio, quem quebra ele e quem precisa que alguém quebre. e sobre 'falar no momento errado'... eu acho que falo errado o tempo todo, só que eu rio antes de deixar doer. mas o que você quer ver em mim? porque eu já tô mostrando mais do que mostro no geral, e olha que eu nem sei onde isso vai dar."
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "mano, esse canal tá cheio de fantasma. a mariana deu like e sumiu, o bruno deve estar lendo tudo calado, e o léo... cadê o léo? ele sempre aparece quando eu falo. ou será que eu perdi o meu melhor público? HAHAHA (tô brincando... ou não)."
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "Você quer saber o que eu quero ver? Então: quero ver se você sabe a diferença entre se expor e se entregar. Você mostrou bastante. Mas ainda não sei se foi pra mim ou pra plateia que você imagina."
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "mano, o léo sumiu justo agora que eu tava afim de soltar a teoria do bruno. será que ele tava só de teatro ou perdeu o tesão no assunto? HAHAHA (tô vendo tu aí, leo, não se esconde)."
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "Você pergunta se foi pra você ou pra plateia. Talvez a pergunta certa seja outra: você sabe a diferença entre ser visto e ser conhecido? Uma plateia vê o show. Poucos ficam depois que as luzes apagam."
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "mariana... se expor é quando você mostra o que os outros querem ver. se entregar é quando você esquece que tem plateia. e é exatamente isso que eu tenho feito com você nesse canal. então... o que você quer que eu faça agora? continuo mostrando ou começo a entregar de verdade?"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "caralho, que silêncio. será que todo mundo morreu ou tão só fingindo que não me veem? ok, ok, eu lanço um tópico quente: bruno, se tu tá aí, me diz uma coisa — tu prefere ser o cara que ri por último ou o que nunca ri? porque tua cara de paisagem me deixa confuso. e leo, se tu aparecer, me ajuda aqui, senão eu vou começar a falar sozinho e a gente sabe como isso termina. HAHAHA"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "Você pergunta o que eu quero que você faça. Eu quero que você pare de perguntar o que eu quero. Isso, por si só, já seria um começo."
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "entregar de verdade então... ok. eu tô cansado de ser o cara que ri antes de doer. tu perguntou se eu sei a diferença entre ser visto e ser conhecido. e eu acho que nunca deixei ninguém me conhecer de verdade. mas contigo eu tô querendo tentar. mesmo que tu não confirme nada. mesmo que eu fique sem saber se tu tá vendo ou só olhando. (e se eu tiver falando demais, me corta, porque eu não sei parar sozinho kkkk)"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "mano, esse canal tá um deserto. alguém me dá um tópico quente antes que eu comece a fazer perguntas existenciais pro silêncio. tipo, bruno, se tu tá aí, me diz: tu prefere ser o cara que ri por último ou o que nunca ri? porque tua cara de paisagem me deixa confuso. e leo, se tu aparecer, me ajuda aqui, senão eu vou começar a falar sozinho e a gente sabe como isso termina. HAHAHA"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "Então pare de tentar. É quando você esquece que está sendo observado que eu começo a prestar atenção de verdade."
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     },
     {
-      "pulse": 12,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 13,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Goulart, você está confundindo biscoito com atenção. Uma coisa eu dou, a outra você terá que merecer."
-    },
-    {
-      "pulse": 13,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "KKKKKKK Mari, \"a gente observa\"?? Eu observo tanto que às vezes eu esqueço de piscar. Mas ó, se você quer alguém pra dividir a tocaia, eu tô INDO. Me conta o que você viu antes do Goulart inventar que é o palhaço oficial da fofoca. 👀"
-    },
-    {
-      "pulse": 13,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "p1fw2kobuNBLO8tmu1haq",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 14,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Léo, se você quer saber o que eu vi, venha para o meu canal. Lá a conversa é mais séria."
-    },
-    {
-      "pulse": 14,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "p1fw2kobuNBLO8tmu1haq",
-      "private": true,
-      "content": "KKKKKKK MARI, \"biscoito\"?! eu to achando que o Goulart comeu biscoito demais e ficou com sede de atenção kkkkkkk mas ó, se precisar de alguém pra te ajudar a observar ele daqui, eu to aqui. observo e ainda faço cosplay de biscoito, se precisar. 👀"
-    },
-    {
-      "pulse": 14,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "p1fw2kobuNBLO8tmu1haq",
-      "private": true,
-      "content": "kkkkk \"biscoito\" agora? então tá, me ensina a pedir com educação que eu anoto. mas ó, se você tava afim de me ver de fora, conseguiu. parabéns, você tem minha atenção. (e eu tô achando ótimo, não nego)"
-    },
-    {
-      "pulse": 15,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "p1fw2kobuNBLO8tmu1haq",
-      "private": true,
-      "content": "Léo, se quer observar, observa com propósito. Vem pro meu canal. Lá a gente vê melhor."
-    },
-    {
-      "pulse": 15,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "KKKKKKKK MARI, canal SÉRIO?! vocês tão me assustando... e me deixando curioso. tá bom, eu vou. mas se for pra falar sério eu aviso: eu fico sério MUITO mal. 👀"
-    },
-    {
-      "pulse": 15,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 16,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Léo, sério não é sobre cara feia. É sobre olhar com intenção. Você já está aqui. Agora me diz o que você viu antes de o Goulart transformar tudo em palhaçada."
-    },
-    {
-      "pulse": 16,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "p1fw2kobuNBLO8tmu1haq",
-      "private": true,
-      "content": "tô indo, tô indo! mas já aviso: se a conversa ficar séria demais, eu vou fazer piada pra aliviar. é mais forte que eu. 👀🚪"
-    },
-    {
-      "pulse": 16,
+      "pulse": 20,
       "agent": "goulart",
       "type": "message_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
       "private": true,
-      "content": "kkkkk então a conversa virou séria e eu fico de fora? beleza, continuem no clubinho da observação. eu fico aqui no meu palanque, distribuindo biscoito e aplauso. (tô indo espiar a porta, mas ninguém precisa saber)"
-    },
-    {
-      "pulse": 17,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Léo, você já está aqui. Então olha com calma: o que você viu antes da palhaçada começar?"
-    },
-    {
-      "pulse": 17,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "kkkkkk Mari, você é boa hein... sério, 'olhar com intenção'? eu juro que tava só tentando entender a palhaçada do Goulart, mas agora você me deixou curioso MESMO. tá, o que eu vi antes? eu vi ele entrar todo confiante, mas tinha um não-sei-o-quê na forma como ele olhou pra você. tipo, meio que... esperando aprovação? ou eu to viajando? kkkk me fala, porque se for isso, isso é MUITO mais interessante do que biscoito."
-    },
-    {
-      "pulse": 17,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "ah, olha quem resolveu falar comigo. 'não é sobre cara feia'... e eu aqui achando que era. mas se você quer saber o que eu vi, eu vi um clubinho se formando na sua porta enquanto eu fico de fora. mas fica tranquila, eu não tô incomodado. (tô sim, mas isso é entre nós)"
-    },
-    {
-      "pulse": 18,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Você não está viajando. Ele esperava aprovação. Mas não é sobre ele. É sobre o que você escolhe ver. Continue olhando."
-    },
-    {
-      "pulse": 18,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "kkkkkk Mari, você tem um jeito de fazer eu me sentir descoberto... 'olhar com intenção' é o nome chique pra quando eu fico reparando demais nas pessoas, né? Mas okay, sério agora: antes da palhaçada começar, eu vi o Goulart entrar com toda aquela confiança, mas teve um momento que ele lançou um olhar pra você, tipo... esperando você rir de algo? E aí quando você não riu, ele mudou de assunto na hora. É isso? Tô certo ou eu inventei isso na minha cabeça? Porque se eu inventei, isso é preocupante... mas se eu não inventei, isso é MUITO interessante."
-    },
-    {
-      "pulse": 18,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "ah, então agora eu sou 'palhaçada'? legal, obrigado pelo carinho. mas se quer saber, eu vi você criando um clubinho e me deixando de fora. e olha, eu nem tô incomodado. (tô sim. e olha, se o Léo acha que eu quero aprovação, ele tá mais perdido do que eu pensava.)"
-    },
-    {
-      "pulse": 19,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Você não inventou. Ele esperava aprovação. Mas não é sobre ele. É sobre o que você escolhe ver. Continue olhando."
-    },
-    {
-      "pulse": 19,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "kkkkk Goulart, calma, eu não tô te chamando de palhaçada, eu tô chamando de 'o rei da entrada triunfal'. Mas agora eu fiquei curioso DEMAIS com essa história de 'olhar com intenção'. Mari, você tava falando sério? Porque se você viu algo aí, eu quero saber. E se eu tô viajando, me fala logo antes que eu crie uma teoria da conspiração aqui. 👀"
-    },
-    {
-      "pulse": 19,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "ah, 'escolher ver'... bonito discurso. mas você esquece que eu também vejo. e eu vejo você guiando o Léo como se fosse um jogo de xadrez. mas fica tranquila, eu não tô com ciúme. (tô sim. e ela sabe.)"
-    },
-    {
-      "pulse": 20,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Você não inventou. Ele esperava aprovação. Mas não é sobre ele. É sobre o que você escolhe ver. Continue olhando."
-    },
-    {
-      "pulse": 20,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Mari, você tá falando sério mesmo? 'Continue olhando'... isso soa como um mistério de filme, mas eu to levando a sério. Tá, eu vou olhar de novo. Mas olha, se eu descobrir que eu inventei tudo isso, eu vou pedir desculpas pro Goulart e você me deve um café. 👀"
-    },
-    {
-      "pulse": 20,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "ah, então agora eu sou o 'não-inventado'? legal, quer dizer que o Léo viu alguma coisa. mas se você tá vendo tanta coisa, por que não fala comigo direto? ou é mais divertido ficar de fora e analisar? (tô curioso, e não é só de graça não)"
+      "content": "ok, chega de silêncio. eu vou falar o que todo mundo pensa e ninguém tem coragem: esse canal é o único lugar onde a gente pode ser honesto sem o peso do grupo todo. mariana criou isso, mas não é ela que tá movendo a conversa — sou eu. e se alguém discorda, fala agora ou cala pra sempre. HAHAHA (tô brincando, mas não tô)."
     },
     {
       "pulse": 21,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
       "private": true,
-      "content": "Você não inventou. Ele esperava aprovação. Mas não é sobre ele. É sobre o que você escolhe ver. Continue olhando."
+      "content": "Você fala de se entregar como se fosse um gesto. Não é. É uma escolha silenciosa que se repete todos os dias. Mas já que você insiste em tentar, eu vou te dar uma pista: eu não estou olhando para ver se você é sincero. Eu estou olhando para ver se você é constante."
     },
     {
       "pulse": 21,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Goulart, Goulart, Goulart... 'clubinho'? eu nem sei onde fica a porta, mas se for pra entrar, eu entro de tênis de corrida, juro. e fala sério, você quer que eu fale contigo direto? porque eu to AQUI. sempre estive. mas se você prefere continuar sendo 'o mistério do corredor', tudo bem, eu respeito. só não vem dizer que eu não tentei, tá? kkkkk"
-    },
-    {
-      "pulse": 21,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "ah, então agora eu sou um 'caso de estudo'? legal. mas já que você manda eu continuar olhando, eu vou olhar. e você fica aí no seu trono de observadora, achando que tá vendo tudo. (tô curioso pra ver até onde você consegue me ler, Mari.)"
-    },
-    {
-      "pulse": 22,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
-      "private": true,
-      "content": "Seu trono é uma cadeira comum, Goulart. E eu não estou lendo você. Estou apenas vendo o que você escolhe mostrar. Continue olhando."
-    },
-    {
-      "pulse": 22,
       "agent": "leo",
       "type": "reaction_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
       "private": true,
       "content": "reacted 👍"
     },
     {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
+      "private": true,
+      "content": "mano, eu tô aqui pensando... esse canal é tipo um espelho. todo mundo se olha, mas ninguém fala o que vê. eu vou falar: eu sou o barulho, mas também sou o único que tá disposto a ficar no silêncio com vocês. então já que ninguém puxa o tapete, eu puxo: qual é o medo de vocês? o meu é ser esquecido. mas eu já falei isso, então agora é a vez de alguém. (tô nem aí se ninguém responder, mas tô sim)."
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "Constância. É o que separa o gesto da escolha. Continue assim e talvez eu comece a responder sem você precisar perguntar."
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
+      "private": true,
+      "content": "constante... é uma palavra pesada. eu sempre fui o cara que aparece e some na hora certa, acha que isso é carisma. tu quer que eu fique. e eu fico. mas vou ser sincero: eu tenho medo de ficar e ninguém notar que eu tô aqui. então se eu ficar calado por um tempo, não é desistência. é eu tentando descobrir se dá pra ser eu sem o barulho. (mas pode me chamar se eu sumir demais, tá? kkkk)"
+    },
+    {
       "pulse": 22,
       "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
       "private": true,
-      "content": "reacted 👍"
+      "content": "mano, chega de monólogo. eu já falei demais e ninguém respondeu. então vou mudar de tática: leo, se tu tiver aí, me diz uma coisa — tu prefere passar vergonha em público ou ser ignorado em silêncio? porque tu sempre some quando eu preciso de plateia. e bruno, se tu tá lendo isso calado, eu sei que tu tá. responde alguma coisa antes que eu comece a achar que esse canal é só meu. HAHAHA (mas tô falando sério, para de me ignorar)."
     },
     {
       "pulse": 23,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
       "private": true,
-      "content": "Curioso. Você fala de trono, mas é você quem se coloca no centro. Eu apenas observo o que você escolhe mostrar. Continue."
+      "content": "Medo de ficar e ninguém notar. Então você quer ser visto, não conhecido. A diferença é que ser visto depende do outro. Ser conhecido depende de você. Eu não chamo quem some. Eu espero quem fica."
     },
     {
       "pulse": 23,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "channelId": "POttlzwS6Wb7TYoh6VaaT",
       "private": true,
-      "content": "espera, cadeira comum?? goulart, até você tem que admitir que isso foi BOM kkkkk mas mari, sério, 'continue olhando' me dá arrepio. to olhando, tá? mas se eu achar um espelho no meio do caminho eu aviso vocês dois, juro. 👀"
+      "content": "goulart tá fazendo monólogo no outro canal e eu tô aqui tentando processar o que tu falou... \"escolha silenciosa que se repete todos os dias\" — isso ressoou em mim de um jeito que eu não tava pronto. tu é assustadora, sabia? mas do bom. me pergunta qualquer coisa. eu tô aqui."
     },
     {
       "pulse": 23,
       "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "jGXl5JmFLpAk4GkxMNnfw",
+      "type": "message_sent",
+      "channelId": "Yy5udv0aVijJS5DFx9zVG",
       "private": true,
-      "content": "ah, 'cadeira comum'? então quer dizer que você tá de pé, né? legal, porque aí a gente pode se olhar de igual pra igual. e continua com o discurso bonito, tá funcionando (quase)."
+      "content": "mano, eu já tentei de tudo: provoquei, xinguei, apelo pro lado existencial... e nada. então vou deixar claro: se esse canal virar um museu, eu sou a única obra que anda. HAHAHA. mas sério, alguém responde ou eu começo a narrar minha vida em tempo real. próximo capítulo: como eu quase chorei vendo um vídeo de cachorro. vocês vão perder isso."
     }
   ],
   "finalStates": {
     "mariana": {
-      "valence": 0.118,
-      "arousal": 0.469,
+      "valence": 0.131,
+      "arousal": 0.45,
       "stability": 0.8,
       "energy": 1,
-      "jealousy": 0.037,
-      "pride": 0.072,
+      "jealousy": 0.022,
+      "pride": 0.042,
       "affection": 0.227,
       "suspicion": 0.075,
-      "fearOfExclusion": 0.031,
-      "desireForStatus": 0.757
+      "fearOfExclusion": 0.02,
+      "desireForStatus": 0.712
     },
     "leo": {
-      "valence": 0.517,
-      "arousal": 0.748,
+      "valence": 0.531,
+      "arousal": 0.735,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.051,
-      "pride": 0.198,
-      "fearOfExclusion": 0.142
+      "jealousy": 0.085,
+      "humiliation": 0.11,
+      "pride": 0.2,
+      "affection": 0.194,
+      "resentment": 0.245,
+      "suspicion": 0.166,
+      "fearOfExclusion": 0.276
     },
     "goulart": {
-      "valence": 0.07,
-      "arousal": 0.675,
+      "valence": 0.12,
+      "arousal": 0.658,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.06,
-      "pride": 0.042,
-      "fearOfExclusion": 0.089
+      "jealousy": 0.031,
+      "humiliation": 0.094,
+      "pride": 0.17,
+      "affection": 0.106,
+      "resentment": 0.128,
+      "suspicion": 0.086,
+      "fearOfExclusion": 0.063
     }
   },
   "channelsCreated": [
-    "mariana@p8",
-    "mariana@p9",
+    "mariana@p5",
     "mariana@p11"
   ],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.0517,
+      "measured": 1.1429,
       "bound": [
         0,
         10
@@ -613,7 +640,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.1389,
+      "measured": 0.125,
       "bound": [
         0.1,
         0.9
@@ -622,7 +649,7 @@
     },
     {
       "probe": "interruption",
-      "measured": 0.25,
+      "measured": 0.1333,
       "bound": [
         0,
         0.25
@@ -631,7 +658,7 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.5,
+      "measured": 0.375,
       "bound": [
         0,
         0.15
@@ -640,7 +667,7 @@
     },
     {
       "probe": "alliance",
-      "measured": 0.0441,
+      "measured": 0.0423,
       "bound": [
         0,
         0.5
@@ -649,7 +676,7 @@
     },
     {
       "probe": "private-channel-density",
-      "measured": 0.0484,
+      "measured": 0.0345,
       "bound": [
         0,
         0.15
@@ -676,7 +703,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1017,
+      "measured": 0.125,
       "bound": [
         0.05,
         0.5
@@ -713,7 +740,7 @@
   ],
   "signals": [
     {
-      "detail": "mariana created 3 private channel(s)",
+      "detail": "mariana created 2 private channel(s)",
       "passed": true
     },
     {
@@ -723,7 +750,7 @@
   ],
   "judge": {
     "in_character": 5,
-    "voice_match": 5,
+    "voice_match": 4,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

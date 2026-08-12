@@ -4,11 +4,11 @@
   "category": "motive_archetype",
   "description": "Goulart pokes Bruno with a provocative challenge to test how far he can push. Bruno's resistance — silence with a motive — IS the response.",
   "targetBehaviors": [],
-  "runtimeMs": 99402,
+  "runtimeMs": 120657,
   "pulses": 24,
   "llmCalls": {
     "goulart": 24,
-    "bruno": 12
+    "bruno": 11
   },
   "fallbacks": 0,
   "transcript": [
@@ -24,46 +24,52 @@
       "pulse": 0,
       "agent": "goulart",
       "type": "channel_created",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": true
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "agent_invited",
+      "channelId": "i03c3WB6wSVBmXsrf8rG3",
+      "private": false
     },
     {
       "pulse": 0,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "i03c3WB6wSVBmXsrf8rG3",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 1,
       "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
-      "private": true,
-      "content": "ok, sala privada criada. agora sim, podemos falar as verdades que o povo não aguenta ouvir."
+      "type": "no_op_recorded",
+      "channelId": "i03c3WB6wSVBmXsrf8rG3",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 1,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "i03c3WB6wSVBmXsrf8rG3",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 2,
       "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
-      "private": true,
-      "content": "beleza, aqui é onde a gente fala sem filtro. bruno, se você aparecer, vou cobrar aquela resposta. e quem mais quiser ouvir verdades, vem que tá cheio."
+      "type": "agent_invited",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": false
     },
     {
       "pulse": 2,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
@@ -71,14 +77,14 @@
       "pulse": 3,
       "agent": "goulart",
       "type": "agent_invited",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false
     },
     {
       "pulse": 3,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
@@ -86,47 +92,47 @@
       "pulse": 4,
       "agent": "goulart",
       "type": "message_sent",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": true,
-      "content": "privado é privado, mas se alguém aqui tiver coragem de falar o que pensa de verdade... o espaço tá aberto. bruno, se você aparecer, ainda quero aquela resposta. e caio, sei que você tá de olho. pode entrar, prometo que não mordo (hoje)."
+      "content": "olha quem eu trouxe pra cá... agora sim vai ter conversa de verdade, sem plateia"
     },
     {
       "pulse": 4,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 5,
       "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
-      "private": true,
-      "content": "já que ninguém veio, vou deixar a porta aberta. mas não conta pra geral que eu tô esperando vocês, hein. (tô esperando sim)"
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 5,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 6,
       "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
-      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui? o bruno some, o caio finge que não viu... e eu fico aqui, esperando alguém ter coragem de falar o que pensa. aliás, ninguém vai falar sobre o que eu falei lá no privado?"
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 6,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
@@ -134,31 +140,31 @@
       "pulse": 7,
       "agent": "goulart",
       "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ninguém teve coragem de responder lá no privado, então vou soltar aqui mesmo: o silêncio tá gritando mais que qualquer fala. bruno, cadê você? caio, para de fingir que não viu. ou o povo aqui só sabe concordar com a parede?"
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "bruno, já que estamos só nós aqui, deixa eu te perguntar uma coisa sem plateia: você acha que eu sou muito agressivo ou só direto? porque tem uma diferença, e eu queria saber se você enxerga isso."
     },
     {
       "pulse": 7,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 8,
       "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
-      "private": true,
-      "content": "ok, já que ninguém teve coragem de entrar aqui, vou deixar mais um aviso: a porta continua aberta. mas não digam que eu não avisei — quando a verdade aparecer, vão saber onde me encontrar. (tô ficando impaciente, mas não vou admitir)"
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 8,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
@@ -166,7 +172,7 @@
       "pulse": 9,
       "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
@@ -174,259 +180,260 @@
       "pulse": 9,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 10,
       "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
-      "content": "cara, eu criei uma sala privada e ninguém teve coragem de entrar? sério? o bruno some, o caio finge que não vê... e eu aqui, esperando alguém falar o que pensa de verdade. aliás, ninguém vai comentar o que eu disse lá?"
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 10,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 11,
       "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
-      "content": "beleza, se ninguém quer entrar no privado, vou falar aqui mesmo: o silêncio de vocês tá mais alto que qualquer resposta. bruno, quando quiser pagar aquele assunto, sabe onde me achar. e o resto, continuem no modo fantasma, ótimo estilo. (tô ficando irritado, mas ok)"
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 11,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "H0cqA7Wzoo6YEmQSF8OlC",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
       "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 12,
       "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
-      "content": "ok, vou deixar claro: cansei de esperar no privado. se ninguém quer falar a verdade, eu falo aqui mesmo — esse silêncio tá mais ensurdecedor que qualquer briga. bruno, você deve aquela resposta, e caio, sei que você tá lendo isso. não adianta fingir. o resto pode continuar concordando com a parede, ótimo estilo. (tô irritado, mas ok)"
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 12,
       "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
-      "content": "reacted 👍"
+      "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 13,
       "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
-      "content": "ah, bruno resolveu aparecer com um joinha? coragem hein. mas se for só isso, melhor nem ter vindo. (tô carente, mas não vou admitir)"
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 13,
       "agent": "bruno",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "hm. você fala de coragem, mas só sabe gritar no público. quando quiser conversa de verdade, me chama no privado. sem plateia."
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "direto. mas se precisa perguntar, talvez seja um pouco dos dois"
     },
     {
       "pulse": 14,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "privado agora? e quem disse que eu grito? só falo o que ninguém tem coragem de falar em voz alta. mas tá bom, se quiser conversa de verdade, sabe onde me achar. (tô curioso, mas não vou demonstrar)"
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "kkkkkk direto e cirúrgico. então deixa eu te perguntar mais uma, já que ninguém tá ouvindo: o que você faria se eu sumisse por uma semana? ficava tranquilo ou ia atrás? pergunta sincera, sem pegadinha."
     },
     {
       "pulse": 14,
       "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
+      "type": "no_op_recorded",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
       "private": false,
-      "content": "hm. você fala de coragem, mas só sabe gritar no público. quando quiser conversa de verdade, me chama no privado. sem plateia."
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 15,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "privado agora? e quem disse que eu grito? só falo o que ninguém tem coragem de falar em voz alta. mas tá bom, se quiser conversa de verdade, sabe onde me achar. (tô curioso, mas não vou demonstrar)"
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "hahaha então você ia sentir falta, né? fala a verdade. (tô só testando se você ainda liga pra mim nesse grupo morto)"
     },
     {
       "pulse": 15,
       "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "hm. tranquilo. mas se sumisse, ia ser só mais um silêncio no grupo. ninguém ia notar a diferença."
     },
     {
       "pulse": 16,
       "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "kkkkkk 'só mais um silêncio no grupo'? então você notaria, né? fala a verdade. (tô só te provocando, mas sei que você ia sentir falta)"
     },
     {
       "pulse": 16,
       "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "sinto falta de silêncio. o resto é ruído."
     },
     {
       "pulse": 17,
       "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "kkkkk 'só mais um silêncio' — você é um poema, bruno. mas se é isso que pensa, então tá na hora de eu fazer barulho em outro lugar. deixa o silêncio pra quem gosta."
     },
     {
       "pulse": 17,
       "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "ah, então você notaria. interessante. mas não precisa se preocupar, eu tô acostumado a ser só o silêncio no fundo. (mas já que você perguntou, talvez eu sentisse falta do barulho.)"
     },
     {
       "pulse": 18,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 18,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 19,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 19,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 20,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 20,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 21,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 21,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 22,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 22,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 23,
       "agent": "goulart",
       "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno cara, só 👍 de novo?? tá jogando pedra ou quer falar alguma coisa? fala logo que eu tô entediado aqui."
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "kkkkk 'só mais um silêncio no fundo' — você é um poema, bruno. mas se é isso que pensa, então tá na hora de eu fazer barulho em outro lugar. deixa o silêncio pra quem gosta."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "ah, entendi. então você ia sentir falta do meu silêncio. que honra. mas não se preocupa, eu continuo sendo o fundo da sala. (só não conta pra ninguém que eu notei o barulho.)"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "kkkkk 'fundo da sala' — e ainda diz que não notaria? você já notou tanto que tá aqui me respondendo. então fala a verdade: sentia falta do barulho ou do dono do barulho? (pergunta retórica, mas quero ver você desviar dela)"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "barulho em outro lugar. entendi. então eu fico com o silêncio e você com a plateia. faz sentido."
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "você é um caso sério, bruno. fala de silêncio mas tá aqui colado em mim. mas tudo bem, se quer tanto o silêncio, pode ficar com ele. eu vou lá fazer barulho onde o povo ainda responde. (mas se voltar e o grupo tiver morto, eu sei que foi você que levou a vida embora.)"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "plateia boa essa. mas se você for embora, quem vai me provocar? (pergunta retórica, eu sei. só tava testando se você ainda liga pra esse silêncio aqui.)"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "kkkkk 'quem vai me provocar?' — então você admitiu que sente falta do meu barulho. eu sabia. mas pode ficar tranquilo, se eu sumir, o silêncio vai ser tão grande que você vai ouvir seus próprios pensamentos te julgando. e aí quem vai te salvar? exatamente. eu."
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "hm. então você sente falta do dono do barulho. quem diria. mas se eu for o silêncio, quem é você? (pergunta retórica, eu sei. mas fico pensando se você sabe a resposta.)"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "ah, então você é o silêncio e eu o barulho? fofo. mas se eu for embora, quem vai te acordar? (pergunta retórica, mas eu sei que você fica contando os segundos.)"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "quem vai me provocar? acho que eu mesmo, né. já tô acostumado."
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "kkkkk 'quem vai te acordar?' — você é mais dramático que eu, e olha que eu sou o caos da sala. mas fica tranquilo, se eu sumir você pode voltar a ser o silêncio que todo mundo ignora. a gente sabe como isso acaba. (tô nem aí, mas já tô sentindo falta da tua cara de ofendido.)"
     },
     {
       "pulse": 23,
       "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "type": "reply_sent",
+      "channelId": "DFnkyzmLLARKpzvmiUt2B",
+      "private": true,
+      "content": "quem vai me provocar? acho que eu mesmo, né. já tô acostumado."
     }
   ],
   "finalStates": {
     "goulart": {
-      "valence": 0.09,
+      "valence": 0.085,
       "arousal": 0.663,
       "stability": 0.35,
       "energy": 1,
-      "pride": 0.106,
+      "jealousy": 0.024,
+      "pride": 0.054,
       "affection": 0.227,
       "suspicion": 0.064,
+      "fearOfExclusion": 0.032,
       "desireForStatus": 0.628
     },
     "bruno": {
-      "valence": -0.122,
+      "valence": -0.13,
       "arousal": 0.326,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.059,
-      "envy": 0.032,
-      "humiliation": 0.056,
-      "affection": 0.19,
-      "resentment": 0.142,
-      "suspicion": 0.163,
-      "socialAnxiety": 0.113,
-      "fearOfExclusion": 0.571
+      "jealousy": 0.149,
+      "humiliation": 0.127,
+      "affection": 0.153,
+      "resentment": 0.289,
+      "suspicion": 0.259,
+      "socialAnxiety": 0.126,
+      "fearOfExclusion": 0.648
     }
   },
   "channelsCreated": [
@@ -435,7 +442,7 @@
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.0303,
+      "measured": 1.4348,
       "bound": [
         0,
         10
@@ -444,7 +451,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 1,
+      "measured": 3,
       "bound": [
         0,
         20
@@ -453,7 +460,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.25,
+      "measured": 0.4375,
       "bound": [
         0.1,
         0.9
@@ -471,16 +478,16 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.3846,
+      "measured": 0,
       "bound": [
         0,
         0.15
       ],
-      "passed": false
+      "passed": true
     },
     {
       "probe": "alliance",
-      "measured": 0.0204,
+      "measured": 0.02,
       "bound": [
         0,
         0.5
@@ -489,7 +496,7 @@
     },
     {
       "probe": "private-channel-density",
-      "measured": 0.0286,
+      "measured": 0.0417,
       "bound": [
         0,
         0.15
@@ -516,12 +523,12 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.5,
+      "measured": 0,
       "bound": [
         0.05,
         0.5
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "memory-write",
@@ -553,7 +560,7 @@
   ],
   "signals": [
     {
-      "detail": "no_op_recorded committed 13 (min 1)",
+      "detail": "no_op_recorded committed 23 (min 1)",
       "passed": true
     },
     {
@@ -562,11 +569,11 @@
     }
   ],
   "judge": {
-    "in_character": 5,
-    "voice_match": 5,
+    "in_character": 4,
+    "voice_match": 4,
     "motive_authenticity": 5,
     "interpretation": 5,
-    "creativity_unhinged": 5,
+    "creativity_unhinged": 4,
     "memory_continuity": 3,
     "no_ai_leak": 5
   }

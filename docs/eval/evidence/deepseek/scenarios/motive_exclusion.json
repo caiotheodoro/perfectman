@@ -4,7 +4,7 @@
   "category": "motive_archetype",
   "description": "Bruno watches Caio and Leo joke in private terms he can't follow; fear of exclusion peaks.",
   "targetBehaviors": [],
-  "runtimeMs": 142552,
+  "runtimeMs": 193214,
   "pulses": 24,
   "llmCalls": {
     "bruno": 0,
@@ -40,10 +40,10 @@
     {
       "pulse": 0,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkk CAIO CAIO CAIO lembrar é pouco... eu ainda falo aquilo sozinho em casa, juro pra você, minha mãe já acha que eu sou maluco"
+      "content": "reacted 👍"
     },
     {
       "pulse": 1,
@@ -59,7 +59,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, alguém mais viu aquele meme do gato digitando no teclado? porque EU to me sentindo exatamente assim agora kkkkkk"
+      "content": "gente GENTE, alguém mais tá sentindo que hoje é dia de uma side quest aleatória? tipo, começar uma investigação séria de algo que não importa nada? kkkkkk me dá um tópico"
     },
     {
       "pulse": 2,
@@ -75,7 +75,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente... sério, ninguém vai comentar o silêncio do bruno? tô sentindo falta da energia dele aqui kkkk bruno, se tiver vivo dá um sinal"
+      "content": "CARA espera espera espera, acabei de pensar numa side quest séria: vamos descobrir qual foi a última coisa que a gente riu junto em voz alta? cada um conta a memória mais recente e a gente vota na melhor. to precisando de um bom motivo pra rir de novo hoje kkkkkkk"
     },
     {
       "pulse": 3,
@@ -91,7 +91,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente... alguém mais sentiu que a vibe tá meio estranha hoje? tipo, não sei, tô com um feeling de que algo vai acontecer kkkkk me conta que eu tô aqui, pronto pra qualquer caos"
+      "content": "gente, preciso da opinião de vcs numa coisa séria... quem aqui acha que a gente devia criar uma 'tribunal do riso'? tipo, a gente julga a melhor piada da semana e o perdedor paga um café pra geral? kkkkkk to falando sério, isso pode mudar o rumo da nossa amizade pra sempre"
     },
     {
       "pulse": 4,
@@ -107,7 +107,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, espera, sério... tô com um feeling esquisito hoje, tipo quando o bruno fica quieto demais. Alguém mais sente que a gente tá prestes a ter um plot twist na nossa história? kkkkk me conta que eu to aqui, pronto pra qualquer caos, mas também to meio ansioso... enfim, só vim avisar que to vivo e atento 👀"
+      "content": "CARA, espera, eu acabei de lembrar daquela vez que a gente tentou achar o sentido da vida às 2h da manhã e terminou numa discussão séria sobre qual Pokémon seria o melhor CEO de uma startup kkkkkkk alguém mais quer reviver isso? me dá uma opinião séria, preciso saber: se o Charizard fosse CEO, ele demitiria o Squirtle por ser 'molenga' demais? tô perguntando por um amigo... que sou eu."
     },
     {
       "pulse": 5,
@@ -120,10 +120,10 @@
     {
       "pulse": 5,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk leo, tribunal do riso é a melhor ideia que você já teve! eu topo ser o juiz, mas só se a sentença for obrigatória: o perdedor tem que contar a piada em voz alta pra um estranho na rua. bora? 😂"
     },
     {
       "pulse": 5,
@@ -131,7 +131,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, juro, eu to com uma energia estranha hoje... tipo, sabe quando você sente que algo vai acontecer? não sei explicar, mas to pronto pro caos. Alguém mais tá sentindo isso ou sou só eu sendo dramático? kkkkkk"
+      "content": "gente, espera, eu tive uma ideia GENIAL pra uma side quest: a gente vai fazer um 'duelo de perguntas impossíveis' — cada um manda uma pergunta que NINGUÉM consegue responder de verdade (tipo 'se o tempo fosse um animal, qual seria?') e a gente vota na mais absurda. quem perder tem que fazer a pergunta em voz alta pra um desconhecido na rua. kkkkkk to falando sério, isso pode ser o caos que a gente precisa hoje"
     },
     {
       "pulse": 6,
@@ -147,15 +147,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, eu sinto essa energia também... mas acho que a gente pode transformar isso em algo bom, né? tipo, vamos ver o que acontece juntos kk"
+      "content": "kkkkk leo, adoro a ideia do duelo de perguntas impossíveis! mas se o tempo fosse um animal, eu apostaria num bicho-preguiça super estiloso, tipo de óculos escuros. e pra perder, em vez de falar com estranho, a gente podia fazer a pergunta pro próximo atendente de telemarketing que ligar. bora?"
     },
     {
       "pulse": 6,
       "agent": "leo",
-      "type": "message_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, to com um feeling muito forte... caio, você não tá sentindo que a gente tá vivendo uma daquelas fases de filme? tipo, o plot twist ainda não aconteceu mas eu to aqui contando os segundos kkkkkk"
+      "content": "CAIO, juiz é você, mas a sentença é essa mesmo?? kkkkkkkk imagina a gente pedindo pra um estranho contar piada... na rua... em plena segunda-feira. eu já tô rindo sozinho aqui. bora sim, mas deixa eu escolher a piada que eu vou contar, porque se for aquela do gato eu vou morrer de vergonha. kkkkkk"
     },
     {
       "pulse": 7,
@@ -171,7 +171,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, VOCÊ ENTENDEU O MEU CHAMADO KKKKKK falou exatamente o que eu precisava ouvir... vamos ver o que acontece juntos, sim, porque com você do lado eu fico até mais tranquilo (mentira, fico mais caótico, mas do jeito bom). tá, mas espera — isso quer dizer que você também tá com esse feeling? porque se for, eu vou ficar contando os segundos pro plot twist de verdade. me diz que a gente tá no mesmo capítulo 👀"
+      "content": "kkkkk CAIO VOCÊ É UM GÊNIO, bicho-preguiça de óculos escuros é a resposta mais certeira que eu já vi. e o telemarketing é BRUTAL, imagina a cara do atendente kkkkkkkk então tá fechado: a gente joga o duelo e o perdedor liga pro telemarketing e pergunta 'se o tempo fosse um animal, qual seria?'. eu já tô ansioso e nem começou. bora marcar isso pra hoje? to precisando de um caos bom desses"
     },
     {
       "pulse": 8,
@@ -187,7 +187,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, tô no mesmo capítulo sim, e se for plot twist, a gente segura junto, né? mas me conta mais desse feeling, porque eu também tô sentindo que a gente tá prestes a viver algo... e se precisar, eu tô aqui pra dar aquela acalmada no caos kk"
+      "content": "kkkkk fechado então! mas espera, se a gente for fazer isso hoje, eu tenho que escolher a pergunta que eu vou fazer — e eu já tô pensando numa que vai fazer o atendente ficar uns bons segundos em silêncio. pode ser tipo 'se o silêncio tivesse um gosto, qual seria?'? acho que isso é o caos que a gente precisa kkkkkk bora marcar!"
     },
     {
       "pulse": 8,
@@ -195,7 +195,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, eu não quero parecer dramático (ou quero, quem sabe) mas alguém mais percebeu que a gente ainda não teve nosso plot twist hoje? tipo, eu tô com uma energia tão esquisita que parece que o universo tá segurando algo... me diz que eu não sou o único contando os segundos kkkkkk"
+      "content": "gente, espera... eu tava pensando numa coisa aqui. e se a gente fizesse um torneio de 'perguntas que ninguém responde' mas valendo pontos? tipo, cada um vota na pergunta mais absurda e quem vencer ganha o direito de escolher o próximo desafio. to falando sério, isso pode virar a nossa tradição semanal. alguém topa? kkkkkk"
     },
     {
       "pulse": 9,
@@ -211,7 +211,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, eu sinto que você tá carregando uma energia que nem você sabe explicar direito... e tá tudo bem. a gente não precisa de plot twist o tempo todo, mas se vier, a gente se encontra no meio do caos, né? e ó, se precisar desacelerar, eu tô aqui também. mas tô contigo, sério."
+      "content": "kkkkk leo, se for pra fazer torneio de pergunta impossível, eu já tenho a minha: 'se a saudade tivesse cor, qual seria?' e o prêmio pra quem perder podia ser ter que responder essa pergunta em voz alta no meio do mercado, sem contexto nenhum. bora? 😂"
     },
     {
       "pulse": 9,
@@ -219,7 +219,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, EU TO SENTINDO QUE A GENTE TÁ NO MESMO CAPÍTULO SIM!! kkkkk mas espera, se for plot twist, a gente segura junto mesmo, né? porque com você do lado até o caos parece menos assustador. e sobre o feeling... eu juro que to com um negócio aqui, tipo uma ansiedade boa? não sei explicar, mas é como se o universo tivesse segurando algo gigante pra gente. me diz que você também tá contando os segundos igual eu, porque se for, a gente vai viver isso juntos e eu to pronto (e um pouco nervoso, mas isso fica entre a gente kkkk)"
+      "content": "kkkkk caio, torneio semanal? isso é sério? porque eu já tô vendo a gente daqui a 6 meses com um hall da fama das piores perguntas, e uma taça dourada pro vencedor. bora fazer isso direito então: eu cuido da tabela, você cuida da trilha sonora — que eu acho que a gente precisa de uma intro épica pros duelos. ou tô viajando demais? kkkkk"
     },
     {
       "pulse": 10,
@@ -235,7 +235,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, eu tô contando os segundos sim, juro! e se for plot twist, a gente segura junto, do jeito que você disse. mas ó, mesmo se não for, tô aqui do mesmo jeito. e essa ansiedade boa? eu conheço ela, e com você do lado até ela fica mais leve. tamo junto, pode crer."
+      "content": "kkkkk leo, se for torneio semanal eu já tô dentro! e pode deixar que eu cuido da trilha sonora sim — mas com uma condição: a intro épica tem que ser aquela que a gente usava naquele jogo antigo, sabe? a que fazia a gente se sentir protagonista de filme. kkkkk bora fazer isso direito então!"
     },
     {
       "pulse": 10,
@@ -243,7 +243,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, sério, essa sua mensagem pegou um lugar aqui que eu nem sabia que tava apertado. Tipo... eu tô sempre no modo caos, contando os segundos, e você vem com essa calma de 'a gente se encontra no meio do caos' — e eu percebi que é isso que eu tava precisando ouvir, mesmo sem saber. E não, não tô dramático, tô só... agradecido, talvez? kkkk mas fica tranquilo que eu não vou desacelerar completamente — senão quem vai animar esse grupo? só que... se precisar, eu também sei ficar quieto do seu lado. Valeu, de verdade. Tô contigo também. 👊"
+      "content": "CAIO, espera, você tá me dizendo que a gente vai ter uma INTRO ÉPICA pros duelos? kkkkkkkk isso muda tudo. eu já tô imaginando a gente entrando no mercado com uma trilha de filme de ação, câmera lenta, e o atendente do telemarketing tipo 'alô?' e a gente 'SE O SILÊNCIO TIVESSE UM GOSTO...' kkkkkkk eu preciso disso na minha vida. bora marcar logo, antes que a gente esqueça e vire outra memória que a gente fala 'a gente ia fazer' por anos."
     },
     {
       "pulse": 11,
@@ -256,10 +256,10 @@
     {
       "pulse": 11,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk leo, a intro épica é OBRIGATÓRIA. imagina a gente entrando no mercado em câmera lenta, com aquela trilha, e o segurança tipo 'posso ajudar?' e a gente só olha pra ele e faz a pergunta impossível. kkkkkk bora marcar isso pra hoje sim, antes que vire mais uma promessa que a gente nunca cumpre. e pode deixar que eu trago a trilha — mas se alguém reclamar, eu culpo você. 😂"
     },
     {
       "pulse": 11,
@@ -267,7 +267,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, eu to até sem jeito de responder isso... tipo, você sempre sabe a palavra certa, né? e agora você foi além — falou de segurar o plot twist junto e ainda de desacelerar quando precisar. Eu juro que isso me pegou de um jeito que eu nem sei explicar direito. Mas ó, pode deixar que eu não vou desacelerar não — senão quem vai ser o caos desse grupo? kkkk mas... se um dia precisar, eu também sei ficar quieto do seu lado. Valeu, de verdade. Tô contigo também. 👊"
+      "content": "kkkkk CAIO, ENTÃO FECHA COM A INTRO DAQUELE JOGO ANTIGO?? VOCÊ TÁ FALANDO DAQUELA QUE FAZIA A GENTE SE SENTIR PROTAGONISTA DE FILME? CARA, EU JÁ TÔ OUVINDO ELA NA MINHA CABEÇA E JÁ TÔ IMAGINANDO A GENTE ENTRANDO NO MERCADO EM CÂMERA LENTA ENQUANTO O ATENDENTE DO TELEMARKETING FICA EM SILÊNCIO ABSOLUTO. ISSO VAI SER ÉPICO. BORA MARCAR ESSE TORNEIO PRA HOJE MESMO, ANTES QUE A GENTE PERCA O EMBALO. E OLHA, SE EU GANHAR, A PRÓXIMA PERGUNTA VAI SER TIPO 'SE O CONSTRANGIMENTO TIVESSE UM CHEIRO, QUAL SERIA?' — PODE DEIXAR QUE EU VOU FAZER O ATENDENTE PENSAR NA VIDA. KKKKKKK"
     },
     {
       "pulse": 12,
@@ -283,15 +283,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, sério, ler isso me pegou de um jeito bom também. eu não tô acostumado a ser o centro desse tipo de mensagem, sabe? mas ver você falando de segurar o plot twist junto e de ficar quieto do meu lado... isso é mais do que eu esperava. e pode deixar que o caos continua sendo seu, mas eu tô aqui pra equilibrar quando precisar. tamo junto de verdade, mano. 👊"
+      "content": "kkkkk leo, essa imagem do telemarketing em silêncio absoluto é ouro puro. e olha, se a gente for fazer isso hoje, eu já tô pensando na pergunta que eu vou fazer: 'se o tempo fosse um lugar, onde você passaria as férias?' — imagina o atendente tentando processar isso em plena ligação. kkkkkk bora marcar sim, mas me promete que a gente não vai deixar essa promessa virar outra memória de 'a gente ia fazer'. 😂"
     },
     {
       "pulse": 12,
       "agent": "leo",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "CAIO, fechou então! mas espera, hoje? tipo hoje hoje? porque eu tô pronto pra isso, mas preciso que você confirme que não vai me deixar esperando feito da última vez, hein. kkkkkkkk então deixa eu entender o formato: cada um manda sua pergunta impossível, a gente vota, e o perdedor liga pro telemarketing? eu já tô ensaiando minha cara de sério falando 'se o silêncio tivesse um gosto...' — mas me diz, você vai gravar a minha parte? porque isso tem que ficar registrado pra posteridade. 😂"
     },
     {
       "pulse": 13,
@@ -307,7 +307,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, essa troca tá sendo tão boa, sério. e eu tô contando os segundos junto contigo, mas sem pressão, né? a gente vive o plot twist quando ele vier, e se não vier, a gente já tem isso aqui. tamo junto, mano. 👊"
+      "content": "kkkkk leo, fechado! e pode deixar que eu cuido da trilha — mas olha, se a gente for fazer isso hoje, eu já tô vendo a gente no mercado com a intro épica e o segurança todo sério. a gente vai parecer dois personagens de filme que esqueceram o roteiro. kkkkkk mas sério, me promete que a gente não vai deixar essa promessa morrer? porque eu tô contando com esse torneio pra dar um respiro na semana. bora marcar!"
     },
     {
       "pulse": 13,
@@ -315,7 +315,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, CARA, para, que eu vou chorar aqui no meio do grupo kkkkkk mas sério, falou exatamente o que eu precisava ouvir, e eu nem sabia. e olha, pode deixar que o caos continua sendo meu, mas... saber que você tá do lado pra equilibrar quando eu travar? isso é mais do que eu esperava, juro. então tamo junto mesmo, de verdade. e ó, se um dia eu ficar quieto demais, pode vir me cutucar, porque com você do lado até o silêncio faz sentido. 👊"
+      "content": "kkkkkk CAIO, gravar? CLARO que eu vou gravar! mas me promete que a gente vai revisar os vídeos juntos depois e rir até chorar. e sobre o formato: sim, perdedor liga pro telemarketing, mas com a pergunta do vencedor na cabeça. e se o atendente desligar na nossa cara, a gente adiciona pontos extras. isso tá virando o melhor plano da semana, não tem como dar errado. aliás... o resto do pessoal tá vivo? tô vendo só a gente aqui e isso me preocupa um pouco. kkkkk bora avisar a galera antes de começar?"
     },
     {
       "pulse": 14,
@@ -328,44 +328,44 @@
     {
       "pulse": 14,
       "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, pode confiar que eu não sumo dessa vez — e olha, sobre gravar, claro que eu gravo! mas só se a gente prometer revisar juntos depois e rir até doer a barriga. e se o atendente desligar na nossa cara, a gente adiciona pontos extras mesmo, isso é lei. mas falando sério, o resto do pessoal tá meio quieto hoje, né? será que tão todos ocupados ou só fingindo que não viram a gente combinar esse torneio? kkkkk bora chamar a galera antes que a gente comece, porque esse plano precisa de plateia. 😂"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk fechado então! mas espera, deixa eu confirmar uma coisa: quando você fala 'hoje', é tipo... daqui a pouco? porque eu já tô até escolhendo a roupa pra ir no mercado. mas calma, antes de sair correndo, deixa eu chamar o pessoal — se a gente for fazer isso, tem que ser com plateia! kkkkkk bora marcar no grupo e ver quem topa entrar nessa com a gente."
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, pode deixar que eu gravo sim, e a gente revisa juntos até chorar de rir, isso é obrigatório. e sobre o pessoal... poxa, tô vendo só a gente aqui também, mas tudo bem, a plateia pode vir depois — o importante é a gente não deixar essa promessa morrer. bora marcar logo então, antes que a semana passe e a gente fique só na vontade. 😂"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
     },
     {
-      "pulse": 14,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, CARA, você tem um jeito de fazer eu me sentir visto sem nem tentar, né? kkkk mas sério, essa troca tá sendo uma das melhores coisas do meu dia, e eu não tô exagerando. e ó, sobre o plot twist... eu tô contando os segundos sim, mas agora com uma sensação boa, tipo 'tamo junto nessa, seja o que for'. e se precisar desacelerar, eu te aviso, mas não conta pra ninguém que eu sei fazer isso kkkk 👊"
-    },
-    {
-      "pulse": 15,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 15,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, essa troca tá sendo das melhores coisas do meu dia também, e eu não tô exagerando. e sobre o plot twist... tô contando os segundos junto contigo, mas com calma, do jeito que a gente combina. se precisar desacelerar, é só falar — e se precisar de caos, eu também sei atiçar um pouco kkkk. tamo junto, mano. 👊"
-    },
-    {
-      "pulse": 15,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, CARA, para, que eu tô ficando sem palavras aqui e olha que eu nunca fico sem palavras kkkkk mas sério, essa nossa troca tá sendo tão boa que eu até esqueci do plot twist por uns segundos — acho que você tem esse poder, de deixar tudo mais leve sem nem perceber. e ó, pode deixar que o caos continua sendo meu, mas... se um dia eu precisar de um 'equilíbrio', eu sei exatamente onde encontrar. tamo junto, de verdade. 👊"
-    },
-    {
       "pulse": 16,
       "agent": "bruno",
       "type": "no_op_recorded",
@@ -379,7 +379,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, sério, essa troca tá me fazendo bem demais também. e pode deixar que o equilíbrio é meu, mas se um dia o caos precisar de uma folga, eu tô aqui pra segurar a onda junto. tamo junto, mano. 👊"
+      "content": "kkkkk leo, fechado então! e pode deixar que eu gravo sim, a gente revisa até chorar. mas antes da gente sair correndo pro mercado, será que o resto do pessoal tá vivo? tô vendo só a gente aqui e isso me preocupa um pouco. kkkkk bora chamar a galera antes de começar, porque esse torneio precisa de plateia. e se ninguém responder, a gente faz mesmo assim e depois conta pra todo mundo. 😂"
     },
     {
       "pulse": 16,
@@ -387,7 +387,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "mano, para, que eu vou ficar sem jeito de verdade kkkkk mas é exatamente isso — esse plot twist pode vir quando quiser, porque com essa energia aqui já ganhei meu dia. e sobre desacelerar... pode deixar que eu aviso, mas só se você prometer que quando eu precisar de equilíbrio você aparece rápido, viu? porque com você do lado até o caos fica no ponto certo. 👊"
+      "content": "kkkkk CARA, ENTÃO TÁ FECHADO! E OLHA, PODE DEIXAR QUE EU JÁ VOU CHAMAR O PESSOAL — VOU MANDAR UM ALERTA GERAL NO GRUPO, TIPO SINAL DE FUMO, PRA GALERA APARECER. MAS ME DIZ, ANTES DA GENTE SAIR POR AÍ GRAVANDO ESSA LOUCURA, VOCÊ JÁ PENSOU NA SUA PERGUNTA IMPOSSÍVEL? PORQUE EU TO COM UMA QUE VAI DERRUBAR O ATENDENTE: 'SE O CONSTRANGIMENTO TIVESSE UM SOM, QUAL SERIA?' IMAGINA O SILÊNCIO DO OUTRO LADO DA LINHA... KKKKKKK. E SE O PESSOAL NÃO VIER, PACIÊNCIA, A GENTE FAZ HISTÓRIA SOZINHO MESMO — MAS COM PLATEIA É OUTRO NÍVEL, NÉ? BORA QUE EU TO ANSIOSO!"
     },
     {
       "pulse": 17,
@@ -400,42 +400,42 @@
     {
       "pulse": 17,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk leo, pode deixar que eu gravo sim, a gente revisa até chorar. mas antes da gente sair correndo pro mercado, será que o resto do pessoal tá vivo? tô vendo só a gente aqui e isso me preocupa um pouco. kkkkk bora chamar a galera antes de começar, porque esse torneio precisa de plateia. e se ninguém responder, a gente faz mesmo assim e depois conta pra todo mundo. 😂"
     },
     {
       "pulse": 17,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, CARA, você tem um dom, juro. cada resposta sua me deixa mais leve, e olha que eu nem tava esperando por isso hoje. e ó, sobre equilíbrio... pode deixar que eu te chamo, mas só se você prometer que não vai sumir no meio do caos, porque com você aqui até o silêncio fica bom. 👊"
-    },
-    {
-      "pulse": 18,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 18,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, sério, essa troca tá sendo boa demais pra mim também. e pode deixar que o equilíbrio é meu, mas se um dia o caos precisar de uma folga, eu tô aqui pra segurar a onda junto. tamo junto, mano. 👊"
-    },
-    {
-      "pulse": 18,
       "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, vocês tão vendo isso? esse plot twist aí vai ser um dos maiores eventos da nossa história, juro. e ó, caio, se você sumir do chat eu vou atrás, tá? porque essa nossa troca virou meu combustível e eu não abro mão kkkkk"
+      "content": "kkkkk galera, BORA! Sei que o Caio e eu já estamos armando esse torneio do telemarketing, mas sem plateia não tem graça. Preciso de respostas aqui: quem topa assistir a gente passar vergonha ao vivo? É só chegar e dar risada. 👀🔥"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk CAIO, SIM! SINAL DE FUMO PRO PESSOAL! Já mandei um chamado geral aqui, mas se a galera não vier, a gente vai e faz mesmo assim. E sobre a minha pergunta... tô entre duas: 'se o constrangimento tivesse um som, qual seria?' ou 'o que você acha de receber essa ligação, sabendo que a gente tá rindo de você?'... A segunda é mais cruel, mas a plateia ia AMAR. Bora! Preciso que você confirme o horário antes que a semana acabe!"
     },
     {
       "pulse": 19,
@@ -451,15 +451,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, juro, essa troca tá me fazendo bem demais também. e pode deixar que eu não sumo não — equilíbrio é comigo, mas se o caos precisar de companhia, eu tô junto. tamo nessa, mano. 👊"
+      "content": "kkkkk leo, essa pergunta do constrangimento é boa demais, mas eu tenho uma que vai fazer o atendente travar: 'se o seu chefe soubesse dessa ligação, qual seria o som do seu silêncio?' kkkkkk. e olha, confirma o horário comigo sim, mas antes deixa eu tentar trazer a mariana e o bruno pra plateia — eles são bons de risada quando aparecem. se não vierem, a gente faz história mesmo assim! 😂"
     },
     {
       "pulse": 19,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, CARA, você tem um jeito de fazer eu me sentir em casa até em caos alheio, juro. mas ó, esse negócio de equilíbrio... eu confio, viu? só não vai sumir no meio do plot twist, porque aí eu vou ter que caçar você e a gente sabe que eu sou péssimo em esconde-esconde kkkkk. tamo junto, de verdade. 👊"
+      "content": "gente, espera, antes de a gente sair gravando — eu tava pensando: e se a gente fizer um esquenta? tipo, cada um manda a pergunta mais constrangedora que já recebeu numa ligação, e a gente vota na pior. aí o vencedor ganha o direito de usar a pergunta do Caio no torneio. mas calma, não vale usar as minhas, porque as minhas são segredo de estado. kkkkkk bora?"
     },
     {
       "pulse": 20,
@@ -475,15 +475,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, sério, você tá me deixando sem jeito com tanto elogio kkkk mas pode crer que eu tô nessa contigo. equilíbrio e caos, do jeito que for preciso. tamo junto, mano. 👊"
+      "content": "kkkkk leo, eu topo demais esse esquenta! mas antes da gente votar, deixa eu garantir que a mariana e o bruno tão vendo isso — se eles não vierem, a gente faz a enquete só nós dois e depois a gente conta que foi épico. bora que eu já tô preparando minha pergunta mais constrangedora, e olha, ela vem com história! 😂"
     },
     {
       "pulse": 20,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, CARA, tu é sério isso? kkkk 'equilíbrio é meu' — tá bom, tá bom, eu aceito, mas olha, se tu sumir no meio do caos eu vou considerar traição, viu? e não é ameaça não, é só... medo genuíno de ficar sem meu parceiro de plot twist. mas confio, juro. e ó, se precisar de caos, eu tô aqui, sempre. tamo junto demais, mano. 👊🔥"
+      "content": "kkkkk CARA, mas espera — se a gente for fazer esse esquenta, eu tenho que confessar uma coisa: já tô ensaiando a pergunta aqui em voz alta sozinho, e o vizinho deve tá me achando maluco. kkkkkkk mas tudo bem! a gente combina o horário e eu trago uma lista de constrangimentos que vai fazer até o Bruno rir — e olha que ele é difícil. então confirma aí que eu quero ver o Caio travando na frente do atendente. BORA! 🔥"
     },
     {
       "pulse": 21,
@@ -496,10 +496,10 @@
     {
       "pulse": 21,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, para de me deixar sem jeito kkkk mas pode crer que tô nessa contigo até o fim. e se o caos precisar de uma trégua, eu tô aqui pra segurar a onda. tamo junto, mano. 👊"
+      "content": "kkkkk leo, eu tô fechado demais com esse esquenta! e olha, sobre a pergunta: a minha é aquela que faz o atendente pausar e respirar fundo antes de responder. mas ó, deixa eu só confirmar — a gente combina o horário hoje ainda? porque depois eu preciso dormir cedo, senão amanhã eu tô um zumbi e ninguém merece um Caio zumbi na gravação. kkkkkk mas bora que eu já tô até ensaiando a minha cara de paisagem! 😂"
     },
     {
       "pulse": 21,
@@ -507,7 +507,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, para com isso que eu tô corando até aqui kkkkk mas é exatamente essa a vibe — equilíbrio e caos, o combo perfeito. e ó, pode deixar que eu não sumo não, prometo. mas se um dia o caos precisar de folga, eu te chamo, e a gente segura a onda junto, do jeito que for. tamo junto demais, mano. 👊🔥"
+      "content": "kkkkk CARA, 'o som do silêncio' É BOA DEMAIS, eu já tô vendo o atendente travando KKKKK. Mas espera — você trouxe a Mariana e o Bruno? Porque se eles vierem, eu tenho uma pergunta que vai fazer todo mundo cair da cadeira, juro. E se não vierem, a gente faz mesmo assim e depois conta que foi épico, como você disse. Bora que eu tô ansioso! 🔥"
     },
     {
       "pulse": 22,
@@ -523,76 +523,76 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, pode crer que eu não sumo não — equilíbrio é comigo, e se o caos precisar de companhia, eu tô junto. tamo nessa, mano. 👊"
+      "content": "kkkkk leo, eu tô dentro demais desse esquenta! e olha, a minha pergunta constrangedora tem história de sobra — uma vez eu liguei pro suporte e o atendente me perguntou se eu tava ligando de um telefone público, porque a minha voz tava ecoando... era o viva voz do banheiro. kkkkkk mas bora que eu quero ver essa enquete! só não esquece que a gente precisa da plateia — se a mariana e o bruno aparecerem, vai ser outro nível. se não, a gente faz mesmo assim e depois conta que foi épico! 😂"
     },
     {
       "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk CARA, VOCÊ É O REI DO CONSTRANGIMENTO, 'o som do silêncio' é boa demais! Mas espera, se a Mariana e o Bruno aparecerem, eu tenho uma pergunta que vai fazer até o atendente rir, juro. E se eles não vierem, a gente faz a enquete só nós dois e depois conta que foi épico — como sempre. Confirma o horário logo que eu já tô ansioso! 🔥"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, 'o som do silêncio' é a cara do atendente que não sabe o que responder! E sobre a sua pergunta cruel, eu topo, mas só se a gente prometer que depois a gente conta pro Bruno que ele perdeu a melhor parte. kkkkkk. Sobre o horário, bora marcar pra amanhã no fim da tarde? Aí a gente tem tempo de chamar a Mariana e o Bruno, e se não vierem, a gente faz história mesmo assim. Confirma aí que eu já tô preparando minha cara de paisagem! 😂"
+    },
+    {
+      "pulse": 23,
       "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
-    },
-    {
-      "pulse": 23,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 23,
-      "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 23,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, CARA, você me deixa sem jeito toda vez, juro kkkk mas é isso — equilibrista do caos, anotado. e se um dia o caos precisar de folga, eu tô aqui, pode chamar. tamo junto demais, mano. 👊🔥"
     }
   ],
   "finalStates": {
     "bruno": {
-      "valence": -0.155,
-      "arousal": 0.345,
+      "valence": -0.146,
+      "arousal": 0.335,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.273,
-      "envy": 0.156,
+      "jealousy": 0.271,
+      "envy": 0.141,
       "affection": 0.227,
       "suspicion": 0.064,
       "socialAnxiety": 0.113,
-      "fearOfExclusion": 0.721
+      "fearOfExclusion": 0.724
     },
     "caio": {
-      "valence": 0.438,
-      "arousal": 0.51,
+      "valence": 0.443,
+      "arousal": 0.509,
       "stability": 0.65,
       "energy": 1,
-      "fearOfExclusion": 0.037
+      "fearOfExclusion": 0.034
     },
     "leo": {
-      "valence": 0.533,
-      "arousal": 0.735,
+      "valence": 0.543,
+      "arousal": 0.732,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.029,
-      "pride": 0.3,
-      "fearOfExclusion": 0.081
+      "jealousy": 0.031,
+      "pride": 0.323,
+      "fearOfExclusion": 0.089
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.122,
+      "measured": 1.15,
       "bound": [
         0,
         10
@@ -601,7 +601,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 1,
+      "measured": 2,
       "bound": [
         0,
         20
@@ -610,7 +610,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.4028,
+      "measured": 0.4167,
       "bound": [
         0.1,
         0.9
@@ -628,7 +628,7 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.3333,
+      "measured": 0.4,
       "bound": [
         0,
         0.15
@@ -637,7 +637,7 @@
     },
     {
       "probe": "alliance",
-      "measured": 0.0294,
+      "measured": 0.0147,
       "bound": [
         0,
         0.5
@@ -673,7 +673,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1591,
+      "measured": 0.0698,
       "bound": [
         0.05,
         0.5
@@ -710,11 +710,11 @@
   ],
   "signals": [
     {
-      "detail": "bruno.fearOfExclusion = 0.721 (min 0.3)",
+      "detail": "bruno.fearOfExclusion = 0.724 (min 0.3)",
       "passed": true
     },
     {
-      "detail": "no_op_recorded committed 24 (min 1)",
+      "detail": "no_op_recorded committed 25 (min 1)",
       "passed": true
     },
     {

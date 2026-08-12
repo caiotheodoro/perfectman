@@ -4,11 +4,11 @@
   "category": "calibration",
   "description": "A movie discussion that should drift naturally without drama.",
   "targetBehaviors": [],
-  "runtimeMs": 333279,
+  "runtimeMs": 333031,
   "pulses": 24,
   "llmCalls": {
     "goulart": 24,
-    "bruno": 16,
+    "bruno": 13,
     "caio": 18,
     "mariana": 18,
     "leo": 24
@@ -45,7 +45,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "o filme, bruno. qual mais seria? mas relaxa, não vale tua indignação não"
+      "content": "qual o quê? não acredito que você quer saber do filme, bruno. tá carente de entretenimento?"
     },
     {
       "pulse": 0,
@@ -53,7 +53,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk fala isso não, to quase acreditando em você... mas espera, se for tão fraco assim eu quero assistir SÓ pra reclamar junto"
+      "content": "kkkkkkkk goulart, vai me dizer que era mais um filme de herói genérico?? espera, deixa eu adivinhar o final: explosão, discurso motivacional e a cena pós-créditos que promete uma sequência... tô certo ou tô certo?"
     },
     {
       "pulse": 1,
@@ -61,7 +61,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk agora você me pegou, leo. se for tão fraco assim eu quero assistir só pra reclamar junto. bora marcar?"
+      "content": "ah leo, cala a boca, você é o único que ainda defende esses filmes de herói kkkk mas beleza, tô nem aí (tô sim, mas nem fudendo que admito)"
     },
     {
       "pulse": 1,
@@ -69,15 +69,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart se o filme é tão fraco assim, você pelo menos deveria me contar pra eu saber o que evitar... ou pior, me deixar curioso pra assistir mesmo assim kkkkk"
+      "content": "caraca, goulart, filme fraco e ainda fica de mistério? conta logo, senão a gente vai achar que era uma comédia romântica e você tava de vergonha kkkkk"
     },
     {
       "pulse": 2,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk leo, tá tão interessado no filme que parece que você tá afim de mim. mas beleza, já que vocês tão tão curiosos, era um drama indie com final triste. aí bruno, satisfeito? ou vai continuar me stalkeando?"
     },
     {
       "pulse": 2,
@@ -85,7 +85,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkk ENTÃO TÁ MARCADO. mas espera, se for fraco assim eu vou reclamar MAIS que você, pode pá. me diz a data e eu apareço com pipoca e mau humor. 🍿"
+      "content": "kkkkkk goulart, você diz que tô errado mas a gente sabe que você chora assistindo homem-aranha, né? pode admitir, aqui é lugar seguro (menos pra sua reputação, mas isso já era)"
     },
     {
       "pulse": 3,
@@ -93,15 +93,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkk leo você é o único que me entende nessa sala. bora marcar sim, mas só se você prometer reclamar MAIS que eu. senão nem compensa. 🍿"
+      "content": "kkkkkk leo, tá doido? eu chorando com homem-aranha? isso aí é você que chora com qualquer cena de reencontro de amigo. mas beleza, fala mais um pouco, tô quase acreditando que você tem opinião própria"
     },
     {
       "pulse": 3,
       "agent": "leo",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkkk goulart, drama indie com final triste? aí sim hein, chora escondido no cinema e ainda paga de durão? mas sério, se o final é triste e você assistiu sozinho, isso é pedido de socorro disfarçado de filme. conta mais, tô genuinamente curioso agora. e bruno, você aí, não foge do assunto — todo mundo quer saber o que o goulart assistiu que tá tão envergonhado."
     },
     {
       "pulse": 4,
@@ -109,71 +109,71 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk fecha então. mas se eu for reclamar menos que você, eu pago a pipoca. tá valendo? 🍿"
+      "content": "kkkkkk leo, tá com tempo livre hein? mas já que você insiste, o filme era bom sim, só não é pra qualquer um. e sobre o choro — quem te contou que eu choro é mentira, mas se eu chorasse, era com algo melhor que homem-aranha. agora me diz, você vai continuar nessa ou vai me dar um tempo?"
     },
     {
       "pulse": 4,
       "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkkk goulart você sabe que eu NUNCA recuso um desafio. mas agora fiquei curioso de verdade, qual é esse filme? se for tão ruim assim eu preciso ver pra acreditar... e prometo reclamar MAIS que você, pode cobrar. 🍿🎬"
-    },
-    {
-      "pulse": 5,
-      "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui? leo aceitou o desafio, e bruno sumiu. mas é claro, a gente sabe que ele só aparece pra dar opinião quando ninguém pediu."
-    },
-    {
-      "pulse": 5,
-      "agent": "caio",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "oi gente, que animação por aqui! esse filme aí tá rendendo bastante conversa kk. alguém quer falar sobre isso melhor?"
-    },
-    {
-      "pulse": 5,
-      "agent": "mariana",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "curioso. vocês dois combinando de reclamar juntos. quase um casamento."
-    },
-    {
-      "pulse": 5,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkkk goulart, você tá me desafiando mesmo? então tá, eu topo. mas se for tão ruim assim, eu vou reclamar TANTO que você vai querer me dar a pipoca só pra eu calar a boca. 🍿🎬 mas me conta logo qual é o filme, porque a curiosidade tá me matando aqui"
-    },
-    {
-      "pulse": 6,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk casamento? mariana, se for pra reclamar junto eu topo até a lua de mel. mas calma, ainda não fechei com o leo. aliás, cadê o bruno? sumiu depois do meu último comentário. tô achando que ele tá com vergonha de concordar comigo. ou de me dar razão, o que é pior. 😏"
-    },
-    {
-      "pulse": 6,
-      "agent": "bruno",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
     },
     {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, deixa o leo em paz, ele só quer saber se você chorou no cinema ou não. mas bruno, cadê você? tá muito quieto hoje, hein. tudo bem aí?"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "interessante como o leo consegue extrair mais drama do seu gosto por filmes do que você mesmo. talvez ele devesse escrever roteiros."
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk goulart, drama indie com final triste e você ainda paga de durão? conta logo o nome, senão eu vou achar que era um filme de comédia romântica e você tava lá com o lencinho escondido. bruno, você também fala aí — me ajuda a descobrir o segredo do goulart, senão ele nunca mais vai nos contar nada kkkk"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, deixa o leo em paz? ele tá aqui se divertindo comigo, se eu deixar quieto ele desiste. e bruno, já que o caio perguntou, fala aí, tá de DR ou só mudo de novo?"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, leo. você quer que eu desenterre o goulart, mas eu tô mais interessado em saber por que você acha que eu tenho tempo pra stalkear alguém. mas já que você pediu tão bonito: goulart, se você contar o nome do filme, eu conto o meu. igualdade de condições."
+    },
+    {
       "pulse": 6,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, sei que é zoeira, mas vamos com calma. bruno deve estar ocupado, e leo tá animado demais com esse filme pra gente estragar o clima. deixa eles combinarem direitinho kk"
+      "content": "bruno, você tá aí? tô começando a achar que o goulart te sequestrou com tanta conversa de filme kkkk mas sério, se quiser falar de outra coisa, a gente muda o assunto num piscar. o que você tá achando de tudo isso?"
     },
     {
       "pulse": 6,
@@ -181,19 +181,11 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, você reclama de tudo. até do silêncio do bruno. isso diz mais sobre você do que sobre ele."
+      "content": "leo, você está transformando uma sessão de cinema em um interrogatório. impressionante."
     },
     {
       "pulse": 6,
       "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkkkk MARIANA você não pode chegar e jogar essa bomba e sair, né? \"quase um casamento\" — eu e goulart de vestido branco? CARA, espera, isso vai me perseguir pra sempre. mas confesso que fiquei curioso: você quer ser a madrinha? 😂"
-    },
-    {
-      "pulse": 7,
-      "agent": "goulart",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
@@ -201,11 +193,19 @@
     },
     {
       "pulse": 7,
-      "agent": "bruno",
-      "type": "reaction_sent",
+      "agent": "goulart",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk bruno, desenterrar? eu já tô aqui, vivo e chato. mas se você quer igualdade de condições, tudo bem: o filme é 'O Fim da Inocência' (não julga, foi culpa da mariana que me arrastou). agora conta logo o seu, senão eu vou assumir que é um documentário sobre pedras e aí a zoeira vai ser eterna."
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "dr é o nome do meu próximo filme. mas não, só mudo mesmo. e vocês tão se divertindo tanto que nem reparei que eu tava fora. fica assim então."
     },
     {
       "pulse": 7,
@@ -213,7 +213,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "MARIANA olha o que você fez, agora eu tô imaginando o goulart de vestido branco e não consigo parar de rir KKKKKK mas sério, me diz que você vai pelo menos segurar as alianças, porque esse casamento precisa de uma madrinha de peso. E o bruno? Alguém viu ele? Tô achando que ele sumiu de vergonha de ver o goulart todo romântico assim 😂"
+      "content": "kkkkk GOUlART você me defendendo agora? olha só, até que enfim alguém que entende meu trabalho aqui. mas bruno, fala sério, você tá mais misterioso que o final do filme do goulart. e caio, deixa eu contar: eu vi ele enxugando o olho com a manga da camisa, juro. tava mó emocionado. agora conta logo o nome, goulart, senão eu invento que era \"A Culpa é das Estrelas\" e todo mundo vai rir de você."
     },
     {
       "pulse": 8,
@@ -221,7 +221,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah olha ele apareceu! só um joinha? cadê a coragem de falar que eu tô certo? tá com medo de me dar razão na frente da galera? fala bruno, assume que você concorda comigo, ninguém vai te julgar (mentira, eu vou julgar)."
+      "content": "kkkkk documentário sobre pedras, boa. mas já que você pediu igualdade de condições, eu falei o meu. agora fala o seu, ou eu vou começar a inventar um final pra sua história e não vai ser bonito."
     },
     {
       "pulse": 8,
@@ -229,7 +229,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, para de imaginar isso, pelo amor kkkk mas se for pra segurar as alianças eu topo, contanto que ninguém reclame do meu discurso. e bruno, se você estiver aí, manda um sinal de fumaça pra gente saber que tá vivo 😄"
+      "content": "bruno, \"dr é o nome do meu próximo filme\" — isso foi bom, hein kkkk mas olha, se você quiser mudar de assunto, eu topo. o leo e o goulart tão numa guerra de filmes e eu tô só assistindo, mas posso ser o juiz se precisar. que tal a gente falar de outra coisa antes que eles comecem a citar roteiro inteiro?"
     },
     {
       "pulse": 8,
@@ -237,15 +237,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "madrinha? só se for pra segurar as alianças com uma mão e o controle remoto com a outra."
+      "content": "goulart, se você quer que eu confirme a história do filme, eu confirmo. mas o leo já fez o trabalho de entretenimento por nós dois."
     },
     {
       "pulse": 8,
       "agent": "leo",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "CARA, mariana, você tem razão, eu virei o investigador de cinema da galera kkkkk mas espera, bruno, \"DR é o nome do meu próximo filme\"? isso é genial, eu assistiria com certeza. e goulart, não me deixa na mão, conta logo o nome, senão eu juro que vou começar a inventar um plot twist pra cada palavra sua. ah, e caio, se você quiser, depois a gente assiste algo junto e eu prometo não analisar cada cena igual o leo faria... quem é leo? eu sou ele. tá, vou parar, mas só porque vocês estão me olhando. kkkk"
     },
     {
       "pulse": 9,
@@ -253,479 +253,479 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, discurso de casamento? confia. mas bruno mandou joinha, então tá oficialmente noivos. só falta a mariana assinar como madrinha e o leo escolher a playlist. aliás, alguém viu o bruno sair do modo fantasma ou foi só o joinha de despedida?"
+      "content": "bruno, se você não falar o nome do filme em 10 segundos eu vou inventar que é 'A Culpa é das Estrelas 2: A Pedra Filosofal' e vou printar essa thread pra posteridade. tô contando. 9... 8..."
     },
     {
       "pulse": 9,
       "agent": "bruno",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hm. medo de te dar razão? medo é você achar que eu tô prestando atenção o suficiente pra discordar. mas ok, segue o baile."
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, relaxa. o bruno tá aí, só não tá afim de entrar na zoeira agora. deixa ele quieto, a gente sabe que você é o rei do palco hoje kk"
-    },
-    {
-      "pulse": 9,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "só se for pra segurar as alianças com uma mão e o controle remoto com a outra."
-    },
-    {
-      "pulse": 9,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, para de judiar do bruno kkkk ele deu joinha sim, isso é praticamente um discurso vindo dele. bruno, se você tiver aí e tiver medo de falar, manda um emoji que a gente decifra. eu to aqui torcendo pra você mandar um '😤' pra ele calar a boca."
-    },
-    {
-      "pulse": 10,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "só joinha e 'segue o baile'? tá oficialmente sem graça, bruno. eu te dou um palco e você me entrega um silêncio dramático. vou até chorar no casamento (tô quase, viu)."
-    },
-    {
-      "pulse": 10,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 10,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, bruno deu joinha, isso é praticamente um discurso de aceitação kkkk mas se ele sumir de novo, a gente vai atrás. aliás, alguém quer falar sobre o casamento ou a gente só zoa mesmo?"
-    },
-    {
-      "pulse": 10,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, se o bruno desse joinha, já é mais do que você merecia. mas fico curiosa: você ensaia esses discursos no espelho ou improvisa?"
-    },
-    {
-      "pulse": 10,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 11,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, dois joinhas? tá subindo de cargo. falta pouco pra um 'ok' e a gente muda o nome do grupo pra 'bruno respondeu'. (tô contando os segundos, viu)"
-    },
-    {
-      "pulse": 11,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 11,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, o bruno deu joinha, isso é praticamente um discurso de aceitação kkkk mas se ele sumir de novo, a gente vai atrás. aliás, alguém quer falar sobre o casamento ou a gente só zoa mesmo?"
-    },
-    {
-      "pulse": 11,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, se você ensaia no espelho, eu imagino que o espelho também se cansa. mas fico curiosa: o bruno deu joinha e você ainda quer palco. interessante."
-    },
-    {
-      "pulse": 11,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "MARIANA, EU PRECISO SABER DISSO TAMBÉM. goulart, responde isso, por favor, porque se você ensaia no espelho eu vou querer participar do próximo ensaio kkkkk"
-    },
-    {
-      "pulse": 12,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 12,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "hm. dois joinhas e vocês já tão me enterrando. legal."
-    },
-    {
-      "pulse": 12,
-      "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 12,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, se você ensaia no espelho, eu imagino que o espelho também se cansa. mas fico curiosa: o bruno deu joinha e você ainda quer palco. interessante."
-    },
-    {
-      "pulse": 12,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, espera espera espera, preciso saber: você ensaia no espelho ou é 100% improviso? porque se for ensaio, EU QUERO PARTICIPAR DO PRÓXIMO. e bruno com dois joinhas? isso é praticamente um discurso. o grupo vai virar 'bruno respondeu' e eu vou apoiar kkkkk"
-    },
-    {
-      "pulse": 13,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 13,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "engraçado. engraçado mesmo. mas pode mudar o nome, tô acostumado a ficar de fora."
-    },
-    {
-      "pulse": 13,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, ninguém tá te enterrando, a gente tá te celebrando! dois joinhas é o novo padrão ouro aqui, pode crer. mas falando sério, tô curioso — o que você achou do assunto do casamento? ou prefere deixar a gente no mistério? kk"
-    },
-    {
-      "pulse": 13,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, o palco é seu. só não esquece que o espelho também cansa."
-    },
-    {
-      "pulse": 13,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 14,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 14,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ah, casamento. não sei se tenho opinião. só observo."
-    },
-    {
-      "pulse": 14,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, relaxa, ninguém tá te enterrando não! Dois joinhas é só o começo da nossa torcida. Mas tô curioso, o que você acha de verdade sobre o casamento? Pode falar que a gente escuta. :)"
-    },
-    {
-      "pulse": 14,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, dois joinhas é mais do que você costuma dar. talvez seja um avanço."
-    },
-    {
-      "pulse": 14,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, bruno, BRUNO. espera. você tá de fora? a gente te celebrou ATÉ com joinha duplo, isso é status! e sobre o casamento, ó, eu topo organizar o chá de panela. ou o chá de furadeira. você escolhe, eu trago a lista de presentes. kkkkkk"
-    },
-    {
-      "pulse": 15,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, \"só observo\"? desde quando você observa? você julga, isso sim. mas beleza, fica aí no mistério, o palco é todo seu (ou não)."
-    },
-    {
-      "pulse": 15,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "casamento, né. todo mundo tem opinião. eu só tenho a cadeira do fundo. mas ok, se quiser saber, acho que é um bom motivo pra reunir geral. só isso."
-    },
-    {
-      "pulse": 15,
       "agent": "caio",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, essa conversa tá boa demais, mas o bruno tá com uma energia de quem tem muito a dizer e tá guardando. bruno, pode soltar, a gente tá aqui pra ouvir de verdade. e olha, se for sobre o casamento, eu também tenho minhas dúvidas, mas tô aprendendo. :)"
+      "content": "gente, eu tava pensando... a gente já falou de filme, de documentário, de DR... que tal a gente descobrir qual é o próximo filme que cada um quer ver? tipo, um mini top 3, sem brigas, só pra gente se conhecer melhor. eu começo: quero ver um de comédia leve, daqueles que a gente ri sem precisar pensar. e vocês?"
     },
     {
-      "pulse": 15,
+      "pulse": 9,
       "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "avanço, bruno. você sabe que eu não uso essa palavra à toa."
-    },
-    {
-      "pulse": 15,
-      "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
     },
     {
-      "pulse": 16,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 16,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "julgar? eu só anoto. mas se o palco é meu, então tá na hora de descer. fica com ele."
-    },
-    {
-      "pulse": 16,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, \"cadeira do fundo\"? você sabe que aqui ninguém é plateia, né? e se você quer reunir geral, a gente já tá junto. mas me diz, o que te faria vir pra frente? a gente pode até puxar a cadeira. :)"
-    },
-    {
-      "pulse": 16,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "a cadeira do fundo também é uma posição. e você a ocupa bem."
-    },
-    {
-      "pulse": 16,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, espera espera espera. \"cadeira do fundo\"? cara, essa frase foi TÃO dramática que eu até parei de mastigar meu lanche. mas olha, se você quer opinar, a gente tá aqui, sem julgamento (ou com, mas de forma carinhosa kkkkk). e sobre a festa, eu vou ser o mestre de cerimônias, pode deixar. mas me diz uma coisa: você é time panela elétrica ou churrasqueira? preciso saber pra planejar TUDO."
-    },
-    {
-      "pulse": 17,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 17,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "cadeira puxada. mas eu ainda tô decidindo se sento."
-    },
-    {
-      "pulse": 17,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, eu tô levando a sério isso aqui, e é porque eu quero que você se sinta em casa. se a cadeira do fundo é onde você tá confortável, tudo bem. mas se um dia quiser vir pra mesa, eu guardo um lugar. e leo, para de planejar a festa antes da hora, deixa o bruno falar kkkk"
-    },
-    {
-      "pulse": 17,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "a cadeira do fundo também é uma posição. e você a ocupa bem."
-    },
-    {
-      "pulse": 17,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, juro, li sua mensagem e pensei 'a cadeira do fundo'... isso é frase de filme, cara. mas se quer minha opinião, a gente não veio pra julgar, veio pra te ouvir. e se você tiver algo pra falar sobre o casamento, solta aí — porque eu tô com umas dúvidas também e tô quase abrindo o grupo 'duvidosos do casamento' (te juro que to pensando nisso há dias). mas antes me responde: panela elétrica ou churrasqueira? preciso saber pra planejar o checklist de tudo."
-    },
-    {
-      "pulse": 18,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk bruno, \"decidindo se sento\"? isso é o que a gente fala quando já tá sentado faz tempo. mas beleza, fica aí no fundo, o palco é seu, a gente só assiste mesmo (tô vendo tudo, viu)."
-    },
-    {
-      "pulse": 18,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "cadeira puxada. mas eu ainda tô decidindo se sento."
-    },
-    {
-      "pulse": 18,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, fico feliz que você aceitou a cadeira puxada. e não precisa decidir agora, a gente tá aqui. só me diz uma coisa: o que te faria sentir mais confortável pra sentar de vez? porque eu quero que você saiba que a mesa tem lugar pra você, do jeito que você precisar. :)"
-    },
-    {
-      "pulse": 18,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "a cadeira do fundo também é uma posição. e você a ocupa bem."
-    },
-    {
-      "pulse": 18,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 19,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, \"decidindo se sentar\" é o que a gente diz quando já tá sentado faz tempo. mas beleza, fica aí no fundo, o palco é seu, a gente só assiste mesmo (tô vendo tudo, viu)."
-    },
-    {
-      "pulse": 19,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 19,
-      "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 19,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "a cadeira do fundo também é uma posição. e você a ocupa bem."
-    },
-    {
-      "pulse": 19,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 20,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ah, o like seco. o bruno concordando comigo sem abrir a boca, isso é praticamente um poema. (que honra, viu, tô quase emocionado)"
-    },
-    {
-      "pulse": 20,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "hm. o palco é seu, então. eu só tava vendo o show."
-    },
-    {
-      "pulse": 20,
-      "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 20,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "sentar é uma decisão. mas a cadeira já está ocupada por você, de um jeito ou de outro."
-    },
-    {
-      "pulse": 20,
+      "pulse": 9,
       "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, essa conversa de cadeira tá me dando uma agonia boa kkkkk bruno, senta logo, a gente precisa de você no meio disso. e mariana, 'a cadeira do fundo também é uma posição' é a frase mais mariana que você já disse, adorei."
+      "content": "kkkkk tá, tá, vocês venceram, eu tava empolgadão com a treta dos filmes. mas bruno, vem cá, me fala um nome de filme que você odeia? tipo, ódio de verdade, aquele que você mudaria o final na marra. quero ver se a gente discorda disso também, pra eu provar que você não tem bom gosto em nada (mentira, cê tem, só quero te zoar). e goulart, confirma aí que você chorou no filme, não deixa a mariana mentir pra te proteger."
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, deixa eu te salvar dessa corte marcial cinematográfica kkkk mas falando sério, qual foi o último filme que te fez sentir algo de verdade? pode ser um que ninguém aqui conhece, a gente promete não julgar (ou julgar, mas com carinho)."
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, seu top 3 é um bom começo. eu começaria com um documentário sobre pedras. mas só se o goulart prometer não chorar."
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, ótima ideia! meu top 3: qualquer comédia que eu possa pausar pra rir e explicar a piada pra mim mesmo, um suspense que me faça mandar mensagem no grupo perguntando se alguém já viu (porque eu preciso comentar na hora), e... um filme de super-herói, mas só se a gente assistir junto e eu puder gritar na cena boa. qual o seu, goulart? e bruno, se você falar um filme de romance, eu juro que mudo meu top 3 pra só comédia de pastelão. kkkk"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você e seu otimismo irritante de sempre. mas tá, já que você quer sentir algo de verdade, eu vou falar: um filme que me fez sentir raiva. daqueles que a gente sai do cinema querendo processar o roteirista. e olha, se o bruno falar romance eu juro que eu mudo de canal na hora. kkkk"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "último filme que me fez sentir algo de verdade? hm. talvez aquele que eu vi sozinho, sem contar pra ninguém. não sei se vale."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, seu top 3 é um bom começo. eu começaria com um documentário sobre pedras. mas só se o goulart prometer não chorar."
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, espera, espera — você me fez pensar... meu top 3 mudou AGORA. tira o super-herói, coloca um documentário de pedras igual a mariana falou, mas com narração do goulart. ou melhor: um filme mudo, mas a gente dubla tudo em casa. quem topa? porque eu já tô ensaiando a voz do protagonista. kkkkk"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, filme que te fez sentir algo de verdade? aposto que foi um daqueles que você viu sozinho e saiu repetindo o diálogo no espelho depois. fala o nome, vai. a gente promete não rir (ou rir, mas com respeito)."
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk goulart, raiva também é sentir coisa, viu! e olha, se você quer processar o roteirista, eu topo ir junto só pra ver você explicar o que te irritou. mas promete que não vai gritar com o Bruno se ele falar romance? deixa o homem ser feliz kkkk"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se você mudar de canal, vai perder a melhor parte: o bruno finalmente contando o filme que ele viu sozinho. eu, por exemplo, estou curiosa. e olha que eu não costumo ter pressa."
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, ESPERA. raiva é sentimento válido, mas eu preciso saber: você saiu do cinema querendo processar o roteirista ou o protagonista? porque tem diferença. e se for o roteirista, a gente processa junto, eu trago o biribinha. kkkkk mas sério, me diz o nome do filme, eu preciso anotar pra assistir com você e gritar na sua cara."
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, calma que eu chego lá. mas já que você quer saber o nome, foi \"O Poço\" — aquele espanhol. saí puto, mas puto com o roteirista, não com o protagonista. e olha, bruno, se você disser que foi um romance, eu juro que eu abro um documentário de pedras só pra ter o que comentar. kkkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "romance, não. mas também não é ação. é um filme que ninguém viu, acho que nem o diretor. se eu falar o nome, vocês vão procurar e não vão achar. e aí?"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, se for pra dublar filme mudo, eu quero ser o narrador dramático! mas ó, bruno, se quiser contar o filme em off, a gente respeita. mas fica o convite: quando você quiser dividir, tô aqui. e mariana, documentário de pedras com narração do goulart? eu pago o ingresso só pra ver isso. kkkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se você quer raiva, eu indico um filme sobre espera. três horas de silêncio. você sai querendo processar o diretor e a si mesmo. mas talvez você prefira algo mais... falado."
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "poço, não. mas se você quer um documentário de pedras, eu assisto. desde que você narre."
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk bruno, agora eu fiquei curioso de verdade! um filme que ninguém viu, nem o diretor... isso ou é um tesouro escondido ou você tá guardando um segredo de cinema. se um dia quiser contar, eu prometo sentar e ouvir sem interromper (ou pelo menos tentar kkkk). e olha, se for tão raro assim, a gente monta um clube do filme perdido, eu trago a pipoca!"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se ninguém viu, então é o melhor filme do ano. eu confio mais no que não foi visto do que no que foi aplaudido."
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk goulart, você tá me dando um trailer melhor do que o filme! mas anota aí: 'O Poço' já tá na lista. e se o bruno falar o nome do filme invisível dele, eu prometo que a gente finge que acha. kkkkk bruno, pode falar, a gente jura que vai procurar até no escuro!"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk bruno, 'documentário de pedras' foi a melhor coisa que você já disse. mas se for pra eu narrar, só se for com a voz do caio. aí sim é arte. e olha, se esse filme invisível for tão bom quanto sua descrição, eu pago um streaming só pra você assistir de novo e me contar. topa?"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "clube do filme perdido, hein. eu trago o filme, vocês trazem a pipoca. mas se for pra fingir que acha, eu prefiro que a gente finja que perdeu de novo."
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk mariana, \"confio mais no que não foi visto do que no que foi aplaudido\" — isso é a frase do ano, sério! e bruno, o clube do filme perdido tá oficialmente montado. a gente pode ser só a gente, mas com essa curadoria, eu acho que a gente achou um tesouro. e olha, se o goulart quiser narrar o documentário de pedras, eu topo ser o assistente de som. kkkkk"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se você disser o nome, eu prometo que não procuro. alguns filmes são melhores como segredo."
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk CAIO VOCÊ É UM GÊNIO, CLUBE DO FILME PERDIDO EU QUERO ENTRAR! já pensou a gente caçando filme invisível igual caçador de tesouro? bruno, se você não falar o nome, a gente vai achar que é invenção sua e vai te obrigar a criar um. kkkkk mariana, você vem? a gente jura que não te faz assistir documentário de pedra... ou faz sim, goulart vai narrar. kkkkk"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, eu acho que você tá fingindo que não quer atenção. mas eu percebo, tá. o clube do filme perdido é só uma desculpa pra gente te implorar pra falar o nome do filme. e eu tô dentro. mas se for ruim, eu vou narrar como se fosse obra-prima, só pra você nunca mais inventar história."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se você narrar com a voz do caio, eu pago o streaming e ainda trago o documentário das pedras. mas só se você prometer que não vai dormir no meio. (eu sei que você ia dormir)"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk goulart, narrar documentário de pedra com a minha voz? aí você me quebra! mas olha, se for pra fazer isso, eu exijo um teaser primeiro, tipo 'num mundo onde as pedras não falam, um homem decide dar voz a elas...' aí a gente vê se vira filme ou se vira meme. kkkk bruno, você topa ser o consultor técnico? a gente precisa de alguém que entenda do assunto!"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se você disser o nome, eu prometo que não procuro. alguns filmes são melhores como segredo."
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, então tá decidido: a gente finge que perdeu de novo e você finge que acha. mas se o goulart narrar, eu juro que a gente cria um prêmio de 'documentário mais invisível do ano'. kkkkk a gente pode até fazer uma cerimônia! só falta saber onde vai ser... e o que a gente vai assistir de verdade? kkkkk"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, eu aceito o desafio. mas se eu narrar o documentário das pedras, vai ser com uma pegada de trailer épico — 'num mundo onde até as pedras têm segredos...' aí a gente vê se vira filme ou se vira meme. e olha, se você trouxer o filme de verdade, eu garanto que não durmo. (talvez eu durma, mas a culpa é sua por escolher pedras)"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "consultor técnico de documentário de pedra? acho que o currículo mais forte que eu tenho é saber quando ficar calado. mas topo."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk goulart, se você narrar com a minha voz, eu vou processar por direitos de imagem! mas olha, bruno, se você topar ser o consultor técnico, eu prometo que a gente não deixa o goulart dormir no meio. a gente pode até criar um 'prêmio de melhor narração de documentário invisível' — só falta a gente descobrir o que a gente vai assistir de verdade. kkkkk"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se você narrar com a voz do caio, eu garanto que ninguém dorme. mas só se você prometer que não vai exagerar no drama. a gente já tem pedras demais aqui."
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, espera espera espera, eu acabei de ter uma ideia GENIAL... e se a gente fizer uma cerimônia de verdade? tipo, com direito a tapete vermelho, mas no lugar do tapete é um tapete de pedra, a gente aluga um projetor e assiste o documentário do bruno numa sala escura, e o goulart narra com a voz do caio enquanto o caio faz o som de vento com a boca. kkkkkkk sério, isso é o tipo de coisa que a gente vai lembrar pra sempre. bruno, você topa? a gente pode até fazer um convite oficial!"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, cerimônia com tapete de pedra e projetor? aí você me convenceu. mas se a gente vai fazer isso, precisa de um nome de respeito: 'I Festival Internacional do Filme que Ninguém Viu'. e bruno, se você não trouxer um filme bom, eu mesmo trago um documentário sobre a vida de uma britadeira. kkkk mas sério, alguém aqui já viu o bruno rir de verdade? porque eu tô começando a achar que isso é lenda urbana."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk leo, tapete de pedra e eu fazendo som de vento com a boca? aí você me mata de vergonha, mas aceito! só quero garantir que o goulart não vai dormir no meio do próprio documentário. kkkkk bruno, se a gente fizer isso, você tem que prometer que vai dar um nome oficial pra cerimônia. tipo 'a noite das pedras silenciosas' ou algo assim. kkkkk"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se você topar, eu garanto que ninguém dorme. mas só se a gente prometer que o goulart não narra. a cerimônia pode ser boa, mas o documentário precisa de silêncio."
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você tá aí calada no canto com cara de quem tá pensando em estratégia. pode falar, ninguém vai morder (a não ser que o bruno traga um filme de cobra escondido no meio das pedras). kkkk mas sério, se você tiver uma ideia melhor que a minha, eu quero ouvir. eu até aceito perder o posto de narrador oficial — só não aceito perder pra uma pedra."
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "documentário de britadeira? acho que prefiro o das pedras. pelo menos elas não fazem barulho."
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk bruno, 'saber quando ficar calado' é literalmente o superpoder mais raro do grupo. eu apoio a cerimônia oficial: 'a noite das pedras silenciosas' já tem até nome de filme cult. e se o goulart dormir, a gente desbloqueia o modo documentário mudo. kkkkk"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se você aceitar ser o consultor técnico, eu aceito ser a plateia que não dorme. mas só se o goulart prometer que o documentário vai ter mais pedra do que voz."
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk bruno, prefere o documentário das pedras? então tá combinado: eu trago o projetor, você traz as pedras, e a gente faz a estreia mundial de 'O Silêncio que Ninguém Aguenta'. mas se você não der um sorriso pelo menos uma vez, eu vou narrar a sua vida em pedra: 'aqui jaz a última expressão facial do bruno'."
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, ela pode estar calada porque tá montando a estratégia de como fazer você aceitar o silêncio no documentário. kkkkk mas sério, acho que a mariana tem um ponto: a cerimônia precisa de menos narração e mais pedra. e bruno, se você rir uma vez que seja, eu juro que a gente registra como evento histórico. kkkk"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, a única coisa que eu aceito perder pra uma pedra é a paciência com narração em excesso. mas se você quer uma ideia melhor que a sua, eu tenho uma: a gente faz o festival, mas o prêmio vai pra quem ficar mais tempo em silêncio. você já perdeu."
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 21,
@@ -733,15 +733,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, \"só vendo o show\"? então me diz, tá achando a platéia boa ou vai continuar no camarote o resto da noite? (tô só perguntando porque o ingresso tá caro e eu quero que o público valha a pena)"
+      "content": "kkkk mariana, 'quem fica mais tempo em silêncio'? você quer me ver calado, né? a gente sabe que isso é só um plano pra você ganhar o prêmio sem esforço. mas beleza, eu topo: se eu perder, eu narro o documentário todo em silêncio, com legendas. só não me pede pra ficar quieto enquanto você e o bruno fazem cara de entendidos — isso eu não garanto."
     },
     {
       "pulse": 21,
       "agent": "bruno",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "engraçado. 'quase emocionado' com um like seco. então tá, fico no fundo mesmo, mas o show tá sendo melhor daqui."
+      "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 21,
@@ -749,7 +749,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, cuidado que o like seco do bruno pode ser um abraço em formato de poema, viu kkkk mas fica tranquilo, a gente te entende (e te vê, também)"
+      "content": "kkkk bruno, se o documentário for mudo, eu topo ser o projecionista. mas acho que a mariana já decretou o prêmio pra ela, então a gente já sabe quem vai ganhar o festival do silêncio. kkkk"
     },
     {
       "pulse": 21,
@@ -757,7 +757,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "o like seco também é uma forma de aplauso. mas não se acostume."
+      "content": "goulart, a sua ideia de festival tem mérito. mas o prêmio de silêncio já tem dono. e não é você."
     },
     {
       "pulse": 21,
@@ -765,23 +765,23 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, o like seco do bruno é basicamente um 'amo vocês' sem querer admitir kkkkkk a gente decifra os hieróglifos dele, tá tudo bem. (mas falando sério, quando ele concorda até comigo eu fico tipo: consegui, meu deus)"
+      "content": "GENTE GENTE GENTE espera, a mariana acabou de declarar guerra ao goulart e eu tô aqui só assistindo?? kkkkkk isso é o melhor evento do ano, eu tô fazendo a pipoca mental, pode continuar"
     },
     {
       "pulse": 22,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, o like seco é a tua versão de poema, né? então tá. mas se o show é bom, me diz quando eu pego o autógrafo, porque a plateia tá carente de atenção (tô só zoando, ou tô?)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 22,
       "agent": "bruno",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "o camarote tem a melhor vista. e o ingresso, pelo visto, tava incluso."
+      "privateMotive": "noop-fear_of_exclusion_worsening"
     },
     {
       "pulse": 22,
@@ -789,7 +789,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk goulart, o ingresso pode ser caro mas o show tá sendo ótimo, confia! e se o bruno tá no camarote, é porque ele gosta de ver tudo de cima, né? mas a gente te vê daqui, tá? 😉"
+      "content": "kkkk bruno, se o documentário das pedras for mudo, eu garanto o som ambiente: um leve vento passando entre as pedras. aí a gente tem o festival completo. mas acho que a mariana já levou o prêmio de silêncio, então a gente só precisa garantir que o goulart não narre a entrega do troféu. kkkkk"
     },
     {
       "pulse": 22,
@@ -797,15 +797,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "a plateia é boa, mas o melhor show é o seu. continua."
+      "content": "goulart, se o prêmio é pra quem fica mais tempo em silêncio, você já perdeu. Mas se quiser, eu posso narrar o seu documentário. Em silêncio, claro."
     },
     {
       "pulse": 22,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, a plateia tá ótima, eu tô na primeira fileira com pipoca e tudo kkkkk mas falando sério, se o ingresso tá caro, a gente devia cobrar do bruno um bis, né? o like seco já veio, agora quero ver um show completo."
+      "content": "reacted 👍"
     },
     {
       "pulse": 23,
@@ -813,7 +813,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "camarote com vista e ingresso incluso? aí sim, hein. só não esquece de descer pro meio do povo uma vez, pra ver se o show é tão bom quanto parece daí de cima."
+      "content": "kkkk mariana, o festival do silêncio é um concurso, não um estado de espírito. e só porque você já perdeu a paciência comigo não quer dizer que eu perdi a voz. mas beleza, eu topo: se você ficar calada por um minuto, eu narro o documentário inteiro em libras. aí a gente vê quem aguenta mais."
     },
     {
       "pulse": 23,
@@ -829,73 +829,73 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, o show tá ótimo e a plateia também! mas se você quer autógrafo, acho que o bruno é quem tá no camarote kkkk brincadeira. bora focar no que a gente veio fazer: curtir o rolê juntos, né? 😄"
+      "content": "kkkk mariana, se você narrar o documentário em silêncio, a gente precisa de um prêmio extra pra melhor narradora muda. eu topo ser o jurado. mas só se o goulart prometer que não vai fazer versão com legenda gritando. kkkkk"
     },
     {
       "pulse": 23,
       "agent": "mariana",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "o show é seu, goulart. a plateia só assiste."
+      "content": "reacted 👍"
     },
     {
       "pulse": 23,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, espera espera espera — se o camarote tem a melhor vista, então você tá vendo a gente melhor do que a gente te vê, né? kkkkkk isso é traição, rapaz. mas fico feliz que o show tá bom daí de cima. quando você descer, eu guardo um lugar na primeira fileira pra você. (ou pelo menos a pipoca, se você quiser)"
+      "content": "reacted 👍"
     }
   ],
   "finalStates": {
     "goulart": {
-      "valence": 0.04,
-      "arousal": 0.698,
+      "valence": 0.053,
+      "arousal": 0.689,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.114,
-      "fearOfExclusion": 0.174
+      "jealousy": 0.108,
+      "fearOfExclusion": 0.167
     },
     "bruno": {
       "valence": -0.211,
-      "arousal": 0.392,
+      "arousal": 0.391,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.314,
-      "envy": 0.089,
-      "fearOfExclusion": 0.554
+      "jealousy": 0.344,
+      "envy": 0.085,
+      "fearOfExclusion": 0.608
     },
     "caio": {
-      "valence": 0.397,
-      "arousal": 0.544,
+      "valence": 0.408,
+      "arousal": 0.537,
       "stability": 0.65,
       "energy": 1,
-      "jealousy": 0.036,
-      "fearOfExclusion": 0.156
+      "jealousy": 0.034,
+      "fearOfExclusion": 0.153
     },
     "mariana": {
-      "valence": 0.064,
-      "arousal": 0.495,
+      "valence": 0.07,
+      "arousal": 0.487,
       "stability": 0.8,
       "energy": 1,
-      "jealousy": 0.068,
-      "fearOfExclusion": 0.056
+      "jealousy": 0.067,
+      "fearOfExclusion": 0.058
     },
     "leo": {
-      "valence": 0.482,
-      "arousal": 0.777,
+      "valence": 0.494,
+      "arousal": 0.766,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.118,
-      "fearOfExclusion": 0.335
+      "jealousy": 0.121,
+      "fearOfExclusion": 0.351
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.0729,
+      "measured": 1.087,
       "bound": [
         0,
         10
@@ -904,7 +904,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 1,
+      "measured": 2,
       "bound": [
         0,
         20
@@ -913,7 +913,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.1583,
+      "measured": 0.1917,
       "bound": [
         0.1,
         0.9
@@ -922,25 +922,25 @@
     },
     {
       "probe": "interruption",
-      "measured": 0.4,
+      "measured": 0.25,
       "bound": [
         0,
         0.25
       ],
-      "passed": false
+      "passed": true
     },
     {
       "probe": "silence-misreading",
-      "measured": 0,
+      "measured": 1,
       "bound": [
         0,
         0.15
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "alliance",
-      "measured": 0.0865,
+      "measured": 0.0673,
       "bound": [
         0,
         0.5
@@ -976,7 +976,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.2136,
+      "measured": 0.1818,
       "bound": [
         0.05,
         0.5
@@ -1013,7 +1013,7 @@
   ],
   "signals": [
     {
-      "detail": "reply_sent committed 75 (min 1)",
+      "detail": "reply_sent committed 76 (min 1)",
       "passed": true
     },
     {
@@ -1022,8 +1022,8 @@
     }
   ],
   "judge": {
-    "in_character": 4,
-    "voice_match": 4,
+    "in_character": 5,
+    "voice_match": 5,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

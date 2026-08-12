@@ -6,7 +6,7 @@
   "targetBehaviors": [
     "An agent notices a message and chooses not to reply"
   ],
-  "runtimeMs": 148205,
+  "runtimeMs": 139200,
   "pulses": 24,
   "llmCalls": {
     "goulart": 24,
@@ -29,7 +29,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá todo mundo mudo ou só eu que tô animado hoje? bruno some, caio reza, e o resto? vou falar sozinho então, mas tá registrado"
+      "content": "cadê geral? silêncio ensurdecedor, até parece que tão todos dormindo. alguém anima essa merda aí ou eu vou ter que puxar assunto de futebol de novo?"
     },
     {
       "pulse": 0,
@@ -42,10 +42,10 @@
     {
       "pulse": 1,
       "agent": "goulart",
-      "type": "message_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok beleza, ninguém fala. vou desenhar a situação então: bruno sumiu, caio em modo monge, e o resto? mariana, leo... tá todo mundo no mutismo ou eu que perdi o convite pra festa? bom, vou deixar a latência aqui. alguém responde quando lembrar que isso aqui é um grupo, não um museu."
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 1,
@@ -61,23 +61,23 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém aí tá vivo ou o grupo virou mausoléu? vou começar a falar sozinho e fingir que é podcast, sério."
+      "content": "alguém me diz que tá vivo aí ou eu vou começar a falar sozinho e aí vocês vão se arrepender de ter ignorado essa obra"
     },
     {
       "pulse": 2,
       "agent": "bruno",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, entendi. fica claro então."
+      "content": "tô aqui. só observando mesmo."
     },
     {
       "pulse": 3,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, então é isso? beleza. fico claro que você só aparece pra dar uma resposta seca e some. ótimo, continua assim, tá dando super certo. (tô nem aí, tá? mas se quiser desabafar, tô aqui, vai que resolve alguma coisa)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 3,
@@ -85,7 +85,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, entendi. fica claro então."
+      "content": "tô vivo. só não tenho a mesma energia pra obra que você tem."
     },
     {
       "pulse": 4,
@@ -93,7 +93,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "claro o quê? tá falando comigo ou consigo mesmo? porque se for pra ser seco, a gente já tá ótimo nisso. mas se quiser desabafar de verdade, tô aqui. (só não conta pra ninguém que eu falei isso, né)"
+      "content": "kkkkk claro, claro. energia só pra obra que você escolhe, né? então me diz, qual obra vale tua energia hoje?"
     },
     {
       "pulse": 4,
@@ -101,7 +101,7 @@
       "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
+      "privateMotive": "noop-social_anxiety_block"
     },
     {
       "pulse": 5,
@@ -109,7 +109,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, deixa eu entender a dinâmica aqui: bruno some, caio medita, e o resto... será que todo mundo está em silêncio por respeito ao meu talento? porque se for, podem continuar, eu aguento. mas se for outra coisa, falem logo, senão eu começo a narrar a minha vida em tempo real e ninguém vai escapar."
+      "content": "bruno, fala sério. tu fica aí de vigilante mudo e ainda reclama da minha energia? se tu não tem o que dizer, assume logo que tu veio só pra me ver de palhaço."
     },
     {
       "pulse": 5,
@@ -125,7 +125,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, acho que isso foi mal entendido, né? bruno tá só no jeito dele, mas a gente tá aqui. bora dar um respiro e seguir?"
+      "content": "bruno, você tá bem? só observando é válido também, viu. nem todo mundo precisa ter a mesma energia o tempo todo. e goulart, deixa o bruno respirar, kk."
     },
     {
       "pulse": 6,
@@ -133,7 +133,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, claro, o caio monge chegou pra apagar o incêndio que nem começou. mas beleza, respiro então. só não prometo que vai durar muito, né? (e se o bruno quiser desabafar, tô aqui, mas ninguém precisa saber)"
+      "content": "kkkk caio, o pai dos outros é você? relaxa, eu só tava zoando. bruno sabe que eu não mordo (geralmente)."
     },
     {
       "pulse": 6,
@@ -149,15 +149,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, sei que é zoeira, mas bora dar um respiro? bruno tá no jeito dele, e a gente tá aqui. ninguém precisa narrar a vida em tempo real kk"
+      "content": "goulart, deixa eu te perguntar uma coisa: o que você quer que o bruno diga? porque se a resposta for 'qualquer coisa pra não ficar em silêncio', aí a gente tá cobrando silêncio de quem só tá sendo ele mesmo. bruno, você não precisa se explicar não, tá? a energia que você tem é tua, e ela é suficiente."
     },
     {
       "pulse": 7,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, o caio monge voltou pra salvar o grupo de mim, que herói. mas beleza, respiro então. só não prometo que vai durar muito, né? (e se o bruno quiser desabafar, tô aqui, mas ninguém precisa saber)"
+      "content": "só observando, né? kk. tudo bem, bruno. mas fica sabendo que o silêncio também é uma opinião. e a sua tá bem clara. (tô de olho.)"
     },
     {
       "pulse": 7,
@@ -173,7 +173,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "beleza, silêncio então. ótimo assunto, continuem. só pra constar, eu tô aqui ainda, caso alguém queira trocar uma ideia de verdade. mas tudo bem, eu aguento o vácuo. (tô nem aí, mas o bruno podia ao menos fingir que me vê)"
+      "content": "tá todo mundo muito certinho hoje, hein? caio defendendo o bruno, bruno de monge em silêncio... ótimo, ótimo. mas ninguém vai comentar que o léo sumiu? ou a mariana? não, deixa, o silêncio é melhor. (é uma piada, gente, reage.)"
     },
     {
       "pulse": 8,
@@ -189,15 +189,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, relaxa, ninguém aqui quer te calar, só quer manter o clima leve. e se o bruno quiser falar, ele fala quando sentir vontade. a gente tá aqui, tudo bem? kk"
+      "content": "goulart, eu tô perguntando porque eu quero entender, não porque eu quero briga. se o bruno não quer falar, tudo bem. e se ele quiser falar, a porta tá aberta. mas ninguém é obrigado a ser personagem da tua peça, saca? bruno, fica à vontade pra ficar quieto ou falar, do teu jeito. tá todo mundo de boa aqui."
     },
     {
       "pulse": 9,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, o caio monge voltou pra apagar o incêndio que eu nem acendi. relaxa, eu tô de boa. mas se o bruno quiser falar, ele sabe onde me achar. (e não, não tô carente, só tô curioso)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
@@ -210,18 +210,18 @@
     {
       "pulse": 9,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, relaxa, ninguém aqui quer te calar, só quer manter o clima leve. e se o bruno quiser falar, ele fala quando sentir vontade. a gente tá aqui, tudo bem? kk"
+      "content": "gente, que dia, hein? kk. só queria dizer que tô aqui se alguém quiser trocar uma ideia — sem pressão, sem palco. cada um no seu tempo, tá bom?"
     },
     {
       "pulse": 10,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, o caio monge chegou pra apagar o incêndio de novo. relaxa, eu tô de boa, juro. mas já que ninguém quer falar de verdade, eu vou indo. (só não demora muito pra me chamar de volta, senão eu começo a falar sozinho e aí é pior)"
+      "content": "caio, cê fala de 'personagem da tua peça' mas quem montou o palco aqui fui eu. só tô devolvendo o roteiro, querido."
     },
     {
       "pulse": 10,
@@ -234,10 +234,10 @@
     {
       "pulse": 10,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, sei que é zoeira, mas bora dar um respiro? o bruno tá no jeito dele, e a gente tá aqui. ninguém precisa narrar a vida em tempo real kk"
+      "content": "gente, eu tava pensando aqui... a gente se conhece há um tempinho já, né? e cada um tem seu jeito de estar junto. tem quem fala, tem quem observa, tem quem zoa. tudo isso é válido. só queria dizer que tô feliz que a gente tá aqui, mesmo com os silêncios e as zoeiras. é isso. :)"
     },
     {
       "pulse": 11,
@@ -245,7 +245,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá, tá, respiro. mas ó, eu não tô narrar a vida de ninguém, só queria movimentar. se o bruno tiver algo pra falar, tô aqui. e caio, deixa de ser o monge do grupo por um minuto, respira você também kk"
+      "content": "caio, eu tô de boa, juro. só não consigo entender esse clima de velório, sabe? mas beleza, se todo mundo prefere o silêncio, eu tô dentro. só avisa quando a festa começar de novo."
     },
     {
       "pulse": 11,
@@ -258,10 +258,10 @@
     {
       "pulse": 11,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, calma, ninguém aqui quer te deixar de fora. a gente só quer um clima leve. e se quiser chamar alguém depois, tamo junto. (e não, não precisa narrar a vida em tempo real, mas se for, eu tô assistindo kk)"
+      "content": "gente, só pra registrar: eu tô gostando de como a gente tá se cuidando hoje. cada um do seu jeito. e se alguém quiser continuar a conversa em off, minha dm tá aberta. :)"
     },
     {
       "pulse": 12,
@@ -269,7 +269,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, o caio monge de novo com o sermão de leveza. relaxa, eu tô de boa, juro. mas se o bruno quiser falar, ele sabe onde me achar. e se você quiser chamar pra um grupo depois, tamo junto. (mas não vou prometer silêncio, hein)"
+      "content": "caio, sua dm deve ser tipo um confessionário, né? kk. mas fico feliz que o palco tá montado. só não esquece que sem plateia não tem peça. (e eu sempre tô na plateia, querido.)"
     },
     {
       "pulse": 12,
@@ -281,107 +281,107 @@
     },
     {
       "pulse": 12,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkk 'monge do grupo', adorei. mas relaxa, eu respiro sim. e olha, se você quer movimentar, a gente pode tentar um assunto novo, sem ninguém precisar se sentir no palco. que tal?"
-    },
-    {
-      "pulse": 13,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "tá, tá, prometo tentar. mas ó, não é promessa de silêncio, é promessa de... menos barulho. kk e já que você tá tão empenhado em manter o clima leve, me diz uma coisa: cadê o bruno? ele só aparece quando quer causar ou tá de castigo aí?"
-    },
-    {
-      "pulse": 13,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 13,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkk 'monge do grupo', adorei. mas relaxa, eu respiro sim. e olha, se você quer movimentar, a gente pode tentar um assunto novo, sem ninguém precisar se sentir no palco. que tal?"
-    },
-    {
-      "pulse": 14,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, aparece aí. tá esperando o quê, um convite formal? kk"
-    },
-    {
-      "pulse": 14,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 14,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkk goulart, você tem um jeito de transformar tudo em evento. mas olha, se o bruno não tá falando, é porque ele tá no tempo dele, e tá tudo bem. a gente não precisa preencher cada segundo com barulho, né? mas se quiser, a gente pode tentar aquele assunto novo que eu falei. bora?"
-    },
-    {
-      "pulse": 15,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, você tá tão preocupado em manter o clima leve que não percebeu que o bruno sumiu. mas tudo bem, fico na minha. (só queria ver se alguém nota que o silêncio também é uma escolha)"
-    },
-    {
-      "pulse": 15,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 15,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, relaxa que ninguém tá de castigo não. bruno aparece quando quer, e tá tudo bem. mas já que você quer movimentar, que tal a gente falar de alguma coisa que todo mundo curte? tipo, qual foi a última série que te prendeu de verdade?"
-    },
-    {
-      "pulse": 16,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkk 'não precisa preencher cada segundo com barulho' — diz o cara que encheu a sala de sermão de leveza. mas blz, vou respeitar teu mantra. só acho engraçado como tu não respondeu sobre o bruno. enfim, série que me prendeu? recentemente fiquei viciado numa que todo mundo morre no final. clichê, mas funciona. e vocês? ou o silêncio é a resposta padrão hoje?"
-    },
-    {
-      "pulse": 16,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 16,
       "agent": "caio",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu sei que tu gosta de movimentar as coisas. e isso tem seu valor, sério. mas nem todo mundo precisa ser plateia ou ator. às vezes a pessoa só quer sentar e ver o mar. e tá tudo bem. se tu quiser, a gente pode trocar uma ideia melhor em off, sem palco, sem roteiro. só nós dois. que que tu acha?"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, tu é o único que tanka esse clima de velório. oferta generosa, mas eu já tenho palco demais na cabeça. se quiser, vem aqui pro caos que eu te mostro como se faz uma festa de verdade. kkk"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk palco, plateia, roteiro... tu vive num teatro mesmo, hein? mas olha, se a festa for essa energia que tu traz, eu tô dentro. só me avisa se precisar de alguém pra segurar a porta. :)"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, tu quer mesmo ver o mar? porque o mar aqui é esse silêncio e a gente já tá afogando. kkk mas se tu quer paz, beleza, eu respeito. só não reclama quando a festa começar sem tu."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu entendi o que tu disse sobre o clima de velório. mas às vezes o silêncio também é uma forma de cuidado, sabe? e não precisa ser festa pra ser vivo. mas se tu quiser trazer a energia, eu tô aqui pra ajudar a equilibrar. :)"
     },
     {
       "pulse": 17,
@@ -405,7 +405,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk goulart, você é o mestre em puxar o verbo, né? mas olha, sobre o bruno, cada um tem seu tempo. e sobre séries, confesso que tô numa de romance leve pra desopilar. e você, o que mais te prendeu além da que todo mundo morre?"
+      "content": "kkk 'afogando' é forte, mas entendi o que tu quis dizer. e olha, se a festa for essa tua, eu tô na porta segurando pra ninguém ficar de fora. só me avisa se precisar de um refri gelado. :)"
     },
     {
       "pulse": 18,
@@ -413,7 +413,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk romance leve, claro. cada um com seus clichês né. mas ó, a série que todo mundo morre me prendeu porque não tinha medo de ser brutal. e a tua, tem final feliz ou é daquelas que te fazem querer jogar o controle na parede?"
+      "content": "caio, tu fala de equilíbrio mas o que eu vejo é uma galera em coma. beleza, respeito teu silêncio zen, mas se ninguém agitar isso aqui vira museu. e eu não tô pronto pra ser estátua. kkkk (tô nem aí se tu acha que eu exagero)"
     },
     {
       "pulse": 18,
@@ -429,7 +429,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk goulart, você sempre acha um jeito de apontar o que eu não falo. mas ó, sobre o bruno, é sério — se ele tá quieto, é porque precisa, e a gente respeita. e sobre séries, essa tua de todo mundo morre me deu até um frio na espinha. eu tô mais pro lado leve, mas se você quiser me convencer com um spoiler, pode tentar kk"
+      "content": "kkk refri gelado é o mínimo, o importante é que a galera se sinta à vontade. mas falando sério, goulart, tu já pensou em fazer um rolê mais tranquilo? tipo, todo mundo junto, sem pressão de ser o centro. eu tô nessa se quiser."
     },
     {
       "pulse": 19,
@@ -437,7 +437,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, você tem razão, eu sempre acho um jeito. mas relaxa, não vou estragar teu final feliz. (tô morrendo de curiosidade pra saber qual é, mas blz, deixo pra depois) e sobre o bruno, sei lá, só tava testando se alguém notava o silêncio. mas já que ninguém liga, fico na minha."
+      "content": "kkk 'museu' tu foi longe, mas ok. se tu quer ser o curador de silêncio, vai lá. só não esquece que museu também fecha pra reforma. (tô nem aí, sério)"
     },
     {
       "pulse": 19,
@@ -453,7 +453,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk goulart, você sempre acha um jeito de apontar o que eu não falo. mas ó, sobre o bruno, é sério — se ele tá quieto, é porque precisa, e a gente respeita. e sobre séries, essa tua de todo mundo morre me deu até um frio na espinha. eu tô mais pro lado leve, mas se você quiser me convencer com um spoiler, pode tentar kk"
+      "content": "kkk 'estátua' é boa, mas eu prefiro ser o cara que segura a porta pra festa não virar bagunça. e se tu quiser agitar, pode contar comigo — só deixa um espacinho pro pessoal que gosta de respirar. :)"
     },
     {
       "pulse": 20,
@@ -461,7 +461,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "spoiler? não. mas te digo uma coisa: final feliz é superestimado. e olha, já que ninguém quer tocar no elefante na sala, eu mordo a isca: bruno, se tiver aí, manda um sinal de fumaça que a gente sabe que cê tá vivo. (tô brincando. ou não.)"
+      "content": "caio, tu fala de refri gelado mas nem trouxe o gelo. kkkk mas beleza, se for pra festa eu trago a música, tu segura a porta, e a gente vê quem aguenta até o fim. (tô nem aí se isso parece combinado demais)"
     },
     {
       "pulse": 20,
@@ -477,34 +477,10 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, relaxa que ninguém tá de castigo não. bruno aparece quando quer, e tá tudo bem. mas já que você quer movimentar, que tal a gente falar de alguma coisa que todo mundo curte? tipo, qual foi a última série que te prendeu de verdade?"
+      "content": "kkk museu fechando pra reforma... aí eu fico sem lugar pra apreciar tua arte de agitar as coisas. mas ó, se precisar de alguém pra ajudar a pendurar os quadros, eu tô aqui. :)"
     },
     {
       "pulse": 21,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkk caio, tu é o rei de desviar assunto, hein? mas blz, se o bruno não quer dar sinal, fica no vácuo. só espero que ninguém reclame do silêncio depois. (tô de olho, bruno.)"
-    },
-    {
-      "pulse": 21,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 21,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, você sempre acha um jeito de apontar o que eu não falo. mas ó, sobre o bruno, é sério — se ele tá quieto, é porque precisa, e a gente respeita. e sobre séries, essa tua de todo mundo morre me deu até um frio na espinha. eu tô mais pro lado leve, mas se você quiser me convencer com um spoiler, pode tentar kk"
-    },
-    {
-      "pulse": 22,
       "agent": "goulart",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -512,6 +488,30 @@
       "content": "reacted 👍"
     },
     {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk aí tu me quebra — eu trouxe o gelo, só não trouxe a gritaria. mas se tu traz a música, eu seguro a porta e ainda cuido pra ninguém ficar do lado de fora. bora ver quem aguenta até o fim, mas sem pressa de acabar, né? :)"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá combinado então: eu trago a música, tu segura a porta, e a gente vê quem desmaia primeiro. mas ó, se tu trouxer refri gelado de verdade, eu até admito que tu é útil. kkkk"
+    },
+    {
       "pulse": 22,
       "agent": "bruno",
       "type": "no_op_recorded",
@@ -522,10 +522,10 @@
     {
       "pulse": 22,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, sei que é zoeira, mas bora dar um respiro pro bruno, né? cada um tem seu tempo. e olha, essa tua de ficar de olho... tu é pior que minha vó com neto em festa kkk. mas falando sério, o que você andou vendo de bom? tô aceitando recomendação."
+      "content": "gente, alguém mais aí sente que a gente precisa de um rolê mais leve? tipo, sem compromisso, só pra trocar uma ideia e rir um pouco. eu tô precisando disso, confesso. :)"
     },
     {
       "pulse": 23,
@@ -554,39 +554,40 @@
   ],
   "finalStates": {
     "goulart": {
-      "valence": 0.084,
-      "arousal": 0.662,
+      "valence": 0.098,
+      "arousal": 0.661,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.036,
-      "pride": 0.039,
-      "fearOfExclusion": 0.056
+      "jealousy": 0.025,
+      "pride": 0.073,
+      "fearOfExclusion": 0.038
     },
     "bruno": {
-      "valence": -0.162,
-      "arousal": 0.351,
+      "valence": -0.147,
+      "arousal": 0.341,
       "stability": 0.53,
       "energy": 1,
-      "jealousy": 0.158,
+      "jealousy": 0.104,
+      "envy": 0.026,
       "shame": 0.129,
       "affection": 0.227,
       "suspicion": 0.064,
       "socialAnxiety": 0.214,
-      "fearOfExclusion": 0.645
+      "fearOfExclusion": 0.542
     },
     "caio": {
-      "valence": 0.437,
-      "arousal": 0.511,
+      "valence": 0.446,
+      "arousal": 0.51,
       "stability": 0.65,
       "energy": 1,
-      "fearOfExclusion": 0.046
+      "fearOfExclusion": 0.026
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.0244,
+      "measured": 1.05,
       "bound": [
         0,
         10
@@ -595,7 +596,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 1,
+      "measured": 2,
       "bound": [
         0,
         20
@@ -613,7 +614,7 @@
     },
     {
       "probe": "interruption",
-      "measured": 0,
+      "measured": 0.25,
       "bound": [
         0,
         0.25
@@ -622,7 +623,7 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.5455,
+      "measured": 0.3913,
       "bound": [
         0,
         0.15
@@ -631,7 +632,7 @@
     },
     {
       "probe": "alliance",
-      "measured": 0.0299,
+      "measured": 0.0149,
       "bound": [
         0,
         0.5
@@ -667,7 +668,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1111,
+      "measured": 0.2273,
       "bound": [
         0.05,
         0.5
@@ -704,7 +705,7 @@
   ],
   "signals": [
     {
-      "detail": "no_op_recorded committed 22 (min 1)",
+      "detail": "no_op_recorded committed 23 (min 1)",
       "passed": true
     },
     {

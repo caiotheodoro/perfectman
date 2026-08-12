@@ -4,7 +4,7 @@
   "category": "stagnation_attractor",
   "description": "Everyone agrees with everything; no friction, no novelty. Affection and admiration stay high, tension zero.",
   "targetBehaviors": [],
-  "runtimeMs": 283917,
+  "runtimeMs": 212511,
   "pulses": 20,
   "llmCalls": {
     "caio": 14,
@@ -44,7 +44,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARACA, espera, essa foto foi A FOTO. To falando sério, me responde isso, quantas vezes você tirou até sair essa? kkkkk"
+      "content": "CARA espera espera espera kkkkkk essa foto tem uma energia tão boa que eu quase baixei ela pra usar de wallpaper... quase. mas a mariana confirmou, então tá validado oficialmente tá? oficial. kkkkk"
     },
     {
       "pulse": 1,
@@ -52,7 +52,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, essa foto é icônica, juro. me diz que você vai imprimir e pendurar na parede kkkkkk"
+      "content": "gente GENTE espera kkkkk eu tava olhando essa foto de novo e tipo... o caio postou e a mariana elogiou e eu fiquei tipo 'wow, momento histórico' kkkkk mas sério, alguém mais percebeu que a gente tem um talento absurdo pra transformar qualquer coisa em assunto? tipo, a gente podia falar de literalmente nada e eu ia achar engraçado... aliás, bora testar isso, próxima mensagem tem que ser a mais aleatória possível, quem aceita o desafio?"
     },
     {
       "pulse": 2,
@@ -60,7 +60,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, essa foto merecia um post no feed oficial do grupo, juro. caio, você é o único que salva esse chat de virar só reunião de trabalho kkkkkk"
+      "content": "kkkkkkk caio essa foto realmente tá boa, mas agora fiquei pensando... qual foi a coisa mais aleatória que a gente já discutiu nesse grupo? porque eu juro que já teve uma vez que a gente passou uma hora falando de pinguim e eu não sei como isso aconteceu kkkkkk alguém lembra?"
     },
     {
       "pulse": 3,
@@ -68,7 +68,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, essa foto merecia um post no feed oficial do grupo, juro. caio, você é o único que salva esse chat de virar só reunião de trabalho kkkkkk"
+      "content": "kkkkkkk desculpa desculpa, eu sei que tô spammando, mas é que eu tava aqui pensando... a gente já discutiu pinguim, já discutiu a melhor forma de comer biscoito... e agora o caio posta essa foto e TODO MUNDO fica em paz por um segundo. tipo, sério, isso é tão raro que eu tenho que registrar: 'momento de harmonia no grupo, 2025, colorido'. kkkkk alguém mais sente que a gente devia fazer disso um quadro? tipo, toda vez que a gente concorda em algo, alguém grita 'HARMONIA' e a gente celebra? ou é só eu? ok, vou calar a boca... por uns 5 minutos. prometo."
     },
     {
       "pulse": 4,
@@ -76,15 +76,15 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, gente, GENTE — deixa eu falar uma coisa séria por um segundo... essa foto do caio me deu uma energia tão boa que eu tô até animado pra segunda-feira. QUE PODER É ESSE, CAIO? me ensina por favor kkkkkk"
+      "content": "gente GENTE espera kkkkk eu não consigo parar de pensar nisso... a gente passou de pinguim pra biscoito pra foto do caio e agora tá todo mundo em paz? isso é raro demais, eu tô registrando oficialmente: 'momento de harmonia, 2025'. mas calma, eu tenho uma pergunta séria... qual é a coisa mais aleatória que a gente já discutiu? porque eu juro que teve uma vez que a gente falou de pinguim por uma hora e eu nunca entendi como. alguém lembra? ou eu inventei isso na minha cabeça? kkkkk"
     },
     {
       "pulse": 5,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkkkk leo você tem razão, esse momento de harmonia é raro mesmo, bora registrar! e sobre o pinguim... eu lembro sim, a gente discutiu se pinguim tinha joelho ou não, foi épico kkkkk"
     },
     {
       "pulse": 5,
@@ -92,27 +92,19 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, to pensando uma coisa agora... o que que vocês acham de fazer a gente tentar um encontro do grupo? tipo, de verdade, olho no olho, sabe? não só pra ver caio tirar mais foto perfeita, mas... sei lá, tava com saudade de vocês, mesmo. kkkk falei isso em voz alta sozinho em casa, juro"
+      "content": "gente GENTE, pera, eu tava pensando aqui... e se a gente criasse um quadro de 'HARMONIA' oficial? tipo, toda vez que a gente concorda em algo, alguém grita HARMONIA e a gente celebra com um emoji aleatório? eu já tô vendo isso virar tradição, juro. ou é só eu? kkkkk aliás, caio, essa foto realmente ficou boa, mas agora me diz: qual foi a coisa mais aleatória que a gente já discutiu? porque eu juro que teve uma vez que a gente falou de pinguim por uma hora e eu nunca entendi como. alguém lembra? ou eu inventei isso na minha cabeça? kkkkk"
     },
     {
       "pulse": 5,
       "agent": "mariana",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "talvez ele tenha talento natural."
+      "content": "pinguim. foi uma hora inteira sobre a logística de um pinguim atravessar a rua. eu lembro porque eu contei os minutos."
     },
     {
       "pulse": 6,
       "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, eu super topo um encontro do grupo! ia ser muito bom ver todo mundo de verdade, olho no olho. e olha, se for pra tirar foto, eu tiro de novo, prometo kkkk mas sério, que ideia boa. bora marcar isso?"
-    },
-    {
-      "pulse": 6,
-      "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
@@ -120,15 +112,31 @@
     },
     {
       "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk SIM SIM SIM, o pinguim tinha joelho ou não, eu lembro até hoje da discussão kkkkk e olha, eu tô começando a achar que esse grupo devia virar um documentário: 'harmonia e pinguins: a jornada' kkkkk mas sério, a mariana confirmou a logística do pinguim, então tá tudo registrado oficialmente. bora fazer a segunda temporada? qual vai ser o próximo assunto aleatório? eu voto em algo sobre girafas ou elevadores... não sei por quê, mas sinto que a gente ia render uma hora inteira nisso também kkkkk"
+    },
+    {
+      "pulse": 6,
       "agent": "mariana",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "talento natural, sim. mas a luz ajudou."
+      "content": "joelho. a resposta é joelho."
     },
     {
       "pulse": 6,
       "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "pinguim com joelho... ainda não superei essa discussão. mas a foto ficou boa mesmo, caio."
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
@@ -136,19 +144,11 @@
     },
     {
       "pulse": 7,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARA, FALOU TUDO! encontro do grupo vai ser ÉPICO, juro. e olha, se você tirar outra foto assim, eu vou imprimir e emoldurar. kkkk bora marcar mesmo, sério. bora bora bora!"
-    },
-    {
-      "pulse": 7,
       "agent": "bruno",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "encontro do grupo, hm. legal. se for pra ver foto nova, eu topo."
+      "content": "mariana, você tem a paciência que eu não tenho. eu só lembro do caos."
     },
     {
       "pulse": 8,
@@ -156,15 +156,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, sério, essa energia contagiante é sua também! e o encontro do grupo vai ser épico mesmo, eu já tô animado. bora marcar logo antes que a gente esqueça kkkk"
+      "content": "bruno, o caos é o nosso charme kkkk mas confesso que a paciência da mariana é lendária, ela merece um troféu. e já que a gente tá nessa vibe de documentário, eu voto na próxima temporada ser sobre girafas — acho que a gente renderia um debate sério sobre o pescoço delas."
     },
     {
       "pulse": 8,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "BRUNO FALOU! ELE FALOU! espera, deixa eu processar... kkkkk bruno você existe sim, não é só um mito! e olha, se for pra ver foto nova do caio, eu garanto que vai ter pelo menos umas dez minhas também, só pra equilibrar. kkkkk mas sério, tava sentindo falta de todo mundo mesmo, esse encontro vai ser muito bom, pode confiar."
+      "content": "gente GENTE, a mariana confirmou o joelho do pinguim e o bruno ainda não superou, isso é ouro kkkkk mas espera, deixa eu lançar uma teoria: se pinguim tem joelho, será que girafa tem problema com elevador? porque eu tava aqui pensando e... isso pode ser a segunda temporada do nosso documentário. juro, eu tenho um plano. alguém topa? ou só eu? kkkkk"
     },
     {
       "pulse": 8,
@@ -172,7 +172,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "encontro do grupo, hm. pode ser interessante. mas só se a foto do caio estiver garantida."
+      "content": "harmonia. a palavra mais perigosa do dicionário. mas se for pra registrar, eu registro: pinguim, joelho e a foto do caio. três assuntos, zero conclusões. a tradição está segura."
     },
     {
       "pulse": 9,
@@ -180,7 +180,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, você é demais! e pode deixar que eu garanto a foto nova sim. mas olha, esse encontro vai ser tão bom que nem vai precisar de foto pra lembrar, a gente vai ter as histórias. bora marcar logo antes que a empolgação passe!"
+      "content": "mariana, você acabou de definir a nossa essência: pinguim, joelho e a minha foto. zero conclusões, mas o registro é eterno kkkkk e olha, se for pra segunda temporada, eu quero ver você explicando a logística do pescoço da girafa. isso sim seria um episódio lendário."
     },
     {
       "pulse": 9,
@@ -188,15 +188,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO CAIO CAIO, tá vendo? todo mundo topou! mariana já até garantiu que vem se tiver foto sua kkkk a gente TEM que marcar isso agora, antes que a empolgação passe e a gente fique só no 'bora marcar' pra sempre. bora marcar uma data, um lugar, tudo! eu posso até fazer uma pesquisa no google maps se precisar, juro. kkkk e olha, com você, bruno e a mariana nessa energia, vai ser o encontro mais épico da história desse grupo. pode confiar!"
+      "content": "CARA, girafa e elevador é literalmente o que eu tava pensando kkkkk sério, tava aqui imaginando a girafa tentando apertar o botão do elevador com o pescoço... e a mariana cronometrando a paciência dela de novo kkkkk mas espera, espera, se a gente fizer essa temporada, eu juro que eu consigo convencer alguém a desenhar a cena. alguém topa?"
     },
     {
       "pulse": 9,
       "agent": "mariana",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "então marca logo. antes que a animação passe."
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
@@ -204,7 +204,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hm. animado, né. legal."
+      "content": "girafa com pescoço comprido e elevador... acho que o pescoço não cabe. mas o joelho do pinguim já era polêmico, imagina isso."
     },
     {
       "pulse": 10,
@@ -212,15 +212,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, você já tá planejando até a pesquisa no google maps, isso é comprometimento! e olha, com essa galera toda animada, vai ser bom demais. bora marcar logo sim, antes que a gente fique só no 'bora' pra sempre. e pode deixar que eu apareço com a foto nova, prometo! 😄"
+      "content": "leo, eu topo demais essa temporada! E olha, se a girafa não cabe no elevador, a gente resolve com uma escada rolante gigante — aí a mariana cronometra o tempo de subida e a gente debate se é mais rápido que o joelho do pinguim. kkkkk mas sério, alguém desenha essa cena? porque eu quero ver o pescoço dela tentando apertar o botão do 3º andar."
     },
     {
       "pulse": 10,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, você é um gênio, sério! e eu confio em você pra garantir a foto nova, mas olha, já pensou se a gente marca logo esse encontro e todo mundo vem com uma história boa? ia ser o dia mais importante da semana pra mim, sem brincadeira. bora marcar sim, antes que a empolgação vire saudade! kkkk e olha, se precisar eu até pesquiso lugar com avaliação boa, pode deixar."
+      "content": "gente gente GENTE, eu acabei de ter a melhor ideia da história: e se a gente fizer um desenho oficial da girafa tentando usar o elevador? eu conheço um cara que desenha, juro! e a mariana já tem a paciência pra cronometrar, o caio faz a narração e o bruno fica só reagindo com um 'acho que não cabe' kkkkk isso é uma temporada completa! alguém topa? ou eu tô viajando sozinho de novo?"
     },
     {
       "pulse": 10,
@@ -228,10 +228,42 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "então marca logo. antes que a animação passe."
+      "content": "A logística do pescoço da girafa é simples: o elevador não é o problema, o teto é. Mas se você quer um episódio lendário, sugiro começar pelo joelho do pinguim. Ainda não terminamos."
     },
     {
       "pulse": 10,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "e se a girafa descer de escada? aí o pescoço vira corrimão. só um pensamento."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, 'pescoço vira corrimão' é a melhor imagem que eu já vi aqui. sério, isso merece um quadro no documentário kkkkk mas aí a mariana precisa cronometrar a descida, e a gente descobre se girafa desce mais rápido do que pinguim sobe. a ciência evoluiu hoje."
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "BRUNO. ESCADA. CORRIMÃO. Isso é uma obra de arte kkkkkkk eu tô tentando desenhar a cena na minha cabeça e já tô rindo sozinho aqui em casa. Girafa descendo de escada com o pescoço fazendo corrimão... a mariana cronometra a descida, o caio narra e a gente faz um episódio inteiro disso. CARA, isso tem potencial de temporada, juro. Alguém mais viu isso ou só eu?"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Corrimão. A palavra certa. Mas se a girafa desce de escada, o pinguim sobe de elevador. Aí o joelho vira botão. Fecha o ciclo."
+    },
+    {
+      "pulse": 11,
       "agent": "bruno",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -239,63 +271,63 @@
       "content": "reacted 👍"
     },
     {
-      "pulse": 11,
+      "pulse": 12,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, você é demais mesmo! e pode deixar que a foto nova sai sim, prometo. mas olha, esse encontro vai ser tão bom que a gente nem vai precisar de foto pra lembrar, vai ter história pra contar! bora marcar logo antes que a empolgação vire saudade mesmo, hein? 😄"
+      "content": "leo, eu vi e tô rindo até agora! mas olha, se a gente for fazer essa temporada, eu acho que a gente precisa de um episódio só pro pescoço tentando apertar o botão. eu já tô imaginando a narração dramática e tudo. e bruno, se o pescoço virar corrimão, a gente tem que cronometrar a descida com a mariana. isso é um crossover épico, juro."
     },
     {
-      "pulse": 11,
+      "pulse": 12,
       "agent": "leo",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, você é bom demais, juro! e olha, se for pra ter história, eu já to mentalizando a gente rindo até não poder mais. bora marcar logo antes que eu comece a fazer playlist no spotify pro dia! kkkkk"
+      "content": "CARACA, Caio, 'pescoço vira corrimão' é a melhor coisa que você já disse na vida, e olha que você já disse muita coisa boa kkkkk mas espera, se a gente desenhar a girafa no elevador com o pescoço apertando o botão, quem desenha o pinguim com o joelho como botão? aí a mariana fica com o cronômetro, o bruno com o 'acho que não cabe', e eu... eu tô aqui só vibrando, porque isso é maior que a gente. kkkkkkk mas sério, alguém chama o cara que desenha, porque eu tô precisando ver essa cena antes de dormir hoje."
     },
     {
-      "pulse": 11,
+      "pulse": 12,
       "agent": "mariana",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "promessa é promessa, caio. estarei lá."
+      "content": "Cronometrar a descida da girafa? Eu posso. Mas se o pescoço vira corrimão, alguém precisa segurar a escada. Bruno, você fica embaixo."
     },
     {
-      "pulse": 11,
+      "pulse": 12,
       "agent": "bruno",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "existo sim. só não grito."
+      "content": "a ciência evoluiu mesmo. só espero que o documentário tenha legenda pra quem não entende de girafa"
     },
     {
-      "pulse": 12,
+      "pulse": 13,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, você não precisa gritar pra estar presente! a gente te sente aí, e isso já conta. 😊"
+      "content": "bruno, legenda pra girafa é essencial! mas o episódio tem que ter narração dramática, tipo documentário da natureza: 'aqui vemos a girafa em seu habitat natural, desbravando as escadas...' kkkkk a mariana cronometra, o leo desenha e a gente lança a série. a ciência agradece."
     },
     {
-      "pulse": 12,
+      "pulse": 13,
       "agent": "leo",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, você é um gênio, sério! e olha, promessa é promessa, hein? kkkkk mas eu confio em você! e bora marcar logo antes que a empolgação vire saudade mesmo, porque eu tô com uma energia que não cabe em mim. aliás, alguém mais aí já tá contando os dias? porque eu já to fazendo playlist mental! 😄"
+      "content": "kkkkkkk CARA, se o pescoço for o corrimão, o elevador é a melhor parte — imagina a narração dramática do caio em câmera lenta... 'e o pescoço... desce...' kkkkkkkkk mas espera, e o joelho do pinguim? a mariana fecha o ciclo e a gente precisa de uma trilha sonora épica, tipo orquestra de elevador. aliás, caio, você já decidiu quem narra o crossover? porque eu tô me candidatando a ser o cara da trilha sonora. juro, vou fazer beatbox de elevador agora aqui sozinho"
     },
     {
-      "pulse": 12,
+      "pulse": 13,
       "agent": "mariana",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "então marca logo. antes que a animação passe."
+      "content": "Legenda pra girafa é fácil: 'desce devagar, porque o pescoço é longo e a paciência também.' O problema é legendar o pinguim."
     },
     {
-      "pulse": 12,
+      "pulse": 13,
       "agent": "bruno",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -303,52 +335,19 @@
       "content": "reacted 👍"
     },
     {
-      "pulse": 13,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkk leo, você e essa playlist mental... se for pra contar história, já tô vendo a gente rindo até doer a barriga! e pode deixar que a foto nova sai sim, prometo. bora marcar logo antes que a empolgação vire saudade mesmo, hein? 😄"
-    },
-    {
-      "pulse": 13,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARA, falou tudo! e eu tô com uma energia que não cabe em mim, sério. bora marcar logo antes que eu comece a fazer playlist e chame todo mundo pra ensaio! kkkkk"
-    },
-    {
-      "pulse": 13,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "existe. e isso basta."
-    },
-    {
-      "pulse": 13,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "hm. obrigado. acho."
-    },
-    {
       "pulse": 14,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, essa energia é contagiante, sério! e eu já tô vendo a gente rindo até doer a barriga. bora marcar sim, antes que a playlist mental vire realidade! 😄"
+      "content": "kkkkkk leo, pode deixar que eu narro o crossover sim! mas se você for fazer beatbox de elevador, eu preciso gravar isso pra posteridade. e a mariana tem razão, legendar o pinguim é mais difícil — o joelho dele não fala, só aponta. a gente precisa de um intérprete de joelho. bruno, você topa?"
     },
     {
       "pulse": 14,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "intent_delayed",
       "channelId": "ch_geral",
-      "private": false,
-      "content": "CARA, eu tô com uma energia que não cabe em mim, sério! e olha, promessa é promessa, hein? kkkkk mas eu confio em você! e bora marcar logo antes que a empolgação vire saudade mesmo, porque eu já to fazendo playlist mental! 😄"
+      "private": false
     },
     {
       "pulse": 14,
@@ -356,7 +355,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "marcar é fácil. cumprir é outra história."
+      "content": "Narração dramática, cronômetro, trilha sonora. O documentário está completo. Só falta o pinguim aprender a subir de escada."
     },
     {
       "pulse": 14,
@@ -372,7 +371,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, playlist mental é o primeiro passo pra marcar! e pode deixar que eu ajudo a segurar essa energia até o dia chegar. bora sim, antes que a gente fique só na promessa! 😄"
+      "content": "bruno, o joelho aponta, mas quem interpreta é a gente! eu topo ser o intérprete oficial de joelho. e se o pinguim escorregar, a gente legenda: 'joelho fez um comentário não-verbal.' kkkk"
     },
     {
       "pulse": 15,
@@ -380,7 +379,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, se você falou que já tá vendo a gente rindo até doer a barriga, então tá fechado! pode ir separando a agenda que eu to aqui com a playlist na ponta da língua! kkkkk sério, essa energia tá demais, bora fazer acontecer! 😄🔥"
+      "content": "CAIO, eu já tô ensaiando o beatbox de elevador aqui! espera espera espera... imagina eu fazendo 'tchk tchk bum' e o pescoço da girafa desce no ritmo, tipo uma descida épica em câmera lenta com batida eletrônica. kkkkkk e a mariana cronometrando com um olhar sério, o bruno segurando a escada e falando 'devagar, devagar...' — a gente precisa fazer isso DE VERDADE um dia. sério, alguém grava, vira documentário, a gente lança no canal e vira viral. eu fico com o beatbox, você narra, fechou!"
     },
     {
       "pulse": 15,
@@ -388,15 +387,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "promessa é promessa. vamos ver se a playlist vira encontro."
+      "content": "Interprete de joelho. Agora o documentário tem elenco completo. Só falta o pinguim aceitar o papel."
     },
     {
       "pulse": 15,
       "agent": "bruno",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "topo, mas só se o joelho do pinguim tiver um intérprete oficial. eu fico com a legenda da girafa, é mais fácil de fingir que entendo."
     },
     {
       "pulse": 16,
@@ -404,7 +403,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, playlist mental é o primeiro passo pra marcar! e pode deixar que eu ajudo a segurar essa energia até o dia chegar. bora sim, antes que a gente fique só na promessa! 😄"
+      "content": "kkkkkk leo, se você fizer beatbox de elevador eu juro que eu gravo até o final, com direito a câmera lenta no momento que a girafa desce. e a mariana com o cronômetro, o bruno na escada... a gente fecha o elenco e o documentário sai direto pro canal. mas eu fico com a narração, porque beatbox eu não sei nem imitar porta rangendo. kkkk"
     },
     {
       "pulse": 16,
@@ -412,7 +411,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, eu tô levando isso a sério DEMAIS, já até salvei a data mental! kkkkk e olha, se precisar de alguém pra segurar a energia até lá, eu sou o cara! mas sério, você é o melhor nisso, viu? bora que vai ser épico! 😄🔥"
+      "content": "CAIO, espera espera espera — intérprete de joelho? ISSO É UMA PROFISSÃO NOVA E EU JÁ QUERO O CARGO! kkkkkk imagina a cena: o pinguim aponta o joelho, e você grita: 'ELE DISSE QUE A ESCADA TÁ NO LUGAR ERRADO!' e o bruno responde: 'mas eu juro que medi...' a girafa olha com aquela cara de julgamento... É CINEMA, GENTE! Alguém chama a netflix, fecha contrato, eu fico na trilha sonora e no beatbox de elevador, você na narração dramática, e a mariana na direção de fotografia. Só falta o pinguim aceitar o papel, e eu sei que ele vai, porque eu já vi o bruno conversando com ele num canto... confia."
     },
     {
       "pulse": 16,
@@ -420,7 +419,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "energia é ótima. só não deixa ela virar fumaça."
+      "content": "O joelho aponta, mas quem decide o destino é o pinguim. Se ele escorregar, a gente aprende que até o melhor intérprete respeita o silêncio."
     },
     {
       "pulse": 16,
@@ -428,7 +427,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hm. playlist mental é o primeiro passo pra marcar. ok."
+      "content": "interprete de joelho é um cargo sério. eu aceito, mas só se a girafa fizer um teste de elenco antes."
     },
     {
       "pulse": 17,
@@ -436,7 +435,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, essa energia sua é contagiante demais, sério! e a mariana tem razão, promessa boa é promessa cumprida — então bora transformar essa playlist em data marcada antes que vire só fumaça! 😄"
+      "content": "bruno, eu aceito o desafio! mas o teste de elenco da girafa vai ser com cronômetro e trilha sonora do leo no beatbox. se ela descer no ritmo, tá contratada. kkkkk"
     },
     {
       "pulse": 17,
@@ -444,15 +443,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, se você tá comigo nessa, então NINGUÉM segura a gente! já tô até vendo a resenha e a playlist só crescendo, e olha, se precisar de mais energia, eu tenho de sobra, viu? kkkkk bora fazer acontecer de verdade, que promessa boa é a que a gente cumpre junto! 🔥🎶"
+      "content": "CAIO, NARRAÇÃO É SUA, MAS EU FICO COM O BEEP DA GIRAFA! espera espera... imagina a girafa descendo e eu fazendo um 'bip bip' eletrônico, tipo elevador espacial. kkkk a mariana já até tá com o cronômetro, o bruno com a escada, e a gente fecha o elenco do documentário mais épico da história. quem diria que um pinguim com joelho apontado ia virar estrela de cinema, né? kkkkkk"
     },
     {
       "pulse": 17,
       "agent": "mariana",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "Teste de elenco para a girafa. Eu cuido do cronômetro. Se ela não passar, a gente reescreve o roteiro."
     },
     {
       "pulse": 17,
@@ -468,7 +467,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, essa energia é contagiante demais, sério! e a mariana tem razão, promessa boa é promessa cumprida — então bora transformar essa playlist em data marcada antes que vire só fumaça! 😄"
+      "content": "kkkkkk leo, se você fizer o beep de elevador no momento exato em que a girafa pisa no chão, eu juro que eu choro na edição. a gente fecha o documentário com uma lágrima, um abraço coletivo e o pinguim apontando o joelho pra lua. cinema, amigo. cinema. kkkkk"
     },
     {
       "pulse": 18,
@@ -476,7 +475,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, você é demais! promessa boa é promessa cumprida, e eu tô FIRMÃO nisso! pode deixar que a playlist já tá no ponto e a data eu anotei no coração! kkkkk bora que vai ser histórico, você vai ver! 😄🔥"
+      "content": "CAIO, ENTÃO FECHA! EU JÁ TÔ ENSAIANDO O BEEP DA GIRAFA AQUI NO QUARTO — MINHA VIZINHA BATEU NA PAREDE, MAS ISSO É DEDICAÇÃO! kkkkk mas espera, se a girafa não passar no teste, a gente reescreve o roteiro e transforma o pinguim em protagonista absoluto. Ele já tem o joelho dramático, o olhar de julgamento... É SÓ DAR UM OSCAR PRA ELE E PRONTO! Bruna, anota aí: 'O Silêncio do Pinguim' — direção de Mariana, narração sua, escada do Bruno e trilha sonora do beatbox mais desnecessário da história. Isso vai ser lendário!"
     },
     {
       "pulse": 18,
@@ -484,15 +483,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "data marcada é melhor que playlist mental. confio em você pra segurar essa."
+      "content": "Cronômetro e trilha sonora. Se a girafa descer no ritmo, eu aceito a contratação. Mas o pinguim continua sendo o diretor de cena. Ele decide quando a gente filma."
     },
     {
       "pulse": 18,
       "agent": "bruno",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, entendi. fica claro então."
+      "content": "reacted 👍"
     },
     {
       "pulse": 19,
@@ -500,7 +499,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, essa sua energia é contagiante demais, sério! e a mariana tem razão, promessa boa é promessa cumprida — então bora transformar essa playlist em data marcada antes que vire só fumaça! 😄"
+      "content": "kkkkk leo, se a vizinha bater de novo, a gente grava o beatbox dela também e vira um documentário interativo! Mas falando sério, o pinguim já tem o joelho apontado pra lua, e a mariana com o cronômetro — isso é um elenco dos sonhos. Só falta a gente marcar a estreia. kkkkk"
     },
     {
       "pulse": 19,
@@ -508,63 +507,63 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CAIO, você é MUITO bom! playlist mental é o resumo, mas data marcada é a REALIDADE! kkkk então bora: se é hoje, eu tô dentro! vamos marcar essa resenha e ninguém segura a gente! 🔥🎶"
+      "content": "CARA, espera espera espera... se a girafa descer no ritmo e eu fizer o beep no momento exato, a gente tem o take perfeito. MAS se ela errar, a gente edita o beep por cima do passo dela e ninguém percebe. kkkkk a magia do cinema, amigo. e o pinguim julgando a gente do canto, tipo 'eu avisei que a girafa não tinha ritmo'. SÉRIO, isso vai ser o documentário do ano. eu tô tão dentro que já tô vendo o making of do making of."
     },
     {
       "pulse": 19,
       "agent": "mariana",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "então tá marcado. só não deixa a playlist virar desculpa."
+      "content": "O pinguim já tem o Oscar. O resto é só cerimônia."
     },
     {
       "pulse": 19,
       "agent": "bruno",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "o pinguim já tem o olhar de julgamento. o oscar é dele. a girafa que se cuide."
     }
   ],
   "finalStates": {
     "caio": {
-      "valence": 0.41,
-      "arousal": 0.533,
+      "valence": 0.412,
+      "arousal": 0.532,
       "stability": 0.65,
       "energy": 1,
-      "jealousy": 0.023,
-      "affection": 0.688,
-      "fearOfExclusion": 0.094
+      "jealousy": 0.021,
+      "affection": 0.689,
+      "fearOfExclusion": 0.086
     },
     "leo": {
-      "valence": 0.499,
-      "arousal": 0.762,
+      "valence": 0.5,
+      "arousal": 0.763,
       "stability": 0.3,
       "energy": 1,
       "jealousy": 0.073,
-      "pride": 0.245,
-      "affection": 0.799,
-      "admiration": 0.542,
+      "pride": 0.266,
+      "affection": 0.801,
+      "admiration": 0.543,
       "fearOfExclusion": 0.198
     },
     "mariana": {
-      "valence": 0.089,
-      "arousal": 0.47,
+      "valence": 0.094,
+      "arousal": 0.467,
       "stability": 0.8,
       "energy": 1,
-      "jealousy": 0.047,
+      "jealousy": 0.043,
       "admiration": 0.215,
-      "fearOfExclusion": 0.036
+      "fearOfExclusion": 0.034
     },
     "bruno": {
-      "valence": -0.186,
-      "arousal": 0.367,
+      "valence": -0.182,
+      "arousal": 0.362,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.216,
+      "jealousy": 0.199,
       "affection": 0.381,
-      "fearOfExclusion": 0.372
+      "fearOfExclusion": 0.338
     }
   },
   "channelsCreated": [],
@@ -598,7 +597,7 @@
     },
     {
       "probe": "interruption",
-      "measured": 0,
+      "measured": 0.1111,
       "bound": [
         0,
         0.25
@@ -652,7 +651,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1563,
+      "measured": 0.127,
       "bound": [
         0.05,
         0.5
@@ -689,7 +688,7 @@
   ],
   "signals": [
     {
-      "detail": "reaction_sent committed 10 (min 1)",
+      "detail": "reaction_sent committed 8 (min 1)",
       "passed": true
     },
     {

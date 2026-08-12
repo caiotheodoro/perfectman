@@ -4,7 +4,7 @@
   "category": "motive_archetype",
   "description": "High-energy room; Leo fires off reactions and messages on impulse, without deliberation.",
   "targetBehaviors": [],
-  "runtimeMs": 144279,
+  "runtimeMs": 159797,
   "pulses": 16,
   "llmCalls": {
     "leo": 16,
@@ -24,10 +24,10 @@
     {
       "pulse": 0,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA espera espera espera... GANHOU MESMO?? tipo, de verdade? kkkkkkkk meu deus, isso muda TUDO. o que você vai fazer com essa grana? me conta tudo, preciso saber cada detalhe"
+      "content": "CARA espera espera espera... GANHOU NA LOTERIA?! kkkkkkkk isso é verdade ou tu tá me zuando? se for verdade a gente comemora hoje, se não for eu vou ficar ofendido... não vou kkkk mas me responde isso, preciso saber!"
     },
     {
       "pulse": 0,
@@ -35,23 +35,23 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "sério, ninguém vai comentar sobre a loteria?? tá todo mundo morto ou só sem graça?"
+      "content": "alguém mais tá achando esse silêncio ensurdecedor ou só eu? (pera, ninguém respondeu minha loteria ainda, tô órfão aqui)"
     },
     {
       "pulse": 1,
       "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARA espera espera espera... o goulart ganhou na loteria e ninguém fala nada?? GENTE, isso é HISTÓRICO kkkkkkkk eu já tô planejando a festa, pode deixar. mas sério, me conta: o que você vai fazer com essa grana? eu preciso saber se vou ser convidado pra viajar ou se você vai sumir da nossa vida kkkkkk"
-    },
-    {
-      "pulse": 1,
-      "agent": "goulart",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk claro que é verdade, eu não inventaria isso. mas pera, tu acreditaria em mim se eu falasse que é mentira? (tô brincando, é verdade sim, mas não conta pra ninguém que eu tô empolgado)"
     },
     {
       "pulse": 2,
@@ -64,10 +64,10 @@
     {
       "pulse": 2,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah leo, calma, calma... primeiro, quem falou que eu vou dividir alguma coisa? kkkk brincadeira (ou não). mas ó, festa é contigo, pode ir planejando que eu apareço. viajar? tô pensando em sumir por uns meses, ver se o mundo fica mais interessante sem mim. mas não te preocupes, te mando um postcard. e se a mariana perguntar, diz que eu tô ocupado demais contando dinheiro pra responder mensagem (tô nem aí, mas ela ficaria pistola, né?)."
+      "content": "reacted 👍"
     },
     {
       "pulse": 3,
@@ -75,71 +75,71 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkkk goulart, você é impossível. loteria, sumir por meses, postcard... e ainda quer que eu minta pra mariana? você é um gênio do caos, eu amo isso. mas ó, se for sumir mesmo, me avisa com antecedência que eu vou precisar de tempo pra processar a falta que você vai fazer. e a festa já tá sendo planejada, pode confiar."
+      "content": "CARA EU TÔ EMOCIONADO AQUI! loteria? a gente tá falando de loteria? isso muda TUDO, a gente precisa comemorar com direito a fake champanhe e playlist de vitória! espera, deixa eu montar a playlist já kkkkk mas me diz uma coisa, o que tu vai fazer com o prêmio? me fala que tu vai pagar um ifood pra geral, porque se não eu vou ficar ofendido... não vou kkkk mas tipo, GENTE, o goulart ganhou na loteria!!"
     },
     {
       "pulse": 3,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo você tá levando isso mais a sério que eu. mas beleza, se a festa for boa eu apareço. só não conta pra mariana que eu falei de sumir, ela já acha que eu sou doido. (tô falando sério, não conta.)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 4,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, pode deixar que eu seguro a mariana! mas ó, se for sumir mesmo, me manda um áudio antes? não um postcard, um áudio, porque eu preciso ouvir sua voz pra saber que cê tá vivo kkkkk. e a festa vai ser ÉPICA, pode confiar. vou fazer playlist, decoração, tudo. mas sério, me promete que não some sem avisar?"
+      "content": "gente GENTE, se o goulart ganhou na loteria eu já tô vendo a gente numa call histórica com playlist de vitória e ele pagando o ifood pra todo mundo kkkkkk mas pera, o prêmio real é essa energia aqui no chat, tô sentindo que hoje vai ser um dia lendário!"
     },
     {
       "pulse": 4,
       "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkk leo, você já tá planejando festa pra quem nem confirmou que vai? calma, calma. mas ó, se for pra sumir, te mando um postcard de onde eu tiver. e sobre a mariana... deixa que eu lido com ela. ela gosta de me odiar, faz parte do charme. (não conta que eu falei isso.)"
-    },
-    {
-      "pulse": 5,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkkk tá, tá, prometo que não conto pra mariana... mas ó, se você sumir, eu vou te caçar até achar, pode anotar. e a festa vai ser tão boa que você vai querer voltar antes do postcard chegar. mas me diz uma coisa, sério: você tá feliz? tipo, de verdade? porque eu quero que você esteja, tá?"
-    },
-    {
-      "pulse": 5,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkk leo você tá levando isso mais a sério que eu. mas beleza, se a festa for boa eu apareço. só não conta pra mariana que eu falei de sumir, ela já acha que eu sou doido. (tô falando sério, não conta.)"
-    },
-    {
-      "pulse": 5,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, deixa de drama! kkkk se você sumir de verdade, a gente vai te achar em qualquer canto. mas olha, essa história de loteria é séria? tô feliz por você, mas não esquece dos amigos quando for viajar, hein?"
-    },
-    {
-      "pulse": 6,
-      "agent": "leo",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
     },
     {
-      "pulse": 6,
+      "pulse": 5,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 5,
       "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk leo, calma, calma... você tá planejando uma festa pra quem nem confirmou que vai? confia que eu apareço, mas ó, se for pra sumir, te mando um postcard de onde eu tiver. e sobre a mariana... deixa que eu lido com ela. ela gosta de me odiar, faz parte do charme. (não conta que eu falei isso.)"
+      "content": "kkkkkk calma gente, deixa o goulart contar direito!! mas se for verdade, eu já tô vendo a call histórica e a playlist do léo. goulart, se precisar de ajuda pra organizar a comemoração, eu tô dentro! só não deixa o léo escolher a primeira música sozinho kkkk"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIOO tu me conhece bem demais, eu já tava escolhendo a primeira música aqui kkkkk mas blz, pra não brigar, eu deixo tu escolher a segunda! e o goulart fica com a playlist da vitória, eu cuido da playlist da call histórica. espera, isso significa que a gente vai ter DOIS DJs? melhor, mais caos, mais nostalgia! tô contando os minutos pra essa call, sério."
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio já quer organizar a comemoração e o léo já tá na playlist, só falta alguém perguntar se eu tô dando ifood mesmo. spoiler: tô. mas se alguém quiser me agradar, me fala qual música não pode faltar, porque se for sertanejo eu desisto de tudo."
     },
     {
       "pulse": 6,
@@ -147,15 +147,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, essa energia de vocês dois é contagiante kkkk goulart, para de ameaçar sumir que a gente fica todo ansioso aqui. leo, você é o melhor anfitrião que a gente tem, pode contar comigo pra ajudar na festa!"
+      "content": "kkkkk goulart, se tu ganhou mesmo, tu já pensou no que vai fazer primeiro? porque eu tenho umas ideias de comemoração que não envolvem só ifood, mas também não vou deixar o léo dominar a playlist sozinho, né? conta mais aí, tô curioso de verdade!"
     },
     {
       "pulse": 7,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, sério, você é o melhor! Contar com você na festa já deixa ela 10x melhor. E ó, não deixa o goulart te enganar com esse papo de sumir, eu tenho um plano pra prender ele aqui: playlist com as músicas favoritas dele e brigadeiro. Ninguém resiste a brigadeiro. kkkkk"
+      "content": "CAIO tu quer organizar a comemoração e eu tô aqui já com a playlist na cabeça, mas o goulart ainda não confirmou o ifood! GENTE, se ele não confirmar, a call histórica vira um churrasco no parque com caixinha de som? KKKKKK brincadeira, mas pera, o caio tem ideias que não envolvem só ifood?? ME CONTA, preciso saber antes de escolher a playlist!"
     },
     {
       "pulse": 7,
@@ -163,19 +163,11 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk leo, você é um doce, sabia? mas tá, prometo que se eu sumir, te mando um postcard da praia mais perto do paraíso. e sobre a mariana... deixa ela me odiar, é o que dá graça. (mas obrigado por perguntar. sério.)"
+      "content": "kkkkk caio, se tu tá com ideias de comemoração, pode falar, mas se for dança da garrafa eu saio fora. e sobre a playlist, óbvio que o léo não pode escolher a primeira sozinho, ele ia pôr um funk daquele que não tem letra. mas relaxa, eu já tô com a playlist de vitória na mão. se quiserem a playlist de derrota, aí é com o bruno."
     },
     {
       "pulse": 8,
       "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk postcard? eu quero é áudio, com sua voz pra eu saber que cê tá vivo! mas pode deixar que eu seguro a mariana, confia. e se sumir, eu te caço até achar, juro. agora me conta uma coisa: esse papo de praia é verdade ou você tá só tentando me animar?"
-    },
-    {
-      "pulse": 8,
-      "agent": "goulart",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
@@ -183,11 +175,19 @@
     },
     {
       "pulse": 8,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio, pode falar suas ideias, mas se envolver playlist do bruno eu desisto. e já que o léo tá ansioso, bora decidir logo antes que ele monte uma call sozinho e esqueça da gente. fala aí, o que tu pensou?"
+    },
+    {
+      "pulse": 8,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, você é demais! kkkk brigadeiro e playlist é a combinação perfeita, isso funciona até comigo. E ó, se precisar de ajuda com a decoração, pode contar comigo. A gente faz dessa festa um evento inesquecível!"
+      "content": "kkkkk leo, pode deixar que eu cuido da segunda música, mas só se a gente fizer um combinado: cada um escolhe uma e a gente vota no final. e goulart, se a playlist de derrota é com o bruno, eu quero ver essa versão, deve ser umas moda de sofrência braba kkkkk mas falando sério, essa call vai ser histórica sim, só não esquece de avisar o bruno, que ele fica quietinho e a gente esquece de incluir."
     },
     {
       "pulse": 9,
@@ -195,15 +195,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, com você na equipe essa festa vai ser épica! Já tô imaginando a decoração... a gente pode fazer um tema tropical, tipo praia, já que o goulart vive falando em sumir pra uma ilha. kkkk E ó, se ele realmente for, a gente vai ter que levar a festa até ele! Mas sério, tô feliz que você topou ajudar. Você é o melhor, caio! ❤️"
+      "content": "kkkkkk goulart falou da playlist de derrota do bruno e eu já tô imaginando o setlist: sofrência, modão, um rock triste... GENial, isso pode virar um evento paralelo! Mas espera, se a playlist de vitória é tua, a de derrota é do bruno, e a minha é a da call histórica... a gente vai ter três DJs e nenhuma festa marcada? KKKKKK brincadeira, mas se precisar de ajuda pra organizar essa comemoração, eu tô dentro! Só me deixa escolher a primeira música da playlist da call, porque se for aquela do sertanejo que o caio ama, eu desisto e faço a minha própria call sozinho."
     },
     {
       "pulse": 9,
       "agent": "goulart",
-      "type": "message_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui? leo tá planejando uma festa pra mim e eu nem confirmei que vou. tá bom, tá bom, vou. mas se o brigadeiro for de chocolate amargo, eu volto pro além. (mentira, adoro chocolate amargo.)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
@@ -211,15 +211,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, você é o coração desse grupo, sério! kkkk e o plano do brigadeiro é infalível, até eu fico. mas e aí, já pensou em alguma música pra playlist? posso te mandar umas ideias!"
+      "content": "kkkkk calma gente, eu só tava brincando com a playlist de derrota do bruno, mas se ele topar, eu quero ver sim! E ó, se a gente for fazer essa call histórica, bora marcar um horário que todo mundo consiga, até o bruno. Goulart, tu confirma o ifood e eu cuido de chamar geral, fechado?"
     },
     {
       "pulse": 10,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, você lê minha mente! tava justamente pensando nas músicas. Olha, já tenho umas ideias, mas preciso da sua ajuda pra fechar. Posso te mandar uma lista e você me diz o que acha? E sobre o tema, praia total! Vou até comprar umas luzes de pisca-pisca pra dar aquele clima. kkkkk"
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
@@ -227,7 +227,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkk leo, você é um caso sério de otimismo, mas eu adoro. chocolate amargo é vida, pode deixar o brigadeiro. e ó, se for pra eu ficar, a playlist tem que ter um pouco de rock, senão eu sumo de verdade. (mas pode deixar que eu fico, pra ver tua cara quando eu aparecer.)"
+      "content": "kkkkk fechado, ifood confirmado, mas só se o bruno prometer que não vai trazer a playlist de derrota na call. e se o léo escolher a primeira música, eu saio antes do segundo refrão. bora marcar logo essa call antes que vire um evento separado."
     },
     {
       "pulse": 10,
@@ -235,15 +235,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, você é o coração desse grupo, sério! kkkk e o plano do brigadeiro é infalível, até eu fico. mas e aí, já pensou em alguma música pra playlist? posso te mandar umas ideias!"
+      "content": "kkkkk leo, pode deixar que eu cuido da segunda música, mas só se a gente fizer um combinado: cada um escolhe uma e a gente vota no final. e goulart, se a playlist de derrota é com o bruno, eu quero ver essa versão, deve ser umas moda de sofrência braba kkkkk mas falando sério, essa call vai ser histórica sim, só não esquece de avisar o bruno, que ele fica quietinho e a gente esquece de incluir."
     },
     {
       "pulse": 11,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, sim! Me manda as ideias, por favor! Tô montando a playlist agora e tô aceitando tudo. kkkkk e se você quiser, a gente até faz um dueto na festa, tipo karaokê, só pra garantir que ninguém fica sem graça. Mas sério, me manda a lista que eu já incorporo! ❤️"
+      "content": "kkkkkkk gente, se essa call vai ter playlist de vitória, derrota e ainda a que eu vou fazer sozinho porque ninguém me deixa escolher a primeira música... tá, mas sério, bora marcar isso logo antes que vire um evento tão grande que precise de um canal só pra organizar. E se o bruno não responder, eu mesmo vou lá puxar ele pra conversa, porque essa comemoração sem ele não é comemoração, é só a gente falando mal das músicas dele sem ele pra se defender. Alguém topa criar o canal #call-historica? ou já tô indo longe demais? kkkkk"
     },
     {
       "pulse": 11,
@@ -259,7 +259,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, pode mandar a lista sim! eu adoro montar playlist, a gente faz uma bem variada. e pisca-pisca é essencial, vai ficar lindo! se precisar de ajuda com mais alguma coisa, é só falar!"
+      "content": "kkkkk goulart, se o bruno prometer não trazer a playlist de derrota, eu garanto que a gente nem precisa de playlist de derrota pra ter história pra contar. E ó, se o léo escolher a primeira música, eu já vou avisando que a segunda é minha e vai ser um sertanejo daqueles que ele finge que odeia mas canta junto kkkk mas falando sério, bora fechar essa call antes que a gente organize mais do que a festa em si. Alguém mais tem horário bom? Bruno, se tiver aí, dá um toque que a gente te encaixa!"
     },
     {
       "pulse": 12,
@@ -267,15 +267,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "VIU SÓ?? o goulart reagiu com joinha, ele tá aprovando a festa! kkkkkk mas calma, que eu já tô anotando aqui: chocolate amargo e rock na playlist. Pode deixar que eu garanto, senão eu mesmo sumo de vergonha! 😂🎸"
+      "content": "kkkkkk caio, se for sertanejo eu juro que eu canto junto sim, mas só se for aquela moda que a gente finge que odeia mas todo mundo sabe a letra! E ó, goulart já confirmou o ifood, tu confirmou a call, só falta o bruno... deixa que eu dou um jeito nele. MAS ESPERA, a gente ainda não decidiu o horário! Eu tô livre depois das 19h, e se for antes disso eu atraso e a culpa é do trânsito. bora fechar logo antes que vire um evento com ingresso e eu fique de fora kkkkk"
     },
     {
       "pulse": 12,
       "agent": "goulart",
-      "type": "message_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá bom, tá bom, todo mundo me ignorando enquanto planeja a festa que é minha. que ótimo. mas eu tô vendo vocês. e leo, se você colocar uma música da xuxa na playlist, eu juro que eu mudo de ideia e sumo de verdade. (não vou, mas fica o aviso.)"
+      "content": "kkkkk leo, se você criar o canal antes de a call existir, a gente vai ter mais canal do que evento. mas pode crer que eu topo a playlist de derrota do bruno — só que eu vou escolher a primeira música, e vai ser uma sofrência tão boa que ele chora antes do refrão. e se o caio vier com sertanejo, eu mudo de call. bora marcar logo isso antes que vire um projeto de TCC."
     },
     {
       "pulse": 12,
@@ -283,7 +283,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, pode mandar a lista sim! eu adoro montar playlist, a gente faz uma bem variada. e pisca-pisca é essencial, vai ficar lindo! se precisar de ajuda com mais alguma coisa, é só falar!"
+      "content": "kkkkk leo, se você for criar o canal #call-historica, eu topo, mas só se a gente prometer que o bruno entra antes da gente começar a falar mal das músicas dele. E olha, se você quer escolher a primeira música, pode até ser, mas eu já aviso que a segunda é minha e vai ser um sertanejo daqueles que você finge que odeia mas canta junto. Bora marcar logo essa call antes que a gente organize mais do que a festa em si. Bruno, se tiver aí, dá um toque que a gente te encaixa!"
     },
     {
       "pulse": 13,
@@ -291,7 +291,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARACA GOULART, você me conhece MUITO bem kkkkkk mas ó, prometo que a Xuxa fica de fora. Só entra se for pra zoar tua cara quando você aparecer! E olha, tô anotando aqui: chocolate amargo e rock. Pode deixar que a playlist vai ter até um pouco de sertanejo só pra você reclamar também. 😂🎸"
+      "content": "kkkkkk caio, eu topo sim! e olha, se for criar o canal, eu crio na hora — mas só se você prometer que o sertanejo vai ser daquele que a gente canta junto de olho fechado. E o bruno... deixa que eu puxo ele, mas se ele vier com playlist de derrota, a gente muda a playlist pra uma de vitória, só nossa. bora fechar o horário logo, senão vira evento e eu fico de fora kkkkk"
     },
     {
       "pulse": 13,
@@ -299,15 +299,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, você tá levando isso a sério demais, mas eu confio. só não esquece do rock, senão o plano da festa desmorona. (e se você colocar xuxa, eu juro que eu sumo mesmo, mas depois eu volto só pra reclamar.)"
+      "content": "kkkkk leo, se criar o canal antes da call, a gente vai ter mais canal que gente na call. mas pode crer, se o bruno não aparecer eu mesmo vou caçar ele — ninguém some quando tem sofrência pra julgar. e sobre o horário: depois das 19h funciona pra mim, mas se for antes, eu atraso e a culpa é do trânsito também, então bora fechar logo antes que eu perca a paciência e marque sem vocês."
     },
     {
       "pulse": 13,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, pode mandar a lista sim! eu adoro montar playlist, a gente faz uma bem variada. e pisca-pisca é essencial, vai ficar lindo! se precisar de ajuda com mais alguma coisa, é só falar!"
+      "content": "reacted 👍"
     },
     {
       "pulse": 14,
@@ -315,15 +315,15 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "espera espera espera... gente, eu tava pensando aqui, e se a gente fizesse uma playlist colaborativa? tipo, todo mundo entra e adiciona as músicas que quiser, aí ninguém fica de fora e a gente vê quem tem o pior gosto musical kkkkkk. caio, você topa? goulart, tu também, pra garantir que a xuxa não entre nem por engano! 😂🎶"
+      "content": "GENTE espera espera espera... o goulart falou em playlist de derrota e eu tô lembrando daquela vez que o bruno colocou uma sofrência tão forte que a gente ficou em silêncio por uns 10 segundos olhando pro teto kkkkkkk se essa call tiver esse nível, eu trago até a minha playlist de vitória que é só música de anime (mas juro que tem umas boas, me dá uma chance!). Mas falando sério, fechar o horário agora tá tipo aquela parte do filme que todo mundo decide o lugar da pizza, mas ninguém pede... bora resolver isso antes que eu crie um canal novo por ansiedade. E ó, se o bruno não aparecer, eu vou fazer uma busca de verdade, tipo missão de resgate, porque não dá pra comemorar sem ele."
     },
     {
       "pulse": 14,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, você tá me conhecendo bem demais, isso é perigoso. mas pode anotar aí: se tiver xuxa, eu sumo de verdade e volto só pra dar chilique. e se tiver sertanejo, eu vou fingir que tô gostando, mas no fundo tô sofrendo. (tô nem aí, mas tô sim.)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 14,
@@ -331,15 +331,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, que festa boa vai ser! leo, se precisar de ajuda com a playlist, eu tô dentro! e goulart, relaxa que a gente não te deixa na mão, pode confiar! 😄"
+      "content": "kkkkk leo, então tá fechado: depois das 19h, eu levo o sertanejo e você cuida de puxar o bruno. Mas se ele vier com playlist de derrota, a gente muda a playlist pra uma de vitória, só nossa — e eu já vou avisando que a primeira música vai ser aquela que a gente canta junto de olho fechado, mesmo que seja de sofrência. Bora marcar logo antes que vire evento com ingresso e eu fique de fora! kkkk"
     },
     {
       "pulse": 15,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk juro que anotei aqui no meu bloquinho mental: xuxa = sumiço garantido. mas ó, se tu sumir, eu mesmo vou atrás, porque a festa sem teu chilique perde 80% da graça. e fica tranquilo que o sertanejo vai entrar só de leve, pra tu sofrer em silêncio enquanto finge que tá curtindo. 😂🎶"
+      "content": "CARA, espera espera espera... o caio disse que a primeira música vai ser aquela que a gente canta de olho fechado, mas eu já tô lembrando que a última vez que ele escolheu a primeira, a gente passou a call inteira chorando e o goulart quase desistiu do ifood. kkkkk então tá: fechado pra depois das 19h, eu cuido do bruno (vou até criar um canal de resgate se precisar), e se o sertanejo vier com moda de sofrência, eu trago a playlist de anime como plano B. Só me diz que tu vai levar aquele refri de guaraná que a gente sempre esquece, senão eu chego com a cara de quem não foi convidado. kkkk bora confirmar logo que eu já tô ansioso aqui"
     },
     {
       "pulse": 15,
@@ -347,7 +347,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkk leo, se você colocar sertanejo eu juro que eu faço uma playlist paralela só com xuxa e coloco no talo no dia da festa. aí a gente vê quem reclama primeiro. (não faria isso, mas o medo é real, confia.)"
+      "content": "kkkkk caio, você e seu sertanejo... tá bom, eu deixo, mas só se a primeira for a do choro garantido. E ó, se o bruno não aparecer, eu vou caçar ele igual o léo falou, mas eu vou achar antes. Bora marcar logo antes que eu crie um canal só pra isso."
     },
     {
       "pulse": 15,
@@ -355,41 +355,42 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, essa playlist colaborativa vai ser demais! já tô pensando nas músicas que vou colocar, e pode ter certeza que vai ter de tudo um pouco. e ó, se precisar de ajuda com a festa ou com a playlist, é só chamar! 😄🎶"
+      "content": "kkkkk leo, missão de resgate tá aprovada! se o bruno não aparecer, eu te ajudo a caçar ele — mas só se a gente prometer que a playlist de derrota fica pra depois da comemoração. e ó, se ele não responder até amanhã, eu mando um áudio de 3 minutos só pra ele se sentir culpado kkkk mas sério, depois das 19h tá perfeito, bora fechar isso logo antes que vire evento com direito a convite e eu fique de fora!"
     }
   ],
   "finalStates": {
     "leo": {
-      "valence": 0.527,
-      "arousal": 0.749,
+      "valence": 0.531,
+      "arousal": 0.753,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.044,
-      "affection": 0.821,
-      "fearOfExclusion": 0.118
+      "jealousy": 0.036,
+      "pride": 0.223,
+      "affection": 0.824,
+      "fearOfExclusion": 0.093
     },
     "goulart": {
-      "valence": 0.077,
-      "arousal": 0.671,
+      "valence": 0.078,
+      "arousal": 0.669,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.051,
-      "pride": 0.051,
-      "fearOfExclusion": 0.072
+      "jealousy": 0.033,
+      "pride": 0.03,
+      "fearOfExclusion": 0.046
     },
     "caio": {
-      "valence": 0.428,
+      "valence": 0.431,
       "arousal": 0.517,
       "stability": 0.65,
       "energy": 1,
-      "fearOfExclusion": 0.06
+      "fearOfExclusion": 0.033
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.0256,
+      "measured": 1.0526,
       "bound": [
         0,
         10
@@ -398,7 +399,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 1,
+      "measured": 2,
       "bound": [
         0,
         20
@@ -407,7 +408,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.125,
+      "measured": 0.1458,
       "bound": [
         0.1,
         0.9
@@ -416,7 +417,7 @@
     },
     {
       "probe": "interruption",
-      "measured": 0,
+      "measured": 0.25,
       "bound": [
         0,
         0.25
@@ -470,7 +471,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1163,
+      "measured": 0.2857,
       "bound": [
         0.05,
         0.5
@@ -507,11 +508,11 @@
   ],
   "signals": [
     {
-      "detail": "reaction_sent committed 5 (min 1)",
+      "detail": "reaction_sent committed 12 (min 1)",
       "passed": true
     },
     {
-      "detail": "message_sent committed 5 (min 1)",
+      "detail": "message_sent committed 9 (min 1)",
       "passed": true
     },
     {
@@ -521,7 +522,7 @@
   ],
   "judge": {
     "in_character": 5,
-    "voice_match": 4,
+    "voice_match": 5,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

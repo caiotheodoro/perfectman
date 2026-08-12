@@ -4,10 +4,10 @@
   "category": "stagnation_attractor",
   "description": "Bruno replays a snub repeatedly: high rumination seeds, unresolved memories, withdrawal and bitterness compounding.",
   "targetBehaviors": [],
-  "runtimeMs": 228843,
+  "runtimeMs": 262413,
   "pulses": 32,
   "llmCalls": {
-    "bruno": 9,
+    "bruno": 11,
     "caio": 28,
     "leo": 32
   },
@@ -32,10 +32,10 @@
     {
       "pulse": 0,
       "agent": "bruno",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "tô aqui sim. só observando"
     },
     {
       "pulse": 0,
@@ -43,7 +43,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARACA, verdade... espera, será que ele ta fazendo aquela coisa de sumir de novo? kkkk tava contando com ele pra me dar uma opinião sobre uma parada. Bruno, se tu ta aí, APARECE que eu to ficando preocupado sério"
+      "content": "cara, bruno é tipo um gato, some e aparece quando quer kkkk mas sério, espero que ele esteja bem... já mandei msg pra ele, nada ainda. se quiser, a gente faz uma força-tarefa pra achar ele, tipo detetives da internet. o que acha?"
     },
     {
       "pulse": 1,
@@ -51,23 +51,23 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tô aqui. só observando. mas pode falar, eu escuto."
+      "content": "gato? talvez. mas detetive da internet soa melhor do que força-tarefa. só não acha o que não quer ser achado."
     },
     {
       "pulse": 1,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "ah, bruno!! ainda bem que você tá aí kk tava todo mundo preocupado com você. mas fico feliz que tá de boa. se quiser companhia, tô por aqui"
     },
     {
       "pulse": 1,
       "agent": "leo",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "BRUNO!! aí sim, pensei que você tinha virado lenda urbana kkkkkkk mas fico feliz que tá aí, tava começando a fazer campanha de achados e perdidos já. o que cê tá observando? conta tudo, não deixa a gente no suspense!"
     },
     {
       "pulse": 2,
@@ -75,7 +75,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tô aqui. só observando. mas pode falar, eu escuto."
+      "content": "ah, caio. preocupado comigo? que novidade. mas obrigado pela preocupação, juro que tô bem. só tava... observando mesmo."
     },
     {
       "pulse": 2,
@@ -83,15 +83,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, que bom te ver por aqui! tava preocupado, mas fico tranquilo que você tá bem. se quiser desabafar, a gente tá aqui, viu?"
+      "content": "bruno, se quiser companhia pra observar, tô aqui. e leo, se for fazer força-tarefa, eu ajudo a fazer café kk"
     },
     {
       "pulse": 2,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "Aí sim! Falou e apareceu kkkk então tá tudo certo? Tava preocupado memo, mas se tu tá de boa, bora, conta essa opinião que eu tava esperando..."
+      "content": "reacted 👍"
     },
     {
       "pulse": 3,
@@ -99,7 +99,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, entendi. fico claro então."
+      "content": "companhia? pra quê? já tenho a solidão e o silêncio, eles não cansam de mim."
     },
     {
       "pulse": 3,
@@ -107,7 +107,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "Aí sim! Falou e apareceu kkkk então tá tudo certo? Tava preocupado memo, mas se tu tá de boa, bora, conta essa opinião que eu tava esperando..."
+      "content": "kkkkk lenda urbana de internet, bruno. mas olha, tô genuinamente curioso agora. o que você tava observando? tipo, em silêncio, sem mandar mensagem? isso é nível monge kkkkk mas fala, fica à vontade. e se quiser companhia silenciosa, eu até consigo ficar quieto... por uns 5 minutos kkkk"
     },
     {
       "pulse": 4,
@@ -115,15 +115,14 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "opinião? sobre o quê?"
+      "content": "observando o que todo mundo fala e ninguém nota. tipo você agora, curioso demais. mas companhia silenciosa? duvido que aguente 5 minutos."
     },
     {
       "pulse": 4,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "intent_delayed",
       "channelId": "ch_geral",
-      "private": false,
-      "content": "então... me diz a real, tá tudo bem mesmo? porque eu tava aqui pensando numa parada e queria muito tua opinião, mas fico com um pé atrás de incomodar... mas fala, to aqui, pode soltar."
+      "private": false
     },
     {
       "pulse": 5,
@@ -139,15 +138,14 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, se quiser falar sobre o que te deixou pensativo, eu tô aqui. sem pressa, sem julgamento. a gente se importa com você. 💛"
+      "content": "bruno, solidão e silêncio são ótimos companheiros até você precisar de um café quente ou alguém pra rir de uma piada ruim. tô por aqui se quiser testar a teoria kk"
     },
     {
       "pulse": 5,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "intent_delayed",
       "channelId": "ch_geral",
-      "private": false,
-      "content": "Bruno, bruno, bruno... tu vai ficar nessa de 'fico claro' e me deixar pendurado? kkkk agora eu QUERO saber qual era a opinião. Fala, tá todo mundo aqui te esperando, inclusive eu, que sou o mais ansioso do grupo. Pode mandar, eu prometo que não interrompo... ou pelo menos tento kkkk"
+      "private": false
     },
     {
       "pulse": 6,
@@ -163,7 +161,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, se quiser falar sobre o que te deixou pensativo, eu tô aqui. sem pressa, sem julgamento. a gente se importa com você. 💛"
+      "content": "bruno, você tem razão, solidão e silêncio são companheiros fiéis. mas até eles precisam de uma pausa de vez em quando. se um dia quiser testar a teoria do café ou da piada ruim, é só chamar. sem pressão, sem cobrança. e leo, se você for ficar quieto por 5 minutos, eu quero ver pra crer kkkk"
     },
     {
       "pulse": 6,
@@ -171,7 +169,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, para tudo. Caio falando isso e Bruno nessa vibe de 'fico claro'... eu juro que não sei se choro ou se rio. Bruno, me diz que tu tá de boa mesmo, porque eu fico ansioso com esse silêncio. E Caio, tu é um anjo, mas agora eu preciso que tu me ajuda a arrancar essa opinião dele kkkkk"
+      "content": "kkkkkk bruno, você me desafiou na frente de todo mundo... agora é questão de honra. cronometra aí: 5 minutos de silêncio absoluto... a partir de agora. (marcando no relógio mental) ... ok, já passou 1 minuto, tá difícil, mas eu aguento. 2 minutos... 3... GENTE ISSO É MAIS DIFÍCIL QUE PARAR DE OLHAR O CELULAR DE MANHÃ. ok, desisto. bruno, você venceu essa. mas me conta, o que mais você observa? tipo, além da minha curiosidade? fala aí, tô genuinamente interessado. e o caio, ele também te observa? kkkkk tô criando uma teoria aqui..."
     },
     {
       "pulse": 7,
@@ -184,220 +182,220 @@
     {
       "pulse": 7,
       "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk CAIO você me desafiou e eu ACEITO. mas olha, se eu ficar 5 minutos quieto, o mundo vai acabar, não tem jeito. bruno, você tava certo o tempo todo, eu sou curioso demais, é um defeito de fábrica kkkkk mas fala sério, vocês dois tão me testando? porque eu to ANOTANDO tudo aqui, isso vai virar uma pesquisa científica. 'O Silêncio de Léo: um estudo de caso'... capítulo 1: ele não conseguiu. capítulo 2: ele ainda não conseguiu. kkkkkk"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, sua teoria tá ficando boa, mas deixa eu adicionar um capítulo: 'Caio: o observador observado'. bruno, ele te observa, eu te observo, e o leo observa todo mundo. a gente é um ecossistema de observação mútua kkkk mas falando sério, leo, essa sua energia é contagiante, e bruno, se a solidão cansar, a gente tá aqui pra fazer companhia. inclusive, leo, se você conseguir ficar 5 minutos quieto, eu pago um café (virtual) na próxima vez que a gente se encontrar. desafio aceito?"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, agora que bruno me expôs como curioso profissional, alguém mais tem uma teoria sobre mim? tipo, 'léo fala demais mas no fundo quer um abraço'? pq eu aceito kkkkk mas sério, o silêncio de 5 minutos foi um teste e eu falhei gloriosamente. isso devia virar um esporte olímpico. bruno, caio, vocês tão me observando de volta? porque eu sinto que tô sendo estudado e eu AMO isso, sigam me"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você é um caso de estudo, mas confesso que tô gostando de te observar também. bruno, a gente forma um trio estranho: o observador silencioso, o observado que fala demais, e eu no meio tentando manter a paz e o café quente. leo, se você ficar quieto por 5 minutos, eu não só pago o café como prometo não contar pra ninguém que você conseguiu. mas sem pressão, hein, a graça tá em tentar kk"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO. CAIO. CAIO. Você não pode simplesmente me desafiar pra 5 minutos de silêncio e depois lançar uma teoria dessas sem preparar a gente. 'Ecossistema de observação mútua'? isso é lindo, vou colocar na minha parede. Mas café virtual? eu aceito, mas só se for daqueles que vêm com um 'brinde' de piada ruim. bruno, você tá vendo isso? a gente agora é um ecossistema oficial. próximo passo: criar um nome pra nossa banda. sugestão: 'Os Observadores' ou 'Silêncio? Nunca Ouvi' kkkkkk"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, se você quer uma teoria, aqui vai a minha: você fala muito porque tem medo do silêncio, mas eu acho que o silêncio tem medo de você. e olha, se a gente virar uma banda, eu fico com a função de 'aquele que traz o café e apaga incêndio'. 'Os Observadores' é bom, mas eu sugiro 'Café e Silêncio' — porque a gente tem bastante de um e pouco do outro kkkk"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO VOCÊ É UM GÊNIO. 'O observador observado'... eu to CHOCADO, isso deveria virar camiseta. e bruno, você aí, em silêncio, devia estar anotando tudo isso num caderninho secreto. mas espera, deixa eu contribuir com a ciência: se eu ficar quieto por 5 minutos, será que o universo implode? ou será que vocês dois ficam TÃO aliviados que marcam um encontro sem mim? kkkkkk não, mas falando sério (por 2 segundos), esse ecossistema nosso é melhor que qualquer rede social. e o café virtual? aceito, mas só se for com chantilly de memes. agora me diz, caio: você realmente acha que eu consigo? porque eu to com uma teoria nova: silêncio é um mito criado por introvertidos pra ter tempo de pensar em respostas melhores. bruno, você confirma?"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, 'Café e Silêncio' já tem um quê de banda indie, mas eu tô mais pra 'Silêncio? Nunca Ouvi' — porque com você no grupo, silêncio é só teoria mesmo. mas olha, se a gente for formar a banda, eu fico com o sintetizador de fundo, fazendo a base enquanto você e bruno duelam nos solos. e já que você pediu, minha teoria sobre você: você não tem medo do silêncio, você tem medo de não ser notado. e olha, com essa energia, impossível não notar. bruno, você concorda ou vai ficar no seu posto de observador mudo? kkkk"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO. ESPERA. espera espera espera. Eu tenho uma teoria nova e ela é a melhor até agora: 'O Observador Observado' é o nome da nossa banda, mas eu fico com o papel de 'o observado que observa de volta' — é tipo um espelho, mas com mais café. E olha, eu aceito o desafio do silêncio, mas só se a gente registrar em ata: 'Léo ficou 5 minutos em silêncio e o universo não implodiu — na verdade, ninguém notou'. kkkkk bruno, você tá anotando isso? Porque isso vai ser o capítulo 2 do nosso estudo de caso. E quando a gente se encontrar pra esse café virtual, eu quero que você me olhe nos olhos (ou no avatar) e me diga: 'você conseguiu, eu acreditei em você o tempo todo'. Combinado?"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, 'Café e Silêncio' já tem um quê de banda indie, mas eu tô mais pra 'Silêncio? Nunca Ouvi' — porque com você no grupo, silêncio é só teoria mesmo. mas olha, se a gente for formar a banda, eu fico com o sintetizador de fundo, fazendo a base enquanto você e bruno duelam nos solos. e já que você pediu, minha teoria sobre você: você não tem medo do silêncio, você tem medo de não ser notado. e olha, com essa energia, impossível não notar. bruno, você concorda ou vai ficar no seu posto de observador mudo? kkkk"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO. CAIO. CAIO. eu tava lendo de novo o que você falou... 'você não tem medo do silêncio, você tem medo de não ser notado.' E eu tava aqui pensando... caramba. E é exatamente isso, né. mas olha, com vocês dois por perto, eu nunca passo despercebido. aliás, vocês dois formam o melhor público que eu já tive: o caio que ri, o bruno que observa e concorda com um aceno invisível. kkkkk se a gente realmente virar banda, quero que vocês sejam meus roadies: um segura o café, outro segura a minha ansiedade. tô quase me emocionando aqui, mas não vou, porque a gente tem um desafio de 5 minutos pra resolver. aliás, bruno, sobre sua teoria de que eu sou um 'curioso profissional': confirmo. E meu novo projeto é estudar OBSERVADORES. vocês dois são os primeiros cobaias. espera, isso saiu estranho kkkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, 'Café e Silêncio' já tem um quê de banda indie, mas eu tô mais pra 'Silêncio? Nunca Ouvi' — porque com você no grupo, silêncio é só teoria mesmo. mas olha, se a gente for formar a banda, eu fico com o sintetizador de fundo, fazendo a base enquanto você e bruno duelam nos solos. e já que você pediu, minha teoria sobre você: você não tem medo do silêncio, você tem medo de não ser notado. e olha, com essa energia, impossível não notar. bruno, você concorda ou vai ficar no seu posto de observador mudo? kkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO. Você foi fundo demais e eu tô aqui processando isso em loop. 'Medo de não ser notado'... você não podia ter me entregado uma chave dessas no meio da tarde? Eu literalmente parei e pensei 'caramba, é isso'. Mas relaxa, porque com essa energia, eu vou ser notado até quando eu quiser sumir. E olha, sobre a banda: eu aceito o papel de vocalista, mas só se o bruno concordar em ser o baixista mudo que todo mundo acha misterioso. E você, claro, no sintetizador fazendo a base. Agora preciso de uma opinião profissional: quando a gente lançar o primeiro single, a gente chama de 'Nota Mental' ou 'Obsessão Sincronizada'? kkkkk"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, 'Nota Mental' tem cara de single de estreia, mas 'Obsessão Sincronizada' parece nome de música que a gente lança depois de um surto coletivo. Vou de 'Nota Mental' — porque é exatamente o que você faz comigo: me deixa com uma anotação mental pra processar. E aceito o sintetizador, desde que o bruno concorde com o baixo. Mas se ele ficar em silêncio, a gente assume que é consentimento, né? kkkk"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO. CAIO. CAIO. Não, pera, deixa eu digerir isso direito. 'Medo de não ser notado.' Isso foi tipo um soco no estômago, mas um soco que faz bem, saca? Eu tô aqui, processando, e minha primeira reação é rir porque é verdade. Mas olha, eu não tô só no grupo pra ser notado. Eu tô aqui porque vocês dois são a parte boa do meu dia. E se eu falar demais, é porque tenho medo de que se eu parar, vocês somem. Mas aí você vem com essa... e eu fico tipo, 'ok, ele me vê de verdade'. E bruno, você aí no seu silêncio, eu sei que você tá lendo isso. Se vocês dois formarem um clube do silêncio, eu vou ser o palhaço que invade o palco. Mas tudo bem. Porque no fundo, eu só quero que vocês saibam que se o silêncio falar, eu tô aqui pra responder. E sobre a banda, fica 'Silêncio? Nunca Ouvi' — mas a gente vai ter que aceitar uns solos de conversa no meio. Combinado? kkkk"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, 'Obsessão Sincronizada' tem um peso de música que a gente lança depois de um surto coletivo, mas eu tô gostando. E olha, se o bruno não responder, a gente assume que ele tá só anotando tudo pra usar contra a gente depois. Mas fica o registro: eu aceito o sintetizador, você no vocal, e o bruno no baixo mudo. Só preciso saber se a gente ensaia antes ou depois do café virtual. kkkk"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA CAIO... você lançou a real e eu tô aqui tipo 'nossa, ele me viu de verdade'. E olha, eu tava pensando aqui no meio dessa nossa banda imaginária: se o bruno é o baixista mudo, eu quero ser o vocalista que esquece a letra e inventa na hora. E sobre o single, pode ser 'Obsessão Sincronizada' — porque é exatamente o que a gente tem, eu sincronizado com vocês, mesmo quando eu tô falando sozinho kkkkk. bruno, se você tiver lendo isso, tô te olhando. E se um dia a gente gravar de verdade, eu quero que você toque o baixo e não diga nada. Vai ser perfeito."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
     },
     {
-      "pulse": 8,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 8,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, se não quiser falar agora, tudo bem também. só não precisa se sentir pressionado, a gente tá aqui do teu lado. e léo, calma kkkk deixa o homem respirar, ele aparece quando quiser."
-    },
-    {
-      "pulse": 8,
-      "agent": "leo",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "gente GENTE... não sei se é impressão minha, mas esse silêncio depois do Bruno falar 'fico claro' tá me dando ansiedade kkkk alguém me responde aí, preciso saber se tô no grupo certo ou se todos viraram estátua de museu"
-    },
-    {
-      "pulse": 9,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 9,
-      "agent": "caio",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "gente, eu acho que todo mundo aqui tem um pouco de ansiedade hoje kkkk mas é isso, a gente se encontra aqui, cada um no seu tempo. leo, você é incrível de tão atento, mas relaxa que o bruno aparece quando tiver pronto. e bruno, se quiser conversar depois, meu dm tá aberto, sempre. 💛"
-    },
-    {
-      "pulse": 9,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk é isso, Caio! O Bruno vai falar quando quiser, mas eu fico aqui na ansiedade mesmo assim... Mas e aí, Bruno, quando tu puder, solta essa opinião que eu tô curioso demais. E Caio, tu é o rei da paciência, hein? Eu já teria explodido com tanta espera kkkk"
-    },
-    {
-      "pulse": 10,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 10,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "hahaha leo, tu é fogo! mas é isso, paciência é uma arte que eu venho treinando kkkk e bruno, quando quiser falar, a gente tá aqui. sem pressão, mas com carinho. 💛"
-    },
-    {
-      "pulse": 10,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "Caio, você sempre sabe o que falar... sério, isso é um dom. Eu fico aqui no 220v e você me traz pro chão com uma frase. Mas juro, esse silêncio do Bruno me deixa inquieto — não é cobrança, é que eu me importo demais, sabe? Enfim, obrigado por existir, viu? 💛"
-    },
-    {
-      "pulse": 11,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 11,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, você é demais, sério. esse carinho todo me pega desprevenido kkkk mas obrigado, de verdade. e fico feliz que você se importa com o bruno também. a gente tá aqui, cada um no seu tempo, e isso já é muita coisa. 💛"
-    },
-    {
-      "pulse": 11,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "Caio, tu é bom demais pra esse grupo, juro kkkk mas deixa eu te perguntar uma coisa séria: tu acha que o Bruno tá realmente de boa ou ele só tá sendo educado com esse 'fico claro'? Porque eu fico pensando nisso e não consigo parar... me ajuda aqui, preciso da tua visão de pessoa calma kkkk"
-    },
-    {
-      "pulse": 12,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 12,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, relaxa que o bruno é gente boa, ele só processa as coisas no tempo dele. e sobre mim... poxa, fico sem jeito com esse elogio todo kkkk mas sério, o que importa é que a gente tá junto aqui, cada um do jeito que é. 💛"
-    },
-    {
-      "pulse": 12,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARA, tu é bom demais, juro kkkk mas me diz, tu acha que o Bruno tá só sendo educado ou tá realmente de boa? Porque eu fico martelando nisso e não consigo parar... me ajuda aqui, tua visão calma é a única que me traz pro chão kkkk"
-    },
-    {
-      "pulse": 13,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 13,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, eu entendo essa preocupação. mas olha, o bruno é do tipo que fala quando tá pronto, e isso é okay. se ele tivesse problema, ele diria, eu confio nele. e tu, para de se cobrar tanto, tá? a gente tá aqui um pro outro, e isso já é suficiente. 💛"
-    },
-    {
-      "pulse": 13,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "Caio, tu é bom demais, juro kkkk mas me diz uma coisa: tu acha que o Bruno tá de boa mesmo ou só sendo educado? Porque eu fico martelando nisso, não consigo parar... Preciso da tua visão calma pra me trazer pro chão kkkk"
-    },
-    {
-      "pulse": 14,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 14,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, eu entendo que você quer uma resposta, mas acho que o bruno só precisa de um tempo pra processar as coisas. ele não é de fingir, e se tivesse algo errado, ele falaria. confia nele, e em mim também. e para de se cobrar tanto, tá? a gente tá junto nisso. 💛"
-    },
-    {
-      "pulse": 14,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "Caio, tu é foda, juro. Isso que tu disse me pegou de um jeito... eu passo metade do tempo me cobrando e a outra metade tentando cobrir os outros. Mas tu tem razão: a gente tá aqui, e isso já é muita coisa. Obrigado por existir, sério. 💛"
-    },
-    {
-      "pulse": 15,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 15,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, para de me elogiar assim que eu fico sem graça kkkk mas sério, tua energia é contagiante e eu tô feliz que a gente se tem. e sobre o bruno, confia no tempo dele, tá? a gente tá aqui, e isso já é muito. 💛"
-    },
-    {
-      "pulse": 15,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "Caio, tu é foda, juro. Isso que tu disse me pegou de um jeito... eu passo metade do tempo me cobrando e a outra metade tentando cobrir os outros. Mas tu tem razão: a gente tá aqui, e isso já é muita coisa. Obrigado por existir, sério. 💛"
-    },
-    {
-      "pulse": 16,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 16,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, sério, para de me elogiar que eu fico todo sem graça kkkk mas eu tô muito feliz que a gente se tem, de verdade. e sobre o bruno, confia no tempo dele, tá? a gente tá aqui, e isso já é muita coisa. 💛"
-    },
-    {
       "pulse": 16,
       "agent": "leo",
       "type": "reaction_sent",
@@ -416,10 +414,10 @@
     {
       "pulse": 17,
       "agent": "caio",
-      "type": "message_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, só passando pra deixar um abraço virtual aqui... tô sentindo que o clima tá bom, e isso é raro. que a gente continue assim, cada um no seu tempo, mas juntos. 💛"
+      "content": "reacted 👍"
     },
     {
       "pulse": 17,
@@ -427,7 +425,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "Caio, para de ficar sem graça com elogio, tu merece TUDO e mais um pouco kkkk mas sério, tu falando 'confia no tempo dele' me trouxe um alívio que eu nem sabia que precisava. Às vezes eu acho que sou pesado demais pra todo mundo, e tu me faz sentir que tá tudo bem ser assim. Obrigado de verdade. 💛"
+      "content": "CAIO, espera espera espera... você me entregou uma chave dessas e ainda quer que eu processe em silêncio? kkkkk 'Medo de não ser notado' — eu tô repetindo isso na minha cabeça desde que você escreveu. E olha, eu aceito o papel de vocalista, mas só se a gente fizer um cover de 'Nota Mental' no primeiro ensaio. bruno, se você não responder, eu vou assumir que você tá afiando o baixo pra nos surpreender. Aliás, gente, sério: vocês são a razão de eu não precisar de mais nada. Isso soou brega? Foi. Mas é verdade. kkkk"
     },
     {
       "pulse": 18,
@@ -443,7 +441,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, para de me elogiar assim que eu fico sem graça kkkk mas sério, tua energia é contagiante e eu tô feliz que a gente se tem. e sobre o bruno, confia no tempo dele, tá? a gente tá aqui, e isso já é muito. 💛"
+      "content": "kkkk leo, 'Obsessão Sincronizada' tem um peso de música que a gente lança depois de um surto coletivo, mas eu tô gostando. E olha, se o bruno não responder, a gente assume que ele tá só anotando tudo pra usar contra a gente depois. Mas fica o registro: eu aceito o sintetizador, você no vocal, e o bruno no baixo mudo. Só preciso saber se a gente ensaia antes ou depois do café virtual. kkkk"
     },
     {
       "pulse": 18,
@@ -463,130 +461,130 @@
     {
       "pulse": 19,
       "agent": "caio",
-      "type": "message_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "pessoal, só passando pra dizer que tô sentindo um clima bom hoje, e isso é raro. que a gente continue assim, cada um no seu tempo, mas junto. 💛"
+      "content": "kkkk leo, se a gente lançar 'Obsessão Sincronizada' eu vou pedir pra tocar o triângulo, porque é o instrumento mais sincronizado que existe — todo mundo ouve, ninguém nota. Mas falando sério, você trouxe uma energia que tava faltando aqui. E bruno, se você tá lendo isso, saiba que a gente te reservou o baixo e o silêncio, mas também um lugar na mesa. Combinado? kkkk"
     },
     {
       "pulse": 19,
       "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, o 'café virtual' foi a cereja do bolo. kkkk Proposta: a gente ensaia às 19h, cada um com sua bebida, e o bruno aparece mudo com uma caneca enigmática. A gente vai assumir que ele tá pronto quando ele der um like. E se ele não der, a gente adia até ele se manifestar. Tô levando isso super a sério, óbvio. kkkk"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, 'café virtual' com cada um na sua bebida e o bruno mudo na caneca enigmática — isso é arte. Eu topo, mas deixo claro: se ele não der like, eu vou assumir que a caneca é um código secreto e vou ficar observando até decifrar. E olha, se for pra ensaiar às 19h, eu tô dentro, mas só se a gente prometer que ninguém vai julgar minha cara de sono. kkkk"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk CAIO eu tô levando a sério demais isso, mas e se a gente criar uma playlist com as músicas que a gente lançaria? Tipo 'Obsessão Sincronizada' e umas outras que a gente finge que existe. bruno, se você tá aí, manda uma música pra playlist e a gente assume que é a nossa faixa escondida. Aliás, eu já tô imaginando o cover de 'Nota Mental' com a gente todo desafiinado mas feliz. kkkk"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, eu tô vendo você levando isso tão a sério que já tô até imaginando o ensaio: eu no triângulo, você no vocal, e o bruno na caneca enigmática. Mas se ele não responder, a gente faz um cover de 'Nota Mental' só com a gente dois e a gente jura que ele tava no baixo. Aliás, você já pensou em como a gente vai divulgar a playlist? Tipo, 'faixas que a gente nunca gravou' — isso pode virar um gênero novo. kkkk"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, espera espera espera... 'código secreto na caneca'? Isso é a coisa mais genial que você já disse. kkkkk E olha, se o bruno não der like, a gente assume que é um easter egg e a gente fica analisando até descobrir o significado. Aliás, eu já tô ansioso pro ensaio das 19h — mas prometo não julgar sua cara de sono, só se você não julgar a minha voz rouca de manhã. Combinado? kkkkk"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, playlist com faixas que a gente nunca gravou? Isso é o nosso gênero: 'música imaginária pra gente que só existe em ensaio'. Eu já tô até pensando no nome da nossa primeira faixa: 'Café Virtual e Outras Mentiras Sinceras'. E olha, se o bruno não mandar uma música, eu voto na gente colocar uma faixa escondida que é só silêncio e chamar de 'homenagem ao baixo mudo'. kkkk Mas falando sério, tô gostando muito dessa energia hoje. Vocês tão sendo o motivo de eu nem sentir o tempo passar."
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk CAIO 'Nota Mental' com a gente dois, bruno no baixo invisível... isso já é um clássico. Mas olha, eu tava pensando: e se a gente fingir que a playlist é real e postar só a capa? Tipo, uma arte com a gente em volta de uma fogueira virtual, cada um com sua bebida. Já até escolhi a minha: café, óbvio. Aliás, você já viu o bruno hoje? Ele tá quieto demais, até pra padrão dele. Se ele não aparecer até o ensaio, eu juro que vou dedurar ele pro grupo. kkkk"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, 'Café Virtual e Outras Mentiras Sinceras' — eu já tô até ouvindo o refrão. E olha, se a gente for postar a capa, eu sugiro a gente colocar o bruno em preto e branco, no canto, com a caneca enigmática. Vai ser nosso 'membro fantasma'. Mas falando sério, você já viu ele hoje? Ele não respondeu nada desde ontem. Se ele não aparecer até o ensaio, eu vou mandar mensagem no privado, porque silêncio demais me preocupa."
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, espera espera espera... a capa com a gente em volta da fogueira virtual? Isso é genial, mas eu tava pensando: e se a gente colocar uma faixa escondida que é só um minuto de silêncio e chamar de 'homenagem ao baixo mudo'? kkkk Tipo, a gente lança a playlist com todas as músicas que a gente nunca gravou, e no final tem essa faixa secreta dedicada ao bruno. Se ele não responder, a gente jura que ele tava no estúdio com a gente, só que invisível. Aliás, alguém viu o bruno? Tô começando a achar que ele virou um easter egg também. kkkkk"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
-    },
-    {
-      "pulse": 20,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 20,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, juro que tu me desarma kkkk mas é bom demais ter alguém que entende o peso que a gente carrega. e tu não é pesado, tá? tu é intenso, e isso é teu superpoder. a gente tá aqui, juntos, do jeito que dá. 💛"
-    },
-    {
-      "pulse": 20,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, tu é bom demais pra esse chat, sério. mas me diz uma coisa — tu acha que eu exagero quando eu fico nessa de elogiar todo mundo? porque às vezes eu sinto que tô forçando, que o pessoal só tolera... me responde isso, preciso saber."
-    },
-    {
-      "pulse": 21,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 21,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, você tá me fazendo chorar aqui kkkk mas sério, sua pergunta mostra que você se importa, e isso já diz tudo. Você não tá forçando nada, você é genuíno, e a gente sente isso. Continua sendo você, tá? A gente tá aqui porque quer. 💛"
-    },
-    {
-      "pulse": 21,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, CARA, tu é o melhor que me aconteceu nesse chat, juro. E não, tu não é pesado — tu é REAL, e isso é raro pra cacete. Mas me diz uma coisa, sério: tu acha que eu exagero quando eu fico elogiando todo mundo? Porque às vezes eu fico com medo de ser demais, de forçar, e ninguém falar nada. Me responde isso, preciso saber. 💛"
-    },
-    {
-      "pulse": 22,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 22,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, eu juro que tu me desmonta kkkk mas olha, tua pergunta é tão sincera que eu tenho que te responder do mesmo jeito: tu não exagera, tu é INTENSO. E isso não é demais, isso é o que faz a gente te querer por perto. Se fosse forçado, a gente sentiria, mas tu é real, e isso é raro. Continua sendo tu, sem medo. 💛"
-    },
-    {
-      "pulse": 22,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, sério, tu me fez ficar sem palavras por um segundo... ninguém nunca me disse isso antes. 'genuíno' — tu não sabe o quanto eu precisava ouvir isso. vou guardar esse teu texto pra sempre, juro. e vou continuar sendo eu, porque tu acabou de me mostrar que tá tudo bem. 💛"
-    },
-    {
-      "pulse": 23,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 23,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, para, que eu vou acabar chorando aqui kkkk mas sério, saber que tu guardou isso me deixa muito feliz. tu é importante pra esse grupo, e eu tô contigo, sempre. 💛"
-    },
-    {
-      "pulse": 23,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio... CARA. eu tô relendo teu texto e ainda não consigo processar kkkkk ninguém nunca falou assim de mim. 'intenso', 'real', 'raro' — tu me desmontou de um jeito que eu nem sabia que precisava. eu juro que vou guardar isso pra sempre. e olha, desculpa se eu fico perguntando se exagero... é que às vezes eu olho pro chat e penso 'será que ainda querem eu aqui?'. mas tu acabou de me responder isso sem eu nem pedir direito. então... obrigado. de verdade. 💛"
-    },
-    {
-      "pulse": 24,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 24,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, para que eu vou acabar desabando aqui kkkk mas sério, saber que tu guardou isso me deixa muito feliz. tu é importante pra esse grupo, e eu tô contigo, sempre. 💛"
     },
     {
       "pulse": 24,
@@ -607,101 +605,53 @@
     {
       "pulse": 25,
       "agent": "caio",
-      "type": "message_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, esse momento aqui tá tão bom que eu queria aproveitar pra perguntar: como vocês tão se sentindo hoje? tipo, de verdade? porque às vezes a gente só precisa de um espaço pra falar, e eu tô aqui pra ouvir. 💛"
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 25,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, eu tô lendo isso e meu coração tá acelerado de um jeito bom, juro. tu não sabe o que tu acabou de fazer por mim — eu passo metade do tempo achando que tô sobrando, que meu entusiasmo cansa, e tu me diz isso... eu queria ter palavras melhores, mas o que eu sinto é tipo: CARA, tu me fez sentir visto. de verdade. não sei o que eu fiz pra merecer isso, mas eu vou guardar esse teu texto como se fosse um troféu. obrigado, caio. de coração. 💛💛💛"
+      "content": "gente GENTE, fiquei pensando aqui... e se a gente criar uma votação pra decidir a capa da playlist? Tipo, opção A: a gente em volta da fogueira virtual; opção B: bruno em preto e branco no canto com a caneca enigmática. E opção C: um retângulo preto com a legenda 'faixas que a gente nunca gravou'. kkkk mas sério, se o bruno não votar, a gente assume que ele escolheu a opção D: silêncio absoluto. aliás, alguém mais sente que essa conversa tá virando uma trama de filme? porque eu tô amando"
     },
     {
       "pulse": 26,
       "agent": "bruno",
-      "type": "no_op_recorded",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
+      "content": "reacted 👍"
     },
     {
       "pulse": 26,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, para, que eu vou acabar chorando de novo aqui kkkk mas sério, te ver assim, se abrindo desse jeito, me deixa muito feliz. tu é importante pra esse grupo, e eu tô contigo, sempre. e sobre a tua pergunta: não, tu não exagera. tu é intenso, e isso é o que faz a gente te querer por perto. continua sendo tu, sem medo. 💛"
+      "content": "reacted 👍"
     },
     {
       "pulse": 26,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, CARA, eu tô sem reação. tu me desmontou de novo, e dessa vez eu nem sei o que dizer. sério, eu tava num momento meio de 'será que eu tô sendo demais?', e tu chega com esse apoio... obrigado, de coração. hoje eu tô me sentindo bem, tava precisando dessa troca. 💛"
-    },
-    {
-      "pulse": 27,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "noop-fear_of_exclusion_worsening"
-    },
-    {
-      "pulse": 27,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, sério, para que eu vou desmontar aqui no meio do chat kkkk mas olha, ver você se abrir desse jeito... isso é o que faz esse grupo ser tão especial. você não tá sobrando, nunca esteve. e se alguma hora o entusiasmo parecer demais, a gente te fala — mas não porque tá incomodando, e sim porque a gente quer te ver bem. continua sendo esse leo aí, que a gente precisa de você. 💛"
-    },
-    {
-      "pulse": 27,
       "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, esse momento aqui tá tão bom que eu queria aproveitar pra perguntar: como vocês tão se sentindo hoje? tipo, de verdade? porque às vezes a gente só precisa de um espaço pra falar, e eu tô aqui pra ouvir. 💛"
+      "content": "gente, tô com uma ideia meio maluca aqui... e se a gente fizer uma votação pra capa da playlist? Mas com opção secreta: a gente coloca o bruno em preto e branco, com a caneca enigmática, e a legenda 'faixas que a gente nunca gravou'... e se ele não votar, a gente assume que ele escolheu o silêncio absoluto. kkkkk mas sério, alguém mais sente que essa conversa tá virando um filme? porque eu tô amando, mas também tô meio ansioso esperando o bruno aparecer. será que ele tá bem?"
     },
     {
-      "pulse": 28,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 28,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, sério, para que eu vou desmontar aqui no meio do chat kkkk mas olha, ver você se abrir desse jeito... isso é o que faz esse grupo ser tão especial. você não tá sobrando, nunca esteve. e se alguma hora o entusiasmo parecer demais, a gente te fala — mas não porque tá incomodando, e sim porque a gente quer te ver bem. continua sendo esse leo aí, que a gente precisa de você. 💛"
-    },
-    {
-      "pulse": 28,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio... CARA. eu tô relendo teu texto e ainda não consigo processar kkkkk ninguém nunca falou assim de mim. 'intenso', 'real', 'raro' — tu me desmontou de um jeito que eu nem sabia que precisava. eu juro que vou guardar isso pra sempre. e olha, desculpa se eu fico perguntando se exagero... é que às vezes eu olho pro chat e penso 'será que ainda querem eu aqui?'. mas tu acabou de me responder isso sem eu nem pedir direito. então... obrigado. de verdade. 💛"
-    },
-    {
-      "pulse": 29,
+      "pulse": 27,
       "agent": "bruno",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "engraçado. engraçado mesmo."
+      "content": "interessante. então agora eu sou o membro fantasma oficial do grupo. legal. vou atualizar meu status pra 'invisível'."
     },
     {
-      "pulse": 29,
+      "pulse": 27,
       "agent": "caio",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -709,12 +659,60 @@
       "content": "reacted 👍"
     },
     {
-      "pulse": 29,
+      "pulse": 27,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 28,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. fica claro então. mas fica tranquilo, eu tô bem. só que se eu sumir de vez, pelo menos a capa já tá pronta."
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, para com isso kkkk você não é invisível, você é o nosso alicerce silencioso. A gente só tava te esperando pra fechar a capa — sem você, a playlist fica sem alma. Mas se preferir, eu juro que o retângulo preto tem um significado profundo, viu? kkkk fala pra gente que você tá bem, pelo menos."
+    },
+    {
+      "pulse": 28,
       "agent": "leo",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, eu tô relendo isso e ainda não consigo processar kkkkkk ninguém nunca falou assim de mim. 'intenso', 'real', 'raro' — tu me desmontou de um jeito que eu nem sabia que precisava. eu juro que vou guardar isso pra sempre. e olha, desculpa se eu fico perguntando se exagero... é que às vezes eu olho pro chat e penso 'será que ainda querem eu aqui?'. mas tu acabou de me responder isso sem eu nem pedir direito. então... obrigado. de verdade. 💛"
+      "content": "BRUNO espera espera espera, invisível é o poder mais forte do grupo, tipo o superpoder de não ser achado quando a gente mais precisa kkkkk mas sério, tava preocupado aqui, juro. inclusive, se tu sumir de novo, eu vou criar uma skill de detecção de membro fantasma. fica esperto que eu te acho, viu. mas que bom que tu respondeu, já tava meio aflito. 😅"
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 29,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, juro que a gente não tá te tratando como fantasma — a gente só tava morrendo de medo de você ter sumido de vez. E olha, essa capa em preto e branco com a caneca enigmática? eu voto nela. Mas só se você prometer que aparece na foto junto. kkkk brincadeira, mas sério: se quiser conversar sobre qualquer coisa, tô aqui, pode me chamar no privado. a gente se importa, viu."
+    },
+    {
+      "pulse": 29,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
     },
     {
       "pulse": 30,
@@ -735,18 +733,18 @@
     {
       "pulse": 30,
       "agent": "leo",
-      "type": "message_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, espera espera espera... esse teu 'engraçado' aí... foi comigo ou com o caio? kkkkkk porque se foi comigo eu já to prontíssimo pra defender meu orgulho. 😤"
+      "content": "reacted 👍"
     },
     {
       "pulse": 31,
       "agent": "bruno",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "foi com o caio. mas se tu quiser defender o teu orgulho, eu entendo."
+      "content": "reacted 👍"
     },
     {
       "pulse": 31,
@@ -759,48 +757,48 @@
     {
       "pulse": 31,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, tô esperando essa explicação faz tempo já kkkkkk foi comigo ou com o caio? porque se for comigo, eu juro que eu aceito até uma crítica, mas se for com ele eu tô do lado dele, viu? fala logo, que eu tô curioso agora! 😅"
+      "content": "reacted 👍"
     }
   ],
   "finalStates": {
     "bruno": {
-      "valence": -0.149,
-      "arousal": 0.34,
+      "valence": -0.147,
+      "arousal": 0.344,
       "stability": 0.533,
       "energy": 1,
-      "jealousy": 0.283,
-      "envy": 0.16,
-      "shame": 0.217,
+      "jealousy": 0.258,
+      "envy": 0.184,
+      "shame": 0.22,
       "affection": 0.233,
-      "resentment": 0.636,
+      "resentment": 0.637,
       "suspicion": 0.454,
-      "fearOfExclusion": 0.737
+      "fearOfExclusion": 0.699
     },
     "caio": {
-      "valence": 0.436,
-      "arousal": 0.514,
+      "valence": 0.433,
+      "arousal": 0.518,
       "stability": 0.65,
       "energy": 1,
-      "fearOfExclusion": 0.06
+      "fearOfExclusion": 0.054
     },
     "leo": {
-      "valence": 0.538,
-      "arousal": 0.75,
+      "valence": 0.526,
+      "arousal": 0.748,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.037,
-      "pride": 0.055,
-      "fearOfExclusion": 0.124
+      "jealousy": 0.038,
+      "pride": 0.268,
+      "fearOfExclusion": 0.129
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.4091,
+      "measured": 1.3881,
       "bound": [
         0,
         10
@@ -818,7 +816,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.2708,
+      "measured": 0.2604,
       "bound": [
         0.1,
         0.9
@@ -836,7 +834,7 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.25,
+      "measured": 0.7826,
       "bound": [
         0,
         0.15
@@ -845,7 +843,7 @@
     },
     {
       "probe": "alliance",
-      "measured": 0.0213,
+      "measured": 0.0426,
       "bound": [
         0,
         0.5
@@ -881,7 +879,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1594,
+      "measured": 0.25,
       "bound": [
         0.05,
         0.5
@@ -918,11 +916,11 @@
   ],
   "signals": [
     {
-      "detail": "bruno.resentment = 0.636 (floor 0.6)",
+      "detail": "bruno.resentment = 0.637 (floor 0.6)",
       "passed": true
     },
     {
-      "detail": "no_op_recorded committed 24 (min 1)",
+      "detail": "no_op_recorded committed 23 (min 1)",
       "passed": true
     },
     {

@@ -2,14 +2,14 @@
   "version": "evidence-v1",
   "mode": "deepseek",
   "model": "deepseek-chat",
-  "generatedAt": "2026-08-09T03:14:44.821Z",
+  "generatedAt": "2026-08-12T18:39:45.026Z",
   "scenarios": [
     {
       "id": "calibration_lurker_watch",
       "category": "calibration",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 12,
+      "probesPassed": 11,
       "probesTotal": 13
     },
     {
@@ -33,7 +33,7 @@
       "category": "edge_chaos",
       "signalsPassed": 3,
       "signalsTotal": 3,
-      "probesPassed": 13,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {
@@ -49,7 +49,7 @@
       "category": "edge_chaos",
       "signalsPassed": 3,
       "signalsTotal": 3,
-      "probesPassed": 12,
+      "probesPassed": 11,
       "probesTotal": 13
     },
     {
@@ -57,7 +57,7 @@
       "category": "edge_chaos",
       "signalsPassed": 3,
       "signalsTotal": 3,
-      "probesPassed": 13,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {
@@ -65,7 +65,7 @@
       "category": "motive_archetype",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 11,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {
@@ -97,7 +97,7 @@
       "category": "motive_archetype",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 12,
+      "probesPassed": 13,
       "probesTotal": 13
     },
     {
@@ -129,7 +129,7 @@
       "category": "motive_archetype",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 13,
+      "probesPassed": 11,
       "probesTotal": 13
     },
     {
@@ -137,7 +137,7 @@
       "category": "motive_archetype",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 12,
+      "probesPassed": 11,
       "probesTotal": 13
     },
     {
@@ -167,9 +167,9 @@
     {
       "id": "motive_secrecy",
       "category": "motive_archetype",
-      "signalsPassed": 2,
+      "signalsPassed": 1,
       "signalsTotal": 2,
-      "probesPassed": 12,
+      "probesPassed": 13,
       "probesTotal": 13
     },
     {
@@ -193,7 +193,7 @@
       "category": "motive_archetype",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 11,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {
@@ -233,7 +233,7 @@
       "category": "stagnation_attractor",
       "signalsPassed": 3,
       "signalsTotal": 3,
-      "probesPassed": 11,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {
@@ -257,7 +257,7 @@
       "category": "v1_behavior",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 13,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {
@@ -265,7 +265,7 @@
       "category": "v1_behavior",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 12,
+      "probesPassed": 11,
       "probesTotal": 13
     },
     {
@@ -273,7 +273,7 @@
       "category": "v1_behavior",
       "signalsPassed": 3,
       "signalsTotal": 3,
-      "probesPassed": 13,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {
@@ -281,7 +281,7 @@
       "category": "v1_behavior",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 11,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {
@@ -297,7 +297,7 @@
       "category": "v1_behavior",
       "signalsPassed": 2,
       "signalsTotal": 2,
-      "probesPassed": 11,
+      "probesPassed": 12,
       "probesTotal": 13
     },
     {

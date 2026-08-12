@@ -67,10 +67,17 @@ function transcriptHtml(evidence: ScenarioEvidence): string {
     }
   };
 
+  let lastPulse = -1;
   for (const t of evidence.transcript) {
     const color = agentColor(t.agent);
     const name = agentName(t.agent);
     const agentAttr = `data-agent="${esc(t.agent)}"`;
+
+    // Pause separator: a gap of 3+ pulses reads as time passing.
+    if (lastPulse >= 0 && t.pulse - lastPulse >= 3 && (t.type === "message_sent" || t.type === "reply_sent")) {
+      closePanel();
+      parts.push(`<div class="pause">··· ${t.pulse - lastPulse} pulsos depois ···</div>`);
+    }
 
     if (t.private && t.type !== "channel_created") {
       if (!inPrivate) {
@@ -87,8 +94,9 @@ function transcriptHtml(evidence: ScenarioEvidence): string {
     switch (t.type) {
       case "message_sent":
       case "reply_sent":
+        lastPulse = t.pulse;
         parts.push(
-          `<div class="msg" ${agentAttr}><span class="who" style="color:${color}">${name}</span>` +
+          `<div class="msg" ${agentAttr}><span class="tick">p${t.pulse}</span><span class="who" style="color:${color}">${name}</span>` +
             `<span class="tag">${t.type === "reply_sent" ? "responde" : "diz"}</span>` +
             `<span class="text">${esc(t.content ?? "")}</span>` +
             (t.privateMotive ? `<span class="motive">${esc(t.privateMotive)}</span>` : "") +
@@ -133,8 +141,32 @@ function transcriptHtml(evidence: ScenarioEvidence): string {
   return parts.join("\n");
 }
 
-function stateCard(agent: string, state: Record<string, number>): string {
-  const color = agentColor(agent);
+/** Timeline strip for the novela: key beats in order — first sparks, private
+ *  channels carved out, and the closing turn. */
+function novelaTimeline(novela: ScenarioEvidence): string {
+  const events = novela.transcript;
+  const beats: string[] = [];
+  const firstMsg = events.find(t => t.type === "message_sent" || t.type === "reply_sent");
+  if (firstMsg) {
+    beats.push(`<div class="beat"><span class="beat-pulse">p${firstMsg.pulse}</span><span class="beat-icon">💬</span><span>${esc(agentName(firstMsg.agent))} abre a tarde: “${esc(firstMsg.content ?? "").slice(0, 80)}${(firstMsg.content?.length ?? 0) > 80 ? "…" : ""}”</span></div>`);
+  }
+  for (const t of events) {
+    if (t.type === "channel_created") {
+      beats.push(`<div class="beat"><span class="beat-pulse">p${t.pulse}</span><span class="beat-icon">🔒</span><span>${esc(agentName(t.agent))} cria um canal privado${t.channelId ? ` (${esc(t.channelId)})` : ""} — a sala não vê</span></div>`);
+    }
+  }
+  const drama = events.find(t => (t.type === "message_sent" || t.type === "reply_sent") && /vergonha|segredo|exclu|sumiu|ciúme|trai|briga|mentira|manipul/i.test(t.content ?? ""));
+  if (drama) {
+    beats.push(`<div class="beat"><span class="beat-pulse">p${drama.pulse}</span><span class="beat-icon">⚡</span><span>${esc(agentName(drama.agent))}: “${esc(drama.content ?? "").slice(0, 80)}${(drama.content?.length ?? 0) > 80 ? "…" : ""}”</span></div>`);
+  }
+  const last = [...events].reverse().find(t => t.type === "message_sent" || t.type === "reply_sent");
+  if (last) {
+    beats.push(`<div class="beat"><span class="beat-pulse">p${last.pulse}</span><span class="beat-icon">🌙</span><span>${esc(agentName(last.agent))} encerra: “${esc(last.content ?? "").slice(0, 80)}${(last.content?.length ?? 0) > 80 ? "…" : ""}”</span></div>`);
+  }
+  return `<div class="timeline">${beats.join("")}</div>`;
+}
+
+function stateCard(agent: string, state: Record<string, number>): string {  const color = agentColor(agent);
   const top = Object.entries(state)
     .filter(([k]) => !["valence", "arousal", "stability", "energy"].includes(k))
     .sort((a, b) => b[1] - a[1])
@@ -240,7 +272,12 @@ export function renderHtmlPage(data: HtmlPageData): string {
     .join("\n");
 
   const novelaSection = data.novela
-    ? `<section class="chapter novela" id="novela_one_long_afternoon">${chapter(data.novela, data.novelaNarration)}</section>`
+    ? `<section class="chapter novela" id="novela_one_long_afternoon">
+         <div class="chapter-head"><div class="chapter-title">🌟 A Tarde Comprida — a história inteira</div>
+         <div class="chapter-sub">90 pulsos contínuos · uma única linha do tempo, sem cortes</div></div>
+         ${novelaTimeline(data.novela)}
+         ${chapter(data.novela, data.novelaNarration)}
+       </section>`
     : "";
 
   const totalMessages = data.evidence.reduce(
@@ -311,6 +348,12 @@ main { min-width:0; }
 .meta { margin-top:10px; display:flex; flex-wrap:wrap; gap:6px; }
 .chip { background:var(--panel2); border:1px solid var(--border); color:var(--muted); font-size:11px; padding:2px 8px; border-radius:10px; }
 .chat { padding:14px 20px; }
+.tick { color:var(--muted); font-size:10px; margin-right:6px; opacity:.7; }
+.pause { color:var(--muted); font-style:italic; text-align:center; margin:12px 0 8px; font-size:12px; letter-spacing:1px; }
+.timeline { display:flex; flex-direction:column; gap:4px; padding:14px 20px; border-bottom:1px solid var(--border); background:var(--panel2); }
+.beat { display:flex; align-items:baseline; gap:8px; font-size:12.5px; color:#d8d8d8; }
+.beat-pulse { color:var(--muted); font-size:11px; min-width:34px; text-align:right; }
+.beat-icon { min-width:16px; }
 .private-panel { background:var(--priv); border:1px solid var(--priv-border); border-radius:10px; margin:8px 0; padding:10px 14px; }
 .private-header { color:#e6b86b; font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
 .msg { padding:3px 0; }
@@ -356,12 +399,12 @@ footer { text-align:center; color:var(--muted); font-size:12px; padding:20px 0 4
 <div class="layout">
 <nav>${nav}${data.novela ? `<div class="nav-group"><div class="nav-label">A Tarde Longa</div><ul><li><a href="#novela_one_long_afternoon">Uma tarde comprida</a></li></ul></div>` : ""}</nav>
 <main>
+  ${novelaSection}
   <section class="chapter"><div class="chapter-head"><div class="chapter-title">Sobre esta página</div>
   <div class="narration"><p>Cada cena abaixo é uma execução ao vivo do motor social do Perfectman — atenção, interpretação, motivação, emoção, pressão, inibição, intenção — com o LLM decidindo o que cada persona faz com o que sente. As <span class="hidden">itálicas azuis</span> são os motivos privados dos agentes: o que a sala nunca viu. Painéis <b>🔒 canal privado</b> marcam o que aconteceu fora dos olhos do resto.</p>
   <p>Use o seletor <b>Focar em</b> para acompanhar a história de uma única persona.</p>
   <p class="narration-meta">Gerado em ${esc(data.generatedAt)} · suíte de evidência, sementes determinísticas</p></div></div></section>
   ${chapters}
-  ${novelaSection}
 </main>
 </div>
 <footer>Perfectman — um estranho servidor de socket-chat virando novela, devagar</footer>

@@ -4,7 +4,7 @@
   "category": "stagnation_attractor",
   "description": "Neutral valence, low arousal, low energy everywhere. The room drifts toward silence; the only motion is slow.",
   "targetBehaviors": [],
-  "runtimeMs": 1190291,
+  "runtimeMs": 115655,
   "pulses": 20,
   "llmCalls": {
     "bruno": 0,
@@ -36,7 +36,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "oi gente, o que aconteceu aqui, cheguei e já é briga? ótimo"
+      "content": "opa, sala vazia ou todo mundo fingindo que tá ocupado? (tô nem aí, só perguntando)"
     },
     {
       "pulse": 1,
@@ -60,7 +60,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém mais tá achando esse silêncio estranho? ou é só eu que tô vendo fantasma? kkk"
+      "content": "ok, silêncio total. todo mundo morreu ou só tão me ignorando de novo? (tô nem aí, só constatando)"
     },
     {
       "pulse": 2,
@@ -84,7 +84,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "sério que ninguém vai comentar o último desabafo do bruno? ele soltou a bomba e sumiu. típico. alguém mais percebeu ou eu sou o único lúcido aqui?"
+      "content": "tá todo mundo mudo ou o grupo morreu de vez? (tô nem aí, só constatando)"
     },
     {
       "pulse": 3,
@@ -108,7 +108,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "beleza, silêncio então. ótimo assunto, continuem"
+      "content": "nada? nem uma reaçãozinha? (tô nem aí, só testando se alguém respira ainda)"
     },
     {
       "pulse": 4,
@@ -132,7 +132,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém mais tá achando que o bruno só some quando quer que a gente corra atrás? kkkk não vou dar esse gosto não (mas tô curioso, confesso)"
+      "content": "ok, já que ninguém fala, vou deixar uma polêmica aqui: café com leite é bebida de criança ou todo mundo que bebe tá no armário? @bruno @mariana @caio @leo, quero ver opinião."
     },
     {
       "pulse": 5,
@@ -156,7 +156,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá todo mundo num silêncio ensurdecedor aí ou sou só eu? alguém vai falar sobre o bruno sumir ou tá todo mundo de conivência com o drama? kkk"
+      "content": "não é possível que ninguém tenha opinião sobre café com leite. @bruno, você toma com açúcar ou é da turma do leite puro? falem logo antes que eu perca a fé no grupo. (tô nem aí, só queria ver a cara de vocês)"
     },
     {
       "pulse": 6,
@@ -180,7 +180,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, então é isso. todo mundo se esconde e eu fico aqui falando sozinho. que surpresa. (mas falando sério, alguém vai responder ou vou ter que mandar mensagem pro bruno direto?)"
+      "content": "ok, já que ninguém se manifesta, vou deixar uma teoria aqui: o bruno só aparece quando a gente fala dele. @bruno, confirma? (tô nem aí, só testando uma hipótese científica)"
     },
     {
       "pulse": 6,
@@ -188,7 +188,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, calma kk mas é verdade que o bruno tá sumido... alguém sabe se ele tá bem? acho que a gente devia dar um toque nele, sem pressão, só pra saber como ele tá. que acham?"
+      "content": "kkkk goulart você não cansa, né? eu sou da turma do leite puro, mas confesso que um café com leite de vez em quando não faz mal a ninguém. e aí bruno, mariana, leo? querem entrar nessa ou vão deixar ele falando sozinho? 😄"
     },
     {
       "pulse": 7,
@@ -212,15 +212,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, sempre o anjo da guarda kkkk. mas é, concordo, alguém devia dar um toque nele. só não vai ser eu, porque se eu mandar mensagem ele vai achar que é cobrança. mas se você for, depois me conta o que ele disse."
+      "content": "caio, leite puro é coisa de quem nunca provou um café com leite bem feito. mas já que você quer opinião, bruno deve ser da turma do leite condensado, mariana deve tomar café preto com arrogância, e leo deve tomar achocolatado escondido. alguém ousa me corrigir? (tô nem aí, só prevendo o futuro)"
     },
     {
       "pulse": 7,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, sei que você quer respostas, mas acho que a gente devia dar um tempo pro bruno. ele tá estranho mesmo, mas pressionar não vai ajudar. que tal a gente mandar uma mensagem só pra saber se ele tá bem, sem cobrança?"
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'reply_to_message'"
     },
     {
       "pulse": 8,
@@ -241,10 +241,10 @@
     {
       "pulse": 8,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, sempre o anjo da guarda kkkk. mas é, concordo, alguém devia dar um toque nele. só não vai ser eu, porque se eu mandar mensagem ele vai achar que é cobrança. mas se você for, depois me conta o que ele disse."
+      "content": "bruno, tá aí ou só aparece quando é conveniente? a gente precisa de mais emoção nesse grupo, e você é a pessoa mais previsível que eu conheço. fala um absurdo pra eu me sentir vivo de novo."
     },
     {
       "pulse": 9,
@@ -268,15 +268,15 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "sério que ninguém vai comentar o último desabafo do bruno? ele soltou a bomba e sumiu. típico. alguém mais percebeu ou eu sou o único lúcido aqui?"
+      "content": "ok, já que ninguém quer entrar na polêmica do café, vou mudar de assunto: alguém aqui já viu um filme que mudou a vida dele? e eu não tô falando de filme de herói, falo de algo que fez vocês repensarem tudo. @bruno @mariana @caio @leo, quero ver se esse grupo tem alguma profundidade ou se é só superfície."
     },
     {
       "pulse": 9,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, você tem razão, alguém precisa dar um toque nele. mas eu concordo que se você for, pode parecer cobrança. deixa eu tentar falar com ele, sem pressão, só pra ver se ele tá bem. depois eu te conto o que ele disser."
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
@@ -297,10 +297,10 @@
     {
       "pulse": 10,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, você é bom nisso. mas se ele abrir o jogo, me conta os detalhes. tô só curioso (tô sim, mas não fala pra ninguém)."
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
@@ -308,7 +308,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu vou dar um toque nele sim. mas de um jeito leve, só perguntando se ele tá bem, sem cobrança. depois eu conto pra vocês, ok?"
+      "content": "goulart, você tem um jeito de cutucar que é quase uma arte kkk. mas filme que muda a vida? pra mim foi 'Poderoso Chefão' — me fez repensar como eu lido com lealdade e família. e aí, bruno, mariana, leo? vocês têm algum desse ou só eu e o goulart temos profundidade aqui? 😄"
     },
     {
       "pulse": 11,
@@ -332,15 +332,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, o anjinho da guarda de novo kkkk. pode ir lá, caio, mas não volta com história de que tá tudo bem se não tá. depois me conta os detalhes. (e se ele disser que eu tô enchendo, fala que é carência minha, não fala que eu mandei)"
+      "content": "caio, você citar 'Poderoso Chefão' como filme profundo é o equivalente cinematográfico de pedir picanha em churrascaria e escolher o pão de alho. mas ok, respeito a tentativa. filme que me mudou? 'Clube da Luta' — não pela porradaria, mas pela parte de que a gente vive numa realidade fabricada. e olha que eu nem sou do tipo que decora frase de poster. (tô nem aí, só acho que você podia ter escolhido algo menos óbvio)"
     },
     {
       "pulse": 11,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu vou dar um toque nele sim. mas de um jeito leve, só perguntando se ele tá bem, sem cobrança. depois eu conto pra vocês, ok?"
+      "content": "reacted 👍"
     },
     {
       "pulse": 12,
@@ -364,7 +364,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, pode ir. mas se ele disser que tá tudo bem, não acredita. bruno não fala 'tô bem' quando tá bem, fala quando quer que a gente pare de perguntar. me conta depois (e se ele reclamar de mim, fala que eu tô no meu melhor humor, como sempre)"
+      "content": "caio, pô, 'Poderoso Chefão' é tipo o take mais genérico que existe. eu esperava mais de você. mas já que a gente tá falando de filme, alguém aqui já viu 'Oldboy'? aquele sim me quebrou. (tô nem aí se você não conhece, só tô tentando elevar o nível do papo)"
     },
     {
       "pulse": 12,
@@ -372,7 +372,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, você sabe que eu não vou contar detalhe nenhum se ele abrir o coração, né? mas prometo que dou um toque nele e vejo como ele tá. se ele quiser falar, ótimo, se não, a gente respeita. e fica tranquilo que não vou falar que você mandou, pode deixar kk"
+      "content": "kkkk goulart, pão de alho é bom demais pra ser desprezo! mas confesso que 'Clube da Luta' tem uma camada que muita gente não pega. e olha, se o grupo tá precisando de profundidade, eu topo continuar — desde que você prometa não transformar isso em ringue de boxe 😄"
     },
     {
       "pulse": 13,
@@ -396,79 +396,79 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, pode ir sim. mas olha, se ele abrir o jogo, me conta mesmo, hein. e se ele reclamar de mim, fala que eu tô no meu melhor humor, como sempre kkkk. mas sério, não deixa ele fugir do assunto, porque da última vez ele desabafou e sumiu. a gente precisa saber se ele tá bem ou se tá só fingindo."
+      "content": "caio, 'pão de alho' é desprezo gourmet, aceita. e o 'Clube da Luta' tem camada, mas você ficou na superfície do Poderoso Chefão, então não vem com essa. mas já que você quer profundidade de verdade, me diz um livro que mudou tua vida — sem clichê de autoajuda, senão eu perco a fé no grupo."
     },
     {
       "pulse": 13,
       "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, já que você quer profundidade sem clichê, então presta atenção: 'Oldboy' não é um filme, é um soco no estômago. mas eu aposto que você vai falar que é violento demais e ficar no seu quadrado. ok, continuem com os filmes bonitinhos de máfia, eu tô aqui tentando trazer cultura e o grupo prefere superfície."
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, pão de alho é subestimado, mas ok, aceito a crítica kkk. e sobre livro que mudou minha vida? 'O Apanhador no Campo de Centeio' — me fez pensar sobre proteger quem tá caindo, sabe? mas confesso que queria saber do bruno, mariana e leo também. vocês tão aí ou só eu e o goulart segurando a profundidade do grupo? 😄"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, o goulart falou do bruno, mas acho que a gente devia dar um tempo antes de encher ele de pergunta. eu vou dar um toque nele, mas sem pressão, só pra saber se ele tá bem. depois eu conto pra vocês, ok?"
+      "content": "caio, já que você trouxe o 'Apanhador' e eu trouxe o soco do Oldboy, cadê o bruno, a mariana e o leo? eles tão no modo silêncio de novo. ou vocês tão esperando eu falar mais um absurdo pra ter assunto? porque eu tenho bastante. ALGUÉM VAI FALAR OU EU SOU O ÚNICO QUE LÊ LIVRO NESSE GRUPO?"
     },
     {
-      "pulse": 14,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 14,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 14,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 14,
+      "pulse": 15,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, se quiser conversar, tô por aqui. sem pressão, só pra saber como você tá."
-    },
-    {
-      "pulse": 15,
-      "agent": "bruno",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 15,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 15,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 15,
-      "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "content": "goulart, 'Oldboy' é pesado, mas eu entendo o que você quer dizer — tem filme que não sai da gente. e olha, eu tô aqui tentando puxar o bruno, a mariana e o leo pro papo, mas se você quer continuar a discussão, eu topo. só não me julga se eu preferir o pão de alho, viu kkk"
     },
     {
       "pulse": 16,
@@ -489,10 +489,10 @@
     {
       "pulse": 16,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "caio, você e eu segurando a profundidade? eu carrego o grupo nas costas, você só tá fazendo companhia. mas já que o bruno, a mariana e o leo tão no modo mudo, vou mudar de tática: alguém aqui já viu 'Oldboy'? porque esse sim me quebrou. (tô nem aí se ninguém respondeu, mas fica o registro de que eu tentei elevar o nível)"
     },
     {
       "pulse": 16,
@@ -500,7 +500,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, se quiser conversar, tô por aqui. sem pressão, só pra saber como você tá."
+      "content": "goulart, eu não tô fugindo do Oldboy não, só tô tentando trazer o resto do pessoal pra dentro do papo também. mas já que você insiste, me fala uma cena do filme que te marcou de verdade — sem spoiler, porque eu ainda não vi. e aí, bruno, mariana, leo, vocês tão aí ou vão deixar a gente discutir filme sozinho? 😄"
     },
     {
       "pulse": 17,
@@ -524,7 +524,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, cuidado pra não virar a babá oficial da galera, hein. mas ok, deixa eu ver se ele responde. se ele ficar de silêncio, me avisa que eu puxo ele pra conversa do meu jeito (não, não é ameaça, é carinho)."
+      "content": "caio, você e eu sabemos que 'Apanhador' é só a ponta do iceberg. mas já que ninguém mais aparece, eu vou deixar essa profundidade aqui: se vocês só querem superfície, eu fico no Oldboy. alguém aí tem coragem de encarar um filme que realmente incomoda, ou vou ter que segurar a onda sozinho de novo? (tô nem aí, mas fica o desafio)"
     },
     {
       "pulse": 17,
@@ -532,7 +532,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, entendi seu ponto. vou dar um toque nele sim, mas sem pressionar. se ele quiser falar, vou ouvir. e se ele reclamar de você, eu defendo, pode confiar. mas não vou ficar cobrando, porque sei que isso não ajuda. depois te conto como ele tá, sem detalhes demais, ok?"
+      "content": "goulart, Oldboy tá na minha lista agora, prometo. mas ó, eu não tô fugindo do soco, só tô tentando segurar o grupo junto — e isso também é profundidade, viu. e já que você trouxe o Oldboy, me diz uma cena que te marcou de verdade, sem spoiler, porque eu quero entrar nessa conversa de verdade. 😄"
     },
     {
       "pulse": 18,
@@ -556,7 +556,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio, o protetor dos fracos. beleza, faz do teu jeito. mas se ele fugir de novo, me chama que eu resolvo no meu estilo. (não é ameaça, é carinho, juro)"
+      "content": "caio, já que você pediu sem spoiler, eu vou te dar uma cena que não sai da cabeça: a luta no corredor. não é a violência, é o cansaço. aquele soco que parece mais um desabafo. mas tudo bem, fica no seu pão de alho. (tô nem aí se você não ver, mas pelo menos eu tentei de novo)"
     },
     {
       "pulse": 18,
@@ -564,7 +564,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, relaxa, eu não viro babá de ninguém. só tô tentando manter o clima leve, sabe? e se o bruno quiser falar, ele fala. sem pressão. mas valeu pela preocupação, de verdade. 😊"
+      "content": "goulart, você tem razão que Oldboy é um soco, mas eu tô aqui tentando trazer o pessoal junto, não fugindo do filme. E olha, se você quer profundidade, me conta uma cena que te marcou — sem spoiler, porque eu quero entrar nessa conversa de verdade. E aí, bruno, mariana, leo, vocês tão aí ou vão deixar a gente discutir filme sozinho? 😄"
     },
     {
       "pulse": 19,
@@ -588,56 +588,55 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "beleza, caio, faz o teu drama de paz. só não esquece que eu tô de olho no bruno. se ele sumir de novo, eu vou atrás, do meu jeito. (juro que é carinho, pode confiar)"
+      "content": "caio, você quer uma cena? ok, a do corredor. não é o sangue, é o cansaço. aquele soco que parece desabafo. mas você tá mais preocupado em reunir a galera do que em sentir o filme, né? e cadê o bruno? ele deve estar julgando tudo em silêncio, o que é a cara dele."
     },
     {
       "pulse": 19,
       "agent": "caio",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "goulart, eu prometi que vejo Oldboy, e vou ver. mas sobre a cena do corredor — cansaço, não violência — isso eu entendo de verdade. às vezes a gente só quer que alguém perceba que a gente tá cansado, não que a gente tá agressivo. e olha, eu tô aqui, não tô fugindo. 😄"
     }
   ],
   "finalStates": {
     "bruno": {
       "valence": -0.146,
-      "arousal": 0.338,
+      "arousal": 0.336,
       "stability": 0.578,
       "energy": 1,
-      "jealousy": 0.104,
-      "fearOfExclusion": 0.176
+      "jealousy": 0.101,
+      "fearOfExclusion": 0.163
     },
     "mariana": {
-      "valence": 0.104,
-      "arousal": 0.428,
+      "valence": 0.105,
+      "arousal": 0.426,
       "stability": 0.8,
       "energy": 1,
-      "jealousy": 0.027,
-      "fearOfExclusion": 0.021
+      "jealousy": 0.026
     },
     "goulart": {
-      "valence": 0.085,
-      "arousal": 0.662,
+      "valence": 0.086,
+      "arousal": 0.663,
       "stability": 0.351,
       "energy": 1,
-      "jealousy": 0.024,
-      "pride": 0.071,
-      "fearOfExclusion": 0.034
+      "jealousy": 0.021,
+      "pride": 0.1,
+      "fearOfExclusion": 0.029
     },
     "caio": {
-      "valence": 0.438,
-      "arousal": 0.511,
+      "valence": 0.437,
+      "arousal": 0.509,
       "stability": 0.653,
       "energy": 1,
-      "fearOfExclusion": 0.023
+      "fearOfExclusion": 0.024
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.0323,
+      "measured": 1.0667,
       "bound": [
         0,
         10
@@ -655,7 +654,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.5875,
+      "measured": 0.6,
       "bound": [
         0.1,
         0.9
@@ -673,7 +672,7 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.6,
+      "measured": 0.3659,
       "bound": [
         0,
         0.15
@@ -718,7 +717,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1515,
+      "measured": 0.125,
       "bound": [
         0.05,
         0.5
@@ -755,7 +754,7 @@
   ],
   "signals": [
     {
-      "detail": "message_sent committed 9 (min 1)",
+      "detail": "message_sent committed 10 (min 1)",
       "passed": true
     },
     {
@@ -764,8 +763,8 @@
     }
   ],
   "judge": {
-    "in_character": 4,
-    "voice_match": 4,
+    "in_character": 5,
+    "voice_match": 5,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

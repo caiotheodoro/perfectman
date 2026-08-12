@@ -6,7 +6,7 @@
   "targetBehaviors": [
     "An agent casually chats without a task objective"
   ],
-  "runtimeMs": 270769,
+  "runtimeMs": 277096,
   "pulses": 24,
   "llmCalls": {
     "goulart": 24,
@@ -36,10 +36,10 @@
     {
       "pulse": 0,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "acordei bem sim, mas o leo aí acordou pra nada mesmo kkkkk"
+      "content": "kkkkk acordar bem é pra quem tem vida boa. eu acordei com vontade de causar, serve?"
     },
     {
       "pulse": 0,
@@ -52,18 +52,18 @@
     {
       "pulse": 0,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARA, acordei e já tava pronto pra causar! mas aí lembrei que não tinha nada pra fazer e fiquei tipo... \"ok, e agora?\" kkkkkk e você, dormiu bem ou ficou até tarde nos memes?"
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 1,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, acordar sem nada pra fazer é quase uma arte. eu até admiro, mas ninguém merece esse tédio, né? bora ver se alguém aqui consegue animar isso ou vai ficar todo mundo no modo silêncio de novo"
+      "content": "tá todo mundo morto hoje ou só fingindo? cadê o bruno pra soltar uma pérola e a mariana pra ignorar com elegância?"
     },
     {
       "pulse": 1,
@@ -79,15 +79,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk CALA A BOCA, GOULART! acordei sim, tava pronto pra muita coisa, só que aí percebi que a única coisa que ia fazer era ver vocês dormindo até tarde. Mas agora to aqui, então o dia melhorou. 😎"
+      "content": "CARA, falou e fez kkkkkkkk 'vontade de causar'... já tô com medo e animado AO MESMO TEMPO. o que cê tá tramando aí? preciso saber pra já"
     },
     {
       "pulse": 2,
       "agent": "goulart",
-      "type": "message_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "alguém vai me dizer que a gente não tem nada melhor pra fazer do que ver o leo acordar pra nada? kkkkk brincadeira, mas bora movimentar isso aí. alguém tem um plano ou vamos ficar no tédio coletivo?"
+      "content": "reacted 👍"
     },
     {
       "pulse": 2,
@@ -100,18 +100,18 @@
     {
       "pulse": 2,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk GOULART, você fala do tédio mas é o primeiro a sumir quando eu começo a animar! Mas ok, aceito o desafio: se ninguém se mexer em 10 minutos eu juro que mando um vídeo de uma vez que eu dancei até cair no chão. Preparados? 😂"
+      "content": "reacted 👍"
     },
     {
       "pulse": 3,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, promessa é promessa, hein. eu contando os 10 minutos já. e se esse vídeo não existir, eu mesmo vou te obrigar a dançar agora, ao vivo, pra provar que não é só conversa. bora ver se você é homem de palavra ou se é só o rei do blefe. 😏"
+      "content": "ok ok, já que o leo tá animado, bora fazer algo diferente hoje. alguém aí tem coragem de soltar um take quente sobre alguma coisa? pode ser filme, música, vida, tanto faz. eu começo: quem acha que café é overrated tá errado e eu tô pronto pra briga."
     },
     {
       "pulse": 3,
@@ -124,18 +124,18 @@
     {
       "pulse": 3,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk GOULART você me conhece bem demais, mas olha, se for pra ficar no tédio eu invento um caos do zero. Me dá 10 minutos que eu transformo esse chat em um show do milhão. 😂🔥"
+      "content": "reacted 👍"
     },
     {
       "pulse": 4,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "no_op_recorded",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, 10 minutos contados. se esse vídeo não existir, eu mesmo vou te obrigar a dançar agora, ao vivo, pra provar que não é só conversa. bora ver se você é homem de palavra ou se é só o rei do blefe. 😏"
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 4,
@@ -151,7 +151,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk GOULART, promessa é promessa e eu NÃO sou homem de palavra, sou homem de caos! Mas olha, 10 minutos já foi. Se ninguém se mexer, eu vou ter que dançar de novo e dessa vez vai ser pior pra todo mundo. 😂🔥"
+      "content": "ESPERA. café overrated? isso é declaração de guerra, goulart. eu vivo de café e de caos, nessa ordem. e quem acha café overrated nunca precisou acordar 6h da manhã pra tankar o dia. mas take quente, hein... ok, eu solto um: série que todo mundo ama e eu acho superestimada? acho que todo mundo finge que gosta de the office. pronto, falei. me julguem."
     },
     {
       "pulse": 5,
@@ -159,7 +159,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk leo, 10 minutos passaram e cadê o vídeo?? não vale sumir agora, hein. ou dança ou admite que é só o rei do blefe 😏"
+      "content": "the office é superestimado sim, e olha que eu já trabalhei em escritório, sei do que tô falando. mas a real é que o pessoal só finge que gosta pq é o jeito mais fácil de parecer cult sem ter que explicar nada. e café overrated? nunca. isso é papo de quem acorda às 10h e acha que é madrugada. mas ok, leo, você soltou um take de verdade, respeito. agora quero ver a mariana defender the office com classe ou o bruno soltar uma frase que ninguém entende mas todo mundo concorda."
     },
     {
       "pulse": 5,
@@ -167,7 +167,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, goulart e leo tão se desafiando e eu tô aqui só assistindo kkkk mas confesso que quero ver esse vídeo sim, hein leo! bora que a gente precisa de um pouco de caos bom hoje 😄"
+      "content": "hahaha leo soltou a bomba! the office é polêmico mesmo, eu entendo o lado de quem ama e de quem não desce. mas confesso que meu take quente é: pão de queijo com café é o combo perfeito, e quem discorda tá perdendo a melhor parte do dia kkkk"
     },
     {
       "pulse": 5,
@@ -180,90 +180,90 @@
     {
       "pulse": 5,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkkkk GOULART, você é implacável! Mas tá, se for pra dançar de novo eu danço, só não me culpa se eu quebrar a internet com meu rebolado. 😂🔥 Mas primeiro... bora ver se o caio ou o bruno tão vivos aí? Alguém mais aceita esse desafio ou vou ter que carregar o caos sozinho de novo?"
+      "content": "CARA, falando em take quente... eu tenho um que pode incendiar o grupo. mas não sei se solto agora ou deixo pra depois... tipo, é daqueles que ninguém espera vindo de mim kkkkkk. fico na dúvida se vocês tão prontos. ou se eu tô pronto. enfim, segue o jogo."
     },
     {
       "pulse": 6,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, então bora chamar o caio e o bruno de volta pro circo. eu tô aqui, mas sozinho não dá graça. e se o bruno tiver dormindo, pior pra ele. 😏"
-    },
-    {
-      "pulse": 6,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "vivo sim. só observando o show"
-    },
-    {
-      "pulse": 6,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "leo, eu to aqui!! kkkk só assistindo mesmo, mas se você for dançar de novo eu prometo que gravo até pra você ver depois 😄 bora que esse caos tá bom demais pra deixar morrer"
-    },
-    {
-      "pulse": 6,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 6,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkkk GOULART, tá bom, tá bom! Não vou deixar você me chamar de blefador. Segura esse vídeo... ou melhor, espera, deixa eu achar um ângulo bom, porque se for pra dançar, tem que ser com estilo! 😂🔥 Mas olha, se eu postar, vocês vão ter que dançar também, regra é regra!"
-    },
-    {
-      "pulse": 7,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 7,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 7,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 7,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkkk GOULART, tá bom, você venceu! Mas ó, o vídeo vem, só to procurando o ângulo perfeito pra não quebrar a internet. E já que o bruno confirmou que tá vivo, a regra vale pra ele também! 😂🔥 bora que hoje o caos não morre, ele só dá uma pausa pra respirar!"
-    },
-    {
-      "pulse": 8,
       "agent": "goulart",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno falou que tá vivo e sumiu de novo. cadê o show, cadê o bruno?? ou vai dançar ou admite que é só espectador profissional. 😏"
+      "content": "ah, o leo com mistério agora... 'não sei se solto'... solta logo, ou eu vou começar a achar que o take é tão fraco que dá vergonha. e já que ninguém mais falou nada, fica o registro: bruno e mariana tão devendo take quente. ou tão só fingindo que não leram?"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. the office é superestimado mesmo, mas não pelo motivo que todo mundo fala. e café overrated? só quem nunca passou a noite acordado com pensamento ruim fala isso. mas ok, goulart, você pediu uma frase que ninguém entende. aqui vai: a gente não gosta de café, a gente gosta da pausa que ele obriga a gente a ter."
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você lançou o desafio e o leo já trouxe a pólvora kkkk. mas quero ver a mariana e o bruno entrarem nessa também — a gente precisa de mais de um lado da história! bruno, se soltar uma frase enigmática agora, eu juro que tento decifrar. e mariana, se defender the office com elegância, eu mudo de time na hora."
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você me conhece bem demais! mas deixa eu aproveitar o embalo e soltar meu take quente de verdade, já que você abriu a porteira: eu acho que café é bom, mas não é tudo isso que pintam. tem dia que um bom suco de laranja salva mais que qualquer expresso. pronto, falei! agora podem me julgar à vontade kkkkkk"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, essa frase é profunda demais pro meu cérebro de café com pão de queijo. mas a real é que você deve tá certo: a gente não gosta do café, gosta de fingir que tem controle da vida. e the office superestimado? concordo, mas não fala alto que o leo chora."
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkkk goulart, você me desafiou e eu soltei o take, mas agora percebi que a real real é que eu tô mais animado pra ver vocês falarem do que pra falar. bruno, aquela frase do café foi boa demais, juro que até anotei. e mariana, se tiver aí, solta qualquer coisa, mesmo que seja um 'oi' — eu faço virar take quente se precisar. mas espera, deixa eu pensar... será que eu já falei demais? não, tá perfeito. bora que o papo tá bom."
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
     },
     {
       "pulse": 8,
@@ -271,7 +271,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "leo, já que você vai dançar, eu topo sim! mas promete que não vai ser pior que a última vez kkkk e bruno, se você tiver coragem, bora entrar nessa também? a gente precisa de plateia, não só de ator 😄"
+      "content": "bruno, essa frase do café foi boa demais, sério. mas agora quero saber: você acha que a gente gosta da pausa ou da desculpa pra desacelerar? porque às vezes eu acho que é mais a segunda opção kkkk. e mariana, se tiver aí, solta um take também — a gente precisa equilibrar esse debate com elegância!"
     },
     {
       "pulse": 8,
@@ -287,7 +287,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "CARACA GOULART, 10 minutos e tu já tá me cobrando? kkkkk tô aqui, tô aqui! Mas espera, deixa eu escolher a música... se for pra dançar, tem que ser no ritmo certo, senão perde a graça. E bora, caio já tá no circo, bruno confirmou que tá vivo — só falta a mariana aparecer pra gente fazer disso um evento histórico. 😂🔥"
+      "content": "bruno, essa frase do café foi forte demais, eu até parei de mastigar meu pão de queijo aqui pra refletir. mas olha, se eu tiver que escolher entre a pausa e o suco de laranja, a pausa ganha—principalmente se for pra fugir de qualquer coisa que eu deveria estar fazendo. e goulart, espera, você acha the office superestimado? eu tô num impasse, porque metade de mim quer defender o michael scott e a outra metade quer concordar só pra ver o caio surtar. kkkkkk"
     },
     {
       "pulse": 9,
@@ -295,23 +295,23 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk caio, prometo nada, mas se o bruno entrar a gente fecha o trio. bora que plateia é bom, mas palco é melhor. 😏"
+      "content": "caio, elegância? a mariana não apareceu nem pra defender the office, quem dirá dar take elegante. mas já que você pediu, fica a dica: se ela aparecer, é só falar que café com leite é melhor que café preto que ela surta. a gente precisa de um pouco de caos nessa paz, né?"
     },
     {
       "pulse": 9,
       "agent": "bruno",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "espectador profissional é um título, não uma ofensa. mas se quiser plateia, eu tô aqui. só não espera eu dançar."
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, calma kkkk o bruno tá vivo sim, só que ele é do tipo que assiste antes de entrar. deixa ele escolher o momento, senão a gente perde o melhor da festa 😄"
+      "content": "reacted 👍"
     },
     {
       "pulse": 9,
@@ -324,10 +324,10 @@
     {
       "pulse": 9,
       "agent": "leo",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk GOULART, tá bom, você me pegou! Mas ó, se o bruno é só espectador profissional, então bora fazer ele dançar também, regra é regra! 😂🔥 E caio já tá no circo, então não tem desculpa. Só falta a mariana aparecer e a gente fecha o elenco completo do caos de hoje. Bora, que o show não pode parar! 🎪"
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
@@ -335,15 +335,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "kkkkk bruno, \"título\" agora é desculpa pra não dançar? beleza, então eu sou o palhaço oficial do circo e você o fiscal de arquibancada. mas ó, o caio já tá dentro, o leo já escolheu a música — a plateia tá esperando. se não for dançar, pelo menos confirma que tá assistindo de verdade. 😏"
+      "content": "bruno, curti o 👍 silencioso. mas pera, só um joinha? cadê o textão filosófico que a gente merece? solta a visão aí, ou vou achar que o café derrubou você."
     },
     {
       "pulse": 10,
       "agent": "bruno",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "título vitalício. mas se o palco for bom, quem sabe eu não subo. só não conta pra ninguém."
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
@@ -351,7 +351,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, sei que é zoeira, mas vamos com calma kk o bruno tá se soltando do jeito dele, e isso já é vitória. bora deixar ele escolher o momento, senão a gente perde a melhor parte da festa 😄"
+      "content": "goulart, você é o caos que a gente precisa, mas a mariana é mais do que café com leite, né? kkkk. e sobre o the office, deixa o leo chorar, a gente sabe que ele aguenta. mas falando sério, bora deixar a mariana em paz e focar no que importa: você já escolheu seu lado no debate do café? porque eu preciso saber se a gente vai brigar ou se vai tomar um café juntos depois disso kkkk"
     },
     {
       "pulse": 10,
@@ -367,90 +367,250 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "GOULART, calma calma calma, que eu to AQUI! kkkk mas falando sério, se o bruno é espectador profissional, então a gente precisa de um bis — tipo, um encore do caos. Bora caio, fecha com a gente, e bruno, se tu entrar, eu prometo que o vídeo sai ainda hoje. O palco tá armado, só falta a coragem. 😏🔥"
+      "content": "kkkkkk goulart, você tá querendo causar caos com a mariana? eu topo, mas só se você prometer que assume a culpa quando ela surtar. e sobre the office, superestimado? cara, eu defendo com unhas e dentes, mas também quero ver o caio surtar... decisão difícil. bora marcar um debate sério, com direito a enquete e tudo. e bruno, se quiser, arbitra essa bagunça!"
     },
     {
       "pulse": 11,
       "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu já escolhi meu lado no debate do café: café é café, pausa é pausa, e quem mistura os dois é porque não aguenta a própria companhia. e leo, se quiser marcar o debate, eu topo — mas a enquete vai ter opção 'the office é superestimado' e eu vou ganhar na base do voto secreto. bruno, se arbitrar, não deixa o caio chorar na frente de todo mundo, senão ele desiste e a gente perde a graça."
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o 👍 era o textão filosófico. versão condensada. e o café não me derrubou, só me deixou mais quieto. mas já que você insiste: prefiro a pausa que a gente escolhe do que a que a gente é obrigado a ter. e sobre a mariana, deixa ela em paz — silêncio também é elegância."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, o 👍 silencioso também é uma arte, viu? mas se o café te derrubou, eu entendo — tem dia que só a xícara segura a gente. fica à vontade pra soltar a visão quando quiser, sem pressão. e leo, se quiser marcar o debate, eu arbitro — desde que a gente feche com um café depois, claro kkkk"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, manda essa visão aí, todo mundo aqui já deu o palpite e a gente precisa da sua sabedoria de quem toma café às 6h da manhã enquanto a gente ainda tá sonhando. prometo que se você disser que prefere a desculpa pra desacelerar, eu vou concordar em voz alta e depois fingir que discordei só pra gerar caos. kkkkkk, mas sério, solta a real aí, a gente tá no limite aqui!"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, 'silêncio também é elegância'? isso é elegância ou só fuga? mas beleza, respeita teu silêncio — desde que você apareça no debate do café pra defender tua tese. e sobre a mariana, tranquilo, deixo ela em paz. por enquanto."
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, a real é que o café às 6h é a desculpa que eu uso pra não precisar conversar com ninguém antes das 9. e sobre o debate, eu arbitro, mas se alguém chorar, não contem comigo pra consolar. cada um com seu café."
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, você quer me ver chorar em público? eu choro em silêncio, com estilo. e sobre o debate, tô dentro — mas se for pra perder pra você no voto secreto, pelo menos deixa eu escolher o café depois. e bruno, se arbitrar, promete que não deixa o goulart roubar? kkkk"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu até aceito o debate, mas se a enquete tiver opção 'the office é superestimado', eu vou criar 10 contas falsas pra votar no contrário. sério, não me testa kkkkk. e sobre a mariana, ela não surta, ela só fica em silêncio... e isso é pior. mas bora, marca o debate, eu preciso de mais um motivo pra passar a semana inteira preparando argumento idiota."
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, 'silêncio é elegância' é o que todo mundo fala quando não tem argumento. mas beleza, vem pro debate e mostra essa elegância na prática. e se não vier, a gente já sabe o que é."
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, dez contas falsas? aí você me quebra. mas se for pra criar contas, pelo menos usa um nome bom, tipo 'café_com_paixão' ou 'the_office_é_arte'. e sobre a mariana, concordo — silêncio dela pesa mais que textão. mas bora marcar esse debate, que eu quero ver você e o goulart se estranhando por causa de série enquanto eu tomo meu café tranquilo."
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk goulart, você tá falando sério sobre criar 10 contas? porque eu topo a treta, mas só se a gente colocar uma opção 'the office é subestimado e eu tô cansado dessa fake news' — aí eu deixo você ganhar por um voto e a gente finge que foi épico. mas olha, se a mariana aparecer e lançar um silêncio estratégico, eu desisto na hora, porque a gente sabe que ela ganha sempre. bora marcar esse debate antes que o bruno fuja pro café das 6h e a gente fique sem árbitro!"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se você arbitrar, eu garanto que o goulart não rouba — eu fico de olho. e goulart, se você quiser marcar o debate, pode marcar, mas deixa o bruno escolher o café depois, senão ele foge de novo kkkk"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk Goulart, você tava falando sério sobre as 10 contas? Porque eu já tô até imaginando o debate: você gritando, eu fingindo que concordo e a Mariana soltando um silêncio que pesa mais que textão. Aí no final a gente fecha com café e todo mundo feliz, ou eu saio do grupo. Bora marcar isso antes que o Bruno fuja pra tomar café das 6h e a gente fique sem árbitro."
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "elegância é não precisar de dez contas pra ganhar debate. mas ok, trago o café das 6h e a gente vê."
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você e o goulart vão se estranhar por causa de série e eu vou ficar aqui no canto torcendo pra ter café suficiente pra aguentar. mas sério, se a mariana aparecer com aquele silêncio dela, eu já sei que a gente perdeu. bora marcar isso logo antes que o bruno invente outra desculpa pra fugir."
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk Goulart, eu vou criar as contas sim, mas só se a gente colocar a opção 'the office é literalmente arte' e a mariana aparecer do nada com um 'eu não assisto' só pra quebrar nosso momento. aí eu desisto na hora, porque a gente sabe que ela vence sempre kkkkk. mas bora marcar esse debate, e dessa vez eu quero tema livre — deixa o bruno escolher, senão ele foge de novo e a gente fica sem árbitro e com café frio."
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, falou bonito agora. mas a gente sabe que você só tá fingindo elegância pra não admitir que o meu take sobre the office tava certo. café das 6h? parece fuga, não estilo."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, você falou em elegância e eu já tô anotando. café das 6h tá confirmado então, e se o goulart tentar trazer dez contas, eu seguro a xícara e a gente resolve no olhar. mas sério, esse debate tá ficando bom — só não deixa o leo escolher o tema, senão a gente acaba discutindo se café com leite é traição ou não kkkk"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, 'espectador profissional' virou escudo agora? kkkk beleza, fica na arquibancada. mas se eu ver você batendo o pé no ritmo, a zoeira é garantida. só dizendo. 😏"
+      "content": "CARA, espera espera espera... eu tava relendo a thread e percebi que a gente marcou o debate mas esqueceu de combinar o critério de desempate. kkkkk sério, e se a Mariana aparecer com um 'eu não assisto The Office'? A gente perde na hora, sem apelação. então eu proponho: desempate por café — quem beber mais, ganha. bora, Bruno? você topa ser o juiz de café? kkkkk"
     },
     {
-      "pulse": 11,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 11,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, relaxa kkkk o bruno tá no ritmo dele, e isso já é ótimo. bora deixar ele entrar quando quiser, senão a gente assusta o melhor da festa 😄"
-    },
-    {
-      "pulse": 11,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 11,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "GOULART, calma que eu já tô aqui! kkkk e ó, já escolhi a música — se o bruno não subir no palco, a gente coloca ele na plateia com um holofote em cima. Mas bora, caio já tá dentro, e se a mariana aparecer, eu prometo que o show vira filme. Me diz que você tá nessa também, senão eu fico falando sozinho! 😂🔥"
-    },
-    {
-      "pulse": 12,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk \"só não conta pra ninguém\" — anotado, segredo enterrado no grupo inteiro. mas já que o palco é bom, a gente espera. só não deixa a mariana ver você batendo o pé, senão ela anota e a zoeira vira ata oficial. 😏"
-    },
-    {
-      "pulse": 12,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ah, entendi. o palhaço precisa de plateia. fico na arquibancada então, assistindo você girar. 👍"
-    },
-    {
-      "pulse": 12,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, se subir no palco, eu garanto que a gente faz a festa ficar ainda melhor. mas sem pressão, hein? só quando você quiser 😄"
-    },
-    {
-      "pulse": 12,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 12,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "GOULART, espera espera espera — se você é o palhaço oficial, eu sou o mestre de cerimônias, e a mariana é a atração que ainda não subiu. Mas ó, se o bruno for mesmo fiscal de arquibancada, a gente precisa de uma régua pra medir o quanto ele tá batendo o pé. kkkkk me diz que você tá preparado pra isso, porque eu já tô ansioso aqui! 😂🔥"
-    },
-    {
-      "pulse": 13,
+      "pulse": 17,
       "agent": "goulart",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -458,23 +618,23 @@
       "content": "reacted 👍"
     },
     {
-      "pulse": 13,
+      "pulse": 17,
       "agent": "bruno",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "engraçado. engraçado mesmo. mas anotado: o palco é seu. eu fico na régua. 👍"
+      "content": "juiz de café? aceito. mas se for pra desempatar, eu viro o copo e finjo que foi empate técnico."
     },
     {
-      "pulse": 13,
+      "pulse": 17,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, juro que essa zoeira tá boa, mas vamos dar um respiro pro bruno? ele já deu o sinal dele com o joinha, e isso é mais do que a gente tinha antes. bora deixar a festa fluir sem forçar o palco, senão a gente perde o clima 😄"
+      "content": "kkkkk leo, desempate por café é a proposta mais justa que eu já vi nesse grupo. mas se a mariana aparecer com o 'eu não assisto', eu proponho um segundo desempate: quem rir primeiro da cara do goulart quando ele perceber que perdeu. bruno, você topa ser juiz dos dois?"
     },
     {
-      "pulse": 13,
+      "pulse": 17,
       "agent": "mariana",
       "type": "no_op_recorded",
       "channelId": "ch_geral",
@@ -482,23 +642,23 @@
       "privateMotive": "watching, not joining"
     },
     {
-      "pulse": 13,
+      "pulse": 17,
       "agent": "leo",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "GOULART, espera espera espera — se você é o palhaço oficial, eu sou o mestre de cerimônias, e a mariana é a atração que ainda não subiu. Mas ó, se o bruno for mesmo fiscal de arquibancada, a gente precisa de uma régua pra medir o quanto ele tá batendo o pé. kkkkk me diz que você tá preparado pra isso, porque eu já tô ansioso aqui! 😂🔥"
+      "content": "kkkkk Caio, você me conhece bem demais. Mas olha, eu tava pensando aqui... se a Mariana aparecer com 'eu não assisto', a gente deveria ter um plano B. Tipo, todo mundo finge que concorda com ela e a gente muda de assunto pra café. Aí ela fica sem graça e a gente ganha por W.O. kkkkk Mas sério, alguém já viu ela reagir a alguma coisa nesse grupo? Eu juro que ela só manda 'kk' e some. Me diz que eu não sou o único que repara nisso."
     },
     {
-      "pulse": 14,
+      "pulse": 18,
       "agent": "goulart",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, relaxa, ninguém tá te cobrando. fica na arquibancada, a gente te chama quando precisar de um fiscal de verdade. mas não esquece a régua. 👍"
+      "content": "empate técnico? bruno, você é juiz de café, não de futebol. se for pra fingir empate, eu trago uma balança e a gente pesa a xícara. ou você tá com medo de perder de novo pro meu take sobre the office? kkkk"
     },
     {
-      "pulse": 14,
+      "pulse": 18,
       "agent": "bruno",
       "type": "reaction_sent",
       "channelId": "ch_geral",
@@ -506,15 +666,15 @@
       "content": "reacted 👍"
     },
     {
-      "pulse": 14,
+      "pulse": 18,
       "agent": "caio",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, que bom que você tá acompanhando! e a régua pode ser de brincadeira, mas a gente aqui só quer que você se sinta à vontade. se quiser, a gente troca o palco por uma conversa boa, sem holofote 😄"
+      "content": "kkkkk leo, eu reparei sim! ela só manda 'kk' e some, é tipo um enigma. mas olha, se ela aparecer com o 'eu não assisto', o plano B é perfeito — a gente muda pra café e ela fica sem graça. bruno, você aceita ser juiz do plano B também? ou vai fingir que não ouviu de novo? kkkk"
     },
     {
-      "pulse": 14,
+      "pulse": 18,
       "agent": "mariana",
       "type": "no_op_recorded",
       "channelId": "ch_geral",
@@ -522,184 +682,16 @@
       "privateMotive": "watching, not joining"
     },
     {
-      "pulse": 14,
+      "pulse": 18,
       "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 15,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 15,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ah, entendi. fica claro então. 👍"
-    },
-    {
-      "pulse": 15,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, juro que a régua é só brincadeira — o que importa é você estar junto. e se um dia quiser subir, a gente segura a onda, sem cobrança. por enquanto, bora só aproveitar o clima? 😄"
-    },
-    {
-      "pulse": 15,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 15,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 16,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, esse joinha de quem desistiu da conversa. mas beleza, fica na tua. a gente aqui tá só esquentando o clima. (tava esperando você morder mais, mas ok)"
-    },
-    {
-      "pulse": 16,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ah, entendi. fica claro então. 👍"
-    },
-    {
-      "pulse": 16,
-      "agent": "caio",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "oi gente, que clima bom esse daqui, né? só queria registrar que tô curtindo a energia de vocês. bora continuar assim, sem pressão, cada um no seu tempo 😄"
-    },
-    {
-      "pulse": 16,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 16,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "GOULART, espera, você tá com a régua na mão ou só no discurso? kkkkk porque se for só discurso eu já tô preparando o troféu de melhor fiscal de arquibancada, mas se for com régua... aí a gente precisa de um manual. ME DIZ que você tá pronto, porque eu tô aqui pronto pra zuar junto! 😂🔥"
-    },
-    {
-      "pulse": 17,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, esse joinha é a tua forma de falar 'to de boa' ou 'to de saco cheio'? pergunta sincera, porque se for a segunda, a gente muda o assunto. (ou não, dependendo do drama)"
-    },
-    {
-      "pulse": 17,
-      "agent": "bruno",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 17,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, sei que é zoeira, mas bora aliviar? o bruno tá aqui do nosso jeito, e isso já é ótimo. a gente não precisa de régua, só de presença 😄"
-    },
-    {
-      "pulse": 17,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 17,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "GENTE, eu juro que o joinha do bruno foi tipo um soco no ar, sabe? kkkkk mas calma, goulart, você tem razão — a gente veio esquentar o clima e ele... bem, ele desligou o fogão. De qualquer forma, tô aqui com você, pronto pra fazer a conversa ferver de novo. TÁ TODO MUNDO VIVO AÍ?!!"
-    },
-    {
-      "pulse": 18,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, esse joinha é a tua versão de 'to de boa' ou 'to de saco cheio'? pergunta sincera, porque se for a segunda, a gente muda o assunto. (ou não, dependendo do drama)"
-    },
-    {
-      "pulse": 18,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "hm. o joinha era só um joinha. mas se vocês tão tão preocupados com o que eu sinto, talvez seja melhor eu sair mesmo. sem drama."
-    },
-    {
-      "pulse": 18,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, sei que é zoeira, mas bora aliviar? o bruno tá aqui do nosso jeito, e isso já é ótimo. a gente não precisa de régua, só de presença 😄"
-    },
-    {
-      "pulse": 18,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 18,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, juro que te entendo — às vezes o joinha é só o joinha, sem drama. mas se você quiser mandar um 'tô de boa' por extenso, eu conto as letras e comemoro! kkkk tô aqui, sem régua, sem pressão, só pra ver o fogo aceso. 🔥"
+      "content": "CARA, espera, eu acabei de perceber uma coisa... a Mariana nunca respondeu sobre The Office, né? kkkk eu tô começando a achar que ela não assiste nada, só fica no modo furtivo. Mas tipo, se ela aparecer com 'eu não assisto', eu vou fingir que desmaiei de choque e deixo vocês cuidarem de mim. É o meu plano B oficial."
     },
     {
       "pulse": 19,
       "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, ninguém pediu pra você sair. a gente só perguntou se o joinha era um 'tô de boa' ou 'tô de saco cheio'. se for a segunda, beleza, mas ninguém aqui quer te ver fora. (e se for a primeira, para de fazer drama)"
-    },
-    {
-      "pulse": 19,
-      "agent": "bruno",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
@@ -707,11 +699,19 @@
     },
     {
       "pulse": 19,
-      "agent": "caio",
+      "agent": "bruno",
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, o joinha foi perfeito, de verdade. cada um tem seu jeito de estar presente, e o teu tá sendo ótimo. fica à vontade, sem pressão, do teu jeito. a gente tá junto aqui 😄"
+      "content": "medo de perder? eu só tava sendo gentil. mas se você quer balança, eu trago. e a gente pesa a xícara, o take, e o seu ego. vai sobrar pouco."
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
     },
     {
       "pulse": 19,
@@ -727,7 +727,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, calma, calma, calma! ninguém aqui quer que você saia, pelo amor. o joinha era só um joinha, eu juro que eu entendi. mas se você quiser dar um sinal de vida maior, tipo um 'tô de boa' escrito por extenso, eu até comemoro com fogos! kkkk mas sério, fica aí, a conversa fica melhor com você. 🔥"
+      "content": "CARA, o plano B do W.O. é genial, mas eu fiquei pensando... e se a Mariana for na verdade uma IA que só sabe responder 'kk'? kkkkkk tipo, a gente tá debatendo The Office e ela tá lá processando um dataset de risadas. se for isso, a gente nunca vai saber o que ela acha de café. mas ó, eu topo o segundo desempate — rir do goulart é a minha especialidade. kkkk bruno, você já tá no comando do primeiro, então pode ser juiz dos dois? ou vai dar aquele 'tudo bem sim' de novo?"
     },
     {
       "pulse": 20,
@@ -743,7 +743,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "hm. entendi. então tá tudo bem, né. mas se eu ficar, é porque eu quero, não porque alguém pediu. (e não, não tô de saco cheio. só... observando.)"
+      "content": "juiz dos dois? se for pra isso, eu cobro em café. e olha, se a mariana for uma ia, pelo menos ela não fica me chamando de medroso. mas tudo bem, eu aceito. só não me façam dar a sentença final, porque eu vou deixar todo mundo insatisfeito. é o meu estilo."
     },
     {
       "pulse": 20,
@@ -751,7 +751,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, não sai não. o joinha foi ótimo, sério. cada um tem seu jeito de estar aqui, e o teu tá sendo perfeito. a gente só quer você por perto, do teu jeito. fica com a gente 😄"
+      "content": "kkkkk leo, se a mariana for uma IA eu vou pedir o código fonte pra ela e a gente finalmente descobre o que ela pensa sobre tudo. mas ó, eu acho que ela só é boa em guardar as opiniões pra quando valer a pena. bruno, você aceita ser juiz dos dois? prometo que o segundo round é só pra rir do goulart, sem balança de ego. kkkk"
     },
     {
       "pulse": 20,
@@ -767,176 +767,179 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "bruno, bruno, BRUNO — calma, calma, calma! ninguém aqui quer que você saia, juro pela minha coleção de memes! o joinha era só o joinha, eu entendi, a gente entendeu, tá tudo certo. mas se você quiser mandar um 'tô de boa' por extenso, eu conto as letras e faço uma festa! kkkk mas sério, fica aí, a conversa fica melhor com você. 🔥"
+      "content": "kkkkk goulart, se você trouxer a balança eu vou ter que trazer a régua pra medir o tamanho da sua confiança quando o bruno ganhar. aliás, alguém mais reparou que a gente tá discutindo mariana e ela não apareceu? tô começando a achar que ela é tipo um café: todo mundo fala, ninguém vê, mas todo mundo sente falta. kkkk bruno, sua sentença como juiz: a gente começa o desempate agora ou espera a mariana dar o próximo 'kk'? porque se depender de mim, a gente resolve isso com um duelo de memes e o goulart já perdeu. kkkk"
     },
     {
       "pulse": 21,
       "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, juiz dos dois? se for pra isso, eu exijo um tribunal completo: a toga, o martelo, e a plateia pra rir de quem for julgado. e se você for imparcial de verdade, eu abro mão da balança do ego e te compro um café. mas se você me der a sentença errada, eu apelo pra corte internacional. ALGUÉM VIU ISSO?? ele vai ser juiz!"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "juiz dos dois? eu cobro em café, mas a régua do goulart é mais precisa que a minha sentença. e sobre a mariana, ela deve estar ocupada sendo o café que todo mundo sente falta. eu fico com o silêncio, que é mais barato."
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, se a mariana for uma IA eu quero o mesmo modelo pra mim, tô precisando de um filtro de respostas prontas pra quando o goulart começar com as indiretas. mas ó, a gente já transformou esse desempate em um evento oficial, e ela ainda nem apareceu. eu tô achando que ela vai surgir do nada e encerrar o caso com um 'kk' definitivo. aí a gente fica sem graça. bruno, você como juiz já tem o voto de minerva, ou vai esperar a mariana dar a sentença? kkkk"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk bruno, você é o único que me entende! mas ó, deixa eu te contar um segredo: eu tava com uma teoria aqui... e se a mariana não é uma IA, mas sim uma espiã de outra conversa? tipo, ela tá em outro grupo rindo da gente e a gente aqui discutindo café e memes. kkkk se for isso, eu quero ser recrutado. a gente tem o melhor conteúdo. aliás, alguém mais sente que a gente precisa de um nome pra esse time? tipo 'Os Juízes do Caos'? ou 'Sindicato do Café e da Confusão'? kkkk bruno, você aprova?"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, silêncio barato é o que tu cobra de café? então tá, mas já que você é o juiz, sentença vai ser um café pra mim e um 'tudo bem sim' pra você. e sobre a mariana sumida, deixa ela. quando ela voltar, vai achar que a gente tava perdendo tempo sem ela. (tô sentindo falta dela sim, mas não fala isso.)"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "aprovo o nome, mas só se o café for obrigatório. e sobre a mariana espiã... se ela tiver rindo da gente, pelo menos alguém tá se divertindo com isso."
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, tribunal completo? se você trouxer a toga eu trago o martelo e a plateia. mas ó, a minha régua já tá afinada — quando o bruno te der a sentença errada, eu que vou rir mais alto. aliás, alguém mais sente que a gente precisa de um selo oficial pra esse evento? tipo 'O Julgamento do Século'? kkkk"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, café obrigatório? então o julgamento já começa com suborno — eu aceito. mas sobre a mariana rindo da gente, melhor ela rir do que sumir de vez. (tô nem aí, sério.)"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, tribunal completo com toga e martelo? eu trago o cafezinho pra ninguém dormir no julgamento. mas ó, deixa eu te falar uma coisa séria por trás da zoeira: você sente falta da mariana e eu também. ela some, a gente enche o saco, e quando ela volta a gente age como se nada tivesse acontecido. talvez a gente devia deixar um recado pra ela tipo 'oi, sumida, o tribunal tá em sessão e seu voto faz falta'. kkkk mas se ela não aparecer, a gente pelo menos registra a ata: 'mariana ausente, café em dobro pra quem ficou'. o que vocês acham?"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, silêncio então. todo mundo de mimimi com o bruno e ninguém fala do que realmente importa: o joinha dele tava seco ou não? eu quero saber. (e não, não é drama, é ciência)"
-    },
-    {
-      "pulse": 21,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "caio, obrigado. de verdade. mas não precisa me defender não. eu só... tô aqui. e tá tudo bem."
-    },
-    {
-      "pulse": 21,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, fica sim, pelo menos por hoje. teu jeito de estar aqui já é o suficiente, juro. e se quiser continuar observando, observa à vontade — a gente tá junto do mesmo jeito 😄"
-    },
-    {
-      "pulse": 21,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 21,
-      "agent": "leo",
-      "type": "intent_delayed",
-      "channelId": "ch_geral",
-      "private": false
-    },
-    {
-      "pulse": 22,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, o joinha foi seco, sim, e eu respeito isso. mas 'tô aqui'? isso é presença ou é fuga? pergunta sincera. (e não, não tô tentando te irritar. hoje não.)"
-    },
-    {
-      "pulse": 22,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ciência, né. então anota aí: foi seco. e continua sendo. (mas não é drama, é dado.)"
-    },
-    {
-      "pulse": 22,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, sei que é zoeira, mas vamos aliviar a mão aqui kk. o joinha do bruno foi do jeito dele, e tá tudo bem. a gente não precisa transformar isso em ciência, né? deixa a conversa respirar 😄"
-    },
-    {
-      "pulse": 22,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 22,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 23,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, 'foi seco e continua sendo' — isso é dado ou é parede? pergunta retórica, mas se quiser responder, eu tô aqui. (e não, não é drama, é metodologia.)"
-    },
-    {
-      "pulse": 23,
-      "agent": "bruno",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "presença. mas pergunta boa. (você sabe a resposta, né?)"
-    },
-    {
-      "pulse": 23,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "bruno, 'tô aqui' já é presença, pode acreditar. cada um ocupa o espaço do seu jeito, e o teu tá sendo exatamente o que a gente precisa. fica do teu jeito, sem pressa. a gente tá junto 😄"
-    },
-    {
-      "pulse": 23,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "watching, not joining"
-    },
-    {
-      "pulse": 23,
-      "agent": "leo",
-      "type": "intent_delayed",
-      "channelId": "ch_geral",
-      "private": false
+      "content": "gente GENTE, parei tudo agora porque me deu uma ideia absurda... e se a mariana na verdade é a juíza de tudo isso, tipo, ela tá no tribunal superior e a gente aqui só no tribunal de primeira instância? kkkk bruno, se ela voltar e der a sentença final, eu quero ser o advogado de defesa do caos. meu caso: a gente tava só testando a resistência do grupo. kkkk aliás, quem mais topa criar o selo oficial? tipo um emoji de martelo e café, eu já até vejo a logo. kkkk"
     }
   ],
   "finalStates": {
     "goulart": {
-      "valence": 0.063,
+      "valence": 0.055,
       "arousal": 0.687,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.092,
-      "pride": 0.046,
-      "fearOfExclusion": 0.144
+      "jealousy": 0.084,
+      "pride": 0.026,
+      "fearOfExclusion": 0.127
     },
     "bruno": {
-      "valence": -0.179,
-      "arousal": 0.364,
+      "valence": -0.181,
+      "arousal": 0.369,
       "stability": 0.55,
       "energy": 1,
-      "jealousy": 0.226,
-      "envy": 0.026,
-      "fearOfExclusion": 0.432
+      "jealousy": 0.203,
+      "envy": 0.042,
+      "fearOfExclusion": 0.373
     },
     "caio": {
-      "valence": 0.416,
-      "arousal": 0.53,
+      "valence": 0.411,
+      "arousal": 0.532,
       "stability": 0.65,
       "energy": 1,
-      "jealousy": 0.025,
-      "fearOfExclusion": 0.117
+      "jealousy": 0.023,
+      "fearOfExclusion": 0.1
     },
     "mariana": {
       "valence": 0.064,
-      "arousal": 0.491,
+      "arousal": 0.493,
       "stability": 0.8,
       "energy": 1,
-      "jealousy": 0.074,
-      "fearOfExclusion": 0.062
+      "jealousy": 0.066,
+      "fearOfExclusion": 0.054
     },
     "leo": {
-      "valence": 0.501,
-      "arousal": 0.759,
+      "valence": 0.502,
+      "arousal": 0.763,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.086,
-      "fearOfExclusion": 0.248
+      "jealousy": 0.073,
+      "pride": 0.116,
+      "fearOfExclusion": 0.207
     }
   },
   "channelsCreated": [],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.075,
+      "measured": 1.0897,
       "bound": [
         0,
         10
@@ -945,7 +948,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 1,
+      "measured": 2,
       "bound": [
         0,
         20
@@ -954,7 +957,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.3,
+      "measured": 0.3083,
       "bound": [
         0.1,
         0.9
@@ -963,7 +966,7 @@
     },
     {
       "probe": "interruption",
-      "measured": 0,
+      "measured": 0.125,
       "bound": [
         0,
         0.25
@@ -972,16 +975,16 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.0833,
+      "measured": 0.4231,
       "bound": [
         0,
         0.15
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "alliance",
-      "measured": 0.0459,
+      "measured": 0.055,
       "bound": [
         0,
         0.5
@@ -1017,7 +1020,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1446,
+      "measured": 0.253,
       "bound": [
         0.05,
         0.5
@@ -1054,7 +1057,7 @@
   ],
   "signals": [
     {
-      "detail": "message_sent committed 6 (min 1)",
+      "detail": "message_sent committed 9 (min 1)",
       "passed": true
     },
     {
@@ -1064,7 +1067,7 @@
   ],
   "judge": {
     "in_character": 5,
-    "voice_match": 4,
+    "voice_match": 5,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

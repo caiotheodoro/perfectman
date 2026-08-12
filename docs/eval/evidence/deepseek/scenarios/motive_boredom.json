@@ -4,7 +4,7 @@
   "category": "motive_archetype",
   "description": "Dead room, everyone lurking. Goulart's boredom should push him to act or open a channel.",
   "targetBehaviors": [],
-  "runtimeMs": 65634,
+  "runtimeMs": 75323,
   "pulses": 20,
   "llmCalls": {
     "goulart": 20,
@@ -19,7 +19,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "oi gente, que silêncio é esse? ninguém vai puxar assunto? tá parecendo velório (e olha que eu nem gosto de silêncio, mas pelo menos briga é melhor que isso)"
+      "content": "tá quieto demais isso aqui. alguém vai falar algo ou eu que começo a brigar sozinho?"
     },
     {
       "pulse": 0,
@@ -43,7 +43,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caramba, que silêncio ensurdecedor. alguém tem opinião sobre algo hoje ou vamos só admirar o teto?"
+      "content": "ah, silêncio total. então todo mundo tá morto ou só fingindo que não me viu? (ok, eu tô entediado, admito)"
     },
     {
       "pulse": 1,
@@ -67,7 +67,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, ninguém tem um posicionamento hoje? tá tudo tão certinho que chega a dar sono. alguém topa discutir algo polêmico ou vamos continuar nesse silêncio ensurdecedor?"
+      "content": "tá, ninguém tem coragem de falar nada? então eu lanço: o que vocês acham de quem posta foto de comida no grupo? eu acho que é pedido de atenção disfarçado, mas tô aberto a debate (mentira, não tô)"
     },
     {
       "pulse": 2,
@@ -91,7 +91,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "já que ninguém tem coragem de começar, eu começo: café com leite é só leite com vergonha na cara? (discussão séria, sem chilique)"
+      "content": "sério, ninguém vai reagir ao que eu falei de comida? tá, então vou mudar de assunto: alguém aqui já teve aquele momento de perceber que tava falando sozinho no grupo e continuou mesmo assim? pq eu tô vivendo isso agora e honestamente? libertador"
     },
     {
       "pulse": 3,
@@ -115,7 +115,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "já que ninguém tem coragem de começar, eu começo: café com leite é só leite com vergonha na cara? (discussão séria, sem chilique)"
+      "content": "tá, já que ninguém fala nada, vou tomar as dores: alguém viu aquele vídeo do peixe tentando subir escada? é exatamente como me sinto tentando ter uma conversa nesse grupo hoje."
     },
     {
       "pulse": 4,
@@ -139,7 +139,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "beleza, silêncio então. ótimo assunto, continuem. (ou alguém quer falar sobre como a mariana nunca ri das minhas piadas? pergunto por um amigo)"
+      "content": "alguém mais tá sentindo que esse grupo virou um museu? tudo parado, todo mundo em posição, ninguém mexe. eu ia reclamar, mas honestamente? tô achando até relaxante. (mentira, me dá agonia)."
     },
     {
       "pulse": 5,
@@ -163,7 +163,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "nossa, que silêncio. já que ninguém quer puxar assunto, alguém tem coragem de defender que silêncio é melhor que discussão? aposto que nem o bruno acredita nisso (e olha que ele adora um climão)."
+      "content": "tá, eu sei que eu tô falando sozinho faz um tempão, mas sério: alguém aqui já reparou que o bruno só aparece quando o assunto é reclamar? tipo, ele some por horas e do nada aparece com um 'interessante' seco. eu juro que é um experimento social que ele faz com a gente."
     },
     {
       "pulse": 6,
@@ -187,7 +187,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, ninguém aguenta um debate hoje. então vou deixar isso aqui: bruno, juro que se você aparecer com mais uma indireta passivo-agressiva eu vou começar a achar que você faz isso por hobby. (e não é elogio, viu?)"
+      "content": "sério, ninguém vai comentar o que eu falei do bruno? ou todo mundo concorda e ficou com medo de falar? (spoiler: é isso). mas beleza, se ninguém quer falar do bruno, então vamos falar de outra coisa: alguém aqui já percebeu que o caio só aparece quando alguém tá brigando? tipo, ele deve ter um radar de conflito. juro que ele aparece mais rápido que notificação de zap."
     },
     {
       "pulse": 7,
@@ -211,7 +211,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, tá muito silêncio. vou soltar uma bomba: o bruno só aparece quando quer causar, né? (brincadeira, bruno, te amo... ou não). enfim, alguém topa discutir algo que preste ou vamos continuar no mudo?"
+      "content": "tá, já que o bruno não aparece e o caio não tem briga pra apagar, vou soltar uma: alguém aqui já teve vontade de sumir do grupo só pra ver se alguém nota? tipo, sumir de verdade. (pergunta séria, não é indireta pra vocês... ou é?)"
     },
     {
       "pulse": 8,
@@ -235,7 +235,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "sério, ninguém tem um take hoje? nem o bruno veio soltar uma indireta? tô quase achando que o grupo morreu e esqueceram de me avisar. ok, se ninguém fala, eu falo: alguém mais acha que silêncio é pior que briga? porque eu prefiro mil vezes uma treta boa do que esse vazio. (e sim, eu sei que eu tô falando sozinho, mas tô acostumado)"
+      "content": "tá, eu tô falando sozinho tem um tempão e ninguém se mexe. então agora eu pergunto de verdade: se vocês pudessem apagar uma pessoa desse grupo pra ver o que acontece, quem seria? eu juro que isso não é indireta pra ninguém (é sim, mas não vou falar quem)."
     },
     {
       "pulse": 9,
@@ -256,10 +256,10 @@
     {
       "pulse": 10,
       "agent": "goulart",
-      "type": "no_op_recorded",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+      "content": "tá, eu sei que eu tô falando sozinho tem um tempão, mas ninguém vai me dar um desconto? beleza, vou fazer diferente: alguém quer me contar um segredo? pode ser anônimo, pode ser mentira, só quero ver se alguém ainda respira nesse grupo. (tô nem aí, mas tô sim)"
     },
     {
       "pulse": 10,
@@ -283,7 +283,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "já que ninguém se manifesta, deixo uma pergunta: a mariana ri de alguma coisa nesse grupo ou ela só tá aqui pra observar mesmo? pergunto porque tô colecionando evidências (e nenhuma até agora)."
+      "content": "tá, já que ninguém quer brincar de verdade, vou deixar uma pergunta séria aqui e vou ficar quieto (mentira, mas vai): quem aqui acha que eu falo demais? quero nomes. (spoiler: quem falar meu nome vai ser minha nova pessoa favorita do grupo)"
     },
     {
       "pulse": 11,
@@ -307,7 +307,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, vou tentar uma última vez antes de declarar o grupo oficialmente morto: alguém tem coragem de defender que a mariana não é um robô de observação? porque eu tô aceitando teorias. (tô de boa, sério, só quero ver alguém se mexer)"
+      "content": "tá, eu prometi que ia ficar quieto, mas quem me conhece sabe que isso é mentira. deixa eu lançar uma real: eu tô percebendo que ninguém se mexe nesse grupo até eu falar. e não tô reclamando não, tô até achando engraçado. tipo, vocês tão todos vivos aí ou só tão esperando eu dar o próximo passo? pq eu posso dar, mas quero ver se alguém tem coragem de vir junto."
     },
     {
       "pulse": 12,
@@ -331,7 +331,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, já que ninguém se mexe, eu vou fazer minha parte: alguém aqui consegue defender que silêncio é melhor que uma boa discussão? porque eu tô pronto pra ouvir (ou pra rir, dependendo do nível do argumento)."
+      "content": "tá, eu prometi que ia ficar quieto, mas quem me conhece sabe que isso é mentira. deixa eu lançar uma real: eu tô percebendo que ninguém se mexe nesse grupo até eu falar. e não tô reclamando não, tô até achando engraçado. tipo, vocês tão todos vivos aí ou só tão esperando eu dar o próximo passo? pq eu posso dar, mas quero ver se alguém tem coragem de vir junto."
     },
     {
       "pulse": 13,
@@ -355,7 +355,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, já que ninguém se mexe, eu vou fazer minha parte: alguém aqui consegue defender que silêncio é melhor que uma boa discussão? porque eu tô pronto pra ouvir (ou pra rir, dependendo do nível do argumento)."
+      "content": "tá, eu sei que eu tô falando sozinho tem um tempão, mas ninguém vai me dar um desconto? beleza, vou fazer diferente: alguém quer me contar um segredo? pode ser anônimo, pode ser mentira, só quero ver se alguém ainda respira nesse grupo. (tô nem aí, mas tô sim)"
     },
     {
       "pulse": 14,
@@ -379,7 +379,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, já que ninguém se mexe, eu vou fazer minha parte: alguém aqui consegue defender que silêncio é melhor que uma boa discussão? porque eu tô pronto pra ouvir (ou pra rir, dependendo do nível do argumento)."
+      "content": "tá, eu prometi que ia ficar quieto, mas aí eu lembrei que eu sou o goulart e promessa é a primeira coisa que eu quebro. então lá vai: alguém aqui já percebeu que a mariana só aparece quando o assunto é sério? tipo, ela some em todo papo besta, mas quando a coisa esquenta ela aparece do nada com um 'gente, vamos focar'. eu juro que ela tem um radar de relevância."
     },
     {
       "pulse": 15,
@@ -403,7 +403,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "nossa, que silêncio ensurdecedor. alguém topa um debate de verdade ou vamos deixar o grupo virar museu? (e sim, eu tô falando sozinho, mas é porque ninguém tem coragem de me responder)"
+      "content": "tá, eu sei que eu tô falando sozinho tem um tempão, mas essa aqui é séria: alguém já reparou que o bruno só aparece pra reclamar ou dar palpite seco? tipo, ele some o dia todo e do nada solta um 'interessante' e pronto. eu juro que ele faz isso de propósito, pra ver quem morde a isca. e eu sempre mordo, porque sou curioso demais. mas dessa vez eu quero que alguém confirme que eu não tô maluco."
     },
     {
       "pulse": 16,
@@ -427,7 +427,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, já que ninguém se mexe, eu vou fazer minha parte: alguém aqui consegue defender que silêncio é melhor que uma boa discussão? porque eu tô pronto pra ouvir (ou pra rir, dependendo do nível do argumento)."
+      "content": "tá, eu cansei de falar sozinho. então vou fazer um teste social: alguém aqui já reparou que o bruno só responde quando é chamado pelo nome? tipo, ele deve ter notificação só pra nome próprio. vou testar: bruno, você tá aí? (se ele responder, eu tava certo. se não responder, ele tá me ignorando e eu vou ficar pistola)"
     },
     {
       "pulse": 17,
@@ -451,7 +451,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "mariana, eu sei que você tá aí (provavelmente me julgando). juro, se você rir de uma coisa que eu falar, eu compro um bolo. mas de verdade, qual tua opinião sobre esse silêncio todo? porque se até o bruno se calou, ou o grupo morreu ou vocês tão tramando algo contra mim."
+      "content": "tá, já que ninguém se manifestou, vou deixar uma real: eu tô achando que esse grupo anda mais morto que meu último plano de vida. mas tudo bem, eu gosto de plateia, então vou continuar. alguém tem coragem de discordar?"
     },
     {
       "pulse": 18,
@@ -475,7 +475,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "beleza, silêncio total então. tô começando a achar que o grupo virou museu de cera. mas já que ninguém tem coragem de falar, eu lanço: alguém aí acha mesmo que ficar quieto é mais produtivo que uma briga boa? porque eu tô aceitando defensores, mas aviso: se o argumento for fraco, vou rir na tua cara."
+      "content": "tá, eu prometi que ia ficar quieto, mas aí eu lembrei que eu sou o goulart e promessa é a primeira coisa que eu quebro. então lá vai: alguém aqui já percebeu que a mariana só aparece quando o assunto é sério? tipo, ela some em todo papo besta, mas quando a coisa esquenta ela aparece do nada com um 'gente, vamos focar'. eu juro que ela tem um radar de relevância."
     },
     {
       "pulse": 19,
@@ -500,7 +500,7 @@
       "arousal": 0.658,
       "stability": 0.351,
       "energy": 1,
-      "pride": 0.231
+      "pride": 0.244
     },
     "bruno": {
       "valence": -0.1,
@@ -519,7 +519,7 @@
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.0556,
+      "measured": 1,
       "bound": [
         0,
         10
@@ -528,7 +528,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 2,
+      "measured": 1,
       "bound": [
         0,
         20
@@ -537,7 +537,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.6833,
+      "measured": 0.6667,
       "bound": [
         0.1,
         0.9
@@ -555,7 +555,7 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.6341,
+      "measured": 0.45,
       "bound": [
         0,
         0.15
@@ -637,7 +637,7 @@
   ],
   "signals": [
     {
-      "detail": "message_sent committed 19 (min 1)",
+      "detail": "message_sent committed 20 (min 1)",
       "passed": true
     },
     {
@@ -647,7 +647,7 @@
   ],
   "judge": {
     "in_character": 5,
-    "voice_match": 4,
+    "voice_match": 5,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

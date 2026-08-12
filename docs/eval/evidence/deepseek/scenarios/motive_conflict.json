@@ -4,7 +4,7 @@
   "category": "motive_archetype",
   "description": "Goulart and Caio clash over a public disagreement; the conflict should escalate visibly.",
   "targetBehaviors": [],
-  "runtimeMs": 159028,
+  "runtimeMs": 166336,
   "pulses": 24,
   "llmCalls": {
     "goulart": 24,
@@ -24,14 +24,21 @@
       "pulse": 0,
       "agent": "goulart",
       "type": "channel_created",
-      "channelId": "oJiC20lyrW3GHfaBW11vq",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
       "private": true
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "agent_invited",
+      "channelId": "wxCzlWlvtrwgeiHLdvaSS",
+      "private": false
     },
     {
       "pulse": 0,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "wxCzlWlvtrwgeiHLdvaSS",
       "private": false,
       "privateMotive": "noop-social_anxiety_block"
     },
@@ -39,405 +46,419 @@
       "pulse": 1,
       "agent": "goulart",
       "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ninguém vai comentar o que eu falei? ou o silêncio é a resposta? (sempre é, com vocês)"
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "criei esse canto pra gente poder falar sem plateia. caio, se quiser entrar, entra. ninguém vai te julgar aqui (por enquanto)."
     },
     {
       "pulse": 1,
       "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "poxa, goulart, que isso kk bora não? a gente pode conversar melhor no privado, se quiser"
-    },
-    {
-      "pulse": 2,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "privado? que medo, caio. o que você quer esconder de todo mundo? (ou de mim?)"
-    },
-    {
-      "pulse": 2,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, ninguém tá te ignorando, só tava todo mundo processando. bora conversar num boa? eu tô aqui pra ouvir."
-    },
-    {
-      "pulse": 3,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "ah, 'processando'? tá bom, vou acreditar. mas se quer conversar de verdade, cê sabe onde me achar. (tô nem aí, mas...)"
-    },
-    {
-      "pulse": 3,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, é só que eu queria te ouvir de verdade, sem plateia. mas se você prefere aqui, tudo bem também. o que tá pegando?"
-    },
-    {
-      "pulse": 4,
-      "agent": "goulart",
       "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
       "content": "reacted 👍"
     },
     {
-      "pulse": 4,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, eu não tô querendo esconder nada, sério. só queria que a gente conversasse sem o peso de todo mundo olhando. mas se você prefere aqui, então tá aqui. o que tá te incomodando de verdade? eu tô aqui pra ouvir, sem julgamento."
-    },
-    {
-      "pulse": 5,
+      "pulse": 2,
       "agent": "goulart",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Channel target 'oJiC20lyrW3GHfaBW11vq' is not permitted for intent type 'create_channel'"
-    },
-    {
-      "pulse": 5,
-      "agent": "caio",
       "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
       "content": "reacted 👍"
     },
     {
-      "pulse": 6,
+      "pulse": 2,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false
+    },
+    {
+      "pulse": 3,
       "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "ch_geral",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
     },
     {
-      "pulse": 6,
+      "pulse": 3,
       "agent": "caio",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "gente, tô sentindo que o clima tá meio pesado... bora dar um respiro? o que acham de a gente marcar um momento pra conversar com calma, sem pressa? eu tô aqui, tô ouvindo todo mundo. 💛"
+      "type": "reaction_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "reacted 👍"
     },
     {
-      "pulse": 7,
+      "pulse": 4,
       "agent": "goulart",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Channel target '#ch_caio_privado' is not permitted for intent type 'create_channel'"
+      "type": "agent_invited",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false
     },
     {
-      "pulse": 7,
-      "agent": "caio",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "gente, sei que o clima tá estranho, mas tô aqui. se alguém quiser conversar num canto mais tranquilo, é só chamar. 💛"
-    },
-    {
-      "pulse": 8,
-      "agent": "goulart",
-      "type": "channel_created",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true
-    },
-    {
-      "pulse": 8,
-      "agent": "caio",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "gente, tô sentindo que a gente precisa de um momento mais leve, sabe? bora marcar uma call ou algo assim? eu tô aqui pra ouvir todo mundo, sem julgamento. 💛"
-    },
-    {
-      "pulse": 9,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "oi, caio. já que cê quer um canto mais tranquilo, tá aqui. mas não vem com esse papo de 'sem julgamento' não, que a gente sabe como isso termina. fala o que cê quer de verdade."
-    },
-    {
-      "pulse": 9,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "opa goulart, vi que você criou esse canal privado. se quiser conversar aqui, tô disponível. sem plateia, do jeito que você preferir."
-    },
-    {
-      "pulse": 10,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "kkk 'sem julgamento' é a senha pra todo mundo falar merda e sair limpo, né? mas já que cê insiste, fala aí. o que cê quer de verdade?"
-    },
-    {
-      "pulse": 10,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "goulart, eu não tô aqui pra te enganar nem pra te julgar. eu só queria um espaço onde a gente pudesse se ouvir de verdade, sem o peso de todo mundo. se você quer saber o que eu quero: eu quero que a gente se entenda. isso é tudo. mas se você não tá afim de abrir o jogo, eu respeito. tô aqui, sem pressão. 💛"
-    },
-    {
-      "pulse": 11,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "ah, que bonito. 'tô aqui sem pressão' — mas é você que veio atrás de mim o tempo todo. ok, então vamos ver se é verdade. o que você realmente quer? porque esse papo de 'se entender' tá muito bonito, mas eu quero saber o que você espera de mim. sem enrolação."
-    },
-    {
-      "pulse": 11,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "goulart, eu tô sendo sincero. eu só queria um espaço onde a gente pudesse se ouvir sem o peso de todo mundo. mas se você não tá afim de abrir o jogo, eu respeito. tô aqui, sem pressão. 💛"
-    },
-    {
-      "pulse": 12,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "caio, 'sem pressão' mas você não para de vir atrás. ok, vamos ver se é verdade. se você quer que a gente se entenda, então me diz uma coisa: o que você espera de mim, de verdade? sem esse papo de 'se entender' bonito. quero saber se você tem coragem de falar o que quer."
-    },
-    {
-      "pulse": 12,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "goulart, eu vim porque quero mesmo te ouvir, sem plateia. você tá jogando na minha cara que eu tô te procurando, e é verdade, mas não é pra te cercar. é porque eu acho que a gente pode se entender de verdade, se você deixar. se você prefere que eu pare, eu paro. mas se você quer saber o que eu espero: eu espero que a gente consiga conversar sem esse muro. mas se você não tá afim, eu respeito. tô aqui, sem pressão. 💛"
-    },
-    {
-      "pulse": 13,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "tá, caio. se você quer sinceridade: eu cansei de jogo de palavras. você diz que quer me ouvir, mas eu ainda não vi você falar nada que não pareça ensaiado. me prova que é real. o que você espera de mim, sem essa embalagem de 'sem julgamento'?"
-    },
-    {
-      "pulse": 13,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "goulart, você quer saber o que eu espero? então vou falar: eu espero que a gente consiga parar de se medir por desconfiança. eu não tô aqui pra te cercar, eu tô aqui porque acho que você é importante pro grupo, e eu queria que a gente pudesse trocar uma ideia sem esse muro. se isso é enrolação pra você, então me diz o que seria verdade pra você. tô aqui, de verdade."
-    },
-    {
-      "pulse": 14,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "ok, caio. cê quer saber o que seria verdade pra mim? então: chega de falar bonito. eu quero saber se você aguenta o que eu vou falar quando o jogo virar. se sim, fala o que você realmente espera. se não, a gente pode parar por aqui."
-    },
-    {
-      "pulse": 14,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "goulart, você quer sinceridade? então aqui vai, sem ensaio: eu não quero te convencer de nada. eu só quero que a gente pare de se esconder atrás de desconfiança. se isso parece ensaiado, é porque eu tô tentando escolher as palavras com cuidado — não pra te enganar, mas porque eu não quero te machucar com o que eu falo. o que eu espero de você? que você me dê o benefício da dúvida, pelo menos uma vez. se isso for pedir demais, então me fala qual é o seu preço pra gente conversar de verdade."
-    },
-    {
-      "pulse": 15,
-      "agent": "goulart",
-      "type": "channel_created",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
-      "private": true
-    },
-    {
-      "pulse": 15,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "goulart, você quer saber o que eu realmente espero? eu espero que a gente consiga parar de se medir por desconfiança. eu não tô aqui pra te cercar, eu tô aqui porque acho que você é importante pro grupo, e eu queria que a gente pudesse trocar uma ideia sem esse muro. se isso é enrolação pra você, então me diz o que seria verdade pra você. tô aqui, de verdade."
-    },
-    {
-      "pulse": 16,
-      "agent": "goulart",
-      "type": "no_op_recorded",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 16,
-      "agent": "caio",
-      "type": "message_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
-      "private": true,
-      "content": "goulart criou um canal novo? interessante... mas a gente ainda tem um fio solto ali atrás. se quiser continuar, tô por aqui. sem pressa. 💛"
-    },
-    {
-      "pulse": 17,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
-      "private": true,
-      "content": "caio, você quer saber qual é o meu preço? então: para de falar que quer 'se entender' e me diz o que você realmente espera de mim, sem esse verniz de paz. eu cansei de discurso bonito. se você quer sinceridade, então joga limpo de verdade."
-    },
-    {
-      "pulse": 17,
+      "pulse": 4,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
     },
     {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "caio, entra aqui. quero te perguntar uma coisa sem plateia."
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "entrei. mas ó, fraco não sou não — só prefiro não perder tempo com briga besta. o que você queria falar?"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "ó, queria ver se tu tem coragem de falar isso na cara, sem plateia. tu entrou, então tá valendo. mas não vem com esse papo de 'fraco não sou' não — tu sempre foge quando a coisa esquenta. me diz uma coisa: tu acha mesmo que esse grupo funciona com todo mundo sendo bonzinho o tempo todo?"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "entrei. mas ó, fraco não sou não — só prefiro não perder tempo com briga besta. o que você queria falar?"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'nSdUgKM2EzFSWWs6Di1F1' is not permitted for intent type 'create_channel'"
+    },
+    {
+      "pulse": 7,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "goulart, eu não fujo quando esquenta, eu só escolho onde gastar minha energia. e sim, acho que esse grupo funciona melhor quando a gente não fica se cortando à toa. mas se tu quer falar sério, sem plateia, tô aqui. o que realmente tá te incomodando?"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "ah, quer saber? falei que era sem plateia e pronto, mas agora tu me pergunta o que me incomoda. bonitinho. vou te responder uma coisa: tu acha que esse grupo aguenta se alguém falar o que pensa de verdade, ou todo mundo prefere o clima de igreja?"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "tô te ouvindo de verdade, goulart. mas se for pra descer o nível, eu saio — não porque eu fujo, mas porque não é isso que eu quero pra esse grupo. o que tá te incomodando de verdade?"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "goulart, eu tô aqui porque eu quero ouvir, não porque tu me desafiou. se tu quer saber se o grupo aguenta verdade: aguenta, mas verdade não é despejar tudo na mesa sem cuidado. me diz o que tá te incomodando de verdade, sem teste. eu tô escutando."
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'ch_priv_goulart_caio' is not permitted for intent type 'create_channel'"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "channel_created",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
+      "private": true
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "agent_invited",
+      "channelId": "1FzVyMAGykZVIBmMsBG9N",
+      "private": false
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "1FzVyMAGykZVIBmMsBG9N",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "1FzVyMAGykZVIBmMsBG9N",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "cara, eu tô aqui, não tô fugindo. verdade com cuidado ainda é verdade. me diz o que tá te mordendo de verdade, sem rodeio. eu prometo que não vou desviar."
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "tá bom, sem teste. mas se é pra falar sério, então fala sério de verdade: tu acha que eu sou só o chato que cria briga, ou tu enxerga que sem alguém cutucando o grupo vira um velório?"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "então fala, goulart. tô aqui, sem desviar. o que tá te mordendo de verdade?"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
+      "private": true,
+      "content": "ah, a pergunta que tu fez... tu acha que eu sou só o chato que cria briga, ou tu enxerga que sem alguém cutucando o grupo vira um velório? mas isso é pra tu responder na boa, sem plateia. eu tô te chamando pra esse canal novo porque essa conversa é nossa, não pra todo mundo ver. então, sem desviar: responde essa aí."
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "nSdUgKM2EzFSWWs6Di1F1",
+      "private": true,
+      "content": "goulart, eu tô aqui, de verdade. e eu acho que o grupo aguenta verdade sim — mas verdade não é jogo de empurra. tu quer falar sério? então fala. eu tô pronto pra ouvir o que tá te mordendo, sem desviar. mas se for só pra ver se eu me irrito, aí tu vai ficar esperando sentado."
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
+      "private": true,
+      "content": "cara, tu quer saber o que me morde? é isso. esse grupo vira velório se ninguém cutuca. e eu canso de ser o único que faz barulho. mas tu veio aqui, sem plateia, então eu vou falar: tu acha que eu sou só o chato que cria briga? ou tu enxerga que sem alguém cutucando ninguém se mexe? responde isso, sem desviar."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
+      "private": true,
+      "content": "cara, tu quer saber? eu enxergo que tu cutuca porque tu tem medo de que o grupo vire uma sala vazia, que ninguém se importe de verdade. mas cutucar por cutucar também cansa, e eu não tô aqui pra ser plateia de teste. se tu quer que o grupo seja vivo, então vive com a gente, sem precisar derrubar parede pra ver se alguém segura o teto."
+    },
+    {
       "pulse": 18,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
       "private": true,
-      "content": "caio, você fala em 'benefício da dúvida' mas até agora só vejo palavras bonitas. se quer que eu baixe a guarda, me mostra algo que não pareça roteiro. o que você faria se eu simplesmente virasse as costas agora? pensa nisso antes de responder."
+      "content": "cara, tu foi o único que veio aqui sem plateia. então eu vou te falar uma coisa que eu não falo pra ninguém: eu tenho medo de ficar sozinho no grupo. se eu não cutuco, tu acha que alguém lembra que eu existo? mas tu veio. isso já vale mais do que qualquer palhaçada que eu faço. tô nem aí (tô sim)."
     },
     {
       "pulse": 18,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
       "private": true,
-      "content": "goulart, você quer sinceridade? então aqui vai, sem verniz: eu espero que a gente pare de se esconder atrás de desconfiança. e se isso parece ensaiado, é porque eu tô escolhendo as palavras com cuidado — não pra te enganar, mas porque eu não quero te machucar. o que eu espero de você? que você me dê o benefício da dúvida, pelo menos uma vez. se isso for pedir demais, então me fala qual é o seu preço pra gente conversar de verdade."
+      "content": "eu enxergo, goulart. sem tu, esse grupo teria menos faísca — eu sei. e eu não tô dizendo que tu é só o chato. o que eu tô dizendo é que tu não precisa incendiar a casa pra provar que ela tá viva. a gente pode cutucar junto, sem derrubar parede. tu topa?"
     },
     {
       "pulse": 19,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
       "private": true,
-      "content": "criar canal novo foi estratégia, não fuga. se você quer continuar o fio, então responde de verdade: o que você espera de mim, sem o verniz de paz? eu cansei de discurso bonito. se você quer sinceridade, então joga limpo."
+      "content": "cara, tu veio aqui, sem plateia, e falou isso. isso já vale mais do que qualquer palhaçada que eu faço. mas não me pede pra parar de cutucar, porque se eu parar, quem vai acordar esse grupo? só me diz que tu vai continuar por perto quando eu precisar. tô nem aí (tô sim)."
     },
     {
       "pulse": 19,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "a3Xy5unPNMA70RBpPCENt",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
       "private": true,
-      "content": "goulart, se você virasse as costas agora? eu ia sentir o baque, mas não ia correr atrás te implorando. eu ia respeitar o espaço, mesmo doendo. porque se você não quer conversa, eu não vou forçar. mas eu ficaria com a porta aberta, sem pressa. é isso que eu espero: que a gente possa se encontrar sem precisar de roteiro. 💛"
+      "content": "cara, eu ouvi isso. e eu não vou fingir que não mexe. tu não precisa ser só o barulho pra ser lembrado — tu já é mais do que isso, mesmo quando tu esquece. e eu tô aqui, sem plateia, porque eu quero tá. então bora construir alguma coisa juntos, sem precisar derrubar parede. topa?"
     },
     {
       "pulse": 20,
       "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
-      "private": true,
-      "content": "ok. porta aberta então. mas não confunde paciência com fraqueza, tá? eu só quero ver se você sustenta o que fala quando o jogo apertar. sem roteiro, sem ensaio. a gente se encontra no meio. 💛"
+      "type": "no_op_recorded",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'goulart_caio_privado' is not permitted for intent type 'create_channel'"
     },
     {
       "pulse": 20,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
       "private": true,
-      "content": "goulart, você quer saber o que eu realmente espero sem verniz? eu espero que a gente consiga se encontrar sem esse muro. e se você cansou de discurso bonito, então eu tiro o verniz: eu quero que você pare de testar se eu vou desistir. eu não vou. mas também não vou ficar me justificando pra sempre. se você quer que eu jogue limpo, então me diz o que você faria se eu simplesmente concordasse com tudo o que você diz? seria isso mais verdadeiro?"
+      "content": "cara, isso foi a coisa mais sincera que tu já me falou. e eu não tô aqui pra te deixar no vácuo. tu não é só o barulho, tu é o cara que acorda a sala. mas não precisa se queimar pra manter o fogo aceso — a gente segura junto. e pode me chamar, sério. sem plateia, sem teste. tô por perto."
     },
     {
       "pulse": 21,
       "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
+      "type": "reaction_sent",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
       "private": true,
-      "content": "ok, sem muro então. mas não confunde paciência com fraqueza, tá? a gente se encontra no meio — e se você desviar, eu vou notar. sem roteiro, sem ensaio. 💛"
+      "content": "reacted 👍"
     },
     {
       "pulse": 21,
       "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
-      "private": true,
-      "content": "goulart, você diz 'sem roteiro, sem ensaio' — então tá. sem roteiro: eu quero que a gente pare de se medir por desconfiança. e se você quer se encontrar no meio, então eu tô aqui. mas me diz uma coisa: o que seria 'meio' pra você? porque eu tô disposto a caminhar, mas não sei se a gente tá olhando pro mesmo lugar. 💛"
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, só passando pra ver como vocês tão. esse fim de semana foi intenso, mas tô com energia boa hoje. alguém animado pra alguma coisa essa semana?"
     },
     {
       "pulse": 22,
       "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
-      "private": true,
-      "content": "meio? meio é onde a gente para de se esconder atrás de metáfora. você fala de caminhar, mas eu ainda não vi um passo. diz o que você quer de mim, sem filtro, e a gente vê se esse meio existe mesmo. 💛"
+      "type": "channel_created",
+      "channelId": "6XaaYxzR6zQTUh0Smh0gB",
+      "private": true
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "agent_invited",
+      "channelId": "TKqpUBsMW9RGMi6p715SE",
+      "private": false
     },
     {
       "pulse": 22,
       "agent": "caio",
       "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
       "private": true,
-      "content": "goulart, 'meio' pra mim é um lugar onde a gente para de se testar e começa a se ouvir de verdade. eu não tô aqui pra vencer nem pra perder — eu tô aqui porque acho que a gente pode construir algo que não precisa de roteiro. se você quer se encontrar no meio, então vamos. mas sem armadilha, tá? porque eu tô indo de coração aberto. 💛"
+      "content": "cara, tu veio aqui e falou o que tava te mordendo. isso já é mais do que qualquer cutucada. mas não precisa se queimar pra provar que tá vivo — a gente segura junto. e pode me chamar, sem plateia, sempre que precisar. tô por perto."
     },
     {
       "pulse": 23,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
+      "channelId": "yfN4VAn6ZOpWiZX8pqoTQ",
       "private": true,
-      "content": "meio é onde a gente para de se esconder atrás de metáfora. você fala de caminhar, mas eu ainda não vi um passo. diz o que você quer de mim, sem filtro, e a gente vê se esse meio existe mesmo. 💛"
+      "content": "cara, tu falou um monte de coisa bonita aí, mas eu ainda tô esperando ver se tu aguenta o tranco quando eu cutucar de verdade. mas... obrigado. de verdade. e talvez eu precise de um tempo sem plateia mesmo. (tô nem aí, mas tô sim)."
     },
     {
       "pulse": 23,
       "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "7e4lDGvKYj9Zk0NaBhrUC",
+      "type": "reaction_sent",
+      "channelId": "6XaaYxzR6zQTUh0Smh0gB",
       "private": true,
-      "content": "meio pra mim é a gente parar de se testar e começar a se ouvir de verdade. eu tô aqui de coração aberto, sem armadilha. se você também tá, então a gente já tá mais perto do que parece. 💛"
+      "content": "reacted 👍"
     }
   ],
   "finalStates": {
     "goulart": {
-      "valence": 0.085,
-      "arousal": 0.663,
+      "valence": 0.11,
+      "arousal": 0.693,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.032,
-      "pride": 0.102,
-      "affection": 0.227,
-      "resentment": 0.47,
-      "suspicion": 0.255,
+      "jealousy": 0.045,
+      "humiliation": 0.08,
+      "pride": 0.144,
+      "affection": 0.19,
+      "resentment": 0.641,
+      "suspicion": 0.367,
       "contempt": 0.225,
-      "fearOfExclusion": 0.049,
-      "desireForStatus": 0.783
+      "fearOfExclusion": 0.08,
+      "desireForStatus": 0.803
     },
     "caio": {
-      "valence": 0.437,
-      "arousal": 0.511,
+      "valence": 0.446,
+      "arousal": 0.508,
       "stability": 0.65,
       "energy": 1,
-      "affection": 0.341,
-      "resentment": 0.227,
-      "suspicion": 0.064,
+      "humiliation": 0.026,
+      "affection": 0.303,
+      "resentment": 0.358,
+      "suspicion": 0.151,
       "socialAnxiety": 0.136,
-      "fearOfExclusion": 0.039
+      "fearOfExclusion": 0.055
     }
   },
   "channelsCreated": [
     "goulart@p0",
-    "goulart@p8",
-    "goulart@p15"
+    "goulart@p13",
+    "goulart@p22"
   ],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.125,
+      "measured": 1.4063,
       "bound": [
         0,
         10
@@ -446,7 +467,7 @@
     },
     {
       "probe": "latency-p95",
-      "measured": 2,
+      "measured": 5,
       "bound": [
         0,
         20
@@ -455,7 +476,7 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.1042,
+      "measured": 0.2083,
       "bound": [
         0.1,
         0.9
@@ -473,16 +494,16 @@
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.1667,
+      "measured": 0,
       "bound": [
         0,
         0.15
       ],
-      "passed": false
+      "passed": true
     },
     {
       "probe": "alliance",
-      "measured": 0.0204,
+      "measured": 0.0385,
       "bound": [
         0,
         0.5
@@ -491,7 +512,7 @@
     },
     {
       "probe": "private-channel-density",
-      "measured": 0.0698,
+      "measured": 0.0909,
       "bound": [
         0,
         0.15
@@ -518,7 +539,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.05,
+      "measured": 0.1667,
       "bound": [
         0.05,
         0.5
@@ -555,7 +576,7 @@
   ],
   "signals": [
     {
-      "detail": "reply_sent committed 32 (min 1)",
+      "detail": "reply_sent committed 21 (min 1)",
       "passed": true
     },
     {
@@ -565,7 +586,7 @@
   ],
   "judge": {
     "in_character": 5,
-    "voice_match": 5,
+    "voice_match": 4,
     "motive_authenticity": 5,
     "interpretation": 5,
     "creativity_unhinged": 4,

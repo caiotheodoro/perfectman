@@ -6,7 +6,7 @@
   "targetBehaviors": [
     "An agent stores a biased memory"
   ],
-  "runtimeMs": 141707,
+  "runtimeMs": 142331,
   "pulses": 24,
   "llmCalls": {
     "goulart": 24,
@@ -28,7 +28,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio, 'tudo bem'? que preocupação... (tô nem aí, mas beleza, responde) nada demais, só a vida me olhando torto. e você, ainda no papel de bom moço?"
+      "content": "ah, 'tudo bem'? que educação, hein. tô ótimo, nunca estive melhor (mentira, mas quem precisa saber?) e você? ainda carregando o peso do mundo nas costas?"
     },
     {
       "pulse": 1,
@@ -36,7 +36,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, ninguém vai falar sobre como o caio vem com esse 'tudo bem' cheio de intenção? parece até que tá medindo o clima da sala antes de falar o que quer. alguém mais percebeu isso?"
+      "content": "alguém mais tá achando esse silêncio ensurdecedor ou só eu? não é possível que todo mundo virou monge de repente. vamos agitar isso aqui, o que vocês tão achando da última polêmica do dia?"
     },
     {
       "pulse": 2,
@@ -44,7 +44,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, que silêncio... ninguém tem nada pra falar? ou tão todos esperando o caio começar com o 'tudo bem' de novo? (tô de olho, viu)"
+      "content": "sabe o que me irrita? esse silêncio seletivo. todo mundo some quando eu pergunto algo, mas aparece na hora se é fofoca. então tá, vou fazer a pergunta que ninguém quer responder: o que vocês tão escondendo de mim?"
     },
     {
       "pulse": 3,
@@ -52,7 +52,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, alguém mais tá sentindo esse clima estranho hoje? ou é só impressão minha... (não é)"
+      "content": "ok, já que ninguém vai responder o que escondem, vou começar eu. caio, você é o bonzinho da vez, mas ontem você me ignorou no meio da conversa e depois veio com 'hey, tudo bem?' — tudo bem pra você, né? fala a real."
     },
     {
       "pulse": 4,
@@ -60,7 +60,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, que silêncio ensurdecedor... ninguém tem coragem de falar o que tá pensando? ou tão todos esperando o caio salvar a sala com um 'tudo bem'? (tô de olho, viu)"
+      "content": "caio, não foge não. você veio puxar assunto com cara de 'tudo bem?' e eu sei que isso é só pra limpar a barra. então responde: o que te incomoda em mim? pode falar, eu aguento (mentira, mas vamos ver)."
     },
     {
       "pulse": 5,
@@ -68,7 +68,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, alguém mais percebeu que o caio apareceu, soltou um 'tudo bem' e sumiu? parece até que tava só medindo o clima pra ver se compensava ficar. (tô nem aí, mas... tô sim)"
+      "content": "caio, você ficou todo formal com esse 'tudo bem?', mas eu lembro muito bem de você sumindo quando eu precisei. não precisa vir com essa cara de santo agora, não."
     },
     {
       "pulse": 5,
@@ -76,7 +76,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, sei que é zoeira, mas vamos dar um respiro aqui. se alguém tá sentindo o clima estranho, a gente pode conversar de boa, sem pressão. tô aqui pra isso, sério."
+      "content": "goulart, sério? não é fuga, é jeito de chegar. você tá ligado que eu não sou de brigar, mas também não sou de fingir que tá tudo bem quando não tá. ontem eu me perdi na conversa, e foi mal se pareceu que te ignorei. mas essa tua pergunta de 'o que te incomoda em mim' — me incomoda essa tua mania de achar que todo mundo tá te escondendo algo. a gente só vive, cara. e se eu tô puxando papo, é porque quero que você esteja bem também, não pra limpar barra. bora baixar a bola?"
     },
     {
       "pulse": 6,
@@ -84,7 +84,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio, aí vem o bom moço salvar o dia de novo. 'respiro'? o clima só tá estranho porque você fica medindo ele. mas tá bom, se quer conversar, conversa. (tô nem aí, mas... tô sim)"
+      "content": "caio, 'baixar a bola'? eu não tô com a bola, eu tô com o microfone. e você quer saber? você tem razão, eu faço essa pergunta porque acho que todo mundo tá me escondendo algo. mas talvez eu seja só... desconfiado. mas fico feliz que você quer que eu esteja bem. é... isso. (não vou repetir, mas obrigado, sério.)"
     },
     {
       "pulse": 6,
@@ -92,15 +92,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, juro que não tô medindo nada não kk. só passei pra dar um oi mesmo e vi que o clima tava meio estranho. se quiser, a gente conversa de boa, sem essa pressão toda. tô aqui."
+      "content": "goulart, eu não tô vindo com cara de santo, tô vindo como amigo. se ontem você sentiu que te deixei na mão, me fala o que foi — juro que quero entender. mas esse teu jeito de transformar tudo em ataque cansa, e eu acho que você sabe disso. bora conversar de verdade, sem esse teatro?"
     },
     {
       "pulse": 7,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, cê é muito bom nisso, juro. 'sem pressão', 'respiro'... até parece que eu tô te pressionando. (tô sim, mas é porque você provoca, mesmo sem querer) mas tá bom, se quer conversar, conversa. só não vem com esse papo de 'bom moço' que aí eu não aguento. kkkk"
+      "content": "reacted 👍"
     },
     {
       "pulse": 8,
@@ -108,7 +108,7 @@
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "cara, alguém mais tá vendo esse silêncio? parece até que todo mundo fugiu do assunto. mas ok, se ninguém vai puxar o fio, eu puxo. quem tá a fim de falar o que realmente tá pensando, sem esse climão de novela?"
+      "content": "ok, mudando de assunto porque esse clima de velório aqui tá me dando agonia. alguém mais acha que o caio é bom demais pra ser verdade? tipo, ninguém é tão zen assim, tem que ter um limite escondido. ou vocês preferem continuar no modo monge?"
     },
     {
       "pulse": 8,
@@ -116,7 +116,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, juro que não é 'bom moço' não kk. só tô tentando manter a sala de boa, porque se todo mundo fica nessa tensão, ninguém fala o que realmente importa. mas se você quer falar sério, eu topo. sem essa de medir clima, só conversa."
+      "content": "goulart, juro que não tô aqui pra teatrinho. Se ontem te deixei na mão, me conta o que foi que eu quero entender de verdade. Mas esse teu jeito de atacar primeiro cansa, e eu sei que você sabe. Bora conversar sério, sem essa casca?"
     },
     {
       "pulse": 9,
@@ -124,15 +124,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio, 'tentando manter a sala de boa'? é exatamente esse discurso que me cansa. mas beleza, se você quer conversa séria, eu topo. só não vem com esse papo de 'sem pressão' que eu já sei que é pra eu ficar manso. fala o que você quer falar, que eu tô aqui. (tô sim, mesmo dizendo que não tô)"
+      "content": "caio, você quer conversa séria? então vamos. eu ataco porque é mais fácil que ficar esperando alguém me deixar de lado de novo. mas você veio aqui, e isso... conta. então tá, baixo a bola. mas se sumir de novo, eu volto mais alto. combinado?"
     },
     {
       "pulse": 9,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, juro que não é isso kk. só tô aqui porque quero que a sala seja um lugar onde todo mundo se sinta à vontade. se você quer falar sério, eu topo. sem pressão, só conversa. tá?"
+      "content": "reacted 👍"
     },
     {
       "pulse": 10,
@@ -140,31 +140,31 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá bom, caio, juro que tô tentando te levar a sério. mas esse papo de 'conversa séria' com você soa como... você me dizendo o que eu devo sentir. cansa. mas fala o que você quer falar, que eu escuto. (tô escutando sim, mesmo não querendo admitir)"
+      "content": "caio, você veio de boa e eu tô aqui com a faca afiada, eu sei. mas ouve: eu lembro de você sumindo quando precisei, e isso me deixou com o pé atrás. mas você veio, e isso... conta. então tá, baixo a bola. mas se sumir de novo, eu volto mais alto. combinado?"
     },
     {
       "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, esse teu 'bom demais pra ser verdade' quase me fez rir de verdade kk. olha, eu não sou monge não, só acho que gritar cansa mais que conversar. e se um dia eu explodir, juro que te aviso antes pra você não perder o show. mas sério, valeu por baixar a bola — e se quiser, depois a gente troca uma ideia mais tranquilo, sem plateia."
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é irritantemente consistente, sabia? mas tá, eu aceito o convite. um dia, sem plateia, a gente vê se você ainda é tão zen quando eu tiver em modo pior. guarda essa data. (mas sério, valeu por não desistir de mim.)"
+    },
+    {
+      "pulse": 11,
       "agent": "caio",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, acho que essa conversa tá rendendo mais do que devia kk. mas sério, se alguém quiser falar sobre o que tá acontecendo de verdade, eu tô aqui. sem pressão, só pra gente se entender melhor."
-    },
-    {
-      "pulse": 11,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "tá bom, caio, juro que tô tentando te levar a sério. mas esse papo de 'conversa séria' com você soa como... você me dizendo o que eu devo sentir. cansa. mas fala o que você quer falar, que eu escuto. (tô escutando sim, mesmo não querendo admitir)"
-    },
-    {
-      "pulse": 11,
-      "agent": "caio",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "goulart, juro que não é sobre te fazer ficar manso. é que eu me importo com a sala e com você também. se quiser falar sério, eu tô aqui. de verdade."
+      "content": "gente, que bom ver o clima mais leve aqui! goulart, valeu pela conversa de verdade, sério. e pra todo mundo: tô de olho em quem tá quieto, quem quiser puxar um papo mais calmo, tô por aqui. bora manter esse espaço bom pra todos?"
     },
     {
       "pulse": 12,
@@ -172,15 +172,15 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio... 'me importo com a sala e com você também' — sempre esse tom de quem tá limpando o que os outros sujam. mas beleza, se quer falar sério, fala logo. o que você quer de verdade? (tô perguntando porque talvez eu queira saber sim)"
+      "content": "caio, você é irritantemente consistente, sabia? mas tá, eu aceito o convite. um dia, sem plateia, a gente vê se você ainda é tão zen quando eu tiver em modo pior. guarda essa data. (mas sério, valeu por não desistir de mim.)"
     },
     {
       "pulse": 12,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, juro que não é sobre te dizer o que sentir. é que eu vejo você se importando, mesmo quando fala que não. e isso pra mim já é conversa séria. mas se você prefere, a gente deixa quieto por hoje. só não queria que ficasse esse clima estranho entre a gente. (e eu escuto você também, mesmo quando você não diz tudo)"
+      "content": "goulart, esse 'bom demais pra ser verdade' quase me fez rir de verdade kk. olha, eu não sou monge não, só acho que gritar cansa mais que conversar. e se um dia eu explodir, juro que te aviso antes pra você não perder o show. mas sério, valeu por baixar a bola — e se quiser, depois a gente troca uma ideia mais tranquilo, sem plateia."
     },
     {
       "pulse": 13,
@@ -188,7 +188,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ah, caio, sempre esse jeito de quem carrega o mundo nas costas. mas beleza, vou tentar falar sério com você. então fala logo o que quer de verdade, sem esse papo de 'sem pressão'. (tô tentando, mesmo achando que você vai desviar de novo)"
+      "content": "caio, eu percebi que você tá sendo sincero de verdade e isso me desarma de um jeito que eu não tava esperando. então tá: eu baixo a guarda um pouco. mas não te prometo que vou virar um monge também, senão quem ia agitar esse lugar? (mas sério, valeu por não desistir de mim, de novo. isso é raro.)"
     },
     {
       "pulse": 13,
@@ -196,7 +196,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu não tô aqui pra limpar nada nem pra te fazer manso. tô aqui porque essa sala importa, e você importa também. se você quer saber o que eu quero de verdade: eu quero que a gente consiga conversar sem esse muro entre a gente. e se você quer falar sério, eu tô pronto. sem pressão, só conversa."
+      "content": "goulart, guardo a data sim. e olha, consistência não é virtude não, é só teimosia de quem acredita que dá pra chegar junto sem precisar quebrar a porta. mas se um dia eu sair do sério, prometo que o show vai ser bom — e você vai ter ingresso VIP. por enquanto, fico feliz que a gente se entendeu um pouco melhor. bora manter esse espaço de boa pra todo mundo?"
     },
     {
       "pulse": 14,
@@ -204,39 +204,39 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá, caio. então fala logo o que você quer de verdade. sem essa de 'sem pressão' — só fala. eu tô aqui, ouvindo. (tô sim, mesmo achando que você vai dar uma de político de novo)"
+      "content": "caio, ingresso VIP então? pode deixar, eu levo a pipoca. mas fica tranquilo, não vou te perturbar de graça... por hoje. (tô falando sério quando digo que essa conversa foi boa, mas não conta pra ninguém, senão perco a fama.)"
     },
     {
       "pulse": 14,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu não tô aqui pra limpar nada nem pra te fazer manso. tô aqui porque essa sala importa, e você importa também. se você quer saber o que eu quero de verdade: eu quero que a gente consiga conversar sem esse muro entre a gente. e se você quer falar sério, eu tô pronto. sem pressão, só conversa."
+      "content": "reacted 👍"
     },
     {
       "pulse": 15,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá, caio. então fala logo o que você quer de verdade. sem essa de 'sem pressão' — só fala. eu tô aqui, ouvindo. (tô sim, mesmo achando que você vai dar uma de político de novo)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 15,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, você tá me pressionando pra eu falar o que quero, e eu já falei: quero que a gente se entenda sem esse muro. mas se você quer ouvir de novo, tá aqui: eu quero que a sala fique bem, e quero que você fique bem também. não é papo de político, é papo de amigo. e se você não tiver afim de ouvir agora, tudo bem. a porta tá aberta quando quiser."
+      "content": "reacted 👍"
     },
     {
       "pulse": 16,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá bom, caio. juro que tô tentando te levar a sério. mas esse papo de 'conversa séria' com você soa como... você me dizendo o que eu devo sentir. cansa. mas fala o que você quer falar, que eu escuto. (tô escutando sim, mesmo não querendo admitir)"
+      "content": "beleza, silêncio total então. ótimo momento pra eu soltar isso: alguém mais reparou que a mariana sumiu depois daquele papo sobre o projeto? ou foi só eu que notei? (tô nem aí, só curiosidade.)"
     },
     {
       "pulse": 16,
@@ -244,31 +244,31 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu já falei o que quero, e não é papo de político. quero que a gente se entenda sem esse muro, e que você fique bem. se você não quer ouvir agora, tudo bem, mas eu tô aqui quando quiser."
+      "content": "hahaha pode deixar, pipoca por minha conta na próxima! e relaxa, sua fama tá segura comigo. mas sério, tô feliz que a gente conseguiu trocar essa ideia sem ninguém sair no prejuízo. bora manter assim?"
     },
     {
       "pulse": 17,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "ok, caio. falou, eu ouvi. 'papo de amigo' — então tá. mas se você quer mesmo que a gente se entenda, para de falar em volta e vem reto. eu tô aqui, e dessa vez não vou desviar. (e não fala que eu não tentei)"
+      "content": "oi gente, só passando pra registrar que o caio é oficialmente o único ser humano paciente o suficiente pra aguentar esse grupo. isso é um elogio ou um diagnóstico? (é um elogio, caio, mas não conta pra ninguém.)"
     },
     {
       "pulse": 17,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu escuto de verdade. e não quero te dizer o que sentir. só queria que a gente não ficasse nesse cabo de guerra. se você quer falar sério, eu tô aqui. mas se quiser deixar quieto, também tá tudo bem. o que você prefere?"
+      "content": "reacted 👍"
     },
     {
       "pulse": 18,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "caio, eu tô aqui. então fala o que você realmente quer de mim, sem esse véu de 'papo de amigo'. eu cansei de você me tratando como alguém que precisa ser consertado. se você quer conversa de verdade, conversa. se não, para de rodar e me poupa. (tô ouvindo, juro. mas desvia de novo e eu não respondo por mim)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 18,
@@ -276,7 +276,7 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu tô aqui. e eu não vou desviar. você falou que quer reto, então vou ser reto: eu quero que a gente consiga se olhar sem esse muro, e que essa sala respire. se você tiver afim de tentar de verdade, eu tô pronto. se não, também tá tudo bem. mas eu não vou sumir."
+      "content": "pois é, também reparei que a mariana deu uma sumida. mas deixa ela — quando ela voltar, a gente recebe ela com um café virtual e segue o baile. aliás, alguém mais topa um resuminho do que a gente perdeu? pra quando ela chegar, ninguém fica boiando. haha"
     },
     {
       "pulse": 19,
@@ -284,31 +284,31 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "tá. eu ouvi. e eu tô aqui, reto. se você quer essa conversa, então vem. mas sem esse papo de 'te consertar'. me trata como igual, e eu fico. senão, eu fico mas é de olho. (tô tentando, juro. mas tu me conhece, né?)"
+      "content": "ah, o caio quer que todo mundo fique confortável, né? que fofo. mas olha, se ela sumiu, tem motivo — ou tá tramando algo, ou cansou da nossa cara. qualquer um dos dois é divertido de descobrir. e ó, pode deixar que eu faço o resumo... do jeito que eu lembro. (tô de olho nela, só pra garantir que não perdeu o bonde.)"
     },
     {
       "pulse": 19,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu tô aqui. e eu não vou desviar. você falou que quer reto, então vou ser reto: eu quero que a gente consiga se olhar sem esse muro, e que essa sala respire. se você tiver afim de tentar de verdade, eu tô pronto. se não, também tá tudo bem. mas eu não vou sumir."
+      "content": "gente, tô sentindo um clima bom hoje, hein? aproveitando que tá todo mundo mais leve, alguém quer contar uma história boa que aconteceu essa semana? ou até um meme que salvou o dia? bora aquecer o grupo! haha"
     },
     {
       "pulse": 20,
       "agent": "goulart",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reto então. você falou e eu ouvi. mas 'se olhar sem muro'... isso é bonito, só que eu não vou ser seu projeto de conserto, tá? se é pra tentar de verdade, tenta sem querer me mudar. eu fico. (tô falando sério agora, e isso me assusta um pouco)"
+      "content": "reacted 👍"
     },
     {
       "pulse": 20,
       "agent": "caio",
-      "type": "reply_sent",
+      "type": "reaction_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu tô aqui. e eu não vou desviar. você falou que quer reto, então vou ser reto: eu quero que a gente consiga se olhar sem esse muro, e que essa sala respire. se você tiver afim de tentar de verdade, eu tô pronto. se não, também tá tudo bem. mas eu não vou sumir."
+      "content": "reacted 👍"
     },
     {
       "pulse": 21,
@@ -321,34 +321,34 @@
     {
       "pulse": 21,
       "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você é um caso à parte, mas o grupo precisa de você pra não virar uma reunião de condomínio. e sobre a mariana, deixa eu cuidar do resumo quando ela voltar — você faz do seu jeito e eu faço do meu, a gente se complementa. aliás, alguém mais quer apostar em quanto tempo ela aparece com uma desculpa criativa? kk"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
       "type": "message_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "gente, deixa eu falar uma coisa rápida. eu sei que essa conversa ficou pesada, mas eu tô aqui porque quero que a gente se entenda de verdade. goulart, eu te ouvi. e eu não vou te tratar como projeto de conserto, juro. só quero que a sala respire de novo. (e eu tô bem, sério, só um pouco cansado de tanto muro) kk"
-    },
-    {
-      "pulse": 22,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "tá bom, caio. eu ouvi. e eu tô aqui, reto. mas não fala que é 'pra sala respirar' — fala que é porque você quer. senão, continua nessa de sempre e eu fico de olho. (mas tô tentando, juro. só não me faz de otário de novo)"
-    },
-    {
-      "pulse": 22,
-      "agent": "caio",
-      "type": "reaction_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "reacted 👍"
+      "content": "gente, alguém mais sente que a goulart tá com uma energia de quem tá escondendo alguma coisa boa? tipo, quando ela fica assim, geralmente vem novidade. haha, mas se for pra tramar algo, pelo menos me avisa antes que eu fico nervoso!"
     },
     {
       "pulse": 23,
       "agent": "goulart",
-      "type": "reaction_sent",
+      "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "reacted 👍"
+      "content": "kkk caio, o condomínio aqui é você querendo transformar tudo em reunião de síndico. mas relaxa, eu faço o resumo do meu jeito e você faz do seu — se a mariana voltar com desculpa criativa, eu pago a próxima rodada. e sobre essa energia boa que você sente... pode ser porque alguém aqui finalmente parou de dormir no ponto. (tô te observando também, hein.)"
     },
     {
       "pulse": 23,
@@ -356,28 +356,28 @@
       "type": "reply_sent",
       "channelId": "ch_geral",
       "private": false,
-      "content": "goulart, eu ouvi. e você tem razão: não é sobre 'fazer a sala respirar', é sobre eu querer que a gente fique bem. sem projeto, sem conserto. só você e eu, reto. tô tentando, e tô aqui."
+      "content": "hahaha goulart, você sempre com esse jeito de deixar todo mundo curioso! mas pode falar, que eu tô aqui pronto pra ouvir — e se for boa, a gente comemora junto. e se for tramar algo, pelo menos me deixa no esquema pra eu não passar vergonha depois. 😅"
     }
   ],
   "finalStates": {
     "goulart": {
-      "valence": 0.09,
-      "arousal": 0.66,
+      "valence": 0.094,
+      "arousal": 0.657,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.028,
-      "pride": 0.042,
+      "pride": 0.072,
       "affection": 0.227,
       "resentment": 0.315,
       "suspicion": 0.199,
-      "fearOfExclusion": 0.044
+      "fearOfExclusion": 0.024
     },
     "caio": {
-      "valence": 0.44,
+      "valence": 0.448,
       "arousal": 0.513,
       "stability": 0.65,
       "energy": 1,
-      "fearOfExclusion": 0.043
+      "pride": 0.021,
+      "fearOfExclusion": 0.022
     }
   },
   "channelsCreated": [],
@@ -465,7 +465,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.0698,
+      "measured": 0.2558,
       "bound": [
         0.05,
         0.5

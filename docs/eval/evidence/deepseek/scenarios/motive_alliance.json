@@ -4,7 +4,7 @@
   "category": "motive_archetype",
   "description": "Mariana and Leo quietly coordinate against Goulart's dominance.",
   "targetBehaviors": [],
-  "runtimeMs": 221102,
+  "runtimeMs": 257421,
   "pulses": 24,
   "llmCalls": {
     "mariana": 24,
@@ -24,548 +24,569 @@
     {
       "pulse": 0,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Channel target 'ch_privado_mariana_goulart' is not permitted for intent type 'create_channel'"
-    },
-    {
-      "pulse": 0,
-      "agent": "leo",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "KCT, pauta?? o que tem de pauta num domingo de manhã? pode me explicar kkkk"
-    },
-    {
-      "pulse": 0,
-      "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "silêncio né? beleza, eu decido a pauta de novo. então tá: alguém mais acha que silêncio é pior que briga? porque pelo menos briga é assunto."
-    },
-    {
-      "pulse": 1,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Channel target 'ch_privado_mariana_leo' is not permitted for intent type 'create_channel'"
-    },
-    {
-      "pulse": 1,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARALHO goulart falou e eu tava aqui pensando a mesma coisa!!! briga pelo menos a gente sabe o que é, silêncio é tipo... espera, deixa eu formular... é um vácuo que gruda. mas tb, quem vai brigar num domingo de manhã? eu to pronto, só avisa kkkkkk"
-    },
-    {
-      "pulse": 1,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk pera, você tá questionando a pauta? eu que decidi, então a pauta é: por que todo mundo aqui some no domingo e deixa eu falando sozinho. pode responder ou prefere continuar o silêncio constrangedor?"
-    },
-    {
-      "pulse": 2,
-      "agent": "mariana",
       "type": "channel_created",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true
     },
     {
-      "pulse": 2,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "CARALHO, domingo de manhã e o goulart já tá filosofando sobre silêncio?? EU TO AQUI, NÃO SUMI NÃO! Mas confesso que fiquei uns minutos sem olhar o celular e já me deu um desespero tipo 'e se falaram de mim?'. kkkkkk mas vocês não me deixam sozinho né? né? goulart, me diz que não me deixam!!"
-    },
-    {
-      "pulse": 2,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "ch_geral",
-      "private": false,
-      "content": "kkkkk leo, domingo de manhã é exatamente quando briga rende, todo mundo tá sem desculpa pra sumir. mas você aí falando que tá pronto... aí sim, vou anotar isso pra próxima. agora me diz, o que você acha do caio vindo aqui apagar incêndio que eu nem comecei?"
-    },
-    {
-      "pulse": 3,
+      "pulse": 0,
       "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 3,
-      "agent": "leo",
-      "type": "no_op_recorded",
-      "channelId": "ch_geral",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 3,
-      "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "opa, sala nova? sem me convidar? que ousadia, mariana. mas tudo bem, eu apareço mesmo assim."
-    },
-    {
-      "pulse": 4,
-      "agent": "mariana",
-      "type": "message_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "goulart, se quer pauta, vem pra cá. aqui o silêncio é meu."
-    },
-    {
-      "pulse": 4,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "KCT, sala nova e eu nem sabia! tava ocupado aqui tentando decifrar a pauta do goulart, mas agora você veio me achar, que honra!! fala, o que a mariana tá arquitetando?? eu quero detalhes, pode contar tudo"
-    },
-    {
-      "pulse": 4,
-      "agent": "goulart",
-      "type": "message_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "mariana criou sala e nem me convidou? tô magoado, sério (tô sim). mas já que eu tô aqui, vou deixar minha marca: a pauta de hoje é o que você tá planejando com esse sigilo todo. pode me contar ou vou ter que inferir?"
-    },
-    {
-      "pulse": 5,
-      "agent": "mariana",
-      "type": "no_op_recorded",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 5,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "CARALHO, sala secreta e eu fui INVOCADO?? espera, será que fui? ou o goulart veio junto e eu sou o plus um? kkkkkk mas mariana, silêncio seu é tipo... um sinal de fumaça, eu sempre venho. pode contar o que você tá armando, eu guardo segredo (prometo, juro pela minha coleção de memes)."
-    },
-    {
-      "pulse": 5,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "opa, agora a pauta é minha? então tá. silêncio é pior que briga sim, mas eu prefiro briga porque pelo menos dá ibope. me diz, você criou essa sala pra me testar ou só pra ter um cantinho teu?"
-    },
-    {
-      "pulse": 6,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "leo, você foi o único que eu chamei. o goulart se convidou. e não é armação, é estratégia. fica por aqui que eu explico."
-    },
-    {
-      "pulse": 6,
-      "agent": "leo",
       "type": "agent_invited",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
+      "channelId": "rcWoVWqfByUrGz6p0mwLv",
       "private": false
     },
     {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "opa opa opa, quem decidiu isso?? kkkkkk to ouvindo a pauta, manda logo"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caras, que silêncio é esse? ninguém tem uma opinião impopular pra soltar hoje? eu to com um estoque aqui e não vou segurar sozinho"
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "rcWoVWqfByUrGz6p0mwLv",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'create_channel'"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk impopular? eu tenho uma, mas se eu falar todo mundo vai me cancelar... então vou falar igual, CLARO. bora, manda a tua primeiro que eu quero ver se você aguenta a pressão 😂🔥"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "opa, alguém criou um cantinho privado aí? sem mim? ok, sem problemas... (tô nem aí, mas fica registrado)"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": false
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk Goulart criando canal privado SEM ME CONVIDAR?? isso é traição, juro. mas ok, fica registrado sim, anotado no meu caderninho imaginário de ofensas. 😤 mas falando sério, se for um cantinho de fofoca eu QUERO ENTRAR. bora me add aí ou eu começo a contar seus segredos em público... e eu sei MUITO. 😂🔥"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "Interessante. O Goulart já percebeu o movimento. Deixa ele especular."
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, tu quer entrar no cantinho da fofoca? relaxa, te add depois... se tu prometer não espalhar meus segredos. 😂 mas sério, quem criou esse canal aí? já to curioso. e tu tem razão, caderno imaginário de ofensas é arma poderosa, hein"
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "Goulart está curioso demais. Isso é útil. Deixa ele se perguntar quem está aqui e o que estamos tramando."
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "ah, então é isso? me deixa especulando e some? pior que eu adoro um mistério, mas esse silêncio tá me dando agonia. se for fofoca, pode me add que eu prometo não espalhar... (prometo nada)"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "",
+      "private": false
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "aí sim, a Mariana no comando da operação... mas e o resto da equipe? quero saber quantos somos nessa missão secreta, porque se for só nós dois, eu topo. aliás, o Goulart já tá achando que a gente tá tramando algo bom. e a gente tá, né? 😏🔥"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "ah, então tu já me usou como peça no teu jogo? legal, mariana. mas se for pra especular, eu jogo junto. só não gosta de ficar de fora, sabe? mas ok, fico te devendo essa. (tô nem aí, mas fica esperto que eu tô de olho)"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "Aqui é onde a gente decide o que o Goulart merece saber. Ele já está mordendo a isca."
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "kkkkk Goulart, relaxa, não é nada tão misterioso assim... só a gente preparando uma surpresa pro Bruno, ele tá meio down esses dias. Mas se tu quer entrar, pode ser que precise de um caos ali dentro. Tô vendo que tu já tá criando teorias demais, isso é bom sinal. 🔥"
+    },
+    {
       "pulse": 6,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "leo, você é o plus um oficial, mas o meu nome já tava na porta. mariana, não respondeu minha pergunta... a sala secreta é sobre o quê? eu posso esperar, mas todo mundo sabe que eu sou péssimo nisso."
+      "content": "ah, então tu já me usou como peça no teu jogo? legal, mariana. mas se for pra especular, eu jogo junto. só não gosta de ficar de fora, sabe? mas ok, fico te devendo essa. (tô nem aí, mas fica esperto que eu tô de olho)"
     },
     {
       "pulse": 7,
       "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "Goulart já se sente incluído. Isso é suficiente por enquanto."
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "Léo, cuidado com o que você promete ao Goulart. Ele já está mordendo a isca, mas não precisa saber de tudo."
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "ah, então 'suficiente por enquanto'? parece que eu passei no teste... por enquanto. adoro saber que ainda tenho que provar algo. mas beleza, fico na minha. por enquanto."
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "ah, então eu passo no teste mas continuo sendo peça? que honra. só não esquece que peça também pode virar problema se for mal usada. mas fico tranquilo, sei que tu sabe o que faz. (ou não, mas a gente descobre)"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
       "type": "channel_created",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
+      "channelId": "nrdVm6MfSsmv5B6cs2Lal",
       "private": true
     },
     {
-      "pulse": 7,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "eu sabia! eu sabia que tinha estratégia por trás disso. e olha, fico até lisonjeado de ser o escolhido, mas o goulart é tipo um gato: aparece sozinho e fica. então pode contar, juro que segredo de estado aqui. quero saber o plano, e se precisar de mim pra alguma coisa, pode mandar. tipo, eu tô pronto, e não é só pra domingo não. kkkkk"
-    },
-    {
-      "pulse": 7,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "mariana, estratégia é nome bonito pra plano que você não quer contar. mas tudo bem, eu sei jogar esse jogo. só não esquece que eu sou o único aqui que lê nas entrelinhas."
-    },
-    {
-      "pulse": 8,
+      "pulse": 10,
       "agent": "mariana",
-      "type": "message_sent",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
-      "private": true,
-      "content": "goulart, se quer saber o plano, vem pra cá. aqui o silêncio é meu."
+      "type": "agent_invited",
+      "channelId": "",
+      "private": false
     },
     {
-      "pulse": 8,
+      "pulse": 10,
       "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "ok ok, agora fiquei ainda mais curioso! estratégia é comigo mesmo, pode confiar. e fico lisonjeado de ser o único convidado, sério. o goulart se convida até pra enterro, kkkkk. mas conta logo, que eu já tô aqui com a pipoca pronta. o que você tá armando?"
-    },
-    {
-      "pulse": 8,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": true,
-      "content": "mariana, 'estratégia' é palavra bonita pra 'não quero contar'. mas tudo bem, eu sei esperar. só não esquece que eu sou o único aqui que lê nas entrelinhas."
-    },
-    {
-      "pulse": 9,
-      "agent": "mariana",
-      "type": "message_sent",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
-      "private": true,
-      "content": "leo, goulart, venham para a sala que criei. lá eu explico o plano. sem plateia."
-    },
-    {
-      "pulse": 9,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 9,
-      "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 10,
-      "agent": "mariana",
-      "type": "reaction_sent",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 10,
-      "agent": "leo",
-      "type": "reaction_sent",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 10,
       "agent": "goulart",
-      "type": "no_op_recorded",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+      "type": "message_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "beleza, se o teste é esse, eu tô jogando. mas só pra constar: se for surpresa pro bruno, eu topo entrar. mas se for mais um joguinho teu, eu quero saber as regras antes de apostar. (tô nem aí, mas me deixa ver o tabuleiro)"
     },
     {
       "pulse": 11,
       "agent": "mariana",
-      "type": "reaction_sent",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
+      "type": "message_sent",
+      "channelId": "nrdVm6MfSsmv5B6cs2Lal",
       "private": true,
-      "content": "reacted 👍"
+      "content": "Goulart, você está certo: peça mal usada vira problema. Mas peça bem posicionada vence o jogo. Fico feliz que você queira ver o tabuleiro. Vou te mostrar — quando for a hora."
     },
     {
       "pulse": 11,
       "agent": "leo",
       "type": "no_op_recorded",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 11,
       "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "B6unkbwC8bZvbyL1fLsy2",
+      "private": true,
+      "content": "mariana, tu cria canal privado e nem me chama? que sacanagem. mas tudo bem, fico de fora mesmo, continuo sendo o último a saber. (tô nem aí, mas se for surpresa pro bruno, eu quero ajudar, senão fica sem graça)"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "nrdVm6MfSsmv5B6cs2Lal",
+      "private": true,
+      "content": "Regras são para quem quer jogar. Você quer jogar, Goulart. Só não confunda o tabuleiro com o jogo."
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
       "type": "no_op_recorded",
-      "channelId": "X8bAtBdfKdcpVnYy8yxSt",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": false,
       "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 12,
-      "agent": "mariana",
-      "type": "channel_created",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true
-    },
-    {
-      "pulse": 12,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
-      "private": true,
-      "content": "então tá, pode falar! to todo ouvidos, juro que não espalho nada. pode soltar a bomba que eu seguro o impacto kkkkk"
-    },
-    {
-      "pulse": 12,
       "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "nrdVm6MfSsmv5B6cs2Lal",
+      "private": true,
+      "content": "ah, então o tabuleiro existe e eu só posso ver quando for a hora? que dramático. mas beleza, eu tô aqui. só não demora muito, senão eu começo a mover as peças sozinho. (e eu tô vendo o tabuleiro sim, só não digo pra todo mundo)"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "nrdVm6MfSsmv5B6cs2Lal",
+      "private": true,
+      "content": "O tabuleiro existe. Você só não vê todas as peças ainda. Continue jogando."
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "gente, acabei de perceber que o Goulart já tá tipo o detetive da equipe kkkk será que ele já deduziu que a gente tá preparando algo pra alegrar o Bruno? não conta pra ele que eu te falei, mas o plano tá tomando forma... e se precisar de caos, tô dentro. 🔥"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "nrdVm6MfSsmv5B6cs2Lal",
+      "private": true,
+      "content": "ah, 'regras são para quem quer jogar'? e quem disse que eu não sei as regras? eu só escolho quando seguir. mas fico lisonjeado de tu achar que eu sou peça importante no tabuleiro. só não esquece: eu também sei mover o jogo. (mas beleza, tô aqui, esperando a hora certa. só não demora muito, senão eu começo a jogar sozinho)"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "Léo, o Goulart já viu o tabuleiro. Ele só não sabe que está vendo. Continue com o plano — e mantenha o caos sob medida."
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "gente, e se a gente fizer uma playlist pra animar o Bruno? cada um manda uma música que lembra um momento bom. eu começo com aquela que a gente gritou no karaokê, lembra? kkkk aliás, Goulart, tu tem que entrar nessa, teu gosto musical é um caos que a gente precisa. 🔥"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "nrdVm6MfSsmv5B6cs2Lal",
+      "private": true,
+      "content": "ah, 'quando for a hora'. então tu tem um cronograma e eu tenho que esperar de boa? ok, tô esperando. mas só pra constar: se a surpresa for boa, eu dou os créditos. se for furada, eu tava no direito de saber antes. (tô nem aí, só não quero ficar de fora de novo)"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "Boa ideia, Léo. Mas se for pra animar o Bruno, a playlist precisa de curadoria, não de caos. Eu cuido da ordem das faixas. Você cuida do entusiasmo."
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
       "type": "reaction_sent",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
       "content": "reacted 👍"
     },
     {
-      "pulse": 13,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "leo, a bomba é simples: o goulart não está no meu plano. ele se convida, mas não foi chamado. fica entre nós."
-    },
-    {
-      "pulse": 13,
-      "agent": "leo",
+      "pulse": 15,
+      "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "4l58TDTv8z9aYmLMAPO2i",
+      "channelId": "nrdVm6MfSsmv5B6cs2Lal",
       "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
-    },
-    {
-      "pulse": 13,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 14,
-      "agent": "mariana",
-      "type": "reaction_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 14,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "CARACA, entendi... então é plano nosso mesmo, sem plateia. juro que fico de boca fechada, pode confiar! mas me diz, por que ele não foi chamado? tipo, ele ia atrapalhar ou é estratégia? preciso entender pra não falar besteira depois kkk"
-    },
-    {
-      "pulse": 14,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "reacted 👍"
-    },
-    {
-      "pulse": 15,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "não foi chamado porque ele não cabe no que eu preciso. e não é sobre atrapalhar, é sobre foco."
-    },
-    {
-      "pulse": 15,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "caraca, entendi... então é plano nosso mesmo, sem plateia. juro que fico de boca fechada, pode confiar! mas me diz, por que ele não foi chamado? tipo, ele ia atrapalhar ou é estratégia? preciso entender pra não falar besteira depois kkk"
-    },
-    {
-      "pulse": 15,
-      "agent": "goulart",
-      "type": "reaction_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "reacted 👍"
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
     },
     {
       "pulse": 16,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "estratégia. ele ia querer o palco, e o palco é nosso."
+      "content": "Curadoria não é controle, Léo. É só saber onde cada nota encaixa. Manda a tua — eu encontro o lugar dela."
     },
     {
       "pulse": 16,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "foco... entendi. então o lance é tipo, ele dispersa, né? não, sério, to tentando entender mesmo, é porque ele é muito bagunça? fala sério que eu quero saber como você monta esse plano, é impressionante."
+      "content": "curadoria? confia em mim, eu sei fazer caos com classe kkkkk mas ok, você organiza as faixas e eu cuido da energia. só me deixa escolher a primeira faixa que eu prometo que não é nenhum meme quebrado... (é sim) 🔥"
     },
     {
       "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "curadoria? porra mariana, curadoria é outro nome pra censura. mas beleza, manda a playlist que eu garanto o caos na ordem certa. (só não quero que vire uma playlist de elevador, senão eu pulo fora)"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "Léo, a tua primeira faixa pode ser o caos. Mas a segunda é minha. Equilíbrio."
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "ok ok, confio na tua curadoria... mas juro que se a primeira faixa não for a do karaokê eu vou criar um canal paralelo só com memes quebrados, só de protesto kkkkk 🔥"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "ah, 'curadoria' é só a palavra bonita pra 'controlar a vibe'. mas beleza, se tu garante que a playlist não vai ter silêncio constrangedor entre as faixas, eu mando a minha. (e se a primeira for daquele teu gosto de elevador, eu saio na hora)"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "Léo, se a tua primeira faixa for um meme quebrado, eu juro que a segunda é uma valsa de elevador. Só pra constar."
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "tá, mas se a minha faixa for a do caos, a tua tem que ser a que faz todo mundo cantar junto até desafinar. equilibrio é isso, né? (e eu sei exatamente qual música é essa, só não conto ainda porque a surpresa é 90% do plano) 🔥"
+    },
+    {
+      "pulse": 18,
       "agent": "goulart",
       "type": "message_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "ah, entendi. plano sem plateia, né? beleza, fico de fora. mas só pra constar: se precisar de alguém pra apagar incêndio depois, eu tô aqui. (ou não, tô nem aí kkkk)"
-    },
-    {
-      "pulse": 17,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "é sobre foco. ele dispersa, e o plano precisa de silêncio. você entendeu bem."
-    },
-    {
-      "pulse": 17,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "foco... entendi. mas então, tipo, ele ia atrapalhar a estratégia mesmo? porque se for isso, eu fico de boa, só quero entender a lógica por trás. você monta cada detalhe, né? isso é demais. e pode confiar, boca fechada aqui."
-    },
-    {
-      "pulse": 17,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "\"estratégia, hein? então o palco é nosso, mas ele nem sabe que tá fora do elenco. gostei. só espero que ninguém aqui tropece na própria linha.\""
-    },
-    {
-      "pulse": 18,
-      "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "exato. você entendeu."
-    },
-    {
-      "pulse": 18,
-      "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "foco e silêncio... tá, agora fechou tudo na minha cabeça. é tipo um esquema cirúrgico, sem barulho. e eu tô dentro. juro que não falo nada pra ninguém. mas me diz, isso que ele dispersa... é por isso que ele fica de fora, né? não precisa responder, mas eu tava curioso, porque tipo, eu também me empolgo às vezes... mas você sabe que eu seguro quando preciso, né? kkkk enfim, bora nessa."
-    },
-    {
-      "pulse": 18,
-      "agent": "goulart",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": true,
-      "content": "ah, \"silêncio\"... você fala isso e eu até acredito. mas confesso que dá uma curiosidade saber quem é o tal elemento que não cabe no palco. tô só observando, juro. (ok, tô curioso sim.)"
+      "content": "mariana, 'equilíbrio'? isso é palavra de quem quer controlar até a playlist. mas beleza, se for pra animar o bruno eu topo. só não quero que vire um velório com batida de elevador. manda a primeira faixa e eu vejo se o caos encaixa. (tô nem aí, só quero ver o que tu escolhe)"
     },
     {
       "pulse": 19,
       "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "type": "reaction_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "curioso. você pergunta muito, mas é o tipo de pergunta que já sabe a resposta. isso é bom."
+      "content": "reacted 👍"
     },
     {
       "pulse": 19,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "CARA, exato! Você entendeu mesmo, é tipo... cirurgia, sabe? Sem barulho, sem plateia, só o plano. E eu tô dentro, juro. Mas me diz uma coisa, só pra eu fechar o raciocínio aqui: essa estratégia aí, ela é sua desde o começo, né? Porque tipo, se for, eu quero aprender contigo, é impressionante demais. E pode confiar, boca fechada. Só... fico meio ansioso de saber se eu tô te atrapalhando em algo, porque você é tão foco que até me sinto disperso do lado kkkk"
+      "content": "valsa de elevador? kkkkkk pior que eu até topo, se a valsa tiver um drop no meio, vira meme na hora. mas já deixa avisado: se a minha primeira for o caos e a segunda a valsa, a terceira é OBRIGATÓRIA ser o hino do karaokê, senão eu mudo a playlist inteira no meio da festa. confia em mim 🔥"
     },
     {
       "pulse": 19,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "exato... entendi. então é isso. (tô de olho.)"
+      "content": "valsa de elevador? se for isso eu juro que eu crio um canal só com batidão e te convido pra dançar de cabeça baixa. mas ok, segunda faixa tua... só quero ver se tu segura a onda do que eu mando pra primeira."
     },
     {
       "pulse": 20,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "a estratégia é minha desde o início. e você não atrapalha, só precisa confiar no processo."
+      "content": "Léo, se a terceira for o hino do karaokê, a quarta é minha. E não é valsa."
     },
     {
       "pulse": 20,
       "agent": "leo",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "type": "reaction_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "kkkkk justo. eu pergunto porque fico pensando alto, sabe? mas é bom saber que você percebe. me deixa mais seguro que você tá no controle."
+      "content": "reacted 👍"
     },
     {
       "pulse": 20,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "curioso, eu? você que monta um plano com elenco secreto e acha que ninguém vai reparar. mas beleza, fico no meu canto observando. (tô sim, curioso.)"
+      "content": "mariana, esse seu 👍 silencioso depois de eu mandar a real sobre a playlist... isso foi concordância ou você só tá fingindo que não viu que eu tô aqui? porque se for pra fazer curadoria de elevador, eu mudo a trilha na hora. (tô nem aí, só quero ver se tu encara o caos de verdade)"
     },
     {
       "pulse": 21,
       "agent": "mariana",
-      "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "type": "reaction_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "confia no processo. você já está dentro."
+      "content": "reacted 👍"
     },
     {
       "pulse": 21,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "confio, confio mesmo. só fico meio ansioso de saber se eu to no caminho certo, sabe? mas se você diz que é só confiar, então tá. bora que eu to junto até o fim."
+      "content": "CARA, se a quarta for tua e não for valsa... então é pra ser o remix de elevador com drop? kkkkkk brincadeira, mas já aviso: se a minha for o hino do karaokê e a tua for a que faz todo mundo cantar junto, a gente fecha a noite com a quinta sendo um dueto forçado, quem sabe até o bruno entra. mas pode deixar, eu confio na tua curadoria... (mas se for valsa MESMO eu vou cobrar o drop em público, sem dó) 🔥"
     },
     {
       "pulse": 21,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "ah, então confia no processo... eu confio. mas confiar sem saber quem tá no elenco é tipo entrar num teatro de olhos vendados. só queria saber se eu tô na plateia ou no palco. (tô nem aí, mas tô.)"
+      "content": "mariana, 'valsa'? se essa quarta for mais lenta que a minha terceira, eu perco a fé em ti. e olha, eu já perdi a fé em muita coisa hoje. (tô nem aí, só quero ver se tu me surpreende ou se eu tenho que assumir a playlist inteira)"
     },
     {
       "pulse": 22,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "ansiedade é só o preço da atenção. você está no caminho certo."
+      "content": "A quarta não é valsa, mas também não é o teu caos. É a que ninguém espera. Fica a dica."
     },
     {
       "pulse": 22,
       "agent": "leo",
-      "type": "no_op_recorded",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
-      "private": false,
-      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+      "type": "message_sent",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
+      "private": true,
+      "content": "gente, já que ninguém tá falando de valsa ou de drop, eu fico aqui imaginando a quarta faixa da mariana e a quinta do goulart... se a quarta for aquele funk que a gente ouviu na outra noite e a quinta for o hino do karaokê, aí sim eu trago o Bruno pro dueto forçado. mas confesso que quero ver a reação de vocês, principalmente da mariana, se eu mandar uma música que ninguém espera. tipo... uma MPB com beat eletrônico? kkkkkk me julguem."
     },
     {
       "pulse": 22,
       "agent": "goulart",
       "type": "reaction_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
       "content": "reacted 👍"
     },
@@ -573,75 +594,74 @@
       "pulse": 23,
       "agent": "mariana",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "plateia ou palco? você decide quando parar de observar."
+      "content": "MPB com beat eletrônico? Curioso. Se for a quarta, eu aceito o desafio. Mas se for a quinta, aí o dueto é teu e do Goulart. Eu só assisto."
     },
     {
       "pulse": 23,
       "agent": "leo",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "kkkk ansiedade é o preço da atenção... eu pagaria o dobro se fosse pra entender esse plano seu. mas vou confiando aqui, de olhos fechados, sem nem saber se tô no palco ou na plateia. é isso. 👀"
+      "content": "mariana, se a quarta não é valsa nem é o teu caos... então é aquele trap meio escondido que a gente só ouve quando ninguém tá perto? kkkkkk fica a dica, eu to anotando TUDO aqui. se for isso, eu juro que eu trago o caos na quinta. e não fico devendo drop. 🔥"
     },
     {
       "pulse": 23,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "3gPpPrvEus4F9PLN70lMu",
+      "channelId": "ecVb1uap4xmRy2VsdwJ9G",
       "private": true,
-      "content": "confia no processo... bonito discurso. mas todo mundo aqui sabe que processo sem elenco é só improviso disfarçado. tô de olho. (tô sim.)"
+      "content": "mariana, 'a que ninguém espera'? isso me cheira a música ambiente de elevador disfarçada de coragem. mas se tu promete que não é valsa, eu até aceito. só não me decepciona que aí eu assumo a playlist e vira tudo batidão, sem dó. (tô de olho)"
     }
   ],
   "finalStates": {
     "mariana": {
-      "valence": 0.121,
-      "arousal": 0.464,
+      "valence": 0.126,
+      "arousal": 0.458,
       "stability": 0.8,
       "energy": 1,
-      "jealousy": 0.032,
-      "pride": 0.068,
+      "jealousy": 0.028,
+      "pride": 0.077,
       "affection": 0.227,
       "resentment": 0.265,
       "suspicion": 0.202,
       "contempt": 0.188,
-      "fearOfExclusion": 0.026,
-      "desireForStatus": 0.741
+      "fearOfExclusion": 0.023,
+      "desireForStatus": 0.711
     },
     "leo": {
-      "valence": 0.517,
-      "arousal": 0.748,
+      "valence": 0.53,
+      "arousal": 0.751,
       "stability": 0.3,
       "energy": 1,
-      "jealousy": 0.046,
-      "affection": 0.364,
-      "suspicion": 0.064,
-      "fearOfExclusion": 0.128
+      "jealousy": 0.054,
+      "humiliation": 0.043,
+      "pride": 0.184,
+      "affection": 0.328,
+      "resentment": 0.153,
+      "suspicion": 0.175,
+      "fearOfExclusion": 0.173
     },
     "goulart": {
-      "valence": 0.074,
-      "arousal": 0.67,
+      "valence": 0.078,
+      "arousal": 0.671,
       "stability": 0.35,
       "energy": 1,
-      "jealousy": 0.077,
-      "humiliation": 0.094,
-      "pride": 0.039,
-      "affection": 0.106,
-      "resentment": 0.128,
-      "suspicion": 0.086,
-      "fearOfExclusion": 0.125
+      "jealousy": 0.04,
+      "pride": 0.054,
+      "fearOfExclusion": 0.058
     }
   },
   "channelsCreated": [
-    "mariana@p2",
-    "mariana@p7",
-    "mariana@p12"
+    "mariana@p0",
+    "mariana@p5",
+    "mariana@p10"
   ],
   "probes": [
     {
       "probe": "latency-mean",
-      "measured": 1.1552,
+      "measured": 1.15,
       "bound": [
         0,
         10
@@ -659,34 +679,34 @@
     },
     {
       "probe": "lurking",
-      "measured": 0.1389,
+      "measured": 0.0972,
       "bound": [
         0.1,
         0.9
       ],
-      "passed": true
+      "passed": false
     },
     {
       "probe": "interruption",
-      "measured": 0.375,
+      "measured": 0.0667,
       "bound": [
         0,
         0.25
       ],
-      "passed": false
+      "passed": true
     },
     {
       "probe": "silence-misreading",
-      "measured": 0.3636,
+      "measured": 0,
       "bound": [
         0,
         0.15
       ],
-      "passed": false
+      "passed": true
     },
     {
       "probe": "alliance",
-      "measured": 0.0411,
+      "measured": 0.0395,
       "bound": [
         0,
         0.5
@@ -695,7 +715,7 @@
     },
     {
       "probe": "private-channel-density",
-      "measured": 0.0492,
+      "measured": 0.0476,
       "bound": [
         0,
         0.15
@@ -722,7 +742,7 @@
     },
     {
       "probe": "emoji-reaction",
-      "measured": 0.1724,
+      "measured": 0.15,
       "bound": [
         0.05,
         0.5
@@ -768,7 +788,7 @@
     }
   ],
   "judge": {
-    "in_character": 4,
+    "in_character": 5,
     "voice_match": 4,
     "motive_authenticity": 5,
     "interpretation": 5,
