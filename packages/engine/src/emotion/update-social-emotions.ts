@@ -62,17 +62,20 @@ export function updateSocialEmotions(
   }
 
   // Step 2: Mood-congruent amplification
-  // Negative valence boosts negative-valence emotions; positive boosts positive
+  // Negative valence gently RAISES negative emotions — but additively and
+  // only on dimensions that already carry signal. The old multiplicative
+  // `(1 + |v|*0.15) per pulse` compounds like 1.15^n and pins EVERY
+  // negative dimension at 1.0 for every agent (the "everyone feels
+  // identical" saturation). Additive + decay → differentiated equilibria.
   const moodCongruence = -mood.valence; // negative → amplify negative emotions
   if (Math.abs(moodCongruence) > 0.2) {
     const NEGATIVE_DIMS = ["jealousy", "envy", "humiliation", "shame", "resentment",
                            "suspicion", "contempt", "neediness", "socialAnxiety", "fearOfExclusion"];
     const POSITIVE_DIMS = ["pride", "affection", "admiration", "desireForStatus", "desireForIntimacy"];
-    const ampFactor = 1 + Math.abs(moodCongruence) * 0.15;
-
+    const amp = Math.abs(moodCongruence) * 0.04;
     for (const dim of moodCongruence > 0 ? NEGATIVE_DIMS : POSITIVE_DIMS) {
-      if (dim in updated) {
-        updated[dim] = clamp((updated[dim] ?? 0) * ampFactor, 0, 1);
+      if (dim in updated && (updated[dim] ?? 0) > 0.03) {
+        updated[dim] = clamp((updated[dim] ?? 0) + amp, 0, 1);
       }
     }
   }

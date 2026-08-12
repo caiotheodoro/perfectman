@@ -74,8 +74,9 @@ export function scoreAttention(
   let objectiveUrgency = 0;
 
   for (const event of newEvents) {
+    // Your own messages don't demand your own attention.
+    if (event.actorId === agent.agentId) continue;
     const isMentioned =
-      event.actorId !== agent.agentId &&
       (event.payload["mentionedAgentIds"] as string[] | undefined)?.includes(agent.agentId) === true;
 
     const isDirectReply =
@@ -160,9 +161,12 @@ export function scoreAttention(
   dueScore = Math.max(0, Math.min(1, dueScore));
 
   const noticed = dueScore > 0.15 || newEvents.length > 0;
+  // A direct mention or reply-to-self ALWAYS deserves the LLM's attention —
+  // "an agent notices a mention and replies" is a V1 target behavior.
   const needsLLM =
     dueScore >= ATTENTION_LLM_THRESHOLD ||
-    (mentionUrgency > 0 && newEvents.some(
+    mentionUrgency > 0 ||
+    (newEvents.some(
       e => e.emotionalSalience === "high" || e.emotionalSalience === "critical",
     ));
 

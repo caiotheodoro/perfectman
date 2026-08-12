@@ -232,6 +232,26 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
       (attentionResults.needsLLM && rawDecision.outcome !== "no_op" && rawDecision.outcome !== "memory_only"),
   };
 
+  // Lurking personas lurk: unless directly addressed (mention/reply-to-self),
+  // a lurking agent observes and records silence instead of acting.
+  // (docs: "high threshold for speaking, low threshold for observing".)
+  const directlyAddressed = attentionResults.reasons.some(
+    r => r === "direct_mention" || r === "reply_to_self",
+  );
+  if (
+    agentState.presence === "lurking" &&
+    !directlyAddressed &&
+    decision.outcome !== "no_op" &&
+    decision.outcome !== "memory_only" &&
+    attentionResults.triggeringReason !== "operator_injection"
+  ) {
+    decision.outcome = "no_op";
+    decision.needsLLM = false;
+    decision.initiativeProceed = false;
+    decision.noOpReason = "lurking_observer";
+    decision.privateMotiveSeed = "watching, not joining";
+  }
+
   // ── 13. Perception packet ─────────────────────────────────────────────────
   const triggeringEvent = attentionResults.triggeringEventId
     ? newEvents.find(e => e.id === attentionResults.triggeringEventId) ?? null

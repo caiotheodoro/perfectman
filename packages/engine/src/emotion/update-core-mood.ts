@@ -27,17 +27,25 @@ export function updateCoreMood(
   let momentumValence = current.momentumValence;
   let momentumArousal = current.momentumArousal;
 
-  // Step 1: Damped spring toward baseline
-  const springK = persona.moodInertia; // higher inertia → slower return
-  valence = dampedSpring(valence, persona.baselineValence, springK, dt);
-  arousal = dampedSpring(arousal, persona.baselineArousal, springK, dt);
-  stability = dampedSpring(stability, persona.baselineStability, springK * 0.5, dt);
-  energy = dampedSpring(energy, persona.baselineEnergy, springK * 0.3, dt);
+  // Step 1: Damped spring toward baseline.
+  // NOTE: personas document moodInertia as "high inertia = slow river"
+  // (Mariana 0.8 barely moves; Goulart 0.25 swings fast). The spring's
+  // pull-back must therefore be LARGER for LOW inertia: pull = (1-inertia).
+  // With the previous `inertia * dt` formula the semantics were inverted
+  // AND dt≈0 in fast bench runs → moods pinned at the clamps forever.
+  const pullK = (1 - persona.moodInertia) * 0.18;
+  valence = dampedSpring(valence, persona.baselineValence, pullK, dt);
+  arousal = dampedSpring(arousal, persona.baselineArousal, pullK, dt);
+  stability = dampedSpring(stability, persona.baselineStability, pullK * 0.5, dt);
+  energy = dampedSpring(energy, persona.baselineEnergy, pullK * 0.3, dt);
 
   // Step 2: Energy regen toward baseline
   energy = clamp(energy + persona.energyRegen * dt, 0, 1);
 
-  // Step 3: Apply impulses
+  // Step 3: Apply impulses — with a per-pulse ceiling. A single pulse must
+  // not swing mood to the clamps ("moving 30 degrees is natural drift").
+  const MAX_DELTA_V_PER_PULSE = 0.3;
+  const MAX_DELTA_A_PER_PULSE = 0.25;
   let totalDeltaV = 0;
   let totalDeltaA = 0;
 
@@ -51,6 +59,8 @@ export function updateCoreMood(
       stability -= impulse.magnitude * 0.3;
     }
   }
+  totalDeltaV = clamp(totalDeltaV, -MAX_DELTA_V_PER_PULSE, MAX_DELTA_V_PER_PULSE);
+  totalDeltaA = clamp(totalDeltaA, -MAX_DELTA_A_PER_PULSE, MAX_DELTA_A_PER_PULSE);
 
   // Momentum accumulates but decays
   const MOMENTUM_DECAY = 0.75;

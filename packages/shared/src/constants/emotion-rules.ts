@@ -41,13 +41,17 @@ export const EVENT_IMPULSE_TABLE: readonly EventImpulseRule[] = [
     affectedDimensions: ["pride", "affection"],
   },
 
-  // 3. reply_sent — bystander sees reply go to someone else
+  // 3. reply_sent — bystander sees a reply go to someone else.
+  // A snub stings, but NOT every public reply is a snub — keep it mild and
+  // exclude resentment (resentment is for direct slights, not ambient chat).
+  // (Old values 0.22/-0.12 pushed EVERY agent's resentment to 1.0 in any
+  // active room.)
   {
     eventType:          "reply_sent",
     role:               "bystander",
-    valenceShift:      -0.05,
-    arousalShift:       0.08,
-    magnitude:          0.12,
+    valenceShift:      -0.04,
+    arousalShift:       0.03,
+    magnitude:          0.10,
     affectedDimensions: ["jealousy", "fearOfExclusion"],
   },
 
@@ -177,19 +181,19 @@ export const EVENT_IMPULSE_TABLE: readonly EventImpulseRule[] = [
 // Lower = faster decay.
 
 export const SOCIAL_EMOTION_DECAY: Readonly<Record<string, number>> = {
-  jealousy:           0.92, // decays relatively fast
-  envy:               0.93,
-  humiliation:        0.95, // lingers
+  jealousy:           0.94, // decays fast-ish, but a repeated snub rekindles it
+  envy:               0.94,
+  humiliation:        0.96, // lingers
   pride:              0.94,
   shame:              0.96, // very persistent
   affection:          0.97, // slow decay — relationships build
   resentment:         0.97, // also slow — grudges
-  suspicion:          0.93,
+  suspicion:          0.94,
   admiration:         0.95,
   contempt:           0.96,
   neediness:          0.90, // fast — spikes and fades
-  socialAnxiety:      0.91,
-  fearOfExclusion:    0.93,
+  socialAnxiety:      0.94,
+  fearOfExclusion:    0.97, // a felt exclusion persists like a grudge
   desireForStatus:    0.98, // very persistent — background motivation
   desireForIntimacy:  0.97,
 };

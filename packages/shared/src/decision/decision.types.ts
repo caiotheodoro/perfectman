@@ -9,7 +9,8 @@ export type NoOpReason =
   | "watched_private_channel_instead"
   | "waited_for_someone_else"
   | "pretended_not_to_care"
-  | "felt_too_uncertain";
+  | "felt_too_uncertain"
+  | "lurking_observer";
 
 export type DelayPreference = {
   durationMs: number;

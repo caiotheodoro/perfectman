@@ -160,7 +160,7 @@ describe("computeAvailableActions", () => {
     expect(messageAction?.blocked).toBe(true);
   });
 
-  it("channelTargets contains correct public channels", () => {
+  it("channelTargets contains member channels — private included so agents can converse privately", () => {
     const agent = makeAgent();
     const channels = [makeChannel("ch1"), makeChannel("ch2"), makeChannel("priv1", { type: "private_channel" })];
     const membership = [makeMembership("ch1"), makeMembership("ch2"), makeMembership("priv1")];
@@ -168,7 +168,7 @@ describe("computeAvailableActions", () => {
     const sendMsg = actions.find(a => a.intentType === "send_message");
     expect(sendMsg?.channelTargets).toContain("ch1");
     expect(sendMsg?.channelTargets).toContain("ch2");
-    expect(sendMsg?.channelTargets).not.toContain("priv1"); // private not in send_message
+    expect(sendMsg?.channelTargets).toContain("priv1"); // private channels are for talking in
   });
 
   it("personTargets excludes self", () => {

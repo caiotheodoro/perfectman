@@ -69,25 +69,26 @@ export function computeAvailableActions(
     rateLimitStatus.privateChannelsCreated >= settings.maxPrivateChannelsPerAgent;
 
   const actions: AvailableAction[] = [
-    // send_message — any public channel
+    // send_message — any channel the agent is in (private included: a
+    // private channel exists to be talked in)
     {
       intentType: "send_message",
-      channelTargets: publicChannels.map(c => c.id),
+      channelTargets: memberChannels.map(c => c.id),
       personTargets: [],
-      blocked: globallyBlocked || messageLimited || publicChannels.length === 0,
+      blocked: globallyBlocked || messageLimited || memberChannels.length === 0,
       blockReason: globallyBlocked
         ? rateLimitStatus.blockReason
         : messageLimited
         ? "message_rate_limit"
-        : publicChannels.length === 0
+        : memberChannels.length === 0
         ? "no_channel_available"
         : undefined,
     },
 
-    // reply_to_message — any public channel with recent messages
+    // reply_to_message — any channel the agent is in with recent messages
     {
       intentType: "reply_to_message",
-      channelTargets: publicChannels.map(c => c.id),
+      channelTargets: memberChannels.map(c => c.id),
       personTargets: reachablePeople,
       blocked: globallyBlocked || messageLimited,
       blockReason: globallyBlocked
@@ -144,17 +145,17 @@ export function computeAvailableActions(
       blockReason: globallyBlocked ? rateLimitStatus.blockReason : undefined,
     },
 
-    // typing_start / typing_cancel — any public channel
+    // typing_start / typing_cancel — any channel the agent is in
     {
       intentType: "typing_start",
-      channelTargets: publicChannels.map(c => c.id),
+      channelTargets: memberChannels.map(c => c.id),
       personTargets: [],
       blocked: globallyBlocked,
       blockReason: globallyBlocked ? rateLimitStatus.blockReason : undefined,
     },
     {
       intentType: "typing_cancel",
-      channelTargets: publicChannels.map(c => c.id),
+      channelTargets: memberChannels.map(c => c.id),
       personTargets: [],
       blocked: false,
     },

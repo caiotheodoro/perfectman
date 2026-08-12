@@ -18,6 +18,10 @@ const STRENGTH_RANK: Record<InhibitionStrength, number> = {
   low: 1, medium: 2, high: 3,
 };
 
+/** Room-birth grace: genuine initiative yields to strategic patience while
+ *  the room is still waking up (cold-start stagger, no burst of messages). */
+const INITIATIVE_OVERRIDE_GRACE_PULSES = 5;
+
 /**
  * Resolve decision from pressures vs inhibitions.
  *
@@ -46,6 +50,12 @@ export function resolveDecision(
   // social_anxiety_block, etc.) which remain fully blocking.
   const coldStartFired = initiativeCandidates.some(
     c => c.source === "cold_start_bootstrap" && c.proceed,
+  );
+  // Genuine (non-bootstrap) initiative — motivation that builds over time
+  // (boredom, curiosity, repair…) — breaks the freeze after the room's
+  // birth grace window.
+  const otherInitiativeFired = initiativeCandidates.some(
+    c => c.source !== "cold_start_bootstrap" && c.proceed,
   );
   // No pressures at all
   if (pressures.length === 0) {
@@ -107,7 +117,13 @@ export function resolveDecision(
       // talking — the agent is being left out of a live conversation, so patience
       // serves nothing. When the channel is empty (no new events), strategic
       // patience holds normally.
-      if (coldStartFired && hasNewEvents) {
+      // Genuine initiative ALSO overrides after the room-birth grace window —
+      // motivation creates action (docs core loop), and a stuck agent's real
+      // drives must break the freeze.
+      if (
+        (coldStartFired && hasNewEvents) ||
+        (pulseIndex >= INITIATIVE_OVERRIDE_GRACE_PULSES && otherInitiativeFired)
+      ) {
         return {
           outcome:           "act",
           needsLLM:          true,

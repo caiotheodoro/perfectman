@@ -39,6 +39,18 @@ export function filterVisibleEventsForAgent(
 
     const vis = event.visibility;
 
+    // Operator-only events (no agent audience, not spectator-facing, marked
+    // operator_only) are never shown to agents — no-op records, memory
+    // writes, motives. Private-channel events use the same visibility shape
+    // but a different reason and ARE shown to channel members.
+    if (
+      vis.visibleToAgents.length === 0 &&
+      !vis.visibleToSpectators &&
+      vis.visibilityReason === "operator_only"
+    ) {
+      return false;
+    }
+
     // If visibleToAgents is populated, agent must be in list
     if (vis.visibleToAgents.length > 0) {
       return vis.visibleToAgents.includes(agentId);
