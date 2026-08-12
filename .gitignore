@@ -33,4 +33,7 @@ docs/persona-*.html
 
 # Local tooling / OS noise
 freellmapi/
+
+# Eval artifacts
+out/
 .DS_Store
