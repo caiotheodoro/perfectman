@@ -1,0 +1,531 @@
+{
+  "scenarioId": "motive_impulse",
+  "name": "Impulse",
+  "category": "motive_archetype",
+  "description": "High-energy room; Leo fires off reactions and messages on impulse, without deliberation.",
+  "targetBehaviors": [],
+  "runtimeMs": 144279,
+  "pulses": 16,
+  "llmCalls": {
+    "leo": 16,
+    "goulart": 16,
+    "caio": 10
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ganhei na loteria ontem"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA espera espera espera... GANHOU MESMO?? tipo, de verdade? kkkkkkkk meu deus, isso muda TUDO. o que você vai fazer com essa grana? me conta tudo, preciso saber cada detalhe"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "sério, ninguém vai comentar sobre a loteria?? tá todo mundo morto ou só sem graça?"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA espera espera espera... o goulart ganhou na loteria e ninguém fala nada?? GENTE, isso é HISTÓRICO kkkkkkkk eu já tô planejando a festa, pode deixar. mas sério, me conta: o que você vai fazer com essa grana? eu preciso saber se vou ser convidado pra viajar ou se você vai sumir da nossa vida kkkkkk"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah leo, calma, calma... primeiro, quem falou que eu vou dividir alguma coisa? kkkk brincadeira (ou não). mas ó, festa é contigo, pode ir planejando que eu apareço. viajar? tô pensando em sumir por uns meses, ver se o mundo fica mais interessante sem mim. mas não te preocupes, te mando um postcard. e se a mariana perguntar, diz que eu tô ocupado demais contando dinheiro pra responder mensagem (tô nem aí, mas ela ficaria pistola, né?)."
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkkk goulart, você é impossível. loteria, sumir por meses, postcard... e ainda quer que eu minta pra mariana? você é um gênio do caos, eu amo isso. mas ó, se for sumir mesmo, me avisa com antecedência que eu vou precisar de tempo pra processar a falta que você vai fazer. e a festa já tá sendo planejada, pode confiar."
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo você tá levando isso mais a sério que eu. mas beleza, se a festa for boa eu apareço. só não conta pra mariana que eu falei de sumir, ela já acha que eu sou doido. (tô falando sério, não conta.)"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, pode deixar que eu seguro a mariana! mas ó, se for sumir mesmo, me manda um áudio antes? não um postcard, um áudio, porque eu preciso ouvir sua voz pra saber que cê tá vivo kkkkk. e a festa vai ser ÉPICA, pode confiar. vou fazer playlist, decoração, tudo. mas sério, me promete que não some sem avisar?"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk leo, você já tá planejando festa pra quem nem confirmou que vai? calma, calma. mas ó, se for pra sumir, te mando um postcard de onde eu tiver. e sobre a mariana... deixa que eu lido com ela. ela gosta de me odiar, faz parte do charme. (não conta que eu falei isso.)"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk tá, tá, prometo que não conto pra mariana... mas ó, se você sumir, eu vou te caçar até achar, pode anotar. e a festa vai ser tão boa que você vai querer voltar antes do postcard chegar. mas me diz uma coisa, sério: você tá feliz? tipo, de verdade? porque eu quero que você esteja, tá?"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo você tá levando isso mais a sério que eu. mas beleza, se a festa for boa eu apareço. só não conta pra mariana que eu falei de sumir, ela já acha que eu sou doido. (tô falando sério, não conta.)"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, deixa de drama! kkkk se você sumir de verdade, a gente vai te achar em qualquer canto. mas olha, essa história de loteria é séria? tô feliz por você, mas não esquece dos amigos quando for viajar, hein?"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk leo, calma, calma... você tá planejando uma festa pra quem nem confirmou que vai? confia que eu apareço, mas ó, se for pra sumir, te mando um postcard de onde eu tiver. e sobre a mariana... deixa que eu lido com ela. ela gosta de me odiar, faz parte do charme. (não conta que eu falei isso.)"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, essa energia de vocês dois é contagiante kkkk goulart, para de ameaçar sumir que a gente fica todo ansioso aqui. leo, você é o melhor anfitrião que a gente tem, pode contar comigo pra ajudar na festa!"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, sério, você é o melhor! Contar com você na festa já deixa ela 10x melhor. E ó, não deixa o goulart te enganar com esse papo de sumir, eu tenho um plano pra prender ele aqui: playlist com as músicas favoritas dele e brigadeiro. Ninguém resiste a brigadeiro. kkkkk"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk leo, você é um doce, sabia? mas tá, prometo que se eu sumir, te mando um postcard da praia mais perto do paraíso. e sobre a mariana... deixa ela me odiar, é o que dá graça. (mas obrigado por perguntar. sério.)"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk postcard? eu quero é áudio, com sua voz pra eu saber que cê tá vivo! mas pode deixar que eu seguro a mariana, confia. e se sumir, eu te caço até achar, juro. agora me conta uma coisa: esse papo de praia é verdade ou você tá só tentando me animar?"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você é demais! kkkk brigadeiro e playlist é a combinação perfeita, isso funciona até comigo. E ó, se precisar de ajuda com a decoração, pode contar comigo. A gente faz dessa festa um evento inesquecível!"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, com você na equipe essa festa vai ser épica! Já tô imaginando a decoração... a gente pode fazer um tema tropical, tipo praia, já que o goulart vive falando em sumir pra uma ilha. kkkk E ó, se ele realmente for, a gente vai ter que levar a festa até ele! Mas sério, tô feliz que você topou ajudar. Você é o melhor, caio! ❤️"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui? leo tá planejando uma festa pra mim e eu nem confirmei que vou. tá bom, tá bom, vou. mas se o brigadeiro for de chocolate amargo, eu volto pro além. (mentira, adoro chocolate amargo.)"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você é o coração desse grupo, sério! kkkk e o plano do brigadeiro é infalível, até eu fico. mas e aí, já pensou em alguma música pra playlist? posso te mandar umas ideias!"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, você lê minha mente! tava justamente pensando nas músicas. Olha, já tenho umas ideias, mas preciso da sua ajuda pra fechar. Posso te mandar uma lista e você me diz o que acha? E sobre o tema, praia total! Vou até comprar umas luzes de pisca-pisca pra dar aquele clima. kkkkk"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk leo, você é um caso sério de otimismo, mas eu adoro. chocolate amargo é vida, pode deixar o brigadeiro. e ó, se for pra eu ficar, a playlist tem que ter um pouco de rock, senão eu sumo de verdade. (mas pode deixar que eu fico, pra ver tua cara quando eu aparecer.)"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você é o coração desse grupo, sério! kkkk e o plano do brigadeiro é infalível, até eu fico. mas e aí, já pensou em alguma música pra playlist? posso te mandar umas ideias!"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, sim! Me manda as ideias, por favor! Tô montando a playlist agora e tô aceitando tudo. kkkkk e se você quiser, a gente até faz um dueto na festa, tipo karaokê, só pra garantir que ninguém fica sem graça. Mas sério, me manda a lista que eu já incorporo! ❤️"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode mandar a lista sim! eu adoro montar playlist, a gente faz uma bem variada. e pisca-pisca é essencial, vai ficar lindo! se precisar de ajuda com mais alguma coisa, é só falar!"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "VIU SÓ?? o goulart reagiu com joinha, ele tá aprovando a festa! kkkkkk mas calma, que eu já tô anotando aqui: chocolate amargo e rock na playlist. Pode deixar que eu garanto, senão eu mesmo sumo de vergonha! 😂🎸"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá bom, tá bom, todo mundo me ignorando enquanto planeja a festa que é minha. que ótimo. mas eu tô vendo vocês. e leo, se você colocar uma música da xuxa na playlist, eu juro que eu mudo de ideia e sumo de verdade. (não vou, mas fica o aviso.)"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode mandar a lista sim! eu adoro montar playlist, a gente faz uma bem variada. e pisca-pisca é essencial, vai ficar lindo! se precisar de ajuda com mais alguma coisa, é só falar!"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA GOULART, você me conhece MUITO bem kkkkkk mas ó, prometo que a Xuxa fica de fora. Só entra se for pra zoar tua cara quando você aparecer! E olha, tô anotando aqui: chocolate amargo e rock. Pode deixar que a playlist vai ter até um pouco de sertanejo só pra você reclamar também. 😂🎸"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você tá levando isso a sério demais, mas eu confio. só não esquece do rock, senão o plano da festa desmorona. (e se você colocar xuxa, eu juro que eu sumo mesmo, mas depois eu volto só pra reclamar.)"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode mandar a lista sim! eu adoro montar playlist, a gente faz uma bem variada. e pisca-pisca é essencial, vai ficar lindo! se precisar de ajuda com mais alguma coisa, é só falar!"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "espera espera espera... gente, eu tava pensando aqui, e se a gente fizesse uma playlist colaborativa? tipo, todo mundo entra e adiciona as músicas que quiser, aí ninguém fica de fora e a gente vê quem tem o pior gosto musical kkkkkk. caio, você topa? goulart, tu também, pra garantir que a xuxa não entre nem por engano! 😂🎶"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você tá me conhecendo bem demais, isso é perigoso. mas pode anotar aí: se tiver xuxa, eu sumo de verdade e volto só pra dar chilique. e se tiver sertanejo, eu vou fingir que tô gostando, mas no fundo tô sofrendo. (tô nem aí, mas tô sim.)"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, que festa boa vai ser! leo, se precisar de ajuda com a playlist, eu tô dentro! e goulart, relaxa que a gente não te deixa na mão, pode confiar! 😄"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk juro que anotei aqui no meu bloquinho mental: xuxa = sumiço garantido. mas ó, se tu sumir, eu mesmo vou atrás, porque a festa sem teu chilique perde 80% da graça. e fica tranquilo que o sertanejo vai entrar só de leve, pra tu sofrer em silêncio enquanto finge que tá curtindo. 😂🎶"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, se você colocar sertanejo eu juro que eu faço uma playlist paralela só com xuxa e coloco no talo no dia da festa. aí a gente vê quem reclama primeiro. (não faria isso, mas o medo é real, confia.)"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, essa playlist colaborativa vai ser demais! já tô pensando nas músicas que vou colocar, e pode ter certeza que vai ter de tudo um pouco. e ó, se precisar de ajuda com a festa ou com a playlist, é só chamar! 😄🎶"
+    }
+  ],
+  "finalStates": {
+    "leo": {
+      "valence": 0.527,
+      "arousal": 0.749,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.044,
+      "affection": 0.821,
+      "fearOfExclusion": 0.118
+    },
+    "goulart": {
+      "valence": 0.077,
+      "arousal": 0.671,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.051,
+      "pride": 0.051,
+      "fearOfExclusion": 0.072
+    },
+    "caio": {
+      "valence": 0.428,
+      "arousal": 0.517,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.06
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.0256,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.125,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0698,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1163,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "reaction_sent committed 5 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "message_sent committed 5 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 4,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

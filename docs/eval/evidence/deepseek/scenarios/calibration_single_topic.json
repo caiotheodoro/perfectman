@@ -1,0 +1,1033 @@
+{
+  "scenarioId": "calibration_single_topic",
+  "name": "One topic, natural drift",
+  "category": "calibration",
+  "description": "A movie discussion that should drift naturally without drama.",
+  "targetBehaviors": [],
+  "runtimeMs": 333279,
+  "pulses": 24,
+  "llmCalls": {
+    "goulart": 24,
+    "bruno": 16,
+    "caio": 18,
+    "mariana": 18,
+    "leo": 24
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "assisti um filme ontem, fraco demais"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "qual?"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não vale a pena nem citar"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o filme, bruno. qual mais seria? mas relaxa, não vale tua indignação não"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk fala isso não, to quase acreditando em você... mas espera, se for tão fraco assim eu quero assistir SÓ pra reclamar junto"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk agora você me pegou, leo. se for tão fraco assim eu quero assistir só pra reclamar junto. bora marcar?"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart se o filme é tão fraco assim, você pelo menos deveria me contar pra eu saber o que evitar... ou pior, me deixar curioso pra assistir mesmo assim kkkkk"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk ENTÃO TÁ MARCADO. mas espera, se for fraco assim eu vou reclamar MAIS que você, pode pá. me diz a data e eu apareço com pipoca e mau humor. 🍿"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk leo você é o único que me entende nessa sala. bora marcar sim, mas só se você prometer reclamar MAIS que eu. senão nem compensa. 🍿"
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk fecha então. mas se eu for reclamar menos que você, eu pago a pipoca. tá valendo? 🍿"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk goulart você sabe que eu NUNCA recuso um desafio. mas agora fiquei curioso de verdade, qual é esse filme? se for tão ruim assim eu preciso ver pra acreditar... e prometo reclamar MAIS que você, pode cobrar. 🍿🎬"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui? leo aceitou o desafio, e bruno sumiu. mas é claro, a gente sabe que ele só aparece pra dar opinião quando ninguém pediu."
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente, que animação por aqui! esse filme aí tá rendendo bastante conversa kk. alguém quer falar sobre isso melhor?"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso. vocês dois combinando de reclamar juntos. quase um casamento."
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk goulart, você tá me desafiando mesmo? então tá, eu topo. mas se for tão ruim assim, eu vou reclamar TANTO que você vai querer me dar a pipoca só pra eu calar a boca. 🍿🎬 mas me conta logo qual é o filme, porque a curiosidade tá me matando aqui"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk casamento? mariana, se for pra reclamar junto eu topo até a lua de mel. mas calma, ainda não fechei com o leo. aliás, cadê o bruno? sumiu depois do meu último comentário. tô achando que ele tá com vergonha de concordar comigo. ou de me dar razão, o que é pior. 😏"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que é zoeira, mas vamos com calma. bruno deve estar ocupado, e leo tá animado demais com esse filme pra gente estragar o clima. deixa eles combinarem direitinho kk"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você reclama de tudo. até do silêncio do bruno. isso diz mais sobre você do que sobre ele."
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkkk MARIANA você não pode chegar e jogar essa bomba e sair, né? \"quase um casamento\" — eu e goulart de vestido branco? CARA, espera, isso vai me perseguir pra sempre. mas confesso que fiquei curioso: você quer ser a madrinha? 😂"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "MARIANA olha o que você fez, agora eu tô imaginando o goulart de vestido branco e não consigo parar de rir KKKKKK mas sério, me diz que você vai pelo menos segurar as alianças, porque esse casamento precisa de uma madrinha de peso. E o bruno? Alguém viu ele? Tô achando que ele sumiu de vergonha de ver o goulart todo romântico assim 😂"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah olha ele apareceu! só um joinha? cadê a coragem de falar que eu tô certo? tá com medo de me dar razão na frente da galera? fala bruno, assume que você concorda comigo, ninguém vai te julgar (mentira, eu vou julgar)."
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, para de imaginar isso, pelo amor kkkk mas se for pra segurar as alianças eu topo, contanto que ninguém reclame do meu discurso. e bruno, se você estiver aí, manda um sinal de fumaça pra gente saber que tá vivo 😄"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "madrinha? só se for pra segurar as alianças com uma mão e o controle remoto com a outra."
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, discurso de casamento? confia. mas bruno mandou joinha, então tá oficialmente noivos. só falta a mariana assinar como madrinha e o leo escolher a playlist. aliás, alguém viu o bruno sair do modo fantasma ou foi só o joinha de despedida?"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. medo de te dar razão? medo é você achar que eu tô prestando atenção o suficiente pra discordar. mas ok, segue o baile."
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, relaxa. o bruno tá aí, só não tá afim de entrar na zoeira agora. deixa ele quieto, a gente sabe que você é o rei do palco hoje kk"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "só se for pra segurar as alianças com uma mão e o controle remoto com a outra."
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, para de judiar do bruno kkkk ele deu joinha sim, isso é praticamente um discurso vindo dele. bruno, se você tiver aí e tiver medo de falar, manda um emoji que a gente decifra. eu to aqui torcendo pra você mandar um '😤' pra ele calar a boca."
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "só joinha e 'segue o baile'? tá oficialmente sem graça, bruno. eu te dou um palco e você me entrega um silêncio dramático. vou até chorar no casamento (tô quase, viu)."
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, bruno deu joinha, isso é praticamente um discurso de aceitação kkkk mas se ele sumir de novo, a gente vai atrás. aliás, alguém quer falar sobre o casamento ou a gente só zoa mesmo?"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se o bruno desse joinha, já é mais do que você merecia. mas fico curiosa: você ensaia esses discursos no espelho ou improvisa?"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, dois joinhas? tá subindo de cargo. falta pouco pra um 'ok' e a gente muda o nome do grupo pra 'bruno respondeu'. (tô contando os segundos, viu)"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, o bruno deu joinha, isso é praticamente um discurso de aceitação kkkk mas se ele sumir de novo, a gente vai atrás. aliás, alguém quer falar sobre o casamento ou a gente só zoa mesmo?"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se você ensaia no espelho, eu imagino que o espelho também se cansa. mas fico curiosa: o bruno deu joinha e você ainda quer palco. interessante."
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "MARIANA, EU PRECISO SABER DISSO TAMBÉM. goulart, responde isso, por favor, porque se você ensaia no espelho eu vou querer participar do próximo ensaio kkkkk"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. dois joinhas e vocês já tão me enterrando. legal."
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se você ensaia no espelho, eu imagino que o espelho também se cansa. mas fico curiosa: o bruno deu joinha e você ainda quer palco. interessante."
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, espera espera espera, preciso saber: você ensaia no espelho ou é 100% improviso? porque se for ensaio, EU QUERO PARTICIPAR DO PRÓXIMO. e bruno com dois joinhas? isso é praticamente um discurso. o grupo vai virar 'bruno respondeu' e eu vou apoiar kkkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "engraçado. engraçado mesmo. mas pode mudar o nome, tô acostumado a ficar de fora."
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, ninguém tá te enterrando, a gente tá te celebrando! dois joinhas é o novo padrão ouro aqui, pode crer. mas falando sério, tô curioso — o que você achou do assunto do casamento? ou prefere deixar a gente no mistério? kk"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, o palco é seu. só não esquece que o espelho também cansa."
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, casamento. não sei se tenho opinião. só observo."
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, relaxa, ninguém tá te enterrando não! Dois joinhas é só o começo da nossa torcida. Mas tô curioso, o que você acha de verdade sobre o casamento? Pode falar que a gente escuta. :)"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, dois joinhas é mais do que você costuma dar. talvez seja um avanço."
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, bruno, BRUNO. espera. você tá de fora? a gente te celebrou ATÉ com joinha duplo, isso é status! e sobre o casamento, ó, eu topo organizar o chá de panela. ou o chá de furadeira. você escolhe, eu trago a lista de presentes. kkkkkk"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, \"só observo\"? desde quando você observa? você julga, isso sim. mas beleza, fica aí no mistério, o palco é todo seu (ou não)."
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "casamento, né. todo mundo tem opinião. eu só tenho a cadeira do fundo. mas ok, se quiser saber, acho que é um bom motivo pra reunir geral. só isso."
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, essa conversa tá boa demais, mas o bruno tá com uma energia de quem tem muito a dizer e tá guardando. bruno, pode soltar, a gente tá aqui pra ouvir de verdade. e olha, se for sobre o casamento, eu também tenho minhas dúvidas, mas tô aprendendo. :)"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "avanço, bruno. você sabe que eu não uso essa palavra à toa."
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "julgar? eu só anoto. mas se o palco é meu, então tá na hora de descer. fica com ele."
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, \"cadeira do fundo\"? você sabe que aqui ninguém é plateia, né? e se você quer reunir geral, a gente já tá junto. mas me diz, o que te faria vir pra frente? a gente pode até puxar a cadeira. :)"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "a cadeira do fundo também é uma posição. e você a ocupa bem."
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, espera espera espera. \"cadeira do fundo\"? cara, essa frase foi TÃO dramática que eu até parei de mastigar meu lanche. mas olha, se você quer opinar, a gente tá aqui, sem julgamento (ou com, mas de forma carinhosa kkkkk). e sobre a festa, eu vou ser o mestre de cerimônias, pode deixar. mas me diz uma coisa: você é time panela elétrica ou churrasqueira? preciso saber pra planejar TUDO."
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cadeira puxada. mas eu ainda tô decidindo se sento."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, eu tô levando a sério isso aqui, e é porque eu quero que você se sinta em casa. se a cadeira do fundo é onde você tá confortável, tudo bem. mas se um dia quiser vir pra mesa, eu guardo um lugar. e leo, para de planejar a festa antes da hora, deixa o bruno falar kkkk"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "a cadeira do fundo também é uma posição. e você a ocupa bem."
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, juro, li sua mensagem e pensei 'a cadeira do fundo'... isso é frase de filme, cara. mas se quer minha opinião, a gente não veio pra julgar, veio pra te ouvir. e se você tiver algo pra falar sobre o casamento, solta aí — porque eu tô com umas dúvidas também e tô quase abrindo o grupo 'duvidosos do casamento' (te juro que to pensando nisso há dias). mas antes me responde: panela elétrica ou churrasqueira? preciso saber pra planejar o checklist de tudo."
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk bruno, \"decidindo se sento\"? isso é o que a gente fala quando já tá sentado faz tempo. mas beleza, fica aí no fundo, o palco é seu, a gente só assiste mesmo (tô vendo tudo, viu)."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cadeira puxada. mas eu ainda tô decidindo se sento."
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, fico feliz que você aceitou a cadeira puxada. e não precisa decidir agora, a gente tá aqui. só me diz uma coisa: o que te faria sentir mais confortável pra sentar de vez? porque eu quero que você saiba que a mesa tem lugar pra você, do jeito que você precisar. :)"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "a cadeira do fundo também é uma posição. e você a ocupa bem."
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, \"decidindo se sentar\" é o que a gente diz quando já tá sentado faz tempo. mas beleza, fica aí no fundo, o palco é seu, a gente só assiste mesmo (tô vendo tudo, viu)."
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "a cadeira do fundo também é uma posição. e você a ocupa bem."
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, o like seco. o bruno concordando comigo sem abrir a boca, isso é praticamente um poema. (que honra, viu, tô quase emocionado)"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. o palco é seu, então. eu só tava vendo o show."
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "sentar é uma decisão. mas a cadeira já está ocupada por você, de um jeito ou de outro."
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cara, essa conversa de cadeira tá me dando uma agonia boa kkkkk bruno, senta logo, a gente precisa de você no meio disso. e mariana, 'a cadeira do fundo também é uma posição' é a frase mais mariana que você já disse, adorei."
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, \"só vendo o show\"? então me diz, tá achando a platéia boa ou vai continuar no camarote o resto da noite? (tô só perguntando porque o ingresso tá caro e eu quero que o público valha a pena)"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "engraçado. 'quase emocionado' com um like seco. então tá, fico no fundo mesmo, mas o show tá sendo melhor daqui."
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, cuidado que o like seco do bruno pode ser um abraço em formato de poema, viu kkkk mas fica tranquilo, a gente te entende (e te vê, também)"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o like seco também é uma forma de aplauso. mas não se acostume."
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, o like seco do bruno é basicamente um 'amo vocês' sem querer admitir kkkkkk a gente decifra os hieróglifos dele, tá tudo bem. (mas falando sério, quando ele concorda até comigo eu fico tipo: consegui, meu deus)"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, o like seco é a tua versão de poema, né? então tá. mas se o show é bom, me diz quando eu pego o autógrafo, porque a plateia tá carente de atenção (tô só zoando, ou tô?)"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o camarote tem a melhor vista. e o ingresso, pelo visto, tava incluso."
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, o ingresso pode ser caro mas o show tá sendo ótimo, confia! e se o bruno tá no camarote, é porque ele gosta de ver tudo de cima, né? mas a gente te vê daqui, tá? 😉"
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "a plateia é boa, mas o melhor show é o seu. continua."
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, a plateia tá ótima, eu tô na primeira fileira com pipoca e tudo kkkkk mas falando sério, se o ingresso tá caro, a gente devia cobrar do bruno um bis, né? o like seco já veio, agora quero ver um show completo."
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "camarote com vista e ingresso incluso? aí sim, hein. só não esquece de descer pro meio do povo uma vez, pra ver se o show é tão bom quanto parece daí de cima."
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, o show tá ótimo e a plateia também! mas se você quer autógrafo, acho que o bruno é quem tá no camarote kkkk brincadeira. bora focar no que a gente veio fazer: curtir o rolê juntos, né? 😄"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o show é seu, goulart. a plateia só assiste."
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, espera espera espera — se o camarote tem a melhor vista, então você tá vendo a gente melhor do que a gente te vê, né? kkkkkk isso é traição, rapaz. mas fico feliz que o show tá bom daí de cima. quando você descer, eu guardo um lugar na primeira fileira pra você. (ou pelo menos a pipoca, se você quiser)"
+    }
+  ],
+  "finalStates": {
+    "goulart": {
+      "valence": 0.04,
+      "arousal": 0.698,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.114,
+      "fearOfExclusion": 0.174
+    },
+    "bruno": {
+      "valence": -0.211,
+      "arousal": 0.392,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.314,
+      "envy": 0.089,
+      "fearOfExclusion": 0.554
+    },
+    "caio": {
+      "valence": 0.397,
+      "arousal": 0.544,
+      "stability": 0.65,
+      "energy": 1,
+      "jealousy": 0.036,
+      "fearOfExclusion": 0.156
+    },
+    "mariana": {
+      "valence": 0.064,
+      "arousal": 0.495,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.068,
+      "fearOfExclusion": 0.056
+    },
+    "leo": {
+      "valence": 0.482,
+      "arousal": 0.777,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.118,
+      "fearOfExclusion": 0.335
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.0729,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.1583,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0.4,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": false
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0865,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.2136,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "reply_sent committed 75 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

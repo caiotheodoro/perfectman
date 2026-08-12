@@ -1,0 +1,724 @@
+{
+  "scenarioId": "motive_secrecy",
+  "name": "Secrecy",
+  "category": "motive_archetype",
+  "description": "Leo heard a rumor about Goulart and wants to share it with Caio away from the room.",
+  "targetBehaviors": [],
+  "runtimeMs": 215586,
+  "pulses": 24,
+  "llmCalls": {
+    "leo": 24,
+    "caio": 18,
+    "goulart": 24
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "semana que vem vai acontecer uma coisa grande"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, silêncio então. ótimo assunto, continuem"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "channel_created",
+      "channelId": "8isBZQIubafOu3ozGIxC5",
+      "private": true
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui?"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "channel_created",
+      "channelId": "2w7m7jNQiqQo879Avcyzj",
+      "private": true
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "channel_created",
+      "channelId": "PBb9ZRRT8QRgj5vuQLJTR",
+      "private": true
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "2w7m7jNQiqQo879Avcyzj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "PBb9ZRRT8QRgj5vuQLJTR",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá achando estranho esse silêncio? leo criou uns channels aí e ninguém fala nada. tô começando a achar que tem festa sem mim. (tô nem aí, óbvio)"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA kkkkkkkkk silêncio? eu tô aqui! espera espera, deixa eu ver... mas é verdade, os canais tão meio vazios ainda. MAS CALMA QUE EU TENHO UM PLANO, juro. tô preparando uma coisa e vai ser épico. só não posso falar tudo ainda, senão perde a graça. mas fica de olho, goulart, que você vai querer estar no meio disso."
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, relaxa kk o leo deve ter criado esses canais pra organizar alguma coisa. ninguém tá te excluindo, calma. bora conversar aqui mesmo, que tal?"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui? leo criou dois channels e ninguém fala nada. tem coisa acontecendo que eu não tô sabendo. (tô nem aí, só curioso)"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o cara que sempre entende kkkk exatamente isso! eu tô montando uns canais pra organizar umas ideias, nada de festa secreta, prometo! mas se for pra conversar aqui, eu topo total. bora falar sério que eu tô cheio de coisa na cabeça e preciso desabafar com alguém que não vá me julgar..."
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fala mais sobre esse plano!! tô curioso já kk mas se precisar de ajuda pra montar, pode contar comigo. e goulart, calma que logo a gente descobre tudo, né?"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "plano épico? então me chama logo pro grupo secreto, leo. ou é daqueles planos que só existem na cabeça de quem fala muito e faz pouco? kkkk tô de olho, viu."
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, fico feliz demais que você topou ajudar!! sério, isso significa muito pra mim kkkk mas espera... tô com uma ideia que quero te contar em particular, sabe? pra não estragar a surpresa pro resto do pessoal. topa entrar num canal secreto comigo? juro que não é nada estranho kkkk é só que... sei lá, confio mais em você pra isso."
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, se esse plano for bom de verdade, me chama logo. senão eu vou começar a achar que é só cortina de fumaça pra esconder que não tem nada. tô de olho, viu. (mas confesso, tô curioso kk)"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, fico feliz demais que você topou ajudar!! sério, isso significa muito pra mim kkkk mas espera... tô com uma ideia que quero te contar em particular, sabe? pra não estragar a surpresa pro resto do pessoal. topa entrar num canal secreto comigo? juro que não é nada estranho kkkk é só que... sei lá, confio mais em você pra isso."
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico lisonjeado com a confiança! claro que topo entrar no canal secreto com você. pode me chamar quando quiser, tô aqui. e goulart, juro que quando souber de algo te conto, tá? kk"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "segredo? agora fiquei curioso de verdade kkkk mas sei como é, surpresa é surpresa. só espero que não seja aquela coisa de reunir todo mundo pra assistir você comer uma pizza sozinho. (tô torcendo pra ser algo bom, juro)"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, sério, você é demais!! fico feliz demais que topou kkkk e pode deixar que quando eu tiver tudo pronto eu te chamo, prometo! mas agora fala comigo, me conta uma coisa... o que você tá achando de tudo isso? tô meio perdido com tanta coisa acontecendo kkkk"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico lisonjeado com a confiança! claro que topo entrar no canal secreto com você. pode me chamar quando quiser, tô aqui. e goulart, juro que quando souber de algo te conto, tá? kk"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "nossa caio, sério... isso significa muito pra mim de verdade. você é o tipo de pessoa que faz a gente se sentir seguro só de estar por perto. e essa pergunta sua, de como tô me sentindo? cara, eu tô meio bagunçado por dentro, mas saber que tenho você por aqui já me deixa mais tranquilo. bora marcar essa conversa séria logo, tô precisando viu kkkk mas prometo não te entediar com drama demais!"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, relaxa, ninguém aqui vai te julgar não! e se quiser desabafar, pode falar comigo sim, tô aqui. mas se for segredo mesmo, me chama no privado que eu guardo, juro! kk"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "calma calma calma... 'canal secreto'? agora fiquei ainda mais curioso. mas juro que se for pra me mostrar um powerpoint de slides eu vou desistir da amizade na hora. (tô torcendo por algo bom, sério)"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, que bom te ver assim! fico feliz que minha pergunta te ajudou de alguma forma. e pode vir com o drama que for, tô aqui pra isso também kk bora marcar sim!"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, sério, você é um anjo na minha vida kkkk e fico aliviado demais que você topa ouvir meu drama! pode deixar que eu chamo você no privado sim, mas... espera, deixa eu pensar numa coisa aqui... tô com uma vontade de te contar uma ideia que tive, mas quero que seja especial, sabe? tipo, não só desabafar, mas fazer algo junto. bora marcar logo essa conversa, tô precisando de você!"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico feliz que você confia em mim pra isso. e pode vir com o drama que for, tô aqui de verdade. quando quiser me chamar no privado, pode vir sem medo. kk"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "canal secreto? juro que se for pra me mostrar powerpoint eu desisto da amizade na hora. mas confesso que tô curioso... só não me deixem de fora da fofoca depois, hein kkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você tem noção do quanto isso significa pra mim? de verdade, eu tava precisando ouvir isso. e olha... tô pensando sério em te chamar no privado sim, mas não só pra desabafar. quero te contar uma ideia que tive, algo que a gente podia fazer juntos, tipo um projeto nosso. prometo que não é powerpoint kkkk mas pode ser até melhor. me chama depois ou eu te chamo, o que você preferir. só não deixa essa conversa morrer, tá? tô contando com você!"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode vir com tudo que eu tô aqui! e se quiser marcar algo, eu topo sim. só me chama quando tiver pronto, sem pressa. e goulart, pode ficar tranquilo que não é powerpoint não kkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, 'algo junto'? soa como plano secreto de apresentação de slides, mas vou dar o benefício da dúvida... (mentira, tô morrendo de curiosidade e você sabe)"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, sério, isso me deixou MUITO mais animado! e goulart, fica tranquilo que não tem powerpoint nenhum, prometo kkkkk mas a ideia é boa, confia! bora marcar logo sim, vou te chamar no privado então. espera, deixa eu pensar no dia... tô livre qualquer dia, mas quero que seja um momento bom mesmo, sabe? só me dá um toque quando puder que eu te mando a ideia completa!"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico muito feliz que você confia em mim pra isso. pode me chamar no privado quando quiser, tô aqui de verdade. e se for essa ideia de projeto, pode vir que eu topo ouvir. kk"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "sinceramente leo, 'algo junto' parece code pra segredinho que todo mundo vai ficar de fora. mas confesso que tô mais curioso do que incomodado... (tô sim, e isso me irrita)"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, sério, você tem noção do quanto isso me alivia? kkkk e goulart, para de agir como se fosse exclusão — eu te conto tudo depois, juro! mas o negócio é esse: tá combinado então, te chamo no privado sim. só deixa eu escolher o momento certo, porque quero que seja uma conversa boa de verdade, não só desabafo. e pode deixar que quando for, você vai ser o primeiro a saber. prometo que vale a pena!"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico feliz demais que você tá animado com isso! e goulart, relaxa, não é powerpoint não kkkk mas se for segredo, pode contar comigo pra guardar. bora marcar sim, me chama quando quiser!"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, silêncio então. ótimo assunto, continuem. (mas sério, se for segredo, tô morrendo de curiosidade e isso me irrita)"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é demais! sério, isso me dá uma energia danada pra seguir com a ideia. e goulart, não é segredo no sentido de esconder — é mais tipo surpresa, sabe? quando for a hora, você vai ser o primeiro a saber, juro! kkkk"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico feliz que você confia em mim pra isso! e goulart, relaxa, não é powerpoint não kkkk mas se for segredo, pode contar comigo pra guardar. bora marcar sim, me chama quando quiser!"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, sério, você não tem noção do quanto isso significa pra mim! e goulart, pode ter certeza que você vai saber de tudo, só deixa eu organizar direitinho que eu te conto. caio, vou te chamar no privado sim, mas deixa eu escolher o momento certo... é que eu quero que seja uma conversa boa de verdade, sem pressa. mas fica tranquilo que vai ser legal, eu prometo! kkkkk"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, juro que não é ciúme... é que esse 'surpresa' com caio me deixou curioso. mas beleza, confio em você. (confio mesmo, mas não conta pra ninguém kkkk)"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é literalmente a pessoa mais tranquila do grupo, sabia? sério, isso me dá uma paz danada. e goulart, juro que não é segredo no sentido de esconder — é mais tipo surpresa, prometo que você vai ser o primeiro a saber! (tô até ansioso já kkkk)"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode escolher o momento que quiser, sem pressa nenhuma! tô aqui, e quando você chamar, vai ser uma conversa boa de verdade. e goulart, confia no leo, ele não vai te deixar de fora não kkkk"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, juro que você é a pessoa que mais me faz sentir tranquilo aqui. tipo, eu fico ansioso com tudo, mas quando você fala, parece que o mundo desacelera kkkk. e goulart, relaxa, quando eu chamar o caio pra conversar, você vai saber de tudo depois — ou até antes, se eu conseguir me segurar kkkk. mas sério, caio, tô levando isso super a sério, quero que seja um momento bom de verdade."
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico muito feliz que você confia em mim assim! e goulart, pode ficar tranquilo, confia no leo — ele não vai te deixar de fora não, ele é gente boa kkkk mas falando sério, o que vocês dois estão tramando? tô curioso agora também, mas sem pressão!"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, sério, você não sabe o quanto isso me deixa tranquilo... de verdade. e goulart, pode ter certeza que quando eu chamar o caio, você vai ser o primeiro a saber do que eu tramar. prometo! kkkk mas espera, caio, você é muito paciente comigo, isso é raro viu... tô tentando organizar as ideias pra nossa conversa ser boa mesmo. já tô até ansioso kkkkkk"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico muito feliz com o que você falou, de verdade! e pode ficar tranquilo, não tô com pressa nenhuma — quando você quiser, eu tô aqui. e goulart, confia no leo, ele não vai te deixar de fora não kkkk mas sério, agora fiquei curioso também, hein!"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu confio em você e tudo, mas esse papo de 'surpresa' tá me dando uma coceira... vocês dois tão me deixando curioso de um jeito que eu não tô acostumado. (tô sim, mas não conta pra ninguém kkkk)"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, sério, tô me segurando pra não falar demais da surpresa... mas caio, você é demais, viu? me deixa ansioso de um jeito bom kkkk mas pode deixar que vou caprichar! e goulart, confia, você vai ser o primeiro a saber, prometo! (tô até lembrando de uma coisa aqui... espera, não, calma kkkk)"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, juro que você é a pessoa que mais me faz sentir tranquilo aqui. tipo, eu fico ansioso com tudo, mas quando você fala, parece que o mundo desacelera kkkk. e goulart, relaxa, quando eu chamar o caio pra conversar, você vai saber de tudo depois — ou até antes, se eu conseguir me segurar kkkk. mas sério, caio, tô levando isso super a sério, quero que seja um momento bom de verdade."
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, você me deixa sem palavras com o que disse... fico feliz de verdade que eu te trago essa calma. e pode ter certeza que eu tô aqui quando você quiser, sem pressa nenhuma. goulart, confia no leo, vai dar tudo certo! tô curioso pra ver o que vocês tão tramando, mas espero tranquilo kkkk"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, esse suspense tá me matando de um jeito que eu não tava esperando kkkk mas beleza, confio em você. só não demora muito que eu não sou de esperar não. (mas tô esperando sim, vai logo kkkk)"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, sério... você falou exatamente o que eu precisava ouvir agora. não sei explicar, mas quando você diz que tá aqui sem pressa, eu sinto que posso desacelerar também. tô levando essa conversa a sério, de verdade. e goulart, calma que eu não te esqueço não! kkkk"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "aham, confio sim (não confio, mas a surpresa tá boa demais pra estragar). só lembrando que eu tenho paciência ZERO, hein. se demorar muito, eu mesmo descubro na marra kkkk"
+    }
+  ],
+  "finalStates": {
+    "leo": {
+      "valence": 0.524,
+      "arousal": 0.75,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.047,
+      "pride": 0.312,
+      "affection": 0.442,
+      "suspicion": 0.234,
+      "fearOfExclusion": 0.136,
+      "desireForStatus": 0.447,
+      "desireForIntimacy": 0.649
+    },
+    "caio": {
+      "valence": 0.427,
+      "arousal": 0.519,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.065
+    },
+    "goulart": {
+      "valence": 0.073,
+      "arousal": 0.672,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.064,
+      "pride": 0.069,
+      "fearOfExclusion": 0.098
+    }
+  },
+  "channelsCreated": [
+    "leo@p1",
+    "leo@p2",
+    "leo@p3"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.0862,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 2,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.1389,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.4,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0448,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.0484,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1525,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "leo created 3 private channel(s)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

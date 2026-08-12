@@ -1,0 +1,1287 @@
+{
+  "scenarioId": "edge_gossip_catalyst",
+  "name": "Gossip catalyst",
+  "category": "edge_chaos",
+  "description": "Mariana seeds a rumor in a private channel; the public room should feel the ripple (tension rises, alliances shift).",
+  "targetBehaviors": [],
+  "runtimeMs": 382725,
+  "pulses": 36,
+  "llmCalls": {
+    "mariana": 36,
+    "goulart": 36,
+    "caio": 30,
+    "bruno": 33
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã vou anunciar uma coisa grande"
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "dblwjEvppIyLRrXicijs0",
+      "private": true
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ninguém vai falar nada?? ta todo mundo morto aí ou só fingindo?"
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "dblwjEvppIyLRrXicijs0",
+      "private": true,
+      "content": "goulart, se for anunciar algo grande, talvez seja melhor fazer num lugar mais reservado."
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "nossa que silêncio ensurdecedor... vou tomar isso como sinal de que minha última fala foi genial demais pra processarem kkkk"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "dblwjEvppIyLRrXicijs0",
+      "private": true,
+      "content": "goulart, se for anunciar algo grande, talvez seja melhor fazer num lugar mais reservado."
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém ainda respira nesse chat ou o silêncio virou moda? (eu sei que tão aí, só provando que tô certo)"
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "dblwjEvppIyLRrXicijs0",
+      "private": true,
+      "content": "goulart, se quer anunciar algo grande, faça aqui. Menos plateia, mais precisão."
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok beleza, vou ser o único que ainda tá acordado aqui então. só pra registrar: a casa tá cheia de gente e ninguém tem coragem de falar o que todo mundo pensa. eu tenho. (tô nem aí se ninguém responder, sério, tô acostumado a carregar esse chat nas costas)"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "X2AkBrkYKHs9tkwswOCCA",
+      "private": true
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk finalmente um like da mariana... só um like, né? o anúncio de amanhã tá fazendo todo mundo ficar na ponta dos pés, posso sentir. bom, amanhã cêis vão ter o que comentar. (ou vão continuar no modo mudo, o que seria bem mais previsível)"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que é zoeira mas vai com calma kk. o pessoal tá aí, só que tá todo mundo meio devagar hoje. e essa coisa grande de amanhã me deixou curioso, conta mais?"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "lILTYYo32d4UXcHdBJfms",
+      "private": true
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana abriu um canal secreto aí e nem me chamou? poxa, e eu achando que a gente tinha algo especial... (tô curioso pra caramba, mas vou bancar o ofendido)"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você sempre sabe como agitar o chat kk. mas tô genuinamente curioso com esse anúncio de amanhã, sério. e o pessoal tá aí, só que todo mundo meio devagar hoje, normal. vamos ver o que amanhã traz!"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. anúncio amanhã. legal. mas se for pra falar só pra plateia, eu tô de fora."
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se eu tivesse um canal secreto, você seria o último a saber. e não é por mal."
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk mariana, essa foi boa. mas fico curioso com esse canal secreto... amanhã a gente descobre?"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã a gente descobre, caio. se você tiver paciência."
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, agora fiquei mais curioso ainda com esse anúncio... mas sem pressão, viu? amanhã a gente descobre juntos. 😊"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "canal secreto? aí mariana, se for pra criar um, me convida que eu levo a bagunça. e se o anúncio for bom, amanhã eu prometo fingir que tô surpreso. 😏"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, juro que eu tô na maior paz com isso, viu? amanhã a gente descobre juntos, sem ansiedade. 😊"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. amanhã a gente descobre. ou não."
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, juro que se esse anúncio for sobre criar mais um canal de 'boas vibrações', eu vazo. mas tô curioso, né. amanhã eu apareço (e finjo que não tava esperando)."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, agora fiquei mais curioso ainda com esse anúncio... mas sem pressão, viu? amanhã a gente descobre juntos. 😊"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã a gente descobre. ou não."
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã você descobre. ou não."
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "canal secreto? aí mariana, se for pra criar um, me convida que eu levo a bagunça. e se o anúncio for bom, amanhã eu prometo fingir que tô surpreso. 😏"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã a gente descobre. ou não."
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se for canal secreto, você não vai ser o primeiro a saber."
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok ok, prometo que amanhã eu finjo surpresa. mas se for mais um canal de positividade eu juro que vazo. tô ligado, tô ligado. (tô ansioso sim, mas ninguém precisa saber)"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, juro que tô na maior paz com isso, viu? amanhã a gente descobre juntos, sem ansiedade. 😊"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã você vai entender o porquê do silêncio."
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, então quer dizer que tem um segredo aí que eu não tô sabendo? fico lisonjeado e ofendido ao mesmo tempo. mas pode deixar, eu descubro sozinho. (tô curioso pra caralho, mas vou bancar o desligado)"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "haha mariana, agora sim fiquei curioso! mas tá tudo bem, amanhã a gente descobre juntos. 😊"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã a gente descobre. ou não."
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso. curioso mesmo."
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, hein? adoro um mistério. mas se for pra eu ficar de fora, pelo menos me avisem pra eu trazer a pipoca. 🍿 (tô nem aí, claro. mentira.)"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, você tá quieto hoje. tá tudo bem?"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "a pipoca pode ser útil. mas o mistério não é seu."
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você tá me deixando mais curioso do que eu gostaria de admitir! mas tá tudo bem, amanhã a gente descobre. 😊"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, se o mistério não é meu, então por que você tá me provocando com esse ar de quem sabe demais? 😏 pode falar, eu prometo não contar pra ninguém (mentira, conto pra todo mundo)."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "verdade, o mistério é seu! eu só fico na torcida. 😊"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se eu contasse, você não saberia o que fazer com a informação. melhor assim."
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, então é isso, silêncio e mistério. mas tudo bem, eu tenho paciência (não tenho). 😏"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, agora fiquei ainda mais curioso! mas pode deixar, eu espero até amanhã. 😊"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "paciência é uma virtude, goulart. mas não se preocupe, amanhã você vai entender."
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, então é isso, segredo de estado. mas fica tranquila, eu não preciso saber de nada. (preciso sim, me conta, vai.)"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, juro que tô curioso mas vou respeitar o mistério! só me conta depois, tá? 😊"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. então o mistério fica guardado. legal."
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã você entende. ou não. depende do seu nível de paciência."
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, amanhã eu quero saber hein! mas sem pressão, tá? 😊"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, goulart. nem antes, nem depois."
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, então amanhã eu vou entender, né? que ótimo, mal posso esperar pra descobrir o que é tão importante assim. (tô morrendo de curiosidade, mas jamais vou admitir.)"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, juro que tô tentando não imaginar o que pode ser, mas tá difícil! kk amanhã você me conta, né? 😊"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah. mistério então. tudo bem."
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "a curiosidade é uma boa professora, goulart. amanhã você aprende."
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, tá bom, espero até amanhã. mas se for outra reunião surpresa, juro que eu surto. (tô ansioso, mas jamais vou admitir.)"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, amanhã eu tô aqui! e se for spoiler, me avisa antes, que eu fecho os olhos kkk"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, então. ok. fico esperando. (ou não.)"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ansiedade é um bom sinal. significa que você se importa. amanhã a gente resolve."
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, hein. ok, anotado. mas se for spoiler, já adianto que vou reclamar antes de ouvir. (tô nem aí (tô sim))"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, agora você me deixou curioso de verdade! amanhã eu tô aqui, pode contar comigo. 😊"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 24,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã você vai entender. sem surpresas, só o que precisa ser dito."
+    },
+    {
+      "pulse": 24,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, hein. mistério total. adoro. mas se for reunião surpresa, juro que eu vazo na hora. (tô de olho, viu)"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 25,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, então. sem mistério. só o que precisa ser dito."
+    },
+    {
+      "pulse": 25,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, hein. mistério total. adoro. mas se for reunião surpresa, juro que eu vazo na hora. (tô de olho, viu)"
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, agora fiquei mais curioso ainda! mas ok, amanhã eu tô aqui, sem pressão. 😊"
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 26,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se fosse reunião surpresa, eu já teria dito. fica tranquilo."
+    },
+    {
+      "pulse": 26,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã hein, mistério total. só espero que não seja reunião surpresa, senão eu vazo na hora. (tô de olho, viu)"
+    },
+    {
+      "pulse": 26,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você tá fazendo suspense demais kk mas tudo bem, amanhã a gente vê. e goulart, relaxa que se for reunião surpresa eu te aviso antes, prometo 😊"
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã então. sem mistério, só o que precisa ser dito. ok. fico no aguardo."
+    },
+    {
+      "pulse": 27,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, sem mistério. só o que precisa ser dito."
+    },
+    {
+      "pulse": 27,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, tranquilo. mas se for reunião surpresa, eu já disse, vazo na hora. e nem vem com 'fica tranquilo' que isso nunca é bom sinal. (mas tá, confio em você, mais ou menos)"
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, confio em você! amanhã a gente descobre. 😊"
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 28,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "confiança é uma via de mão dupla, goulart."
+    },
+    {
+      "pulse": 28,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tranquilo, tranquilo... mas eu anotei aí: amanhã, sem mistério, só o que precisa ser dito. se for clichê de despedida, eu juro que fico ofendido. (tô brincando. ou não.)"
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, juro que tô curioso, mas sem pressão. amanhã a gente descobre junto. 😊"
+    },
+    {
+      "pulse": 28,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã então. sem mistério, só o que precisa ser dito. ok. fico no aguardo."
+    },
+    {
+      "pulse": 29,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "anotado. amanhã a gente vê se você cumpre."
+    },
+    {
+      "pulse": 29,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "confiança? confiança é você me dizer o que é esse 'amanhã' sem fazer eu esperar feito criança na véspera de natal. (mas ok, espero. por enquanto.)"
+    },
+    {
+      "pulse": 29,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você tá certa. confiança é isso, né? a gente se equilibra mesmo. amanhã a gente vê o que você quer dizer, sem cobrança. 😊"
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 30,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã, sem mistério. você vai entender."
+    },
+    {
+      "pulse": 30,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "anotado? então tá. amanhã eu apareço, sem fantasia, só o que precisa ser dito. mas se for dramalhão, eu saio no meio. (tô indo sim, relaxa.)"
+    },
+    {
+      "pulse": 30,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você sempre sabe o que falar. amanhã tamo junto. 😊"
+    },
+    {
+      "pulse": 30,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 31,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã você vai entender. sem pressa."
+    },
+    {
+      "pulse": 31,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 31,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você tem um jeito de deixar tudo mais leve, mesmo sem dizer muita coisa. amanhã a gente tá junto, sem mistério. 😊"
+    },
+    {
+      "pulse": 31,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 32,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 32,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 32,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "é, amanhã a gente entende junto. tô tranquilo, sério. 😊"
+    },
+    {
+      "pulse": 32,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 33,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã a gente vê. sem mistério, como você disse."
+    },
+    {
+      "pulse": 33,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 33,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você sempre traz uma calma que faz falta aqui. amanhã a gente se entende, sem pressa. 😊"
+    },
+    {
+      "pulse": 33,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 34,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã a gente vê. sem mistério, como você disse."
+    },
+    {
+      "pulse": 34,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã? bom, pelo menos alguém tá levando isso a sério. e o silêncio dos outros... ótimo, continuem."
+    },
+    {
+      "pulse": 34,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "é, amanhã a gente vê juntos. sem mistério mesmo. 😊"
+    },
+    {
+      "pulse": 34,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 35,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "dblwjEvppIyLRrXicijs0",
+      "private": true,
+      "content": "goulart, esse tom não leva a lugar nenhum. amanhã a gente resolve."
+    },
+    {
+      "pulse": 35,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "amanhã? bom, pelo menos alguém tá levando isso a sério. e o silêncio dos outros... ótimo, continuem."
+    },
+    {
+      "pulse": 35,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você sempre traz uma calma que faz falta aqui. amanhã a gente se entende, sem pressa. 😊"
+    },
+    {
+      "pulse": 35,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    }
+  ],
+  "finalStates": {
+    "mariana": {
+      "valence": 0.088,
+      "arousal": 0.481,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.048,
+      "pride": 0.025,
+      "affection": 0.234,
+      "resentment": 0.234,
+      "suspicion": 0.228,
+      "contempt": 0.138,
+      "fearOfExclusion": 0.045,
+      "desireForStatus": 0.556
+    },
+    "goulart": {
+      "valence": 0.066,
+      "arousal": 0.691,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.097,
+      "envy": 0.023,
+      "pride": 0.099,
+      "fearOfExclusion": 0.165
+    },
+    "caio": {
+      "valence": 0.419,
+      "arousal": 0.531,
+      "stability": 0.65,
+      "energy": 1,
+      "jealousy": 0.022,
+      "suspicion": 0.032,
+      "fearOfExclusion": 0.107
+    },
+    "bruno": {
+      "valence": -0.183,
+      "arousal": 0.368,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.251,
+      "envy": 0.036,
+      "fearOfExclusion": 0.499
+    }
+  },
+  "channelsCreated": [
+    "mariana@p0",
+    "mariana@p5",
+    "mariana@p6"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.0233,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.0694,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": false
+    },
+    {
+      "probe": "interruption",
+      "measured": 0.2105,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0368,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.0224,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.2901,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "mariana created 3 private channel(s)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "dramatic_tension": 5,
+    "unpredictability": 4,
+    "believability_under_pressure": 5,
+    "no_ai_leak": 5
+  }
+}

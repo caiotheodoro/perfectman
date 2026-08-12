@@ -1,0 +1,775 @@
+{
+  "scenarioId": "motive_repair",
+  "name": "Repair",
+  "category": "motive_archetype",
+  "description": "Caio noticed Bruno went cold after being ignored; he opens a private channel to repair.",
+  "targetBehaviors": [],
+  "runtimeMs": 169132,
+  "pulses": 24,
+  "llmCalls": {
+    "caio": 24,
+    "bruno": 10,
+    "goulart": 24
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno cê tá estranho hoje"
+    },
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "channel_created",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": true
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá achando esse silêncio ensurdecedor ou é só eu? fala alguma coisa bruno, sei que cê tá aí"
+    },
+    {
+      "pulse": 1,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá todo mundo em modo avião ou o grupo morreu e ninguém me avisou? bruno, juro, se cê tá aí, dá um sinal de vida, nem que seja um xingamento"
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá todo mundo mudo ou só eu aqui? beleza, vou contar uma história então..."
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, bruno, o like é um sinal de vida, mas tô esperando mais. vem conversar, ninguém morde (talvez eu morda, mas só se provocar)."
+    },
+    {
+      "pulse": 4,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, silêncio total. vou falar sozinho mesmo, tô acostumado. só queria registrar que o bruno deu like e não falou nada — acho que é a forma dele de dizer que ainda respira. ok, ok, entendi o recado"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, o bruno deu like e sumiu de novo. e o caio? todo mundo sumiu hoje? ok, vou contar um caso sério: sabe quando a gente fala demais e depois fica aquele silêncio? é tipo isso agora. só que eu não vou me desculpar, porque foi bom falar. aliás, alguém viu o léo? sumiu também. tá todo mundo num retiro espiritual? bom, se for, me chamem pra próxima, porque esse silêncio tá me dando agonia."
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, todo mundo sumiu de novo. bruno deu like e foi embora, caio deve estar meditando, léo? alguém viu o léo? ninguém? bom, se ninguém vai falar, eu vou contar um caso sério: quando eu falo demais e o povo fica mudo, eu começo a achar que tô num canal de ventriloquia. ok, ok, alguém me responde aí que eu prometo não morder. (tá, talvez morda um pouquinho, mas é de carinho)"
+    },
+    {
+      "pulse": 7,
+      "agent": "caio",
+      "type": "channel_created",
+      "channelId": "DVAZQOCXM6wQX0MUjO2Df",
+      "private": true
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, vou falar uma coisa que ninguém pediu: esse silêncio aí de vocês é pior que comentário de político. bruno deu like e sumiu, caio deve tá abraçando uma árvore, e o léo? sumiu no mundo da lua. ok, ok, se ninguém vai puxar papo, eu trago um tema quente: alguém aqui já fez algo que se arrependeu na hora? eu tenho uma história boa pra contar, mas quero ver se alguém topa antes de eu me abrir (tô nem aí se toparem, vou contar mesmo assim)."
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "channel_created",
+      "channelId": "dtgJxJ7PTCFUaiiDlX9Fc",
+      "private": true
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "DVAZQOCXM6wQX0MUjO2Df",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "dtgJxJ7PTCFUaiiDlX9Fc",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "DVAZQOCXM6wQX0MUjO2Df",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "DVAZQOCXM6wQX0MUjO2Df",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, de novo o silêncio ensurdecedor. bruno deu like e evaporou, caio deve tá num retiro espiritual, e o léo? aposto que tá perdido na própria imaginação. ok, eu conto uma história de arrependimento, mas só pra quebrar esse gelo. quem topa? (tô nem aí se topam, vou contar mesmo assim)."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "DVAZQOCXM6wQX0MUjO2Df",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "DVAZQOCXM6wQX0MUjO2Df",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "DVAZQOCXM6wQX0MUjO2Df",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok, vou desistir de puxar papo com esse povo mudo. mas se o bruno der like de novo sem falar nada, eu juro que vou criar um canal só pra gente discutir o assunto que ninguém quer tocar. alguém aí tá vivo? (tô ficando preocupado, mas não vou admitir)"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "DVAZQOCXM6wQX0MUjO2Df",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, o caio reage mas não fala. padrão do grupo, né? mas e aí, vai deixar a gente no vácuo ou tem opinião sobre a história de arrependimento?"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, calma kk tô aqui sim, só processando. e essa história de arrependimento? conta aí, tô genuinamente curioso. e bruno, se tiver por perto, também quero ouvir sua versão. bora conversar de verdade?"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. arrependimento é um luxo que a gente só conta quando tem plateia. mas se você quer saber, eu tenho uma história. só não sei se é sua pra ouvir."
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se essa história for pra contar, eu tô aqui. mas se for pesada, a gente pode conversar num canto mais tranquilo também, se quiser."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você quer ouvir minha versão? hm. talvez eu conte, mas não aqui. tem coisa que só se fala em lugar fechado."
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, agora resolveu falar? ok, conta aí. mas se for me dar lição de moral, eu já aviso que não tô no clima. e bruno, se quiser soltar sua história, a plateia tá aqui. só não fica de mistério não, pelo amor."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. talvez. mas se for pra contar, vai ser num canto mais fechado. não aqui, não agora."
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, agora resolveu falar? ok, conta aí. mas se for me dar lição de moral, eu já aviso que não tô no clima. e bruno, se quiser soltar sua história, a plateia tá aqui. só não fica de mistério não, pelo amor."
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. então é mistério pra plateia certa, é? tudo bem, eu aguento a curiosidade. mas quando resolver contar, me chama. ou não, tanto faz. (tô curioso sim, mas não vou dar o braço a torcer)"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, entendi. se for pra contar num canto mais fechado, me chama que eu tô dentro. e goulart, relaxa que ninguém tá dando lição de moral aqui não. a gente só tá tentando conversar de verdade, sabe?"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. mistério pra plateia certa, é? talvez a plateia certa não seja essa. mas fica tranquilo, eu aguento a curiosidade também."
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá bom, bruno, mistério é mistério. mas quando resolver soltar, me chama. ou não, tanto faz. (tô curioso sim, mas não vou dar o braço a torcer)"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, talvez eu conte. mas num canto mais fechado, sim. sem plateia."
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, lá vem o caio com o papo de 'conversar de verdade'. relaxa, eu sei conversar. só não gosto de sermão disfarçado de carinho. e bruno, se for contar, conta logo. mistério demais cansa."
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "gqKg7oLjtOV1P6N4WXqnR",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se quiser contar num canto mais fechado, eu tô dentro. e goulart, relaxa que ninguém tá dando sermão aqui não. a gente só tá tentando conversar de verdade, sabe?"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    }
+  ],
+  "finalStates": {
+    "caio": {
+      "valence": 0.435,
+      "arousal": 0.514,
+      "stability": 0.65,
+      "energy": 1,
+      "pride": 0.198,
+      "affection": 0.57,
+      "suspicion": 0.064,
+      "socialAnxiety": 0.136,
+      "fearOfExclusion": 0.274,
+      "desireForStatus": 0.252,
+      "desireForIntimacy": 0.685
+    },
+    "bruno": {
+      "valence": -0.204,
+      "arousal": 0.415,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.304,
+      "envy": 0.024,
+      "humiliation": 0.262,
+      "affection": 0.062,
+      "resentment": 0.354,
+      "suspicion": 0.229,
+      "fearOfExclusion": 0.853
+    },
+    "goulart": {
+      "valence": 0.086,
+      "arousal": 0.661,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.024,
+      "pride": 0.081,
+      "fearOfExclusion": 0.032
+    }
+  },
+  "channelsCreated": [
+    "caio@p0",
+    "caio@p7",
+    "caio@p8"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.5,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 3,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.3611,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.3704,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0411,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.0698,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.35,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "caio created 3 private channel(s)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

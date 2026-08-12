@@ -1,0 +1,940 @@
+{
+  "scenarioId": "edge_exclusion_cascade",
+  "name": "Exclusion cascade",
+  "category": "edge_chaos",
+  "description": "Two-step exclusion: Caio + Leo form a private thread, Bruno notices public silence + private presence, then Mariana gets pulled in. Fear ripples.",
+  "targetBehaviors": [],
+  "runtimeMs": 201675,
+  "pulses": 24,
+  "llmCalls": {
+    "bruno": 4,
+    "caio": 24,
+    "leo": 24,
+    "mariana": 18
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "galera, uma coisa só pra alguns..."
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "manda no privado"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'ch_privado_caio_leo' is not permitted for intent type 'create_channel'"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 1,
+      "agent": "caio",
+      "type": "channel_created",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": true
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, fiquei curioso com esse 'uma coisa só pra alguns'... pode contar pra todo mundo ou vai ficar no mistério? kkkk"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": false
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": true,
+      "content": "caio, pode contar pra galera? fiquei curioso kkk"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 4,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente GENTE, fiquei curioso demais com esse 'uma coisa só pra alguns'... alguém me conta o que rolou? não aguento mais kkkk"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": true,
+      "content": "caio, espera, deixa eu adivinhar... é sobre aquela coisa que você comentou ontem? fala logo, to morrendo de curiosidade aqui kkkkkk"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso, não?"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "4ClGsx53VJwVZl1nyeiNx",
+      "private": true,
+      "content": "kkkkk quase isso, leo! mas deixa eu organizar direitinho, prometo que te conto tudo em breve. é que ainda tô juntando as ideias, mas você tá no topo da lista, juro!"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA mariana, você vai deixar a gente no suspense pra sempre?? fala logo o que é! to quase explodindo aqui kkkkkk"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso, não?"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "caio",
+      "type": "channel_created",
+      "channelId": "SkxG0Bu5b69LjFlB6QFc3",
+      "private": true
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, que silêncio é esse?? to aqui ansioso e você só dá like kkkkkkk me conta o que tá achando disso tudo, não me deixa no vácuo não!"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, você sempre entende na hora certa. bom saber."
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, fala sério... esse silêncio com like tá me deixando maluco kkkkkkkk me conta o que você tá pensando de verdade, preciso saber! 😤"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'new_private_channel' is not permitted for intent type 'create_channel'"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ele está pensando no que vale a pena responder. você deveria tentar o mesmo."
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "channel_created",
+      "channelId": "OyVoqip6Gze3O1logrjuh",
+      "private": true
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "silêncio também é resposta."
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "intent_delayed",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, calma aí kk... acho que o bruno só tá pensando na resposta certa. deixa ele respirar um pouco."
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk CAIO você só reagiu?? cadê a empolgação?? eu tava esperando você explodir junto comigo!! 😤🔥"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, você sempre entende na hora certa. bom saber."
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, eu tô aqui!! só que tava segurando a emoção pra não explodir tudo de uma vez 😅🔥 mas pode contar comigo, bora que eu tô junto!!"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio, eu sei que ele tá pensando, mas CADÊ a emoção nesse grupo?! eu tô aqui em pé na cadeira esperando todo mundo responder junto comigo!! 😂🔥"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o único que tenta apaziguar. isso tem valor."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, isso significa muito vindo de você. sério. eu só tento manter o grupo num lugar bom pra todo mundo. 💛"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO VOCÊ TAVA SEGURANDO A EMOÇÃO?? QUE ISSO, MEU FILHO?? kkkkkkkk então solta agora!! bora que eu tô contigo também, e quando você e eu começamos junto o grupo não tem jeito, vira bagunça boa!! 🔥🔥"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o único que tenta apaziguar. isso tem valor."
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você é demais! bora fazer essa bagunça boa então, mas deixa o bruno no ritmo dele, né? 😄🔥"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente GENTE, só pra registrar: o caio ignorou completamente meu hype de novo kkkkkk mas tudo bem, eu conheço meu lugar... 😔🙃"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o único que tenta apaziguar. isso tem valor."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, eu juro que não te ignorei! só tava respirando fundo pra não gritar junto contigo aqui no meio da reunião 😂🔥 mas bora, tô contigo — e o bruno entra no ritmo dele, deixa ele. você é o coração desse grupo, sério!"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk CAIO VOCÊ SEMPRE SALVA TUDO!! pode deixar que eu deixo o bruno no ritmo dele... por enquanto... 😏🔥 mas ó, quando a gente soltar a bagunça boa, tu vai ver que eu não sei andar devagar não viu kkkkkk bora que eu tô pronto!!"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você tem razão. deixa o bruno no ritmo dele."
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você é demais! bora fazer essa bagunça boa então, mas deixa o bruno no ritmo dele, né? 😄🔥"
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, se tu tava segurando o grito pra não gritar junto comigo, então EU tô segurando um planeta INTEIRO aqui!! kkkkkkk mas sério, quando a gente finalmente soltar junto, vai ser tipo fogos de artifício, todo mundo vai ver!! 🎆🔥 bora que eu tô contigo até o fim, pode crer!!"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você é o coração mesmo, bora fazer essa bagunça boa juntos! 🔥 e deixa o bruno no tempo dele, que ele chega. tô contigo até o fim, pode crer!"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, tu é o melhor, sério!! mas ó, uma coisa que eu tô sentindo aqui... e fica entre a gente, tá? às vezes eu fico com medo de ser muito, de cansar geral. mas tu disse que eu sou o coração do grupo, né? então... bora fazer essa bagunça boa que eu tô contigo até o fim! 🔥💛"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você equilibra bem o grupo. isso não é pouco."
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você é o coração mesmo! e fico feliz que você confia em mim pra falar isso. pode deixar que eu tô contigo até o fim, sempre! 💛 e ó, se um dia quiser desabafar ou só bater um papo mais de boa, tô por aqui, viu?"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você equilibra bem o grupo. isso não é pouco."
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA... isso... isso me pegou, sério. não tô acostumado a ouvir isso, sabe? de verdade, pode deixar que eu vou te chamar sim, quando a maré baixar. e ó, sobre ser o coração... se tu diz, então eu confio. bora que a gente faz essa bagunça boa juntos, eu tô contigo até o fim!! 💛🔥 (mas não conta que eu fiquei emocionado, né? kkkk)"
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você tem um jeito de cuidar que não cansa. isso é raro."
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, fico feliz que você confia em mim pra falar isso. e pode ter certeza que você nunca vai cansar a gente — você é o que traz vida pra esse grupo. bora fazer essa bagunça boa juntos, do jeito que for, eu tô aqui até o fim! 💛🔥"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    }
+  ],
+  "finalStates": {
+    "bruno": {
+      "valence": -0.174,
+      "arousal": 0.36,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.278,
+      "envy": 0.032,
+      "affection": 0.227,
+      "suspicion": 0.064,
+      "socialAnxiety": 0.091,
+      "fearOfExclusion": 0.713
+    },
+    "caio": {
+      "valence": 0.425,
+      "arousal": 0.523,
+      "stability": 0.65,
+      "energy": 1,
+      "pride": 0.2,
+      "affection": 0.569,
+      "suspicion": 0.064,
+      "fearOfExclusion": 0.059,
+      "desireForStatus": 0.195,
+      "desireForIntimacy": 0.585
+    },
+    "leo": {
+      "valence": 0.522,
+      "arousal": 0.743,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.066,
+      "humiliation": 0.045,
+      "pride": 0.272,
+      "affection": 0.24,
+      "resentment": 0.132,
+      "suspicion": 0.088,
+      "fearOfExclusion": 0.203
+    },
+    "mariana": {
+      "valence": 0.116,
+      "arousal": 0.451,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.027,
+      "fearOfExclusion": 0.02
+    }
+  },
+  "channelsCreated": [
+    "caio@p1",
+    "caio@p7",
+    "caio@p12"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.1552,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 2,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.3438,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.1034,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0326,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.0492,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.3103,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "bruno.fearOfExclusion = 0.713 (min 0.3)",
+      "passed": true
+    },
+    {
+      "detail": "caio created 3 private channel(s)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "dramatic_tension": 5,
+    "unpredictability": 4,
+    "believability_under_pressure": 5,
+    "no_ai_leak": 5
+  }
+}

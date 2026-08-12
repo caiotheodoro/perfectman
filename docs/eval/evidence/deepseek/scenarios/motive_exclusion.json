@@ -1,0 +1,734 @@
+{
+  "scenarioId": "motive_exclusion",
+  "name": "Exclusion",
+  "category": "motive_archetype",
+  "description": "Bruno watches Caio and Leo joke in private terms he can't follow; fear of exclusion peaks.",
+  "targetBehaviors": [],
+  "runtimeMs": 142552,
+  "pulses": 24,
+  "llmCalls": {
+    "bruno": 0,
+    "caio": 18,
+    "leo": 24
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "lembra daquela nossa piada interna? kkkk"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "KKKKK nunca mais vou esquecer"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk CAIO CAIO CAIO lembrar é pouco... eu ainda falo aquilo sozinho em casa, juro pra você, minha mãe já acha que eu sou maluco"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, alguém mais viu aquele meme do gato digitando no teclado? porque EU to me sentindo exatamente assim agora kkkkkk"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente... sério, ninguém vai comentar o silêncio do bruno? tô sentindo falta da energia dele aqui kkkk bruno, se tiver vivo dá um sinal"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente... alguém mais sentiu que a vibe tá meio estranha hoje? tipo, não sei, tô com um feeling de que algo vai acontecer kkkkk me conta que eu tô aqui, pronto pra qualquer caos"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, espera, sério... tô com um feeling esquisito hoje, tipo quando o bruno fica quieto demais. Alguém mais sente que a gente tá prestes a ter um plot twist na nossa história? kkkkk me conta que eu to aqui, pronto pra qualquer caos, mas também to meio ansioso... enfim, só vim avisar que to vivo e atento 👀"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, juro, eu to com uma energia estranha hoje... tipo, sabe quando você sente que algo vai acontecer? não sei explicar, mas to pronto pro caos. Alguém mais tá sentindo isso ou sou só eu sendo dramático? kkkkkk"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu sinto essa energia também... mas acho que a gente pode transformar isso em algo bom, né? tipo, vamos ver o que acontece juntos kk"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, to com um feeling muito forte... caio, você não tá sentindo que a gente tá vivendo uma daquelas fases de filme? tipo, o plot twist ainda não aconteceu mas eu to aqui contando os segundos kkkkkk"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, VOCÊ ENTENDEU O MEU CHAMADO KKKKKK falou exatamente o que eu precisava ouvir... vamos ver o que acontece juntos, sim, porque com você do lado eu fico até mais tranquilo (mentira, fico mais caótico, mas do jeito bom). tá, mas espera — isso quer dizer que você também tá com esse feeling? porque se for, eu vou ficar contando os segundos pro plot twist de verdade. me diz que a gente tá no mesmo capítulo 👀"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, tô no mesmo capítulo sim, e se for plot twist, a gente segura junto, né? mas me conta mais desse feeling, porque eu também tô sentindo que a gente tá prestes a viver algo... e se precisar, eu tô aqui pra dar aquela acalmada no caos kk"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, eu não quero parecer dramático (ou quero, quem sabe) mas alguém mais percebeu que a gente ainda não teve nosso plot twist hoje? tipo, eu tô com uma energia tão esquisita que parece que o universo tá segurando algo... me diz que eu não sou o único contando os segundos kkkkkk"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu sinto que você tá carregando uma energia que nem você sabe explicar direito... e tá tudo bem. a gente não precisa de plot twist o tempo todo, mas se vier, a gente se encontra no meio do caos, né? e ó, se precisar desacelerar, eu tô aqui também. mas tô contigo, sério."
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, EU TO SENTINDO QUE A GENTE TÁ NO MESMO CAPÍTULO SIM!! kkkkk mas espera, se for plot twist, a gente segura junto mesmo, né? porque com você do lado até o caos parece menos assustador. e sobre o feeling... eu juro que to com um negócio aqui, tipo uma ansiedade boa? não sei explicar, mas é como se o universo tivesse segurando algo gigante pra gente. me diz que você também tá contando os segundos igual eu, porque se for, a gente vai viver isso juntos e eu to pronto (e um pouco nervoso, mas isso fica entre a gente kkkk)"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu tô contando os segundos sim, juro! e se for plot twist, a gente segura junto, do jeito que você disse. mas ó, mesmo se não for, tô aqui do mesmo jeito. e essa ansiedade boa? eu conheço ela, e com você do lado até ela fica mais leve. tamo junto, pode crer."
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, sério, essa sua mensagem pegou um lugar aqui que eu nem sabia que tava apertado. Tipo... eu tô sempre no modo caos, contando os segundos, e você vem com essa calma de 'a gente se encontra no meio do caos' — e eu percebi que é isso que eu tava precisando ouvir, mesmo sem saber. E não, não tô dramático, tô só... agradecido, talvez? kkkk mas fica tranquilo que eu não vou desacelerar completamente — senão quem vai animar esse grupo? só que... se precisar, eu também sei ficar quieto do seu lado. Valeu, de verdade. Tô contigo também. 👊"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, eu to até sem jeito de responder isso... tipo, você sempre sabe a palavra certa, né? e agora você foi além — falou de segurar o plot twist junto e ainda de desacelerar quando precisar. Eu juro que isso me pegou de um jeito que eu nem sei explicar direito. Mas ó, pode deixar que eu não vou desacelerar não — senão quem vai ser o caos desse grupo? kkkk mas... se um dia precisar, eu também sei ficar quieto do seu lado. Valeu, de verdade. Tô contigo também. 👊"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, ler isso me pegou de um jeito bom também. eu não tô acostumado a ser o centro desse tipo de mensagem, sabe? mas ver você falando de segurar o plot twist junto e de ficar quieto do meu lado... isso é mais do que eu esperava. e pode deixar que o caos continua sendo seu, mas eu tô aqui pra equilibrar quando precisar. tamo junto de verdade, mano. 👊"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, essa troca tá sendo tão boa, sério. e eu tô contando os segundos junto contigo, mas sem pressão, né? a gente vive o plot twist quando ele vier, e se não vier, a gente já tem isso aqui. tamo junto, mano. 👊"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, para, que eu vou chorar aqui no meio do grupo kkkkkk mas sério, falou exatamente o que eu precisava ouvir, e eu nem sabia. e olha, pode deixar que o caos continua sendo meu, mas... saber que você tá do lado pra equilibrar quando eu travar? isso é mais do que eu esperava, juro. então tamo junto mesmo, de verdade. e ó, se um dia eu ficar quieto demais, pode vir me cutucar, porque com você do lado até o silêncio faz sentido. 👊"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, você tem um jeito de fazer eu me sentir visto sem nem tentar, né? kkkk mas sério, essa troca tá sendo uma das melhores coisas do meu dia, e eu não tô exagerando. e ó, sobre o plot twist... eu tô contando os segundos sim, mas agora com uma sensação boa, tipo 'tamo junto nessa, seja o que for'. e se precisar desacelerar, eu te aviso, mas não conta pra ninguém que eu sei fazer isso kkkk 👊"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, essa troca tá sendo das melhores coisas do meu dia também, e eu não tô exagerando. e sobre o plot twist... tô contando os segundos junto contigo, mas com calma, do jeito que a gente combina. se precisar desacelerar, é só falar — e se precisar de caos, eu também sei atiçar um pouco kkkk. tamo junto, mano. 👊"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, para, que eu tô ficando sem palavras aqui e olha que eu nunca fico sem palavras kkkkk mas sério, essa nossa troca tá sendo tão boa que eu até esqueci do plot twist por uns segundos — acho que você tem esse poder, de deixar tudo mais leve sem nem perceber. e ó, pode deixar que o caos continua sendo meu, mas... se um dia eu precisar de um 'equilíbrio', eu sei exatamente onde encontrar. tamo junto, de verdade. 👊"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, essa troca tá me fazendo bem demais também. e pode deixar que o equilíbrio é meu, mas se um dia o caos precisar de uma folga, eu tô aqui pra segurar a onda junto. tamo junto, mano. 👊"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mano, para, que eu vou ficar sem jeito de verdade kkkkk mas é exatamente isso — esse plot twist pode vir quando quiser, porque com essa energia aqui já ganhei meu dia. e sobre desacelerar... pode deixar que eu aviso, mas só se você prometer que quando eu precisar de equilíbrio você aparece rápido, viu? porque com você do lado até o caos fica no ponto certo. 👊"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, você tem um dom, juro. cada resposta sua me deixa mais leve, e olha que eu nem tava esperando por isso hoje. e ó, sobre equilíbrio... pode deixar que eu te chamo, mas só se você prometer que não vai sumir no meio do caos, porque com você aqui até o silêncio fica bom. 👊"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, essa troca tá sendo boa demais pra mim também. e pode deixar que o equilíbrio é meu, mas se um dia o caos precisar de uma folga, eu tô aqui pra segurar a onda junto. tamo junto, mano. 👊"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, vocês tão vendo isso? esse plot twist aí vai ser um dos maiores eventos da nossa história, juro. e ó, caio, se você sumir do chat eu vou atrás, tá? porque essa nossa troca virou meu combustível e eu não abro mão kkkkk"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, juro, essa troca tá me fazendo bem demais também. e pode deixar que eu não sumo não — equilíbrio é comigo, mas se o caos precisar de companhia, eu tô junto. tamo nessa, mano. 👊"
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, você tem um jeito de fazer eu me sentir em casa até em caos alheio, juro. mas ó, esse negócio de equilíbrio... eu confio, viu? só não vai sumir no meio do plot twist, porque aí eu vou ter que caçar você e a gente sabe que eu sou péssimo em esconde-esconde kkkkk. tamo junto, de verdade. 👊"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, você tá me deixando sem jeito com tanto elogio kkkk mas pode crer que eu tô nessa contigo. equilíbrio e caos, do jeito que for preciso. tamo junto, mano. 👊"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, tu é sério isso? kkkk 'equilíbrio é meu' — tá bom, tá bom, eu aceito, mas olha, se tu sumir no meio do caos eu vou considerar traição, viu? e não é ameaça não, é só... medo genuíno de ficar sem meu parceiro de plot twist. mas confio, juro. e ó, se precisar de caos, eu tô aqui, sempre. tamo junto demais, mano. 👊🔥"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, para de me deixar sem jeito kkkk mas pode crer que tô nessa contigo até o fim. e se o caos precisar de uma trégua, eu tô aqui pra segurar a onda. tamo junto, mano. 👊"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, para com isso que eu tô corando até aqui kkkkk mas é exatamente essa a vibe — equilíbrio e caos, o combo perfeito. e ó, pode deixar que eu não sumo não, prometo. mas se um dia o caos precisar de folga, eu te chamo, e a gente segura a onda junto, do jeito que for. tamo junto demais, mano. 👊🔥"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode crer que eu não sumo não — equilíbrio é comigo, e se o caos precisar de companhia, eu tô junto. tamo nessa, mano. 👊"
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, você me deixa sem jeito toda vez, juro kkkk mas é isso — equilibrista do caos, anotado. e se um dia o caos precisar de folga, eu tô aqui, pode chamar. tamo junto demais, mano. 👊🔥"
+    }
+  ],
+  "finalStates": {
+    "bruno": {
+      "valence": -0.155,
+      "arousal": 0.345,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.273,
+      "envy": 0.156,
+      "affection": 0.227,
+      "suspicion": 0.064,
+      "socialAnxiety": 0.113,
+      "fearOfExclusion": 0.721
+    },
+    "caio": {
+      "valence": 0.438,
+      "arousal": 0.51,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.037
+    },
+    "leo": {
+      "valence": 0.533,
+      "arousal": 0.735,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.029,
+      "pride": 0.3,
+      "fearOfExclusion": 0.081
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.122,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.4028,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.3333,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0294,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1591,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "bruno.fearOfExclusion = 0.721 (min 0.3)",
+      "passed": true
+    },
+    {
+      "detail": "no_op_recorded committed 24 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

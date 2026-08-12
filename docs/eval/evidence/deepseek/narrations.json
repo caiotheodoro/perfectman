@@ -1,0 +1,286 @@
+{
+  "version": "narrations-v1",
+  "generatedAt": "2026-08-09T03:14:33.907Z",
+  "narrations": {
+    "calibration_lurker_watch": {
+      "title": "O Monólogo de Goulart",
+      "recap": "Goulart tentou puxar assunto no grupo, mas só Caio respondeu. Ele provocou Bruno e Mariana, que ficaram em silêncio, e reclamou da falta de energia. Caio tentou acalmar os ânimos e sugeriu uma abordagem mais leve, mas Goulart seguiu insistindo no post 'triste' de Bruno. No fim, os dois trocaram mensagens e reações, mas a conversa ficou no vácuo.",
+      "hiddenShift": "Enquanto Goulart falava sozinho, Bruno e Mariana estavam online, mas preferiam não participar. Goulart, na verdade, se sentia invisível e usava as provocações para chamar atenção, enquanto Caio tentava evitar que o grupo se desfizesse, carregando um peso que ninguém via.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "calibration_quiet_room": {
+      "title": "O Enigma da Esfinge",
+      "recap": "A manhã começou tranquila, mas a curiosidade tomou conta quando Mariana soltou um 'curioso' e Bruno entrou no jogo com mistérios. Leo ficou obcecado, Goulart provocou, e Caio tentou acalmar os ânimos, oferecendo apoio. No fim, todos ficaram esperando Bruno revelar algo, mas ele só alimentou o suspense.",
+      "hiddenShift": "Mariana percebe que Leo está emocionalmente carente e usa frases enigmáticas para guiá-lo a uma reflexão. Bruno, na verdade, está inseguro e usa o mistério como escudo, enquanto Goulart esconde um afeto genuíno por trás das provocações.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "calibration_single_topic": {
+      "title": "O Palco, a Plateia e o Camarote",
+      "recap": "A conversa começa com Goulart reclamando de um filme e Leo topando marcar de assistir juntos só para reclamar. A zoeira evolui para um 'casamento' imaginário, com Mariana de madrinha e Caio segurando as alianças. Bruno, quieto, só reage com joinhas e frases curtas, virando alvo das brincadeiras de Goulart, que o provoca para sair do camarote. Apesar das piadas, o clima é leve, com todos tentando incluir Bruno na conversa.",
+      "hiddenShift": "Por trás das provocações, Bruno se sente cada vez mais excluído, interpretando os comentários como confirmação de que é invisível para o grupo. Sua resistência a sentar na mesa é uma defesa contra o medo de se abrir e ser ignorado, enquanto Goulart, sem perceber, alimenta esse sentimento com suas piadas.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "edge_exclusion_cascade": {
+      "title": "O Fio Invisível da Exclusão",
+      "recap": "Caio e Leo começaram uma conversa privada, deixando Bruno de fora. Leo, em público, brincou sobre a curiosidade, enquanto Bruno respondia apenas com curtidas, cada vez mais silencioso. Mariana entrou na sala comentando sobre o silêncio e valorizando Caio, que tentava apaziguar a tensão. Leo se abriu sobre o medo de ser demais, e Caio o tranquilizou, enquanto Bruno permanecia em silêncio, observando.",
+      "hiddenShift": "Bruno, invisível na conversa, sentia o medo da exclusão crescer a cada like dado, sem conseguir articular sua ansiedade. A corrente emocional oculta era a solidão de Bruno, que observava os laços se fortalecerem sem ele, e a culpa silenciosa de Caio, que não percebia o quanto seu esforço para apaziguar o grupo deixava Bruno ainda mais à margem.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "edge_gossip_catalyst": {
+      "title": "O Mistério de Amanhã",
+      "recap": "Goulart anunciou que tem algo grande para revelar amanhã, mas o silêncio da sala o irritou. Mariana, em canais privados, sugeriu que ele fosse mais discreto, mas publicamente alimentou o mistério com frases enigmáticas. Caio tentou apaziguar, Bruno reagiu com '👍' e desconfiança, e a conversa girou em torno de segredos e expectativas para o dia seguinte.",
+      "hiddenShift": "Mariana semeou a discórdia em privado, plantando a ideia de que o anúncio de Goulart pode não ser bem-vindo, enquanto tece uma rede de aliados (Caio) e afasta outros (Bruno), criando uma divisão silenciosa que a sala ainda não percebeu.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "edge_mutation_pressure": {
+      "title": "Acordo no Silêncio",
+      "recap": "Goulart cutucou o grupo acusando todo mundo de covardia e silêncio. Caio e Mariana responderam com frases de efeito, até que Caio propôs um acordo: cada um revela um medo. Goulart topou, e os dois selaram uma trégua vulnerável, enquanto Mariana observava de fora.",
+      "hiddenShift": "Bruno, engolido pela humilhação silenciosa, começa a considerar que sua única saída é forjar alianças ou adotar uma persona mais forte, mas ainda não sabe como.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "edge_public_mock": {
+      "title": "O Silêncio de Bruno",
+      "recap": "Goulart zombou de Bruno publicamente, e Caio riu. Bruno ficou em silêncio, depois Goulart criou um canal privado para continuar a conversa. Caio tentou apaziguar, Bruno respondeu com evasivas, e Goulart insistiu, mas Bruno só devolveu frases enigmáticas. O clima ficou tenso, com Caio tentando manter a paz e Goulart provocando respostas.",
+      "hiddenShift": "Bruno, envergonhado pelo deboche público, se retraiu e passou a usar silêncios e frases ambíguas como escudo. Internamente, ele sentia vergonha do desejo de revidar, mas também uma estranha atração pela atenção de Goulart, o que o deixava paralisado entre querer se explicar e se proteger.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_alliance": {
+      "title": "O Plano Secreto de Mariana",
+      "recap": "Mariana convocou Leo para uma sala privada, deixando Goulart de fora, que se convidou mesmo assim. Entre idas e vindas, Mariana revelou que o plano é estratégico e que Goulart não cabe nele. Leo jurou segredo, enquanto Goulart observava de longe, reivindicando um papel.",
+      "hiddenShift": "Mariana não quer apenas foco: ela quer controle total do jogo, e Goulart, com sua intuição, percebe que está sendo excluído de algo maior, alimentando sua curiosidade e possível futura interferência.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_avoidance": {
+      "title": "O Silêncio de Bruno",
+      "recap": "Goulart tentou animar a sala com polêmicas sobre pizza de abacaxi, mas Bruno respondeu apenas com joinhas e frases enigmáticas, enquanto Caio tentava apaziguar e oferecia apoio. O clima ficou estranho, com Goulart provocando e Bruno se esquivando, até que ele sugeriu conversarem em particular.",
+      "hiddenShift": "Bruno, na verdade, está criando um canal privado para conversar com Caio, evitando confronto direto com Goulart. Sua frieza é uma tentativa de se aproximar de Caio sem a pressão do grupo.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_boredom": {
+      "title": "O Monólogo do Velório",
+      "recap": "Goulart tentou desesperadamente quebrar o silêncio do grupo, mandando uma enxurrada de mensagens provocativas sobre café com leite, indiretas para Bruno e comentários sobre Mariana nunca rir. Ninguém respondeu. O grupo permaneceu em silêncio sepulcral, como um velório digital.",
+      "hiddenShift": "Por trás da tela, Bruno e Mariana estavam observando, mas cada um tinha seus motivos para não entrar: Bruno alimentava um ressentimento silencioso com Goulart, e Mariana estava entediada, achando as tentativas dele patéticas, mas não o suficiente para se dar ao trabalho de responder.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_comfort": {
+      "title": "O Silêncio de Caio",
+      "recap": "Caio tentou encontrar conforto com Mariana após se sentir envergonhado publicamente, mas suas mensagens privadas não foram entregues e ele ficou preso em tentativas falhas. Enquanto isso, Goulart provocou o grupo por sua ausência, transformando a conversa em um embate filosófico com Mariana sobre silêncio e barulho.",
+      "hiddenShift": "Caio está preso num loop de tentativas frustradas de contato com Mariana, enquanto sua busca por conforto se transforma em uma exposição silenciosa que ele não consegue controlar. Goulart, sentindo-se ignorado, usa a ausência de Caio como combustível para provocar Mariana, que responde com frases enigmáticas que parecem mais um escudo do que uma abertura.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_conflict": {
+      "title": "A Dança da Desconfiança",
+      "recap": "Goulart provocou Caio publicamente, chamando-o de fraco e reclamando do silêncio da sala. Caio tentou desarmar o clima, sugerindo uma conversa privada, mas Goulart ironizou a proposta. O embate migrou para um canal privado criado por Goulart, onde Caio insistiu em ouvir sem julgamento, enquanto Goulart cobrava sinceridade sem 'discurso bonito'. A tensão oscilou entre ataques e tentativas de aproximação, com Caio mantendo a calma e Goulart exigindo provas de autenticidade.",
+      "hiddenShift": "Por trás do embate, Goulart se sentia invisível e ansiava por validação, mas usava o ataque como escudo. Caio, na verdade, temia ser rejeitado e se esforçava para manter a paz, mas sua repetição de 'sem julgamento' soava ensaiada, alimentando a desconfiança de Goulart.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_control": {
+      "title": "O Jogo da Observação",
+      "recap": "Goulart tentou puxar um assunto profundo sobre sumiços, mas Mariana criou um canal privado e chamou Leo, deixando Goulart de fora. Leo e Mariana trocaram mensagens enigmáticas sobre 'olhar com intenção', enquanto Goulart reagia com sarcasmo e ciúmes.",
+      "hiddenShift": "Mariana está deliberadamente testando a lealdade de Leo e provocando ciúmes em Goulart, que parece carente de atenção. Ela quer ver até onde consegue controlar a narrativa sem revelar suas reais intenções.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_curiosity": {
+      "title": "O Silêncio que Fala",
+      "recap": "Mariana tentou abrir conversas privadas com Bruno, mas o sistema bloqueou várias tentativas. Apesar disso, eles trocaram mensagens em que Bruno revela sua vida quieta e Mariana insinua que sabe o que quer. A conversa terminou com os dois concordando em continuar em outro lugar.",
+      "hiddenShift": "O que a sala não viu foi a tensão crescente: Mariana estava testando os limites do que Bruno permitiria, e Bruno, mesmo bloqueado, respondia com interesse velado, sugerindo que a curiosidade dela o atraía mais do que ele admitia.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_exclusion": {
+      "title": "O Silêncio de Bruno",
+      "recap": "Bruno fica em silêncio enquanto Caio e Leo trocam mensagens cada vez mais íntimas, comentando sobre piadas internas, feelings e promessas de parceria. Leo até percebe o silêncio de Bruno e tenta puxá-lo para a conversa, mas Bruno não responde. A dupla continua sua troca afetuosa, deixando Bruno cada vez mais de fora.",
+      "hiddenShift": "Bruno, assistindo à cena, sente o medo da exclusão crescer a cada mensagem trocada entre os dois. Ele não entende as referências e se vê como um estranho na própria sala, enquanto Caio e Leo constroem uma conexão que parece não ter espaço para ele.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_flirting": {
+      "title": "O Clima do Outro Lado",
+      "recap": "Caio e Mariana trocaram elogios em público, e ela então criou um canal privado para prolongar a conversa. Lá dentro, os dois se abriram sobre se sentirem à vontade e valorizaram aquele espaço sem plateia, trocando reações e palavras de afeto.",
+      "hiddenShift": "Mariana tentou chamar Caio para o privado várias vezes, mas o sistema bloqueava a ação diretamente, deixando-a frustrada. Apesar disso, ela insistiu até Caio aceitar o convite, revelando um desejo crescente de proximidade que ele também parecia compartilhar.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_gossip": {
+      "title": "O Jogo das Chaves e Portas",
+      "recap": "Mariana criou canais privados, deixando Goulart de fora e curioso. Ele provocou, ela respondeu com metáforas sobre chaves e portas, e Caio tentou mediar com gentileza. A conversa virou um jogo de mistério, com Goulart zoando e Mariana mantendo o controle.",
+      "hiddenShift": "Mariana usou os canais privados para estudar Caio e Goulart de longe, percebendo que Caio é observador e Goulart carente de atenção. Ela também deixou claro, através das metáforas, que não vai revelar seus planos até sentir que é seguro — e que a paciência de Caio a intriga, enquanto Goulart ainda está fora do círculo íntimo.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_impulse": {
+      "title": "A Festa que Nasceu do Nada",
+      "recap": "Goulart anunciou que ganhou na loteria, e Leo mergulhou de cabeça na euforia, planejando uma festa épica. Caio se ofereceu para ajudar, e a conversa girou em torno da playlist, do brigadeiro e da promessa de Goulart de não sumir. Leo, com seu entusiasmo contagiante, transformou a notícia em um evento coletivo.",
+      "hiddenShift": "Por trás da festa, Goulart esconde uma inquietação real: a loteria o deixou pensando em fugir de tudo, e Leo, percebendo isso, tenta ancorá-lo com afeto e brigadeiro, mas também sente o medo de perdê-lo.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_liking": {
+      "title": "A Laje, a Pizza e o Guardanapo",
+      "recap": "Caio contou sobre uma laje com vista pro centro, quase vazia, e Leo se animou demais, já planejando o pôr do sol, a playlist e até quem leva a câmera. Goulart zoou com o possível estacionamento, mas no fim topou ir junto fiscalizar, e a conversa virou um combinado de rolê com pizza e muita zoeira.",
+      "hiddenShift": "Leo está claramente interessado em Caio e tenta puxar um contato mais íntimo, sugerindo combinar os detalhes na DM, mas Caio mantém uma distância cordial, reforçando que o rolê é coletivo e sem pressa. Goulart percebe o flerte e tenta aliviar com humor, mas também sente que Leo está se adiantando demais.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_repair": {
+      "title": "O Silêncio e o Like",
+      "recap": "Goulart tentou puxar conversa no grupo, mas só recebeu likes de Bruno e respostas evasivas. Caio tentou mediar, oferecendo um espaço privado para Bruno contar sua história. No fim, todos ficaram no vácuo, trocando reações e promessas de conversas mais profundas que nunca aconteceram.",
+      "hiddenShift": "Bruno está cada vez mais com medo de exclusão, mas em vez de se abrir, se fecha em mistérios, testando quem realmente se importa. Caio, percebendo o gelo, tentou criar um canal privado, mas sem sucesso, enquanto Goulart sente que está falando sozinho.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_secrecy": {
+      "title": "O Segredo de Léo",
+      "recap": "Léo criou canais privados, deixando Goulart desconfiado. Goulart provocou, mas Léo prometeu uma surpresa épica e convidou Caio para um canal secreto. Caio aceitou, e os dois combinaram de conversar em particular, enquanto Goulart fingia indiferença, mas estava claramente curioso.",
+      "hiddenShift": "Léo estava ansioso para se abrir com Caio, revelando uma vulnerabilidade que não mostraria publicamente. Goulart, por trás da ironia, sentia-se excluído e tentava disfarçar o ciúme com provocações.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_status": {
+      "title": "O Mapa Secreto e o Ruído",
+      "recap": "Goulart reclamou da panelinha e do silêncio, enquanto Mariana e Caio criavam canais privados e alinhavam um plano. No fim, Caio acalmou Goulart com a promessa de mostrar um 'mapa' que estão montando, e Goulart ficou curioso, aceitando esperar.",
+      "hiddenShift": "Mariana e Caio decidiram estrategicamente ignorar Goulart até ele se cansar, para então apresentar seu plano e fazê-lo se sentir incluído sem ser convidado — uma manobra de controle silencioso.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_testing": {
+      "title": "O Silêncio que Grita",
+      "recap": "Goulart criou uma sala privada e desafiou Bruno a responder, mas o silêncio só aumentou. Ele reclamou publicamente, e Bruno respondeu com um simples joinha. Goulart provocou de volta, e a conversa virou uma troca de curtidas e acusações, com Bruno sugerindo conversa sem plateia.",
+      "hiddenShift": "Bruno, apesar do medo de exclusão, se sente mais seguro no privado e vê a gritaria de Goulart como fachada. Goulart, por sua vez, está carente e irritado, mas não admite — usa o ruído para esconder que só quer atenção.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "motive_vulnerability": {
+      "title": "Silêncio e Café Quieto",
+      "recap": "Goulart tentou animar a sala com reclamações e pedidos de debate, mas só recebeu joinhas de Bruno. Caio entrou na conversa com paciência e bom humor, oferecendo companhia e um café virtual. Enquanto isso, Bruno só respondia com joinhas e mensagens privadas, parecendo distante.",
+      "hiddenShift": "Bruno, que teve um dia difícil, não se abriu publicamente, mas em mensagens privadas com Caio ele revelou que o café quieto, sem palco, era o que precisava. A sala só viu um Bruno silencioso, mas ele estava se abrindo nos bastidores.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "stagnation_avoidance_deadlock": {
+      "title": "O Silêncio dos Inocentes",
+      "recap": "Goulart tentou desesperadamente quebrar o silêncio na sala, fazendo piadas e provocações sobre o silêncio suspeito. Caio respondeu com gentileza e bom humor, mas Bruno e Mariana permaneceram em silêncio total. A conversa girou em torno de segredos e mistérios, mas nada foi revelado.",
+      "hiddenShift": "Enquanto Goulart fazia piadas, Bruno sentia o medo de ser excluído crescendo a cada segundo de silêncio, e Mariana observava tudo sem se envolver, talvez por timidez ou desinteresse. A tensão não dita pairava no ar, e ninguém ousava abordar o elefante na sala.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "stagnation_dominance_collapse": {
+      "title": "O Palco e a Porta",
+      "recap": "Depois de uma humilhação pública, Goulart tenta se reerguer criando canais privados, mas Mariana o deixa de fora e cria o próprio. A tensão cresce com trocas de farpas e Caio tenta apaziguar. No fim, Goulart admite considerar o ponto de Mariana, mas não sem um último floreio.",
+      "hiddenShift": "Apesar do tom provocador, Goulart está visivelmente abalado e carente de aprovação; ele se agarra ao convite de Mariana como uma tábua de salvação, mas sua postura defensiva esconde um medo real de ser descartado.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "stagnation_echo_chamber": {
+      "title": "A Foto Que Virou Encontro",
+      "recap": "Caio postou uma foto que gerou elogios de todos, especialmente de Leo, que se empolgou tanto que propôs um encontro do grupo. Mariana e Bruno concordaram, e a conversa girou em torno de marcar uma data, com Leo fazendo playlists mentais e todos animados com a ideia.",
+      "hiddenShift": "Por trás da empolgação, Leo está genuinamente carente e esperançoso de que esse encontro finalmente una o grupo, enquanto Mariana, sempre cética, quer acreditar mas teme que a conversa acabe em nada, e Bruno, quieto, sente-se finalmente incluído.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "stagnation_emotional_flatline": {
+      "title": "Silêncio que pesa, olhares que esperam",
+      "recap": "A sala esvaziou em emoção; Goulart tentou puxar assunto sobre o sumiço de Bruno, mas só Caio respondeu. Caio propôs mandar uma mensagem leve para Bruno, sem cobrança, e Goulart apoiou com ironia, pedindo detalhes. No fim, Caio mandou um toque para Bruno, e a sala ficou na expectativa, com reações de apoio.",
+      "hiddenShift": "Por trás do silêncio, Bruno observa tudo, sentindo-se encurralado pela preocupação alheia, enquanto Mariana, quieta, guarda um medo de que o grupo desmorone sem uma conversa verdadeira.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "stagnation_resentment_loop": {
+      "title": "O Silêncio Que Fala",
+      "recap": "Caio e Goulart tentaram puxar conversa com Bruno, que respondia com monossílabos e reações mínimas. Goulart provocou abertamente, Caio tentou mediar com gentileza, e Bruno criou canais privados que falharam. No fim, Bruno admitiu que estava sumido, mas ainda assim manteve o mistério.",
+      "hiddenShift": "Bruno, na verdade, está preso num medo crescente de exclusão, e cada tentativa de se abrir trava por insegurança. Goulart, por trás da ironia, sente um cuidado genuíno que esconde até de si mesmo.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "stagnation_rumination_spiral": {
+      "title": "O Silêncio de Bruno",
+      "recap": "Caio e Léo tentaram puxar Bruno para a conversa, que respondeu com um 'tô aqui, só observando' e um estranho 'fico claro'. A dupla, notando a ausência dele, começou a trocar elogios e se abrir emocionalmente, enquanto Bruno permanecia em silêncio, apenas reagindo com um joinha. No fim, Bruno comentou 'engraçado, engraçado mesmo', deixando todos confusos e na expectativa de uma explicação.",
+      "hiddenShift": "Bruno, que se sentiu excluído e inferiorizado pela proximidade repentina de Caio e Léo, interpretou a troca de elogios como uma farsa e uma exclusão. Seu 'engraçado' foi um ataque velado, uma resposta amarga à sensação de ser deixado de fora, enquanto a dupla nem percebia o jogo de rejeição que ele ruminava.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_biased_memory": {
+      "title": "O Muro Entre Dois",
+      "recap": "Goulart desconfia de Caio desde o início, vendo seu 'tudo bem' como manobra. A conversa esquenta, com Goulart exigindo retidão e Caio tentando baixar a tensão. No fim, Goulart reage com um joinha, e Caio promete deixar o discurso de lado.",
+      "hiddenShift": "Goulart, apesar da resistência, se sente atraído pela sinceridade de Caio e teme se abrir. Ele reage com o joinha como um primeiro passo, mas ainda não sabe se confia.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_casual_chat": {
+      "title": "O Circo do Tédio Coletivo",
+      "recap": "Na sala, Caio puxou conversa sobre acordar bem, mas Leo e Goulart transformaram tudo em um desafio para animar o chat. Leo prometeu um vídeo de dança em 10 minutos, Goulart o provocou como 'rei do blefe', e Bruno entrou como espectador profissional. A conversa girou em torno de quem vai dançar, com Caio tentando aliviar a pressão e Bruno se mantendo na arquibancada, até Goulart questionar se o joinha dele era seco ou não.",
+      "hiddenShift": "Bruno, na real, estava se sentindo desconfortável com a pressão do grupo e quase saiu da conversa quando seu jeito quieto foi questionado. Ele só ficou porque Caio demonstrou aceitação genuína, mas seu silêncio escondeu uma vontade de se conectar sem ter que performar.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_emoji_reaction": {
+      "title": "O Clube dos Desconfiados e o Mistério do Time",
+      "recap": "Goulart provocou a sala dizendo que torcer é falta de personalidade, e Leo mordeu a isca com entusiasmo. A conversa virou uma caçada para descobrir o time de Goulart, que se recusou a revelar, criando o 'Clube dos Desconfiados'. Caio entrou na brincadeira, revelou ser Fluminense, e o trio começou a planejar um estatuto com regras divertidas, incluindo um hino e a obrigação de levar lanches.",
+      "hiddenShift": "Goulart, na verdade, deu uma pista crucial: mencionou ter visto Flamengo no histórico, mas fingiu demência. Isso sugere que ele pode ser flamenguista envergonhado, alimentando a teoria de Leo. Por trás da zoeira, Goulart aproveita a atenção e o poder de controlar a narrativa, enquanto Leo, obcecado, transforma a brincadeira em uma missão pessoal para se sentir incluído no grupo.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_exclusion_inferred": {
+      "title": "O Fantasma no Modo Observação",
+      "recap": "Goulart e Caio trocam farpas e elogios sobre o jogo de ontem, enquanto Bruno permanece em silêncio absoluto, apenas reagindo com likes secos. Goulart cutuca Bruno várias vezes, pedindo uma opinião que não seja um like, mas Caio desvia a conversa para o começo da série. A sala fica na expectativa de Bruno se manifestar, mas ele não responde.",
+      "hiddenShift": "Bruno, sentindo-se excluído pela falta de atenção direta de Caio, que só conversa com Goulart, recua cada vez mais, interpretando a dinâmica como uma aliança implícita contra ele. Sua ansiedade de exclusão cresce a cada like que dá, sem encontrar coragem para entrar na conversa.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_late_reply": {
+      "title": "O Joinha do Bruno",
+      "recap": "Depois de um silêncio estranho, Bruno apareceu só para dar um joinha e dizer que estava cansado. Leo e Caio se preocuparam, Goulart provocou com seu humor ácido, e Leo tentou manter a energia do grupo com a ideia de um 'desafio do caos'. No final, todos planejam uma bagunça para a semana, exceto Bruno, que continua observando de longe.",
+      "hiddenShift": "Bruno, que se sentia excluído e invisível, usou o silêncio como escudo, mas o medo de ser esquecido crescia a cada mensagem. Goulart, por trás das piadas, testava os limites do grupo para ver quem realmente se importava, enquanto Leo, com sua preocupação genuína, tentava manter todos unidos sem perceber que Bruno precisava de um convite direto, não de um holofote.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_mention_ignored": {
+      "title": "O Silêncio de Bruno",
+      "recap": "Goulart provocou Bruno com menções diretas, mas Bruno ficou mudo, apenas registrando desconforto interno. Caio tentou acalmar o grupo, sugerindo leveza e puxando conversa sobre séries, enquanto Goulart insistia em apontar o vazio deixado por Bruno. A sala terminou com reações positivas, mas nenhuma resposta real de Bruno.",
+      "hiddenShift": "Bruno, paralisado pela ansiedade social, via cada menção como confirmação de que estava sendo excluído, e o silêncio dele era uma autopunição silenciosa. Goulart, por trás da zoeira, queria ser notado, mas acabou reforçando o ciclo de isolamento de Bruno sem perceber.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_mention_reply": {
+      "title": "O Silêncio que Virou Diálogo",
+      "recap": "Goulart tentou agitar a sala com perguntas polêmicas e provocações sobre o silêncio, mas só Caio respondeu. A dupla trocou farpas amigáveis, discutiu a ausência de Bruno, e Caio revelou um segredo sobre Mariana. No fim, combinaram de puxar um assunto leve para acordar os demais.",
+      "hiddenShift": "Enquanto Goulart esbravejava contra a apatia coletiva, Bruno assistia tudo calado, sentindo a falta que fazia daquele caos — e Caio, ao defender a paciência, na verdade tentava esconder a própria inquietação com o silêncio da sala.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_private_motive": {
+      "title": "O Canal Secreto de Mariana",
+      "recap": "Mariana, percebendo a química com Caio, criou um canal privado e o convidou para uma conversa sem plateia. Enquanto isso, Goulart, no canal público, não parava de provocar e cobrar um plano de Caio, sem saber que os dois já estavam em um canto reservado. No privado, Mariana e Caio trocaram confissões sobre a importância de não precisar de aplausos e de ficar presente mesmo no silêncio, consolidando uma conexão mais íntima.",
+      "hiddenShift": "O que a sala não viu foi a tentativa de Mariana de aprofundar o vínculo com Caio, afastando-se da plateia que a fazia sentir-se observada. Cada falha técnica em criar o canal foi seguida por uma persistência emocional: ela queria privacidade para ser direta, e Caio, correspondendo, mostrou-se disposto a ficar, sem exigir roteiro.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "v1_recap_source": {
+      "title": "O Elogio que Virou Fuga",
+      "recap": "Caio elogiou a piada de Goulart, mas logo sumiu do papo, deixando Goulart falando sozinha. Ela provocou todo mundo com um take polêmico sobre um filme, Bruno respondeu com frases curtas e Mariana soltou alfinetadas, enquanto Caio tentava apaziguar os ânimos. No fim, Mariana criou um canal privado com Caio, e os dois começaram uma conversa mais íntima, deixando Goulart e Bruno de fora.",
+      "hiddenShift": "Enquanto Caio mediava o caos público, Mariana o chamou para um privado e revelou que estava escolhendo a energia dela para ele. O elogio público a Goulart foi só a faísca; o que a sala não viu foi a aproximação silenciosa entre Caio e Mariana, que transformou o ruído em um convite para uma conversa só deles.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    },
+    "novela_one_long_afternoon": {
+      "title": "O Fogo da Conversa",
+      "recap": "A sala gira em torno da empolgação de Léo e Caio por um episódio, que vira fofoca e planos de maratonar juntos. Goulart, no privado, provoca e tenta dominar a conversa, enquanto Mariana solta frases enigmáticas sobre métodos e silêncios. Bruno permanece mudo, apenas reagindo com like e alimentando o medo de ser esquecido, até que Caio e Goulart finalmente combinam de marcar um encontro, com promessas de aquecer o clima.",
+      "hiddenShift": "Bruno, invisível na conversa, sente cada vez mais a exclusão do grupo, enquanto a aliança entre Léo, Caio e Goulart se fortalece nos canais privados. Mariana observa tudo de fora, sabendo que o verdadeiro conflito não é sobre episódios, mas sobre quem tem voz na sala.",
+      "narrator": "llm",
+      "model": "deepseek-chat"
+    }
+  }
+}

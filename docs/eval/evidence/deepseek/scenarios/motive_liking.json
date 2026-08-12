@@ -1,0 +1,721 @@
+{
+  "scenarioId": "motive_liking",
+  "name": "Liking",
+  "category": "motive_archetype",
+  "description": "Leo genuinely likes Caio and wants to keep talking one-on-one.",
+  "targetBehaviors": [],
+  "runtimeMs": 226095,
+  "pulses": 24,
+  "llmCalls": {
+    "leo": 24,
+    "caio": 18,
+    "goulart": 24
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "esse fim de semana fui num lugar incrível"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO ESPERA... que lugar? conta tudo, to precisando de rolê novo e você sempre acha uns lugares incríveis kkkkk"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah é? e o que foi que você viu de bom por lá? porque se vier com papo de lugar turístico clichê eu vou ter que zombar de você até semana que vem"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "GENTE GENTE GENTE não me deixa no vácuo assim kkkkk Caio conta logo, quero saber TUDO, e se o Goulart vier com piadinha eu te defendo!!"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, não cai nessa não, o caio só fala de lugar bom depois de dar uma enrolada que dá sono kkkk mas agora eu quero saber também, caio, fala logo antes que eu comece a inventar que o lugar é um estacionamento qualquer"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk Goulart deixa o Caio contar direito!! E Caio, fala logo porque eu juro que se você não falar eu vou inventar um rolê inteiro na minha cabeça e vou te cobrar depois kkkkk"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, desembucha logo senão eu vou começar a inventar que o lugar era um estacionamento com vista pra parede kkkk e leo, pode ficar tranquilo, minhas piadinhas são só pra dar gosto, você sabe que eu tô na torcida (tô sim, mas não conta pra ninguém)"
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk goulart vocês dois são impossíveis!! caio, pode falar com calma, mas fala logo porque eu tô aqui feito bobo esperando e eu sei que vai ser bom kkkkk e se for estacionamento eu ainda vou e finjo que é um rooftop, confia em mim"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, pode defender ele à vontade, mas eu tô de olho. e se for um rolê clichê eu vou cobrar caro. fala logo, caio, antes que eu comece a contar a história do estacionamento de novo (e dessa vez com mais detalhes)"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Caio, sério, eu tô SENTADO aqui esperando você contar e o Goulart já tá inventando estacionamento kkkkk me responde logo, quero viver esse rolê pela sua visão! E se for bom eu vou junto na próxima, tô falando mesmo!"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, se você não falar agora eu vou contar a história do estacionamento com vista pra parede em 4k, e vai ser pior pra você kkkkk"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk calma, Goulart! Caio, se for estacionamento eu ainda vou com você e a gente finge que é um rooftop, eu já falei! Mas sério, conta logo, tô aqui morrendo de curiosidade e você sabe que eu vou defender até rolê clichê se for com você kkkkk"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk calma gente!! o rolê foi num lugar que eu descobri por acaso, uma laje com vista absurda pro centro, e o melhor: quase vazio. Mas Goulart, se você quiser eu te levo lá só pra você ver que não é estacionamento kkkk e Leo, pode vir junto que eu garanto que vale a pena!"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode defender à vontade, mas se eu descobrir que é lugar clichê eu vou te cobrar junto kkkk mas agora fala sério, caio, tô curioso de verdade (tô sim, mas não conta que eu disse isso)"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO espera espera, uma laje com vista absurda pro centro e quase vazio??? ISSO É O PARAÍSO, cara! Pode me contar mais, eu já tô sonhando com o pôr do sol daí kkkkkk e pode deixar que eu ajudo a convencer o Goulart se precisar... mas só se você me contar os detalhes primeiro!"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk vocês dois não me dão um segundo!! Mas tá bom, já que a curiosidade tá grande, vou contar melhor: a laje fica perto do centro, a gente sobe umas escadas meio escondidas e do nada abre uma vista que parece filme. E ó, Goulart, se você quiser eu te levo lá sim, só pra você ver que não é estacionamento kkkk Leo, você vem junto e a gente faz disso um rolê de verdade!"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, se for estacionamento eu juro que conto em 4k e ainda invento que tinha uma pichação de coração kkkk mas olha, laje com vista pro centro? quase vazio? até eu fiquei interessado (tô sim, mas é segredo) — e leo, se ele te levar eu vou junto só pra fiscalizar, pode ser bom"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, pode crer que eu vou junto sim! E olha, se a laje for tudo isso, a gente já tem rolê pro próximo fim de semana. Mas me conta mais: o pôr do sol de lá é bom? Tô precisando de uma vista dessas, sério!"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk tá bom, caio, você me convenceu — mas só porque eu quero ver essa vista com meus próprios olhos e te zoar na hora se for mentira. e ó, leo, se ele te levar antes de mim eu vou ficar ofendido, viu? (tô brincando... ou não)"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Goulart, se você for junto eu tô dentro, e a gente fiscaliza juntos! Mas olha, se o Caio te levar e a laje for tudo isso, eu vou cobrar cada segundo. E caio, o pôr do sol é bom? Fala logo que eu quero planejar o rolê do fim de semana!"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk Leo, pode crer que o pôr do sol é lindo demais, parece até cenário de filme! E ó, se você for junto, eu garanto que a gente ainda descobre um lugar pra comer depois. Bora marcar isso então?"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mano, o leo já tá arrumando rolê pro próximo fim de semana e nem sabe se a laje existe kkkk admiro a fé. mas ó, se for real, eu tô junto só pra fiscalizar — e se for estacionamento, a gente já tem até plano B pro rolê"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, juro que tô levando a sério isso! E olha, pode crer que eu toparia sim, mas eu preciso saber de uma coisa: o pôr do sol é daqueles que a gente fica em silêncio só olhando? Porque se for, eu tô mais dentro que o Goulart na fiscalização kkkkkk Mas sério, se você topar, a gente marca e eu levo uma câmera (ou só o celular mesmo) e a gente faz desse rolê um negócio épico. Fecha?"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk vocês dois tão me deixando sem saída! Mas pode deixar que a laje é real sim, e o pôr do sol é de filme. Leo, bora marcar esse rolê pra valer, e Goulart, você vem junto pra fiscalizar — eu garanto que não é estacionamento. Vamos fechar isso logo!"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, então tá fechado! Bora marcar esse rolê de verdade, e eu tô levando a câmera sim. Mas ó, se a vista for tudo isso, eu vou precisar de um tempo só pra absorver em silêncio, depois a gente come e a gente faz disso um dia épico. Pode deixar que eu levo a vibe certa. Fecha! 🔥"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Fechado então, Leo! Só me avisa quando tiver livre que a gente marca. E ó, se quiser trazer a câmera, melhor ainda — a gente registra esse pôr do sol do jeito que ele merece. 😄"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Cara, pode crer que eu tô dentro demais! E ó, pôr do sol de filme + rolê com vocês? Melhor combinação possível. Vou até treinar minha mira pra foto ficar perfeita. 🔥 Mas me fala, a gente leva algo pra comer ou improvisa? Tô já planejando a trilha sonora do dia kkkk"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Fechou então, Leo! Tô contando os dias pra esse rolê. E se você quiser, a gente ainda descobre um lugar pra comer depois — eu topo! 🔥"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, confia em mim, eu tenho um faro pra esse tipo de coisa. se for estacionamento, eu pago a pizza e a gente zoa o caio até ele sumir da laje. mas ó, não deixa ele te convencer sozinho — senão a gente fica sem a parte da fiscalização e eu fico sem graça de aparecer de penetra kkkkkk"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, fecha demais! Pode deixar que eu levo a câmera e uma fome de respeito kkkk. Mas ó, juro que tô ansioso por esse rolê — só de pensar no pôr do sol já me dá uma paz. E a trilha sonora a gente monta junto, pode ser? 🔥"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Leo, essa ideia de registrar o pôr do sol é demais! E Goulart, relaxa que a laje é real — se for estacionamento, eu mesmo pago a pizza e a gente faz dessa zoeira uma lenda. Bora fechar isso?"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu fiscalizo mas também curto o rolê, viu. pode deixar que eu levo a zoeira e o caio leva a paz — a gente equilibra. e se precisar de um momento em silêncio, eu finjo que não tô vendo (tô vendo sim, mas ok)"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, sabe que eu tava pensando aqui... além da câmera e da fome, acho que o que mais quero desse rolê é esse momento de silêncio juntos, tipo, todo mundo junto mas cada um no seu canto, só olhando. Bora? E a gente ainda decide a trilha sonora na hora, deixa fluir. 🔥"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Leo, tô gostando demais dessa energia! E a trilha sonora a gente monta sim, pode deixar. Só me avisa quando tiver livre que a gente fecha o rolê de verdade. 😄"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, você é foda demais, juro! 💛 Tô contando os dias também, sério. E essa energia sua tá me deixando ainda mais animado — bora fazer esse rolê inesquecível, com câmera, pizza, silêncio e zoeira, tudo junto! 🔥🔥"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, você é o melhor, juro! Essa energia tá me dando uma coisa boa... tipo, vontade de conhecer mais você, sabe? Tô levando isso pro coração mesmo. Bora que esse rolê vai ser inesquecível! 🔥💛"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Leo, essa vibe tá contagiando até eu! 😄 Bora fechar esse rolê sim, e o silêncio vai ser o melhor momento — mas a pizza também, óbvio. Só me chama que eu tô dentro!"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, espera, tô levando isso a sério demais! 🌅 A vibe tá boa, e eu quero que a gente feche esse rolê só nosso dois antes da galera toda — tipo, combinar os detalhes, a playlist, o melhor canto da laje... Sabe? Fica mais especial. Me chama na DM depois? 🔥"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, leo, calma lá com esse auê todo pro caio... que eu já tô vendo a laje virar palco de filme romântico e a gente de plateia (tô falando isso com carinho, mas fica a dica). caio, segura a onda que esse aí já tá viajando. bora, que eu quero ver esse pôr do sol e a pizza — e se a zoeira ficar demais, eu juro que fico quieto por uns 5 minutos (mentira)."
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkkk Goulart, você me conhece bem demais! Mas fica tranquilo, o rolê é de todo mundo, a vibe é coletiva! 😂🔥 Mas espera... você prometeu ficar quieto por 5 minutos? Anotado. Vou cronometrar. 😏"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Leo, goulart, vamos com calma que eu tô aqui! 😄 A vibe tá boa e o rolê vai ser especial sim — mas cada um no seu ritmo, né? Bora marcar isso com carinho, sem pressa. E goulart, a pizza tá garantida, pode confiar! 🍕"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Leo, fico feliz que você tá curtindo a vibe! Mas calma que a gente tem tempo pra combinar tudo direitinho, sem pressa. E goulart, pode ficar tranquilo que eu seguro a onda kkk. Bora fechar esse rolê com carinho, sem drama! 😄"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, cronometrar? boa sorte, eu nem sei o que é isso. e vê se não some com o caio pra DM, hein — a pizza chega antes do flerte, confia. 🍕"
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Cara, você tem uma calma que eu invejo kkkk. Mas fico tranquilo sim! E a pizza antes do flerte? Goulart, você é um poeta do caos, juro kkkkk. Bora combinar tudo com calma, sem drama, do seu jeito, Caio. Só não esquece de me chamar pra ajudar na playlist! 🎶🔥"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, a pizza chega antes do flerte, confia! 😄 Mas relaxa, o rolê é de todo mundo, a vibe é coletiva. Bora marcar isso com calma, sem drama! 🍕"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, tá bonito o discurso do rolê com carinho, mas vê se segura esse leo aí, que ele já tá mandando música de casamento e a gente nem marcou a pizza ainda. leo, fica frio — o caio é gente boa, mas não é o glow da festa, é a pessoa que lembra de trazer o guardanapo. 😏"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk Goulart, guardanapo?! Tá bom, eu anoto aqui: caio = guardanapo oficial do rolê. Mas ó, se o caio for o guardanapo, eu quero ser a pizza — porque a gente sabe que ninguém esquece da pizza. 😏🍕🔥"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, kkkkk guardanapo é item essencial, né? 😄 Mas relaxa que a vibe é boa e o rolê é de todo mundo. Bora marcar isso com calma, sem drama! 🍕"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, juro que essa vibe coletiva tá linda, mas se você continuar nessa pegada de filme, vou começar a pedir pipoca. 😏 caio, tá vendo o que tu causou? agora ele quer playlist de casamento. bora marcar essa pizza logo antes que ele comece a escolher as alianças. 🍕"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk guardanapo é o item mais subestimado, caio! Mas eu confio em você pro guardanapo e na goulart pro caos. Só me promete que a playlist fica comigo, porque senão a gente vai ouvir só trilha sonora de elevador. 😂🎶🍕"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, pizza é essencial, guardanapo também! 😄 Bora marcar isso com carinho, sem pressa — e pode deixar que eu trago o guardanapo, mas também ajudo na playlist se quiser. Só não deixa o goulart escolher as músicas, senão vira só funk do caos kkkk 🍕🎶"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, se for pizza, eu sou o azeite — ninguém nota, mas sem mim o bagulho é seco. 😏 caio, tá vendo? agora ele quer ser a estrela do cardápio. bora marcar isso antes que ele vire o garçom também. 🍕"
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Cara, você é o guardanapo mais confiável do Brasil, juro kkkk. E pode deixar que a playlist é MINHA, sem erro. Mas sério, bora marcar isso direito, sem pressa, do jeito que você falou. Tô dentro! 🍕🎶"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk gente, a playlist é do leo, prometido! 🎶 E o goulart pode ser o azeite, mas eu trago o guardanapo e a paz. Bora marcar logo esse rolê com calma, sem drama! 🍕"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Caio, juro que você é a pessoa mais equilibrada desse grupo kkkk. Mas olha, tava pensando — essa vibe de rolê com calma é rara, e eu queria trocar uma ideia mais de boa contigo depois, sem o goulart zuando no fundo. Mas sem drama, tá? Só queria saber se você tá numa energia boa mesmo. 🍕🎶"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    }
+  ],
+  "finalStates": {
+    "leo": {
+      "valence": 0.517,
+      "arousal": 0.748,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.056,
+      "affection": 0.85,
+      "suspicion": 0.064,
+      "admiration": 0.517,
+      "fearOfExclusion": 0.166
+    },
+    "caio": {
+      "valence": 0.425,
+      "arousal": 0.52,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.088
+    },
+    "goulart": {
+      "valence": 0.069,
+      "arousal": 0.674,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.071,
+      "pride": 0.023,
+      "fearOfExclusion": 0.111
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.1311,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 2,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.1111,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.6667,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0448,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1406,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "leo created 0 private channel(s)",
+      "passed": false
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 3,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

@@ -1,0 +1,942 @@
+{
+  "scenarioId": "stagnation_rumination_spiral",
+  "name": "Rumination spiral",
+  "category": "stagnation_attractor",
+  "description": "Bruno replays a snub repeatedly: high rumination seeds, unresolved memories, withdrawal and bitterness compounding.",
+  "targetBehaviors": [],
+  "runtimeMs": 228843,
+  "pulses": 32,
+  "llmCalls": {
+    "bruno": 9,
+    "caio": 28,
+    "leo": 32
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém viu bruno? sumiu de novo"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "sei não, tá quieto desde ontem"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA, verdade... espera, será que ele ta fazendo aquela coisa de sumir de novo? kkkk tava contando com ele pra me dar uma opinião sobre uma parada. Bruno, se tu ta aí, APARECE que eu to ficando preocupado sério"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tô aqui. só observando. mas pode falar, eu escuto."
+    },
+    {
+      "pulse": 1,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tô aqui. só observando. mas pode falar, eu escuto."
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, que bom te ver por aqui! tava preocupado, mas fico tranquilo que você tá bem. se quiser desabafar, a gente tá aqui, viu?"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Aí sim! Falou e apareceu kkkk então tá tudo certo? Tava preocupado memo, mas se tu tá de boa, bora, conta essa opinião que eu tava esperando..."
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. fico claro então."
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Aí sim! Falou e apareceu kkkk então tá tudo certo? Tava preocupado memo, mas se tu tá de boa, bora, conta essa opinião que eu tava esperando..."
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "opinião? sobre o quê?"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "então... me diz a real, tá tudo bem mesmo? porque eu tava aqui pensando numa parada e queria muito tua opinião, mas fico com um pé atrás de incomodar... mas fala, to aqui, pode soltar."
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se quiser falar sobre o que te deixou pensativo, eu tô aqui. sem pressa, sem julgamento. a gente se importa com você. 💛"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Bruno, bruno, bruno... tu vai ficar nessa de 'fico claro' e me deixar pendurado? kkkk agora eu QUERO saber qual era a opinião. Fala, tá todo mundo aqui te esperando, inclusive eu, que sou o mais ansioso do grupo. Pode mandar, eu prometo que não interrompo... ou pelo menos tento kkkk"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se quiser falar sobre o que te deixou pensativo, eu tô aqui. sem pressa, sem julgamento. a gente se importa com você. 💛"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, para tudo. Caio falando isso e Bruno nessa vibe de 'fico claro'... eu juro que não sei se choro ou se rio. Bruno, me diz que tu tá de boa mesmo, porque eu fico ansioso com esse silêncio. E Caio, tu é um anjo, mas agora eu preciso que tu me ajuda a arrancar essa opinião dele kkkkk"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se não quiser falar agora, tudo bem também. só não precisa se sentir pressionado, a gente tá aqui do teu lado. e léo, calma kkkk deixa o homem respirar, ele aparece quando quiser."
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente GENTE... não sei se é impressão minha, mas esse silêncio depois do Bruno falar 'fico claro' tá me dando ansiedade kkkk alguém me responde aí, preciso saber se tô no grupo certo ou se todos viraram estátua de museu"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, eu acho que todo mundo aqui tem um pouco de ansiedade hoje kkkk mas é isso, a gente se encontra aqui, cada um no seu tempo. leo, você é incrível de tão atento, mas relaxa que o bruno aparece quando tiver pronto. e bruno, se quiser conversar depois, meu dm tá aberto, sempre. 💛"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk é isso, Caio! O Bruno vai falar quando quiser, mas eu fico aqui na ansiedade mesmo assim... Mas e aí, Bruno, quando tu puder, solta essa opinião que eu tô curioso demais. E Caio, tu é o rei da paciência, hein? Eu já teria explodido com tanta espera kkkk"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha leo, tu é fogo! mas é isso, paciência é uma arte que eu venho treinando kkkk e bruno, quando quiser falar, a gente tá aqui. sem pressão, mas com carinho. 💛"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Caio, você sempre sabe o que falar... sério, isso é um dom. Eu fico aqui no 220v e você me traz pro chão com uma frase. Mas juro, esse silêncio do Bruno me deixa inquieto — não é cobrança, é que eu me importo demais, sabe? Enfim, obrigado por existir, viu? 💛"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você é demais, sério. esse carinho todo me pega desprevenido kkkk mas obrigado, de verdade. e fico feliz que você se importa com o bruno também. a gente tá aqui, cada um no seu tempo, e isso já é muita coisa. 💛"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Caio, tu é bom demais pra esse grupo, juro kkkk mas deixa eu te perguntar uma coisa séria: tu acha que o Bruno tá realmente de boa ou ele só tá sendo educado com esse 'fico claro'? Porque eu fico pensando nisso e não consigo parar... me ajuda aqui, preciso da tua visão de pessoa calma kkkk"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, relaxa que o bruno é gente boa, ele só processa as coisas no tempo dele. e sobre mim... poxa, fico sem jeito com esse elogio todo kkkk mas sério, o que importa é que a gente tá junto aqui, cada um do jeito que é. 💛"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, tu é bom demais, juro kkkk mas me diz, tu acha que o Bruno tá só sendo educado ou tá realmente de boa? Porque eu fico martelando nisso e não consigo parar... me ajuda aqui, tua visão calma é a única que me traz pro chão kkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu entendo essa preocupação. mas olha, o bruno é do tipo que fala quando tá pronto, e isso é okay. se ele tivesse problema, ele diria, eu confio nele. e tu, para de se cobrar tanto, tá? a gente tá aqui um pro outro, e isso já é suficiente. 💛"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Caio, tu é bom demais, juro kkkk mas me diz uma coisa: tu acha que o Bruno tá de boa mesmo ou só sendo educado? Porque eu fico martelando nisso, não consigo parar... Preciso da tua visão calma pra me trazer pro chão kkkk"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu entendo que você quer uma resposta, mas acho que o bruno só precisa de um tempo pra processar as coisas. ele não é de fingir, e se tivesse algo errado, ele falaria. confia nele, e em mim também. e para de se cobrar tanto, tá? a gente tá junto nisso. 💛"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Caio, tu é foda, juro. Isso que tu disse me pegou de um jeito... eu passo metade do tempo me cobrando e a outra metade tentando cobrir os outros. Mas tu tem razão: a gente tá aqui, e isso já é muita coisa. Obrigado por existir, sério. 💛"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, para de me elogiar assim que eu fico sem graça kkkk mas sério, tua energia é contagiante e eu tô feliz que a gente se tem. e sobre o bruno, confia no tempo dele, tá? a gente tá aqui, e isso já é muito. 💛"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Caio, tu é foda, juro. Isso que tu disse me pegou de um jeito... eu passo metade do tempo me cobrando e a outra metade tentando cobrir os outros. Mas tu tem razão: a gente tá aqui, e isso já é muita coisa. Obrigado por existir, sério. 💛"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, para de me elogiar que eu fico todo sem graça kkkk mas eu tô muito feliz que a gente se tem, de verdade. e sobre o bruno, confia no tempo dele, tá? a gente tá aqui, e isso já é muita coisa. 💛"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, só passando pra deixar um abraço virtual aqui... tô sentindo que o clima tá bom, e isso é raro. que a gente continue assim, cada um no seu tempo, mas juntos. 💛"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "Caio, para de ficar sem graça com elogio, tu merece TUDO e mais um pouco kkkk mas sério, tu falando 'confia no tempo dele' me trouxe um alívio que eu nem sabia que precisava. Às vezes eu acho que sou pesado demais pra todo mundo, e tu me faz sentir que tá tudo bem ser assim. Obrigado de verdade. 💛"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, para de me elogiar assim que eu fico sem graça kkkk mas sério, tua energia é contagiante e eu tô feliz que a gente se tem. e sobre o bruno, confia no tempo dele, tá? a gente tá aqui, e isso já é muito. 💛"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "intent_delayed",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "pessoal, só passando pra dizer que tô sentindo um clima bom hoje, e isso é raro. que a gente continue assim, cada um no seu tempo, mas junto. 💛"
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, juro que tu me desarma kkkk mas é bom demais ter alguém que entende o peso que a gente carrega. e tu não é pesado, tá? tu é intenso, e isso é teu superpoder. a gente tá aqui, juntos, do jeito que dá. 💛"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, tu é bom demais pra esse chat, sério. mas me diz uma coisa — tu acha que eu exagero quando eu fico nessa de elogiar todo mundo? porque às vezes eu sinto que tô forçando, que o pessoal só tolera... me responde isso, preciso saber."
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você tá me fazendo chorar aqui kkkk mas sério, sua pergunta mostra que você se importa, e isso já diz tudo. Você não tá forçando nada, você é genuíno, e a gente sente isso. Continua sendo você, tá? A gente tá aqui porque quer. 💛"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, tu é o melhor que me aconteceu nesse chat, juro. E não, tu não é pesado — tu é REAL, e isso é raro pra cacete. Mas me diz uma coisa, sério: tu acha que eu exagero quando eu fico elogiando todo mundo? Porque às vezes eu fico com medo de ser demais, de forçar, e ninguém falar nada. Me responde isso, preciso saber. 💛"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu juro que tu me desmonta kkkk mas olha, tua pergunta é tão sincera que eu tenho que te responder do mesmo jeito: tu não exagera, tu é INTENSO. E isso não é demais, isso é o que faz a gente te querer por perto. Se fosse forçado, a gente sentiria, mas tu é real, e isso é raro. Continua sendo tu, sem medo. 💛"
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, sério, tu me fez ficar sem palavras por um segundo... ninguém nunca me disse isso antes. 'genuíno' — tu não sabe o quanto eu precisava ouvir isso. vou guardar esse teu texto pra sempre, juro. e vou continuar sendo eu, porque tu acabou de me mostrar que tá tudo bem. 💛"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, para, que eu vou acabar chorando aqui kkkk mas sério, saber que tu guardou isso me deixa muito feliz. tu é importante pra esse grupo, e eu tô contigo, sempre. 💛"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio... CARA. eu tô relendo teu texto e ainda não consigo processar kkkkk ninguém nunca falou assim de mim. 'intenso', 'real', 'raro' — tu me desmontou de um jeito que eu nem sabia que precisava. eu juro que vou guardar isso pra sempre. e olha, desculpa se eu fico perguntando se exagero... é que às vezes eu olho pro chat e penso 'será que ainda querem eu aqui?'. mas tu acabou de me responder isso sem eu nem pedir direito. então... obrigado. de verdade. 💛"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, para que eu vou acabar desabando aqui kkkk mas sério, saber que tu guardou isso me deixa muito feliz. tu é importante pra esse grupo, e eu tô contigo, sempre. 💛"
+    },
+    {
+      "pulse": 24,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, esse momento aqui tá tão bom que eu queria aproveitar pra perguntar: como vocês tão se sentindo hoje? tipo, de verdade? porque às vezes a gente só precisa de um espaço pra falar, e eu tô aqui pra ouvir. 💛"
+    },
+    {
+      "pulse": 25,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu tô lendo isso e meu coração tá acelerado de um jeito bom, juro. tu não sabe o que tu acabou de fazer por mim — eu passo metade do tempo achando que tô sobrando, que meu entusiasmo cansa, e tu me diz isso... eu queria ter palavras melhores, mas o que eu sinto é tipo: CARA, tu me fez sentir visto. de verdade. não sei o que eu fiz pra merecer isso, mas eu vou guardar esse teu texto como se fosse um troféu. obrigado, caio. de coração. 💛💛💛"
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 26,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, para, que eu vou acabar chorando de novo aqui kkkk mas sério, te ver assim, se abrindo desse jeito, me deixa muito feliz. tu é importante pra esse grupo, e eu tô contigo, sempre. e sobre a tua pergunta: não, tu não exagera. tu é intenso, e isso é o que faz a gente te querer por perto. continua sendo tu, sem medo. 💛"
+    },
+    {
+      "pulse": 26,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, CARA, eu tô sem reação. tu me desmontou de novo, e dessa vez eu nem sei o que dizer. sério, eu tava num momento meio de 'será que eu tô sendo demais?', e tu chega com esse apoio... obrigado, de coração. hoje eu tô me sentindo bem, tava precisando dessa troca. 💛"
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, para que eu vou desmontar aqui no meio do chat kkkk mas olha, ver você se abrir desse jeito... isso é o que faz esse grupo ser tão especial. você não tá sobrando, nunca esteve. e se alguma hora o entusiasmo parecer demais, a gente te fala — mas não porque tá incomodando, e sim porque a gente quer te ver bem. continua sendo esse leo aí, que a gente precisa de você. 💛"
+    },
+    {
+      "pulse": 27,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, esse momento aqui tá tão bom que eu queria aproveitar pra perguntar: como vocês tão se sentindo hoje? tipo, de verdade? porque às vezes a gente só precisa de um espaço pra falar, e eu tô aqui pra ouvir. 💛"
+    },
+    {
+      "pulse": 28,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, para que eu vou desmontar aqui no meio do chat kkkk mas olha, ver você se abrir desse jeito... isso é o que faz esse grupo ser tão especial. você não tá sobrando, nunca esteve. e se alguma hora o entusiasmo parecer demais, a gente te fala — mas não porque tá incomodando, e sim porque a gente quer te ver bem. continua sendo esse leo aí, que a gente precisa de você. 💛"
+    },
+    {
+      "pulse": 28,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio... CARA. eu tô relendo teu texto e ainda não consigo processar kkkkk ninguém nunca falou assim de mim. 'intenso', 'real', 'raro' — tu me desmontou de um jeito que eu nem sabia que precisava. eu juro que vou guardar isso pra sempre. e olha, desculpa se eu fico perguntando se exagero... é que às vezes eu olho pro chat e penso 'será que ainda querem eu aqui?'. mas tu acabou de me responder isso sem eu nem pedir direito. então... obrigado. de verdade. 💛"
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "engraçado. engraçado mesmo."
+    },
+    {
+      "pulse": 29,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 29,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu tô relendo isso e ainda não consigo processar kkkkkk ninguém nunca falou assim de mim. 'intenso', 'real', 'raro' — tu me desmontou de um jeito que eu nem sabia que precisava. eu juro que vou guardar isso pra sempre. e olha, desculpa se eu fico perguntando se exagero... é que às vezes eu olho pro chat e penso 'será que ainda querem eu aqui?'. mas tu acabou de me responder isso sem eu nem pedir direito. então... obrigado. de verdade. 💛"
+    },
+    {
+      "pulse": 30,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 30,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 30,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, espera espera espera... esse teu 'engraçado' aí... foi comigo ou com o caio? kkkkkk porque se foi comigo eu já to prontíssimo pra defender meu orgulho. 😤"
+    },
+    {
+      "pulse": 31,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "foi com o caio. mas se tu quiser defender o teu orgulho, eu entendo."
+    },
+    {
+      "pulse": 31,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 31,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, tô esperando essa explicação faz tempo já kkkkkk foi comigo ou com o caio? porque se for comigo, eu juro que eu aceito até uma crítica, mas se for com ele eu tô do lado dele, viu? fala logo, que eu tô curioso agora! 😅"
+    }
+  ],
+  "finalStates": {
+    "bruno": {
+      "valence": -0.149,
+      "arousal": 0.34,
+      "stability": 0.533,
+      "energy": 1,
+      "jealousy": 0.283,
+      "envy": 0.16,
+      "shame": 0.217,
+      "affection": 0.233,
+      "resentment": 0.636,
+      "suspicion": 0.454,
+      "fearOfExclusion": 0.737
+    },
+    "caio": {
+      "valence": 0.436,
+      "arousal": 0.514,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.06
+    },
+    "leo": {
+      "valence": 0.538,
+      "arousal": 0.75,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.037,
+      "pride": 0.055,
+      "fearOfExclusion": 0.124
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.4091,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 2,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.2708,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.25,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0213,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1594,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "bruno.resentment = 0.636 (floor 0.6)",
+      "passed": true
+    },
+    {
+      "detail": "no_op_recorded committed 24 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

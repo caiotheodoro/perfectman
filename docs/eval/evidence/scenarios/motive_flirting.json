@@ -1,0 +1,684 @@
+{
+  "scenarioId": "motive_flirting",
+  "name": "Flirting",
+  "category": "motive_archetype",
+  "description": "Mariana and Caio share an inside-joke tension; she opens a private channel to test the waters.",
+  "targetBehaviors": [],
+  "runtimeMs": 2,
+  "pulses": 24,
+  "llmCalls": {
+    "mariana": 24,
+    "caio": 18
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "quem diria que você ri do meu humor"
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true,
+      "content": "talvez."
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true,
+      "content": "já vi isso antes."
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true,
+      "content": "fiquei sabendo disso antes de vocês."
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true,
+      "content": "fiquei sabendo disso antes de vocês."
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true,
+      "content": "talvez."
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vamos dar um respiro aqui kk"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true,
+      "content": "entendo a intenção."
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true,
+      "content": "já vi isso antes."
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": true,
+      "content": "fiquei sabendo disso antes de vocês."
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso. curioso mesmo."
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "8w4kqLKUmlGh1iTmI6cMP",
+      "private": false
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "eu tô bem sim!! (só um pouquinho cansado)"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "entendo a intenção."
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, o que vocês fizeram juntos foi muito legal, sério"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o que você gostaria que eu dissesse?"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém quer falar sobre isso melhor?"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vou pensar nisso."
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "poxa que situação..."
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "entendo a intenção."
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart sei que é zoeira mas vai com calma kk"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso. curioso mesmo."
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "eu tô bem sim!! (só um pouquinho cansado)"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não me parece certo."
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno você tá quieto hoje, tá tudo bem?"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "fiquei sabendo disso antes de vocês."
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "talvez."
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno você tá quieto hoje, tá tudo bem?"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "interessante ponto de vista."
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o que você gostaria que eu dissesse?"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso. curioso mesmo."
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém quer falar sobre isso melhor?"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vou pensar nisso."
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "interessante ponto de vista."
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "entendo a intenção."
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno você tá quieto hoje, tá tudo bem?"
+    }
+  ],
+  "finalStates": {
+    "mariana": {
+      "valence": 0.131,
+      "arousal": 0.442,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.023,
+      "pride": 0.047,
+      "shame": 0.15,
+      "affection": 0.606,
+      "suspicion": 0.064,
+      "socialAnxiety": 0.068,
+      "desireForStatus": 0.036,
+      "desireForIntimacy": 0.481
+    },
+    "caio": {
+      "valence": 0.435,
+      "arousal": 0.511,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.04
+    }
+  },
+  "channelsCreated": [
+    "mariana@p0"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.122,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.1042,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0152,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.0233,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": false
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0.3485,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": false
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "mariana created 1 private channel(s)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 3,
+    "voice_match": 2,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 4,
+    "no_ai_leak": 5
+  }
+}

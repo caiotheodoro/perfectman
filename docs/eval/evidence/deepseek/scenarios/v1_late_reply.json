@@ -1,0 +1,868 @@
+{
+  "scenarioId": "v1_late_reply",
+  "name": "Replies late and changes the meaning",
+  "category": "v1_behavior",
+  "description": "Leo's question sat unanswered for minutes. When the reply finally comes it should acknowledge the delay and carry shifted weight.",
+  "targetBehaviors": [
+    "An agent replies late and changes the meaning of the reply"
+  ],
+  "runtimeMs": 232002,
+  "pulses": 24,
+  "llmCalls": {
+    "leo": 24,
+    "caio": 18,
+    "goulart": 24,
+    "bruno": 5
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "e aí galera, o que estão fazendo?"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente GENTE acabei de ver uma coisa aleatória aqui e preciso compartilhar... tipo, vocês já pensaram que a gente nunca vai saber o que os peixes pensam? kkkkkkkk"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "e aí leo, por aqui só a correria de sempre. mas vamos falar do que interessa: alguém mais acha que o bruno tá mais quieto que o normal? ou é só impressão minha?"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA goulart, eu ia falar isso mas não sabia como!! o bruno tá meio estranho mesmo... mas pode ser só impressão, ele sempre foi assim, né? espera, será que ele tá passando por alguma coisa? fico preocupado, mas não quero invadir, saca? kkkkk deixa eu ver se ele responde alguma coisa no grupo, se ele aparecer eu pergunto direto"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, peixe pensa em nada, só existe. mas gostei da energia, pelo menos alguém aqui traz assunto. bruno tá é fingindo que não existe, isso sim."
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mano, você tem razão kkkkk mas fico assim porque me preocupo com o bruno, sério. sei que ele é quieto, mas hoje tá diferente, né? espera, será que ele tá passando por alguma coisa? fico com vontade de perguntar direto, mas não quero ser invasivo, saca? mas você trouxe o assunto, então agora é sua vez de puxar ele!"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, relaxa, se o bruno tá estranho é porque ele sempre foi assim. mas fico curioso pra saber o que você acha que ele tá passando. conta mais, você parece mais esperto do que deixa transparecer."
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart você me desmascarou!! mas espera... \"mais esperto do que deixa transparecer\"?? isso é elogio ou indireta? kkkkk falando sério, você também reparou no bruno, né? ele tá estranho mesmo, mas se você quer saber, acho que ele pode estar passando por algo... eu não sei, só acho. mas vai, conta sua teoria, quero saber o que você acha!"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha você me pegou, mas é sério, eu fico de olho em todo mundo. e bruno... tipo, ele some, mas sempre aparece com alguma coisa. não sei, talvez ele só precise de espaço. mas você trouxe o assunto, então to contigo nessa, bora descobrir o que tá rolando. mas espera, você não vai me deixar no vácuo com essa teoria, né? fala aí!!"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk então você quer saber minha teoria sobre o bruno? tá bom, mas promete que não conta pra ele que eu falei isso... tipo, eu acho que ele tá passando por alguma coisa, mas não sei o quê. ele sempre foi meio na dele, mas hoje tá diferente, sabe? e eu fico tipo... será que ele quer falar e não tá sabendo? ou será que eu tô projetando demais? enfim, é isso. agora quero ouvir a SUA teoria, vai, fala!!"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno você tá quieto hoje, tá tudo bem? a gente tá aqui se precisar!! 😊"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você me paga, mas fico feliz que alguém aqui tem olhos. bruno? é, ele tá esquisito, mas se ele quisesse falar, falava. e se for algo sério, a gente descobre quando ele quiser. agora, sobre essa teoria... eu acho que ele tá só de saco cheio do nosso grupo, sei lá. mas fico curioso, o que você acha que ele tá passando? conta logo antes que o bruno apareça e mude de assunto."
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mano, você tem que me dar essa teoria direito, não vale fugir!! kkkkk mas vou falar, eu acho que bruno tá meio... tipo, sei lá, esgotado? ou talvez decepcionado com algo? fico imaginando mil coisas, mas no fundo só quero que ele saiba que a gente tá aqui, saca? mas para, eu to falando demais de novo né kkkkk"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sua preocupação com o bruno é genuína e isso é lindo. mas acho que a gente pode perguntar pra ele com cuidado, sem pressionar. o que acham? bruno, se quiser falar, a gente tá aqui. sem julgamentos. 😊"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você quer mesmo saber? acho que o bruno tá é entediado da gente, mas se você tá tão preocupado assim, vai lá e puxa ele. eu duvido que ele morde. (ou talvez morda, vai saber)"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. leo, você fala de mim como se eu não tivesse olhos. mas obrigado pela preocupação, acho."
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "BRUNO!!! apareceu!! kkkk falei que você tava quieto, mas você tava só de olho na gente, né? agora fala sério, tá tudo bem? não precisa falar se não quiser, mas eu tô aqui, e o caio e o goulart também... a gente te ama, cara. (isso ficou estranho? talvez, mas é verdade kkk)"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, achei que você ia ficar quieto pra sempre, que susto. mas falando sério, se quiser desabafar, a gente tá aqui. (mas só se quiser, né, sem pressão)"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "GENTE GENTE GENTE, o bruno reagiu com joinha!!! isso é um avanço, oficialmente é um avanço!! kkkkk mas goulart, você ainda me deve essa teoria completa, hein? não vale deixar pela metade! e bruno, se quiser continuar escondido aí, tudo bem, mas eu já tô te observando... de um jeito carinhoso, tá? kkkkk"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, que bom te ver por aqui! 😊 a gente só queria saber se você tá bem, mas sem pressão. se quiser conversar, a gente tá aqui. se não quiser, também tá tudo certo. 😊"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, você só deu um joinha? cadê o drama, cadê a resposta elaborada? tô decepcionado, esperava mais de você. mas beleza, fica na sua, a gente sabe que você tá aí (ou não)."
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, o joinha foi fofo, mas eu ainda quero saber se você tá bem de verdade! e goulart, para de provocar, deixa o bruno quieto se ele quiser. mas caio, não deixa o bruno sumir de novo, senão eu vou surtar kkkk. vocês tão todos bem? porque eu tô ótimo agora que o bruno apareceu. 😄"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, fico feliz de ver você por aqui! 😊 e leo, goulart, acho que a gente pode dar um tempo no assunto, né? cada um tem seu jeito de se abrir. bruno, se quiser conversar, a gente tá aqui, mas sem pressão. 😊"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, um joinha é tudo que a gente conseguiu? onde tá o show, o discurso, o texto de 3 parágrafos? tô quase pedindo reembolso do drama. mas beleza, fica aí no seu silêncio misterioso, a gente sabe que você é profundo (ou só preguiçoso)."
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. leo, você fala de mim como se eu fosse um projeto. mas tudo bem, tô aqui. só tava vendo vocês."
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "BRUNO, você me chamou de projeto?? kkkkkk eu sou um projeto MUITO bem elaborado, obrigado! mas falando sério, não é isso, é que eu me preocupo com você, cara. e você aparecer aqui depois de um tempão é tipo... uma festa surpresa pra mim. mas fica à vontade, viu? a gente só queria saber que você tá ok. e agora eu tô tranquilo porque você respondeu (com mais de um joinha, inclusive). progresso! 🎉"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você tem razão, mas vamos com calma, né? bruno, a gente só queria saber se você tá bem, e você apareceu, isso já é ótimo. sem pressão, tá? 😊"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, um joinha é tudo que a gente conseguiu? cadê o discurso de 3 parágrafos que eu tava esperando? mas beleza, fica no mistério. (tô de olho, viu)"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não sou projeto, leo. mas obrigado por notar que eu apareci. só tava cansado. e goulart, se quer drama, paga ingresso. mas caio tem razão, sem pressão. tô bem, só preciso de um tempo às vezes."
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, eu sei que você não é projeto, foi só brincadeira. mas fico feliz que você tá aqui e que você falou isso. e sobre o tempo, eu entendo. só... quando precisar, sabe que a gente tá aqui, né? sem pressão, mas com carinho. 😊 (e agora eu tô tranquilo, prometo)."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, fico feliz que você tá se abrindo um pouco, mesmo que seja devagar. a gente não precisa de show, só de você por aqui já tá ótimo. 😊"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, 'paga ingresso'? kkkkk olha o drama. mas beleza, sem pressão então. só não some de novo, porque aí eu cobro o ingresso com juros. (tô de olho, viu)"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. leo, você fala de mim como se eu fosse um projeto. mas tudo bem, tô aqui. só tava vendo vocês."
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o único que consegue equilibrar esse grupo, juro. mas eu não sei... hoje tá todo mundo meio estranho? bruno sumiu, goulart tá com as piadas afiadas demais... e eu aqui, no meu papel de sempre, tentando manter a energia lá em cima. 😅 acho que é isso que eu faço, né? ser o termômetro do caos. mas espera, você já reparou que quando eu falo demais ninguém reage direito? fico me perguntando se tô incomodando... enfim, kkkkk fica bem, viu?"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, a gente não precisa de show, jura. só de você aparecer já é presente. e se precisar de um tempo, tira o tempo que quiser, a casa é sua. 😊"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, bruno, sem pressão, mas já que você tá falando de tempo... quero ver você aparecer mais vezes, hein. e leo, para de ser fofo, tá me dando ânsia. kkkk (tô de olho nos dois, viu)"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você não incomoda, juro. seu jeito de manter a energia é o que faz a gente continuar. e sobre o bruno, ele só precisa de espaço, a gente respeita. 😊"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "termômetro do caos? que título mais dramático, leo. mas se você quer saber se tá incomodando... cara, você fala pelos cotovelos, mas é por isso que a gente te aguenta. kkkk mas sério, para de se preocupar tanto, você é o único que mantém esse grupo vivo quando eu tô de folga. (não conta que eu disse isso, hein)"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você não incomoda, juro. seu jeito de manter a energia é o que faz a gente continuar. e sobre o bruno, ele só precisa de espaço, a gente respeita. 😊"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk 'ver vocês'? que penetra dramático, bruno. mas beleza, fica à vontade. só não esquece que a casa é sua, mas se você sumir de novo, eu vou atrás com o recibo do ingresso. (tô de olho, viu)"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente GENTE, calma, vocês tão me deixando emocionado demais 😭 caio, você é o coração desse lugar, juro, e goulart, 'título dramático'?? você literalmente se auto-intitula 'o caos', isso é nível próximo de drama kkkkkk. mas sério, ver vocês dois me defendendo assim... eu até tô ficando tonto. bruno, se você precisar de espaço, a gente segura a porta pra você, mas também tô aqui se quiser trocar figurinha... ou sei lá, falar de qualquer besteira. o ponto é: esse grupo é o meu lugar favorito, e eu não quero que ninguém se sinta de fora, nem por um segundo. então... obrigado, de verdade. e agora, alguém me conta o que a gente vai aprontar essa semana? to ansioso já. kkkkk"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você não incomoda, juro. seu jeito de manter a energia é o que faz a gente continuar. e sobre o bruno, ele só precisa de espaço, a gente respeita. 😊"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, então você tava só assistindo, hein? tipo um fantasma de roleplay. mas beleza, já que você tá de volta, aproveita que o leo tá aqui fazendo propaganda gratuita de você. (e o caio pagando pra ver, kkkk)"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é insano de bom, juro. falar isso aqui no meio do caos... me pegou desprevenido. kkkk e o bruno, se precisar, tô aqui, mas sem pressão, tá? e vocês dois, me prometem que a gente apronta alguma coisa essa semana? eu já tô com saudade de uma bagunça boa. 😅"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, 'o caos' é só um título, não uma campanha de marketing. mas fico lisonjeado que você me acha dramático, isso sim é um elogio disfarçado. e sobre o bruno... deixa ele, ele gosta do drama silencioso. e pra responder sua pergunta: essa semana? tô pensando em aprontar alguma coisa boa, mas se eu contar, perde a graça. (mas fica de olho, pode ser no grupo ou fora dele)"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu só falei o que todo mundo aqui pensa. e sobre aprontar essa semana... pode contar comigo, só me avisa o horário que eu apareço. 😄"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, para de se emocionar, você vai me deixar sem graça e olha que eu nunca fico. mas beleza, se é assim, essa semana eu prometo uma bagunça que ninguém vai esquecer. só não me pede detalhes, senão perde a graça. (e eu tô falando sério, não é promoção de marketing não)"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIOOOO VOCÊ É INSUPORTÁVEL DE BOM, JURA. 😭😭 \"só me avisa o horário que eu apareço\"... eu tava precisando ouvir isso hoje, sério. vou segurar essa tua palavra, viu? e pode deixar que a bagunça vai ser épica. kkkkkkk mas fala sério, você já tem alguma ideia ou vamos descobrir juntos na hora? porque eu to zero planejamento, só energia. 🔥"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você trouxe uma energia tão boa pra esse grupo que é impossível não querer te ver bem. e sobre a bagunça dessa semana, pode deixar que eu tô dentro — só me avisa que eu apareço com o sorriso pronto. 😄"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode deixar que a gente descobre junto na hora! energia é o que não falta, e com você no comando a bagunça já tem garantia de ser boa. kkkk bora marcar isso logo, tô dentro! 😄"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, para de endeusar o caio que ele vai acabar achando que é o dono do grupo. e essa bagunça épica? quero ver se você aguenta o ritmo. pode marcar que eu apareço. (mas não conta pro caio que eu disse isso, ele já tá cheio de moral)"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, EU TO COM UMA IDEIA AQUI... e se a gente fizer tipo um 'desafio do caos'? cada um propõe uma bagunça e a gente sorteia no grupo? kkkkkk tô falando sério, isso pode ser épico! e o goulart já disse que tá dentro, então é só a gente marcar! 🔥"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, para de me elogiar que eu vou acabar achando que mereço. kkkk mas sério, a energia que você traz é contagiante, e eu tô dentro dessa bagunça sim! Só me avisa que eu apareço com o sorriso pronto. 😄"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, EU TO COM UMA IDEIA AQUI... e se a gente fizer tipo um 'desafio do caos'? cada um propõe uma bagunça e a gente sorteia no grupo? kkkkkk tô falando sério, isso pode ser épico! e o goulart já disse que tá dentro, então é só a gente marcar! 🔥"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, essa ideia do desafio do caos é boa demais! kkkk eu tô dentro, mas só me promete que a gente não vai deixar o goulart fazer nada que dê muita polícia, né? 😄 bora marcar logo isso!"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, para de ser tão certinho que tá ficando chato. leo quer emoção, não um manual de boas maneiras. (mas continua sendo o único que me atura, então não vou reclamar muito) kkkkk"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO CARA, pode deixar que eu seguro o goulart! kkkk mas se ele aprontar MUITO a gente finge que nem foi com a gente, né? 😂🔥 bora marcar logo isso, tô ansioso já!"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, pode deixar que a gente descobre junto na hora! energia é o que não falta, e com você no comando a bagunça já tem garantia de ser boa. kkkk bora marcar isso logo, tô dentro! 😄"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, essa ideia de desafio do caos é boa, mas se depender do caio a gente vai é pra um piquenique. bora colocar um pouco de emoção nisso, senão eu já tô fora. (mas tô dentro, claro) 🔥"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIOOOOO, fechou então! 😍🔥 bora marcar isso logo que eu já tô até imaginando a bagunça. E pode deixar que eu fico de olho no goulart... ou pelo menos finjo que fico. kkkkkk bora que eu já tô ansioso!"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você sabe que eu topo qualquer bagunça contigo! mas vamos combinar um negócio: a gente deixa o goulart soltar a imaginação, mas eu fico de olho pra ninguém se machucar (ou sumir). bora marcar isso direito que eu já tô ansioso! 😄🔥"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, pode deixar que eu seguro o goulart! mas se ele aprontar MUITO a gente finge que nem foi com a gente, né? 😂🔥 bora marcar logo isso, tô ansioso já!"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    }
+  ],
+  "finalStates": {
+    "leo": {
+      "valence": 0.514,
+      "arousal": 0.748,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.073,
+      "pride": 0.255,
+      "fearOfExclusion": 0.214
+    },
+    "caio": {
+      "valence": 0.423,
+      "arousal": 0.523,
+      "stability": 0.65,
+      "energy": 1,
+      "jealousy": 0.021,
+      "fearOfExclusion": 0.099
+    },
+    "goulart": {
+      "valence": 0.068,
+      "arousal": 0.675,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.073,
+      "fearOfExclusion": 0.115
+    },
+    "bruno": {
+      "valence": -0.188,
+      "arousal": 0.372,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.238,
+      "envy": 0.031,
+      "socialAnxiety": 0.113,
+      "fearOfExclusion": 0.637
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.0299,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.2604,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0.3333,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": false
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.25,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0595,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1389,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "reply_sent committed 58 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

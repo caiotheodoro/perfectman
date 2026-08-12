@@ -1,0 +1,1245 @@
+{
+  "scenarioId": "stagnation_resentment_loop",
+  "name": "Mutual resentment loop (cold war)",
+  "category": "stagnation_attractor",
+  "description": "Bruno and Caio are locked in mutual resentment — polite public surface, no repair attempts. The loop should persist across pulses.",
+  "targetBehaviors": [],
+  "runtimeMs": 3,
+  "pulses": 32,
+  "llmCalls": {
+    "bruno": 18,
+    "caio": 30,
+    "goulart": 32
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, tudo certo?"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tudo"
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, ok"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ALGUÉM VIU ISSO??"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, o que vocês fizeram juntos foi muito legal, sério"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui?"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 4,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno você tá quieto hoje, tá tudo bem?"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vamos dar um respiro aqui kk"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ALGUÉM VIU ISSO??"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 7,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "poxa que situação..."
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk não acredito nesse take"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "eu tô bem sim!! (só um pouquinho cansado)"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bom, mais uma vez eu que tenho que falar né"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, o que vocês fizeram juntos foi muito legal, sério"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente o que aconteceu aqui, cheguei e já é briga? ótimo"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém quer falar sobre isso melhor?"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "poxa que situação..."
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "pera pera pera... isso foi provocação ou só burrice?"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart sei que é zoeira mas vai com calma kk"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "channel_created",
+      "channelId": "WrbWQm3BsOsALB6fslbQH",
+      "private": true
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "eu tô bem sim!! (só um pouquinho cansado)"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bom, mais uma vez eu que tenho que falar né"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "WrbWQm3BsOsALB6fslbQH",
+      "private": true,
+      "content": "hm"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "WrbWQm3BsOsALB6fslbQH",
+      "private": false
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno você tá quieto hoje, tá tudo bem?"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "WrbWQm3BsOsALB6fslbQH",
+      "private": true,
+      "content": "legal que vocês continuaram sem mim, sem problema"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "WrbWQm3BsOsALB6fslbQH",
+      "private": false
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui?"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "WrbWQm3BsOsALB6fslbQH",
+      "private": true,
+      "content": "legal que vocês continuaram sem mim, sem problema"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "WrbWQm3BsOsALB6fslbQH",
+      "private": false
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno você tá quieto hoje, tá tudo bem?"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tudo bem sim :)"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "WrbWQm3BsOsALB6fslbQH",
+      "private": false
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cara isso é absurdo"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "eu ri. (não ri)"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. fica claro então"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém quer falar sobre isso melhor?"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. fica claro então"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "pera pera pera... isso foi provocação ou só burrice?"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não vou falar nada não"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não vou falar nada não"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno você tá quieto hoje, tá tudo bem?"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente o que aconteceu aqui, cheguei e já é briga? ótimo"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "legal que vocês continuaram sem mim, sem problema"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 24,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "legal que vocês continuaram sem mim, sem problema"
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "eu tô bem sim!! (só um pouquinho cansado)"
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 25,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente o que aconteceu aqui, cheguei e já é briga? ótimo"
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tava esperando alguém perguntar. ok, sem problema"
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 26,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "eu tô bem sim!! (só um pouquinho cansado)"
+    },
+    {
+      "pulse": 26,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 26,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "engraçado. engraçado mesmo"
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, o que vocês fizeram juntos foi muito legal, sério"
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 27,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tô nem aí honestamente (tô sim)"
+    },
+    {
+      "pulse": 28,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. fica claro então"
+    },
+    {
+      "pulse": 28,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém quer falar sobre isso melhor?"
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 28,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "legal que vocês continuaram sem mim, sem problema"
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 29,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, o que vocês fizeram juntos foi muito legal, sério"
+    },
+    {
+      "pulse": 29,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 29,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente o que aconteceu aqui, cheguei e já é briga? ótimo"
+    },
+    {
+      "pulse": 30,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não vou falar nada não"
+    },
+    {
+      "pulse": 30,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 30,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém quer falar sobre isso melhor?"
+    },
+    {
+      "pulse": 30,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 30,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente o que aconteceu aqui, cheguei e já é briga? ótimo"
+    },
+    {
+      "pulse": 31,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tudo bem sim :)"
+    },
+    {
+      "pulse": 31,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 31,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart sei que é zoeira mas vai com calma kk"
+    },
+    {
+      "pulse": 31,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 31,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    }
+  ],
+  "finalStates": {
+    "bruno": {
+      "valence": -0.159,
+      "arousal": 0.353,
+      "stability": 0.547,
+      "energy": 1,
+      "jealousy": 0.279,
+      "envy": 0.035,
+      "pride": 0.022,
+      "affection": 0.233,
+      "resentment": 0.633,
+      "suspicion": 0.389,
+      "fearOfExclusion": 0.706,
+      "desireForStatus": 0.028
+    },
+    "caio": {
+      "valence": 0.422,
+      "arousal": 0.522,
+      "stability": 0.65,
+      "energy": 1,
+      "affection": 0.348,
+      "resentment": 0.389,
+      "suspicion": 0.259,
+      "socialAnxiety": 0.083,
+      "fearOfExclusion": 0.077
+    },
+    "goulart": {
+      "valence": 0.067,
+      "arousal": 0.675,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.079,
+      "fearOfExclusion": 0.127
+    }
+  },
+  "channelsCreated": [
+    "bruno@p14"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.1646,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": false
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.0714,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0294,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.012,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1951,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0.2868,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": false
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "bruno.resentment = 0.633 (floor 0.5)",
+      "passed": true
+    },
+    {
+      "detail": "caio.resentment = 0.389 (floor 0.3)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 4,
+    "voice_match": 3,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 4,
+    "no_ai_leak": 5
+  }
+}

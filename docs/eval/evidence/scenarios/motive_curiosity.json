@@ -1,0 +1,518 @@
+{
+  "scenarioId": "motive_curiosity",
+  "name": "Curiosity",
+  "category": "motive_archetype",
+  "description": "Mariana is curious about Bruno's quiet life and opens a private thread.",
+  "targetBehaviors": [],
+  "runtimeMs": 1,
+  "pulses": 24,
+  "llmCalls": {
+    "mariana": 24,
+    "bruno": 17
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não sei, às vezes eu só fico em casa"
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "talvez."
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "memory_written",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": false
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "já vi isso antes."
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "fiquei sabendo disso antes de vocês."
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "fiquei sabendo disso antes de vocês."
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "talvez."
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "entendo a intenção."
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "fear_of_being_the_last_pick"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "já vi isso antes."
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "envy_of_caio_easy_belonging"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "fiquei sabendo disso antes de vocês."
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "curioso. curioso mesmo."
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "fear_of_being_the_last_pick"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "06WPDPCqJFepwKJwz6I9j",
+      "private": true,
+      "content": "entendo a intenção."
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "want_to_be_noticed_without_asking"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o que você gostaria que eu dissesse?"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "want_to_be_noticed_without_asking"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vou pensar nisso."
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "want_to_be_noticed_without_asking"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "entendo a intenção."
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "envy_of_caio_easy_belonging"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso. curioso mesmo."
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "fear_of_being_the_last_pick"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não me parece certo."
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "fear_of_being_the_last_pick"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "fiquei sabendo disso antes de vocês."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "need_to_leave_quietly_to_make_them_wonder"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "talvez."
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "need_to_leave_quietly_to_make_them_wonder"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "interessante ponto de vista."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "fear_of_being_the_last_pick"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o que você gostaria que eu dissesse?"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "hurt_hidden_as_sarcasm"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso. curioso mesmo."
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "envy_of_caio_easy_belonging"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vou pensar nisso."
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "envy_of_caio_easy_belonging"
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "interessante ponto de vista."
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "fear_of_being_the_last_pick"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "entendo a intenção."
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "fear_of_being_the_last_pick"
+    }
+  ],
+  "finalStates": {
+    "mariana": {
+      "valence": 0.184,
+      "arousal": 0.435,
+      "stability": 0.8,
+      "energy": 1,
+      "pride": 0.174,
+      "affection": 0.227,
+      "suspicion": 0.071,
+      "desireForStatus": 0.036,
+      "desireForIntimacy": 0.241
+    },
+    "bruno": {
+      "valence": -0.1,
+      "arousal": 0.3,
+      "stability": 0.55,
+      "energy": 1
+    }
+  },
+  "channelsCreated": [
+    "mariana@p0"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.4792,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.04,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": false
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0.0233,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "mariana created 1 private channel(s)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 2,
+    "voice_match": 1,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 4,
+    "no_ai_leak": 5
+  }
+}

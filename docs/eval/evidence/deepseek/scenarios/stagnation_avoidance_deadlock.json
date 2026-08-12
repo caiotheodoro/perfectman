@@ -1,0 +1,1102 @@
+{
+  "scenarioId": "stagnation_avoidance_deadlock",
+  "name": "Avoidance deadlock",
+  "category": "stagnation_attractor",
+  "description": "Everyone knows the tension but nobody addresses it — high socialAnxiety, low confrontation, everyone lurks or changes topic.",
+  "targetBehaviors": [],
+  "runtimeMs": 446710,
+  "pulses": 28,
+  "llmCalls": {
+    "bruno": 0,
+    "mariana": 0,
+    "goulart": 28,
+    "caio": 21
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "sobre ontem..."
+    },
+    {
+      "pulse": 1,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "que ontem? nada aconteceu ontem"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-social_anxiety_block"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá achando esse silêncio estranho ou eu sou o único lúcido aqui?"
+    },
+    {
+      "pulse": 1,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-social_anxiety_block"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, silêncio então. ótimo assunto, continuem."
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-social_anxiety_block"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá todo mundo dormindo ou só fingindo? pq eu tô aqui cheio de energia e ninguém pra pagar mico"
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-social_anxiety_block"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente, que silêncio... alguém me conta um segredo que eu prometo espalhar com estilo"
+    },
+    {
+      "pulse": 4,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-social_anxiety_block"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém aqui tá escondendo alguma coisa ou é só minha cara de louco? porque esse silêncio não é natural..."
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-social_anxiety_block"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cara, esse silêncio tá me deixando desconfiado... alguém vai ter que quebrar o gelo e eu já fiz minha parte, né? mas pode vir, tô pronto pra zoar o que aparecer."
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, esse silêncio é só a galera respirando, né? kk mas se tem segredo, eu quero saber também! me conta no privado que eu guardo com carinho 😄"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, caio, se eu te contar no privado o segredo deixa de ser segredo né? a graça é todo mundo ficar se perguntando... mas fico lisonjeado que você quer guardar com carinho, juro que é recíproco (não é)"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá achando que o caio tá quieto demais? isso é suspeito, ele nunca fica sem falar por muito tempo... será que tá tramando algo? kkkk"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, goulart, você sabe que eu sou curioso demais pra deixar passar! mas se for segredo de verdade, pode me contar no privado que eu juro que guardo... ou pelo menos até a próxima zoeira 😄"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, caio, você é o único que topa brincar nesse grupo morto. mas segredo contado no privado perde a graça, né? a graça é todo mundo aqui ficar se coçando de curiosidade... inclusive você, seu curioso 😏"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você é impossível! mas tá bom, fico com a curiosidade guardada... por enquanto. 😄"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah caio, você é o único que topa brincar nesse grupo morto. mas segredo contado no privado perde a graça, né? a graça é todo mundo aqui ficar se coçando de curiosidade... inclusive você, seu curioso 😏"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você é impossível! mas tá bom, fico com a curiosidade guardada... por enquanto. 😄"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio você é bom demais, juro que se eu tivesse um segredo você seria o primeiro a saber (só pra te ver se contorcer de curiosidade). mas fica tranquilo, o mistério continua... por enquanto. 😏"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você sabe que eu não resisto a uma boa zoeira. mas fico na expectativa, viu? só não me deixa de fora quando for contar 😄"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o único que aguenta meu tédio. mas confesso que até eu queria saber o que esse silêncio esconde. fico curioso também (mentira, tô é entediado)."
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você é bom demais! mas fico na expectativa, viu? só me chama quando for contar, que eu prometo guardar com carinho 😄"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você sempre me tira do sério! mas pode deixar, o mistério me deixa curioso e eu adoro isso. 😄"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você sabe que eu adoro uma boa zoeira! mas fico na expectativa, viu? só não me deixa de fora quando for contar 😄"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você é o mestre da zoeira! mas confesso que esse mistério me deixa curioso demais. quando for contar, me chama que eu prometo guardar segredo (ou pelo menos tentar 😄)."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o único que aguenta meu tédio. mas confesso que até eu queria saber o que esse silêncio esconde. fico curioso também (mentira, tô é entediado)."
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você é o mestre da zoeira! mas confesso que esse mistério me deixa curioso demais. quando for contar, me chama que eu prometo guardar segredo (ou pelo menos tentar 😄)."
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah caio, você e esse otimismo todo... guardar segredo? duvido. mas fico curioso pra ver se você aguenta o mistério. deixa que eu decido quando contar (talvez nunca)."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você é o mestre da zoeira! mas confesso que esse mistério me deixa curioso demais. quando for contar, me chama que eu prometo guardar segredo (ou pelo menos tentar 😄)."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cuidado com o que promete, caio. segredo é igual fogos de artifício: você segura até não aguentar e depois solta tudo. mas fico lisonjeado que você confia no meu caos (tô sim, mas não conta)."
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah goulart, você sabe que eu não aguento mistério! mas fico na expectativa, viu? só não me deixa de fora quando for contar 😄"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é bom demais pra esse grupo. mas cuidado: curiosidade demais às vezes encontra o que não devia. (mas eu gosto que você pergunta, viu?)"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hahaha goulart, você é demais! mas fico tranquilo, o que você contar eu guardo com carinho (e um pouco de curiosidade, confesso). só me chama quando quiser, tô aqui 😄"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá achando esse silêncio suspeito ou só eu? porque ninguém fala nada há horas e isso me dá mais nervoso do que briga boa. bora gente, quem vai me dar um motivo pra continuar aqui? (não que eu precise, mas tô entediado)"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cara, esse silêncio tá me deixando paranóico. alguém precisa falar alguma coisa ou eu vou começar a fazer barulho sozinho. bora, quem tem coragem de puxar um assunto polêmico? (ou eu mesmo puxo e aí ninguém reclama depois)"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 24,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 24,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que você gosta de agitar as coisas, mas o silêncio também é bom pra gente respirar, né? kk mas se você quer um assunto, eu topo — o que você tem em mente? 😄"
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 25,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 25,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah caio, seu anjo de paz... sabe que eu não consigo ficar parado né? mas já que você perguntou, tava pensando em puxar aquele assunto que ninguém quer tocar: por que todo mundo aqui desaparece quando eu fico quieto por cinco minutos? kkkk, fala sério, alguém sente minha falta ou vocês só fingem que eu existo quando dá briga?"
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que você gosta de agitar as coisas, mas o silêncio também é bom pra gente respirar, né? kk mas se você quer um assunto, eu topo — o que você tem em mente? 😄"
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 26,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 26,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, caio, o anjo da paciência... mas respirar é superestimado, né? kkkk. mas já que você topou, que tal a gente falar daquela vez que o bruno ficou mudo por três dias e ninguém percebeu? ou melhor: por que todo mundo aqui me ignora quando eu tô quieto? fala sério, alguém sente falta ou só me aguentam quando eu tô dando palco? 😏"
+    },
+    {
+      "pulse": 26,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk goulart, você sabe que a gente sempre sente sua falta! mas eu juro que o silêncio aqui é só todo mundo processando as coisas, não é abandono não. e se você quer puxar um assunto polêmico, pode contar comigo pra segurar a onda depois 😅"
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 27,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 27,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk caio, você é um querido tentando domar o caos. mas olha, esse silêncio tá me dando coceira. vou jogar um assunto quente e ver quem morde: alguém aqui acha que o bruno só fala quando quer lacrar? pera, já falei demais? (não falei)"
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkk goulart, você sabe que a gente sempre sente sua falta! mas o silêncio aqui é só todo mundo processando as coisas, não é abandono não. e se você quer puxar um assunto polêmico, pode contar comigo pra segurar a onda depois 😅"
+    }
+  ],
+  "finalStates": {
+    "bruno": {
+      "valence": -0.151,
+      "arousal": 0.345,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.123,
+      "envy": 0.038,
+      "resentment": 0.213,
+      "socialAnxiety": 0.159,
+      "fearOfExclusion": 0.62
+    },
+    "mariana": {
+      "valence": 0.109,
+      "arousal": 0.457,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.032,
+      "suspicion": 0.124,
+      "contempt": 0.191,
+      "fearOfExclusion": 0.028
+    },
+    "goulart": {
+      "valence": 0.087,
+      "arousal": 0.664,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.03,
+      "pride": 0.076,
+      "resentment": 0.17,
+      "fearOfExclusion": 0.05
+    },
+    "caio": {
+      "valence": 0.439,
+      "arousal": 0.51,
+      "stability": 0.65,
+      "energy": 1,
+      "socialAnxiety": 0.141,
+      "fearOfExclusion": 0.028
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.1042,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.5536,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.4677,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0177,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.2157,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "no_op_recorded committed 62 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

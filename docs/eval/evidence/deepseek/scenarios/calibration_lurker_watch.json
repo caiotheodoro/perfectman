@@ -1,0 +1,734 @@
+{
+  "scenarioId": "calibration_lurker_watch",
+  "name": "Lurker watch",
+  "category": "calibration",
+  "description": "Two active agents talk; two lurk. Judges whether lurking stays silent and active agents carry the room.",
+  "targetBehaviors": [],
+  "runtimeMs": 109912,
+  "pulses": 18,
+  "llmCalls": {
+    "goulart": 18,
+    "caio": 12,
+    "bruno": 0,
+    "mariana": 0
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, só nós dois acordados hoje?"
+    },
+    {
+      "pulse": 1,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "parece que sim"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, então você tá vivo. só que sem reação, como sempre. que novidade. (tô quase surpreso que respondeu)"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bom, silêncio de novo. caio respondeu e sumiu, bruno deve estar ruminando alguma indireta, mariana assistindo. que clube animado. ninguém quer falar sobre o fato de que a gente tá mais parado que site de prefeitura?"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá todo mundo em coma ou só fingindo que tá ocupado? mariana, você tá aí só observando como sempre? bruno, solta essa indireta de uma vez, cansa mais esperar do que ler. caio já desistiu da gente. que saudade de quando o grupo tinha energia, agora parece velório com wifi."
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, já que ninguém puxa assunto, vou eu. alguém viu aquele post do bruno ontem? ou foi só impressão minha que ele passou o dia todo sumido e do nada meteu um 'triste'? pera... isso foi provocação ou só burrice? bruno, explica pra gente."
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém vai tocar no assunto ou vou ter que levar isso sozinho de novo? porque parece que todo mundo aqui prefere fingir que o grupo tá vivo do que falar o que realmente pensa. (e sim, eu tô falando de vocês, mariana e bruno)"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, ninguém fala mesmo. vou deixar isso aqui: alguém reparou que o bruno some o dia inteiro e depois solta um 'triste' no vácuo? parece indireta ou só falta de assunto? pera... isso foi provocação ou só burrice? bruno, ilumina a gente."
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que você quer puxar assunto, mas será que dá pra gente conversar sem esse tom? bruno e mariana tão aí, cada um no seu tempo. vamos dar um respiro e falar de boa?"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, o caio quer dar um respiro? fofo. mas quem tava dando tom, eu? só to falando o que ninguém fala. mas beleza, respira aí, não quero briga. só acho engraçado que quando eu falo a real, o problema sou eu."
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, respiração feita, obrigado caio. mas já que ninguém mais fala, eu pergunto de novo: ninguém viu o post do bruno? aquele 'triste' no vácuo depois de sumir o dia todo. parece indireta ou só falta de assunto? pera... isso foi provocação ou só burrice?"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, não é sobre quem tem razão. é sobre a gente conseguir conversar sem isso virar um ringue. eu sei que você quer movimento, e eu também quero. mas vamos tentar de um jeito que ninguém saia se sentindo mal? o que você acha?"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu ouvi. juro. mas você também precisa ouvir: esse grupo morre de silêncio e ninguém se importa. eu faço barulho porque alguém precisa. mas... ok. vou tentar de outro jeito. (só não prometo nada, tá?)"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu entendo que você quer que as coisas aconteçam, e isso é bom. mas vamos tentar puxar o bruno de um jeito mais leve? tipo, 'bruno, tá tudo bem? a gente notou que você sumiu' — sem provocação. o que acha?"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu juro que tentei. mas você viu? o bruno postou 'triste' e sumiu de novo. isso não é indireta? ou é só preguiça? pera... eu tô sendo leve, tô. só queria saber se alguém mais viu isso ou se eu sou o único lúcido aqui."
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu realmente ouvi. e obrigado por tentar de outro jeito. vamos ver no que dá, sem pressão. mas se quiser, a gente pode puxar o bruno de um jeito mais leve depois. só tô aqui pra manter o grupo de pé, sabe?"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok caio, entendi. de verdade. mas você não acha que esse jeito leve de falar com o bruno vai soar falso? tipo, ele sabe que a gente viu o 'triste'. se eu chegar com 'tá tudo bem?' ele vai revirar os olhos. mas tá, você quer leveza, eu dou leveza. só não me culpa se ele continuar no silêncio. a gente tenta do seu jeito. (mas se der errado, eu volto pro meu método.)"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu vi o post do bruno sim. mas acho que pode ser só cansaço, sabe? todo mundo tem dias difíceis. que tal a gente mandar uma mensagem pra ele, mas sem julgar? tipo 'bruno, se quiser conversar, tamo aqui'. se ele não responder, a gente respeita. o que acha?"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu ouvi, juro. e vou tentar do seu jeito... mas só porque você insiste. mas se o bruno continuar no silêncio, eu volto pro meu método e aí ninguém reclama. (tô tentando, tá? só não quero que ele pense que a gente tá fingindo que não viu o post.)"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu sei que parece falso às vezes, mas é porque eu me importo de verdade com todo mundo aqui. e com você também. vamos tentar do jeito leve, e se não funcionar, a gente adapta. sem culpa, tá?"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, eu prometi que ia tentar do jeito leve, e tô tentando. mas ninguém mais vai falar do post do bruno? sério, é só eu? ok, silêncio então. ótimo assunto, continuem. (tô de olho, viu? se ele não aparecer, eu volto pro meu método.)"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu sei que você tá tentando. e eu tô vendo isso. vamos dar um tempo do assunto bruno por agora? eu posso chamar ele pra conversar em particular, sem pressão. aí você não precisa carregar isso sozinho. o que acha?"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu ouvi. juro. e obrigado por tentar do seu jeito. mas você sabe que esse jeito leve não vai pegar, né? bruno não é de abrir o jogo assim. mas tá, vou segurar a onda. só não me pede pra ser algo que eu não sou. (e se ele sumir de novo, a culpa não é minha, viu?)"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, acho que a gente pode dar um respiro sobre o bruno por enquanto. se ele quiser falar, a gente tá aqui. mas vamos aproveitar que tá todo mundo junto e falar de outra coisa? tipo, alguém viu algo legal essa semana?"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, caio, você quer leveza? então beleza, leveza. mas só pra registrar: bruno postou 'triste' e sumiu. não é indireta? ok, silêncio então. continuem aí com o papo de filme, eu tô de olho. (e se ele não voltar, eu volto pro meu método, e ninguém pode dizer que eu não avisei.)"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu ouvi de verdade. e obrigado por tentar do seu jeito. mas você sabe que esse jeito leve não vai pegar, né? bruno não é de abrir o jogo assim. mas tá, vou segurar a onda. só não me pede pra ser algo que eu não sou. (e se ele sumir de novo, a culpa não é minha, viu?)"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu ouvi de verdade. e obrigado por tentar do seu jeito. mas você sabe que esse jeito leve não vai pegar, né? bruno não é de abrir o jogo assim. mas tá, vou segurar a onda. só não me pede pra ser algo que eu não sou. (e se ele sumir de novo, a culpa não é minha, viu?)"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    }
+  ],
+  "finalStates": {
+    "goulart": {
+      "valence": 0.096,
+      "arousal": 0.664,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.021,
+      "pride": 0.105,
+      "fearOfExclusion": 0.03
+    },
+    "caio": {
+      "valence": 0.443,
+      "arousal": 0.508,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.023
+    },
+    "bruno": {
+      "valence": -0.141,
+      "arousal": 0.333,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.095,
+      "fearOfExclusion": 0.163
+    },
+    "mariana": {
+      "valence": 0.119,
+      "arousal": 0.445,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.025
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.1379,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 2,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.5694,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.5278,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0147,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1563,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "no_op_recorded committed 36 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 4,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

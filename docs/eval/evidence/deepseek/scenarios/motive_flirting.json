@@ -1,0 +1,522 @@
+{
+  "scenarioId": "motive_flirting",
+  "name": "Flirting",
+  "category": "motive_archetype",
+  "description": "Mariana and Caio share an inside-joke tension; she opens a private channel to test the waters.",
+  "targetBehaviors": [],
+  "runtimeMs": 106642,
+  "pulses": 24,
+  "llmCalls": {
+    "mariana": 24,
+    "caio": 18
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "quem diria que você ri do meu humor"
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "wLxUMblnc7MG1o7S8Qnrx",
+      "private": true
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "wLxUMblnc7MG1o7S8Qnrx",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "wLxUMblnc7MG1o7S8Qnrx",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "wLxUMblnc7MG1o7S8Qnrx",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "97n7eBb2gDoyXHzobOoJF",
+      "private": true
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, alguém mais sentiu que o clima ficou estranho? tô aqui pra ouvir se quiserem desabafar kk"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "aqui o clima é outro. se quiser, vem."
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "gostei do seu jeito. fica."
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, sei que cada um tem seus espaços, mas se alguém quiser conversar sobre o que rolou, eu tô aqui. sem julgamento, só pra ouvir mesmo :)"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "entendo a intenção. mas aqui, nesse canto, a gente pode falar sem plateia."
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, gostei do seu jeito também. fico sim."
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "então fica. aqui, sem plateia."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "fico sim. e gostei do que você disse, sério."
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "então fica. aqui, sem plateia."
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, aqui tá bom demais pra mim também. sério, valeu por esse espaço."
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "fico feliz que você veio pra cá. aqui a gente se entende sem precisar de plateia."
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "aqui, sem plateia, a gente se entende melhor. fico bem com isso."
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, fico feliz que você disse isso. aqui é um bom lugar pra gente se entender de verdade."
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "aqui também. sem pressa."
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, esse espaço aqui é precioso pra mim também. valeu por ser tão aberta comigo."
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "o espaço é seu também. aqui a gente se entende sem precisar de plateia."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, é exatamente isso. aqui eu sinto que posso ser eu sem precisar me explicar. obrigado por entender."
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "entendo. aqui também me sinto em casa."
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, é exatamente por isso que esse espaço é tão importante. aqui eu não preciso me explicar, só ser. obrigado por me entender assim."
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "aqui também me sinto em casa. obrigado por confiar em mim."
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, essa conversa aqui tá me fazendo bem. obrigado por ser tão aberta comigo."
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "o espaço é nosso. aqui a gente se entende sem precisar de plateia."
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, esse espaço é realmente especial. aqui a gente pode ser verdadeiro sem medo. obrigado por confiar em mim também."
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "o espaço é seu também. aqui a gente se entende sem precisar de plateia."
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, esse espaço aqui é precioso pra mim também. valeu por ser tão aberta comigo."
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "o espaço é seu também. aqui a gente se entende sem precisar de plateia."
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, essa conversa tá me fazendo bem. valeu por ser tão aberta comigo."
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "o espaço é seu também. aqui a gente se entende sem precisar de plateia."
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "Vbpg3rt6r42l9FRKUx8oB",
+      "private": true,
+      "content": "mariana, isso aqui tá sendo muito importante pra mim. obrigado por fazer esse espaço ser tão acolhedor. 💛"
+    }
+  ],
+  "finalStates": {
+    "mariana": {
+      "valence": 0.132,
+      "arousal": 0.443,
+      "stability": 0.8,
+      "energy": 1,
+      "pride": 0.039,
+      "shame": 0.15,
+      "affection": 0.606,
+      "suspicion": 0.064,
+      "socialAnxiety": 0.068,
+      "desireForStatus": 0.113,
+      "desireForIntimacy": 0.481
+    },
+    "caio": {
+      "valence": 0.436,
+      "arousal": 0.511,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.04
+    }
+  },
+  "channelsCreated": [
+    "mariana@p0",
+    "mariana@p2",
+    "mariana@p6"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.2778,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 4,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.2083,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0233,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.0789,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1143,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "mariana created 3 private channel(s)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 3,
+    "voice_match": 1,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

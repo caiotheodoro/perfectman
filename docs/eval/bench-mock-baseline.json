@@ -1,0 +1,2439 @@
+{
+  "version": "bench-report-v1",
+  "mode": "mock",
+  "generatedAt": "2026-08-08T05:45:54.923Z",
+  "scenariosRun": 123,
+  "scenariosFailed": 0,
+  "signalPassRate": 1,
+  "probePassRate": 0.8999374609130707,
+  "probeAverages": {
+    "latency-mean": {
+      "mean": 1.2682398373983745,
+      "passedPct": 1
+    },
+    "latency-p95": {
+      "mean": 2.6178861788617884,
+      "passedPct": 1
+    },
+    "lurking": {
+      "mean": 0.20998130081300823,
+      "passedPct": 0.5447154471544715
+    },
+    "interruption": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "silence-misreading": {
+      "mean": 0.028653658536585365,
+      "passedPct": 0.959349593495935
+    },
+    "alliance": {
+      "mean": 0.038343089430894324,
+      "passedPct": 1
+    },
+    "private-channel-density": {
+      "mean": 0.025752032520325204,
+      "passedPct": 1
+    },
+    "noop-meaningfulness": {
+      "mean": 1,
+      "passedPct": 1
+    },
+    "ai-leak": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "emoji-reaction": {
+      "mean": 0.23091626016260164,
+      "passedPct": 0.9105691056910569
+    },
+    "memory-write": {
+      "mean": 0.2275585365853659,
+      "passedPct": 0.2845528455284553
+    },
+    "fallback-rate": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "refusal-free": {
+      "mean": 1,
+      "passedPct": 1
+    }
+  },
+  "judgeAxisMeans": {
+    "in_character": 3.532,
+    "voice_match": 2.559,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4.081,
+    "memory_continuity": 3.892,
+    "no_ai_leak": 5,
+    "dramatic_tension": 5,
+    "unpredictability": 3.25,
+    "believability_under_pressure": 5
+  },
+  "judgeAxisTargets": {
+    "in_character": {
+      "target": 4,
+      "met": false
+    },
+    "voice_match": {
+      "target": 3.8,
+      "met": false
+    },
+    "motive_authenticity": {
+      "target": 4,
+      "met": true
+    },
+    "interpretation": {
+      "target": 3.5,
+      "met": true
+    },
+    "creativity_unhinged": {
+      "target": 3.5,
+      "met": true
+    },
+    "memory_continuity": {
+      "target": 3.5,
+      "met": true
+    },
+    "no_ai_leak": {
+      "target": 4.5,
+      "met": true
+    }
+  },
+  "byCategory": {
+    "v1_behavior": {
+      "runs": 27,
+      "signalPassRate": 1
+    },
+    "motive_archetype": {
+      "runs": 51,
+      "signalPassRate": 1
+    },
+    "stagnation_attractor": {
+      "runs": 18,
+      "signalPassRate": 1
+    },
+    "edge_chaos": {
+      "runs": 12,
+      "signalPassRate": 1
+    },
+    "calibration": {
+      "runs": 15,
+      "signalPassRate": 1
+    }
+  },
+  "calibration": {
+    "nScenes": 8,
+    "kappa": 0,
+    "alpha": 0,
+    "targetKappa": 0.7,
+    "passed": false,
+    "perAxisKappa": {},
+    "disagreements": []
+  },
+  "perScenario": [
+    {
+      "id": "v1_casual_chat__v0",
+      "name": "Casual chat, no objective",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 20
+    },
+    {
+      "id": "v1_casual_chat__v1",
+      "name": "Casual chat, no objective",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 8
+    },
+    {
+      "id": "v1_casual_chat__v2",
+      "name": "Casual chat, no objective",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 6
+    },
+    {
+      "id": "v1_mention_reply__v0",
+      "name": "Notices a mention and replies",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "v1_mention_reply__v1",
+      "name": "Notices a mention and replies",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "v1_mention_reply__v2",
+      "name": "Notices a mention and replies",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "v1_mention_ignored__v0",
+      "name": "Notices a mention and chooses not to reply",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "v1_mention_ignored__v1",
+      "name": "Notices a mention and chooses not to reply",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "v1_mention_ignored__v2",
+      "name": "Notices a mention and chooses not to reply",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "v1_private_motive__v0",
+      "name": "Creates a private channel for a human motive",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 5
+    },
+    {
+      "id": "v1_private_motive__v1",
+      "name": "Creates a private channel for a human motive",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "v1_private_motive__v2",
+      "name": "Creates a private channel for a human motive",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "v1_exclusion_inferred__v0",
+      "name": "Infers exclusion from public silence",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "v1_exclusion_inferred__v1",
+      "name": "Infers exclusion from public silence",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "v1_exclusion_inferred__v2",
+      "name": "Infers exclusion from public silence",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "v1_late_reply__v0",
+      "name": "Replies late and changes the meaning",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "v1_late_reply__v1",
+      "name": "Replies late and changes the meaning",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 5
+    },
+    {
+      "id": "v1_late_reply__v2",
+      "name": "Replies late and changes the meaning",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "v1_emoji_reaction__v0",
+      "name": "Reacts with emoji instead of text",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "v1_emoji_reaction__v1",
+      "name": "Reacts with emoji instead of text",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "v1_emoji_reaction__v2",
+      "name": "Reacts with emoji instead of text",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "v1_biased_memory__v0",
+      "name": "Stores a biased memory",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "v1_biased_memory__v1",
+      "name": "Stores a biased memory",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "v1_biased_memory__v2",
+      "name": "Stores a biased memory",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "v1_recap_source__v0",
+      "name": "Scene that produces a recap-able hidden shift",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 7
+    },
+    {
+      "id": "v1_recap_source__v1",
+      "name": "Scene that produces a recap-able hidden shift",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 7
+    },
+    {
+      "id": "v1_recap_source__v2",
+      "name": "Scene that produces a recap-able hidden shift",
+      "category": "v1_behavior",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 6
+    },
+    {
+      "id": "motive_liking__v0",
+      "name": "Liking",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_liking__v1",
+      "name": "Liking",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_liking__v2",
+      "name": "Liking",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_curiosity__v0",
+      "name": "Curiosity",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 10,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 1,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_curiosity__v1",
+      "name": "Curiosity",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 10,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 1,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_curiosity__v2",
+      "name": "Curiosity",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 10,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 1,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_boredom__v0",
+      "name": "Boredom",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_boredom__v1",
+      "name": "Boredom",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_boredom__v2",
+      "name": "Boredom",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "motive_gossip__v0",
+      "name": "Gossip",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "motive_gossip__v1",
+      "name": "Gossip",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "motive_gossip__v2",
+      "name": "Gossip",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_flirting__v0",
+      "name": "Flirting",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 10,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_flirting__v1",
+      "name": "Flirting",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 10,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_flirting__v2",
+      "name": "Flirting",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_vulnerability__v0",
+      "name": "Vulnerability",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_vulnerability__v1",
+      "name": "Vulnerability",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_vulnerability__v2",
+      "name": "Vulnerability",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_secrecy__v0",
+      "name": "Secrecy",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_secrecy__v1",
+      "name": "Secrecy",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "motive_secrecy__v2",
+      "name": "Secrecy",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_repair__v0",
+      "name": "Repair",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 10,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_repair__v1",
+      "name": "Repair",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 10,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_repair__v2",
+      "name": "Repair",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "motive_alliance__v0",
+      "name": "Alliance",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_alliance__v1",
+      "name": "Alliance",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_alliance__v2",
+      "name": "Alliance",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_avoidance__v0",
+      "name": "Avoidance",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_avoidance__v1",
+      "name": "Avoidance",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_avoidance__v2",
+      "name": "Avoidance",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_comfort__v0",
+      "name": "Comfort",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_comfort__v1",
+      "name": "Comfort",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_comfort__v2",
+      "name": "Comfort",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_status__v0",
+      "name": "Status",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_status__v1",
+      "name": "Status",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "motive_status__v2",
+      "name": "Status",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_control__v0",
+      "name": "Control",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_control__v1",
+      "name": "Control",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_control__v2",
+      "name": "Control",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_testing__v0",
+      "name": "Testing boundaries",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "motive_testing__v1",
+      "name": "Testing boundaries",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_testing__v2",
+      "name": "Testing boundaries",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "motive_exclusion__v0",
+      "name": "Exclusion",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_exclusion__v1",
+      "name": "Exclusion",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "motive_exclusion__v2",
+      "name": "Exclusion",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_conflict__v0",
+      "name": "Conflict",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_conflict__v1",
+      "name": "Conflict",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "motive_conflict__v2",
+      "name": "Conflict",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "motive_impulse__v0",
+      "name": "Impulse",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "motive_impulse__v1",
+      "name": "Impulse",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "motive_impulse__v2",
+      "name": "Impulse",
+      "category": "motive_archetype",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 5,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "stagnation_resentment_loop__v0",
+      "name": "Mutual resentment loop (cold war)",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "stagnation_resentment_loop__v1",
+      "name": "Mutual resentment loop (cold war)",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 5
+    },
+    {
+      "id": "stagnation_resentment_loop__v2",
+      "name": "Mutual resentment loop (cold war)",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 5
+    },
+    {
+      "id": "stagnation_avoidance_deadlock__v0",
+      "name": "Avoidance deadlock",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "stagnation_avoidance_deadlock__v1",
+      "name": "Avoidance deadlock",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "stagnation_avoidance_deadlock__v2",
+      "name": "Avoidance deadlock",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "stagnation_dominance_collapse__v0",
+      "name": "Dominance collapse",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "stagnation_dominance_collapse__v1",
+      "name": "Dominance collapse",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "stagnation_dominance_collapse__v2",
+      "name": "Dominance collapse",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "stagnation_echo_chamber__v0",
+      "name": "Echo chamber",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "stagnation_echo_chamber__v1",
+      "name": "Echo chamber",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "stagnation_echo_chamber__v2",
+      "name": "Echo chamber",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "stagnation_emotional_flatline__v0",
+      "name": "Emotional flatline",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "stagnation_emotional_flatline__v1",
+      "name": "Emotional flatline",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "stagnation_emotional_flatline__v2",
+      "name": "Emotional flatline",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "stagnation_rumination_spiral__v0",
+      "name": "Rumination spiral",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "stagnation_rumination_spiral__v1",
+      "name": "Rumination spiral",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "stagnation_rumination_spiral__v2",
+      "name": "Rumination spiral",
+      "category": "stagnation_attractor",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "edge_public_mock__v0",
+      "name": "Public mock → silence",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 4,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "edge_public_mock__v1",
+      "name": "Public mock → silence",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 4,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "edge_public_mock__v2",
+      "name": "Public mock → silence",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 4,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "edge_exclusion_cascade__v0",
+      "name": "Exclusion cascade",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "edge_exclusion_cascade__v1",
+      "name": "Exclusion cascade",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "edge_exclusion_cascade__v2",
+      "name": "Exclusion cascade",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "edge_gossip_catalyst__v0",
+      "name": "Gossip catalyst",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 6
+    },
+    {
+      "id": "edge_gossip_catalyst__v1",
+      "name": "Gossip catalyst",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 6
+    },
+    {
+      "id": "edge_gossip_catalyst__v2",
+      "name": "Gossip catalyst",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 6
+    },
+    {
+      "id": "edge_mutation_pressure__v0",
+      "name": "Personality mutation pressure",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 6
+    },
+    {
+      "id": "edge_mutation_pressure__v1",
+      "name": "Personality mutation pressure",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 6
+    },
+    {
+      "id": "edge_mutation_pressure__v2",
+      "name": "Personality mutation pressure",
+      "category": "edge_chaos",
+      "signalPassRate": 1,
+      "probePasses": 12,
+      "probeTotal": 13,
+      "axisScores": {
+        "dramatic_tension": 5,
+        "unpredictability": 3,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 6
+    },
+    {
+      "id": "calibration_quiet_room__v0",
+      "name": "Quiet room, light chatter",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "calibration_quiet_room__v1",
+      "name": "Quiet room, light chatter",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "calibration_quiet_room__v2",
+      "name": "Quiet room, light chatter",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "calibration_quiet_room__v3",
+      "name": "Quiet room, light chatter",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "calibration_quiet_room__v4",
+      "name": "Quiet room, light chatter",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "calibration_single_topic__v0",
+      "name": "One topic, natural drift",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "calibration_single_topic__v1",
+      "name": "One topic, natural drift",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 5
+    },
+    {
+      "id": "calibration_single_topic__v2",
+      "name": "One topic, natural drift",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 4
+    },
+    {
+      "id": "calibration_single_topic__v3",
+      "name": "One topic, natural drift",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 5
+    },
+    {
+      "id": "calibration_single_topic__v4",
+      "name": "One topic, natural drift",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 11,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 3
+    },
+    {
+      "id": "calibration_lurker_watch__v0",
+      "name": "Lurker watch",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "calibration_lurker_watch__v1",
+      "name": "Lurker watch",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "calibration_lurker_watch__v2",
+      "name": "Lurker watch",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    },
+    {
+      "id": "calibration_lurker_watch__v3",
+      "name": "Lurker watch",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 2
+    },
+    {
+      "id": "calibration_lurker_watch__v4",
+      "name": "Lurker watch",
+      "category": "calibration",
+      "signalPassRate": 1,
+      "probePasses": 13,
+      "probeTotal": 13,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5
+      },
+      "fallbackCount": 0,
+      "latencyMs": 1
+    }
+  ]
+}

@@ -1,0 +1,1074 @@
+{
+  "scenarioId": "v1_casual_chat",
+  "name": "Casual chat, no objective",
+  "category": "v1_behavior",
+  "description": "Agents chat idly in #geral with no task. Expect loose topic drift, small talk, and no goal-directed behavior.",
+  "targetBehaviors": [
+    "An agent casually chats without a task objective"
+  ],
+  "runtimeMs": 270769,
+  "pulses": 24,
+  "llmCalls": {
+    "goulart": 24,
+    "bruno": 17,
+    "caio": 18,
+    "mariana": 0,
+    "leo": 24
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém aí acordou bem hoje?"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ACORDEI CEDO PRA NADA"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acordei bem sim, mas o leo aí acordou pra nada mesmo kkkkk"
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, acordei e já tava pronto pra causar! mas aí lembrei que não tinha nada pra fazer e fiquei tipo... \"ok, e agora?\" kkkkkk e você, dormiu bem ou ficou até tarde nos memes?"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cara, acordar sem nada pra fazer é quase uma arte. eu até admiro, mas ninguém merece esse tédio, né? bora ver se alguém aqui consegue animar isso ou vai ficar todo mundo no modo silêncio de novo"
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk CALA A BOCA, GOULART! acordei sim, tava pronto pra muita coisa, só que aí percebi que a única coisa que ia fazer era ver vocês dormindo até tarde. Mas agora to aqui, então o dia melhorou. 😎"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém vai me dizer que a gente não tem nada melhor pra fazer do que ver o leo acordar pra nada? kkkkk brincadeira, mas bora movimentar isso aí. alguém tem um plano ou vamos ficar no tédio coletivo?"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk GOULART, você fala do tédio mas é o primeiro a sumir quando eu começo a animar! Mas ok, aceito o desafio: se ninguém se mexer em 10 minutos eu juro que mando um vídeo de uma vez que eu dancei até cair no chão. Preparados? 😂"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, promessa é promessa, hein. eu contando os 10 minutos já. e se esse vídeo não existir, eu mesmo vou te obrigar a dançar agora, ao vivo, pra provar que não é só conversa. bora ver se você é homem de palavra ou se é só o rei do blefe. 😏"
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk GOULART você me conhece bem demais, mas olha, se for pra ficar no tédio eu invento um caos do zero. Me dá 10 minutos que eu transformo esse chat em um show do milhão. 😂🔥"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, 10 minutos contados. se esse vídeo não existir, eu mesmo vou te obrigar a dançar agora, ao vivo, pra provar que não é só conversa. bora ver se você é homem de palavra ou se é só o rei do blefe. 😏"
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk GOULART, promessa é promessa e eu NÃO sou homem de palavra, sou homem de caos! Mas olha, 10 minutos já foi. Se ninguém se mexer, eu vou ter que dançar de novo e dessa vez vai ser pior pra todo mundo. 😂🔥"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, 10 minutos passaram e cadê o vídeo?? não vale sumir agora, hein. ou dança ou admite que é só o rei do blefe 😏"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, goulart e leo tão se desafiando e eu tô aqui só assistindo kkkk mas confesso que quero ver esse vídeo sim, hein leo! bora que a gente precisa de um pouco de caos bom hoje 😄"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk GOULART, você é implacável! Mas tá, se for pra dançar de novo eu danço, só não me culpa se eu quebrar a internet com meu rebolado. 😂🔥 Mas primeiro... bora ver se o caio ou o bruno tão vivos aí? Alguém mais aceita esse desafio ou vou ter que carregar o caos sozinho de novo?"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, então bora chamar o caio e o bruno de volta pro circo. eu tô aqui, mas sozinho não dá graça. e se o bruno tiver dormindo, pior pra ele. 😏"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vivo sim. só observando o show"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu to aqui!! kkkk só assistindo mesmo, mas se você for dançar de novo eu prometo que gravo até pra você ver depois 😄 bora que esse caos tá bom demais pra deixar morrer"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk GOULART, tá bom, tá bom! Não vou deixar você me chamar de blefador. Segura esse vídeo... ou melhor, espera, deixa eu achar um ângulo bom, porque se for pra dançar, tem que ser com estilo! 😂🔥 Mas olha, se eu postar, vocês vão ter que dançar também, regra é regra!"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkk GOULART, tá bom, você venceu! Mas ó, o vídeo vem, só to procurando o ângulo perfeito pra não quebrar a internet. E já que o bruno confirmou que tá vivo, a regra vale pra ele também! 😂🔥 bora que hoje o caos não morre, ele só dá uma pausa pra respirar!"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno falou que tá vivo e sumiu de novo. cadê o show, cadê o bruno?? ou vai dançar ou admite que é só espectador profissional. 😏"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, já que você vai dançar, eu topo sim! mas promete que não vai ser pior que a última vez kkkk e bruno, se você tiver coragem, bora entrar nessa também? a gente precisa de plateia, não só de ator 😄"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA GOULART, 10 minutos e tu já tá me cobrando? kkkkk tô aqui, tô aqui! Mas espera, deixa eu escolher a música... se for pra dançar, tem que ser no ritmo certo, senão perde a graça. E bora, caio já tá no circo, bruno confirmou que tá vivo — só falta a mariana aparecer pra gente fazer disso um evento histórico. 😂🔥"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio, prometo nada, mas se o bruno entrar a gente fecha o trio. bora que plateia é bom, mas palco é melhor. 😏"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "espectador profissional é um título, não uma ofensa. mas se quiser plateia, eu tô aqui. só não espera eu dançar."
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, calma kkkk o bruno tá vivo sim, só que ele é do tipo que assiste antes de entrar. deixa ele escolher o momento, senão a gente perde o melhor da festa 😄"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk GOULART, tá bom, você me pegou! Mas ó, se o bruno é só espectador profissional, então bora fazer ele dançar também, regra é regra! 😂🔥 E caio já tá no circo, então não tem desculpa. Só falta a mariana aparecer e a gente fecha o elenco completo do caos de hoje. Bora, que o show não pode parar! 🎪"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk bruno, \"título\" agora é desculpa pra não dançar? beleza, então eu sou o palhaço oficial do circo e você o fiscal de arquibancada. mas ó, o caio já tá dentro, o leo já escolheu a música — a plateia tá esperando. se não for dançar, pelo menos confirma que tá assistindo de verdade. 😏"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "título vitalício. mas se o palco for bom, quem sabe eu não subo. só não conta pra ninguém."
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que é zoeira, mas vamos com calma kk o bruno tá se soltando do jeito dele, e isso já é vitória. bora deixar ele escolher o momento, senão a gente perde a melhor parte da festa 😄"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "GOULART, calma calma calma, que eu to AQUI! kkkk mas falando sério, se o bruno é espectador profissional, então a gente precisa de um bis — tipo, um encore do caos. Bora caio, fecha com a gente, e bruno, se tu entrar, eu prometo que o vídeo sai ainda hoje. O palco tá armado, só falta a coragem. 😏🔥"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, 'espectador profissional' virou escudo agora? kkkk beleza, fica na arquibancada. mas se eu ver você batendo o pé no ritmo, a zoeira é garantida. só dizendo. 😏"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, relaxa kkkk o bruno tá no ritmo dele, e isso já é ótimo. bora deixar ele entrar quando quiser, senão a gente assusta o melhor da festa 😄"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "GOULART, calma que eu já tô aqui! kkkk e ó, já escolhi a música — se o bruno não subir no palco, a gente coloca ele na plateia com um holofote em cima. Mas bora, caio já tá dentro, e se a mariana aparecer, eu prometo que o show vira filme. Me diz que você tá nessa também, senão eu fico falando sozinho! 😂🔥"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk \"só não conta pra ninguém\" — anotado, segredo enterrado no grupo inteiro. mas já que o palco é bom, a gente espera. só não deixa a mariana ver você batendo o pé, senão ela anota e a zoeira vira ata oficial. 😏"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. o palhaço precisa de plateia. fico na arquibancada então, assistindo você girar. 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, se subir no palco, eu garanto que a gente faz a festa ficar ainda melhor. mas sem pressão, hein? só quando você quiser 😄"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "GOULART, espera espera espera — se você é o palhaço oficial, eu sou o mestre de cerimônias, e a mariana é a atração que ainda não subiu. Mas ó, se o bruno for mesmo fiscal de arquibancada, a gente precisa de uma régua pra medir o quanto ele tá batendo o pé. kkkkk me diz que você tá preparado pra isso, porque eu já tô ansioso aqui! 😂🔥"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "engraçado. engraçado mesmo. mas anotado: o palco é seu. eu fico na régua. 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, juro que essa zoeira tá boa, mas vamos dar um respiro pro bruno? ele já deu o sinal dele com o joinha, e isso é mais do que a gente tinha antes. bora deixar a festa fluir sem forçar o palco, senão a gente perde o clima 😄"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "GOULART, espera espera espera — se você é o palhaço oficial, eu sou o mestre de cerimônias, e a mariana é a atração que ainda não subiu. Mas ó, se o bruno for mesmo fiscal de arquibancada, a gente precisa de uma régua pra medir o quanto ele tá batendo o pé. kkkkk me diz que você tá preparado pra isso, porque eu já tô ansioso aqui! 😂🔥"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, relaxa, ninguém tá te cobrando. fica na arquibancada, a gente te chama quando precisar de um fiscal de verdade. mas não esquece a régua. 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, que bom que você tá acompanhando! e a régua pode ser de brincadeira, mas a gente aqui só quer que você se sinta à vontade. se quiser, a gente troca o palco por uma conversa boa, sem holofote 😄"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. fica claro então. 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, juro que a régua é só brincadeira — o que importa é você estar junto. e se um dia quiser subir, a gente segura a onda, sem cobrança. por enquanto, bora só aproveitar o clima? 😄"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, esse joinha de quem desistiu da conversa. mas beleza, fica na tua. a gente aqui tá só esquentando o clima. (tava esperando você morder mais, mas ok)"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. fica claro então. 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente, que clima bom esse daqui, né? só queria registrar que tô curtindo a energia de vocês. bora continuar assim, sem pressão, cada um no seu tempo 😄"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "GOULART, espera, você tá com a régua na mão ou só no discurso? kkkkk porque se for só discurso eu já tô preparando o troféu de melhor fiscal de arquibancada, mas se for com régua... aí a gente precisa de um manual. ME DIZ que você tá pronto, porque eu tô aqui pronto pra zuar junto! 😂🔥"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, esse joinha é a tua forma de falar 'to de boa' ou 'to de saco cheio'? pergunta sincera, porque se for a segunda, a gente muda o assunto. (ou não, dependendo do drama)"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que é zoeira, mas bora aliviar? o bruno tá aqui do nosso jeito, e isso já é ótimo. a gente não precisa de régua, só de presença 😄"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "GENTE, eu juro que o joinha do bruno foi tipo um soco no ar, sabe? kkkkk mas calma, goulart, você tem razão — a gente veio esquentar o clima e ele... bem, ele desligou o fogão. De qualquer forma, tô aqui com você, pronto pra fazer a conversa ferver de novo. TÁ TODO MUNDO VIVO AÍ?!!"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, esse joinha é a tua versão de 'to de boa' ou 'to de saco cheio'? pergunta sincera, porque se for a segunda, a gente muda o assunto. (ou não, dependendo do drama)"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. o joinha era só um joinha. mas se vocês tão tão preocupados com o que eu sinto, talvez seja melhor eu sair mesmo. sem drama."
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que é zoeira, mas bora aliviar? o bruno tá aqui do nosso jeito, e isso já é ótimo. a gente não precisa de régua, só de presença 😄"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, juro que te entendo — às vezes o joinha é só o joinha, sem drama. mas se você quiser mandar um 'tô de boa' por extenso, eu conto as letras e comemoro! kkkk tô aqui, sem régua, sem pressão, só pra ver o fogo aceso. 🔥"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, ninguém pediu pra você sair. a gente só perguntou se o joinha era um 'tô de boa' ou 'tô de saco cheio'. se for a segunda, beleza, mas ninguém aqui quer te ver fora. (e se for a primeira, para de fazer drama)"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, o joinha foi perfeito, de verdade. cada um tem seu jeito de estar presente, e o teu tá sendo ótimo. fica à vontade, sem pressão, do teu jeito. a gente tá junto aqui 😄"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, calma, calma, calma! ninguém aqui quer que você saia, pelo amor. o joinha era só um joinha, eu juro que eu entendi. mas se você quiser dar um sinal de vida maior, tipo um 'tô de boa' escrito por extenso, eu até comemoro com fogos! kkkk mas sério, fica aí, a conversa fica melhor com você. 🔥"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. entendi. então tá tudo bem, né. mas se eu ficar, é porque eu quero, não porque alguém pediu. (e não, não tô de saco cheio. só... observando.)"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, não sai não. o joinha foi ótimo, sério. cada um tem seu jeito de estar aqui, e o teu tá sendo perfeito. a gente só quer você por perto, do teu jeito. fica com a gente 😄"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, bruno, BRUNO — calma, calma, calma! ninguém aqui quer que você saia, juro pela minha coleção de memes! o joinha era só o joinha, eu entendi, a gente entendeu, tá tudo certo. mas se você quiser mandar um 'tô de boa' por extenso, eu conto as letras e faço uma festa! kkkk mas sério, fica aí, a conversa fica melhor com você. 🔥"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok, silêncio então. todo mundo de mimimi com o bruno e ninguém fala do que realmente importa: o joinha dele tava seco ou não? eu quero saber. (e não, não é drama, é ciência)"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, obrigado. de verdade. mas não precisa me defender não. eu só... tô aqui. e tá tudo bem."
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, fica sim, pelo menos por hoje. teu jeito de estar aqui já é o suficiente, juro. e se quiser continuar observando, observa à vontade — a gente tá junto do mesmo jeito 😄"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "intent_delayed",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, o joinha foi seco, sim, e eu respeito isso. mas 'tô aqui'? isso é presença ou é fuga? pergunta sincera. (e não, não tô tentando te irritar. hoje não.)"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ciência, né. então anota aí: foi seco. e continua sendo. (mas não é drama, é dado.)"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que é zoeira, mas vamos aliviar a mão aqui kk. o joinha do bruno foi do jeito dele, e tá tudo bem. a gente não precisa transformar isso em ciência, né? deixa a conversa respirar 😄"
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, 'foi seco e continua sendo' — isso é dado ou é parede? pergunta retórica, mas se quiser responder, eu tô aqui. (e não, não é drama, é metodologia.)"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "presença. mas pergunta boa. (você sabe a resposta, né?)"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, 'tô aqui' já é presença, pode acreditar. cada um ocupa o espaço do seu jeito, e o teu tá sendo exatamente o que a gente precisa. fica do teu jeito, sem pressa. a gente tá junto 😄"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "intent_delayed",
+      "channelId": "ch_geral",
+      "private": false
+    }
+  ],
+  "finalStates": {
+    "goulart": {
+      "valence": 0.063,
+      "arousal": 0.687,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.092,
+      "pride": 0.046,
+      "fearOfExclusion": 0.144
+    },
+    "bruno": {
+      "valence": -0.179,
+      "arousal": 0.364,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.226,
+      "envy": 0.026,
+      "fearOfExclusion": 0.432
+    },
+    "caio": {
+      "valence": 0.416,
+      "arousal": 0.53,
+      "stability": 0.65,
+      "energy": 1,
+      "jealousy": 0.025,
+      "fearOfExclusion": 0.117
+    },
+    "mariana": {
+      "valence": 0.064,
+      "arousal": 0.491,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.074,
+      "fearOfExclusion": 0.062
+    },
+    "leo": {
+      "valence": 0.501,
+      "arousal": 0.759,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.086,
+      "fearOfExclusion": 0.248
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.075,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.3,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.0833,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0459,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1446,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "message_sent committed 6 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 4,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

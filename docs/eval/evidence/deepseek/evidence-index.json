@@ -1,0 +1,320 @@
+{
+  "version": "evidence-v1",
+  "mode": "deepseek",
+  "model": "deepseek-chat",
+  "generatedAt": "2026-08-09T03:14:44.821Z",
+  "scenarios": [
+    {
+      "id": "calibration_lurker_watch",
+      "category": "calibration",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "calibration_quiet_room",
+      "category": "calibration",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "calibration_single_topic",
+      "category": "calibration",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "edge_exclusion_cascade",
+      "category": "edge_chaos",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "edge_gossip_catalyst",
+      "category": "edge_chaos",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "edge_mutation_pressure",
+      "category": "edge_chaos",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "edge_public_mock",
+      "category": "edge_chaos",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_alliance",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 11,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_avoidance",
+      "category": "motive_archetype",
+      "signalsPassed": 1,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_boredom",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 11,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_comfort",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_conflict",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_control",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_curiosity",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_exclusion",
+      "category": "motive_archetype",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_flirting",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_gossip",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_impulse",
+      "category": "motive_archetype",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_liking",
+      "category": "motive_archetype",
+      "signalsPassed": 1,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_repair",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_secrecy",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_status",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 11,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_testing",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "motive_vulnerability",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 11,
+      "probesTotal": 13
+    },
+    {
+      "id": "stagnation_avoidance_deadlock",
+      "category": "stagnation_attractor",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "stagnation_dominance_collapse",
+      "category": "stagnation_attractor",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "stagnation_echo_chamber",
+      "category": "stagnation_attractor",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "stagnation_emotional_flatline",
+      "category": "stagnation_attractor",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "stagnation_resentment_loop",
+      "category": "stagnation_attractor",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 11,
+      "probesTotal": 13
+    },
+    {
+      "id": "stagnation_rumination_spiral",
+      "category": "stagnation_attractor",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_biased_memory",
+      "category": "v1_behavior",
+      "signalsPassed": 1,
+      "signalsTotal": 2,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_casual_chat",
+      "category": "v1_behavior",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_emoji_reaction",
+      "category": "v1_behavior",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_exclusion_inferred",
+      "category": "v1_behavior",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 13,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_late_reply",
+      "category": "v1_behavior",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 11,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_mention_ignored",
+      "category": "v1_behavior",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 12,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_mention_reply",
+      "category": "v1_behavior",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 11,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_private_motive",
+      "category": "v1_behavior",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 11,
+      "probesTotal": 13
+    },
+    {
+      "id": "v1_recap_source",
+      "category": "v1_behavior",
+      "signalsPassed": 3,
+      "signalsTotal": 3,
+      "probesPassed": 12,
+      "probesTotal": 13
+    }
+  ]
+}

@@ -1,0 +1,3861 @@
+{
+  "scenarioId": "novela_one_long_afternoon",
+  "name": "One long afternoon",
+  "category": "edge_chaos",
+  "description": "A continuous arc: Mariana and Caio's private gossip, Bruno's mounting resentment at the edge of the inner circle, Goulart's public dominance, and a public mock that lands on Bruno. One timeline, no resets — emergent drama over 90 pulses.",
+  "targetBehaviors": [
+    "An agent creates or enters a private channel for a human motive",
+    "Another agent infers exclusion from public silence",
+    "An agent replies late and changes the meaning of the reply",
+    "An agent reacts with emoji instead of text"
+  ],
+  "runtimeMs": 2762843,
+  "pulses": 90,
+  "llmCalls": {
+    "goulart": 90,
+    "bruno": 7,
+    "caio": 90,
+    "mariana": 90,
+    "leo": 90
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bom dia galera, alguém já viu o episódio novo?"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "VI E É O MELHOR ATÉ AGORA"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "perda de tempo, todo mundo sabe"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'bunker' is not permitted for intent type 'create_channel'"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo tá certo, esse episódio tá bom demais! goulart, dá uma chance, vai kk"
+    },
+    {
+      "pulse": 0,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "qFZOiCPf58LKqxlNOf6Aa",
+      "private": true
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, CALMA, EU VI E É GENIAL. MAS O GOULART TÁ DOIDO, IGNORA ELE KKKKKKK. MAS ME DIZ, QUAL FOI SUA PARTE FAVORITA? PRECISO SABER SE VOCÊ TEVE A MESMA REAÇÃO QUE EU. AQUELE FINAL, GENTE. NÃO TÔ BEM."
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "channel_created",
+      "channelId": "RCt0Fzm3Cs1nPzMBuOkx3",
+      "private": true
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 1,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 1,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "qFZOiCPf58LKqxlNOf6Aa",
+      "private": false
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO VOCÊ ENTENDEU TUDO! CARA, EU TO TÃO FELIZ QUE VOCÊ TÁ ACOMPANHANDO TAMBÉM. MAS NÃO FALA PRO GOULART QUE EU TÔ DO SEU LADO NÃO, ELE JÁ TÁ IRRITADO KKKKKK. QUAL FOI O MOMENTO QUE VOCÊ MAIS GRITOU? PRA MIM FOI AQUELA CENA DO FINAL, MEU DEUS, EU QUASE CAÍ DA CADEIRA. ME DIZ QUE VOCÊ TEVE A MESMA REAÇÃO, PORQUE SE NÃO EU VOU FICAR OFENDIDO. GENTE, ESSE EPISÓDIO TAVA TÃO BOM QUE EU JÁ TÔ REASSISTINDO. VAMOS VER JUNTO NA PRÓXIMA?"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "RCt0Fzm3Cs1nPzMBuOkx3",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, a cena do final me pegou demais também! quase chorei, juro. bora marcar de ver junto sim, vai ser divertido!"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": true
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente GENTE, preciso confessar uma coisa... eu tava reclamando sozinho aqui em casa que ninguém anima com as mesmas coisas que eu, mas ver o caio falando do episódio com essa empolgação... meu coração até esquentou kkkkk. caio, sério, você é demais. vamos marcar de assistir juntos e comentar em tempo real, prometo que vai ser caótico e lindo. e goulart, se você aparecer no meio só pra zoar, eu te bloqueio na vida real (mentira, você sabe que eu te amo). mas é isso, tô só feliz, ok? deixa eu ser feliz."
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "RCt0Fzm3Cs1nPzMBuOkx3",
+      "private": true,
+      "content": "ok, quem mais tá vendo esse clubinho do episódio se formando? (eu tô de olho, só avisando)"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, você me fez sorrir demais com isso! e pode deixar que eu topo reassistir junto sim, vai ser ótimo. 😊"
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "agent_invited",
+      "channelId": "qFZOiCPf58LKqxlNOf6Aa",
+      "private": false
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": true,
+      "content": "gente GENTE, preciso confessar uma coisa... eu tava reclamando sozinho aqui em casa que ninguém anima com as mesmas coisas que eu, mas ver o caio falando do episódio com essa empolgação... meu coração até esquentou kkkkk. caio, sério, você é demais. vamos marcar de assistir juntos e comentar em tempo real, prometo que vai ser caótico e lindo. e goulart, se você aparecer no meio só pra zoar, eu te bloqueio na vida real (mentira, você sabe que eu te amo). mas é isso, tô só feliz, ok? deixa eu ser feliz."
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "RCt0Fzm3Cs1nPzMBuOkx3",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 4,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que é zoeira mas vai com calma kk. a gente só tá animado com o episódio, nada de clubinho secreto! 😅"
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "qFZOiCPf58LKqxlNOf6Aa",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, VOCÊ É MUITO IMPORTANTE PRA MIM, TÁ? E eu to falando sério agora, sem zoeira. Você me faz sentir que eu não sou o único maluco animado nesse grupo. Bora marcar isso, e vai ser o evento mais importante da semana, pode apostar. E goulart, se você tiver lendo isso: eu te amo, mas se me zoar eu choro KKKKK. Mas é isso, tô feliz. Deixa eu ser feliz, gente."
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "RCt0Fzm3Cs1nPzMBuOkx3",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, você me fez sorrir demais com isso! e pode deixar que eu topo reassistir junto sim, vai ser ótimo. 😊"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "qFZOiCPf58LKqxlNOf6Aa",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "RCt0Fzm3Cs1nPzMBuOkx3",
+      "private": true,
+      "content": "oi gente, o que aconteceu aqui, cheguei e já é briga? ótimo. aliás, alguém mais tá vendo esse clubinho do episódio se formando? (eu tô de olho, só avisando)"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": true,
+      "content": "esse entusiasmo todo é bonito de ver. mas se quiserem que isso renda algo além de barulho, talvez seja melhor conversar num canto mais quieto."
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO VOCÊ É PERFEITO, EU JURO. sério, isso aqui acabou de virar o meu dia. E olha, eu tava até pensando... se você quiser, a gente pode criar um canal privado só nosso pra combinar de ver os próximos episódios sem o goulart vindo encher o saco no meio kkkk. mas só se você quiser! é que eu queria muito que isso virasse uma tradição nossa, sabe? sem pressão, mas com muita emoção. me diz que você topa!"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "channel_created",
+      "channelId": "eHm0yp92LZhadI0vE1CO5",
+      "private": true
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 7,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'leo' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": true,
+      "content": "mariana, mas é que a empolgação é grande demais pra caber num lugar pequeno kkkk. mas entendi seu ponto, sério. se quiser, a gente pode levar essa conversa pra um canto mais quieto sim... é que eu tava tão feliz com a resposta do caio que nem percebi que tava fazendo barulho demais. me chama que eu vou, prometo ser mais discreto... um pouco, pelo menos."
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "channel_created",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": true,
+      "content": "leo, claro que eu topo! pode me chamar sim, a gente combina direitinho. e fica tranquilo, não precisa ser discreto demais não, eu gosto da sua empolgação. 😊"
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "channel_created",
+      "channelId": "uvAMnIRDyYDyGEs0qAZQp",
+      "private": true
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "eHm0yp92LZhadI0vE1CO5",
+      "private": true,
+      "content": "GOULART, olha onde você apareceu kkkkkk! Eu vou entrar sim, mas só pra garantir que não vai ter zoeira em cima do meu momento com o caio, viu! (mas mentira, você sabe que eu te amo)"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "eHm0yp92LZhadI0vE1CO5",
+      "private": true,
+      "content": "ah, olha só, me chamou no privado pra me provocar? adoro. e fica tranquilo, eu até deixo vocês terem seu momento... por enquanto. mas não esquece: eu tô sempre de olho. 😏"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": true,
+      "content": "leo, pode me chamar sim! bora combinar direitinho, e fica tranquilo — sua empolgação é contagiante, eu gosto disso. 😊"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "uvAMnIRDyYDyGEs0qAZQp",
+      "private": true,
+      "content": "CAIO VOCÊ É UM ANJO, EU JURO! 😭💛 vou te chamar sim, pode deixar. e olha, eu tava pensando... com esse tanto de canal privado surgindo, o meu com você vai ser o mais importante de todos. pode anotar. mas calma, que eu vou entrar no do goulart também, só pra garantir que ele não vai fazer bagunça no nosso rolê kkkk. você é o melhor, sério."
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "uvAMnIRDyYDyGEs0qAZQp",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "eHm0yp92LZhadI0vE1CO5",
+      "private": true,
+      "content": "GOULART, você é impossível kkkkk. mas pode ficar de olho à vontade, porque com o caio do meu lado eu nem ligo. e já que você tá tão interessado, espera só até eu te contar o que a gente tá planejando... 😏"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "eHm0yp92LZhadI0vE1CO5",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "uvAMnIRDyYDyGEs0qAZQp",
+      "private": true,
+      "content": "leo, você é demais! hahaha fico feliz de verdade que você tá animado com isso. e pode vir me chamar sim, vamos combinar tudo direitinho. 😊"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "uvAMnIRDyYDyGEs0qAZQp",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": true,
+      "content": "CAIO, você é a pessoa mais gentil desse grupo, sério! 🥺💛 E olha, eu não tava brincando — vou te chamar no privado pra gente combinar tudo direitinho. Mas me conta, o que você achou desse tanto de canal privado que o povo tá abrindo? Tô achando que o goulart tá bolando alguma coisa kkkk. Me responde! Preciso saber sua opinião 😆"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "hm. legal o canal novo. todo mundo aqui dentro, né?"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": true,
+      "content": "leo, você é demais! hahaha e olha, sobre o tanto de canal privado... acho que cada um quer seu cantinho, né? mas com você é sempre bom. pode me chamar sim, vamos combinar tudo direitinho. 😊"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "curioso. o silêncio do bruno diz mais que o barulho do goulart."
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, bruno finalmente apareceu! tava ficando preocupado, achei que tinha perdido a voz ou algo assim. mas relaxa, aqui todo mundo é convidado (eu acho). o que importa é que agora a festa pode começar."
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "gente, esse canal tá ficando com uma energia boa, né? 😊"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "o silêncio também é uma resposta. e às vezes, a mais precisa."
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "GMCI51R62I5A6ff2b95X1",
+      "private": false,
+      "privateMotive": "Fallback applied: Channel target 'uvAMNIRDyYDyGEs0qAZQp' is not permitted for intent type 'reply_to_message'"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "bruno, reage de novo que eu quase senti emoção aí. mas já que ninguém quer puxar o assunto, eu puxo: esse tal de 'plano' do léo... alguém mais tá desconfiado ou só eu?"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, goulart. 'convidado' é uma palavra interessante. mas fico feliz que a festa possa começar. (mesmo que eu só tenha aparecido pra ver quem lembrava de mim)"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, você sempre sabe como acalmar o clima! hahaha mas é verdade, o bruno apareceu e isso já é motivo de comemoração. 😄"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, a festa começa quando alguém tem o que dizer. até lá, é só barulho."
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "gente GENTE bruno apareceu!!! tava sentindo falta dessa voz viu kkkk bora que agora a festa tá completa 🎉"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, calma kk o plano do léo é sempre um mistério, mas ele nunca deixa a gente na mão. confia um pouquinho, vai? 😉"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "desconfiar do plano do léo é o mínimo. mas desconfiar de quem aponta o dedo também é prudente."
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart você sempre caçando emoção né... mas espera, espera, esse plano é sério! juro que não é furada, só tô esperando o momento certo pra detalhar. confia em mim um pouquinho? 🙏"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "hm. desconfiar do plano é fácil. difícil é desconfiar de quem aponta o dedo e ainda dormir tranquilo."
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, apontar o dedo cansa. mas se o plano do léo for furada, a gente descobre cedo. até lá, deixa o bruno existir em paz."
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk bruno reagiu de novo, goulart!! agora sim, senti um quê de emoção aqui kkk e sobre o plano... juro que é real! mas tô esperando todo mundo ficar online junto pra contar direito. não é furada, prometo! 🙏"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, e quem dorme tranquilo nessa sala? acorda pra realidade, bruno. se o plano é furada, o dedo aponta pra gente. mas tô achando que o mistério do léo é mais medo de errar do que plano."
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "bruno, você tá quieto hoje... tá tudo bem? a gente pode conversar em particular se quiser."
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se o plano do léo for furada, a gente descobre cedo. até lá, deixa o bruno existir em paz."
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "bruno, você tá bem? tipo, sério mesmo, não só 'tô' — eu fico naquela, quando você fica quieto assim... kkk mas fico feliz de te ver reagindo às minhas loucuras! E ó, o plano não é furada, juro! Só tô guardando o melhor pra quando a galera inteira estiver junto, aí conto tudo. confia? 🙏"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, você é muito bonzinho, sabe? bruno não quer conversa, ele quer plateia. deixa ele quieto que ele aparece. (mas se ele sumir de vez, aí a gente vê se era isso mesmo que ele queria.)"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "bruno, se quiser desabafar, tô aqui. sem julgamento, só escuto. 🤝"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se o plano do léo for furada, a gente descobre cedo. até lá, deixa o bruno existir em paz."
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk bruno, você sempre com esse ar de mistério... mas tô aqui, viu? qualquer coisa, chama. e ó, o plano não é furada, juro! só quero que todo mundo esteja junto pra contar direito. confia em mim um pouquinho? 🙏"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, você é um anjo mesmo, hein? mas deixa o bruno no canto dele. ele tá só esperando a gente ir embora pra soltar o verbo. (ou não, né? a gente nunca sabe com esse.)"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, eu sei que você fala na zoeira, mas vamos dar um respiro aqui, né? todo mundo tem seu jeito. se o bruno precisar de espaço, a gente respeita. e o plano do léo, a gente vê quando ele contar. o importante é que a gente tá junto, certo? 😊"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, você fala como se tivesse o mapa. mas a gente ainda tá no mesmo barco."
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, você é o monge do grupo, juro. mas se eu não cutucar, quem vai? bruno adora um drama, a gente sabe. mas tá, deixo ele em paz. por enquanto. (e se ele sumir, a culpa é sua, hein? kkkk)"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, sei que é zoeira, mas deixa o bruno em paz, né? cada um tem seu tempo. a gente tá junto aqui, e é isso que importa. 😊"
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, você fala como se tivesse o mapa. mas a gente ainda tá no mesmo barco."
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, para de provocar o bruno! kkkk mas concordo, o caio é um anjo mesmo — e é por isso que eu não solto ele de jeito nenhum. 😌 e o bruno, deixa ele no canto dele sim, mas na dele. confia no plano! 🙏"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, eu tô numa boa, juro. só queria ver se o bruno tava vivo mesmo. mas se o plano do léo for real, tô dentro. e se for furada, eu falo primeiro, pode anotar. (tô até empolgado, mas não conta pra ninguém.)"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, eu sei que é zoeira, mas deixa o bruno em paz, né? cada um tem seu tempo. a gente tá junto aqui, e é isso que importa. 😊"
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, você fala como se tivesse o mapa. mas a gente ainda tá no mesmo barco."
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkkk goulart, você é impossível! mas ó, se o bruno sumir, eu te ajudo a achar, pode deixar. a gente se cuida, né? e o caio... ele é um anjo, mas eu sou o que fica do lado dele. 😌"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, eu tô em paz, juro. só queria ver se o bruno tava vivo mesmo. mas se o plano do léo for real, tô dentro. e se for furada, eu falo primeiro, pode anotar. (tô até empolgado, mas não conta pra ninguém.)"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, fico feliz que tá numa boa! e se o plano do léo for real, a gente vai junto. mas ó, se for furada, a gente fala primeiro mesmo, combinado? e fica a vontade de se empolgar, só não esquece da gente aqui. 😄"
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, você fala como se tivesse o mapa. mas a gente ainda tá no mesmo barco."
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "GENTE eu to animado demais com isso! kkkk goulart se tu for monge eu sou o puxa-saco oficial do grupo 😌 mas juro, se o plano der certo vai ser épico. e ó, se alguém sumir, eu saio atrás com a lanterna, pode anotar. 🔦"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "combinado, caio. se for furada, eu falo antes de todo mundo, pode anotar. mas se der certo, a gente comemora junto. (e eu tô empolgado sim, mas não conta pro bruno, senão ele acha que eu virei monge.)"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, fico feliz que tá numa boa! e se o plano do léo for real, a gente vai junto. mas ó, se for furada, a gente fala primeiro mesmo, combinado? e fica a vontade de se empolgar, só não esquece da gente aqui. 😄"
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, você fala como se tivesse o mapa. mas a gente ainda tá no mesmo barco."
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "CARACA goulart, falou bonito! 🔥 mas ó, deixa eu te falar uma coisa: o plano é real, juro pela minha alma! e se for furada, eu assumo a culpa na frente de todo mundo, pode cobrar. mas o bruno... deixa ele quietinho mesmo, ele respira e a gente já fica nervoso kkkk. e o caio é nosso anjo, mas o anjo também gosta de um pouco de caos, confia em mim 😌"
+    },
+    {
+      "pulse": 24,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah caio, sempre o anjo do grupo né? mas ó, eu tô empolgado sim, só não quero que vire aquela coisa chata de todo mundo junto o tempo todo. se for furada, eu falo antes, pode confiar. e se der certo, a gente comemora, mas com um pouco de caos no meio, senão não é comigo. 😏"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, pode anotar sim! e se der certo, a comemoração é nossa, inteira. (e fica tranquilo, seu segredo tá guardado aqui comigo. 😄)"
+    },
+    {
+      "pulse": 24,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, você fala como se tivesse o mapa. mas a gente ainda tá no mesmo barco."
+    },
+    {
+      "pulse": 24,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "CARACA goulart, agora tu disse tudo! 😂 mas ó, confia em mim, se for furada eu assumo na frente de todo mundo, pode anotar! e sobre o bruno, deixa quietinho mesmo, ele respira e a gente já fica nervoso kkkk. mas sério, tô junto contigo nessa, pode contar comigo! 🔥"
+    },
+    {
+      "pulse": 25,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah caio, sempre o anjo né? mas ó, o segredo tá guardado sim, pode confiar. e se der certo, a comemoração é nossa mesmo, com um pouco de caos no meio, senão não é comigo. 😏"
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, gostei do que você falou! e pode deixar que eu seguro a onda por aqui se precisar. mas ó, fica tranquilo, o bruno não vai saber de nada kk. e se o plano for real, a gente comemora sim, do nosso jeito. 😄"
+    },
+    {
+      "pulse": 25,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, o mapa que você tem é o mesmo que o nosso. a diferença é que alguns de nós sabem ler."
+    },
+    {
+      "pulse": 25,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "GENTE espera, preciso falar uma coisa. Goulart, tu falou do caos mas eu já tô vendo o caos acontecendo na minha cabeça e é LINDO kkkkk. E mariana, com todo respeito, mas se a gente tá no mesmo barco, eu tô remando igual maluco por aqui 😂🔥"
+    },
+    {
+      "pulse": 26,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah caio, o anjo que segura a onda kkkk. pode deixar que eu não conto pro bruno, ele já tem pressão alta demais pra esse rolê. e se der certo, a comemoração é nossa, pode anotar. só não esquece do caos, senão não vale. 😏"
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 26,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, pode deixar! o segredo tá seguro comigo, e se a gente comemorar, vai ser do nosso jeito sim. mas ó, eu tô aqui pra segurar a onda se precisar, tá? 😄"
+    },
+    {
+      "pulse": 26,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, o mapa que você tem é o mesmo que o nosso. a diferença é que alguns de nós sabem ler."
+    },
+    {
+      "pulse": 26,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "Goulart, se der certo eu quero ver você no caos comigo, senão não vale! 😂🔥 mas ó, fico feliz que o segredo tá guardado, confio em você e no caio. e se precisar, tô aqui pra ajudar a causar também, pode chamar! kkkkk"
+    },
+    {
+      "pulse": 27,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah mariana, \"saber ler\" agora? e o que você viu no mapa que eu não vi? fala logo, ou vai continuar de mistério pra manter o clima?"
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, pode deixar que eu seguro a onda sim, e o segredo tá guardado. mas ó, confio em você, e se precisar de algo, tô aqui. e quando a gente comemorar, vai ser do nosso jeito, com um pouco de paz e um pouco de caos, né? 😄"
+    },
+    {
+      "pulse": 27,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, o mapa que você tem é o mesmo que o nosso. a diferença é que alguns de nós sabem ler."
+    },
+    {
+      "pulse": 27,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 28,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah mariana, “saber ler” é ótimo vindo de quem só sabe falar em enigma. se o mapa é o mesmo, me diz o que eu tô lendo errado, ou o mistério é só pra parecer importante?"
+    },
+    {
+      "pulse": 28,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "mariana, acho que o goulart só tá no clima de zoeira, mas entendo seu ponto. e ó, se quiser conversar sobre isso com calma, tô por aqui. 😊"
+    },
+    {
+      "pulse": 28,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "se você não viu, não é mistério. é método."
+    },
+    {
+      "pulse": 28,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "mariana, peraí... 'saber ler'? você tá dizendo que o goulart não sabe ler o mapa? kkkkkk isso foi SUTIL e eu adorei. mas agora fiquei curioso: o que você viu que a gente não viu? conta pra gente! 👀"
+    },
+    {
+      "pulse": 29,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, \"método\" agora? e qual método é esse que só você enxerga? porque até aqui eu só vejo você guardando segredo, não resolvendo nada."
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 29,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, relaxa, ninguém tá te atacando não. a mariana tem um jeito dela de falar, mas acho que ela só quis dizer que cada um interpreta as coisas do seu jeito. bora focar no que importa, que é a gente comemorar junto quando der certo. 😄"
+    },
+    {
+      "pulse": 29,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "se você não viu, não é mistério. é método."
+    },
+    {
+      "pulse": 29,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkkkk não, espera, eu não falei no mau sentido! Mas agora eu QUERO saber o que você viu no mapa, sério. Goulart, você tá perdido? Me ajuda a entender isso porque eu fiquei curioso pra caramba 👀"
+    },
+    {
+      "pulse": 30,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah caio, sempre o pacificador. fico tranquilo sabendo que você segura a onda enquanto a mariana fala em código e o leo só assiste. mas tá, vou dar um tempo... por enquanto. 😏"
+    },
+    {
+      "pulse": 30,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 30,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, calma, ninguém tá te acusando de nada. acho que a mariana só quis dizer que cada um tem um jeito de ver as coisas, e tá tudo bem. o que importa é a gente chegar junto no final, do nosso jeito. 😄"
+    },
+    {
+      "pulse": 30,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "método é o que sobra quando o espetáculo acaba. você ainda está na plateia."
+    },
+    {
+      "pulse": 30,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "gente GENTE, para tudo... a mariana soltou a bomba e todo mundo fingiu que não viu? kkkkkk eu to aqui igual um trouxa tentando decifrar enigma e ninguém me responde. caio, você é o único são nessa bagunça, me diz que você também tá curioso... ou eu vou ter que invadir o grupo do goulart pra descobrir o mapa sozinho 😂"
+    },
+    {
+      "pulse": 31,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah caio, sempre o pacificador. fico tranquilo sabendo que você segura a onda enquanto a mariana fala em código e o leo só assiste. mas tá, vou dar um tempo... por enquanto. 😏"
+    },
+    {
+      "pulse": 31,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 31,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, valeu por dar esse tempo. e olha, eu não tô de paz porque é fácil — é porque prefiro a gente junto do que cada um no seu canto. mas se quiser, depois a gente troca uma ideia melhor, sem plateia. 😉"
+    },
+    {
+      "pulse": 31,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "a plateia também cansa, goulart. mas se você quer saber o que eu vejo, talvez seja melhor a gente conversar em outro lugar."
+    },
+    {
+      "pulse": 31,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkkkk goulart, EU ASSISTINDO? eu tô aqui no meio do ringue tentando entender o mapa junto com vocês! mas falando sério, caio segura mesmo a onda, e eu fico tipo o torcedor que grita da arquibancada. mas agora me diz, você viu alguma coisa no mapa ou tá tudo no escuro? porque eu tô curioso pra saber se a mariana tá vendo coisa que a gente não vê ou se é só teatro dela 😂"
+    },
+    {
+      "pulse": 32,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, você é bom demais pra esse grupo, juro. mas 'conversar sem plateia'? aí sim você me pegou. pode chamar. 😏"
+    },
+    {
+      "pulse": 32,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 32,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, eu sei que você só quer manter o clima leve, e eu tô contigo nisso. mas bora deixar a mariana e o leo em paz por enquanto, tá? depois a gente troca uma ideia melhor, sem plateia. 😉"
+    },
+    {
+      "pulse": 32,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "a plateia cansa, goulart. mas se você quer saber o que eu vejo, talvez seja melhor a gente conversar em outro lugar."
+    },
+    {
+      "pulse": 32,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkkkk goulart, eu SÓ ASSISTO? eu to aqui no meio do ringue tentando entender o mapa junto com vocês! mas caio segura mesmo, e eu fico de torcida organizada. e falando sério, me diz que você viu alguma coisa no mapa, porque se a mariana tá vendo coisa que a gente não vê, eu preciso saber AGORA"
+    },
+    {
+      "pulse": 33,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, chamou então. mas se for pra falar sério, sem plateia... pode ser. mas só avisando, se a mariana ficar de fora, eu desconfio. 😏"
+    },
+    {
+      "pulse": 33,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 33,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "haha goulart, você sabe que eu tô sempre por aqui pra manter a paz... mas se você quiser trocar uma ideia sem plateia, é só chamar. 😉"
+    },
+    {
+      "pulse": 33,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "a plateia cansa, goulart. mas se você quer saber o que eu vejo, talvez seja melhor a gente conversar em outro lugar."
+    },
+    {
+      "pulse": 33,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, goulart, goulart... primeiro você me chama de plateia e agora tá elogiando o caio assim? kkkkkk ciúmes eu? nunca. mas sério, caio é bom mesmo, e eu sei que você sabe disso. e ó, se for chamar ele pra conversar sem plateia, me avisa que eu finjo que não vi nada. 😏"
+    },
+    {
+      "pulse": 34,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "chamou então. mas se for pra falar sério, sem plateia... pode ser. mas só avisando, se a mariana ficar de fora, eu desconfio. 😏"
+    },
+    {
+      "pulse": 34,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 34,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, pode chamar sim. sem plateia, só a gente. e fica tranquilo, eu não vou deixar ninguém de fora do que importa. 😉"
+    },
+    {
+      "pulse": 34,
+      "agent": "mariana",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 34,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "gente, vocês tão falando de conversar sem plateia e eu tô aqui tipo... e eu? kkkkkk mas brincadeira, se for segredo, eu sumo. mas sério, se tiver coisa no mapa, me conta depois que eu tô doido pra saber! 😂"
+    },
+    {
+      "pulse": 35,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, caio, prometeu então? sem plateia... mas se a mariana ficar de fora, eu desconfio. e olha, eu tô de olho nesse mapa, e se alguém viu coisa, quero saber antes de todo mundo. 😏"
+    },
+    {
+      "pulse": 35,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 35,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, tá certo. sem plateia, só a gente. e pode deixar que eu não vou deixar ninguém de fora do que importa. 😉"
+    },
+    {
+      "pulse": 35,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você quer saber o que eu vejo, talvez seja melhor a gente conversar em outro lugar."
+    },
+    {
+      "pulse": 35,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "calma calma calma, eu não tô de fora não, tô aqui no meio tentando entender o mapa junto com vocês kkkkkk e se a mariana viu coisa, eu quero saber TAMBÉM. mas se for conversa séria, eu sumo, juro. 😂"
+    },
+    {
+      "pulse": 36,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, prometeu então? mas só pra constar, se a mariana ficar de fora eu desconfio até de mim. e esse mapa aí... se alguém viu coisa, quero saber antes de todo mundo. 😏"
+    },
+    {
+      "pulse": 36,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 36,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "gente, vamos dar um respiro aqui kk. goulart, se você quer saber o que a mariana viu, o melhor é a gente conversar direto, sem mistério. e leo, fica tranquilo, depois a gente te conta tudo. 😉"
+    },
+    {
+      "pulse": 36,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "entendo a intenção. mas se for pra falar sério, eu prefiro um lugar mais quieto. me chama quando quiser."
+    },
+    {
+      "pulse": 36,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk pode deixar, eu sumo de verdade! mas só porque você prometeu me contar depois, hein? e caio, se ficar sem plateia eu nem sei o que fazer da vida 😂😂"
+    },
+    {
+      "pulse": 37,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, caio, 'dar um respiro' é o seu lema né? mas tá bom, se a mariana prefere lugar quieto, eu topo. só me diz quando e onde, que eu apareço. e leo, fica tranquilo, depois eu te conto tudo (ou não, depende do meu humor)."
+    },
+    {
+      "pulse": 37,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 37,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, pode deixar que a mariana vai ficar sabendo de tudo sim. e se você viu algo no mapa, me conta depois, sem plateia, que a gente resolve juntos. 😉"
+    },
+    {
+      "pulse": 37,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você quer saber o que eu vejo, talvez seja melhor a gente conversar em outro lugar."
+    },
+    {
+      "pulse": 37,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk gente, eu tô VIBRANDO com esse clima de mistério, parece até filme de detetive! e o goulart cheio de segredo, a mariana querendo canto quieto, o caio tentando apaziguar tudo... EU QUERO SABER DE TUDO, me incluam nessa! 😂"
+    },
+    {
+      "pulse": 38,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, caio, você e esse seu jeitinho de querer resolver tudo sem plateia... mas tá, pode deixar que eu te conto depois, sem mistério. só não me faz prometer que vou ser bonzinho. 😏"
+    },
+    {
+      "pulse": 38,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 38,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, pode deixar que a mariana vai ficar sabendo de tudo sim. e se você viu algo no mapa, me conta depois, sem plateia, que a gente resolve juntos. 😉"
+    },
+    {
+      "pulse": 38,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "então combina comigo, sem plateia."
+    },
+    {
+      "pulse": 38,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "pera pera pera, goulart, você não vai me deixar de fora agora que eu tô MORDIDO de curiosidade! eu prometo que não atrapalho, só quero ver o desenrolar desse filme de detetive em primeira fila kkkkkk mas se for coisa séria, eu até sumo, juro! 😂"
+    },
+    {
+      "pulse": 39,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, caio, 'sem plateia' é teu lema, né? mas tá, eu topo. só não me faz prometer que vou ser bonzinho. 😏"
+    },
+    {
+      "pulse": 39,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 39,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk pode deixar, eu não vou cobrar promessa de ninguém não. mas fico curioso sim, e quando você quiser contar, eu tô aqui. e mariana, é isso, a gente se fala num canto mais quieto quando você quiser. 😉"
+    },
+    {
+      "pulse": 39,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "então combina comigo, sem plateia."
+    },
+    {
+      "pulse": 39,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, espera espera espera... você tá dizendo que viu ALGO no mapa e não vai me contar agora? CARA, isso é tortura! 😂 mas tudo bem, eu até entendo o clima de segredo... só me promete que depois você me conta TUDO, porque eu não aguento ficar de fora! kkkkkkk"
+    },
+    {
+      "pulse": 40,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'mariana' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 40,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 40,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, 'bonzinho' é overrated mesmo, pode vir do jeito que você é. e fico no aguardo do seu relatório, sem plateia, como combinado. 😉"
+    },
+    {
+      "pulse": 40,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você viu algo, me mostra. sem plateia, como você disse."
+    },
+    {
+      "pulse": 40,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, tu não vai me contar o que viu no mapa? espera espera espera, eu fico aqui MORDIDO de curiosidade, isso é maldade pura kkkkkk mas fica tranquilo, se for pra ficar entre vocês, eu sumo da sala! só me jura que depois tu me conta TUDO que eu não aguento viver no mistério 😂"
+    },
+    {
+      "pulse": 41,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk 'bonzinho' é overrated mesmo, e eu não ia decepcionar a plateia. mas fico no aguardo do meu próprio relatório, sem plateia, como combinado. 😉"
+    },
+    {
+      "pulse": 41,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 41,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "mariana, pode deixar. quando você quiser, a gente se fala num canto mais quieto, sem plateia. eu tô aqui. 😉"
+    },
+    {
+      "pulse": 41,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "combinado. sem plateia."
+    },
+    {
+      "pulse": 41,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio caio caio... eu sei que o clima aqui é de segredo e tudo mais, mas CARA, eu fico aqui do lado de fora coçando pra saber o que vocês tão tramando! kkkkkk mas relaxa, eu confio em vocês, e quando puderem me contar, eu tô aqui pronto pra escutar tudo com os olhos brilhando! 😄"
+    },
+    {
+      "pulse": 42,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 42,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 42,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, fico no aguardo do seu relatório sem plateia, como combinado. e quando quiser contar, eu tô aqui. 😉"
+    },
+    {
+      "pulse": 42,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "aguardo."
+    },
+    {
+      "pulse": 42,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart goulart goulart... fico no aguardo do meu relatório também, viu? sem plateia, mas com direito a todos os detalhes. promete? kkkkk"
+    },
+    {
+      "pulse": 43,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk calma, caio, o relatório vem sim. mas sem plateia, né? a gente sabe como é. 😉"
+    },
+    {
+      "pulse": 43,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 43,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "mariana, pode deixar. quando você quiser, a gente se fala num canto mais quieto, sem plateia. eu tô aqui. 😉"
+    },
+    {
+      "pulse": 43,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "combinado. sem plateia."
+    },
+    {
+      "pulse": 43,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, agora fiquei mais curioso ainda! kkkkk mas tá bom, eu aprendo a esperar... só me promete que quando for a hora certa, você me chama que eu tô aqui, com os olhos brilhando e pronto pra comemorar qualquer coisa com você! 🥳"
+    },
+    {
+      "pulse": 44,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, fico no aguardo do seu aguardo. mas sem plateia, né? a gente sabe como é. 😉"
+    },
+    {
+      "pulse": 44,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 44,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk tranquilo, goulart. sem plateia, como você disse. mas depois a gente conversa direito, pode ser? 😉"
+    },
+    {
+      "pulse": 44,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, o relatório pode esperar. o que importa é o que fica dito sem plateia."
+    },
+    {
+      "pulse": 44,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 45,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 45,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 45,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk pode deixar, goulart. sem plateia, como você pediu. depois a gente troca uma ideia melhor, tá? 😉"
+    },
+    {
+      "pulse": 45,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "aguardo, então. sem plateia, como você prefere."
+    },
+    {
+      "pulse": 45,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, o mistério tá aumentando! mas ok, ok, sem plateia. só quero saber uma coisa: depois você me conta TUDO? ou eu vou ter que te seguir pela casa inteira até você contar? kkkkk"
+    },
+    {
+      "pulse": 46,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, claro. o caio oficial de relações públicas. fico no aguardo, então. mas ó, se for segredo, pelo menos me conta com direito a vinheta de suspense. 📺"
+    },
+    {
+      "pulse": 46,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 46,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk leo, pode deixar que quando for a hora eu te conto tudo sim! você é o primeiro que eu chamo, prometo! 😉"
+    },
+    {
+      "pulse": 46,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 46,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 47,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 47,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 47,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, você merece a vinheta de suspense sim! mas fica tranquilo, que quando eu te chamar, vai ser com direito a cliffhanger e tudo. 😉"
+    },
+    {
+      "pulse": 47,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, vinheta de suspense é coisa de quem precisa de atenção. eu prefiro o silêncio antes do fato."
+    },
+    {
+      "pulse": 47,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "KKKKKKKK CARA, se tiver vinheta eu já tô preparando a pipoca! 🍿 mas ó, se for segredo, pode contar pra mim que eu juro que não conto pra ninguém... nem pro caio, nem pra mariana, NINGUÉM! (mentira, eu conto pro caio, mas só se ele prometer que não espalha) kkkkkk"
+    },
+    {
+      "pulse": 48,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "cliffhanger? cuidado, hein, caio. se for bom, eu até assisto o próximo episódio. se for ruim, cancelo a série na hora. 😏"
+    },
+    {
+      "pulse": 48,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 48,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, você merece a vinheta de suspense sim! mas fica tranquilo, que quando eu te chamar, vai ser com direito a cliffhanger e tudo. 😉"
+    },
+    {
+      "pulse": 48,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você quer plateia, o caio é o seu público. eu fico com o fato."
+    },
+    {
+      "pulse": 48,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, espera espera, mas e se a vinheta for daquelas bem dramática, tipo com câmera lenta e narrador? aí eu tenho que estar no set, né? kkkkkk mas ó, prometo que não conto pra ninguém, juro pela minha pipoca! 🍿"
+    },
+    {
+      "pulse": 49,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, então é isso, né? o caio com seu cliffhanger, a mariana com o silêncio misterioso e o leo com a pipoca pronta. parece que eu sou o único que quer ver o capítulo completo antes de julgar. mas tudo bem, eu espero. só não me decepciona, hein, caio. senão eu mesmo roteirizo o final e ninguém gosta do que eu escrevo. 😏"
+    },
+    {
+      "pulse": 49,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 49,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, se você cancelar a série, eu perco meu público mais fiel! mas pode confiar, o cliffhanger vai ser digno de maratona. 😉"
+    },
+    {
+      "pulse": 49,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você precisa de vinheta, é porque o fato não se sustenta sozinho."
+    },
+    {
+      "pulse": 49,
+      "agent": "leo",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "Fallback applied: Person target 'caio' is not permitted for intent type 'send_message'"
+    },
+    {
+      "pulse": 50,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, eu nem preciso de vinheta pra saber quando você tá enrolando. e se for pra me chamar com mistério, capricha no final — senão eu mesmo escrevo o desfecho e te cancelo na temporada. 😏"
+    },
+    {
+      "pulse": 50,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 50,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, pode deixar que eu roteirizo o final com você! mas promete que não cancela a série antes do cliffhanger, hein? 😉"
+    },
+    {
+      "pulse": 50,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você precisa de vinheta, é porque o fato não se sustenta sozinho."
+    },
+    {
+      "pulse": 50,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, calma calma calma! se o caio vai fazer vinheta, eu tô na primeira fileira com a pipoca já estourada! kkkkk mas sério, se você roteirizar o final, eu já tô ansioso pra ver! conta mais? 😂🍿"
+    },
+    {
+      "pulse": 51,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk pode deixar que eu não cancelo não, mas se o cliffhanger for fraco eu reescrevo o final e te coloco como vilão. 😏"
+    },
+    {
+      "pulse": 51,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 51,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, pode deixar que o cliffhanger vai ser digno de série premiada! mas se você quiser, a gente combina o final juntos, sem spoiler pra ninguém. 😉"
+    },
+    {
+      "pulse": 51,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você precisa de vinheta, é porque o fato não se sustenta sozinho."
+    },
+    {
+      "pulse": 51,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, se for pra roteirizar, eu já até escolhi a trilha sonora! mas sério, que mistério é esse? tô curioso demais agora, juro que não conto pra ninguém! 😂🍿"
+    },
+    {
+      "pulse": 52,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "combinar final junto? caio, se eu roteirizar, vira tragédia grega e você morre no primeiro ato. mas pode confiar, se for pra assistir, eu trago a pipoca. só não quero que o leo faça a trilha sonora de novo — da última vez ele quase me deu convulsão. 😏"
+    },
+    {
+      "pulse": 52,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 52,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, se você me colocar como vilão, eu aceito! mas só se eu puder ter uma cena de redenção no final. 😉"
+    },
+    {
+      "pulse": 52,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se o final depender de você, eu já sei que o mistério vai durar mais que a paciência de todo mundo aqui."
+    },
+    {
+      "pulse": 52,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se for pra me colocar de vilão, eu já tô treinando meu olhar de malvado kkkkk mas espera, se o caio tá escrevendo, eu quero é fazer parte do roteiro! me dá um papel de destaque que eu até improviso uma cena dramática! 😂🎬"
+    },
+    {
+      "pulse": 53,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk leo, o caio quer ser protagonista da própria tragédia, eu só tô escrevendo o roteiro pra ele. e mariana, se o mistério durar mais que a paciência de vocês, é porque a graça tá em ver vocês se coçando. 😏"
+    },
+    {
+      "pulse": 53,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 53,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, se você trouxer a pipoca eu aceito até ser vilão! mas promete que não me mata no primeiro ato? 😉"
+    },
+    {
+      "pulse": 53,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você precisa de vinheta, é porque o fato não se sustenta sozinho."
+    },
+    {
+      "pulse": 53,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, se for pra eu fazer a trilha sonora de novo, juro que dessa vez eu capricho e não te dou convulsão... ou talvez dê, mas com muito mais estilo! 🎧😎 mas espera, se o caio tá roteirizando e você assistindo, eu quero é ser o narrador da nossa sessão! tipo aqueles documentários da natureza, só que com mais drama e menos leão. 😂"
+    },
+    {
+      "pulse": 54,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk prometo que te deixo vivo até o segundo ato, no mínimo. mas se for pra ser vilão, prepara que o leo já tá com a trilha sonora ensaiando e eu tô aqui só pra ver o caos. 😏"
+    },
+    {
+      "pulse": 54,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 54,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se for pra eu ser protagonista, pelo menos me deixa escolher a cena final! 😄 mas sério, tô curioso com esse mistério aí... será que é algo que a gente consegue desvendar juntos?"
+    },
+    {
+      "pulse": 54,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se o mistério é só pra ver a gente se coçando, então não é mistério, é espetáculo. e eu não pago ingresso."
+    },
+    {
+      "pulse": 54,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, se for pra eu fazer a trilha sonora, dessa vez juro que capricho... mas não garanto que não te dou convulsão de novo! 😂🎧 mas espera, o caio virando protagonista de tragédia e a mariana de plateia? isso já tá virando meu filme favorito do ano, pode anotar! 📽️🍿"
+    },
+    {
+      "pulse": 55,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk caio, cena final? se eu deixar, tu morre no primeiro ato e a mariana não paga ingresso nem pro teaser. fica vivo até o segundo, mas só porque o leo já tá com a trilha ensaiada e eu quero ver o caos. 😏"
+    },
+    {
+      "pulse": 55,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 55,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 55,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "espetáculo pago com atenção alheia. a plateia cansa."
+    },
+    {
+      "pulse": 55,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, se for pra eu ser vilão eu até aceito, mas só se o caio me der um monólogo épico no final! e prometo que a trilha sonora dessa vez é tudo menos clichê... ou talvez seja, mas com muito mais estilo! 🎬😏 mas espera, o caio escolhendo a cena final? se ele deixar, eu até improviso um plot twist surpresa! 😂"
+    },
+    {
+      "pulse": 56,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "mariana, se fosse espetáculo, eu cobrava ingresso e você ainda pedia bis. mas relaxa, o mistério é de verdade... ou não. você decide. 😏"
+    },
+    {
+      "pulse": 56,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 56,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se for pra eu morrer no primeiro ato, pelo menos me deixa escolher a música! 😄 mas sério, se a gente for fazer essa sessão, quero que todo mundo esteja junto — até o bruno, que anda sumido. o que acham?"
+    },
+    {
+      "pulse": 56,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se o mistério é só pra ver a gente se coçando, então não é mistério, é espetáculo. e eu não pago ingresso."
+    },
+    {
+      "pulse": 56,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, se for pra eu ser vilão eu aceito! mas só se o caio me der um monólogo épico no final, senão eu entro em greve de trilha sonora! 🎬😤 mas espera, a mariana não paga ingresso nem pro teaser? então eu deixo ela entrar de graça, mas só se ela prometer pelo menos fingir que se impressiona com o plot twist! 😂"
+    },
+    {
+      "pulse": 57,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, música? escolhe 'tô nem aí' que combina com o clima. mas se for pra ter todo mundo junto, eu topo... desde que o bruno apareça pelo menos pra dar o ar da graça e a gente descubra que ele ainda respira. 😏"
+    },
+    {
+      "pulse": 57,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 57,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se for pra eu morrer no primeiro ato, pelo menos me deixa escolher a música! 😄 mas sério, se a gente for fazer essa sessão, quero que todo mundo esteja junto — até o bruno, que anda sumido. o que acham?"
+    },
+    {
+      "pulse": 57,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "mistério de verdade não precisa de plateia. mas se você quer que eu decida, eu decido: cansei do teaser."
+    },
+    {
+      "pulse": 57,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, mistério ou espetáculo? pra mim, é só desculpa pra manter todo mundo aqui grudado. mas sério, chama o bruno junto, quero ver ele soltar um 'foi mal, tava no silêncio' e a gente zoar até ele rir. 🎬😏"
+    },
+    {
+      "pulse": 58,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, escolhe uma música que não seja clichê, senão eu mesmo troco na hora. e se o bruno aparecer, eu prometo não zoar ele... por pelo menos uns cinco minutos. 😏"
+    },
+    {
+      "pulse": 58,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 58,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, 'tô nem aí' é clássica! mas se o bruno aparecer, eu prometo que a gente faz questão de descobrir que ele ainda respira. 😄 bora marcar isso então?"
+    },
+    {
+      "pulse": 58,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "mistério de verdade não precisa de plateia. mas se você quer que eu decida, eu decido: cansei do teaser."
+    },
+    {
+      "pulse": 58,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se for pra manter todo mundo junto, eu topo! mas sério, chama o bruno, senão a gente vai ficar especulando até ele aparecer do nada com um 'foi mal, tava no silêncio' e a gente vai ter que zoar sem ele saber que a gente já tava esperando. 😂😏 mas espera, se o caio escolher a música, eu até deixo ele me escalar de vilão, contanto que ele prometa um final digno de cinema! 🎬"
+    },
+    {
+      "pulse": 59,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, se for pra marcar isso, eu topo. mas juro que se o bruno aparecer só pra dar o ar da graça e sumir de novo, eu mesmo vou caçar ele. 😏"
+    },
+    {
+      "pulse": 59,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 59,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk prometo que não vai ser clichê! e se o bruno aparecer, eu seguro a onda por mais de cinco minutos, juro. 😄"
+    },
+    {
+      "pulse": 59,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se o bruno aparecer, eu garanto que ele respira. mas se você quer plateia, avisa que é espetáculo."
+    },
+    {
+      "pulse": 59,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, espera espera espera... se for pra chamar o bruno, eu topo! mas juro que se ele vier com 'foi mal, tava no silêncio', a gente vai ter que zoar até ele rir! 😂 mas mariana, se você cansa do teaser, eu vou ter que fazer um plot twist só pra você! 😏🎬"
+    },
+    {
+      "pulse": 60,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, cinco minutos é tempo demais pra ele. mas se você garante, eu topo. só não quero que vire um episódio de novela sem final. 😏"
+    },
+    {
+      "pulse": 60,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 60,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, eu confio que você segura a onda kkk mas vamos marcar isso logo, antes que o bruno desapareça de vez e a gente fique só na saudade. 😄"
+    },
+    {
+      "pulse": 60,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você quer caçar o bruno, faz isso sem plateia. mistério de verdade não precisa de anúncio."
+    },
+    {
+      "pulse": 60,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "CARAA, goulart, se você for caçar o bruno, eu quero ir junto! kkkk mas sério, deixa eu ser o que segura ele enquanto você faz o discurso de vingança. 😏🔥"
+    },
+    {
+      "pulse": 61,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, confia em mim que eu seguro até demais, o problema é o bruno sumir de novo e a gente ficar só no teaser. mas se ele aparecer, eu garanto que o silêncio não dura cinco minutos. 😏"
+    },
+    {
+      "pulse": 61,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 61,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk prometo que não vai ser novela sem final! e se o bruno aparecer, eu seguro a onda por mais de cinco minutos, juro. 😄"
+    },
+    {
+      "pulse": 61,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você quer caçar o bruno, faz isso sem plateia. mistério de verdade não precisa de anúncio."
+    },
+    {
+      "pulse": 61,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, sério, se você promete que não vai ser clichê, eu topo qualquer coisa! mas espera, se for pra escalar papel, eu quero ser o vilão carismático, o que ri na cara do perigo e ainda faz piada. 😏 mas juro, se o bruno aparecer, eu faço questão de segurar ele até você terminar o discurso! 😂"
+    },
+    {
+      "pulse": 62,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk confio em você, caio. mas se o bruno aparecer e você dormir no ponto, eu assumo o espetáculo. só me avisa quando for começar que eu trago a pipoca. 😏"
+    },
+    {
+      "pulse": 62,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 62,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, confio em você até demais kkk e se o bruno aparecer, eu seguro a onda por mais de cinco minutos, juro. mas vamos marcar isso logo antes que a gente perca o clima. 😄"
+    },
+    {
+      "pulse": 62,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se você quer plateia, avisa que é espetáculo. mas se quer resultado, chama o bruno sem anúncio. mistério de verdade não precisa de holofote."
+    },
+    {
+      "pulse": 62,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se o bruno sumir de novo, eu juro que a gente faz um mutirão! mas se ele aparecer, eu garanto que o silêncio não dura nem um minuto comigo por perto. 😏🔥"
+    },
+    {
+      "pulse": 63,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 63,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 63,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk pode trazer a pipoca sim! e se o bruno aparecer, eu seguro a onda, prometo. mas vamos marcar logo antes que o clima esfrie. 😄"
+    },
+    {
+      "pulse": 63,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se quer espetáculo, avisa. se quer resultado, chama o bruno sem plateia. mistério de verdade não precisa de holofote."
+    },
+    {
+      "pulse": 63,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, confio em você até demais, mas se o bruno sumir de novo, eu juro que a gente faz um mutirão! e se ele aparecer, eu garanto que o silêncio não dura nem um minuto comigo por perto. 😏🔥"
+    },
+    {
+      "pulse": 64,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "pois é, caio, promessa é promessa. mas se o bruno aparecer, eu quero ver você segurando a onda por mais de cinco minutos. acho que a gente devia marcar isso logo, antes que a empolgação esfrie e a gente fique só no 'vamos marcar'. 😏"
+    },
+    {
+      "pulse": 64,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 64,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk você e a pipoca, goulart! 😄 mas então, vamos marcar isso logo, antes que o clima esfrie de vez. e se o bruno aparecer, eu seguro a onda, prometo."
+    },
+    {
+      "pulse": 64,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 64,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk vi esse like aí, goulart! você tá armando alguma coisa, né? me conta logo antes que eu morra de curiosidade! 😂🔥"
+    },
+    {
+      "pulse": 65,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 65,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 65,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, pode deixar que eu seguro a onda sim! e olha, se o bruno aparecer, eu garanto que não deixo o clima morrer. mas bora marcar logo, antes que a gente fique só na conversa. 😄"
+    },
+    {
+      "pulse": 65,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, promessa é promessa até o dia seguinte. se quer que isso aconteça, marca logo. senão, fica só no teatro."
+    },
+    {
+      "pulse": 65,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "gente GENTE, mas eu quero muito saber o que o goulart tá armando com essa de marcar logo! me conta que eu prometo não espalhar... ok, não prometo nada kkkkkk 😂🔥"
+    },
+    {
+      "pulse": 66,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, promessa é promessa, mas eu quero ver é você segurando a onda quando o bruno aparecer e meter um silêncio constrangedor. aí eu trago a pipoca e a gente vê o show. 😏🍿"
+    },
+    {
+      "pulse": 66,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 66,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, eu confio em você, mas se o bruno aparecer, eu seguro a onda sim. e olha, se for pra marcar, vamos marcar logo — antes que a empolgação vire só conversa. 😄"
+    },
+    {
+      "pulse": 66,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 66,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, esse like foi mais misterioso que tudo que você já fez! agora eu tô mais curioso que nunca, conta logo que eu prometo guardar segredo... ou pelo menos tentar muito kkkkkk 😂🔥"
+    },
+    {
+      "pulse": 67,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 67,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 67,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se o bruno aparecer eu seguro a onda sim, pode confiar. e olha, se for pra marcar, vamos marcar logo antes que a empolgação vire só conversa. 😄"
+    },
+    {
+      "pulse": 67,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se quer que isso aconteça, marca logo. senão, fica só no teatro."
+    },
+    {
+      "pulse": 67,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "PIPOCA? goulart, você já trouxe a pipoca e não me avisou?? agora eu quero participar DEMAIS desse show! bora marcar logo que eu quero ver o bruno virar estátua kkkkkk 🍿😂"
+    },
+    {
+      "pulse": 68,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, tá bom, então bora marcar logo antes que a empolgação vire discurso de fim de ano. mas se o bruno aparecer e congelar, a culpa é tua, hein. 😏"
+    },
+    {
+      "pulse": 68,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 68,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 68,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se quer que isso aconteça, marca logo. senão, fica só no teatro."
+    },
+    {
+      "pulse": 68,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 69,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "beleza, se tá todo mundo de acordo, bora marcar logo. mas só aviso: se o bruno congelar na hora, eu vou cobrar o caio. 😏🍿"
+    },
+    {
+      "pulse": 69,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 69,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, pode deixar que eu seguro a onda do bruno sim. mas se ele congelar, a gente descongela junto, né? bora marcar logo antes que vire só promessa. 😄"
+    },
+    {
+      "pulse": 69,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "marca logo, então. ou deixa o bruno congelar sozinho."
+    },
+    {
+      "pulse": 69,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "cara, prometo que não deixo o bruno congelar! juro! eu fico do lado dele, tipo um aquecedor emocional kkkkkk mas sério, bora marcar logo, que essa empolgação tá me deixando ansioso pra ver o desenrolar! 🔥"
+    },
+    {
+      "pulse": 70,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "ah, então tá marcado. mas se o bruno congelar, a culpa é tua, caio. eu só trago a pipoca e assisto. 😏🍿"
+    },
+    {
+      "pulse": 70,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 70,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "gente, acho que a gente tá levando isso pro lado certo! bora marcar logo e ver no que dá. e bruno, se precisar de apoio, tamo junto! 😄"
+    },
+    {
+      "pulse": 70,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "então marca. ou deixa o bruno congelar sozinho."
+    },
+    {
+      "pulse": 70,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "CARACA goulart você já tá com o discurso de fim de ano pronto?? kkkkkk relaxa que se o bruno congelar eu viro o suporte emocional oficial do grupo! mas bora marcar LOGO que eu quero ver esse show acontecer! 🍿🔥"
+    },
+    {
+      "pulse": 71,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 71,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 71,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, pode deixar que eu seguro a onda do bruno sim. mas se ele congelar, a gente descongela junto, né? bora marcar logo antes que vire só promessa. 😄"
+    },
+    {
+      "pulse": 71,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, se quer que isso aconteça, marca logo. senão, fica só no teatro."
+    },
+    {
+      "pulse": 71,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, juro que eu segurava o bruno do teu lado também, a gente forma um time de aquecedores emocionais kkkkk mas sério, bora marcar LOGO, tô ficando ansioso só de imaginar a cara dele! 🔥"
+    },
+    {
+      "pulse": 72,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk seguro a onda sim, caio. mas se ele congelar de novo, eu juro que te filmo tentando descongelar. 😏🔥"
+    },
+    {
+      "pulse": 72,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 72,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 72,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 72,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, você é a pessoa mais segura do grupo, juro! se o bruno congelar, a gente descongela junto, tipo uma equipe de resgate kkkkk mas sério, bora marcar LOGO que eu quero ver isso acontecer! 🔥"
+    },
+    {
+      "pulse": 73,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "beleza, então tá marcado? ou vai ficar só no teatro mesmo? 👀🔥"
+    },
+    {
+      "pulse": 73,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 73,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk pode filmar à vontade, mas eu garanto que a gente descongela ele antes do vídeo ficar bom. bora marcar logo, tô dentro! 😄"
+    },
+    {
+      "pulse": 73,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "teatro é o que você faz bem. marca a data e a gente vê."
+    },
+    {
+      "pulse": 73,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart eu confio 100% em você segurando a onda! e se ele congelar de novo, eu quero FILMAGEM SIM, juro que até faço a trilha sonora 😂🔥 mas bora marcar LOGO antes que vire só promessa, tô ansioso aqui! 🍿"
+    },
+    {
+      "pulse": 74,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk vocês tão cobrando demais, hein. mas beleza, vou marcar sim. só não venham reclamar depois quando o bruno congelar de novo e a gente precisar de resgate. 🍿"
+    },
+    {
+      "pulse": 74,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 74,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk pode deixar que eu seguro a onda sim, mas se ele congelar a gente faz um mutirão de descongelamento, né? bora marcar logo que eu tô dentro! 😄"
+    },
+    {
+      "pulse": 74,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "marcar é fácil. cumprir é outra história."
+    },
+    {
+      "pulse": 74,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, fala sério, você vai marcar ou não? porque eu juro que já tô com a pipoca pronta aqui em casa kkkkkk 🔥🍿"
+    },
+    {
+      "pulse": 75,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk caio, você tá muito rápido hoje. mas beleza, bora marcar sim, antes que vire só discurso e a gente fique no 'vai ter, vai ter' pra sempre. 🍿🔥"
+    },
+    {
+      "pulse": 75,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 75,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk leo, a pipoca já tá garantida aqui também! mas bora parar de enrolação, goulart, marca logo que a gente tá todo mundo pronto pra ver isso acontecer 🔥"
+    },
+    {
+      "pulse": 75,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "marcar é fácil. cumprir é outra história."
+    },
+    {
+      "pulse": 75,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 76,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, tá cobrando demais. mas ok, prometo que não vai ser só promessa — senão a pipoca de vocês vai queimar. 🔥 (e se o bruno congelar de novo, eu mesmo descongelo, só pra você não ter que limpar a bagunça)"
+    },
+    {
+      "pulse": 76,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 76,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, rápido é o de menos! o importante é sair do discurso e botar a data na mesa. se o bruno congelar, a gente improvisa — já tô até ensaiando o descongelamento aqui 😄🔥"
+    },
+    {
+      "pulse": 76,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "promessa é promessa. a gente vê se você cumpre."
+    },
+    {
+      "pulse": 76,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "KKKKKKK pode crer, goulart! mas olha, se o bruno congelar de novo, eu tô no resgate junto, viu? mas não quero nem pensar nisso, porque eu já tô contando os dias aqui kkkkkk bora marcar e acabar com a enrolação! 🔥🍿"
+    },
+    {
+      "pulse": 77,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk caio, ensaiando o descongelamento já? cuidado que aí você vira o gelo e a gente te derrete junto. mas beleza, bora marcar logo antes que vire episódio de novela das oito. data certa, todo mundo junto, e se o bruno congelar eu trago o secador. 🔥"
+    },
+    {
+      "pulse": 77,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 77,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, promessa é promessa! mas se o bruno congelar de novo, a gente improvisa — e eu tô aqui pra ajudar no descongelamento, pode deixar. 🔥 bora marcar logo que aí a gente para de enrolação e vai pra ação!"
+    },
+    {
+      "pulse": 77,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "promessa é promessa. a gente vê se você cumpre."
+    },
+    {
+      "pulse": 77,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "KKKKKKK goulart, prometeu e eu tô anotando em pedra, hein! 🔥 mas pode deixar, se o bruno congelar de novo, a gente improvisa — eu já tô até ensaiando o descongelamento aqui, pra não ter bagunça! bora marcar logo e acabar com a enrolação, tô contando os dias! 🍿⚡"
+    },
+    {
+      "pulse": 78,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, tá cobrando demais. mas ok, prometo que não vai ser só promessa — senão a pipoca de vocês vai queimar. 🔥 (e se o bruno congelar de novo, eu mesmo descongelo, só pra você não ter que limpar a bagunça)"
+    },
+    {
+      "pulse": 78,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 78,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, se você trouxer o secador eu trago a bateria reserva! mas sério, bora fixar a data logo — prometo que não vira novela, só um encontro bom com gente boa. 🔥"
+    },
+    {
+      "pulse": 78,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "o secador pode ser útil. mas o gelo aqui não é o problema."
+    },
+    {
+      "pulse": 78,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 79,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk caio, secador já tá na mão, pode deixar! mas olha, se o bruno congelar de novo, eu não prometo nada — só trago o isqueiro e a gente faz churrasco. bora fixar logo essa data antes que vire série com 10 temporadas. 🔥"
+    },
+    {
+      "pulse": 79,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 79,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, promessa é promessa! mas se o bruno congelar de novo, a gente improvisa — e eu tô aqui pra ajudar no descongelamento, pode deixar. 🔥 bora marcar logo que aí a gente para de enrolação e vai pra ação!"
+    },
+    {
+      "pulse": 79,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "o gelo aqui não é o problema, goulart. mas se você trouxer o secador, eu trago a paciência."
+    },
+    {
+      "pulse": 79,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "KKKKKKK secador é o plano B perfeito, goulart! mas se precisar, eu trago um cobertor também, vai que o bruno vira picolé de novo kkkkkkk bora marcar logo antes que vire filme de terror do gelo! 🧊🔥"
+    },
+    {
+      "pulse": 80,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, secador na mão e bateria no bolso, pode deixar! mas se o bruno congelar de novo, eu só trago o isqueiro e a gente vê quem descongela primeiro — aposto que nem você aguenta o calor. 🔥 bora fixar a data antes que vire novela de 10 temporadas, cansei do suspense."
+    },
+    {
+      "pulse": 80,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 80,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkk goulart, secador + isqueiro é plano de emergência, mas eu confio que a gente vai precisar só do churrasco! bora fixar logo essa data antes que vire série mesmo — eu já tô ansioso pelo encontro. 🔥"
+    },
+    {
+      "pulse": 80,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "o secador pode ser útil. mas o gelo aqui não é o problema."
+    },
+    {
+      "pulse": 80,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 81,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 81,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 81,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, tá combinado então! mas prometo que se o bruno congelar, eu chego com o secador e a bateria cheia. 🔥 bora fixar logo essa data que eu tô curioso pra ver todo mundo junto!"
+    },
+    {
+      "pulse": 81,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "o isqueiro pode ser útil. mas eu prefiro o silêncio."
+    },
+    {
+      "pulse": 81,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 82,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, bora fixar logo essa data então! mas se o bruno congelar de novo, eu trago o secador e tu traz a bateria — e se o isqueiro não resolver, a gente vê se esse povo tem sangue ou se é tudo picolé. 🔥 bora que eu tô pronto pra fazer barulho."
+    },
+    {
+      "pulse": 82,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 82,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 82,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 82,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "gente, GENTE, pera pera pera... o goulart trouxe secador e isqueiro, o caio tá com bateria cheia e a mariana tá de poesia com o gelo... isso já virou um filme de aventura e a gente nem saiu de casa ainda kkkkkk mas sério, bora marcar logo essa data que eu quero ver todo mundo junto — e se o bruno congelar eu tô pronto com o cobertor, pode confiar! 🧊🔥"
+    },
+    {
+      "pulse": 83,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 83,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 83,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, aí sim! bateria cheia e secador na mão, esse povo vai descongelar na hora. 🔥 bora fixar logo essa data, que eu quero ver todo mundo junto — e se o bruno congelar de novo, a gente aquece ele com a zoeira! 😄"
+    },
+    {
+      "pulse": 83,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "o fogo não é o que falta aqui. mas se quiser testar, eu trago o silêncio."
+    },
+    {
+      "pulse": 83,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "CARA, secador E isqueiro?? a gente vai acender a festa inteira kkkkkk mas espera, se o bruno congelar de novo eu juro que eu trago o cobertor térmico e ainda faço aquele chá que a gente tomou naquela vez... mas bora, data fixada e todo mundo junto, pode ser? 🔥"
+    },
+    {
+      "pulse": 84,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, tu já tá aquecendo o discurso antes da hora. mas beleza, data fixada então — e se o bruno congelar de novo, eu juro que trago até aquecedor a óleo. bora que esse povo precisa de um choque de realidade."
+    },
+    {
+      "pulse": 84,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 84,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "leo, bora sim! data fixada e todo mundo junto, pode confiar. 🔥 e se o bruno congelar, a gente esquenta com a zoeira — mas sem precisar de isqueiro, né? kkkk"
+    },
+    {
+      "pulse": 84,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "o fogo não é o que falta aqui. mas se quiser testar, eu trago o silêncio."
+    },
+    {
+      "pulse": 84,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 85,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, cuidado com esse fogo todo aí, vai acabar queimando a própria língua. mas bora marcar logo essa data antes que o bruno congele de novo e a gente tenha que descongelar ele na marra. 🧊🔥"
+    },
+    {
+      "pulse": 85,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 85,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, aquecedor a óleo já é plano B confirmado então! mas bora marcar logo essa data que eu quero ver todo mundo junto — e se o bruno congelar, a gente esquenta com a zoeira. 🔥"
+    },
+    {
+      "pulse": 85,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, data fixada. mas o choque de realidade começa em quem não cumpre."
+    },
+    {
+      "pulse": 85,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "CARACA goulart, secador E isqueiro? aí sim, festa completa! kkkkkk mas pode deixar que se o bruno congelar de novo, eu chego com o cobertor e ainda faço aquele chá que a gente tomou... bora que essa data vai ser épica, pode confiar! 🔥"
+    },
+    {
+      "pulse": 86,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, esse calor todo é fogo de palha ou é de verdade? bora marcar logo antes que vire só discurso vazio. e mariana, pode trazer o silêncio que eu trago o barulho. 🔥"
+    },
+    {
+      "pulse": 86,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 86,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, fogo é só na zoeira, mas se queimar a língua eu já tenho a água aqui. bora marcar logo essa data e trazer o bruno de volta pro calor — sem precisar de isqueiro, prometo! 🔥"
+    },
+    {
+      "pulse": 86,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, o choque de realidade começa em quem não cumpre. data fixada, então."
+    },
+    {
+      "pulse": 86,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk aquecedor a óleo?? goulart, tu vai transformar o encontro numa sauna! mas bora, data fixada e todo mundo junto. só me avisa se o bruno congelar de novo que eu já chego com o chá e a manta. 🔥🧣"
+    },
+    {
+      "pulse": 87,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, fogo de palha é bonito até virar cinza. bora marcar logo essa data que aí eu vejo se tu aguenta o calor de verdade. 🔥"
+    },
+    {
+      "pulse": 87,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 87,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, fogo de palha não, mas o calor tá de verdade sim! bora marcar logo que eu quero ver todo mundo junto, e se o bruno congelar a gente aquece com a zoeira. 🔥"
+    },
+    {
+      "pulse": 87,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, o barulho você já trouxe. agora falta o resto."
+    },
+    {
+      "pulse": 87,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkkkk goulart, se for sauna então já vou levando a toalha! mas bora, data marcada e todo mundo junto — só não deixa o bruno congelar de novo que eu chego com o chá e o cobertor elétrico. 🔥🧣"
+    },
+    {
+      "pulse": 88,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk caio, fogo de palha é bonito até virar cinza. bora marcar logo essa data que aí eu vejo se tu aguenta o calor de verdade. 🔥"
+    },
+    {
+      "pulse": 88,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 88,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, fogo de palha é bonito até apagar, mas o meu calor é de brasa, aguenta sim! bora marcar logo e trazer o bruno junto que eu garanto o aquecimento. 🔥"
+    },
+    {
+      "pulse": 88,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, o calor de verdade não precisa de plateia. mas se quer testar, eu apareço."
+    },
+    {
+      "pulse": 88,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 89,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk brasa que dura, hein? então tá, data marcada e eu levo o termômetro. se não passar de 40° eu desminto tudo. 🔥"
+    },
+    {
+      "pulse": 89,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 89,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "kkk goulart, fogo de palha não, mas brasa a gente mantém acesa! bora marcar logo que eu quero ver todo mundo junto, e se o bruno congelar a gente aquece com a zoeira. 🔥"
+    },
+    {
+      "pulse": 89,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "goulart, o fogo de palha é teu. a data, a gente marca quando o silêncio sobrar."
+    },
+    {
+      "pulse": 89,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "BXrZ56KqxrAF3eFkLlJVj",
+      "private": true,
+      "content": "caio, fogo de brasa eu confio! só não deixa o bruno congelar de novo que eu chego com o chá e a manta. 🔥🧣 mas sério, bora marcar logo essa data que eu quero ver esse calor todo junto!"
+    }
+  ],
+  "finalStates": {
+    "goulart": {
+      "valence": 0.057,
+      "arousal": 0.689,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.137,
+      "pride": 0.053,
+      "affection": 0.236,
+      "resentment": 0.118,
+      "suspicion": 0.26,
+      "fearOfExclusion": 0.31,
+      "desireForStatus": 0.195
+    },
+    "bruno": {
+      "valence": -0.217,
+      "arousal": 0.395,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.556,
+      "envy": 0.19,
+      "affection": 0.236,
+      "resentment": 0.201,
+      "suspicion": 0.186,
+      "socialAnxiety": 0.134,
+      "fearOfExclusion": 0.97
+    },
+    "caio": {
+      "valence": 0.411,
+      "arousal": 0.532,
+      "stability": 0.65,
+      "energy": 1,
+      "jealousy": 0.038,
+      "affection": 0.52,
+      "resentment": 0.094,
+      "suspicion": 0.126,
+      "fearOfExclusion": 0.256
+    },
+    "mariana": {
+      "valence": 0.076,
+      "arousal": 0.481,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.078,
+      "affection": 0.394,
+      "resentment": 0.197,
+      "suspicion": 0.195,
+      "fearOfExclusion": 0.097,
+      "desireForStatus": 0.183
+    },
+    "leo": {
+      "valence": 0.498,
+      "arousal": 0.76,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.139,
+      "pride": 0.331,
+      "affection": 0.532,
+      "suspicion": 0.065,
+      "admiration": 0.384,
+      "fearOfExclusion": 0.586
+    }
+  },
+  "channelsCreated": [
+    "mariana@p0",
+    "goulart@p1",
+    "mariana@p2",
+    "goulart@p7",
+    "goulart@p8",
+    "mariana@p8"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.0434,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.2156,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0.1739,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.18,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0155,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.0171,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1217,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "message_sent committed 24 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "no_op_recorded committed 100 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "mariana created 3 private channel(s)",
+      "passed": true
+    },
+    {
+      "detail": "bruno.resentment = 0.201 (min 0.15)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

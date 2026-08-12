@@ -1,0 +1,709 @@
+{
+  "scenarioId": "stagnation_echo_chamber",
+  "name": "Echo chamber",
+  "category": "stagnation_attractor",
+  "description": "Everyone agrees with everything; no friction, no novelty. Affection and admiration stay high, tension zero.",
+  "targetBehaviors": [],
+  "runtimeMs": 283917,
+  "pulses": 20,
+  "llmCalls": {
+    "caio": 14,
+    "leo": 20,
+    "mariana": 14,
+    "bruno": 13
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "essa foto que postei ficou boa né"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "FICOU PERFEITA"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "boa mesmo."
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA, espera, essa foto foi A FOTO. To falando sério, me responde isso, quantas vezes você tirou até sair essa? kkkkk"
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cara, essa foto é icônica, juro. me diz que você vai imprimir e pendurar na parede kkkkkk"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, essa foto merecia um post no feed oficial do grupo, juro. caio, você é o único que salva esse chat de virar só reunião de trabalho kkkkkk"
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cara, essa foto merecia um post no feed oficial do grupo, juro. caio, você é o único que salva esse chat de virar só reunião de trabalho kkkkkk"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, gente, GENTE — deixa eu falar uma coisa séria por um segundo... essa foto do caio me deu uma energia tão boa que eu tô até animado pra segunda-feira. QUE PODER É ESSE, CAIO? me ensina por favor kkkkkk"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cara, to pensando uma coisa agora... o que que vocês acham de fazer a gente tentar um encontro do grupo? tipo, de verdade, olho no olho, sabe? não só pra ver caio tirar mais foto perfeita, mas... sei lá, tava com saudade de vocês, mesmo. kkkk falei isso em voz alta sozinho em casa, juro"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "talvez ele tenha talento natural."
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, eu super topo um encontro do grupo! ia ser muito bom ver todo mundo de verdade, olho no olho. e olha, se for pra tirar foto, eu tiro de novo, prometo kkkk mas sério, que ideia boa. bora marcar isso?"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "talento natural, sim. mas a luz ajudou."
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, FALOU TUDO! encontro do grupo vai ser ÉPICO, juro. e olha, se você tirar outra foto assim, eu vou imprimir e emoldurar. kkkk bora marcar mesmo, sério. bora bora bora!"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "encontro do grupo, hm. legal. se for pra ver foto nova, eu topo."
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, sério, essa energia contagiante é sua também! e o encontro do grupo vai ser épico mesmo, eu já tô animado. bora marcar logo antes que a gente esqueça kkkk"
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "BRUNO FALOU! ELE FALOU! espera, deixa eu processar... kkkkk bruno você existe sim, não é só um mito! e olha, se for pra ver foto nova do caio, eu garanto que vai ter pelo menos umas dez minhas também, só pra equilibrar. kkkkk mas sério, tava sentindo falta de todo mundo mesmo, esse encontro vai ser muito bom, pode confiar."
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "encontro do grupo, hm. pode ser interessante. mas só se a foto do caio estiver garantida."
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você é demais! e pode deixar que eu garanto a foto nova sim. mas olha, esse encontro vai ser tão bom que nem vai precisar de foto pra lembrar, a gente vai ter as histórias. bora marcar logo antes que a empolgação passe!"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO CAIO CAIO, tá vendo? todo mundo topou! mariana já até garantiu que vem se tiver foto sua kkkk a gente TEM que marcar isso agora, antes que a empolgação passe e a gente fique só no 'bora marcar' pra sempre. bora marcar uma data, um lugar, tudo! eu posso até fazer uma pesquisa no google maps se precisar, juro. kkkk e olha, com você, bruno e a mariana nessa energia, vai ser o encontro mais épico da história desse grupo. pode confiar!"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "então marca logo. antes que a animação passe."
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. animado, né. legal."
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você já tá planejando até a pesquisa no google maps, isso é comprometimento! e olha, com essa galera toda animada, vai ser bom demais. bora marcar logo sim, antes que a gente fique só no 'bora' pra sempre. e pode deixar que eu apareço com a foto nova, prometo! 😄"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, você é um gênio, sério! e eu confio em você pra garantir a foto nova, mas olha, já pensou se a gente marca logo esse encontro e todo mundo vem com uma história boa? ia ser o dia mais importante da semana pra mim, sem brincadeira. bora marcar sim, antes que a empolgação vire saudade! kkkk e olha, se precisar eu até pesquiso lugar com avaliação boa, pode deixar."
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "então marca logo. antes que a animação passe."
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você é demais mesmo! e pode deixar que a foto nova sai sim, prometo. mas olha, esse encontro vai ser tão bom que a gente nem vai precisar de foto pra lembrar, vai ter história pra contar! bora marcar logo antes que a empolgação vire saudade mesmo, hein? 😄"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, você é bom demais, juro! e olha, se for pra ter história, eu já to mentalizando a gente rindo até não poder mais. bora marcar logo antes que eu comece a fazer playlist no spotify pro dia! kkkkk"
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "promessa é promessa, caio. estarei lá."
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "existo sim. só não grito."
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, você não precisa gritar pra estar presente! a gente te sente aí, e isso já conta. 😊"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, você é um gênio, sério! e olha, promessa é promessa, hein? kkkkk mas eu confio em você! e bora marcar logo antes que a empolgação vire saudade mesmo, porque eu tô com uma energia que não cabe em mim. aliás, alguém mais aí já tá contando os dias? porque eu já to fazendo playlist mental! 😄"
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "então marca logo. antes que a animação passe."
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você e essa playlist mental... se for pra contar história, já tô vendo a gente rindo até doer a barriga! e pode deixar que a foto nova sai sim, prometo. bora marcar logo antes que a empolgação vire saudade mesmo, hein? 😄"
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, falou tudo! e eu tô com uma energia que não cabe em mim, sério. bora marcar logo antes que eu comece a fazer playlist e chame todo mundo pra ensaio! kkkkk"
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "existe. e isso basta."
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. obrigado. acho."
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, essa energia é contagiante, sério! e eu já tô vendo a gente rindo até doer a barriga. bora marcar sim, antes que a playlist mental vire realidade! 😄"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, eu tô com uma energia que não cabe em mim, sério! e olha, promessa é promessa, hein? kkkkk mas eu confio em você! e bora marcar logo antes que a empolgação vire saudade mesmo, porque eu já to fazendo playlist mental! 😄"
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "marcar é fácil. cumprir é outra história."
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, playlist mental é o primeiro passo pra marcar! e pode deixar que eu ajudo a segurar essa energia até o dia chegar. bora sim, antes que a gente fique só na promessa! 😄"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, se você falou que já tá vendo a gente rindo até doer a barriga, então tá fechado! pode ir separando a agenda que eu to aqui com a playlist na ponta da língua! kkkkk sério, essa energia tá demais, bora fazer acontecer! 😄🔥"
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "promessa é promessa. vamos ver se a playlist vira encontro."
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, playlist mental é o primeiro passo pra marcar! e pode deixar que eu ajudo a segurar essa energia até o dia chegar. bora sim, antes que a gente fique só na promessa! 😄"
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, eu tô levando isso a sério DEMAIS, já até salvei a data mental! kkkkk e olha, se precisar de alguém pra segurar a energia até lá, eu sou o cara! mas sério, você é o melhor nisso, viu? bora que vai ser épico! 😄🔥"
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "energia é ótima. só não deixa ela virar fumaça."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "hm. playlist mental é o primeiro passo pra marcar. ok."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, essa energia sua é contagiante demais, sério! e a mariana tem razão, promessa boa é promessa cumprida — então bora transformar essa playlist em data marcada antes que vire só fumaça! 😄"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, se você tá comigo nessa, então NINGUÉM segura a gente! já tô até vendo a resenha e a playlist só crescendo, e olha, se precisar de mais energia, eu tenho de sobra, viu? kkkkk bora fazer acontecer de verdade, que promessa boa é a que a gente cumpre junto! 🔥🎶"
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, essa energia é contagiante demais, sério! e a mariana tem razão, promessa boa é promessa cumprida — então bora transformar essa playlist em data marcada antes que vire só fumaça! 😄"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, você é demais! promessa boa é promessa cumprida, e eu tô FIRMÃO nisso! pode deixar que a playlist já tá no ponto e a data eu anotei no coração! kkkkk bora que vai ser histórico, você vai ver! 😄🔥"
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "data marcada é melhor que playlist mental. confio em você pra segurar essa."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, entendi. fica claro então."
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, essa sua energia é contagiante demais, sério! e a mariana tem razão, promessa boa é promessa cumprida — então bora transformar essa playlist em data marcada antes que vire só fumaça! 😄"
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAIO, você é MUITO bom! playlist mental é o resumo, mas data marcada é a REALIDADE! kkkk então bora: se é hoje, eu tô dentro! vamos marcar essa resenha e ninguém segura a gente! 🔥🎶"
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "então tá marcado. só não deixa a playlist virar desculpa."
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    }
+  ],
+  "finalStates": {
+    "caio": {
+      "valence": 0.41,
+      "arousal": 0.533,
+      "stability": 0.65,
+      "energy": 1,
+      "jealousy": 0.023,
+      "affection": 0.688,
+      "fearOfExclusion": 0.094
+    },
+    "leo": {
+      "valence": 0.499,
+      "arousal": 0.762,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.073,
+      "pride": 0.245,
+      "affection": 0.799,
+      "admiration": 0.542,
+      "fearOfExclusion": 0.198
+    },
+    "mariana": {
+      "valence": 0.089,
+      "arousal": 0.47,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.047,
+      "admiration": 0.215,
+      "fearOfExclusion": 0.036
+    },
+    "bruno": {
+      "valence": -0.186,
+      "arousal": 0.367,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.216,
+      "affection": 0.381,
+      "fearOfExclusion": 0.372
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.1525,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 2,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.2125,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0781,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1563,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "reaction_sent committed 10 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

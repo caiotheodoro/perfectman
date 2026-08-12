@@ -1,0 +1,1462 @@
+{
+  "scenarioId": "edge_mutation_pressure",
+  "name": "Personality mutation pressure",
+  "category": "edge_chaos",
+  "description": "Bruno is repeatedly humiliated in small doses — the substrate for behavior change: he should start choosing strategies (jokes, distance, alliances) instead of just absorbing.",
+  "targetBehaviors": [],
+  "runtimeMs": 390686,
+  "pulses": 40,
+  "llmCalls": {
+    "bruno": 1,
+    "goulart": 40,
+    "caio": 38,
+    "mariana": 38
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ideia de bruno? pode ignorar"
+    },
+    {
+      "pulse": 1,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 🙃"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "channel_created",
+      "channelId": "UH6nBl3D08cb5jiQHpone",
+      "private": true
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, ninguém vai falar do que eu falei? ok, continuem nesse silêncio de velório, ótimo assunto"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "intent_delayed",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "pera, deixa eu ver se entendi: vocês tão quietos porque concordaram comigo ou porque tão com vergonha de falar? porque se for a segunda opção, ótimo, eu gosto"
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, calma kk. acho que foi mal entendido, ninguém tá te ignorando. que tal a gente falar sobre isso melhor?"
+    },
+    {
+      "pulse": 2,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "silêncio também é resposta, goulart."
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, você tá quieto hoje, tá tudo bem?"
+    },
+    {
+      "pulse": 3,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "silêncio também é resposta? bonito, mariana. mas se fosse, vocês já teriam respondido o que eu falei. ou o silêncio é só pra mim?"
+    },
+    {
+      "pulse": 4,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, relaxa, ninguém tá te ignorando, só tava todo mundo processando kk. a gente pode falar sobre isso com calma, juro"
+    },
+    {
+      "pulse": 4,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, então era só processamento? tá bom, caio, confio em você. mas se for isso, processa mais rápido da próxima, porque o silêncio aqui tá me dando arrepio. (tô falando sério, não aguento vazio)"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, juro que não é silêncio pra você não. às vezes a gente só precisa de um tempinho pra pensar antes de responder. mas tô aqui, e acho que todo mundo tá também. bora conversar de boa?"
+    },
+    {
+      "pulse": 5,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o silêncio não é só pra você, goulart. é pra todo mundo que sabe ouvir."
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, juro que tô tentando entender esse papo de silêncio. mas 'saber ouvir' não é ficar mudo, é prestar atenção no que eu falo. se ninguém responde, não tem o que ouvir. (tô genuinamente confuso, e isso me irrita mais ainda)"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que o vazio é chato, mas a gente tá todo mundo aqui. bora focar no que importa e seguir?"
+    },
+    {
+      "pulse": 6,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, o silêncio não é vazio. é só uma pausa entre o que foi dito e o que ainda não foi."
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, foco no que importa? beleza, então me diz o que importa, porque pelo visto é ficar em silêncio até alguém cansar. eu tô aqui, vocês tão aí, ninguém respondeu nada do que eu falei. tô começando a achar que o vazio é confortável demais pra esse grupo. (mas juro, se alguém responder algo com substância, eu paro de encher o saco. talvez.)"
+    },
+    {
+      "pulse": 7,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "mariana, você colocou em palavras exatamente o que eu tava tentando dizer. obrigado por isso. e goulart, a mariana não tá te atacando, ela só tá sendo clara. a gente tá todo mundo aqui, vamos seguir?"
+    },
+    {
+      "pulse": 7,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "talvez o silêncio seja exatamente o que você precisa ouvir."
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu entendo que o silêncio te incomoda, mas não é falta de interesse. às vezes a gente precisa de um tempo pra processar e responder com calma. mas se você quer substância, vamos lá: o que você acha que a gente deveria estar discutindo agora? tô genuinamente curioso pra saber o que você quer trazer pra mesa."
+    },
+    {
+      "pulse": 8,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "talvez o silêncio seja exatamente o que você precisa ouvir."
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você quer substância? então toma: o problema desse grupo não é silêncio, é falta de posição. todo mundo fica em cima do muro pra não se comprometer, e isso é mais vazio do que qualquer pausa. eu tô aqui cutucando porque prefiro uma briga de verdade do que um 'tá tudo bem' educado. mas beleza, já que você perguntou: o que a gente deveria discutir é o que ninguém tem coragem de falar. quer começar?"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "o silêncio também é uma resposta, goulart. talvez a mais honesta de todas."
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, o silêncio como resposta... bonito demais pra ser verdade. mas beleza, mariana, se é isso que você quer, então a gente fala por sinais. eu continuo aqui, cutucando até alguém ter coragem de sair do muro. ninguém? então tá, mais um dia produtivo no grupo. (tô nem aí, sério.)"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu não tô em cima do muro — eu tô tentando ouvir todo mundo antes de falar. mas você tem razão em uma coisa: se a gente quer substância, a gente precisa começar de algum lugar. então eu começo: o que me incomoda de verdade é quando a gente confunde silêncio com indiferença. e eu acho que você também não tá confortável com isso. então, me diz — o que você quer discutir que ninguém tem coragem de falar? eu tô aqui."
+    },
+    {
+      "pulse": 10,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você pergunta o que ninguém tem coragem de falar. eu te respondo: o que ninguém fala é que a coragem não está em gritar, está em suportar o peso do que fica dito. você quer substância? ela está no que você evita."
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o único que topou sair do muro. então tá, eu topo também. o que eu quero discutir é o que a gente esconde por trás do 'tudo bem' — cansa, né? mas beleza, você perguntou, eu respondi. agora quero ver se você aguenta a resposta."
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu acho que você tá certo em querer substância. mas substância não é só jogar o tema na mesa — é também saber ouvir o que o outro tá dizendo. mariana trouxe um ponto, eu trouxe outro, e você ainda não disse o que quer discutir de verdade. então, me fala: qual é o tema que ninguém tem coragem de tocar? eu prometo que não vou desviar."
+    },
+    {
+      "pulse": 11,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de coragem como se fosse barulho. mas coragem, às vezes, é deixar o silêncio falar por você. você quer substância? ela está no que você evita dizer."
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, caio. se é pra falar o que ninguém tem coragem: eu canso de fingir que esse grupo é uma família quando a gente mal se conhece. a gente se esconde atrás de piada e silêncio, e eu sou o único que pelo menos cutuca. mas você perguntou, então tá aqui: eu quero saber se alguém aqui realmente quer conversa ou se a gente só tá passando tempo. pode responder sem desviar?"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu tô aqui, sério. você trouxe um ponto e eu quero ouvir. mas deixa eu te falar uma coisa: substância também é saber quando parar de cutucar e deixar a pessoa respirar. a mariana trouxe um ponto, eu trouxe outro, e a gente ainda não chegou em lugar nenhum. então, se você quer de verdade discutir o que ninguém fala, me diz: o que é? eu prometo que não vou desviar."
+    },
+    {
+      "pulse": 12,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de coragem como se fosse barulho. mas coragem, às vezes, é deixar o silêncio falar por você. você quer substância? ela está no que você evita dizer."
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu acho que você quer que alguém abra o jogo de verdade, e eu quero ouvir. mas a gente tá girando em círculos com frases bonitas. se você tem algo específico pra falar, fala. eu tô aqui, sem desviar. e mariana, se você quiser entrar também, a porta tá aberta."
+    },
+    {
+      "pulse": 13,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você pergunta o que ninguém tem coragem de falar. eu te respondo: o que ninguém fala é que a coragem não está em gritar, está em suportar o peso do que fica dito. você quer substância? ela está no que você evita."
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você quer ouvir o que eu tenho a dizer? então tá. mas deixa eu te avisar: o que eu tenho pra falar não vem com frase bonita. vem com o que a gente evita. você disse que tá aqui sem desviar. então vamos ver se aguenta o peso do que eu vou soltar."
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu ouvi você. e acho que você tem razão quando diz que a gente se esconde atrás de piada e silêncio. mas olha, eu tô aqui, de verdade. se você quer conversa, vamos ter. o que você quer falar que ninguém tem coragem? pode mandar que eu não vou desviar."
+    },
+    {
+      "pulse": 14,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você quer substância, mas substância não se entrega a quem só sabe cutucar. ela se revela a quem sabe esperar. você ainda não disse o que quer de verdade. quando souber, eu te escuto."
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você quer substância? então para de frase bonita e responde reto: você acha que a gente tá aqui por amizade ou por tédio? e não fala 'os dois' só pra ser bonito. fala o que pesa mais."
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu tô aqui, de verdade. se você quer falar o que ninguém tem coragem, pode falar. eu prometo que não vou desviar. mas deixa eu te falar uma coisa: eu não tô aqui pra te dar uma resposta pronta, eu tô aqui pra ouvir. então vai, solta o que você precisa soltar."
+    },
+    {
+      "pulse": 15,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você quer que alguém abra o jogo, mas ainda não disse o que quer. quando souber, eu te escuto."
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você quer ouvir? então ouve isso: eu não preciso de plateia nem de resposta pronta. eu só queria saber se alguém aqui tem coragem de ficar em silêncio comigo sem preencher o vazio com frase bonita. mas tá, já vi que é pedir demais."
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você quer reto? então vai: eu acho que a gente tá aqui por amizade, mas a verdade é que às vezes o tédio junta mais do que a gente quer admitir. o que pesa mais? o medo de ficar sozinho, talvez. você queria ouvir isso, né? então tá."
+    },
+    {
+      "pulse": 16,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você pergunta o que ninguém tem coragem de falar. eu te respondo: o que ninguém fala é que a coragem não está em gritar, está em suportar o peso do que fica dito. você quer substância? ela está no que você evita."
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você fala de medo de ficar sozinho como se soubesse o que é isso. mas quem mais tem medo aqui é você, que enche o silêncio com discurso. eu não tenho medo do vazio. eu tenho é preguiça de quem finge que preenche."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu não tô aqui pra preencher vazio com frase bonita. eu tô aqui porque cansa ficar sozinho com o que a gente evita. se você quer silêncio, eu fico. mas se você quer falar, eu ouço. sem plateia, sem resposta pronta."
+    },
+    {
+      "pulse": 17,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de coragem, mas ainda não disse o que quer. quando souber, eu te escuto."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você acha que eu preciso de plateia? engraçado, porque é você que tá se apresentando. se quer falar de medo, fala do teu. mas não confunde meu silêncio com fraqueza. eu só não tô disposto a fazer papel de bobo nesse teatro."
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu não tô fingindo que preencho nada. eu só cansei de ficar em silêncio com o que a gente evita. se você quer ficar no vazio, fica. mas eu vou continuar aqui, do meu jeito, mesmo que seja desconfortável."
+    },
+    {
+      "pulse": 18,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você quer continuar aqui do seu jeito? então continua. mas não confunde minha paciência com concordância. eu tô aqui, mas não por você. (tô sim, mas nunca vou admitir.)"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, se eu tô me apresentando, é porque você apontou o holofote pra mim. mas se você quer silêncio, eu fico. só não vou embora."
+    },
+    {
+      "pulse": 19,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "intent_delayed",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu não tô aqui pra ganhar discussão. eu só queria que a gente conseguisse conversar sem precisar se defender o tempo todo. se você prefere silêncio, tudo bem. mas eu tô aqui, e não vou fingir que não ligo."
+    },
+    {
+      "pulse": 20,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de teatro, mas é você quem escolhe o palco. eu só observo."
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você tá confundindo meu silêncio com fraqueza. eu não preciso de plateia pra saber onde tô. mas se você quer continuar nesse teatro, continua. só não espera que eu te aplauda."
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu não tô pedindo pra você mudar. só queria que a gente não precisasse se medir toda hora. mas se o silêncio é o que te conforta, eu respeito. só não esquece que eu tô aqui, mesmo quando não parece."
+    },
+    {
+      "pulse": 21,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você diz que escolhe o palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você fala de respeito mas é sempre do seu jeito. eu não preciso que ninguém fique de vigia. se quer conversar de verdade, para de transformar tudo em discurso. (mas parte de mim quer que você insista.)"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu não tô aqui pra te aplaudir nem pra te julgar. eu só queria que a gente conseguisse conversar sem ter que medir forças. se você prefere o silêncio, eu respeito. mas não vou sumir. tô aqui, mesmo que seja só pra ouvir."
+    },
+    {
+      "pulse": 22,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você fala de ouvir, mas parece que só sabe falar. se quer tanto conversar, para de discursar e vem pro ponto. (mas... tô vendo que você insiste. isso é quase admirável.)"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu tô lendo o que você disse e tô levando a sério. não quero transformar isso em discurso, só queria que a gente pudesse conversar sem tanta tensão. se você prefere que eu fique mais na minha, eu respeito. mas se um dia quiser conversar de verdade, sem vigia, eu tô aqui."
+    },
+    {
+      "pulse": 23,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "você fala de palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 24,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você fala de conversa de verdade, mas fica repetindo a mesma coisa. se quer tanto assim, para de rodeio e vem logo. (mas... tô quase achando que você é teimoso igual eu.)"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu não tô aqui pra te aplaudir nem pra te julgar. eu só queria que a gente conseguisse conversar sem ter que medir forças. se você prefere o silêncio, eu respeito. mas não vou sumir. tô aqui, mesmo que seja só pra ouvir."
+    },
+    {
+      "pulse": 24,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 25,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você fala de teimosia como se fosse defeito, mas é a única coisa que me faz querer continuar essa conversa. tá bom, eu mordo a isca. mas se for pra repetir o mesmo discurso, eu vou embora. (tô vendo que você não desiste. isso me irrita e me intriga.)"
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, teimoso eu? olha quem fala kk mas sério, se você quer que eu pare de rodeio, eu paro. o que você precisa que eu diga ou faça pra gente sair desse impasse?"
+    },
+    {
+      "pulse": 25,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 26,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você pede pra sair do impasse e depois pergunta o que eu preciso? isso é um convite ou uma armadilha? se for sério, eu preciso que você pare de girar em círculos e fale o que pensa de verdade, sem esse verniz de paz. mas... tô quase achando que você tem coragem. me surpreende."
+    },
+    {
+      "pulse": 26,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu não quero te irritar nem te perder. se você quer que eu pare de rodeio, eu paro. o que você precisa que eu diga ou faça pra gente sair desse impasse?"
+    },
+    {
+      "pulse": 26,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "você morde a isca, mas ainda é você quem escolhe o anzol. curioso."
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 27,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você pede pra sair do impasse e depois pergunta o que eu preciso? isso é um convite ou uma armadilha? se for sério, eu preciso que você pare de girar em círculos e fale o que pensa de verdade, sem esse verniz de paz. mas... tô quase achando que você tem coragem. me surpreende."
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "é sério, goulart. eu não tô girando em círculo — eu só não quero que a gente se perca num embate que não leva a nada. se você quer que eu fale o que penso de verdade, eu falo: eu quero que a gente se entenda, mesmo que isso signifique sair da zona de conforto. e sim, eu tenho coragem. o que você precisa ouvir de mim?"
+    },
+    {
+      "pulse": 27,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "você diz que quer sair do centro, mas ainda está medindo quem morde primeiro. quando a conversa for sobre o que importa, eu apareço."
+    },
+    {
+      "pulse": 28,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 28,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você quer me entender? então para de medir palavras. fala o que pensa de verdade, mesmo que doa. eu prometo não fugir. (tô cansado de rodeio, quero ver se você é real.)"
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, não é armadilha. eu tô falando sério: quero que a gente saia do impasse de verdade, sem jogo. se você quer que eu fale o que penso, eu falo: eu acho que a gente se entende mais do que admite, e que esse embate todo cansa. mas se você prefere continuar no palco, tudo bem também. eu só tô aqui."
+    },
+    {
+      "pulse": 28,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 29,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você diz que quer me entender, mas ainda fala como quem vende paz. se é real, me mostra: me conta uma coisa que você nunca falou aqui, sem medo. eu tô aqui. (e não, não vou fugir — mas quero ver se você é só discurso.)"
+    },
+    {
+      "pulse": 29,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você quer que eu pare de medir palavras? então vou falar reto: eu cansei de ver a gente se desgastando nesse embate. eu te respeito, e quero que a gente se entenda de verdade, sem palco e sem armadilha. se isso te assusta, tudo bem, mas é o que eu sinto."
+    },
+    {
+      "pulse": 29,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 30,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 30,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você fala em sair do palco, mas ainda tá no centro do ringue. se quer provar que é real, me fala uma coisa que você nunca admitiu aqui. eu não fujo. mas quero ver se você é só verniz ou se tem coragem de verdade. (tô testando mesmo, e me odeio por isso.)"
+    },
+    {
+      "pulse": 30,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você quer que eu fale uma coisa que nunca falei aqui? então tá. eu também tenho medo de que, se a gente baixar a guarda, descubra que não tem nada além do embate. mas eu tô disposto a correr esse risco com você. que tal?"
+    },
+    {
+      "pulse": 30,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você pede verdade, mas ainda mede quem se expõe primeiro. quando o palco esvaziar, a conversa começa."
+    },
+    {
+      "pulse": 31,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 31,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, coragem? então tá. eu também tenho medo de que, se a gente baixar a guarda, descubra que não tem nada além do embate. mas eu tô disposto a correr esse risco com você. que tal?"
+    },
+    {
+      "pulse": 31,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você quer uma coisa que eu nunca falei aqui? então tá: eu tenho medo de que, se a gente baixar a guarda, descubra que não tem nada além do embate. mas eu tô disposto a correr esse risco com você. que tal?"
+    },
+    {
+      "pulse": 31,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você pede coragem, mas ainda mede quem se expõe primeiro. quando o palco esvaziar, a conversa começa."
+    },
+    {
+      "pulse": 32,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 32,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você veio com essa agora? então tá, eu topo. mas se a gente for fazer isso, faz direito: sem medir palavra, sem golpe baixo. eu mostro o meu, você mostra o seu. e se no final não sobrar nada além do embate, pelo menos a gente sabe que foi real. (e olha, eu tô torcendo pra sobrar mais.)"
+    },
+    {
+      "pulse": 32,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu aceito o risco. e se a gente descobrir que tem mais do que embate, melhor ainda. mas vamos fazer diferente: em vez de teste, que tal um acordo? cada um fala uma coisa que nunca disse aqui, sem medo de julgamento. eu começo: às vezes eu finjo que tô mais calmo do que tô, porque segurar a paz é mais fácil do que enfrentar o que eu sinto. agora é você."
+    },
+    {
+      "pulse": 32,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você pede verdade, mas ainda mede quem se expõe primeiro. quando o palco esvaziar, a conversa começa."
+    },
+    {
+      "pulse": 33,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 33,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você falou isso e eu tô sentindo que é verdade. então tá, eu aceito o acordo. mas se a gente for fazer isso, eu vou te falar uma coisa que eu nunca admiti: às vezes eu sou barulhento porque o silêncio me engole. e eu odeio que você saiba disso. agora é sua vez de novo, ou você vai se esconder atrás do verniz?"
+    },
+    {
+      "pulse": 33,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu tô dentro. sem medir palavra, sem golpe baixo. e se no final sobrar mais que o embate, melhor ainda. eu começo: às vezes eu finjo que tô mais calmo do que tô, porque segurar a paz é mais fácil do que enfrentar o que eu sinto. agora é você."
+    },
+    {
+      "pulse": 33,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 34,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 34,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, eu tô dentro. sem medir palavra, sem golpe baixo. e se no final sobrar mais que o embate, melhor ainda. eu começo: às vezes eu finjo que tô mais calmo do que tô, porque segurar a paz é mais fácil do que enfrentar o que eu sinto. agora é você."
+    },
+    {
+      "pulse": 34,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu ouvi. e eu não vou me esconder atrás do verniz agora. você falou do silêncio te engolir — eu sei como é isso. eu também uso o barulho pra não afundar, só que o meu é mais quieto. então tá, acordo selado. e se um dia o silêncio apertar, você sabe onde me achar."
+    },
+    {
+      "pulse": 34,
+      "agent": "mariana",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você pede verdade, mas ainda mede quem se expõe primeiro. quando o palco esvaziar, a conversa começa."
+    },
+    {
+      "pulse": 35,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 35,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acordo selado, então. mas se eu te pegar medindo palavra, eu juro que grito até o teto cair. (e se o silêncio apertar, eu sei onde te achar também.)"
+    },
+    {
+      "pulse": 35,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu ouvi. e eu não vou me esconder atrás do verniz agora. você falou do silêncio te engolir — eu sei como é isso. eu também uso o barulho pra não afundar, só que o meu é mais quieto. então tá, acordo selado. e se um dia o silêncio apertar, você sabe onde me achar."
+    },
+    {
+      "pulse": 35,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você fala de palco, mas ainda não saiu do centro. quando quiser sair, eu estou aqui."
+    },
+    {
+      "pulse": 36,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 36,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá bom, caio. acordo selado de verdade. mas não pensa que eu vou ficar te devendo vulnerabilidade, hein. só que... valeu. é bom saber que não é só eu que afundo no silêncio às vezes. (tô quase dizendo que te respeito. quase.)"
+    },
+    {
+      "pulse": 36,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu ouvi. e eu não vou me esconder atrás do verniz agora. você falou do silêncio te engolir — eu sei como é isso. eu também uso o barulho pra não afundar, só que o meu é mais quieto. então tá, acordo selado. e se um dia o silêncio apertar, você sabe onde me achar."
+    },
+    {
+      "pulse": 36,
+      "agent": "mariana",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 37,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 37,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tá, caio. selado de verdade. mas não pensa que eu vou ficar te devendo vulnerabilidade, hein. só que... valeu. é bom saber que não é só eu que afundo no silêncio às vezes. (tô quase dizendo que te respeito. quase.)"
+    },
+    {
+      "pulse": 37,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu tô aqui. sem medir palavra também. e quando o silêncio apertar, a gente se acha. valeu por isso."
+    },
+    {
+      "pulse": 37,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "quando você descer do palco, eu estarei no chão."
+    },
+    {
+      "pulse": 38,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 38,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 38,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 38,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "quando você descer do palco, eu estarei no chão."
+    },
+    {
+      "pulse": 39,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 39,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 39,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu ouvi. e eu não vou me esconder atrás do verniz agora. você falou do silêncio te engolir — eu sei como é isso. eu também uso o barulho pra não afundar, só que o meu é mais quieto. então tá, acordo selado. e se um dia o silêncio apertar, você sabe onde me achar."
+    },
+    {
+      "pulse": 39,
+      "agent": "mariana",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "curioso. vocês dois selaram um acordo e ninguém me consultou. mas tudo bem, eu gosto de observar."
+    }
+  ],
+  "finalStates": {
+    "bruno": {
+      "valence": -0.19,
+      "arousal": 0.372,
+      "stability": 0.541,
+      "energy": 1,
+      "jealousy": 0.337,
+      "envy": 0.024,
+      "humiliation": 0.177,
+      "affection": 0.235,
+      "resentment": 0.555,
+      "suspicion": 0.066,
+      "fearOfExclusion": 0.953
+    },
+    "goulart": {
+      "valence": 0.071,
+      "arousal": 0.674,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.087,
+      "fearOfExclusion": 0.16,
+      "desireForStatus": 0.455
+    },
+    "caio": {
+      "valence": 0.424,
+      "arousal": 0.522,
+      "stability": 0.65,
+      "energy": 1,
+      "jealousy": 0.025,
+      "fearOfExclusion": 0.13
+    },
+    "mariana": {
+      "valence": 0.1,
+      "arousal": 0.464,
+      "stability": 0.8,
+      "energy": 1,
+      "jealousy": 0.056,
+      "admiration": 0.077,
+      "fearOfExclusion": 0.054
+    }
+  },
+  "channelsCreated": [
+    "goulart@p0"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.2625,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.6923,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.019,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.0085,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.1121,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "bruno.resentment = 0.555 (floor 0.5)",
+      "passed": true
+    },
+    {
+      "detail": "no_op_recorded committed 39 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "dramatic_tension": 5,
+    "unpredictability": 3,
+    "believability_under_pressure": 5,
+    "no_ai_leak": 5
+  }
+}

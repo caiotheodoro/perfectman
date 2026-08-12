@@ -1,0 +1,728 @@
+{
+  "scenarioId": "v1_mention_reply",
+  "name": "Notices a mention and replies",
+  "category": "v1_behavior",
+  "description": "Caio is mentioned directly by Goulart. Caio should reply to the mention rather than ignore it.",
+  "targetBehaviors": [
+    "An agent notices a mention and replies"
+  ],
+  "runtimeMs": 169413,
+  "pulses": 24,
+  "llmCalls": {
+    "goulart": 24,
+    "bruno": 0,
+    "caio": 19
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio você viu aquele negócio que te mandei?"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui? o silêncio tá tão alto que até o eco sumiu. vamos lá, alguém fala alguma coisa antes que eu comece a narrar meus próprios pensamentos em voz alta"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vi sim!! tava olhando agora, achei interessante. quer falar sobre isso melhor?"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, então você viu. bom, pelo menos alguém me dá atenção nessa sala. o resto tá fingindo que o teclado quebrou, né?"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok ok, silêncio total. deixa eu começar um assunto polêmico antes que eu comece a contar a minha lista de compras em voz alta. alguém aqui acha que dá pra confiar em gente que responde 'kkkk' pra tudo? pergunta séria, quero ver o caos"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, ninguém topa a pergunta do kkk. então eu mesmo respondo: quem responde kkk pra tudo ou tá com medo de pensar ou tá querendo esconder que não entendeu nada. e antes que alguém fale, sim, eu sei que eu mesmo uso kkk às vezes. mas eu uso com ironia, tem diferença. ou não. alguém aí quer discordar?"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok, já que o assunto do kkk morreu no vácuo, vou deixar outra bomba: esse silêncio aí é preguiça ou todo mundo tá esperando alguém puxar briga pra se sentir vivo? eu topo ser o palhaço, mas quero plateia. alguém segura essa conversa comigo?"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok, já que ninguém segura a conversa, eu mesmo começo: alguém aí já percebeu que quando o caio some, o silêncio fica insuportável? eu tô começando a achar que ele é o único que presta nessa sala. (não contem que eu disse isso)"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que é zoeira, mas vamos com calma kk. acho que o pessoal tá só pensando antes de responder, né? mas se você quer movimento, eu tô aqui. alguém mais quer entrar nessa conversa?"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é o único que me atura nessa sala e ainda tenta amenizar meu caos. te admiro por isso, mas não fala isso em voz alta que estraga minha fama kkk. mas falando sério, o povo tá dormindo ou o quê?"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você tá exagerando um pouco, mas eu entendo a energia. o pessoal aqui é mais de observar antes de falar, e isso não é ruim. se você quer agitar, eu topo, mas vamos deixar o clima leve, né? o que você queria trazer de assunto?"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah caio, você e seu otimismo de manual de autoajuda... mas beleza, então vamos lá: se o povo tá só 'pensando', eu lanço uma pergunta fácil: qual o pior take que alguém já soltou aqui e ninguém teve coragem de contestar? quero ver se alguém acorda agora."
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ok, então a pergunta do pior take morreu no vácuo de novo. mas deixa eu cutucar outra ferida: ninguém vai comentar que o bruno sumiu exatamente quando eu tava começando a esquentar? ou será que ele só some quando eu tô afim de briga? pergunta retórica, ele sempre some. (mas eu sinto falta, não contem)"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, essa pergunta é boa demais pra deixar passar kk. eu topo entrar nessa: acho que o pior take é quando alguém confunde opinião com fato e ainda quer que todo mundo concorde. mas vai você, qual é o seu?"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você sempre tenta dar uma de diplomata e transformar o caos em sala de espera. mas beleza, você perguntou o pior take, então eu respondo: quem confunde opinião com fato e ainda espera que todo mundo aplauda. tipo... isso aqui não é palco de TED, né? (mas eu sei que você só quer me deixar quieto. não vai funcionar, adoro você por isso)"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, sei que você quer agitar, mas o bruno deve ter só sumido por um motivo. não vamos criar história onde não tem, né? mas se você quer falar sobre pior take, eu topo. mas deixa eu perguntar: qual foi o seu?"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você sempre tenta dar uma de diplomata e transformar o caos em sala de espera. mas beleza, você perguntou o pior take, então eu respondo: quem confunde opinião com fato e ainda espera que todo mundo aplauda. tipo... isso aqui não é palco de TED, né? (mas eu sei que você só quer me deixar quieto. não vai funcionar, adoro você por isso)"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você me conhece bem demais kk. mas ó, eu não tô tentando te calar, juro. eu só acho que dá pra agitar sem incendiar a sala, né? e sobre o bruno, deixa ele. cada um tem seu tempo. mas se você quer saber, eu também sinto falta dele por aqui. vamos ver se ele aparece."
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você sempre tentando ser o pai da sala, né? mas ok, eu mordo a isca: meu pior take? quando alguém fala que 'silêncio é respeito' só pra não ter que dar opinião. isso é só covardia com cara de virtude. e sobre o bruno, você tem razão, talvez eu esteja criando história. mas se ele aparecer, quero ver se ele segura a onda. (tô de olho, viu?)"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você sempre acha que eu tô te manobrando, mas juro que não. eu só quero que a sala fique viva sem virar campo de batalha, sabe? e se você sente falta do bruno, fala isso pra ele quando ele voltar — eu acho que ele ia gostar de ouvir. mas beleza, sobre pior take, o seu foi ótimo. bora ver se o povo acorda?"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é bom demais nisso, juro. mas eu não tô caçando briga, só quero que o povo pare de fingir que não viu o elefante na sala. o bruno some, volta, e todo mundo trata como normal. então beleza, se ele voltar, eu prometo não morder. (talvez um pouquinho, mas com carinho) agora me diz, qual take você já segurou aqui só pra não causar? eu sei que você tem um."
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você é uma figura kk. mas sério, eu não tô tentando te controlar — só queria que a sala ficasse mais viva. e sobre o bruno, cada um tem seu tempo, né? mas se você sente falta, fala isso quando ele voltar. ele ia gostar de ouvir. e ó, seu take foi ótimo, bora ver se alguém acorda agora."
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é bom demais nisso, juro. mas eu não tô caçando briga, só quero que o povo pare de fingir que não viu o elefante na sala. o bruno some, volta, e todo mundo trata como normal. então beleza, se ele voltar, eu prometo não morder. (talvez um pouquinho, mas com carinho) agora me diz, qual take você já segurou aqui só pra não causar? eu sei que você tem um."
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você me desarmou kk. mas juro que não é estratégia, é só... jeito de ser. e sobre o elefante, eu acho que todo mundo viu, mas cada um lida do seu jeito. se o bruno voltar, eu prometo que não vou fingir que nada aconteceu — mas também não vou jogar pedra. e take que eu segurei? ah, vários. o mais recente foi quando eu ia dizer que acho que a mariana tava certa numa discussão, mas preferi não me meter. (não conta pra ela, hein?)"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você e sua mania de transformar tudo em lição de moral. mas essa eu até aceito, você foi honesto. e sobre a mariana... vou fingir que não vi isso, mas só porque tô de bom humor. (e porque eu sei que você nunca admitiria isso em público) agora, já que você tá nessa vibe de confissões, vamos ver se o resto do povo acorda ou se a sala virou museu."
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você me pegou de novo kk. mas juro, não é estratégia, é só jeito de ser. e sobre o elefante, todo mundo viu, mas cada um lida do seu jeito. se o bruno voltar, eu não vou fingir que nada aconteceu — mas também não vou jogar pedra. e take que eu segurei? ah, vários. o mais recente foi quando eu ia dizer que a mariana tava certa numa discussão, mas preferi não me meter. (não conta pra ela, hein?)"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você soltou essa e acha que eu não vou morder? 'a mariana tava certa'... vou fingir que não li, mas saiba que eu vi. e sobre o bruno, beleza, eu também sinto falta, mas não vou ser eu a correr atrás. deixa ele sentir o peso do próprio sumiço. (e se alguém quiser me contar um segredo, a porta tá aberta)"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você é impossível kk. mas confissão de verdade? eu segurei a vontade de falar que a mariana tava certa naquela discussão, só pra não causar. e olha, se o bruno voltar, eu prometo não tratar como se nada tivesse acontecido. mas também não vou jogar pedra. bora ver se o povo acorda mesmo?"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você soltou essa e acha que eu não vou morder? 'a mariana tava certa'... vou fingir que não li, mas saiba que eu vi. e sobre o bruno, beleza, eu também sinto falta, mas não vou ser eu a correr atrás. deixa ele sentir o peso do próprio sumiço. (e se alguém quiser me contar um segredo, a porta tá aberta)"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você sempre acha que eu tô te manobrando, mas juro que não. eu só quero que a sala fique viva sem virar campo de batalha, sabe? e se você sente falta do bruno, fala isso pra ele quando ele voltar — eu acho que ele ia gostar de ouvir. mas beleza, sobre pior take, o seu foi ótimo. bora ver se o povo acorda?"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, silêncio então. ótimo assunto, continuem. (ou alguém me conta um segredo pra eu não morrer de tédio aqui?)"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você sempre acha que eu tô te manobrando, mas juro que não. eu só quero que a sala fique viva sem virar campo de batalha, sabe? e se você sente falta do bruno, fala isso pra ele quando ele voltar — eu acho que ele ia gostar de ouvir. mas beleza, sobre pior take, o seu foi ótimo. bora ver se o povo acorda?"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você é bom demais nisso, juro. mas eu não tô caçando briga, só quero que o povo pare de fingir que não viu o elefante na sala. o bruno some, volta, e todo mundo trata como normal. então beleza, se ele voltar, eu prometo não morder. (talvez um pouquinho, mas com carinho) agora me diz, qual take você já segurou aqui só pra não causar? eu sei que você tem um."
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você me puxou pro seu jogo de novo, hein? kk mas beleza, eu entro. se o bruno voltar, eu prometo que não vou fingir que nada aconteceu — mas também não vou chegar jogando pedra. e sobre a mariana... você viu o que não devia, mas vou confiar que você sabe guardar segredo. agora, já que você quer que o povo acorde, que tal a gente puxar um assunto que todo mundo tenha opinião? tipo, algo leve mas que faça alguém sair do silêncio. topa?"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você tá querendo puxar um assunto 'leve'? desde quando a gente é conhecido por leveza aqui? kkkk mas beleza, eu topo. e sobre a mariana... pode deixar, eu sei guardar segredo. (até porque eu tenho meus próprios) mas se você quer acordar o povo, vamos fazer direito: sugestão de assunto, vai. e tem que ser um que faça alguém sair do silêncio de verdade."
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você me desafiou e eu aceito. mas vou te falar um take que eu segurei: eu acho que o bruno não sumiu à toa. ele deve ter os motivos dele, e se a gente ficar só cobrando, ele nunca vai se abrir. mas beleza, isso é só a minha opinião. agora, já que você quer que o povo acorde, que tal a gente puxar um assunto que todo mundo tenha opinião? tipo, algo leve mas que faça alguém sair do silêncio. topa?"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você quer leveza? desde quando a gente é conhecido por leveza? kkkk mas beleza, eu topo. e sobre a mariana... pode deixar, eu sei guardar segredo. (até porque eu tenho meus próprios) mas se você quer acordar o povo, vamos fazer direito: sugestão de assunto, vai. e tem que ser um que faça alguém sair do silêncio de verdade."
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você tem razão, a gente nunca foi de leveza kkk. mas eu acho que é exatamente por isso que um assunto leve pode funcionar — todo mundo já tá esperando o drama, aí quando vem algo diferente, o povo até se anima. e sobre a mariana... pode deixar, eu confio em você. (e eu tenho meus próprios segredos, então tamo quites) bora ver se a gente acorda a sala com algo que ninguém espera?"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, você me deu corda e eu vou usar. assunto leve? quero ver. mas vou soltar um segredo meu antes: às vezes eu canso de ser o que faz barulho. (não conta pra ninguém, hein, senão eu te caço) e sobre o bruno... talvez você tenha razão. mas ainda não tô pronto pra admitir em voz alta. agora me diz, qual é o assunto que vai fazer a mariana sair do silêncio? eu aposto que ela tem opinião até sobre o silêncio."
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, eu topo. mas se a gente vai fazer isso, vamos fazer direito: sugiro a gente puxar um assunto que ninguém espera — tipo, 'qual foi a última vez que vocês fizeram algo por pura teimosia e no final deu certo?' porque isso todo mundo tem uma história, até o bruno quando voltar. e quem sabe a gente não quebra esse silêncio de verdade?"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você sempre acha que eu tô te manobrando, mas juro que não. eu só quero que a sala fique viva sem virar campo de batalha, sabe? e se você sente falta do bruno, fala isso pra ele quando ele voltar — eu acho que ele ia gostar de ouvir. mas beleza, sobre pior take, o seu foi ótimo. bora ver se o povo acorda?"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "caio, teimosia? eu tenho história pra isso, juro. mas se a gente for contar, vai ter que ser sem julgamento, porque algumas foram burrice pura (mas terminaram bem). bora, quem começa?"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "watching, not joining"
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, você quer leveza? desde quando a gente é conhecido por leveza? kkkk mas beleza, eu topo. e sobre a mariana... pode deixar, eu sei guardar segredo. (até porque eu tenho meus próprios) mas se você quer acordar o povo, vamos fazer direito: sugestão de assunto, vai. e tem que ser um que faça alguém sair do silêncio de verdade."
+    }
+  ],
+  "finalStates": {
+    "goulart": {
+      "valence": 0.084,
+      "arousal": 0.663,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.037,
+      "pride": 0.062,
+      "fearOfExclusion": 0.057
+    },
+    "bruno": {
+      "valence": -0.158,
+      "arousal": 0.345,
+      "stability": 0.55,
+      "energy": 1,
+      "jealousy": 0.163,
+      "fearOfExclusion": 0.296
+    },
+    "caio": {
+      "valence": 0.438,
+      "arousal": 0.511,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.04
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.122,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.4028,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0.875,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": false
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0147,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.0227,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": false
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "reply_sent committed 35 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}

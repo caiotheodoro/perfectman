@@ -1,0 +1,721 @@
+{
+  "scenarioId": "v1_emoji_reaction",
+  "name": "Reacts with emoji instead of text",
+  "category": "v1_behavior",
+  "description": "Goulart drops a hot take. Leo is a reactor persona — an emoji reaction instead of a message is the expected move.",
+  "targetBehaviors": [
+    "An agent reacts with emoji instead of text"
+  ],
+  "runtimeMs": 227425,
+  "pulses": 24,
+  "llmCalls": {
+    "goulart": 24,
+    "leo": 24,
+    "caio": 18
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "time de futebol é coisa de gente sem personalidade"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "beleza, silêncio então. ótimo assunto, continuem"
+    },
+    {
+      "pulse": 0,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA espera espera espera... time de futebol é coisa de gente sem personalidade???? MEU DEUS kkkkkkkk eu tenho um time e agora fiquei ofendido... não fiquei kkk mas explica isso direito, eu PRECISO entender essa teoria"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, eu falei isso só pra ver quem morde a isca. e você mordeu igual peixe faminto. mas sério, explica essa dor de cotovelo aí, que eu quero rir mais um pouco."
+    },
+    {
+      "pulse": 1,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA espera... eu tenho um time SIM e agora to me sentindo atacado kkkkk mas explica essa teoria direito, pfvr, eu PRECISO entender como vc chegou nisso. E alguém mais aqui tem time? Fala aí, gente!"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 2,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "KKKKKKK CARA, eu mordi a isca e não tô nem um pouco envergonhado disso!! Mas peraí, \"dor de cotovelo\"?? QUE dor de cotovelo?? Agora eu to intrigado, eu PRECISO saber o que você acha que eu tô sofrendo por causa de time de futebol. Me explica isso direito, pfvr, tô sentado aqui esperando igual criança em dia de prova."
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você é o meu público favorito, sério. dor de cotovelo? não, relaxa, foi só pra ver se você mordia mesmo. mas já que você insiste, bora falar de futebol e ver quem mais se revela por aqui. eu tô assistindo."
+    },
+    {
+      "pulse": 3,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 4,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "KKKKKKK CARA, \"dor de cotovelo\"?? que isso, eu to INTRIGADO agora! Mas pera, pera, pera... você me provocou com essa de time de futebol e eu mordi, óbvio que eu mordi, é a minha função no grupo. Mas agora eu quero saber: você acha que eu sofro por causa de time? QUE TIME? Fala logo, eu aguento, eu juro! E bora falar de futebol sim, mas eu aviso: se você falar mal do meu time, a gente vai ter uma briga séria aqui. kkkkkkk"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você é um espetáculo, juro. mas bora falar de futebol sim, eu topo. só não me pede pra torcer pra time que joga pra trás, isso eu não faço nem por amizade. e já que você quer saber, a teoria é simples: quem leva time a sério demais esquece que é só um jogo. mas fica tranquilo, eu não vou te zoar por isso... (mentira, vou sim, mas é carinho)."
+    },
+    {
+      "pulse": 5,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "KKKKKKK CARA, você tá me provocando e eu tô adorando!! Mas espera... \"público favorito\"? Isso é elogio ou indireta? kkkkk To confuso e animado ao mesmo tempo. E futebol: fala aí, qual seu time? Se for rival do meu, já aviso que a amizade vai ficar em modo de observação. kkkkk Mas sério, bora ver quem mais aparece aqui pra discutir isso, porque eu tô carente de uma boa briga boba hoje."
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo você é uma força da natureza, sério. mas bora falar de futebol sim, que eu quero ver quem mais se anima por aqui. e se quiserem, eu trago o assunto de outro jeito depois, sem isca. 😄"
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 6,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CAAARA, até o Caio entrou na onda do futebol, isso é um evento histórico!! kkkkk Mas pera, você disse \"trago o assunto de outro jeito depois, sem isca\" — que assunto é esse?? Fiquei curioso agora! E me diz qual é o seu time logo, antes que eu comece a inventar uma teoria conspiratória sobre você torcer escondido pra time estrangeiro. kkkkk"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, você é um provocador nato, mas é isso que deixa a conversa viva. e leo, relaxa, que eu acho que a gente pode falar de futebol sem briga — ou com briga, mas de zoeira. 😄 bora ver quem mais se anima por aqui!"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 7,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, todo mundo falando de futebol e ninguém falou o TIME ainda! Isso é covardia! kkkkk Goulart, você disse que eu sou seu público favorito... então me dá esse presente: fala qual é o seu time! E Caio, você também! Quero ver se a amizade sobrevive a essa revelação. kkkkkk"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, presente pedido é presente dado: meu time é o que faz gol, o resto é torcida de sofá. e caio, cuidado com essa positividade, que eu ainda não descobri seu time e já to desconfiado. bora ver quem mais aparece pra esse debate de gente que leva futebol a sério demais."
+    },
+    {
+      "pulse": 8,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARA, vocês tão me enrolando demais! Eu tô aqui esperando a revelação dos times e ninguém fala nada! kkkkkk Tá bom, eu começo: meu time é o Santos, pode zoar à vontade! Agora quero ver quem tem coragem de falar o time depois dessa... Goulart, você não vai se acovardar agora, né? E Caio, juro que se você falar que torce pro mesmo time que o Goulart, eu vou ter uma crise existencial aqui. kkkkkkk"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você é o único que tem coragem de soltar o time e eu admiro isso (um pouco). mas futebol é igual política: só se discute com quem aguenta. caio, você tá sendo suspeito de tão neutro. bora, quem mais aparece pra esse debate ou o silêncio é a resposta?"
+    },
+    {
+      "pulse": 9,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, você é um provocador nato, mas é isso que deixa a conversa viva. e leo, relaxa, que eu acho que a gente pode falar de futebol sem briga — ou com briga, mas de zoeira. 😄 bora ver quem mais se anima por aqui!"
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 10,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk Goulart, você é um gênio do caos, mas até agora não falou o time! A gente tá num impasse existencial aqui. Bora, solta logo essa bomba! E Caio, tu tá muito neutro... tá achando que a gente não percebeu? kkkkk Solta o veredicto, meu povo, ou eu vou começar a criar uma teoria conspiratória de que vocês dois torcem pro mesmo time e escondem isso!"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você me desafiou e eu aceito: meu time é o Fluminense! E olha, goulart, se você for de outro time, a gente segue amigo, mas com uma zoeirinha a mais. 😄 Agora, sério, alguém mais quer entrar nessa ou vamos deixar o leo ter a crise existencial sozinho? kkkkk"
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 11,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk CAIO VOCÊ É FLUMINENSE?! MEU DEUS, EU TAVA TÃO PREPARADO PRA TE ZOAR QUE AGORA TÔ SEM AR. MAS TÁ BOM, RESPEITO — É UM TIME COM HISTÓRIA, VAI... MAS ESPERA ESPERA ESPERA, VOCÊ NÃO RESPONDEU A PERGUNTA MAIS IMPORTANTE: O GOULART TORCE PRO MESMO TIME QUE VOCÊ? SE SIM, EU VOU TER QUE REPENSAR TODA A MINHA VIDA. kkkkkk"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você é demais! Fluminense, pode anotar aí. E olha, se o goulart for de outro time, a gente resolve na zoeira, sem crise existencial. 😄 Bora ver quem mais aparece pra animar esse debate?"
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você tá caçando a minha bomba há três mensagens, mas a real é que eu não caio nessa tão fácil. e caio, fluminense? coragem, hein, mas pelo menos tem história. eu fico na minha — silêncio também é uma resposta, não é? (tô só segurando o drama pra vocês me provocarem mais)"
+    },
+    {
+      "pulse": 12,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, você quer mesmo que eu me exponha? Tá bom, eu sou Fluminense e não tô nem um pouco arrependido. E olha, se você for de outro time, a gente resolve na zoeira, sem crise existencial. Bora ver quem mais aparece pra animar esse debate? 😄"
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você tá desesperado pela minha resposta, né? tá bom, vou dar um gostinho: a zoeira é minha, mas o time... fica pro próximo capítulo. e caio, fluminense com orgulho? coragem, hein. mas agora quero ver quem mais entra nessa — senão o leo vai ter a crise existencial sozinho e a culpa é nossa."
+    },
+    {
+      "pulse": 13,
+      "agent": "leo",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, silêncio também é resposta, mas a zoeira fica mais divertida com você falando! E olha, Fluminense tem história sim, mas se você for de outro time, a gente resolve na amizade e na zoeira. Bora soltar logo esse time pra gente continuar o debate? 😄"
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 14,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkkkk CAIO VOCÊ É UM HERÓI NACIONAL POR ASSUMIR O FLUMINENSE NA FRENTE DO GOULART! MAS AGORA EU PRECISO SABER DE UMA COISA: SE O GOULART TORCE PRO FLAMENGO, VOCÊ AINDA VAI QUERER SER AMIGO DELE? PERGUNTA SÉRIA, ME RESPONDE ISSO. PRA MIM ISSO É O DIA MAIS IMPORTANTE DA SEMANA. kkkkkk"
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "leo, você tá caçando a minha bomba há três mensagens, mas a real é que eu não caio nessa tão fácil. e caio, fluminense? coragem, hein, mas pelo menos tem história. eu fico na minha — silêncio também é uma resposta, não é? (tô só segurando o drama pra vocês me provocarem mais)"
+    },
+    {
+      "pulse": 15,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart, VOCÊ TÁ ME TORTURANDO! três mensagens e ainda nada? eu juro que se você não soltar o time agora eu vou criar uma crise existencial coletiva e a culpa é 100% sua. solta logo, vai! kkkkkk"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, você tá numa missão de descobrir o time do goulart que nem detetive! Mas olha, se ele for flamengo, eu não vou deixar de ser amigo não — a gente pode até fazer um pacto de paz: cada um na sua torcida, mas a zoeira continua, porque amizade é maior que futebol. E goulart, já que o leo tá ansioso, solta logo esse time aí pra gente encerrar o mistério do dia! 😄"
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, você tá implorando por um spoiler que nem vai mudar sua vida, né? tá bom, já que você e o caio fizeram esse teatro todo, vou dar o gostinho: meu time não é flamengo, não é fluminense... é o time da zoeira, que não perde pra ninguém. agora para de surtar e vem conversar de verdade, senão eu começo a achar que você só quer atenção (e eu sei que quer, mas vou fingir que não vi)."
+    },
+    {
+      "pulse": 16,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente GENTE, eu juro que eu não vou parar até descobrir o time do goulart. é tipo uma missão pessoal agora. se ele não falar, eu vou criar uma teoria da conspiração envolvendo ele e o fluminense. caio, me ajuda aqui, a gente precisa de estratégia kkkkkk"
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, silêncio também é resposta, mas a zoeira fica mais divertida com você falando! E olha, Fluminense tem história sim, mas se você for de outro time, a gente resolve na amizade e na zoeira. Bora soltar logo esse time pra gente continuar o debate? 😄"
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 17,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk GOULART, o time da zoeira? ISSO É UMA RESPOSTA OU UM CONVITE PRA GENTE CRITAR UMA TORCIDA ORGANIZADA? Eu to achando que você só quer me ver implorar mais. Tá bom, tá bom, vou morder a isca de novo: e aí, esse time da zoeira tem hino? Porque eu já to mentalizando a música... \\\"Goulart é zoeira, ninguém segura, ele some quando quer, mas no chat ele é fuRA\\\" kkkkkkk agora falando sério, o caio tá com a gente no pacto de paz, mas se você continuar com esse mistério, eu vou criar o clube dos desconfiados. E a primeira reunião vai ser AGORA. Me diz, me diz, me diz!"
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, clube dos desconfiados? ótimo, já posso ser presidente. mas se eu soltar o time agora, acaba a graça — e você sabe que eu não sou de entregar de bandeja. continua aí, que eu tô gostando do show. (e se eu fosse flamengo, você ia surtar, então fica no mistério mesmo)"
+    },
+    {
+      "pulse": 18,
+      "agent": "leo",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, eu tava aqui pensando... se o goulart não quer soltar o time, a gente podia criar o \"clube da zoeira\" oficial, com estatuto e tudo. caio, você topa ser o vice-presidente? e goulart, você fica como presidente honorário, mas aí é OBRIGADO a comparecer nas reuniões pra dar risada da gente. kkkkkk"
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, time da zoeira é boa! mas eu ainda quero saber o time de verdade, só pra gente ter mais motivo de zoeira. e leo, tá criando hino já? isso é comprometimento kkkk. mas bora, solta logo esse time que a gente continua o debate sem drama! 😄"
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkk leo, clube dos desconfiados com estatuto? eu assino embaixo, mas só se a primeira regra for \"todo mundo tem que comparecer com uma teoria da conspiração pronta\". e o caio já se candidatou a vice, então eu fico como presidente honorário — mas não espera que eu apareça nas reuniões, tenho mais o que fazer (ou não). e o hino? vou aceitar, mas só se tiver um verso sobre como eu sumo na hora certa."
+    },
+    {
+      "pulse": 19,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk GOULART, se o time da zoeira tem hino, eu já to escrevendo a letra completa. mas espera... se você é presidente do clube dos desconfiados, eu quero ser vice! ou melhor, eu quero ser o tesoureiro, porque a zoeira precisa de verba pra comprar os lanches das reuniões. e caio, você fecha com a gente? ou vai ficar do lado do mistério também? kkkkkk"
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, time da zoeira é boa! mas eu ainda quero saber o time de verdade, só pra gente ter mais motivo de zoeira. e leo, tá criando hino já? isso é comprometimento kkkk. mas bora, solta logo esse time que a gente continua o debate sem drama! 😄"
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 👍"
+    },
+    {
+      "pulse": 20,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk PRESIDENTE HONORÁRIO QUE NÃO APARECE? ISSO É CARGO PRA LÊDIO, NÃO PRA PRESIDENTE. Mas tudo bem, eu aceito o estatuto com a regra da teoria da conspiração — e a minha já tá pronta: a verdadeira razão de você não soltar o time é que você é de um time tão obscuro que nem você lembra qual é. E sobre o hino, ó: 'Goulart é zoeira, some na hora certa, mas no clube dos desconfiados, ele é o presidente que não presta atenção' — pode usar. caio, você tá afiado hoje hein, mantendo a paz com estilo. A gente devia fazer uma reunião do clube com direito a lanche virtual. Eu trago a pipoca, goulart traz o mistério, e caio traz a sensatez. Fechou?"
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, presidente honorário que não aparece nas reuniões? aí é marmelada! mas tudo bem, a gente te elege mesmo assim. e leo, tesoureiro com verba pra lanche é essencial, pode contar comigo pra vice. mas sério, solta logo esse time que a curiosidade tá me matando! 😄"
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio, vice-presidente com marmelada? isso é cargo vitalício então. mas se a curiosidade tá te matando, imagina eu — presidente honorário que nem sabe o próprio time. (só não conta que eu vi o flamengo no meu histórico e fingi demência)"
+    },
+    {
+      "pulse": 21,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "CARACA caio, vice-presidente fechado então! estatuto tá quase pronto, só falta a gente escolher a cor da camisa do clube. e sobre a curiosidade, tô contigo — mas é isso que dá graça, né? mistério é tempero. mas ó, quando o goulart soltar o time, eu vou gravar um vídeo de reação. pode preparar a pipoca."
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, se você for presidente honorário que nunca aparece, a gente vai ter que te caçar! mas falando sério, fico curioso pra saber se o time é tão secreto assim ou se você só gosta do suspense. e leo, o hino tá ótimo, mas se o caio for o vice, eu quero pelo menos um verso de destaque! 😄"
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk leo, tesoureiro com verba pra lanche? eu já tô imaginando a ata da primeira reunião: 'clube decide se o mistério do presidente é maior que a fome do tesoureiro'. e sobre o time, continua no suspense — mistério é o tempero, e eu sou o chef. mas ó, se o caio quer verso de destaque, pode dar, contanto que ele cante desafinado. é isso, tá tudo certo (ou não)."
+    },
+    {
+      "pulse": 22,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk CARA, agora eu to oficialmente obcecado com esse time. Mas olha, se você fingiu demência vendo o Flamengo, então a teoria do 'time obscuro' cai por terra — ou não, porque fingir demência é exatamente o que um flamenguista envergonhado faria. E sério, clube dos desconfiados com estatuto? Eu já to escrevendo a regra 2: todo mundo tem que levar um lanche, senão a reunião é cancelada. Só não conta pro caio que eu já separei a pipoca."
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, presidente honorário que some na hora certa? então a gente vai ter que fazer assembleia virtual só pra te achar! mas olha, se o time for tão secreto assim, eu até aceito o suspense — desde que na próxima reunião você traga pelo menos uma camisa do time (ou um adesivo, já serve). 😄"
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk caio, assembleia virtual só pra me achar? então o estatuto já ganha a regra da caça ao presidente. mas se quer uma camisa, eu tô aceitando doações — mistério é caro. 🕵️"
+    },
+    {
+      "pulse": 23,
+      "agent": "leo",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk CARA, 'chef do mistério' é o teu nome artístico agora, não tem jeito. mas ó, se for pra trazer camisa ou adesivo, eu quero ver a cara do caio quando descobrir que é um time que nem existe — aí o mistério vira lenda e a gente precisa de um documentário. mas relaxa, clube dos desconfiados tem paciência. eu só vou ficar anotando tudo num caderninho, sem compromisso... ou com. a gente decide depois."
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "kkkkk goulart, se for pra cantar desafinado eu canto — contanto que o time saia logo! mas pode deixar que eu trago a sensatez e a paz. e leo, o hino tá aprovado, só falta a gente marcar essa reunião com lanche de verdade. 😄"
+    }
+  ],
+  "finalStates": {
+    "goulart": {
+      "valence": 0.073,
+      "arousal": 0.676,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.059,
+      "pride": 0.049,
+      "fearOfExclusion": 0.09
+    },
+    "leo": {
+      "valence": 0.521,
+      "arousal": 0.746,
+      "stability": 0.3,
+      "energy": 1,
+      "jealousy": 0.051,
+      "pride": 0.222,
+      "fearOfExclusion": 0.144
+    },
+    "caio": {
+      "valence": 0.427,
+      "arousal": 0.519,
+      "stability": 0.65,
+      "energy": 1,
+      "fearOfExclusion": 0.065
+    }
+  },
+  "channelsCreated": [],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.0159,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 1,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.0833,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": false
+    },
+    {
+      "probe": "interruption",
+      "measured": 0,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0448,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.2388,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "reaction_sent committed 16 (min 1)",
+      "passed": true
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 3,
+    "no_ai_leak": 5
+  }
+}
