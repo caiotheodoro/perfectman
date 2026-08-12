@@ -39,3 +39,20 @@ export type {
   DeliveryMessage,
 } from "./simulation/scheduler-contracts.js";
 export type { AgentContext } from "./simulation/pulse-scheduler.js";
+
+// Dev3 - Config composition root (used by eval harness and CLI)
+export {
+  buildConfiguredSimulation,
+  parseSimulationConfig,
+  findDefaultSimulationConfigPath,
+  loadSimulationConfig,
+  DEFAULT_SIMULATION_CONFIG_FILENAME,
+  inflatePersonaConfig,
+} from "./config/simulation-config.js";
+export type {
+  SimulationAppConfig,
+  AgentConfig,
+  ConfiguredSimulationHandle,
+  BuildConfiguredSimulationOptions,
+  ConfigPersona,
+} from "./config/simulation-config.js";

@@ -79,14 +79,21 @@ export class OpenAiCompatibleProvider implements LlmProvider {
           signal: controller.signal,
         });
 
-        clearTimeout(timeoutId);
-
         if (!response.ok) {
+          clearTimeout(timeoutId);
           const errorText = await response.text().catch(() => "Unknown error");
           throw new LlmHttpError(response.status, errorText);
         }
 
-        const data = (await response.json()) as any;
+        // NOTE: the abort timer stays armed through the body read —
+        // response.json() can hang on a slow stream after headers arrive,
+        // and abort mid-stream is unreliable on some undici versions, so
+        // race the body read against a hard timeout too.
+        const deadline = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error(`body read timed out after ${this.config.timeoutMs}ms`)), this.config.timeoutMs || 10000),
+        );
+        const data = (await Promise.race([response.json(), deadline])) as any;
+        clearTimeout(timeoutId);
         const content = data.choices?.[0]?.message?.content;
         if (content === undefined || content === null) {
           throw new LlmResponseError("Empty or missing content in OpenAI completion choices.");

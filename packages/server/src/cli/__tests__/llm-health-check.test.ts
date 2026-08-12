@@ -54,7 +54,7 @@ function baseConfig(): SimulationAppConfig {
         language: "en",
       },
       llm: {
-        providerType: "qwen3",
+        providerType: "qwen3_8b",
         baseUrl: "http://localhost:11434/v1",
         modelName: "qwen3:1.7b",
         maxInputTokens: 1024,

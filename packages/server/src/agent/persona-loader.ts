@@ -1,5 +1,9 @@
 import type { LlmConfig } from "../llm/llm-config.js";
 import {
+  getPersonaPackById,
+  type PersonaPack,
+} from "@perfectman/shared";
+import {
   GENERIC_PROMPT_PROFILE,
   PERSONA_PROFILES,
   type PersonaPromptProfile
@@ -16,10 +20,18 @@ export const DEFAULT_MOCK_CONFIG: LlmConfig = {
 };
 
 export class PersonaLoader {
+  /**
+   * Resolves the compiled prompt profile for a persona. Canonical personas
+   * resolve to their authored PersonaPack (identity frame, voice, biases,
+   * motive lexicon); unknown ids fall back to a generic profile.
+   */
   static getProfile(personaId: string): PersonaPromptProfile {
     const normalizedPersonaId = personaId.toLowerCase();
     const profile = PERSONA_PROFILES[normalizedPersonaId];
     if (profile) return profile;
+
+    const pack = getPersonaPackById(personaId);
+    if (pack) return personaPackToProfile(pack);
 
     return {
       ...GENERIC_PROMPT_PROFILE,
@@ -30,15 +42,61 @@ export class PersonaLoader {
 
   /**
    * Resolves an LlmConfig by personaId with safe mock defaults.
-   * By default, it resolves to mock unless explicit overrides are supplied.
+   * Sampling is persona-tuned when a persona pack exists.
    */
   static getLlmConfig(personaId: string, overrides?: Partial<LlmConfig>): LlmConfig {
-    // In the future, we could check if process.env has specific settings for this agent
-    // E.g., process.env[`LLM_CONFIG_${personaId.toUpperCase()}`]
-    
+    const pack = getPersonaPackById(personaId);
     return {
       ...DEFAULT_MOCK_CONFIG,
+      ...(pack
+        ? {
+            temperature: pack.sampling.temperature,
+            maxOutputTokens: pack.sampling.maxTokens,
+            extraBody: {
+              top_p: pack.sampling.topP,
+              repetition_penalty: pack.sampling.repetitionPenalty,
+            },
+          }
+        : {}),
       ...overrides,
     };
   }
+}
+
+/** Compiles an authored PersonaPack into the LLM-facing prompt profile. */
+export function personaPackToProfile(pack: PersonaPack): PersonaPromptProfile {
+  const biases: Record<string, import("./persona-prompt-profile.js").RelationshipPromptBias> = {};
+  for (const [peer, view] of Object.entries(pack.relationshipBiases)) {
+    biases[peer] = { view, warmth: "medium", trust: "medium", likelyBehaviors: [], triggers: [] };
+  }
+  return {
+    personaId: pack.personaId,
+    displayName: pack.displayName,
+    language: pack.language,
+    identityFrame: pack.identityFrame,
+    coreTraits: [pack.archetype],
+    valuesAndMotivations: pack.socialTheory,
+    socialPresence: pack.edgeProfile.maskTells.length > 0
+      ? pack.edgeProfile.maskTells.map(t => `Masking tell: ${t}`)
+      : [],
+    cognitiveStyle: pack.edgeProfile.maskTells.length > 0 ? pack.edgeProfile.maskTells : [],
+    emotionalPatterns: pack.memorySeeds.filter(m => m.unresolved).map(m => `Unresolved: ${m.summary}`),
+    conflictStyle: pack.edgeProfile.triggers.map(t => `Trigger: ${t.trigger} → ${t.behavior}`),
+    affectionStyle: [],
+    publicPrivateDelta: pack.edgeProfile.maskTells,
+    voiceGuidelines: pack.voiceGuidelines,
+    styleExamples: {
+      default: pack.styleExamples,
+      animated: [],
+      dryOrLowEnergy: [],
+      conflict: pack.edgeProfile.impulseBehaviors,
+    },
+    privateMotivePatterns: pack.edgeProfile.privateMotiveLexicon,
+    hardAvoids: pack.edgeProfile.hardLimits,
+    relationshipBiases: biases,
+    sourceRefs: {
+      assessmentIds: [],
+      lastCompiledAt: new Date().toISOString(),
+    },
+  };
 }

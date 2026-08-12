@@ -37,7 +37,29 @@ export class IntentParser {
       jsonText = jsonText.replace(/,\s*([}\]])/g, "$1");
 
       // 4. Parse JSON
-      const parsedObject = JSON.parse(jsonText);
+      const parsedObject = JSON.parse(jsonText) as Record<string, unknown>;
+
+      // 4b. Narrow structural repair — default fields that are structural
+      // (not semantic) so a model that follows the compact schema example
+      // still passes: id, arrays, motive. Also: models return `null` for
+      // optional fields — zod rejects null where it expects undefined.
+      if (typeof parsedObject.id !== "string" || parsedObject.id.trim() === "") {
+        parsedObject.id = createId();
+      }
+      if (parsedObject.actorId === undefined) parsedObject.actorId = actorId;
+      if (!Array.isArray(parsedObject.personTargets)) parsedObject.personTargets = [];
+      if (!Array.isArray(parsedObject.emotionDrivers)) parsedObject.emotionDrivers = [];
+      if (!Array.isArray(parsedObject.motivationDrivers)) parsedObject.motivationDrivers = [];
+      if (!Array.isArray(parsedObject.memoryWrites)) parsedObject.memoryWrites = [];
+      for (const optional of [
+        "channelTarget", "visibleContent", "preferredDelay", "fallbackIfBlocked",
+        "spectatorSummary", "replyToEventId", "emoji", "targetEventId",
+        "channelName", "channelType", "invitedAgentIds",
+      ]) {
+        if (parsedObject[optional] === null) {
+          delete parsedObject[optional];
+        }
+      }
 
       // 5. Validate against ActionIntentSchema
       const validatedIntent = ActionIntentSchema.parse(parsedObject) as ActionIntent;

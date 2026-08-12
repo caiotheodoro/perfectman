@@ -23,6 +23,7 @@ export class AgentRuntime {
   constructor(
     private readonly configOverrides?: Record<string, Partial<LlmConfig>>,
     private readonly agentConfigRegistry?: AgentConfigRegistry,
+    private readonly providerFactory?: (llmConfig: LlmConfig, agentId: string) => LlmProvider,
   ) {}
 
   async generateIntent(
@@ -75,7 +76,9 @@ export class AgentRuntime {
 
     // Determine LLM provider
     let provider: LlmProvider;
-    if (llmConfig.providerType === "mock") {
+    if (this.providerFactory) {
+      provider = this.providerFactory(llmConfig, agentId);
+    } else if (llmConfig.providerType === "mock") {
       provider = new MockLlmProvider();
     } else if (llmConfig.providerType === "ollama") {
       provider = new OllamaProvider(llmConfig);

@@ -70,7 +70,15 @@ export type PulseResult = {
 
 export class PulseScheduler {
   private pulseIndex = 0;
-  private lastPulseTimestamp: number = Date.now();
+  /** Rolling context limit: how many recent events the LLM sees. */
+  private static readonly CONTEXT_WINDOW_PULSES_LIMIT = 40;
+  /**
+   * Simulated simulation clock (monotonic, ms). Advances pulseIntervalMs per
+   * pulse. All emotion/attention/cooldown math uses SIM time — wall clock
+   * makes fast bench runs see dt≈0 and saturate every emotion (the moods
+   * never spring back to baseline).
+   */
+  private simTime: number = 0;
   private lastCommittedEventId: string | undefined = undefined;
   private running = false;
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -82,7 +90,6 @@ export class PulseScheduler {
   start(): void {
     if (this.running) return;
     this.running = true;
-    this.lastPulseTimestamp = Date.now();
     this.scheduleNext();
   }
 
@@ -123,9 +130,9 @@ export class PulseScheduler {
   }
 
   private async executePulse(): Promise<PulseResult> {
-    const now = Date.now();
-    const dt = (now - this.lastPulseTimestamp) / 1000;
-    this.lastPulseTimestamp = now;
+    this.simTime += this.config.pulseIntervalMs;
+    const now = this.simTime;
+    const dt = this.config.pulseIntervalMs / 1000;
 
     const sim = this.config.simulation;
     const rng = createSeededRng(sim.seed + this.pulseIndex);
@@ -136,6 +143,7 @@ export class PulseScheduler {
     let channels: Channel[] = [];
     let membership: ChannelMembership[] = [];
     let newEvents: CommittedEvent[] = [];
+    let contextEvents: CommittedEvent[] = [];
 
     try {
       channels = await this.config.channelRegistry.getChannels(sim.id);
@@ -144,6 +152,15 @@ export class PulseScheduler {
         sim.id,
         this.lastCommittedEventId,
       );
+      // The model's context is a ROLLING WINDOW, not just this pulse's
+      // events — agents reference what was said earlier (docs: short-term
+      // memory, "last ~10 conversations"). Seed events (any pulseIndex)
+      // stay visible through the room's first pulses.
+      const allCommitted = await this.config.eventRepo.getCommittedThrough(
+        sim.id,
+        Number.MAX_SAFE_INTEGER,
+      );
+      contextEvents = allCommitted;
     } catch (err) {
       await this.emitOperatorEvent(this.schedulerError("Failed to load pulse context", err));
       return this.finishPulse(eventsCommitted, agentsCalled);
@@ -189,7 +206,7 @@ export class PulseScheduler {
       const snapshot = this.config.engineSnapshotProjection.build({
         pulseIndex: this.pulseIndex,
         simulation: sim,
-        recentEventsWindow: newEvents,
+        recentEventsWindow: contextEvents.slice(-PulseScheduler.CONTEXT_WINDOW_PULSES_LIMIT),
         now,
         agentState,
         persona: agent.persona,

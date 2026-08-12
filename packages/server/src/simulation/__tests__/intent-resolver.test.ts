@@ -161,3 +161,115 @@ describe("IntentResolver", () => {
     expect(event.actorId).toBe(AGENT_ID);
   });
 });
+
+describe("private channel event tagging", () => {
+  let resolver: IntentResolver;
+
+  beforeEach(async () => {
+    const channelRepo = new InMemoryChannelRepository();
+    const channelRegistry = new ChannelRegistry(channelRepo);
+    await channelRepo.create({
+      id: CHANNEL_ID,
+      simulationId: SIM_ID,
+      type: "public_channel",
+      name: "general",
+      createdBy: "system",
+      memberAgentIds: [AGENT_ID],
+      spectatorVisible: true,
+      operatorVisible: true,
+      createdForMotives: [],
+      status: "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    await channelRepo.addMembership({ channelId: CHANNEL_ID, agentId: AGENT_ID, joinedAt: Date.now() });
+    await channelRepo.create({
+      id: "ch_priv",
+      simulationId: SIM_ID,
+      type: "private_channel",
+      name: "pv-test",
+      createdBy: AGENT_ID,
+      memberAgentIds: [AGENT_ID],
+      spectatorVisible: false,
+      operatorVisible: true,
+      createdForMotives: ["gossip"],
+      status: "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    await channelRepo.addMembership({ channelId: "ch_priv", agentId: AGENT_ID, joinedAt: Date.now() });
+    resolver = new IntentResolver(new RateLimitGate(SETTINGS), channelRegistry);
+  });
+
+  const privCtx = () => ({
+    simulationId: SIM_ID,
+    channelId: "ch_priv",
+    pulseIndex: 1,
+    agentState: makeAgentState(),
+    availableActions: [
+      { intentType: "send_message", channelTargets: ["ch_priv"], personTargets: [], blocked: false },
+      { intentType: "reply_to_message", channelTargets: ["ch_priv"], personTargets: [], blocked: false },
+      { intentType: "react", channelTargets: ["ch_priv"], personTargets: [], blocked: false },
+      { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
+    ],
+    channels: [
+      {
+        id: "ch_priv",
+        simulationId: SIM_ID,
+        type: "private_channel" as const,
+        name: "pv-test",
+        createdBy: AGENT_ID,
+        memberAgentIds: [AGENT_ID],
+        spectatorVisible: false,
+        operatorVisible: true,
+        createdForMotives: ["gossip"],
+        status: "active" as const,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      },
+    ],
+    membership: [],
+    settings: SETTINGS,
+    actionEmotions: ACTION_EMOTIONS,
+  });
+
+  it("tags private-channel messages so the model can tell", async () => {
+    const intent = makeIntent({ intentType: "send_message", channelTarget: "ch_priv" });
+    const result = await resolver.resolve(intent, privCtx());
+    expect(result.outcome).toBe("committed");
+    const evt = result.committedEvents[0]!;
+    expect(evt.type).toBe("message_sent");
+    expect(evt.visibility.visibilityReason).toBe("private_channel_members_only");
+    expect(evt.visibility.visibleToSpectators).toBe(false);
+    expect((evt.payload as Record<string, unknown>).channelType).toBe("private_channel");
+  });
+
+  it("public messages stay public", async () => {
+    const publicCtx = {
+      ...privCtx(),
+      channelId: CHANNEL_ID,
+      availableActions: AVAILABLE_ACTIONS,
+      channels: [
+        {
+          id: CHANNEL_ID,
+          simulationId: SIM_ID,
+          type: "public_channel" as const,
+          name: "general",
+          createdBy: "system",
+          memberAgentIds: [AGENT_ID],
+          spectatorVisible: true,
+          operatorVisible: true,
+          createdForMotives: [],
+          status: "active" as const,
+          createdAt: Date.now(),
+          updatedAt: Date.now(),
+        },
+      ],
+    };
+    const intent = makeIntent({ intentType: "send_message", channelTarget: CHANNEL_ID });
+    const result = await resolver.resolve(intent, publicCtx);
+    const evt = result.committedEvents[0]!;
+    expect(evt.visibility.visibilityReason).toBe("public");
+    expect((evt.payload as Record<string, unknown>).channelType).toBeUndefined();
+  });
+});

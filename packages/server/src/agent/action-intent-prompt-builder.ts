@@ -36,7 +36,8 @@ JSON Schema:
   "emotionDrivers": ["Emotion keywords driving this action (e.g. warmth, jealousy, irritation)"],
   "motivationDrivers": ["Motivation keywords driving this action (e.g. affinity, gossip, exclusion)"],
   "preferredDelay": 0,
-  "fallbackIfBlocked": "no_op"
+  "fallbackIfBlocked": "no_op",
+  "memoryWrites": []
 }
 
 Ensure:
@@ -55,6 +56,27 @@ Ensure:
 ${this.formatEvent(perceptionPacket.triggeringEvent)}`);
     } else {
       userSections.push("Triggering Event: No specific event triggered this pulse (you have the initiative to speak or act on your own).");
+    }
+
+    // Private-channel awareness: if anything in view lives in a private
+    // channel, say so explicitly — the model must know who can see what.
+    const privateContext = perceptionPacket.visibleContextEvents.some(e => this.isPrivateEvent(e));
+    if (privateContext) {
+      userSections.push(
+        "IMPORTANT: part of this conversation is happening in a PRIVATE channel (marked 🔒). " +
+          "Only the invited people can see those messages. What is said there stays there.",
+      );
+    }
+    // If the agent itself created a private channel, point it out — that is
+    // the natural place to take a conversation that shouldn't be public.
+    const myPrivateChannel = perceptionPacket.visibleContextEvents.find(
+      e => e.type === "channel_created" && e.actorId === input.agentId && e.channelId,
+    );
+    if (myPrivateChannel) {
+      userSections.push(
+        `You created a private channel (#${myPrivateChannel.channelId}). If what you want to say ` +
+          "should not be public, send it THERE (use it as your channelTarget) instead of the public channel.",
+      );
     }
 
     if (perceptionPacket.visibleContextEvents.length > 0) {
@@ -100,6 +122,14 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
       });
     }
 
+    // Section 5b: Motivations — the felt drives behind the urges.
+    if (input.activeMotivations.length > 0) {
+      userSections.push("\nWhat is driving you right now:");
+      input.activeMotivations.forEach((m) => {
+        userSections.push(`- Motivation (${m.strength}): ${m.description}`);
+      });
+    }
+
     // Section 6: Relevant Memories
     userSections.push("### SECTION 6: WHAT YOU REMEMBER");
     if (perceptionPacket.relevantMemories.length > 0) {
@@ -124,6 +154,21 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
         }
         userSections.push(`- **${act.intentType}** ${targetsDetail.length > 0 ? `(${targetsDetail.join("; ")})` : ""}${act.blocked ? ` [BLOCKED: ${act.blockReason}]` : ""}`);
       });
+      // Private-motive salience: when the engine feels a strong pull to move
+      // somewhere private, say so — models default to public replies.
+      const privatePressure = input.activePressures.find(
+        p => p.type === "urge_to_create_private_channel" &&
+          (p.intensity === "high" || p.intensity === "overwhelming"),
+      );
+      const canCreateChannel = input.availableActions.find(
+        a => a.intentType === "create_channel" && !a.blocked,
+      );
+      if (privatePressure && canCreateChannel) {
+        userSections.push(
+          "\nNote: you are strongly feeling that part of this should NOT be said in front of everyone. " +
+            "If the `create_channel` action fits what you want to do, using it is a natural move right now.",
+        );
+      }
     } else {
       userSections.push("- **no_op** (No action available)");
     }
@@ -235,11 +280,21 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
     return lines.join("\n");
   }
 
+  private static isPrivateEvent(event: CommittedEvent): boolean {
+    const payloadObj = event.payload as Record<string, unknown>;
+    return (
+      payloadObj.channelType === "private_channel" ||
+      event.visibility.visibilityReason.includes("private")
+    );
+  }
+
   // Event content is LLM-generated (agent outputs), not untrusted user input — no sanitization needed.
   private static formatEvent(event: CommittedEvent): string {
     const actor = event.actorId;
     const type = event.type;
     const channel = event.channelId ? `#${event.channelId}` : "";
+    const priv = this.isPrivateEvent(event) ? " 🔒(private)" : "";
+    const channelTag = `${channel}${priv}`;
     
     let content = "";
     if (event.payload && typeof event.payload === "object") {
@@ -248,6 +303,8 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
         content = `"${payloadObj.content}"`;
       } else if (typeof payloadObj.reaction === "string") {
         content = `reacted with ${payloadObj.reaction}`;
+      } else if (typeof payloadObj.emoji === "string") {
+        content = `reacted with ${payloadObj.emoji}`;
       } else {
         content = JSON.stringify(event.payload);
       }
@@ -255,21 +312,21 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
 
     switch (type) {
       case "message_sent":
-        return `[${actor} in ${channel}]: ${content}`;
+        return `[${actor} in ${channelTag}]: ${content}`;
       case "reply_sent":
-        return `[${actor} in ${channel} (reply)]: ${content}`;
+        return `[${actor} in ${channelTag} (reply)]: ${content}`;
       case "reaction_sent":
-        return `[${actor} in ${channel}]: ${content}`;
+        return `[${actor} in ${channelTag}]: ${content}`;
       case "channel_created":
-        return `[System]: ${actor} created a new private channel ${channel}`;
+        return `[System]: ${actor} created a new private channel ${channelTag}`;
       case "agent_invited":
-        return `[System]: ${actor} invited someone to ${channel}`;
+        return `[System]: ${actor} invited someone to ${channelTag}`;
       case "presence_changed":
         return `[System]: ${actor} changed presence to ${event.payload?.presence || "unknown"}`;
       case "no_op_recorded":
         return `[System]: ${actor} chose to lurk silently.`;
       default:
-        return `[${actor} in ${channel} (${type})]: ${content}`;
+        return `[${actor} in ${channelTag} (${type})]: ${content}`;
     }
   }
 }

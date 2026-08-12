@@ -20,6 +20,7 @@ import {
   SimulationSettingsSchema,
   SocialEmotionsSchema,
   createId,
+  getPersonaById,
 } from "@perfectman/shared";
 import {
   AgentConfigRegistry,
@@ -738,6 +739,30 @@ function parseAgents(input: unknown): AgentConfig[] {
 }
 
 export function inflatePersonaConfig(persona: ConfigPersona): PersonaConfig {
+  // Canonical personas carry their calibration in constants/personas.ts —
+  // resolve it by id so config files stay lean AND the persona thresholds
+  // actually reach the engine (persona-as-thresholds, not persona-as-cosmetics).
+  const canonical = getPersonaById(persona.id);
+  if (canonical) {
+    return {
+      ...persona,
+      baselineValence: canonical.baselineValence,
+      baselineArousal: canonical.baselineArousal,
+      baselineStability: canonical.baselineStability,
+      baselineEnergy: canonical.baselineEnergy,
+      emotionalReactivity: canonical.emotionalReactivity,
+      moodInertia: canonical.moodInertia,
+      maxMoodRotation: canonical.maxMoodRotation,
+      energyRegen: canonical.energyRegen,
+      exclusionSensitivity: canonical.exclusionSensitivity,
+      praiseSensitivity: canonical.praiseSensitivity,
+      conflictSensitivity: canonical.conflictSensitivity,
+      boredomSensitivity: canonical.boredomSensitivity,
+      intimacySensitivity: canonical.intimacySensitivity,
+      styleExamples: [...persona.styleExamples],
+      socialSensitivities: { ...canonical.socialSensitivities },
+    };
+  }
   return {
     ...persona,
     ...DEFAULT_PERSONA_CALIBRATION,

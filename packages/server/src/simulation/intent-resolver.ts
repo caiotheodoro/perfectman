@@ -113,28 +113,54 @@ function buildDelayEvent(
   };
 }
 
+/** Marks an event's visibility as private-channel (members-only) and tags
+ *  the payload so the model and the evidence can tell. */
+function channelVisibility(
+  channelId: string,
+  ctx: ResolveContext,
+): { payload: Record<string, unknown>; visibility: SimulationEvent["visibility"] } {
+  const channel = ctx.channels.find(ch => ch.id === channelId);
+  const isPrivate = channel?.type === "private_channel";
+  if (!isPrivate) {
+    return {
+      payload: {},
+      visibility: {
+        visibleToAgents: [],
+        visibleToSpectators: true,
+        visibleToOperators: true,
+        visibilityReason: "public",
+      },
+    };
+  }
+  return {
+    payload: { channelType: "private_channel" },
+    visibility: {
+      visibleToAgents: [],
+      visibleToSpectators: false,
+      visibleToOperators: true,
+      visibilityReason: "private_channel_members_only",
+    },
+  };
+}
+
 function buildMessageEvent(
   intent: ActionIntent,
   salience: EmotionalSalience,
   ctx: ResolveContext,
 ): SimulationEvent {
   const channelId = intent.channelTarget ?? ctx.channelId;
+  const vis = channelVisibility(channelId, ctx);
   return {
     simulationId: ctx.simulationId,
     channelId,
     actorId: intent.actorId,
     type: "message_sent",
-    payload: { content: intent.visibleContent ?? "" },
+    payload: { content: intent.visibleContent ?? "", ...vis.payload },
     sourceIntentId: intent.id,
     sourceEventIds: [],
     emotionalSalience: salience,
     pulseIndex: ctx.pulseIndex,
-    visibility: {
-      visibleToAgents: [],
-      visibleToSpectators: true,
-      visibleToOperators: true,
-      visibilityReason: "public",
-    },
+    visibility: vis.visibility,
   };
 }
 
@@ -145,22 +171,18 @@ function buildReplyEvent(
 ): SimulationEvent {
   const channelId = intent.channelTarget ?? ctx.channelId;
   const replyToEventId = intent.replyToEventId;
+  const vis = channelVisibility(channelId, ctx);
   return {
     simulationId: ctx.simulationId,
     channelId,
     actorId: intent.actorId,
     type: "reply_sent",
-    payload: { content: intent.visibleContent ?? "", replyToEventId: replyToEventId ?? "" },
+    payload: { content: intent.visibleContent ?? "", replyToEventId: replyToEventId ?? "", ...vis.payload },
     sourceIntentId: intent.id,
     sourceEventIds: replyToEventId ? [replyToEventId] : [],
     emotionalSalience: salience,
     pulseIndex: ctx.pulseIndex,
-    visibility: {
-      visibleToAgents: [],
-      visibleToSpectators: true,
-      visibleToOperators: true,
-      visibilityReason: "public",
-    },
+    visibility: vis.visibility,
   };
 }
 
@@ -170,6 +192,7 @@ function buildReactionEvent(
   ctx: ResolveContext,
 ): SimulationEvent {
   const channelId = intent.channelTarget ?? ctx.channelId;
+  const vis = channelVisibility(channelId, ctx);
   return {
     simulationId: ctx.simulationId,
     channelId,
@@ -178,17 +201,13 @@ function buildReactionEvent(
     payload: {
       emoji: intent.emoji ?? "👍",
       targetEventId: intent.targetEventId ?? "",
+      ...vis.payload,
     },
     sourceIntentId: intent.id,
     sourceEventIds: intent.targetEventId ? [intent.targetEventId] : [],
     emotionalSalience: salience,
     pulseIndex: ctx.pulseIndex,
-    visibility: {
-      visibleToAgents: [],
-      visibleToSpectators: true,
-      visibleToOperators: true,
-      visibilityReason: "public",
-    },
+    visibility: vis.visibility,
   };
 }
 
@@ -328,10 +347,76 @@ export class IntentResolver {
       };
     }
 
-    const events = this.intentToEvents(intent, ctx);
+    const primaryEvents = this.intentToEvents(intent, ctx);
+
+    // create_channel intents must REGISTER the channel + memberships —
+    // otherwise the creator (and invitees) can't message inside it, and
+    // the event stays invisible to the very people it concerns.
+    if (intent.intentType === "create_channel") {
+      const memberSet = new Set([
+        intent.actorId,
+        ...(intent.invitedAgentIds ?? []),
+        ...(intent.personTargets ?? []),
+      ]);
+      const channel = await this.channelRegistry.createChannel({
+        simulationId: ctx.simulationId,
+        type: "private_channel",
+        name: intent.channelName ?? `pv-${intent.actorId}`,
+        createdBy: intent.actorId,
+        memberAgentIds: [...memberSet],
+        spectatorVisible: false,
+        createdForMotives: [intent.privateMotiveSummary.slice(0, 80)],
+      });
+      // Rewrite the committed event with the real registered channel id.
+      for (const evt of primaryEvents) {
+        if (evt.type === "channel_created") {
+          evt.channelId = channel.id;
+        }
+      }
+    } else if (intent.intentType === "invite_agent" && intent.channelTarget) {
+      for (const invitee of intent.personTargets) {
+        await this.channelRegistry.addMember(intent.channelTarget, invitee);
+      }
+    }
+
+    // memoryWrites attached to ANY intent commit operator-only memory events.
+    const memoryEvents =
+      intent.intentType !== "write_memory" ? this.memoryProposalEvents(intent, ctx) : [];
     this.rateLimitGate.recordAction(intent.actorId, intent.intentType);
 
-    return { outcome: "committed", committedEvents: events, operatorEvents: [] };
+    return {
+      outcome: "committed",
+      committedEvents: [...primaryEvents, ...memoryEvents],
+      operatorEvents: [],
+    };
+  }
+
+  private memoryProposalEvents(intent: ActionIntent, ctx: ResolveContext): SimulationEvent[] {
+    return (intent.memoryWrites ?? []).map((proposal, i) => ({
+      simulationId: ctx.simulationId,
+      channelId: ctx.channelId,
+      actorId: intent.actorId,
+      type: "memory_written" as const,
+      payload: {
+        memoryType: proposal.type,
+        summary: proposal.summary,
+        emotionalTone: proposal.emotionalTone,
+        confidence: proposal.confidence,
+        unresolved: proposal.unresolved,
+        subjectAgentIds: proposal.subjectAgentIds,
+        proposalIndex: i,
+      },
+      sourceIntentId: intent.id,
+      sourceEventIds: [],
+      emotionalSalience: "low",
+      pulseIndex: ctx.pulseIndex,
+      visibility: {
+        visibleToAgents: [],
+        visibleToSpectators: false,
+        visibleToOperators: true,
+        visibilityReason: "operator_only",
+      },
+    }));
   }
 
   private intentToEvents(intent: ActionIntent, ctx: ResolveContext): SimulationEvent[] {
@@ -421,8 +506,12 @@ export class IntentResolver {
             visibilityReason: "public",
           },
         }];
-      case "write_memory":
+      case "write_memory": {
+        // A bare write_memory intent with no proposals is a no-op that never
+        // happened — not an event. Proposals are committed by the caller's
+        // memoryProposalEvents path.
         return [];
+      }
     }
   }
 }

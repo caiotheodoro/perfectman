@@ -106,7 +106,7 @@ describe("simulation config", () => {
         ...config.agents[0],
         llm: {
           ...llm,
-          providerType: "qwen3",
+          providerType: "qwen3_8b",
           baseUrl: "http://localhost:11434/v1",
           modelName: "qwen3:1.7b",
           extraBody: { stream: false },
@@ -114,7 +114,7 @@ describe("simulation config", () => {
       }],
     });
 
-    expect(parsed.agents[0]?.llm.providerType).toBe("qwen3");
+    expect(parsed.agents[0]?.llm.providerType).toBe("qwen3_8b");
     expect(parsed.agents[0]?.llm.modelName).toBe("qwen3:1.7b");
   });
 

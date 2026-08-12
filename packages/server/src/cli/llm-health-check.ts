@@ -21,7 +21,7 @@ export async function assertRequiredLlmServicesAvailable(
     if (agent.llm.providerType === "freellmapi") {
       freellmChecks.set(agent.llm.baseUrl, agent.llm.apiKeyEnv);
     }
-    if (agent.llm.providerType === "qwen3") {
+    if (agent.llm.providerType === "qwen3_8b") {
       qwenChecks.set(`${agent.llm.baseUrl}|${agent.llm.modelName}`, agent.llm);
     }
   }
