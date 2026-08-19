@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-19T03:10:23.166Z — audited 65 files, 685 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-19T03:17:42.138Z — audited 67 files, 664 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -10,10 +10,10 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 |---|---|---|---|
 | engine | 15 | 216 | weak-terminal-toBeDefined(201), weak-terminal-toBeDefined(174)
 | eval | 2 | 16 | —
-| server | 43 | 376 | console(1), over-cap(47>25), weak-terminal-toBeDefined(697,775), async-pause(1)
+| server | 45 | 355 | console(1), weak-terminal-toBeDefined(697,775), async-pause(1)
 | shared | 5 | 77 | over-cap(31>25)
 
-**Total: 65 files, 685 it/test blocks; 7 files flagged.**
+**Total: 67 files, 664 it/test blocks; 6 files flagged.**
 
 ## Per-file inventory
 
@@ -36,12 +36,9 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/engine/src/__tests__/visibility.test.ts | integration | 20 | 
 | packages/eval/src/test/judge-signals.test.ts | eval-harness | 6 | 
 | packages/eval/src/test/probes.test.ts | eval-harness | 10 | 
-| packages/server/src/__e2e__/cold-start.e2e.test.ts | e2e | 9 | 
-| packages/server/src/__e2e__/exclusion-cascade.e2e.test.ts | e2e | 9 | 
 | packages/server/src/__e2e__/html-snapshot.e2e.test.ts | e2e | 1 | console(1)
-| packages/server/src/__e2e__/no-op-inhibition.e2e.test.ts | e2e | 10 | 
 | packages/server/src/__e2e__/pipeline-invariants.e2e.test.ts | e2e | 10 | 
-| packages/server/src/__e2e__/private-channel-motive.e2e.test.ts | e2e | 10 | 
+| packages/server/src/__e2e__/roleplay-behaviors.e2e.test.ts | e2e | 17 | 
 | packages/server/src/agent/__tests__/agent-runtime.test.ts | integration | 4 | 
 | packages/server/src/agent/__tests__/intent-parser-null.test.ts | integration | 3 | 
 | packages/server/src/agent/__tests__/intent-parser.test.ts | integration | 9 | 
@@ -60,7 +57,12 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/llm/__tests__/llm-budget.test.ts | integration | 6 | 
 | packages/server/src/llm/__tests__/mock-llm-provider.test.ts | integration | 7 | 
 | packages/server/src/llm/__tests__/openai-compatible-provider.test.ts | integration | 7 | 
-| packages/server/src/persistence/__tests__/sqlite-repositories.test.ts | integration | 47 | over-cap(47>25)
+| packages/server/src/persistence/__tests__/sqlite-agent-state-repository.test.ts | integration | 8 | 
+| packages/server/src/persistence/__tests__/sqlite-channel-repository.test.ts | integration | 9 | 
+| packages/server/src/persistence/__tests__/sqlite-event-repository.test.ts | integration | 13 | 
+| packages/server/src/persistence/__tests__/sqlite-foreign-key-cascade.test.ts | integration | 2 | 
+| packages/server/src/persistence/__tests__/sqlite-memory-repository.test.ts | integration | 8 | 
+| packages/server/src/persistence/__tests__/sqlite-simulation-repository.test.ts | integration | 7 | 
 | packages/server/src/simulation/__tests__/channel-registry.test.ts | integration | 7 | 
 | packages/server/src/simulation/__tests__/command-handlers.test.ts | integration | 4 | 
 | packages/server/src/simulation/__tests__/delivery-projection-fanout.test.ts | integration | 18 | 

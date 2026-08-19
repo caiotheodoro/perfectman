@@ -58,9 +58,15 @@ All fixes verified against production before editing. Tests stayed green
 | File | Issue | Why deferred | Plan |
 |---|---|---|---|
 | `engine/__tests__/emotion-stack.test.ts:200-201`, `engine/__tests__/engine-step.test.ts:173-174` | Tests end with 4 existence-only `toBeDefined()` (shape guard, not dead — would catch null field) | Needs behavioral value decisions | P2/P3 quality refactor |
-| `server/persistence/__tests__/sqlite-repositories.test.ts` | 47 `it` blocks (over 25 cap) | Needs split/parameterization design | P2 |
 | `shared/__tests__/constants.test.ts` | 31 `it` blocks; range loops hand-duplicated per table | Q2 schema-driven refactor | P3 |
 | `server/simulation/__tests__/pulse-scheduler-integration.test.ts:697,775` | `payload[key]).toBeDefined()` terminal after length check | Borderline (presence of event key); low priority | P3 if kept |
+
+## P2 — completed redundancy cut
+
+1. **4 e2e family suites → 1 parameterized suite** — `cold-start`, `exclusion-cascade`, `no-op-inhibition`, `private-channel-motive` deleted; replaced by `roleplay-behaviors.e2e.test.ts`: a `SCENARIOS` registry (fixture adapters) + one `describe.each` smoke block + per-scenario behavioral describes. Cross-cutting invariants (shape, operator visibility, cursor, persistence, bounds) were **already owned by `pipeline-invariants.e2e.test.ts`** — stripped from the family suites instead of re-asserted (Q3). Result: 38 its → 23 its, zero behavior lost, all P1-fixed assertions carried over.
+2. **sqlite-repositories.test.ts (47 its, 6 suites + contract runs) split into 6 files** — `sqlite-test-helpers.ts` extracted (fixtures + `makeSqliteFactory`); per-repo files: simulation, channel, event, agent-state, memory, foreign-key-cascade. Each runs its own `run*RepositoryContract`. 81 tests preserved exactly.
+
+Suite totals after P2: 67 files, 664 `it`/`test` blocks, 713 vitest-reported tests (was 65 files / 685 / 728). Audit flags 20 → 6 (sqlite over-cap resolved; the split files are all ≤24 it).
 
 ## Documented false positives / exceptions (do NOT re-flag)
 
@@ -78,8 +84,8 @@ All fixes verified against production before editing. Tests stayed green
 |---|---|---|
 | P0 Baseline: inventory + hygiene sweep | ✅ done | `docs/test-inventory.md` + verified findings list |
 | P1 Classify & rename / hygiene fixes | ✅ done (hygiene; rename deferred per open decision #2) | 728/728 green, flags 20 → 7 |
-| P2 Redundancy cut | ⏳ next | 4 e2e family suites → 1 `it.each`; e2e assertions owned by lower layers stripped; sqlite 47-it split |
-| P3 Quality refactor | ⏳ | Q1-Q10 applied per file; constants schema-driven |
+| P2 Redundancy cut | ✅ done | 4 e2e family suites → 1 `it.each`; e2e assertions owned by lower layers stripped; sqlite 47-it split; 713/713 green, flags → 6 |
+| P3 Quality refactor | ⏳ next | Q1-Q10 applied per file; constants schema-driven; weak-terminal clusters in emotion-stack/engine-step resolved |
 | P4 Property tests | ⏳ | fast-check replaces edge-case `it`s (emotion bounds, circumplex, kappa/alpha, signal-checker) |
 | P5 Mutation gate | ⏳ | Stryker on engine ≥80% kill; wired into review gate |
 | P6 Guardrails | ⏳ | `scripts/audit-tests.mjs` promoted to CI gate (caps + zero-tolerance list) |
