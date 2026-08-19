@@ -126,3 +126,13 @@ Suite totals after P2: 67 files, 664 `it`/`test` blocks, 713 vitest-reported tes
   Outputs `docs/test-inventory.md` + `.json`. Heuristic — always pair with a
   manual verification pass.
 - Regenerate anytime with: `node scripts/audit-tests.mjs`
+
+## P4 — property tests (fast-check) completed
+
+- Added `fast-check` devDependency to `packages/eval` and `packages/engine` (engine installed for future emotion/circumplex targets).
+- New `packages/eval/src/test/calibration-properties.test.ts` — 6 property tests over `weightedKappa` + `krippendorffAlpha`:
+  - self-agreement returns exactly 1
+  - raters symmetric
+  - result finite and ≤ 1
+- **Verified findings from running them:** both functions are mathematically symmetric. `weightedKappa` uses rational weights (0.75, 0.9375) that accumulate in different FP order when raters swap → symmetry holds to ~1e-10, not bit-exact (asserted with `toBeCloseTo`). `krippendorffAlpha` uses integer squared distances → symmetry is bit-exact (`toBe`). No logic bugs in the implementations — the initial property failure was first a test-generator destructuring bug, then the FP-precision consideration; both are documented here and in the test comments.
+- Suite now: 68 files, 698 tests, audit flags still 2 (both documented exceptions).

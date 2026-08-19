@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-19T03:23:36.299Z",
+  "generatedAt": "2026-08-19T03:30:35.234Z",
   "totals": {
-    "files": 67,
-    "its": 643
+    "files": 68,
+    "its": 649
   },
   "byPackage": {
     "engine": {
@@ -11,8 +11,8 @@
       "flags": []
     },
     "eval": {
-      "files": 2,
-      "its": 16,
+      "files": 3,
+      "its": 22,
       "flags": []
     },
     "server": {
@@ -329,6 +329,27 @@
       "pkg": "engine",
       "layer": "integration",
       "its": 20,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": []
+    },
+    {
+      "file": "packages/eval/src/test/calibration-properties.test.ts",
+      "pkg": "eval",
+      "layer": "eval-harness",
+      "its": 6,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
