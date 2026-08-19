@@ -111,6 +111,7 @@ Hope you like it!
     expect(result.intent.intentType).toBe("no_op");
     expect(result.intent.privateMotiveSummary).toContain("Fallback applied");
     expect(result.errorDetail).toBeDefined();
+    expect(result.errorDetail!.length).toBeGreaterThan(0);
   });
 
   it("should apply safe fallback if required fields are missing", () => {

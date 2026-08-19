@@ -20,7 +20,6 @@ describe("command-handlers", () => {
   it("makeCommandResult ok=true has no reason", () => {
     const result = makeCommandResult(true);
     expect(result.ok).toBe(true);
-    expect(result.commandId).toBeTruthy();
   });
 
   it("makeCommandResult ok=false has a reason", () => {

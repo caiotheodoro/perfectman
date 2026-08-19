@@ -59,6 +59,8 @@ describe("E2E: Private Channel Motive — Mariana opens a private channel with C
     const created = await harness.getEventsByType("channel_created");
     const marianaChannel = created.find(e => e.actorId === "mariana");
     expect(marianaChannel).toBeDefined();
+    // The private-channel motive is evidenced by who she invited, not by a payload summary
+    expect(marianaChannel!.payload["invitedAgentIds"]).toContain("caio");
   });
 
   it("calls gateway.createChannel with Mariana as creator", async () => {
@@ -72,12 +74,12 @@ describe("E2E: Private Channel Motive — Mariana opens a private channel with C
     expect(created?.memberAgentIds).toContain("caio");
   });
 
-  it("Mariana's private motive is in the channel_created payload", async () => {
+  it("Mariana's channel_created payload marks a private channel", async () => {
     await harness.runPulse();
     const created = await harness.getEventsByType("channel_created");
     const marianaChannel = created.find(e => e.actorId === "mariana");
-    // Payload carries privateMotiveSummary from the intent
-    expect(marianaChannel?.payload).toBeDefined();
+    // channel_created payload carries channelType/invitedAgentIds, not the motive summary
+    expect(marianaChannel?.payload["channelType"]).toBe("private_channel");
   });
 
   it("Mariana's emotional bounds remain valid after private motive resolution", async () => {

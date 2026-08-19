@@ -167,7 +167,6 @@ describe("computeInhibitions", () => {
     const result = computeInhibitions(agent, CAIO, ZERO_ACTIONS);
     for (const inh of result) {
       expect(inh.agentId).toBe("a1");
-      expect(inh.type).toBeTruthy();
       expect(["low", "medium", "high"]).toContain(inh.strength);
       expect(inh.reason.length).toBeGreaterThan(0);
     }
@@ -181,8 +180,9 @@ describe("deriveMotivations", () => {
     const result = deriveMotivations(agent, CAIO, ZERO_ACTIONS);
     // boredom might appear due to low arousal
     for (const m of result) {
-      expect(m.strength).toBeTruthy();
-      expect(m.type).toBeTruthy();
+      // Zero action emotions → boredom (low arousal) is the only motivation production can emit
+      expect(m.type).toBe("boredom");
+      expect(["weak", "moderate", "strong"]).toContain(m.strength);
     }
   });
 

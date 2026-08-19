@@ -111,13 +111,14 @@ describe("HTML Snapshot: 4-persona simulation", () => {
       // All 4 agents must appear in emotional trajectory every pulse
       const trajectory = normalizeReplay(replay) as ReturnType<typeof normalizeReplay> & {
         emotionalTrajectory: Array<{ agentMoods: Record<string, unknown> }>;
+        perPulseEventSummary: Array<{ byActor: Record<string, unknown[]> }>;
       };
-      for (const p of (trajectory as any).emotionalTrajectory) {
+      for (const p of trajectory.emotionalTrajectory) {
         expect(Object.keys(p.agentMoods).sort()).toEqual(["ana", "bruno", "carla", "diego"]);
       }
       // At least one agent must act across the entire run
-      const anyAgentActed = (trajectory as any).perPulseEventSummary.some(
-        (p: any) => Object.keys(p.byActor).length > 0,
+      const anyAgentActed = trajectory.perPulseEventSummary.some(
+        (p) => Object.keys(p.byActor).length > 0,
       );
       expect(anyAgentActed).toBe(true);
 

@@ -81,7 +81,8 @@ describe("validateIntentPure", () => {
   });
 
   it("rejects unsupported intent type", () => {
-    const intent = makeIntent({ intentType: "hack_system" as any });
+    // Deliberate out-of-band value: validateIntentPure is a runtime (Set-based) validator, not schema-typed
+    const intent = makeIntent({ intentType: "hack_system" as ActionIntent["intentType"] });
     const actions = [makeAvailableAction()];
     const result = validateIntentPure(intent, actions, makeAgent(), DEFAULT_SETTINGS);
     expect(result.valid).toBe(false);
@@ -158,7 +159,8 @@ describe("validateIntentPure", () => {
   });
 
   it("rejects invalid fallbackIfBlocked", () => {
-    const intent = makeIntent({ fallbackIfBlocked: "invalid_type" as any });
+    // Deliberate out-of-band value: exercised against the runtime validator, not the TS type
+    const intent = makeIntent({ fallbackIfBlocked: "invalid_type" as ActionIntent["fallbackIfBlocked"] });
     const actions = [makeAvailableAction()];
     const result = validateIntentPure(intent, actions, makeAgent(), DEFAULT_SETTINGS);
     expect(result.valid).toBe(false);

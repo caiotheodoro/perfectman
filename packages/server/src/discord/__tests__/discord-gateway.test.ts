@@ -112,6 +112,8 @@ describe("DiscordDeliveryGateway", () => {
     const entry = channelMap.get("sim-1", "lobby")!;
     expect(entry.discordRoleId).toBeUndefined();
     expect(entry.discordChannelId).toBeDefined();
+    // Public channel must actually exist in the guild port (no role, but a real channel)
+    expect(guildPort.channels.has(entry.discordChannelId)).toBe(true);
   });
 
   it("createChannel spectator creates named channel", async () => {

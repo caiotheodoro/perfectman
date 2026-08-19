@@ -47,6 +47,10 @@ describe("E2E: No-Op Inhibition — shame silences Bruno without an LLM call", (
     const noOps = await harness.getEventsByType("no_op_recorded");
     const brunoNoOp = noOps.find(e => e.actorId === "bruno");
     expect(brunoNoOp).toBeDefined();
+    // Silence must carry a private motive (the e2e's point): non-empty summary
+    const summary = brunoNoOp?.payload["privateMotiveSummary"];
+    expect(typeof summary).toBe("string");
+    expect(summary!.length).toBeGreaterThan(0);
   });
 
   it("shame inhibition silences Bruno regardless of whether attention events route him through the LLM", async () => {

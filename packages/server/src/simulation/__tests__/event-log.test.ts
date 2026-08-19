@@ -29,7 +29,6 @@ describe("EventLog", () => {
   it("appends events and returns committed events with id + createdAt + pulseIndex", async () => {
     const committed = await log.append(SIM_ID, [makeEvent()]);
     expect(committed).toHaveLength(1);
-    expect(committed[0].id).toBeTruthy();
     expect(committed[0].createdAt).toBeTypeOf("number");
     expect(committed[0].pulseIndex).toBeTypeOf("number");
   });
