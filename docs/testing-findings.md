@@ -53,13 +53,45 @@ All fixes verified against production before editing. Tests stayed green
 | `server/__e2e__/html-snapshot.e2e.test.ts:115,119` | Redundant `as any` | Trajectory type already declared at line 112 (intersection type) | Extended the declared type with `perPulseEventSummary`; removed both casts |
 | `engine/__tests__/validate-intent.test.ts:84,161` | `as any` for negative fixtures | `validate-intent.ts` is a hand-written runtime validator (Set-based), not schema-typed — the negative tests are valuable | Narrow casts (`as ActionIntent["intentType"]`) + rationale comments |
 
-## Verified findings — REMAINING (deferred)
+## Verified findings — RESOLVED in P3
 
-| File | Issue | Why deferred | Plan |
-|---|---|---|---|
-| `engine/__tests__/emotion-stack.test.ts:200-201`, `engine/__tests__/engine-step.test.ts:173-174` | Tests end with 4 existence-only `toBeDefined()` (shape guard, not dead — would catch null field) | Needs behavioral value decisions | P2/P3 quality refactor |
-| `shared/__tests__/constants.test.ts` | 31 `it` blocks; range loops hand-duplicated per table | Q2 schema-driven refactor | P3 |
-| `server/simulation/__tests__/pulse-scheduler-integration.test.ts:697,775` | `payload[key]).toBeDefined()` terminal after length check | Borderline (presence of event key); low priority | P3 if kept |
+1. **`engine/__tests__/emotion-stack.test.ts` + `engine/__tests__/engine-step.test.ts`** —
+   deleted `toBeDefined()` shape-guard tests. Rationale: every field of
+   `EmotionStackResult` / `EngineStepResult` is required (verified in
+   `shared/src/.../engine.types.ts`) — a dropped field is a compile error, so the
+   runtime guards duplicated the type system. Behavioral tests that follow cover
+   the real contract.
+2. **`shared/__tests__/constants.test.ts` 31 → 13** — merged per-table range
+   loops into one validity assertion per table using a shared
+   `expectAllInRange` helper with element-identity messages (Q8) and original
+   strictness (exclusive bounds preserved). All invariant coverage retained
+   (counts, schema validation via `PersonaConfigSchema`, lookups known/unknown,
+   threshold ordering, weight sums). True schema-driven validation (Q2) is
+   deferred: the constant tables have no zod schemas — creating them is a
+   production change (see Open decisions).
+3. **`pulse-scheduler-integration.test.ts` — MAJOR FINDING.** The suite drives a
+   hand-rolled fake `PulseOrchestrator` (a parallel re-implementation of the
+   scheduler), **not the real `PulseScheduler`**. The double had drifted from
+   production on six event payload contracts:
+   - `memory_written`: fake `{ proposal }` vs production flat `{ memoryType, summary, ... }`
+   - `message_sent`: fake `{ text }` vs production `{ content }`
+   - `intent_blocked`: fake `{ reason, intentType }` vs production `{ intentType, violations, intentId }` (both validation & rate-limit)
+   - `intent_delayed`: fake omitted `intentId`
+   - `stagnation_detected`: (deleted test — see below)
+   Fixes: aligned the double's payloads to the production builders
+   (`intent-resolver.ts` / `engine-event-builder.ts`), corrected the suite header
+   to state it pins commit-ORDERING against a controlled double (real scheduler
+   is covered by `pulse-scheduler.test.ts`), and **deleted a tautological
+   stagnation test** that constructed `{ metrics }` then asserted
+   `payload["metrics"]` was defined (asserts its own fixture; can never fail).
+
+Suite totals after P3: 67 files, 643 `it`/`test` blocks, 692 vitest-reported
+(suite was 728). Audit flags: 20 → **2** (both documented exceptions below).
+
+## Documented false positives / exceptions (do NOT re-flag)
+
+- `server/simulation/__tests__/pulse-scheduler-resilience.test.ts` — `new Promise` in a `deferred()` helper: legitimate async orchestration, not a sleep.
+- `server/__e2e__/html-snapshot.e2e.test.ts:135` — `console.log` success notice for the file-generating e2e: deliberate UX, kept.
 
 ## P2 — completed redundancy cut
 
@@ -68,15 +100,12 @@ All fixes verified against production before editing. Tests stayed green
 
 Suite totals after P2: 67 files, 664 `it`/`test` blocks, 713 vitest-reported tests (was 65 files / 685 / 728). Audit flags 20 → 6 (sqlite over-cap resolved; the split files are all ≤24 it).
 
-## Documented false positives / exceptions (do NOT re-flag)
-
-- `server/simulation/__tests__/pulse-scheduler-resilience.test.ts` — `new Promise` in a `deferred()` helper: legitimate async orchestration, not a sleep.
-- `server/__e2e__/html-snapshot.e2e.test.ts:135` — `console.log` success notice for the file-generating e2e: deliberate UX, kept.
-
 ## Open decisions (need owner)
 
 1. **html-snapshot e2e side effect** — the e2e writes `docs/simulation-snapshot.html` (a committed file) on every test run, dirtying the tree. Options: (a) keep in fast suite + restore after run, (b) move to a generator script excluded from `pnpm test`. Undecided.
 2. **Rename existing files to layer suffixes** (`*.contract.test.ts` / `*.integration.test.ts`) — pure churn vs. enabling the enforcement script from day 1. Deferred until the audit script is promoted to a CI gate (P6).
+3. **Constants have no zod schemas** — Q2 (schema-driven validation) currently approximated by per-table validity tests. Creating schemas for the constant tables is a production change (engine parses them); decide if/when to add them.
+4. **`PulseScheduler` lacks a stepResult-injection seam** — the commit-ordering tests in `pulse-scheduler-integration.test.ts` run against a hand-rolled double because the real scheduler computes `runEngineStep(snapshot)` internally. Recommend adding a test seam (production change) so ordering tests migrate to the real scheduler and the double can be deleted.
 
 ## Phase tracker
 
@@ -85,8 +114,8 @@ Suite totals after P2: 67 files, 664 `it`/`test` blocks, 713 vitest-reported tes
 | P0 Baseline: inventory + hygiene sweep | ✅ done | `docs/test-inventory.md` + verified findings list |
 | P1 Classify & rename / hygiene fixes | ✅ done (hygiene; rename deferred per open decision #2) | 728/728 green, flags 20 → 7 |
 | P2 Redundancy cut | ✅ done | 4 e2e family suites → 1 `it.each`; e2e assertions owned by lower layers stripped; sqlite 47-it split; 713/713 green, flags → 6 |
-| P3 Quality refactor | ⏳ next | Q1-Q10 applied per file; constants schema-driven; weak-terminal clusters in emotion-stack/engine-step resolved |
-| P4 Property tests | ⏳ | fast-check replaces edge-case `it`s (emotion bounds, circumplex, kappa/alpha, signal-checker) |
+| P3 Quality refactor | ✅ done | Q1-Q10 applied; constants 31→13; shape-guard clusters removed; **fake scheduler double aligned to production + tautology deleted**; 692/692 green, flags → 2 (both documented exceptions) |
+| P4 Property tests | ⏳ next | fast-check replaces edge-case `it`s (emotion bounds, circumplex, kappa/alpha, signal-checker) |
 | P5 Mutation gate | ⏳ | Stryker on engine ≥80% kill; wired into review gate |
 | P6 Guardrails | ⏳ | `scripts/audit-tests.mjs` promoted to CI gate (caps + zero-tolerance list) |
 

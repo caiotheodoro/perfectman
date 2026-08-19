@@ -1,17 +1,14 @@
 {
-  "generatedAt": "2026-08-19T03:17:42.143Z",
+  "generatedAt": "2026-08-19T03:23:36.299Z",
   "totals": {
     "files": 67,
-    "its": 664
+    "its": 643
   },
   "byPackage": {
     "engine": {
       "files": 15,
-      "its": 216,
-      "flags": [
-        "weak-terminal-toBeDefined(201)",
-        "weak-terminal-toBeDefined(174)"
-      ]
+      "its": 214,
+      "flags": []
     },
     "eval": {
       "files": 2,
@@ -20,19 +17,16 @@
     },
     "server": {
       "files": 45,
-      "its": 355,
+      "its": 354,
       "flags": [
         "console(1)",
-        "weak-terminal-toBeDefined(697,775)",
         "async-pause(1)"
       ]
     },
     "shared": {
       "files": 5,
-      "its": 77,
-      "flags": [
-        "over-cap(31>25)"
-      ]
+      "its": 59,
+      "flags": []
     }
   },
   "files": [
@@ -103,31 +97,6 @@
       "file": "packages/engine/src/__tests__/emotion-stack.test.ts",
       "pkg": "engine",
       "layer": "integration",
-      "its": 15,
-      "itsEach": 0,
-      "forcedCasts": 0,
-      "tsBypasses": 0,
-      "eslintDisables": 0,
-      "onlys": 0,
-      "skips": 0,
-      "consoleLogs": 0,
-      "truthy": 0,
-      "defined": 5,
-      "deadIdTruthy": 0,
-      "nonNull": 0,
-      "spies": 0,
-      "asyncPauses": 0,
-      "weakTerminals": [
-        201
-      ],
-      "flags": [
-        "weak-terminal-toBeDefined(201)"
-      ]
-    },
-    {
-      "file": "packages/engine/src/__tests__/engine-step.test.ts",
-      "pkg": "engine",
-      "layer": "integration",
       "its": 14,
       "itsEach": 0,
       "forcedCasts": 0,
@@ -137,17 +106,34 @@
       "skips": 0,
       "consoleLogs": 0,
       "truthy": 0,
-      "defined": 16,
+      "defined": 0,
       "deadIdTruthy": 0,
       "nonNull": 0,
       "spies": 0,
       "asyncPauses": 0,
-      "weakTerminals": [
-        174
-      ],
-      "flags": [
-        "weak-terminal-toBeDefined(174)"
-      ]
+      "weakTerminals": [],
+      "flags": []
+    },
+    {
+      "file": "packages/engine/src/__tests__/engine-step.test.ts",
+      "pkg": "engine",
+      "layer": "integration",
+      "its": 13,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": []
     },
     {
       "file": "packages/engine/src/__tests__/multi-pulse.test.ts",
@@ -1163,7 +1149,7 @@
       "file": "packages/server/src/simulation/__tests__/pulse-scheduler-integration.test.ts",
       "pkg": "server",
       "layer": "integration",
-      "its": 16,
+      "its": 15,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -1172,18 +1158,13 @@
       "skips": 0,
       "consoleLogs": 0,
       "truthy": 0,
-      "defined": 3,
+      "defined": 1,
       "deadIdTruthy": 0,
       "nonNull": 0,
       "spies": 0,
       "asyncPauses": 0,
-      "weakTerminals": [
-        697,
-        775
-      ],
-      "flags": [
-        "weak-terminal-toBeDefined(697,775)"
-      ]
+      "weakTerminals": [],
+      "flags": []
     },
     {
       "file": "packages/server/src/simulation/__tests__/pulse-scheduler-resilience.test.ts",
@@ -1359,7 +1340,7 @@
       "file": "packages/shared/src/__tests__/constants.test.ts",
       "pkg": "shared",
       "layer": "contract",
-      "its": 31,
+      "its": 13,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -1368,15 +1349,13 @@
       "skips": 0,
       "consoleLogs": 0,
       "truthy": 0,
-      "defined": 2,
+      "defined": 0,
       "deadIdTruthy": 0,
       "nonNull": 0,
       "spies": 0,
       "asyncPauses": 0,
       "weakTerminals": [],
-      "flags": [
-        "over-cap(31>25)"
-      ]
+      "flags": []
     },
     {
       "file": "packages/shared/src/__tests__/contracts.test.ts",

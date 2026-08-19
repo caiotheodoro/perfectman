@@ -16,6 +16,13 @@
  *   - agentStateRepo updated with stepResult.updatedAgentState after each pulse
  *   - lastProcessedEventId matches engine output (not mutated by dev2)
  *   - WorldSignals channel-scoped fields use scheduler channel anchor, falling back to defaultPublicChannelId
+ *
+ * NOTE: this suite drives a controlled double (PulseOrchestrator), not the real
+ * PulseScheduler — it pins commit-ORDERING and branching contracts so they are
+ * readably asserted. Event payload shapes stay aligned with the production
+ * builders (intent-resolver.ts / engine-event-builder.ts); the real scheduler is
+ * exercised in pulse-scheduler.test.ts. If a production payload shape changes,
+ * update BOTH the double and these assertions.
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
@@ -479,12 +486,19 @@ function buildPulseOrchestrator(
       // memory_written for each proposal
       for (const proposal of stepResult.memoryProposals) {
         const memEvent: CommittedEvent = {
-          id: `mem-${pulseIndex}-${agentId}-${proposal.id}`,
+          id: `mem-${pulseIndex}-${agentId}`,
           simulationId: SIM_ID,
           channelId: channelAnchorId ?? defaultPublicChannelId,
           actorId: agentId,
           type: "memory_written",
-          payload: { proposal },
+          payload: {
+            memoryType: proposal.type,
+            summary: proposal.summary,
+            emotionalTone: proposal.emotionalTone,
+            confidence: proposal.confidence,
+            unresolved: proposal.unresolved,
+            subjectAgentIds: proposal.subjectAgentIds,
+          },
           createdAt: NOW + pulseIndex,
           pulseIndex,
           sourceEventIds: [],
@@ -514,7 +528,7 @@ function buildPulseOrchestrator(
             channelId: channelAnchorId ?? defaultPublicChannelId,
             actorId: agentId,
             type: "intent_blocked",
-            payload: { reason: "validation_failed", intentType: intent.intentType },
+            payload: { intentType: intent.intentType, violations: [{ type: "validation_failed" }], intentId: intent.id },
             createdAt: NOW + pulseIndex,
             pulseIndex,
             sourceEventIds: [],
@@ -547,7 +561,7 @@ function buildPulseOrchestrator(
             channelId: channelAnchorId ?? defaultPublicChannelId,
             actorId: agentId,
             type: "intent_blocked",
-            payload: { reason: "rate_limited", intentType: intent.intentType },
+            payload: { intentType: intent.intentType, violations: [{ type: "rate_limited" }], intentId: intent.id },
             createdAt: NOW + pulseIndex,
             pulseIndex,
             sourceEventIds: [],
@@ -582,6 +596,7 @@ function buildPulseOrchestrator(
             type: "intent_delayed",
             payload: {
               intentType: intent.intentType,
+              intentId: intent.id,
               delayUntilPulse: resolvedPulse,
               preferredDelay: intent.preferredDelay,
             },
@@ -607,7 +622,7 @@ function buildPulseOrchestrator(
             channelId: channelAnchorId ?? defaultPublicChannelId,
             actorId: agentId,
             type: "message_sent",
-            payload: { text: intent.visibleContent },
+            payload: { content: intent.visibleContent ?? "" },
             createdAt: NOW + pulseIndex,
             pulseIndex,
             sourceEventIds: [],
@@ -694,7 +709,7 @@ describe("PulseScheduler Integration — Engine-Emitted Events", () => {
     const allEvents = eventRepo.getAll(SIM_ID);
     const memEvents = allEvents.filter((e) => e.type === "memory_written");
     expect(memEvents.length).toBe(1);
-    expect(memEvents[0]!.payload["proposal"]).toBeDefined();
+    expect(memEvents[0]!.payload["summary"]).toBe("agent-B seems untrustworthy");
   });
 
   it("no memory_written when memoryProposals is empty", async () => {
@@ -730,51 +745,6 @@ describe("PulseScheduler Integration — stagnation_detected", () => {
     expect(metrics.pulseIndex).toBe(10);
     expect(metrics.compositeScore).toBeGreaterThanOrEqual(0);
     expect(["normal", "yellow", "red", "critical"]).toContain(metrics.level);
-  });
-
-  it("stagnation_detected event is committed when metrics level >= yellow", async () => {
-    const eventRepo = new InMemoryEventRepo();
-
-    // Construct stagnation metrics that trip the threshold
-    const noOpEvents: CommittedEvent[] = Array.from({ length: 30 }, (_, i) =>
-      makeCommittedEvent(`stag-evt-${i}`, "no_op_recorded", i + 1),
-    );
-
-    const agentStates = new Map<string, AgentState>([
-      ["agent-A", makeAgentState("agent-A")],
-    ]);
-
-    const metrics = computeStagnationMetrics(SIM_ID, 10, noOpEvents, agentStates);
-
-    // If thresholds trip, commit stagnation_detected
-    if (metrics.level !== "normal") {
-      const stagnationEvent: CommittedEvent = {
-        id: "stag-evt",
-        simulationId: SIM_ID,
-        channelId: "pub-ch",
-        actorId: "system",
-        type: "stagnation_detected",
-        payload: { metrics },
-        createdAt: NOW + 10,
-        pulseIndex: 10,
-        sourceEventIds: [],
-        emotionalSalience: "high",
-        visibility: {
-          visibleToAgents: [],
-          visibleToSpectators: false,
-          visibleToOperators: true,
-          visibilityReason: "system_emitted",
-        },
-      };
-
-      await eventRepo.append(SIM_ID, [stagnationEvent]);
-
-      const all = eventRepo.getAll(SIM_ID);
-      const stagEvents = all.filter((e) => e.type === "stagnation_detected");
-      expect(stagEvents).toHaveLength(1);
-      expect(stagEvents[0]!.payload["metrics"]).toBeDefined();
-    }
-    // If level is normal, stagnation_detected should not be committed — correct behavior
   });
 });
 

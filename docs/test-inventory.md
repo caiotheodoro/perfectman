@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-19T03:17:42.138Z — audited 67 files, 664 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-19T03:23:36.294Z — audited 67 files, 643 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -8,12 +8,12 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 
 | Package | Files | it/test | Hygiene flags
 |---|---|---|---|
-| engine | 15 | 216 | weak-terminal-toBeDefined(201), weak-terminal-toBeDefined(174)
+| engine | 15 | 214 | —
 | eval | 2 | 16 | —
-| server | 45 | 355 | console(1), weak-terminal-toBeDefined(697,775), async-pause(1)
-| shared | 5 | 77 | over-cap(31>25)
+| server | 45 | 354 | console(1), async-pause(1)
+| shared | 5 | 59 | —
 
-**Total: 67 files, 664 it/test blocks; 6 files flagged.**
+**Total: 67 files, 643 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -22,8 +22,8 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/engine/src/__tests__/attention.test.ts | integration | 10 | 
 | packages/engine/src/__tests__/available-actions.test.ts | integration | 11 | 
 | packages/engine/src/__tests__/decision.test.ts | integration | 20 | 
-| packages/engine/src/__tests__/emotion-stack.test.ts | integration | 15 | weak-terminal-toBeDefined(201)
-| packages/engine/src/__tests__/engine-step.test.ts | integration | 14 | weak-terminal-toBeDefined(174)
+| packages/engine/src/__tests__/emotion-stack.test.ts | integration | 14 | 
+| packages/engine/src/__tests__/engine-step.test.ts | integration | 13 | 
 | packages/engine/src/__tests__/multi-pulse.test.ts | integration | 4 | 
 | packages/engine/src/__tests__/no-io-boundary.test.ts | integration | 3 | 
 | packages/engine/src/__tests__/no-prompt-leak.test.ts | integration | 12 | 
@@ -72,7 +72,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/intent-resolver.test.ts | integration | 7 | 
 | packages/server/src/simulation/__tests__/lifecycle-state-machine.test.ts | integration | 18 | 
 | packages/server/src/simulation/__tests__/operator-projection.test.ts | integration | 4 | 
-| packages/server/src/simulation/__tests__/pulse-scheduler-integration.test.ts | integration | 16 | weak-terminal-toBeDefined(697,775)
+| packages/server/src/simulation/__tests__/pulse-scheduler-integration.test.ts | integration | 15 | 
 | packages/server/src/simulation/__tests__/pulse-scheduler-resilience.test.ts | integration | 2 | async-pause(1)
 | packages/server/src/simulation/__tests__/pulse-scheduler.test.ts | integration | 5 | 
 | packages/server/src/simulation/__tests__/runtime-input-builder.test.ts | integration | 5 | 
@@ -81,7 +81,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/spectator-projection.test.ts | integration | 6 | 
 | packages/server/src/simulation/__tests__/visibility-invariants.test.ts | integration | 13 | 
 | packages/server/src/simulation/__tests__/world-signals-builder.test.ts | integration | 7 | 
-| packages/shared/src/__tests__/constants.test.ts | contract | 31 | over-cap(31>25)
+| packages/shared/src/__tests__/constants.test.ts | contract | 13 | 
 | packages/shared/src/__tests__/contracts.test.ts | contract | 3 | 
 | packages/shared/src/__tests__/schemas.test.ts | contract | 22 | 
 | packages/shared/src/persona-packs/persona-packs.test.ts | contract | 13 | 
