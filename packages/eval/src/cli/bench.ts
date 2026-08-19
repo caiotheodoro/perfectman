@@ -20,7 +20,7 @@ import {
   type RoleplayScenario,
 } from "@perfectman/shared";
 import { ScenarioRunner } from "../run/scenario-runner.js";
-import { ruleJudge, llmJudge, type AxisScores } from "../judge/judge.js";
+import { ruleJudge, llmJudge, llmJudgePerTurn, type AxisScores } from "../judge/judge.js";
 import { calibrateJudge } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
@@ -29,6 +29,10 @@ import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 export function judgeConfig(): import("../judge/judge.js").LlmJudgeConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
+  // Empty/unset → default; only an explicit numeric value (incl. "0") wins.
+  const tempRaw = Number(process.env.PERFECTMAN_JUDGE_TEMPERATURE);
+  const tempSet = process.env.PERFECTMAN_JUDGE_TEMPERATURE !== undefined
+    && process.env.PERFECTMAN_JUDGE_TEMPERATURE.trim() !== "";
   return {
     baseUrl:
       process.env.PERFECTMAN_LLM_BASE_URL ??
@@ -38,7 +42,10 @@ export function judgeConfig(): import("../judge/judge.js").LlmJudgeConfig {
       process.env.PERFECTMAN_LLM_MODEL ??
       (isDeepseek ? "deepseek-chat" : "qwen3:8b"),
     apiKey: process.env.PERFECTMAN_LLM_API_KEY,
-    temperature: 0,
+    // Heuristic LLM-as-judge: temperature UP by default (varied, creative
+    // reads expose cohesion/voice failures a strict low-temp judge misses).
+    // Set PERFECTMAN_JUDGE_TEMPERATURE=0 for deterministic calibration runs.
+    temperature: tempSet && Number.isFinite(tempRaw) ? tempRaw : 1.0,
     timeoutMs: 90000,
   };
 }
@@ -77,9 +84,11 @@ export async function runBench(opts: {
   limit?: number;
   out?: string;
   judge?: "rule" | "llm";
+  perTurn?: boolean;
 }): Promise<BenchReport> {
   const mode = opts.mode ?? "mock";
   const judgeMode = opts.judge ?? "rule";
+  const perTurn = opts.perTurn ?? false;
 
   let selected: RoleplayScenario[];
   if (opts.scenarios && opts.scenarios.length > 0) {
@@ -130,7 +139,9 @@ export async function runBench(opts: {
 
       const axisScores =
         judgeMode === "llm"
-          ? await llmJudge(scenario, artifact.events, judgeConfig())
+          ? perTurn
+            ? await llmJudgePerTurn(scenario, artifact.events, judgeConfig())
+            : await llmJudge(scenario, artifact.events, judgeConfig())
           : ruleJudge(scenario, artifact.events, artifact.probeResults, artifact.passedSignals / Math.max(1, artifact.totalSignals));
 
       judgeScores.set(scenario.id, axisScores);
@@ -259,6 +270,7 @@ export async function main(): Promise<void> {
     limit: argValue("--limit") ? Number(argValue("--limit")) : undefined,
     out: argValue("--out"),
     judge: (argValue("--judge") as "rule" | "llm") ?? "rule",
+    perTurn: args.includes("--per-turn"),
   });
   printReport(report);
 }
