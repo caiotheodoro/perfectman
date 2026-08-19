@@ -188,3 +188,32 @@ Approximate target after P2–P4: **~685 → ~280–320** fast tests, evals unto
 - Eval benchmark (123 tasks) untouched; evals excluded from the suite budget.
 - No snapshot tests for deterministic code. Snapshot/characterization tests
   are reserved for fuzzy dynamics (simulation trajectories) if needed later.
+## Status & durable decisions (branch refactor/test-taxonomy-and-hygiene — closed)
+
+Phases P0–P4 and the two later workstreams (engine-dynamics coverage, audit
+gate) are complete and committed. Working notes lived in `docs/testing-findings.md`
+(now deleted by design; this section is the durable record). Suite: 68 → 74 test
+files, 728 → ~774 vitest-reported tests, all green; audit gate (`pnpm test:gate`)
+passes.
+
+Key findings worth not losing:
+1. Green tests ≠ coverage. Manual + mutation audits found and removed dead
+   `toBeTruthy()`-on-nanoid asserts, duplicate e2e suites, a tautological
+   stagnation test, redundant shape guards, and a hand-rolled scheduler double
+   whose event payloads had drifted from production (including a factually wrong
+   test that claimed a payload carried `privateMotiveSummary`).
+2. Stryker (mutation) is reliable **per-file** but one-shot **batch mode breaks
+   in this pnpm+vitest-alias monorepo** (mass no-cov/errors). Not used as CI.
+   Per-file run: `pnpm --filter @perfectman/engine mutation --mutate src/<f>.ts`.
+3. Engine dynamics: comparison/branch functions respond well to behavioral tests
+   (`update-social-emotions` 0% → 92% kill). Continuous-formula functions
+   (`derive-motivations`, `compute-action-emotions`, …) stay ~0% kill **by
+   design** (normalized coefficients resist coarse assertions); pushing them to
+   ≥80% requires brittle exact-value golden tests — intentionally not pursued.
+4. Note: `pnpm test:all` runs unit tests + hygiene gate.
+
+Open decisions (not resolved; revisit when relevant):
+- Add zod schemas for the constant tables (to make Q2 truly schema-driven).
+- Add a stepResult-injection seam to `PulseScheduler` so the ordering tests can
+  migrate off the controlled double in `pulse-scheduler-integration.test.ts`.
+- The html-snapshot e2e writes a committed file on every run.
