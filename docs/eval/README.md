@@ -53,9 +53,11 @@ pnpm --filter @perfectman/eval bench --scenarios v1_mention_reply,motive_gossip 
 The report (`bench-report-v1`) contains per-scenario signal/probe/judge
 results, probe averages, judge axis means vs targets, category splits, and
 the judge calibration report. Failing reports are committed, never hidden.
-`--per-turn` adds a `narrative_cohesion` axis: consecutive content-bearing
-turns are each scored against the turn before them, and the mean overrides
-the whole-transcript default (see `packages/eval/src/judge/judge.ts`).
+The `narrative_cohesion` axis lives on the `roleplay-v1` rubric (anchored for
+turn-to-turn thread, callbacks, escalation, shifted meaning). By default the
+LLM judge scores it from the whole transcript; `--per-turn` (LLM judge only)
+replaces that with the mean of per-turn scores — each sampled content-bearing
+turn is scored against the turn before it (see `packages/eval/src/judge/judge.ts`).
 
 ## Current baseline (mock, 123 tasks)
 

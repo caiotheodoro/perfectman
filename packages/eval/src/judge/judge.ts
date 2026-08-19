@@ -203,6 +203,12 @@ export async function llmJudgePerTurn(
 ): Promise<AxisScores> {
   const axes = await llmJudge(scenario, events, config);
 
+  // The per-turn axis is only meaningful when the rubric defines it (it lives
+  // on roleplay-v1, not edge-chaos/behavioral). Guard before spending calls.
+  if (!scenario.rubric.axes.some(a => a.id === "narrative_cohesion")) {
+    return axes;
+  }
+
   const turns: CommittedEvent[][] = [];
   for (const e of events) {
     (turns[e.pulseIndex] ??= []).push(e);
@@ -216,7 +222,9 @@ export async function llmJudgePerTurn(
   const step = Math.max(1, Math.ceil((contentTurns.length - 1) / maxTurnSamples));
   let cohesionSum = 0;
   let cohesionCount = 0;
-  for (let i = 0; i < contentTurns.length; i += step) {
+  // Start at 1 so the opening pair (0,1) is sampled and the strided adjacency
+  // covers the full timeline when step > 1.
+  for (let i = 1; i < contentTurns.length; i += step) {
     const prior = contentTurns[i - 1];
     const turn = contentTurns[i];
     if (!prior || !turn) continue;
@@ -226,7 +234,7 @@ export async function llmJudgePerTurn(
       cohesionCount++;
     } catch {
       // A failed per-turn call should not sink the whole scene — the axis
-      // stays unscored if nothing succeeded.
+      // keeps the whole-transcript default if nothing succeeded.
     }
   }
   if (cohesionCount > 0) {
@@ -295,8 +303,11 @@ ${turnTranscript(turn.group)}`;
   };
   const raw = data.choices?.[0]?.message?.content ?? "";
   const jsonText = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
-  const parsed = JSON.parse(jsonText) as { narrative_cohesion?: number };
-  const v = parsed.narrative_cohesion;
+  const parsed = JSON.parse(jsonText) as {
+    narrative_cohesion?: number;
+    axes?: { narrative_cohesion?: number };
+  };
+  const v = parsed.narrative_cohesion ?? parsed.axes?.narrative_cohesion;
   return typeof v === "number" ? clampScore(v) : 3;
 }
 

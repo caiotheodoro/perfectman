@@ -29,7 +29,10 @@ import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 export function judgeConfig(): import("../judge/judge.js").LlmJudgeConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
+  // Empty/unset → default; only an explicit numeric value (incl. "0") wins.
   const tempRaw = Number(process.env.PERFECTMAN_JUDGE_TEMPERATURE);
+  const tempSet = process.env.PERFECTMAN_JUDGE_TEMPERATURE !== undefined
+    && process.env.PERFECTMAN_JUDGE_TEMPERATURE.trim() !== "";
   return {
     baseUrl:
       process.env.PERFECTMAN_LLM_BASE_URL ??
@@ -42,7 +45,7 @@ export function judgeConfig(): import("../judge/judge.js").LlmJudgeConfig {
     // Heuristic LLM-as-judge: temperature UP by default (varied, creative
     // reads expose cohesion/voice failures a strict low-temp judge misses).
     // Set PERFECTMAN_JUDGE_TEMPERATURE=0 for deterministic calibration runs.
-    temperature: Number.isFinite(tempRaw) ? tempRaw : 1.0,
+    temperature: tempSet && Number.isFinite(tempRaw) ? tempRaw : 1.0,
     timeoutMs: 90000,
   };
 }

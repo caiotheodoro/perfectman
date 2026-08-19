@@ -110,14 +110,29 @@ describe("LLM judge (per-turn)", () => {
       { ...event("reply_sent", "leo", 1), payload: { content: "kkkk bom dia caio" } },
       { ...event("reply_sent", "caio", 2), payload: { content: "tb! animado hoje?" } },
     ];
+    // Whole-transcript call returns a proper {axes:{...}} payload; the two
+    // per-turn calls return distinct scores so the mean is a real aggregation:
+    // (3 + 5) / 2 → 4, clamped. A coincidental round-up can't fake this.
+    const perTurnScores = [3, 5];
     let calls = 0;
-    globalThis.fetch = (async () =>
-      new Response(
+    globalThis.fetch = (async () => {
+      const n = calls++;
+      const cohesion = n === 0 ? undefined : perTurnScores[n - 1];
+      return new Response(
         JSON.stringify({
-          choices: [{ message: { content: JSON.stringify({ narrative_cohesion: calls++ === 0 ? 4 : 5 }) } }],
+          choices: [{
+            message: {
+              content: JSON.stringify(
+                n === 0
+                  ? { axes: { in_character: 4 } }
+                  : { narrative_cohesion: cohesion },
+              ),
+            },
+          }],
         }),
         { status: 200, headers: { "Content-Type": "application/json" } },
-      )) as typeof fetch;
+      );
+    }) as typeof fetch;
 
     const scores = await llmJudgePerTurn(
       scenario,
@@ -125,10 +140,75 @@ describe("LLM judge (per-turn)", () => {
       { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
       8,
     );
-    // Whole-transcript call fills the other axes; cohesion is the mean of the
-    // two per-turn samples (4 + 5) / 2 → 4.5, clamped to an integer score.
-    expect(scores.narrative_cohesion).toBe(5);
+    // Mean of the two per-turn samples (3 + 5) / 2 → 4.
+    expect(scores.narrative_cohesion).toBe(4);
     expect(calls).toBe(3); // 1 whole-transcript + 2 per-turn
+  });
+
+  it("samples strided adjacent pairs across many turns", async () => {
+    const scenario = getScenario("v1_casual_chat")!;
+    // 10 content-bearing pulses; maxTurnSamples=4 → step = ceil(9/4) = 3.
+    // Loop starts at i=1 and steps by 3: pairs (0,1),(3,4),(6,7),(9,10→n-1=9, skip).
+    // Start-at-1 guarantees (0,1) is always sampled.
+    const events = Array.from({ length: 10 }, (_, pulseIndex) => ({
+      ...event("message_sent", "caio", pulseIndex),
+      payload: { content: `msg ${pulseIndex}` },
+    }));
+    const fetchedPairs: string[] = [];
+    globalThis.fetch = (async (input: unknown, init?: { body?: string }) => {
+      const body = JSON.parse(String(init?.body ?? "{}")) as {
+        messages?: { role: string; content: string }[];
+      };
+      const lastUser = body.messages?.filter(m => m.role === "user").at(-1)?.content ?? "";
+      const priorMatch = lastUser.match(/Earlier turn \(pulse (\d+)\):/);
+      const turnMatch = lastUser.match(/This turn \(pulse (\d+)\):/);
+      fetchedPairs.push(`${priorMatch?.[1]}->${turnMatch?.[1]}`);
+      return new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify({ narrative_cohesion: 4 }) } }],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const scores = await llmJudgePerTurn(
+      scenario,
+      events,
+      { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
+      4,
+    );
+    expect(fetchedPairs).toContain("0->1");
+    expect(fetchedPairs.length).toBeGreaterThan(1);
+    expect(scores.narrative_cohesion).toBe(4);
+  });
+
+  it("does not score narrative_cohesion when the rubric lacks the axis", async () => {
+    // edge-chaos rubric has no narrative_cohesion axis — the per-turn path
+    // must not inject it or spend per-turn calls.
+    const scenario = getScenario("edge_public_mock")!;
+    const events = [
+      { ...event("message_sent", "caio", 0), payload: { content: "oi" } },
+      { ...event("reply_sent", "leo", 1), payload: { content: "opa" } },
+    ];
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls++;
+      return new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify({ axes: {} }) } }],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      );
+    }) as typeof fetch;
+
+    const scores = await llmJudgePerTurn(
+      scenario,
+      events,
+      { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
+      8,
+    );
+    expect(scores.narrative_cohesion).toBeUndefined();
+    expect(calls).toBe(1); // whole-transcript only
   });
 
   it("falls back to the whole-transcript default when per-turn calls fail", async () => {
