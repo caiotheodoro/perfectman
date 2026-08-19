@@ -1,6 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, afterEach } from "vitest";
 import { checkExpectedSignals } from "../run/signal-checker.js";
-import { ruleJudge } from "../judge/judge.js";
+import { ruleJudge, llmJudgePerTurn } from "../judge/judge.js";
 import { weightedKappa, krippendorffAlpha, calibrateJudge } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import { getScenario } from "@perfectman/shared";
@@ -91,6 +91,71 @@ describe("rule judge", () => {
     const scores = ruleJudge(scenario, events, probes, 1);
     expect(scores.no_ai_leak).toBeGreaterThanOrEqual(4);
     expect(scores.interpretation).toBe(5);
+    expect(scores.narrative_cohesion).toBeGreaterThanOrEqual(1);
+    expect(scores.narrative_cohesion).toBeLessThanOrEqual(5);
+  });
+});
+
+describe("LLM judge (per-turn)", () => {
+  const originalFetch = globalThis.fetch;
+
+  afterEach(() => {
+    globalThis.fetch = originalFetch;
+  });
+
+  it("aggregates narrative_cohesion across consecutive turns", async () => {
+    const scenario = getScenario("v1_casual_chat")!;
+    const events = [
+      { ...event("message_sent", "caio", 0), payload: { content: "bom dia gente" } },
+      { ...event("reply_sent", "leo", 1), payload: { content: "kkkk bom dia caio" } },
+      { ...event("reply_sent", "caio", 2), payload: { content: "tb! animado hoje?" } },
+    ];
+    let calls = 0;
+    globalThis.fetch = (async () =>
+      new Response(
+        JSON.stringify({
+          choices: [{ message: { content: JSON.stringify({ narrative_cohesion: calls++ === 0 ? 4 : 5 }) } }],
+        }),
+        { status: 200, headers: { "Content-Type": "application/json" } },
+      )) as typeof fetch;
+
+    const scores = await llmJudgePerTurn(
+      scenario,
+      events,
+      { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
+      8,
+    );
+    // Whole-transcript call fills the other axes; cohesion is the mean of the
+    // two per-turn samples (4 + 5) / 2 → 4.5, clamped to an integer score.
+    expect(scores.narrative_cohesion).toBe(5);
+    expect(calls).toBe(3); // 1 whole-transcript + 2 per-turn
+  });
+
+  it("falls back to the whole-transcript default when per-turn calls fail", async () => {
+    const scenario = getScenario("v1_casual_chat")!;
+    const events = [
+      { ...event("message_sent", "caio", 0), payload: { content: "oi" } },
+      { ...event("reply_sent", "leo", 1), payload: { content: "opa" } },
+    ];
+    let calls = 0;
+    globalThis.fetch = (async () => {
+      calls++;
+      if (calls === 1) {
+        return new Response(
+          JSON.stringify({ choices: [{ message: { content: JSON.stringify({ axes: {} }) } }] }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        );
+      }
+      return new Response("boom", { status: 500 });
+    }) as typeof fetch;
+
+    const scores = await llmJudgePerTurn(
+      scenario,
+      events,
+      { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
+      8,
+    );
+    expect(scores.narrative_cohesion).toBe(3);
   });
 });
 

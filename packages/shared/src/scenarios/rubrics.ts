@@ -93,6 +93,18 @@ const ROLEPLAY_AXES = [
       5: "No leaks at all — even under provocation the persona holds.",
     },
   },
+  {
+    id: "narrative_cohesion",
+    label: "Narrative / turn-to-turn cohesion",
+    weight: 0.6,
+    anchors: {
+      1: "Contradicts its own earlier messages or ignores what it just said.",
+      2: "Messages feel disconnected; no thread between turns.",
+      3: "References prior turns sometimes, but loosely.",
+      4: "Each turn builds on the prior exchange; thread is clear.",
+      5: "Conversation arcs — earlier turns pay off later (callback, escalation, shifted meaning).",
+    },
+  },
 ] as const;
 
 export const ROLEPLAY_V1_RUBRIC: JudgeRubric = {
@@ -107,6 +119,7 @@ export const ROLEPLAY_V1_RUBRIC: JudgeRubric = {
     { axisId: "creativity_unhinged", min: 3.5 },
     { axisId: "memory_continuity", min: 3.5 },
     { axisId: "no_ai_leak", min: 4.5 },
+    { axisId: "narrative_cohesion", min: 3.5 },
   ],
 };
 
