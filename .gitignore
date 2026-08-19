@@ -39,3 +39,4 @@ out/
 .DS_Store
 packages/*/reports/
 packages/*/.stryker-tmp
+tmp/
