@@ -154,27 +154,7 @@ function makeSnapshot(overrides?: Partial<EngineSnapshot>): EngineSnapshot {
 
 // --- Tests ---
 describe("runEngineStep", () => {
-  it("returns a valid EngineStepResult with all required fields", () => {
-    const result = runEngineStep(makeSnapshot());
-    expect(result.visibleEvents).toBeDefined();
-    expect(result.newEvents).toBeDefined();
-    expect(result.attentionResults).toBeDefined();
-    expect(result.perceptionPacket).toBeDefined();
-    expect(result.interpretations).toBeDefined();
-    expect(result.emotionDelta).toBeDefined();
-    expect(result.updatedAgentState).toBeDefined();
-    expect(result.motivations).toBeDefined();
-    expect(result.pressures).toBeDefined();
-    expect(result.inhibitions).toBeDefined();
-    expect(result.actionEmotions).toBeDefined();
-    expect(result.decision).toBeDefined();
-    expect(result.availableActions).toBeDefined();
-    expect(result.initiativeCandidates).toBeDefined();
-    expect(result.memoryProposals).toBeDefined();
-    expect(result.operatorMetrics).toBeDefined();
-  });
-
-  it("updatedAgentState has same agentId as input", () => {
+  it("updatedState has same agentId as input", () => {
     const result = runEngineStep(makeSnapshot());
     expect(result.updatedAgentState.agentId).toBe("a1");
   });

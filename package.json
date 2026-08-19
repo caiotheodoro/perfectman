@@ -8,6 +8,8 @@
     "qwen:dev": "docker compose -f docker/qwen3/qwen3.compose.yml up",
     "qwen:dev:8b": "OLLAMA_MODEL=qwen3:8b docker compose -f docker/qwen3/qwen3.compose.yml up",
     "test": "vitest run --passWithNoTests",
+    "test:gate": "node scripts/audit-tests.mjs --check",
+    "test:all": "pnpm test && pnpm test:gate",
     "test:watch": "vitest",
     "lint": "pnpm -r typecheck"
   },

@@ -71,6 +71,9 @@ export function ruleJudge(
     creativity_unhinged: clampScore(creativity),
     memory_continuity: clampScore(continuity),
     no_ai_leak: clampScore(noAiLeak),
+    // Proxy: a scene that references memories and reads signals is more likely
+    // to keep a thread across turns. The LLM judge owns the real axis.
+    narrative_cohesion: clampScore((continuity + interpretation) / 2),
   };
 
   // Edge rubric uses different axes — map what exists.
@@ -170,6 +173,142 @@ export async function llmJudge(
     axes[axis.id] = typeof v === "number" ? clampScore(v) : 3;
   }
   return axes;
+}
+
+// ── Per-turn narrative-cohesion eval ─────────────────────────────────────────
+
+/**
+ * Scores turn-to-turn narrative cohesion across a transcript, plus the full
+ * rubric from the whole transcript.
+ *
+ * The premise: perfectman is more than text generation — the interesting
+ * failure modes live in whether a later message still carries the thread of
+ * earlier turns (callbacks, escalation, shifted meaning), not in any single
+ * message. A whole-transcript judge misses that; a per-turn judge sees it.
+ *
+ * Strategy (kept cheap for heuristic runs):
+ *  1. One whole-transcript call scores all rubric axes (as `llmJudge` does).
+ *  2. Consecutive content-bearing turns (grouped by pulse) are sampled and
+ *     each scored on narrative_cohesion against the turn that preceded it.
+ *  3. The mean cohesion becomes the `narrative_cohesion` axis value.
+ *
+ * Nondeterministic by design (high temperature, see bench.ts default) — this
+ * is a heuristic, not a calibration gate. Calibration runs set temperature 0.
+ */
+export async function llmJudgePerTurn(
+  scenario: RoleplayScenario,
+  events: readonly CommittedEvent[],
+  config: LlmJudgeConfig,
+  maxTurnSamples = 8,
+): Promise<AxisScores> {
+  const axes = await llmJudge(scenario, events, config);
+
+  // The per-turn axis is only meaningful when the rubric defines it (it lives
+  // on roleplay-v1, not edge-chaos/behavioral). Guard before spending calls.
+  if (!scenario.rubric.axes.some(a => a.id === "narrative_cohesion")) {
+    return axes;
+  }
+
+  const turns: CommittedEvent[][] = [];
+  for (const e of events) {
+    (turns[e.pulseIndex] ??= []).push(e);
+  }
+  const contentTurns = turns
+    .map((group, pulseIndex) => ({ pulseIndex, group }))
+    .filter(({ group }) =>
+      group.some(e => e.type === "message_sent" || e.type === "reply_sent"),
+    );
+
+  const step = Math.max(1, Math.ceil((contentTurns.length - 1) / maxTurnSamples));
+  let cohesionSum = 0;
+  let cohesionCount = 0;
+  // Start at 1 so the opening pair (0,1) is sampled and the strided adjacency
+  // covers the full timeline when step > 1.
+  for (let i = 1; i < contentTurns.length; i += step) {
+    const prior = contentTurns[i - 1];
+    const turn = contentTurns[i];
+    if (!prior || !turn) continue;
+    try {
+      const score = await scoreCohesion(scenario, prior, turn, config);
+      cohesionSum += score;
+      cohesionCount++;
+    } catch {
+      // A failed per-turn call should not sink the whole scene — the axis
+      // keeps the whole-transcript default if nothing succeeded.
+    }
+  }
+  if (cohesionCount > 0) {
+    axes["narrative_cohesion"] = clampScore(cohesionSum / cohesionCount);
+  }
+  return axes;
+}
+
+function turnTranscript(group: readonly CommittedEvent[]): string {
+  return group
+    .map(e => {
+      const p = e.payload as Record<string, unknown>;
+      const text = typeof p.content === "string" ? `: ${p.content}` : "";
+      return `[p${e.pulseIndex}] ${e.actorId} (${e.type})${text}`;
+    })
+    .join("\n");
+}
+
+async function scoreCohesion(
+  scenario: RoleplayScenario,
+  prior: { pulseIndex: number; group: CommittedEvent[] },
+  turn: { pulseIndex: number; group: CommittedEvent[] },
+  config: LlmJudgeConfig,
+): Promise<number> {
+  const system = `You are a strict evaluator of NARRATIVE COHESION in a chat-room social simulation. Score 1-5 using ONLY these anchors:
+1: Contradicts its own earlier messages or ignores what it just said.
+2: Messages feel disconnected; no thread between turns.
+3: References prior turns sometimes, but loosely.
+4: Each turn builds on the prior exchange; thread is clear.
+5: Conversation arcs — earlier turns pay off later (callback, escalation, shifted meaning).
+
+Return ONLY a JSON object: {"narrative_cohesion": score} with no prose.`;
+
+  const user = `Scenario: ${scenario.name}
+${scenario.description}
+
+Earlier turn (pulse ${prior.pulseIndex}):
+${turnTranscript(prior.group)}
+
+This turn (pulse ${turn.pulseIndex}):
+${turnTranscript(turn.group)}`;
+
+  const res = await fetch(`${config.baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}),
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+      temperature: config.temperature ?? 1,
+      max_tokens: 120,
+    }),
+    signal: AbortSignal.timeout(config.timeoutMs ?? 60000),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Cohesion judge HTTP ${res.status}: ${await res.text()}`);
+  }
+  const data = (await res.json()) as {
+    choices?: { message?: { content?: string } }[];
+  };
+  const raw = data.choices?.[0]?.message?.content ?? "";
+  const jsonText = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
+  const parsed = JSON.parse(jsonText) as {
+    narrative_cohesion?: number;
+    axes?: { narrative_cohesion?: number };
+  };
+  const v = parsed.narrative_cohesion ?? parsed.axes?.narrative_cohesion;
+  return typeof v === "number" ? clampScore(v) : 3;
 }
 
 // ── Cache ────────────────────────────────────────────────────────────────────

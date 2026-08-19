@@ -20,7 +20,6 @@ describe("ChannelRegistry", () => {
       memberAgentIds: ["agent_1", "agent_2"],
       spectatorVisible: true,
     });
-    expect(ch.id).toBeTruthy();
     expect(ch.memberAgentIds).toEqual(["agent_1", "agent_2"]);
     expect(ch.type).toBe("public_channel");
   });

@@ -1,0 +1,24 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-core.json",
+  "plugins": ["@stryker-mutator/vitest-runner", "@stryker-mutator/typescript-checker"],
+  "testRunner": "vitest",
+  "coverageAnalysis": "all",
+  "vitest": { "related": false, "configFile": "vitest.config.ts" },
+  "mutate": [
+    "src/action/*.ts",
+    "src/attention/*.ts",
+    "src/decision/*.ts",
+    "src/emotion/*.ts",
+    "src/inhibition/*.ts",
+    "src/intent/*.ts",
+    "src/memory/*.ts",
+    "src/motivation/*.ts",
+    "src/pressure/*.ts",
+    "src/prompt/*.ts",
+    "src/visibility/*.ts"
+  ],
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "reporters": ["clear-text", "progress"],
+  "thresholds": { "high": 80, "low": 60, "break": null }
+}

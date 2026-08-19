@@ -37,6 +37,14 @@ PERFECTMAN_LLM_BASE_URL=http://localhost:11434/v1 \
 PERFECTMAN_LLM_MODEL=qwen3:8b \
 pnpm --filter @perfectman/eval bench --mode local --judge llm --out out/bench-local.json
 
+# heuristic LLM-as-judge with per-turn narrative-cohesion scoring.
+# The judge defaults to HIGH temperature (PERFECTMAN_JUDGE_TEMPERATURE) —
+# varied, creative reads expose cohesion/voice failures a strict low-temp
+# judge misses. Set it to 0 for deterministic calibration runs.
+PERFECTMAN_LLM_PROVIDER=deepseek \
+PERFECTMAN_JUDGE_TEMPERATURE=1.0 \
+pnpm --filter @perfectman/eval bench --mode local --judge llm --per-turn --limit 6
+
 # slices
 pnpm --filter @perfectman/eval bench --category edge_chaos
 pnpm --filter @perfectman/eval bench --scenarios v1_mention_reply,motive_gossip --limit 6
@@ -45,6 +53,11 @@ pnpm --filter @perfectman/eval bench --scenarios v1_mention_reply,motive_gossip 
 The report (`bench-report-v1`) contains per-scenario signal/probe/judge
 results, probe averages, judge axis means vs targets, category splits, and
 the judge calibration report. Failing reports are committed, never hidden.
+The `narrative_cohesion` axis lives on the `roleplay-v1` rubric (anchored for
+turn-to-turn thread, callbacks, escalation, shifted meaning). By default the
+LLM judge scores it from the whole transcript; `--per-turn` (LLM judge only)
+replaces that with the mean of per-turn scores — each sampled content-bearing
+turn is scored against the turn before it (see `packages/eval/src/judge/judge.ts`).
 
 ## Current baseline (mock, 123 tasks)
 

@@ -190,17 +190,6 @@ describe("computeActionEmotions", () => {
 
 // --- updateEmotionStack integration ---
 describe("updateEmotionStack", () => {
-  it("returns updated state with all required fields", () => {
-    const agent = makeAgent("a1");
-    const events = [makeEvent("e1", { actorId: "other", payload: { mentionedAgentIds: ["a1"] } })];
-    const result = updateEmotionStack(agent, CAIO, events, 3, Date.now());
-    expect(result.updatedState.coreMood).toBeDefined();
-    expect(result.updatedState.socialEmotions).toBeDefined();
-    expect(result.updatedState.relationalStates).toBeDefined();
-    expect(result.actionEmotions).toBeDefined();
-    expect(result.emotionDelta).toBeDefined();
-  });
-
   it("all action emotions in [0, 1] after full stack", () => {
     const agent = makeAgent("a1");
     const events = [

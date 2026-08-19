@@ -18,8 +18,9 @@ import { generateHtml } from "./snapshot-html-generator.js";
 import type { SimulationReplay } from "./simulation-recorder.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const DOCS_DIR = resolve(__dirname, "../../../../docs");
-const HTML_OUTPUT = resolve(DOCS_DIR, "simulation-snapshot.html");
+// Test evidence only — written to a gitignored tmp dir so the tree stays clean.
+const SNAPSHOT_DIR = resolve(__dirname, "../../../../tmp");
+const HTML_OUTPUT = resolve(SNAPSHOT_DIR, "perfectman-simulation-snapshot.html");
 const PULSE_COUNT = parseInt(process.env["PULSE_COUNT"] ?? "15", 10);
 
 // ── Normalisation (strips volatile fields before snapshot assertion) ──────────
@@ -111,13 +112,14 @@ describe("HTML Snapshot: 4-persona simulation", () => {
       // All 4 agents must appear in emotional trajectory every pulse
       const trajectory = normalizeReplay(replay) as ReturnType<typeof normalizeReplay> & {
         emotionalTrajectory: Array<{ agentMoods: Record<string, unknown> }>;
+        perPulseEventSummary: Array<{ byActor: Record<string, unknown[]> }>;
       };
-      for (const p of (trajectory as any).emotionalTrajectory) {
+      for (const p of trajectory.emotionalTrajectory) {
         expect(Object.keys(p.agentMoods).sort()).toEqual(["ana", "bruno", "carla", "diego"]);
       }
       // At least one agent must act across the entire run
-      const anyAgentActed = (trajectory as any).perPulseEventSummary.some(
-        (p: any) => Object.keys(p.byActor).length > 0,
+      const anyAgentActed = trajectory.perPulseEventSummary.some(
+        (p) => Object.keys(p.byActor).length > 0,
       );
       expect(anyAgentActed).toBe(true);
 
@@ -130,7 +132,7 @@ describe("HTML Snapshot: 4-persona simulation", () => {
       expect(html).toContain("Carla");
       expect(html).toContain("Diego");
 
-      mkdirSync(DOCS_DIR, { recursive: true });
+      mkdirSync(SNAPSHOT_DIR, { recursive: true });
       writeFileSync(HTML_OUTPUT, html, "utf-8");
       console.log(`\n✅ HTML written to: ${HTML_OUTPUT}\n`);
     },
