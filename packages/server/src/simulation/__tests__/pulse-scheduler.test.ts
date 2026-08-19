@@ -91,6 +91,43 @@ function makeNoOpIntent(agentId: string): ActionIntent {
   };
 }
 
+const ZERO_ACTION = {
+  defensiveness: 0, warmth: 0, jealousInspection: 0, shameWithdrawal: 0, resentfulColdness: 0,
+  curiousApproach: 0, anxiousOverreach: 0, pridefulPerformance: 0, vulnerableRetreat: 0,
+  contemptuousDismissal: 0, strategicPatience: 0, impulsiveProvocation: 0, comfortSeeking: 0,
+  dominanceAssertion: 0, repairImpulse: 0,
+};
+
+/** Canned step result for driving the real PulseScheduler through its commit-ordering. */
+function makeCannedStep({ memory = false } = {}): import("@perfectman/shared").EngineStepResult {
+  return {
+    visibleEvents: [],
+    newEvents: [],
+    attentionResults: { noticed: false, dueScore: 0, reasons: [], needsLLM: false, triggeringReason: "test" },
+    perceptionPacket: {
+      agentId: "agent_1", triggeringEvent: null, visibleContextEvents: [], involvedPeople: [],
+      relevantChannels: [], relevantMemories: [],
+      translatedEmotionalState: { summary: "", emotions: [] },
+      availableActions: [],
+    },
+    interpretations: [],
+    emotionDelta: { coreMoodDelta: {}, socialEmotionDeltas: {}, relationalDeltas: new Map(), ruminationApplied: false },
+    updatedAgentState: makeAgentState(),
+    motivations: [],
+    pressures: [],
+    inhibitions: [],
+    actionEmotions: ZERO_ACTION,
+    decision: { outcome: "no_op", needsLLM: false, initiativeProceed: false, noOpReason: "test", privateMotiveSeed: "x" },
+    availableActions: [],
+    initiativeCandidates: [],
+    memoryProposals: memory
+      ? [{ type: "relationship", subjectAgentIds: ["agent-B"], summary: "agent-B seems untrustworthy", emotionalTone: "suspicious", confidence: 0.7, unresolved: true }]
+      : [],
+    noOpRecord: { agentId: "agent_1", pulseIndex: 0, privateMotiveSummary: "nothing to do", reason: "test" },
+    operatorMetrics: { pulseIndex: 0, pulseDurationMs: 10, agentsCalled: 1, eventsCommitted: 0, llmCallsMade: 0, budgetUsedPercent: 0 },
+  };
+}
+
 describe("PulseScheduler", () => {
   let scheduler: PulseScheduler;
   let eventRepo: InMemoryEventRepository;
@@ -98,7 +135,30 @@ describe("PulseScheduler", () => {
   let channelRepo: InMemoryChannelRepository;
   let channelRegistry: ChannelRegistry;
   let gateway: MockDeliveryGateway;
+  let intentResolver: IntentResolver;
+  let engineEventBuilder: EngineEventBuilder;
 
+  function buildScheduler(stepResolver?: (snap: import("@perfectman/shared").EngineSnapshot) => import("@perfectman/shared").EngineStepResult): PulseScheduler {
+    return new PulseScheduler({
+      simulation: SIM,
+      agents: [AGENT],
+      defaultPublicChannelId: "ch_public",
+      eventRepo,
+      agentStateRepo,
+      channelRegistry,
+      rateLimitGate: new RateLimitGate(SETTINGS),
+      intentResolver,
+      engineSnapshotProjection: new EngineSnapshotProjection(),
+      deliveryProjection: new DeliveryProjection(gateway),
+      spectatorProjection: new SpectatorProjection(gateway),
+      operatorProjection: new OperatorProjection(gateway),
+      engineEventBuilder,
+      agentRuntime: mockAgentRuntime,
+      llmBudget: mockLlmBudget,
+      pulseIntervalMs: SETTINGS.pulseIntervalMs,
+      ...(stepResolver ? { stepResolver } : {}),
+    });
+  }
   const AGENT: AgentContext = {
     id: "agent_1",
     state: makeAgentState(),
@@ -120,6 +180,7 @@ describe("PulseScheduler", () => {
   };
 
   beforeEach(async () => {
+    vi.clearAllMocks();
     eventRepo = new InMemoryEventRepository();
     agentStateRepo = new InMemoryAgentStateRepository();
     channelRepo = new InMemoryChannelRepository();
@@ -146,31 +207,10 @@ describe("PulseScheduler", () => {
     await agentStateRepo.upsert(makeAgentState());
 
     const rateLimitGate = new RateLimitGate(SETTINGS);
-    const intentResolver = new IntentResolver(rateLimitGate, channelRegistry);
-    const engineSnapshotProjection = new EngineSnapshotProjection();
-    const deliveryProjection = new DeliveryProjection(gateway);
-    const spectatorProjection = new SpectatorProjection(gateway);
-    const operatorProjection = new OperatorProjection(gateway);
-    const engineEventBuilder = new EngineEventBuilder();
+    intentResolver = new IntentResolver(rateLimitGate, channelRegistry);
+    engineEventBuilder = new EngineEventBuilder();
 
-    scheduler = new PulseScheduler({
-      simulation: SIM,
-      agents: [AGENT],
-      defaultPublicChannelId: "ch_public",
-      eventRepo,
-      agentStateRepo,
-      channelRegistry,
-      rateLimitGate,
-      intentResolver,
-      engineSnapshotProjection,
-      deliveryProjection,
-      spectatorProjection,
-      operatorProjection,
-      engineEventBuilder,
-      agentRuntime: mockAgentRuntime,
-      llmBudget: mockLlmBudget,
-      pulseIntervalMs: SETTINGS.pulseIntervalMs,
-    });
+    scheduler = buildScheduler();
   });
 
   it("runPulse completes without error", async () => {
@@ -202,5 +242,29 @@ describe("PulseScheduler", () => {
   it("start and stop do not throw", () => {
     expect(() => scheduler.start()).not.toThrow();
     expect(() => scheduler.stop()).not.toThrow();
+  });
+
+  it("commits memory_written through the real scheduler when a canned step proposes memory", async () => {
+    const sched = buildScheduler(() => makeCannedStep({ memory: true }));
+    await sched.runPulse();
+    const events = await eventRepo.getAfter("sim_test");
+    const mem = events.filter((e) => e.type === "memory_written");
+    expect(mem).toHaveLength(1);
+    expect(mem[0]!.payload["summary"]).toBe("agent-B seems untrustworthy");
+    // noOpRecord present with needsLLM=false — the LLM path must not be invoked
+    expect(mockAgentRuntime.generateIntent).not.toHaveBeenCalled();
+  });
+
+  it("commit-ordering: a needsLLM step is resolved (not committed as no-op) through the real scheduler", async () => {
+    const sched = buildScheduler((snap) => {
+      const base = makeCannedStep();
+      return {
+        ...base,
+        decision: { outcome: "act", needsLLM: true, initiativeProceed: false },
+        noOpRecord: null,
+      };
+    });
+    await sched.runPulse();
+    expect(mockAgentRuntime.generateIntent).toHaveBeenCalled();
   });
 });

@@ -9,6 +9,8 @@ import type {
   ActionIntent,
   SimulationEvent,
   OperatorEvent,
+  EngineSnapshot,
+  EngineStepResult,
 } from "@perfectman/shared";
 import { createSeededRng } from "@perfectman/shared";
 import { runEngineStep, computeStagnationMetrics, filterVisibleEventsForAgent } from "@perfectman/engine";
@@ -60,6 +62,9 @@ export type PulseSchedulerConfig = {
   agentRuntime: AgentRuntime;
   llmBudget: LlmBudget;
   pulseIntervalMs: number;
+  /** Testability seam: defaults to runEngineStep(snapshot). Inject to drive the
+   *  commit-ordering pipeline with a known step result without the LLM. */
+  stepResolver?: (snapshot: EngineSnapshot) => EngineStepResult;
 };
 
 export type PulseResult = {
@@ -219,7 +224,9 @@ export class PulseScheduler {
         rng,
       });
 
-      const stepResult = runEngineStep(snapshot);
+      const stepResult = this.config.stepResolver
+        ? this.config.stepResolver(snapshot)
+        : runEngineStep(snapshot);
 
       // Commit engine-emitted events before LLM path
       const engineEvents = this.config.engineEventBuilder.fromStepResult(stepResult, {
