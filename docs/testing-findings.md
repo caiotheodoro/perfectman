@@ -136,3 +136,46 @@ Suite totals after P2: 67 files, 664 `it`/`test` blocks, 713 vitest-reported tes
   - result finite and ≤ 1
 - **Verified findings from running them:** both functions are mathematically symmetric. `weightedKappa` uses rational weights (0.75, 0.9375) that accumulate in different FP order when raters swap → symmetry holds to ~1e-10, not bit-exact (asserted with `toBeCloseTo`). `krippendorffAlpha` uses integer squared distances → symmetry is bit-exact (`toBe`). No logic bugs in the implementations — the initial property failure was first a test-generator destructuring bug, then the FP-precision consideration; both are documented here and in the test comments.
 - Suite now: 68 files, 698 tests, audit flags still 2 (both documented exceptions).
+
+## P5 — mutation gate (Stryker on engine): installed as DIAGNOSTIC, NOT a CI gate
+
+**Tooling:** added `@stryker-mutator/{core,vitest-runner,typescript-checker}` to
+`packages/engine`, config at `packages/engine/stryker.config.json`, npm script
+`pnpm --filter @perfectman/engine mutation`.
+
+**Reliability finding (why there is NO CI gate):**
+- **Isolated/per-file stryker runs are reliable** and give real kill scores
+  (verified: `memory/get-new-events-since.ts` = 100% kill, consistent with batch).
+- **One-shot batch mode is broken in this monorepo** (pnpm + vitest alias +
+  workspace layout): coverage attribution collapses under multi-file mutation →
+  mass `no-cov` + `errors` (e.g. full run: 10.28% score, 1836 no-cov, 685 errors;
+  2-3 tests/mutant vs 50+ in isolated runs). `vitest.related:false`,
+  `coverageAnalysis:"all"`, explicit `configFile` did NOT fix it. Recorded as a
+  stryker-vitest monorepo integration limitation until investigated further.
+- Therefore: run stryker **per file** (`npx stryker run --mutate src/<dir>/<file>.ts`)
+  for trustworthy scores. thresholds.break kept null (manual tool).
+
+**MAJOR discovery (the value of the exercise):** engine test suite is shallow at
+the branch level despite 214 green tests. Isolated mutation kill scores:
+| Function | Kill % |
+|---|---|
+| memory/get-new-events-since | 100 |
+| intent/validate-intent | 61 |
+| visibility/filter-visible-events | 63 |
+| motivation/derive-motivations | 0 |
+| emotion/update-social-emotions | 0 |
+| emotion/compute-action-emotions | 0 |
+| emotion/update-emotion-stack | 0 |
+| inhibition/compute-inhibitions | 0 |
+
+The engine's core emotion/motivation/pressure/inhibition dynamics functions are
+practically untested at the branch level — the green happy-path assertions
+pass without covering the logic. **This is the real next-test work:** before
+adding more tests, cover these functions with branch-behavioral tests (the
+`compute-*`/`update-*` dynamics), which is far higher-value than count growth.
+
+**Conclusion:** P5 does not ship an automated CI gate (tooling unreliable in
+batch). It ships a dependable per-file diagnostic, and — more importantly —
+a concrete, evidence-backed redirection: the engine's dynamics functions need
+real behavioral tests. The audit script + review (the lighter alternative)
+remains the practical gate.
