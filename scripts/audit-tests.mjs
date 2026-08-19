@@ -16,7 +16,7 @@ const OUT_JSON = join(ROOT, "docs", "test-inventory.json");
 
 function walk(dir, acc = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
-    if (e.name === "node_modules" || e.name === "dist") continue;
+    if (e.name === "node_modules" || e.name === "dist" || e.name === ".stryker-tmp") continue;
     const p = join(dir, e.name);
     if (e.isDirectory()) walk(p, acc);
     else if (e.name.endsWith(".test.ts")) acc.push(p);
@@ -85,10 +85,21 @@ for (const f of files) {
   if (asyncPauses) flags.push(`async-pause(${asyncPauses})`);
   if (its > CAP_ITS_PER_FILE) flags.push(`over-cap(${its}>${CAP_ITS_PER_FILE})`);
 
+  // Zero-tolerance (CI-failing) vs informational (documented exceptions)
+  const violations = [];
+  if (forcedCasts) violations.push(`forced-cast`);
+  if (tsBypasses) violations.push(`ts-bypass`);
+  if (eslintDisables) violations.push(`eslint-disable`);
+  if (onlys) violations.push(`ONLY`);
+  if (skips) violations.push(`skip`);
+  if (deadIdTruthy) violations.push(`dead-id-truthy`);
+  if (weakTerminals.length) violations.push(`weak-terminal`);
+  if (its > CAP_ITS_PER_FILE) violations.push(`over-cap`);
+
   rows.push({
     file: rel, pkg, layer, its, itsEach, forcedCasts, tsBypasses, eslintDisables,
     onlys, skips, consoleLogs, truthy, defined, deadIdTruthy, nonNull, spies,
-    asyncPauses, weakTerminals, flags,
+    asyncPauses, weakTerminals, flags, violations,
   });
 }
 
@@ -147,3 +158,19 @@ console.log("Flagged files:");
 for (const r of flagged) console.log(`  ${r.file} — ${r.flags.join("; ")}`);
 
 if (process.argv.includes("--json")) console.log(JSON.stringify(rows, null, 1));
+
+// --check: act as a CI gate. Exit non-zero if any zero-tolerance violation exists.
+// Informational flags (console, async-pause) are allowlisted as documented exceptions
+// (see docs/testing-findings.md), so they do not fail the gate.
+if (process.argv.includes("--check")) {
+  const violators = rows.filter((r) => r.violations.length);
+  if (violators.length) {
+    console.error("\n[audit-tests] TEST HYGIENE GATE FAILED — zero-tolerance violations:");
+    for (const r of violators) {
+      console.error(`  ${r.file} — ${r.violations.join(", ")}`);
+    }
+    process.exit(1);
+  }
+  console.log(`\n[audit-tests] PASS — ${rows.length} files scanned, ${totalIts} its, no violations.`);
+  process.exit(0);
+}
