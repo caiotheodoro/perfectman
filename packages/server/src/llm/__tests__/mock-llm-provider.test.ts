@@ -66,7 +66,7 @@ describe("MockLlmProvider", () => {
     perceptionPacket: {
       agentId: "agent-beta",
       triggeringEvent: null,
-      visibleContextEvents: [],
+      visibleContextEvents: [], ownRecentUtterances: [],
       involvedPeople: [],
       relevantChannels: ["general"],
       relevantMemories: [],

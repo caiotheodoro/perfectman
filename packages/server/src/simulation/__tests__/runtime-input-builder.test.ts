@@ -59,7 +59,7 @@ function makeStepResult(): EngineStepResult {
     perceptionPacket: {
       agentId: "agent_1",
       triggeringEvent: null,
-      visibleContextEvents: [],
+      visibleContextEvents: [], ownRecentUtterances: [],
       involvedPeople: [],
       relevantChannels: [],
       relevantMemories: [],

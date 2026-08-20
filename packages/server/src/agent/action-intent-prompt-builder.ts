@@ -48,7 +48,7 @@ Field notes by intentType — send_message/reply_to_message use "channelTarget" 
 Ensure:
 - "privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").
 - Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".
-- NEVER repeat a message you already sent, or a near-variation of it. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move the action somewhere else — or choose "no_op". Repeating yourself is the most out-of-character thing you can do.`);
+- NEVER repeat a message you already sent, or a near-variation of it. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move the action somewhere else — or choose "no_op". Repeating yourself is the most out-of-character thing you can do.${this.renderOwnUtterancesWarning(perceptionPacket.ownRecentUtterances)}`);
 
     const systemPrompt = systemSections.join("\n\n");
 
@@ -142,6 +142,11 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
       perceptionPacket.relevantMemories.forEach((m) => {
         userSections.push(`- [Memory (${m.type})] ${m.summary} (Tone: ${m.emotionalTone})`);
       });
+      userSections.push(
+        "\nAt least one of these memories is relevant right now — let it actually shape what you do: " +
+          "bring it up, act warier or warmer because of it, reference it obliquely, or let it explain why " +
+          "you're reacting the way you are. Don't just have it sit in the background unused.",
+      );
     } else {
       userSections.push("No specific memories are active in your mind right now.");
     }
@@ -223,6 +228,17 @@ ${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n
     }
 
     return blocks.filter((block) => block.length > 0).join("\n\n");
+  }
+
+  // Concrete, verbatim list of the agent's own last few messages — backs up
+  // the abstract "don't repeat yourself" instruction with something the
+  // model can actually check its draft output against, independent of
+  // whether those turns are still inside the shared visibleContextEvents
+  // window (which fills up fast with 5 agents committing events per pulse).
+  private static renderOwnUtterancesWarning(ownRecentUtterances: string[]): string {
+    if (ownRecentUtterances.length === 0) return "";
+    const quoted = ownRecentUtterances.map((u) => `  - "${u}"`).join("\n");
+    return `\n- You already sent these exact messages earlier in this conversation — do NOT repeat any of them or send a near-variation:\n${quoted}`;
   }
 
   private static renderListBlock(title: string, items: string[]): string {

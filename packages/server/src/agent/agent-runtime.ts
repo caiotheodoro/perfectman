@@ -11,6 +11,7 @@ import type {
 import { PersonaLoader } from "./persona-loader.js";
 import { PromptBuilder } from "./prompt-builder.js";
 import { IntentParser } from "./intent-parser.js";
+import { isNearRepeat } from "./repetition-guard.js";
 import { llmBudget } from "../llm/llm-budget.js";
 import { MockLlmProvider } from "../llm/mock-llm-provider.js";
 import { OpenAiCompatibleProvider } from "../llm/openai-compatible-provider.js";
@@ -116,20 +117,73 @@ export class AgentRuntime {
     }
 
     // Parse and validate intent
-    const parseResult = IntentParser.parse(
+    let parseResult = IntentParser.parse(
       providerResult.content,
       agentId,
       input.availableActions,
       "no_op"
     );
 
-    // Track usage
+    // Repetition guard: the prompt already tells the model not to repeat
+    // itself and shows it the exact text to avoid (see
+    // action-intent-prompt-builder.ts), but empirically small local models
+    // repeat anyway — the instruction alone isn't sufficient enforcement.
+    // Give the model exactly one chance to try again with an explicit,
+    // pointed correction before falling back to no_op — a hard fallback on
+    // the first near-repeat just trades spam for silence; a targeted retry
+    // can recover real content instead.
+    let intent = parseResult.intent;
+    let fallbackApplied = parseResult.fallbackApplied;
+    let repetitionBlocked = false;
+    let repetitionRetried = false;
+    let totalInputTokens = providerResult.usage.inputTokens;
+    let totalOutputTokens = providerResult.usage.outputTokens;
+
+    const isRepeat = (candidateIntent: typeof intent): boolean =>
+      (candidateIntent.intentType === "send_message" || candidateIntent.intentType === "reply_to_message") &&
+      !!candidateIntent.visibleContent &&
+      isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances);
+
+    if (!fallbackApplied && isRepeat(intent)) {
+      repetitionRetried = true;
+      const retryPrompt = {
+        ...prompt,
+        system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
+      };
+      try {
+        const retryResult = await provider.generateIntent(input, context, retryPrompt);
+        totalInputTokens += retryResult.usage.inputTokens;
+        totalOutputTokens += retryResult.usage.outputTokens;
+        const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op");
+        if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent)) {
+          parseResult = retryParse;
+          intent = retryParse.intent;
+          fallbackApplied = retryParse.fallbackApplied;
+        } else {
+          repetitionBlocked = true;
+        }
+      } catch {
+        // Retry call itself failed — fall through to the block below.
+        repetitionBlocked = true;
+      }
+    }
+
+    if (repetitionBlocked) {
+      fallbackApplied = true;
+      intent = IntentParser.createFallback(
+        agentId,
+        "no_op",
+        "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.",
+      );
+    }
+
+    // Track usage (includes the retry call's tokens, if one happened)
     const usageRecord: LlmUsage = {
       simulationId,
       agentId,
       model: providerResult.model || llmConfig.modelName,
-      inputTokens: providerResult.usage.inputTokens,
-      outputTokens: providerResult.usage.outputTokens,
+      inputTokens: totalInputTokens,
+      outputTokens: totalOutputTokens,
       latencyMs: providerResult.latencyMs,
       callType: purposeToCallType(prompt.purpose),
       pulseIndex: context.pulseIndex,
@@ -160,7 +214,7 @@ export class AgentRuntime {
       },
     });
 
-    if (parseResult.fallbackApplied) {
+    if (fallbackApplied && !repetitionBlocked) {
       operatorEvents.push({
         type: "llm_failure",
         simulationId,
@@ -177,11 +231,22 @@ export class AgentRuntime {
       });
     }
 
+    if (repetitionBlocked) {
+      operatorEvents.push({
+        type: "intent_blocked",
+        simulationId,
+        agentId,
+        pulseIndex: context.pulseIndex,
+        detail: `Repetition guard blocked a near-duplicate message from agent ${agentId}; substituted no_op.`,
+        createdAt: context.now,
+      });
+    }
+
     return {
-      intent: parseResult.intent,
+      intent,
       llmUsage: usageRecord,
       latencyMs: Date.now() - startTime,
-      fallbackApplied: parseResult.fallbackApplied,
+      fallbackApplied,
       operatorEvents,
     };
   }

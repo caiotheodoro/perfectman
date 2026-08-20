@@ -70,6 +70,7 @@ describe("PromptBuilder", () => {
       agentId: "example-friend",
       triggeringEvent: triggeringEvent,
       visibleContextEvents: [triggeringEvent, contextEvent],
+      ownRecentUtterances: [],
       involvedPeople: ["agent-peer", "agent-peer"],
       relevantChannels: ["general"],
       relevantMemories: [
