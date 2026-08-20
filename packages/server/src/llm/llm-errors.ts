@@ -1,37 +1,37 @@
-export class LlmError extends Error {
+export class LLMError extends Error {
   override readonly cause?: unknown;
 
   constructor(message: string, cause?: unknown) {
     super(message);
     this.cause = cause;
-    this.name = "LlmError";
+    this.name = "LLMError";
   }
 }
 
-export class LlmConfigurationError extends LlmError {
+export class LLMConfigurationError extends LLMError {
   constructor(message: string) {
     super(message);
-    this.name = "LlmConfigurationError";
+    this.name = "LLMConfigurationError";
   }
 }
 
-export class LlmTimeoutError extends LlmError {
+export class LLMTimeoutError extends LLMError {
   constructor(message: string) {
     super(message);
-    this.name = "LlmTimeoutError";
+    this.name = "LLMTimeoutError";
   }
 }
 
-export class LlmHttpError extends LlmError {
+export class LLMHttpError extends LLMError {
   constructor(public readonly status: number, message: string) {
     super(`HTTP ${status}: ${message}`);
-    this.name = "LlmHttpError";
+    this.name = "LLMHttpError";
   }
 }
 
-export class LlmResponseError extends LlmError {
+export class LLMResponseError extends LLMError {
   constructor(message: string) {
     super(message);
-    this.name = "LlmResponseError";
+    this.name = "LLMResponseError";
   }
 }

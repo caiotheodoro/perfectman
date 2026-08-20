@@ -164,20 +164,42 @@ describe("PromptBuilder", () => {
     expect(typeof prompt.system).toBe("string");
     expect(typeof prompt.user).toBe("string");
     expect(prompt.inputTokensEstimate).toBeGreaterThan(0);
+    expect(prompt.version).toBeTruthy();
   });
 
-  it("should verify that the prompt contains all required sections", () => {
+  it("assigns a deterministic promptVersion (stable across identical builds)", () => {
+    const a = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    const b = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    expect(a.version).toBe(b.version);
+    expect(a.version).toMatch(/^[0-9a-z]+$/);
+  });
+
+  it("should verify that the prompt contains all required sections in hybrid containers", () => {
     const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
     const combined = prompt.system + "\n\n" + prompt.user;
 
-    expect(combined).toContain("SECTION 1: YOUR IDENTITY");
-    expect(combined).toContain("SECTION 2: RECENT CHANNEL EVENTS");
-    expect(combined).toContain("SECTION 3: SOCIAL INTERPRETATION");
-    expect(combined).toContain("SECTION 4: HOW YOU SUBJECTIVELY FEEL");
-    expect(combined).toContain("SECTION 5: FELT URGES & SOCIAL BLOCKS");
-    expect(combined).toContain("SECTION 6: WHAT YOU REMEMBER");
-    expect(combined).toContain("SECTION 7: PERMITTED ACTIONS MENU");
-    expect(combined).toContain("SECTION 8: OUTPUT CONTRACT");
+    expect(prompt.system).toContain("<persona>");
+    expect(prompt.system).toContain("</persona>");
+    expect(prompt.system).toContain("<output_contract>");
+    expect(prompt.system).toContain("</output_contract>");
+    expect(prompt.user).toContain("<events>");
+    expect(prompt.user).toContain("</events>");
+    expect(prompt.user).toContain("<social>");
+    expect(prompt.user).toContain("<emotional_state>");
+    expect(prompt.user).toContain("<pressures>");
+    expect(prompt.user).toContain("<memories>");
+    expect(prompt.user).toContain("<actions>");
+    // decision question comes LAST in the user prompt
+    expect(prompt.user.trimEnd().endsWith("</decision>")).toBe(true);
+    expect(prompt.user).toContain("<decision>");
+  });
+
+  it("should not ask the model to emit engine-owned fields", () => {
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    expect(prompt.system).not.toContain('"fallbackIfBlocked"');
+    expect(prompt.system).not.toContain('"preferredDelay"');
+    expect(prompt.system).not.toContain("generate a new unique string");
+    expect(prompt.system).toContain("assigned by the system");
   });
 
   it("should verify that the prompt includes the triggering event and context", () => {
@@ -213,8 +235,11 @@ describe("PromptBuilder", () => {
     const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
     expect(prompt.system).toContain("SINGLE valid JSON object");
-    expect(prompt.system).toContain("DO NOT include any chain-of-thought");
+    expect(prompt.system).toContain("return ONLY the JSON object");
     expect(prompt.system).toContain("privateMotiveSummary");
+    // no hand-written JSON example remains in the prompt (schema-derived / enforced)
+    expect(prompt.system).not.toContain('"memoryWrites": []');
+    expect(prompt.system).not.toContain('"invitedAgentIds"');
   });
 
   describe("PromptPurpose policy", () => {
@@ -234,11 +259,11 @@ describe("PromptBuilder", () => {
       expect(prompt.system).toContain(EXAMPLE_PROMPT_PROFILE.styleExamples.dryOrLowEnergy[0]!);
     });
 
-    it("action_intent: Section 1 renders the richer persona profile compactly", () => {
+    it("action_intent: <persona> renders the richer persona profile compactly", () => {
       const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
-      const section1 = prompt.system.split("\n\n### SECTION 8: OUTPUT CONTRACT & JSON FORMAT")[0]!;
+      const section1 = prompt.system.split("</persona>")[0]!;
 
-      expect(section1).toContain("SECTION 1: YOUR IDENTITY & PERSONA");
+      expect(section1).toContain("## Identity");
       expect(section1).toContain(`- **Display Name**: ${EXAMPLE_PROMPT_PROFILE.displayName}`);
       expect(section1).toContain("Core traits");
       expect(section1).toContain("Values and motivations");
@@ -249,14 +274,14 @@ describe("PromptBuilder", () => {
       expect(section1).toContain("Relationship-specific views");
     });
 
-    it("action_intent: Section 1 includes cognitive style and hard avoids", () => {
+    it("action_intent: <persona> includes cognitive style and hard avoids", () => {
       const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
       expect(prompt.system).toContain("You compare context, timing, and likely consequences before acting.");
       expect(prompt.system).toContain("Do not sound overly warm, sentimental, or artificially therapeutic.");
     });
 
-    it("action_intent: Section 1 does not render source refs, raw transcripts, or assessment scores", () => {
+    it("action_intent: <persona> does not render source refs, raw transcripts, or assessment scores", () => {
       const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
       expect(prompt.system).not.toContain("sourceRefs");

@@ -44,7 +44,9 @@ describe("IntentParser", () => {
     const result = IntentParser.parse(rawText, actorId, availableActions);
 
     expect(result.fallbackApplied).toBe(false);
-    expect(result.intent.id).toBe("intent-123");
+    // engine owns id; the model-provided id is ignored (packet split)
+    expect(result.intent.id).toBeTruthy();
+    expect(result.intent.id).not.toBe("intent-123");
     expect(result.intent.intentType).toBe("send_message");
     expect(result.intent.visibleContent).toBe("Hey there!");
     expect(result.intent.privateMotiveSummary).toBe("Initiate contact");
@@ -73,7 +75,9 @@ Hope you like it!
     const result = IntentParser.parse(rawText, actorId, availableActions);
 
     expect(result.fallbackApplied).toBe(false);
-    expect(result.intent.id).toBe("intent-456");
+    // engine owns id; the model-provided id is ignored (packet split)
+    expect(result.intent.id).toBeTruthy();
+    expect(result.intent.id).not.toBe("intent-456");
     expect(result.intent.intentType).toBe("reply_to_message");
     expect(result.intent.personTargets).toContain("agent-peer");
     expect(result.intent.privateMotiveSummary).toBe("Agree with Agent Peer");
@@ -98,7 +102,9 @@ Hope you like it!
     const result = IntentParser.parse(rawText, actorId, availableActions);
 
     expect(result.fallbackApplied).toBe(false);
-    expect(result.intent.id).toBe("intent-comma");
+    // engine owns id; the model-provided id is ignored (packet split)
+    expect(result.intent.id).toBeTruthy();
+    expect(result.intent.id).not.toBe("intent-comma");
     expect(result.intent.privateMotiveSummary).toBe("testing comma repair");
   });
 

@@ -10,7 +10,7 @@ import { SpectatorProjection } from "../projections/spectator-projection.js";
 import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
-import type { AgentContext, AgentRuntime, LlmBudget } from "../pulse-scheduler.js";
+import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type { AgentState, CommittedEvent, PersonaConfig, Simulation, SimulationSettings } from "@perfectman/shared";
 
 vi.mock("@perfectman/engine", () => ({
@@ -149,7 +149,7 @@ describe("PulseScheduler resilience", () => {
 
     const rateLimitGate = new RateLimitGate(SETTINGS);
     const agent: AgentContext = { id: "agent_1", state: makeAgentState(), persona: PERSONA };
-    const llmBudget: LlmBudget = { getPriority: vi.fn().mockReturnValue("normal") };
+    const llmBudget: LLMBudget = { getPriority: vi.fn().mockReturnValue("normal") };
 
     return new PulseScheduler({
       simulation: SIM,

@@ -1,7 +1,7 @@
 import type { AgentRuntimeInput } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt } from "../agent/agent-runtime.types.js";
 
-export type LlmProviderResult = {
+export type LLMProviderResult = {
   content: string;
   usage: {
     inputTokens: number;
@@ -15,10 +15,10 @@ export type LlmProviderResult = {
   fallbackAttempts?: number;
 };
 
-export interface LlmProvider {
+export interface LLMProvider {
   generateIntent(
     input: AgentRuntimeInput,
     context: AgentRuntimeContext,
     prompt: BuiltPrompt
-  ): Promise<LlmProviderResult>;
+  ): Promise<LLMProviderResult>;
 }

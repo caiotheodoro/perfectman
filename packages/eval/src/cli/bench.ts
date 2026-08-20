@@ -26,7 +26,7 @@ import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 
 /** LLM judge endpoint — DeepSeek by default when PERFECTMAN_LLM_PROVIDER=deepseek. */
-export function judgeConfig(): import("../judge/judge.js").LlmJudgeConfig {
+export function judgeConfig(): import("../judge/judge.js").LLMJudgeConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
   // Empty/unset → default; only an explicit numeric value (incl. "0") wins.
@@ -62,6 +62,8 @@ export type BenchReport = {
   judgeAxisMeans: Record<string, number>;
   judgeAxisTargets: Record<string, { target: number; met: boolean }>;
   byCategory: Record<string, { runs: number; signalPassRate: number }>;
+  /** Unique generation prompt versions across all scenarios (attribution). */
+  promptVersions: string[];
   calibration: ReturnType<typeof calibrateJudge>;
   perScenario: Array<{
     id: string;
@@ -73,6 +75,7 @@ export type BenchReport = {
     axisScores: AxisScores;
     fallbackCount: number;
     latencyMs: number;
+    promptVersions: string[];
     failed?: string;
   }>;
 };
@@ -119,6 +122,7 @@ export async function runBench(opts: {
     judgeAxisMeans: {},
     judgeAxisTargets: {},
     byCategory: {},
+    promptVersions: [],
     calibration: calibrateJudge(new Map(), []),
     perScenario: [],
   };
@@ -131,11 +135,13 @@ export async function runBench(opts: {
   let probesPassed = 0;
   let probesTotal = 0;
   const catAgg: Record<string, { runs: number; signalsPassed: number; signalsTotal: number }> = {};
+  const allPromptVersions = new Set<string>();
 
   for (const scenario of limited) {
     try {
       const artifact: ScenarioRunArtifact = await ScenarioRunner.run(scenario, { llmMode: mode });
       report.scenariosRun++;
+      artifact.promptVersions.forEach((v) => allPromptVersions.add(v));
 
       const axisScores =
         judgeMode === "llm"
@@ -176,6 +182,7 @@ export async function runBench(opts: {
         axisScores,
         fallbackCount: artifact.fallbackCount,
         latencyMs: artifact.latencyMs,
+        promptVersions: artifact.promptVersions,
       });
     } catch (err) {
       report.scenariosFailed++;
@@ -189,6 +196,7 @@ export async function runBench(opts: {
         axisScores: {},
         fallbackCount: 0,
         latencyMs: 0,
+        promptVersions: [],
         failed: err instanceof Error ? err.message : String(err),
       });
     }
@@ -225,6 +233,7 @@ export async function runBench(opts: {
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, JSON.stringify(report, null, 2), "utf8");
   }
+  report.promptVersions = [...allPromptVersions];
   return report;
 }
 

@@ -29,12 +29,12 @@ import { OperatorProjection } from "./projections/operator-projection.js";
 import { EngineEventBuilder } from "./engine-event-builder.js";
 import { PulseScheduler } from "./pulse-scheduler.js";
 import type { IDeliveryGateway } from "./scheduler-contracts.js";
-import type { AgentRuntime, LlmBudget, AgentContext, PulseResult } from "./pulse-scheduler.js";
+import type { AgentRuntime, LLMBudget, AgentContext, PulseResult } from "./pulse-scheduler.js";
 
 export type SimulationRuntimeConfig = {
   delivery: IDeliveryGateway;
   agentRuntime: AgentRuntime;
-  llmBudget: LlmBudget;
+  llmBudget: LLMBudget;
   repositories?: SimulationRuntimeRepositories;
 };
 

@@ -86,5 +86,5 @@ export type ProbeInput = {
   agentIds: readonly string[];
   totalPulses: number;
   fallbackCount?: number;
-  totalLlmCalls?: number;
+  totalLLMCalls?: number;
 };
