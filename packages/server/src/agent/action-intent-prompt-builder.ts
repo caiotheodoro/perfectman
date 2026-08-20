@@ -29,16 +29,21 @@ JSON Schema:
   "id": "A unique string representing this intent (copy from the inputs or generate a new unique string)",
   "actorId": "${input.agentId}",
   "intentType": "Must match one of the available intent types",
-  "channelTarget": "Target channel ID if applicable (must match available targets)",
-  "personTargets": ["Array of target friend agentIds if applicable"],
+  "channelTarget": "ONLY for send_message/reply_to_message/leave_channel/invite_agent — the existing channel ID you're acting in. OMIT this field entirely for create_channel (use channelName/channelType instead).",
+  "personTargets": "OMIT this field for send_message and create_channel — it does not apply to them. Only used for actions that target a specific person directly.",
   "visibleContent": "Optional text message content (required for 'send_message' or 'reply_to_message')",
   "privateMotiveSummary": "A highly specific natural-language thought explaining your real, raw, hidden motive behind this action. Never leave empty.",
   "emotionDrivers": ["Emotion keywords driving this action (e.g. warmth, jealousy, irritation)"],
   "motivationDrivers": ["Motivation keywords driving this action (e.g. affinity, gossip, exclusion)"],
   "preferredDelay": 0,
   "fallbackIfBlocked": "no_op",
-  "memoryWrites": []
+  "memoryWrites": [],
+  "channelName": "ONLY for create_channel — a short name for the new channel.",
+  "channelType": "ONLY for create_channel — usually \\"private_channel\\".",
+  "invitedAgentIds": ["ONLY for create_channel — array of agentIds to invite into the new channel."]
 }
+
+Field notes by intentType — send_message/reply_to_message use "channelTarget" (an existing channel); create_channel uses "channelName" + "channelType" (usually "private_channel") + "invitedAgentIds" instead, and has no "channelTarget" or "personTargets".
 
 Ensure:
 - "privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").

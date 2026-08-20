@@ -209,4 +209,72 @@ Hope you like it!
     expect(result.fallbackApplied).toBe(true);
     expect(result.intent.intentType).toBe("delay_response"); // used custom fallback option!
   });
+
+  describe("create_channel channelType default", () => {
+    const createChannelActions: AvailableAction[] = [
+      {
+        intentType: "create_channel",
+        channelTargets: [],
+        personTargets: [],
+        blocked: false,
+      },
+    ];
+
+    it("defaults an empty-string channelType to private_channel instead of rejecting", () => {
+      const rawText = JSON.stringify({
+        id: "intent-create-1",
+        actorId,
+        intentType: "create_channel",
+        channelType: "", // the observed real-world failure mode
+        channelName: "papo-reservado",
+        privateMotiveSummary: "want to talk privately",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+      });
+
+      const result = IntentParser.parse(rawText, actorId, createChannelActions);
+
+      expect(result.fallbackApplied).toBe(false);
+      expect(result.intent.intentType).toBe("create_channel");
+      expect(result.intent.channelType).toBe("private_channel");
+    });
+
+    it("defaults a missing channelType to private_channel", () => {
+      const rawText = JSON.stringify({
+        id: "intent-create-2",
+        actorId,
+        intentType: "create_channel",
+        channelName: "papo-reservado",
+        privateMotiveSummary: "want to talk privately",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+      });
+
+      const result = IntentParser.parse(rawText, actorId, createChannelActions);
+
+      expect(result.fallbackApplied).toBe(false);
+      expect(result.intent.channelType).toBe("private_channel");
+    });
+
+    it("leaves an explicit valid channelType untouched", () => {
+      const rawText = JSON.stringify({
+        id: "intent-create-3",
+        actorId,
+        intentType: "create_channel",
+        channelType: "spectator_channel",
+        channelName: "watch-party",
+        privateMotiveSummary: "want an audience",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+      });
+
+      const result = IntentParser.parse(rawText, actorId, createChannelActions);
+
+      expect(result.fallbackApplied).toBe(false);
+      expect(result.intent.channelType).toBe("spectator_channel");
+    });
+  });
 });
