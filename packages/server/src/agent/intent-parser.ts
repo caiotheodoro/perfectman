@@ -61,8 +61,32 @@ export class IntentParser {
         }
       }
 
+      // 4c. create_channel with a missing/empty channelType is by far the
+      // most common way this intent type gets rejected — the prompt already
+      // tells the model channelType is "usually private_channel" for this
+      // action, but a small model frequently omits the field or emits ""
+      // instead of following through. Default rather than reject: this is a
+      // clear, single, prompt-consistent inference, not a guess.
+      if (
+        parsedObject.intentType === "create_channel" &&
+        (parsedObject.channelType === "" || parsedObject.channelType === undefined)
+      ) {
+        parsedObject.channelType = "private_channel";
+      }
+
       // 5. Validate against ActionIntentSchema
       const validatedIntent = ActionIntentSchema.parse(parsedObject) as ActionIntent;
+
+      // 5b. Normalize a stray leading '#' on channelTarget. The transcript
+      // rendered into the prompt displays channels as "#channelId"
+      // (action-intent-prompt-builder.ts formatEvent) — small models copy
+      // that display convention into the channelTarget value itself, which
+      // then fails the availableActions allow-list check since the actual
+      // channel IDs never carry the '#'. This is display formatting bleeding
+      // into model output, not a real different channel.
+      if (validatedIntent.channelTarget?.startsWith("#")) {
+        validatedIntent.channelTarget = validatedIntent.channelTarget.slice(1);
+      }
 
       // 6. Reject empty privateMotiveSummary
       if (!validatedIntent.privateMotiveSummary || validatedIntent.privateMotiveSummary.trim() === "") {
@@ -84,18 +108,29 @@ export class IntentParser {
           );
         }
 
-        // Validate channelTarget if specified
+        // Validate channelTarget if specified. An empty allow-list means the
+        // intent type doesn't constrain this field (e.g. create_channel has
+        // no existing channelTargets to pick from) — treat that as "no
+        // constraint", not "reject everything". Mirrors validate-intent.ts's
+        // personTargets guard below.
         if (validatedIntent.channelTarget) {
-          if (!matchedAction.channelTargets.includes(validatedIntent.channelTarget)) {
+          if (
+            matchedAction.channelTargets.length > 0 &&
+            !matchedAction.channelTargets.includes(validatedIntent.channelTarget)
+          ) {
             throw new Error(
               `Channel target '${validatedIntent.channelTarget}' is not permitted for intent type '${validatedIntent.intentType}'`
             );
           }
         }
 
-        // Validate personTargets
+        // Validate personTargets — same empty-allow-list-means-unconstrained
+        // rule (e.g. send_message has no personTargets allow-list at all).
         for (const targetPerson of validatedIntent.personTargets) {
-          if (!matchedAction.personTargets.includes(targetPerson)) {
+          if (
+            matchedAction.personTargets.length > 0 &&
+            !matchedAction.personTargets.includes(targetPerson)
+          ) {
             throw new Error(
               `Person target '${targetPerson}' is not permitted for intent type '${validatedIntent.intentType}'`
             );

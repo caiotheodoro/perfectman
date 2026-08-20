@@ -65,9 +65,15 @@ export function validateIntentPure(
       detail: `intentType "${intent.intentType}" has no available action slot`,
     });
   } else {
-    // 3. Channel target validation
+    // 3. Channel target validation. An empty allow-list means this intent
+    // type doesn't constrain channelTarget (e.g. create_channel has no
+    // existing channels to target) — treat as unconstrained, matching the
+    // personTargets guard just below.
     if (intent.channelTarget) {
-      if (!availableAction.channelTargets.includes(intent.channelTarget)) {
+      if (
+        availableAction.channelTargets.length > 0 &&
+        !availableAction.channelTargets.includes(intent.channelTarget)
+      ) {
         violations.push({
           type:   "hidden_channel_target",
           detail: `channelTarget "${intent.channelTarget}" is not in available channels for ${intent.intentType}`,
