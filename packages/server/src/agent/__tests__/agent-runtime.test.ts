@@ -52,7 +52,7 @@ describe("AgentRuntime Orchestration", () => {
     perceptionPacket: {
       agentId: "example-friend",
       triggeringEvent: null,
-      visibleContextEvents: [],
+      visibleContextEvents: [], ownRecentUtterances: [],
       involvedPeople: [],
       relevantChannels: ["general"],
       relevantMemories: [],
@@ -194,5 +194,82 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.operatorEvents[1]!.type).toBe("llm_failure");
     expect(output.operatorEvents[1]!.detail).toContain("LLM parsing or target constraint validation failed");
     expect(output.operatorEvents[1]!.data!.errorDetail).toContain("No JSON object found in response");
+  });
+
+  describe("repetition guard retry", () => {
+    const repeatingInput: AgentRuntimeInput = {
+      ...baseInput,
+      perceptionPacket: {
+        ...baseInput.perceptionPacket,
+        ownRecentUtterances: ["kkkkk não acredito nesse take"],
+      },
+    };
+
+    function jsonResponse(content: string, promptTokens = 50, completionTokens = 10) {
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          choices: [{ message: { content: JSON.stringify({
+            id: "intent-1",
+            actorId: "example-friend",
+            intentType: "send_message",
+            channelTarget: "general",
+            personTargets: [],
+            visibleContent: content,
+            privateMotiveSummary: "reacting",
+            emotionDrivers: [],
+            motivationDrivers: [],
+            memoryWrites: [],
+          }) } }],
+          usage: { prompt_tokens: promptTokens, completion_tokens: completionTokens },
+          model: "test-model",
+        }),
+        headers: new Map(),
+      };
+    }
+
+    it("retries once and commits fresh content when the retry is genuinely different", async () => {
+      const runtime = new AgentRuntime({
+        "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+      });
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse("kkkkk não acredito nesse take", 50, 10)) // repeat of ownRecentUtterances
+        .mockResolvedValueOnce(jsonResponse("acho que devíamos falar de outra coisa agora", 60, 15)); // genuinely new
+      vi.stubGlobal("fetch", fetchMock);
+
+      const output = await runtime.generateIntent(repeatingInput, context);
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(output.fallbackApplied).toBe(false);
+      expect(output.intent.intentType).toBe("send_message");
+      expect(output.intent.visibleContent).toBe("acho que devíamos falar de outra coisa agora");
+      // Usage should sum both calls, not just the first.
+      expect(output.llmUsage!.inputTokens).toBe(110);
+      expect(output.llmUsage!.outputTokens).toBe(25);
+      // No intent_blocked event — the retry recovered real content.
+      expect(output.operatorEvents.some(e => e.type === "intent_blocked")).toBe(false);
+    });
+
+    it("falls back to no_op when the retry also repeats", async () => {
+      const runtime = new AgentRuntime({
+        "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+      });
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse("kkkkk não acredito nesse take", 50, 10))
+        .mockResolvedValueOnce(jsonResponse("kkkkk não acredito nesse take", 40, 8)); // still a repeat
+      vi.stubGlobal("fetch", fetchMock);
+
+      const output = await runtime.generateIntent(repeatingInput, context);
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(output.fallbackApplied).toBe(true);
+      expect(output.intent.intentType).toBe("no_op");
+      expect(output.intent.privateMotiveSummary).toContain("Repetition guard");
+      expect(output.intent.privateMotiveSummary).toContain("even after a retry");
+      expect(output.operatorEvents.some(e => e.type === "intent_blocked")).toBe(true);
+    });
   });
 });

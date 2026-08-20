@@ -69,6 +69,22 @@ export function buildPerceptionPacket(
     if (replyTarget && replyTarget !== agent.agentId) involvedPeople.add(replyTarget);
   }
 
+  // Own recent utterances — sourced from cleanEvents (full visible history,
+  // pre-CONTEXT_WINDOW-truncation), not contextEvents, so it survives the
+  // shared window filling up with other agents' turns. Deduped consecutively
+  // in case the same content was committed more than once in a row.
+  const OWN_UTTERANCE_WINDOW = 5;
+  const ownRecentUtterances: string[] = [];
+  for (const e of cleanEvents) {
+    if (e.actorId !== agent.agentId) continue;
+    if (e.type !== "message_sent" && e.type !== "reply_sent") continue;
+    const content = (e.payload as Record<string, unknown>)["content"];
+    if (typeof content !== "string" || content.length === 0) continue;
+    if (ownRecentUtterances[ownRecentUtterances.length - 1] === content) continue;
+    ownRecentUtterances.push(content);
+  }
+  const recentOwnUtterances = ownRecentUtterances.slice(-OWN_UTTERANCE_WINDOW);
+
   // Relevant memories: most recent N, preference for memories involving involved people
   const MAX_MEMORIES = 8;
   const involvedSet = involvedPeople;
@@ -85,6 +101,7 @@ export function buildPerceptionPacket(
     agentId:               agent.agentId,
     triggeringEvent:       triggeringEvent,
     visibleContextEvents:  contextEvents,
+    ownRecentUtterances:   recentOwnUtterances,
     involvedPeople:        [...involvedPeople],
     relevantChannels,
     relevantMemories,

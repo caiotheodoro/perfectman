@@ -105,7 +105,7 @@ function makeCannedStep({ memory = false } = {}): import("@perfectman/shared").E
     newEvents: [],
     attentionResults: { noticed: false, dueScore: 0, reasons: [], needsLLM: false, triggeringReason: "test" },
     perceptionPacket: {
-      agentId: "agent_1", triggeringEvent: null, visibleContextEvents: [], involvedPeople: [],
+      agentId: "agent_1", triggeringEvent: null, visibleContextEvents: [], ownRecentUtterances: [], involvedPeople: [],
       relevantChannels: [], relevantMemories: [],
       translatedEmotionalState: { summary: "", emotions: [] },
       availableActions: [],
