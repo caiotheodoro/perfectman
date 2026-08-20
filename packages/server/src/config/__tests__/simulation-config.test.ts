@@ -118,6 +118,64 @@ describe("simulation config", () => {
     expect(parsed.agents[0]?.llm.modelName).toBe("qwen3:1.7b");
   });
 
+  it("defaults extraBody.think to false for the ollama provider when omitted", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      agents: [{
+        ...config.agents[0],
+        llm: {
+          ...llm,
+          providerType: "ollama",
+          baseUrl: "http://localhost:11434/v1",
+          modelName: "qwen3:1.7b",
+          // no extraBody at all — this is the real-world gap: a config
+          // that doesn't know to opt into think:false previously hit the
+          // exact same 100%-fallback bug the eval harness had.
+        },
+      }],
+    });
+
+    expect(parsed.agents[0]?.llm.extraBody).toEqual({ think: false });
+  });
+
+  it("does not override an explicit extraBody.think for the ollama provider", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      agents: [{
+        ...config.agents[0],
+        llm: {
+          ...llm,
+          providerType: "ollama",
+          baseUrl: "http://localhost:11434/v1",
+          modelName: "qwen3:1.7b",
+          extraBody: { think: true, top_p: 0.9 },
+        },
+      }],
+    });
+
+    expect(parsed.agents[0]?.llm.extraBody).toEqual({ think: true, top_p: 0.9 });
+  });
+
+  it("does not inject think for non-ollama providers", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      agents: [{
+        ...config.agents[0],
+        llm: {
+          ...llm,
+          providerType: "qwen3_8b",
+          baseUrl: "http://localhost:11434/v1",
+          modelName: "qwen3:1.7b",
+        },
+      }],
+    });
+
+    expect(parsed.agents[0]?.llm.extraBody).toBeUndefined();
+  });
+
   it("rejects simulation calibration fields in persona config", () => {
     const config = baseConfig();
     expect(() => parseSimulationConfig({
