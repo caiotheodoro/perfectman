@@ -308,7 +308,20 @@ function localLlmConfig(pack: import("@perfectman/shared").PersonaPack | undefin
           frequency_penalty: Math.min(2, (sampling.repetitionPenalty - 1) * 2.5),
           presence_penalty: 0.4,
         }
-      : { top_p: sampling.topP, repetition_penalty: sampling.repetitionPenalty },
+      : {
+          top_p: sampling.topP,
+          repetition_penalty: sampling.repetitionPenalty,
+          // Qwen3 emits a <think>...</think> reasoning block by default,
+          // which breaks JSON-object parsing of the intent response
+          // (OllamaProvider only sends `think` through when explicitly
+          // set — see its native /api/chat mapping). Without this, local
+          // Qwen3 runs fail to parse on ~every turn and fall back to
+          // no-ops, producing no real signal. The product's own example
+          // config (examples/simulations/qwen3-local.example.json) sets
+          // this per-agent already; the eval harness's local-mode default
+          // needs the same.
+          think: false,
+        },
   };
 }
 

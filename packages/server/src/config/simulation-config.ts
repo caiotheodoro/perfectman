@@ -973,6 +973,27 @@ function parsePromptSourceRefs(
   };
 }
 
+/**
+ * Ollama's native /api/chat honors extraBody.think (see ollama-provider.ts),
+ * and Qwen3 models emit a <think>...</think> reasoning block by default —
+ * left uncontrolled, that block eats the whole response and the agent
+ * intent JSON never arrives (100% fallback to no-op, confirmed live).
+ * Every example config sets extraBody.think: false explicitly per agent,
+ * but nothing enforced that — a config that omits it hits the same bug in
+ * real usage, not just the eval harness (where scenario-runner.ts already
+ * defaults it in code). Default it here too, so it's not opt-in-by-copying.
+ */
+function parseExtraBody(
+  value: unknown,
+  providerType: string,
+  path: string,
+): Record<string, unknown> | undefined {
+  const extraBody = value === undefined ? undefined : asRecord(value, `${path}.extraBody`);
+  if (providerType !== "ollama") return extraBody;
+  if (extraBody?.["think"] !== undefined) return extraBody;
+  return { ...extraBody, think: false };
+}
+
 function parseLlmConfig(input: unknown, path: string): LlmConfig {
   const llm = asRecord(input, path);
   const providerType = requiredString(
@@ -1012,10 +1033,7 @@ function parseLlmConfig(input: unknown, path: string): LlmConfig {
       llm["responseFormatJson"],
       `${path}.responseFormatJson`,
     ),
-    extraBody:
-      llm["extraBody"] === undefined
-        ? undefined
-        : asRecord(llm["extraBody"], `${path}.extraBody`),
+    extraBody: parseExtraBody(llm["extraBody"], providerType, path),
   };
 }
 

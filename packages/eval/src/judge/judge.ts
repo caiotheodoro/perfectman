@@ -31,6 +31,30 @@ function clampScore(v: number): number {
   return Math.min(5, Math.max(1, Math.round(v)));
 }
 
+/**
+ * Extracts the JSON object from a judge model's raw response text.
+ *
+ * The judge calls hit an OpenAI-compatible /chat/completions endpoint,
+ * which — unlike a native Ollama /api/chat call — has no way to request
+ * think:false for Qwen3-family models. Left uncontrolled, the model can
+ * spend its entire token budget on a <think>...</think> reasoning block and
+ * never emit the actual JSON, which used to blow up downstream as an opaque
+ * "Unexpected end of JSON input" on JSON.parse(""). Stripping the think
+ * block first (if present) means the brace search only ever looks at the
+ * model's actual answer.
+ */
+function extractJsonObject(raw: string): string {
+  const withoutThinking = raw.replace(/<think>[\s\S]*?<\/think>/gi, "");
+  const start = withoutThinking.indexOf("{");
+  const end = withoutThinking.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) {
+    throw new Error(
+      `Judge response had no parseable JSON object (raw length ${raw.length}, likely truncated mid-reasoning): ${raw.slice(0, 200)}`,
+    );
+  }
+  return withoutThinking.slice(start, end + 1);
+}
+
 const STYLE_TELLS = ["kkk", "kkkk", "cara", "pera", "hm", "né", "tô", "tá", "tbm", "tb", "vdd", "pois é", "não", "..." ];
 
 export function ruleJudge(
@@ -153,7 +177,10 @@ export async function llmJudge(
         { role: "user", content: user },
       ],
       temperature: config.temperature ?? 0,
-      max_tokens: 600,
+      // Generous headroom: a thinking-mode model spends real tokens on
+      // <think>...</think> before it ever reaches the answer, and this
+      // endpoint can't suppress that (see extractJsonObject above).
+      max_tokens: 1500,
     }),
     signal: AbortSignal.timeout(config.timeoutMs ?? 60000),
   });
@@ -165,7 +192,7 @@ export async function llmJudge(
     choices?: { message?: { content?: string } }[];
   };
   const raw = data.choices?.[0]?.message?.content ?? "";
-  const jsonText = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
+  const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as { axes?: Record<string, number> };
   const axes: AxisScores = {};
   for (const axis of scenario.rubric.axes) {
@@ -290,7 +317,9 @@ ${turnTranscript(turn.group)}`;
         { role: "user", content: user },
       ],
       temperature: config.temperature ?? 1,
-      max_tokens: 120,
+      // See extractJsonObject's comment — a thinking-mode model needs
+      // headroom beyond the tiny {"narrative_cohesion": N} answer itself.
+      max_tokens: 800,
     }),
     signal: AbortSignal.timeout(config.timeoutMs ?? 60000),
   });
@@ -302,7 +331,7 @@ ${turnTranscript(turn.group)}`;
     choices?: { message?: { content?: string } }[];
   };
   const raw = data.choices?.[0]?.message?.content ?? "";
-  const jsonText = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
+  const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as {
     narrative_cohesion?: number;
     axes?: { narrative_cohesion?: number };
