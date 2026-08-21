@@ -278,8 +278,12 @@ function genericProfile(persona: import("@perfectman/shared").PersonaConfig): Pe
 // Exported for tests: benchmarks must pin LLM sampling so runs are
 // comparable (see issue #45). Overridable without code changes via env.
 export function benchSeed(): number {
-  const parsed = Number(process.env.PERFECTMAN_LLM_SEED ?? 42);
-  return Number.isFinite(parsed) ? parsed : 42;
+  const raw = process.env.PERFECTMAN_LLM_SEED?.trim();
+  if (raw) {
+    const parsed = Number(raw);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 42;
 }
 
 // Exported for tests and local debug tooling.

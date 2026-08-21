@@ -22,6 +22,16 @@ describe("bench seed wiring (#45)", () => {
     expect(benchSeed()).toBe(42);
   });
 
+  it("falls back to 42 on a blank override", () => {
+    process.env.PERFECTMAN_LLM_SEED = "   ";
+    expect(benchSeed()).toBe(42);
+  });
+
+  it("respects an explicit zero seed", () => {
+    process.env.PERFECTMAN_LLM_SEED = "0";
+    expect(benchSeed()).toBe(0);
+  });
+
   it("pins seed into the ollama-path extraBody", () => {
     const config = localLlmConfig(undefined);
     expect(config.providerType).toBe("ollama");
