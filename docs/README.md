@@ -227,15 +227,17 @@ pnpm freellm:dev
 
 The script builds the FreeLLMAPI container from `https://github.com/tashfeenahmed/freellmapi`, reads this repo's `.env`, exposes the API on `http://localhost:3001/v1`, and exposes the dashboard on `http://localhost:5173`. Set `FREELLMAPI_ENCRYPTION_KEY` in `.env` before first run so FreeLLMAPI can store provider keys. Use the dashboard to add provider keys and create the unified key, then store that value in `.env` as `FREELLMAPI_KEY`.
 
-For the DeepSeek config, copy `examples/simulations/deepseek.example.json` to `config/index.json` and set `DEEPSEEK_API_KEY` in your environment. DeepSeek is routed through the OpenAI-compatible provider using `https://api.deepseek.com/v1`.
-
-For the local Qwen3 config, run the Ollama container first:
+For the local Qwen3 config, run Ollama first. On macOS, prefer native
+Ollama (`brew install ollama && ollama pull qwen3:1.7b && ollama serve`) —
+Docker Desktop has no GPU passthrough there and the CPU-only container is
+dramatically slower. On Linux machines with an NVIDIA GPU, use the Docker
+path:
 
 ```bash
 pnpm qwen:dev
 ```
 
-The script starts `ollama/ollama`, pulls `qwen3:1.7b` by default into a Docker-managed volume, and exposes the OpenAI-compatible API on `http://localhost:11434/v1`. Use it with `config/index.json` copied from `examples/simulations/qwen3-local.example.json`. For the 8B model, run `pnpm qwen:dev:8b` and use a config with `modelName: "qwen3:8b"`.
+The script starts `ollama/ollama` from the portable base compose file, pulls `qwen3:1.7b` by default into a Docker-managed volume, and exposes the OpenAI-compatible API on `http://localhost:11434/v1`. Use it with `config/index.json` copied from `examples/simulations/qwen3-local.example.json`. For the 8B model, run `pnpm qwen:dev:8b` and use a config with `modelName: "qwen3:8b"`. NVIDIA machines can opt into GPU passthrough with `-f docker/qwen3/qwen3.gpu.compose.yml` (see the root README).
 
 ## Current Open Questions
 
