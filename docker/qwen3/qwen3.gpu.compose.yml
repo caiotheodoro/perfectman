@@ -1,0 +1,19 @@
+# Opt-in GPU passthrough for machines with an NVIDIA driver (typically
+# native Linux). The base qwen3.compose.yml is intentionally portable:
+# Docker Desktop on macOS has no GPU passthrough at all, so a hardcoded
+# NVIDIA reservation made the container fail to start there (#37).
+#
+# Usage:
+#   docker compose -f docker/qwen3/qwen3.compose.yml \
+#                  -f docker/qwen3/qwen3.gpu.compose.yml up -d
+name: perfectman
+
+services:
+  qwen3:
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]

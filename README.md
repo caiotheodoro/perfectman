@@ -51,14 +51,34 @@ This uses `providerType: "mock"` by default — no API key or model needed to se
 
 You don't need a paid API key. Two free local options:
 
-**Local Qwen3 via Ollama** (recommended if you have a GPU, works on CPU too):
+**Native Ollama** (recommended on macOS / Apple Silicon):
+
+Docker Desktop has no GPU passthrough on macOS, and the Docker CPU path is
+dramatically slower (~1.2–1.5 tok/s vs ~40 tok/s native with Metal). Install
+Ollama directly instead — it's free and exposes the same API:
 
 ```bash
-pnpm qwen:dev          # pulls qwen3:1.7b, exposes an OpenAI-compatible API on :11434
-# or: pnpm qwen:dev:8b for the 8B model
+brew install ollama        # or download from https://ollama.com
+ollama pull qwen3:1.7b
+ollama serve               # API on :11434
 ```
 
 Then point `config/index.json` at `examples/simulations/qwen3-local.example.json`.
+
+**Local Qwen3 via Docker** (Linux machines with an NVIDIA GPU):
+
+```bash
+pnpm qwen:dev              # pulls qwen3:1.7b, portable CPU-safe default
+# or: pnpm qwen:dev:8b for the 8B model
+```
+
+On a machine with an NVIDIA driver, opt into GPU passthrough with the
+override file:
+
+```bash
+docker compose -f docker/qwen3/qwen3.compose.yml \
+               -f docker/qwen3/qwen3.gpu.compose.yml up -d
+```
 
 **FreeLLMAPI** (unified proxy for aggregating free-tier provider keys):
 
