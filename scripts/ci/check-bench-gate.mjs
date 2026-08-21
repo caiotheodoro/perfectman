@@ -10,13 +10,17 @@
  * 100%; rule-judge axis scores are advisory until the judge passes its
  * kappa calibration gate, so they are NOT gated here.
  *
- * Usage: node scripts/ci/check-bench-gate.mjs <bench-report.json>
+ * Usage: node scripts/ci/check-bench-gate.mjs <bench-report.json> [expectedIdsCsv]
+ *
+ * When expectedIdsCsv is provided, every id must appear in the report's
+ * perScenario list — protects against silent coverage shrink when a
+ * scenario id gets renamed out of the requested slice.
  */
 import { readFileSync } from "node:fs";
 
 const path = process.argv[2];
 if (!path) {
-  console.error("usage: node scripts/ci/check-bench-gate.mjs <bench-report.json>");
+  console.error("usage: node scripts/ci/check-bench-gate.mjs <bench-report.json> [expectedIdsCsv]");
   process.exit(2);
 }
 
@@ -42,6 +46,19 @@ if (report.scenariosFailed > 0) {
 }
 if (report.signalPassRate < 1) {
   failures.push(`signal pass rate ${(report.signalPassRate * 100).toFixed(1)}% < 100%`);
+}
+
+const expectedIds = (process.argv[3] ?? "").split(",").map(s => s.trim()).filter(Boolean);
+if (expectedIds.length > 0) {
+  // Variant-expanded ids carry a __vN suffix (e.g. motive_gossip__v2);
+  // match on the base id before the suffix.
+  const seen = new Set(
+    (report.perScenario ?? []).map(s => s.id.split("__")[0]),
+  );
+  const missing = expectedIds.filter(id => !seen.has(id));
+  if (missing.length > 0) {
+    failures.push(`expected scenario id(s) missing from the run: ${missing.join(", ")}`);
+  }
 }
 
 console.log(

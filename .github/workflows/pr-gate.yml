@@ -52,7 +52,7 @@ jobs:
         run: pnpm --filter @perfectman/eval bench --mode mock --judge rule --scenarios "$GOLDEN_SCENARIOS" --out "$GITHUB_WORKSPACE/out/bench-pr-gate.json"
 
       - name: Assert bench gate
-        run: node scripts/ci/check-bench-gate.mjs out/bench-pr-gate.json
+        run: node scripts/ci/check-bench-gate.mjs out/bench-pr-gate.json "$GOLDEN_SCENARIOS"
 
       - name: Upload bench report
         if: always() && hashFiles('out/bench-pr-gate.json') != ''
