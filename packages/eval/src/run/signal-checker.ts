@@ -20,6 +20,51 @@ export function checkExpectedSignals(
   return scenario.expectedSignals.map(sig => checkSignal(sig, events, states, llmCallsFor));
 }
 
+export type SignalsByKindEntry = {
+  passed: number;
+  total: number;
+  passRate: number;
+  failExamples: string[];
+};
+
+const MAX_FAIL_EXAMPLES = 3;
+
+/**
+ * Rolls SignalOutcome[] up per signal kind ("emotion_rises",
+ * "event_committed", …). Outcomes carry the full signal JSON-stringified in
+ * `signal`, so the kind is recovered by parsing it; anything unparsable
+ * lands under "unknown" rather than being dropped.
+ */
+export function aggregateSignalsByKind(
+  results: readonly SignalOutcome[],
+): Record<string, SignalsByKindEntry> {
+  const agg: Record<string, { passed: number; total: number; failExamples: string[] }> = {};
+  for (const outcome of results) {
+    let kind = "unknown";
+    try {
+      const parsed = JSON.parse(outcome.signal) as { kind?: unknown };
+      if (typeof parsed.kind === "string") kind = parsed.kind;
+    } catch {
+      // keep "unknown"
+    }
+    agg[kind] ??= { passed: 0, total: 0, failExamples: [] };
+    agg[kind]!.total++;
+    if (outcome.passed) {
+      agg[kind]!.passed++;
+    } else if (agg[kind]!.failExamples.length < MAX_FAIL_EXAMPLES) {
+      agg[kind]!.failExamples.push(outcome.detail);
+    }
+  }
+  return Object.fromEntries(
+    Object.entries(agg).map(([kind, a]) => [kind, {
+      passed: a.passed,
+      total: a.total,
+      passRate: a.passed / a.total,
+      failExamples: a.failExamples,
+    }]),
+  );
+}
+
 function checkSignal(
   sig: ExpectedSignal,
   events: readonly CommittedEvent[],
