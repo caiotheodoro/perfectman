@@ -46,14 +46,16 @@ jobs:
       # the golden-labeled scenario subset. No model, no API key. Signals
       # must hold at 100%; rule-judge axis scores stay advisory until the
       # judge clears its kappa >= 0.7 calibration gate.
+      # NOTE: pnpm --filter runs inside packages/eval, so --out gets an
+      # absolute workspace path to keep the later steps root-relative.
       - name: Golden-scenario bench (mock + rule judge)
-        run: pnpm --filter @perfectman/eval bench --mode mock --judge rule --scenarios "$GOLDEN_SCENARIOS" --out out/bench-pr-gate.json
+        run: pnpm --filter @perfectman/eval bench --mode mock --judge rule --scenarios "$GOLDEN_SCENARIOS" --out "$GITHUB_WORKSPACE/out/bench-pr-gate.json"
 
       - name: Assert bench gate
         run: node scripts/ci/check-bench-gate.mjs out/bench-pr-gate.json
 
       - name: Upload bench report
-        if: always()
+        if: always() && hashFiles('out/bench-pr-gate.json') != ''
         uses: actions/upload-artifact@v4
         with:
           name: bench-pr-gate

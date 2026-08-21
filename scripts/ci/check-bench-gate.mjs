@@ -41,14 +41,7 @@ if (report.scenariosFailed > 0) {
   failures.push(`${report.scenariosFailed} scenario run(s) failed:\n    ${failed.join("\n    ")}`);
 }
 if (report.signalPassRate < 1) {
-  const worst = Object.entries(report.signalsByKind ?? {})
-    .sort((a, b) => a[1].passRate - b[1].passRate)
-    .slice(0, 5)
-    .map(([kind, a]) => `${kind} ${(a.passRate * 100).toFixed(0)}% (${a.passed}/${a.total})`);
-  failures.push(
-    `signal pass rate ${(report.signalPassRate * 100).toFixed(1)}% < 100%` +
-      (worst.length ? `\n  worst kinds:\n    ${worst.join("\n    ")}` : ""),
-  );
+  failures.push(`signal pass rate ${(report.signalPassRate * 100).toFixed(1)}% < 100%`);
 }
 
 console.log(
