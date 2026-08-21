@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { ACTION_INTENT_JSON_SCHEMA } from "../intent/intent-json-schema.js";
-import type { ActionIntent } from "./intent.types.js";
+import type { ActionIntent } from "../intent/intent.types.js";
 
 describe("ACTION_INTENT_JSON_SCHEMA", () => {
   const schema = ACTION_INTENT_JSON_SCHEMA as {

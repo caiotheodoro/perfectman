@@ -1033,6 +1033,10 @@ function parseLlmConfig(input: unknown, path: string): LlmConfig {
       llm["responseFormatJson"],
       `${path}.responseFormatJson`,
     ),
+    constrainedDecoding: optionalBoolean(
+      llm["constrainedDecoding"],
+      `${path}.constrainedDecoding`,
+    ),
     extraBody: parseExtraBody(llm["extraBody"], providerType, path),
   };
 }

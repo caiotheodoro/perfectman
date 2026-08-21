@@ -9,6 +9,8 @@ import { ActionIntentSchema } from "./intent.schema.js";
  * Consumed by OllamaProvider as a structured-output `format` target, so the
  * model can only emit tokens that fit the intent shape at decoding time.
  */
-export const ACTION_INTENT_JSON_SCHEMA = zodToJsonSchema(ActionIntentSchema, {
-  $refStrategy: "none",
-}) as Record<string, unknown>;
+export const ACTION_INTENT_JSON_SCHEMA: Readonly<Record<string, unknown>> = Object.freeze(
+  zodToJsonSchema(ActionIntentSchema, {
+    $refStrategy: "none",
+  }) as Record<string, unknown>,
+);

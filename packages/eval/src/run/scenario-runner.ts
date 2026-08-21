@@ -312,6 +312,7 @@ export function localLlmConfig(pack: import("@perfectman/shared").PersonaPack | 
     timeoutMs: 120000,
     retryCount: 2,
     responseFormatJson: true,
+    constrainedDecoding: !isDeepseek,
     extraBody: isDeepseek
       ? {
           seed: benchSeed(),

@@ -88,9 +88,10 @@ export class OllamaProvider implements LlmProvider {
 
     if (this.config.responseFormatJson) {
       // Constrained decoding: when enabled, the schema itself becomes the
-      // format target (Ollama >= 0.5) so shape-invalid JSON is mechanically
-      // impossible — defense in depth on top of IntentParser's repair
-      // ladder, which stays in place for non-constrained paths.
+      // format target (Ollama >= 0.5) so STRUCTURALLY invalid JSON becomes
+      // impossible at decode time. Note Ollama's grammar enforces
+      // shape/types/enums but not value constraints (minLength, minimum) —
+      // IntentParser's repair ladder remains the backstop everywhere.
       body.format = this.config.constrainedDecoding
         ? ACTION_INTENT_JSON_SCHEMA
         : "json";
