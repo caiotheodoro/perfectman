@@ -43,6 +43,10 @@ function judgeConfig(): LlmJudgeConfig {
 
 export async function main(): Promise<void> {
   const judgeMode = (argValue("--judge") as "rule" | "llm") ?? "rule";
+  if (judgeMode !== "rule" && judgeMode !== "llm") {
+    console.error(`unknown --judge value: ${judgeMode} (expected rule|llm)`);
+    process.exit(2);
+  }
   const out = argValue("--out");
 
   const judgeScores = new Map<string, import("../judge/judge.js").AxisScores>();
@@ -77,7 +81,11 @@ export async function main(): Promise<void> {
 
   const report = {
     version: "calibration-report-v1" as const,
-    mode: judgeMode === "llm" ? ("local" as const) : ("mock" as const),
+    // Generation is always the mock provider here; `judge` records what
+    // scored the transcripts. Golden labels were authored against the mock
+    // baseline, so LLM-judged calibration reads mock transcripts too.
+    mode: "mock" as const,
+    judge: judgeMode,
     generatedAt: new Date().toISOString(),
     transcriptLength: "full",
     calibration: calibrateJudge(judgeScores, GOLDEN_LABELS, 0.7),
@@ -91,7 +99,7 @@ export async function main(): Promise<void> {
   }
 
   const cal = report.calibration;
-  console.log(`\n=== Calibration (${report.mode}, full-length transcripts) ===`);
+  console.log(`\n=== Calibration (mock transcripts, ${report.judge} judge, full length) ===`);
   console.log(`kappa ${cal.kappa} (target ${cal.targetKappa}) ${cal.passed ? "PASS" : "FAIL"} | alpha ${cal.alpha} | n=${cal.nScenes}`);
   for (const [axis, k] of Object.entries(cal.perAxisKappa)) {
     console.log(`  ${axis.padEnd(26)} ${k.toFixed(3)}`);
