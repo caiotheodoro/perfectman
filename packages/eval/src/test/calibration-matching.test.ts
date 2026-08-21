@@ -15,15 +15,21 @@ describe("baseScenarioId", () => {
 });
 
 describe("calibration matching (#24)", () => {
-  const golden = GOLDEN_LABELS[0]!;
-  // Identical rater: same scores the golden set holds.
-  const axes = { ...golden.axes };
+  const [g0, g1] = GOLDEN_LABELS;
+  // Identical rater: same scores the golden set holds, per scene.
+  // (calibrateJudge requires >=2 matched pairs per axis to compute kappa,
+  // so a single scene would be vacuous by construction.)
+  const judgeScores = new Map([
+    [g0!.scenarioId, { ...g0!.axes }],
+    [g1!.scenarioId, { ...g1!.axes }],
+  ]);
 
   it("matches judge scores keyed by base scenario id", () => {
-    const judgeScores = new Map([[golden.scenarioId, axes]]);
-    const report = calibrateJudge(judgeScores, [golden], 0.7);
+    const report = calibrateJudge(judgeScores, [g0!, g1!], 0.7);
+    expect(report.nScenes).toBe(2);
     // Identical raters on every matched axis -> kappa 1.
     expect(report.kappa).toBeGreaterThan(0.99);
+    expect(report.disagreements).toEqual([]);
   });
 
   it("reports kappa 0 when nothing matches (vacuous case stays detectable)", () => {
