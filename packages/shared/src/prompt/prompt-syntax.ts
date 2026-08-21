@@ -29,8 +29,9 @@ export class PromptSection {
 
   /**
    * Renders a compact list as one block: `Title:` then `- item` per element.
-   * Pass no title for a bare bullet list. Items that are already multi-line are
-   * emitted verbatim (no re-prefixing).
+   * Pass no title for a bare bullet list. Items that already begin with `- `
+   * are emitted verbatim; any other item (including the first line of a
+   * multi-line string) is prefixed with `- `.
    */
   list(title: string | undefined, items: readonly string[]): this {
     const lines: string[] = [];

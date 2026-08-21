@@ -219,10 +219,11 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       llmBudget.recordUsage(makeUsage(retryUsage));
     }
     // Aggregated view for the returned output (summed across main+retry).
+    const totalLatencyMs = providerResult.latencyMs + (retryUsage?.latencyMs ?? 0);
     const usageRecord = makeUsage({
       inputTokens: totalInputTokens,
       outputTokens: totalOutputTokens,
-      latencyMs: providerResult.latencyMs,
+      latencyMs: totalLatencyMs,
       promptVersion: prompt.version,
     });
 
@@ -239,7 +240,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         requestedModel: providerResult.requestedModel || llmConfig.modelName,
         routedModel: providerResult.routedModel ?? null,
         fallbackAttempts: providerResult.fallbackAttempts ?? null,
-        latencyMs: providerResult.latencyMs,
+        latencyMs: totalLatencyMs,
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
       },

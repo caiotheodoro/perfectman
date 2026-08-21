@@ -175,6 +175,8 @@ describe("ActionIntentStep", () => {
     // Both calls' tokens are summed in budget + telemetry alike.
     expect(outcome.value.llmUsage?.inputTokens).toBe(110);
     expect(outcome.value.llmUsage?.outputTokens).toBe(25);
+    // latency is also aggregated across main+retry
+    expect(outcome.value.llmUsage?.latencyMs).toBe(10);
     const telemetry = outcome.value.operatorEvents.find((e) => e.type === "pulse_metrics");
     expect(telemetry?.data?.inputTokens).toBe(110);
     expect(telemetry?.data?.outputTokens).toBe(25);
