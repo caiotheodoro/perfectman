@@ -12,7 +12,7 @@ The architecture explicitly avoids persona as one giant prompt only; see `docs/c
 | --- | --- | --- |
 | `action_intent` | Builds the existing full persona prompt for choosing an action intent and optional visible chat text. | Active via `ActionIntentPromptBuilder` |
 | `social_interpretation` | Reserved for interpreting tone, ambiguity, sarcasm, passive aggression, and plausible motive. | Reserved; no builder yet |
-| `background_reflection` | Reserved for relationship memory, emotional residue, and pending-intention consolidation. | Reserved; no builder yet |
+| `background_reflection` | Reserved for relationship memory, emotional residue, and pending-intention consolidation. | Builder implemented (`BackgroundReflectionPromptBuilder`); not yet scheduled by the runtime — wiring a trigger cadence is a separate integration decision |
 | `spectator_recap` | Reserved for narrator-facing recap generation. | Reserved; no builder yet |
 
 Reserved values exist to make field gating explicit. They must not be wired into runtime LLM calls or passed to the current `PromptBuilder.build()` until their prompt builders and tests exist.
