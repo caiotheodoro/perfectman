@@ -35,6 +35,7 @@ export * from "./memory/memory.types.js";
 // Intent
 export * from "./intent/intent.types.js";
 export * from "./intent/intent.schema.js";
+export * from "./intent/intent-json-schema.js";
 
 // Decision
 export * from "./decision/decision.types.js";

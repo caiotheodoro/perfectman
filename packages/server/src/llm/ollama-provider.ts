@@ -1,3 +1,4 @@
+import { ACTION_INTENT_JSON_SCHEMA } from "@perfectman/shared";
 import type { AgentRuntimeInput } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt } from "../agent/agent-runtime.types.js";
 import type { LlmConfig } from "./llm-config.js";
@@ -86,7 +87,13 @@ export class OllamaProvider implements LlmProvider {
     }
 
     if (this.config.responseFormatJson) {
-      body.format = "json";
+      // Constrained decoding: when enabled, the schema itself becomes the
+      // format target (Ollama >= 0.5) so shape-invalid JSON is mechanically
+      // impossible — defense in depth on top of IntentParser's repair
+      // ladder, which stays in place for non-constrained paths.
+      body.format = this.config.constrainedDecoding
+        ? ACTION_INTENT_JSON_SCHEMA
+        : "json";
     }
 
     let attempts = 0;

@@ -188,6 +188,36 @@ describe("OllamaProvider", () => {
     expect(body.format).toBe("json");
   });
 
+  it("sends the ActionIntent schema as format under constrained decoding", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(successResponse());
+    vi.stubGlobal("fetch", fetchSpy);
+
+    await new OllamaProvider({
+      ...baseConfig,
+      responseFormatJson: true,
+      constrainedDecoding: true,
+    }).generateIntent(baseInput, context, prompt);
+    const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
+
+    // The format target is the derived schema object, not the bare "json".
+    expect(typeof body.format).toBe("object");
+    expect(body.format.$schema).toContain("json-schema");
+    expect(body.format.properties.intentType.enum).toContain("send_message");
+    expect(body.format.properties.visibleContent.type).toBe("string");
+  });
+
+  it("ignores constrainedDecoding when responseFormatJson is off", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(successResponse());
+    vi.stubGlobal("fetch", fetchSpy);
+
+    await new OllamaProvider({
+      ...baseConfig,
+      constrainedDecoding: true,
+    }).generateIntent(baseInput, context, prompt);
+    const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
+    expect(body.format).toBeUndefined();
+  });
+
   it("returns the expected result structure on success", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(successResponse()));
 
