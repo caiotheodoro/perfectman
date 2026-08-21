@@ -73,12 +73,27 @@ turn is scored against the turn before it (see `packages/eval/src/judge/judge.ts
 1. **Probe bands** are v1 seeds from the substrate research room; perfectman's
    multi-agent pulse scheduler shifts the meaning of interruption/lurking.
    Human-calibrated bands (research S1 discipline) replace them next.
-2. **Judge calibration kappa = 0** against the authored golden labels: the
-   rule judge is v0. The golden set needs human review (Phase 2.4) and the
-   LLM judge needs a kappa ≥ 0.7 gate before its scores gate changes.
-3. **The local model** has not yet produced a benchmark run — the mock
-   baseline is the floor; the local uncensored model is the first real data
-   point (`--mode local --judge llm`).
+2. **Judge calibration fails against the authored golden labels** — the first
+   real LLM-judge calibration run measured kappa = −0.116 (target ≥ 0.7,
+   n=8 overlapping scenes; see #24). A known confound: that run scored
+   transcripts truncated at 8 pulses while the golden labels assume each
+   scenario's full pulse count. The rule judge is v0 and the golden set
+   still needs human review (Phase 2.4); the LLM judge must clear the
+   kappa gate before its scores gate changes.
+3. **Real local-model data now exists.** The run-preventing blockers — Qwen3
+   `<think>` blocks eating the JSON response and judge parse failures — are
+   fixed (#19), plus silently dropped Ollama sampling params (#21), and
+   benchmark sweeps have been run against local models repeatedly (PRs
+   #19–#22). Highlights from the PR #22 post-fix sweep: zero literal
+   duplicate messages committed (previously agents repeated verbatim for
+   5–10 straight pulses), `narrative_cohesion` mean 3.00 → 3.80,
+   `memory_continuity` 2.93 → 3.67, aggregate signal pass rate 70.8%
+   (from a 67.7% baseline) across the 16-scenario slice — with no
+   per-signal-kind breakdown yet (#42). Committed offline evidence lives in
+   `docs/eval/evidence/` (mock + deepseek-chat runs). These numbers come
+   from single local runs without a pinned sampling seed (#45) and the same
+   model family acting as both generator and judge (#28), so treat them as
+   directional until both gaps close.
 
 ## Iteration loop
 
