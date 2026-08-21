@@ -246,35 +246,41 @@ export async function llmJudge(
   events: readonly CommittedEvent[],
   config: LlmJudgeConfig,
 ): Promise<AxisScores> {
-  let raw = await callJudge(scenario, events, config);
+  const rawAttempts: string[] = [];
+  const axisIds = scenario.rubric.axes.map(a => a.id);
 
+  rawAttempts.push(await callJudge(scenario, events, config));
   try {
-    return parseAxes(raw, scenario);
-  } catch (firstError) {
+    return parseAxes(rawAttempts[0]!, scenario);
+  } catch {
     // One strict retry covers judges that burned their budget on reasoning
     // or ignored the JSON instruction on the first pass.
-    try {
-      raw = await callJudge(scenario, events, config, RETRY_SYSTEM_SUFFIX);
-      return parseAxes(raw, scenario);
-    } catch {
-      // Fall through to prose salvage — a judge that answered in a scored
-      // critique still emitted usable signal.
-    }
-    void firstError;
+  }
+  try {
+    rawAttempts.push(await callJudge(scenario, events, config, RETRY_SYSTEM_SUFFIX));
+    return parseAxes(rawAttempts[1]!, scenario);
+  } catch {
+    // Fall through to prose salvage — a judge that answered in a scored
+    // critique still emitted usable signal. Try every response we hold:
+    // pass 2 may be truncated garbage while pass 1 was scored prose.
   }
 
-  const salvaged = salvageAxisScoresFromProse(raw, scenario.rubric.axes.map(a => a.id));
-  if (!salvaged) {
-    throw new Error(
-      `LLM judge returned unparseable response after retry (raw length ${raw.length}): ${raw.slice(0, 200)}`,
-    );
+  for (const raw of rawAttempts) {
+    const salvaged = salvageAxisScoresFromProse(raw, axisIds);
+    if (salvaged) {
+      const axes: AxisScores = {};
+      for (const axis of scenario.rubric.axes) {
+        const v = salvaged[axis.id];
+        axes[axis.id] = typeof v === "number" ? clampScore(v) : 3;
+      }
+      return axes;
+    }
   }
-  const axes: AxisScores = {};
-  for (const axis of scenario.rubric.axes) {
-    const v = salvaged[axis.id];
-    axes[axis.id] = typeof v === "number" ? clampScore(v) : 3;
-  }
-  return axes;
+
+  const lastRaw = rawAttempts[rawAttempts.length - 1] ?? "";
+  throw new Error(
+    `LLM judge returned unparseable response after retry (raw length ${lastRaw.length}): ${lastRaw.slice(0, 200)}`,
+  );
 }
 
 // ── Per-turn narrative-cohesion eval ─────────────────────────────────────────

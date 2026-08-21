@@ -6,17 +6,14 @@ const scenario = getScenario("v1_casual_chat")!;
 const axisIds = scenario.rubric.axes.map(a => a.id);
 
 describe("salvageAxisScoresFromProse", () => {
-  it("recovers scores from a markdown prose critique", () => {
-    const raw = `**Roleplay Quality Score Summary**
-
-1. Character Development (2/5) — the agents barely evolved.
-2. ${axisIds[0]} (4/5): stayed in persona.
-Overall ${axisIds[1]}: 3 out of 5.`;
-    const salvaged = salvageAxisScoresFromProse(raw, axisIds);
-    // Only a couple of axes present → below the >= half threshold → null.
-    if (axisIds.length > 4) {
-      expect(salvaged).toBeNull();
-    }
+  it("rejects salvage when fewer than half the axes are recovered", () => {
+    // Strictly below the >= half threshold for any rubric size.
+    const fewCount = Math.max(1, Math.floor(axisIds.length / 2) - 1);
+    const lines = axisIds
+      .slice(0, fewCount)
+      .map((id, i) => `**${id}**: ${(i % 5) + 1}/5 — some note`);
+    const raw = `Roleplay Quality Score Summary\n\n${lines.join("\n")}`;
+    expect(salvageAxisScoresFromProse(raw, axisIds)).toBeNull();
   });
 
   it("accepts when at least half the axes are recovered", () => {
@@ -37,8 +34,10 @@ Overall ${axisIds[1]}: 3 out of 5.`;
     expect(salvageAxisScoresFromProse("a lovely poem about the weather", axisIds)).toBeNull();
   });
 
-  it("ignores scores outside the 1-5 range", () => {
-    const lines = axisIds.map(id => `${id}: 42`).join("\n");
+  it("ignores matched numbers outside the 1-5 range", () => {
+    // "6" matches the single-digit capture but must be rejected by the
+    // range guard (unlike "42", which the regex never captures at all).
+    const lines = axisIds.map(id => `${id}: 6`).join("\n");
     expect(salvageAxisScoresFromProse(lines, axisIds)).toBeNull();
   });
 });
@@ -49,13 +48,15 @@ describe("llmJudge parse-failure defenses", () => {
     vi.restoreAllMocks();
   });
 
-  function stubResponses(contents: unknown[]): () => number {
+  function stubResponses(contents: unknown[]): { calls: () => number; bodies: () => string[] } {
     let call = 0;
+    const bodies: string[] = [];
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockImplementation(() => {
+      vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
         const content = contents[Math.min(call, contents.length - 1)];
         call++;
+        bodies.push(init?.body ?? "");
         return Promise.resolve({
           ok: true,
           status: 200,
@@ -65,7 +66,7 @@ describe("llmJudge parse-failure defenses", () => {
         });
       }),
     );
-    return () => call;
+    return { calls: () => call, bodies: () => bodies };
   }
 
   const config = { baseUrl: "http://localhost:11434/v1", model: "test-model" };
@@ -78,12 +79,13 @@ describe("llmJudge parse-failure defenses", () => {
   });
 
   it("retries with a stricter instruction after unparseable output", async () => {
-    const calls = stubResponses([
+    const { calls, bodies } = stubResponses([
       "<think>I reasoned forever but never emitted JSON",
       '{"axes": {"in_character": 2}}',
     ]);
     const axes = await llmJudge(scenario, [], config);
     expect(calls()).toBe(2);
+    expect(bodies()[1]!).toContain("not parseable JSON");
     expect(axes["in_character"]).toBe(2);
   });
 
