@@ -18,7 +18,7 @@ function memory(overrides: Partial<Memory> = {}): Memory {
     confidence: 0.8,
     unresolved: true,
     createdAt: 1,
-    lastReinforcedAt: null,
+    lastReinforcedAt: Date.now(),
     ...overrides,
   };
 }
@@ -128,8 +128,12 @@ describe("BackgroundReflectionPromptBuilder", () => {
   });
 
   it("renders unresolved memories and current mood into the user prompt", () => {
-    const built = BackgroundReflectionPromptBuilder.build(input([memory()]), profile);
-    expect(built.user).toContain("bruno me ignorou de propósito (unresolved)");
+    const built = BackgroundReflectionPromptBuilder.build(
+      input([memory(), memory({ id: "mem-2", summary: "resolved thing", unresolved: false })]),
+      profile,
+    );
+    expect(built.user).toContain("bruno me ignorou de propósito");
+    expect(built.user).not.toContain("resolved thing");
     expect(built.user).toContain("You feel tense and watched");
   });
 

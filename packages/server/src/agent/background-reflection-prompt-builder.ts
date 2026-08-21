@@ -25,12 +25,12 @@ export class BackgroundReflectionPromptBuilder {
       .join("\n\n");
 
     const user = [
-      "### CONTEXTO DO MOMENTO",
+      "### CURRENT MOMENT",
       this.renderRecentEvents(packet.visibleContextEvents),
       this.renderUnresolvedMemories(packet.relevantMemories),
-      `- Estado emocional agora: ${packet.translatedEmotionalState.moodDescription}`,
+      `- Current emotional state: ${packet.translatedEmotionalState.moodDescription}`,
       "",
-      "Consolide o que o momento deixou para trás. Responda ONLY com o JSON object do contrato.",
+      "Consolidate what this moment left behind. Respond ONLY with the JSON object from the contract.",
     ].join("\n");
 
     const inputTokensEstimate = Math.ceil((system.length + user.length) / 4);
@@ -92,9 +92,9 @@ Rules:
   }
 
   private static renderUnresolvedMemories(memories: readonly Memory[]): string {
-    const unresolved = memories.filter((m) => m.summary.length > 0);
+    const unresolved = memories.filter((m) => m.unresolved && m.summary.length > 0);
     if (unresolved.length === 0) return "Unresolved memories: (none carried into this scene)";
-    const lines = unresolved.map((m) => `- ${m.summary}${m.unresolved ? " (unresolved)" : ""}`);
+    const lines = unresolved.map((m) => `- ${m.summary}`);
     return `Unresolved memories still on your mind:\n${lines.join("\n")}`;
   }
 }
