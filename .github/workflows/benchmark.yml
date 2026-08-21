@@ -1,0 +1,72 @@
+name: Benchmark
+
+on:
+  schedule:
+    # Weekly, Mondays 03:00 UTC — trend tracking, not a merge gate.
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      judge:
+        description: "Judge backend. 'rule' is fully offline and works on hosted runners. 'llm' requires a runner with model servers + keys configured."
+        required: false
+        default: rule
+        type: choice
+        options:
+          - rule
+          - llm
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Workspace packages resolve each other through dist/ — build before gates.
+      - name: Build packages
+        run: pnpm -r build
+
+      - name: Typecheck (lint)
+        run: pnpm lint
+
+      - name: Unit + hygiene tests
+        run: pnpm test:all
+
+      # Full deterministic suite: all scenarios through variant rotation.
+      # The LLM-judged deep run is an explicit opt-in for runners that have
+      # model access; hosted CI stays offline by design.
+      - name: Full mock bench (rule judge)
+        if: ${{ github.event.inputs.judge != 'llm' }}
+        run: pnpm --filter @perfectman/eval bench --mode mock --judge rule --out "$GITHUB_WORKSPACE/out/bench-full.json"
+
+      - name: Assert signals held at 100%
+        if: ${{ github.event.inputs.judge != 'llm' }}
+        run: node scripts/ci/check-bench-gate.mjs out/bench-full.json
+
+      # Opt-in deep run (self-hosted runner with models configured via env).
+      - name: Deep bench (LLM judge)
+        if: ${{ github.event.inputs.judge == 'llm' }}
+        run: pnpm --filter @perfectman/eval bench --mode local --judge llm --out "$GITHUB_WORKSPACE/out/bench-full.json"
+
+      - name: Upload report
+        if: always() && hashFiles('out/bench-full.json') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-${{ github.run_id }}
+          path: out/bench-full.json
