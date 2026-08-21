@@ -1,17 +1,82 @@
 import { PromptSection, modelIntentPacketFieldContract, type AgentRuntimeInput, type CommittedEvent } from "@perfectman/shared";
-import type { PersonaPromptProfile, ScenarioContextBlock } from "./persona-prompt-profile.js";
+import { GENERIC_PROMPT_PROFILE, type PersonaPromptProfile, type ScenarioContextBlock } from "./persona-prompt-profile.js";
 import type { BuiltPrompt } from "./agent-runtime.types.js";
 import { promptVersionHash } from "./prompt-version.js";
 
 /**
- * Identifies the prompt's structure (sections, containers, headings, static
- * prose) independent of the per-render content that fills it. `version` below
- * is a content hash and changes on every render (event transcript, mood,
- * memories differ per pulse), so it can't answer "did the template change
- * between these two runs?" — bump this manually whenever the structure below
- * changes; leave it alone for content-only changes.
+ * Fixed placeholder input used only to compute `templateVersion` below —
+ * never shown to a model. Every per-pulse field takes its simplest branch
+ * (no triggering event, empty lists) so the render this produces is stable
+ * across process runs and only ever changes when the builder's own logic does.
  */
-const TEMPLATE_VERSION = "action-intent-hybrid-v1";
+const CANONICAL_TEMPLATE_VERSION_INPUT: AgentRuntimeInput = {
+  simulationId: "template-version",
+  agentId: "template-version",
+  personaConfig: {
+    id: "template-version",
+    name: "Template Version",
+    archetype: "generic",
+    writingStyle: "neutral",
+    styleExamples: [],
+    baselineValence: 0,
+    baselineArousal: 0,
+    baselineStability: 0.5,
+    baselineEnergy: 0.5,
+    emotionalReactivity: 1,
+    moodInertia: 0.5,
+    maxMoodRotation: 0.5,
+    energyRegen: 0.05,
+    exclusionSensitivity: 1,
+    praiseSensitivity: 1,
+    conflictSensitivity: 1,
+    boredomSensitivity: 1,
+    intimacySensitivity: 1,
+    socialSensitivities: {},
+  },
+  perceptionPacket: {
+    agentId: "template-version",
+    triggeringEvent: null,
+    visibleContextEvents: [],
+    ownRecentUtterances: [],
+    involvedPeople: [],
+    relevantChannels: [],
+    relevantMemories: [],
+    translatedEmotionalState: {
+      moodDescription: "",
+      socialContext: "",
+      relationalFlavors: [],
+      pressureDescriptions: [],
+      inhibitionDescriptions: [],
+    },
+    availableActions: [],
+  },
+  emotionalState: {
+    coreMood: {
+      valence: 0,
+      arousal: 0,
+      stability: 0.5,
+      energy: 0.5,
+      circumplexAngle: 0,
+      circumplexRadius: 0,
+      momentumValence: 0,
+      momentumArousal: 0,
+    },
+    socialEmotions: {
+      jealousy: 0, envy: 0, humiliation: 0, pride: 0, shame: 0,
+      affection: 0, resentment: 0, suspicion: 0, admiration: 0,
+      contempt: 0, neediness: 0, socialAnxiety: 0, fearOfExclusion: 0,
+      desireForStatus: 0, desireForIntimacy: 0,
+    },
+    relationalStates: new Map(),
+  },
+  activeMotivations: [],
+  activePressures: [],
+  activeInhibitions: [],
+  relevantMemories: [],
+  availableActions: [],
+  budgetPriority: "normal",
+  triggeringReason: "cold_start",
+};
 
 /**
  * Builds the action-intent prompt in the "full hybrid, precision-first"
@@ -21,6 +86,19 @@ const TEMPLATE_VERSION = "action-intent-hybrid-v1";
  */
 export class ActionIntentPromptBuilder {
   static build(input: AgentRuntimeInput, profile: PersonaPromptProfile): BuiltPrompt {
+    const { systemPrompt, userPrompt } = this.render(input, profile);
+    const totalChars = systemPrompt.length + userPrompt.length;
+    return {
+      system: systemPrompt,
+      user: userPrompt,
+      inputTokensEstimate: Math.ceil(totalChars / 4),
+      purpose: "action_intent",
+      version: promptVersionHash([systemPrompt, userPrompt]),
+      templateVersion: this.templateVersion(),
+    };
+  }
+
+  private static render(input: AgentRuntimeInput, profile: PersonaPromptProfile): { systemPrompt: string; userPrompt: string } {
     const { perceptionPacket } = input;
     const { translatedEmotionalState } = perceptionPacket;
 
@@ -42,15 +120,28 @@ export class ActionIntentPromptBuilder {
       .container("decision", (s) => this.renderDecision(s, input));
     const userPrompt = user.toString();
 
-    const totalChars = systemPrompt.length + userPrompt.length;
-    return {
-      system: systemPrompt,
-      user: userPrompt,
-      inputTokensEstimate: Math.ceil(totalChars / 4),
-      purpose: "action_intent",
-      version: promptVersionHash([systemPrompt, userPrompt]),
-      templateVersion: TEMPLATE_VERSION,
-    };
+    return { systemPrompt, userPrompt };
+  }
+
+  private static cachedTemplateVersion: string | undefined;
+
+  /**
+   * Content hash of a render against a fixed canonical input, computed once
+   * and cached. `version` above hashes the real per-pulse render, so it changes
+   * on every call and can't say whether the *template* (as opposed to the
+   * event transcript, mood, memories, etc.) changed between two runs — this
+   * does, by holding the input fixed and only ever changing when `render`
+   * itself does. The canonical input always takes the same branches (e.g. no
+   * `<no_repeat>` container, since `ownRecentUtterances` is empty), so those
+   * per-pulse-conditional branches aren't reflected here even when real
+   * renders use them — this identifies the template, not full branch coverage.
+   */
+  private static templateVersion(): string {
+    if (this.cachedTemplateVersion === undefined) {
+      const { systemPrompt, userPrompt } = this.render(CANONICAL_TEMPLATE_VERSION_INPUT, GENERIC_PROMPT_PROFILE);
+      this.cachedTemplateVersion = promptVersionHash([systemPrompt, userPrompt]);
+    }
+    return this.cachedTemplateVersion;
   }
 
   private static renderPersona(s: PromptSection, profile: PersonaPromptProfile): void {
