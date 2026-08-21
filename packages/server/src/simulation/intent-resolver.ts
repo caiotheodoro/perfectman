@@ -25,6 +25,20 @@ export type ResolvedIntent = {
   delayUntilPulse?: number;
 };
 
+/**
+ * Engine clamp for model-declared `fallbackIfBlocked`: only low-risk
+ * surfaces are reachable when the primary action is denied. Side-effect-
+ * heavy types (create_channel, invite_agent, write_memory) are excluded —
+ * a denied intent must not become a route to structural changes.
+ */
+const FALLBACK_ALLOWED_TYPES: ReadonlySet<ActionIntent["intentType"]> = new Set([
+  "no_op",
+  "delay_response",
+  "send_message",
+  "reply_to_message",
+  "react",
+]);
+
 type ResolveContext = {
   simulationId: string;
   channelId: string;
@@ -295,10 +309,69 @@ export class IntentResolver {
     private readonly channelRegistry: ChannelRegistry,
   ) {}
 
+  /**
+   * Resolves an intent, honoring a model-declared `fallbackIfBlocked` when
+   * the primary action is denied — with engine clamps:
+   *
+   * - Single level, same pulse. The derived intent gets a fresh id and its
+   *   own `fallbackIfBlocked` cleared, so chains are impossible.
+   * - Allow-list clamp (model proposes, engine approves): only low-risk
+   *   surfaces are reachable as fallbacks — no create_channel / invite_agent
+   *   / write_memory via a denied intent.
+   * - Rate-limit blocks suppress fallback entirely: a denied action must not
+   *   become a route around the gate.
+   * - The primary's `intent_blocked` event is retained in the committed
+   *   events of a successful fallback; the outcome becomes the existing
+   *   "fallback_committed".
+   */
   async resolve(
     intent: ActionIntent,
     ctx: ResolveContext,
   ): Promise<ResolvedIntent> {
+    const primary = await this.resolveInternal(intent, ctx);
+    if (primary.result.outcome !== "blocked") return primary.result;
+    if (primary.rateLimited) return primary.result;
+
+    const fallbackType = intent.fallbackIfBlocked;
+    if (!fallbackType || !FALLBACK_ALLOWED_TYPES.has(fallbackType)) {
+      return primary.result;
+    }
+    if (
+      (fallbackType === "send_message" || fallbackType === "reply_to_message") &&
+      !intent.visibleContent?.trim()
+    ) {
+      // A content-bearing fallback without content would only re-create the
+      // empty-message defect — let the denial stand.
+      return primary.result;
+    }
+
+    const derived: ActionIntent = {
+      ...intent,
+      id: createId(),
+      intentType: fallbackType,
+      fallbackIfBlocked: undefined,
+      preferredDelay: undefined,
+    };
+    const secondary = await this.resolveInternal(derived, ctx);
+    if (
+      secondary.result.outcome !== "committed" &&
+      secondary.result.outcome !== "delayed"
+    ) {
+      return primary.result;
+    }
+
+    return {
+      ...secondary.result,
+      outcome:
+        secondary.result.outcome === "committed" ? "fallback_committed" : secondary.result.outcome,
+      committedEvents: [...primary.result.committedEvents, ...secondary.result.committedEvents],
+    };
+  }
+
+  private async resolveInternal(
+    intent: ActionIntent,
+    ctx: ResolveContext,
+  ): Promise<{ result: ResolvedIntent; rateLimited: boolean }> {
     const validation = validateIntentPure(
       intent,
       ctx.availableActions,
@@ -309,9 +382,8 @@ export class IntentResolver {
     if (!validation.valid) {
       const blockEvent = buildBlockEvent(intent, validation.violations, ctx);
       return {
-        outcome: "blocked",
-        committedEvents: [blockEvent],
-        operatorEvents: [],
+        result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+        rateLimited: false,
       };
     }
 
@@ -319,19 +391,28 @@ export class IntentResolver {
       const isMember = await this.channelRegistry.isMember(intent.actorId, intent.channelTarget);
       if (!isMember && intent.intentType !== "create_channel") {
         const blockEvent = buildBlockEvent(intent, [{ type: "not_member" }], ctx);
-        return { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] };
+        return {
+          result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+          rateLimited: false,
+        };
       }
     }
 
     if (!this.rateLimitGate.allowAction(intent.actorId, intent.intentType)) {
       const blockEvent = buildBlockEvent(intent, [{ type: "rate_limited" }], ctx);
-      return { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] };
+      return {
+        result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+        rateLimited: true,
+      };
     }
 
     if (intent.preferredDelay && intent.preferredDelay > 0) {
       if (!Number.isFinite(ctx.settings.pulseIntervalMs) || ctx.settings.pulseIntervalMs <= 0) {
         const blockEvent = buildBlockEvent(intent, [{ type: "invalid_delay", detail: "pulseIntervalMs must be greater than 0" }], ctx);
-        return { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] };
+        return {
+          result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+          rateLimited: false,
+        };
       }
       const delayPulses = Math.min(
         10_000,
@@ -340,10 +421,13 @@ export class IntentResolver {
       const delayUntilPulse = ctx.pulseIndex + delayPulses;
       const delayEvent = buildDelayEvent(intent, delayUntilPulse, ctx);
       return {
-        outcome: "delayed",
-        committedEvents: [delayEvent],
-        operatorEvents: [],
-        delayUntilPulse,
+        result: {
+          outcome: "delayed",
+          committedEvents: [delayEvent],
+          operatorEvents: [],
+          delayUntilPulse,
+        },
+        rateLimited: false,
       };
     }
 
@@ -385,9 +469,12 @@ export class IntentResolver {
     this.rateLimitGate.recordAction(intent.actorId, intent.intentType);
 
     return {
-      outcome: "committed",
-      committedEvents: [...primaryEvents, ...memoryEvents],
-      operatorEvents: [],
+      result: {
+        outcome: "committed",
+        committedEvents: [...primaryEvents, ...memoryEvents],
+        operatorEvents: [],
+      },
+      rateLimited: false,
     };
   }
 
