@@ -165,18 +165,28 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
       memoryWrites: [{
         type: "episodic",
         subjectAgentIds: [],
-        summary: "fallback happened",
+        summary: "I told bruno everything",
         emotionalTone: "neutral",
-        confidence: 0.5,
+        confidence: 0.9,
         unresolved: false,
       }],
     });
     const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
 
     expect(result.outcome).toBe("fallback_committed");
-    // primary block + derived no_op + derived memory proposal
-    expect(result.committedEvents).toHaveLength(3);
+    // primary block + derived no_op. The denied primary's memory proposal
+    // must NOT commit — it would record a message that never happened.
+    expect(result.committedEvents).toHaveLength(2);
     expect(result.committedEvents.filter(e => e.type === "no_op_recorded")).toHaveLength(1);
+    expect(result.committedEvents.filter(e => e.type === "memory_written")).toHaveLength(0);
+  });
+
+  it("stands by the denial when a react fallback has no target event", async () => {
+    const intent = makeIntent({ fallbackIfBlocked: "react", targetEventId: undefined, emoji: "🔥" });
+    const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
+
+    expect(result.outcome).toBe("blocked");
+    expect(result.committedEvents.map(e => e.type)).toEqual(["intent_blocked"]);
   });
 
   it("stands by the denial when the content-bearing fallback has empty content", async () => {

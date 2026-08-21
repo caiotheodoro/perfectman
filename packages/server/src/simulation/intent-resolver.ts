@@ -303,6 +303,41 @@ function buildNoOpEvent(
   };
 }
 
+/**
+ * Builds the derived fallback intent with per-type field selection: only the
+ * fields the fallback type can actually use carry over. The denied primary's
+ * `memoryWrites` are dropped — recording "I told Bruno X" as memory after
+ * the message was refused would be false telemetry. `fallbackIfBlocked` and
+ * `preferredDelay` never carry over (single level, same pulse).
+ */
+function deriveFallbackIntent(
+  primary: ActionIntent,
+  fallbackType: NonNullable<ActionIntent["fallbackIfBlocked"]>,
+): ActionIntent {
+  const derived: ActionIntent = {
+    id: createId(),
+    actorId: primary.actorId,
+    intentType: fallbackType,
+    personTargets: primary.personTargets,
+    privateMotiveSummary: primary.privateMotiveSummary,
+    emotionDrivers: primary.emotionDrivers,
+    motivationDrivers: primary.motivationDrivers,
+    memoryWrites: [],
+  };
+  if (fallbackType === "send_message" || fallbackType === "reply_to_message") {
+    derived.visibleContent = primary.visibleContent;
+    derived.channelTarget = primary.channelTarget;
+  }
+  if (fallbackType === "reply_to_message") {
+    derived.replyToEventId = primary.replyToEventId;
+  }
+  if (fallbackType === "react") {
+    derived.targetEventId = primary.targetEventId;
+    derived.emoji = primary.emoji;
+  }
+  return derived;
+}
+
 export class IntentResolver {
   constructor(
     private readonly rateLimitGate: RateLimitGate,
@@ -344,26 +379,24 @@ export class IntentResolver {
       // empty-message defect — let the denial stand.
       return primary.result;
     }
+    if (fallbackType === "reply_to_message" && !intent.replyToEventId) {
+      // A reply with no target event is an orphan reference — denial stands.
+      return primary.result;
+    }
+    if (fallbackType === "react" && !intent.targetEventId) {
+      // Same orphan-reference rule for reactions.
+      return primary.result;
+    }
 
-    const derived: ActionIntent = {
-      ...intent,
-      id: createId(),
-      intentType: fallbackType,
-      fallbackIfBlocked: undefined,
-      preferredDelay: undefined,
-    };
+    const derived = deriveFallbackIntent(intent, fallbackType);
     const secondary = await this.resolveInternal(derived, ctx);
-    if (
-      secondary.result.outcome !== "committed" &&
-      secondary.result.outcome !== "delayed"
-    ) {
+    if (secondary.result.outcome !== "committed") {
       return primary.result;
     }
 
     return {
       ...secondary.result,
-      outcome:
-        secondary.result.outcome === "committed" ? "fallback_committed" : secondary.result.outcome,
+      outcome: "fallback_committed",
       committedEvents: [...primary.result.committedEvents, ...secondary.result.committedEvents],
     };
   }
