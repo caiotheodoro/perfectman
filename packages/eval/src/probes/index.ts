@@ -210,6 +210,10 @@ export function memoryWriteRate(events: readonly BehavioralEvent[]): number {
  * the CNS stagnation metric only measures actor turn-taking diversity, and
  * the verbatim-repetition bug this project hit (#27) was a
  * same-agent-different-turns pattern neither existing metric caught.
+ *
+ * Assumes events are in chronological order (the pipeline's
+ * eventsToBehavioral sorts by pulseIndex); "earlier" means earlier array
+ * position per agent.
  */
 export function contentRepetitionRate(
   events: readonly BehavioralEvent[],
