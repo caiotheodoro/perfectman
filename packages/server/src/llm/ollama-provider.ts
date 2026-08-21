@@ -42,22 +42,25 @@ export class OllamaProvider implements LlmProvider {
     const {
       think,
       options: extraOptions,
-      // top_p/repetition_penalty are populated at the top level of extraBody
-      // by persona-loader.ts and scenario-runner.ts (matching the
+      // top_p/repetition_penalty/seed are populated at the top level of
+      // extraBody by persona-loader.ts and scenario-runner.ts (matching the
       // OpenAI-compatible provider's flat-body convention). Ollama's native
       // /api/chat only reads sampling params from a nested `options` object,
       // and its repetition-penalty key is `repeat_penalty`, not
       // `repetition_penalty` — pull both out here and translate them instead
       // of letting them fall into restExtra and get silently dropped on the
-      // request body root.
+      // request body root. `seed` gets the same treatment so benchmark runs
+      // can pin model sampling determinism.
       top_p,
       repetition_penalty,
+      seed,
       ...restExtra
     } = extraBody as {
       think?: boolean;
       options?: Record<string, unknown>;
       top_p?: number;
       repetition_penalty?: number;
+      seed?: number;
       [key: string]: unknown;
     };
 
@@ -66,6 +69,7 @@ export class OllamaProvider implements LlmProvider {
       temperature: this.config.temperature,
       ...(top_p !== undefined ? { top_p } : {}),
       ...(repetition_penalty !== undefined ? { repeat_penalty: repetition_penalty } : {}),
+      ...(seed !== undefined ? { seed } : {}),
       ...extraOptions,
     };
 

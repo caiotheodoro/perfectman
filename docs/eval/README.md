@@ -50,6 +50,12 @@ pnpm --filter @perfectman/eval bench --category edge_chaos
 pnpm --filter @perfectman/eval bench --scenarios v1_mention_reply,motive_gossip --limit 6
 ```
 
+Local-mode benchmark runs pin LLM sampling to a fixed seed (`42` by default,
+overridable via `PERFECTMAN_LLM_SEED`) so two runs of the same scenarios are
+comparable instead of confounded by sampling variance. Normal simulation runs
+(`pnpm --filter @perfectman/server simulation`) are unaffected and stay free
+to be nondeterministic.
+
 The report (`bench-report-v1`) contains per-scenario signal/probe/judge
 results, probe averages, judge axis means vs targets, category splits, and
 the judge calibration report. Failing reports are committed, never hidden.
