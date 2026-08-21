@@ -150,6 +150,90 @@ Hope you like it!
     expect(result.intent.privateMotiveSummary).toContain("privateMotiveSummary must not be empty");
   });
 
+  describe("content-bearing actions require visibleContent (#39)", () => {
+    it("applies safe fallback when send_message has no visibleContent", () => {
+      const rawText = JSON.stringify({
+        id: "intent-no-content",
+        actorId,
+        intentType: "send_message",
+        channelTarget: "general-id",
+        personTargets: [],
+        privateMotiveSummary: "say something",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+      });
+
+      const result = IntentParser.parse(rawText, actorId, availableActions);
+
+      expect(result.fallbackApplied).toBe(true);
+      expect(result.intent.intentType).toBe("no_op");
+      expect(result.errorDetail).toContain("visibleContent must not be empty for intent type 'send_message'");
+    });
+
+    it("applies safe fallback when visibleContent is whitespace-only", () => {
+      const rawText = JSON.stringify({
+        id: "intent-blank-content",
+        actorId,
+        intentType: "send_message",
+        channelTarget: "general-id",
+        personTargets: [],
+        visibleContent: "   ",
+        privateMotiveSummary: "say something",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+      });
+
+      const result = IntentParser.parse(rawText, actorId, availableActions);
+
+      expect(result.fallbackApplied).toBe(true);
+      expect(result.intent.intentType).toBe("no_op");
+      expect(result.errorDetail).toContain("visibleContent must not be empty");
+    });
+
+    it("applies safe fallback when reply_to_message has no visibleContent", () => {
+      const rawText = JSON.stringify({
+        id: "intent-reply-no-content",
+        actorId,
+        intentType: "reply_to_message",
+        channelTarget: "general-id",
+        personTargets: [actorId],
+        replyToEventId: "evt-1",
+        privateMotiveSummary: "reply without content",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+      });
+
+      const result = IntentParser.parse(rawText, actorId, availableActions);
+
+      expect(result.fallbackApplied).toBe(true);
+      expect(result.intent.intentType).toBe("no_op");
+      expect(result.errorDetail).toContain("visibleContent must not be empty for intent type 'reply_to_message'");
+    });
+
+    it("still accepts content-bearing send_message with real content", () => {
+      const rawText = JSON.stringify({
+        id: "intent-with-content",
+        actorId,
+        intentType: "send_message",
+        channelTarget: "general-id",
+        personTargets: [],
+        visibleContent: "fala sério",
+        privateMotiveSummary: "genuine message",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+      });
+
+      const result = IntentParser.parse(rawText, actorId, availableActions);
+
+      expect(result.fallbackApplied).toBe(false);
+      expect(result.intent.visibleContent).toBe("fala sério");
+    });
+  });
+
   it("should apply safe fallback if targets are not allowed in availableActions", () => {
     const rawText = JSON.stringify({
       id: "intent-invalid-target",
