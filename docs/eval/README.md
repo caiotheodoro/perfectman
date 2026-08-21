@@ -80,8 +80,9 @@ turn is scored against the turn before it (see `packages/eval/src/judge/judge.ts
    scenario's full pulse count. The rule judge is v0 and the golden set
    still needs human review (Phase 2.4); the LLM judge must clear the
    kappa gate before its scores gate changes.
-3. **Real local-model data now exists.** The `think:false` / JSON-parse
-   blockers that originally prevented local runs are fixed (#19, #21), and
+3. **Real local-model data now exists.** The run-preventing blockers — Qwen3
+   `<think>` blocks eating the JSON response and judge parse failures — are
+   fixed (#19), plus silently dropped Ollama sampling params (#21), and
    benchmark sweeps have been run against local models repeatedly (PRs
    #19–#22). Highlights from the PR #22 post-fix sweep: zero literal
    duplicate messages committed (previously agents repeated verbatim for
