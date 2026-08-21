@@ -50,12 +50,15 @@ export type ScenarioRunArtifact = {
   pulseResults: number;
   /** Unique generation prompt versions observed across the run (attribution). */
   promptVersions: string[];
+  /** Unique prompt template versions observed across the run (old-vs-new template comparison). */
+  templateVersions: string[];
 };
 
 class TrackingRuntime {
   private readonly inner: AgentRuntime;
   private readonly calls = new Map<string, number>();
   private readonly versions = new Set<string>();
+  private readonly templateVersions = new Set<string>();
   private readonly providers = new Map<string, LLMProvider>();
 
   constructor(
@@ -91,6 +94,7 @@ class TrackingRuntime {
     this.calls.set(input.agentId, (this.calls.get(input.agentId) ?? 0) + 1);
     const output = await this.inner.generateIntent(input, context);
     if (output.llmUsage?.promptVersion) this.versions.add(output.llmUsage.promptVersion);
+    if (output.llmUsage?.promptTemplateVersion) this.templateVersions.add(output.llmUsage.promptTemplateVersion);
     return output;
   }
 
@@ -106,6 +110,10 @@ class TrackingRuntime {
 
   versionsUsed(): string[] {
     return [...this.versions];
+  }
+
+  templateVersionsUsed(): string[] {
+    return [...this.templateVersions];
   }
 }
 
@@ -190,6 +198,7 @@ export class ScenarioRunner {
       latencyMs: Date.now() - started,
       pulseResults,
       promptVersions: tracking?.versionsUsed() ?? [],
+      templateVersions: tracking?.templateVersionsUsed() ?? [],
     };
   }
 }

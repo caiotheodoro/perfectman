@@ -75,6 +75,42 @@ export const ModelIntentPacketJsonSchema = {
   },
 } as const;
 
+type JsonSchemaProp = {
+  type?: string;
+  enum?: readonly string[];
+  items?: { type?: string; properties?: Record<string, unknown> };
+};
+
+function describePacketFieldType(def: JsonSchemaProp): string {
+  if (def.enum) return `one of: ${def.enum.join(", ")}`;
+  if (def.type === "array") {
+    const items = def.items;
+    if (items?.type === "object" && items.properties) {
+      return `array of objects (${Object.keys(items.properties).join(", ")})`;
+    }
+    return "array of strings";
+  }
+  return "string";
+}
+
+/**
+ * Compact per-field guidance derived straight from `ModelIntentPacketJsonSchema`,
+ * so the prompt's field list can never drift from what the parser and
+ * constrained decoding actually accept (the drift test above pins zod/JSON
+ * Schema parity; this pins prompt/schema parity on top of that). Needed on
+ * decode paths where the schema isn't actually enforced by the provider
+ * (json_object fallback, `responseFormatJsonSchema:false`, non-strict
+ * `json_schema` backends) — the tolerant parser can't repair a field the
+ * model was never shown.
+ */
+export function modelIntentPacketFieldContract(): string[] {
+  const { properties, required } = ModelIntentPacketJsonSchema;
+  return Object.entries(properties).map(([name, def]) => {
+    const isRequired = (required as readonly string[]).includes(name);
+    return `"${name}" (${isRequired ? "required" : "optional"}): ${describePacketFieldType(def as JsonSchemaProp)}`;
+  });
+}
+
 /**
  * Merges a validated model packet with the engine-stamped structural fields
  * to produce the full engine-side ActionIntent. `defaultIntentType` is used by

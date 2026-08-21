@@ -12,6 +12,8 @@ export type BuiltPrompt = {
   purpose: PromptPurpose;
   /** Deterministic content hash of the rendered prompt, for result attribution. */
   version: string;
+  /** Manually-bumped structure identifier, stable across renders that share the same template. */
+  templateVersion: string;
 };
 
 export type AgentRuntimeOutput = {

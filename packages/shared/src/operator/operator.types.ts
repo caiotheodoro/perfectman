@@ -33,6 +33,8 @@ export type LLMUsage = {
   createdAt: number;
   /** Deterministic content hash of the prompt that produced this call. */
   promptVersion?: string;
+  /** Structure identifier of the prompt template, stable across renders — for old-vs-new template comparison. */
+  promptTemplateVersion?: string;
 };
 
 export type StagnationMetrics = {

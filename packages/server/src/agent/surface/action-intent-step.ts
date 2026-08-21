@@ -203,6 +203,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       pulseIndex: ctx.pulseIndex,
       createdAt: ctx.now,
       promptVersion: u.promptVersion,
+      promptTemplateVersion: prompt.templateVersion,
     });
 
     // Record each provider call with the prompt version that actually produced

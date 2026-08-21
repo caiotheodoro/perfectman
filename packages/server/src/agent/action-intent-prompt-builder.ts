@@ -1,7 +1,17 @@
-import { PromptSection, type AgentRuntimeInput, type CommittedEvent } from "@perfectman/shared";
+import { PromptSection, modelIntentPacketFieldContract, type AgentRuntimeInput, type CommittedEvent } from "@perfectman/shared";
 import type { PersonaPromptProfile, ScenarioContextBlock } from "./persona-prompt-profile.js";
 import type { BuiltPrompt } from "./agent-runtime.types.js";
 import { promptVersionHash } from "./prompt-version.js";
+
+/**
+ * Identifies the prompt's structure (sections, containers, headings, static
+ * prose) independent of the per-render content that fills it. `version` below
+ * is a content hash and changes on every render (event transcript, mood,
+ * memories differ per pulse), so it can't answer "did the template change
+ * between these two runs?" — bump this manually whenever the structure below
+ * changes; leave it alone for content-only changes.
+ */
+const TEMPLATE_VERSION = "action-intent-hybrid-v1";
 
 /**
  * Builds the action-intent prompt in the "full hybrid, precision-first"
@@ -39,6 +49,7 @@ export class ActionIntentPromptBuilder {
       inputTokensEstimate: Math.ceil(totalChars / 4),
       purpose: "action_intent",
       version: promptVersionHash([systemPrompt, userPrompt]),
+      templateVersion: TEMPLATE_VERSION,
     };
   }
 
@@ -73,7 +84,8 @@ export class ActionIntentPromptBuilder {
     s.heading("Output contract");
     s.raw("You must respond with a SINGLE valid JSON object matching the enforced intent schema. Do not include any conversational introduction, explanations, markdown code fences, or thinking blocks — return ONLY the JSON object.");
     s.raw(`The fields id, actorId, preferredDelay and fallbackIfBlocked are assigned by the system — never set them (actorId is ${actorId}).`);
-    s.raw("The schema is enforced at decoding time: set intentType to one value from <actions> below, set targets/content only where they apply, and never omit privateMotiveSummary.");
+    s.raw("The schema is enforced at decoding time where the provider honors it; where it isn't, these are the only fields you may set — set intentType to one value from <actions> below, set targets/content only where they apply, and never omit privateMotiveSummary:");
+    s.list("Fields", modelIntentPacketFieldContract());
     s.list("Ensure", [
       `"privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").`,
       `Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`,

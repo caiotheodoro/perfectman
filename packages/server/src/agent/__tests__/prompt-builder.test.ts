@@ -174,6 +174,24 @@ describe("PromptBuilder", () => {
     expect(a.version).toMatch(/^[0-9a-z]+$/);
   });
 
+  it("keeps templateVersion stable across renders whose per-pulse content differs, unlike version", () => {
+    const variantInput: AgentRuntimeInput = {
+      ...input,
+      perceptionPacket: {
+        ...input.perceptionPacket,
+        triggeringEvent: {
+          ...triggeringEvent,
+          payload: { content: "a completely different message from a different pulse" },
+        },
+      },
+    };
+    const a = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    const b = PromptBuilder.build(variantInput, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    expect(a.version).not.toBe(b.version);
+    expect(a.templateVersion).toBeTruthy();
+    expect(a.templateVersion).toBe(b.templateVersion);
+  });
+
   it("should verify that the prompt contains all required sections in hybrid containers", () => {
     const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
     const combined = prompt.system + "\n\n" + prompt.user;
@@ -237,9 +255,16 @@ describe("PromptBuilder", () => {
     expect(prompt.system).toContain("SINGLE valid JSON object");
     expect(prompt.system).toContain("return ONLY the JSON object");
     expect(prompt.system).toContain("privateMotiveSummary");
-    // no hand-written JSON example remains in the prompt (schema-derived / enforced)
+    // no hand-written JSON example object remains (with literal default values) —
+    // the field list below is schema-derived prose, not a copy-pasted example.
     expect(prompt.system).not.toContain('"memoryWrites": []');
-    expect(prompt.system).not.toContain('"invitedAgentIds"');
+  });
+
+  it("includes a schema-derived field list so json_object/non-strict decode paths still see field names", () => {
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    expect(prompt.system).toContain('"invitedAgentIds" (optional): array of strings');
+    expect(prompt.system).toContain('"intentType" (required): one of:');
+    expect(prompt.system).toContain('"privateMotiveSummary" (required): string');
   });
 
   describe("PromptPurpose policy", () => {

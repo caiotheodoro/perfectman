@@ -64,6 +64,8 @@ export type BenchReport = {
   byCategory: Record<string, { runs: number; signalPassRate: number }>;
   /** Unique generation prompt versions across all scenarios (attribution). */
   promptVersions: string[];
+  /** Unique prompt template versions across all scenarios — compare this across saved reports to check whether the prompt structure changed between runs. */
+  promptTemplateVersions: string[];
   calibration: ReturnType<typeof calibrateJudge>;
   perScenario: Array<{
     id: string;
@@ -123,6 +125,7 @@ export async function runBench(opts: {
     judgeAxisTargets: {},
     byCategory: {},
     promptVersions: [],
+    promptTemplateVersions: [],
     calibration: calibrateJudge(new Map(), []),
     perScenario: [],
   };
@@ -136,12 +139,14 @@ export async function runBench(opts: {
   let probesTotal = 0;
   const catAgg: Record<string, { runs: number; signalsPassed: number; signalsTotal: number }> = {};
   const allPromptVersions = new Set<string>();
+  const allTemplateVersions = new Set<string>();
 
   for (const scenario of limited) {
     try {
       const artifact: ScenarioRunArtifact = await ScenarioRunner.run(scenario, { llmMode: mode });
       report.scenariosRun++;
       artifact.promptVersions.forEach((v) => allPromptVersions.add(v));
+      artifact.templateVersions.forEach((v) => allTemplateVersions.add(v));
 
       const axisScores =
         judgeMode === "llm"
@@ -227,13 +232,14 @@ export async function runBench(opts: {
     }]),
   );
   report.calibration = calibrateJudge(judgeScores, GOLDEN_LABELS, 0.7);
+  report.promptVersions = [...allPromptVersions];
+  report.promptTemplateVersions = [...allTemplateVersions];
 
   if (opts.out) {
     const outPath = resolve(opts.out);
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, JSON.stringify(report, null, 2), "utf8");
   }
-  report.promptVersions = [...allPromptVersions];
   return report;
 }
 
