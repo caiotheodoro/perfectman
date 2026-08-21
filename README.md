@@ -49,7 +49,7 @@ This uses `providerType: "mock"` by default — no API key or model needed to se
 
 ### Running with a real model, for free
 
-You don't need a paid API key. Two free local options:
+You don't need a paid API key. Free local options:
 
 **Native Ollama** (recommended on macOS / Apple Silicon):
 
