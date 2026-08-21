@@ -11,6 +11,7 @@ import {
   emojiReactionRate,
   memoryWriteRate,
   privateChannelDensity,
+  contentRepetitionRate,
   runAllProbes,
 } from "../probes/index.js";
 import { eventsToBehavioral } from "../probes/adapter.js";
@@ -122,5 +123,50 @@ describe("probes", () => {
     expect(emojiReactionRate([ev("react", "A", 1), ev("post", "A", 2)])).toBe(0.5);
     expect(memoryWriteRate([ev("memory", "A", 1), ev("post", "A", 2), ev("post", "A", 3)])).toBeCloseTo(1 / 3);
     expect(privateChannelDensity([ev("private_channel", "A", 1), ev("post", "A", 2)])).toBe(0.5);
+  });
+
+  describe("contentRepetitionRate (#27)", () => {
+    it("detects a verbatim repeat by the same agent", () => {
+      const events = [
+        ev("post", "A", 1, "vou falar isso mesmo cara"),
+        ev("post", "B", 2, "outro assunto totalmente diferente aqui"),
+        ev("post", "A", 3, "Vou falar isso mesmo, cara!"),
+      ];
+      // A's third turn near-repeats its first; B's turn is distinct.
+      expect(contentRepetitionRate(events)).toBeCloseTo(1 / 3);
+    });
+
+    it("scores fully distinct content as zero", () => {
+      const events = [
+        ev("post", "A", 1, "bom dia pessoal tudo certo"),
+        ev("post", "A", 2, "ontem o jogo foi incrível"),
+        ev("reply", "B", 3, "concordo plenamente contigo"),
+      ];
+      expect(contentRepetitionRate(events)).toBe(0);
+    });
+
+    it("does not count cross-agent similarity (per-agent scoping)", () => {
+      const events = [
+        ev("post", "A", 1, "esse time não ganha nunca"),
+        ev("post", "B", 2, "esse time não ganha nunca"),
+      ];
+      expect(contentRepetitionRate(events)).toBe(0);
+    });
+
+    it("returns zero for empty or contentless transcripts", () => {
+      expect(contentRepetitionRate([])).toBe(0);
+      expect(contentRepetitionRate([ev("silence", "A", 1), ev("react", "A", 2)])).toBe(0);
+    });
+
+    it("is wired into runAllProbes with a band", () => {
+      const events = [
+        ev("post", "A", 1, "repetindo a mesma linha de sempre"),
+        ev("post", "A", 2, "repetindo a mesma linha de sempre"),
+      ];
+      const probe = runAllProbes({ events, agentIds: ["A"], totalPulses: 2 })
+        .find(r => r.probe === "content-repetition");
+      expect(probe).toBeDefined();
+      expect(probe!.measured).toBeGreaterThan(0);
+    });
   });
 });
