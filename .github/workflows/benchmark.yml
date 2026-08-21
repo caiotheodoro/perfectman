@@ -22,7 +22,8 @@ concurrency:
 jobs:
   benchmark:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # The opt-in LLM deep run needs far more headroom than the offline path.
+    timeout-minutes: ${{ github.event.inputs.judge == 'llm' && 240 || 30 }}
     steps:
       - uses: actions/checkout@v4
 
@@ -60,9 +61,16 @@ jobs:
         run: node scripts/ci/check-bench-gate.mjs out/bench-full.json
 
       # Opt-in deep run (self-hosted runner with models configured via env).
+      # Signal rates legitimately vary under real-model generation, so this
+      # path asserts only structural sanity: no scenario run hard-failed and
+      # every expected scenario id is present.
       - name: Deep bench (LLM judge)
         if: ${{ github.event.inputs.judge == 'llm' }}
         run: pnpm --filter @perfectman/eval bench --mode local --judge llm --out "$GITHUB_WORKSPACE/out/bench-full.json"
+
+      - name: Assert deep bench produced complete results
+        if: ${{ github.event.inputs.judge == 'llm' }}
+        run: node scripts/ci/check-bench-gate.mjs --skip-signal-gate out/bench-full.json
 
       - name: Upload report
         if: always() && hashFiles('out/bench-full.json') != ''
