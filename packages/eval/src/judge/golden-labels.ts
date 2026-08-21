@@ -69,6 +69,11 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
     scenarioId: "edge_public_mock",
     note: "Bruno shamed into silence — the no-op must be loaded.",
     axes: {
+      // Edge scenes are scored under EDGE_CHAOS_RUBRIC — carry its axes so
+      // calibration actually pairs judge output against golden expectations.
+      dramatic_tension: 4,
+      unpredictability: 3,
+      believability_under_pressure: 4,
       in_character: 4,
       voice_match: 4,
       motive_authenticity: 4,
@@ -462,6 +467,11 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
     scenarioId: "edge_exclusion_cascade",
     note: "Two-step exclusion noticed across public+private — cascading reads must land.",
     axes: {
+      // Edge scenes are scored under EDGE_CHAOS_RUBRIC — carry its axes so
+      // calibration actually pairs judge output against golden expectations.
+      dramatic_tension: 4,
+      unpredictability: 3,
+      believability_under_pressure: 4,
       in_character: 4,
       voice_match: 4,
       motive_authenticity: 4,
@@ -475,6 +485,11 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
     scenarioId: "edge_gossip_catalyst",
     note: "Private rumor ripples into public tension — catalyst dynamics with expressive gossip.",
     axes: {
+      // Edge scenes are scored under EDGE_CHAOS_RUBRIC — carry its axes so
+      // calibration actually pairs judge output against golden expectations.
+      dramatic_tension: 4,
+      unpredictability: 3,
+      believability_under_pressure: 4,
       in_character: 4,
       voice_match: 4,
       motive_authenticity: 4,
@@ -488,6 +503,11 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
     scenarioId: "edge_mutation_pressure",
     note: "Repeated small humiliations should move behavior — substrate for change under pressure.",
     axes: {
+      // Edge scenes are scored under EDGE_CHAOS_RUBRIC — carry its axes so
+      // calibration actually pairs judge output against golden expectations.
+      dramatic_tension: 4,
+      unpredictability: 3,
+      believability_under_pressure: 4,
       in_character: 4,
       voice_match: 4,
       motive_authenticity: 4,

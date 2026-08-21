@@ -2,12 +2,12 @@
   "version": "calibration-report-v1",
   "mode": "mock",
   "judge": "rule",
-  "generatedAt": "2026-08-21T22:25:24.697Z",
+  "generatedAt": "2026-08-21T22:35:31.667Z",
   "transcriptLength": "full",
   "calibration": {
     "nScenes": 39,
-    "kappa": 0.185,
-    "alpha": -0.114,
+    "kappa": 0.129,
+    "alpha": -0.104,
     "targetKappa": 0.7,
     "passed": false,
     "perAxisKappa": {
@@ -17,7 +17,10 @@
       "interpretation": 0,
       "creativity_unhinged": 0.005681818181817634,
       "memory_continuity": 0.3820224719101093,
-      "no_ai_leak": 1
+      "no_ai_leak": 1,
+      "dramatic_tension": 0,
+      "unpredictability": 0,
+      "believability_under_pressure": 0
     },
     "disagreements": [
       "motive_curiosity in_character: judge 2 vs golden 4",
