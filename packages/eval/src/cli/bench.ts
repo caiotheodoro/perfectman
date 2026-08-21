@@ -24,7 +24,7 @@ import { ruleJudge, llmJudge, llmJudgePerTurn, type AxisScores } from "../judge/
 import { calibrateJudge } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
-import { aggregateSignalsByKind } from "../run/signal-checker.js";
+import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checker.js";
 
 /** LLM judge endpoint — DeepSeek by default when PERFECTMAN_LLM_PROVIDER=deepseek. */
 export function judgeConfig(): import("../judge/judge.js").LlmJudgeConfig {
@@ -129,7 +129,7 @@ export async function runBench(opts: {
   const judgeScores = new Map<string, AxisScores>();
   const probeAgg: Record<string, { sum: number; count: number; passed: number }> = {};
   const axisAgg: Record<string, { sum: number; count: number }> = {};
-  const signalKindResults: Array<Parameters<typeof aggregateSignalsByKind>[0][number]> = [];
+  const signalKindResults: SignalOutcome[] = [];
   let signalsPassed = 0;
   let signalsTotal = 0;
   let probesPassed = 0;
