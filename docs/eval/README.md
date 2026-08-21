@@ -57,7 +57,8 @@ comparable instead of confounded by sampling variance. Normal simulation runs
 to be nondeterministic.
 
 The report (`bench-report-v1`) contains per-scenario signal/probe/judge
-results, probe averages, judge axis means vs targets, category splits, and
+results, probe averages, per-signal-kind pass rates with failing examples
+(`signalsByKind`), judge axis means vs targets, category splits, and
 the judge calibration report. Failing reports are committed, never hidden.
 The `narrative_cohesion` axis lives on the `roleplay-v1` rubric (anchored for
 turn-to-turn thread, callbacks, escalation, shifted meaning). By default the
