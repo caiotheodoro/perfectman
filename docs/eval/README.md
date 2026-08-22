@@ -48,6 +48,12 @@ pnpm --filter @perfectman/eval bench --mode local --judge llm --per-turn --limit
 # slices
 pnpm --filter @perfectman/eval bench --category edge_chaos
 pnpm --filter @perfectman/eval bench --scenarios v1_mention_reply,motive_gossip --limit 6
+
+# named slices — curated id sets (edges / golden / canary), see
+# packages/eval/src/bench-slices.ts. Prefer these over hand-typed lists
+# so per-axis samples stay meaningful. --slice and --scenarios are
+# mutually exclusive; --limit truncates AFTER variant expansion.
+pnpm --filter @perfectman/eval bench --slice edges
 ```
 
 Local-mode benchmark runs pin LLM sampling to a fixed seed (`42` by default,
