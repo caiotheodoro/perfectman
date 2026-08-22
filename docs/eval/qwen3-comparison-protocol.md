@@ -21,10 +21,10 @@ restarts possible:
 # repeat for SCENARIO in motive_gossip v1_exclusion_inferred motive_conflict stagnation_resentment_loop
 SCENARIO=motive_gossip
 
-# restart between scenarios (resets KV cache + thermal state):
-# kill the server, wait for the port, relaunch fresh
+# restart between scenarios (clears the in-process KV cache):
+# kill the server, wait for the port to free, relaunch fresh
 pkill -f "ollama serve" 2>/dev/null || true
-sleep 2
+until ! lsof -i :11434 >/dev/null 2>&1; do sleep 1; done
 ollama serve >/dev/null 2>&1 &
 
 PERFECTMAN_LLM_BASE_URL=http://localhost:11434/v1 \
