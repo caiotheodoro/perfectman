@@ -76,11 +76,15 @@ export async function main(): Promise<void> {
     for (const scenario of scenarios) {
       const artifact = await ScenarioRunner.run(scenario!, {
         llmMode: "mock",
-        providerFactory: (llmConfig, agentId): LLMProvider =>
-          new PersonaAwareMockProvider(
-            packs.get(agentId)!,
-            scenario!.seed,
-          ),
+        providerFactory: (llmConfig, agentId): LLMProvider => {
+          // Agents without a compiled pack degrade to the generic pack,
+          // matching the default factory's behavior.
+          const pack =
+            packs.get(agentId) ??
+            getPersonaPackById("generic") ??
+            packs.values().next().value!;
+          return new PersonaAwareMockProvider(pack, scenario!.seed);
+        },
       });
 
       cell.runs++;
