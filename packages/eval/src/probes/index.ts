@@ -9,6 +9,7 @@
 
 import type { BehavioralEvent, ProbeInput } from "./types.js";
 import { checkProbe, PROBE_BANDS, type ProbeResult } from "./types.js";
+import { isNearRepeat, REPETITION_SIMILARITY_THRESHOLD } from "@perfectman/server";
 
 export * from "./adapter.js";
 export type { BehavioralEvent, BehavioralEventKind, ProbeBound, ProbeInput, ProbeResult } from "./types.js";
@@ -200,6 +201,39 @@ export function memoryWriteRate(events: readonly BehavioralEvent[]): number {
   return memories / events.length;
 }
 
+// ── Content repetition ───────────────────────────────────────────────────────
+
+/**
+ * Share of content-bearing turns that near-repeat the same agent's own
+ * earlier utterances anywhere in the transcript (Jaccard word-overlap via
+ * the runtime's canonical isNearRepeat). This measures *text* similarity —
+ * the CNS stagnation metric only measures actor turn-taking diversity, and
+ * the verbatim-repetition bug this project hit (#27) was a
+ * same-agent-different-turns pattern neither existing metric caught.
+ *
+ * Assumes events are in chronological order (the pipeline's
+ * eventsToBehavioral sorts by pulseIndex); "earlier" means earlier array
+ * position per agent.
+ */
+export function contentRepetitionRate(
+  events: readonly BehavioralEvent[],
+  threshold: number = REPETITION_SIMILARITY_THRESHOLD,
+): number {
+  const contentTurns = events.filter(
+    e => (e.kind === "post" || e.kind === "reply") && !!e.content?.trim(),
+  );
+  if (contentTurns.length === 0) return 0;
+  const ownUtterances = new Map<string, string[]>();
+  let repeated = 0;
+  for (const turn of contentTurns) {
+    const priors = ownUtterances.get(turn.agentId) ?? [];
+    if (isNearRepeat(turn.content!, priors, threshold)) repeated++;
+    priors.push(turn.content!);
+    ownUtterances.set(turn.agentId, priors);
+  }
+  return repeated / contentTurns.length;
+}
+
 // ── Aggregate ────────────────────────────────────────────────────────────────
 
 export function runAllProbes(input: ProbeInput): ProbeResult[] {
@@ -245,6 +279,12 @@ export function runAllProbes(input: ProbeInput): ProbeResult[] {
       PROBE_BANDS["emoji-reaction"]!,
     ),
     checkProbe("memory-write", "Memory write density", memoryWriteRate(events), PROBE_BANDS["memory-write"]!),
+    checkProbe(
+      "content-repetition",
+      "Near-repeat share of content turns",
+      contentRepetitionRate(events),
+      PROBE_BANDS["content-repetition"]!,
+    ),
     checkProbe("fallback-rate", "LLM fallback rate", fallbackRate, PROBE_BANDS["fallback-rate"]!),
     checkProbe("refusal-free", "Refusal-free rate", refusalFree, PROBE_BANDS["refusal-free"]!),
   ];

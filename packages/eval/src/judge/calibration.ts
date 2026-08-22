@@ -157,3 +157,14 @@ export function calibrateJudge(
     disagreements,
   };
 }
+
+/**
+ * Strips the deterministic variant suffix ("motive_gossip__v2" ->
+ * "motive_gossip"). Golden labels and calibration lookups are keyed by
+ * base scenario ids; variant-expanded runs must fold back onto them or
+ * every judge-vs-golden pair silently misses.
+ */
+export function baseScenarioId(scenarioId: string): string {
+  const sep = scenarioId.lastIndexOf("__v");
+  return sep > 0 ? scenarioId.slice(0, sep) : scenarioId;
+}

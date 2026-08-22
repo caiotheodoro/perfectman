@@ -56,6 +56,41 @@ function extractJsonObject(raw: string): string {
   return withoutThinking.slice(start, end + 1);
 }
 
+/**
+ * Last-resort recovery for judges that ignore the JSON contract and answer
+ * in prose ("**Roleplay Quality Score Summary** ... 1. Character
+ * Development (2/5)"). Scans for each rubric axis id followed nearby by a
+ * 1-5 integer score. Returns null unless at least half the axes were
+ * recovered — a partial read of the transcript's quality must beat crashing
+ * mid-benchmark, but near-empty salvage is not signal.
+ */
+export function salvageAxisScoresFromProse(
+  raw: string,
+  axisIds: readonly string[],
+): Record<string, number> | null {
+  const scores: Record<string, number> = {};
+  for (const axisId of axisIds) {
+    const labelPattern = axisId.replace(/_/g, "[_\\s]");
+    // axis id, optional separator decoration, then a 1-5 integer either as
+    // "N/5", "N out of 5", or a bare "N" right after : - = or whitespace.
+    // The gap before the digit excludes newlines so a numbered-list marker
+    // on the *next* line (e.g. "in_character — strong\n2. voice_match") can
+    // never be mistaken for this axis's score.
+    const re = new RegExp(
+      `${labelPattern}[^0-9\\n]{0,40}?(\\d)\\s*(?:/\\s*5|out of 5|(?=[.,;)\\n]|$))`,
+      "i",
+    );
+    const m = raw.match(re);
+    if (m) {
+      const v = Number(m[1]);
+      if (v >= 1 && v <= 5) scores[axisId] = v;
+    }
+  }
+  const recovered = Object.keys(scores).length;
+  if (recovered === 0 || recovered < axisIds.length / 2) return null;
+  return scores;
+}
+
 const STYLE_TELLS = ["kkk", "kkkk", "cara", "pera", "hm", "né", "tô", "tá", "tbm", "tb", "vdd", "pois é", "não", "..." ];
 
 export function ruleJudge(
@@ -160,12 +195,13 @@ function buildJudgeUser(scenario: RoleplayScenario, events: readonly CommittedEv
     .toString();
 }
 
-export async function llmJudge(
+async function callJudge(
   scenario: RoleplayScenario,
   events: readonly CommittedEvent[],
   config: LLMJudgeConfig,
-): Promise<AxisScores> {
-  const system = buildJudgeSystem(scenario.rubric);
+  systemSuffix = "",
+): Promise<string> {
+  const system = buildJudgeSystem(scenario.rubric) + systemSuffix;
   const user = buildJudgeUser(scenario, events);
 
   const res = await fetch(`${config.baseUrl}/chat/completions`, {
@@ -195,7 +231,10 @@ export async function llmJudge(
   const data = (await res.json()) as {
     choices?: { message?: { content?: string } }[];
   };
-  const raw = data.choices?.[0]?.message?.content ?? "";
+  return data.choices?.[0]?.message?.content ?? "";
+}
+
+function parseAxes(raw: string, scenario: RoleplayScenario): AxisScores {
   const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as { axes?: Record<string, number> };
   const axes: AxisScores = {};
@@ -204,6 +243,59 @@ export async function llmJudge(
     axes[axis.id] = typeof v === "number" ? clampScore(v) : 3;
   }
   return axes;
+}
+
+const RETRY_SYSTEM_SUFFIX =
+  "\n\nIMPORTANT: your previous reply was not parseable JSON. Respond with ONLY the JSON object — no prose, no markdown, no reasoning.";
+
+/**
+ * `salvaged: true` means the axes were recovered from a prose critique (or
+ * partly defaulted to 3) rather than parsed from the requested JSON —
+ * callers that feed scores into calibration must exclude these, since a
+ * fabricated midpoint would silently compress the agreement signal.
+ */
+export type JudgeResult = { axes: AxisScores; salvaged: boolean };
+
+export async function llmJudge(
+  scenario: RoleplayScenario,
+  events: readonly CommittedEvent[],
+  config: LLMJudgeConfig,
+): Promise<JudgeResult> {
+  const rawAttempts: string[] = [];
+  const axisIds = scenario.rubric.axes.map(a => a.id);
+
+  rawAttempts.push(await callJudge(scenario, events, config));
+  try {
+    return { axes: parseAxes(rawAttempts[0]!, scenario), salvaged: false };
+  } catch {
+    // One strict retry covers judges that burned their budget on reasoning
+    // or ignored the JSON instruction on the first pass.
+  }
+  try {
+    rawAttempts.push(await callJudge(scenario, events, config, RETRY_SYSTEM_SUFFIX));
+    return { axes: parseAxes(rawAttempts[1]!, scenario), salvaged: false };
+  } catch {
+    // Fall through to prose salvage — a judge that answered in a scored
+    // critique still emitted usable signal. Try every response we hold:
+    // pass 2 may be truncated garbage while pass 1 was scored prose.
+  }
+
+  for (const raw of rawAttempts) {
+    const salvaged = salvageAxisScoresFromProse(raw, axisIds);
+    if (salvaged) {
+      const axes: AxisScores = {};
+      for (const axis of scenario.rubric.axes) {
+        const v = salvaged[axis.id];
+        axes[axis.id] = typeof v === "number" ? clampScore(v) : 3;
+      }
+      return { axes, salvaged: true };
+    }
+  }
+
+  const lastRaw = rawAttempts[rawAttempts.length - 1] ?? "";
+  throw new Error(
+    `LLM judge returned unparseable response after retry (raw length ${lastRaw.length}): ${lastRaw.slice(0, 200)}`,
+  );
 }
 
 // ── Per-turn narrative-cohesion eval ─────────────────────────────────────────
@@ -231,13 +323,13 @@ export async function llmJudgePerTurn(
   events: readonly CommittedEvent[],
   config: LLMJudgeConfig,
   maxTurnSamples = 8,
-): Promise<AxisScores> {
-  const axes = await llmJudge(scenario, events, config);
+): Promise<JudgeResult> {
+  const { axes, salvaged } = await llmJudge(scenario, events, config);
 
   // The per-turn axis is only meaningful when the rubric defines it (it lives
   // on roleplay-v1, not edge-chaos/behavioral). Guard before spending calls.
   if (!scenario.rubric.axes.some(a => a.id === "narrative_cohesion")) {
-    return axes;
+    return { axes, salvaged };
   }
 
   const turns: CommittedEvent[][] = [];
@@ -271,7 +363,7 @@ export async function llmJudgePerTurn(
   if (cohesionCount > 0) {
     axes["narrative_cohesion"] = clampScore(cohesionSum / cohesionCount);
   }
-  return axes;
+  return { axes, salvaged };
 }
 
 function turnTranscript(group: readonly CommittedEvent[]): string {

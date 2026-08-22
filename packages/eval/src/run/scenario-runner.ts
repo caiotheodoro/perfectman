@@ -294,7 +294,19 @@ function genericProfile(persona: import("@perfectman/shared").PersonaConfig): Pe
   };
 }
 
-function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | undefined): import("@perfectman/server").LLMConfig {
+// Exported for tests: benchmarks must pin LLM sampling so runs are
+// comparable (see issue #45). Overridable without code changes via env.
+export function benchSeed(): number {
+  const raw = process.env.PERFECTMAN_LLM_SEED?.trim();
+  if (raw) {
+    const parsed = Number(raw);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 42;
+}
+
+// Exported for tests and local debug tooling.
+export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | undefined): import("@perfectman/server").LLMConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
   const baseUrl =
@@ -321,6 +333,7 @@ function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | undefin
     responseFormatJson: true,
     extraBody: isDeepseek
       ? {
+          seed: benchSeed(),
           top_p: sampling.topP,
           // DeepSeek has no repetition_penalty — map to frequency_penalty
           // (stronger for hot personas) plus presence_penalty to kill loops.
@@ -328,6 +341,7 @@ function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | undefin
           presence_penalty: 0.4,
         }
       : {
+          seed: benchSeed(),
           top_p: sampling.topP,
           repetition_penalty: sampling.repetitionPenalty,
           // Qwen3 emits a <think>...</think> reasoning block by default,

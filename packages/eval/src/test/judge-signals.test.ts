@@ -134,14 +134,14 @@ describe("LLM judge (per-turn)", () => {
       );
     }) as typeof fetch;
 
-    const scores = await llmJudgePerTurn(
+    const { axes } = await llmJudgePerTurn(
       scenario,
       events,
       { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
       8,
     );
     // Mean of the two per-turn samples (3 + 5) / 2 → 4.
-    expect(scores.narrative_cohesion).toBe(4);
+    expect(axes.narrative_cohesion).toBe(4);
     expect(calls).toBe(3); // 1 whole-transcript + 2 per-turn
   });
 
@@ -171,7 +171,7 @@ describe("LLM judge (per-turn)", () => {
       );
     }) as typeof fetch;
 
-    const scores = await llmJudgePerTurn(
+    const { axes } = await llmJudgePerTurn(
       scenario,
       events,
       { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
@@ -179,7 +179,7 @@ describe("LLM judge (per-turn)", () => {
     );
     expect(fetchedPairs).toContain("0->1");
     expect(fetchedPairs.length).toBeGreaterThan(1);
-    expect(scores.narrative_cohesion).toBe(4);
+    expect(axes.narrative_cohesion).toBe(4);
   });
 
   it("does not score narrative_cohesion when the rubric lacks the axis", async () => {
@@ -201,13 +201,13 @@ describe("LLM judge (per-turn)", () => {
       );
     }) as typeof fetch;
 
-    const scores = await llmJudgePerTurn(
+    const { axes } = await llmJudgePerTurn(
       scenario,
       events,
       { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
       8,
     );
-    expect(scores.narrative_cohesion).toBeUndefined();
+    expect(axes.narrative_cohesion).toBeUndefined();
     expect(calls).toBe(1); // whole-transcript only
   });
 
@@ -229,13 +229,13 @@ describe("LLM judge (per-turn)", () => {
       return new Response("boom", { status: 500 });
     }) as typeof fetch;
 
-    const scores = await llmJudgePerTurn(
+    const { axes } = await llmJudgePerTurn(
       scenario,
       events,
       { baseUrl: "http://localhost/v1", model: "m", temperature: 1 },
       8,
     );
-    expect(scores.narrative_cohesion).toBe(3);
+    expect(axes.narrative_cohesion).toBe(3);
   });
 });
 
