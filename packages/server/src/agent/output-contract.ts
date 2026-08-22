@@ -6,9 +6,10 @@ import { ACTION_INTENT_JSON_SCHEMA } from "@perfectman/shared";
  * History: this contract existed twice — hand-written prose in the prompt
  * and the zod schema in shared. They drifted (spectatorSummary, emoji,
  * targetEventId, replyToEventId were never explained; preferredDelay and
- * channelType were hardcoded; memoryWrites semantics were never described).
- * The renderer below makes the field list mechanically follow the schema so
- * drift is a compile/test failure, not a silent prompt change.
+ * channelType were hardcoded). The renderer below makes the field list
+ * mechanically follow the schema so drift is a compile/test failure, not a
+ * silent prompt change. Nested shapes (memoryWrites proposals) still render
+ * as arrays — their inner contract is enforced by validation, not prose.
  *
  * Engine-stamped fields (id, actorId) are NOT requested: the runtime owns
  * structure, the model owns language (see intent-parser's structural
@@ -20,10 +21,10 @@ import { ACTION_INTENT_JSON_SCHEMA } from "@perfectman/shared";
 const ENGINE_STAMPED = new Set(["id", "actorId"]);
 
 /** Curated per-field guidance, keyed by schema property name. String arrays are example lists. */
-const FIELD_NOTES: Record<string, string | string[]> = {
+export const FIELD_NOTES: Record<string, string | string[]> = {
   intentType: "one of the available intent types",
   channelTarget:
-    'ONLY for send_message/reply_to_message/leave_channel/invite_agent — the existing channel ID you\'re acting in. OMIT entirely for create_channel (use channelName/channelType instead).',
+    "ONLY for send_message/reply_to_message/leave_channel/invite_agent — the existing channel ID you're acting in. OMIT entirely for create_channel (use channelName/channelType instead).",
   personTargets:
     "OMIT this field unless the action targets a specific person directly.",
   visibleContent:
@@ -35,9 +36,11 @@ const FIELD_NOTES: Record<string, string | string[]> = {
   fallbackIfBlocked:
     "if your primary action is denied, the low-risk action to take instead (optional)",
   channelName: "ONLY for create_channel — a short name for the new channel.",
-  channelType: 'ONLY for create_channel — usually "private_channel".',
+  channelType: "ONLY for create_channel — usually private_channel.",
   invitedAgentIds:
     "ONLY for create_channel — agentIds to invite into the new channel.",
+  memoryWrites:
+    "optional list of {type: episodic|relationship|self|social_theory|pending_intention|emotional_residue, subjectAgentIds: [], summary: 'one sentence', emotionalTone: 'one or two words', confidence: 0.0-1.0, unresolved: true|false}",
   spectatorSummary: "short neutral summary as seen by spectators (rarely needed)",
   replyToEventId: "ONLY for reply_to_message — the event id you are replying to.",
   emoji: "ONLY for react — a single emoji.",
@@ -78,7 +81,7 @@ export function renderIntentOutputContract(ownUtterancesWarning: string): string
 
   const stampedLine =
     ENGINE_STAMPED.size > 0
-      ? `\nThe runtime supplies "${[...ENGINE_STAMPED].join('"} and "')}" itself — do not include them.`
+      ? `\nThe runtime supplies "${[...ENGINE_STAMPED].join('" and "')}" itself — do not include them.`
       : "";
 
   return `### SECTION 8: OUTPUT CONTRACT & JSON FORMAT

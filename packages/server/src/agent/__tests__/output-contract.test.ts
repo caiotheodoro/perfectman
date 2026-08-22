@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { renderIntentOutputContract } from "../output-contract.js";
 import { ACTION_INTENT_JSON_SCHEMA } from "@perfectman/shared";
 
+import { renderIntentOutputContract, FIELD_NOTES } from "../output-contract.js";
+
 const properties = (ACTION_INTENT_JSON_SCHEMA.properties ?? {}) as Record<
   string,
   Record<string, unknown>
@@ -11,12 +13,19 @@ describe("renderIntentOutputContract (#49 drift guard)", () => {
   const contract = renderIntentOutputContract("");
 
   it("renders every non-engine-stamped schema field exactly once", () => {
-    for (const [name, prop] of Object.entries(properties)) {
+    for (const [name] of Object.entries(properties)) {
       if (name === "id" || name === "actorId") continue;
       const needle = `"${name}":`;
       const count = contract.split(needle).length - 1;
-      expect(count, `${needle} appears once`).toBeGreaterThanOrEqual(1);
-      expect(prop).toBeDefined();
+      expect(count, `${needle} appears once`).toBe(1);
+    }
+  });
+
+  it("has no dead curated notes (reverse drift guard)", () => {
+    // A note whose schema property was renamed/removed must fail here —
+    // otherwise the notes map silently stops rendering.
+    for (const key of Object.keys(FIELD_NOTES)) {
+      expect(properties[key], `FIELD_NOTES.${key} is a schema property`).toBeDefined();
     }
   });
 
@@ -30,10 +39,12 @@ describe("renderIntentOutputContract (#49 drift guard)", () => {
   });
 
   it("renders enum choices exhaustively", () => {
-    const intentEnum = properties.intentType?.enum as string[];
-    expect(intentEnum).toBeDefined();
-    for (const value of intentEnum) {
-      expect(contract, `enum value ${value}`).toContain(`"${value}"`);
+    for (const enumField of ["intentType", "channelType", "fallbackIfBlocked"]) {
+      const values = properties[enumField]?.enum as string[] | undefined;
+      expect(values, `${enumField} is an enum in the schema`).toBeDefined();
+      for (const value of values!) {
+        expect(contract, `${enumField} value ${value}`).toContain(`"${value}"`);
+      }
     }
   });
 
