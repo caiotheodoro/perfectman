@@ -86,6 +86,10 @@ tracking. Its `judge=llm` dispatch input is an opt-in deep run for
 self-hosted runners with model servers configured; hosted CI stays on the
 offline rule judge by default.
 
+A controlled 1.7b-vs-8b re-run recipe (interleaved arms, pinned
+sampling, retry-cost visibility) lives in
+[qwen3-comparison-protocol.md](qwen3-comparison-protocol.md).
+
 ## Judge self-preference: cross-family comparison + jury
 
 Same-family judge/generator pairing risks self-preference bias. The judge
@@ -110,6 +114,7 @@ single-judge number in `docs/eval/evidence/` or the calibration baselines.
 yet — invoke it from a node one-liner). It fans every config out
 concurrently via `Promise.allSettled`, so keep the judge list small and
 point it at one local Ollama host at a time.
+
 
 ## Current baseline (mock, 123 tasks)
 
