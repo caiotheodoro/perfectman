@@ -25,6 +25,7 @@ import { calibrateJudge, baseScenarioId } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checker.js";
+import { BENCH_SLICES, resolveBenchSlice } from "../bench-slices.js";
 
 /** LLM judge endpoint — DeepSeek by default when PERFECTMAN_LLM_PROVIDER=deepseek. */
 export function judgeConfig(): import("../judge/judge.js").LLMJudgeConfig {
@@ -88,6 +89,7 @@ export type BenchReport = {
 export async function runBench(opts: {
   mode?: "mock" | "local";
   scenarios?: string[];
+  slice?: string;
   category?: string;
   limit?: number;
   out?: string;
@@ -99,6 +101,12 @@ export async function runBench(opts: {
   const perTurn = opts.perTurn ?? false;
 
   let selected: RoleplayScenario[];
+  if (opts.slice !== undefined && opts.scenarios && opts.scenarios.length > 0) {
+    throw new Error("Pass either --slice or --scenarios, not both");
+  }
+  if (opts.slice !== undefined && opts.category) {
+    throw new Error("Pass either --slice or --category, not both");
+  }
   if (opts.scenarios && opts.scenarios.length > 0) {
     selected = opts.scenarios
       .map(id => getScenario(id))
@@ -106,6 +114,19 @@ export async function runBench(opts: {
     if (selected.length === 0) {
       throw new Error(`No scenarios matched: ${opts.scenarios.join(", ")}`);
     }
+  } else if (opts.slice !== undefined) {
+    const ids = resolveBenchSlice(opts.slice);
+    if (!ids) {
+      throw new Error(`Unknown slice "${opts.slice}" (available: ${Object.keys(BENCH_SLICES).join(", ")})`);
+    }
+    if (ids.length === 0) {
+      throw new Error(`Slice "${opts.slice}" resolved to no scenarios`);
+    }
+    const unknownIds = ids.filter(id => !getScenario(id));
+    if (unknownIds.length > 0) {
+      throw new Error(`Slice "${opts.slice}" has unknown scenario ids: ${unknownIds.join(", ")}`);
+    }
+    selected = ids.map(id => getScenario(id)).filter((x): x is RoleplayScenario => Boolean(x));
   } else if (opts.category) {
     selected = scenariosByCategory(opts.category as never);
   } else {
@@ -303,6 +324,7 @@ export async function main(): Promise<void> {
   const report = await runBench({
     mode: (argValue("--mode") as "mock" | "local") ?? "mock",
     scenarios: args.includes("--scenarios") ? (argValue("--scenarios") ?? "").split(",").filter(Boolean) : undefined,
+    slice: args.includes("--slice") ? (argValue("--slice") ?? "") : undefined,
     category: argValue("--category"),
     limit: argValue("--limit") ? Number(argValue("--limit")) : undefined,
     out: argValue("--out"),
