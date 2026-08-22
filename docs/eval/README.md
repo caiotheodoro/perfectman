@@ -78,6 +78,10 @@ tracking. Its `judge=llm` dispatch input is an opt-in deep run for
 self-hosted runners with model servers configured; hosted CI stays on the
 offline rule judge by default.
 
+A controlled 1.7b-vs-8b re-run recipe (interleaved arms, pinned
+sampling, retry-cost visibility) lives in
+[qwen3-comparison-protocol.md](qwen3-comparison-protocol.md).
+
 ## Current baseline (mock, 123 tasks)
 
 - Signal pass rate: **100%** (all expected signals across all rotated scenes)
