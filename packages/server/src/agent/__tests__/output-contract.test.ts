@@ -24,9 +24,8 @@ describe("renderIntentOutputContract (#49 drift guard)", () => {
   it("has no dead curated notes (reverse drift guard)", () => {
     // A note whose schema property was renamed/removed must fail here —
     // otherwise the notes map silently stops rendering.
-    for (const key of Object.keys(FIELD_NOTES)) {
-      expect(properties[key], `FIELD_NOTES.${key} is a schema property`).toBeDefined();
-    }
+    const deadNotes = Object.keys(FIELD_NOTES).filter(k => !(k in properties));
+    expect(deadNotes).toEqual([]);
   });
 
   it("never requests engine-stamped fields or hardcodes their values", () => {
@@ -41,7 +40,7 @@ describe("renderIntentOutputContract (#49 drift guard)", () => {
   it("renders enum choices exhaustively", () => {
     for (const enumField of ["intentType", "channelType", "fallbackIfBlocked"]) {
       const values = properties[enumField]?.enum as string[] | undefined;
-      expect(values, `${enumField} is an enum in the schema`).toBeDefined();
+      expect(Array.isArray(values), `${enumField} is an enum in the schema`).toBe(true);
       for (const value of values!) {
         expect(contract, `${enumField} value ${value}`).toContain(`"${value}"`);
       }
@@ -52,8 +51,7 @@ describe("renderIntentOutputContract (#49 drift guard)", () => {
     // Every rendered line must correspond to a real schema property —
     // catches typos in curated notes drifting away from the schema.
     const rendered = [...contract.matchAll(/"([a-zA-Z]+)":/g)].map(m => m[1]!);
-    for (const name of rendered) {
-      expect(properties[name], `"${name}" is a schema property`).toBeDefined();
-    }
+    const foreign = rendered.filter(name => !(name in properties));
+    expect(foreign).toEqual([]);
   });
 });
