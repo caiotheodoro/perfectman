@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      GOLDEN_SCENARIOS: v1_casual_chat,v1_exclusion_inferred,v1_private_motive,motive_gossip,edge_public_mock,stagnation_resentment_loop,calibration_quiet_room,motive_flirting
+      GOLDEN_SCENARIOS: v1_casual_chat,v1_exclusion_inferred,v1_private_motive,motive_gossip,edge_public_mock,edge_exclusion_cascade,edge_gossip_catalyst,edge_mutation_pressure,stagnation_resentment_loop,calibration_quiet_room,motive_flirting
     steps:
       - uses: actions/checkout@v4
 

@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-22T19:54:49.330Z",
+  "generatedAt": "2026-08-22T21:26:30.183Z",
   "totals": {
-    "files": 92,
-    "its": 855
+    "files": 93,
+    "its": 861
   },
   "byPackage": {
     "engine": {
@@ -11,8 +11,8 @@
       "flags": []
     },
     "eval": {
-      "files": 14,
-      "its": 106,
+      "files": 15,
+      "its": 112,
       "flags": []
     },
     "server": {
@@ -619,6 +619,28 @@
       "deadIdTruthy": 0,
       "nonNull": 0,
       "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/eval/src/test/chat-completion.test.ts",
+      "pkg": "eval",
+      "layer": "eval-harness",
+      "its": 6,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 6,
       "asyncPauses": 0,
       "weakTerminals": [],
       "flags": [],
