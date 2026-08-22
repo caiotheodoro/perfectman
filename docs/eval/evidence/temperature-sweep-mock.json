@@ -2,6 +2,8 @@
   "version": "temperature-sweep-v1",
   "mode": "mock",
   "slice": "canary",
+  "seeds": "scenario.seed per cell — PERFECTMAN_LLM_SEED only reaches localLLMConfig (live mode) and cannot perturb this path",
+  "limitations": "the deterministic mock's only temperature read is the charged-react gate (temperature >= 0.9), so all sub-0.9 cells are identical by construction — only guardBlocks/contentRepetition/creativity/cohesion cells at >= 0.9 vary",
   "scenarios": [
     "motive_gossip",
     "v1_exclusion_inferred",

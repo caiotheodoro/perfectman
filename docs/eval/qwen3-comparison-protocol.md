@@ -70,19 +70,27 @@ Prefer 1.7b unless 8b wins ≥ two quality axes by a full point across the
 usable pairs AND costs ≤ 2× median paired latency with comparable
 fallback pressure. Anything narrower is noise at this n.
 
-**Instrument caveat (why quality axes are provisional here).** The recipe
-above runs `--judge rule`, whose axes are structural heuristics that
+**Instrument caveat (provisional; the real judge is cross-family).** The
+recipe above runs `--judge rule`, whose axes are structural heuristics that
 main's own docs say not to trust as prose-quality measures — a genuine 8b
 quality win may be unmeasurable by that instrument, so the defaults
 would win by construction. The correct instrument is a cross-family LLM
 judge (DeepSeek at temperature 0, sidestepping local-qwen-judges-its-own-
-arms bias), but the CLI currently shares one endpoint env
-(`PERFECTMAN_LLM_BASE_URL`) between the arena and the judge, so a
-separate-endpoint judge is not runnable today without pointing the arena
-at DeepSeek too. Until a judge-endpoint override lands (small follow-up:
-`PERFECTMAN_JUDGE_BASE_URL` in `judgeConfig()`), treat every quality
-conclusion as provisional and lean on the required full-point margin and
-multi-seed sweeps to keep noise out of the verdict.
+arms bias), which is runnable today with a judge endpoint separate from the
+arena:
+
+```sh
+PERFECTMAN_LLM_BASE_URL=http://localhost:11434/v1 PERFECTMAN_LLM_MODEL=qwen3:8b \
+PERFECTMAN_JUDGE_BASE_URL=https://api.deepseek.com/v1 PERFECTMAN_JUDGE_MODEL=deepseek-chat \
+PERFECTMAN_LLM_API_KEY=$DEEPSEEK_API_KEY PERFECTMAN_JUDGE_TEMPERATURE=0 \
+pnpm --filter @perfectman/eval bench --mode local --judge llm --scenarios "$SCENARIO" …
+```
+
+(`PERFECTMAN_JUDGE_BASE_URL`/`PERFECTMAN_JUDGE_MODEL`/`PERFECTMAN_JUDGE_TEMPERATURE`
+override the judge independently of the arena — see `judgeConfig()` in
+`packages/eval/src/cli/bench.ts`.) Until that run exists, treat every
+quality conclusion as provisional and lean on the required full-point
+margin and multi-seed sweeps to keep noise out of the verdict.
 
 ## What stays manual
 
