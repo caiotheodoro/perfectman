@@ -460,3 +460,62 @@ function hashString(s: string): string {
   }
   return (h >>> 0).toString(36);
 }
+
+// ── Jury of judges ───────────────────────────────────────────────────────────
+
+export type JuryVerdict = {
+  /** Per-axis median across surviving judges — the verdict. */
+  axes: AxisScores;
+  /** Per-judge raw scores, keyed by config label, for divergence inspection. */
+  perJudge: Record<string, AxisScores>;
+};
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+}
+
+/**
+ * Majority verdict across independently-sourced judges: same transcript,
+ * different model families/endpoints, per-axis median. Self-preference bias
+ * shows up as spread in `perJudge`; the median resists a single biased
+ * outlier. Judges that error are dropped, not averaged-in; at least one
+ * survivor is required.
+ */
+export async function juryJudge(
+  scenario: RoleplayScenario,
+  events: readonly CommittedEvent[],
+  configs: Array<LLMJudgeConfig & { label?: string }>,
+): Promise<JuryVerdict> {
+  if (configs.length === 0) throw new Error("juryJudge requires at least one judge config");
+
+  const settled = await Promise.allSettled(
+    configs.map(async (config, i) => ({
+      label: config.label ?? `judge-${i}`,
+      axes: (await llmJudge(scenario, events, config)).axes,
+    })),
+  );
+
+  const perJudge: Record<string, AxisScores> = {};
+  for (const outcome of settled) {
+    if (outcome.status === "fulfilled") perJudge[outcome.value.label] = outcome.value.axes;
+  }
+  if (Object.keys(perJudge).length === 0) {
+    throw new Error("All jury judges failed");
+  }
+
+  const axisIds = new Set<string>();
+  for (const axes of Object.values(perJudge)) {
+    for (const axis of Object.keys(axes)) axisIds.add(axis);
+  }
+
+  const axes: AxisScores = {};
+  for (const axis of axisIds) {
+    const votes = Object.values(perJudge)
+      .map(a => a[axis])
+      .filter((v): v is number => typeof v === "number");
+    if (votes.length > 0) axes[axis] = Math.round(median(votes) * 1000) / 1000;
+  }
+  return { axes, perJudge };
+}

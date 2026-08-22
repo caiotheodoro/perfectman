@@ -86,6 +86,20 @@ tracking. Its `judge=llm` dispatch input is an opt-in deep run for
 self-hosted runners with model servers configured; hosted CI stays on the
 offline rule judge by default.
 
+## Judge self-preference: cross-family comparison + jury
+
+Same-family judge/generator pairing risks self-preference bias. The judge
+module supports a **jury**: `juryJudge(scenario, events, configs[])` runs
+the same transcript through independently-sourced judges (different model
+family and/or endpoint per config) and returns the per-axis median plus
+every judge's raw scores. Spread across `perJudge` IS the bias evidence —
+if a differently-sourced judge disagrees with the same-family judge by a
+full point or more on an axis, don't trust that axis from either alone.
+
+Maintainer-run protocol (needs live models): score the same saved
+transcripts once with the same-family judge, once with a different family,
+diff axis means; if they diverge, switch to the jury for headline numbers.
+
 ## Current baseline (mock, 123 tasks)
 
 - Signal pass rate: **100%** (all expected signals across all rotated scenes)
