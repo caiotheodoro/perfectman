@@ -5,6 +5,10 @@ Two design decisions: **(A)** prompt text uses a *full hybrid* structure chosen 
 **model precision** (not human readability); **(B)** no LangChain/LangGraph framework —
 instead an internal typed-step abstraction (`LlmStep`) that the runtime routes through.
 
+New or changed code that sends an LLM prompt should follow A and B below. A deviation
+that's intentional (e.g. a call outside the agent decision pipeline B targets) belongs
+in the open items list, not silently introduced.
+
 ---
 
 ## A. Prompt text structure: full hybrid, precision-first
@@ -101,6 +105,11 @@ multi-call consumer (see open items).
 - Real-model format A/B (`--mode local`, qwen3:8b) — #44/#45/#43.
 - CI: build `shared`/`engine` before server typecheck so stale `dist` can't silently rot — #43.
 - `fallbackIfBlocked` alternate-action wiring — #50.
+- `packages/eval/src/judge/judge.ts` and `packages/eval/src/narrator/narrator.ts` follow A
+  (build prompt text with `PromptSection`) but call `fetch` directly rather than routing
+  through B (`LlmStep`/`LLMProvider`) — acceptable since they score/narrate outside the
+  agent decision pipeline the step abstraction targets, but revisit if they need retry,
+  fallback, or version telemetry parity with it.
 
 ## D. Sources
 
