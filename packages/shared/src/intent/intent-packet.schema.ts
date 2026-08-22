@@ -6,9 +6,10 @@ import { IntentTypeSchema, IntentChannelTypeSchema, MemoryWriteProposalSchema } 
 /**
  * The model-decision packet: only the fields the model legitimately decides.
  * Structural fields the engine owns (id, actorId, preferredDelay,
- * fallbackIfBlocked) are intentionally NOT here — they are stamped by
- * `composeIntentPacket`, not requested from the model. This is the single
- * source of truth for both the prompt contract and constrained decoding.
+ * fallbackIfBlocked) are intentionally NOT here — they are computed by
+ * `composeIntentPacket` from `intentType` (see `ENGINE_FALLBACK_ELIGIBLE_TYPES`
+ * below), not requested from the model. This is the single source of truth
+ * for both the prompt contract and constrained decoding.
  */
 export const ModelIntentPacketSchema = z.object({
   intentType: IntentTypeSchema,
@@ -143,6 +144,24 @@ export function memoryWriteProposalFieldContract(): string[] {
 }
 
 /**
+ * Primary intent types the engine assigns an automatic `no_op` fallback to
+ * when denied. Deliberately single-target: the engine has no way to judge
+ * which softer alternative fits a specific denial reason the way a model
+ * could, so it always falls back to the one universally-available,
+ * never-blocked action (see `computeAvailableActions`) instead of guessing.
+ * Types left out (no_op, delay_response, leave_channel, typing_start/cancel,
+ * write_memory) are already low-risk or already unblockable — no fallback
+ * safety net is needed for them.
+ */
+const ENGINE_FALLBACK_ELIGIBLE_TYPES: ReadonlySet<IntentType> = new Set([
+  "send_message",
+  "reply_to_message",
+  "react",
+  "create_channel",
+  "invite_agent",
+]);
+
+/**
  * Merges a validated model packet with the engine-stamped structural fields
  * to produce the full engine-side ActionIntent. `defaultIntentType` is used by
  * controlled fallbacks (no_op / delay_response) so those never pass through
@@ -177,6 +196,7 @@ export function composeIntentPacket(spec: IntentComposeInput): ActionIntent {
     actorId: spec.agentId,
     intentType: packet.intentType,
     preferredDelay: 0,
+    fallbackIfBlocked: ENGINE_FALLBACK_ELIGIBLE_TYPES.has(packet.intentType) ? "no_op" : undefined,
     channelTarget: packet.channelTarget,
     personTargets: packet.personTargets,
     visibleContent: packet.visibleContent,

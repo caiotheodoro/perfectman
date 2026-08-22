@@ -35,6 +35,15 @@ describe("ModelIntentPacket", () => {
     expect(intent.channelTarget).toBe("c1");
     expect(intent.visibleContent).toBe("oi");
     expect(intent.preferredDelay).toBe(0);
+    expect(intent.fallbackIfBlocked).toBe("no_op");
+  });
+
+  it("composeIntentPacket assigns no fallback for types the engine can't usefully soften", () => {
+    const intent = composeIntentPacket({
+      kind: "model",
+      packet: { intentType: "no_op", privateMotiveSummary: "why", memoryWrites: [] },
+      agentId: "a1",
+    });
     expect(intent.fallbackIfBlocked).toBeUndefined();
   });
 
