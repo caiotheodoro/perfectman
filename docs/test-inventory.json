@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-22T01:56:53.451Z",
+  "generatedAt": "2026-08-22T10:42:24.658Z",
   "totals": {
-    "files": 84,
-    "its": 758
+    "files": 85,
+    "its": 763
   },
   "byPackage": {
     "engine": {
@@ -11,8 +11,8 @@
       "flags": []
     },
     "eval": {
-      "files": 9,
-      "its": 59,
+      "files": 10,
+      "its": 64,
       "flags": []
     },
     "server": {
@@ -508,6 +508,28 @@
       "defined": 0,
       "deadIdTruthy": 0,
       "nonNull": 0,
+      "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/eval/src/test/bench-slices.test.ts",
+      "pkg": "eval",
+      "layer": "eval-harness",
+      "its": 5,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 2,
       "spies": 0,
       "asyncPauses": 0,
       "weakTerminals": [],

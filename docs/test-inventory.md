@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-22T01:56:53.446Z — audited 84 files, 758 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-22T10:42:24.644Z — audited 85 files, 763 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -9,11 +9,11 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | Package | Files | it/test | Hygiene flags
 |---|---|---|---|
 | engine | 21 | 246 | —
-| eval | 9 | 59 | —
+| eval | 10 | 64 | —
 | server | 47 | 385 | console(1), async-pause(1)
 | shared | 7 | 68 | —
 
-**Total: 84 files, 758 it/test blocks; 2 files flagged.**
+**Total: 85 files, 763 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -41,6 +41,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/engine/src/__tests__/visibility-security.test.ts | integration | 18 | 
 | packages/engine/src/__tests__/visibility.test.ts | integration | 20 | 
 | packages/eval/src/test/bench-seed.test.ts | eval-harness | 7 | 
+| packages/eval/src/test/bench-slices.test.ts | eval-harness | 5 | 
 | packages/eval/src/test/bench.test.ts | eval-harness | 1 | 
 | packages/eval/src/test/calibration-matching.test.ts | eval-harness | 4 | 
 | packages/eval/src/test/calibration-properties.test.ts | eval-harness | 6 | 

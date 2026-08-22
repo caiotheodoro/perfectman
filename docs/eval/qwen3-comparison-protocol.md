@@ -8,46 +8,55 @@ this protocol removes.
 
 | Confound | Control |
 | --- | --- |
-| Retry logic landed after the comparison; 8b's retry-token cost was folded into its baseline | Both arms run on current main (repetition guard + policy knobs included); wire-call counts recorded per run via the bench report so retry cost is visible separately from generation cost |
-| Per-scenario timing escalated within a single run (306s → 567s → 672s), suggesting thermal/context compounding | Interleave models per scenario (A/B/A/B) instead of back-to-back runs; discard the first scenario of each arm as warm-up; cap each session to one scenario before restarting the server (`ollama stop` / relaunch) to reset KV and thermal state |
-| Unpinned sampling made quality deltas unattributable | Sampling is pinned by default in local-mode benchmarks (seed 42, see docs/eval README); keep `PERFECTMAN_LLM_SEED` identical across arms |
+| Retry logic landed after the comparison; 8b's retry-token cost was folded into its baseline | Both arms run on current main (repetition guard included); `fallbackCount` and per-scenario turn counts come from the bench report. Wire-call-level retry accounting lands with the repetition-sweep work — until then, treat fallbackCount as the retry-pressure proxy |
+| Per-scenario timing escalated within a single run (306s → 567s → 672s) | Arms are interleaved **per scenario** (1.7b then 8b on the same scenario before moving on), the first pair is discarded as warm-up, and the Ollama server is restarted between scenarios to reset KV cache and thermal state |
+| Unpinned sampling made quality deltas unattributable | Local-mode benchmarks pin sampling by default (seed 42; see docs/eval README). Keep `PERFECTMAN_LLM_SEED` identical across arms |
 
 ## Recipe
 
-1. **Slice**: use a named slice so both arms see identical scenarios:
+One scenario per invocation — that is what makes the interleave and the
+restarts possible:
 
-   ```sh
-   pnpm --filter @perfectman/eval bench --slice edges --out out/qwen-arm-<model>-edges.json
-   ```
+```sh
+# repeat for SCENARIO in motive_gossip v1_exclusion_inferred motive_conflict stagnation_resentment_loop
+SCENARIO=motive_gossip
 
-2. **Arms**: one process per model, everything else identical:
+# restart between scenarios (resets KV + thermal state)
+ollama stop 2>/dev/null; ollama serve &
 
-   ```sh
-   PERFECTMAN_LLM_BASE_URL=http://localhost:11434/v1 \
-   PERFECTMAN_LLM_MODEL=qwen3:1.7b \
-   pnpm --filter @perfectman/eval bench --mode local --judge rule --slice canary \
-     --out out/qwen-1.7b-canary.json
+PERFECTMAN_LLM_BASE_URL=http://localhost:11434/v1 \
+PERFECTMAN_LLM_MODEL=qwen3:1.7b \
+pnpm --filter @perfectman/eval bench --mode local --judge rule \
+  --scenarios "$SCENARIO" --out "out/qwen-1.7b-$SCENARIO.json"
 
-   PERFECTMAN_LLM_MODEL=qwen3:8b \
-   pnpm --filter @perfectman/eval bench --mode local --judge rule --slice canary \
-     --out out/qwen-8b-canary.json
-   ```
+PERFECTMAN_LLM_BASE_URL=http://localhost:11434/v1 \
+PERFECTMAN_LLM_MODEL=qwen3:8b \
+pnpm --filter @perfectman/eval bench --mode local --judge rule \
+  --scenarios "$SCENARIO" --out "out/qwen-8b-$SCENARIO.json"
+```
 
-3. **Read-out** (per arm, then diff):
-   - judge axis means vs targets (quality),
-   - `providerCalls` vs turn counts (retry pressure by model),
-   - wall-clock `latencyMs` per scenario (cost) — compare interleaved pairs,
-     not totals,
-   - signal pass rate must be 100% in both arms or the run is invalid
-     (structural regressions trump quality deltas).
+Slice identity: use the same four scenarios as the `edges` slice (see
+`packages/eval/src/bench-slices.ts`) so the pressure axes get a sample.
 
-4. **Decision rule**: prefer 1.7b unless 8b wins ≥ two quality axes by a
-   full point AND costs ≤ 2× latency with comparable retry pressure.
-   Anything narrower is noise at n=4 scenarios.
+## Read-out
+
+Per scenario pair (discard the first pair as warm-up):
+
+- judge axis means vs targets (quality),
+- `fallbackCount` per arm (retry pressure proxy),
+- wall-clock `latencyMs` compared within the pair, never across scenarios,
+- signals: track pass rate directionally (live-model runs legitimately
+  vary — the offline 100% bar is not the live bar), but any outright
+  scenario failure invalidates that pair.
+
+## Decision rule
+
+Prefer 1.7b unless 8b wins ≥ two quality axes by a full point across the
+usable pairs AND costs ≤ 2× median paired latency with comparable
+fallback pressure. Anything narrower is noise at this n.
 
 ## What stays manual
 
 Steps involving a live Ollama server are maintainer-run by design — the
 repo's CI and offline gates never start local models. Everything up to the
-`bench` invocations is reproducible offline via `--slice` dry-runs against
-the persona-aware mock.
+`bench` invocations is reproducible offline against the persona-aware mock.
