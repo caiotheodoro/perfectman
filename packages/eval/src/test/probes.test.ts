@@ -195,6 +195,17 @@ describe("probes", () => {
 
     it("is wired into runAllProbes with a band", () => {
       const events = [
+        ev("post", "A", 1, "fala sério que isso é real"),
+        ev("post", "B", 2, "Fala sério que isso é real!"),
+      ];
+      const probe = runAllProbes({ events, agentIds: ["A", "B"], totalPulses: 2 })
+        .find(r => r.probe === "cross-agent-echo");
+      expect(probe).toBeDefined();
+      expect(probe!.measured).toBeGreaterThan(0);
+    });
+
+    it("is wired into runAllProbes with a band", () => {
+      const events = [
         ev("post", "A", 1, "repetindo a mesma linha de sempre"),
         ev("post", "A", 2, "repetindo a mesma linha de sempre"),
       ];
