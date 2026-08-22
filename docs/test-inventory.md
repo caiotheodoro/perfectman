@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-22T07:08:50.523Z — audited 86 files, 785 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-22T18:52:05.667Z — audited 91 files, 838 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -8,12 +8,12 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 
 | Package | Files | it/test | Hygiene flags
 |---|---|---|---|
-| engine | 21 | 246 | —
-| eval | 9 | 59 | —
-| server | 49 | 407 | console(1), async-pause(1)
+| engine | 22 | 259 | —
+| eval | 13 | 94 | —
+| server | 49 | 412 | console(1), async-pause(1)
 | shared | 7 | 73 | —
 
-**Total: 86 files, 785 it/test blocks; 2 files flagged.**
+**Total: 91 files, 838 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -32,7 +32,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/engine/src/__tests__/no-io-boundary.test.ts | integration | 3 | 
 | packages/engine/src/__tests__/no-prompt-leak.test.ts | integration | 12 | 
 | packages/engine/src/__tests__/pressure-inhibition.test.ts | integration | 19 | 
-| packages/engine/src/__tests__/scenarios.test.ts | integration | 22 | 
+| packages/engine/src/__tests__/scenarios.test.ts | integration | 23 | 
 | packages/engine/src/__tests__/stagnation.test.ts | integration | 11 | 
 | packages/engine/src/__tests__/translate-emotional-state.test.ts | integration | 15 | 
 | packages/engine/src/__tests__/update-core-mood.test.ts | integration | 7 | 
@@ -40,19 +40,24 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/engine/src/__tests__/validate-intent.test.ts | integration | 22 | 
 | packages/engine/src/__tests__/visibility-security.test.ts | integration | 18 | 
 | packages/engine/src/__tests__/visibility.test.ts | integration | 20 | 
+| packages/engine/src/perception/__tests__/memory-salience.test.ts | integration | 12 | 
 | packages/eval/src/test/bench-seed.test.ts | eval-harness | 7 | 
-| packages/eval/src/test/bench.test.ts | eval-harness | 1 | 
+| packages/eval/src/test/bench-slices.test.ts | eval-harness | 6 | 
+| packages/eval/src/test/bench.test.ts | eval-harness | 5 | 
 | packages/eval/src/test/calibration-matching.test.ts | eval-harness | 4 | 
 | packages/eval/src/test/calibration-properties.test.ts | eval-harness | 6 | 
+| packages/eval/src/test/echo-chamber-stability.test.ts | eval-harness | 2 | 
 | packages/eval/src/test/golden-labels-coverage.test.ts | eval-harness | 3 | 
 | packages/eval/src/test/judge-json-salvage.test.ts | eval-harness | 9 | 
 | packages/eval/src/test/judge-signals.test.ts | eval-harness | 10 | 
-| packages/eval/src/test/probes.test.ts | eval-harness | 15 | 
+| packages/eval/src/test/jury-judge.test.ts | eval-harness | 9 | 
+| packages/eval/src/test/probes.test.ts | eval-harness | 23 | 
 | packages/eval/src/test/signal-breakdown.test.ts | eval-harness | 4 | 
+| packages/eval/src/test/sweep-temperature.test.ts | eval-harness | 6 | 
 | packages/server/src/__e2e__/html-snapshot.e2e.test.ts | e2e | 1 | console(1)
 | packages/server/src/__e2e__/pipeline-invariants.e2e.test.ts | e2e | 10 | 
 | packages/server/src/__e2e__/roleplay-behaviors.e2e.test.ts | e2e | 17 | 
-| packages/server/src/agent/__tests__/agent-runtime.test.ts | integration | 6 | 
+| packages/server/src/agent/__tests__/agent-runtime.test.ts | integration | 11 | 
 | packages/server/src/agent/__tests__/background-reflection-prompt-builder.test.ts | integration | 11 | 
 | packages/server/src/agent/__tests__/intent-parser-null.test.ts | integration | 4 | 
 | packages/server/src/agent/__tests__/intent-parser.test.ts | integration | 16 | 

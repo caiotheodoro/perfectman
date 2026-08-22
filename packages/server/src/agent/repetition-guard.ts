@@ -41,6 +41,34 @@ export function similarity(a: string, b: string): number {
 export const REPETITION_SIMILARITY_THRESHOLD = 0.7;
 
 /**
+ * Marker written into no_op motives when the guard blocks a repeat.
+ *
+ * Load-bearing prose: the offline sweeps have no structural signal to count
+ * guard blocks (the block is an ordinary `no_op` fallback, and `intent_blocked`
+ * is also raised for rate limits and permission denials), so they match this
+ * prefix. Keep it as the first token of the blocked motive.
+ */
+export const REPETITION_GUARD_MARKER = "Repetition guard";
+
+/**
+ * Repetition-guard policy knobs. Omitting either field reproduces the shipped
+ * behavior: Jaccard threshold 0.7, exactly one retry before a structural block.
+ *
+ * Retries are billed but not pre-authorized by the surface's budget gate, which
+ * runs once before the first call. `ActionIntentStep` therefore re-checks
+ * `llmBudget.canCall` before every retry, so raising `maxRetries` cannot
+ * multiply unmetered wire calls.
+ */
+export type RepetitionPolicy = {
+  /** Similarity at or above which a candidate counts as a repeat. Clamped to [0, 1]. */
+  threshold?: number;
+  /** Retries allowed after a detected repeat before blocking. Clamped to a non-negative integer. */
+  maxRetries?: number;
+};
+
+export const DEFAULT_REPETITION_MAX_RETRIES = 1;
+
+/**
  * Returns true if `candidate` is a near-duplicate of any of the agent's own
  * recent utterances (word-overlap similarity >= threshold).
  */
