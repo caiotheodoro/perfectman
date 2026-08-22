@@ -15,13 +15,18 @@ on:
           - rule
           - llm
 
+# A trend run should never lose a data point to a later dispatch, and the
+# scheduled cron shouldn't kill an in-flight opt-in deep run either — so
+# runs queue instead of cancelling each other.
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   benchmark:
-    runs-on: ubuntu-latest
+    # The offline path runs anywhere; the opt-in LLM deep run needs a runner
+    # with model servers + keys configured, so it targets self-hosted only.
+    runs-on: ${{ github.event.inputs.judge == 'llm' && 'self-hosted' || 'ubuntu-latest' }}
     # The opt-in LLM deep run needs far more headroom than the offline path.
     timeout-minutes: ${{ github.event.inputs.judge == 'llm' && 240 || 30 }}
     steps:
@@ -62,8 +67,9 @@ jobs:
 
       # Opt-in deep run (self-hosted runner with models configured via env).
       # Signal rates legitimately vary under real-model generation, so this
-      # path asserts only structural sanity: no scenario run hard-failed and
-      # every expected scenario id is present.
+      # path asserts only structural sanity: no scenario run hard-failed.
+      # (No expected-ids CSV is passed — the full suite has no fixed golden
+      # subset to check coverage against, unlike the PR-gate run.)
       - name: Deep bench (LLM judge)
         if: ${{ github.event.inputs.judge == 'llm' }}
         run: pnpm --filter @perfectman/eval bench --mode local --judge llm --out "$GITHUB_WORKSPACE/out/bench-full.json"
