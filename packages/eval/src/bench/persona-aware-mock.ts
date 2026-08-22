@@ -29,6 +29,8 @@ export class PersonaAwareMockProvider implements LlmProvider {
   private readonly seed: number;
 
   private readonly privateChannelsUsed = new Set<string>();
+  /** Consecutive identical-emoji reacts per agent — echo-chamber guard. */
+  private readonly consecutiveReacts = new Map<string, { emoji: string; count: number }>();
 
   constructor(pack: PersonaPack, seed: number) {
     this.pack = pack;
@@ -196,21 +198,38 @@ export class PersonaAwareMockProvider implements LlmProvider {
 
     // 3. Reactor impulse — a high-arousal persona reacts BEFORE replying.
     const pulseSalt = String(opts.pulseIndex);
-    const chargedReact = opts.canReact && pack.sampling.temperature >= 0.9 && (randDigest(agentId + ":" + pulseSalt, 7) % 2 === 0 || this.isChargedReact());
+    // Saturation cap: after two identical-emoji reacts in a row the agent
+    // falls through to the message paths — a persona who only posts 😂 for
+    // ten straight pulses was the echo-chamber transcript's worst artifact.
+    const MAX_IDENTICAL_REACTS = 2;
+    const prior = this.consecutiveReacts.get(agentId);
+    const saturated = (prior?.count ?? 0) >= MAX_IDENTICAL_REACTS;
+    const chargedReact =
+      opts.canReact &&
+      !saturated &&
+      pack.sampling.temperature >= 0.9 &&
+      (randDigest(agentId + ":" + pulseSalt, 7) % 2 === 0 || this.isChargedReact());
     if (chargedReact) {
       const emojis = pack.edgeProfile.impulseBehaviors.length > 0 ? ["😂", "🔥", "🤨", "🙃"] : ["👍", "👀"];
+      // Salt with the pulse too — a fixed digest gave one agent the same
+      // emoji forever.
+      const emoji = emojis[randDigest(agentId + ":" + pulseSalt, 13) % emojis.length]!;
+      if (prior && prior.emoji === emoji) prior.count += 1;
+      else this.consecutiveReacts.set(agentId, { emoji, count: 1 });
       return {
         id: `int_${agentId}_${now}`,
         actorId: agentId,
         intentType: "react",
         personTargets: [],
-        emoji: emojis[randDigest(agentId, 13) % emojis.length],
+        emoji,
         privateMotiveSummary: "No words needed — the reaction says it all.",
         emotionDrivers,
         motivationDrivers,
         memoryWrites: [],
       };
     }
+    // Non-react turn breaks any react streak.
+    this.consecutiveReacts.delete(agentId);
 
     // 4. Direct attention event with a REAL trigger → reply in persona style.
     if (
