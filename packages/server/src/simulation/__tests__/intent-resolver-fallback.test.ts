@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { IntentResolver } from "../intent-resolver.js";
-import type { RateLimitGate } from "../rate-limit-gate.js";
+import { RateLimitGate } from "../rate-limit-gate.js";
 import { ChannelRegistry } from "../channel-registry.js";
 import { InMemoryChannelRepository } from "../in-memory-stores.js";
 import type {
@@ -104,11 +104,13 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
       updatedAt: Date.now(),
     });
     await channelRepo.addMembership({ channelId: CHANNEL_ID, agentId: AGENT_ID, joinedAt: Date.now() });
-    const rateLimitGate = new RateLimitGateStub();
-    resolver = new IntentResolver(rateLimitGate as RateLimitGate, channelRegistry);
+    resolver = new IntentResolver(new RateLimitGate(SETTINGS), channelRegistry);
   });
 
-  const ctx = (availableActions = AVAILABLE_ACTIONS) => ({
+  const ctx = (
+    availableActions = AVAILABLE_ACTIONS,
+    settings: SimulationSettings = SETTINGS,
+  ) => ({
     simulationId: SIM_ID,
     channelId: CHANNEL_ID,
     pulseIndex: 1,
@@ -116,7 +118,7 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     availableActions,
     channels: [],
     membership: [],
-    settings: SETTINGS,
+    settings,
     actionEmotions: ACTION_EMOTIONS,
   });
 
@@ -131,18 +133,22 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
   });
 
   it("suppresses fallback entirely when the primary was rate-limited", async () => {
-    const denyingGate = {
-      allowAction: () => false,
-      recordAction: () => {},
+    // A zero message limit makes the real gate deny send_message — no stub.
+    const zeroMessageSettings: SimulationSettings = {
+      ...SETTINGS,
+      maxMessagesPerMinutePerAgent: 0,
     };
-    const gated = new IntentResolver(denyingGate as unknown as RateLimitGate, channelRegistry);
+    const gated = new IntentResolver(new RateLimitGate(zeroMessageSettings), channelRegistry);
 
     const intent = makeIntent({ fallbackIfBlocked: "no_op" });
-    const result = await gated.resolve(intent, ctx());
+    const result = await gated.resolve(intent, ctx(AVAILABLE_ACTIONS, zeroMessageSettings));
 
     expect(result.outcome).toBe("blocked");
     expect(result.committedEvents).toHaveLength(1);
     expect(result.committedEvents[0]!.type).toBe("intent_blocked");
+    const violations = (result.committedEvents[0]!.payload as { violations: Array<{ type: string }> })
+      .violations;
+    expect(violations[0]!.type).toBe("rate_limited");
   });
 
   it("rejects side-effect-heavy fallback types (engine clamp)", async () => {
@@ -207,11 +213,3 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     expect(result.committedEvents).toHaveLength(1);
   });
 });
-
-class RateLimitGateStub {
-  allowed = true;
-  async allowAction(): Promise<boolean> {
-    return this.allowed;
-  }
-  recordAction(): void {}
-}
