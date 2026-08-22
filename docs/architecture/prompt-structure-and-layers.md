@@ -107,9 +107,8 @@ multi-call consumer (see open items).
 - `fallbackIfBlocked` alternate-action wiring — #50.
 - `packages/eval/src/judge/judge.ts` and `packages/eval/src/narrator/narrator.ts` follow A
   (build prompt text with `PromptSection`) but call `fetch` directly rather than routing
-  through B (`LlmStep`/`LLMProvider`) — acceptable since they score/narrate outside the
-  agent decision pipeline the step abstraction targets, but revisit if they need retry,
-  fallback, or version telemetry parity with it.
+  through B (`LlmStep`/`LLMProvider`) — real duplication of `OpenAiCompatibleProvider`'s
+  request/retry/timeout logic, not just a style gap — #66.
 
 ## D. Sources
 
