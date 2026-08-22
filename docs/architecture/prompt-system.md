@@ -12,7 +12,7 @@ The architecture explicitly avoids persona as one giant prompt only; see `docs/c
 | --- | --- | --- |
 | `action_intent` | Builds the existing full persona prompt for choosing an action intent and optional visible chat text. | Active via `ActionIntentPromptBuilder` |
 | `social_interpretation` | Reserved for interpreting tone, ambiguity, sarcasm, passive aggression, and plausible motive. | Reserved; no builder yet |
-| `background_reflection` | Reserved for relationship memory, emotional residue, and pending-intention consolidation. | Reserved; no builder yet |
+| `background_reflection` | Reserved for relationship memory, emotional residue, and pending-intention consolidation. | Builder implemented (`BackgroundReflectionPromptBuilder`); not yet scheduled by the runtime — wiring a trigger cadence is a separate integration decision |
 | `spectator_recap` | Reserved for narrator-facing recap generation. | Reserved; no builder yet |
 
 Reserved values exist to make field gating explicit. They must not be wired into runtime LLM calls or passed to the current `PromptBuilder.build()` until their prompt builders and tests exist.
@@ -35,13 +35,13 @@ Every `BuiltPrompt` carries its `purpose`. Providers can receive one prompt obje
 
 There is no implicit default at the prompt-construction boundary. Call sites must pass a purpose explicitly so new LLM surfaces cannot accidentally inherit the action prompt.
 
-`PromptBuilder` is a dispatcher, not a universal prompt template. Each supported purpose must have a dedicated builder. Today only `ActionIntentPromptBuilder` exists.
+`PromptBuilder` is a dispatcher, not a universal prompt template. Each supported purpose must have a dedicated builder. `ActionIntentPromptBuilder` and `BackgroundReflectionPromptBuilder` exist today; `social_interpretation` and `spectator_recap` remain reserved with no builder.
 
 ## callType Alignment
 
-`AgentRuntime` maps `BuiltPrompt.purpose` to `LlmUsage.callType` through `purposeToCallType`.
+`PromptPurpose` maps to `LLMUsage.callType` through `purposeToCallType` (`agent/surface/llm-step.ts`); each LLM-surface step (e.g. `ActionIntentStep`) uses it when recording usage.
 
-| PromptPurpose | LlmUsage.callType |
+| PromptPurpose | LLMUsage.callType |
 | --- | --- |
 | `action_intent` | `cognition` |
 | `social_interpretation` | `interpretation` |

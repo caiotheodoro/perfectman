@@ -1,4 +1,4 @@
-export type LlmConfig = {
+export type LLMConfig = {
   providerType: "mock" | "qwen3_8b" | "ollama" | "freellmapi";
   baseUrl?: string;
   apiKeyEnv?: string;
@@ -9,5 +9,11 @@ export type LlmConfig = {
   timeoutMs: number;
   retryCount: number;
   responseFormatJson?: boolean;
+  /**
+   * Use shape-constrained json_schema decoding when the provider supports it.
+   * Defaults to true (with an automatic 400/422 fallback to json_object in the
+   * OpenAI-compatible provider); set false to force syntax-only json_object.
+   */
+  responseFormatJsonSchema?: boolean;
   extraBody?: Record<string, unknown>;
 };

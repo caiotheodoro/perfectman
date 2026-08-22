@@ -153,6 +153,23 @@ describe("IntentResolver", () => {
     expect(result.outcome).toBe("blocked");
   });
 
+  it("creates a channel with the model-provided channelType (not hardcoded private)", async () => {
+    const repo = new InMemoryChannelRepository();
+    const reg = new ChannelRegistry(repo);
+    const r = new IntentResolver(new RateLimitGate(SETTINGS), reg);
+    const intent = makeIntent({
+      intentType: "create_channel",
+      channelTarget: undefined,
+      channelName: "clube-do-livro",
+      channelType: "public_channel",
+      invitedAgentIds: [],
+    });
+    const result = await r.resolve(intent, ctx());
+    expect(result.outcome).toBe("committed");
+    const channels = await repo.listBySimulation(SIM_ID);
+    expect(channels.find(c => c.name === "clube-do-livro")?.type).toBe("public_channel");
+  });
+
   it("committed events are SimulationEvents (not raw intents)", async () => {
     const intent = makeIntent({ intentType: "send_message", channelTarget: CHANNEL_ID });
     const result = await resolver.resolve(intent, ctx());

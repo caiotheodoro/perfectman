@@ -1,4 +1,4 @@
-import type { LlmConfig } from "../llm/llm-config.js";
+import type { LLMConfig } from "../llm/llm-config.js";
 import {
   getPersonaPackById,
   type PersonaPack,
@@ -9,7 +9,7 @@ import {
   type PersonaPromptProfile
 } from "./persona-prompt-profile.js";
 
-export const DEFAULT_MOCK_CONFIG: LlmConfig = {
+export const DEFAULT_MOCK_CONFIG: LLMConfig = {
   providerType: "mock",
   modelName: "mock-model",
   maxInputTokens: 2048,
@@ -41,10 +41,10 @@ export class PersonaLoader {
   }
 
   /**
-   * Resolves an LlmConfig by personaId with safe mock defaults.
+   * Resolves an LLMConfig by personaId with safe mock defaults.
    * Sampling is persona-tuned when a persona pack exists.
    */
-  static getLlmConfig(personaId: string, overrides?: Partial<LlmConfig>): LlmConfig {
+  static getLLMConfig(personaId: string, overrides?: Partial<LLMConfig>): LLMConfig {
     const pack = getPersonaPackById(personaId);
     return {
       ...DEFAULT_MOCK_CONFIG,

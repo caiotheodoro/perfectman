@@ -1,14 +1,14 @@
 import type { AgentRuntimeInput } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt } from "../agent/agent-runtime.types.js";
-import type { LlmProvider, LlmProviderResult } from "./llm-provider.js";
+import type { LLMProvider, LLMProviderResult } from "./llm-provider.js";
 
-export class MockLlmProvider implements LlmProvider {
+export class MockLLMProvider implements LLMProvider {
   async generateIntent(
     input: AgentRuntimeInput,
     context: AgentRuntimeContext,
     prompt: BuiltPrompt
-  ): Promise<LlmProviderResult> {
+  ): Promise<LLMProviderResult> {
     const startTime = Date.now();
     const actorId = input.agentId;
 
@@ -85,8 +85,6 @@ export class MockLlmProvider implements LlmProvider {
       privateMotiveSummary,
       emotionDrivers,
       motivationDrivers,
-      preferredDelay: 0,
-      fallbackIfBlocked: "no_op",
       memoryWrites: [],
     };
 

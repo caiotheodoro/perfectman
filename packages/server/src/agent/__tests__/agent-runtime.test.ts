@@ -138,11 +138,11 @@ describe("AgentRuntime Orchestration", () => {
   });
 
   it("should catch provider errors and return a fallback intent and failure operator event", async () => {
-    // Register an OpenAI-compatible config but with a missing baseUrl, which throws LlmConfigurationError!
+    // Register an OpenAI-compatible config but with a missing baseUrl, which throws LLMConfigurationError!
     const runtime = new AgentRuntime({
       "example-friend": {
         providerType: "qwen3",
-        baseUrl: "", // Will throw LlmConfigurationError!
+        baseUrl: "", // Will throw LLMConfigurationError!
         modelName: "test-model",
       },
     });
