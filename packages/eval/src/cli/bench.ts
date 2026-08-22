@@ -101,8 +101,11 @@ export async function runBench(opts: {
   const perTurn = opts.perTurn ?? false;
 
   let selected: RoleplayScenario[];
-  if (opts.slice && opts.scenarios && opts.scenarios.length > 0) {
+  if (opts.slice !== undefined && opts.scenarios && opts.scenarios.length > 0) {
     throw new Error("Pass either --slice or --scenarios, not both");
+  }
+  if (opts.slice !== undefined && opts.category) {
+    throw new Error("Pass either --slice or --category, not both");
   }
   if (opts.scenarios && opts.scenarios.length > 0) {
     selected = opts.scenarios
@@ -111,10 +114,13 @@ export async function runBench(opts: {
     if (selected.length === 0) {
       throw new Error(`No scenarios matched: ${opts.scenarios.join(", ")}`);
     }
-  } else if (opts.slice) {
+  } else if (opts.slice !== undefined) {
     const ids = resolveBenchSlice(opts.slice);
     if (!ids) {
       throw new Error(`Unknown slice "${opts.slice}" (available: ${Object.keys(BENCH_SLICES).join(", ")})`);
+    }
+    if (ids.length === 0) {
+      throw new Error(`Slice "${opts.slice}" resolved to no scenarios`);
     }
     const unknownIds = ids.filter(id => !getScenario(id));
     if (unknownIds.length > 0) {
@@ -318,7 +324,7 @@ export async function main(): Promise<void> {
   const report = await runBench({
     mode: (argValue("--mode") as "mock" | "local") ?? "mock",
     scenarios: args.includes("--scenarios") ? (argValue("--scenarios") ?? "").split(",").filter(Boolean) : undefined,
-    slice: argValue("--slice"),
+    slice: args.includes("--slice") ? (argValue("--slice") ?? "") : undefined,
     category: argValue("--category"),
     limit: argValue("--limit") ? Number(argValue("--limit")) : undefined,
     out: argValue("--out"),

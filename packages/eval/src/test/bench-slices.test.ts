@@ -13,7 +13,9 @@ describe("bench slices", () => {
   });
 
   it("golden slice stays pinned to GOLDEN_LABELS (order and uniqueness)", () => {
-    expect(BENCH_SLICES.golden).toEqual(GOLDEN_LABELS.map(g => g.scenarioId));
+    const golden = BENCH_SLICES.golden ?? [];
+    expect(golden).toEqual(GOLDEN_LABELS.map(g => g.scenarioId));
+    expect(new Set(golden).size, "a duplicated label would bench a scenario twice").toBe(golden.length);
   });
 
   it("edges slice covers all four edge_chaos scenarios", () => {
@@ -31,5 +33,11 @@ describe("bench slices", () => {
 
   it("returns undefined for unknown slice names", () => {
     expect(resolveBenchSlice("nope")).toBeUndefined();
+  });
+
+  it("rejects inherited Object.prototype keys instead of crashing on them", () => {
+    for (const name of ["toString", "constructor", "valueOf", "hasOwnProperty", "__proto__"]) {
+      expect(resolveBenchSlice(name), `slice name ${name}`).toBeUndefined();
+    }
   });
 });
