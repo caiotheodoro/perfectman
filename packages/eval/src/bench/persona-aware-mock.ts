@@ -229,8 +229,10 @@ export class PersonaAwareMockProvider implements LlmProvider {
         memoryWrites: [],
       };
     }
-    // A turn that fell past the react branch breaks any react streak.
+    // A turn that falls past the react branch breaks any react streak,
+    // so saturation recovers instead of muting the agent for good.
     // (Early-return decisions above never reach this reset.)
+    this.consecutiveReacts.delete(agentId);
 
     // 4. Direct attention event with a REAL trigger → reply in persona style.
     if (

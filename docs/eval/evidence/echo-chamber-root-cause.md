@@ -22,8 +22,9 @@ mock provider, not about the engine or the scenario definition.
 ## Root cause (mock provider, not engine)
 
 1. **React attractor.** `PersonaAwareMockProvider`'s charged-react branch
-   fires whenever affection/admiration ≥ 0.5 — exactly what this scenario
-   seeds for everyone — so once charged, it fired every pulse.
+   fires whenever affection/admiration ≥ 0.5 and the pack samples hot
+   (temperature ≥ 0.9 — Leo's pack qualifies). This scenario seeds exactly
+   those emotions high, so once charged, Leo reacted every pulse.
 2. **Constant emoji.** The emoji choice digested only the agent id:
    one agent, one emoji, forever.
 3. **Tone-mismatched replies** are persona-pack content and belong to the
