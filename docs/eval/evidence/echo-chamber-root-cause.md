@@ -42,7 +42,7 @@ mock provider, not about the engine or the scenario definition.
 
 ## Measured effect — honestly scoped
 
-The rule judge cannot see reactions at all (`motive_authenticity` derives
+The rule judge cannot see reaction content or identity (`motive_authenticity` derives
 from silence meaningfulfulness; `in_character` from text tells), so
 rule-judge axes are **unchanged** by this fix, and the historical 2/1
 scores came from an LLM judge that cannot be rerun offline. What this
