@@ -28,7 +28,8 @@ describe("ACTION_INTENT_JSON_SCHEMA", () => {
   });
 
   it("stays in sync with the zod schema on a known-good intent shape", () => {
-    // Smoke: every property of a canonical intent must exist in the schema.
+    // Smoke: every property of a canonical intent must exist in the schema
+    // with a concrete type mapping.
     const intent: ActionIntent = {
       id: "i1",
       actorId: "a1",
@@ -41,8 +42,10 @@ describe("ACTION_INTENT_JSON_SCHEMA", () => {
       motivationDrivers: [],
       memoryWrites: [],
     };
-    for (const key of Object.keys(intent)) {
-      expect(schema.properties[key], key).toBeDefined();
-    }
+    const unknownKeys = Object.keys(intent).filter(
+      k => !("type" in (schema.properties[k] ?? {})) && !("$ref" in (schema.properties[k] ?? {})) && !("anyOf" in (schema.properties[k] ?? {})),
+    );
+    expect(unknownKeys).toEqual([]);
+    expect(schema.properties.memoryWrites?.type).toBe("array");
   });
 });
