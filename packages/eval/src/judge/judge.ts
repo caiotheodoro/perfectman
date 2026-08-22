@@ -188,6 +188,9 @@ export function intentEntropyScore(events: readonly CommittedEvent[]): number {
     entropy -= p * Math.log(p);
   }
   return entropy / Math.log(counts.size);
+  // Tiny-transcript caveat: normalizing by OBSERVED types means 2 events of
+  // 2 different types score the ceiling (H=1) — acceptable for a documented
+  // v0 proxy, worth revisiting if micro-transcripts ever gate decisions.
 }
 
 
