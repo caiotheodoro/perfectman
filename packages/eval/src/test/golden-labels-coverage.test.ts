@@ -17,6 +17,10 @@ describe("golden label coverage (#25)", () => {
     const registryIds = SCENARIO_REGISTRY.map(s => s.id).sort();
     const labeledIds = GOLDEN_LABELS.map(g => g.scenarioId).sort();
     expect(labeledIds).toEqual(registryIds);
+    const missingScenario = GOLDEN_LABELS.filter(
+      g => !SCENARIO_REGISTRY.some(s => s.id === g.scenarioId),
+    );
+    expect(missingScenario.map(g => g.scenarioId)).toEqual([]);
   });
 
   it("carries the anchor axes plus each scenario's own rubric axes", () => {
@@ -35,9 +39,8 @@ describe("golden label coverage (#25)", () => {
         ...rubricAxes.filter(id => !DERIVED_AXES.has(id)),
       ]);
       const allowed = new Set<string>([...ANCHOR_AXES, ...rubricAxes]);
-      for (const req of required) {
-        expect(g.axes[req], `${g.scenarioId}.${req} required`).toBeDefined();
-      }
+      const missingRequired = [...required].filter(req => g.axes[req] === undefined);
+      expect(missingRequired, `${g.scenarioId} missing required axes`).toEqual([]);
       for (const key of Object.keys(g.axes)) {
         expect(allowed.has(key), `${g.scenarioId}.${key} allowed`).toBe(true);
         const v = g.axes[key]!;
