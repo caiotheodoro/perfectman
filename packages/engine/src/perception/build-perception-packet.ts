@@ -18,7 +18,7 @@ import { selectRelevantMemories } from "./memory-salience.js";
  *   - No spectator or operator events (type prefix checks)
  *   - No raw numeric scores — only structural data
  *   - Context window is capped at CONTEXT_WINDOW events
- *   - relevantMemories sourced from agentState.memories, filtered by recency/relevance
+ *   - relevantMemories selected from agentState.memories by salience score
  */
 
 const CONTEXT_WINDOW = 10;

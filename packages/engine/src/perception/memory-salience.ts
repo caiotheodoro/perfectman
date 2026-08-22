@@ -51,7 +51,8 @@ export function selectRelevantMemories(
   maxMemories: number,
 ): Memory[] {
   if (memories.length === 0) return [];
-  const newestCreatedAt = Math.max(...memories.map(m => m.createdAt));
+  // reduce, not spread: huge stores would blow the argument limit.
+  const newestCreatedAt = memories.reduce((max, m) => Math.max(max, m.createdAt), 0);
   return [...memories]
     .map(memory => ({
       memory,
