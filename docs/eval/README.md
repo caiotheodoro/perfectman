@@ -153,3 +153,7 @@ Every change to personas, prompts, scenarios, or the engine is a micro-patch:
 run the bench, diff against the baseline, keep only changes that hold signals
 at 100% and push probe/judge metrics up. No-regression first, improvement
 second — the two-gate discipline from the research repo's micro-adapter loop.
+
+## Spikes
+
+- [LoRA per-persona fine-tuning feasibility spike](lora-feasibility-spike.md) — documented experiment, not implemented.
