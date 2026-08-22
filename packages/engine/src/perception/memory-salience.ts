@@ -19,7 +19,7 @@ export const MEMORY_TYPE_WEIGHTS: Record<Memory["type"], number> = {
   episodic: 0.3,
 };
 
-const RELEVANCE_WEIGHT = 2.0;
+const RELEVANCE_WEIGHT = 2.5; // > max opposing delta (0.7 + 1.0 + 0.25 + 0.5) so relevance strictly dominates
 const UNRESOLVED_WEIGHT = 0.25;
 const RECENCY_WEIGHT = 0.5;
 
@@ -27,14 +27,17 @@ export function scoreMemorySalience(
   memory: Memory,
   involvedPeople: ReadonlySet<string>,
   newestCreatedAt: number,
+  oldestCreatedAt: number,
 ): number {
   const relevant = memory.subjectAgentIds.some(id => involvedPeople.has(id)) ? 1 : 0;
   const typeWeight = MEMORY_TYPE_WEIGHTS[memory.type] ?? 0.3;
 
-  const ageSpan = Math.max(1, newestCreatedAt - Math.min(memory.createdAt, newestCreatedAt));
-  // Memories created at `newestCreatedAt` get 1; older ones decay linearly to 0.
+  // Normalized over the whole store's span, not per-memory: a per-memory span
+  // makes every non-newest memory score 0, collapsing the decay into
+  // newest-or-nothing and erasing the ordering between recent and ancient.
+  const ageSpan = Math.max(1, newestCreatedAt - oldestCreatedAt);
   const ageOfThis = Math.max(0, newestCreatedAt - memory.createdAt);
-  const recency = 1 - ageOfThis / ageSpan;
+  const recency = 1 - Math.min(1, ageOfThis / ageSpan);
 
   return (
     RELEVANCE_WEIGHT * relevant +
@@ -52,11 +55,13 @@ export function selectRelevantMemories(
 ): Memory[] {
   if (memories.length === 0) return [];
   // reduce, not spread: huge stores would blow the argument limit.
-  const newestCreatedAt = memories.reduce((max, m) => Math.max(max, m.createdAt), 0);
+  const first = memories[0]!.createdAt;
+  const newestCreatedAt = memories.reduce((max, m) => Math.max(max, m.createdAt), first);
+  const oldestCreatedAt = memories.reduce((min, m) => Math.min(min, m.createdAt), first);
   return [...memories]
     .map(memory => ({
       memory,
-      score: scoreMemorySalience(memory, involvedPeople, newestCreatedAt),
+      score: scoreMemorySalience(memory, involvedPeople, newestCreatedAt, oldestCreatedAt),
     }))
     .sort((a, b) => b.score - a.score || b.memory.createdAt - a.memory.createdAt)
     .slice(0, maxMemories)
