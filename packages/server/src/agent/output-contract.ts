@@ -8,8 +8,8 @@ import { ACTION_INTENT_JSON_SCHEMA } from "@perfectman/shared";
  * targetEventId, replyToEventId were never explained; preferredDelay and
  * channelType were hardcoded). The renderer below makes the field list
  * mechanically follow the schema so drift is a compile/test failure, not a
- * silent prompt change. Nested shapes (memoryWrites proposals) still render
- * as arrays — their inner contract is enforced by validation, not prose.
+ * silent prompt change. memoryWrites renders as a curated string describing
+ * its inner proposal shape; the shape itself stays enforced by validation.
  *
  * Engine-stamped fields (id, actorId) are NOT requested: the runtime owns
  * structure, the model owns language (see intent-parser's structural

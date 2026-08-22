@@ -1,8 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { renderIntentOutputContract } from "../output-contract.js";
-import { ACTION_INTENT_JSON_SCHEMA } from "@perfectman/shared";
-
 import { renderIntentOutputContract, FIELD_NOTES } from "../output-contract.js";
+import { ACTION_INTENT_JSON_SCHEMA } from "@perfectman/shared";
 
 const properties = (ACTION_INTENT_JSON_SCHEMA.properties ?? {}) as Record<
   string,
