@@ -16,6 +16,7 @@
     "dev": "tsc -p tsconfig.json --watch",
     "bench": "node dist/cli/bench.js",
     "evidence": "node dist/cli/evidence.js",
+    "calibrate": "node dist/cli/calibrate.js",
     "narrate": "node dist/cli/narrate.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"

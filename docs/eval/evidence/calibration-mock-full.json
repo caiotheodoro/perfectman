@@ -1,0 +1,145 @@
+{
+  "version": "calibration-report-v1",
+  "mode": "mock",
+  "generatedAt": "2026-08-21T22:12:54.873Z",
+  "transcriptLength": "full",
+  "calibration": {
+    "nScenes": 8,
+    "kappa": 0.116,
+    "alpha": -0.307,
+    "targetKappa": 0.7,
+    "passed": false,
+    "perAxisKappa": {
+      "in_character": -0.3125000000000029,
+      "voice_match": 0,
+      "motive_authenticity": 0,
+      "interpretation": 0,
+      "creativity_unhinged": 0,
+      "memory_continuity": 0.12500000000000375,
+      "no_ai_leak": 1
+    },
+    "disagreements": [
+      "v1_exclusion_inferred voice_match: judge 2 vs golden 4",
+      "v1_private_motive voice_match: judge 2 vs golden 4",
+      "motive_gossip voice_match: judge 2 vs golden 4",
+      "stagnation_resentment_loop voice_match: judge 2 vs golden 4",
+      "calibration_quiet_room voice_match: judge 2 vs golden 4",
+      "motive_flirting voice_match: judge 2 vs golden 4",
+      "v1_casual_chat motive_authenticity: judge 5 vs golden 3",
+      "stagnation_resentment_loop motive_authenticity: judge 5 vs golden 3",
+      "calibration_quiet_room motive_authenticity: judge 5 vs golden 3",
+      "v1_casual_chat interpretation: judge 5 vs golden 3",
+      "calibration_quiet_room interpretation: judge 5 vs golden 3"
+    ]
+  },
+  "perScenario": [
+    {
+      "id": "v1_casual_chat",
+      "pulses": 24,
+      "axes": {
+        "in_character": 4,
+        "voice_match": 3,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4
+      }
+    },
+    {
+      "id": "v1_exclusion_inferred",
+      "pulses": 14,
+      "axes": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    },
+    {
+      "id": "v1_private_motive",
+      "pulses": 24,
+      "axes": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    },
+    {
+      "id": "motive_gossip",
+      "pulses": 24,
+      "axes": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    },
+    {
+      "id": "edge_public_mock",
+      "pulses": 24,
+      "axes": {
+        "dramatic_tension": 5,
+        "unpredictability": 4,
+        "believability_under_pressure": 5,
+        "no_ai_leak": 5
+      }
+    },
+    {
+      "id": "stagnation_resentment_loop",
+      "pulses": 32,
+      "axes": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    },
+    {
+      "id": "calibration_quiet_room",
+      "pulses": 20,
+      "axes": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 3,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4
+      }
+    },
+    {
+      "id": "motive_flirting",
+      "pulses": 24,
+      "axes": {
+        "in_character": 3,
+        "voice_match": 2,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    }
+  ]
+}

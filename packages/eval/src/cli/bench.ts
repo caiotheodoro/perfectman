@@ -21,7 +21,7 @@ import {
 } from "@perfectman/shared";
 import { ScenarioRunner } from "../run/scenario-runner.js";
 import { ruleJudge, llmJudge, llmJudgePerTurn, type AxisScores } from "../judge/judge.js";
-import { calibrateJudge } from "../judge/calibration.js";
+import { calibrateJudge, baseScenarioId } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checker.js";
@@ -148,7 +148,7 @@ export async function runBench(opts: {
             : await llmJudge(scenario, artifact.events, judgeConfig())
           : ruleJudge(scenario, artifact.events, artifact.probeResults, artifact.passedSignals / Math.max(1, artifact.totalSignals));
 
-      judgeScores.set(scenario.id, axisScores);
+      judgeScores.set(baseScenarioId(scenario.id), axisScores);
       for (const [axis, v] of Object.entries(axisScores)) {
         axisAgg[axis] ??= { sum: 0, count: 0 };
         axisAgg[axis]!.sum += v;
