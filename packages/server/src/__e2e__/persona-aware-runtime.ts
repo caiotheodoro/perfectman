@@ -348,8 +348,8 @@ export class PersonaAwareRuntime {
     const result = await this.inner.generateIntent(input, context);
 
     // Real LLM — track intent as-is, never overwrite the model's output.
-    const isRealLlm = result.llmUsage !== null && result.llmUsage.model !== "mock-model";
-    if (isRealLlm || result.fallbackApplied) {
+    const isRealLLM = result.llmUsage !== null && result.llmUsage.model !== "mock-model";
+    if (isRealLLM || result.fallbackApplied) {
       this.lastIntents.set(input.agentId, result.intent);
       return result;
     }

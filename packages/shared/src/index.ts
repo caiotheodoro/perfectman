@@ -35,6 +35,7 @@ export * from "./memory/memory.types.js";
 // Intent
 export * from "./intent/intent.types.js";
 export * from "./intent/intent.schema.js";
+export * from "./intent/intent-packet.schema.js";
 
 // Decision
 export * from "./decision/decision.types.js";
@@ -49,6 +50,7 @@ export * from "./visibility/visibility.types.js";
 export * from "./attention/attention.types.js";
 
 // Prompt
+export * from "./prompt/prompt-syntax.js";
 export type { TranslatedEmotionalState, RelationalFlavor, PromptPurpose } from "./prompt/prompt.types.js";
 
 // Perception

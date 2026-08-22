@@ -360,7 +360,7 @@ export class IntentResolver {
       ]);
       const channel = await this.channelRegistry.createChannel({
         simulationId: ctx.simulationId,
-        type: "private_channel",
+        type: intent.channelType ?? "private_channel",
         name: intent.channelName ?? `pv-${intent.actorId}`,
         createdBy: intent.actorId,
         memberAgentIds: [...memberSet],

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import {
   assertQwenAvailable,
-  assertRequiredLlmServicesAvailable,
+  assertRequiredLLMServicesAvailable,
 } from "../llm-health-check.js";
 import type { SimulationAppConfig } from "../../config/simulation-config.js";
 
@@ -115,7 +115,7 @@ describe("LLM health checks", () => {
       status: 200,
     });
 
-    await assertRequiredLlmServicesAvailable(config, { fetch, timeoutMs: 1000 });
+    await assertRequiredLLMServicesAvailable(config, { fetch, timeoutMs: 1000 });
 
     expect(fetch).toHaveBeenCalledTimes(1);
   });

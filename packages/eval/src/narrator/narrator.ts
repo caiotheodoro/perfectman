@@ -8,6 +8,7 @@
  */
 
 import type { CommittedEvent, RoleplayScenario } from "@perfectman/shared";
+import { PromptSection } from "@perfectman/shared";
 
 export type Narration = {
   title: string;
@@ -78,7 +79,11 @@ export async function narrateTranscript(
           { role: "system", content: NARRATOR_SYSTEM },
           {
             role: "user",
-            content: `Scene: ${name}\n${description}\n\nTranscript:\n${transcript}`,
+            content: new PromptSection()
+              .container("scene", (s) => { s.raw(`Scene: ${name}`); s.raw(description); })
+              .container("transcript", (s) => s.raw(transcript))
+              .container("decision", (s) => s.raw("Escreva o resumo agora como JSON, conforme o contrato no prompt de sistema."))
+              .toString(),
           },
         ],
         temperature: 0.9,

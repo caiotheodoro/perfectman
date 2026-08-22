@@ -4,13 +4,13 @@ import {
 } from "../config/simulation-config.js";
 import { getConfigPath } from "./config-path.js";
 import { loadEnvFile } from "./env.js";
-import { assertRequiredLlmServicesAvailable } from "./llm-health-check.js";
+import { assertRequiredLLMServicesAvailable } from "./llm-health-check.js";
 
 async function main(): Promise<void> {
   loadEnvFile();
   const configPath = getConfigPath(process.argv.slice(2));
   const config = await loadSimulationConfig(configPath);
-  await assertRequiredLlmServicesAvailable(config);
+  await assertRequiredLLMServicesAvailable(config);
   const handle = await buildConfiguredSimulation(config);
 
   const shutdown = async (signal: string): Promise<void> => {
