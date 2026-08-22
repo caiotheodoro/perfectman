@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { createId } from "../utils/id.js";
 import type { ActionIntent, IntentType } from "./intent.types.js";
 import { IntentTypeSchema, IntentChannelTypeSchema, MemoryWriteProposalSchema } from "./intent.schema.js";
@@ -31,60 +32,6 @@ export const ModelIntentPacketSchema = z.object({
 
 export type ModelIntentPacket = z.infer<typeof ModelIntentPacketSchema>;
 
-/**
- * JSON Schema mirror of `MemoryWriteProposalSchema`, used both embedded in
- * `ModelIntentPacketJsonSchema.memoryWrites` (action_intent's inline memory
- * writes) and standalone by any reasoning-only surface that proposes memory
- * consolidations on its own (e.g. background_reflection). Kept in lockstep
- * with `MemoryWriteProposalSchema`; a drift-test asserts field parity.
- */
-export const MemoryWriteProposalJsonSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["type", "subjectAgentIds", "summary", "emotionalTone", "confidence", "unresolved"],
-  properties: {
-    type: {
-      enum: ["episodic", "relationship", "self", "social_theory", "pending_intention", "emotional_residue"],
-    },
-    subjectAgentIds: { type: "array", items: { type: "string" } },
-    summary: { type: "string", minLength: 1 },
-    emotionalTone: { type: "string", minLength: 1 },
-    confidence: { type: "number", minimum: 0, maximum: 1 },
-    unresolved: { type: "boolean" },
-  },
-} as const;
-
-/**
- * JSON Schema mirror of the packet, used for constrained decoding
- * (Ollama `format` object / OpenAI `response_format.json_schema`). Kept in
- * lockstep with ModelIntentPacketSchema; a drift-test asserts field parity.
- */
-export const ModelIntentPacketJsonSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["intentType", "privateMotiveSummary"],
-  properties: {
-    intentType: { enum: IntentTypeSchema.options },
-    channelTarget: { type: "string" },
-    personTargets: { type: "array", items: { type: "string" } },
-    visibleContent: { type: "string" },
-    privateMotiveSummary: { type: "string", minLength: 1 },
-    emotionDrivers: { type: "array", items: { type: "string" } },
-    motivationDrivers: { type: "array", items: { type: "string" } },
-    memoryWrites: {
-      type: "array",
-      items: MemoryWriteProposalJsonSchema,
-    },
-    replyToEventId: { type: "string" },
-    emoji: { type: "string" },
-    targetEventId: { type: "string" },
-    channelName: { type: "string" },
-    channelType: { enum: IntentChannelTypeSchema.options },
-    invitedAgentIds: { type: "array", items: { type: "string" } },
-    spectatorSummary: { type: "string" },
-  },
-} as const;
-
 type JsonSchemaProp = {
   type?: string;
   enum?: readonly string[];
@@ -92,6 +39,36 @@ type JsonSchemaProp = {
   minimum?: number;
   maximum?: number;
 };
+
+type JsonSchemaObject = {
+  type: "object";
+  properties: Record<string, JsonSchemaProp>;
+  required: readonly string[];
+  additionalProperties: false;
+};
+
+/**
+ * JSON Schema mirror of `MemoryWriteProposalSchema`, derived straight from
+ * the zod schema via zod-to-json-schema (flattened — no `$ref` wrappers) so
+ * it cannot drift the way a hand-written mirror can. Used both embedded in
+ * `ModelIntentPacketJsonSchema.memoryWrites` (action_intent's inline memory
+ * writes) and standalone by any reasoning-only surface that proposes memory
+ * consolidations on its own (e.g. background_reflection).
+ */
+export const MemoryWriteProposalJsonSchema = zodToJsonSchema(MemoryWriteProposalSchema, {
+  $refStrategy: "none",
+}) as JsonSchemaObject;
+
+/**
+ * JSON Schema mirror of the packet, used for constrained decoding
+ * (Ollama `format` object / OpenAI `response_format.json_schema`). Derived
+ * straight from `ModelIntentPacketSchema` via zod-to-json-schema, so the zod
+ * schema stays the single source of truth for both the prompt contract and
+ * the decode-time grammar.
+ */
+export const ModelIntentPacketJsonSchema = zodToJsonSchema(ModelIntentPacketSchema, {
+  $refStrategy: "none",
+}) as JsonSchemaObject;
 
 function describePacketFieldType(def: JsonSchemaProp): string {
   if (def.enum) return `one of: ${def.enum.join(", ")}`;

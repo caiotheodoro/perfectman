@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-22T06:52:31.956Z",
+  "generatedAt": "2026-08-22T07:08:50.528Z",
   "totals": {
     "files": 86,
-    "its": 783
+    "its": 785
   },
   "byPackage": {
     "engine": {
@@ -25,7 +25,7 @@
     },
     "shared": {
       "files": 7,
-      "its": 71,
+      "its": 73,
       "flags": []
     }
   },
@@ -1820,7 +1820,7 @@
       "file": "packages/shared/src/__tests__/intent-packet-schema.test.ts",
       "pkg": "shared",
       "layer": "contract",
-      "its": 7,
+      "its": 9,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,

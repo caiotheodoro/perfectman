@@ -6,7 +6,7 @@ import {
   composeIntentPacket,
   memoryWriteProposalFieldContract,
 } from "../intent/intent-packet.schema.js";
-import { MemoryWriteProposalSchema } from "../intent/intent.schema.js";
+import { MemoryWriteProposalSchema, IntentTypeSchema } from "../intent/intent.schema.js";
 
 describe("ModelIntentPacket", () => {
   it("excludes engine-stamped structural fields (id, actorId, preferredDelay, fallbackIfBlocked)", () => {
@@ -21,6 +21,15 @@ describe("ModelIntentPacket", () => {
     const zodKeys = Object.keys(ModelIntentPacketSchema.shape).sort();
     const jsonKeys = Object.keys(ModelIntentPacketJsonSchema.properties).sort();
     expect(jsonKeys).toEqual(zodKeys);
+  });
+
+  it("exposes the full intentType enum, not a subset", () => {
+    expect(ModelIntentPacketJsonSchema.properties.intentType?.enum).toEqual(IntentTypeSchema.options);
+  });
+
+  it("marks the packet flat with no dangling $ref", () => {
+    expect(ModelIntentPacketJsonSchema.additionalProperties).toBe(false);
+    expect(JSON.stringify(ModelIntentPacketJsonSchema)).not.toContain("$ref");
   });
 
   it("composeIntentPacket stamps engine fields and carries model decisions", () => {
