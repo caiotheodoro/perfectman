@@ -241,8 +241,8 @@ export function runAllProbes(input: ProbeInput): ProbeResult[] {
   const { meanGap, p95Gap } = latencyStats(events, agentIds);
 
   const fallbackRate =
-    input.totalLlmCalls && input.totalLlmCalls > 0
-      ? (input.fallbackCount ?? 0) / input.totalLlmCalls
+    input.totalLLMCalls && input.totalLLMCalls > 0
+      ? (input.fallbackCount ?? 0) / input.totalLLMCalls
       : 0;
 
   const refusalFree = 1 - aiLeakRate(events);

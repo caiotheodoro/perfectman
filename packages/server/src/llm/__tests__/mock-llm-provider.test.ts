@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { MockLlmProvider } from "../mock-llm-provider.js";
+import { MockLLMProvider } from "../mock-llm-provider.js";
 import { IntentParser } from "../../agent/intent-parser.js";
 import type { AgentRuntimeInput, AvailableAction } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt } from "../../agent/agent-runtime.types.js";
 
-describe("MockLlmProvider", () => {
-  const provider = new MockLlmProvider();
+describe("MockLLMProvider", () => {
+  const provider = new MockLLMProvider();
 
   const context: AgentRuntimeContext = {
     pulseIndex: 10,

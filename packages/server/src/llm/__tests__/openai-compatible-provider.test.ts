@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { OpenAiCompatibleProvider } from "../openai-compatible-provider.js";
-import { LlmTimeoutError, LlmHttpError, LlmConfigurationError, LlmResponseError } from "../llm-errors.js";
+import { LLMTimeoutError, LLMHttpError, LLMConfigurationError, LLMResponseError } from "../llm-errors.js";
 import type { AgentRuntimeInput } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt } from "../../agent/agent-runtime.types.js";
 
@@ -131,7 +131,7 @@ describe("OpenAiCompatibleProvider", () => {
     expect(res.fallbackAttempts).toBe(0);
   });
 
-  it("should throw LlmConfigurationError when baseUrl is missing", async () => {
+  it("should throw LLMConfigurationError when baseUrl is missing", async () => {
     const provider = new OpenAiCompatibleProvider({
       providerType: "freellmapi",
       baseUrl: "", // missing
@@ -143,10 +143,10 @@ describe("OpenAiCompatibleProvider", () => {
       retryCount: 2,
     });
 
-    await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LlmConfigurationError);
+    await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LLMConfigurationError);
   });
 
-  it("should throw LlmHttpError on non-2xx status code", async () => {
+  it("should throw LLMHttpError on non-2xx status code", async () => {
     const mockResponse = {
       ok: false,
       status: 500,
@@ -166,10 +166,10 @@ describe("OpenAiCompatibleProvider", () => {
       retryCount: 0, // no retries
     });
 
-    await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LlmHttpError);
+    await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LLMHttpError);
   });
 
-  it("should abort and throw LlmTimeoutError when request times out", async () => {
+  it("should abort and throw LLMTimeoutError when request times out", async () => {
     // Mock fetch that throws AbortError (DOMException)
     const abortError = new DOMException("The user aborted a request.", "AbortError");
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(abortError));
@@ -185,7 +185,7 @@ describe("OpenAiCompatibleProvider", () => {
       retryCount: 0,
     });
 
-    await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LlmTimeoutError);
+    await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LLMTimeoutError);
   });
 
   it("should include response_format only when explicitly enabled", async () => {
@@ -233,7 +233,48 @@ describe("OpenAiCompatibleProvider", () => {
 
     await jsonProvider.generateIntent(baseInput, context, prompt);
     const jsonBody = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
-    expect(jsonBody.response_format).toEqual({ type: "json_object" });
+    // default: shape-constrained json_schema decoding
+    expect(jsonBody.response_format.type).toBe("json_schema");
+    expect(jsonBody.response_format.json_schema.name).toBe("intent_packet");
+    expect(jsonBody.response_format.json_schema.schema.required).toEqual(["intentType", "privateMotiveSummary"]);
+  });
+
+  it("forces syntax-only json_object when responseFormatJsonSchema is false", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue({
+      ok: true, status: 200,
+      json: async () => ({ choices: [{ message: { content: '{"intentType":"no_op"}' } }], model: "test" }),
+      headers: new Map(),
+    });
+    vi.stubGlobal("fetch", fetchSpy);
+    const provider = new OpenAiCompatibleProvider({
+      providerType: "freellmapi", baseUrl: "http://localhost:3001/v1", modelName: "auto",
+      temperature: 0.7, maxInputTokens: 1000, maxOutputTokens: 200, timeoutMs: 5000, retryCount: 0,
+      responseFormatJson: true, responseFormatJsonSchema: false,
+    });
+    await provider.generateIntent(baseInput, context, prompt);
+    const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
+    expect(body.response_format).toEqual({ type: "json_object" });
+  });
+
+  it("falls back to json_object on a 400 json_schema rejection", async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 400, text: async () => "schema not supported" })
+      .mockResolvedValueOnce({
+        ok: true, status: 200,
+        json: async () => ({ choices: [{ message: { content: '{"intentType":"no_op","privateMotiveSummary":"s"}' } }], model: "test" }),
+        headers: new Map(),
+      });
+    vi.stubGlobal("fetch", fetchSpy);
+    const provider = new OpenAiCompatibleProvider({
+      providerType: "freellmapi", baseUrl: "http://localhost:3001/v1", modelName: "auto",
+      temperature: 0.7, maxInputTokens: 1000, maxOutputTokens: 200, timeoutMs: 5000, retryCount: 0,
+      responseFormatJson: true,
+    });
+    await provider.generateIntent(baseInput, context, prompt);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    const fallbackBody = JSON.parse(fetchSpy.mock.calls[1]![1]!.body as string);
+    expect(fallbackBody.response_format).toEqual({ type: "json_object" });
   });
 
   it("should fail fast on malformed OpenAI-compatible response shape", async () => {
@@ -256,7 +297,7 @@ describe("OpenAiCompatibleProvider", () => {
       retryCount: 2,
     });
 
-    await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LlmResponseError);
+    await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LLMResponseError);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 

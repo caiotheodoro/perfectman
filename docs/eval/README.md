@@ -77,6 +77,13 @@ typecheck, unit tests, then a mock+rule-judge bench over the golden scenario
 subset with a hard 100%-signals assertion (`scripts/ci/check-bench-gate.mjs`)
 — free, deterministic, no model needed.
 
+A second, weekly workflow (`.github/workflows/benchmark.yml`) runs the same
+gate over the *full* 123-task suite (Mondays 03:00 UTC, or on demand via
+`workflow_dispatch`) and uploads the report as a run artifact for trend
+tracking. Its `judge=llm` dispatch input is an opt-in deep run for
+self-hosted runners with model servers configured; hosted CI stays on the
+offline rule judge by default.
+
 ## Current baseline (mock, 123 tasks)
 
 - Signal pass rate: **100%** (all expected signals across all rotated scenes)

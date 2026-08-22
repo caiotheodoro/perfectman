@@ -114,7 +114,7 @@ describe.each(SCENARIOS)("E2E scenario smoke: $name", ({ name, seed }) => {
 
   it("produces no LLM failures", async () => {
     await harness.runPulse();
-    await harness.assertNoLlmFailures();
+    await harness.assertNoLLMFailures();
   });
 });
 
@@ -141,7 +141,7 @@ describe("cold-start: Goulart delays due to strategic patience in pulse 0", () =
 
   it("total LLM calls is zero — budget is fully preserved in pulse 0", async () => {
     await harness.runPulse();
-    expect(harness.totalLlmCalls()).toBe(0);
+    expect(harness.totalLLMCalls()).toBe(0);
   });
 
   it("no message_sent committed in pulse 0 (Goulart is delayed, not acting)", async () => {
@@ -187,7 +187,7 @@ describe("exclusion cascade: Bruno's fear does not decrease after being ignored"
     await harness.runPulse();
     const result2 = await harness.runPulse();
     expect(result2.pulseIndex).toBe(1);
-    await harness.assertNoLlmFailures();
+    await harness.assertNoLLMFailures();
   });
 });
 

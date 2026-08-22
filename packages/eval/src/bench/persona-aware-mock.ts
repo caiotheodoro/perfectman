@@ -1,7 +1,7 @@
 /**
  * PersonaAwareMockProvider — the offline benchmark's LLM.
  *
- * Deterministic decision tree (mirrors the built-in MockLlmProvider's shape)
+ * Deterministic decision tree (mirrors the built-in MockLLMProvider's shape)
  * but persona-flavored: replies use the pack's style examples, private
  * motives come from the pack's motive lexicon, and memory writes carry the
  * pack's biased tone. Lets the judge run offline and separates provider
@@ -9,7 +9,7 @@
  */
 
 import type { AgentRuntimeInput, AvailableAction } from "@perfectman/shared";
-import type { AgentRuntimeContext, BuiltPrompt, LlmConfig, LlmProvider, LlmProviderResult } from "@perfectman/server";
+import type { AgentRuntimeContext, BuiltPrompt, LLMConfig, LLMProvider, LLMProviderResult } from "@perfectman/server";
 import { OpenAiCompatibleProvider } from "@perfectman/server";
 import type { PersonaPack } from "@perfectman/shared";
 
@@ -24,7 +24,7 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-export class PersonaAwareMockProvider implements LlmProvider {
+export class PersonaAwareMockProvider implements LLMProvider {
   private readonly pack: PersonaPack;
   private readonly seed: number;
 
@@ -39,7 +39,7 @@ export class PersonaAwareMockProvider implements LlmProvider {
     input: AgentRuntimeInput,
     context: AgentRuntimeContext,
     prompt: BuiltPrompt,
-  ): Promise<LlmProviderResult> {
+  ): Promise<LLMProviderResult> {
     this.lastInput = input;
     const rand = mulberry32(this.seed + (context.pulseIndex ?? 0) * 7919 + input.agentId.length * 31);
     const pick = <T,>(arr: T[]): T => arr[Math.floor(rand() * arr.length)] ?? arr[0]!;
@@ -381,10 +381,10 @@ function randDigest(s: string, salt: number): number {
 export function personaAwareProviderFactory(
   packs: Map<string, PersonaPack>,
   seed: number,
-): (llmConfig: LlmConfig, agentId: string) => LlmProvider {
+): (llmConfig: LLMConfig, agentId: string) => LLMProvider {
   return (llmConfig, agentId) => {
     if (llmConfig.providerType !== "mock") {
-      return new OpenAiCompatibleProvider(llmConfig) as LlmProvider;
+      return new OpenAiCompatibleProvider(llmConfig) as LLMProvider;
     }
     const pack = packs.get(agentId);
     return new PersonaAwareMockProvider(

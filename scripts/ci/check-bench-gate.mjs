@@ -10,7 +10,11 @@
  * 100%; rule-judge axis scores are advisory until the judge passes its
  * kappa calibration gate, so they are NOT gated here.
  *
- * Usage: node scripts/ci/check-bench-gate.mjs <bench-report.json> [expectedIdsCsv]
+ * Usage: node scripts/ci/check-bench-gate.mjs [--skip-signal-gate] <bench-report.json> [expectedIdsCsv]
+ *
+ * --skip-signal-gate: assert only structural sanity (no scenario run
+ * hard-failed, expected ids present). Used for real-model runs where
+ * signal rates legitimately vary; the offline gate keeps the 100% bar.
  *
  * When expectedIdsCsv is provided, every id must appear in the report's
  * perScenario list — protects against silent coverage shrink when a
@@ -18,9 +22,11 @@
  */
 import { readFileSync } from "node:fs";
 
-const path = process.argv[2];
+const skipSignalGate = process.argv.includes("--skip-signal-gate");
+const positional = process.argv.slice(2).filter(a => !a.startsWith("--"));
+const path = positional[0];
 if (!path) {
-  console.error("usage: node scripts/ci/check-bench-gate.mjs <bench-report.json> [expectedIdsCsv]");
+  console.error("usage: node scripts/ci/check-bench-gate.mjs [--skip-signal-gate] <bench-report.json> [expectedIdsCsv]");
   process.exit(2);
 }
 
@@ -44,11 +50,11 @@ if (report.scenariosFailed > 0) {
     .map(s => `${s.id}: ${s.failed}`);
   failures.push(`${report.scenariosFailed} scenario run(s) failed:\n    ${failed.join("\n    ")}`);
 }
-if (report.signalPassRate < 1) {
+if (!skipSignalGate && report.signalPassRate < 1) {
   failures.push(`signal pass rate ${(report.signalPassRate * 100).toFixed(1)}% < 100%`);
 }
 
-const expectedIds = (process.argv[3] ?? "").split(",").map(s => s.trim()).filter(Boolean);
+const expectedIds = (positional[1] ?? "").split(",").map(s => s.trim()).filter(Boolean);
 if (expectedIds.length > 0) {
   // Variant-expanded ids carry a __vN suffix (e.g. motive_gossip__v2);
   // match on the base id before the suffix.

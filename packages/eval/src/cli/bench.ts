@@ -28,7 +28,7 @@ import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checke
 import { BENCH_SLICES, resolveBenchSlice } from "../bench-slices.js";
 
 /** LLM judge endpoint — DeepSeek by default when PERFECTMAN_LLM_PROVIDER=deepseek. */
-export function judgeConfig(): import("../judge/judge.js").LlmJudgeConfig {
+export function judgeConfig(): import("../judge/judge.js").LLMJudgeConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
   // Empty/unset → default; only an explicit numeric value (incl. "0") wins.
@@ -64,6 +64,10 @@ export type BenchReport = {
   judgeAxisMeans: Record<string, number>;
   judgeAxisTargets: Record<string, { target: number; met: boolean }>;
   byCategory: Record<string, { runs: number; signalPassRate: number }>;
+  /** Unique generation prompt versions across all scenarios (attribution). */
+  promptVersions: string[];
+  /** Unique prompt template versions across all scenarios — compare this across saved reports to check whether the prompt structure changed between runs. */
+  promptTemplateVersions: string[];
   signalsByKind: Record<string, import("../run/signal-checker.js").SignalsByKindEntry>;
   calibration: ReturnType<typeof calibrateJudge>;
   perScenario: Array<{
@@ -76,6 +80,7 @@ export type BenchReport = {
     axisScores: AxisScores;
     fallbackCount: number;
     latencyMs: number;
+    promptVersions: string[];
     judgeSalvaged?: boolean;
     failed?: string;
   }>;
@@ -137,6 +142,8 @@ export async function runBench(opts: {
     judgeAxisMeans: {},
     judgeAxisTargets: {},
     byCategory: {},
+    promptVersions: [],
+    promptTemplateVersions: [],
     signalsByKind: {},
     calibration: calibrateJudge(new Map(), []),
     perScenario: [],
@@ -151,11 +158,15 @@ export async function runBench(opts: {
   let probesPassed = 0;
   let probesTotal = 0;
   const catAgg: Record<string, { runs: number; signalsPassed: number; signalsTotal: number }> = {};
+  const allPromptVersions = new Set<string>();
+  const allTemplateVersions = new Set<string>();
 
   for (const scenario of limited) {
     try {
       const artifact: ScenarioRunArtifact = await ScenarioRunner.run(scenario, { llmMode: mode });
       report.scenariosRun++;
+      artifact.promptVersions.forEach((v) => allPromptVersions.add(v));
+      artifact.templateVersions.forEach((v) => allTemplateVersions.add(v));
 
       const judgeResult =
         judgeMode === "llm"
@@ -203,6 +214,7 @@ export async function runBench(opts: {
         axisScores,
         fallbackCount: artifact.fallbackCount,
         latencyMs: artifact.latencyMs,
+        promptVersions: artifact.promptVersions,
         judgeSalvaged: judgeResult.salvaged,
       });
     } catch (err) {
@@ -217,6 +229,7 @@ export async function runBench(opts: {
         axisScores: {},
         fallbackCount: 0,
         latencyMs: 0,
+        promptVersions: [],
         failed: err instanceof Error ? err.message : String(err),
       });
     }
@@ -248,6 +261,8 @@ export async function runBench(opts: {
     }]),
   );
   report.calibration = calibrateJudge(judgeScores, GOLDEN_LABELS, 0.7);
+  report.promptVersions = [...allPromptVersions];
+  report.promptTemplateVersions = [...allTemplateVersions];
 
   if (opts.out) {
     const outPath = resolve(opts.out);

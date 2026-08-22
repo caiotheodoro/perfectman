@@ -13,6 +13,7 @@
  */
 
 import type { CommittedEvent, JudgeRubric, RoleplayScenario } from "@perfectman/shared";
+import { PromptSection } from "@perfectman/shared";
 import type { ProbeResult } from "../probes/types.js";
 
 export type AxisScores = Record<string, number>;
@@ -154,7 +155,7 @@ export function ruleJudge(
 
 // ── LLM judge ────────────────────────────────────────────────────────────────
 
-export type LlmJudgeConfig = {
+export type LLMJudgeConfig = {
   baseUrl: string;
   model: string;
   apiKey?: string;
@@ -163,16 +164,19 @@ export type LlmJudgeConfig = {
 };
 
 function buildJudgeSystem(rubric: JudgeRubric): string {
-  const axes = rubric.axes
-    .map(a => `- ${a.id}: ${a.label}\n  ${Object.entries(a.anchors).map(([k, v]) => `  ${k}: ${v}`).join("\n  ")}`)
-    .join("\n");
-  return `You are a strict evaluator of roleplay quality in a chat-room social simulation. Score each axis 1-5 using ONLY the anchor descriptions. Be honest — a flat, safe, assistant-like performance must score low on creativity, voice, and motive authenticity.
-
-Rubric: ${rubric.name}
-Axes:
-${axes}
-
-Return ONLY a JSON object: {"axes": {"<axisId>": score, ...}} with no prose.`;
+  const axes = rubric.axes.map(
+    (a) => `${a.id}: ${a.label}\n${Object.entries(a.anchors).map(([k, v]) => `  ${k}: ${v}`).join("\n")}`,
+  );
+  return new PromptSection()
+    .container("role", (s) => s.raw(
+      "You are a strict evaluator of roleplay quality in a chat-room social simulation. Score each axis 1-5 using ONLY the anchor descriptions. Be honest — a flat, safe, assistant-like performance must score low on creativity, voice, and motive authenticity.",
+    ))
+    .container("rubric", (s) => {
+      s.raw(`Rubric: ${rubric.name}`);
+      s.list(undefined, axes);
+    })
+    .container("output_contract", (s) => s.raw('Return ONLY a JSON object: {"axes": {"<axisId>": score, ...}} with no prose.'))
+    .toString();
 }
 
 function buildJudgeUser(scenario: RoleplayScenario, events: readonly CommittedEvent[]): string {
@@ -184,17 +188,17 @@ function buildJudgeUser(scenario: RoleplayScenario, events: readonly CommittedEv
       return `[p${e.pulseIndex}] ${e.actorId} (${e.type})${text}${motive}`;
     })
     .join("\n");
-  return `Scenario: ${scenario.name}
-${scenario.description}
-
-Transcript:
-${transcript}`;
+  return new PromptSection()
+    .container("scenario", (s) => { s.raw(`Scenario: ${scenario.name}`); s.raw(scenario.description); })
+    .container("transcript", (s) => s.raw(transcript))
+    .container("decision", (s) => s.raw("Score each axis from the transcript above, returning ONLY the JSON object per the output contract."))
+    .toString();
 }
 
 async function callJudge(
   scenario: RoleplayScenario,
   events: readonly CommittedEvent[],
-  config: LlmJudgeConfig,
+  config: LLMJudgeConfig,
   systemSuffix = "",
 ): Promise<string> {
   const system = buildJudgeSystem(scenario.rubric) + systemSuffix;
@@ -255,7 +259,7 @@ export type JudgeResult = { axes: AxisScores; salvaged: boolean };
 export async function llmJudge(
   scenario: RoleplayScenario,
   events: readonly CommittedEvent[],
-  config: LlmJudgeConfig,
+  config: LLMJudgeConfig,
 ): Promise<JudgeResult> {
   const rawAttempts: string[] = [];
   const axisIds = scenario.rubric.axes.map(a => a.id);
@@ -317,7 +321,7 @@ export async function llmJudge(
 export async function llmJudgePerTurn(
   scenario: RoleplayScenario,
   events: readonly CommittedEvent[],
-  config: LlmJudgeConfig,
+  config: LLMJudgeConfig,
   maxTurnSamples = 8,
 ): Promise<JudgeResult> {
   const { axes, salvaged } = await llmJudge(scenario, events, config);
@@ -376,25 +380,28 @@ async function scoreCohesion(
   scenario: RoleplayScenario,
   prior: { pulseIndex: number; group: CommittedEvent[] },
   turn: { pulseIndex: number; group: CommittedEvent[] },
-  config: LlmJudgeConfig,
+  config: LLMJudgeConfig,
 ): Promise<number> {
-  const system = `You are a strict evaluator of NARRATIVE COHESION in a chat-room social simulation. Score 1-5 using ONLY these anchors:
-1: Contradicts its own earlier messages or ignores what it just said.
-2: Messages feel disconnected; no thread between turns.
-3: References prior turns sometimes, but loosely.
-4: Each turn builds on the prior exchange; thread is clear.
-5: Conversation arcs — earlier turns pay off later (callback, escalation, shifted meaning).
+  const system = new PromptSection()
+    .container("role", (s) => s.raw(
+      "You are a strict evaluator of NARRATIVE COHESION in a chat-room social simulation. Score 1-5 using ONLY these anchors:",
+    ))
+    .container("rubric", (s) => s.raw([
+      "1: Contradicts its own earlier messages or ignores what it just said.",
+      "2: Messages feel disconnected; no thread between turns.",
+      "3: References prior turns sometimes, but loosely.",
+      "4: Each turn builds on the prior exchange; thread is clear.",
+      "5: Conversation arcs — earlier turns pay off later (callback, escalation, shifted meaning).",
+    ].join("\n")))
+    .container("output_contract", (s) => s.raw('Return ONLY a JSON object: {"narrative_cohesion": score} with no prose.'))
+    .toString();
 
-Return ONLY a JSON object: {"narrative_cohesion": score} with no prose.`;
-
-  const user = `Scenario: ${scenario.name}
-${scenario.description}
-
-Earlier turn (pulse ${prior.pulseIndex}):
-${turnTranscript(prior.group)}
-
-This turn (pulse ${turn.pulseIndex}):
-${turnTranscript(turn.group)}`;
+  const user = new PromptSection()
+    .container("scenario", (s) => { s.raw(`Scenario: ${scenario.name}`); s.raw(scenario.description); })
+    .container("earlier_turn", (s) => { s.raw(`Earlier turn (pulse ${prior.pulseIndex}):`); s.raw(turnTranscript(prior.group)); })
+    .container("this_turn", (s) => { s.raw(`This turn (pulse ${turn.pulseIndex}):`); s.raw(turnTranscript(turn.group)); })
+    .container("decision", (s) => s.raw("Score narrative_cohesion 1-5 from these two turns, returning ONLY the JSON object."))
+    .toString();
 
   const res = await fetch(`${config.baseUrl}/chat/completions`, {
     method: "POST",
