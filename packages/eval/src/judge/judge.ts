@@ -472,6 +472,8 @@ export type JuryJuror = {
 export type JuryVerdict = {
   /** Per-axis median across UNSALVAGED surviving judges — the verdict. */
   axes: AxisScores;
+  /** Number of unsalvaged jurors whose votes produced the median. */
+  voterCount: number;
   /** Per-judge raw scores + salvage status, keyed by config label. */
   perJudge: Record<string, JuryJuror>;
 };
@@ -541,7 +543,11 @@ export async function juryJudge(
   const axes: AxisScores = {};
   for (const axis of axisIds) {
     const votes = voters.map(juror => juror.axes[axis]).filter((v): v is number => typeof v === "number");
-    if (votes.length > 0) axes[axis] = Math.round(median(votes) * 1000) / 1000;
+    // clampScore keeps the verdict on the repo's single integer score domain
+    // — an unclamped x.5 median would inflate kappa categories if a verdict
+    // ever reached computeCalibration, and every other AxisScores value is
+    // an integer in [1,5].
+    if (votes.length > 0) axes[axis] = clampScore(median(votes));
   }
-  return { axes, perJudge };
+  return { axes, voterCount: voters.length, perJudge };
 }

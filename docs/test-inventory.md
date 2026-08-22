@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-22T16:39:17.600Z — audited 90 files, 818 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-22T18:52:05.667Z — audited 91 files, 838 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -9,11 +9,11 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | Package | Files | it/test | Hygiene flags
 |---|---|---|---|
 | engine | 22 | 259 | —
-| eval | 12 | 79 | —
-| server | 49 | 407 | console(1), async-pause(1)
+| eval | 13 | 94 | —
+| server | 49 | 412 | console(1), async-pause(1)
 | shared | 7 | 73 | —
 
-**Total: 90 files, 818 it/test blocks; 2 files flagged.**
+**Total: 91 files, 838 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -50,13 +50,14 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/eval/src/test/golden-labels-coverage.test.ts | eval-harness | 3 | 
 | packages/eval/src/test/judge-json-salvage.test.ts | eval-harness | 9 | 
 | packages/eval/src/test/judge-signals.test.ts | eval-harness | 10 | 
-| packages/eval/src/test/jury-judge.test.ts | eval-harness | 8 | 
-| packages/eval/src/test/probes.test.ts | eval-harness | 15 | 
+| packages/eval/src/test/jury-judge.test.ts | eval-harness | 9 | 
+| packages/eval/src/test/probes.test.ts | eval-harness | 23 | 
 | packages/eval/src/test/signal-breakdown.test.ts | eval-harness | 4 | 
+| packages/eval/src/test/sweep-temperature.test.ts | eval-harness | 6 | 
 | packages/server/src/__e2e__/html-snapshot.e2e.test.ts | e2e | 1 | console(1)
 | packages/server/src/__e2e__/pipeline-invariants.e2e.test.ts | e2e | 10 | 
 | packages/server/src/__e2e__/roleplay-behaviors.e2e.test.ts | e2e | 17 | 
-| packages/server/src/agent/__tests__/agent-runtime.test.ts | integration | 6 | 
+| packages/server/src/agent/__tests__/agent-runtime.test.ts | integration | 11 | 
 | packages/server/src/agent/__tests__/background-reflection-prompt-builder.test.ts | integration | 11 | 
 | packages/server/src/agent/__tests__/intent-parser-null.test.ts | integration | 4 | 
 | packages/server/src/agent/__tests__/intent-parser.test.ts | integration | 16 | 

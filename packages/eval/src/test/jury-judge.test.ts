@@ -42,27 +42,29 @@ describe("juryJudge", () => {
   it("returns per-axis medians with per-judge scores for divergence inspection", async () => {
     // Route by model so fixtures are deterministic under allSettled
     // concurrency regardless of call ordering inside callJudge.
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
-        const model = JSON.parse(init?.body ?? "{}").model as string;
-        const axes =
-          model === "family-a" ? { in_character: 2, voice_match: 3 }
-          : model === "family-b" ? { in_character: 4, voice_match: 3 }
-          : { in_character: 5, voice_match: 3 };
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
-        });
-      }),
-    );
+    const fetchMock = vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
+      const model = JSON.parse(init?.body ?? "{}").model as string;
+      const axes =
+        model === "family-a" ? { in_character: 2, voice_match: 3 }
+        : model === "family-b" ? { in_character: 4, voice_match: 3 }
+        : { in_character: 5, voice_match: 3 };
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
     const verdict = await juryJudge(scenario, [], configs);
     expect(verdict.axes["in_character"]).toBe(4);
     expect(verdict.axes["voice_match"]).toBe(3);
+    expect(verdict.voterCount).toBe(3);
     expect(Object.keys(verdict.perJudge).sort()).toEqual(["family-a", "family-b", "family-c"]);
     expect(verdict.perJudge["family-a"]!.axes.in_character).toBe(2);
     expect(verdict.perJudge["family-a"]!.salvaged).toBe(false);
+    // One fetch per judge, no retry: a parse-failure retry inside llmJudge
+    // would shift the per-judge response mapping and this assertion reds.
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it("resists a single biased outlier via the median", async () => {
@@ -81,6 +83,36 @@ describe("juryJudge", () => {
     );
     const verdict = await juryJudge(scenario, [], configs);
     expect(verdict.axes["in_character"]).toBe(3);
+  });
+
+  it("keeps even-voter medians on the shared integer score domain", async () => {
+    // 4 voters [2,3,4,4] -> median 3.5 -> clamped to 4, NOT a fractional
+    // 3.5: fractional AxisScores would inflate kappa categories if a verdict
+    // ever reached computeCalibration (all other scores are integers in [1,5]).
+    const four = [
+      { ...baseConfig, model: "j1", label: "j1" },
+      { ...baseConfig, model: "j2", label: "j2" },
+      { ...baseConfig, model: "j3", label: "j3" },
+      { ...baseConfig, model: "j4", label: "j4" },
+    ];
+    const scores: Record<string, number> = { j1: 2, j2: 3, j3: 4, j4: 4 };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
+        const model = JSON.parse(init?.body ?? "{}").model as string;
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            choices: [{ message: { content: JSON.stringify({ axes: { in_character: scores[model]! } }) } }],
+          }),
+        });
+      }),
+    );
+    const verdict = await juryJudge(scenario, [], four);
+    expect(verdict.voterCount).toBe(4);
+    expect(verdict.axes["in_character"]).toBe(4);
+    expect(Number.isInteger(verdict.axes["in_character"])).toBe(true);
   });
 
   it("drops failed judges and still reaches a verdict", async () => {
