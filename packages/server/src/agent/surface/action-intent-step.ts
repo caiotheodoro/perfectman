@@ -30,6 +30,16 @@ import {
 type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
 
 /**
+ * Correction appended to the system prompt on each repetition retry. The
+ * retry prompt version hash covers this text, so a reworded note yields a
+ * new prompt version; the block motive keeps its own "Repetition guard"
+ * prefix (repetition-guard.ts) that the offline sweeps match on.
+ */
+function retryCorrectionNote(lastAttempt: string): string {
+  return `IMPORTANT: your last attempt this turn ("${lastAttempt}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — while staying true to what you actually want right now; do not invent novelty that your current motive and emotional state wouldn't justify. Or choose "no_op" if you truly have nothing new to add.`;
+}
+
+/**
  * The `action_intent` LLM surface as a typed step. This is the canonical
  * implementation of the project's "engine owns structure, model owns language"
  * rule for the one active production surface: the provider call, strict parse,
@@ -167,10 +177,10 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         const retryPrompt = {
           ...prompt,
           version: promptVersionHash([
-            `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
+            `${prompt.system}\n\n${retryCorrectionNote(intent.visibleContent ?? "")}`,
             prompt.user,
           ]),
-          system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
+          system: `${prompt.system}\n\n${retryCorrectionNote(intent.visibleContent ?? "")}`,
         };
         try {
           const retryResult = await provider.generateIntent(input, runtimeContext, retryPrompt);
