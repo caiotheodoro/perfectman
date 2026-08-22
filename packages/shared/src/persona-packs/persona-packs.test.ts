@@ -151,3 +151,34 @@ describe("PersonaPacks", () => {
     }
   });
 });
+
+describe("PersonaPacks style refresh (#29)", () => {
+  it("carries enough examples per persona for varied generation", () => {
+    for (const pack of ALL_PERSONA_PACKS) {
+      expect(
+        pack.styleExamples.length,
+        `${pack.personaId}.styleExamples count`,
+      ).toBeGreaterThanOrEqual(12);
+    }
+  });
+
+  it("has no duplicate or cross-persona-identical examples", () => {
+    const seen = new Map<string, string>();
+    for (const pack of ALL_PERSONA_PACKS) {
+      const intra = new Set(pack.styleExamples);
+      expect(intra.size, `${pack.personaId} duplicates`).toBe(pack.styleExamples.length);
+      for (const example of pack.styleExamples) {
+        expect(seen.has(example), `"${example}" duplicated across ${seen.get(example)} and ${pack.personaId}`).toBe(false);
+        seen.set(example, pack.personaId);
+      }
+    }
+  });
+
+  it("keeps length variance so generation is not capped at one rhythm", () => {
+    for (const pack of ALL_PERSONA_PACKS) {
+      const lengths = pack.styleExamples.map(s => s.length);
+      const spread = Math.max(...lengths) / Math.max(1, Math.min(...lengths));
+      expect(spread, `${pack.personaId} short/long spread`).toBeGreaterThanOrEqual(2);
+    }
+  });
+});
