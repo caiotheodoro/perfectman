@@ -164,7 +164,7 @@ export class AgentRuntime {
 
     if (!fallbackApplied && isRepeat(intent)) {
       repetitionRetried = true;
-      const maxRetries = Math.max(0, this.repetitionPolicy?.maxRetries ?? 1);
+      const maxRetries = Math.max(0, Math.floor(this.repetitionPolicy?.maxRetries ?? 1));
       if (maxRetries <= 0) {
         // No retry budget: the detected repeat blocks right away.
         repetitionBlocked = true;

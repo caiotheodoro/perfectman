@@ -314,7 +314,8 @@ describe("AgentRuntime Orchestration", () => {
 
     it("honors a stricter threshold: a loose near-match passes when threshold is raised", async () => {
       // "kkkkk não acredito nesse take" vs "kkkkk não acredito nesse tema"
-      // share most words -> high Jaccard; only the strictest gate blocks it.
+      // share most words -> high Jaccard (~0.67); at threshold 0.99 the
+      // guard must NOT fire — one provider call, content committed as-is.
       const borderline = "kkkkk não acredito nesse tema";
       const lenient = new AgentRuntime(
         { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
@@ -322,6 +323,16 @@ describe("AgentRuntime Orchestration", () => {
         undefined,
         { threshold: 0.99 },
       );
+
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse(borderline));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const output = await lenient.generateIntent(repeatingInput, context);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(output.fallbackApplied).toBe(false);
+      expect(output.intent.visibleContent).toBe(borderline);
+      expect(output.operatorEvents.some(e => e.type === "intent_blocked")).toBe(false);
     });
 
     it("blocks a loose near-match when the threshold is lowered", async () => {

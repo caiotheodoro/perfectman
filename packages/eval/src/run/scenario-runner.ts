@@ -95,9 +95,9 @@ class TrackingRuntime {
           },
         };
         return counted;
-        },
-        repetition,
-      );
+      },
+      repetition,
+    );
   }
 
   providerCalls(): number {
