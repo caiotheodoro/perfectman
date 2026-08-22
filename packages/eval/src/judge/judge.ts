@@ -308,15 +308,25 @@ async function callJudge(
   return data.choices?.[0]?.message?.content ?? "";
 }
 
-function parseAxes(raw: string, scenario: RoleplayScenario): AxisScores {
+function parseAxes(raw: string, scenario: RoleplayScenario): { axes: AxisScores; imputedAxes: string[] } {
   const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as { axes?: Record<string, number> };
   const axes: AxisScores = {};
+  const imputedAxes: string[] = [];
   for (const axis of scenario.rubric.axes) {
     const v = parsed.axes?.[axis.id];
-    axes[axis.id] = typeof v === "number" ? clampScore(v) : 3;
+    if (typeof v === "number") {
+      axes[axis.id] = clampScore(v);
+    } else {
+      // Model omitted this axis: fill the neutral 3 for single-judge
+      // consumers, but flag it so a jury can exclude the vote — an
+      // unflagged default would move the median on axes the juror never
+      // scored.
+      axes[axis.id] = 3;
+      imputedAxes.push(axis.id);
+    }
   }
-  return axes;
+  return { axes, imputedAxes };
 }
 
 const RETRY_SYSTEM_SUFFIX =
@@ -328,7 +338,15 @@ const RETRY_SYSTEM_SUFFIX =
  * callers that feed scores into calibration must exclude these, since a
  * fabricated midpoint would silently compress the agreement signal.
  */
-export type JudgeResult = { axes: AxisScores; salvaged: boolean };
+/**
+ * `salvaged: true` means the axes were recovered from a prose critique (or
+ * partly defaulted to 3) rather than parsed from the requested JSON —
+ * callers that feed scores into calibration must exclude these, since a
+ * fabricated midpoint would silently compress the agreement signal.
+ * `imputedAxes` lists rubric axes the model omitted from its JSON answer
+ * (filled with 3 by the single-judge path, but juries exclude them).
+ */
+export type JudgeResult = { axes: AxisScores; salvaged: boolean; imputedAxes: string[] };
 
 export async function llmJudge(
   scenario: RoleplayScenario,
@@ -340,14 +358,16 @@ export async function llmJudge(
 
   rawAttempts.push(await callJudge(scenario, events, config));
   try {
-    return { axes: parseAxes(rawAttempts[0]!, scenario), salvaged: false };
+    const first = parseAxes(rawAttempts[0]!, scenario);
+    return { axes: first.axes, salvaged: false, imputedAxes: first.imputedAxes };
   } catch {
     // One strict retry covers judges that burned their budget on reasoning
     // or ignored the JSON instruction on the first pass.
   }
   try {
     rawAttempts.push(await callJudge(scenario, events, config, RETRY_SYSTEM_SUFFIX));
-    return { axes: parseAxes(rawAttempts[1]!, scenario), salvaged: false };
+    const second = parseAxes(rawAttempts[1]!, scenario);
+    return { axes: second.axes, salvaged: false, imputedAxes: second.imputedAxes };
   } catch {
     // Fall through to prose salvage — a judge that answered in a scored
     // critique still emitted usable signal. Try every response we hold:
@@ -362,7 +382,7 @@ export async function llmJudge(
         const v = salvaged[axis.id];
         axes[axis.id] = typeof v === "number" ? clampScore(v) : 3;
       }
-      return { axes, salvaged: true };
+      return { axes, salvaged: true, imputedAxes: [] };
     }
   }
 
@@ -398,12 +418,12 @@ export async function llmJudgePerTurn(
   config: LLMJudgeConfig,
   maxTurnSamples = 8,
 ): Promise<JudgeResult> {
-  const { axes, salvaged } = await llmJudge(scenario, events, config);
+  const { axes, salvaged, imputedAxes } = await llmJudge(scenario, events, config);
 
   // The per-turn axis is only meaningful when the rubric defines it (it lives
   // on roleplay-v1, not edge-chaos/behavioral). Guard before spending calls.
   if (!scenario.rubric.axes.some(a => a.id === "narrative_cohesion")) {
-    return { axes, salvaged };
+    return { axes, salvaged, imputedAxes };
   }
 
   const turns: CommittedEvent[][] = [];
@@ -437,7 +457,13 @@ export async function llmJudgePerTurn(
   if (cohesionCount > 0) {
     axes["narrative_cohesion"] = clampScore(cohesionSum / cohesionCount);
   }
-  return { axes, salvaged };
+  return {
+    axes,
+    salvaged,
+    // The per-turn pass actually measured cohesion, so it is no longer
+    // imputed even if the whole-transcript judge omitted it.
+    imputedAxes: imputedAxes.filter(a => a !== "narrative_cohesion"),
+  };
 }
 
 function turnTranscript(group: readonly CommittedEvent[]): string {
@@ -541,6 +567,11 @@ export type JuryJuror = {
   axes: AxisScores;
   /** True when this juror's scores came from prose salvage (imputed defaults). */
   salvaged: boolean;
+  /** Rubric axes the model omitted from its JSON answer (voted nothing). */
+  imputedAxes: string[];
+  /** Source of this juror's scores, for the evidence trail. */
+  model: string;
+  baseUrl: string;
 };
 
 export type JuryVerdict = {
@@ -550,6 +581,8 @@ export type JuryVerdict = {
   voterCount: number;
   /** Per-judge raw scores + salvage status, keyed by config label. */
   perJudge: Record<string, JuryJuror>;
+  /** Judges that errored (transport/timeout/parse), label → reason. */
+  failed: Record<string, string>;
 };
 
 function median(values: number[]): number {
@@ -564,10 +597,16 @@ function median(values: number[]): number {
  * shows up as spread in `perJudge`; the median resists a single biased
  * outlier ONLY when >= 3 jurors survive — with exactly 2 the median is the
  * mean and offers no outlier resistance. Salvaged jurors (prose-implied
- * scores, mostly imputed defaults) are reported but EXCLUDED from medians.
- * Judges that error are dropped; at least one unsalvaged survivor is
- * required. Labels must be unique — duplicates would silently collapse
- * two votes into one.
+ * scores, mostly imputed defaults) are reported but EXCLUDED from medians,
+ * and axes a juror omitted from its JSON answer are excluded from that
+ * juror's vote (the single-judge path fills the neutral 3; a jury must not
+ * let an unflagged default move the median). Judges that error are dropped
+ * and their label → reason recorded in `failed`; at least one unsalvaged
+ * survivor is required. Labels must be unique — duplicates would silently
+ * collapse two votes into one. **Caller obligation: jurors must be
+ * independently sourced** — duplicate (baseUrl, model) pairs throw, and
+ * each juror's model/baseUrl is recorded in `perJudge` so the sourcing is
+ * checkable later.
  */
 export async function juryJudge(
   scenario: RoleplayScenario,
@@ -582,20 +621,45 @@ export async function juryJudge(
     throw new Error(`Duplicate jury judge labels: ${[...new Set(duplicates)].join(", ")}`);
   }
 
+  // Three qwen3:8b configs with distinct labels are NOT a jury — they are
+  // the same bias three times. Reject same-endpoint pairs before any
+  // network call.
+  const endpointOwner = new Map<string, string>();
+  for (let i = 0; i < configs.length; i++) {
+    const key = `${configs[i]!.baseUrl}|${configs[i]!.model}`;
+    const owner = endpointOwner.get(key);
+    if (owner) {
+      throw new Error(
+        `Duplicate jury judge endpoint (${configs[i]!.baseUrl}, ${configs[i]!.model}) on labels "${owner}" and "${labels[i]}" — a jury must be independently sourced`,
+      );
+    }
+    endpointOwner.set(key, labels[i]!);
+  }
+
   const settled = await Promise.allSettled(
     configs.map(async (config, i) => ({
       label: labels[i]!,
+      config,
       result: await llmJudge(scenario, events, config),
     })),
   );
 
   const perJudge: Record<string, JuryJuror> = {};
-  for (const outcome of settled) {
+  const failed: Record<string, string> = {};
+  // Index-based: `allSettled` discards the payload on rejection, so the
+  // label must come from the configs array position, not the outcome.
+  for (let i = 0; i < settled.length; i++) {
+    const outcome = settled[i]!;
     if (outcome.status === "fulfilled") {
       perJudge[outcome.value.label] = {
         axes: outcome.value.result.axes,
         salvaged: outcome.value.result.salvaged,
+        imputedAxes: outcome.value.result.imputedAxes,
+        model: outcome.value.config.model,
+        baseUrl: outcome.value.config.baseUrl,
       };
+    } else {
+      failed[labels[i]!] = (outcome.reason as Error)?.message ?? String(outcome.reason);
     }
   }
   if (Object.keys(perJudge).length === 0) {
@@ -616,12 +680,15 @@ export async function juryJudge(
 
   const axes: AxisScores = {};
   for (const axis of axisIds) {
-    const votes = voters.map(juror => juror.axes[axis]).filter((v): v is number => typeof v === "number");
+    const votes = voters
+      .filter(juror => !juror.imputedAxes.includes(axis))
+      .map(juror => juror.axes[axis])
+      .filter((v): v is number => typeof v === "number");
     // clampScore keeps the verdict on the repo's single integer score domain
     // — an unclamped x.5 median would inflate kappa categories if a verdict
     // ever reached computeCalibration, and every other AxisScores value is
     // an integer in [1,5].
     if (votes.length > 0) axes[axis] = clampScore(median(votes));
   }
-  return { axes, voterCount: voters.length, perJudge };
+  return { axes, voterCount: voters.length, perJudge, failed };
 }
