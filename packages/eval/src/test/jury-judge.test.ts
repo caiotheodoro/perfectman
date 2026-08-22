@@ -34,17 +34,29 @@ describe("juryJudge", () => {
   });
 
   const configs = [
-    { ...baseConfig, label: "family-a" },
-    { ...baseConfig, label: "family-b" },
-    { ...baseConfig, label: "family-c" },
+    { ...baseConfig, model: "family-a", label: "family-a" },
+    { ...baseConfig, model: "family-b", label: "family-b" },
+    { ...baseConfig, model: "family-c", label: "family-c" },
   ];
 
   it("returns per-axis medians with per-judge scores for divergence inspection", async () => {
-    stubJudgeResponses([
-      { in_character: 2, voice_match: 3 },
-      { in_character: 4, voice_match: 3 },
-      { in_character: 5, voice_match: 3 },
-    ]);
+    // Route by model so fixtures are deterministic under allSettled
+    // concurrency regardless of call ordering inside callJudge.
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
+        const model = JSON.parse(init?.body ?? "{}").model as string;
+        const axes =
+          model === "family-a" ? { in_character: 2, voice_match: 3 }
+          : model === "family-b" ? { in_character: 4, voice_match: 3 }
+          : { in_character: 5, voice_match: 3 };
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
+        });
+      }),
+    );
     const verdict = await juryJudge(scenario, [], configs);
     expect(verdict.axes["in_character"]).toBe(4);
     expect(verdict.axes["voice_match"]).toBe(3);
@@ -55,34 +67,39 @@ describe("juryJudge", () => {
 
   it("resists a single biased outlier via the median", async () => {
     // family-c inflates everything; the median ignores it.
-    stubJudgeResponses([
-      { in_character: 3 },
-      { in_character: 3 },
-      { in_character: 5 },
-    ]);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
+        const model = JSON.parse(init?.body ?? "{}").model as string;
+        const axes = model === "family-c" ? { in_character: 5 } : { in_character: 3 };
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
+        });
+      }),
+    );
     const verdict = await juryJudge(scenario, [], configs);
     expect(verdict.axes["in_character"]).toBe(3);
   });
 
   it("drops failed judges and still reaches a verdict", async () => {
-    let call = 0;
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockImplementation(() => {
-        const fail = call === 0;
-        call++;
-        if (fail) return Promise.resolve({ ok: false, status: 500, text: async () => "boom" });
+      vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
+        const model = JSON.parse(init?.body ?? "{}").model as string;
+        if (model === "family-a") {
+          return Promise.resolve({ ok: false, status: 500, text: async () => "boom" });
+        }
         return Promise.resolve({
           ok: true,
           status: 200,
-          json: async () => ({
-            choices: [{ message: { content: JSON.stringify({ axes: { in_character: 4 } }) } }],
-          }),
+          json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes: { in_character: 4 } }) } }] }),
         });
       }),
     );
-    const verdict = await juryJudge(scenario, [], configs);
-    expect(Object.keys(verdict.perJudge)).toHaveLength(2);
+    const verdict = await juryJudge(scenario, [], configs.slice(1));
+    expect(Object.keys(verdict.perJudge)).toEqual(["family-b", "family-c"]);
     expect(verdict.axes["in_character"]).toBe(4);
   });
 
