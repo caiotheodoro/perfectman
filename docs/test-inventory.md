@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-22T19:06:39.193Z — audited 91 files, 842 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-22T19:31:41.650Z — audited 91 files, 845 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -11,9 +11,9 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | engine | 22 | 259 | —
 | eval | 13 | 96 | —
 | server | 49 | 414 | console(1), async-pause(1)
-| shared | 7 | 73 | —
+| shared | 7 | 76 | —
 
-**Total: 91 files, 842 it/test blocks; 2 files flagged.**
+**Total: 91 files, 845 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -108,7 +108,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/shared/src/__tests__/intent-packet-schema.test.ts | contract | 9 | 
 | packages/shared/src/__tests__/prompt-syntax.test.ts | contract | 5 | 
 | packages/shared/src/__tests__/schemas.test.ts | contract | 22 | 
-| packages/shared/src/persona-packs/persona-packs.test.ts | contract | 13 | 
+| packages/shared/src/persona-packs/persona-packs.test.ts | contract | 16 | 
 | packages/shared/src/scenarios/library.test.ts | contract | 8 | 
 
 ## Hygiene legend

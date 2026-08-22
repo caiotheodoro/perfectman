@@ -14,11 +14,11 @@
     {
       "temperature": 0.25,
       "runs": 4,
-      "guardBlocks": 92,
-      "contentRepetitionMean": 0.302,
+      "guardBlocks": 81,
+      "contentRepetitionMean": 0.246,
       "axisMeans": {
-        "in_character": 3.25,
-        "voice_match": 2.25,
+        "in_character": 3,
+        "voice_match": 1.5,
         "motive_authenticity": 5,
         "interpretation": 5,
         "creativity_unhinged": 4,
@@ -30,11 +30,11 @@
     {
       "temperature": 0.5,
       "runs": 4,
-      "guardBlocks": 92,
-      "contentRepetitionMean": 0.302,
+      "guardBlocks": 81,
+      "contentRepetitionMean": 0.246,
       "axisMeans": {
-        "in_character": 3.25,
-        "voice_match": 2.25,
+        "in_character": 3,
+        "voice_match": 1.5,
         "motive_authenticity": 5,
         "interpretation": 5,
         "creativity_unhinged": 4,
@@ -46,11 +46,11 @@
     {
       "temperature": 0.7,
       "runs": 4,
-      "guardBlocks": 92,
-      "contentRepetitionMean": 0.302,
+      "guardBlocks": 81,
+      "contentRepetitionMean": 0.246,
       "axisMeans": {
-        "in_character": 3.25,
-        "voice_match": 2.25,
+        "in_character": 3,
+        "voice_match": 1.5,
         "motive_authenticity": 5,
         "interpretation": 5,
         "creativity_unhinged": 4,
@@ -62,11 +62,11 @@
     {
       "temperature": 1,
       "runs": 4,
-      "guardBlocks": 44,
-      "contentRepetitionMean": 0.078,
+      "guardBlocks": 29,
+      "contentRepetitionMean": 0.063,
       "axisMeans": {
-        "in_character": 3.75,
-        "voice_match": 2.75,
+        "in_character": 3,
+        "voice_match": 1,
         "motive_authenticity": 5,
         "interpretation": 5,
         "creativity_unhinged": 4.75,
