@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { LlmBudgetTracker } from "../llm-budget.js";
+import { LLMBudgetTracker } from "../llm-budget.js";
 
-describe("LlmBudgetTracker", () => {
-  let budget: LlmBudgetTracker;
+describe("LLMBudgetTracker", () => {
+  let budget: LLMBudgetTracker;
 
   beforeEach(() => {
-    budget = new LlmBudgetTracker();
+    budget = new LLMBudgetTracker();
     budget.registerLimits("sim-test", {
       llmCallBudgetPerMinute: 10,
       tokenBudgetPerHour: 10000,

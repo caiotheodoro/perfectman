@@ -12,7 +12,7 @@
  */
 
 import type { CoreMood, SocialEmotions } from "@perfectman/shared";
-import type { LlmConfig } from "../llm/llm-config.js";
+import type { LLMConfig } from "../llm/llm-config.js";
 import type { SimulationAppConfig, InitialMemory } from "../config/simulation-config.js";
 import { GENERIC_PROMPT_PROFILE } from "../agent/persona-prompt-profile.js";
 import type { ScenarioContextBlock } from "../agent/persona-prompt-profile.js";
@@ -29,7 +29,7 @@ import {
 // Set PERFECTMAN_LLM=qwen3 to use Qwen3 8B via Ollama (requires docker compose up qwen3).
 const USE_REAL_LLM = process.env["PERFECTMAN_LLM"] === "qwen3";
 
-const QWEN3_CONFIG: LlmConfig = {
+const QWEN3_CONFIG: LLMConfig = {
   providerType: "ollama",
   baseUrl: process.env["QWEN3_BASE_URL"] ?? "http://localhost:11434/v1",
   modelName: process.env["QWEN3_MODEL"] ?? "qwen3:8b",
@@ -45,7 +45,7 @@ const QWEN3_CONFIG: LlmConfig = {
   },
 };
 
-export const AGENT_LLM_CONFIG: LlmConfig = USE_REAL_LLM ? QWEN3_CONFIG : DEFAULT_MOCK_CONFIG;
+export const AGENT_LLM_CONFIG: LLMConfig = USE_REAL_LLM ? QWEN3_CONFIG : DEFAULT_MOCK_CONFIG;
 
 // ── Scenario ──────────────────────────────────────────────────────────────────
 

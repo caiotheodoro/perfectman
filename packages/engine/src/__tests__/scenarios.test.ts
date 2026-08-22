@@ -612,6 +612,63 @@ describe("buildBiasedMemoryScenario", () => {
     assertEmotionBounds(result.updatedAgentState);
   });
 
+  it("keeps a salient old memory inside the 8-memory cap against fresher noise", () => {
+    const s = buildBiasedMemoryScenario();
+    const template = s.goulartMemories[0]!;
+    const baseTime = template.createdAt;
+
+    const openLoop = {
+      ...template,
+      id: "mem_open_loop",
+      type: "pending_intention" as const,
+      subjectAgentIds: [],
+      summary: "ainda preciso resolver aquilo",
+      confidence: 0.95,
+      unresolved: true,
+      createdAt: baseTime - 600_000,
+      lastReinforcedAt: baseTime - 600_000,
+    };
+    const freshNoise = Array.from({ length: 10 }, (_, i) => ({
+      ...template,
+      id: `mem_noise_${i}`,
+      type: "episodic" as const,
+      subjectAgentIds: [],
+      summary: `ruido ${i}`,
+      confidence: 0.2,
+      unresolved: false,
+      createdAt: baseTime + 1000 * (i + 1),
+      lastReinforcedAt: baseTime + 1000 * (i + 1),
+    }));
+
+    const snapshot: EngineSnapshot = {
+      pulseIndex: 2,
+      simulation: s.simulation,
+      recentEventsWindow: s.committedEvents,
+      agentState: {
+        ...s.agentStates.goulart,
+        lastProcessedEventId: null,
+        memories: [...s.goulartMemories, openLoop, ...freshNoise],
+      },
+      persona: s.personas.goulart,
+      channels: s.channels,
+      channelMembership: s.memberships,
+      relationalStates: s.agentStates.goulart.relationalStates,
+      worldSignals: DEFAULT_WORLD,
+      rateLimitStatus: makeRateLimit("goulart"),
+      dt: 3,
+      rng: createSeededRng(42),
+      now: 1_700_000_000_000,
+    };
+
+    const selected = runEngineStep(snapshot).perceptionPacket.relevantMemories;
+    const selectedIds = selected.map(m => m.id);
+
+    expect(selected).toHaveLength(8);
+    // Recency-first selection would evict this for the ten fresher noise entries.
+    expect(selectedIds).toContain("mem_open_loop");
+    expect(selectedIds.filter(id => id.startsWith("mem_noise_")).length).toBeLessThan(10);
+  });
+
   it("goulart sees the caio trigger event", () => {
     const s = buildBiasedMemoryScenario();
 

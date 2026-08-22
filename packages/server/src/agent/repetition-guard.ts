@@ -4,10 +4,10 @@
  * self-police a prompt instruction.
  *
  * Why this exists: the prompt already tells the model not to repeat itself
- * and shows it the exact text to avoid (see action-intent-prompt-builder.ts
- * SECTION 8 + renderOwnUtterancesWarning), but empirically small local
- * models keep repeating anyway — the instruction alone isn't sufficient.
- * This is the enforcement backstop.
+ * and renders the exact prior text it must avoid (see
+ * action-intent-prompt-builder.ts <no_repeat> container), but empirically
+ * small local models keep repeating anyway — the instruction alone isn't
+ * sufficient. This is the enforcement backstop.
  */
 
 const STOPWORDS = new Set(["a", "o", "e", "de", "que", "do", "da", "em", "um", "uma", "and", "of", "to", "the"]);

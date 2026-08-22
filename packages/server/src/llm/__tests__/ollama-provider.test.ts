@@ -1,109 +1,51 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { OllamaProvider } from "../ollama-provider.js";
-import { LlmConfigurationError } from "../llm-errors.js";
-import type { AgentRuntimeInput } from "@perfectman/shared";
+import { LLMConfigurationError } from "../llm-errors.js";
 import type { AgentRuntimeContext, BuiltPrompt } from "../../agent/agent-runtime.types.js";
+import { ModelIntentPacketJsonSchema } from "@perfectman/shared";
 
-describe("OllamaProvider", () => {
-  const context: AgentRuntimeContext = {
-    pulseIndex: 10,
-    now: Date.now(),
-  };
+const context: AgentRuntimeContext = { pulseIndex: 1, now: Date.now() };
+const prompt: BuiltPrompt = {
+  system: "sys",
+  user: "user",
+  inputTokensEstimate: 10,
+  purpose: "action_intent",
+  version: "v-test",
+  templateVersion: "template-test",
+};
 
-  const prompt: BuiltPrompt = {
-    system: "system prompt",
-    user: "user prompt",
-    inputTokensEstimate: 100,
-  };
+const baseInput = {} as never;
 
-  const availableActions = [
-    { intentType: "send_message", channelTargets: ["general"], personTargets: [], blocked: false }
-  ];
-
-  const baseInput: AgentRuntimeInput = {
-    simulationId: "sim-123",
-    agentId: "goulart",
-    personaConfig: {
-      id: "goulart",
-      name: "Goulart",
-      archetype: "provocateur",
-      writingStyle: "lowercase blunt",
-      styleExamples: [],
-      baselineValence: 0.1,
-      baselineArousal: 0.65,
-      baselineStability: 0.35,
-      baselineEnergy: 0.70,
-      emotionalReactivity: 1.5,
-      moodInertia: 0.25,
-      maxMoodRotation: 0.8,
-      energyRegen: 0.06,
-      exclusionSensitivity: 0.7,
-      praiseSensitivity: 1.2,
-      conflictSensitivity: 1.8,
-      boredomSensitivity: 1.4,
-      intimacySensitivity: 0.5,
-      socialSensitivities: {},
-    },
-    perceptionPacket: {
-      agentId: "goulart",
-      triggeringEvent: null,
-      visibleContextEvents: [], ownRecentUtterances: [],
-      involvedPeople: [],
-      relevantChannels: ["general"],
-      relevantMemories: [],
-      translatedEmotionalState: {
-        moodDescription: "You feel normal",
-        socialContext: "",
-        relationalFlavors: [],
-        pressureDescriptions: [],
-        inhibitionDescriptions: [],
-      },
-      availableActions,
-    },
-    emotionalState: {
-      coreMood: {
-        valence: 0, arousal: 0, stability: 0.5, energy: 0.5,
-        circumplexAngle: 0, circumplexRadius: 0, momentumValence: 0, momentumArousal: 0,
-      },
-      socialEmotions: {
-        jealousy: 0, envy: 0, humiliation: 0, pride: 0, shame: 0,
-        affection: 0, resentment: 0, suspicion: 0, admiration: 0,
-        contempt: 0, neediness: 0, socialAnxiety: 0, fearOfExclusion: 0,
-        desireForStatus: 0, desireForIntimacy: 0,
-      },
-      relationalStates: new Map(),
-    },
-    activeMotivations: [],
-    activePressures: [],
-    activeInhibitions: [],
-    relevantMemories: [],
-    availableActions,
-    budgetPriority: "normal",
-    triggeringReason: "initiative_cadence",
-  };
-
-  const baseConfig = {
-    providerType: "ollama" as const,
-    baseUrl: "http://localhost:11434/v1",
-    modelName: "qwen3:1.7b",
-    temperature: 0.25,
-    maxInputTokens: 4096,
-    maxOutputTokens: 600,
+function config(overrides: Record<string, unknown> = {}) {
+  return {
+    providerType: "ollama",
+    baseUrl: "http://localhost:11434",
+    modelName: "qwen3:8b",
+    maxInputTokens: 1000,
+    maxOutputTokens: 200,
+    temperature: 1,
     timeoutMs: 5000,
     retryCount: 0,
-  };
+    responseFormatJson: true,
+    ...overrides,
+  } as never;
+}
 
-  const successResponse = () => ({
+function okResponse(content: string, overrides: Record<string, unknown> = {}) {
+  return {
     ok: true,
     status: 200,
     json: async () => ({
-      message: { content: '{"intentType":"no_op"}' },
-      prompt_eval_count: 120,
-      eval_count: 30,
-      model: "qwen3:1.7b",
+      message: { content },
+      model: "qwen3:8b",
+      prompt_eval_count: 20,
+      eval_count: 5,
+      ...overrides,
     }),
-  });
+  };
+}
 
+describe("OllamaProvider", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -112,19 +54,37 @@ describe("OllamaProvider", () => {
     vi.unstubAllGlobals();
   });
 
+  it("returns content and uses the schema object as format (not plain \"json\")", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(okResponse('{"intentType":"no_op"}'));
+    vi.stubGlobal("fetch", fetchSpy);
+    const provider = new OllamaProvider(config());
+    const res = await provider.generateIntent(baseInput, context, prompt);
+    expect(res.content).toContain("no_op");
+    const firstBody = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
+    expect(firstBody.format).not.toBe("json");
+  });
+
+  it("falls back to format \"json\" on a 400 schema rejection", async () => {
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValueOnce({ ok: false, status: 400, text: async () => "schema unsupported" })
+      .mockResolvedValueOnce(okResponse('{"intentType":"no_op","privateMotiveSummary":"s"}'));
+    vi.stubGlobal("fetch", fetchSpy);
+    const provider = new OllamaProvider(config());
+    const res = await provider.generateIntent(baseInput, context, prompt);
+    expect(fetchSpy).toHaveBeenCalledTimes(2);
+    const fallbackBody = JSON.parse(fetchSpy.mock.calls[1]![1]!.body as string);
+    expect(fallbackBody.format).toBe("json");
+    expect(res.content).toContain("no_op");
+  });
+
   it("translates flat extraBody sampling params into nested ollama options", async () => {
-    const fetchSpy = vi.fn().mockResolvedValue(successResponse());
+    const fetchSpy = vi.fn().mockResolvedValue(okResponse('{"intentType":"no_op"}'));
     vi.stubGlobal("fetch", fetchSpy);
 
-    const provider = new OllamaProvider({
-      ...baseConfig,
-      extraBody: {
-        top_p: 0.95,
-        repetition_penalty: 1.1,
-        seed: 42,
-      },
-    });
-
+    const provider = new OllamaProvider(
+      config({ extraBody: { top_p: 0.95, repetition_penalty: 1.1, seed: 42 } }),
+    );
     await provider.generateIntent(baseInput, context, prompt);
 
     const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
@@ -134,10 +94,10 @@ describe("OllamaProvider", () => {
   });
 
   it("omits sampling options when extraBody does not set them", async () => {
-    const fetchSpy = vi.fn().mockResolvedValue(successResponse());
+    const fetchSpy = vi.fn().mockResolvedValue(okResponse('{"intentType":"no_op"}'));
     vi.stubGlobal("fetch", fetchSpy);
 
-    const provider = new OllamaProvider({ ...baseConfig });
+    const provider = new OllamaProvider(config());
     await provider.generateIntent(baseInput, context, prompt);
 
     const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
@@ -147,13 +107,12 @@ describe("OllamaProvider", () => {
   });
 
   it("does not leak flat sampling params onto the request body root", async () => {
-    const fetchSpy = vi.fn().mockResolvedValue(successResponse());
+    const fetchSpy = vi.fn().mockResolvedValue(okResponse('{"intentType":"no_op"}'));
     vi.stubGlobal("fetch", fetchSpy);
 
-    const provider = new OllamaProvider({
-      ...baseConfig,
-      extraBody: { think: false, seed: 7, repetition_penalty: 1.05 },
-    });
+    const provider = new OllamaProvider(
+      config({ extraBody: { think: false, seed: 7, repetition_penalty: 1.05 } }),
+    );
     await provider.generateIntent(baseInput, context, prompt);
 
     const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
@@ -163,53 +122,50 @@ describe("OllamaProvider", () => {
   });
 
   it("derives the native /api/chat url from a /v1 base url", async () => {
-    const fetchSpy = vi.fn().mockResolvedValue(successResponse());
+    const fetchSpy = vi.fn().mockResolvedValue(okResponse('{"intentType":"no_op"}'));
     vi.stubGlobal("fetch", fetchSpy);
 
-    const provider = new OllamaProvider({ ...baseConfig });
+    const provider = new OllamaProvider(config({ baseUrl: "http://localhost:11434/v1" }));
     await provider.generateIntent(baseInput, context, prompt);
 
     expect(fetchSpy.mock.calls[0]![0]).toBe("http://localhost:11434/api/chat");
   });
 
-  it("sets format json only when responseFormatJson is enabled", async () => {
-    const fetchSpy = vi.fn().mockResolvedValue(successResponse());
+  it("sets format only when responseFormatJson is enabled", async () => {
+    const fetchSpy = vi.fn().mockResolvedValue(okResponse('{"intentType":"no_op"}'));
     vi.stubGlobal("fetch", fetchSpy);
 
-    await new OllamaProvider({ ...baseConfig }).generateIntent(baseInput, context, prompt);
+    await new OllamaProvider(config({ responseFormatJson: false })).generateIntent(baseInput, context, prompt);
     let body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
     expect(body.format).toBeUndefined();
 
-    await new OllamaProvider({
-      ...baseConfig,
-      responseFormatJson: true,
-    }).generateIntent(baseInput, context, prompt);
+    await new OllamaProvider(config({ responseFormatJson: true })).generateIntent(baseInput, context, prompt);
     body = JSON.parse(fetchSpy.mock.calls[1]![1]!.body as string);
-    expect(body.format).toBe("json");
+    expect(body.format).toEqual(ModelIntentPacketJsonSchema);
   });
 
   it("returns the expected result structure on success", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(successResponse()));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(okResponse('{"intentType":"no_op"}', { prompt_eval_count: 120, eval_count: 30 })),
+    );
 
-    const provider = new OllamaProvider({
-      ...baseConfig,
-      responseFormatJson: true,
-    });
+    const provider = new OllamaProvider(config({ responseFormatJson: true }));
     const res = await provider.generateIntent(baseInput, context, prompt);
 
     expect(res.content).toBe('{"intentType":"no_op"}');
     expect(res.usage.inputTokens).toBe(120);
     expect(res.usage.outputTokens).toBe(30);
-    expect(res.model).toBe("qwen3:1.7b");
-    expect(res.requestedModel).toBe("qwen3:1.7b");
-    expect(res.routedModel).toBe("qwen3:1.7b");
+    expect(res.model).toBe("qwen3:8b");
+    expect(res.requestedModel).toBe("qwen3:8b");
+    expect(res.routedModel).toBe("qwen3:8b");
     expect(res.fallbackAttempts).toBe(0);
   });
 
-  it("throws LlmConfigurationError when baseUrl is missing", async () => {
-    const provider = new OllamaProvider({ ...baseConfig, baseUrl: "" });
+  it("throws LLMConfigurationError when baseUrl is missing", async () => {
+    const provider = new OllamaProvider(config({ baseUrl: "" }));
     await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(
-      LlmConfigurationError
+      LLMConfigurationError,
     );
   });
 });

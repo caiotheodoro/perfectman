@@ -1,5 +1,5 @@
 import type { SimulationAppConfig } from "../config/simulation-config.js";
-import type { LlmConfig } from "../llm/llm-config.js";
+import type { LLMConfig } from "../llm/llm-config.js";
 
 type Fetch = typeof fetch;
 
@@ -9,12 +9,12 @@ export type FreellmApiHealthCheckDeps = {
   timeoutMs?: number;
 };
 
-export async function assertRequiredLlmServicesAvailable(
+export async function assertRequiredLLMServicesAvailable(
   config: SimulationAppConfig,
   deps: FreellmApiHealthCheckDeps = {},
 ): Promise<void> {
   const freellmChecks = new Map<string, string | undefined>();
-  const qwenChecks = new Map<string, LlmConfig>();
+  const qwenChecks = new Map<string, LLMConfig>();
 
   for (const agent of config.agents) {
     if (!agent.llm.baseUrl) continue;
@@ -93,7 +93,7 @@ export async function assertFreellmApiAvailable(
 }
 
 export async function assertQwenAvailable(
-  llm: LlmConfig,
+  llm: LLMConfig,
   deps: FreellmApiHealthCheckDeps = {},
 ): Promise<void> {
   if (!llm.baseUrl) {

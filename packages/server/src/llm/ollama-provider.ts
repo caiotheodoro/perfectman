@@ -1,13 +1,14 @@
+import { ModelIntentPacketJsonSchema } from "@perfectman/shared";
 import type { AgentRuntimeInput } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt } from "../agent/agent-runtime.types.js";
-import type { LlmConfig } from "./llm-config.js";
-import type { LlmProvider, LlmProviderResult } from "./llm-provider.js";
+import type { LLMConfig } from "./llm-config.js";
+import type { LLMProvider, LLMProviderResult } from "./llm-provider.js";
 import {
-  LlmConfigurationError,
-  LlmTimeoutError,
-  LlmHttpError,
-  LlmResponseError,
-  LlmError,
+  LLMConfigurationError,
+  LLMTimeoutError,
+  LLMHttpError,
+  LLMResponseError,
+  LLMError,
 } from "./llm-errors.js";
 
 /**
@@ -15,18 +16,18 @@ import {
  * Uses the native Ollama API instead of the OpenAI-compatible /v1/chat/completions endpoint
  * so that think: false is correctly respected for Qwen3 models.
  */
-export class OllamaProvider implements LlmProvider {
-  constructor(private readonly config: LlmConfig) {}
+export class OllamaProvider implements LLMProvider {
+  constructor(private readonly config: LLMConfig) {}
 
   async generateIntent(
     input: AgentRuntimeInput,
     context: AgentRuntimeContext,
     prompt: BuiltPrompt
-  ): Promise<LlmProviderResult> {
+  ): Promise<LLMProviderResult> {
     const startTime = Date.now();
 
     if (!this.config.baseUrl) {
-      throw new LlmConfigurationError("Missing baseUrl for Ollama provider.");
+      throw new LLMConfigurationError("Missing baseUrl for Ollama provider.");
     }
 
     // Derive the native API URL from the base URL (strip /v1 suffix if present)
@@ -86,11 +87,14 @@ export class OllamaProvider implements LlmProvider {
     }
 
     if (this.config.responseFormatJson) {
-      body.format = "json";
+      // Constrained decoding: shape is enforced by the intent-packet JSON
+      // Schema instead of the now-removed prose contract in the prompt.
+      body.format = ModelIntentPacketJsonSchema;
     }
 
     let attempts = 0;
     const maxAttempts = (this.config.retryCount ?? 0) + 1;
+    let jsonFormatFallbackUsed = false;
 
     while (attempts < maxAttempts) {
       attempts++;
@@ -108,15 +112,29 @@ export class OllamaProvider implements LlmProvider {
         clearTimeout(timeoutId);
 
         if (!response.ok) {
+          clearTimeout(timeoutId);
           const errorText = await response.text().catch(() => "Unknown error");
-          throw new LlmHttpError(response.status, errorText);
+          // A 400/422 on the schema-constrained format usually means this
+          // Ollama build doesn't support schema decoding — retry once as the
+          // universally-supported plain "json" format (parser still enforces shape).
+          if (
+            (response.status === 400 || response.status === 422) &&
+            !jsonFormatFallbackUsed &&
+            this.config.responseFormatJson
+          ) {
+            jsonFormatFallbackUsed = true;
+            body.format = "json";
+            attempts--; // retry with the fallback on this same budget slot
+            continue;
+          }
+          throw new LLMHttpError(response.status, errorText);
         }
 
         const data = (await response.json()) as any;
         const content = data.message?.content;
 
         if (content === undefined || content === null) {
-          throw new LlmResponseError("Empty or missing content in Ollama response.");
+          throw new LLMResponseError("Empty or missing content in Ollama response.");
         }
 
         const promptTokens = data.prompt_eval_count ?? prompt.inputTokensEstimate ?? 0;
@@ -137,23 +155,23 @@ export class OllamaProvider implements LlmProvider {
 
         let resolvedError: Error;
         if (error.name === "AbortError") {
-          resolvedError = new LlmTimeoutError(`Request timed out after ${this.config.timeoutMs}ms.`);
-        } else if (error instanceof LlmError) {
+          resolvedError = new LLMTimeoutError(`Request timed out after ${this.config.timeoutMs}ms.`);
+        } else if (error instanceof LLMError) {
           resolvedError = error;
         } else {
-          resolvedError = new LlmError(error.message || "Unknown error occurred during fetch.", error);
+          resolvedError = new LLMError(error.message || "Unknown error occurred during fetch.", error);
         }
 
         const isTransient =
-          resolvedError instanceof LlmTimeoutError ||
-          (resolvedError instanceof LlmHttpError && (resolvedError.status === 429 || resolvedError.status >= 500)) ||
-          !(resolvedError instanceof LlmConfigurationError || resolvedError instanceof LlmResponseError || resolvedError instanceof LlmHttpError);
+          resolvedError instanceof LLMTimeoutError ||
+          (resolvedError instanceof LLMHttpError && (resolvedError.status === 429 || resolvedError.status >= 500)) ||
+          !(resolvedError instanceof LLMConfigurationError || resolvedError instanceof LLMResponseError || resolvedError instanceof LLMHttpError);
 
         if (isTransient && attempts < maxAttempts) continue;
         throw resolvedError;
       }
     }
 
-    throw new LlmError("Max retries exceeded without resolving error.");
+    throw new LLMError("Max retries exceeded without resolving error.");
   }
 }
