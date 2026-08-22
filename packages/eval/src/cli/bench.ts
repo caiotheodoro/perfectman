@@ -37,6 +37,7 @@ export function judgeConfig(): import("../judge/judge.js").LLMJudgeConfig {
     && process.env.PERFECTMAN_JUDGE_TEMPERATURE.trim() !== "";
   return {
     baseUrl:
+      process.env.PERFECTMAN_JUDGE_BASE_URL ??
       process.env.PERFECTMAN_LLM_BASE_URL ??
       (isDeepseek ? "https://api.deepseek.com/v1" : "http://localhost:11434/v1"),
     model:

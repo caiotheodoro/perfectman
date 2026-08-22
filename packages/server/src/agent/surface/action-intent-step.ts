@@ -12,7 +12,12 @@ import type { LLMConfig } from "../../llm/llm-config.js";
 import type { LLMProvider } from "../../llm/llm-provider.js";
 import { llmBudget } from "../../llm/llm-budget.js";
 import { IntentParser } from "../intent-parser.js";
-import { isNearRepeat } from "../repetition-guard.js";
+import {
+  DEFAULT_REPETITION_MAX_RETRIES,
+  isNearRepeat,
+  REPETITION_GUARD_MARKER,
+  REPETITION_SIMILARITY_THRESHOLD,
+} from "../repetition-guard.js";
 import { promptVersionHash } from "../prompt-version.js";
 import { PromptBuilder } from "../prompt-builder.js";
 import {
@@ -23,6 +28,16 @@ import {
 } from "./llm-step.js";
 
 type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
+
+/**
+ * Correction appended to the system prompt on each repetition retry. The
+ * retry prompt version hash covers this text, so a reworded note yields a
+ * new prompt version; the block motive keeps its own "Repetition guard"
+ * prefix (repetition-guard.ts) that the offline sweeps match on.
+ */
+function retryCorrectionNote(lastAttempt: string): string {
+  return `IMPORTANT: your last attempt this turn ("${lastAttempt}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — while staying true to what you actually want right now; do not invent novelty that your current motive and emotional state wouldn't justify. Or choose "no_op" if you truly have nothing new to add.`;
+}
 
 /**
  * The `action_intent` LLM surface as a typed step. This is the canonical
@@ -119,70 +134,106 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     // Repetition guard: the prompt already tells the model not to repeat
     // itself and shows it the exact text to avoid, but empirically small
-    // local models repeat anyway. Give the model exactly one chance to try
-    // again with a pointed correction. Outcomes are tracked separately so a
-    // failed retry is reported as an llm_failure, not as a repetition block.
+    // local models repeat anyway. Give the model a bounded number of pointed
+    // retries (default: one), then block structurally. Outcomes are tracked
+    // separately so a failed retry is reported as an llm_failure, not as a
+    // repetition block.
+    const policy = ctx.repetitionPolicy ?? {};
+    const threshold = Math.min(1, Math.max(0, policy.threshold ?? REPETITION_SIMILARITY_THRESHOLD));
+    const maxRetries = Math.max(0, Math.floor(policy.maxRetries ?? DEFAULT_REPETITION_MAX_RETRIES));
+
     let intent = parseResult.intent;
     let fallbackApplied = parseResult.fallbackApplied;
     let repetitionBlocked = false;
     let retryKind: RetryKind = "none";
+    let retriesAttempted = 0;
     let totalInputTokens = providerResult.usage.inputTokens;
     let totalOutputTokens = providerResult.usage.outputTokens;
     const mainInputTokens = providerResult.usage.inputTokens;
     const mainOutputTokens = providerResult.usage.outputTokens;
-    let retryUsage: { inputTokens: number; outputTokens: number; latencyMs: number; promptVersion: string } | undefined;
+    const retryUsages: { inputTokens: number; outputTokens: number; latencyMs: number; promptVersion: string }[] = [];
 
     const isRepeat = (candidateIntent: typeof intent): boolean =>
       (candidateIntent.intentType === "send_message" || candidateIntent.intentType === "reply_to_message") &&
       !!candidateIntent.visibleContent &&
-      isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances);
+      isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances, threshold);
 
     if (!fallbackApplied && isRepeat(intent)) {
-      const retryPrompt = {
-        ...prompt,
-        version: promptVersionHash([
-          `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
-          prompt.user,
-        ]),
-        system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
-      };
-      try {
-        const retryResult = await provider.generateIntent(input, runtimeContext, retryPrompt);
-        totalInputTokens += retryResult.usage.inputTokens;
-        totalOutputTokens += retryResult.usage.outputTokens;
-        retryUsage = {
-          inputTokens: retryResult.usage.inputTokens,
-          outputTokens: retryResult.usage.outputTokens,
-          latencyMs: retryResult.latencyMs,
-          promptVersion: retryPrompt.version,
-        };
-        const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op");
-        if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent)) {
-          parseResult = retryParse;
-          intent = retryParse.intent;
-          fallbackApplied = false;
-        } else if (retryParse.fallbackApplied) {
-          parseResult = retryParse;
-          intent = retryParse.intent;
-          fallbackApplied = true;
-          retryKind = "parse_failed";
-        } else {
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        // The gate's budget check runs once before the first call; each retry
+        // is a further wire call it did not authorize, so re-check before
+        // issuing one. A denial must not turn into a free retry.
+        const budgetDecision = llmBudget.canCall({
+          simulationId,
+          agentId,
+          priority: input.budgetPriority,
+          inputTokensEstimate: prompt.inputTokensEstimate,
+        });
+        if (!budgetDecision.allowed) {
           repetitionBlocked = true;
           retryKind = "repeat_failed";
+          break;
         }
-      } catch {
-        fallbackApplied = true;
-        intent = IntentParser.createFallback(agentId, "no_op", "Repetition retry call failed.");
-        retryKind = "provider_failed";
+        const retryPrompt = {
+          ...prompt,
+          version: promptVersionHash([
+            `${prompt.system}\n\n${retryCorrectionNote(intent.visibleContent ?? "")}`,
+            prompt.user,
+          ]),
+          system: `${prompt.system}\n\n${retryCorrectionNote(intent.visibleContent ?? "")}`,
+        };
+        try {
+          const retryResult = await provider.generateIntent(input, runtimeContext, retryPrompt);
+          retriesAttempted++;
+          totalInputTokens += retryResult.usage.inputTokens;
+          totalOutputTokens += retryResult.usage.outputTokens;
+          retryUsages.push({
+            inputTokens: retryResult.usage.inputTokens,
+            outputTokens: retryResult.usage.outputTokens,
+            latencyMs: retryResult.latencyMs,
+            promptVersion: retryPrompt.version,
+          });
+          const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op");
+          if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent)) {
+            parseResult = retryParse;
+            intent = retryParse.intent;
+            fallbackApplied = false;
+            break;
+          }
+          if (retryParse.fallbackApplied) {
+            parseResult = retryParse;
+            intent = retryParse.intent;
+            fallbackApplied = true;
+            retryKind = "parse_failed";
+            break;
+          }
+          // Still a repeat; loop again if the retry budget allows.
+        } catch {
+          fallbackApplied = true;
+          intent = IntentParser.createFallback(agentId, "no_op", "Repetition retry call failed.");
+          retryKind = "provider_failed";
+          break;
+        }
+      }
+      // Exhausted the retry budget with the model still repeating.
+      if (!fallbackApplied && isRepeat(intent)) {
+        repetitionBlocked = true;
+        retryKind = "repeat_failed";
       }
     }
 
     if (repetitionBlocked) {
       fallbackApplied = true;
+      const retryPhrase =
+        retriesAttempted === 0
+          ? "with no retry allowed"
+          : retriesAttempted === 1
+            ? "even after a retry"
+            : `even after ${retriesAttempted} retries`;
       intent = IntentParser.createFallback(
         agentId,
         "no_op",
-        "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.",
+        `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, ${retryPhrase} — blocked structurally.`,
       );
     }
 
@@ -216,11 +267,12 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       latencyMs: providerResult.latencyMs,
       promptVersion: prompt.version,
     }));
-    if (retryUsage) {
+    for (const retryUsage of retryUsages) {
       llmBudget.recordUsage(makeUsage(retryUsage));
     }
-    // Aggregated view for the returned output (summed across main+retry).
-    const totalLatencyMs = providerResult.latencyMs + (retryUsage?.latencyMs ?? 0);
+    // Aggregated view for the returned output (summed across all calls).
+    const totalLatencyMs =
+      providerResult.latencyMs + retryUsages.reduce((sum, usage) => sum + usage.latencyMs, 0);
     const usageRecord = makeUsage({
       inputTokens: totalInputTokens,
       outputTokens: totalOutputTokens,
