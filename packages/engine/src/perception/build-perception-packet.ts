@@ -8,6 +8,7 @@ import type {
   PerceptionPacket,
   AttentionResult,
 } from "@perfectman/shared";
+import { selectRelevantMemories } from "./memory-salience.js";
 
 /**
  * Build the PerceptionPacket for an agent this pulse.
@@ -85,17 +86,16 @@ export function buildPerceptionPacket(
   }
   const recentOwnUtterances = ownRecentUtterances.slice(-OWN_UTTERANCE_WINDOW);
 
-  // Relevant memories: most recent N, preference for memories involving involved people
+  // Relevant memories: salience-scored selection (subject relevance, memory
+  // type, authored confidence, open loops, bounded recency decay) — see
+  // memory-salience.ts. Recency as a sort key evicted important older
+  // memories once the store grew; it is now a bounded term.
   const MAX_MEMORIES = 8;
-  const involvedSet = involvedPeople;
-  const sortedMemories = [...agent.memories].sort((a, b) => {
-    // Prioritize memories about involved people
-    const aRelevant = a.subjectAgentIds.some(id => involvedSet.has(id)) ? 1 : 0;
-    const bRelevant = b.subjectAgentIds.some(id => involvedSet.has(id)) ? 1 : 0;
-    if (aRelevant !== bRelevant) return bRelevant - aRelevant;
-    return b.createdAt - a.createdAt; // newer first
-  });
-  const relevantMemories = sortedMemories.slice(0, MAX_MEMORIES);
+  const relevantMemories = selectRelevantMemories(
+    agent.memories,
+    involvedPeople,
+    MAX_MEMORIES,
+  );
 
   return {
     agentId:               agent.agentId,
