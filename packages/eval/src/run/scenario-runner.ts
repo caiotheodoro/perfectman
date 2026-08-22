@@ -49,12 +49,15 @@ export type ScenarioRunArtifact = {
   totalSignals: number;
   latencyMs: number;
   pulseResults: number;
+  /** Real provider wire-calls, including repetition-guard retries. */
+  providerCalls?: number;
 };
 
 class TrackingRuntime {
   private readonly inner: AgentRuntime;
   private readonly calls = new Map<string, number>();
   private readonly providers = new Map<string, LlmProvider>();
+  private providerCallsTotal = 0;
 
   constructor(
     registry: AgentConfigRegistry,
@@ -65,27 +68,42 @@ class TrackingRuntime {
       undefined,
       registry,
       (llmConfig, agentId) => {
-      // One provider instance per agent per scenario — per-call state
-      // (channel caps, memory habits) must persist across pulses.
-      let provider = this.providers.get(agentId);
-      if (!provider) {
-        provider = factory ? factory(llmConfig, agentId) : undefined;
+        // One provider instance per agent per scenario — per-call state
+        // (channel caps, memory habits) must persist across pulses.
+        let provider = this.providers.get(agentId);
         if (!provider) {
-          // No injected factory → follow the config's provider type
-          // (mock → canned; ollama → native API for Qwen3; else OpenAI-compatible).
-          provider =
-            llmConfig.providerType === "mock"
-              ? new MockLlmProvider()
-              : llmConfig.providerType === "ollama"
-                ? new OllamaProvider(llmConfig)
-                : new OpenAiCompatibleProvider(llmConfig);
+          provider = factory ? factory(llmConfig, agentId) : undefined;
+          if (!provider) {
+            // No injected factory → follow the config's provider type
+            // (mock → canned; ollama → native API for Qwen3; else OpenAI-compatible).
+            provider =
+              llmConfig.providerType === "mock"
+                ? new MockLlmProvider()
+                : llmConfig.providerType === "ollama"
+                  ? new OllamaProvider(llmConfig)
+                  : new OpenAiCompatibleProvider(llmConfig);
+          }
+          this.providers.set(agentId, provider);
         }
-        this.providers.set(agentId, provider);
-      }
-      return provider;
+      // Count real wire calls — retries inside generateIntent never show up
+      // in per-turn `calls`, but they are exactly the cost side of the
+      // repetition-policy tradeoff.
+      const counted: LlmProvider = {
+        generateIntent: async (...providerArgs) => {
+          this.providerCallsTotal++;
+          return provider!.generateIntent(...providerArgs);
+        },
+      };
+      const wrapped = counted as LlmProvider;
+      void wrapped;
+      return counted;
       },
       repetition,
     );
+  }
+
+  providerCalls(): number {
+    return this.providerCallsTotal;
   }
 
   async generateIntent(
@@ -187,6 +205,7 @@ export class ScenarioRunner {
       totalSignals: signalResults.length,
       latencyMs: Date.now() - started,
       pulseResults,
+      providerCalls: tracking?.providerCalls(),
     };
   }
 }

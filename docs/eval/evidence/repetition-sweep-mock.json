@@ -1,3 +1,102 @@
-
-
-
+{
+  "version": "repetition-sweep-v1",
+  "mode": "mock",
+  "generatedAt": "2026-08-22T04:30:11.303Z",
+  "scenarios": [
+    "motive_gossip",
+    "v1_biased_memory",
+    "stagnation_resentment_loop"
+  ],
+  "grid": [
+    {
+      "threshold": 0.5,
+      "maxRetries": 0,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 199,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.5,
+      "maxRetries": 1,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 260,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.5,
+      "maxRetries": 2,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 321,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 0,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 199,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 1,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 260,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 2,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 321,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 0,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 199,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 1,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 260,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 2,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 321,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    }
+  ]
+}

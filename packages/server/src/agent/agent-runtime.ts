@@ -11,7 +11,7 @@ import type {
 import { PersonaLoader } from "./persona-loader.js";
 import { PromptBuilder } from "./prompt-builder.js";
 import { IntentParser } from "./intent-parser.js";
-import { isNearRepeat, REPETITION_SIMILARITY_THRESHOLD } from "./repetition-guard.js";
+import { isNearRepeat, REPETITION_SIMILARITY_THRESHOLD, REPETITION_GUARD_MARKER } from "./repetition-guard.js";
 import { llmBudget } from "../llm/llm-budget.js";
 import { MockLlmProvider } from "../llm/mock-llm-provider.js";
 import { OpenAiCompatibleProvider } from "../llm/openai-compatible-provider.js";
@@ -160,15 +160,20 @@ export class AgentRuntime {
 
     if (!fallbackApplied && isRepeat(intent)) {
       repetitionRetried = true;
-      const maxRetries = this.repetitionPolicy?.maxRetries ?? 1;
+      const maxRetries = Math.max(0, this.repetitionPolicy?.maxRetries ?? 1);
+      const threshold = Math.min(
+        1,
+        Math.max(0, this.repetitionPolicy?.threshold ?? REPETITION_SIMILARITY_THRESHOLD),
+      );
       if (maxRetries <= 0) {
         // No retry budget: the detected repeat blocks right away.
         repetitionBlocked = true;
       }
+      let lastAttemptContent = intent.visibleContent;
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         const retryPrompt = {
           ...prompt,
-          system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
+          system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${lastAttemptContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
         };
         try {
           const retryResult = await provider.generateIntent(input, context, retryPrompt);
@@ -181,6 +186,7 @@ export class AgentRuntime {
             fallbackApplied = retryParse.fallbackApplied;
             break;
           }
+          lastAttemptContent = retryParse.intent.visibleContent ?? lastAttemptContent;
           if (attempt === maxRetries - 1) repetitionBlocked = true;
         } catch {
           // Retry call itself failed — fall through to the block below.
@@ -195,7 +201,7 @@ export class AgentRuntime {
       intent = IntentParser.createFallback(
         agentId,
         "no_op",
-        "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.",
+        `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, even after a retry — blocked structurally.`, 
       );
     }
 

@@ -40,6 +40,9 @@ function similarity(a: string, b: string): number {
 
 export const REPETITION_SIMILARITY_THRESHOLD = 0.7;
 
+/** Marker written into no_op motives when the guard blocks a repeat. */
+export const REPETITION_GUARD_MARKER = "Repetition guard";
+
 /**
  * Returns true if `candidate` is a near-duplicate of any of the agent's own
  * recent utterances (word-overlap similarity >= threshold).

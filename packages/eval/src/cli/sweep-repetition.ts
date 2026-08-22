@@ -13,6 +13,7 @@ import { dirname, resolve } from "node:path";
 import { ScenarioRunner } from "../run/scenario-runner.js";
 import { ruleJudge } from "../judge/judge.js";
 import { getScenario } from "@perfectman/shared";
+import { REPETITION_GUARD_MARKER } from "@perfectman/server";
 
 const args = process.argv.slice(2);
 function argValue(flag: string): string | undefined {
@@ -30,6 +31,7 @@ type Cell = {
   runs: number;
   guardBlocks: number;
   llmCalls: number;
+  providerCalls: number;
   contentRepetitionMean: number;
   narrativeCohesionMean: number;
 };
@@ -39,7 +41,7 @@ function countGuardBlocks(events: { type: string; payload: Record<string, unknow
     e =>
       e.type === "no_op_recorded" &&
       typeof e.payload["privateMotiveSummary"] === "string" &&
-      (e.payload["privateMotiveSummary"] as string).includes("Repetition guard"),
+      (e.payload["privateMotiveSummary"] as string).includes(REPETITION_GUARD_MARKER),
   ).length;
 }
 
@@ -55,6 +57,7 @@ export async function main(): Promise<void> {
         runs: 0,
         guardBlocks: 0,
         llmCalls: 0,
+        providerCalls: 0,
         contentRepetitionMean: 0,
         narrativeCohesionMean: 0,
       };
@@ -70,6 +73,7 @@ export async function main(): Promise<void> {
         cell.runs++;
         cell.guardBlocks += countGuardBlocks(artifact.events);
         for (const calls of artifact.llmCalls.values()) cell.llmCalls += calls;
+        cell.providerCalls += artifact.providerCalls ?? 0;
 
         const repetitionProbe = artifact.probeResults.find(p => p.probe === "content-repetition");
         if (repetitionProbe) repetitionSum += repetitionProbe.measured;
@@ -93,7 +97,8 @@ export async function main(): Promise<void> {
       grid.push(cell);
       console.log(
         `threshold=${threshold} retries=${maxRetries} | guardBlocks=${cell.guardBlocks} ` +
-          `llmCalls=${cell.llmCalls} contentRepetition=${cell.contentRepetitionMean} ` +
+          `turnCalls=${cell.llmCalls} wireCalls=${cell.providerCalls} ` +
+          `contentRepetition=${cell.contentRepetitionMean} ` +
           `narrativeCohesion=${cell.narrativeCohesionMean}`,
       );
     }
