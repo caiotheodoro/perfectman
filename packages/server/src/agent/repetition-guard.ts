@@ -27,7 +27,7 @@ function normalizeWords(text: string): string[] {
 }
 
 /** Jaccard similarity over normalized word sets. 1.0 = identical content. */
-function similarity(a: string, b: string): number {
+export function similarity(a: string, b: string): number {
   const wordsA = new Set(normalizeWords(a));
   const wordsB = new Set(normalizeWords(b));
   if (wordsA.size === 0 && wordsB.size === 0) return 1;

@@ -12,6 +12,8 @@ import {
   memoryWriteRate,
   privateChannelDensity,
   contentRepetitionRate,
+  crossAgentEchoRate,
+  echoSourcesByAgent,
   runAllProbes,
 } from "../probes/index.js";
 import { eventsToBehavioral } from "../probes/adapter.js";
@@ -156,6 +158,39 @@ describe("probes", () => {
     it("returns zero for empty or contentless transcripts", () => {
       expect(contentRepetitionRate([])).toBe(0);
       expect(contentRepetitionRate([ev("silence", "A", 1), ev("react", "A", 2)])).toBe(0);
+    });
+
+    it("detects a verbatim echo of another agent's earlier line", () => {
+      const events = [
+        ev("post", "A", 1, "esse time não ganha nunca"),
+        ev("post", "B", 2, "Esse time não ganha nunca!"),
+        ev("post", "C", 3, "assunto totalmente diferente"),
+      ];
+      expect(crossAgentEchoRate(events)).toBeCloseTo(1 / 3);
+    });
+
+    it("does not count an agent repeating ITSELF (per-agent probe's job)", () => {
+      const events = [
+        ev("post", "A", 1, "esse time não ganha nunca"),
+        ev("post", "A", 2, "esse time não ganha nunca"),
+      ];
+      expect(crossAgentEchoRate(events)).toBe(0);
+    });
+
+    it("attributes echoes to their source agent", () => {
+      const events = [
+        ev("post", "A", 1, "o churrasco de sábado tá confirmado"),
+        ev("post", "B", 2, "o churrasco de sábado tá confirmado mesmo"),
+        ev("post", "C", 3, "ninguém falou do churrasco de sábado"),
+      ];
+      const sources = echoSourcesByAgent(events);
+      expect(sources["B<-A"]).toBe(1);
+      expect(sources).not.toHaveProperty("A<-A");
+    });
+
+    it("returns zero for empty or single-turn transcripts", () => {
+      expect(crossAgentEchoRate([])).toBe(0);
+      expect(echoSourcesByAgent([ev("post", "A", 1, "só eu aqui")])).toEqual({});
     });
 
     it("is wired into runAllProbes with a band", () => {

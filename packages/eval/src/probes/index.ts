@@ -9,7 +9,7 @@
 
 import type { BehavioralEvent, ProbeInput } from "./types.js";
 import { checkProbe, PROBE_BANDS, type ProbeResult } from "./types.js";
-import { isNearRepeat, REPETITION_SIMILARITY_THRESHOLD } from "@perfectman/server";
+import { isNearRepeat, similarity as jaccardSimilarity, REPETITION_SIMILARITY_THRESHOLD } from "@perfectman/server";
 
 export * from "./adapter.js";
 export type { BehavioralEvent, BehavioralEventKind, ProbeBound, ProbeInput, ProbeResult } from "./types.js";
@@ -234,6 +234,75 @@ export function contentRepetitionRate(
   return repeated / contentTurns.length;
 }
 
+// ── Cross-agent echo (attractor states) ─────────────────────────────────────
+
+/**
+ * Share of content-bearing turns that near-repeat an EARLIER utterance by a
+ * DIFFERENT agent — the multi-agent convergence / attractor-state signal
+ * the per-agent repetition guard structurally cannot see. Assumes events in
+ * chronological order (same contract as contentRepetitionRate).
+ */
+export function crossAgentEchoRate(
+  events: readonly BehavioralEvent[],
+  threshold: number = REPETITION_SIMILARITY_THRESHOLD,
+): number {
+  const contentTurns = events.filter(
+    e => (e.kind === "post" || e.kind === "reply") && !!e.content?.trim(),
+  );
+  if (contentTurns.length === 0) return 0;
+  const utterancesByAgent = new Map<string, string[]>();
+  let echoed = 0;
+  for (const turn of contentTurns) {
+    const others: string[] = [];
+    for (const [agentId, utterances] of utterancesByAgent) {
+      if (agentId !== turn.agentId) others.push(...utterances);
+    }
+    if (isNearRepeat(turn.content!, others, threshold)) echoed++;
+    const own = utterancesByAgent.get(turn.agentId) ?? [];
+    own.push(turn.content!);
+    utterancesByAgent.set(turn.agentId, own);
+  }
+  return echoed / contentTurns.length;
+}
+
+/**
+ * Attractor attribution: for each echoed turn, which agent's earlier text it
+ * most resembles (highest Jaccard above threshold). Returns counts keyed as
+ * "target<-source". Answers "who pulls whom" from any bench artifact.
+ */
+export function echoSourcesByAgent(
+  events: readonly BehavioralEvent[],
+  threshold: number = REPETITION_SIMILARITY_THRESHOLD,
+): Record<string, number> {
+  const counts: Record<string, number> = {};
+  const contentTurns = events.filter(
+    e => (e.kind === "post" || e.kind === "reply") && !!e.content?.trim(),
+  );
+  const utterancesByAgent = new Map<string, string[]>();
+  for (const turn of contentTurns) {
+    let bestSource: string | undefined;
+    let bestScore = 0;
+    for (const [agentId, utterances] of utterancesByAgent) {
+      if (agentId === turn.agentId) continue;
+      for (const prior of utterances) {
+        const score = jaccardSimilarity(turn.content!, prior);
+        if (score >= threshold && score > bestScore) {
+          bestScore = score;
+          bestSource = agentId;
+        }
+      }
+    }
+    if (bestSource) {
+      const key = `${turn.agentId}<-${bestSource}`;
+      counts[key] = (counts[key] ?? 0) + 1;
+    }
+    const own = utterancesByAgent.get(turn.agentId) ?? [];
+    own.push(turn.content!);
+    utterancesByAgent.set(turn.agentId, own);
+  }
+  return counts;
+}
+
 // ── Aggregate ────────────────────────────────────────────────────────────────
 
 export function runAllProbes(input: ProbeInput): ProbeResult[] {
@@ -284,6 +353,12 @@ export function runAllProbes(input: ProbeInput): ProbeResult[] {
       "Near-repeat share of content turns",
       contentRepetitionRate(events),
       PROBE_BANDS["content-repetition"]!,
+    ),
+    checkProbe(
+      "cross-agent-echo",
+      "Cross-agent echo share of content turns",
+      crossAgentEchoRate(events),
+      PROBE_BANDS["cross-agent-echo"]!,
     ),
     checkProbe("fallback-rate", "LLM fallback rate", fallbackRate, PROBE_BANDS["fallback-rate"]!),
     checkProbe("refusal-free", "Refusal-free rate", refusalFree, PROBE_BANDS["refusal-free"]!),

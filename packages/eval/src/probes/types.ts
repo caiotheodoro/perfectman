@@ -84,6 +84,9 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   // legitimately similar in-character phrasing exists — calibration pending
   // like every band above.
   "content-repetition": [0, 0.1],
+  // Cross-agent echo: same seed logic — any structural echo of someone
+  // else's line is suspect, but calibration pending like every band.
+  "cross-agent-echo": [0, 0.1],
 };
 
 export type ProbeInput = {
