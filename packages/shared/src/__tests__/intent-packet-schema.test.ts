@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { ModelIntentPacketSchema, ModelIntentPacketJsonSchema, composeIntentPacket } from "../intent/intent-packet.schema.js";
+import {
+  ModelIntentPacketSchema,
+  ModelIntentPacketJsonSchema,
+  MemoryWriteProposalJsonSchema,
+  composeIntentPacket,
+  memoryWriteProposalFieldContract,
+} from "../intent/intent-packet.schema.js";
+import { MemoryWriteProposalSchema } from "../intent/intent.schema.js";
 
 describe("ModelIntentPacket", () => {
   it("excludes engine-stamped structural fields (id, actorId, preferredDelay, fallbackIfBlocked)", () => {
@@ -41,5 +48,21 @@ describe("ModelIntentPacket", () => {
     expect(intent.intentType).toBe("no_op");
     expect(intent.privateMotiveSummary).toBe("budget exceeded");
     expect(intent.personTargets).toEqual([]);
+  });
+});
+
+describe("MemoryWriteProposal", () => {
+  it("zod keys and JSON-Schema properties are identical (no drift)", () => {
+    const zodKeys = Object.keys(MemoryWriteProposalSchema.shape).sort();
+    const jsonKeys = Object.keys(MemoryWriteProposalJsonSchema.properties).sort();
+    expect(jsonKeys).toEqual(zodKeys);
+  });
+
+  it("field contract lists every schema field with required/optional and type", () => {
+    const contract = memoryWriteProposalFieldContract();
+    expect(contract).toContain('"type" (required): one of: episodic, relationship, self, social_theory, pending_intention, emotional_residue');
+    expect(contract).toContain('"summary" (required): string');
+    expect(contract).toContain('"confidence" (required): number (0-1)');
+    expect(contract).toContain('"unresolved" (required): boolean');
   });
 });

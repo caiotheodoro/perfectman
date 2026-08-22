@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-22T01:56:53.451Z",
+  "generatedAt": "2026-08-22T06:34:11.817Z",
   "totals": {
-    "files": 84,
-    "its": 758
+    "files": 85,
+    "its": 772
   },
   "byPackage": {
     "engine": {
@@ -16,8 +16,8 @@
       "flags": []
     },
     "server": {
-      "files": 47,
-      "its": 385,
+      "files": 48,
+      "its": 397,
       "flags": [
         "console(1)",
         "async-pause(1)"
@@ -25,7 +25,7 @@
     },
     "shared": {
       "files": 7,
-      "its": 68,
+      "its": 70,
       "flags": []
     }
   },
@@ -781,6 +781,28 @@
       "violations": []
     },
     {
+      "file": "packages/server/src/agent/__tests__/background-reflection-prompt-builder.test.ts",
+      "pkg": "server",
+      "layer": "integration",
+      "its": 11,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 1,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": [],
+      "violations": []
+    },
+    {
       "file": "packages/server/src/agent/__tests__/intent-parser-null.test.ts",
       "pkg": "server",
       "layer": "integration",
@@ -850,7 +872,7 @@
       "file": "packages/server/src/agent/__tests__/prompt-builder.test.ts",
       "pkg": "server",
       "layer": "integration",
-      "its": 16,
+      "its": 17,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -1776,7 +1798,7 @@
       "file": "packages/shared/src/__tests__/intent-packet-schema.test.ts",
       "pkg": "shared",
       "layer": "contract",
-      "its": 4,
+      "its": 6,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,

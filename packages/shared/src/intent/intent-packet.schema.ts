@@ -31,6 +31,29 @@ export const ModelIntentPacketSchema = z.object({
 export type ModelIntentPacket = z.infer<typeof ModelIntentPacketSchema>;
 
 /**
+ * JSON Schema mirror of `MemoryWriteProposalSchema`, used both embedded in
+ * `ModelIntentPacketJsonSchema.memoryWrites` (action_intent's inline memory
+ * writes) and standalone by any reasoning-only surface that proposes memory
+ * consolidations on its own (e.g. background_reflection). Kept in lockstep
+ * with `MemoryWriteProposalSchema`; a drift-test asserts field parity.
+ */
+export const MemoryWriteProposalJsonSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["type", "subjectAgentIds", "summary", "emotionalTone", "confidence", "unresolved"],
+  properties: {
+    type: {
+      enum: ["episodic", "relationship", "self", "social_theory", "pending_intention", "emotional_residue"],
+    },
+    subjectAgentIds: { type: "array", items: { type: "string" } },
+    summary: { type: "string", minLength: 1 },
+    emotionalTone: { type: "string", minLength: 1 },
+    confidence: { type: "number", minimum: 0, maximum: 1 },
+    unresolved: { type: "boolean" },
+  },
+} as const;
+
+/**
  * JSON Schema mirror of the packet, used for constrained decoding
  * (Ollama `format` object / OpenAI `response_format.json_schema`). Kept in
  * lockstep with ModelIntentPacketSchema; a drift-test asserts field parity.
@@ -49,21 +72,7 @@ export const ModelIntentPacketJsonSchema = {
     motivationDrivers: { type: "array", items: { type: "string" } },
     memoryWrites: {
       type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["type", "subjectAgentIds", "summary", "emotionalTone", "confidence", "unresolved"],
-        properties: {
-          type: {
-            enum: ["episodic", "relationship", "self", "social_theory", "pending_intention", "emotional_residue"],
-          },
-          subjectAgentIds: { type: "array", items: { type: "string" } },
-          summary: { type: "string", minLength: 1 },
-          emotionalTone: { type: "string", minLength: 1 },
-          confidence: { type: "number", minimum: 0, maximum: 1 },
-          unresolved: { type: "boolean" },
-        },
-      },
+      items: MemoryWriteProposalJsonSchema,
     },
     replyToEventId: { type: "string" },
     emoji: { type: "string" },
@@ -79,6 +88,8 @@ type JsonSchemaProp = {
   type?: string;
   enum?: readonly string[];
   items?: { type?: string; properties?: Record<string, unknown> };
+  minimum?: number;
+  maximum?: number;
 };
 
 function describePacketFieldType(def: JsonSchemaProp): string {
@@ -90,6 +101,12 @@ function describePacketFieldType(def: JsonSchemaProp): string {
     }
     return "array of strings";
   }
+  if (def.type === "number") {
+    return def.minimum !== undefined && def.maximum !== undefined
+      ? `number (${def.minimum}-${def.maximum})`
+      : "number";
+  }
+  if (def.type === "boolean") return "boolean";
   return "string";
 }
 
@@ -105,6 +122,20 @@ function describePacketFieldType(def: JsonSchemaProp): string {
  */
 export function modelIntentPacketFieldContract(): string[] {
   const { properties, required } = ModelIntentPacketJsonSchema;
+  return Object.entries(properties).map(([name, def]) => {
+    const isRequired = (required as readonly string[]).includes(name);
+    return `"${name}" (${isRequired ? "required" : "optional"}): ${describePacketFieldType(def as JsonSchemaProp)}`;
+  });
+}
+
+/**
+ * Same per-field guidance as `modelIntentPacketFieldContract`, scoped to a
+ * single memory-write proposal — for surfaces (like background_reflection)
+ * that emit `MemoryWriteProposal` objects directly rather than embedded in
+ * an intent packet.
+ */
+export function memoryWriteProposalFieldContract(): string[] {
+  const { properties, required } = MemoryWriteProposalJsonSchema;
   return Object.entries(properties).map(([name, def]) => {
     const isRequired = (required as readonly string[]).includes(name);
     return `"${name}" (${isRequired ? "required" : "optional"}): ${describePacketFieldType(def as JsonSchemaProp)}`;
