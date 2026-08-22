@@ -1,12 +1,12 @@
 import type { PersonaConfig } from "@perfectman/shared";
-import type { LlmConfig } from "../llm/llm-config.js";
+import type { LLMConfig } from "../llm/llm-config.js";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 
 export type ConfiguredAgent = {
   id: string;
   persona: PersonaConfig;
   promptProfile: PersonaPromptProfile;
-  llm: LlmConfig;
+  llm: LLMConfig;
 };
 
 export class AgentConfigRegistry {
@@ -32,7 +32,7 @@ export class AgentConfigRegistry {
     return this.getAgent(agentId).promptProfile;
   }
 
-  getLlmConfig(agentId: string): LlmConfig {
+  getLLMConfig(agentId: string): LLMConfig {
     return this.getAgent(agentId).llm;
   }
 

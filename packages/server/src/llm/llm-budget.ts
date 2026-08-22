@@ -1,18 +1,18 @@
-import type { LlmUsage, BudgetPriority } from "@perfectman/shared";
+import type { LLMUsage, BudgetPriority } from "@perfectman/shared";
 
-export type LlmBudgetRequest = {
+export type LLMBudgetRequest = {
   simulationId: string;
   agentId: string;
   priority: BudgetPriority;
   inputTokensEstimate?: number;
 };
 
-export type LlmBudgetDecision = {
+export type LLMBudgetDecision = {
   allowed: boolean;
   reason?: string;
 };
 
-export type LlmBudgetStatus = {
+export type LLMBudgetStatus = {
   simulationId: string;
   callsThisMinute: number;
   tokensThisHour: number;
@@ -27,7 +27,7 @@ export interface SimulationBudgetLimits {
 const CALL_WINDOW_MS = 60 * 1000; // 1 minute
 const TOKEN_WINDOW_MS = 60 * 60 * 1000; // 1 hour
 
-export class LlmBudgetTracker {
+export class LLMBudgetTracker {
   // In-memory records
   private limits = new Map<string, SimulationBudgetLimits>();
   
@@ -117,7 +117,7 @@ export class LlmBudgetTracker {
     }
   }
 
-  canCall(request: LlmBudgetRequest): LlmBudgetDecision {
+  canCall(request: LLMBudgetRequest): LLMBudgetDecision {
     const { simulationId, agentId, priority, inputTokensEstimate = 0 } = request;
     const now = Date.now();
     this.cleanup(simulationId, now);
@@ -163,7 +163,7 @@ export class LlmBudgetTracker {
     return { allowed: true };
   }
 
-  recordUsage(usage: LlmUsage): void {
+  recordUsage(usage: LLMUsage): void {
     const { simulationId, agentId, inputTokens, outputTokens, createdAt } = usage;
     const timestamp = createdAt || Date.now();
 
@@ -200,7 +200,7 @@ export class LlmBudgetTracker {
     simAgentTokens.get(agentId)!.push({ timestamp, tokens: inputTokens + outputTokens });
   }
 
-  getStatus(simulationId: string): LlmBudgetStatus {
+  getStatus(simulationId: string): LLMBudgetStatus {
     const now = Date.now();
     this.cleanup(simulationId, now);
 
@@ -272,4 +272,4 @@ export class LlmBudgetTracker {
 }
 
 // Export a singleton instance for global in-memory tracking
-export const llmBudget = new LlmBudgetTracker();
+export const llmBudget = new LLMBudgetTracker();
