@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-22T19:31:41.650Z — audited 91 files, 845 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-22T19:34:46.778Z — audited 92 files, 853 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -9,11 +9,11 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | Package | Files | it/test | Hygiene flags
 |---|---|---|---|
 | engine | 22 | 259 | —
-| eval | 13 | 96 | —
+| eval | 14 | 104 | —
 | server | 49 | 414 | console(1), async-pause(1)
 | shared | 7 | 76 | —
 
-**Total: 91 files, 845 it/test blocks; 2 files flagged.**
+**Total: 92 files, 853 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -48,6 +48,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/eval/src/test/calibration-properties.test.ts | eval-harness | 6 | 
 | packages/eval/src/test/echo-chamber-stability.test.ts | eval-harness | 2 | 
 | packages/eval/src/test/golden-labels-coverage.test.ts | eval-harness | 3 | 
+| packages/eval/src/test/intent-entropy.test.ts | eval-harness | 8 | 
 | packages/eval/src/test/judge-json-salvage.test.ts | eval-harness | 9 | 
 | packages/eval/src/test/judge-signals.test.ts | eval-harness | 10 | 
 | packages/eval/src/test/jury-judge.test.ts | eval-harness | 9 | 
