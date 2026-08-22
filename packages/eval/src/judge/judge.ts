@@ -501,3 +501,94 @@ function hashString(s: string): string {
   }
   return (h >>> 0).toString(36);
 }
+
+// ── Jury of judges ───────────────────────────────────────────────────────────
+
+export type JuryJuror = {
+  axes: AxisScores;
+  /** True when this juror's scores came from prose salvage (imputed defaults). */
+  salvaged: boolean;
+};
+
+export type JuryVerdict = {
+  /** Per-axis median across UNSALVAGED surviving judges — the verdict. */
+  axes: AxisScores;
+  /** Number of unsalvaged jurors whose votes produced the median. */
+  voterCount: number;
+  /** Per-judge raw scores + salvage status, keyed by config label. */
+  perJudge: Record<string, JuryJuror>;
+};
+
+function median(values: number[]): number {
+  const sorted = [...values].sort((a, b) => a - b);
+  const mid = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2;
+}
+
+/**
+ * Majority verdict across independently-sourced judges: same transcript,
+ * different model families/endpoints, per-axis median. Self-preference bias
+ * shows up as spread in `perJudge`; the median resists a single biased
+ * outlier ONLY when >= 3 jurors survive — with exactly 2 the median is the
+ * mean and offers no outlier resistance. Salvaged jurors (prose-implied
+ * scores, mostly imputed defaults) are reported but EXCLUDED from medians.
+ * Judges that error are dropped; at least one unsalvaged survivor is
+ * required. Labels must be unique — duplicates would silently collapse
+ * two votes into one.
+ */
+export async function juryJudge(
+  scenario: RoleplayScenario,
+  events: readonly CommittedEvent[],
+  configs: Array<LLMJudgeConfig & { label?: string }>,
+): Promise<JuryVerdict> {
+  if (configs.length === 0) throw new Error("juryJudge requires at least one judge config");
+
+  const labels = configs.map((c, i) => c.label ?? `judge-${i}`);
+  const duplicates = labels.filter((label, i) => labels.indexOf(label) !== i);
+  if (duplicates.length > 0) {
+    throw new Error(`Duplicate jury judge labels: ${[...new Set(duplicates)].join(", ")}`);
+  }
+
+  const settled = await Promise.allSettled(
+    configs.map(async (config, i) => ({
+      label: labels[i]!,
+      result: await llmJudge(scenario, events, config),
+    })),
+  );
+
+  const perJudge: Record<string, JuryJuror> = {};
+  for (const outcome of settled) {
+    if (outcome.status === "fulfilled") {
+      perJudge[outcome.value.label] = {
+        axes: outcome.value.result.axes,
+        salvaged: outcome.value.result.salvaged,
+      };
+    }
+  }
+  if (Object.keys(perJudge).length === 0) {
+    throw new Error("All jury judges failed");
+  }
+
+  // Salvaged scores are imputed defaults — they drag medians toward 3 and
+  // poison divergence evidence. Reported, but never voted.
+  const voters = Object.values(perJudge).filter(juror => !juror.salvaged);
+  if (voters.length === 0) {
+    throw new Error("All surviving jury judges required prose salvage — no trustworthy votes");
+  }
+
+  const axisIds = new Set<string>();
+  for (const juror of voters) {
+    for (const axis of Object.keys(juror.axes)) axisIds.add(axis);
+  }
+
+  const axes: AxisScores = {};
+  for (const axis of axisIds) {
+    const votes = voters.map(juror => juror.axes[axis]).filter((v): v is number => typeof v === "number");
+    // clampScore keeps the verdict on the repo's single integer score domain
+    // — an unclamped x.5 median would inflate kappa categories if a verdict
+    // ever reached computeCalibration, and every other AxisScores value is
+    // an integer in [1,5].
+    if (votes.length > 0) axes[axis] = clampScore(median(votes));
+  }
+  return { axes, voterCount: voters.length, perJudge };
+}

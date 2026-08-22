@@ -2,6 +2,8 @@
   "version": "temperature-sweep-v1",
   "mode": "mock",
   "slice": "canary",
+  "seeds": "scenario.seed per cell — PERFECTMAN_LLM_SEED only reaches localLLMConfig (live mode) and cannot perturb this path",
+  "limitations": "the deterministic mock's only temperature read is the charged-react gate (temperature >= 0.9), so all sub-0.9 cells are identical by construction — only guardBlocks/contentRepetition/creativity/cohesion cells at >= 0.9 vary",
   "scenarios": [
     "motive_gossip",
     "v1_exclusion_inferred",
@@ -12,11 +14,11 @@
     {
       "temperature": 0.25,
       "runs": 4,
-      "guardBlocks": 92,
-      "contentRepetitionMean": 0.302,
+      "guardBlocks": 81,
+      "contentRepetitionMean": 0.246,
       "axisMeans": {
-        "in_character": 3.25,
-        "voice_match": 2.25,
+        "in_character": 3,
+        "voice_match": 1.5,
         "motive_authenticity": 5,
         "interpretation": 5,
         "creativity_unhinged": 4,
@@ -28,11 +30,11 @@
     {
       "temperature": 0.5,
       "runs": 4,
-      "guardBlocks": 92,
-      "contentRepetitionMean": 0.302,
+      "guardBlocks": 81,
+      "contentRepetitionMean": 0.246,
       "axisMeans": {
-        "in_character": 3.25,
-        "voice_match": 2.25,
+        "in_character": 3,
+        "voice_match": 1.5,
         "motive_authenticity": 5,
         "interpretation": 5,
         "creativity_unhinged": 4,
@@ -44,11 +46,11 @@
     {
       "temperature": 0.7,
       "runs": 4,
-      "guardBlocks": 92,
-      "contentRepetitionMean": 0.302,
+      "guardBlocks": 81,
+      "contentRepetitionMean": 0.246,
       "axisMeans": {
-        "in_character": 3.25,
-        "voice_match": 2.25,
+        "in_character": 3,
+        "voice_match": 1.5,
         "motive_authenticity": 5,
         "interpretation": 5,
         "creativity_unhinged": 4,
@@ -60,11 +62,11 @@
     {
       "temperature": 1,
       "runs": 4,
-      "guardBlocks": 44,
-      "contentRepetitionMean": 0.078,
+      "guardBlocks": 29,
+      "contentRepetitionMean": 0.063,
       "axisMeans": {
-        "in_character": 3.75,
-        "voice_match": 2.75,
+        "in_character": 3,
+        "voice_match": 1,
         "motive_authenticity": 5,
         "interpretation": 5,
         "creativity_unhinged": 4.75,

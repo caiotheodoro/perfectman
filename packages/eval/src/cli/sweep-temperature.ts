@@ -26,6 +26,7 @@ import { ScenarioRunner } from "../run/scenario-runner.js";
 import { ruleJudge } from "../judge/judge.js";
 import { personaAwareProviderFactory } from "../bench/persona-aware-mock.js";
 import { resolveBenchSlice } from "../bench-slices.js";
+import { REPETITION_GUARD_MARKER } from "@perfectman/server";
 
 const args = process.argv.slice(2);
 function argValue(flag: string): string | undefined {
@@ -44,14 +45,13 @@ const TEMPERATURES = [0.25, 0.5, 0.7, 1.0];
 const SLICE = "canary";
 
 /**
- * The prefix `ActionIntentStep` stamps on a repetition-guard fallback's
- * `privateMotiveSummary`. `guardBlocks` is the sweep's headline metric and
- * this prose is its only signal, so rewording that sentence upstream would
- * zero the metric with no other symptom — `sweep-temperature.test.ts` pins
- * the marker against a real run so the reword fails loudly instead.
+ * `guardBlocks` is the sweep's headline metric and its only signal is the
+ * marker prefix `ActionIntentStep` stamps on a repetition-guard fallback's
+ * `privateMotiveSummary` — rewording that sentence upstream would zero the
+ * metric with no other symptom, so `sweep-temperature.test.ts` pins the
+ * marker against a real run and the reword fails loudly instead. The single
+ * definition lives in `@perfectman/server`; this sweep imports it.
  */
-export const REPETITION_GUARD_MOTIVE_MARKER = "Repetition guard";
-
 type Cell = {
   temperature: number;
   runs: number;
@@ -94,7 +94,7 @@ export function countGuardBlocks(
   return events.filter(e => {
     if (e.type !== "no_op_recorded") return false;
     const motive = e.payload["privateMotiveSummary"];
-    return typeof motive === "string" && motive.includes(REPETITION_GUARD_MOTIVE_MARKER);
+    return typeof motive === "string" && motive.includes(REPETITION_GUARD_MARKER);
   }).length;
 }
 
@@ -163,6 +163,9 @@ export async function main(): Promise<void> {
     version: "temperature-sweep-v1" as const,
     mode: "mock" as const,
     slice: SLICE,
+    seeds: "scenario.seed per cell — PERFECTMAN_LLM_SEED only reaches localLLMConfig (live mode) and cannot perturb this path",
+    limitations:
+      "the deterministic mock's only temperature read is the charged-react gate (temperature >= 0.9), so all sub-0.9 cells are identical by construction — only guardBlocks/contentRepetition/creativity/cohesion cells at >= 0.9 vary",
     scenarios: scenarios.map(s => s.id),
     grid,
   };

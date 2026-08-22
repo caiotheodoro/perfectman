@@ -1,7 +1,7 @@
 import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../run/scenario-runner.js", () => ({
   ScenarioRunner: {
@@ -24,7 +24,7 @@ vi.mock("../run/scenario-runner.js", () => ({
   },
 }));
 
-const { runBench } = await import("../cli/bench.js");
+const { runBench, judgeConfig } = await import("../cli/bench.js");
 const { BENCH_SLICES, resolveBenchSlice } = await import("../bench-slices.js");
 
 describe("runBench", () => {
@@ -66,5 +66,33 @@ describe("runBench slice selection", () => {
 
     expect(resolveBenchSlice("edges")).toHaveLength(4);
     expect(report.scenariosRun).toBe(3);
+  });
+});
+
+describe("judgeConfig", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("lets the judge use a separate endpoint from the arena (cross-family judging)", () => {
+    vi.stubEnv("PERFECTMAN_LLM_PROVIDER", "local");
+    vi.stubEnv("PERFECTMAN_JUDGE_BASE_URL", "https://api.deepseek.com/v1");
+    vi.stubEnv("PERFECTMAN_LLM_BASE_URL", "http://localhost:11434/v1");
+    vi.stubEnv("PERFECTMAN_JUDGE_MODEL", "deepseek-chat");
+    vi.stubEnv("PERFECTMAN_LLM_MODEL", "qwen3:1.7b");
+    vi.stubEnv("PERFECTMAN_JUDGE_TEMPERATURE", "0");
+
+    const cfg = judgeConfig();
+    expect(cfg.baseUrl).toBe("https://api.deepseek.com/v1");
+    expect(cfg.model).toBe("deepseek-chat");
+    expect(cfg.temperature).toBe(0);
+  });
+
+  it("falls back to the arena endpoint when no judge endpoint is set", () => {
+    vi.stubEnv("PERFECTMAN_LLM_PROVIDER", "local");
+    vi.stubEnv("PERFECTMAN_LLM_BASE_URL", "http://localhost:11434/v1");
+    delete process.env.PERFECTMAN_JUDGE_BASE_URL;
+
+    expect(judgeConfig().baseUrl).toBe("http://localhost:11434/v1");
   });
 });

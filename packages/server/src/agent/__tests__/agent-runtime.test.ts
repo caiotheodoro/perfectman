@@ -271,5 +271,112 @@ describe("AgentRuntime Orchestration", () => {
       expect(output.intent.privateMotiveSummary).toContain("even after a retry");
       expect(output.operatorEvents.some(e => e.type === "intent_blocked")).toBe(true);
     });
+
+    it("retry correction carries the repeat warning, a motive anchor, and the no-op escape hatch", async () => {
+      const runtime = new AgentRuntime({
+        "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+      });
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse("kkkkk não acredito nesse take", 50, 10))
+        .mockResolvedValueOnce(jsonResponse("acho que devíamos falar de outra coisa agora", 60, 15));
+      vi.stubGlobal("fetch", fetchMock);
+
+      await runtime.generateIntent(repeatingInput, context);
+
+      const retryBody = JSON.parse(fetchMock.mock.calls[1]![1]!.body as string);
+      const retrySystem: string = retryBody.messages[0]!.content;
+      // (a) repeat warning with the offending text quoted
+      expect(retrySystem).toContain("was too close to something you already said");
+      expect(retrySystem).toContain('"kkkkk não acredito nesse take"');
+      // (b) motive anchor — novelty must stay motivated by current state
+      expect(retrySystem).toContain("staying true to what you actually want right now");
+      expect(retrySystem).toContain("do not invent novelty");
+      // (c) escape hatch — the real sentence, including the standalone "Or choose"
+      expect(retrySystem).toContain('Or choose "no_op" if you truly have nothing new to add');
+    });
+
+    it("honors maxRetries=2: recovers on the second retry after two repeats", async () => {
+      const runtime = new AgentRuntime(
+        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        undefined,
+        undefined,
+        { maxRetries: 2 },
+      );
+
+      const fetchMock = vi.fn()
+        .mockResolvedValueOnce(jsonResponse("kkkkk não acredito nesse take", 50, 10))
+        .mockResolvedValueOnce(jsonResponse("kkkkk não acredito nesse take mesmo", 40, 8)) // still a repeat
+        .mockResolvedValueOnce(jsonResponse("vou mudar de assunto então", 30, 12)); // finally fresh
+      vi.stubGlobal("fetch", fetchMock);
+
+      const output = await runtime.generateIntent(repeatingInput, context);
+
+      expect(fetchMock).toHaveBeenCalledTimes(3);
+      expect(output.fallbackApplied).toBe(false);
+      expect(output.intent.visibleContent).toBe("vou mudar de assunto então");
+    });
+
+    it("blocks immediately with zero retry budget (single provider call)", async () => {
+      const runtime = new AgentRuntime(
+        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        undefined,
+        undefined,
+        { maxRetries: 0 },
+      );
+
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse("kkkkk não acredito nesse take"));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const output = await runtime.generateIntent(repeatingInput, context);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(output.fallbackApplied).toBe(true);
+      expect(output.intent.intentType).toBe("no_op");
+      expect(output.intent.privateMotiveSummary).toContain("Repetition guard");
+    });
+
+    it("honors a stricter threshold: a loose near-match passes when threshold is raised", async () => {
+      // "kkkkk não acredito nesse take mesmo" vs prior "kkkkk não acredito nesse take"
+      // share all but one word -> Jaccard 5/6 ≈ 0.833, strictly between the
+      // 0.7 default and the 0.99 knob. Plumbed 0.99 must pass it; an unplumbed
+      // 0.7 would re-detect the repeat and retry, so this goes red if the
+      // threshold stops reaching the guard.
+      const borderline = "kkkkk não acredito nesse take mesmo";
+      const lenient = new AgentRuntime(
+        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        undefined,
+        undefined,
+        { threshold: 0.99 },
+      );
+
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse(borderline));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const output = await lenient.generateIntent(repeatingInput, context);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(output.fallbackApplied).toBe(false);
+      expect(output.intent.visibleContent).toBe(borderline);
+      expect(output.operatorEvents.some(e => e.type === "intent_blocked")).toBe(false);
+    });
+
+    it("blocks a loose near-match when the threshold is lowered", async () => {
+      const borderline = "kkkkk não acredito nesse tema";
+      const strict = new AgentRuntime(
+        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        undefined,
+        undefined,
+        { threshold: 0.3, maxRetries: 0 },
+      );
+
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse(borderline));
+      vi.stubGlobal("fetch", fetchMock);
+
+      const output = await strict.generateIntent(repeatingInput, context);
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(output.fallbackApplied).toBe(true);
+      expect(output.intent.privateMotiveSummary).toContain("Repetition guard");
+    });
   });
 });

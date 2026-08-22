@@ -1,0 +1,103 @@
+{
+  "version": "repetition-sweep-v1",
+  "mode": "mock",
+  "probeThreshold": 0.7,
+  "scenarios": [
+    "motive_gossip",
+    "v1_biased_memory",
+    "stagnation_resentment_loop"
+  ],
+  "limitations": "Threshold cells are indistinguishable by construction: mock repeats sit at ≈1.0 Jaccard, so any threshold ≥0.5 catches them all and only providerCalls/guardBlocks vary across that axis. This sweep cannot surface the catchphrase false-positive concern (issue #35) — that needs a probe whose transcripts contain near-miss content.",
+  "grid": [
+    {
+      "threshold": 0.5,
+      "maxRetries": 0,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 196,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.5,
+      "maxRetries": 1,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 252,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.5,
+      "maxRetries": 2,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 308,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 0,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 196,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 1,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 252,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 2,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 308,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 0,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 196,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 1,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 252,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 2,
+      "runs": 3,
+      "guardBlocks": 56,
+      "llmCalls": 196,
+      "providerCalls": 308,
+      "contentRepetitionMean": 0.204,
+      "narrativeCohesionMean": 5
+    }
+  ]
+}

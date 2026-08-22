@@ -4,8 +4,8 @@ import { ScenarioRunner } from "../run/scenario-runner.js";
 import {
   countGuardBlocks,
   sweepScenarios,
-  REPETITION_GUARD_MOTIVE_MARKER,
 } from "../cli/sweep-temperature.js";
+import { REPETITION_GUARD_MARKER } from "@perfectman/server";
 import { resolveBenchSlice } from "../bench-slices.js";
 
 describe("temperature sweep: scenario resolution", () => {
@@ -44,7 +44,7 @@ describe("temperature sweep: repetition-guard marker", () => {
 
     // Without no_ops the marker assertion below would be vacuous.
     expect(noOpMotives.length).toBeGreaterThan(0);
-    expect(noOpMotives.some(m => m.includes(REPETITION_GUARD_MOTIVE_MARKER))).toBe(true);
+    expect(noOpMotives.some(m => m.includes(REPETITION_GUARD_MARKER))).toBe(true);
     expect(countGuardBlocks(artifact.events)).toBeGreaterThan(0);
   });
 

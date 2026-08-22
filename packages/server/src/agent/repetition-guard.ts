@@ -30,7 +30,11 @@ export function normalizeWords(text: string): string[] {
 export function similarity(a: string, b: string): number {
   const wordsA = new Set(normalizeWords(a));
   const wordsB = new Set(normalizeWords(b));
-  if (wordsA.size === 0 && wordsB.size === 0) return 1;
+  // Two sets that both normalize to zero words carry no overlapping content
+  // evidence — scoring them 1.0 made `isNearRepeat("😂", ["🔥"])` a false
+  // positive inside the runtime guard (emoji-only messages blocked as
+  // repeats). The probes exclude empty-normalizing turns at their own layer.
+  if (wordsA.size === 0 && wordsB.size === 0) return 0;
   if (wordsA.size === 0 || wordsB.size === 0) return 0;
   let intersection = 0;
   for (const w of wordsA) if (wordsB.has(w)) intersection++;
@@ -39,6 +43,34 @@ export function similarity(a: string, b: string): number {
 }
 
 export const REPETITION_SIMILARITY_THRESHOLD = 0.7;
+
+/**
+ * Marker written into no_op motives when the guard blocks a repeat.
+ *
+ * Load-bearing prose: the offline sweeps have no structural signal to count
+ * guard blocks (the block is an ordinary `no_op` fallback, and `intent_blocked`
+ * is also raised for rate limits and permission denials), so they match this
+ * prefix. Keep it as the first token of the blocked motive.
+ */
+export const REPETITION_GUARD_MARKER = "Repetition guard";
+
+/**
+ * Repetition-guard policy knobs. Omitting either field reproduces the shipped
+ * behavior: Jaccard threshold 0.7, exactly one retry before a structural block.
+ *
+ * Retries are billed but not pre-authorized by the surface's budget gate, which
+ * runs once before the first call. `ActionIntentStep` therefore re-checks
+ * `llmBudget.canCall` before every retry, so raising `maxRetries` cannot
+ * multiply unmetered wire calls.
+ */
+export type RepetitionPolicy = {
+  /** Similarity at or above which a candidate counts as a repeat. Clamped to [0, 1]. */
+  threshold?: number;
+  /** Retries allowed after a detected repeat before blocking. Clamped to a non-negative integer. */
+  maxRetries?: number;
+};
+
+export const DEFAULT_REPETITION_MAX_RETRIES = 1;
 
 /**
  * Returns true if `candidate` is a near-duplicate of any of the agent's own
@@ -50,5 +82,9 @@ export function isNearRepeat(
   threshold: number = REPETITION_SIMILARITY_THRESHOLD,
 ): boolean {
   if (!candidate || candidate.trim().length === 0) return false;
+  // A candidate that normalizes to zero words (emoji/stopword-only) cannot
+  // be a repeat no matter what the priors look like — the Jaccard over two
+  // empty sets is now 0, but short-circuit here so the intent is explicit.
+  if (normalizeWords(candidate).length === 0) return false;
   return ownRecentUtterances.some((prior) => similarity(candidate, prior) >= threshold);
 }

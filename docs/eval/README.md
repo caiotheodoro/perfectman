@@ -74,6 +74,37 @@ LLM judge scores it from the whole transcript; `--per-turn` (LLM judge only)
 replaces that with the mean of per-turn scores — each sampled content-bearing
 turn is scored against the turn before it (see `packages/eval/src/judge/judge.ts`).
 
+## Offline sweeps (policy knobs, no live models)
+
+Two grid harnesses sweep the repetition guard and the temperature axis fully
+offline (persona-aware mock + rule judge), and each commits its evidence
+matrix to `docs/eval/evidence/`:
+
+- `pnpm --filter @perfectman/eval sweep:repetition --out out/repetition-sweep.json`
+  — `threshold × maxRetries` over 3 scenarios. The output embeds
+  `probeThreshold` (the content-repetition yardstick is always measured at the
+  probe's fixed 0.7, never at the cell's runtime threshold) and a `limitations`
+  field (mock repeats sit at ≈1.0 Jaccard, so threshold cells are
+  indistinguishable by construction — only `providerCalls`/`guardBlocks` vary
+  across that axis).
+- `pnpm --filter @perfectman/eval sweep:temperature --out out/temperature-sweep.json`
+  — temperature grid over the `canary` slice; cells below the mock's only
+  temperature read (the ≥0.9 charged-react gate) are identical by
+  construction, which the `limitations` field says.
+
+Both reports carry no wall-clock/timestamp fields so `cmp` against the
+committed evidence is a literal check — a fresh run MUST be byte-identical.
+The `guardBlocks` metric in both sweeps matches the exported
+`REPETITION_GUARD_MARKER` prefix from `@perfectman/server`; rewording that
+sentence upstream turns the sweep tests red, never a silent zero.
+
+Calibration note: `docs/eval/evidence/calibration-mock-full.json` commits
+`kappa 0.129 / alpha −0.104` against `targetKappa 0.7, passed: false` — the
+judge calibration report is the ground truth even when it fails, and 5 of 10
+rubric axes have zero variance across the 39 golden labels (`voice_match`=4,
+`no_ai_leak`=5), which caps per-axis kappa at 0 for those axes until the
+golden set gains spread.
+
 Every PR also runs this harness in CI (`.github/workflows/pr-gate.yml`):
 typecheck, unit tests, then a mock+rule-judge bench over the golden scenario
 subset with a hard 100%-signals assertion (`scripts/ci/check-bench-gate.mjs`)
@@ -85,6 +116,36 @@ gate over the *full* 123-task suite (Mondays 03:00 UTC, or on demand via
 tracking. Its `judge=llm` dispatch input is an opt-in deep run for
 self-hosted runners with model servers configured; hosted CI stays on the
 offline rule judge by default.
+
+A controlled 1.7b-vs-8b re-run recipe (interleaved arms, pinned
+sampling, retry-cost visibility) lives in
+[qwen3-comparison-protocol.md](qwen3-comparison-protocol.md).
+
+## Judge self-preference: cross-family comparison + jury
+
+Same-family judge/generator pairing risks self-preference bias. The judge
+module supports a **jury**: `juryJudge(scenario, events, configs[])` runs
+the same transcript through independently-sourced judges (different model
+family and/or endpoint per config) and returns the per-axis median plus
+every judge's raw scores. Spread across `perJudge` IS the bias evidence —
+if a differently-sourced judge disagrees with the same-family judge by a
+full point or more on an axis, don't trust that axis from either alone.
+Note: median outlier-resistance needs ≥ 3 surviving jurors — with 2 the
+median is just the mean. Salvaged jurors are reported but never voted.
+Give every juror an explicit, source-naming `label` — default `judge-N`
+labels make two byte-identical configs look like two sources.
+
+Maintainer-run protocol (needs live models): score the same saved
+transcripts once with the same-family judge, once with a different family,
+diff axis means. If they diverge, report both and switch to the jury for
+go-forward comparisons — a median verdict is **not comparable** to any
+single-judge number in `docs/eval/evidence/` or the calibration baselines.
+
+`juryJudge` is a library entry point of `@perfectman/eval` (no CLI script
+yet — invoke it from a node one-liner). It fans every config out
+concurrently via `Promise.allSettled`, so keep the judge list small and
+point it at one local Ollama host at a time.
+
 
 ## Current baseline (mock, 123 tasks)
 
@@ -128,3 +189,7 @@ Every change to personas, prompts, scenarios, or the engine is a micro-patch:
 run the bench, diff against the baseline, keep only changes that hold signals
 at 100% and push probe/judge metrics up. No-regression first, improvement
 second — the two-gate discipline from the research repo's micro-adapter loop.
+
+## Spikes
+
+- [LoRA per-persona fine-tuning feasibility spike](lora-feasibility-spike.md) — documented experiment, not implemented.
