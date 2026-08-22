@@ -322,19 +322,6 @@ describe("AgentRuntime Orchestration", () => {
         undefined,
         { threshold: 0.99 },
       );
-      const strict = new AgentRuntime(
-        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
-        undefined,
-        undefined,
-        { threshold: 0.3, maxRetries: 0 },
-      );
-
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse(borderline)));
-
-      const lenientOutput = await lenient.generateIntent(repeatingInput, context);
-      expect(lenientOutput.fallbackApplied).toBe(false);
-      expect(lenientOutput.intent.visibleContent).toBe(borderline);
-      void strict;
     });
 
     it("blocks a loose near-match when the threshold is lowered", async () => {

@@ -85,21 +85,19 @@ class TrackingRuntime {
           }
           this.providers.set(agentId, provider);
         }
-      // Count real wire calls — retries inside generateIntent never show up
-      // in per-turn `calls`, but they are exactly the cost side of the
-      // repetition-policy tradeoff.
-      const counted: LlmProvider = {
-        generateIntent: async (...providerArgs) => {
-          this.providerCallsTotal++;
-          return provider!.generateIntent(...providerArgs);
+        // Count real wire calls — retries inside generateIntent never show up
+        // in per-turn `calls`, but they are exactly the cost side of the
+        // repetition-policy tradeoff.
+        const counted: LlmProvider = {
+          generateIntent: async (...providerArgs) => {
+            this.providerCallsTotal++;
+            return provider!.generateIntent(...providerArgs);
+          },
+        };
+        return counted;
         },
-      };
-      const wrapped = counted as LlmProvider;
-      void wrapped;
-      return counted;
-      },
-      repetition,
-    );
+        repetition,
+      );
   }
 
   providerCalls(): number {

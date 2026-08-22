@@ -149,22 +149,22 @@ export class AgentRuntime {
     let totalInputTokens = providerResult.usage.inputTokens;
     let totalOutputTokens = providerResult.usage.outputTokens;
 
+    const repetitionThreshold = Math.min(
+      1,
+      Math.max(0, this.repetitionPolicy?.threshold ?? REPETITION_SIMILARITY_THRESHOLD),
+    );
     const isRepeat = (candidateIntent: typeof intent): boolean =>
       (candidateIntent.intentType === "send_message" || candidateIntent.intentType === "reply_to_message") &&
       !!candidateIntent.visibleContent &&
       isNearRepeat(
         candidateIntent.visibleContent,
         input.perceptionPacket.ownRecentUtterances,
-        this.repetitionPolicy?.threshold ?? REPETITION_SIMILARITY_THRESHOLD,
+        repetitionThreshold,
       );
 
     if (!fallbackApplied && isRepeat(intent)) {
       repetitionRetried = true;
       const maxRetries = Math.max(0, this.repetitionPolicy?.maxRetries ?? 1);
-      const threshold = Math.min(
-        1,
-        Math.max(0, this.repetitionPolicy?.threshold ?? REPETITION_SIMILARITY_THRESHOLD),
-      );
       if (maxRetries <= 0) {
         // No retry budget: the detected repeat blocks right away.
         repetitionBlocked = true;
@@ -201,7 +201,7 @@ export class AgentRuntime {
       intent = IntentParser.createFallback(
         agentId,
         "no_op",
-        `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, even after a retry — blocked structurally.`, 
+        `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, even after a retry — blocked structurally.`,
       );
     }
 
