@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-22T01:56:53.446Z — audited 84 files, 758 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-22T06:34:11.811Z — audited 85 files, 772 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -10,10 +10,10 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 |---|---|---|---|
 | engine | 21 | 246 | —
 | eval | 9 | 59 | —
-| server | 47 | 385 | console(1), async-pause(1)
-| shared | 7 | 68 | —
+| server | 48 | 397 | console(1), async-pause(1)
+| shared | 7 | 70 | —
 
-**Total: 84 files, 758 it/test blocks; 2 files flagged.**
+**Total: 85 files, 772 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -53,10 +53,11 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/__e2e__/pipeline-invariants.e2e.test.ts | e2e | 10 | 
 | packages/server/src/__e2e__/roleplay-behaviors.e2e.test.ts | e2e | 17 | 
 | packages/server/src/agent/__tests__/agent-runtime.test.ts | integration | 6 | 
+| packages/server/src/agent/__tests__/background-reflection-prompt-builder.test.ts | integration | 11 | 
 | packages/server/src/agent/__tests__/intent-parser-null.test.ts | integration | 4 | 
 | packages/server/src/agent/__tests__/intent-parser.test.ts | integration | 16 | 
 | packages/server/src/agent/__tests__/persona-loader.test.ts | integration | 7 | 
-| packages/server/src/agent/__tests__/prompt-builder.test.ts | integration | 16 | 
+| packages/server/src/agent/__tests__/prompt-builder.test.ts | integration | 17 | 
 | packages/server/src/agent/__tests__/repetition-guard.test.ts | integration | 6 | 
 | packages/server/src/agent/surface/__tests__/action-intent-step.test.ts | integration | 9 | 
 | packages/server/src/cli/__tests__/llm-health-check.test.ts | integration | 3 | 
@@ -98,7 +99,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/world-signals-builder.test.ts | integration | 7 | 
 | packages/shared/src/__tests__/constants.test.ts | contract | 13 | 
 | packages/shared/src/__tests__/contracts.test.ts | contract | 3 | 
-| packages/shared/src/__tests__/intent-packet-schema.test.ts | contract | 4 | 
+| packages/shared/src/__tests__/intent-packet-schema.test.ts | contract | 6 | 
 | packages/shared/src/__tests__/prompt-syntax.test.ts | contract | 5 | 
 | packages/shared/src/__tests__/schemas.test.ts | contract | 22 | 
 | packages/shared/src/persona-packs/persona-packs.test.ts | contract | 13 | 

@@ -35,13 +35,13 @@ Every `BuiltPrompt` carries its `purpose`. Providers can receive one prompt obje
 
 There is no implicit default at the prompt-construction boundary. Call sites must pass a purpose explicitly so new LLM surfaces cannot accidentally inherit the action prompt.
 
-`PromptBuilder` is a dispatcher, not a universal prompt template. Each supported purpose must have a dedicated builder. Today only `ActionIntentPromptBuilder` exists.
+`PromptBuilder` is a dispatcher, not a universal prompt template. Each supported purpose must have a dedicated builder. `ActionIntentPromptBuilder` and `BackgroundReflectionPromptBuilder` exist today; `social_interpretation` and `spectator_recap` remain reserved with no builder.
 
 ## callType Alignment
 
-`AgentRuntime` maps `BuiltPrompt.purpose` to `LlmUsage.callType` through `purposeToCallType`.
+`PromptPurpose` maps to `LLMUsage.callType` through `purposeToCallType` (`agent/surface/llm-step.ts`); each LLM-surface step (e.g. `ActionIntentStep`) uses it when recording usage.
 
-| PromptPurpose | LlmUsage.callType |
+| PromptPurpose | LLMUsage.callType |
 | --- | --- |
 | `action_intent` | `cognition` |
 | `social_interpretation` | `interpretation` |

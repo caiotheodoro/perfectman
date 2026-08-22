@@ -108,19 +108,18 @@ describe("BackgroundReflectionPromptBuilder", () => {
 
   it("excludes voice guidelines and style examples (field matrix)", () => {
     const built = BackgroundReflectionPromptBuilder.build(input(), profile);
-    expect(built.system).not.toContain("Voice guidelines");
-    expect(built.system).not.toContain("Tonal/register guide");
-    expect(built.system).not.toContain("style example");
+    expect(built.system).not.toContain(profile.voiceGuidelines[0]);
+    expect(built.system).not.toContain(profile.styleExamples.default[0]);
   });
 
-  it("documents the consolidation output contract with memory types", () => {
+  it("documents the consolidation output contract, derived from MemoryWriteProposalSchema", () => {
     const built = BackgroundReflectionPromptBuilder.build(input(), profile);
     for (const fragment of [
       '"consolidations"',
-      '"pending_intention"',
-      '"emotional_residue"',
-      '"confidence"',
-      '"unresolved"',
+      'pending_intention',
+      'emotional_residue',
+      '"confidence" (required): number (0-1)',
+      '"unresolved" (required): boolean',
       'ONLY a JSON object',
     ]) {
       expect(built.system, fragment).toContain(fragment);
@@ -149,8 +148,23 @@ describe("BackgroundReflectionPromptBuilder", () => {
   });
 
   it("maps to the reflection call type", async () => {
-    const { purposeToCallType } = await import("../agent-runtime.js");
+    const { purposeToCallType } = await import("../surface/llm-step.js");
     expect(purposeToCallType("background_reflection")).toBe("reflection");
+  });
+
+  it("assigns a deterministic promptVersion (stable across identical builds)", () => {
+    const a = BackgroundReflectionPromptBuilder.build(input(), profile);
+    const b = BackgroundReflectionPromptBuilder.build(input(), profile);
+    expect(a.version).toBe(b.version);
+    expect(a.version).toMatch(/^[0-9a-z]+$/);
+  });
+
+  it("keeps templateVersion stable across renders whose per-pulse content differs, unlike version", () => {
+    const a = BackgroundReflectionPromptBuilder.build(input(), profile);
+    const b = BackgroundReflectionPromptBuilder.build(input([memory()]), profile);
+    expect(a.version).not.toBe(b.version);
+    expect(a.templateVersion).toBeTruthy();
+    expect(a.templateVersion).toBe(b.templateVersion);
   });
 
   it("still fails closed for the other reserved purposes", () => {

@@ -1,6 +1,8 @@
-import type { AgentRuntimeInput, Memory } from "@perfectman/shared";
-import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
+import { memoryWriteProposalFieldContract, type AgentRuntimeInput, type Memory } from "@perfectman/shared";
+import { CANONICAL_TEMPLATE_VERSION_INPUT } from "./action-intent-prompt-builder.js";
+import { GENERIC_PROMPT_PROFILE, type PersonaPromptProfile } from "./persona-prompt-profile.js";
 import type { BuiltPrompt } from "./agent-runtime.types.js";
+import { promptVersionHash } from "./prompt-version.js";
 
 /**
  * Background-reflection prompt: relationship memory, emotional residue, and
@@ -15,6 +17,20 @@ import type { BuiltPrompt } from "./agent-runtime.types.js";
  */
 export class BackgroundReflectionPromptBuilder {
   static build(input: AgentRuntimeInput, profile: PersonaPromptProfile): BuiltPrompt {
+    const { system, user } = this.render(input, profile);
+    const inputTokensEstimate = Math.ceil((system.length + user.length) / 4);
+
+    return {
+      system,
+      user,
+      inputTokensEstimate,
+      purpose: "background_reflection",
+      version: promptVersionHash([system, user]),
+      templateVersion: this.templateVersion(),
+    };
+  }
+
+  private static render(input: AgentRuntimeInput, profile: PersonaPromptProfile): { system: string; user: string } {
     const packet = input.perceptionPacket;
 
     const system = [
@@ -33,14 +49,22 @@ export class BackgroundReflectionPromptBuilder {
       "Consolidate what this moment left behind. Respond ONLY with the JSON object from the contract.",
     ].join("\n");
 
-    const inputTokensEstimate = Math.ceil((system.length + user.length) / 4);
+    return { system, user };
+  }
 
-    return {
-      system,
-      user,
-      inputTokensEstimate,
-      purpose: "background_reflection",
-    };
+  private static cachedTemplateVersion: string | undefined;
+
+  /**
+   * Content hash of a render against the shared fixed canonical input,
+   * computed once and cached. See `CANONICAL_TEMPLATE_VERSION_INPUT` for why
+   * this differs from `version` (which hashes the real per-pulse render).
+   */
+  private static templateVersion(): string {
+    if (this.cachedTemplateVersion === undefined) {
+      const { system, user } = this.render(CANONICAL_TEMPLATE_VERSION_INPUT, GENERIC_PROMPT_PROFILE);
+      this.cachedTemplateVersion = promptVersionHash([system, user]);
+    }
+    return this.cachedTemplateVersion;
   }
 
   private static renderReflectionIdentity(profile: PersonaPromptProfile): string {
@@ -61,19 +85,23 @@ How you tend to feel about the others:
 ${renderedBiases}`;
   }
 
+  /**
+   * The `consolidations` output contract, derived from
+   * `MemoryWriteProposalSchema` (`@perfectman/shared`) via
+   * `memoryWriteProposalFieldContract()` instead of hand-written prose, so it
+   * can never drift from what the parser downstream actually accepts.
+   */
   private static renderContract(): string {
+    const fields = memoryWriteProposalFieldContract()
+      .map((field) => `  - ${field}`)
+      .join("\n");
+
     return `### OUTPUT CONTRACT
 Return ONLY a JSON object, no prose, no markdown:
-{"consolidations": [
-  {
-    "type": "episodic|relationship|self|social_theory|pending_intention|emotional_residue",
-    "subjectAgentIds": ["agent-id", ...],
-    "summary": "one sentence, concrete, first-person",
-    "emotionalTone": "one or two words",
-    "confidence": 0.0-1.0,
-    "unresolved": true|false
-  }
-]}
+{"consolidations": [item, ...]}
+
+Each item is a memory-write proposal with these fields:
+${fields}
 
 Rules:
 - 0 to 3 items. An empty list is a valid answer — only consolidate what actually left residue.
