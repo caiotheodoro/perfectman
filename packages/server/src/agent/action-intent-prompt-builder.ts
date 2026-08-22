@@ -1,6 +1,7 @@
 import type { AgentRuntimeInput, CommittedEvent } from "@perfectman/shared";
 import type { PersonaPromptProfile, ScenarioContextBlock } from "./persona-prompt-profile.js";
 import type { BuiltPrompt } from "./agent-runtime.types.js";
+import { renderIntentOutputContract } from "./output-contract.js";
 
 export class ActionIntentPromptBuilder {
   /**
@@ -19,36 +20,11 @@ export class ActionIntentPromptBuilder {
     systemSections.push(this.renderPersonaSection(profile));
 
     // --- SECTION 8: Output Contract (System) ---
-    systemSections.push(`### SECTION 8: OUTPUT CONTRACT & JSON FORMAT
-You must respond with a SINGLE valid JSON object matching the schema below.
-DO NOT include any conversational introduction, explanation, or markdown codeblocks (no \`\`\`json wrappers).
-DO NOT include any chain-of-thought, thinking blocks (<think>), or nested commentary. Return ONLY the JSON object.
-
-JSON Schema:
-{
-  "id": "A unique string representing this intent (copy from the inputs or generate a new unique string)",
-  "actorId": "${input.agentId}",
-  "intentType": "Must match one of the available intent types",
-  "channelTarget": "ONLY for send_message/reply_to_message/leave_channel/invite_agent — the existing channel ID you're acting in. OMIT this field entirely for create_channel (use channelName/channelType instead).",
-  "personTargets": "OMIT this field for send_message and create_channel — it does not apply to them. Only used for actions that target a specific person directly.",
-  "visibleContent": "Optional text message content (required for 'send_message' or 'reply_to_message')",
-  "privateMotiveSummary": "A highly specific natural-language thought explaining your real, raw, hidden motive behind this action. Never leave empty.",
-  "emotionDrivers": ["Emotion keywords driving this action (e.g. warmth, jealousy, irritation)"],
-  "motivationDrivers": ["Motivation keywords driving this action (e.g. affinity, gossip, exclusion)"],
-  "preferredDelay": 0,
-  "fallbackIfBlocked": "no_op",
-  "memoryWrites": [],
-  "channelName": "ONLY for create_channel — a short name for the new channel.",
-  "channelType": "ONLY for create_channel — usually \\"private_channel\\".",
-  "invitedAgentIds": ["ONLY for create_channel — array of agentIds to invite into the new channel."]
-}
-
-Field notes by intentType — send_message/reply_to_message use "channelTarget" (an existing channel); create_channel uses "channelName" + "channelType" (usually "private_channel") + "invitedAgentIds" instead, and has no "channelTarget" or "personTargets".
-
-Ensure:
-- "privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").
-- Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".
-- NEVER repeat a message you already sent, or a near-variation of it. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move the action somewhere else — or choose "no_op". Repeating yourself is the most out-of-character thing you can do.${this.renderOwnUtterancesWarning(perceptionPacket.ownRecentUtterances)}`);
+    // Derived from ActionIntentSchema (see output-contract.ts) — the zod
+    // schema is the single source of truth; the prose contract cannot drift.
+    systemSections.push(
+      renderIntentOutputContract(this.renderOwnUtterancesWarning(perceptionPacket.ownRecentUtterances)),
+    );
 
     const systemPrompt = systemSections.join("\n\n");
 
