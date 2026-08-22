@@ -86,6 +86,31 @@ tracking. Its `judge=llm` dispatch input is an opt-in deep run for
 self-hosted runners with model servers configured; hosted CI stays on the
 offline rule judge by default.
 
+## Judge self-preference: cross-family comparison + jury
+
+Same-family judge/generator pairing risks self-preference bias. The judge
+module supports a **jury**: `juryJudge(scenario, events, configs[])` runs
+the same transcript through independently-sourced judges (different model
+family and/or endpoint per config) and returns the per-axis median plus
+every judge's raw scores. Spread across `perJudge` IS the bias evidence —
+if a differently-sourced judge disagrees with the same-family judge by a
+full point or more on an axis, don't trust that axis from either alone.
+Note: median outlier-resistance needs ≥ 3 surviving jurors — with 2 the
+median is just the mean. Salvaged jurors are reported but never voted.
+Give every juror an explicit, source-naming `label` — default `judge-N`
+labels make two byte-identical configs look like two sources.
+
+Maintainer-run protocol (needs live models): score the same saved
+transcripts once with the same-family judge, once with a different family,
+diff axis means. If they diverge, report both and switch to the jury for
+go-forward comparisons — a median verdict is **not comparable** to any
+single-judge number in `docs/eval/evidence/` or the calibration baselines.
+
+`juryJudge` is a library entry point of `@perfectman/eval` (no CLI script
+yet — invoke it from a node one-liner). It fans every config out
+concurrently via `Promise.allSettled`, so keep the judge list small and
+point it at one local Ollama host at a time.
+
 ## Current baseline (mock, 123 tasks)
 
 - Signal pass rate: **100%** (all expected signals across all rotated scenes)
