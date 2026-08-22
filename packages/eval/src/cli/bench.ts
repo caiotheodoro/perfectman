@@ -111,10 +111,11 @@ export async function runBench(opts: {
     if (!ids) {
       throw new Error(`Unknown slice "${opts.slice}" (available: ${Object.keys(BENCH_SLICES).join(", ")})`);
     }
-    selected = ids.map(id => getScenario(id)).filter((x): x is RoleplayScenario => Boolean(x));
-    if (selected.length === 0) {
-      throw new Error(`Slice "${opts.slice}" resolved to zero registry scenarios`);
+    const unknownIds = ids.filter(id => !getScenario(id));
+    if (unknownIds.length > 0) {
+      throw new Error(`Slice "${opts.slice}" has unknown scenario ids: ${unknownIds.join(", ")}`);
     }
+    selected = ids.map(id => getScenario(id)).filter((x): x is RoleplayScenario => Boolean(x));
   } else if (opts.category) {
     selected = scenariosByCategory(opts.category as never);
   } else {

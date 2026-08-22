@@ -12,10 +12,8 @@ describe("bench slices", () => {
     }
   });
 
-  it("golden slice stays pinned to GOLDEN_LABELS", () => {
-    expect(new Set(BENCH_SLICES.golden)).toEqual(
-      new Set(GOLDEN_LABELS.map(g => g.scenarioId)),
-    );
+  it("golden slice stays pinned to GOLDEN_LABELS (order and uniqueness)", () => {
+    expect(BENCH_SLICES.golden).toEqual(GOLDEN_LABELS.map(g => g.scenarioId));
   });
 
   it("edges slice covers all four edge_chaos scenarios", () => {
