@@ -3,6 +3,7 @@ import type { BuiltPrompt } from "../agent-runtime.types.js";
 import type { LLMConfig } from "../../llm/llm-config.js";
 import type { LLMProvider } from "../../llm/llm-provider.js";
 import type { PersonaPromptProfile } from "../persona-prompt-profile.js";
+import type { RepetitionPolicy } from "../repetition-guard.js";
 
 export type StepOutcome<T> =
   | { ok: true; value: T }
@@ -24,6 +25,8 @@ export interface StepRunContext {
   llmConfig: LLMConfig;
   profile: PersonaPromptProfile;
   prompt?: BuiltPrompt;
+  /** Repetition-guard knobs; undefined means the shipped defaults. */
+  repetitionPolicy?: RepetitionPolicy;
 }
 
 /**
