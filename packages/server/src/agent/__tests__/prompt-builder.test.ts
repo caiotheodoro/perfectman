@@ -164,7 +164,7 @@ describe("PromptBuilder", () => {
     expect(typeof prompt.system).toBe("string");
     expect(typeof prompt.user).toBe("string");
     expect(prompt.inputTokensEstimate).toBeGreaterThan(0);
-    expect(prompt.version).toBeTruthy();
+    expect(prompt.version).toMatch(/^[0-9a-z]+$/);
   });
 
   it("assigns a deterministic promptVersion (stable across identical builds)", () => {

@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { OllamaProvider } from "../ollama-provider.js";
 import { LLMConfigurationError } from "../llm-errors.js";
 import type { AgentRuntimeContext, BuiltPrompt } from "../../agent/agent-runtime.types.js";
+import { ModelIntentPacketJsonSchema } from "@perfectman/shared";
 
 const context: AgentRuntimeContext = { pulseIndex: 1, now: Date.now() };
 const prompt: BuiltPrompt = {
@@ -140,7 +141,7 @@ describe("OllamaProvider", () => {
 
     await new OllamaProvider(config({ responseFormatJson: true })).generateIntent(baseInput, context, prompt);
     body = JSON.parse(fetchSpy.mock.calls[1]![1]!.body as string);
-    expect(body.format).toBeDefined();
+    expect(body.format).toEqual(ModelIntentPacketJsonSchema);
   });
 
   it("returns the expected result structure on success", async () => {
