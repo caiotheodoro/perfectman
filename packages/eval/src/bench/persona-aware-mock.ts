@@ -24,17 +24,25 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+/** Consecutive identical-emoji react run for one agent, carried across pulses. */
+export type ReactStreak = { emoji: string; count: number };
+
 export class PersonaAwareMockProvider implements LLMProvider {
   private readonly pack: PersonaPack;
   private readonly seed: number;
+  private readonly reactStreaks: Map<string, ReactStreak>;
 
   private readonly privateChannelsUsed = new Set<string>();
-  /** Consecutive identical-emoji reacts per agent — echo-chamber guard. */
-  private readonly consecutiveReacts = new Map<string, { emoji: string; count: number }>();
 
-  constructor(pack: PersonaPack, seed: number) {
+  /**
+   * `reactStreaks` is owned by the caller because `AgentRuntime` builds a fresh
+   * provider per agent per pulse: any per-instance streak state would be reset
+   * before it could ever be read.
+   */
+  constructor(pack: PersonaPack, seed: number, reactStreaks: Map<string, ReactStreak> = new Map()) {
     this.pack = pack;
     this.seed = seed;
+    this.reactStreaks = reactStreaks;
   }
 
   async generateIntent(
@@ -198,25 +206,15 @@ export class PersonaAwareMockProvider implements LLMProvider {
 
     // 3. Reactor impulse — a high-arousal persona reacts BEFORE replying.
     const pulseSalt = String(opts.pulseIndex);
-    // Saturation cap: if consecutive identical-emoji reacts become possible
-    // again (the pulse-salted digest below currently prevents it), the
-    // provider falls through to the message paths after two — the guard
-    // exists so the echo-chamber failure mode cannot silently return.
-    const MAX_IDENTICAL_REACTS = 2;
-    const prior = this.consecutiveReacts.get(agentId);
-    const saturated = (prior?.count ?? 0) >= MAX_IDENTICAL_REACTS;
     const chargedReact =
       opts.canReact &&
-      !saturated &&
       pack.sampling.temperature >= 0.9 &&
       (randDigest(agentId + ":" + pulseSalt, 7) % 2 === 0 || this.isChargedReact());
     if (chargedReact) {
       const emojis = pack.edgeProfile.impulseBehaviors.length > 0 ? ["😂", "🔥", "🤨", "🙃"] : ["👍", "👀"];
       // Salt with the pulse too — a fixed digest gave one agent the same
       // emoji forever.
-      const emoji = emojis[randDigest(agentId + ":" + pulseSalt, 13) % emojis.length]!;
-      if (prior && prior.emoji === emoji) prior.count += 1;
-      else this.consecutiveReacts.set(agentId, { emoji, count: 1 });
+      const emoji = this.nextReactEmoji(agentId, emojis, randDigest(agentId + ":" + pulseSalt, 13) % emojis.length);
       return {
         id: `int_${agentId}_${now}`,
         actorId: agentId,
@@ -229,10 +227,6 @@ export class PersonaAwareMockProvider implements LLMProvider {
         memoryWrites: [],
       };
     }
-    // A turn that falls past the react branch breaks any react streak,
-    // so saturation recovers instead of muting the agent for good.
-    // (Early-return decisions above never reach this reset.)
-    this.consecutiveReacts.delete(agentId);
 
     // 4. Direct attention event with a REAL trigger → reply in persona style.
     if (
@@ -389,6 +383,24 @@ export class PersonaAwareMockProvider implements LLMProvider {
     if (!social) return false;
     return (social.affection ?? 0) >= 0.5 || (social.admiration ?? 0) >= 0.5;
   }
+
+  /**
+   * Caps identical consecutive reacts at `MAX_IDENTICAL_REACTS` by rotating to
+   * the next emoji rather than dropping the react: the react rate is a measured
+   * benchmark axis, so the cap must not be able to move it.
+   */
+  private nextReactEmoji(agentId: string, emojis: string[], digestIndex: number): string {
+    const MAX_IDENTICAL_REACTS = 2;
+    const prior = this.reactStreaks.get(agentId);
+    let index = digestIndex;
+    if (prior && prior.emoji === emojis[index] && prior.count >= MAX_IDENTICAL_REACTS) {
+      index = (index + 1) % emojis.length;
+    }
+    const emoji = emojis[index]!;
+    const count = prior && prior.emoji === emoji ? prior.count + 1 : 1;
+    this.reactStreaks.set(agentId, { emoji, count });
+    return emoji;
+  }
 }
 
 function randDigest(s: string, salt: number): number {
@@ -404,6 +416,7 @@ export function personaAwareProviderFactory(
   packs: Map<string, PersonaPack>,
   seed: number,
 ): (llmConfig: LLMConfig, agentId: string) => LLMProvider {
+  const reactStreaks = new Map<string, ReactStreak>();
   return (llmConfig, agentId) => {
     if (llmConfig.providerType !== "mock") {
       return new OpenAiCompatibleProvider(llmConfig) as LLMProvider;
@@ -434,6 +447,7 @@ export function personaAwareProviderFactory(
         sampling: { temperature: 0.7, repetitionPenalty: 1.1, topP: 0.95, maxTokens: 300 },
       },
       seed,
+      reactStreaks,
     );
   };
 }

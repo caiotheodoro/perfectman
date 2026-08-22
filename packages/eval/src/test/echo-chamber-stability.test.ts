@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { ScenarioRunner } from "../run/scenario-runner.js";
 import { getScenario } from "@perfectman/shared";
+import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 
 /**
  * Regression guard for the echo-chamber mock degeneracy: a high-affection,
@@ -9,16 +10,20 @@ import { getScenario } from "@perfectman/shared";
  * out-of-character and tanked judged authenticity.
  */
 describe("persona-aware mock: echo-chamber stability", () => {
-  it("never emits more than two identical consecutive reactions per agent", async () => {
+  const MAX_IDENTICAL_REACTS = 2;
+
+  async function runEchoChamber(): Promise<ScenarioRunArtifact> {
     const scenario = getScenario("stagnation_echo_chamber");
     if (!scenario) throw new Error("scenario missing from registry");
-    const artifact = await ScenarioRunner.run(scenario, { llmMode: "mock" });
+    return ScenarioRunner.run(scenario, { llmMode: "mock" });
+  }
 
-    const agents = ["caio", "leo", "mariana", "bruno"];
-    const maxStreaks: Array<{ agentId: string; maxRun: number }> = [];
-    for (const agentId of agents) {
-      const emojis = artifact.events
-        .filter(e => e.type === "reaction_sent" && e.actorId === agentId)
+  function reactionStreaksByAgent(artifact: ScenarioRunArtifact): Array<{ agentId: string; reacts: number; maxRun: number }> {
+    const reactions = artifact.events.filter(e => e.type === "reaction_sent" && e.actorId);
+    const agentIds = [...new Set(reactions.map(e => String(e.actorId)))];
+    return agentIds.map(agentId => {
+      const emojis = reactions
+        .filter(e => e.actorId === agentId)
         .map(e => String((e.payload as Record<string, unknown>)["emoji"] ?? ""));
       let maxRun = 0;
       let run = 0;
@@ -28,16 +33,22 @@ describe("persona-aware mock: echo-chamber stability", () => {
         prev = emoji;
         maxRun = Math.max(maxRun, run);
       }
-      maxStreaks.push({ agentId, maxRun });
-    }
-    const offenders = maxStreaks.filter(s => s.maxRun > 2);
-    expect(offenders).toEqual([]);
+      return { agentId, reacts: emojis.length, maxRun };
+    });
+  }
+
+  it("never emits more than two identical consecutive reactions per agent", async () => {
+    const streaks = reactionStreaksByAgent(await runEchoChamber());
+
+    // Without a reactor the streak assertion below is vacuously true, which is
+    // exactly how the original attractor stayed invisible.
+    expect(streaks.length).toBeGreaterThan(0);
+    expect(streaks.some(s => s.reacts >= 3)).toBe(true);
+    expect(streaks.filter(s => s.maxRun > MAX_IDENTICAL_REACTS)).toEqual([]);
   });
 
   it("keeps the echo-chamber expected signals passing", async () => {
-    const scenario = getScenario("stagnation_echo_chamber");
-    if (!scenario) throw new Error("scenario missing from registry");
-    const artifact = await ScenarioRunner.run(scenario, { llmMode: "mock" });
+    const artifact = await runEchoChamber();
     expect(artifact.passedSignals).toBe(artifact.totalSignals);
   });
 });
