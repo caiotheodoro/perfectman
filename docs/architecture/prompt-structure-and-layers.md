@@ -75,7 +75,7 @@ type StepOutcome<T> =
   | { ok: true; value: T }
   | { ok: false; fallback: T; errorDetail?: string; gateBlocked?: boolean };
 
-interface LlmStep<Input, Output> {
+interface LLMStep<Input, Output> {
   readonly purpose: string;
   readonly label: string;
   render(input: Input, ctx: StepRunContext): BuiltPrompt;
