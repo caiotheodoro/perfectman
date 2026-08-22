@@ -24,6 +24,11 @@ export const BENCH_SLICES: Record<string, readonly string[]> = {
   canary: ["motive_gossip", "v1_exclusion_inferred", "motive_conflict", "stagnation_resentment_loop"],
 };
 
+/**
+ * Own-property guard: an object literal inherits `toString`/`constructor`, so an
+ * unguarded index yields a function and crashes instead of reporting an unknown slice.
+ */
 export function resolveBenchSlice(name: string): string[] | undefined {
+  if (!Object.hasOwn(BENCH_SLICES, name)) return undefined;
   return BENCH_SLICES[name]?.slice();
 }

@@ -12,12 +12,14 @@ import { OllamaProvider } from "../llm/ollama-provider.js";
 import type { LLMConfig } from "../llm/llm-config.js";
 import type { LLMProvider } from "../llm/llm-provider.js";
 import type { AgentConfigRegistry } from "./agent-config-registry.js";
+import type { RepetitionPolicy } from "./repetition-guard.js";
 
 export class AgentRuntime {
   constructor(
     private readonly configOverrides?: Record<string, Partial<LLMConfig>>,
     private readonly agentConfigRegistry?: AgentConfigRegistry,
     private readonly providerFactory?: (llmConfig: LLMConfig, agentId: string) => LLMProvider,
+    private readonly repetitionPolicy?: RepetitionPolicy,
   ) {}
 
   async generateIntent(
@@ -50,6 +52,7 @@ export class AgentRuntime {
       provider,
       llmConfig,
       profile,
+      repetitionPolicy: this.repetitionPolicy,
     };
     const prompt = step.render(input, baseCtx);
     const ctx: StepRunContext = { ...baseCtx, prompt };

@@ -4,12 +4,15 @@ import type { BuiltPrompt } from "./agent-runtime.types.js";
 import { promptVersionHash } from "./prompt-version.js";
 
 /**
- * Fixed placeholder input used only to compute `templateVersion` below —
- * never shown to a model. Every per-pulse field takes its simplest branch
- * (no triggering event, empty lists) so the render this produces is stable
- * across process runs and only ever changes when the builder's own logic does.
+ * Fixed placeholder input used only to compute each prompt builder's
+ * `templateVersion` — never shown to a model. Every per-pulse field takes its
+ * simplest branch (no triggering event, empty lists) so the render this
+ * produces is stable across process runs and only ever changes when a
+ * builder's own render logic does. Shared across builders (see
+ * `BackgroundReflectionPromptBuilder`) so every purpose's template version is
+ * computed against the same fixed input shape.
  */
-const CANONICAL_TEMPLATE_VERSION_INPUT: AgentRuntimeInput = {
+export const CANONICAL_TEMPLATE_VERSION_INPUT: AgentRuntimeInput = {
   simulationId: "template-version",
   agentId: "template-version",
   personaConfig: {

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { zodToJsonSchema } from "zod-to-json-schema";
 import { createId } from "../utils/id.js";
 import type { ActionIntent, IntentType } from "./intent.types.js";
 import { IntentTypeSchema, IntentChannelTypeSchema, MemoryWriteProposalSchema } from "./intent.schema.js";
@@ -6,9 +7,10 @@ import { IntentTypeSchema, IntentChannelTypeSchema, MemoryWriteProposalSchema } 
 /**
  * The model-decision packet: only the fields the model legitimately decides.
  * Structural fields the engine owns (id, actorId, preferredDelay,
- * fallbackIfBlocked) are intentionally NOT here — they are stamped by
- * `composeIntentPacket`, not requested from the model. This is the single
- * source of truth for both the prompt contract and constrained decoding.
+ * fallbackIfBlocked) are intentionally NOT here — they are computed by
+ * `composeIntentPacket` from `intentType` (see `ENGINE_FALLBACK_ELIGIBLE_TYPES`
+ * below), not requested from the model. This is the single source of truth
+ * for both the prompt contract and constrained decoding.
  */
 export const ModelIntentPacketSchema = z.object({
   intentType: IntentTypeSchema,
@@ -30,56 +32,43 @@ export const ModelIntentPacketSchema = z.object({
 
 export type ModelIntentPacket = z.infer<typeof ModelIntentPacketSchema>;
 
-/**
- * JSON Schema mirror of the packet, used for constrained decoding
- * (Ollama `format` object / OpenAI `response_format.json_schema`). Kept in
- * lockstep with ModelIntentPacketSchema; a drift-test asserts field parity.
- */
-export const ModelIntentPacketJsonSchema = {
-  type: "object",
-  additionalProperties: false,
-  required: ["intentType", "privateMotiveSummary"],
-  properties: {
-    intentType: { enum: IntentTypeSchema.options },
-    channelTarget: { type: "string" },
-    personTargets: { type: "array", items: { type: "string" } },
-    visibleContent: { type: "string" },
-    privateMotiveSummary: { type: "string", minLength: 1 },
-    emotionDrivers: { type: "array", items: { type: "string" } },
-    motivationDrivers: { type: "array", items: { type: "string" } },
-    memoryWrites: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["type", "subjectAgentIds", "summary", "emotionalTone", "confidence", "unresolved"],
-        properties: {
-          type: {
-            enum: ["episodic", "relationship", "self", "social_theory", "pending_intention", "emotional_residue"],
-          },
-          subjectAgentIds: { type: "array", items: { type: "string" } },
-          summary: { type: "string", minLength: 1 },
-          emotionalTone: { type: "string", minLength: 1 },
-          confidence: { type: "number", minimum: 0, maximum: 1 },
-          unresolved: { type: "boolean" },
-        },
-      },
-    },
-    replyToEventId: { type: "string" },
-    emoji: { type: "string" },
-    targetEventId: { type: "string" },
-    channelName: { type: "string" },
-    channelType: { enum: IntentChannelTypeSchema.options },
-    invitedAgentIds: { type: "array", items: { type: "string" } },
-    spectatorSummary: { type: "string" },
-  },
-} as const;
-
 type JsonSchemaProp = {
   type?: string;
   enum?: readonly string[];
   items?: { type?: string; properties?: Record<string, unknown> };
+  minimum?: number;
+  maximum?: number;
 };
+
+type JsonSchemaObject = {
+  type: "object";
+  properties: Record<string, JsonSchemaProp>;
+  required: readonly string[];
+  additionalProperties: false;
+};
+
+/**
+ * JSON Schema mirror of `MemoryWriteProposalSchema`, derived straight from
+ * the zod schema via zod-to-json-schema (flattened — no `$ref` wrappers) so
+ * it cannot drift the way a hand-written mirror can. Used both embedded in
+ * `ModelIntentPacketJsonSchema.memoryWrites` (action_intent's inline memory
+ * writes) and standalone by any reasoning-only surface that proposes memory
+ * consolidations on its own (e.g. background_reflection).
+ */
+export const MemoryWriteProposalJsonSchema = zodToJsonSchema(MemoryWriteProposalSchema, {
+  $refStrategy: "none",
+}) as JsonSchemaObject;
+
+/**
+ * JSON Schema mirror of the packet, used for constrained decoding
+ * (Ollama `format` object / OpenAI `response_format.json_schema`). Derived
+ * straight from `ModelIntentPacketSchema` via zod-to-json-schema, so the zod
+ * schema stays the single source of truth for both the prompt contract and
+ * the decode-time grammar.
+ */
+export const ModelIntentPacketJsonSchema = zodToJsonSchema(ModelIntentPacketSchema, {
+  $refStrategy: "none",
+}) as JsonSchemaObject;
 
 function describePacketFieldType(def: JsonSchemaProp): string {
   if (def.enum) return `one of: ${def.enum.join(", ")}`;
@@ -90,6 +79,12 @@ function describePacketFieldType(def: JsonSchemaProp): string {
     }
     return "array of strings";
   }
+  if (def.type === "number") {
+    return def.minimum !== undefined && def.maximum !== undefined
+      ? `number (${def.minimum}-${def.maximum})`
+      : "number";
+  }
+  if (def.type === "boolean") return "boolean";
   return "string";
 }
 
@@ -110,6 +105,38 @@ export function modelIntentPacketFieldContract(): string[] {
     return `"${name}" (${isRequired ? "required" : "optional"}): ${describePacketFieldType(def as JsonSchemaProp)}`;
   });
 }
+
+/**
+ * Same per-field guidance as `modelIntentPacketFieldContract`, scoped to a
+ * single memory-write proposal — for surfaces (like background_reflection)
+ * that emit `MemoryWriteProposal` objects directly rather than embedded in
+ * an intent packet.
+ */
+export function memoryWriteProposalFieldContract(): string[] {
+  const { properties, required } = MemoryWriteProposalJsonSchema;
+  return Object.entries(properties).map(([name, def]) => {
+    const isRequired = (required as readonly string[]).includes(name);
+    return `"${name}" (${isRequired ? "required" : "optional"}): ${describePacketFieldType(def as JsonSchemaProp)}`;
+  });
+}
+
+/**
+ * Primary intent types the engine assigns an automatic `no_op` fallback to
+ * when denied. Deliberately single-target: the engine has no way to judge
+ * which softer alternative fits a specific denial reason the way a model
+ * could, so it always falls back to the one universally-available,
+ * never-blocked action (see `computeAvailableActions`) instead of guessing.
+ * Types left out (no_op, delay_response, leave_channel, typing_start/cancel,
+ * write_memory) are already low-risk or already unblockable — no fallback
+ * safety net is needed for them.
+ */
+const ENGINE_FALLBACK_ELIGIBLE_TYPES: ReadonlySet<IntentType> = new Set([
+  "send_message",
+  "reply_to_message",
+  "react",
+  "create_channel",
+  "invite_agent",
+]);
 
 /**
  * Merges a validated model packet with the engine-stamped structural fields
@@ -146,6 +173,7 @@ export function composeIntentPacket(spec: IntentComposeInput): ActionIntent {
     actorId: spec.agentId,
     intentType: packet.intentType,
     preferredDelay: 0,
+    fallbackIfBlocked: ENGINE_FALLBACK_ELIGIBLE_TYPES.has(packet.intentType) ? "no_op" : undefined,
     channelTarget: packet.channelTarget,
     personTargets: packet.personTargets,
     visibleContent: packet.visibleContent,

@@ -317,16 +317,21 @@ describe("PromptBuilder", () => {
       expect(prompt.system).not.toContain("0.65");
     });
 
-    it("reserved purposes are rejected until dedicated builders exist", () => {
+    it("reserved purposes without builders are rejected (fail closed)", () => {
       expect(() =>
         PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "social_interpretation")
       ).toThrow("Unsupported prompt purpose: social_interpretation");
       expect(() =>
-        PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "background_reflection")
-      ).toThrow("Unsupported prompt purpose: background_reflection");
-      expect(() =>
         PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "spectator_recap")
       ).toThrow("Unsupported prompt purpose: spectator_recap");
+    });
+
+    it("background_reflection dispatches to its dedicated builder", () => {
+      const built = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "background_reflection");
+      expect(built.purpose).toBe("background_reflection");
+      // Field gating: reasoning-only surface — no voice/style content.
+      expect(built.system).not.toContain("Tonal/register guide");
+      expect(built.system).toContain('"consolidations"');
     });
   });
 });

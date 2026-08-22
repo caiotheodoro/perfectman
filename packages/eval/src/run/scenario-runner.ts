@@ -33,6 +33,7 @@ export type RunnerOpts = {
   providerFactory?: (llmConfig: import("@perfectman/server").LLMConfig, agentId: string) => LLMProvider;
   llmMode?: "mock" | "local";
   pulseLimit?: number;
+  repetition?: import("@perfectman/server").RepetitionPolicy;
 };
 
 export type ScenarioRunArtifact = {
@@ -52,6 +53,8 @@ export type ScenarioRunArtifact = {
   promptVersions: string[];
   /** Unique prompt template versions observed across the run (old-vs-new template comparison). */
   templateVersions: string[];
+  /** Real provider wire-calls, including repetition-guard retries. */
+  providerCalls?: number;
 };
 
 class TrackingRuntime {
@@ -60,31 +63,57 @@ class TrackingRuntime {
   private readonly versions = new Set<string>();
   private readonly templateVersions = new Set<string>();
   private readonly providers = new Map<string, LLMProvider>();
+  private readonly countedProviders = new Map<string, LLMProvider>();
+  private providerCallsTotal = 0;
 
   constructor(
     registry: AgentConfigRegistry,
     factory: ((llmConfig: import("@perfectman/server").LLMConfig, agentId: string) => LLMProvider) | undefined,
+    repetition?: import("@perfectman/server").RepetitionPolicy,
   ) {
-    this.inner = new AgentRuntime(undefined, registry, (llmConfig, agentId) => {
-      // One provider instance per agent per scenario — per-call state
-      // (channel caps, memory habits) must persist across pulses.
-      let provider = this.providers.get(agentId);
-      if (!provider) {
-        provider = factory ? factory(llmConfig, agentId) : undefined;
+    this.inner = new AgentRuntime(
+      undefined,
+      registry,
+      (llmConfig, agentId) => {
+        // One provider instance per agent per scenario — per-call state
+        // (channel caps, memory habits) must persist across pulses.
+        let provider = this.providers.get(agentId);
         if (!provider) {
-          // No injected factory → follow the config's provider type
-          // (mock → canned; ollama → native API for Qwen3; else OpenAI-compatible).
-          provider =
-            llmConfig.providerType === "mock"
-              ? new MockLLMProvider()
-              : llmConfig.providerType === "ollama"
-                ? new OllamaProvider(llmConfig)
-                : new OpenAiCompatibleProvider(llmConfig);
+          provider = factory ? factory(llmConfig, agentId) : undefined;
+          if (!provider) {
+            // No injected factory → follow the config's provider type
+            // (mock → canned; ollama → native API for Qwen3; else OpenAI-compatible).
+            provider =
+              llmConfig.providerType === "mock"
+                ? new MockLLMProvider()
+                : llmConfig.providerType === "ollama"
+                  ? new OllamaProvider(llmConfig)
+                  : new OpenAiCompatibleProvider(llmConfig);
+          }
+          this.providers.set(agentId, provider);
         }
-        this.providers.set(agentId, provider);
-      }
-      return provider;
-    });
+        // Per-turn `calls` counts generateIntent invocations, so a
+        // repetition-guard retry is invisible there — but retries are the cost
+        // side of the repetition policy, so wire calls are counted separately.
+        let counted = this.countedProviders.get(agentId);
+        if (!counted) {
+          const inner = provider;
+          counted = {
+            generateIntent: (...providerArgs) => {
+              this.providerCallsTotal++;
+              return inner.generateIntent(...providerArgs);
+            },
+          };
+          this.countedProviders.set(agentId, counted);
+        }
+        return counted;
+      },
+      repetition,
+    );
+  }
+
+  providerCalls(): number {
+    return this.providerCallsTotal;
   }
 
   async generateIntent(
@@ -133,7 +162,7 @@ export class ScenarioRunner {
       scenarioToConfig(scenario, opts.llmMode ?? "mock"),
       {
         agentRuntimeFactory: (registry) => {
-          tracking = new TrackingRuntime(registry, providerFactory);
+          tracking = new TrackingRuntime(registry, providerFactory, opts.repetition);
           return tracking;
         },
       },
@@ -199,6 +228,7 @@ export class ScenarioRunner {
       pulseResults,
       promptVersions: tracking?.versionsUsed() ?? [],
       templateVersions: tracking?.templateVersionsUsed() ?? [],
+      providerCalls: tracking?.providerCalls(),
     };
   }
 }

@@ -25,6 +25,40 @@ export type ResolvedIntent = {
   delayUntilPulse?: number;
 };
 
+/**
+ * Engine clamp for engine-assigned `fallbackIfBlocked` (see
+ * `composeIntentPacket`): only low-risk surfaces are reachable when the
+ * primary action is denied. Side-effect-heavy types (create_channel,
+ * invite_agent, write_memory) are excluded — a denied intent must not
+ * become a route to structural changes. `delay_response` is excluded too:
+ * `deriveFallbackIntent` never carries `preferredDelay` over (fallback
+ * resolution is single-level, same pulse — a genuine delay defers to a
+ * future pulse, which isn't a same-pulse resolution), so a delay_response
+ * fallback would always resolve as an immediate no_op mislabeled as a
+ * delay. Wiring a real delayed fallback needs the resolver to treat a
+ * "delayed" secondary outcome as a distinct success case, which is out of
+ * scope here.
+ */
+const FALLBACK_ALLOWED_TYPES: ReadonlySet<ActionIntent["intentType"]> = new Set([
+  "no_op",
+  "send_message",
+  "reply_to_message",
+  "react",
+]);
+
+/**
+ * `blockReason` values that mean the anti-gaming rate limiter denied the
+ * action — whether baked into `availableActions` up front by
+ * `computeAvailableActions` (`message_rate_limit`) or surfaced later via
+ * `RateLimitGate.getStatus()` (`messages_per_minute_exceeded`). Both trace
+ * back to the same per-agent message counter; either must suppress
+ * fallback the same way `RateLimitGate.allowAction()` does below.
+ */
+const RATE_LIMIT_BLOCK_REASONS: ReadonlySet<string> = new Set([
+  "message_rate_limit",
+  "messages_per_minute_exceeded",
+]);
+
 type ResolveContext = {
   simulationId: string;
   channelId: string;
@@ -289,16 +323,122 @@ function buildNoOpEvent(
   };
 }
 
+/**
+ * Builds the derived fallback intent with per-type field selection: only the
+ * fields the fallback type can actually use carry over — including
+ * `channelTarget` for every channel-scoped type (send_message,
+ * reply_to_message, react), so membership/visibility checks re-run against
+ * the real target instead of silently re-homing to `ctx.channelId`. The
+ * denied primary's `memoryWrites` are dropped — recording "I told Bruno X"
+ * as memory after the message was refused would be false telemetry.
+ * `fallbackIfBlocked` and `preferredDelay` never carry over (single level,
+ * same pulse).
+ */
+function deriveFallbackIntent(
+  primary: ActionIntent,
+  fallbackType: NonNullable<ActionIntent["fallbackIfBlocked"]>,
+): ActionIntent {
+  const derived: ActionIntent = {
+    id: createId(),
+    actorId: primary.actorId,
+    intentType: fallbackType,
+    personTargets: primary.personTargets,
+    privateMotiveSummary: primary.privateMotiveSummary,
+    emotionDrivers: primary.emotionDrivers,
+    motivationDrivers: primary.motivationDrivers,
+    memoryWrites: [],
+  };
+  if (fallbackType === "send_message" || fallbackType === "reply_to_message") {
+    derived.visibleContent = primary.visibleContent;
+    derived.channelTarget = primary.channelTarget;
+  }
+  if (fallbackType === "reply_to_message") {
+    derived.replyToEventId = primary.replyToEventId;
+  }
+  if (fallbackType === "react") {
+    derived.channelTarget = primary.channelTarget;
+    derived.targetEventId = primary.targetEventId;
+    derived.emoji = primary.emoji;
+  }
+  return derived;
+}
+
 export class IntentResolver {
   constructor(
     private readonly rateLimitGate: RateLimitGate,
     private readonly channelRegistry: ChannelRegistry,
   ) {}
 
+  /**
+   * Resolves an intent, honoring an engine-assigned `fallbackIfBlocked`
+   * (stamped by `composeIntentPacket`, never model-declared — see
+   * `ENGINE_FALLBACK_ELIGIBLE_TYPES`) when the primary action is denied —
+   * with engine clamps:
+   *
+   * - Single level, same pulse. The derived intent gets a fresh id and its
+   *   own `fallbackIfBlocked` cleared, so chains are impossible.
+   * - Allow-list clamp: only low-risk surfaces are reachable as fallbacks —
+   *   no create_channel / invite_agent / write_memory via a denied intent.
+   * - Rate-limit blocks suppress fallback entirely: a denied action must not
+   *   become a route around the gate.
+   * - The primary's `intent_blocked` event is retained in the committed
+   *   events either way: on a successful fallback the outcome becomes
+   *   "fallback_committed"; if the fallback is denied too, the outcome stays
+   *   "blocked" but both the primary's and the fallback's block events are
+   *   kept in `committedEvents` for the audit trail.
+   */
   async resolve(
     intent: ActionIntent,
     ctx: ResolveContext,
   ): Promise<ResolvedIntent> {
+    const primary = await this.resolveInternal(intent, ctx);
+    if (primary.result.outcome !== "blocked") return primary.result;
+    if (primary.rateLimited) return primary.result;
+
+    const fallbackType = intent.fallbackIfBlocked;
+    if (!fallbackType || !FALLBACK_ALLOWED_TYPES.has(fallbackType)) {
+      return primary.result;
+    }
+    if (
+      (fallbackType === "send_message" || fallbackType === "reply_to_message") &&
+      !intent.visibleContent?.trim()
+    ) {
+      // A content-bearing fallback without content would only re-create the
+      // empty-message defect — let the denial stand.
+      return primary.result;
+    }
+    if (fallbackType === "reply_to_message" && !intent.replyToEventId) {
+      // A reply with no target event is an orphan reference — denial stands.
+      return primary.result;
+    }
+    if (fallbackType === "react" && !intent.targetEventId) {
+      // Same orphan-reference rule for reactions.
+      return primary.result;
+    }
+
+    const derived = deriveFallbackIntent(intent, fallbackType);
+    const secondary = await this.resolveInternal(derived, ctx);
+    if (secondary.result.outcome !== "committed") {
+      // Same retention rule as the successful-fallback path below: every
+      // attempt's events stay in the audit trail, even when both the
+      // primary and the fallback end up denied.
+      return {
+        ...primary.result,
+        committedEvents: [...primary.result.committedEvents, ...secondary.result.committedEvents],
+      };
+    }
+
+    return {
+      ...secondary.result,
+      outcome: "fallback_committed",
+      committedEvents: [...primary.result.committedEvents, ...secondary.result.committedEvents],
+    };
+  }
+
+  private async resolveInternal(
+    intent: ActionIntent,
+    ctx: ResolveContext,
+  ): Promise<{ result: ResolvedIntent; rateLimited: boolean }> {
     const validation = validateIntentPure(
       intent,
       ctx.availableActions,
@@ -308,10 +448,16 @@ export class IntentResolver {
 
     if (!validation.valid) {
       const blockEvent = buildBlockEvent(intent, validation.violations, ctx);
+      // The anti-gaming rate limit is baked into `availableActions` before
+      // the LLM call (see `computeAvailableActions`), so a rate-limited
+      // primary is denied here — not at the `RateLimitGate.allowAction()`
+      // check further down, which a rate-limited intent never reaches.
+      const rateLimited = validation.violations.some(
+        v => v.type === "rate_limited" && v.detail !== undefined && RATE_LIMIT_BLOCK_REASONS.has(v.detail),
+      );
       return {
-        outcome: "blocked",
-        committedEvents: [blockEvent],
-        operatorEvents: [],
+        result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+        rateLimited,
       };
     }
 
@@ -319,19 +465,28 @@ export class IntentResolver {
       const isMember = await this.channelRegistry.isMember(intent.actorId, intent.channelTarget);
       if (!isMember && intent.intentType !== "create_channel") {
         const blockEvent = buildBlockEvent(intent, [{ type: "not_member" }], ctx);
-        return { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] };
+        return {
+          result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+          rateLimited: false,
+        };
       }
     }
 
     if (!this.rateLimitGate.allowAction(intent.actorId, intent.intentType)) {
       const blockEvent = buildBlockEvent(intent, [{ type: "rate_limited" }], ctx);
-      return { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] };
+      return {
+        result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+        rateLimited: true,
+      };
     }
 
     if (intent.preferredDelay && intent.preferredDelay > 0) {
       if (!Number.isFinite(ctx.settings.pulseIntervalMs) || ctx.settings.pulseIntervalMs <= 0) {
         const blockEvent = buildBlockEvent(intent, [{ type: "invalid_delay", detail: "pulseIntervalMs must be greater than 0" }], ctx);
-        return { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] };
+        return {
+          result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+          rateLimited: false,
+        };
       }
       const delayPulses = Math.min(
         10_000,
@@ -340,10 +495,13 @@ export class IntentResolver {
       const delayUntilPulse = ctx.pulseIndex + delayPulses;
       const delayEvent = buildDelayEvent(intent, delayUntilPulse, ctx);
       return {
-        outcome: "delayed",
-        committedEvents: [delayEvent],
-        operatorEvents: [],
-        delayUntilPulse,
+        result: {
+          outcome: "delayed",
+          committedEvents: [delayEvent],
+          operatorEvents: [],
+          delayUntilPulse,
+        },
+        rateLimited: false,
       };
     }
 
@@ -385,9 +543,12 @@ export class IntentResolver {
     this.rateLimitGate.recordAction(intent.actorId, intent.intentType);
 
     return {
-      outcome: "committed",
-      committedEvents: [...primaryEvents, ...memoryEvents],
-      operatorEvents: [],
+      result: {
+        outcome: "committed",
+        committedEvents: [...primaryEvents, ...memoryEvents],
+        operatorEvents: [],
+      },
+      rateLimited: false,
     };
   }
 
