@@ -143,7 +143,7 @@ export function ruleJudge(
       axes[axis.id] ??
       clampScore(
         axis.id === "dramatic_tension" ? 3 + signalPassRate * 2 :
-        axis.id === "unpredictability" ? 3 + emoji * 2 :
+        axis.id === "unpredictability" ? 1 + intentEntropyScore(events) * 4 :
         axis.id === "believability_under_pressure" ? 3 + (1 - leak) * 2 :
         axis.id === "probe_bounds" ? (probes.filter(p => p.passed).length / Math.max(1, probes.length)) * 5 :
         axis.id === "signal_completion" ? signalPassRate * 5 :
@@ -152,6 +152,80 @@ export function ruleJudge(
   }
   return result;
 }
+
+
+// ── Intent-entropy (unpredictability proxy) ──────────────────────────────────
+
+/**
+ * Event types that represent an agent's observable choice. `agent_invited`
+ * is intentionally NOT here: it is the mechanical echo of one
+ * `channel_created` decision (N invites from a single create), so counting
+ * it would inflate one choice across two buckets.
+ */
+const CHOICE_EVENT_TYPES = new Set([
+  "message_sent",
+  "reply_sent",
+  "reaction_sent",
+  "no_op_recorded",
+  "channel_created",
+]);
+
+type ChoiceCounts = Map<string, number>;
+
+function choiceEntropy(counts: ChoiceCounts): number {
+  const total = [...counts.values()].reduce((s, c) => s + c, 0);
+  if (total === 0 || counts.size <= 1) return 0;
+  let entropy = 0;
+  for (const count of counts.values()) {
+    const p = count / total;
+    entropy -= p * Math.log(p);
+  }
+  // Normalize by the FULL choice set, not the observed subset: a room that
+  // only messages/replies 50/50 is the most ordinary chat shape and must
+  // not read as maximally unpredictable. log(5) keeps the room that uses
+  // all five choice types uniformly at the ceiling.
+  return entropy / Math.log(CHOICE_EVENT_TYPES.size);
+}
+
+/**
+ * Normalized Shannon entropy over each agent's distribution of committed
+ * choice types, averaged across agents: 1.0 when EVERY agent spreads its
+ * actions uniformly across the full choice set, 0.0 when every action is
+ * the same type. Per-agent, not pooled — the rubric anchor is per-agent
+ * ("unpredictable choices within persona"), and pooling lets one diverse
+ * actor hide a room full of predictable ones. Type-level ONLY: surprising
+ * content inside a fixed type is invisible to this proxy (the LLM judge
+ * owns that). It replaces the old `3 + emoji*2` proxy, which was
+ * structurally pinned at 3.0 in any room that never reacts (#32).
+ *
+ * Tiny-transcript caveat: with very few events the estimate is coarse — a
+ * room storing 2 events of 2 different types scores H=log(2)/log(5) ≈ 0.43.
+ * Acceptable for a documented v0 proxy; revisit if micro-transcripts ever
+ * gate decisions.
+ *
+ * Degenerate rooms (all no_op, or empty) score 0 here and land the
+ * `unpredictability` axis at its 1 floor — the old `3 + emoji*2` proxy left
+ * them at 3. Defensible against anchor 1 (same choice every turn IS the
+ * definition of predictable), but it shifts the axis mean for silent rooms.
+ */
+export function intentEntropyScore(events: readonly CommittedEvent[]): number {
+  const byActor = new Map<string, ChoiceCounts>();
+  for (const e of events) {
+    if (!CHOICE_EVENT_TYPES.has(e.type)) continue;
+    let counts = byActor.get(e.actorId);
+    if (!counts) byActor.set(e.actorId, (counts = new Map()));
+    counts.set(e.type, (counts.get(e.type) ?? 0) + 1);
+  }
+  const scores: number[] = [];
+  for (const counts of byActor.values()) {
+    const total = [...counts.values()].reduce((s, c) => s + c, 0);
+    if (total === 0) continue;
+    scores.push(choiceEntropy(counts));
+  }
+  if (scores.length === 0) return 0;
+  return scores.reduce((s, v) => s + v, 0) / scores.length;
+}
+
 
 // ── LLM judge ────────────────────────────────────────────────────────────────
 
