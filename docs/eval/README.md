@@ -95,6 +95,8 @@ family and/or endpoint per config) and returns the per-axis median plus
 every judge's raw scores. Spread across `perJudge` IS the bias evidence —
 if a differently-sourced judge disagrees with the same-family judge by a
 full point or more on an axis, don't trust that axis from either alone.
+Note: median outlier-resistance needs ≥ 3 surviving jurors — with 2 the
+median is just the mean. Salvaged jurors are reported but never voted.
 
 Maintainer-run protocol (needs live models): score the same saved
 transcripts once with the same-family judge, once with a different family,

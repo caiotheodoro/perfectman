@@ -49,7 +49,8 @@ describe("juryJudge", () => {
     expect(verdict.axes["in_character"]).toBe(4);
     expect(verdict.axes["voice_match"]).toBe(3);
     expect(Object.keys(verdict.perJudge).sort()).toEqual(["family-a", "family-b", "family-c"]);
-    expect(verdict.perJudge["family-a"]!.in_character).toBe(2);
+    expect(verdict.perJudge["family-a"]!.axes.in_character).toBe(2);
+    expect(verdict.perJudge["family-a"]!.salvaged).toBe(false);
   });
 
   it("resists a single biased outlier via the median", async () => {
@@ -95,5 +96,75 @@ describe("juryJudge", () => {
 
   it("requires at least one config", async () => {
     await expect(juryJudge(scenario, [], [])).rejects.toThrow(/at least one judge config/);
+  });
+
+  it("throws on duplicate labels instead of collapsing two votes into one", async () => {
+    await expect(
+      juryJudge(scenario, [], [
+        { ...baseConfig, label: "same" },
+        { ...baseConfig, label: "same" },
+      ]),
+    ).rejects.toThrow(/Duplicate jury judge labels: same/);
+  });
+
+  it("excludes salvaged jurors from medians while still reporting them", async () => {
+    // Salvage fires when both passes return unparseable prose. Route by
+    // request body — Promise.allSettled makes call order nondeterministic.
+    const axisIds = scenario.rubric.axes.map(a => a.id);
+    const half = Math.ceil(axisIds.length / 2) + 1;
+    const prose =
+      "**Scores**\n\n" +
+      axisIds
+        .slice(0, half)
+        .map((id, i) => `${id} (${(i % 5) + 1}/5) note`)
+        .join("\n");
+
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
+        const body = init?.body ?? "";
+        const isSalvageJuror = body.includes('"model":"salvage-model"');
+        const content = isSalvageJuror
+          ? prose
+          : JSON.stringify({ axes: { in_character: 4 } });
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ choices: [{ message: { content } }] }),
+        });
+      }),
+    );
+
+    const verdict = await juryJudge(scenario, [], [
+      { ...baseConfig, label: "family-a", model: "salvage-model" },
+      { ...baseConfig, label: "family-b", model: "clean-b" },
+      { ...baseConfig, label: "family-c", model: "clean-c" },
+    ]);
+
+    expect(verdict.perJudge["family-a"]!.salvaged).toBe(true);
+    // The salvaged juror's imputed defaults must NOT drag the median.
+    expect(verdict.axes["in_character"]).toBe(4);
+  });
+
+  it("throws when every surviving judge required salvage", async () => {
+    const axisIds = scenario.rubric.axes.map(a => a.id);
+    const half = Math.ceil(axisIds.length / 2) + 1;
+    const prose =
+      "**Scores**\n\n" +
+      axisIds
+        .slice(0, half)
+        .map((id, i) => `${id} (${(i % 5) + 1}/5) note`)
+        .join("\n");
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation(() =>
+        Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ choices: [{ message: { content: prose } }] }),
+        }),
+      ),
+    );
+    await expect(juryJudge(scenario, [], configs)).rejects.toThrow(/required prose salvage/);
   });
 });
