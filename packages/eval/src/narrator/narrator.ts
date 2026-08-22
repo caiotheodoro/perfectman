@@ -9,6 +9,8 @@
 
 import type { CommittedEvent, RoleplayScenario } from "@perfectman/shared";
 import { PromptSection } from "@perfectman/shared";
+import { chatCompletion } from "../llm/chat-completion.js";
+
 
 export type Narration = {
   title: string;
@@ -67,34 +69,27 @@ export async function narrateTranscript(
   }
 
   try {
-    const res = await fetch(`${baseUrl}/chat/completions`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}),
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: NARRATOR_SYSTEM },
-          {
-            role: "user",
-            content: new PromptSection()
-              .container("scene", (s) => { s.raw(`Scene: ${name}`); s.raw(description); })
-              .container("transcript", (s) => s.raw(transcript))
-              .container("decision", (s) => s.raw("Escreva o resumo agora como JSON, conforme o contrato no prompt de sistema."))
-              .toString(),
-          },
-        ],
-        temperature: 0.9,
-        max_tokens: 350,
-        response_format: { type: "json_object" },
-      }),
-      signal: AbortSignal.timeout(90000),
+    const raw = await chatCompletion({
+      baseUrl,
+      model,
+      apiKey,
+      label: "narrator",
+      messages: [
+        { role: "system", content: NARRATOR_SYSTEM },
+        {
+          role: "user",
+          content: new PromptSection()
+            .container("scene", (s) => { s.raw(`Scene: ${name}`); s.raw(description); })
+            .container("transcript", (s) => s.raw(transcript))
+            .container("decision", (s) => s.raw("Escreva o resumo agora como JSON, conforme o contrato no prompt de sistema."))
+            .toString(),
+        },
+      ],
+      temperature: 0.9,
+      maxTokens: 350,
+      responseFormatJson: true,
+      timeoutMs: 90000,
     });
-    if (!res.ok) throw new Error(`narrator HTTP ${res.status}`);
-    const data = (await res.json()) as { choices?: { message?: { content?: string } }[] };
-    const raw = data.choices?.[0]?.message?.content ?? "";
     const jsonText = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
     const parsed = JSON.parse(jsonText) as Partial<Narration>;
     return {

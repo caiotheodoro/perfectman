@@ -14,6 +14,8 @@
 
 import type { CommittedEvent, JudgeRubric, RoleplayScenario } from "@perfectman/shared";
 import { PromptSection } from "@perfectman/shared";
+import { chatCompletion } from "../llm/chat-completion.js";
+
 import type { ProbeResult } from "../probes/types.js";
 
 export type AxisScores = Record<string, number>;
@@ -278,34 +280,22 @@ async function callJudge(
   const system = buildJudgeSystem(scenario.rubric) + systemSuffix;
   const user = buildJudgeUser(scenario, events);
 
-  const res = await fetch(`${config.baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}),
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      temperature: config.temperature ?? 0,
-      // Generous headroom: a thinking-mode model spends real tokens on
-      // <think>...</think> before it ever reaches the answer, and this
-      // endpoint can't suppress that (see extractJsonObject above).
-      max_tokens: 1500,
-    }),
-    signal: AbortSignal.timeout(config.timeoutMs ?? 60000),
+  return chatCompletion({
+    baseUrl: config.baseUrl,
+    model: config.model,
+    apiKey: config.apiKey,
+    label: "LLM judge",
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
+    temperature: config.temperature ?? 0,
+    // Generous headroom: a thinking-mode model spends real tokens on
+    //  thinking... response before it ever reaches the answer, and this
+    // endpoint can't suppress that (see extractJsonObject above).
+    maxTokens: 1500,
+    timeoutMs: config.timeoutMs ?? 60000,
   });
-
-  if (!res.ok) {
-    throw new Error(`LLM judge HTTP ${res.status}: ${await res.text()}`);
-  }
-  const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  return data.choices?.[0]?.message?.content ?? "";
 }
 
 function parseAxes(raw: string, scenario: RoleplayScenario): { axes: AxisScores; imputedAxes: string[] } {
@@ -503,33 +493,21 @@ async function scoreCohesion(
     .container("decision", (s) => s.raw("Score narrative_cohesion 1-5 from these two turns, returning ONLY the JSON object."))
     .toString();
 
-  const res = await fetch(`${config.baseUrl}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      ...(config.apiKey ? { Authorization: `Bearer ${config.apiKey}` } : {}),
-    },
-    body: JSON.stringify({
-      model: config.model,
-      messages: [
-        { role: "system", content: system },
-        { role: "user", content: user },
-      ],
-      temperature: config.temperature ?? 1,
-      // See extractJsonObject's comment — a thinking-mode model needs
-      // headroom beyond the tiny {"narrative_cohesion": N} answer itself.
-      max_tokens: 800,
-    }),
-    signal: AbortSignal.timeout(config.timeoutMs ?? 60000),
+  const raw = await chatCompletion({
+    baseUrl: config.baseUrl,
+    model: config.model,
+    apiKey: config.apiKey,
+    label: "Cohesion judge",
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
+    temperature: config.temperature ?? 1,
+    // See extractJsonObject's comment — a thinking-mode model needs
+    // headroom beyond the tiny {"narrative_cohesion": N} answer itself.
+    maxTokens: 800,
+    timeoutMs: config.timeoutMs ?? 60000,
   });
-
-  if (!res.ok) {
-    throw new Error(`Cohesion judge HTTP ${res.status}: ${await res.text()}`);
-  }
-  const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-  };
-  const raw = data.choices?.[0]?.message?.content ?? "";
   const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as {
     narrative_cohesion?: number;

@@ -108,7 +108,9 @@ golden set gains spread.
 Every PR also runs this harness in CI (`.github/workflows/pr-gate.yml`):
 typecheck, unit tests, then a mock+rule-judge bench over the golden scenario
 subset with a hard 100%-signals assertion (`scripts/ci/check-bench-gate.mjs`)
-— free, deterministic, no model needed.
+— free, deterministic, no model needed. The subset carries all four
+`edge_chaos` scenarios (not just `edge_public_mock`), so axes like
+`believability_under_pressure` get more than a single n=1 sample per run.
 
 A second, weekly workflow (`.github/workflows/benchmark.yml`) runs the same
 gate over the *full* 123-task suite (Mondays 03:00 UTC, or on demand via
