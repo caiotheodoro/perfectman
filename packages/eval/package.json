@@ -18,6 +18,7 @@
     "evidence": "node dist/cli/evidence.js",
     "calibrate": "node dist/cli/calibrate.js",
     "narrate": "node dist/cli/narrate.js",
+    "sweep:repetition": "node dist/cli/sweep-repetition.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

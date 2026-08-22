@@ -11,7 +11,7 @@ import type {
 import { PersonaLoader } from "./persona-loader.js";
 import { PromptBuilder } from "./prompt-builder.js";
 import { IntentParser } from "./intent-parser.js";
-import { isNearRepeat } from "./repetition-guard.js";
+import { isNearRepeat, REPETITION_SIMILARITY_THRESHOLD } from "./repetition-guard.js";
 import { llmBudget } from "../llm/llm-budget.js";
 import { MockLlmProvider } from "../llm/mock-llm-provider.js";
 import { OpenAiCompatibleProvider } from "../llm/openai-compatible-provider.js";
@@ -20,11 +20,21 @@ import type { LlmConfig } from "../llm/llm-config.js";
 import type { LlmProvider } from "../llm/llm-provider.js";
 import type { AgentConfigRegistry } from "./agent-config-registry.js";
 
+/**
+ * Repetition-guard policy knobs. Defaults reproduce the shipped behavior:
+ * Jaccard threshold 0.7, exactly one retry before a structural block.
+ */
+export type RepetitionPolicy = {
+  threshold?: number;
+  maxRetries?: number;
+};
+
 export class AgentRuntime {
   constructor(
     private readonly configOverrides?: Record<string, Partial<LlmConfig>>,
     private readonly agentConfigRegistry?: AgentConfigRegistry,
     private readonly providerFactory?: (llmConfig: LlmConfig, agentId: string) => LlmProvider,
+    private readonly repetitionPolicy?: RepetitionPolicy,
   ) {}
 
   async generateIntent(
@@ -142,29 +152,41 @@ export class AgentRuntime {
     const isRepeat = (candidateIntent: typeof intent): boolean =>
       (candidateIntent.intentType === "send_message" || candidateIntent.intentType === "reply_to_message") &&
       !!candidateIntent.visibleContent &&
-      isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances);
+      isNearRepeat(
+        candidateIntent.visibleContent,
+        input.perceptionPacket.ownRecentUtterances,
+        this.repetitionPolicy?.threshold ?? REPETITION_SIMILARITY_THRESHOLD,
+      );
 
     if (!fallbackApplied && isRepeat(intent)) {
       repetitionRetried = true;
-      const retryPrompt = {
-        ...prompt,
-        system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
-      };
-      try {
-        const retryResult = await provider.generateIntent(input, context, retryPrompt);
-        totalInputTokens += retryResult.usage.inputTokens;
-        totalOutputTokens += retryResult.usage.outputTokens;
-        const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op");
-        if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent)) {
-          parseResult = retryParse;
-          intent = retryParse.intent;
-          fallbackApplied = retryParse.fallbackApplied;
-        } else {
-          repetitionBlocked = true;
-        }
-      } catch {
-        // Retry call itself failed — fall through to the block below.
+      const maxRetries = this.repetitionPolicy?.maxRetries ?? 1;
+      if (maxRetries <= 0) {
+        // No retry budget: the detected repeat blocks right away.
         repetitionBlocked = true;
+      }
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        const retryPrompt = {
+          ...prompt,
+          system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
+        };
+        try {
+          const retryResult = await provider.generateIntent(input, context, retryPrompt);
+          totalInputTokens += retryResult.usage.inputTokens;
+          totalOutputTokens += retryResult.usage.outputTokens;
+          const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op");
+          if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent)) {
+            parseResult = retryParse;
+            intent = retryParse.intent;
+            fallbackApplied = retryParse.fallbackApplied;
+            break;
+          }
+          if (attempt === maxRetries - 1) repetitionBlocked = true;
+        } catch {
+          // Retry call itself failed — fall through to the block below.
+          repetitionBlocked = true;
+          break;
+        }
       }
     }
 

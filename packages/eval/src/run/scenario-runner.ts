@@ -33,6 +33,7 @@ export type RunnerOpts = {
   providerFactory?: (llmConfig: import("@perfectman/server").LlmConfig, agentId: string) => LlmProvider;
   llmMode?: "mock" | "local";
   pulseLimit?: number;
+  repetition?: import("@perfectman/server").RepetitionPolicy;
 };
 
 export type ScenarioRunArtifact = {
@@ -58,8 +59,12 @@ class TrackingRuntime {
   constructor(
     registry: AgentConfigRegistry,
     factory: ((llmConfig: import("@perfectman/server").LlmConfig, agentId: string) => LlmProvider) | undefined,
+    repetition?: import("@perfectman/server").RepetitionPolicy,
   ) {
-    this.inner = new AgentRuntime(undefined, registry, (llmConfig, agentId) => {
+    this.inner = new AgentRuntime(
+      undefined,
+      registry,
+      (llmConfig, agentId) => {
       // One provider instance per agent per scenario — per-call state
       // (channel caps, memory habits) must persist across pulses.
       let provider = this.providers.get(agentId);
@@ -78,7 +83,9 @@ class TrackingRuntime {
         this.providers.set(agentId, provider);
       }
       return provider;
-    });
+      },
+      repetition,
+    );
   }
 
   async generateIntent(
@@ -116,7 +123,7 @@ export class ScenarioRunner {
       scenarioToConfig(scenario, opts.llmMode ?? "mock"),
       {
         agentRuntimeFactory: (registry) => {
-          tracking = new TrackingRuntime(registry, providerFactory);
+          tracking = new TrackingRuntime(registry, providerFactory, opts.repetition);
           return tracking;
         },
       },
