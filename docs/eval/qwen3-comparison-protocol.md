@@ -8,7 +8,7 @@ this protocol removes.
 
 | Confound | Control |
 | --- | --- |
-| Retry logic landed after the comparison; 8b's retry-token cost was folded into its baseline | Both arms run on current main (repetition guard included); `fallbackCount` and per-scenario turn counts come from the bench report. Wire-call-level retry accounting lands with the repetition-sweep work — until then, treat fallbackCount as the retry-pressure proxy |
+| Retry logic landed after the comparison; 8b's retry-token cost was folded into its baseline | Both arms run on current main (repetition guard included); per-scenario `fallbackCount` from the bench report is the retry-pressure proxy (wire-call-level accounting lands with the repetition-sweep work) |
 | Per-scenario timing escalated within a single run (306s → 567s → 672s) | Arms are interleaved **per scenario** (1.7b then 8b on the same scenario before moving on), the first pair is discarded as warm-up, and the Ollama server is restarted between scenarios to reset KV cache and thermal state |
 | Unpinned sampling made quality deltas unattributable | Local-mode benchmarks pin sampling by default (seed 42; see docs/eval README). Keep `PERFECTMAN_LLM_SEED` identical across arms |
 
@@ -21,8 +21,11 @@ restarts possible:
 # repeat for SCENARIO in motive_gossip v1_exclusion_inferred motive_conflict stagnation_resentment_loop
 SCENARIO=motive_gossip
 
-# restart between scenarios (resets KV + thermal state)
-ollama stop 2>/dev/null; ollama serve &
+# restart between scenarios (resets KV cache + thermal state):
+# kill the server, wait for the port, relaunch fresh
+pkill -f "ollama serve" 2>/dev/null || true
+sleep 2
+ollama serve >/dev/null 2>&1 &
 
 PERFECTMAN_LLM_BASE_URL=http://localhost:11434/v1 \
 PERFECTMAN_LLM_MODEL=qwen3:1.7b \
@@ -35,8 +38,9 @@ pnpm --filter @perfectman/eval bench --mode local --judge rule \
   --scenarios "$SCENARIO" --out "out/qwen-8b-$SCENARIO.json"
 ```
 
-Slice identity: use the same four scenarios as the `edges` slice (see
-`packages/eval/src/bench-slices.ts`) so the pressure axes get a sample.
+Slice identity: these are exactly the `canary` slice's four scenarios
+(see `packages/eval/src/bench-slices.ts`) — the quality-focused
+iteration set both arms must share.
 
 ## Read-out
 
