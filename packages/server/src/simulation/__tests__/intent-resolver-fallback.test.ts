@@ -9,8 +9,12 @@ import type {
   SimulationSettings,
   ActionEmotions,
   AvailableAction,
+  Channel,
+  ChannelMembership,
+  RateLimitStatus,
 } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
+import { computeAvailableActions } from "@perfectman/engine";
 
 const SIM_ID = "sim_fb";
 const AGENT_ID = "agent_1";
@@ -132,7 +136,7 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     expect(types).toContain("no_op_recorded");
   });
 
-  it("suppresses fallback entirely when the primary was rate-limited", async () => {
+  it("suppresses fallback entirely when the primary was rate-limited via RateLimitGate directly", async () => {
     // A zero message limit makes the real gate deny send_message — no stub.
     const zeroMessageSettings: SimulationSettings = {
       ...SETTINGS,
@@ -151,6 +155,59 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     expect(violations[0]!.type).toBe("rate_limited");
   });
 
+  it("suppresses fallback when the anti-gaming limit denies the primary the way production actually does", async () => {
+    // In production, `computeAvailableActions` bakes the per-agent message
+    // rate limit into `availableActions` (blockReason: "message_rate_limit")
+    // *before* the LLM call — so the primary fails at `validateIntentPure`,
+    // never reaching `RateLimitGate.allowAction()` below. Build
+    // `availableActions` through the real function instead of hand-rolling
+    // `blocked: true` so this test exercises the actual production path.
+    const rateLimitedSettings: SimulationSettings = { ...SETTINGS, maxMessagesPerMinutePerAgent: 0 };
+    const channel: Channel = {
+      id: CHANNEL_ID,
+      simulationId: SIM_ID,
+      type: "public_channel",
+      name: "general",
+      createdBy: "system",
+      memberAgentIds: [AGENT_ID],
+      spectatorVisible: true,
+      operatorVisible: true,
+      createdForMotives: [],
+      status: "active",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    };
+    const membership: ChannelMembership[] = [{ channelId: CHANNEL_ID, agentId: AGENT_ID, joinedAt: Date.now() }];
+    const rateLimitStatus: RateLimitStatus = {
+      agentId: AGENT_ID,
+      messagesThisMinute: 0,
+      privateChannelsCreated: 0,
+      lastActionAt: null,
+      blocked: false,
+    };
+    const availableActions = computeAvailableActions(
+      makeAgentState(),
+      [channel],
+      membership,
+      rateLimitedSettings,
+      rateLimitStatus,
+    );
+    const sendAction = availableActions.find(a => a.intentType === "send_message");
+    expect(sendAction?.blocked).toBe(true);
+    expect(sendAction?.blockReason).toBe("message_rate_limit");
+
+    const gated = new IntentResolver(new RateLimitGate(rateLimitedSettings), channelRegistry);
+    const intent = makeIntent({ fallbackIfBlocked: "no_op" });
+    const result = await gated.resolve(intent, ctx(availableActions, rateLimitedSettings));
+
+    expect(result.outcome).toBe("blocked");
+    expect(result.committedEvents).toHaveLength(1);
+    expect(result.committedEvents[0]!.type).toBe("intent_blocked");
+    const violations = (result.committedEvents[0]!.payload as { violations: Array<{ type: string; detail?: string }> })
+      .violations;
+    expect(violations.some(v => v.detail === "message_rate_limit")).toBe(true);
+  });
+
   it("rejects side-effect-heavy fallback types (engine clamp)", async () => {
     // Primary send_message denied; declared fallback targets create_channel,
     // which is outside the low-risk allow-list -> denial stands.
@@ -161,11 +218,11 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     expect(result.committedEvents.map(e => e.type)).toEqual(["intent_blocked"]);
   });
 
-  it("does not chain: a second-level declaration on the derived intent is impossible", async () => {
-    // Primary send_message blocked; fallback no_op commits. Even though the
-    // derived intent spreads from the primary (which declared a fallback),
-    // the resolver clears it — observable via exactly one extra event and
-    // no repeated resolution attempts.
+  it("drops the denied primary's memoryWrites from the committed fallback", async () => {
+    // Primary send_message blocked; fallback no_op commits. The denied
+    // primary's memoryWrites must not carry over to the derived intent —
+    // recording "I told bruno everything" as memory after the message was
+    // refused would be false telemetry.
     const intent = makeIntent({
       fallbackIfBlocked: "no_op",
       memoryWrites: [{
@@ -211,5 +268,43 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     // original denial stands.
     expect(result.outcome).toBe("blocked");
     expect(result.committedEvents).toHaveLength(1);
+  });
+
+  it("carries channelTarget into a react fallback, so it re-blocks instead of re-homing to ctx.channelId", async () => {
+    // Primary send_message denied while targeting a channel react isn't
+    // allow-listed for either. Before the channelTarget carry-through fix,
+    // the derived react intent silently dropped channelTarget, skipped the
+    // hidden-channel check entirely, and committed in ctx.channelId instead
+    // — this pins that it now re-validates against the real target and
+    // stays blocked.
+    const intent = makeIntent({
+      channelTarget: "ch_other",
+      fallbackIfBlocked: "react",
+      targetEventId: "evt_1",
+      emoji: "👍",
+    });
+    const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
+
+    expect(result.outcome).toBe("blocked");
+    expect(result.committedEvents.every(e => e.type === "intent_blocked")).toBe(true);
+    // Both the primary's and the fallback's block events are retained.
+    expect(result.committedEvents).toHaveLength(2);
+    const secondaryViolations = (
+      result.committedEvents[1]!.payload as { violations: Array<{ type: string }> }
+    ).violations;
+    expect(secondaryViolations.some(v => v.type === "hidden_channel_target")).toBe(true);
+  });
+
+  it("rejects delay_response as a fallback destination (not wired: fallback never carries preferredDelay)", async () => {
+    // delay_response is excluded from FALLBACK_ALLOWED_TYPES — deriveFallbackIntent
+    // never carries preferredDelay over (single-level, same-pulse resolution),
+    // so a delay_response fallback would always resolve as an immediate no_op
+    // mislabeled as a delay. Until a real delayed-fallback path exists, the
+    // denial must stand instead of committing that mismap.
+    const intent = makeIntent({ fallbackIfBlocked: "delay_response" });
+    const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
+
+    expect(result.outcome).toBe("blocked");
+    expect(result.committedEvents.map(e => e.type)).toEqual(["intent_blocked"]);
   });
 });

@@ -26,17 +26,37 @@ export type ResolvedIntent = {
 };
 
 /**
- * Engine clamp for model-declared `fallbackIfBlocked`: only low-risk
- * surfaces are reachable when the primary action is denied. Side-effect-
- * heavy types (create_channel, invite_agent, write_memory) are excluded —
- * a denied intent must not become a route to structural changes.
+ * Engine clamp for engine-assigned `fallbackIfBlocked` (see
+ * `composeIntentPacket`): only low-risk surfaces are reachable when the
+ * primary action is denied. Side-effect-heavy types (create_channel,
+ * invite_agent, write_memory) are excluded — a denied intent must not
+ * become a route to structural changes. `delay_response` is excluded too:
+ * `deriveFallbackIntent` never carries `preferredDelay` over (fallback
+ * resolution is single-level, same pulse — a genuine delay defers to a
+ * future pulse, which isn't a same-pulse resolution), so a delay_response
+ * fallback would always resolve as an immediate no_op mislabeled as a
+ * delay. Wiring a real delayed fallback needs the resolver to treat a
+ * "delayed" secondary outcome as a distinct success case, which is out of
+ * scope here.
  */
 const FALLBACK_ALLOWED_TYPES: ReadonlySet<ActionIntent["intentType"]> = new Set([
   "no_op",
-  "delay_response",
   "send_message",
   "reply_to_message",
   "react",
+]);
+
+/**
+ * `blockReason` values that mean the anti-gaming rate limiter denied the
+ * action — whether baked into `availableActions` up front by
+ * `computeAvailableActions` (`message_rate_limit`) or surfaced later via
+ * `RateLimitGate.getStatus()` (`messages_per_minute_exceeded`). Both trace
+ * back to the same per-agent message counter; either must suppress
+ * fallback the same way `RateLimitGate.allowAction()` does below.
+ */
+const RATE_LIMIT_BLOCK_REASONS: ReadonlySet<string> = new Set([
+  "message_rate_limit",
+  "messages_per_minute_exceeded",
 ]);
 
 type ResolveContext = {
@@ -305,10 +325,14 @@ function buildNoOpEvent(
 
 /**
  * Builds the derived fallback intent with per-type field selection: only the
- * fields the fallback type can actually use carry over. The denied primary's
- * `memoryWrites` are dropped — recording "I told Bruno X" as memory after
- * the message was refused would be false telemetry. `fallbackIfBlocked` and
- * `preferredDelay` never carry over (single level, same pulse).
+ * fields the fallback type can actually use carry over — including
+ * `channelTarget` for every channel-scoped type (send_message,
+ * reply_to_message, react), so membership/visibility checks re-run against
+ * the real target instead of silently re-homing to `ctx.channelId`. The
+ * denied primary's `memoryWrites` are dropped — recording "I told Bruno X"
+ * as memory after the message was refused would be false telemetry.
+ * `fallbackIfBlocked` and `preferredDelay` never carry over (single level,
+ * same pulse).
  */
 function deriveFallbackIntent(
   primary: ActionIntent,
@@ -332,6 +356,7 @@ function deriveFallbackIntent(
     derived.replyToEventId = primary.replyToEventId;
   }
   if (fallbackType === "react") {
+    derived.channelTarget = primary.channelTarget;
     derived.targetEventId = primary.targetEventId;
     derived.emoji = primary.emoji;
   }
@@ -345,19 +370,22 @@ export class IntentResolver {
   ) {}
 
   /**
-   * Resolves an intent, honoring a model-declared `fallbackIfBlocked` when
-   * the primary action is denied — with engine clamps:
+   * Resolves an intent, honoring an engine-assigned `fallbackIfBlocked`
+   * (stamped by `composeIntentPacket`, never model-declared — see
+   * `ENGINE_FALLBACK_ELIGIBLE_TYPES`) when the primary action is denied —
+   * with engine clamps:
    *
    * - Single level, same pulse. The derived intent gets a fresh id and its
    *   own `fallbackIfBlocked` cleared, so chains are impossible.
-   * - Allow-list clamp (model proposes, engine approves): only low-risk
-   *   surfaces are reachable as fallbacks — no create_channel / invite_agent
-   *   / write_memory via a denied intent.
+   * - Allow-list clamp: only low-risk surfaces are reachable as fallbacks —
+   *   no create_channel / invite_agent / write_memory via a denied intent.
    * - Rate-limit blocks suppress fallback entirely: a denied action must not
    *   become a route around the gate.
    * - The primary's `intent_blocked` event is retained in the committed
-   *   events of a successful fallback; the outcome becomes the existing
-   *   "fallback_committed".
+   *   events either way: on a successful fallback the outcome becomes
+   *   "fallback_committed"; if the fallback is denied too, the outcome stays
+   *   "blocked" but both the primary's and the fallback's block events are
+   *   kept in `committedEvents` for the audit trail.
    */
   async resolve(
     intent: ActionIntent,
@@ -391,7 +419,13 @@ export class IntentResolver {
     const derived = deriveFallbackIntent(intent, fallbackType);
     const secondary = await this.resolveInternal(derived, ctx);
     if (secondary.result.outcome !== "committed") {
-      return primary.result;
+      // Same retention rule as the successful-fallback path below: every
+      // attempt's events stay in the audit trail, even when both the
+      // primary and the fallback end up denied.
+      return {
+        ...primary.result,
+        committedEvents: [...primary.result.committedEvents, ...secondary.result.committedEvents],
+      };
     }
 
     return {
@@ -414,9 +448,16 @@ export class IntentResolver {
 
     if (!validation.valid) {
       const blockEvent = buildBlockEvent(intent, validation.violations, ctx);
+      // The anti-gaming rate limit is baked into `availableActions` before
+      // the LLM call (see `computeAvailableActions`), so a rate-limited
+      // primary is denied here — not at the `RateLimitGate.allowAction()`
+      // check further down, which a rate-limited intent never reaches.
+      const rateLimited = validation.violations.some(
+        v => v.type === "rate_limited" && v.detail !== undefined && RATE_LIMIT_BLOCK_REASONS.has(v.detail),
+      );
       return {
         result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
-        rateLimited: false,
+        rateLimited,
       };
     }
 

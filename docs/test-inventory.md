@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-22T06:34:11.811Z — audited 85 files, 772 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-22T06:52:31.950Z — audited 86 files, 783 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -10,10 +10,10 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 |---|---|---|---|
 | engine | 21 | 246 | —
 | eval | 9 | 59 | —
-| server | 48 | 397 | console(1), async-pause(1)
-| shared | 7 | 70 | —
+| server | 49 | 407 | console(1), async-pause(1)
+| shared | 7 | 71 | —
 
-**Total: 85 files, 772 it/test blocks; 2 files flagged.**
+**Total: 86 files, 783 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -86,6 +86,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/delivery-projection.test.ts | integration | 5 | 
 | packages/server/src/simulation/__tests__/engine-snapshot-projection.test.ts | integration | 1 | 
 | packages/server/src/simulation/__tests__/event-log.test.ts | integration | 7 | 
+| packages/server/src/simulation/__tests__/intent-resolver-fallback.test.ts | integration | 10 | 
 | packages/server/src/simulation/__tests__/intent-resolver.test.ts | integration | 8 | 
 | packages/server/src/simulation/__tests__/lifecycle-state-machine.test.ts | integration | 18 | 
 | packages/server/src/simulation/__tests__/operator-projection.test.ts | integration | 4 | 
@@ -99,7 +100,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/world-signals-builder.test.ts | integration | 7 | 
 | packages/shared/src/__tests__/constants.test.ts | contract | 13 | 
 | packages/shared/src/__tests__/contracts.test.ts | contract | 3 | 
-| packages/shared/src/__tests__/intent-packet-schema.test.ts | contract | 6 | 
+| packages/shared/src/__tests__/intent-packet-schema.test.ts | contract | 7 | 
 | packages/shared/src/__tests__/prompt-syntax.test.ts | contract | 5 | 
 | packages/shared/src/__tests__/schemas.test.ts | contract | 22 | 
 | packages/shared/src/persona-packs/persona-packs.test.ts | contract | 13 | 
