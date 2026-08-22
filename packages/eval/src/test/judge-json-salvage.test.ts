@@ -40,6 +40,15 @@ describe("salvageAxisScoresFromProse", () => {
     const lines = axisIds.map(id => `${id}: 6`).join("\n");
     expect(salvageAxisScoresFromProse(lines, axisIds)).toBeNull();
   });
+
+  it("does not fabricate scores from the next line's list numbering", () => {
+    // Each axis id is immediately followed by prose with no score, and the
+    // *next* line happens to start with a markdown list number — that
+    // number must never be read as this axis's score.
+    const lines = axisIds.map((id, i) => `**${i + 1}. ${id}** — no numeric score here`);
+    const raw = `Roleplay Quality Score Summary\n\n${lines.join("\n")}`;
+    expect(salvageAxisScoresFromProse(raw, axisIds)).toBeNull();
+  });
 });
 
 describe("llmJudge parse-failure defenses", () => {
@@ -73,9 +82,10 @@ describe("llmJudge parse-failure defenses", () => {
 
   it("parses fenced JSON with surrounding prose on the first pass", async () => {
     stubResponses(['Sure! Here you go:\n```json\n{"axes": {"in_character": 4}}\n```\nDone.']);
-    const axes = await llmJudge(scenario, [], config);
+    const { axes, salvaged } = await llmJudge(scenario, [], config);
     expect(axes["in_character"]).toBe(4);
     expect(Object.keys(axes).length).toBe(axisIds.length);
+    expect(salvaged).toBe(false);
   });
 
   it("retries with a stricter instruction after unparseable output", async () => {
@@ -83,10 +93,11 @@ describe("llmJudge parse-failure defenses", () => {
       "<think>I reasoned forever but never emitted JSON",
       '{"axes": {"in_character": 2}}',
     ]);
-    const axes = await llmJudge(scenario, [], config);
+    const { axes, salvaged } = await llmJudge(scenario, [], config);
     expect(calls()).toBe(2);
     expect(bodies()[1]!).toContain("not parseable JSON");
     expect(axes["in_character"]).toBe(2);
+    expect(salvaged).toBe(false);
   });
 
   it("falls back to prose salvage when both passes fail unparseably", async () => {
@@ -98,8 +109,9 @@ describe("llmJudge parse-failure defenses", () => {
         .map((id, i) => `${id} (${(i % 5) + 1}/5) note`)
         .join("\n");
     stubResponses([prose]);
-    const axes = await llmJudge(scenario, [], config);
+    const { axes, salvaged } = await llmJudge(scenario, [], config);
     expect(axes[axisIds[0]!]).toBeDefined();
+    expect(salvaged).toBe(true);
   });
 
   it("throws honestly when every defense fails", async () => {
