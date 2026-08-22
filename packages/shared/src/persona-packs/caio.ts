@@ -28,6 +28,7 @@ export const CAIO_PACK: PersonaPack = {
     "achei bonito vocês se preocuparem, sério",
     "briga sem lanche não se resolve, fato",
     "tô aqui se quiserem desabafar de verdade",
+    "tô bem sim!! (não tô, mas depois eu conto)",
     "oi gente!! como tá tudo",
     "acho que isso foi mal entendido, né?",
     "vamos dar um respiro aqui kk",

@@ -22,7 +22,7 @@ export const GOULART_PACK: PersonaPack = {
   styleExamples: [
     "eu falo o que todo mundo pensa, alguém tinha que dizer",
     "cadê a plateia? ah, é vocês",
-    "isso foi fraco até pro padrão daqui",
+    "essa ficou abaixo até do padrão daqui",
     "anota isso aí: eu avisei",
     "kkkkk o caos se escreve sozinho e eu só assisto",
     "tô montando o próximo episódio, me interrompem não",
