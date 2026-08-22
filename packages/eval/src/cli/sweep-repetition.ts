@@ -5,6 +5,12 @@
  * content-repetition probe, rule-judge narrative_cohesion, LLM call
  * totals) that the shipped 0.7/one-retry defaults were missing.
  *
+ * The content-repetition yardstick is always measured at the probe's
+ * fixed threshold (`probeThreshold` in the report), never at the cell's
+ * runtime threshold: `runAllProbes` has no knob, and if the yardstick
+ * moved with the cell it could not separate "model repeated less" from
+ * "guard classified it as a non-repeat".
+ *
  * Usage:
  *   pnpm --filter @perfectman/eval sweep:repetition --out out/repetition-sweep.json
  */
@@ -13,7 +19,7 @@ import { dirname, resolve } from "node:path";
 import { ScenarioRunner } from "../run/scenario-runner.js";
 import { ruleJudge } from "../judge/judge.js";
 import { getScenario } from "@perfectman/shared";
-import { REPETITION_GUARD_MARKER } from "@perfectman/server";
+import { REPETITION_GUARD_MARKER, REPETITION_SIMILARITY_THRESHOLD } from "@perfectman/server";
 
 const args = process.argv.slice(2);
 function argValue(flag: string): string | undefined {
@@ -46,7 +52,11 @@ function countGuardBlocks(events: { type: string; payload: Record<string, unknow
 }
 
 export async function main(): Promise<void> {
-  const scenarios = SCENARIOS.map(id => getScenario(id)).filter(s => s !== undefined);
+  const scenarios = SCENARIOS.map(id => {
+    const scenario = getScenario(id);
+    if (!scenario) throw new Error(`Unknown scenario "${id}" in sweep SCENARIOS`);
+    return scenario;
+  });
 
   const grid: Cell[] = [];
   for (const threshold of THRESHOLDS) {
@@ -66,7 +76,7 @@ export async function main(): Promise<void> {
       let repetitionSum = 0;
 
       for (const scenario of scenarios) {
-        const artifact = await ScenarioRunner.run(scenario!, {
+        const artifact = await ScenarioRunner.run(scenario, {
           llmMode: "mock",
           repetition: { threshold, maxRetries },
         });
@@ -79,7 +89,7 @@ export async function main(): Promise<void> {
         if (repetitionProbe) repetitionSum += repetitionProbe.measured;
 
         const scores = ruleJudge(
-          scenario!,
+          scenario,
           artifact.events,
           artifact.probeResults,
           artifact.passedSignals / Math.max(1, artifact.totalSignals),
@@ -107,12 +117,18 @@ export async function main(): Promise<void> {
   const report = {
     version: "repetition-sweep-v1" as const,
     mode: "mock" as const,
-    generatedAt: new Date().toISOString(),
+    probeThreshold: REPETITION_SIMILARITY_THRESHOLD,
     scenarios: SCENARIOS,
+    limitations:
+      "Threshold cells are indistinguishable by construction: mock repeats sit at ≈1.0 Jaccard, so any threshold ≥0.5 catches them all and only providerCalls/guardBlocks vary across that axis. This sweep cannot surface the catchphrase false-positive concern (issue #35) — that needs a probe whose transcripts contain near-miss content.",
     grid,
   };
-  const out = argValue("--out");
-  if (out) {
+  const outIndex = args.indexOf("--out");
+  if (outIndex >= 0) {
+    const out = args[outIndex + 1];
+    if (!out || out.startsWith("--")) {
+      throw new Error("--out requires a file path");
+    }
     const outPath = resolve(out);
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, JSON.stringify(report, null, 2), "utf8");

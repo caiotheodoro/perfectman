@@ -1,12 +1,13 @@
 {
   "version": "repetition-sweep-v1",
   "mode": "mock",
-  "generatedAt": "2026-08-22T04:30:11.303Z",
+  "probeThreshold": 0.7,
   "scenarios": [
     "motive_gossip",
     "v1_biased_memory",
     "stagnation_resentment_loop"
   ],
+  "limitations": "Threshold cells are indistinguishable by construction: mock repeats sit at ≈1.0 Jaccard, so any threshold ≥0.5 catches them all and only providerCalls/guardBlocks vary across that axis. This sweep cannot surface the catchphrase false-positive concern (issue #35) — that needs a probe whose transcripts contain near-miss content.",
   "grid": [
     {
       "threshold": 0.5,

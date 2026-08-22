@@ -313,10 +313,12 @@ describe("AgentRuntime Orchestration", () => {
     });
 
     it("honors a stricter threshold: a loose near-match passes when threshold is raised", async () => {
-      // "kkkkk não acredito nesse take" vs "kkkkk não acredito nesse tema"
-      // share most words -> high Jaccard (~0.67); at threshold 0.99 the
-      // guard must NOT fire — one provider call, content committed as-is.
-      const borderline = "kkkkk não acredito nesse tema";
+      // "kkkkk não acredito nesse take mesmo" vs prior "kkkkk não acredito nesse take"
+      // share all but one word -> Jaccard 5/6 ≈ 0.833, strictly between the
+      // 0.7 default and the 0.99 knob. Plumbed 0.99 must pass it; an unplumbed
+      // 0.7 would re-detect the repeat and retry, so this goes red if the
+      // threshold stops reaching the guard.
+      const borderline = "kkkkk não acredito nesse take mesmo";
       const lenient = new AgentRuntime(
         { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
