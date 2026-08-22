@@ -198,9 +198,10 @@ export class PersonaAwareMockProvider implements LlmProvider {
 
     // 3. Reactor impulse — a high-arousal persona reacts BEFORE replying.
     const pulseSalt = String(opts.pulseIndex);
-    // Saturation cap: after two identical-emoji reacts in a row the agent
-    // falls through to the message paths — a persona who only posts 😂 for
-    // ten straight pulses was the echo-chamber transcript's worst artifact.
+    // Saturation cap: if consecutive identical-emoji reacts become possible
+    // again (the pulse-salted digest below currently prevents it), the
+    // provider falls through to the message paths after two — the guard
+    // exists so the echo-chamber failure mode cannot silently return.
     const MAX_IDENTICAL_REACTS = 2;
     const prior = this.consecutiveReacts.get(agentId);
     const saturated = (prior?.count ?? 0) >= MAX_IDENTICAL_REACTS;
@@ -228,8 +229,8 @@ export class PersonaAwareMockProvider implements LlmProvider {
         memoryWrites: [],
       };
     }
-    // Non-react turn breaks any react streak.
-    this.consecutiveReacts.delete(agentId);
+    // A turn that fell past the react branch breaks any react streak.
+    // (Early-return decisions above never reach this reset.)
 
     // 4. Direct attention event with a REAL trigger → reply in persona style.
     if (
