@@ -79,6 +79,11 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   "memory-write": [0, 0.12],
   "fallback-rate": [0, 0.05],
   "refusal-free": [0.9, 1.0],
+  // Near-repeat share of content turns (Jaccard >= 0.7 vs the same agent's
+  // earlier utterances). Seed band: any literal-ish repeat is a defect, but
+  // legitimately similar in-character phrasing exists — calibration pending
+  // like every band above.
+  "content-repetition": [0, 0.1],
 };
 
 export type ProbeInput = {

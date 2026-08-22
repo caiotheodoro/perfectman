@@ -21,9 +21,10 @@ import {
 } from "@perfectman/shared";
 import { ScenarioRunner } from "../run/scenario-runner.js";
 import { ruleJudge, llmJudge, llmJudgePerTurn, type AxisScores } from "../judge/judge.js";
-import { calibrateJudge } from "../judge/calibration.js";
+import { calibrateJudge, baseScenarioId } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
+import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checker.js";
 
 /** LLM judge endpoint — DeepSeek by default when PERFECTMAN_LLM_PROVIDER=deepseek. */
 export function judgeConfig(): import("../judge/judge.js").LlmJudgeConfig {
@@ -62,6 +63,7 @@ export type BenchReport = {
   judgeAxisMeans: Record<string, number>;
   judgeAxisTargets: Record<string, { target: number; met: boolean }>;
   byCategory: Record<string, { runs: number; signalPassRate: number }>;
+  signalsByKind: Record<string, import("../run/signal-checker.js").SignalsByKindEntry>;
   calibration: ReturnType<typeof calibrateJudge>;
   perScenario: Array<{
     id: string;
@@ -120,6 +122,7 @@ export async function runBench(opts: {
     judgeAxisMeans: {},
     judgeAxisTargets: {},
     byCategory: {},
+    signalsByKind: {},
     calibration: calibrateJudge(new Map(), []),
     perScenario: [],
   };
@@ -127,6 +130,7 @@ export async function runBench(opts: {
   const judgeScores = new Map<string, AxisScores>();
   const probeAgg: Record<string, { sum: number; count: number; passed: number }> = {};
   const axisAgg: Record<string, { sum: number; count: number }> = {};
+  const signalKindResults: SignalOutcome[] = [];
   let signalsPassed = 0;
   let signalsTotal = 0;
   let probesPassed = 0;
@@ -150,7 +154,7 @@ export async function runBench(opts: {
       // feeding it into calibration would silently compress the kappa the
       // golden-label gate depends on.
       if (!judgeResult.salvaged) {
-        judgeScores.set(scenario.id, axisScores);
+        judgeScores.set(baseScenarioId(scenario.id), axisScores);
       }
       for (const [axis, v] of Object.entries(axisScores)) {
         axisAgg[axis] ??= { sum: 0, count: 0 };
@@ -160,6 +164,7 @@ export async function runBench(opts: {
 
       signalsPassed += artifact.passedSignals;
       signalsTotal += artifact.totalSignals;
+      signalKindResults.push(...artifact.signalResults);
       probesPassed += artifact.probeResults.filter(p => p.passed).length;
       probesTotal += artifact.probeResults.length;
       for (const p of artifact.probeResults) {
@@ -203,6 +208,7 @@ export async function runBench(opts: {
   }
 
   report.signalPassRate = signalsTotal > 0 ? signalsPassed / signalsTotal : 0;
+  report.signalsByKind = aggregateSignalsByKind(signalKindResults);
   report.probePassRate = probesTotal > 0 ? probesPassed / probesTotal : 0;
   report.probeAverages = Object.fromEntries(
     Object.entries(probeAgg).map(([id, a]) => [id, {
@@ -241,6 +247,14 @@ function printReport(report: BenchReport): void {
   console.log(`scenarios: ${report.scenariosRun} run, ${report.scenariosFailed} failed`);
   console.log(`signal pass rate: ${(report.signalPassRate * 100).toFixed(1)}%`);
   console.log(`probe pass rate: ${(report.probePassRate * 100).toFixed(1)}%`);
+  const byKind = Object.entries(report.signalsByKind).sort((a, b) => a[1].passRate - b[1].passRate);
+  if (byKind.length > 0) {
+    console.log("\nsignal pass rate by kind (worst first):");
+    for (const [kind, a] of byKind) {
+      console.log(`  ${kind.padEnd(26)} ${(a.passRate * 100).toFixed(0)}% (${a.passed}/${a.total})`);
+      for (const ex of a.failExamples.slice(0, 2)) console.log(`    - ${ex}`);
+    }
+  }
   console.log("\nprobe averages (mean | passed%):");
   for (const [id, a] of Object.entries(report.probeAverages)) {
     console.log(`  ${id.padEnd(26)} ${a.mean.toFixed(3)} | ${(a.passedPct * 100).toFixed(0)}%`);

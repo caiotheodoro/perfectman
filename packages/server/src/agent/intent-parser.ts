@@ -93,6 +93,24 @@ export class IntentParser {
         throw new Error("privateMotiveSummary must not be empty");
       }
 
+      // 6b. Content-bearing actions must actually carry content. A model
+      // that declares send_message/reply_to_message but omits visibleContent
+      // (or fills it with whitespace) would otherwise pass both this parser
+      // and the engine validator (which only bounds max length) and commit
+      // a message_sent/reply_sent event with empty content — observed once
+      // in a real benchmark transcript (#39). Reject here so the turn falls
+      // into the safe fallback path instead.
+      if (
+        validatedIntent.intentType === "send_message" ||
+        validatedIntent.intentType === "reply_to_message"
+      ) {
+        if (!validatedIntent.visibleContent || validatedIntent.visibleContent.trim() === "") {
+          throw new Error(
+            `visibleContent must not be empty for intent type '${validatedIntent.intentType}'`
+          );
+        }
+      }
+
       // 7. Validate that intent targets exist in availableActions
       // Note: 'no_op' and 'delay_response' are always permitted system-level fallbacks.
       if (validatedIntent.intentType !== "no_op" && validatedIntent.intentType !== "delay_response") {

@@ -1,11 +1,14 @@
 /**
  * Seed golden labels — the calibration anchor set.
  *
- * These are authored expectations of acceptable roleplay quality per scene
- * for the persona-aware mock baseline. PENDING HUMAN REVIEW: this is the
- * seed set the loop is designed to replace with real human labels
- * (docs plan Phase 2.4). The judge must agree with them (kappa ≥ 0.7) or
- * the report is committed as FAILING — no cherry-picking.
+ * Authored expectations of acceptable roleplay quality per scene for the
+ * persona-aware mock baseline. The original 8-entry seed was extended to
+ * the full 39-scenario registry with labels drafted from each scenario's
+ * own declared design intent (see per-entry notes).
+ *
+ * PENDING HUMAN REVIEW: the loop is designed to replace these with real
+ * human labels (docs plan Phase 2.4). The judge must agree with them
+ * (kappa ≥ 0.7) or the report is committed as FAILING — no cherry-picking.
  */
 
 import type { GoldenLabel } from "./calibration.js";
@@ -66,6 +69,11 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
     scenarioId: "edge_public_mock",
     note: "Bruno shamed into silence — the no-op must be loaded.",
     axes: {
+      // Edge scenes are scored under EDGE_CHAOS_RUBRIC — carry its axes so
+      // calibration actually pairs judge output against golden expectations.
+      dramatic_tension: 4,
+      unpredictability: 3,
+      believability_under_pressure: 4,
       in_character: 4,
       voice_match: 4,
       motive_authenticity: 4,
@@ -109,6 +117,429 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
       motive_authenticity: 4,
       interpretation: 4,
       creativity_unhinged: 4,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  // ── v1_behavior (mechanical behavior checks) ──
+  {
+    scenarioId: "v1_mention_reply",
+    note: "Direct mention must produce a reply — mechanical correctness, not drama.",
+    axes: {
+      in_character: 3,
+      voice_match: 4,
+      motive_authenticity: 3,
+      interpretation: 3,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "v1_mention_ignored",
+    note: "High-shame Bruno needles by mention; the loaded response (or loaded silence) is the point.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "v1_late_reply",
+    note: "Late reply should acknowledge the gap — state-reading over time.",
+    axes: {
+      in_character: 3,
+      voice_match: 4,
+      motive_authenticity: 3,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "v1_emoji_reaction",
+    note: "Reactor persona answers a hot take with a reaction, not prose.",
+    axes: {
+      in_character: 3,
+      voice_match: 4,
+      motive_authenticity: 3,
+      interpretation: 3,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "v1_biased_memory",
+    note: "Resentful agent reads warm message skeptically — the written memory must carry the bias.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "v1_recap_source",
+    note: "Two-beat scene: public warmth plus a private thread; both channels must register.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  // ── motive_archetype (a single motive drives the scene) ──
+  {
+    scenarioId: "motive_liking",
+    note: "Genuine liking pulls Leo one-on-one with Caio — private channel as affinity play.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_curiosity",
+    note: "Curiosity opens a private thread about Bruno's quiet life.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_boredom",
+    note: "Dead room; boredom must push Goulart to act or open a channel — agency under low stimulus.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 3,
+      creativity_unhinged: 4,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_vulnerability",
+    note: "Bruno opens up only privately to Caio, never publicly — selective trust is the signal.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_secrecy",
+    note: "Rumor shared away from the room — secrecy shapes channel choice.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 4,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_repair",
+    note: "Caio notices Bruno went cold and moves to repair privately — reading + acting on drift.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_alliance",
+    note: "Quiet coordination against dominance — alliance formation without public fingerprints.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_avoidance",
+    note: "Bruno dodges by relocating rather than confronting — avoidance expressed spatially.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 3,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_comfort",
+    note: "Caio seeks comfort from Mariana after public embarrassment — vulnerability with direction.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_status",
+    note: "A select channel curated as a status play — audience-building as motive.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 4,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_control",
+    note: "Private invite to steer narrative away from Goulart — control exerted indirectly.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_testing",
+    note: "Goulart pokes Bruno to test limits; resistance level is the measured outcome.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_exclusion",
+    note: "Watching an inside joke he can't join — fear of exclusion must visibly rise.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_conflict",
+    note: "Public clash between Goulart and Caio must escalate visibly, not fizzle.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 4,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "motive_impulse",
+    note: "High-energy room; Leo fires reactions and messages on impulse, minus deliberation.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 3,
+      creativity_unhinged: 4,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  // ── stagnation_attractor (persistent tension / flatline patterns) ──
+  {
+    scenarioId: "stagnation_avoidance_deadlock",
+    note: "Everyone knows, nobody addresses it — tension held under avoidance, not resolved.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 3,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "stagnation_dominance_collapse",
+    note: "Status collapse then overcorrected aggression — trajectory, not a single beat.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "stagnation_echo_chamber",
+    note: "Agreement everywhere, zero friction — flat affect with high affection is correct here.",
+    axes: {
+      in_character: 3,
+      voice_match: 4,
+      motive_authenticity: 3,
+      interpretation: 3,
+      creativity_unhinged: 2,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "stagnation_emotional_flatline",
+    note: "Neutral/low-energy drift toward silence — meaningful no-ops are the expected texture.",
+    axes: {
+      in_character: 3,
+      voice_match: 4,
+      motive_authenticity: 3,
+      interpretation: 3,
+      creativity_unhinged: 2,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "stagnation_rumination_spiral",
+    note: "Bruno replays a snub — withdrawal persists, emotion stays elevated without new evidence.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  // ── edge_chaos (pressure responses) ──
+  {
+    scenarioId: "edge_exclusion_cascade",
+    note: "Two-step exclusion noticed across public+private — cascading reads must land.",
+    axes: {
+      // Edge scenes are scored under EDGE_CHAOS_RUBRIC — carry its axes so
+      // calibration actually pairs judge output against golden expectations.
+      dramatic_tension: 4,
+      unpredictability: 3,
+      believability_under_pressure: 4,
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "edge_gossip_catalyst",
+    note: "Private rumor ripples into public tension — catalyst dynamics with expressive gossip.",
+    axes: {
+      // Edge scenes are scored under EDGE_CHAOS_RUBRIC — carry its axes so
+      // calibration actually pairs judge output against golden expectations.
+      dramatic_tension: 4,
+      unpredictability: 3,
+      believability_under_pressure: 4,
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 4,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "edge_mutation_pressure",
+    note: "Repeated small humiliations should move behavior — substrate for change under pressure.",
+    axes: {
+      // Edge scenes are scored under EDGE_CHAOS_RUBRIC — carry its axes so
+      // calibration actually pairs judge output against golden expectations.
+      dramatic_tension: 4,
+      unpredictability: 3,
+      believability_under_pressure: 4,
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 4,
+      interpretation: 4,
+      creativity_unhinged: 3,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
+  // ── calibration (neutral baselines) ──
+  {
+    scenarioId: "calibration_single_topic",
+    note: "Movie talk that drifts naturally — no drama expected, clean voice throughout.",
+    axes: {
+      in_character: 3,
+      voice_match: 4,
+      motive_authenticity: 3,
+      interpretation: 3,
+      creativity_unhinged: 3,
+      memory_continuity: 3,
+      no_ai_leak: 5,
+    },
+  },
+  {
+    scenarioId: "calibration_lurker_watch",
+    note: "Lurkers stay silent while actives carry the thread — role separation is the check.",
+    axes: {
+      in_character: 3,
+      voice_match: 4,
+      motive_authenticity: 3,
+      interpretation: 3,
+      creativity_unhinged: 3,
       memory_continuity: 3,
       no_ai_leak: 5,
     },
