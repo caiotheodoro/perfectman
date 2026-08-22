@@ -148,7 +148,7 @@ export class AgentRuntime {
       repetitionRetried = true;
       const retryPrompt = {
         ...prompt,
-        system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — or choose "no_op" if you truly have nothing new to add.`,
+        system: `${prompt.system}\n\nIMPORTANT: your last attempt this turn ("${intent.visibleContent}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — while staying true to what you actually want right now; do not invent novelty that your current motive and emotional state wouldn't justify. Or choose "no_op" if you truly have nothing new to add.`,
       };
       try {
         const retryResult = await provider.generateIntent(input, context, retryPrompt);
