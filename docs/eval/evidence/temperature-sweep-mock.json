@@ -1,0 +1,77 @@
+{
+  "version": "temperature-sweep-v1",
+  "mode": "mock",
+  "slice": "canary",
+  "scenarios": [
+    "motive_gossip",
+    "v1_exclusion_inferred",
+    "motive_conflict",
+    "stagnation_resentment_loop"
+  ],
+  "grid": [
+    {
+      "temperature": 0.25,
+      "runs": 4,
+      "guardBlocks": 92,
+      "contentRepetitionMean": 0.302,
+      "axisMeans": {
+        "in_character": 3.25,
+        "voice_match": 2.25,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    },
+    {
+      "temperature": 0.5,
+      "runs": 4,
+      "guardBlocks": 92,
+      "contentRepetitionMean": 0.302,
+      "axisMeans": {
+        "in_character": 3.25,
+        "voice_match": 2.25,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    },
+    {
+      "temperature": 0.7,
+      "runs": 4,
+      "guardBlocks": 92,
+      "contentRepetitionMean": 0.302,
+      "axisMeans": {
+        "in_character": 3.25,
+        "voice_match": 2.25,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    },
+    {
+      "temperature": 1,
+      "runs": 4,
+      "guardBlocks": 44,
+      "contentRepetitionMean": 0.078,
+      "axisMeans": {
+        "in_character": 3.75,
+        "voice_match": 2.75,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4.75,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 5
+      }
+    }
+  ]
+}

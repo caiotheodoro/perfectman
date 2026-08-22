@@ -12,6 +12,8 @@ import {
   memoryWriteRate,
   privateChannelDensity,
   contentRepetitionRate,
+  crossAgentEchoRate,
+  echoSourcesByAgent,
   runAllProbes,
 } from "../probes/index.js";
 import { eventsToBehavioral } from "../probes/adapter.js";
@@ -156,6 +158,85 @@ describe("probes", () => {
     it("returns zero for empty or contentless transcripts", () => {
       expect(contentRepetitionRate([])).toBe(0);
       expect(contentRepetitionRate([ev("silence", "A", 1), ev("react", "A", 2)])).toBe(0);
+    });
+
+    it("detects a verbatim echo of another agent's earlier line", () => {
+      const events = [
+        ev("post", "A", 1, "esse time não ganha nunca"),
+        ev("post", "B", 2, "Esse time não ganha nunca!"),
+        ev("post", "C", 3, "assunto totalmente diferente"),
+      ];
+      expect(crossAgentEchoRate(events)).toBeCloseTo(1 / 3);
+    });
+
+    it("does not count an agent repeating ITSELF (per-agent probe's job)", () => {
+      const events = [
+        ev("post", "A", 1, "esse time não ganha nunca"),
+        ev("post", "A", 2, "esse time não ganha nunca"),
+      ];
+      expect(crossAgentEchoRate(events)).toBe(0);
+    });
+
+    it("attributes echoes to their source agent", () => {
+      const events = [
+        ev("post", "A", 1, "o churrasco de sábado tá confirmado"),
+        ev("post", "B", 2, "o churrasco de sábado tá confirmado mesmo"),
+        ev("post", "C", 3, "ninguém falou do churrasco de sábado"),
+      ];
+      const sources = echoSourcesByAgent(events);
+      expect(sources["B<-A"]).toBe(1);
+      expect(sources).not.toHaveProperty("A<-A");
+    });
+
+    it("returns zero for empty or single-turn transcripts", () => {
+      expect(crossAgentEchoRate([])).toBe(0);
+      expect(echoSourcesByAgent([ev("post", "A", 1, "só eu aqui")])).toEqual({});
+    });
+
+    it("ignores turns that normalize to no words (emoji-only, stopwords-only)", () => {
+      const emojiOnly = [
+        ev("post", "A", 1, "😂😂"),
+        ev("post", "B", 2, "🔥🔥🔥"),
+        ev("post", "C", 3, "kkkk vamos nessa"),
+      ];
+      expect(crossAgentEchoRate(emojiOnly)).toBe(0);
+      expect(echoSourcesByAgent(emojiOnly)).toEqual({});
+
+      const stopwordsOnly = [ev("post", "A", 1, "que de o a"), ev("post", "B", 2, "the and of to")];
+      expect(crossAgentEchoRate(stopwordsOnly)).toBe(0);
+      expect(echoSourcesByAgent(stopwordsOnly)).toEqual({});
+    });
+
+    it("leaves a self-repeat to the per-agent probe instead of inverting the arrow", () => {
+      const line = "esse time não ganha nunca";
+      const events = [ev("post", "A", 1, line), ev("post", "B", 2, line), ev("post", "A", 3, line)];
+      expect(echoSourcesByAgent(events)).toEqual({ "B<-A": 1 });
+      expect(crossAgentEchoRate(events)).toBeCloseTo(1 / 3);
+    });
+
+    it("wires cross-agent-echo into runAllProbes with a band", () => {
+      const events = [
+        ev("post", "A", 1, "fala sério que isso é real"),
+        ev("post", "B", 2, "Fala sério que isso é real!"),
+      ];
+      const probe = runAllProbes({ events, agentIds: ["A", "B"], totalPulses: 2 })
+        .find(r => r.probe === "cross-agent-echo");
+      expect(probe).toBeDefined();
+      expect(probe!.measured).toBeGreaterThan(0);
+    });
+
+    it("fails the cross-agent-echo band when a room converges on one line", () => {
+      const line = "esse time não ganha nunca";
+      const events = [
+        ev("post", "A", 1, line),
+        ev("post", "B", 2, line),
+        ev("post", "C", 3, line),
+        ev("post", "D", 4, "mudando totalmente de assunto agora"),
+      ];
+      const probe = runAllProbes({ events, agentIds: ["A", "B", "C", "D"], totalPulses: 4 })
+        .find(r => r.probe === "cross-agent-echo");
+      expect(probe!.measured).toBeCloseTo(0.5);
+      expect(probe!.passed).toBe(false);
     });
 
     it("is wired into runAllProbes with a band", () => {
