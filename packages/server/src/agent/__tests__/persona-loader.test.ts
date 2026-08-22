@@ -40,8 +40,8 @@ describe("PersonaLoader", () => {
     expect(profile.identityFrame).toContain("standard chat room participant");
   });
 
-  it("should default LlmConfig to mock settings", () => {
-    const config = PersonaLoader.getLlmConfig("example-friend");
+  it("should default LLMConfig to mock settings", () => {
+    const config = PersonaLoader.getLLMConfig("example-friend");
     expect(config).toBeDefined();
     expect(config.providerType).toBe("mock");
     expect(config.modelName).toBe("mock-model");
@@ -49,18 +49,18 @@ describe("PersonaLoader", () => {
   });
 
   it("should apply persona-tuned sampling for canonical personas", () => {
-    const config = PersonaLoader.getLlmConfig("bruno");
+    const config = PersonaLoader.getLLMConfig("bruno");
     expect(config.temperature).toBe(0.7);
     expect(config.extraBody).toMatchObject({ top_p: 0.9 });
   });
 
-  it("should apply custom overrides to resolved LlmConfig", () => {
+  it("should apply custom overrides to resolved LLMConfig", () => {
     const overrides = {
       providerType: "qwen3_8b" as const,
       modelName: "qwen-3-special",
       temperature: 0.9,
     };
-    const config = PersonaLoader.getLlmConfig("example-friend", overrides);
+    const config = PersonaLoader.getLLMConfig("example-friend", overrides);
     expect(config).toBeDefined();
     expect(config.providerType).toBe("qwen3_8b");
     expect(config.modelName).toBe("qwen-3-special");

@@ -1,34 +1,35 @@
+import { ModelIntentPacketJsonSchema } from "@perfectman/shared";
 import type { AgentRuntimeInput } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt } from "../agent/agent-runtime.types.js";
-import type { LlmConfig } from "./llm-config.js";
-import type { LlmProvider, LlmProviderResult } from "./llm-provider.js";
+import type { LLMConfig } from "./llm-config.js";
+import type { LLMProvider, LLMProviderResult } from "./llm-provider.js";
 import {
-  LlmConfigurationError,
-  LlmTimeoutError,
-  LlmHttpError,
-  LlmResponseError,
-  LlmError,
+  LLMConfigurationError,
+  LLMTimeoutError,
+  LLMHttpError,
+  LLMResponseError,
+  LLMError,
 } from "./llm-errors.js";
 
-export class OpenAiCompatibleProvider implements LlmProvider {
-  constructor(private readonly config: LlmConfig) {}
+export class OpenAiCompatibleProvider implements LLMProvider {
+  constructor(private readonly config: LLMConfig) {}
 
   async generateIntent(
     input: AgentRuntimeInput,
     context: AgentRuntimeContext,
     prompt: BuiltPrompt
-  ): Promise<LlmProviderResult> {
+  ): Promise<LLMProviderResult> {
     const startTime = Date.now();
 
     if (!this.config.baseUrl) {
-      throw new LlmConfigurationError("Missing baseUrl for OpenAI-compatible provider.");
+      throw new LLMConfigurationError("Missing baseUrl for OpenAI-compatible provider.");
     }
 
     let apiKey: string | undefined = undefined;
     if (this.config.apiKeyEnv) {
       apiKey = process.env[this.config.apiKeyEnv];
       if (!apiKey) {
-        throw new LlmConfigurationError(
+        throw new LLMConfigurationError(
           `API key environment variable '${this.config.apiKeyEnv}' is set but is not present in process.env.`
         );
       }
@@ -57,8 +58,19 @@ export class OpenAiCompatibleProvider implements LlmProvider {
       ...this.config.extraBody,
     };
 
+    // Shape-constrained decoding by default (packet JSON Schema); the tolerant
+    // json_object mode is a fallback — automatic on a 400/422 below, or forced
+    // via responseFormatJsonSchema:false for proxies that never accept schemas.
+    let jsonObjectFallbackUsed = false;
     if (this.config.responseFormatJson) {
-      body.response_format = { type: "json_object" };
+      if (this.config.responseFormatJsonSchema !== false) {
+        body.response_format = {
+          type: "json_schema",
+          json_schema: { name: "intent_packet", schema: ModelIntentPacketJsonSchema, strict: false },
+        };
+      } else {
+        body.response_format = { type: "json_object" };
+      }
     }
 
     let attempts = 0;
@@ -82,7 +94,20 @@ export class OpenAiCompatibleProvider implements LlmProvider {
         if (!response.ok) {
           clearTimeout(timeoutId);
           const errorText = await response.text().catch(() => "Unknown error");
-          throw new LlmHttpError(response.status, errorText);
+          // A 400/422 on a json_schema request usually means the proxy doesn't
+          // support schema-constrained decoding — retry once as json_object.
+          if (
+            (response.status === 400 || response.status === 422) &&
+            !jsonObjectFallbackUsed &&
+            this.config.responseFormatJson &&
+            this.config.responseFormatJsonSchema !== false
+          ) {
+            jsonObjectFallbackUsed = true;
+            body.response_format = { type: "json_object" };
+            attempts--; // retry with the fallback on this same budget slot
+            continue;
+          }
+          throw new LLMHttpError(response.status, errorText);
         }
 
         // NOTE: the abort timer stays armed through the body read —
@@ -96,7 +121,7 @@ export class OpenAiCompatibleProvider implements LlmProvider {
         clearTimeout(timeoutId);
         const content = data.choices?.[0]?.message?.content;
         if (content === undefined || content === null) {
-          throw new LlmResponseError("Empty or missing content in OpenAI completion choices.");
+          throw new LLMResponseError("Empty or missing content in OpenAI completion choices.");
         }
 
         const responseHeaders: Record<string, string> = {};
@@ -127,17 +152,17 @@ export class OpenAiCompatibleProvider implements LlmProvider {
 
         let resolvedError: Error;
         if (error.name === "AbortError") {
-          resolvedError = new LlmTimeoutError(`Request timed out after ${this.config.timeoutMs}ms.`);
-        } else if (error instanceof LlmError) {
+          resolvedError = new LLMTimeoutError(`Request timed out after ${this.config.timeoutMs}ms.`);
+        } else if (error instanceof LLMError) {
           resolvedError = error;
         } else {
-          resolvedError = new LlmError(error.message || "Unknown error occurred during fetch.", error);
+          resolvedError = new LLMError(error.message || "Unknown error occurred during fetch.", error);
         }
 
         const isTransient =
-          resolvedError instanceof LlmTimeoutError ||
-          (resolvedError instanceof LlmHttpError && (resolvedError.status === 429 || resolvedError.status >= 500)) ||
-          !(resolvedError instanceof LlmConfigurationError || resolvedError instanceof LlmResponseError || resolvedError instanceof LlmHttpError);
+          resolvedError instanceof LLMTimeoutError ||
+          (resolvedError instanceof LLMHttpError && (resolvedError.status === 429 || resolvedError.status >= 500)) ||
+          !(resolvedError instanceof LLMConfigurationError || resolvedError instanceof LLMResponseError || resolvedError instanceof LLMHttpError);
 
         if (isTransient && attempts < maxAttempts) {
           // Retry
@@ -148,6 +173,6 @@ export class OpenAiCompatibleProvider implements LlmProvider {
       }
     }
 
-    throw new LlmError("Max retries exceeded without resolving error.");
+    throw new LLMError("Max retries exceeded without resolving error.");
   }
 }

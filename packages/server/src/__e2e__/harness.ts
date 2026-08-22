@@ -184,14 +184,14 @@ export class SimulationHarness {
     return this.tracking.callsFor(agentId);
   }
 
-  totalLlmCalls(): number {
+  totalLLMCalls(): number {
     return this.tracking.totalCalls();
   }
 
   // ── Shared assertion helpers ───────────────────────────────────────────────
 
   /** Asserts no llm_failure events were committed and no operator failure events emitted. */
-  async assertNoLlmFailures(): Promise<void> {
+  async assertNoLLMFailures(): Promise<void> {
     const failures = await this.getEventsByType("llm_failure");
     if (failures.length > 0) {
       throw new Error(

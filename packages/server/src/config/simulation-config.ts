@@ -28,7 +28,7 @@ import {
 } from "../agent/agent-config-registry.js";
 import { AgentRuntime } from "../agent/agent-runtime.js";
 import type { PersonaPromptProfile } from "../agent/persona-prompt-profile.js";
-import type { LlmConfig } from "../llm/llm-config.js";
+import type { LLMConfig } from "../llm/llm-config.js";
 import { llmBudget } from "../llm/llm-budget.js";
 import {
   InMemoryAgentStateRepository,
@@ -54,7 +54,7 @@ import {
 import type { IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 import type {
   AgentRuntime as SchedulerAgentRuntime,
-  LlmBudget,
+  LLMBudget,
 } from "../simulation/pulse-scheduler.js";
 import {
   CompositeDeliveryGateway,
@@ -121,7 +121,7 @@ export type AgentConfig = {
   presence?: PresenceMode;
   persona: ConfigPersona;
   promptProfile: PersonaPromptProfile;
-  llm: LlmConfig;
+  llm: LLMConfig;
   initialCoreMood?: CoreMood;
   initialSocialEmotions?: SocialEmotions;
   relationalStates?: Record<string, RelationalState>;
@@ -141,7 +141,7 @@ export type BuildConfiguredSimulationOptions = {
   agentRuntimeFactory?: (
     registry: AgentConfigRegistry,
   ) => SchedulerAgentRuntime;
-  llmBudget?: LlmBudget;
+  llmBudget?: LLMBudget;
 };
 
 export type ConfigPersona = Pick<
@@ -709,7 +709,7 @@ function parseAgents(input: unknown): AgentConfig[] {
         agent["promptProfile"],
         `agents[${index}].promptProfile`,
       ),
-      llm: parseLlmConfig(agent["llm"], `agents[${index}].llm`),
+      llm: parseLLMConfig(agent["llm"], `agents[${index}].llm`),
       initialCoreMood:
         agent["initialCoreMood"] === undefined
           ? undefined
@@ -994,7 +994,7 @@ function parseExtraBody(
   return { ...extraBody, think: false };
 }
 
-function parseLlmConfig(input: unknown, path: string): LlmConfig {
+function parseLLMConfig(input: unknown, path: string): LLMConfig {
   const llm = asRecord(input, path);
   const providerType = requiredString(
     llm["providerType"],

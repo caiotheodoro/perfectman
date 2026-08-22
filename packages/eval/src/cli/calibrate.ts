@@ -13,7 +13,7 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { ScenarioRunner } from "../run/scenario-runner.js";
-import { ruleJudge, llmJudge, type LlmJudgeConfig } from "../judge/judge.js";
+import { ruleJudge, llmJudge, type LLMJudgeConfig } from "../judge/judge.js";
 import { calibrateJudge } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import { getScenario } from "@perfectman/shared";
@@ -24,7 +24,7 @@ function argValue(flag: string): string | undefined {
   return i >= 0 ? args[i + 1] : undefined;
 }
 
-function judgeConfig(): LlmJudgeConfig {
+function judgeConfig(): LLMJudgeConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
   const tempRaw = process.env.PERFECTMAN_JUDGE_TEMPERATURE;

@@ -41,7 +41,7 @@ export type AgentRuntime = {
   ): Promise<AgentRuntimeOutput>;
 };
 
-export type LlmBudget = {
+export type LLMBudget = {
   getPriority(simulationId: string, agentId: string): import("@perfectman/shared").BudgetPriority;
 };
 
@@ -60,7 +60,7 @@ export type PulseSchedulerConfig = {
   operatorProjection: OperatorProjection;
   engineEventBuilder: EngineEventBuilder;
   agentRuntime: AgentRuntime;
-  llmBudget: LlmBudget;
+  llmBudget: LLMBudget;
   pulseIntervalMs: number;
   /** Testability seam: defaults to runEngineStep(snapshot). Inject to drive the
    *  commit-ordering pipeline with a known step result without the LLM. */
