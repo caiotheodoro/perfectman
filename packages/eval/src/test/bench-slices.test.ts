@@ -1,14 +1,21 @@
 import { describe, it, expect } from "vitest";
 import { BENCH_SLICES, resolveBenchSlice } from "../bench-slices.js";
 import { SCENARIO_REGISTRY } from "@perfectman/shared";
+import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 
 describe("bench slices", () => {
   it("resolves every slice id against the scenario registry", () => {
     const registryIds = new Set(SCENARIO_REGISTRY.map(s => s.id));
-    for (const [name, ids] of Object.entries(BENCH_SLICES) as Array<[string, readonly string[]]>) {
-      const unknown = ids.filter((id: string) => !registryIds.has(id));
+    for (const [name, ids] of Object.entries(BENCH_SLICES)) {
+      const unknown = ids.filter(id => !registryIds.has(id));
       expect(unknown, `slice ${name} has unknown scenario ids`).toEqual([]);
     }
+  });
+
+  it("golden slice stays pinned to GOLDEN_LABELS", () => {
+    expect(new Set(BENCH_SLICES.golden)).toEqual(
+      new Set(GOLDEN_LABELS.map(g => g.scenarioId)),
+    );
   });
 
   it("edges slice covers all four edge_chaos scenarios", () => {

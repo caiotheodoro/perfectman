@@ -96,6 +96,9 @@ export async function runBench(opts: {
   const perTurn = opts.perTurn ?? false;
 
   let selected: RoleplayScenario[];
+  if (opts.slice && opts.scenarios && opts.scenarios.length > 0) {
+    throw new Error("Pass either --slice or --scenarios, not both");
+  }
   if (opts.scenarios && opts.scenarios.length > 0) {
     selected = opts.scenarios
       .map(id => getScenario(id))
@@ -109,6 +112,9 @@ export async function runBench(opts: {
       throw new Error(`Unknown slice "${opts.slice}" (available: ${Object.keys(BENCH_SLICES).join(", ")})`);
     }
     selected = ids.map(id => getScenario(id)).filter((x): x is RoleplayScenario => Boolean(x));
+    if (selected.length === 0) {
+      throw new Error(`Slice "${opts.slice}" resolved to zero registry scenarios`);
+    }
   } else if (opts.category) {
     selected = scenariosByCategory(opts.category as never);
   } else {

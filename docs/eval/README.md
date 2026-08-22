@@ -51,7 +51,8 @@ pnpm --filter @perfectman/eval bench --scenarios v1_mention_reply,motive_gossip 
 
 # named slices — curated id sets (edges / golden / canary), see
 # packages/eval/src/bench-slices.ts. Prefer these over hand-typed lists
-# so per-axis samples stay meaningful.
+# so per-axis samples stay meaningful. --slice and --scenarios are
+# mutually exclusive; --limit truncates AFTER variant expansion.
 pnpm --filter @perfectman/eval bench --slice edges
 ```
 
