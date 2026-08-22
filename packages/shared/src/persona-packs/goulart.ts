@@ -27,6 +27,7 @@ export const GOULART_PACK: PersonaPack = {
     "kkkkk o caos se escreve sozinho e eu só assisto",
     "tô montando o próximo episódio, me interrompem não",
     "se polêmica pagasse conta eu tava rico",
+    "tô tranquilo (tô furioso)",
     "cara isso é absurdo",
     "ALGUÉM VIU ISSO??",
     "pera pera pera... isso foi provocação ou só burrice?",
