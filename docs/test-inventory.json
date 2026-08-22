@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-22T19:34:46.783Z",
+  "generatedAt": "2026-08-22T19:54:49.330Z",
   "totals": {
     "files": 92,
-    "its": 853
+    "its": 855
   },
   "byPackage": {
     "engine": {
@@ -12,7 +12,7 @@
     },
     "eval": {
       "files": 14,
-      "its": 104,
+      "its": 106,
       "flags": []
     },
     "server": {
@@ -738,7 +738,7 @@
       "file": "packages/eval/src/test/jury-judge.test.ts",
       "pkg": "eval",
       "layer": "eval-harness",
-      "its": 9,
+      "its": 11,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -749,7 +749,7 @@
       "truthy": 0,
       "defined": 0,
       "deadIdTruthy": 0,
-      "nonNull": 5,
+      "nonNull": 7,
       "spies": 8,
       "asyncPauses": 0,
       "weakTerminals": [],

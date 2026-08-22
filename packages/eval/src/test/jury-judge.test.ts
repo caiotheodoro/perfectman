@@ -9,24 +9,6 @@ const baseConfig = {
   model: "test-model",
 };
 
-function stubJudgeResponses(responses: Array<Record<string, number>>): void {
-  let call = 0;
-  vi.stubGlobal(
-    "fetch",
-    vi.fn().mockImplementation(() => {
-      const axes = responses[Math.min(call, responses.length - 1)]!;
-      call++;
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({
-          choices: [{ message: { content: JSON.stringify({ axes }) } }],
-        }),
-      });
-    }),
-  );
-}
-
 describe("juryJudge", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -62,6 +44,10 @@ describe("juryJudge", () => {
     expect(Object.keys(verdict.perJudge).sort()).toEqual(["family-a", "family-b", "family-c"]);
     expect(verdict.perJudge["family-a"]!.axes.in_character).toBe(2);
     expect(verdict.perJudge["family-a"]!.salvaged).toBe(false);
+    // the evidence trail records each juror's source
+    expect(verdict.perJudge["family-a"]!.model).toBe("family-a");
+    expect(verdict.perJudge["family-a"]!.baseUrl).toBe("http://judge-host/v1");
+    expect(verdict.failed).toEqual({});
     // One fetch per judge, no retry: a parse-failure retry inside llmJudge
     // would shift the per-judge response mapping and this assertion reds.
     expect(fetchMock).toHaveBeenCalledTimes(3);
@@ -115,7 +101,7 @@ describe("juryJudge", () => {
     expect(Number.isInteger(verdict.axes["in_character"])).toBe(true);
   });
 
-  it("drops failed judges and still reaches a verdict", async () => {
+  it("drops failed judges, records the reason, and still reaches a verdict", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
@@ -130,9 +116,50 @@ describe("juryJudge", () => {
         });
       }),
     );
-    const verdict = await juryJudge(scenario, [], configs.slice(1));
+    // Full configs: family-a IS in the jury and failing — passing a sliced
+    // list would make the drops-failed path run zero times (regression pin
+    // for a vacuous version of this test).
+    const verdict = await juryJudge(scenario, [], configs);
     expect(Object.keys(verdict.perJudge)).toEqual(["family-b", "family-c"]);
+    expect(Object.keys(verdict.failed)).toEqual(["family-a"]);
+    expect(verdict.failed["family-a"]).toContain("500");
     expect(verdict.axes["in_character"]).toBe(4);
+  });
+
+  it("excludes axes a juror omitted from its JSON answer (imputed 3s never vote)", async () => {
+    // family-a answers ONLY in_character; parseAxes fills the other seven
+    // axes with 3 behind the scenes. Those 3s must not move the medians on
+    // axes family-a never scored — with voice_match 5 and 3 from the other
+    // two, the median is 4, NOT 3 (3,5,3).
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
+        const model = JSON.parse(init?.body ?? "{}").model as string;
+        const axes =
+          model === "family-a" ? { in_character: 4 }
+          : model === "family-b" ? { voice_match: 5 }
+          : { voice_match: 3 };
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
+        });
+      }),
+    );
+    const verdict = await juryJudge(scenario, [], configs);
+    expect(verdict.axes["in_character"]).toBe(4);
+    expect(verdict.axes["voice_match"]).toBe(4); // b=5, c=3, a's imputed 3 excluded
+    expect(verdict.perJudge["family-a"]!.imputedAxes).toContain("voice_match");
+    expect(verdict.failed).toEqual({});
+  });
+
+  it("rejects same-endpoint jurors: three qwen3:8b configs are not a jury", async () => {
+    await expect(
+      juryJudge(scenario, [], [
+        { baseUrl: "http://o:11434/v1", model: "qwen3:8b", label: "clone-1" },
+        { baseUrl: "http://o:11434/v1", model: "qwen3:8b", label: "clone-2" },
+      ]),
+    ).rejects.toThrow(/Duplicate jury judge endpoint .* independently sourced/);
   });
 
   it("throws honestly when every judge fails", async () => {
