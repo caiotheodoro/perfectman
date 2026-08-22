@@ -75,6 +75,7 @@ export type BenchReport = {
     axisScores: AxisScores;
     fallbackCount: number;
     latencyMs: number;
+    judgeSalvaged?: boolean;
     failed?: string;
   }>;
 };
@@ -141,14 +142,20 @@ export async function runBench(opts: {
       const artifact: ScenarioRunArtifact = await ScenarioRunner.run(scenario, { llmMode: mode });
       report.scenariosRun++;
 
-      const axisScores =
+      const judgeResult =
         judgeMode === "llm"
           ? perTurn
             ? await llmJudgePerTurn(scenario, artifact.events, judgeConfig())
             : await llmJudge(scenario, artifact.events, judgeConfig())
-          : ruleJudge(scenario, artifact.events, artifact.probeResults, artifact.passedSignals / Math.max(1, artifact.totalSignals));
+          : { axes: ruleJudge(scenario, artifact.events, artifact.probeResults, artifact.passedSignals / Math.max(1, artifact.totalSignals)), salvaged: false };
+      const axisScores = judgeResult.axes;
 
-      judgeScores.set(baseScenarioId(scenario.id), axisScores);
+      // A salvaged score is a fabricated/imputed read, not a clean parse —
+      // feeding it into calibration would silently compress the kappa the
+      // golden-label gate depends on.
+      if (!judgeResult.salvaged) {
+        judgeScores.set(baseScenarioId(scenario.id), axisScores);
+      }
       for (const [axis, v] of Object.entries(axisScores)) {
         axisAgg[axis] ??= { sum: 0, count: 0 };
         axisAgg[axis]!.sum += v;
@@ -181,6 +188,7 @@ export async function runBench(opts: {
         axisScores,
         fallbackCount: artifact.fallbackCount,
         latencyMs: artifact.latencyMs,
+        judgeSalvaged: judgeResult.salvaged,
       });
     } catch (err) {
       report.scenariosFailed++;

@@ -50,7 +50,7 @@ export async function main(): Promise<void> {
   const out = argValue("--out");
 
   const judgeScores = new Map<string, import("../judge/judge.js").AxisScores>();
-  const perScenario: Array<{ id: string; pulses: number; axes: Record<string, number> }> = [];
+  const perScenario: Array<{ id: string; pulses: number; axes: Record<string, number>; judgeSalvaged: boolean }> = [];
 
   for (const label of GOLDEN_LABELS) {
     const scenario = getScenario(label.scenarioId);
@@ -61,22 +61,31 @@ export async function main(): Promise<void> {
     // Full length by construction: ScenarioRunner honors the scenario's own
     // pulse count unless a pulseLimit override is passed — none is here.
     const artifact = await ScenarioRunner.run(scenario, { llmMode: "mock" });
-    const scores =
+    const judgeResult =
       judgeMode === "llm"
         ? await llmJudge(scenario, artifact.events, judgeConfig())
-        : ruleJudge(
-            scenario,
-            artifact.events,
-            artifact.probeResults,
-            artifact.passedSignals / Math.max(1, artifact.totalSignals),
-          );
-    judgeScores.set(label.scenarioId, scores);
+        : {
+            axes: ruleJudge(
+              scenario,
+              artifact.events,
+              artifact.probeResults,
+              artifact.passedSignals / Math.max(1, artifact.totalSignals),
+            ),
+            salvaged: false,
+          };
+    const scores = judgeResult.axes;
+    // A salvaged score is a fabricated/imputed read, not a clean parse — the
+    // calibration gate this CLI measures must never be fed invented scores.
+    if (!judgeResult.salvaged) {
+      judgeScores.set(label.scenarioId, scores);
+    }
     perScenario.push({
       id: scenario.id,
       pulses: artifact.pulseResults,
       axes: Object.fromEntries(Object.entries(scores).map(([k, v]) => [k, v])),
+      judgeSalvaged: judgeResult.salvaged,
     });
-    console.log(`scored ${scenario.id} (${artifact.pulseResults} pulses)`);
+    console.log(`scored ${scenario.id} (${artifact.pulseResults} pulses)${judgeResult.salvaged ? " [salvaged, excluded from calibration]" : ""}`);
   }
 
   const report = {
