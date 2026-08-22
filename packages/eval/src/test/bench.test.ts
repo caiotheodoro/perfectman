@@ -25,6 +25,7 @@ vi.mock("../run/scenario-runner.js", () => ({
 }));
 
 const { runBench } = await import("../cli/bench.js");
+const { BENCH_SLICES, resolveBenchSlice } = await import("../bench-slices.js");
 
 describe("runBench", () => {
   it("persists the aggregated promptVersions and promptTemplateVersions to the written report", async () => {
@@ -37,5 +38,33 @@ describe("runBench", () => {
     const written = JSON.parse(readFileSync(outPath, "utf8"));
     expect(written.promptVersions).toEqual(["abc123"]);
     expect(written.promptTemplateVersions).toEqual(["action-intent-hybrid-v1"]);
+  });
+});
+
+describe("runBench slice selection", () => {
+  it("rejects --slice combined with --category instead of silently ignoring the category", async () => {
+    await expect(runBench({ mode: "mock", slice: "edges", category: "edge_chaos" })).rejects.toThrow(
+      /--slice or --category/,
+    );
+  });
+
+  it("rejects a bare --slice flag rather than falling back to the whole registry", async () => {
+    await expect(runBench({ mode: "mock", slice: "" })).rejects.toThrow(/Unknown slice ""/);
+  });
+
+  it("rejects a registered slice that resolves to no scenarios", async () => {
+    BENCH_SLICES.empty = [];
+    try {
+      await expect(runBench({ mode: "mock", slice: "empty" })).rejects.toThrow(/resolved to no scenarios/);
+    } finally {
+      delete BENCH_SLICES.empty;
+    }
+  });
+
+  it("truncates with --limit AFTER variant expansion, not at the scenario level", async () => {
+    const report = await runBench({ mode: "mock", slice: "edges", limit: 3 });
+
+    expect(resolveBenchSlice("edges")).toHaveLength(4);
+    expect(report.scenariosRun).toBe(3);
   });
 });
