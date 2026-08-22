@@ -143,7 +143,7 @@ export function ruleJudge(
       axes[axis.id] ??
       clampScore(
         axis.id === "dramatic_tension" ? 3 + signalPassRate * 2 :
-        axis.id === "unpredictability" ? 3 + emoji * 2 :
+        axis.id === "unpredictability" ? 1 + intentEntropyScore(events) * 4 :
         axis.id === "believability_under_pressure" ? 3 + (1 - leak) * 2 :
         axis.id === "probe_bounds" ? (probes.filter(p => p.passed).length / Math.max(1, probes.length)) * 5 :
         axis.id === "signal_completion" ? signalPassRate * 5 :
@@ -152,6 +152,44 @@ export function ruleJudge(
   }
   return result;
 }
+
+
+// ── Intent-entropy (unpredictability proxy) ──────────────────────────────────
+
+/** Event types that represent an agent's observable choice. */
+const CHOICE_EVENT_TYPES = new Set([
+  "message_sent",
+  "reply_sent",
+  "reaction_sent",
+  "no_op_recorded",
+  "channel_created",
+  "agent_invited",
+]);
+
+/**
+ * Normalized Shannon entropy over the distribution of committed choice
+ * types: 1.0 when the room's actions are spread uniformly across its
+ * distinct types, 0.0 when every action is the same type. This replaces
+ * the old `3 + emoji*2` proxy, which was structurally pinned at 3.0 in any
+ * room that never reacts (#32) — the anchor measures unpredictable
+ * CHOICES, so the proxy should measure choice diversity.
+ */
+export function intentEntropyScore(events: readonly CommittedEvent[]): number {
+  const counts = new Map<string, number>();
+  for (const e of events) {
+    if (!CHOICE_EVENT_TYPES.has(e.type)) continue;
+    counts.set(e.type, (counts.get(e.type) ?? 0) + 1);
+  }
+  const total = [...counts.values()].reduce((s, c) => s + c, 0);
+  if (total === 0 || counts.size <= 1) return 0;
+  let entropy = 0;
+  for (const count of counts.values()) {
+    const p = count / total;
+    entropy -= p * Math.log(p);
+  }
+  return entropy / Math.log(counts.size);
+}
+
 
 // ── LLM judge ────────────────────────────────────────────────────────────────
 
