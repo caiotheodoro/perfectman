@@ -1,7 +1,7 @@
 {
   "version": "temperature-sweep-v1",
   "mode": "mock",
-  "generatedAt": "2026-08-22T12:14:53.583Z",
+  "slice": "canary",
   "scenarios": [
     "motive_gossip",
     "v1_exclusion_inferred",
