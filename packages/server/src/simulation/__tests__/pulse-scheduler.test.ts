@@ -10,7 +10,7 @@ import { SpectatorProjection } from "../projections/spectator-projection.js";
 import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
-import type { AgentContext, AgentRuntime, LlmBudget } from "../pulse-scheduler.js";
+import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type { Simulation, SimulationSettings, AgentState, PersonaConfig, ActionIntent } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 
@@ -154,7 +154,7 @@ describe("PulseScheduler", () => {
       operatorProjection: new OperatorProjection(gateway),
       engineEventBuilder,
       agentRuntime: mockAgentRuntime,
-      llmBudget: mockLlmBudget,
+      llmBudget: mockLLMBudget,
       pulseIntervalMs: SETTINGS.pulseIntervalMs,
       ...(stepResolver ? { stepResolver } : {}),
     });
@@ -175,7 +175,7 @@ describe("PulseScheduler", () => {
     }),
   };
 
-  const mockLlmBudget: LlmBudget = {
+  const mockLLMBudget: LLMBudget = {
     getPriority: vi.fn().mockReturnValue("normal"),
   };
 

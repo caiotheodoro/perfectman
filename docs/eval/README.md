@@ -48,6 +48,14 @@ pnpm --filter @perfectman/eval bench --mode local --judge llm --per-turn --limit
 # slices
 pnpm --filter @perfectman/eval bench --category edge_chaos
 pnpm --filter @perfectman/eval bench --scenarios v1_mention_reply,motive_gossip --limit 6
+
+# named slices — curated id sets (edges / golden / canary), see
+# packages/eval/src/bench-slices.ts. Prefer these over hand-typed lists
+# so per-axis samples stay meaningful. --slice is mutually exclusive with
+# both --scenarios and --category; --limit truncates AFTER variant
+# expansion, so a limit below the slice's expanded run count drops whole
+# scenarios off the end.
+pnpm --filter @perfectman/eval bench --slice edges
 ```
 
 Local-mode benchmark runs pin LLM sampling to a fixed seed (`42` by default,
@@ -70,6 +78,13 @@ Every PR also runs this harness in CI (`.github/workflows/pr-gate.yml`):
 typecheck, unit tests, then a mock+rule-judge bench over the golden scenario
 subset with a hard 100%-signals assertion (`scripts/ci/check-bench-gate.mjs`)
 — free, deterministic, no model needed.
+
+A second, weekly workflow (`.github/workflows/benchmark.yml`) runs the same
+gate over the *full* 123-task suite (Mondays 03:00 UTC, or on demand via
+`workflow_dispatch`) and uploads the report as a run artifact for trend
+tracking. Its `judge=llm` dispatch input is an opt-in deep run for
+self-hosted runners with model servers configured; hosted CI stays on the
+offline rule judge by default.
 
 ## Current baseline (mock, 123 tasks)
 

@@ -22,15 +22,15 @@ import {
   type ConfiguredSimulationHandle,
   type SimulationAppConfig,
 } from "@perfectman/server";
-import { AgentRuntime, AgentConfigRegistry, MockDeliveryGateway, MockLlmProvider, OllamaProvider, OpenAiCompatibleProvider, personaPackToProfile } from "@perfectman/server";
+import { AgentRuntime, AgentConfigRegistry, MockDeliveryGateway, MockLLMProvider, OllamaProvider, OpenAiCompatibleProvider, personaPackToProfile } from "@perfectman/server";
 import type { PersonaPromptProfile } from "@perfectman/server";
-import type { LlmProvider } from "@perfectman/server";
+import type { LLMProvider } from "@perfectman/server";
 import { eventsToBehavioral, runAllProbes, type ProbeResult } from "../probes/index.js";
 import { checkExpectedSignals, type SignalOutcome } from "./signal-checker.js";
 import { personaAwareProviderFactory } from "../bench/persona-aware-mock.js";
 
 export type RunnerOpts = {
-  providerFactory?: (llmConfig: import("@perfectman/server").LlmConfig, agentId: string) => LlmProvider;
+  providerFactory?: (llmConfig: import("@perfectman/server").LLMConfig, agentId: string) => LLMProvider;
   llmMode?: "mock" | "local";
   pulseLimit?: number;
   repetition?: import("@perfectman/server").RepetitionPolicy;
@@ -49,6 +49,10 @@ export type ScenarioRunArtifact = {
   totalSignals: number;
   latencyMs: number;
   pulseResults: number;
+  /** Unique generation prompt versions observed across the run (attribution). */
+  promptVersions: string[];
+  /** Unique prompt template versions observed across the run (old-vs-new template comparison). */
+  templateVersions: string[];
   /** Real provider wire-calls, including repetition-guard retries. */
   providerCalls?: number;
 };
@@ -56,12 +60,15 @@ export type ScenarioRunArtifact = {
 class TrackingRuntime {
   private readonly inner: AgentRuntime;
   private readonly calls = new Map<string, number>();
-  private readonly providers = new Map<string, LlmProvider>();
+  private readonly versions = new Set<string>();
+  private readonly templateVersions = new Set<string>();
+  private readonly providers = new Map<string, LLMProvider>();
+  private readonly countedProviders = new Map<string, LLMProvider>();
   private providerCallsTotal = 0;
 
   constructor(
     registry: AgentConfigRegistry,
-    factory: ((llmConfig: import("@perfectman/server").LlmConfig, agentId: string) => LlmProvider) | undefined,
+    factory: ((llmConfig: import("@perfectman/server").LLMConfig, agentId: string) => LLMProvider) | undefined,
     repetition?: import("@perfectman/server").RepetitionPolicy,
   ) {
     this.inner = new AgentRuntime(
@@ -78,22 +85,27 @@ class TrackingRuntime {
             // (mock → canned; ollama → native API for Qwen3; else OpenAI-compatible).
             provider =
               llmConfig.providerType === "mock"
-                ? new MockLlmProvider()
+                ? new MockLLMProvider()
                 : llmConfig.providerType === "ollama"
                   ? new OllamaProvider(llmConfig)
                   : new OpenAiCompatibleProvider(llmConfig);
           }
           this.providers.set(agentId, provider);
         }
-        // Count real wire calls — retries inside generateIntent never show up
-        // in per-turn `calls`, but they are exactly the cost side of the
-        // repetition-policy tradeoff.
-        const counted: LlmProvider = {
-          generateIntent: async (...providerArgs) => {
-            this.providerCallsTotal++;
-            return provider!.generateIntent(...providerArgs);
-          },
-        };
+        // Per-turn `calls` counts generateIntent invocations, so a
+        // repetition-guard retry is invisible there — but retries are the cost
+        // side of the repetition policy, so wire calls are counted separately.
+        let counted = this.countedProviders.get(agentId);
+        if (!counted) {
+          const inner = provider;
+          counted = {
+            generateIntent: (...providerArgs) => {
+              this.providerCallsTotal++;
+              return inner.generateIntent(...providerArgs);
+            },
+          };
+          this.countedProviders.set(agentId, counted);
+        }
         return counted;
       },
       repetition,
@@ -109,7 +121,10 @@ class TrackingRuntime {
     context: Parameters<AgentRuntime["generateIntent"]>[1],
   ): ReturnType<AgentRuntime["generateIntent"]> {
     this.calls.set(input.agentId, (this.calls.get(input.agentId) ?? 0) + 1);
-    return this.inner.generateIntent(input, context);
+    const output = await this.inner.generateIntent(input, context);
+    if (output.llmUsage?.promptVersion) this.versions.add(output.llmUsage.promptVersion);
+    if (output.llmUsage?.promptTemplateVersion) this.templateVersions.add(output.llmUsage.promptTemplateVersion);
+    return output;
   }
 
   callsFor(agentId: string): number {
@@ -120,6 +135,14 @@ class TrackingRuntime {
     let t = 0;
     for (const v of this.calls.values()) t += v;
     return t;
+  }
+
+  versionsUsed(): string[] {
+    return [...this.versions];
+  }
+
+  templateVersionsUsed(): string[] {
+    return [...this.templateVersions];
   }
 }
 
@@ -184,7 +207,7 @@ export class ScenarioRunner {
       agentIds: scenario.agents.map(a => a.agentId),
       totalPulses: pulses,
       fallbackCount,
-      totalLlmCalls: tracking?.totalCalls() ?? 0,
+      totalLLMCalls: tracking?.totalCalls() ?? 0,
     });
 
     const signalResults = checkExpectedSignals(scenario, events, states, tracking?.callsFor.bind(tracking) ?? (() => 0));
@@ -203,6 +226,8 @@ export class ScenarioRunner {
       totalSignals: signalResults.length,
       latencyMs: Date.now() - started,
       pulseResults,
+      promptVersions: tracking?.versionsUsed() ?? [],
+      templateVersions: tracking?.templateVersionsUsed() ?? [],
       providerCalls: tracking?.providerCalls(),
     };
   }
@@ -224,7 +249,7 @@ function scenarioToConfig(scenario: RoleplayScenario, llmMode: "mock" | "local")
         ? personaPackToProfile(pack)
         : genericProfile(persona),
       llm: llmMode === "local"
-        ? localLlmConfig(pack)
+        ? localLLMConfig(pack)
         : {
             providerType: "mock",
             modelName: "persona-aware-mock",
@@ -311,7 +336,7 @@ export function benchSeed(): number {
 }
 
 // Exported for tests and local debug tooling.
-export function localLlmConfig(pack: import("@perfectman/shared").PersonaPack | undefined): import("@perfectman/server").LlmConfig {
+export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | undefined): import("@perfectman/server").LLMConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
   const baseUrl =

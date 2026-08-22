@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach, vi } from "vitest";
-import { benchSeed, localLlmConfig } from "../run/scenario-runner.js";
+import { benchSeed, localLLMConfig } from "../run/scenario-runner.js";
 
 describe("bench seed wiring (#45)", () => {
   afterEach(() => {
@@ -33,14 +33,14 @@ describe("bench seed wiring (#45)", () => {
   });
 
   it("pins seed into the ollama-path extraBody", () => {
-    const config = localLlmConfig(undefined);
+    const config = localLLMConfig(undefined);
     expect(config.providerType).toBe("ollama");
     expect(config.extraBody?.["seed"]).toBe(benchSeed());
   });
 
   it("pins seed into the deepseek-path extraBody", () => {
     process.env.PERFECTMAN_LLM_PROVIDER = "deepseek";
-    const config = localLlmConfig(undefined);
+    const config = localLLMConfig(undefined);
     expect(config.providerType).toBe("qwen3_8b");
     expect(config.extraBody?.["seed"]).toBe(benchSeed());
   });
