@@ -193,7 +193,28 @@ describe("probes", () => {
       expect(echoSourcesByAgent([ev("post", "A", 1, "só eu aqui")])).toEqual({});
     });
 
-    it("is wired into runAllProbes with a band", () => {
+    it("ignores turns that normalize to no words (emoji-only, stopwords-only)", () => {
+      const emojiOnly = [
+        ev("post", "A", 1, "😂😂"),
+        ev("post", "B", 2, "🔥🔥🔥"),
+        ev("post", "C", 3, "kkkk vamos nessa"),
+      ];
+      expect(crossAgentEchoRate(emojiOnly)).toBe(0);
+      expect(echoSourcesByAgent(emojiOnly)).toEqual({});
+
+      const stopwordsOnly = [ev("post", "A", 1, "que de o a"), ev("post", "B", 2, "the and of to")];
+      expect(crossAgentEchoRate(stopwordsOnly)).toBe(0);
+      expect(echoSourcesByAgent(stopwordsOnly)).toEqual({});
+    });
+
+    it("leaves a self-repeat to the per-agent probe instead of inverting the arrow", () => {
+      const line = "esse time não ganha nunca";
+      const events = [ev("post", "A", 1, line), ev("post", "B", 2, line), ev("post", "A", 3, line)];
+      expect(echoSourcesByAgent(events)).toEqual({ "B<-A": 1 });
+      expect(crossAgentEchoRate(events)).toBeCloseTo(1 / 3);
+    });
+
+    it("wires cross-agent-echo into runAllProbes with a band", () => {
       const events = [
         ev("post", "A", 1, "fala sério que isso é real"),
         ev("post", "B", 2, "Fala sério que isso é real!"),
@@ -202,6 +223,20 @@ describe("probes", () => {
         .find(r => r.probe === "cross-agent-echo");
       expect(probe).toBeDefined();
       expect(probe!.measured).toBeGreaterThan(0);
+    });
+
+    it("fails the cross-agent-echo band when a room converges on one line", () => {
+      const line = "esse time não ganha nunca";
+      const events = [
+        ev("post", "A", 1, line),
+        ev("post", "B", 2, line),
+        ev("post", "C", 3, line),
+        ev("post", "D", 4, "mudando totalmente de assunto agora"),
+      ];
+      const probe = runAllProbes({ events, agentIds: ["A", "B", "C", "D"], totalPulses: 4 })
+        .find(r => r.probe === "cross-agent-echo");
+      expect(probe!.measured).toBeCloseTo(0.5);
+      expect(probe!.passed).toBe(false);
     });
 
     it("is wired into runAllProbes with a band", () => {

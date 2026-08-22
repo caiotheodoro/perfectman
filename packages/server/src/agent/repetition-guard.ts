@@ -15,7 +15,7 @@ const STOPWORDS = new Set(["a", "o", "e", "de", "que", "do", "da", "em", "um", "
 const COMBINING_DIACRITICS = new RegExp("[\\u0300-\\u036f]", "g");
 
 /** Lowercase, strip punctuation/emoji/diacritics, collapse whitespace, drop stopwords. */
-function normalizeWords(text: string): string[] {
+export function normalizeWords(text: string): string[] {
   const stripped = text
     .toLowerCase()
     .normalize("NFKD")

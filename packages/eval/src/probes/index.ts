@@ -9,7 +9,12 @@
 
 import type { BehavioralEvent, ProbeInput } from "./types.js";
 import { checkProbe, PROBE_BANDS, type ProbeResult } from "./types.js";
-import { isNearRepeat, similarity as jaccardSimilarity, REPETITION_SIMILARITY_THRESHOLD } from "@perfectman/server";
+import {
+  isNearRepeat,
+  normalizeWords,
+  similarity as jaccardSimilarity,
+  REPETITION_SIMILARITY_THRESHOLD,
+} from "@perfectman/server";
 
 export * from "./adapter.js";
 export type { BehavioralEvent, BehavioralEventKind, ProbeBound, ProbeInput, ProbeResult } from "./types.js";
@@ -236,8 +241,69 @@ export function contentRepetitionRate(
 
 // ── Cross-agent echo (attractor states) ─────────────────────────────────────
 
+type CrossAgentEchoWalk = {
+  /** Comparable turns seen — the denominator of the rate. */
+  comparableTurns: number;
+  /** Turns attributed to another agent's earlier text. */
+  echoed: number;
+  /** One "target<-source" count per echoed turn. */
+  sources: Record<string, number>;
+};
+
 /**
- * Share of content-bearing turns that near-repeat an EARLIER utterance by a
+ * Single chronological walk behind both cross-agent echo exports, so the rate
+ * and the attribution can never disagree about which turns are echoes.
+ *
+ * Two turns are deliberately excluded:
+ *  - one whose normalized word set is empty (emoji-only, stopwords-only):
+ *    similarity() scores two such turns 1.0, so admitting them fabricates
+ *    edges between unrelated reactions;
+ *  - one that also near-repeats its own speaker, which belongs to
+ *    contentRepetitionRate — attributing it outward would credit the
+ *    inbound edge to whichever other agent happened to say it too, pointing
+ *    the "who pulls whom" arrow backwards.
+ */
+function walkCrossAgentEchoes(
+  events: readonly BehavioralEvent[],
+  threshold: number,
+): CrossAgentEchoWalk {
+  const utterancesByAgent = new Map<string, string[]>();
+  const sources: Record<string, number> = {};
+  let comparableTurns = 0;
+  let echoed = 0;
+  for (const event of events) {
+    if (event.kind !== "post" && event.kind !== "reply") continue;
+    const content = event.content;
+    if (!content || normalizeWords(content).length === 0) continue;
+    comparableTurns++;
+    const own = utterancesByAgent.get(event.agentId) ?? [];
+    let bestSource: string | undefined;
+    let bestScore = 0;
+    if (!isNearRepeat(content, own, threshold)) {
+      for (const [agentId, utterances] of utterancesByAgent) {
+        if (agentId === event.agentId) continue;
+        for (const prior of utterances) {
+          const score = jaccardSimilarity(content, prior);
+          if (score >= threshold && score > bestScore) {
+            bestScore = score;
+            bestSource = agentId;
+          }
+        }
+      }
+    }
+    if (bestSource) {
+      echoed++;
+      const key = `${event.agentId}<-${bestSource}`;
+      sources[key] = (sources[key] ?? 0) + 1;
+    }
+    own.push(content);
+    utterancesByAgent.set(event.agentId, own);
+  }
+  return { comparableTurns, echoed, sources };
+}
+
+/**
+ * Share of comparable turns that near-repeat an EARLIER utterance by a
  * DIFFERENT agent — the multi-agent convergence / attractor-state signal
  * the per-agent repetition guard structurally cannot see. Assumes events in
  * chronological order (same contract as contentRepetitionRate).
@@ -246,23 +312,8 @@ export function crossAgentEchoRate(
   events: readonly BehavioralEvent[],
   threshold: number = REPETITION_SIMILARITY_THRESHOLD,
 ): number {
-  const contentTurns = events.filter(
-    e => (e.kind === "post" || e.kind === "reply") && !!e.content?.trim(),
-  );
-  if (contentTurns.length === 0) return 0;
-  const utterancesByAgent = new Map<string, string[]>();
-  let echoed = 0;
-  for (const turn of contentTurns) {
-    const others: string[] = [];
-    for (const [agentId, utterances] of utterancesByAgent) {
-      if (agentId !== turn.agentId) others.push(...utterances);
-    }
-    if (isNearRepeat(turn.content!, others, threshold)) echoed++;
-    const own = utterancesByAgent.get(turn.agentId) ?? [];
-    own.push(turn.content!);
-    utterancesByAgent.set(turn.agentId, own);
-  }
-  return echoed / contentTurns.length;
+  const { comparableTurns, echoed } = walkCrossAgentEchoes(events, threshold);
+  return comparableTurns === 0 ? 0 : echoed / comparableTurns;
 }
 
 /**
@@ -274,33 +325,7 @@ export function echoSourcesByAgent(
   events: readonly BehavioralEvent[],
   threshold: number = REPETITION_SIMILARITY_THRESHOLD,
 ): Record<string, number> {
-  const counts: Record<string, number> = {};
-  const contentTurns = events.filter(
-    e => (e.kind === "post" || e.kind === "reply") && !!e.content?.trim(),
-  );
-  const utterancesByAgent = new Map<string, string[]>();
-  for (const turn of contentTurns) {
-    let bestSource: string | undefined;
-    let bestScore = 0;
-    for (const [agentId, utterances] of utterancesByAgent) {
-      if (agentId === turn.agentId) continue;
-      for (const prior of utterances) {
-        const score = jaccardSimilarity(turn.content!, prior);
-        if (score >= threshold && score > bestScore) {
-          bestScore = score;
-          bestSource = agentId;
-        }
-      }
-    }
-    if (bestSource) {
-      const key = `${turn.agentId}<-${bestSource}`;
-      counts[key] = (counts[key] ?? 0) + 1;
-    }
-    const own = utterancesByAgent.get(turn.agentId) ?? [];
-    own.push(turn.content!);
-    utterancesByAgent.set(turn.agentId, own);
-  }
-  return counts;
+  return walkCrossAgentEchoes(events, threshold).sources;
 }
 
 // ── Aggregate ────────────────────────────────────────────────────────────────
