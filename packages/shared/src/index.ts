@@ -37,10 +37,6 @@ export * from "./intent/intent.types.js";
 export * from "./intent/intent.schema.js";
 export * from "./intent/intent-packet.schema.js";
 
-// Judge
-export * from "./judge/judge-config.types.js";
-export * from "./judge/judge-config.schema.js";
-
 // Decision
 export * from "./decision/decision.types.js";
 
@@ -56,9 +52,6 @@ export * from "./attention/attention.types.js";
 // Prompt
 export * from "./prompt/prompt-syntax.js";
 export type { TranslatedEmotionalState, RelationalFlavor, PromptPurpose } from "./prompt/prompt.types.js";
-
-// LLM (shared OpenAI-compatible call primitive)
-export * from "./llm/chat-completion.js";
 
 // Perception
 export * from "./perception/perception.types.js";

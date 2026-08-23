@@ -13,11 +13,9 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { ScenarioRunner } from "../run/scenario-runner.js";
-import { ruleJudge, llmJudge } from "../judge/judge.js";
-import { MockJudgeProvider } from "../judge/mock-judge-provider.js";
+import { ruleJudge, llmJudge, type LLMJudgeConfig } from "../judge/judge.js";
 import { calibrateJudge } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
-import { loadJudgeConfig, applyJudgeShorthand } from "../llm/judge-config.js";
 import { getScenario } from "@perfectman/shared";
 
 const args = process.argv.slice(2);
@@ -26,19 +24,30 @@ function argValue(flag: string): string | undefined {
   return i >= 0 ? args[i + 1] : undefined;
 }
 
+function judgeConfig(): LLMJudgeConfig {
+  const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
+  const isDeepseek = provider === "deepseek";
+  const tempRaw = process.env.PERFECTMAN_JUDGE_TEMPERATURE;
+  // Calibration is an agreement measurement — determinism by default.
+  const temperature = tempRaw !== undefined && Number.isFinite(Number(tempRaw)) ? Number(tempRaw) : 0;
+  return {
+    baseUrl:
+      process.env.PERFECTMAN_LLM_BASE_URL ??
+      (isDeepseek ? "https://api.deepseek.com/v1" : "http://localhost:11434/v1"),
+    model: process.env.PERFECTMAN_JUDGE_MODEL ?? process.env.PERFECTMAN_LLM_MODEL ?? (isDeepseek ? "deepseek-chat" : "qwen3:8b"),
+    apiKey: process.env.PERFECTMAN_LLM_API_KEY,
+    temperature,
+    timeoutMs: 90000,
+  };
+}
+
 export async function main(): Promise<void> {
-  const judgeFlag = argValue("--judge");
-  if (judgeFlag !== undefined && judgeFlag !== "rule" && judgeFlag !== "llm") {
-    console.error(`unknown --judge value: ${judgeFlag} (expected rule|llm)`);
+  const judgeMode = (argValue("--judge") as "rule" | "llm") ?? "rule";
+  if (judgeMode !== "rule" && judgeMode !== "llm") {
+    console.error(`unknown --judge value: ${judgeMode} (expected rule|llm)`);
     process.exit(2);
   }
   const out = argValue("--out");
-
-  // Calibration is an agreement measurement — determinism by default
-  // (temperature 0 rather than bench's heuristic 1.0).
-  const resolvedJudge = await loadJudgeConfig(args, { defaultTemperature: 0 });
-  const providerType = applyJudgeShorthand(resolvedJudge, judgeFlag);
-  const mockJudge = new MockJudgeProvider();
 
   const judgeScores = new Map<string, import("../judge/judge.js").AxisScores>();
   const perScenario: Array<{ id: string; pulses: number; axes: Record<string, number>; judgeSalvaged: boolean }> = [];
@@ -53,19 +62,17 @@ export async function main(): Promise<void> {
     // pulse count unless a pulseLimit override is passed — none is here.
     const artifact = await ScenarioRunner.run(scenario, { llmMode: "mock" });
     const judgeResult =
-      providerType === "openai-compatible"
-        ? await llmJudge(scenario, artifact.events, resolvedJudge.config)
-        : providerType === "mock"
-          ? mockJudge.judge(scenario)
-          : {
-              axes: ruleJudge(
-                scenario,
-                artifact.events,
-                artifact.probeResults,
-                artifact.passedSignals / Math.max(1, artifact.totalSignals),
-              ),
-              salvaged: false,
-            };
+      judgeMode === "llm"
+        ? await llmJudge(scenario, artifact.events, judgeConfig())
+        : {
+            axes: ruleJudge(
+              scenario,
+              artifact.events,
+              artifact.probeResults,
+              artifact.passedSignals / Math.max(1, artifact.totalSignals),
+            ),
+            salvaged: false,
+          };
     const scores = judgeResult.axes;
     // A salvaged score is a fabricated/imputed read, not a clean parse — the
     // calibration gate this CLI measures must never be fed invented scores.
@@ -87,7 +94,7 @@ export async function main(): Promise<void> {
     // scored the transcripts. Golden labels were authored against the mock
     // baseline, so LLM-judged calibration reads mock transcripts too.
     mode: "mock" as const,
-    judge: providerType === "openai-compatible" ? "llm" : "rule",
+    judge: judgeMode,
     generatedAt: new Date().toISOString(),
     transcriptLength: "full",
     calibration: calibrateJudge(judgeScores, GOLDEN_LABELS, 0.7),

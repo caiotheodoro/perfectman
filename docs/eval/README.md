@@ -148,51 +148,6 @@ yet — invoke it from a node one-liner). It fans every config out
 concurrently via `Promise.allSettled`, so keep the judge list small and
 point it at one local Ollama host at a time.
 
-### The judge as a config section
-
-The judge is resolved like every other LLM surface in the project — the
-config file describes the experiment, the `.env` holds the secrets:
-
-1. `--judge-config <path>` — an explicit standalone judge config file;
-2. otherwise the `judge` section of the walk-up `config/index.json`;
-3. otherwise the environment (`PERFECTMAN_JUDGE_BASE_URL` / `_MODEL` /
-   `_TEMPERATURE`, `PERFECTMAN_LLM_*`, `PERFECTMAN_LLM_PROVIDER=deepseek`
-   shortcut) — the env layer stays exactly as documented above;
-4. otherwise defaults (local qwen3:8b endpoint; bench temperature 1.0,
-   calibration 0).
-
-`providerType` is `"openai-compatible" | "rule" | "mock"` — DeepSeek is
-not a type, it is an openai-compatible endpoint in a file. Secrets are
-referenced by NAME through `apiKeyEnv`; never inline a key. The `jury`
-array is the first-class cross-family jury — the same loader instantiates
-every member, so `bench --judge llm` with a jury in the file runs the
-median verdict instead of one judge.
-
-```jsonc
-// config/index.json (or the file given to --judge-config)
-{
-  "judge": {
-    "providerType": "openai-compatible",
-    "baseUrl": "https://api.deepseek.com/v1",
-    "modelName": "deepseek-chat",
-    "apiKeyEnv": "DEEPSEEK_API_KEY",
-    "temperature": 0,
-    "timeoutMs": 90000,
-    "jury": [
-      { "providerType": "openai-compatible", "baseUrl": "http://localhost:11434/v1",
-        "modelName": "qwen3:8b", "temperature": 0, "label": "local-qwen" },
-      { "providerType": "openai-compatible", "baseUrl": "https://api.deepseek.com/v1",
-        "modelName": "deepseek-chat", "apiKeyEnv": "DEEPSEEK_API_KEY",
-        "temperature": 0, "label": "deepseek" }
-    ]
-  }
-}
-```
-
-The `--judge rule|llm` CLI flag survives as a shorthand that overrides
-`judge.providerType` only when passed explicitly; with no file and no
-flag, every CLI keeps its offline rule-judge default.
-
 
 ## Current baseline (mock, 123 tasks)
 

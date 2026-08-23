@@ -33,7 +33,6 @@ describe("juryJudge", () => {
       return Promise.resolve({
         ok: true,
         status: 200,
-        headers: new Map(),
         json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
       });
     });
@@ -64,7 +63,6 @@ describe("juryJudge", () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          headers: new Map(),
           json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
         });
       }),
@@ -91,7 +89,6 @@ describe("juryJudge", () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          headers: new Map(),
           json: async () => ({
             choices: [{ message: { content: JSON.stringify({ axes: { in_character: scores[model]! } }) } }],
           }),
@@ -115,7 +112,6 @@ describe("juryJudge", () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          headers: new Map(),
           json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes: { in_character: 4 } }) } }] }),
         });
       }),
@@ -146,7 +142,6 @@ describe("juryJudge", () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          headers: new Map(),
           json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
         });
       }),
@@ -211,7 +206,6 @@ describe("juryJudge", () => {
         return Promise.resolve({
           ok: true,
           status: 200,
-          headers: new Map(),
           json: async () => ({ choices: [{ message: { content } }] }),
         });
       }),
@@ -243,7 +237,6 @@ describe("juryJudge", () => {
         Promise.resolve({
           ok: true,
           status: 200,
-          headers: new Map(),
           json: async () => ({ choices: [{ message: { content: prose } }] }),
         }),
       ),
