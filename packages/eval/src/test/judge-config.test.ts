@@ -109,6 +109,72 @@ describe("loadJudgeConfig precedence", () => {
     }
   });
 
+  it("file tier NEVER inherits the ambient PERFECTMAN_LLM_API_KEY (secrets resolve only via apiKeyEnv)", async () => {
+    const dir = await tempDir();
+    vi.stubEnv("PERFECTMAN_LLM_API_KEY", "sk-ambient");
+    await writeFile(join(dir, "judge.json"), JSON.stringify({ providerType: "openai-compatible", modelName: "m", baseUrl: "http://other-host/v1" }));
+    try {
+      const resolved = await loadJudgeConfig(["--judge-config", "judge.json"], { cwd: dir });
+      expect(resolved.config.apiKey).toBeUndefined();
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("envOnly skips both file tiers (compat path is immune to stray config/index.json files)", async () => {
+    const dir = await tempDir();
+    await writeSimConfig(dir, section);
+    const filePath = join(dir, "judge.json");
+    await writeFile(filePath, JSON.stringify(standalone));
+    vi.stubEnv("PERFECTMAN_JUDGE_MODEL", "env-model");
+    try {
+      const resolved = await loadJudgeConfig(["--judge-config", filePath], { cwd: dir, envOnly: true });
+      expect(resolved.config.model).toBe("env-model");
+      expect(resolved.providerType).toBe("rule");
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("warns on validated-but-unconsumed keys and unknown keys (typo surface), still resolving", async () => {
+    const dir = await tempDir();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await writeFile(
+      join(dir, "judge.json"),
+      JSON.stringify({
+        providerType: "openai-compatible",
+        modelName: "m",
+        responseFormatJson: true,
+        retryCount: 2,
+        baseURL: "http://typo-host/v1",
+      }),
+    );
+    try {
+      const resolved = await loadJudgeConfig(["--judge-config", "judge.json"], { cwd: dir });
+      expect(resolved.config.model).toBe("m");
+      expect(warn).toHaveBeenCalled();
+      const joined = warn.mock.calls.map((c) => String(c[0])).join("\n");
+      expect(joined).toMatch(/responseFormatJson/);
+      expect(joined).toMatch(/retryCount/);
+      expect(joined).toMatch(/baseURL/);
+    } finally {
+      warn.mockRestore();
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("does not warn on the env tier", async () => {
+    const dir = await tempDir();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    try {
+      await loadJudgeConfig([], { cwd: dir });
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("resolves each jury entry's own apiKeyEnv", async () => {
     const dir = await tempDir();
     vi.stubEnv("JURY_KEY", "sk-jury-secret");

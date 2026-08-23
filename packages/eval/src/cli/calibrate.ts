@@ -87,7 +87,9 @@ export async function main(): Promise<void> {
     // scored the transcripts. Golden labels were authored against the mock
     // baseline, so LLM-judged calibration reads mock transcripts too.
     mode: "mock" as const,
-    judge: providerType === "openai-compatible" ? "llm" : "rule",
+    // The resolved providerType, not the CLI flag: a providerType:"mock"
+    // run must not be recorded as a rule judgement in the evidence.
+    judge: providerType === "openai-compatible" ? "llm" : providerType === "mock" ? "mock" : "rule",
     generatedAt: new Date().toISOString(),
     transcriptLength: "full",
     calibration: calibrateJudge(judgeScores, GOLDEN_LABELS, 0.7),

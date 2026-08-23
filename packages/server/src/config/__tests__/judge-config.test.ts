@@ -153,6 +153,45 @@ describe("loadJudgeSectionFromSimulationConfig", () => {
       await rm(dir, { recursive: true, force: true });
     }
   });
+
+  it("stops the walk-up at the workspace root: a config/index.json OUTSIDE the workspace is never seen", async () => {
+    const base = await tempDir();
+    const workspace = join(base, "ws");
+    await mkdir(join(workspace, "config"), { recursive: true });
+    await writeFile(join(workspace, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+    // Outside the workspace (base/config/index.json) sits a config WITH a
+    // judge section — the bounded walk must never reach it.
+    await mkdir(join(base, "config"), { recursive: true });
+    await writeFile(
+      join(base, "config", "index.json"),
+      JSON.stringify({ simulation: {}, agents: [], judge: validJudgeConfig }),
+    );
+    const nested = join(workspace, "a", "b");
+    await mkdir(nested, { recursive: true });
+    try {
+      const section = await loadJudgeSectionFromSimulationConfig(nested);
+      expect(section).toBeUndefined();
+    } finally {
+      await rm(base, { recursive: true, force: true });
+    }
+  });
+
+  it("still finds config/index.json AT the workspace root itself", async () => {
+    const base = await tempDir();
+    const workspace = join(base, "ws");
+    await mkdir(join(workspace, "config"), { recursive: true });
+    await writeFile(join(workspace, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+    await writeFile(
+      join(workspace, "config", "index.json"),
+      JSON.stringify({ simulation: {}, agents: [], judge: validJudgeConfig }),
+    );
+    try {
+      const section = await loadJudgeSectionFromSimulationConfig(join(workspace, "a"));
+      expect(section?.providerType).toBe("openai-compatible");
+    } finally {
+      await rm(base, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("getJudgeConfigPath", () => {

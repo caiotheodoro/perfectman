@@ -1,10 +1,16 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, expectTypeOf, it } from "vitest";
+import { z } from "zod";
 import {
   JudgeAppConfigSchema,
   JudgeEntryConfigSchema,
   JudgeProviderTypeSchema,
 } from "../judge/judge-config.schema.js";
-import type { JudgeAppConfig } from "../judge/judge-config.types.js";
+import type {
+  JudgeAppConfig,
+  JudgeConfigBase,
+  JudgeEntryConfig,
+  JudgeProviderType,
+} from "../judge/judge-config.types.js";
 
 describe("JudgeProviderTypeSchema", () => {
   it("accepts exactly the three provider types", () => {
@@ -65,6 +71,78 @@ describe("JudgeAppConfigSchema", () => {
       jury: [{ providerType: "openai-compatible", modelName: "qwen3:8b" }],
     });
     expect(config.jury![0]!.label).toBeUndefined();
+  });
+
+  it("mirrors the runtime label defaulting: a partially-labeled jury colliding with a judge-N default is rejected", () => {
+    // Entry 0 unlabeled → runtime would call it judge-0; entry 1 labels
+    // itself judge-0 — the runtime duplicate guard would throw mid-bench,
+    // so the parse-time mirror must reject the file.
+    const result = JudgeAppConfigSchema.safeParse({
+      providerType: "openai-compatible",
+      modelName: "deepseek-chat",
+      jury: [
+        { providerType: "openai-compatible", modelName: "a" },
+        { providerType: "openai-compatible", modelName: "b", label: "judge-0" },
+      ],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.message).toMatch(/Duplicate jury judge labels: judge-0/);
+    }
+  });
+
+  it("does not reject a fully-unlabeled jury (judge-N defaults are position-unique)", () => {
+    const result = JudgeAppConfigSchema.safeParse({
+      providerType: "openai-compatible",
+      modelName: "deepseek-chat",
+      jury: [
+        { providerType: "openai-compatible", modelName: "a" },
+        { providerType: "openai-compatible", modelName: "b" },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("mirrors the runtime endpoint guard: duplicate (baseUrl, modelName) jury entries are rejected", () => {
+    const result = JudgeAppConfigSchema.safeParse({
+      providerType: "openai-compatible",
+      modelName: "deepseek-chat",
+      jury: [
+        { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "qwen3:8b", label: "one" },
+        { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "qwen3:8b", label: "two" },
+      ],
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.message).toMatch(
+        /Duplicate jury judge endpoint \(http:\/\/localhost:11434\/v1, qwen3:8b\)/,
+      );
+    }
+  });
+
+  it("accepts same-endpoint-different-model and same-model-different-endpoint juries", () => {
+    const result = JudgeAppConfigSchema.safeParse({
+      providerType: "openai-compatible",
+      modelName: "deepseek-chat",
+      jury: [
+        { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "qwen3:8b", label: "one" },
+        { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "qwen3:1.7b", label: "two" },
+        { providerType: "openai-compatible", baseUrl: "https://api.deepseek.com/v1", modelName: "qwen3:8b", label: "three" },
+      ],
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("leaves baseUrl-less entries to the runtime guard (env resolves them at load)", () => {
+    const result = JudgeAppConfigSchema.safeParse({
+      providerType: "openai-compatible",
+      modelName: "deepseek-chat",
+      jury: [
+        { providerType: "openai-compatible", modelName: "qwen3:8b", label: "one" },
+        { providerType: "openai-compatible", modelName: "qwen3:8b", label: "two" },
+      ],
+    });
+    expect(result.success).toBe(true);
   });
 
   it("rejects an unsupported providerType (deepseek is an endpoint, not a type)", () => {
@@ -131,6 +209,19 @@ describe("JudgeAppConfigSchema", () => {
     expect(JudgeAppConfigSchema.safeParse({ providerType: "rule", modelName: "x", timeoutMs: 1.5 }).success).toBe(false);
     expect(JudgeAppConfigSchema.safeParse({ providerType: "rule", modelName: "x", retryCount: -1 }).success).toBe(false);
     expect(JudgeAppConfigSchema.safeParse({ providerType: "rule", modelName: "x", responseFormatJson: "yes" }).success).toBe(false);
+  });
+
+  it("derives the config types from the schemas (no hand-written drift)", () => {
+    expectTypeOf<JudgeProviderType>().toEqualTypeOf<z.infer<typeof JudgeProviderTypeSchema>>();
+    expectTypeOf<JudgeConfigBase>().toEqualTypeOf<z.infer<typeof JudgeConfigBaseSchema>>();
+    expectTypeOf<JudgeEntryConfig>().toEqualTypeOf<z.infer<typeof JudgeEntryConfigSchema>>();
+    expectTypeOf<JudgeAppConfig>().toEqualTypeOf<z.infer<typeof JudgeAppConfigSchema>>();
+    // Required-vs-optional surface, pinned explicitly.
+    expectTypeOf<JudgeProviderType>().toEqualTypeOf<"openai-compatible" | "rule" | "mock">();
+    expectTypeOf<JudgeConfigBase["modelName"]>().toEqualTypeOf<string>();
+    expectTypeOf<JudgeConfigBase["baseUrl"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<JudgeEntryConfig["label"]>().toEqualTypeOf<string | undefined>();
+    expectTypeOf<JudgeAppConfig["jury"]>().toEqualTypeOf<JudgeEntryConfig[] | undefined>();
   });
 
   it("types JudgeAppConfig through the shared export", () => {
