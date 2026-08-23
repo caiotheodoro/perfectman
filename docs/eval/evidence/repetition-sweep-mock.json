@@ -1,7 +1,7 @@
 {
   "version": "repetition-sweep-v1",
   "mode": "mock",
-  "generatedAt": "2026-08-23T20:25:41.766Z",
+  "generatedAt": "2026-08-23T20:47:47.986Z",
   "scenarios": [
     "motive_gossip",
     "v1_biased_memory",
@@ -16,7 +16,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 398,
+      "providerCalls": 199,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     },
@@ -27,7 +27,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 520,
+      "providerCalls": 260,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     },
@@ -38,7 +38,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 642,
+      "providerCalls": 321,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     },
@@ -49,7 +49,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 398,
+      "providerCalls": 199,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     },
@@ -60,7 +60,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 520,
+      "providerCalls": 260,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     },
@@ -71,7 +71,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 642,
+      "providerCalls": 321,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     },
@@ -82,7 +82,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 398,
+      "providerCalls": 199,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     },
@@ -93,7 +93,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 520,
+      "providerCalls": 260,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     },
@@ -104,7 +104,7 @@
       "runs": 3,
       "guardBlocks": 61,
       "llmCalls": 199,
-      "providerCalls": 642,
+      "providerCalls": 321,
       "contentRepetitionMean": 0.258,
       "narrativeCohesionMean": 5
     }

@@ -134,7 +134,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     let totalOutputTokens = providerResult.usage.outputTokens;
     const mainInputTokens = providerResult.usage.inputTokens;
     const mainOutputTokens = providerResult.usage.outputTokens;
-    let retryUsage: { inputTokens: number; outputTokens: number; latencyMs: number; promptVersion: string } | undefined;
+    const retryUsages: Array<{ inputTokens: number; outputTokens: number; latencyMs: number; promptVersion: string }> = [];
+    let retryAttemptsMade = 0;
 
     const { threshold, maxRetries } = getRepetitionPolicy();
     const isRepeat = (candidateIntent: typeof intent): boolean =>
@@ -144,6 +145,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     if (!fallbackApplied && isRepeat(intent)) {
       let lastAttemptContent = intent.visibleContent;
+      let attemptsMade = 0;
       let lastFailure: "repeat_failed" | "parse_failed" | "provider_failed" | null = null;
 
       if (maxRetries <= 0) {
@@ -179,14 +181,15 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         };
         try {
           const retryResult = await provider.generateIntent(input, runtimeContext, retryPrompt);
+          attemptsMade++;
           totalInputTokens += retryResult.usage.inputTokens;
           totalOutputTokens += retryResult.usage.outputTokens;
-          retryUsage = {
+          retryUsages.push({
             inputTokens: retryResult.usage.inputTokens,
             outputTokens: retryResult.usage.outputTokens,
             latencyMs: retryResult.latencyMs,
             promptVersion: retryPrompt.version,
-          };
+          });
           const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op");
           if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent)) {
             parseResult = retryParse;
@@ -255,11 +258,14 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       latencyMs: providerResult.latencyMs,
       promptVersion: prompt.version,
     }));
-    if (retryUsage) {
-      llmBudget.recordUsage(makeUsage(retryUsage));
+    // Every retry is its own ledger entry so multi-attempt budgets stay
+    // accurate in canCall's sliding windows.
+    for (const retry of retryUsages) {
+      llmBudget.recordUsage(makeUsage(retry));
     }
-    // Aggregated view for the returned output (summed across main+retry).
-    const totalLatencyMs = providerResult.latencyMs + (retryUsage?.latencyMs ?? 0);
+    // Aggregated view for the returned output (summed across main+retries).
+    const totalLatencyMs = providerResult.latencyMs +
+      retryUsages.reduce((sum, r) => sum + r.latencyMs, 0);
     const usageRecord = makeUsage({
       inputTokens: totalInputTokens,
       outputTokens: totalOutputTokens,
