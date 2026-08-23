@@ -28,6 +28,8 @@ export type JudgeConfigLoaderOptions = {
   defaultTemperature?: number;
   /** Walk-up start for the config/index.json section tier (tests). */
   cwd?: string;
+  /** Skip both file tiers — env + defaults only (compat `judgeConfig()` path). */
+  envOnly?: boolean;
 };
 
 export type ResolvedJudgeConfig = {
@@ -76,11 +78,49 @@ function resolveEntry(
   return {
     baseUrl: entry.baseUrl ?? envDefaults.baseUrl,
     model: entry.modelName,
-    apiKey: entry.apiKeyEnv ? process.env[entry.apiKeyEnv] : envDefaults.apiKey,
+    // File tier: secrets resolve ONLY by name — the ambient
+    // PERFECTMAN_LLM_API_KEY must never ride along to an endpoint the
+    // file names (a shared config could repoint it).
+    apiKey: entry.apiKeyEnv ? process.env[entry.apiKeyEnv] : undefined,
     temperature: entry.temperature ?? envDefaults.temperature,
     timeoutMs: entry.timeoutMs ?? envDefaults.timeoutMs,
     retryCount: entry.retryCount,
   };
+}
+
+const KNOWN_JUDGE_KEYS = new Set([
+  "providerType",
+  "baseUrl",
+  "modelName",
+  "apiKeyEnv",
+  "temperature",
+  "timeoutMs",
+  "retryCount",
+  "responseFormatJson",
+  "label",
+  "jury",
+]);
+
+/**
+ * Validated-but-unconsumed and unknown keys are loud, not silent: the
+ * schema accepts them (forward compatibility), so the loader surfaces
+ * them — `responseFormatJson` is deliberately unused by the judge path
+ * (the judge parses text output for thinking-mode headroom) and a typo'd
+ * key like `baseURL` would otherwise quietly lose to the env fallback.
+ */
+function warnUnusedJudgeKeys(app: JudgeAppConfig): void {
+  const notes: string[] = [];
+  if (app.responseFormatJson !== undefined) {
+    notes.push("responseFormatJson is validated but not consumed by the judge path");
+  }
+  for (const key of Object.keys(app)) {
+    if (!KNOWN_JUDGE_KEYS.has(key)) {
+      notes.push(`unknown key ${key} is ignored (typo?)`);
+    }
+  }
+  if (notes.length > 0) {
+    console.warn(`[judge-config] ${notes.join("; ")}`);
+  }
 }
 
 export async function loadJudgeConfig(
@@ -90,13 +130,16 @@ export async function loadJudgeConfig(
   const cwd = options.cwd ?? process.cwd();
   const envDefaults = envJudgeDefaults(options.defaultTemperature ?? 1.0);
 
-  const explicitPath = getJudgeConfigPath(args, cwd);
+  const explicitPath = options.envOnly ? undefined : getJudgeConfigPath(args, cwd);
   const appConfig =
     explicitPath !== undefined
       ? await loadJudgeConfigFile(explicitPath)
-      : await loadJudgeSectionFromSimulationConfig(cwd);
+      : options.envOnly
+        ? undefined
+        : await loadJudgeSectionFromSimulationConfig(cwd);
 
   if (appConfig !== undefined) {
+    warnUnusedJudgeKeys(appConfig);
     return {
       providerType: appConfig.providerType,
       config: resolveEntry(appConfig, envDefaults),

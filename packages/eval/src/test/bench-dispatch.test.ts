@@ -54,6 +54,25 @@ describe("runBench judge provider dispatch", () => {
       const configs = (juryJudge as ReturnType<typeof vi.fn>).mock.calls[0]![2] as Array<{ model: string; label?: string }>;
       expect(configs.map((c) => c.label)).toEqual(["one", "two"]);
       expect(report.perScenario[0]!.axisScores.in_character).toBe(4);
+      // The jury verdict's provenance rides into the report (failed-juror
+      // visibility from #77/#81) — a degraded jury must be traceable.
+      expect(report.perScenario[0]!.juryVoterCount).toBe(1);
+      expect(report.perScenario[0]!.juryFailed).toEqual({});
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
+  it("rejects --per-turn combined with a configured jury instead of silently ignoring it", async () => {
+    const { dir, path } = await tempJudgeFile({
+      providerType: "rule",
+      modelName: "rule",
+      jury: [{ providerType: "openai-compatible", modelName: "a", label: "one" }],
+    });
+    try {
+      await expect(
+        runBench({ mode: "mock", judge: "llm", perTurn: true, limit: 1, args: ["--judge-config", path] }),
+      ).rejects.toThrow(/--per-turn cannot be combined with a configured jury/);
     } finally {
       await rm(dir, { recursive: true, force: true });
     }

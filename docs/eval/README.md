@@ -193,6 +193,23 @@ The `--judge rule|llm` CLI flag survives as a shorthand that overrides
 `judge.providerType` only when passed explicitly; with no file and no
 flag, every CLI keeps its offline rule-judge default.
 
+Reserved keys and limits:
+
+- `responseFormatJson` is validated but **not consumed** by the judge
+  path — the judge parses raw text output for thinking-mode headroom, so
+  wiring it would mislead. The loader warns when it is set.
+- `retryCount` is consumed once the superset `chatCompletion` lands (the
+  stacked second PR); until then the loader warns when it is set.
+- Unknown keys (e.g. a `baseURL` typo) warn at load and are ignored,
+  rather than silently losing to the env fallback.
+- `calibrate` judges with the single configured judge — the `jury` array
+  is honored by `bench` only.
+
+Jury disjointness is endpoint-level (duplicate baseUrl+model pairs are
+rejected, at parse time and again at runtime). Family diversity — two
+different model families per juror — is a documented obligation, not an
+enforceable config property.
+
 
 ## Current baseline (mock, 123 tasks)
 
