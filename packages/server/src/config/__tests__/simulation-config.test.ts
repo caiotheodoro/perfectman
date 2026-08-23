@@ -98,6 +98,51 @@ describe("simulation config", () => {
     })).toThrow("env field names only");
   });
 
+  it("parses an optional judge section with a jury", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      judge: {
+        providerType: "openai-compatible",
+        baseUrl: "https://api.deepseek.com/v1",
+        modelName: "deepseek-chat",
+        apiKeyEnv: "DEEPSEEK_API_KEY",
+        temperature: 0,
+        timeoutMs: 90000,
+        retryCount: 1,
+        jury: [
+          { providerType: "openai-compatible", modelName: "qwen3:8b", label: "local-qwen" },
+        ],
+      },
+    });
+    expect(parsed.judge?.providerType).toBe("openai-compatible");
+    expect(parsed.judge?.jury).toHaveLength(1);
+    expect(parsed.judge?.jury![0]!.label).toBe("local-qwen");
+  });
+
+  it("rejects an invalid judge section with the same error style", () => {
+    const config = baseConfig();
+    expect(() => parseSimulationConfig({
+      ...config,
+      judge: { providerType: "deepseek", modelName: "x" },
+    })).toThrow(/judge: /);
+  });
+
+  it("rejects duplicate jury labels inside the judge section", () => {
+    const config = baseConfig();
+    expect(() => parseSimulationConfig({
+      ...config,
+      judge: {
+        providerType: "openai-compatible",
+        modelName: "deepseek-chat",
+        jury: [
+          { providerType: "openai-compatible", modelName: "a", label: "same" },
+          { providerType: "openai-compatible", modelName: "b", label: "same" },
+        ],
+      },
+    })).toThrow(/Duplicate jury judge labels: same/);
+  });
+
   it("accepts the generic qwen3 provider type", () => {
     const config = baseConfig();
     const parsed = parseSimulationConfig({
