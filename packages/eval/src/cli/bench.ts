@@ -20,37 +20,23 @@ import {
   type RoleplayScenario,
 } from "@perfectman/shared";
 import { ScenarioRunner } from "../run/scenario-runner.js";
-import { ruleJudge, llmJudge, llmJudgePerTurn, type AxisScores } from "../judge/judge.js";
+import { ruleJudge, llmJudge, llmJudgePerTurn, juryJudge, type AxisScores, type JuryVerdict } from "../judge/judge.js";
+import { MockJudgeProvider } from "../judge/mock-judge-provider.js";
 import { calibrateJudge, baseScenarioId } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
+import { loadJudgeConfig, applyJudgeShorthand } from "../llm/judge-config.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checker.js";
 import { BENCH_SLICES, resolveBenchSlice } from "../bench-slices.js";
 
-/** LLM judge endpoint — DeepSeek by default when PERFECTMAN_LLM_PROVIDER=deepseek. */
-export function judgeConfig(): import("../judge/judge.js").LLMJudgeConfig {
-  const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
-  const isDeepseek = provider === "deepseek";
-  // Empty/unset → default; only an explicit numeric value (incl. "0") wins.
-  const tempRaw = Number(process.env.PERFECTMAN_JUDGE_TEMPERATURE);
-  const tempSet = process.env.PERFECTMAN_JUDGE_TEMPERATURE !== undefined
-    && process.env.PERFECTMAN_JUDGE_TEMPERATURE.trim() !== "";
-  return {
-    baseUrl:
-      process.env.PERFECTMAN_JUDGE_BASE_URL ??
-      process.env.PERFECTMAN_LLM_BASE_URL ??
-      (isDeepseek ? "https://api.deepseek.com/v1" : "http://localhost:11434/v1"),
-    model:
-      process.env.PERFECTMAN_JUDGE_MODEL ??
-      process.env.PERFECTMAN_LLM_MODEL ??
-      (isDeepseek ? "deepseek-chat" : "qwen3:8b"),
-    apiKey: process.env.PERFECTMAN_LLM_API_KEY,
-    // Heuristic LLM-as-judge: temperature UP by default (varied, creative
-    // reads expose cohesion/voice failures a strict low-temp judge misses).
-    // Set PERFECTMAN_JUDGE_TEMPERATURE=0 for deterministic calibration runs.
-    temperature: tempSet && Number.isFinite(tempRaw) ? tempRaw : 1.0,
-    timeoutMs: 90000,
-  };
+/**
+ * Compatibility view of the judge loader for programmatic callers: the
+ * env-resolved endpoint config, exactly as the pre-pivot judgeConfig()
+ * returned it. envOnly: no config file is consulted, so a stray walk-up
+ * config/index.json can never repoint or break the compat path.
+ */
+export function judgeConfig(): Promise<import("../judge/judge.js").LLMJudgeConfig> {
+  return loadJudgeConfig([], { envOnly: true }).then((resolved) => resolved.config);
 }
 
 export type BenchReport = {
@@ -83,6 +69,10 @@ export type BenchReport = {
     latencyMs: number;
     promptVersions: string[];
     judgeSalvaged?: boolean;
+    /** Jury mode only: how many unsalvaged jurors produced the median verdict. */
+    juryVoterCount?: number;
+    /** Jury mode only: jurors that errored (label → reason) — non-empty means the verdict degraded. */
+    juryFailed?: Record<string, string>;
     failed?: string;
   }>;
 };
@@ -94,12 +84,24 @@ export async function runBench(opts: {
   category?: string;
   limit?: number;
   out?: string;
+  /** `--judge rule|llm` shorthand; absent → the resolved config's providerType. */
   judge?: "rule" | "llm";
   perTurn?: boolean;
+  /** CLI args for --judge-config resolution (defaults to the module args). */
+  args?: string[];
 }): Promise<BenchReport> {
   const mode = opts.mode ?? "mock";
-  const judgeMode = opts.judge ?? "rule";
   const perTurn = opts.perTurn ?? false;
+
+  const resolvedJudge = await loadJudgeConfig(opts.args ?? args);
+  const judgeMode = applyJudgeShorthand(resolvedJudge, opts.judge);
+  const mockJudge = new MockJudgeProvider();
+  const useJury = judgeMode === "openai-compatible" && (resolvedJudge.jury?.length ?? 0) > 0;
+  if (perTurn && useJury) {
+    throw new Error(
+      "--per-turn cannot be combined with a configured jury — drop the jury or route each juror through llmJudgePerTurn",
+    );
+  }
 
   let selected: RoleplayScenario[];
   if (opts.slice !== undefined && opts.scenarios && opts.scenarios.length > 0) {
@@ -175,12 +177,27 @@ export async function runBench(opts: {
       artifact.promptVersions.forEach((v) => allPromptVersions.add(v));
       artifact.templateVersions.forEach((v) => allTemplateVersions.add(v));
 
-      const judgeResult =
-        judgeMode === "llm"
-          ? perTurn
-            ? await llmJudgePerTurn(scenario, artifact.events, judgeConfig())
-            : await llmJudge(scenario, artifact.events, judgeConfig())
-          : { axes: ruleJudge(scenario, artifact.events, artifact.probeResults, artifact.passedSignals / Math.max(1, artifact.totalSignals)), salvaged: false };
+      let juryVerdict: JuryVerdict | undefined;
+      let judgeResult: { axes: AxisScores; salvaged: boolean };
+      if (useJury) {
+        // A jury is a median over independently-sourced judges — a juror
+        // that errored is dropped and recorded, never silently diluted.
+        // voterCount/failed ride into the report so a degraded verdict is
+        // traceable (a 3-juror jury with 2 errors is a single-judge read).
+        juryVerdict = await juryJudge(scenario, artifact.events, resolvedJudge.jury!);
+        judgeResult = { axes: juryVerdict.axes, salvaged: false };
+      } else if (judgeMode === "openai-compatible") {
+        judgeResult = perTurn
+          ? await llmJudgePerTurn(scenario, artifact.events, resolvedJudge.config)
+          : await llmJudge(scenario, artifact.events, resolvedJudge.config);
+      } else if (judgeMode === "mock") {
+        judgeResult = mockJudge.judge(scenario);
+      } else {
+        judgeResult = {
+          axes: ruleJudge(scenario, artifact.events, artifact.probeResults, artifact.passedSignals / Math.max(1, artifact.totalSignals)),
+          salvaged: false,
+        };
+      }
       const axisScores = judgeResult.axes;
 
       // A salvaged score is a fabricated/imputed read, not a clean parse —
@@ -223,6 +240,8 @@ export async function runBench(opts: {
         latencyMs: artifact.latencyMs,
         promptVersions: artifact.promptVersions,
         judgeSalvaged: judgeResult.salvaged,
+        juryVoterCount: juryVerdict?.voterCount,
+        juryFailed: juryVerdict?.failed,
       });
     } catch (err) {
       report.scenariosFailed++;
@@ -313,6 +332,13 @@ function printReport(report: BenchReport): void {
   for (const [cat, a] of Object.entries(report.byCategory)) {
     console.log(`  ${cat.padEnd(24)} ${(a.signalPassRate * 100).toFixed(0)}% (${a.runs} runs)`);
   }
+  const failedJuries = report.perScenario.filter((s) => s.juryFailed && Object.keys(s.juryFailed).length > 0);
+  if (failedJuries.length > 0) {
+    console.log("\njury warnings — failed jurors were dropped from the median (perScenario.juryFailed has the reasons):");
+    for (const s of failedJuries) {
+      console.log(`  ${s.id}: ${Object.entries(s.juryFailed!).map(([l, r]) => `${l} (${r})`).join(", ")}`);
+    }
+  }
 }
 
 const args = process.argv.slice(2);
@@ -329,7 +355,9 @@ export async function main(): Promise<void> {
     category: argValue("--category"),
     limit: argValue("--limit") ? Number(argValue("--limit")) : undefined,
     out: argValue("--out"),
-    judge: (argValue("--judge") as "rule" | "llm") ?? "rule",
+    // The shorthand overrides the file's providerType only when the flag is
+    // actually passed — absent, the file (and the rule default) decides.
+    judge: args.includes("--judge") ? (argValue("--judge") as "rule" | "llm") : undefined,
     perTurn: args.includes("--per-turn"),
   });
   printReport(report);

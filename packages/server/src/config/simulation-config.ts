@@ -5,6 +5,7 @@ import type {
   AgentState,
   ChannelType,
   CoreMood,
+  JudgeAppConfig,
   Memory,
   PersonaConfig,
   PresenceMode,
@@ -15,6 +16,7 @@ import type {
 import {
   ChannelTypeSchema,
   CoreMoodSchema,
+  JudgeAppConfigSchema,
   PresenceModeSchema,
   RelationalStateSchema,
   SimulationSettingsSchema,
@@ -74,6 +76,8 @@ export type SimulationAppConfig = {
   deliveryGateways: DeliveryGatewayConfig[];
   channels: InitialChannelConfig[];
   agents: AgentConfig[];
+  /** Optional judge section — the same file describes agents AND judge. */
+  judge?: JudgeAppConfig;
   /** If set, a synthetic host message is injected into the default channel before pulse 0. */
   hostStartingMessage?: string;
 };
@@ -205,22 +209,27 @@ const DEFAULT_PERSONA_CALIBRATION: Omit<PersonaConfig, keyof ConfigPersona> = {
 
 export const DEFAULT_SIMULATION_CONFIG_FILENAME = "config/index.json";
 
-export function findDefaultSimulationConfigPath(
+export function findDefaultConfigPath(
+  filename: string,
   startDir = process.cwd(),
 ): string {
   let current = startDir;
   const root = parse(current).root;
 
   while (true) {
-    const candidate = join(current, DEFAULT_SIMULATION_CONFIG_FILENAME);
+    const candidate = join(current, filename);
     if (existsSync(candidate)) return candidate;
     if (current === root) break;
     current = dirname(current);
   }
 
-  throw new Error(
-    `Default simulation config not found: ${DEFAULT_SIMULATION_CONFIG_FILENAME}`,
-  );
+  throw new Error(`Default config not found: ${filename}`);
+}
+
+export function findDefaultSimulationConfigPath(
+  startDir = process.cwd(),
+): string {
+  return findDefaultConfigPath(DEFAULT_SIMULATION_CONFIG_FILENAME, startDir);
 }
 
 export async function loadSimulationConfig(
@@ -320,6 +329,14 @@ export function parseSimulationConfig(input: unknown): SimulationAppConfig {
     deliveryGateways: parseGateways(root["deliveryGateways"]),
     channels: parseChannels(root["channels"]),
     agents: parseAgents(root["agents"]),
+    judge:
+      root["judge"] === undefined
+        ? undefined
+        : parseWithSchema<JudgeAppConfig>(
+            JudgeAppConfigSchema,
+            root["judge"],
+            "judge",
+          ),
   };
 
   validateCrossReferences(config);
