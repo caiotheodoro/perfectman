@@ -74,6 +74,11 @@ LLM judge scores it from the whole transcript; `--per-turn` (LLM judge only)
 replaces that with the mean of per-turn scores — each sampled content-bearing
 turn is scored against the turn before it (see `packages/eval/src/judge/judge.ts`).
 
+A weekly tier (`.github/workflows/benchmark.yml`) runs the FULL suite on
+schedule and uploads date-stamped report artifacts for trend tracking; its
+`judge=llm` dispatch is a self-hosted-runner-only opt-in guarded against
+missing model endpoints.
+
 Every PR also runs this harness in CI (`.github/workflows/pr-gate.yml`):
 typecheck, unit tests, then a mock+rule-judge bench over the golden scenario
 subset with a hard 100%-signals assertion (`scripts/ci/check-bench-gate.mjs`)

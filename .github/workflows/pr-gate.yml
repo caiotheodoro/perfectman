@@ -16,25 +16,7 @@ jobs:
     env:
       GOLDEN_SCENARIOS: v1_casual_chat,v1_exclusion_inferred,v1_private_motive,motive_gossip,edge_public_mock,stagnation_resentment_loop,calibration_quiet_room,motive_flirting
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # Workspace packages resolve each other through dist/ — a stale build
-      # produces phantom typecheck/test failures (seen locally), so build
-      # everything before running the gates.
-      - name: Build packages
-        run: pnpm -r build
+      - uses: ./.github/actions/setup
 
       - name: Typecheck (lint)
         run: pnpm lint

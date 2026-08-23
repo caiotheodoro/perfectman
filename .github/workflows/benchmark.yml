@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
     inputs:
       judge:
-        description: "Judge backend. 'rule' is fully offline and works on hosted runners. 'llm' requires a runner with model servers + keys configured."
+        description: "Judge backend. 'rule' is fully offline and works on hosted runners. 'llm' requires a self-hosted runner with model servers + PERFECTMAN_LLM_* configured."
         required: false
         default: rule
         type: choice
@@ -24,29 +24,28 @@ concurrency:
 
 jobs:
   benchmark:
-    # The offline path runs anywhere; the opt-in LLM deep run needs a runner
-    # with model servers + keys configured, so it targets self-hosted only.
+    # The offline path runs anywhere; the opt-in LLM deep run needs model
+    # servers + keys, so it targets self-hosted only (see the guard below).
     runs-on: ${{ github.event.inputs.judge == 'llm' && 'self-hosted' || 'ubuntu-latest' }}
     # The opt-in LLM deep run needs far more headroom than the offline path.
     timeout-minutes: ${{ github.event.inputs.judge == 'llm' && 240 || 30 }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
 
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
+      - name: Date stamp
+        id: stamp
+        run: echo "date=$(date +%F)" >> "$GITHUB_OUTPUT"
 
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      # Workspace packages resolve each other through dist/ — build before gates.
-      - name: Build packages
-        run: pnpm -r build
+      # Fail fast with a readable message instead of burning the 240-minute
+      # timeout on 123 ECONNREFUSED failures when judge=llm is dispatched
+      # without a configured model endpoint.
+      - name: Guard — llm mode requires a configured model endpoint
+        if: ${{ github.event.inputs.judge == 'llm' }}
+        run: |
+          if [ -z "$PERFECTMAN_LLM_BASE_URL" ]; then
+            echo "::error::judge=llm requires PERFECTMAN_LLM_BASE_URL (and credentials) on this runner."
+            exit 1
+          fi
 
       - name: Typecheck (lint)
         run: pnpm lint
@@ -70,6 +69,10 @@ jobs:
       # path asserts only structural sanity: no scenario run hard-failed.
       # (No expected-ids CSV is passed — the full suite has no fixed golden
       # subset to check coverage against, unlike the PR-gate run.)
+      #
+      # Scoring policy for this tier: axis scores are ADVISORY until the
+      # judge clears its kappa >= 0.7 calibration gate; trend decisions
+      # should not key off them.
       - name: Deep bench (LLM judge)
         if: ${{ github.event.inputs.judge == 'llm' }}
         run: pnpm --filter @perfectman/eval bench --mode local --judge llm --out "$GITHUB_WORKSPACE/out/bench-full.json"
@@ -78,9 +81,12 @@ jobs:
         if: ${{ github.event.inputs.judge == 'llm' }}
         run: node scripts/ci/check-bench-gate.mjs --skip-signal-gate out/bench-full.json
 
+      # Date-stamped so trend artifacts sort chronologically instead of by
+      # opaque run ids. Note: artifacts alone are a rolling store (default
+      # retention); aggregating them into a committed baseline is future work.
       - name: Upload report
         if: always() && hashFiles('out/bench-full.json') != ''
         uses: actions/upload-artifact@v4
         with:
-          name: bench-${{ github.run_id }}
+          name: bench-${{ steps.stamp.outputs.date }}-${{ github.run_id }}
           path: out/bench-full.json
