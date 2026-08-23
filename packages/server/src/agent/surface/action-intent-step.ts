@@ -163,8 +163,11 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           inputTokensEstimate: ctx.prompt.inputTokensEstimate,
         });
         if (!budgetRecheck.allowed) {
-          lastFailure = "provider_failed";
-          repetitionBlocked = true;
+          // Mirror the provider-failure path: report as llm_failure rather
+          // than a repetition block, since no repeat was actually committed.
+          fallbackApplied = true;
+          intent = IntentParser.createFallback(agentId, "no_op", "Repetition retry aborted: LLM budget exhausted.");
+          retryKind = "provider_failed";
           break;
         }
 

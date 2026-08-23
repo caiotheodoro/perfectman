@@ -79,7 +79,7 @@ export async function main(): Promise<void> {
 
       for (const scenario of scenarios) {
         setRepetitionPolicy({ threshold, maxRetries });
-          let wireCalls = 0;
+        let wireCalls = 0;
         const artifact = await ScenarioRunner.run(scenario!, {
           llmMode: "mock",
           providerFactory: (llmConfig, agentId): LLMProvider => {
