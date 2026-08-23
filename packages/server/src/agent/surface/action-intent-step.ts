@@ -135,7 +135,6 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const mainInputTokens = providerResult.usage.inputTokens;
     const mainOutputTokens = providerResult.usage.outputTokens;
     const retryUsages: Array<{ inputTokens: number; outputTokens: number; latencyMs: number; promptVersion: string }> = [];
-    let retryAttemptsMade = 0;
 
     const { threshold, maxRetries } = getRepetitionPolicy();
     const isRepeat = (candidateIntent: typeof intent): boolean =>
@@ -143,9 +142,9 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       !!candidateIntent.visibleContent &&
       isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances, threshold);
 
+    let attemptsMade = 0;
     if (!fallbackApplied && isRepeat(intent)) {
       let lastAttemptContent = intent.visibleContent;
-      let attemptsMade = 0;
       let lastFailure: "repeat_failed" | "parse_failed" | "provider_failed" | null = null;
 
       if (maxRetries <= 0) {
@@ -224,7 +223,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       intent = IntentParser.createFallback(
         agentId,
         "no_op",
-        `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent — blocked structurally${maxRetries === 0 ? " without any retry attempt" : ` after ${maxRetries} retry attempt(s)`}.`,
+        `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent — blocked structurally${attemptsMade === 0 ? " without any retry attempt" : ` after ${attemptsMade} retry attempt(s)`}.`,
       );
     }
 
