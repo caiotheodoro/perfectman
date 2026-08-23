@@ -50,6 +50,12 @@ export {
   DEFAULT_SIMULATION_CONFIG_FILENAME,
   inflatePersonaConfig,
 } from "./config/simulation-config.js";
+export {
+  parseJudgeConfig,
+  loadJudgeConfig,
+  loadJudgeSectionFromSimulationConfig,
+} from "./config/judge-config.js";
+export { getJudgeConfigPath } from "./cli/config-path.js";
 export type {
   SimulationAppConfig,
   AgentConfig,
