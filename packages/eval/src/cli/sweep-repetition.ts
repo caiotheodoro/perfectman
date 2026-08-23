@@ -11,10 +11,12 @@
 import { writeFileSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { ScenarioRunner } from "../run/scenario-runner.js";
-import { REPETITION_SIMILARITY_THRESHOLD, setRepetitionPolicy } from "@perfectman/server";
 import { ruleJudge } from "../judge/judge.js";
-import { getScenario } from "@perfectman/shared";
-import { REPETITION_GUARD_MARKER } from "@perfectman/server";
+import { PersonaAwareMockProvider } from "../bench/persona-aware-mock.js";
+import type { LLMProvider } from "@perfectman/server";
+import { getScenario, getPersonaPackById, ALL_PERSONAS } from "@perfectman/shared";
+import type { PersonaPack } from "@perfectman/shared";
+import { REPETITION_SIMILARITY_THRESHOLD, REPETITION_GUARD_MARKER, setRepetitionPolicy } from "@perfectman/server";
 
 const args = process.argv.slice(2);
 function argValue(flag: string): string | undefined {
@@ -51,6 +53,11 @@ function countGuardBlocks(events: { type: string; payload: Record<string, unknow
 
 export async function main(): Promise<void> {
   const scenarios = SCENARIOS.map(id => getScenario(id)).filter(s => s !== undefined);
+  const repetitionPacks = new Map<string, PersonaPack>();
+  for (const persona of ALL_PERSONAS) {
+    const pack = getPersonaPackById(persona.id);
+    if (pack) repetitionPacks.set(persona.id, pack);
+  }
 
   const grid: Cell[] = [];
   for (const threshold of THRESHOLDS) {
@@ -72,14 +79,26 @@ export async function main(): Promise<void> {
 
       for (const scenario of scenarios) {
         setRepetitionPolicy({ threshold, maxRetries });
+      let wireCalls = 0;
         const artifact = await ScenarioRunner.run(scenario!, {
           llmMode: "mock",
+          providerFactory: (llmConfig, agentId): LLMProvider => {
+            const inner = new PersonaAwareMockProvider(
+              repetitionPacks.get(agentId) ?? getPersonaPackById("generic")!,
+              scenario!.seed,
+            );
+            return {
+              generateIntent: async (...providerArgs) => {
+                wireCalls++;
+                return inner.generateIntent(...providerArgs);
+              },
+            };
+          },
         });
         cell.runs++;
         cell.guardBlocks += countGuardBlocks(artifact.events);
         for (const calls of artifact.llmCalls.values()) cell.llmCalls += calls;
-        cell.providerCalls += artifact.providerCalls ?? 0;
-        cell.providerCalls += artifact.providerCalls ?? 0;
+        cell.providerCalls += wireCalls;
 
         const repetitionProbe = artifact.probeResults.find(p => p.probe === "content-repetition");
         if (repetitionProbe) repetitionSum += repetitionProbe.measured;

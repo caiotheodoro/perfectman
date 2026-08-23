@@ -3,7 +3,7 @@ import { AgentRuntime } from "../agent-runtime.js";
 import { llmBudget } from "../../llm/llm-budget.js";
 import type { AgentRuntimeInput, AvailableAction } from "@perfectman/shared";
 import type { AgentRuntimeContext } from "../agent-runtime.types.js";
-import { setRepetitionPolicy } from "../repetition-guard.js";
+import { setRepetitionPolicy, getRepetitionPolicy, REPETITION_SIMILARITY_THRESHOLD } from "../repetition-guard.js";
 
 describe("AgentRuntime Orchestration", () => {
   const context: AgentRuntimeContext = {
@@ -198,6 +198,12 @@ describe("AgentRuntime Orchestration", () => {
   });
 
   describe("repetition guard retry", () => {
+    let savedPolicy: ReturnType<typeof getRepetitionPolicy>;
+    beforeEach(() => {
+      savedPolicy = { ...getRepetitionPolicy() };
+    });
+    afterEach(() => setRepetitionPolicy(savedPolicy));
+
     const repeatingInput: AgentRuntimeInput = {
       ...baseInput,
       perceptionPacket: {

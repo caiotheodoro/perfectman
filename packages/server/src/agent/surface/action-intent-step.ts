@@ -143,7 +143,6 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances, threshold);
 
     if (!fallbackApplied && isRepeat(intent)) {
-      let attemptsMade = 0;
       let lastAttemptContent = intent.visibleContent;
       let lastFailure: "repeat_failed" | "parse_failed" | "provider_failed" | null = null;
 
@@ -180,7 +179,6 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         };
         try {
           const retryResult = await provider.generateIntent(input, runtimeContext, retryPrompt);
-          attemptsMade = attempt;
           totalInputTokens += retryResult.usage.inputTokens;
           totalOutputTokens += retryResult.usage.outputTokens;
           retryUsage = {
@@ -216,7 +214,6 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           break;
         }
       }
-      void attemptsMade;
     }
 
     if (repetitionBlocked) {
