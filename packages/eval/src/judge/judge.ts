@@ -13,7 +13,8 @@
  */
 
 import type { CommittedEvent, JudgeRubric, RoleplayScenario } from "@perfectman/shared";
-import { PromptSection, chatCompletion } from "@perfectman/shared";
+import { PromptSection } from "@perfectman/shared";
+import { chatCompletion } from "../llm/chat-completion.js";
 
 import type { ProbeResult } from "../probes/types.js";
 
@@ -236,8 +237,6 @@ export type LLMJudgeConfig = {
   apiKey?: string;
   temperature?: number;
   timeoutMs?: number;
-  /** Transport retries for transient failures (from the judge config file). */
-  retryCount?: number;
 };
 
 function buildJudgeSystem(rubric: JudgeRubric): string {
@@ -281,7 +280,7 @@ async function callJudge(
   const system = buildJudgeSystem(scenario.rubric) + systemSuffix;
   const user = buildJudgeUser(scenario, events);
 
-  return (await chatCompletion({
+  return chatCompletion({
     baseUrl: config.baseUrl,
     model: config.model,
     apiKey: config.apiKey,
@@ -296,8 +295,7 @@ async function callJudge(
     // endpoint can't suppress that (see extractJsonObject above).
     maxTokens: 1500,
     timeoutMs: config.timeoutMs ?? 60000,
-    retryCount: config.retryCount,
-  })).content;
+  });
 }
 
 function parseAxes(raw: string, scenario: RoleplayScenario): { axes: AxisScores; imputedAxes: string[] } {
@@ -495,7 +493,7 @@ async function scoreCohesion(
     .container("decision", (s) => s.raw("Score narrative_cohesion 1-5 from these two turns, returning ONLY the JSON object."))
     .toString();
 
-  const raw = (await chatCompletion({
+  const raw = await chatCompletion({
     baseUrl: config.baseUrl,
     model: config.model,
     apiKey: config.apiKey,
@@ -509,8 +507,7 @@ async function scoreCohesion(
     // headroom beyond the tiny {"narrative_cohesion": N} answer itself.
     maxTokens: 800,
     timeoutMs: config.timeoutMs ?? 60000,
-    retryCount: config.retryCount,
-  })).content;
+  });
   const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as {
     narrative_cohesion?: number;

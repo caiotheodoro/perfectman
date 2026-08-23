@@ -57,9 +57,6 @@ export * from "./attention/attention.types.js";
 export * from "./prompt/prompt-syntax.js";
 export type { TranslatedEmotionalState, RelationalFlavor, PromptPurpose } from "./prompt/prompt.types.js";
 
-// LLM (shared OpenAI-compatible call primitive)
-export * from "./llm/chat-completion.js";
-
 // Perception
 export * from "./perception/perception.types.js";
 

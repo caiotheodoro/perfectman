@@ -8,7 +8,8 @@
  */
 
 import type { CommittedEvent, RoleplayScenario } from "@perfectman/shared";
-import { PromptSection, chatCompletion } from "@perfectman/shared";
+import { PromptSection } from "@perfectman/shared";
+import { chatCompletion } from "../llm/chat-completion.js";
 
 
 export type Narration = {
@@ -68,7 +69,7 @@ export async function narrateTranscript(
   }
 
   try {
-    const raw = (await chatCompletion({
+    const raw = await chatCompletion({
       baseUrl,
       model,
       apiKey,
@@ -88,7 +89,7 @@ export async function narrateTranscript(
       maxTokens: 350,
       responseFormatJson: true,
       timeoutMs: 90000,
-    })).content;
+    });
     const jsonText = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
     const parsed = JSON.parse(jsonText) as Partial<Narration>;
     return {
