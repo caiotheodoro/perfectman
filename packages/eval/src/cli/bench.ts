@@ -20,22 +20,37 @@ import {
   type RoleplayScenario,
 } from "@perfectman/shared";
 import { ScenarioRunner } from "../run/scenario-runner.js";
-import { ruleJudge, llmJudge, llmJudgePerTurn, juryJudge, type AxisScores } from "../judge/judge.js";
-import { MockJudgeProvider } from "../judge/mock-judge-provider.js";
+import { ruleJudge, llmJudge, llmJudgePerTurn, type AxisScores } from "../judge/judge.js";
 import { calibrateJudge, baseScenarioId } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
-import { loadJudgeConfig, applyJudgeShorthand } from "../llm/judge-config.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checker.js";
 import { BENCH_SLICES, resolveBenchSlice } from "../bench-slices.js";
 
-/**
- * Compatibility view of the judge loader for programmatic callers: the
- * env-resolved endpoint config, exactly as the pre-pivot judgeConfig()
- * returned it (no file, no CLI shorthand).
- */
-export function judgeConfig(): Promise<import("../judge/judge.js").LLMJudgeConfig> {
-  return loadJudgeConfig([]).then((resolved) => resolved.config);
+/** LLM judge endpoint — DeepSeek by default when PERFECTMAN_LLM_PROVIDER=deepseek. */
+export function judgeConfig(): import("../judge/judge.js").LLMJudgeConfig {
+  const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
+  const isDeepseek = provider === "deepseek";
+  // Empty/unset → default; only an explicit numeric value (incl. "0") wins.
+  const tempRaw = Number(process.env.PERFECTMAN_JUDGE_TEMPERATURE);
+  const tempSet = process.env.PERFECTMAN_JUDGE_TEMPERATURE !== undefined
+    && process.env.PERFECTMAN_JUDGE_TEMPERATURE.trim() !== "";
+  return {
+    baseUrl:
+      process.env.PERFECTMAN_JUDGE_BASE_URL ??
+      process.env.PERFECTMAN_LLM_BASE_URL ??
+      (isDeepseek ? "https://api.deepseek.com/v1" : "http://localhost:11434/v1"),
+    model:
+      process.env.PERFECTMAN_JUDGE_MODEL ??
+      process.env.PERFECTMAN_LLM_MODEL ??
+      (isDeepseek ? "deepseek-chat" : "qwen3:8b"),
+    apiKey: process.env.PERFECTMAN_LLM_API_KEY,
+    // Heuristic LLM-as-judge: temperature UP by default (varied, creative
+    // reads expose cohesion/voice failures a strict low-temp judge misses).
+    // Set PERFECTMAN_JUDGE_TEMPERATURE=0 for deterministic calibration runs.
+    temperature: tempSet && Number.isFinite(tempRaw) ? tempRaw : 1.0,
+    timeoutMs: 90000,
+  };
 }
 
 export type BenchReport = {
@@ -79,18 +94,12 @@ export async function runBench(opts: {
   category?: string;
   limit?: number;
   out?: string;
-  /** `--judge rule|llm` shorthand; absent → the resolved config's providerType. */
   judge?: "rule" | "llm";
   perTurn?: boolean;
-  /** CLI args for --judge-config resolution (defaults to the module args). */
-  args?: string[];
 }): Promise<BenchReport> {
   const mode = opts.mode ?? "mock";
+  const judgeMode = opts.judge ?? "rule";
   const perTurn = opts.perTurn ?? false;
-
-  const resolvedJudge = await loadJudgeConfig(opts.args ?? args);
-  const judgeMode = applyJudgeShorthand(resolvedJudge, opts.judge);
-  const mockJudge = new MockJudgeProvider();
 
   let selected: RoleplayScenario[];
   if (opts.slice !== undefined && opts.scenarios && opts.scenarios.length > 0) {
@@ -167,18 +176,11 @@ export async function runBench(opts: {
       artifact.templateVersions.forEach((v) => allTemplateVersions.add(v));
 
       const judgeResult =
-        judgeMode === "openai-compatible"
-          ? resolvedJudge.jury && resolvedJudge.jury.length > 0
-            ? {
-                axes: (await juryJudge(scenario, artifact.events, resolvedJudge.jury)).axes,
-                salvaged: false,
-              }
-            : perTurn
-              ? await llmJudgePerTurn(scenario, artifact.events, resolvedJudge.config)
-              : await llmJudge(scenario, artifact.events, resolvedJudge.config)
-          : judgeMode === "mock"
-            ? mockJudge.judge(scenario)
-            : { axes: ruleJudge(scenario, artifact.events, artifact.probeResults, artifact.passedSignals / Math.max(1, artifact.totalSignals)), salvaged: false };
+        judgeMode === "llm"
+          ? perTurn
+            ? await llmJudgePerTurn(scenario, artifact.events, judgeConfig())
+            : await llmJudge(scenario, artifact.events, judgeConfig())
+          : { axes: ruleJudge(scenario, artifact.events, artifact.probeResults, artifact.passedSignals / Math.max(1, artifact.totalSignals)), salvaged: false };
       const axisScores = judgeResult.axes;
 
       // A salvaged score is a fabricated/imputed read, not a clean parse —
@@ -327,9 +329,7 @@ export async function main(): Promise<void> {
     category: argValue("--category"),
     limit: argValue("--limit") ? Number(argValue("--limit")) : undefined,
     out: argValue("--out"),
-    // The shorthand overrides the file's providerType only when the flag is
-    // actually passed — absent, the file (and the rule default) decides.
-    judge: args.includes("--judge") ? (argValue("--judge") as "rule" | "llm") : undefined,
+    judge: (argValue("--judge") as "rule" | "llm") ?? "rule",
     perTurn: args.includes("--per-turn"),
   });
   printReport(report);

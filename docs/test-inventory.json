@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-23T00:21:57.132Z",
+  "generatedAt": "2026-08-22T21:26:30.183Z",
   "totals": {
-    "files": 97,
-    "its": 909
+    "files": 93,
+    "its": 861
   },
   "byPackage": {
     "engine": {
@@ -11,21 +11,21 @@
       "flags": []
     },
     "eval": {
-      "files": 17,
-      "its": 131,
+      "files": 15,
+      "its": 112,
       "flags": []
     },
     "server": {
-      "files": 50,
-      "its": 431,
+      "files": 49,
+      "its": 414,
       "flags": [
         "console(1)",
         "async-pause(1)"
       ]
     },
     "shared": {
-      "files": 8,
-      "its": 88,
+      "files": 7,
+      "its": 76,
       "flags": []
     }
   },
@@ -515,28 +515,6 @@
       "violations": []
     },
     {
-      "file": "packages/eval/src/test/bench-dispatch.test.ts",
-      "pkg": "eval",
-      "layer": "eval-harness",
-      "its": 3,
-      "itsEach": 0,
-      "forcedCasts": 0,
-      "tsBypasses": 0,
-      "eslintDisables": 0,
-      "onlys": 0,
-      "skips": 0,
-      "consoleLogs": 0,
-      "truthy": 0,
-      "defined": 0,
-      "deadIdTruthy": 0,
-      "nonNull": 0,
-      "spies": 1,
-      "asyncPauses": 0,
-      "weakTerminals": [],
-      "flags": [],
-      "violations": []
-    },
-    {
       "file": "packages/eval/src/test/bench-seed.test.ts",
       "pkg": "eval",
       "layer": "eval-harness",
@@ -584,7 +562,7 @@
       "file": "packages/eval/src/test/bench.test.ts",
       "pkg": "eval",
       "layer": "eval-harness",
-      "its": 8,
+      "its": 7,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -717,28 +695,6 @@
       "pkg": "eval",
       "layer": "eval-harness",
       "its": 8,
-      "itsEach": 0,
-      "forcedCasts": 0,
-      "tsBypasses": 0,
-      "eslintDisables": 0,
-      "onlys": 0,
-      "skips": 0,
-      "consoleLogs": 0,
-      "truthy": 0,
-      "defined": 0,
-      "deadIdTruthy": 0,
-      "nonNull": 0,
-      "spies": 0,
-      "asyncPauses": 0,
-      "weakTerminals": [],
-      "flags": [],
-      "violations": []
-    },
-    {
-      "file": "packages/eval/src/test/judge-config.test.ts",
-      "pkg": "eval",
-      "layer": "eval-harness",
-      "its": 15,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -1155,32 +1111,10 @@
       "violations": []
     },
     {
-      "file": "packages/server/src/config/__tests__/judge-config.test.ts",
-      "pkg": "server",
-      "layer": "integration",
-      "its": 14,
-      "itsEach": 0,
-      "forcedCasts": 0,
-      "tsBypasses": 0,
-      "eslintDisables": 0,
-      "onlys": 0,
-      "skips": 0,
-      "consoleLogs": 0,
-      "truthy": 0,
-      "defined": 0,
-      "deadIdTruthy": 0,
-      "nonNull": 0,
-      "spies": 0,
-      "asyncPauses": 0,
-      "weakTerminals": [],
-      "flags": [],
-      "violations": []
-    },
-    {
       "file": "packages/server/src/config/__tests__/simulation-config.test.ts",
       "pkg": "server",
       "layer": "integration",
-      "its": 14,
+      "its": 11,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -2041,28 +1975,6 @@
       "pkg": "shared",
       "layer": "contract",
       "its": 9,
-      "itsEach": 0,
-      "forcedCasts": 0,
-      "tsBypasses": 0,
-      "eslintDisables": 0,
-      "onlys": 0,
-      "skips": 0,
-      "consoleLogs": 0,
-      "truthy": 0,
-      "defined": 0,
-      "deadIdTruthy": 0,
-      "nonNull": 0,
-      "spies": 0,
-      "asyncPauses": 0,
-      "weakTerminals": [],
-      "flags": [],
-      "violations": []
-    },
-    {
-      "file": "packages/shared/src/__tests__/judge-config.test.ts",
-      "pkg": "shared",
-      "layer": "contract",
-      "its": 12,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,

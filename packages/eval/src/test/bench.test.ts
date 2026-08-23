@@ -74,7 +74,7 @@ describe("judgeConfig", () => {
     vi.unstubAllEnvs();
   });
 
-  it("lets the judge use a separate endpoint from the arena (cross-family judging)", async () => {
+  it("lets the judge use a separate endpoint from the arena (cross-family judging)", () => {
     vi.stubEnv("PERFECTMAN_LLM_PROVIDER", "local");
     vi.stubEnv("PERFECTMAN_JUDGE_BASE_URL", "https://api.deepseek.com/v1");
     vi.stubEnv("PERFECTMAN_LLM_BASE_URL", "http://localhost:11434/v1");
@@ -82,28 +82,17 @@ describe("judgeConfig", () => {
     vi.stubEnv("PERFECTMAN_LLM_MODEL", "qwen3:1.7b");
     vi.stubEnv("PERFECTMAN_JUDGE_TEMPERATURE", "0");
 
-    const cfg = await judgeConfig();
+    const cfg = judgeConfig();
     expect(cfg.baseUrl).toBe("https://api.deepseek.com/v1");
     expect(cfg.model).toBe("deepseek-chat");
     expect(cfg.temperature).toBe(0);
   });
 
-  it("falls back to the arena endpoint when no judge endpoint is set", async () => {
+  it("falls back to the arena endpoint when no judge endpoint is set", () => {
     vi.stubEnv("PERFECTMAN_LLM_PROVIDER", "local");
     vi.stubEnv("PERFECTMAN_LLM_BASE_URL", "http://localhost:11434/v1");
     delete process.env.PERFECTMAN_JUDGE_BASE_URL;
 
-    expect((await judgeConfig()).baseUrl).toBe("http://localhost:11434/v1");
-  });
-
-  it("keeps the deepseek endpoint shortcut for env-only runs", async () => {
-    vi.stubEnv("PERFECTMAN_LLM_PROVIDER", "deepseek");
-    vi.stubEnv("PERFECTMAN_LLM_API_KEY", "sk-test");
-
-    const cfg = await judgeConfig();
-    expect(cfg.baseUrl).toBe("https://api.deepseek.com/v1");
-    expect(cfg.model).toBe("deepseek-chat");
-    expect(cfg.apiKey).toBe("sk-test");
-    expect(cfg.timeoutMs).toBe(90000);
+    expect(judgeConfig().baseUrl).toBe("http://localhost:11434/v1");
   });
 });

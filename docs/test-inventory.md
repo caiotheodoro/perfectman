@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-23T00:21:57.128Z — audited 97 files, 909 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-22T21:26:30.178Z — audited 93 files, 861 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -9,11 +9,11 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | Package | Files | it/test | Hygiene flags
 |---|---|---|---|
 | engine | 22 | 259 | —
-| eval | 17 | 131 | —
-| server | 50 | 431 | console(1), async-pause(1)
-| shared | 8 | 88 | —
+| eval | 15 | 112 | —
+| server | 49 | 414 | console(1), async-pause(1)
+| shared | 7 | 76 | —
 
-**Total: 97 files, 909 it/test blocks; 2 files flagged.**
+**Total: 93 files, 861 it/test blocks; 2 files flagged.**
 
 ## Per-file inventory
 
@@ -41,17 +41,15 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/engine/src/__tests__/visibility-security.test.ts | integration | 18 | 
 | packages/engine/src/__tests__/visibility.test.ts | integration | 20 | 
 | packages/engine/src/perception/__tests__/memory-salience.test.ts | integration | 12 | 
-| packages/eval/src/test/bench-dispatch.test.ts | eval-harness | 3 | 
 | packages/eval/src/test/bench-seed.test.ts | eval-harness | 7 | 
 | packages/eval/src/test/bench-slices.test.ts | eval-harness | 6 | 
-| packages/eval/src/test/bench.test.ts | eval-harness | 8 | 
+| packages/eval/src/test/bench.test.ts | eval-harness | 7 | 
 | packages/eval/src/test/calibration-matching.test.ts | eval-harness | 4 | 
 | packages/eval/src/test/calibration-properties.test.ts | eval-harness | 6 | 
 | packages/eval/src/test/chat-completion.test.ts | eval-harness | 6 | 
 | packages/eval/src/test/echo-chamber-stability.test.ts | eval-harness | 2 | 
 | packages/eval/src/test/golden-labels-coverage.test.ts | eval-harness | 3 | 
 | packages/eval/src/test/intent-entropy.test.ts | eval-harness | 8 | 
-| packages/eval/src/test/judge-config.test.ts | eval-harness | 15 | 
 | packages/eval/src/test/judge-json-salvage.test.ts | eval-harness | 9 | 
 | packages/eval/src/test/judge-signals.test.ts | eval-harness | 10 | 
 | packages/eval/src/test/jury-judge.test.ts | eval-harness | 11 | 
@@ -70,8 +68,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/agent/__tests__/repetition-guard.test.ts | integration | 8 | 
 | packages/server/src/agent/surface/__tests__/action-intent-step.test.ts | integration | 9 | 
 | packages/server/src/cli/__tests__/llm-health-check.test.ts | integration | 3 | 
-| packages/server/src/config/__tests__/judge-config.test.ts | integration | 14 | 
-| packages/server/src/config/__tests__/simulation-config.test.ts | integration | 14 | 
+| packages/server/src/config/__tests__/simulation-config.test.ts | integration | 11 | 
 | packages/server/src/discord/__tests__/bot-registry.test.ts | integration | 9 | 
 | packages/server/src/discord/__tests__/channel-map.test.ts | integration | 6 | 
 | packages/server/src/discord/__tests__/discord-config.test.ts | integration | 13 | 
@@ -111,7 +108,6 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/shared/src/__tests__/constants.test.ts | contract | 13 | 
 | packages/shared/src/__tests__/contracts.test.ts | contract | 3 | 
 | packages/shared/src/__tests__/intent-packet-schema.test.ts | contract | 9 | 
-| packages/shared/src/__tests__/judge-config.test.ts | contract | 12 | 
 | packages/shared/src/__tests__/prompt-syntax.test.ts | contract | 5 | 
 | packages/shared/src/__tests__/schemas.test.ts | contract | 22 | 
 | packages/shared/src/persona-packs/persona-packs.test.ts | contract | 16 | 

@@ -37,10 +37,6 @@ export * from "./intent/intent.types.js";
 export * from "./intent/intent.schema.js";
 export * from "./intent/intent-packet.schema.js";
 
-// Judge
-export * from "./judge/judge-config.types.js";
-export * from "./judge/judge-config.schema.js";
-
 // Decision
 export * from "./decision/decision.types.js";
 
