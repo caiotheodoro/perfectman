@@ -297,7 +297,9 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     if (fallbackApplied && !repetitionBlocked) {
       const detail =
         retryKind === "provider_failed"
-          ? `Repetition retry provider call failed for agent ${agentId}; falling back to no_op.`
+          ? attemptsMade === 0
+            ? `Repetition retry aborted before any call for agent ${agentId}: LLM budget exhausted.`
+            : `Repetition retry provider call failed for agent ${agentId}; falling back to no_op.`
           : `LLM parsing or target constraint validation failed for agent ${agentId}: ${parseResult.errorDetail}`;
       operatorEvents.push({
         type: "llm_failure",

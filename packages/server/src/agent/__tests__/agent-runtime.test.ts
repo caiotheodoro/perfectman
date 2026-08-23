@@ -312,6 +312,35 @@ describe("AgentRuntime Orchestration", () => {
       expect(output.intent.privateMotiveSummary).toContain("without any retry attempt");
     });
 
+    it("routes a budget-denied retry through llm_failure, not intent_blocked", async () => {
+      setRepetitionPolicy({ threshold: 0.7, maxRetries: 2 });
+      const runtime = new AgentRuntime({
+        "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+      });
+      const fetchMock = vi.fn().mockResolvedValue(jsonResponse("kkkkk não acredito nesse take", 50, 10));
+      vi.stubGlobal("fetch", fetchMock);
+      // First canCall (main attempt) allows; the retry re-check denies.
+      let canCalls = 0;
+      const canCallSpy = vi.spyOn(llmBudget, "canCall").mockImplementation((req) => {
+        canCalls++;
+        return canCalls === 1
+          ? { allowed: true, reason: undefined, priority: req.priority }
+          : { allowed: false, reason: "token budget exhausted", priority: req.priority };
+      });
+
+      const output = await runtime.generateIntent(repeatingInput, context);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1); // denied before any retry wire call
+      expect(canCallSpy).toHaveBeenCalledTimes(2);
+      expect(output.intent.intentType).toBe("no_op");
+      const kinds = output.operatorEvents.map(e => e.type);
+      expect(kinds).not.toContain("intent_blocked");
+      expect(kinds).toContain("llm_failure");
+      const failureDetail = JSON.stringify(output.operatorEvents.find(e => e.type === "llm_failure"));
+      expect(failureDetail).toContain("budget exhausted");
+      canCallSpy.mockRestore();
+    });
+
     it("honors a stricter threshold: a loose near-match passes when raised", async () => {
       // "kkkkk não acredito nesse take mesmo" sits at Jaccard ~5/6: blocks
       // at the default 0.7 but passes at 0.99 — proving the knob is plumbed.
