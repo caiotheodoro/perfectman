@@ -84,6 +84,7 @@ function resolveEntry(
     apiKey: entry.apiKeyEnv ? process.env[entry.apiKeyEnv] : undefined,
     temperature: entry.temperature ?? envDefaults.temperature,
     timeoutMs: entry.timeoutMs ?? envDefaults.timeoutMs,
+    retryCount: entry.retryCount,
   };
 }
 
@@ -111,9 +112,6 @@ function warnUnusedJudgeKeys(app: JudgeAppConfig): void {
   const notes: string[] = [];
   if (app.responseFormatJson !== undefined) {
     notes.push("responseFormatJson is validated but not consumed by the judge path");
-  }
-  if (app.retryCount !== undefined) {
-    notes.push("retryCount is validated but not consumed by the judge path");
   }
   for (const key of Object.keys(app)) {
     if (!KNOWN_JUDGE_KEYS.has(key)) {
