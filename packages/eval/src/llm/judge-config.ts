@@ -79,6 +79,7 @@ function resolveEntry(
     apiKey: entry.apiKeyEnv ? process.env[entry.apiKeyEnv] : envDefaults.apiKey,
     temperature: entry.temperature ?? envDefaults.temperature,
     timeoutMs: entry.timeoutMs ?? envDefaults.timeoutMs,
+    retryCount: entry.retryCount,
   };
 }
 
