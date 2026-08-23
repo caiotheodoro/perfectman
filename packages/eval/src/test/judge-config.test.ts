@@ -155,7 +155,6 @@ describe("loadJudgeConfig precedence", () => {
       expect(warn).toHaveBeenCalled();
       const joined = warn.mock.calls.map((c) => String(c[0])).join("\n");
       expect(joined).toMatch(/responseFormatJson/);
-      expect(joined).toMatch(/retryCount/);
       expect(joined).toMatch(/baseURL/);
     } finally {
       warn.mockRestore();

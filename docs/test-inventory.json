@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-23T19:44:26.181Z",
+  "generatedAt": "2026-08-23T19:58:56.701Z",
   "totals": {
     "files": 97,
-    "its": 922
+    "its": 935
   },
   "byPackage": {
     "engine": {
@@ -11,8 +11,8 @@
       "flags": []
     },
     "eval": {
-      "files": 17,
-      "its": 136,
+      "files": 16,
+      "its": 130,
       "flags": []
     },
     "server": {
@@ -24,9 +24,11 @@
       ]
     },
     "shared": {
-      "files": 8,
-      "its": 94,
-      "flags": []
+      "files": 9,
+      "its": 113,
+      "flags": [
+        "async-pause(2)"
+      ]
     }
   },
   "files": [
@@ -641,28 +643,6 @@
       "deadIdTruthy": 0,
       "nonNull": 0,
       "spies": 0,
-      "asyncPauses": 0,
-      "weakTerminals": [],
-      "flags": [],
-      "violations": []
-    },
-    {
-      "file": "packages/eval/src/test/chat-completion.test.ts",
-      "pkg": "eval",
-      "layer": "eval-harness",
-      "its": 6,
-      "itsEach": 0,
-      "forcedCasts": 0,
-      "tsBypasses": 0,
-      "eslintDisables": 0,
-      "onlys": 0,
-      "skips": 0,
-      "consoleLogs": 0,
-      "truthy": 0,
-      "defined": 0,
-      "deadIdTruthy": 0,
-      "nonNull": 0,
-      "spies": 6,
       "asyncPauses": 0,
       "weakTerminals": [],
       "flags": [],
@@ -1990,6 +1970,30 @@
       "asyncPauses": 0,
       "weakTerminals": [],
       "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/shared/src/__tests__/chat-completion.test.ts",
+      "pkg": "shared",
+      "layer": "contract",
+      "its": 19,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 17,
+      "asyncPauses": 2,
+      "weakTerminals": [],
+      "flags": [
+        "async-pause(2)"
+      ],
       "violations": []
     },
     {

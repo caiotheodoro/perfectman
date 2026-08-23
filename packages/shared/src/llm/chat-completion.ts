@@ -12,12 +12,17 @@
  *  - transport retry (`retryCount`) for transient failures — timeout,
  *    429, 5xx, network errors (mirrors the server provider's isTransient);
  *  - dual timeout: connect via AbortController, body read raced against a
- *    hard deadline;
+ *    hard deadline (both deadline timers are cleared on settle);
  *  - response-header extraction (lowercased) for routing evidence;
  *  - typed errors aligned with the server's LLMError hierarchy —
  *    `ChatCompletionHttpError` / `ChatCompletionTimeoutError`;
  *  - json_schema response format with an automatic one-shot fallback to
- *    json_object on a 400/422 rejection (does not consume a retry slot).
+ *    json_object on a 400/422 rejection (does not consume a retry slot,
+ *    and is surfaced via `schemaFallbackUsed`).
+ *
+ * Body precedence contract (pinned by tests): named knobs first, then
+ * `extraBody` wins over them — the old provider spread extraBody last —
+ * and the response_format block wins over everything.
  */
 
 export type ChatCompletionMessage = {
@@ -40,11 +45,11 @@ export type ChatCompletionOptions = {
   messages: ChatCompletionMessage[];
   temperature?: number;
   maxTokens: number;
-  /** Syntax-only json_object mode (narrator path). */
+  /** Syntax-only json_object mode. Either this or jsonSchemaFormat enables response_format. */
   responseFormatJson?: boolean;
-  /** Shape-constrained json_schema mode; takes precedence when set. */
+  /** Shape-constrained json_schema mode. Either this or responseFormatJson enables response_format. */
   jsonSchemaFormat?: ChatCompletionJsonSchemaFormat;
-  /** Extra body fields (ollama think:false, stream, ...). */
+  /** Extra body fields — win over the named knobs (provider parity). */
   extraBody?: Record<string, unknown>;
   timeoutMs?: number;
   /** Transport retries for transient failures; schema-fallback retries are free. */
@@ -64,6 +69,8 @@ export type ChatCompletionResult = {
   };
   /** Total HTTP attempts — mirrors the provider's budget arithmetic: the schema-fallback retry does not increment it. */
   attemptCount: number;
+  /** True when a 400/422 forced the json_schema → json_object fallback. */
+  schemaFallbackUsed: boolean;
 };
 
 export class ChatCompletionError extends Error {
@@ -111,9 +118,35 @@ function isTransient(error: unknown): boolean {
 }
 
 /**
- * One OpenAI-compatible /chat/completions call with transport retry,
- * dual timeout, and response-header extraction (see module header).
+ * Race a promise against a hard deadline, clearing the deadline timer on
+ * EVERY settle — a bare setTimeout that survives resolution holds the
+ * process alive for its full duration, and eval CLIs would sit idle up to
+ * timeoutMs after their last LLM call.
  */
+function raceWithDeadline<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  timeoutMessage: string,
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(
+      () => reject(new ChatCompletionTimeoutError(timeoutMessage)),
+      timeoutMs,
+    );
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      },
+    );
+  });
+}
+
+/** One OpenAI-compatible /chat/completions call (see module header). */
 export async function chatCompletion(
   opts: ChatCompletionOptions,
 ): Promise<ChatCompletionResult> {
@@ -124,10 +157,14 @@ export async function chatCompletion(
     model: opts.model,
     messages: opts.messages,
     max_tokens: opts.maxTokens,
-    ...opts.extraBody,
   };
   if (opts.temperature !== undefined) body["temperature"] = opts.temperature;
-  if (opts.responseFormatJson) {
+  // Provider parity: the old OpenAiCompatibleProvider spread extraBody
+  // last, so a configured extraBody.temperature/... override wins over the
+  // named knobs. The response_format block (below) wins over both.
+  Object.assign(body, opts.extraBody);
+
+  if (opts.responseFormatJson === true || opts.jsonSchemaFormat !== undefined) {
     body["response_format"] = opts.jsonSchemaFormat
       ? {
           type: "json_schema",
@@ -147,7 +184,7 @@ export async function chatCompletion(
 
   const maxAttempts = (opts.retryCount ?? 0) + 1;
   let attempts = 0;
-  let jsonObjectFallbackUsed = false;
+  let schemaFallbackUsed = false;
 
   while (attempts < maxAttempts) {
     attempts++;
@@ -164,16 +201,26 @@ export async function chatCompletion(
 
       if (!response.ok) {
         clearTimeout(timeoutId);
-        const errorText = await response.text().catch(() => "Unknown error");
+        // The error-body read needs the same deadline coverage — a proxy
+        // hanging mid-error-body is the one window with zero timeout
+        // otherwise.
+        const errorText = await raceWithDeadline(
+          response.text(),
+          timeoutMs,
+          `error body read timed out after ${timeoutMs}ms`,
+        ).catch((error) => {
+          if (error instanceof ChatCompletionTimeoutError) throw error;
+          return "Unknown error";
+        });
         // A 400/422 on a json_schema request usually means the proxy does
         // not support schema-constrained decoding — retry once as
-        // json_object on the same budget slot.
+        // json_object on the same budget slot, and surface the fallback.
         if (
           (response.status === 400 || response.status === 422) &&
-          !jsonObjectFallbackUsed &&
+          !schemaFallbackUsed &&
           opts.jsonSchemaFormat
         ) {
-          jsonObjectFallbackUsed = true;
+          schemaFallbackUsed = true;
           body["response_format"] = { type: "json_object" };
           attempts--;
           continue;
@@ -187,14 +234,13 @@ export async function chatCompletion(
 
       // The abort timer stays armed through the body read — response.json()
       // can hang on a slow stream after headers arrive, so race the body
-      // read against a hard deadline too.
-      const deadline = new Promise<never>((_, reject) =>
-        setTimeout(
-          () => reject(new ChatCompletionTimeoutError(`body read timed out after ${timeoutMs}ms`)),
-          timeoutMs,
-        ),
+      // read against a hard deadline too (the deadline timer is cleared on
+      // settle by raceWithDeadline).
+      const data = await raceWithDeadline(
+        response.json() as Promise<ChatCompletionResult["data"]>,
+        timeoutMs,
+        `body read timed out after ${timeoutMs}ms`,
       );
-      const data = (await Promise.race([response.json(), deadline])) as ChatCompletionResult["data"];
       clearTimeout(timeoutId);
 
       const responseHeaders: Record<string, string> = {};
@@ -207,6 +253,7 @@ export async function chatCompletion(
         responseHeaders,
         data,
         attemptCount: attempts,
+        schemaFallbackUsed,
       };
     } catch (error) {
       clearTimeout(timeoutId);

@@ -105,6 +105,38 @@ describe("chatCompletion", () => {
     expect(body.stream).toBe(false);
   });
 
+  it("extraBody wins over the named knobs (provider parity — the old provider spread extraBody last)", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(fetchLike({}));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await chatCompletion({
+      ...opts,
+      temperature: 0.2,
+      extraBody: { temperature: 0.9, model: "other-model", max_tokens: 55 },
+    });
+
+    const body = JSON.parse((fetchMock.mock.calls[0]![1] as { body: string }).body) as Record<string, unknown>;
+    expect(body.temperature).toBe(0.9);
+    expect(body.model).toBe("other-model");
+    expect(body.max_tokens).toBe(55);
+  });
+
+  it("jsonSchemaFormat alone enables response_format (no responseFormatJson flag needed)", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(fetchLike({}));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await chatCompletion({
+      ...opts,
+      jsonSchemaFormat: { name: "intent_packet", schema: {}, strict: false },
+    });
+
+    const body = JSON.parse((fetchMock.mock.calls[0]![1] as { body: string }).body) as { response_format?: unknown };
+    expect(body.response_format).toEqual({
+      type: "json_schema",
+      json_schema: { name: "intent_packet", schema: {}, strict: false },
+    });
+  });
+
   it("resolves to empty content when the model sent none", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(fetchLike({ json: async () => ({ choices: [] }) })));
     expect((await chatCompletion(opts)).content).toBe("");
@@ -141,6 +173,7 @@ describe("chatCompletion", () => {
     expect(result.content).toBe("answer");
     expect(fetchMock).toHaveBeenCalledTimes(3);
     expect(result.attemptCount).toBe(3);
+    expect(result.schemaFallbackUsed).toBe(false);
   });
 
   it("does not retry non-transient 4xx errors", async () => {
@@ -180,6 +213,7 @@ describe("chatCompletion", () => {
     const fallbackBody = JSON.parse((fetchMock.mock.calls[1]![1] as { body: string }).body) as { response_format?: unknown };
     expect(fallbackBody.response_format).toEqual({ type: "json_object" });
     expect(result.attemptCount).toBe(1);
+    expect(result.schemaFallbackUsed).toBe(true);
   });
 
   it("extracts response headers lowercased", async () => {
@@ -211,5 +245,29 @@ describe("chatCompletion", () => {
 
     await expect(chatCompletion({ ...opts, timeoutMs: 30 })).rejects.toThrow(ChatCompletionTimeoutError);
     expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("throws ChatCompletionTimeoutError when the ERROR body read hangs (no unbounded window)", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      fetchLike({ ok: false, status: 500, text: () => new Promise<never>(() => {}) }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(chatCompletion({ ...opts, timeoutMs: 30 })).rejects.toThrow(ChatCompletionTimeoutError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("clears BOTH timers on settle — a resolved call leaves no dangling deadline timer", async () => {
+    vi.useFakeTimers();
+    try {
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue(fetchLike({})));
+      await chatCompletion({ ...opts, timeoutMs: 3000 });
+      // The connect timer AND the body-read deadline timer must both be
+      // gone — a surviving deadline timer held the (pre-fix) process open
+      // for the full timeout after the last LLM call.
+      expect(vi.getTimerCount()).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

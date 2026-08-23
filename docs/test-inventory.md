@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-23T19:44:26.176Z — audited 97 files, 922 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-23T19:58:56.696Z — audited 97 files, 935 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -9,11 +9,11 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | Package | Files | it/test | Hygiene flags
 |---|---|---|---|
 | engine | 22 | 259 | —
-| eval | 17 | 136 | —
+| eval | 16 | 130 | —
 | server | 50 | 433 | console(1), async-pause(1)
-| shared | 8 | 94 | —
+| shared | 9 | 113 | async-pause(2)
 
-**Total: 97 files, 922 it/test blocks; 2 files flagged.**
+**Total: 97 files, 935 it/test blocks; 3 files flagged.**
 
 ## Per-file inventory
 
@@ -47,7 +47,6 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/eval/src/test/bench.test.ts | eval-harness | 8 | 
 | packages/eval/src/test/calibration-matching.test.ts | eval-harness | 4 | 
 | packages/eval/src/test/calibration-properties.test.ts | eval-harness | 6 | 
-| packages/eval/src/test/chat-completion.test.ts | eval-harness | 6 | 
 | packages/eval/src/test/echo-chamber-stability.test.ts | eval-harness | 2 | 
 | packages/eval/src/test/golden-labels-coverage.test.ts | eval-harness | 3 | 
 | packages/eval/src/test/intent-entropy.test.ts | eval-harness | 8 | 
@@ -108,6 +107,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/spectator-projection.test.ts | integration | 6 | 
 | packages/server/src/simulation/__tests__/visibility-invariants.test.ts | integration | 13 | 
 | packages/server/src/simulation/__tests__/world-signals-builder.test.ts | integration | 7 | 
+| packages/shared/src/__tests__/chat-completion.test.ts | contract | 19 | async-pause(2)
 | packages/shared/src/__tests__/constants.test.ts | contract | 13 | 
 | packages/shared/src/__tests__/contracts.test.ts | contract | 3 | 
 | packages/shared/src/__tests__/intent-packet-schema.test.ts | contract | 9 | 
