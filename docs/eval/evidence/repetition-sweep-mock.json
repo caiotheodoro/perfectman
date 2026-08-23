@@ -1,0 +1,112 @@
+{
+  "version": "repetition-sweep-v1",
+  "mode": "mock",
+  "generatedAt": "2026-08-23T20:25:41.766Z",
+  "scenarios": [
+    "motive_gossip",
+    "v1_biased_memory",
+    "stagnation_resentment_loop"
+  ],
+  "limitations": "Mock repeats sit at ~1.0 Jaccard, so threshold cells are indistinguishable by construction (identical guardBlocks); only providerCalls varies across retry budgets. Discriminating thresholds requires real-model runs. The contentRepetitionMean yardstick is fixed at the default threshold regardless of the cell's runtime threshold.",
+  "grid": [
+    {
+      "threshold": 0.5,
+      "maxRetries": 0,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 398,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.5,
+      "maxRetries": 1,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 520,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.5,
+      "maxRetries": 2,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 642,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 0,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 398,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 1,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 520,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.7,
+      "maxRetries": 2,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 642,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 0,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 398,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 1,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 520,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    },
+    {
+      "threshold": 0.9,
+      "maxRetries": 2,
+      "probeThreshold": 0.7,
+      "runs": 3,
+      "guardBlocks": 61,
+      "llmCalls": 199,
+      "providerCalls": 642,
+      "contentRepetitionMean": 0.258,
+      "narrativeCohesionMean": 5
+    }
+  ]
+}

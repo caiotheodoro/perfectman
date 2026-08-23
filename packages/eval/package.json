@@ -20,7 +20,8 @@
     "narrate": "node dist/cli/narrate.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "sweep:temperature": "node dist/cli/sweep-temperature.js"
+    "sweep:temperature": "node dist/cli/sweep-temperature.js",
+    "sweep:repetition": "node dist/cli/sweep-repetition.js"
   },
   "dependencies": {
     "@perfectman/engine": "workspace:*",

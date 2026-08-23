@@ -44,6 +44,8 @@ export type ScenarioRunArtifact = {
   operatorFailures: number;
   probeResults: ProbeResult[];
   signalResults: SignalOutcome[];
+  /** Real provider wire-calls including repetition retries. */
+  providerCalls?: number;
   passedSignals: number;
   totalSignals: number;
   latencyMs: number;
@@ -57,6 +59,7 @@ export type ScenarioRunArtifact = {
 class TrackingRuntime {
   private readonly inner: AgentRuntime;
   private readonly calls = new Map<string, number>();
+  private providerCallsTotal = 0;
   private readonly versions = new Set<string>();
   private readonly templateVersions = new Set<string>();
   private readonly providers = new Map<string, LLMProvider>();
@@ -83,8 +86,21 @@ class TrackingRuntime {
         }
         this.providers.set(agentId, provider);
       }
-      return provider;
+      // Count real wire calls — repetition retries happen inside
+      // generateIntent and never show up in per-turn `calls`, but they are
+      // exactly the cost side of the repetition-policy tradeoff.
+      const counted: LLMProvider = {
+        generateIntent: async (...providerArgs) => {
+          this.providerCallsTotal++;
+          return provider!.generateIntent(...providerArgs);
+        },
+      };
+      return counted;
     });
+  }
+
+  providerCalls(): number {
+    return this.providerCallsTotal;
   }
 
   async generateIntent(
@@ -197,6 +213,7 @@ export class ScenarioRunner {
       totalSignals: signalResults.length,
       latencyMs: Date.now() - started,
       pulseResults,
+      providerCalls: tracking?.providerCalls(),
       promptVersions: tracking?.versionsUsed() ?? [],
       templateVersions: tracking?.templateVersionsUsed() ?? [],
     };

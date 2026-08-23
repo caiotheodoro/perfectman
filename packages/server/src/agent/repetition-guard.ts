@@ -40,6 +40,34 @@ export function similarity(a: string, b: string): number {
 
 export const REPETITION_SIMILARITY_THRESHOLD = 0.7;
 
+/** Marker written into no_op motives when the guard blocks a repeat. */
+export const REPETITION_GUARD_MARKER = "Repetition guard";
+
+/**
+ * Runtime-tunable guard policy. Defaults reproduce shipped behavior
+ * (threshold 0.7, one retry). Global by design — mirrors the llmBudget
+ * singleton; sweeps and tests set it per run via setRepetitionPolicy().
+ */
+export type RepetitionPolicy = { threshold: number; maxRetries: number };
+
+let activePolicy: RepetitionPolicy = {
+  threshold: REPETITION_SIMILARITY_THRESHOLD,
+  maxRetries: 1,
+};
+
+export function setRepetitionPolicy(policy: { threshold?: number; maxRetries?: number }): void {
+  if (policy.threshold !== undefined) {
+    activePolicy.threshold = Math.min(1, Math.max(0, policy.threshold));
+  }
+  if (policy.maxRetries !== undefined) {
+    activePolicy.maxRetries = Math.max(0, Math.floor(policy.maxRetries));
+  }
+}
+
+export function getRepetitionPolicy(): Readonly<RepetitionPolicy> {
+  return activePolicy;
+}
+
 /**
  * Returns true if `candidate` is a near-duplicate of any of the agent's own
  * recent utterances (word-overlap similarity >= threshold).
