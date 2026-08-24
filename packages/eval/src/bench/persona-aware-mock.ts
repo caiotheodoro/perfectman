@@ -10,7 +10,7 @@
 
 import type { AgentRuntimeInput, AvailableAction } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt, LLMConfig, LLMProvider, LLMProviderResult } from "@perfectman/server";
-import { OpenAiCompatibleProvider } from "@perfectman/server";
+import { createLLMProvider } from "@perfectman/server";
 import type { PersonaPack } from "@perfectman/shared";
 
 function mulberry32(seed: number): () => number {
@@ -419,7 +419,7 @@ export function personaAwareProviderFactory(
   const reactStreaks = new Map<string, ReactStreak>();
   return (llmConfig, agentId) => {
     if (llmConfig.providerType !== "mock") {
-      return new OpenAiCompatibleProvider(llmConfig) as LLMProvider;
+      return createLLMProvider(llmConfig, agentId);
     }
     const pack = packs.get(agentId);
     return new PersonaAwareMockProvider(

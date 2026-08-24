@@ -143,7 +143,7 @@ describe("simulation config", () => {
     })).toThrow(/Duplicate jury judge labels: same/);
   });
 
-  it("accepts the generic qwen3 provider type", () => {
+  it("accepts the generic openai-compatible provider type", () => {
     const config = baseConfig();
     const parsed = parseSimulationConfig({
       ...config,
@@ -151,7 +151,7 @@ describe("simulation config", () => {
         ...config.agents[0],
         llm: {
           ...llm,
-          providerType: "qwen3_8b",
+          providerType: "openai-compatible",
           baseUrl: "http://localhost:11434/v1",
           modelName: "qwen3:1.7b",
           extraBody: { stream: false },
@@ -159,7 +159,7 @@ describe("simulation config", () => {
       }],
     });
 
-    expect(parsed.agents[0]?.llm.providerType).toBe("qwen3_8b");
+    expect(parsed.agents[0]?.llm.providerType).toBe("openai-compatible");
     expect(parsed.agents[0]?.llm.modelName).toBe("qwen3:1.7b");
   });
 
@@ -211,7 +211,7 @@ describe("simulation config", () => {
         ...config.agents[0],
         llm: {
           ...llm,
-          providerType: "qwen3_8b",
+          providerType: "openai-compatible",
           baseUrl: "http://localhost:11434/v1",
           modelName: "qwen3:1.7b",
         },

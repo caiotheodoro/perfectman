@@ -54,7 +54,7 @@ function baseConfig(): SimulationAppConfig {
         language: "en",
       },
       llm: {
-        providerType: "qwen3_8b",
+        providerType: "openai-compatible",
         baseUrl: "http://localhost:11434/v1",
         modelName: "qwen3:1.7b",
         maxInputTokens: 1024,
@@ -118,5 +118,31 @@ describe("LLM health checks", () => {
     await assertRequiredLLMServicesAvailable(config, { fetch, timeoutMs: 1000 });
 
     expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("probes the native /api/chat endpoint for ollama-shaped configs", async () => {
+    const fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+    });
+    const llm: SimulationAppConfig["agents"][number]["llm"] = {
+      ...baseConfig().agents[0]!.llm,
+      providerType: "ollama",
+    };
+
+    await assertQwenAvailable(llm, { fetch, timeoutMs: 1000 });
+
+    expect(fetch).toHaveBeenCalledWith(
+      "http://localhost:11434/api/chat",
+      expect.objectContaining({
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    const body = JSON.parse(fetch.mock.calls[0]![1]!.body as string);
+    expect(body.model).toBe("qwen3:1.7b");
+    expect(body.options).toEqual({ num_predict: 8 });
+    expect(body.think).toBe(false);
+    expect(body.stream).toBe(false);
   });
 });

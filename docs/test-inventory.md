@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-23T19:44:26.176Z — audited 97 files, 922 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-24T19:47:52.818Z — audited 99 files, 950 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -9,11 +9,11 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | Package | Files | it/test | Hygiene flags
 |---|---|---|---|
 | engine | 22 | 259 | —
-| eval | 17 | 136 | —
-| server | 50 | 433 | console(1), async-pause(1)
+| eval | 17 | 140 | async-pause(1)
+| server | 52 | 457 | console(1), async-pause(1), async-pause(1)
 | shared | 8 | 94 | —
 
-**Total: 97 files, 922 it/test blocks; 2 files flagged.**
+**Total: 99 files, 950 it/test blocks; 4 files flagged.**
 
 ## Per-file inventory
 
@@ -47,12 +47,12 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/eval/src/test/bench.test.ts | eval-harness | 8 | 
 | packages/eval/src/test/calibration-matching.test.ts | eval-harness | 4 | 
 | packages/eval/src/test/calibration-properties.test.ts | eval-harness | 6 | 
-| packages/eval/src/test/chat-completion.test.ts | eval-harness | 6 | 
 | packages/eval/src/test/echo-chamber-stability.test.ts | eval-harness | 2 | 
 | packages/eval/src/test/golden-labels-coverage.test.ts | eval-harness | 3 | 
 | packages/eval/src/test/intent-entropy.test.ts | eval-harness | 8 | 
 | packages/eval/src/test/judge-config.test.ts | eval-harness | 19 | 
 | packages/eval/src/test/judge-json-salvage.test.ts | eval-harness | 9 | 
+| packages/eval/src/test/judge-sdk-path.test.ts | eval-harness | 10 | async-pause(1)
 | packages/eval/src/test/judge-signals.test.ts | eval-harness | 10 | 
 | packages/eval/src/test/jury-judge.test.ts | eval-harness | 11 | 
 | packages/eval/src/test/probes.test.ts | eval-harness | 23 | 
@@ -69,7 +69,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/agent/__tests__/prompt-builder.test.ts | integration | 17 | 
 | packages/server/src/agent/__tests__/repetition-guard.test.ts | integration | 8 | 
 | packages/server/src/agent/surface/__tests__/action-intent-step.test.ts | integration | 9 | 
-| packages/server/src/cli/__tests__/llm-health-check.test.ts | integration | 3 | 
+| packages/server/src/cli/__tests__/llm-health-check.test.ts | integration | 4 | 
 | packages/server/src/config/__tests__/judge-config.test.ts | integration | 16 | 
 | packages/server/src/config/__tests__/simulation-config.test.ts | integration | 14 | 
 | packages/server/src/discord/__tests__/bot-registry.test.ts | integration | 9 | 
@@ -84,6 +84,8 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/llm/__tests__/mock-llm-provider.test.ts | integration | 7 | 
 | packages/server/src/llm/__tests__/ollama-provider.test.ts | integration | 9 | 
 | packages/server/src/llm/__tests__/openai-compatible-provider.test.ts | integration | 9 | 
+| packages/server/src/llm/__tests__/provider-factory.test.ts | integration | 5 | 
+| packages/server/src/llm/__tests__/sdk-transport.test.ts | integration | 18 | async-pause(1)
 | packages/server/src/persistence/__tests__/sqlite-agent-state-repository.test.ts | integration | 8 | 
 | packages/server/src/persistence/__tests__/sqlite-channel-repository.test.ts | integration | 9 | 
 | packages/server/src/persistence/__tests__/sqlite-event-repository.test.ts | integration | 13 | 

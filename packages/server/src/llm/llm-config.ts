@@ -1,5 +1,5 @@
 export type LLMConfig = {
-  providerType: "mock" | "qwen3_8b" | "ollama" | "freellmapi";
+  providerType: "mock" | "ollama" | "openai-compatible";
   baseUrl?: string;
   apiKeyEnv?: string;
   modelName: string;

@@ -63,7 +63,7 @@
         "language": "pt-BR"
       },
       "llm": {
-        "providerType": "qwen3",
+        "providerType": "ollama",
         "baseUrl": "http://localhost:11434/v1",
         "modelName": "qwen3:1.7b",
         "maxInputTokens": 2048,
@@ -104,7 +104,7 @@
         "language": "pt-BR"
       },
       "llm": {
-        "providerType": "qwen3",
+        "providerType": "ollama",
         "baseUrl": "http://localhost:11434/v1",
         "modelName": "qwen3:1.7b",
         "maxInputTokens": 2048,

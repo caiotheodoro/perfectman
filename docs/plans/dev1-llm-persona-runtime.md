@@ -16,8 +16,8 @@ AgentRuntimeInput (built by dev2 from dev3 EngineStepResult)
   → PromptBuilder (uses dev3 PerceptionPacket.translatedEmotionalState)
   → BudgetTracker pre-check
   → LlmProvider: mock | openai-compatible
-       - qwen3: Qwen3 via vLLM, llama.cpp, Ollama, or LM Studio
-       - freellmapi: local FreeLLMAPI proxy for hosted-model A/B tests
+       - ollama: native Ollama /api/chat (local Qwen3 runs)
+       - openai-compatible: any OpenAI-compatible endpoint (hosted DeepSeek, FreeLLMAPI proxy)
   → IntentParser (extracts, repairs narrowly, validates against dev3 ActionIntent schema)
   → BudgetTracker record usage
   → ActionIntent | safe no_op | delay
@@ -131,7 +131,7 @@ Suggested `LlmConfig` shape:
 
 ```typescript
 type LlmConfig = {
-  providerType: "mock" | "qwen3" | "freellmapi";
+  providerType: "mock" | "ollama" | "openai-compatible";
   baseUrl?: string;             // required for OpenAI-compatible providers
   apiKeyEnv?: string;           // env var name; do not store secrets in persona docs
   modelName: string;            // e.g. "Qwen/Qwen3-8B", "qwen3:8b", "auto", or FreeLLMAPI model id

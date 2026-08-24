@@ -14,7 +14,7 @@
 
 import type { CommittedEvent, JudgeRubric, RoleplayScenario } from "@perfectman/shared";
 import { PromptSection } from "@perfectman/shared";
-import { chatCompletion } from "../llm/chat-completion.js";
+import { chatCompletion } from "../llm/chat-completion-error.js";
 
 import type { ProbeResult } from "../probes/types.js";
 

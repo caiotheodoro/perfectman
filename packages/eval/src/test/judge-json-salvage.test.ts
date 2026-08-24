@@ -66,13 +66,14 @@ describe("llmJudge parse-failure defenses", () => {
         const content = contents[Math.min(call, contents.length - 1)];
         call++;
         bodies.push(init?.body ?? "");
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            choices: [{ message: { content: typeof content === "string" ? content : "" } }],
-          }),
-        });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              choices: [{ message: { content: typeof content === "string" ? content : "" } }],
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        );
       }),
     );
     return { calls: () => call, bodies: () => bodies };
