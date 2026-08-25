@@ -5,6 +5,7 @@ import type {
   AgentState,
   ChannelType,
   CoreMood,
+  GoalLayerConfig,
   JudgeAppConfig,
   Memory,
   PersonaConfig,
@@ -16,6 +17,7 @@ import type {
 import {
   ChannelTypeSchema,
   CoreMoodSchema,
+  GoalLayerConfigSchema,
   JudgeAppConfigSchema,
   PresenceModeSchema,
   RelationalStateSchema,
@@ -53,6 +55,13 @@ import {
   SimulationRuntime,
   type SimulationRuntimeRepositories,
 } from "../simulation/simulation-runtime.js";
+import { ChannelRegistry } from "../simulation/channel-registry.js";
+import { GoalRegistry } from "../simulation/world/goal-registry.js";
+import {
+  WorldEvaluator,
+  resolveGoalLayerConfig,
+  type GoalLayerRuntime,
+} from "../simulation/world/world-evaluator.js";
 import type { IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 import type {
   AgentRuntime as SchedulerAgentRuntime,
@@ -79,6 +88,8 @@ export type SimulationAppConfig = {
   agents: AgentConfig[];
   /** Optional judge section — the same file describes agents AND judge. */
   judge?: JudgeAppConfig;
+  /** Optional goal-layer section — emergent goal review, verdicts, ending gate. */
+  goalLayer?: GoalLayerConfig;
   /** If set, a synthetic host message is injected into the default channel before pulse 0. */
   hostStartingMessage?: string;
 };
@@ -347,6 +358,14 @@ export function parseSimulationConfig(input: unknown): SimulationAppConfig {
             root["judge"],
             "judge",
           ),
+    goalLayer:
+      root["goalLayer"] === undefined
+        ? undefined
+        : parseWithSchema<GoalLayerConfig>(
+            GoalLayerConfigSchema,
+            root["goalLayer"],
+            "goalLayer",
+          ),
   };
 
   validateCrossReferences(config);
@@ -385,6 +404,14 @@ export async function buildConfiguredSimulation(
     repositories: persistence.repositories,
   });
 
+  const goalLayer = config.goalLayer?.enabled
+    ? await buildGoalLayerRuntime(
+        config.goalLayer,
+        simulationId,
+        persistence.repositories,
+      )
+    : undefined;
+
   const agentContexts = config.agents.map((agent) => ({
     id: agent.id,
     state: makeAgentState(agent, simulationId),
@@ -398,6 +425,7 @@ export async function buildConfiguredSimulation(
     settings: config.simulation.settings,
     agentContexts,
     channels: config.channels,
+    ...(goalLayer ? { goalLayer } : {}),
   });
 
   return {
@@ -409,6 +437,33 @@ export async function buildConfiguredSimulation(
       if (persistence.db) closeDatabase(persistence.db);
     },
   };
+}
+
+/**
+ * Goal-layer runtime wiring: resolve defaults (rejects schema-valid but
+ * unwired "llm"/"agent" modes — loud failure beats silent degradation),
+ * rebuild the registry from the committed log (empty for fresh sims), and
+ * hand the evaluator to the runtime for the pulse hook.
+ */
+async function buildGoalLayerRuntime(
+  parsed: GoalLayerConfig,
+  simulationId: string,
+  repositories: SimulationRuntimeRepositories,
+): Promise<GoalLayerRuntime> {
+  const config = resolveGoalLayerConfig(parsed);
+  const log = await repositories.eventRepo.getCommittedThrough(
+    simulationId,
+    Number.MAX_SAFE_INTEGER,
+  );
+  const registry = new GoalRegistry(log);
+  const evaluator = new WorldEvaluator(
+    repositories.eventRepo,
+    repositories.agentStateRepo,
+    new ChannelRegistry(repositories.channelRepo),
+    registry,
+    config,
+  );
+  return { config, evaluator };
 }
 
 function createRepositories(config: PersistenceConfig): {

@@ -10,7 +10,15 @@ import {
 import {
   SimulationEventSchema,
   CommittedEventSchema,
+  EventTypeSchema,
 } from "../event/event.schema.js";
+import {
+  DelusionWeightsSchema,
+  GoalAcceptanceDecisionSchema,
+  GoalSynthesisResultSchema,
+  SynthesizerConfigSchema,
+} from "../goal/goal.schema.js";
+import { GoalLayerConfigSchema } from "../goal/goal-layer-config.schema.js";
 import {
   ActionIntentSchema,
   MemoryWriteProposalSchema,
@@ -261,6 +269,218 @@ describe("SocialEmotionsSchema", () => {
         fearOfExclusion: 0, desireForStatus: 0, desireForIntimacy: 0,
       })
     ).toThrow();
+  });
+});
+
+// --- Goal Layer ---
+const validGoalProposal = {
+  id: "goal-1",
+  agentId: "a1",
+  title: "Recover from block",
+  targetState: {
+    id: "ts-1",
+    description: "no more blocked intents from a1 in ch1",
+    observableCriteria: ["no more blocked intents from a1 in ch1"],
+  },
+  kind: "resolve",
+  origin: "crystallized_from",
+  sourceEventIds: ["ev1", "ev2"],
+  createdAt: 1700000000000,
+};
+
+const committedEventFor = (type: string) => ({
+  id: `ev-${type}`,
+  simulationId: "sim1",
+  channelId: "ch1",
+  actorId: "a1",
+  type,
+  payload: {},
+  createdAt: 1700000000000,
+  pulseIndex: 5,
+  sourceEventIds: [],
+  emotionalSalience: "low",
+  visibility: {
+    visibleToAgents: [],
+    visibleToSpectators: true,
+    visibleToOperators: true,
+    visibilityReason: "test",
+  },
+});
+
+describe("EventTypeSchema — goal layer members", () => {
+  const goalEventTypes = [
+    "goal_proposed",
+    "goal_accepted",
+    "goal_declined",
+    "world_verdict",
+    "delusion_gap_sampled",
+    "ending_offered",
+  ] as const;
+
+  it.each(goalEventTypes)("accepts %s", (type) => {
+    expect(EventTypeSchema.parse(type)).toBe(type);
+    expect(CommittedEventSchema.parse(committedEventFor(type)).type).toBe(type);
+  });
+
+  it("rejects an invented goal-layer type", () => {
+    expect(EventTypeSchema.safeParse("goal_fabricated").success).toBe(false);
+  });
+});
+
+describe("DelusionWeightsSchema", () => {
+  const validWeights = {
+    wSignal: 0.5,
+    wSocial: 0.3,
+    wIdentity: 0.2,
+    revisionThreshold: 0.4,
+  };
+
+  it("accepts an unchanged valid weights object", () => {
+    expect(DelusionWeightsSchema.parse(validWeights)).toEqual(validWeights);
+  });
+
+  it("rejects a weight above 1", () => {
+    expect(
+      DelusionWeightsSchema.safeParse({ ...validWeights, wSignal: 1.5 }).success,
+    ).toBe(false);
+  });
+});
+
+describe("GoalLayerConfigSchema", () => {
+  it("parses an empty object (all fields optional)", () => {
+    const config = GoalLayerConfigSchema.parse({});
+    expect(config.enabled).toBeUndefined();
+    expect(config.synthesizer).toBeUndefined();
+    expect(config.acceptance).toBeUndefined();
+  });
+
+  it("parses a full valid section", () => {
+    const config = GoalLayerConfigSchema.parse({
+      enabled: true,
+      reviewEveryPulses: 3,
+      delusionWeightsByAgent: {
+        a1: { wSignal: 0.5, wSocial: 0.3, wIdentity: 0.2, revisionThreshold: 0.4 },
+      },
+      ending: { offerAcceptPulses: 2 },
+      synthesizer: { mode: "deterministic", intervalPulses: 5, maxCandidatesPerReview: 2 },
+      acceptance: { mode: "auto" },
+    });
+    expect(config.reviewEveryPulses).toBe(3);
+    expect(config.synthesizer?.intervalPulses).toBe(5);
+    expect(config.acceptance?.mode).toBe("auto");
+  });
+
+  it("rejects zero reviewEveryPulses", () => {
+    const result = GoalLayerConfigSchema.safeParse({ reviewEveryPulses: 0 });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.message).toMatch(/reviewEveryPulses/);
+    }
+  });
+
+  it("rejects a zero intervalPulses / maxCandidatesPerReview", () => {
+    expect(
+      GoalLayerConfigSchema.safeParse({
+        synthesizer: { mode: "deterministic", intervalPulses: 0, maxCandidatesPerReview: 3 },
+      }).success,
+    ).toBe(false);
+    expect(
+      GoalLayerConfigSchema.safeParse({
+        synthesizer: { mode: "deterministic", intervalPulses: 1, maxCandidatesPerReview: 0 },
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects a delusion weight above 1", () => {
+    const result = GoalLayerConfigSchema.safeParse({
+      delusionWeightsByAgent: {
+        a1: { wSignal: 0.5, wSocial: 1.2, wIdentity: 0.2, revisionThreshold: 0.4 },
+      },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("accepts unwired-but-contract-defined modes (D-3: parse-valid, build-rejected later)", () => {
+    const config = GoalLayerConfigSchema.parse({
+      synthesizer: { mode: "llm", intervalPulses: 5, maxCandidatesPerReview: 2 },
+      acceptance: { mode: "agent" },
+    });
+    expect(config.synthesizer?.mode).toBe("llm");
+    expect(config.acceptance?.mode).toBe("agent");
+  });
+});
+
+describe("SynthesizerConfigSchema", () => {
+  it("accepts a valid deterministic config", () => {
+    const config = SynthesizerConfigSchema.parse({
+      mode: "deterministic",
+      intervalPulses: 1,
+      maxCandidatesPerReview: 3,
+    });
+    expect(config.mode).toBe("deterministic");
+  });
+
+  it("rejects intervalPulses 0", () => {
+    expect(
+      SynthesizerConfigSchema.safeParse({
+        mode: "deterministic",
+        intervalPulses: 0,
+        maxCandidatesPerReview: 3,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("rejects an unknown mode", () => {
+    expect(
+      SynthesizerConfigSchema.safeParse({
+        mode: "quantum",
+        intervalPulses: 1,
+        maxCandidatesPerReview: 3,
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("GoalSynthesisResultSchema", () => {
+  it("accepts a valid deterministic result", () => {
+    const result = GoalSynthesisResultSchema.parse({
+      proposal: validGoalProposal,
+      narrativeFraming: "no more blocked intents from a1 in ch1",
+      confidence: 1,
+      synthesizer: "deterministic",
+    });
+    expect(result.synthesizer).toBe("deterministic");
+    expect(result.proposal.id).toBe("goal-1");
+  });
+
+  it("rejects confidence above 1", () => {
+    expect(
+      GoalSynthesisResultSchema.safeParse({
+        proposal: validGoalProposal,
+        narrativeFraming: "framing",
+        confidence: 1.5,
+        synthesizer: "deterministic",
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("GoalAcceptanceDecisionSchema", () => {
+  it("accepts { decision: 'accept' } without a reason (reason optional)", () => {
+    const decision = GoalAcceptanceDecisionSchema.parse({ decision: "accept" });
+    expect(decision.reason).toBeUndefined();
+  });
+
+  it("accepts a decline with a reason", () => {
+    const decision = GoalAcceptanceDecisionSchema.parse({
+      decision: "decline",
+      reason: "critic pre-filter",
+    });
+    expect(decision.reason).toBe("critic pre-filter");
+  });
+
+  it("rejects an unknown decision", () => {
+    expect(GoalAcceptanceDecisionSchema.safeParse({ decision: "maybe" }).success).toBe(false);
   });
 });
 

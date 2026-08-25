@@ -21,7 +21,13 @@ export type EventType =
   | "simulation_stopped"
   | "recap_generated"
   | "reflection_completed"
-  | "stagnation_detected";
+  | "stagnation_detected"
+  | "goal_proposed"
+  | "goal_accepted"
+  | "goal_declined"
+  | "world_verdict"
+  | "delusion_gap_sampled"
+  | "ending_offered";
 
 export type EmotionalSalience = "low" | "medium" | "high" | "critical";
 

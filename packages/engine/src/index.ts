@@ -36,6 +36,19 @@ export { interpretProgrammaticSignals } from "./interpretation/interpret-program
 // Motivation
 export { deriveMotivations } from "./motivation/derive-motivations.js";
 
+// Goal layer
+export { crystallizeGoalProposals } from "./goal/crystallize-goal-proposals.js";
+export { rateGoalProposal } from "./goal/rate-goal-proposal.js";
+export { verifyGoalProgress } from "./goal/verify-goal-progress.js";
+export { evaluateWorldVerdict } from "./goal/evaluate-world-verdict.js";
+export { computeDelusionGap } from "./goal/compute-delusion-gap.js";
+export { evaluateEndCondition } from "./goal/evaluate-end-condition.js";
+export type { WorldStateSnapshot } from "./goal/verify-goal-progress.js";
+export type { DeferenceSignal } from "./goal/evaluate-world-verdict.js";
+export type { GoalRatingContext } from "./goal/rate-goal-proposal.js";
+export type { EndConditionGates } from "./goal/evaluate-end-condition.js";
+export { DEFAULT_DELUSION_WEIGHTS } from "./goal/compute-delusion-gap.js";
+
 // Pressure
 export { computePressures } from "./pressure/compute-pressures.js";
 

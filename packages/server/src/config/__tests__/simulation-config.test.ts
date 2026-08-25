@@ -144,6 +144,139 @@ describe("simulation config", () => {
     })).toThrow(/Duplicate jury judge labels: same/);
   });
 
+  it("parses a valid full goalLayer section", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      goalLayer: {
+        enabled: true,
+        reviewEveryPulses: 5,
+        delusionWeightsByAgent: {
+          ana: { wSignal: 0.5, wSocial: 0.3, wIdentity: 0.2, revisionThreshold: 0.6 },
+        },
+        ending: { offerAcceptPulses: 2 },
+        synthesizer: { mode: "deterministic", intervalPulses: 5, maxCandidatesPerReview: 2 },
+        acceptance: { mode: "auto" },
+      },
+    });
+    expect(parsed.goalLayer?.enabled).toBe(true);
+    expect(parsed.goalLayer?.reviewEveryPulses).toBe(5);
+    expect(parsed.goalLayer?.delusionWeightsByAgent?.["ana"]?.revisionThreshold).toBe(0.6);
+    expect(parsed.goalLayer?.ending?.offerAcceptPulses).toBe(2);
+    expect(parsed.goalLayer?.synthesizer).toEqual({
+      mode: "deterministic",
+      intervalPulses: 5,
+      maxCandidatesPerReview: 2,
+    });
+    expect(parsed.goalLayer?.acceptance?.mode).toBe("auto");
+  });
+
+  it("allows delusionWeightsByAgent keys for unknown agents (defaults apply at resolve time)", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      goalLayer: {
+        enabled: true,
+        delusionWeightsByAgent: {
+          ghost: {
+            wSignal: 0.4,
+            wSocial: 0.4,
+            wIdentity: 0.2,
+            revisionThreshold: 0.5,
+          },
+        },
+      },
+    });
+    expect(parsed.goalLayer?.enabled).toBe(true);
+    expect(parsed.goalLayer?.delusionWeightsByAgent?.["ghost"]?.wSignal).toBe(0.4);
+  });
+
+  it("rejects invalid goalLayer values with the goalLayer error path", () => {
+    const config = baseConfig();
+    const invalidSections = [
+      { reviewEveryPulses: -1 },
+      {
+        delusionWeightsByAgent: {
+          ana: { wSignal: 1.5, wSocial: 0.3, wIdentity: 0.2, revisionThreshold: 0.6 },
+        },
+      },
+      { synthesizer: { mode: "deterministic", intervalPulses: 0, maxCandidatesPerReview: 2 } },
+      { synthesizer: { mode: "deterministic", intervalPulses: 5, maxCandidatesPerReview: 0 } },
+    ];
+    for (const goalLayer of invalidSections) {
+      expect(() => parseSimulationConfig({ ...config, goalLayer })).toThrow(/goalLayer: /);
+    }
+  });
+
+  it("parses a config without the goalLayer section to goalLayer: undefined and still builds", async () => {
+    const config = baseConfig();
+    expect(config.goalLayer).toBeUndefined();
+    const handle = await buildConfiguredSimulation(config);
+    try {
+      await handle.runtime.start(handle.simulationId);
+      await handle.runtime.stop(handle.simulationId);
+    } finally {
+      await handle.close();
+    }
+  });
+
+  it("parses llm/agent synthesizer and acceptance modes as contract-defined (build rejects them later)", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      goalLayer: {
+        enabled: true,
+        synthesizer: { mode: "llm", intervalPulses: 10, maxCandidatesPerReview: 3 },
+        acceptance: { mode: "agent" },
+      },
+    });
+    expect(parsed.goalLayer?.synthesizer?.mode).toBe("llm");
+    expect(parsed.goalLayer?.acceptance?.mode).toBe("agent");
+  });
+
+  it("build rejects unwired synthesizer.mode llm with the D-13 deferral message", async () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      goalLayer: {
+        enabled: true,
+        synthesizer: { mode: "llm", intervalPulses: 10, maxCandidatesPerReview: 3 },
+      },
+    });
+    await expect(buildConfiguredSimulation(parsed)).rejects.toThrow(
+      /synthesizer\.mode "llm" is not wired in this slice; lands with the LLM synthesizer slice/,
+    );
+  });
+
+  it("build rejects unwired acceptance.mode agent with the D-13 deferral message", async () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      goalLayer: { enabled: true, acceptance: { mode: "agent" } },
+    });
+    await expect(buildConfiguredSimulation(parsed)).rejects.toThrow(
+      /acceptance\.mode "agent" is not wired in this slice; lands with the LLM synthesizer slice/,
+    );
+  });
+
+  it("builds unchanged when goalLayer is disabled even with unwired modes", async () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      goalLayer: {
+        enabled: false,
+        synthesizer: { mode: "llm", intervalPulses: 10, maxCandidatesPerReview: 3 },
+      },
+    });
+    const handle = await buildConfiguredSimulation(parsed);
+    try {
+      await handle.runtime.start(handle.simulationId);
+      await handle.runtime.stop(handle.simulationId);
+    } finally {
+      await handle.close();
+    }
+  });
+
   it("accepts the generic openai-compatible provider type", () => {
     const config = baseConfig();
     const parsed = parseSimulationConfig({

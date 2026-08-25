@@ -1,0 +1,60 @@
+# Goal Layer Research Notes
+
+Atomic findings per research thread, paraphrased unless marked verbatim. Every finding links to its row in [source-map.md](source-map.md); all sources fetched 2026-08-25. Full source lists and verification status live in the source map — this file carries only what the design uses.
+
+## 1. Goal formation & narrative closure (R1)
+
+**A goal is real only if it recurs and is owned.** Personal strivings are idiographic, recurrent goals — "what the individual is characteristically trying to do" (Emmons 1986, via source-map). Attainment pays off psychologically only for autonomous, self-integrated goals: "the autonomy of personal goals predicted goal attainment. In contrast, the strength of 'controlled' motivation did not predict attainment" (Sheldon & Elliot 1998). Intrinsic aspirations (affiliation, growth, contribution) predict well-being on attainment; extrinsic ones (wealth, fame, image) do not (Deci & Ryan 2000).
+
+**"Reached" is a convergence of signals, not one check.**
+
+1. Open-loop discharge: "unfinished tasks are remembered approximately twice as well as completed ones … because at the time of report there still exists an un-satisfied quasi-need" (Zeigarnik 1927, quoted in MacLeod 2020). Genuine closure shows salience collapse; the effect is time- and context-dependent.
+2. Need satisfaction verifiable in events (SDT; Deci & Ryan 2000; Ryan, Rigby & Przybylski 2006).
+3. The arc's macro-question answered in world state — closure is the audience/reader judgment that "the presiding macro questions posed by the plot … get answered" (Carroll's erotetic account, via *Journal of Literary Semantics* 2016).
+4. A return-and-integration leg: "the monomyth finishes when (and if) the initiate, who has returned home, integrates by successfully finding a way to share the boon" (*Heroism Science* 2019; Campbell 1949).
+5. Meaning made vs meaning-making effort — "the quality of meaning-making efforts and meanings made may be at least as important as their quantity" (Park 2010). Perpetual narration of significance is not resolution.
+6. Ego integrity as retro-narrative coherence: successful final-stage reflection "unif[ies] past events into a meaningful 'life puzzle'" — and integrity ≠ absence of despair (van der Kaap-Deeder et al. 2022; Erikson via the same).
+
+**Self-belief and world-verdict must be allowed to diverge both ways.** Public acknowledgment can prematurely close a loop without attainment: "when other people take notice of an individual's identity-related behavioral intention, this gives the individual a premature sense of possessing the aspired-to identity" (Gollwitzer et al. 2009). Factually-closed arcs can stay tension-loaded (Zeigarnik via MacLeod 2020). Design invariant carried forward: public acknowledgment of a goal lowers trust in the agent's own "I did it".
+
+**The ending is authored by the world and needn't be a win.** "…at last in the final catastrophe, it compels the hero to succumb to its irresistible force" (Freytag 1863, full text via Internet Archive) — the protagonist is acted upon. Propp's morphology opens with lack and closes with reward/restoration; the completion block includes "Exposure — The false hero and/or villain is exposed" (Propp, function list via Wikipedia; corroborated by *Folklore* 1985 and *JAF* 2016). Dwarf Fortress: "There is no internal end point, single goal, final Easter egg or 'You Win!' announcement" — the acceptable end is a world-imposed one (dwarffortresswiki.org "Losing").
+
+## 2. Self vs world judgment (R2)
+
+**Two factors make a delusion.** Content (Factor 1: an anomalous/felt signal) plus failure to reject: "what brought the delusional idea to mind in the first place?" and "why is this idea accepted as true and adopted as a belief when … so much evidence against its truth is available?" (Coltheart, Langdon & McKay 2011). The two-factor account is itself contested and incomplete (Connors & Halligan 2015) — the sim should not over-commit to one mechanism.
+
+**Between healthy rationalization and delusion sits a spectrum, not a switch.** "people are more likely to arrive at conclusions that they want to arrive at, but their ability to do so is constrained by their ability to construct seemingly reasonable justifications" (Kunda 1990) — the self-serving claim must stay plausible. Confabulation has two grades: "'provoked' confabulation … may represent a normal response to a faulty memory," while spontaneous confabulation reflects executive/reality-check failure (Kopelman 1987). Identity threat explains why disconfirmation doesn't land: "Events that threaten self-integrity arouse stress and self-protective defenses" (Cohen & Sherman 2014).
+
+**The felt side tracks perceived acceptance, not fact.** "the self-esteem system monitors others' reactions and alerts the individual to the possibility of social exclusion" (Leary et al. 1995); the gauge responds to interpersonal cues and can be moved by social signals alone (Mahadevan, Gregg & Sedikides 2016).
+
+**The world is a talk-maintained consensus, and a private reality decays solo.** "One can maintain one's self-identification as a man of importance only in a milieu that confirms this identity"; "Ridicule is one such sanction" (Berger & Luckmann 1966, archive.org full text). The self is built from "the attitudes of others organized and taken over into one's self" — the generalized other (Mead 1934).
+
+**Ratification is emergent and breakable, not an oracle.** When "an influence hierarchy developed between categorically different actors and appeared to be consensually accepted … participants formed strongly differentiated status beliefs. Yet when slight challenges … broke the validating consensus, participants' status beliefs were significantly weaker" (Ridgeway & Correll 2006). A single credible challenger can flip a ratified claim.
+
+**Unawareness is ordinary machinery under load.** Anosognosia decomposes into "problems in Appreciation, Belief, and Check operations" (Vuilleumier 2004) — denied deficits can coexist with implicit awareness, so the observation gap is a matter of degree and parameters, never a binary flag.
+
+## 3. Emergent / autotelic goals + ending theory (R3)
+
+**The autotelic pipeline is the blueprint for "no preset objective".** "Developmental approaches argue that this can only be achieved by *autotelic agents*: intrinsically motivated learning agents that can learn to represent, generate, select and solve their own problems" (Colas et al., arXiv:2012.09830); IMGEP adds self-selection and self-ordering of goals with "the discovery of skill repertoires through autotelic learning" (arXiv:1708.02190).
+
+**A critic applies the Goldilocks rule.** Intrinsic reward maximizes "the active creation or discovery of novel, surprising patterns allowing for improved prediction or data compression … provoking event sequences exhibiting previously unknown, **but learnable** algorithmic regularities" (Schmidhuber 2010). Interest itself is appraised as novel/complex × comprehensible/copable-with (Silvia 2008). Empowerment — "the information-theoretic capacity of an agent's actuation channel" (Klyubin, Polani & Nehaniv 2005) — is the principled tie-breaker toward open-endedness, and curiosity "disappoint[s] when satisfied" (Loewenstein 1994), which is the engine for goal replacement rather than ending.
+
+**Re-goaling is the adaptive path; hard-ending on unattainability models psychopathology, not meaning.** "goal disengagement and goal reengagement can be associated with ratings of high subjective well-being" (Wrosch et al. 2003). Satisficing compares against an aspiration level, not an optimum, revising the level on success/failure (Simon 1956).
+
+**Goals crystallize from event history.** Sims 3 lifetime wishes trigger on dramatic events — "Watching a Sim die will trigger Emperor of Evil, World Renowned Surgeon…" — and the player may accept or decline (sims.fandom.com "Lifetime wish", fetched via Fandom api.php). "Ambitions are personal goals that characters will set for themselves in their life," re-aimed after fulfillment or cancellation (ck2.paradoxwikis.com "Ambition"). Notably the Sims 3 flattens the arc by blocking a new wish after completion — a design flaw the goal layer must not copy.
+
+**Endings are world-state judged and voluntarily pursued.** "Ascension is the act of becoming a demigod by offering the Amulet of Yendor to your god at their high altar" — a purely objective check; the imitation amulet produces "celestial disgrace," not victory (nethackwiki.com "Ascension"). "While RimWorld can be played for as long as you want, the game can come to an end in a few different ways" — ending conditions are world states the player chose to pursue, plus an epilogue ("This story is over.") (rimworldwiki.com "Ending"). Dwarf Fortress writes a Legends world-history so "every fortress, no matter how successful, will eventually fall" and the fall is itself the story (Wikipedia "Dwarf Fortress").
+
+**Beat detection is an event-log scan, and closure criteria can be made visible.** Propp's ordered completion syntax (Solution → Recognition → Exposure → Transfiguration → Punishment → Wedding; Wikipedia "Vladimir Propp") and Campbell's Ordeal → Ultimate Boon → Return with the Elixir (Wikipedia "Hero's journey") give the archetypal completion beat — with "exposure of the false hero" as a legitimate resolution beat for a deluded achiever. Storylets are "prerequisites that determine when the content can play" with "effects on the world state" (Emily Short) — an ending beat is a storylet whose prerequisites are a verified world state. End-of-Session moves answer explicit world-change questions at the stopping point ("Did we learn something new about the world?") — criteria made visible to participants (Dungeon World SRD, Wayback snapshot 2014-01-16).
+
+**Meaning is the actual terminus.** "This model distinguishes between the constructs of global and situational meaning and between 'meaning-making efforts' and 'meaning made'" (Park 2010) — the world layer operationalizes meaning-made as the agent's narrative converging with the factual event log. "What man actually needs is not a tensionless state but rather the striving and struggling for a worthwhile goal, a freely chosen task" (Frankl, via Wikipedia "Man's Search for Meaning").
+
+## 4. Docs structure audit (R4)
+
+**The llm-wiki bar.** "The knowledge is compiled once and then *kept current*, not re-derived on every query"; raw sources are immutable and the wiki links back to them; an append-only `log.md` with `## [YYYY-MM-DD]` prefixes is parseable with `grep "^## \["` (Karpathy gist, fetched raw).
+
+**The repo's external-source trail is dead in three places.** Committed ADRs point at `.claude/_output/pipeline/decision-log.md`, which archiving moves — rationale links now resolve to nothing; bare-vendor citations ("ScienceDirect", "arxivUpenn") in `docs/notes/design-conversation-history.md` are unrecoverable; `architecture/emotion.md` cites Russell's Circumplex with no URL.
+
+**The pattern already exists in-repo.** `docs/notes/discord/` (README + source-map with URLs, fetch dates, verification status, freshness notes, gaps) is a fully realized llm-wiki raw-source loop; `eval/README.md` "Calibration-pending (honest list)" is the audit-loop precedent.
+
+**Repairs adopted by this run.** New research lands in `docs/research/<topic>/` (README + source-map + notes + gaps) with the discord pack as literal template; committed ADRs carry full Context/Decision/Consequences + Rejected Alternatives inline (never a pointer to `.claude/_output` as the rationale home); new concepts become atomic pages in `docs/concepts/` with one catalog row in `concept-map.md`; a single append-only `docs/research/log.md` records research runs; `.claude/_output/research/` is staging only.

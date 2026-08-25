@@ -25,6 +25,12 @@ export const EventTypeSchema = z.enum([
   "recap_generated",
   "reflection_completed",
   "stagnation_detected",
+  "goal_proposed",
+  "goal_accepted",
+  "goal_declined",
+  "world_verdict",
+  "delusion_gap_sampled",
+  "ending_offered",
 ]);
 
 export const EmotionalSalienceSchema = z.enum(["low", "medium", "high", "critical"]);

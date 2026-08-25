@@ -11,6 +11,7 @@ import type {
   OperatorEvent,
   EngineSnapshot,
   EngineStepResult,
+  EndingOffer,
 } from "@perfectman/shared";
 import { createSeededRng } from "@perfectman/shared";
 import { runEngineStep, computeStagnationMetrics, filterVisibleEventsForAgent } from "@perfectman/engine";
@@ -29,6 +30,7 @@ import type { ActionIntentOperatorData, EventVisibilityData } from "@perfectman/
 import { buildAgentRuntimeInput } from "./runtime-input-builder.js";
 import { buildWorldSignals } from "./world-signals-builder.js";
 import type { AgentRuntimeContext, AgentRuntimeOutput } from "../agent/agent-runtime.types.js";
+import type { GoalLayerRuntime } from "./world/world-evaluator.js";
 
 export type AgentContext = {
   id: string;
@@ -68,6 +70,10 @@ export type PulseSchedulerConfig = {
   /** Testability seam: defaults to runEngineStep(snapshot). Inject to drive the
    *  commit-ordering pipeline with a known step result without the LLM. */
   stepResolver?: (snapshot: EngineSnapshot) => EngineStepResult;
+  /** Optional end-of-pulse world review (goal layer); off when absent. */
+  goalLayer?: GoalLayerRuntime;
+  /** World-layer ending seam: fired when the review delivers an ending offer. */
+  onEndOffered?: (offer: EndingOffer, pulseIndex: number) => Promise<void>;
 };
 
 export type PulseResult = {
@@ -330,6 +336,36 @@ export class PulseScheduler {
         if (stagnationEvent) {
           eventsCommitted += await this.appendAndProject([stagnationEvent], channels, membership);
         }
+      }
+    }
+
+    // Goal-layer world review on the configured cadence, after the agent loop
+    // so it reads this pulse's committed state (stagnation's slot).
+    if (
+      this.pulseIndex > 0 &&
+      this.config.goalLayer &&
+      this.pulseIndex % this.config.goalLayer.config.reviewEveryPulses === 0
+    ) {
+      try {
+        const review = await this.config.goalLayer.evaluator.runReview({
+          simulation: sim,
+          agents: this.config.agents.map((agent) => ({ id: agent.id, state: agent.state })),
+          pulseIndex: this.pulseIndex,
+          now,
+        });
+        if (review.events.length > 0) {
+          const committed = await this.appendAndProject(review.events, channels, membership);
+          eventsCommitted += committed;
+          // The ending offer fires only after its events actually commit: a
+          // failed append leaves the offer pending for the next review.
+          if (committed > 0 && review.endingOffer) {
+            await this.config.onEndOffered?.(review.endingOffer, this.pulseIndex);
+          }
+        } else if (review.endingOffer) {
+          await this.config.onEndOffered?.(review.endingOffer, this.pulseIndex);
+        }
+      } catch (err) {
+        await this.emitOperatorEvent(this.schedulerError("World review failed", err));
       }
     }
 
