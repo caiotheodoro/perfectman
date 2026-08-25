@@ -6,9 +6,7 @@ import type {
 import { PersonaLoader } from "./persona-loader.js";
 import { llmSurfaceRegistry } from "./surface/index.js";
 import type { LLMStep, StepRunContext } from "./surface/llm-step.js";
-import { MockLLMProvider } from "../llm/mock-llm-provider.js";
-import { OpenAiCompatibleProvider } from "../llm/openai-compatible-provider.js";
-import { OllamaProvider } from "../llm/ollama-provider.js";
+import { createLLMProvider } from "../llm/provider-factory.js";
 import type { LLMConfig } from "../llm/llm-config.js";
 import type { LLMProvider } from "../llm/llm-provider.js";
 import type { AgentConfigRegistry } from "./agent-config-registry.js";
@@ -37,12 +35,8 @@ export class AgentRuntime {
     let provider: LLMProvider;
     if (this.providerFactory) {
       provider = this.providerFactory(llmConfig, agentId);
-    } else if (llmConfig.providerType === "mock") {
-      provider = new MockLLMProvider();
-    } else if (llmConfig.providerType === "ollama") {
-      provider = new OllamaProvider(llmConfig);
     } else {
-      provider = new OpenAiCompatibleProvider(llmConfig);
+      provider = createLLMProvider(llmConfig, agentId);
     }
 
     const step: LLMStep<AgentRuntimeInput, AgentRuntimeOutput> = llmSurfaceRegistry.action_intent;

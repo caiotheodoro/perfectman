@@ -97,28 +97,29 @@ describe("OpenAiCompatibleProvider", () => {
       model: "google/gemini-2.5-flash",
     };
 
-    const mockResponse = {
-      ok: true,
+    const mockResponse = new Response(JSON.stringify(mockJson), {
       status: 200,
-      json: async () => mockJson,
-      headers: new Map([
-        ["x-routed-model", "gemini-flash-routed"],
-        ["x-fallback-attempts", "0"]
-      ]),
-    };
-
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(mockResponse));
-
-    const provider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi",
-      baseUrl: "http://localhost:3001/v1",
-      modelName: "gemini/gemini-2.5-flash",
-      temperature: 0.7,
-      maxInputTokens: 1000,
-      maxOutputTokens: 200,
-      timeoutMs: 5000,
-      retryCount: 2,
+      headers: {
+        "x-routed-model": "gemini-flash-routed",
+        "x-fallback-attempts": "0",
+      },
     });
+
+    const fetchSpy = vi.fn().mockResolvedValue(mockResponse);
+
+    const provider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible",
+        baseUrl: "http://localhost:3001/v1",
+        modelName: "gemini/gemini-2.5-flash",
+        temperature: 0.7,
+        maxInputTokens: 1000,
+        maxOutputTokens: 200,
+        timeoutMs: 5000,
+        retryCount: 2,
+      },
+      { fetch: fetchSpy },
+    );
 
     const res = await provider.generateIntent(baseInput, context, prompt);
 
@@ -133,7 +134,7 @@ describe("OpenAiCompatibleProvider", () => {
 
   it("should throw LLMConfigurationError when baseUrl is missing", async () => {
     const provider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi",
+      providerType: "openai-compatible",
       baseUrl: "", // missing
       modelName: "gemini",
       temperature: 0.7,
@@ -147,24 +148,21 @@ describe("OpenAiCompatibleProvider", () => {
   });
 
   it("should throw LLMHttpError on non-2xx status code", async () => {
-    const mockResponse = {
-      ok: false,
-      status: 500,
-      text: async () => "Internal Server Error",
-    };
+    const fetchSpy = vi.fn().mockResolvedValue(new Response("Internal Server Error", { status: 500 }));
 
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(mockResponse));
-
-    const provider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi",
-      baseUrl: "http://localhost:3001/v1",
-      modelName: "gemini",
-      temperature: 0.7,
-      maxInputTokens: 1000,
-      maxOutputTokens: 200,
-      timeoutMs: 5000,
-      retryCount: 0, // no retries
-    });
+    const provider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible",
+        baseUrl: "http://localhost:3001/v1",
+        modelName: "gemini",
+        temperature: 0.7,
+        maxInputTokens: 1000,
+        maxOutputTokens: 200,
+        timeoutMs: 5000,
+        retryCount: 0, // no retries
+      },
+      { fetch: fetchSpy },
+    );
 
     await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LLMHttpError);
   });
@@ -172,64 +170,65 @@ describe("OpenAiCompatibleProvider", () => {
   it("should abort and throw LLMTimeoutError when request times out", async () => {
     // Mock fetch that throws AbortError (DOMException)
     const abortError = new DOMException("The user aborted a request.", "AbortError");
-    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(abortError));
+    const fetchSpy = vi.fn().mockRejectedValue(abortError);
 
-    const provider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi",
-      baseUrl: "http://localhost:3001/v1",
-      modelName: "gemini",
-      temperature: 0.7,
-      maxInputTokens: 1000,
-      maxOutputTokens: 200,
-      timeoutMs: 100, // small timeout
-      retryCount: 0,
-    });
+    const provider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible",
+        baseUrl: "http://localhost:3001/v1",
+        modelName: "gemini",
+        temperature: 0.7,
+        maxInputTokens: 1000,
+        maxOutputTokens: 200,
+        timeoutMs: 100, // small timeout
+        retryCount: 0,
+      },
+      { fetch: fetchSpy },
+    );
 
     await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LLMTimeoutError);
   });
 
   it("should include response_format only when explicitly enabled", async () => {
-    const mockResponse = {
-      ok: true,
-      status: 200,
-      json: async () => ({
-        choices: [{ message: { content: "{}" } }],
-        usage: { prompt_tokens: 1, completion_tokens: 1 },
-        model: "test-model",
+    const fetchSpy = vi.fn((_url: unknown, _init: unknown) =>
+      new Response(JSON.stringify({ choices: [{ message: { content: "{}" } }], model: "test-model" }), {
+        status: 200,
       }),
-      headers: new Map(),
-    };
+    );
 
-    const fetchSpy = vi.fn().mockResolvedValue(mockResponse);
-    vi.stubGlobal("fetch", fetchSpy);
-
-    const provider = new OpenAiCompatibleProvider({
-      providerType: "qwen3",
-      baseUrl: "http://localhost:11434/v1",
-      modelName: "qwen3:8b",
-      temperature: 0.7,
-      maxInputTokens: 1000,
-      maxOutputTokens: 200,
-      timeoutMs: 5000,
-      retryCount: 0,
-    });
+    const provider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible",
+        baseUrl: "http://localhost:11434/v1",
+        modelName: "qwen3:8b",
+        temperature: 0.7,
+        maxInputTokens: 1000,
+        maxOutputTokens: 200,
+        timeoutMs: 5000,
+        retryCount: 0,
+      },
+      { fetch: fetchSpy },
+    );
 
     await provider.generateIntent(baseInput, context, prompt);
     const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
     expect(body.response_format).toBeUndefined();
 
     fetchSpy.mockClear();
-    const jsonProvider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi",
-      baseUrl: "http://localhost:3001/v1",
-      modelName: "auto",
-      temperature: 0.7,
-      maxInputTokens: 1000,
-      maxOutputTokens: 200,
-      timeoutMs: 5000,
-      retryCount: 0,
-      responseFormatJson: true,
-    });
+    const jsonProvider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible",
+        baseUrl: "http://localhost:3001/v1",
+        modelName: "auto",
+        temperature: 0.7,
+        maxInputTokens: 1000,
+        maxOutputTokens: 200,
+        timeoutMs: 5000,
+        retryCount: 0,
+        responseFormatJson: true,
+      },
+      { fetch: fetchSpy },
+    );
 
     await jsonProvider.generateIntent(baseInput, context, prompt);
     const jsonBody = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
@@ -240,17 +239,19 @@ describe("OpenAiCompatibleProvider", () => {
   });
 
   it("forces syntax-only json_object when responseFormatJsonSchema is false", async () => {
-    const fetchSpy = vi.fn().mockResolvedValue({
-      ok: true, status: 200,
-      json: async () => ({ choices: [{ message: { content: '{"intentType":"no_op"}' } }], model: "test" }),
-      headers: new Map(),
-    });
-    vi.stubGlobal("fetch", fetchSpy);
-    const provider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi", baseUrl: "http://localhost:3001/v1", modelName: "auto",
-      temperature: 0.7, maxInputTokens: 1000, maxOutputTokens: 200, timeoutMs: 5000, retryCount: 0,
-      responseFormatJson: true, responseFormatJsonSchema: false,
-    });
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ choices: [{ message: { content: '{"intentType":"no_op"}' } }], model: "test" }), {
+        status: 200,
+      }),
+    );
+    const provider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible", baseUrl: "http://localhost:3001/v1", modelName: "auto",
+        temperature: 0.7, maxInputTokens: 1000, maxOutputTokens: 200, timeoutMs: 5000, retryCount: 0,
+        responseFormatJson: true, responseFormatJsonSchema: false,
+      },
+      { fetch: fetchSpy },
+    );
     await provider.generateIntent(baseInput, context, prompt);
     const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
     expect(body.response_format).toEqual({ type: "json_object" });
@@ -259,18 +260,20 @@ describe("OpenAiCompatibleProvider", () => {
   it("falls back to json_object on a 400 json_schema rejection", async () => {
     const fetchSpy = vi
       .fn()
-      .mockResolvedValueOnce({ ok: false, status: 400, text: async () => "schema not supported" })
-      .mockResolvedValueOnce({
-        ok: true, status: 200,
-        json: async () => ({ choices: [{ message: { content: '{"intentType":"no_op","privateMotiveSummary":"s"}' } }], model: "test" }),
-        headers: new Map(),
-      });
-    vi.stubGlobal("fetch", fetchSpy);
-    const provider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi", baseUrl: "http://localhost:3001/v1", modelName: "auto",
-      temperature: 0.7, maxInputTokens: 1000, maxOutputTokens: 200, timeoutMs: 5000, retryCount: 0,
-      responseFormatJson: true,
-    });
+      .mockResolvedValueOnce(new Response("schema not supported", { status: 400 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ choices: [{ message: { content: '{"intentType":"no_op","privateMotiveSummary":"s"}' } }], model: "test" }), {
+          status: 200,
+        }),
+      );
+    const provider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible", baseUrl: "http://localhost:3001/v1", modelName: "auto",
+        temperature: 0.7, maxInputTokens: 1000, maxOutputTokens: 200, timeoutMs: 5000, retryCount: 0,
+        responseFormatJson: true,
+      },
+      { fetch: fetchSpy },
+    );
     await provider.generateIntent(baseInput, context, prompt);
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     const fallbackBody = JSON.parse(fetchSpy.mock.calls[1]![1]!.body as string);
@@ -278,66 +281,54 @@ describe("OpenAiCompatibleProvider", () => {
   });
 
   it("should fail fast on malformed OpenAI-compatible response shape", async () => {
-    const fetchSpy = vi.fn().mockResolvedValue({
-      ok: true,
-      status: 200,
-      json: async () => ({ choices: [], model: "broken-model" }),
-      headers: new Map(),
-    });
-    vi.stubGlobal("fetch", fetchSpy);
+    const fetchSpy = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ choices: [], model: "broken-model" }), { status: 200 }),
+    );
 
-    const provider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi",
-      baseUrl: "http://localhost:3001/v1",
-      modelName: "gemini",
-      temperature: 0.7,
-      maxInputTokens: 1000,
-      maxOutputTokens: 200,
-      timeoutMs: 5000,
-      retryCount: 2,
-    });
+    const provider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible",
+        baseUrl: "http://localhost:3001/v1",
+        modelName: "gemini",
+        temperature: 0.7,
+        maxInputTokens: 1000,
+        maxOutputTokens: 200,
+        timeoutMs: 5000,
+        retryCount: 2,
+      },
+      { fetch: fetchSpy },
+    );
 
     await expect(provider.generateIntent(baseInput, context, prompt)).rejects.toThrow(LLMResponseError);
     expect(fetchSpy).toHaveBeenCalledTimes(1);
   });
 
   it("should retry transient errors (like 429) up to retryCount", async () => {
-    const errorResponse = {
-      ok: false,
-      status: 429,
-      text: async () => "Rate Limit Exceeded",
-    };
-
     const mockJson = {
       choices: [{ message: { content: '{"intentType":"no_op"}' } }],
       usage: { prompt_tokens: 120, completion_tokens: 30 },
       model: "google/gemini-2.5-flash",
     };
 
-    const successResponse = {
-      ok: true,
-      status: 200,
-      json: async () => mockJson,
-      headers: new Map(),
-    };
+    const fetchSpy = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("Rate Limit Exceeded", { status: 429 }))
+      .mockResolvedValueOnce(new Response("Rate Limit Exceeded", { status: 429 }))
+      .mockResolvedValueOnce(new Response(JSON.stringify(mockJson), { status: 200 }));
 
-    const fetchSpy = vi.fn()
-      .mockResolvedValueOnce(errorResponse)
-      .mockResolvedValueOnce(errorResponse)
-      .mockResolvedValueOnce(successResponse);
-
-    vi.stubGlobal("fetch", fetchSpy);
-
-    const provider = new OpenAiCompatibleProvider({
-      providerType: "freellmapi",
-      baseUrl: "http://localhost:3001/v1",
-      modelName: "gemini",
-      temperature: 0.7,
-      maxInputTokens: 1000,
-      maxOutputTokens: 200,
-      timeoutMs: 5000,
-      retryCount: 2, // 2 retries (3 total attempts allowed)
-    });
+    const provider = new OpenAiCompatibleProvider(
+      {
+        providerType: "openai-compatible",
+        baseUrl: "http://localhost:3001/v1",
+        modelName: "gemini",
+        temperature: 0.7,
+        maxInputTokens: 1000,
+        maxOutputTokens: 200,
+        timeoutMs: 5000,
+        retryCount: 2, // 2 retries (3 total attempts allowed)
+      },
+      { fetch: fetchSpy },
+    );
 
     const res = await provider.generateIntent(baseInput, context, prompt);
 

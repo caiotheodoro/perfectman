@@ -22,7 +22,13 @@ import {
   type ConfiguredSimulationHandle,
   type SimulationAppConfig,
 } from "@perfectman/server";
-import { AgentRuntime, AgentConfigRegistry, MockDeliveryGateway, MockLLMProvider, OllamaProvider, OpenAiCompatibleProvider, personaPackToProfile } from "@perfectman/server";
+import {
+  AgentRuntime,
+  AgentConfigRegistry,
+  MockDeliveryGateway,
+  createLLMProvider,
+  personaPackToProfile,
+} from "@perfectman/server";
 import type { PersonaPromptProfile } from "@perfectman/server";
 import type { LLMProvider } from "@perfectman/server";
 import { eventsToBehavioral, runAllProbes, type ProbeResult } from "../probes/index.js";
@@ -79,17 +85,9 @@ class TrackingRuntime {
         // (channel caps, memory habits) must persist across pulses.
         let provider = this.providers.get(agentId);
         if (!provider) {
-          provider = factory ? factory(llmConfig, agentId) : undefined;
-          if (!provider) {
-            // No injected factory → follow the config's provider type
-            // (mock → canned; ollama → native API for Qwen3; else OpenAI-compatible).
-            provider =
-              llmConfig.providerType === "mock"
-                ? new MockLLMProvider()
-                : llmConfig.providerType === "ollama"
-                  ? new OllamaProvider(llmConfig)
-                  : new OpenAiCompatibleProvider(llmConfig);
-          }
+          // Injected factories override the single resolution site; without
+          // one, the config's providerType routes through the factory.
+          provider = factory ? factory(llmConfig, agentId) : createLLMProvider(llmConfig, agentId);
           this.providers.set(agentId, provider);
         }
         // Per-turn `calls` counts generateIntent invocations, so a
@@ -347,9 +345,10 @@ export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | 
   const apiKeyEnv = process.env.PERFECTMAN_LLM_API_KEY ? "PERFECTMAN_LLM_API_KEY" : undefined;
   const sampling = pack?.sampling ?? { temperature: 0.7, repetitionPenalty: 1.1, topP: 0.95, maxTokens: 512 };
   return {
-    // qwen3_8b/ollama/freellmapi all land on an OpenAI-compatible provider
-    // (or the native Ollama path); DeepSeek uses the OpenAI-compatible one.
-    providerType: isDeepseek ? "qwen3_8b" : "ollama",
+    // providerType only splits the native Ollama /api/chat path from the
+    // generic OpenAI-compatible one; DeepSeek is a plain OpenAI-compatible
+    // config (its baseUrl/model/extraBody mapping above).
+    providerType: isDeepseek ? "openai-compatible" : "ollama",
     modelName,
     baseUrl,
     apiKeyEnv,

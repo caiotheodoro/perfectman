@@ -19,11 +19,15 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^3.0.35",
     "@perfectman/engine": "workspace:*",
     "@perfectman/shared": "workspace:*",
+    "ai": "^7.0.77",
     "better-sqlite3": "^11.0.0",
     "discord.js": "^14.18.0",
-    "dotenv": "^17.4.2"
+    "dotenv": "^17.4.2",
+    "ollama": "^0.6.3",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.0",

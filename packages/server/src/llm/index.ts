@@ -5,3 +5,5 @@ export * from "./llm-budget.js";
 export * from "./openai-compatible-provider.js";
 export * from "./ollama-provider.js";
 export * from "./llm-errors.js";
+export * from "./sdk-transport.js";
+export * from "./provider-factory.js";

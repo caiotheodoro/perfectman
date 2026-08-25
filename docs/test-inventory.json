@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-23T19:44:26.181Z",
+  "generatedAt": "2026-08-24T19:47:52.822Z",
   "totals": {
-    "files": 97,
-    "its": 922
+    "files": 99,
+    "its": 950
   },
   "byPackage": {
     "engine": {
@@ -12,14 +12,17 @@
     },
     "eval": {
       "files": 17,
-      "its": 136,
-      "flags": []
+      "its": 140,
+      "flags": [
+        "async-pause(1)"
+      ]
     },
     "server": {
-      "files": 50,
-      "its": 433,
+      "files": 52,
+      "its": 457,
       "flags": [
         "console(1)",
+        "async-pause(1)",
         "async-pause(1)"
       ]
     },
@@ -647,28 +650,6 @@
       "violations": []
     },
     {
-      "file": "packages/eval/src/test/chat-completion.test.ts",
-      "pkg": "eval",
-      "layer": "eval-harness",
-      "its": 6,
-      "itsEach": 0,
-      "forcedCasts": 0,
-      "tsBypasses": 0,
-      "eslintDisables": 0,
-      "onlys": 0,
-      "skips": 0,
-      "consoleLogs": 0,
-      "truthy": 0,
-      "defined": 0,
-      "deadIdTruthy": 0,
-      "nonNull": 0,
-      "spies": 6,
-      "asyncPauses": 0,
-      "weakTerminals": [],
-      "flags": [],
-      "violations": []
-    },
-    {
       "file": "packages/eval/src/test/echo-chamber-stability.test.ts",
       "pkg": "eval",
       "layer": "eval-harness",
@@ -776,6 +757,30 @@
       "asyncPauses": 0,
       "weakTerminals": [],
       "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/eval/src/test/judge-sdk-path.test.ts",
+      "pkg": "eval",
+      "layer": "eval-harness",
+      "its": 10,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 9,
+      "asyncPauses": 1,
+      "weakTerminals": [],
+      "flags": [
+        "async-pause(1)"
+      ],
       "violations": []
     },
     {
@@ -1136,7 +1141,7 @@
       "file": "packages/server/src/cli/__tests__/llm-health-check.test.ts",
       "pkg": "server",
       "layer": "integration",
-      "its": 3,
+      "its": 4,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -1148,7 +1153,7 @@
       "defined": 0,
       "deadIdTruthy": 0,
       "nonNull": 0,
-      "spies": 3,
+      "spies": 4,
       "asyncPauses": 0,
       "weakTerminals": [],
       "flags": [],
@@ -1434,7 +1439,7 @@
       "defined": 0,
       "deadIdTruthy": 0,
       "nonNull": 0,
-      "spies": 7,
+      "spies": 6,
       "asyncPauses": 0,
       "weakTerminals": [],
       "flags": [],
@@ -1456,10 +1461,56 @@
       "defined": 0,
       "deadIdTruthy": 0,
       "nonNull": 0,
-      "spies": 7,
+      "spies": 6,
       "asyncPauses": 0,
       "weakTerminals": [],
       "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/server/src/llm/__tests__/provider-factory.test.ts",
+      "pkg": "server",
+      "layer": "integration",
+      "its": 5,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/server/src/llm/__tests__/sdk-transport.test.ts",
+      "pkg": "server",
+      "layer": "integration",
+      "its": 18,
+      "itsEach": 6,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 23,
+      "asyncPauses": 1,
+      "weakTerminals": [],
+      "flags": [
+        "async-pause(1)"
+      ],
       "violations": []
     },
     {

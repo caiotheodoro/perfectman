@@ -173,7 +173,7 @@ type AgentRuntimeOutput = {
 
 ```ts
 type LlmConfig = {
-  providerType: "mock" | "qwen3" | "freellmapi";
+  providerType: "mock" | "ollama" | "openai-compatible";
   baseUrl?: string;
   apiKeyEnv?: string;
   modelName: string;

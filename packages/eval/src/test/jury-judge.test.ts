@@ -30,11 +30,12 @@ describe("juryJudge", () => {
         model === "family-a" ? { in_character: 2, voice_match: 3 }
         : model === "family-b" ? { in_character: 4, voice_match: 3 }
         : { in_character: 5, voice_match: 3 };
-      return Promise.resolve({
-        ok: true,
-        status: 200,
-        json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
-      });
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
+          { status: 200, headers: { "Content-Type": "application/json" } },
+        ),
+      );
     });
     vi.stubGlobal("fetch", fetchMock);
     const verdict = await juryJudge(scenario, [], configs);
@@ -60,11 +61,12 @@ describe("juryJudge", () => {
       vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
         const model = JSON.parse(init?.body ?? "{}").model as string;
         const axes = model === "family-c" ? { in_character: 5 } : { in_character: 3 };
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
-        });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        );
       }),
     );
     const verdict = await juryJudge(scenario, [], configs);
@@ -86,13 +88,14 @@ describe("juryJudge", () => {
       "fetch",
       vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
         const model = JSON.parse(init?.body ?? "{}").model as string;
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({
-            choices: [{ message: { content: JSON.stringify({ axes: { in_character: scores[model]! } }) } }],
-          }),
-        });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({
+              choices: [{ message: { content: JSON.stringify({ axes: { in_character: scores[model]! } }) } }],
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        );
       }),
     );
     const verdict = await juryJudge(scenario, [], four);
@@ -107,13 +110,14 @@ describe("juryJudge", () => {
       vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
         const model = JSON.parse(init?.body ?? "{}").model as string;
         if (model === "family-a") {
-          return Promise.resolve({ ok: false, status: 500, text: async () => "boom" });
+          return Promise.resolve(new Response("boom", { status: 500 }));
         }
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes: { in_character: 4 } }) } }] }),
-        });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ choices: [{ message: { content: JSON.stringify({ axes: { in_character: 4 } }) } }] }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        );
       }),
     );
     // Full configs: family-a IS in the jury and failing — passing a sliced
@@ -139,11 +143,12 @@ describe("juryJudge", () => {
           model === "family-a" ? { in_character: 4 }
           : model === "family-b" ? { voice_match: 5 }
           : { voice_match: 3 };
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
-        });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ choices: [{ message: { content: JSON.stringify({ axes }) } }] }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        );
       }),
     );
     const verdict = await juryJudge(scenario, [], configs);
@@ -165,7 +170,7 @@ describe("juryJudge", () => {
   it("throws honestly when every judge fails", async () => {
     vi.stubGlobal(
       "fetch",
-      vi.fn().mockResolvedValue({ ok: false, status: 500, text: async () => "down" }),
+      vi.fn().mockResolvedValue(new Response("down", { status: 500 })),
     );
     await expect(juryJudge(scenario, [], configs)).rejects.toThrow(/All jury judges failed/);
   });
@@ -203,11 +208,12 @@ describe("juryJudge", () => {
         const content = isSalvageJuror
           ? prose
           : JSON.stringify({ axes: { in_character: 4 } });
-        return Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ choices: [{ message: { content } }] }),
-        });
+        return Promise.resolve(
+          new Response(
+            JSON.stringify({ choices: [{ message: { content } }] }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        );
       }),
     );
 
@@ -234,11 +240,12 @@ describe("juryJudge", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation(() =>
-        Promise.resolve({
-          ok: true,
-          status: 200,
-          json: async () => ({ choices: [{ message: { content: prose } }] }),
-        }),
+        Promise.resolve(
+          new Response(
+            JSON.stringify({ choices: [{ message: { content: prose } }] }),
+            { status: 200, headers: { "Content-Type": "application/json" } },
+          ),
+        ),
       ),
     );
     await expect(juryJudge(scenario, [], configs)).rejects.toThrow(/required prose salvage/);

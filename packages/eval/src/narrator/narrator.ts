@@ -9,7 +9,7 @@
 
 import type { CommittedEvent, RoleplayScenario } from "@perfectman/shared";
 import { PromptSection } from "@perfectman/shared";
-import { chatCompletion } from "../llm/chat-completion.js";
+import { chatCompletion } from "../llm/chat-completion-error.js";
 
 
 export type Narration = {

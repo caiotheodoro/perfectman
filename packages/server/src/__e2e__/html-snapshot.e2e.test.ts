@@ -4,9 +4,12 @@
  * Runs a 15-pulse simulation with 4 personas (Ana, Bruno, Carla, Diego)
  * across 4 channels (general, core-group, ana-carla DM, bruno-diego DM),
  * then:
- *  1. Generates docs/simulation-snapshot.html — an interactive single-file
- *     replay viewer with emotion panels, thinking, and dreaming.
- *  2. Saves a normalized snapshot for regression detection.
+ *  1. Generates tmp/perfectman-simulation-snapshot.html (gitignored test
+ *     evidence) — an interactive single-file replay viewer with emotion
+ *     panels, thinking, and dreaming.
+ *  2. Asserts a normalized structural snapshot inline: per-pulse event-type
+ *     distributions per agent and emotional trajectory bands, kept stable
+ *     across runs (no snapshot file is persisted).
  */
 import { describe, it, expect, afterAll } from "vitest";
 import { writeFileSync, mkdirSync } from "node:fs";

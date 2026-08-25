@@ -74,7 +74,7 @@
         "language": "en"
       },
       "llm": {
-        "providerType": "freellmapi",
+        "providerType": "openai-compatible",
         "baseUrl": "http://localhost:3001/v1",
         "apiKeyEnv": "FREELLMAPI_KEY",
         "modelName": "auto",
@@ -119,7 +119,7 @@
         "language": "en"
       },
       "llm": {
-        "providerType": "freellmapi",
+        "providerType": "openai-compatible",
         "baseUrl": "http://localhost:3001/v1",
         "apiKeyEnv": "FREELLMAPI_KEY",
         "modelName": "auto",

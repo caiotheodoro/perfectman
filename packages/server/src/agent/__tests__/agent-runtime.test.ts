@@ -141,7 +141,7 @@ describe("AgentRuntime Orchestration", () => {
     // Register an OpenAI-compatible config but with a missing baseUrl, which throws LLMConfigurationError!
     const runtime = new AgentRuntime({
       "example-friend": {
-        providerType: "qwen3",
+        providerType: "openai-compatible",
         baseUrl: "", // Will throw LLMConfigurationError!
         modelName: "test-model",
       },
@@ -161,23 +161,21 @@ describe("AgentRuntime Orchestration", () => {
   it("should record token usage and emit an operator event when provider succeeds but parsing/validation fails", async () => {
     const runtime = new AgentRuntime({
       "example-friend": {
-        providerType: "qwen3",
+        providerType: "openai-compatible",
         baseUrl: "http://localhost:11434/v1",
         modelName: "test-model",
       },
     });
 
     // Mock fetch to return non-JSON plain text garbage
-    const garbageResponse = {
-      ok: true,
-      status: 200,
-      json: async () => ({
+    const garbageResponse = new Response(
+      JSON.stringify({
         choices: [{ message: { content: "This is not JSON at all!" } }],
         usage: { prompt_tokens: 50, completion_tokens: 10 },
         model: "garbage-model",
       }),
-      headers: new Map(),
-    };
+      { status: 200 },
+    );
     
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(garbageResponse));
 
@@ -206,10 +204,8 @@ describe("AgentRuntime Orchestration", () => {
     };
 
     function jsonResponse(content: string, promptTokens = 50, completionTokens = 10) {
-      return {
-        ok: true,
-        status: 200,
-        json: async () => ({
+      return new Response(
+        JSON.stringify({
           choices: [{ message: { content: JSON.stringify({
             id: "intent-1",
             actorId: "example-friend",
@@ -225,13 +221,13 @@ describe("AgentRuntime Orchestration", () => {
           usage: { prompt_tokens: promptTokens, completion_tokens: completionTokens },
           model: "test-model",
         }),
-        headers: new Map(),
-      };
+        { status: 200 },
+      );
     }
 
     it("retries once and commits fresh content when the retry is genuinely different", async () => {
       const runtime = new AgentRuntime({
-        "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+        "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
       });
 
       const fetchMock = vi.fn()
@@ -254,7 +250,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("falls back to no_op when the retry also repeats", async () => {
       const runtime = new AgentRuntime({
-        "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+        "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
       });
 
       const fetchMock = vi.fn()
@@ -274,7 +270,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("retry correction carries the repeat warning, a motive anchor, and the no-op escape hatch", async () => {
       const runtime = new AgentRuntime({
-        "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+        "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
       });
 
       const fetchMock = vi.fn()
@@ -298,7 +294,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("honors maxRetries=2: recovers on the second retry after two repeats", async () => {
       const runtime = new AgentRuntime(
-        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        { "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
         undefined,
         { maxRetries: 2 },
@@ -319,7 +315,7 @@ describe("AgentRuntime Orchestration", () => {
 
     it("blocks immediately with zero retry budget (single provider call)", async () => {
       const runtime = new AgentRuntime(
-        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        { "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
         undefined,
         { maxRetries: 0 },
@@ -344,7 +340,7 @@ describe("AgentRuntime Orchestration", () => {
       // threshold stops reaching the guard.
       const borderline = "kkkkk não acredito nesse take mesmo";
       const lenient = new AgentRuntime(
-        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        { "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
         undefined,
         { threshold: 0.99 },
@@ -364,7 +360,7 @@ describe("AgentRuntime Orchestration", () => {
     it("blocks a loose near-match when the threshold is lowered", async () => {
       const borderline = "kkkkk não acredito nesse tema";
       const strict = new AgentRuntime(
-        { "example-friend": { providerType: "qwen3", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
+        { "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" } },
         undefined,
         undefined,
         { threshold: 0.3, maxRetries: 0 },

@@ -1019,9 +1019,8 @@ function parseLLMConfig(input: unknown, path: string): LLMConfig {
   );
   if (
     providerType !== "mock" &&
-    providerType !== "qwen3_8b" &&
     providerType !== "ollama" &&
-    providerType !== "freellmapi"
+    providerType !== "openai-compatible"
   ) {
     throw new Error(`${path}.providerType is unsupported: ${providerType}`);
   }

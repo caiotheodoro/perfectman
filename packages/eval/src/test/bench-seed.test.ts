@@ -41,7 +41,7 @@ describe("bench seed wiring (#45)", () => {
   it("pins seed into the deepseek-path extraBody", () => {
     process.env.PERFECTMAN_LLM_PROVIDER = "deepseek";
     const config = localLLMConfig(undefined);
-    expect(config.providerType).toBe("qwen3_8b");
+    expect(config.providerType).toBe("openai-compatible");
     expect(config.extraBody?.["seed"]).toBe(benchSeed());
   });
 });
