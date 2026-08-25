@@ -1,4 +1,5 @@
 export { MockDeliveryGateway } from "./mock-delivery-gateway.js";
 export { StdoutDeliveryGateway } from "./stdout-delivery-gateway.js";
 export { CompositeDeliveryGateway } from "./composite-delivery-gateway.js";
+export { HtmlSnapshotGateway } from "./html-snapshot-gateway.js";
 export { DiscordDeliveryGateway } from "../discord/index.js";

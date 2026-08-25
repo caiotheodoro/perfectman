@@ -25,6 +25,7 @@ Read these in order:
 - [`concepts/`](concepts/) - product thesis, concept synthesis, and experiment framing.
 - [`notes/`](notes/) - raw source notes, transcripts, and meeting material.
 - [`implementation/`](implementation/) - post-merge implementation notes per dev stream.
+- [`adr/`](adr/) - architecture decision records (LOCKED pipeline decisions with lasting architectural consequence).
 - [`plans/`](plans/) - cross-boundary contracts and per-dev implementation plans.
 - [`personas/`](personas/) - generic persona setup docs and templates only. Real/person-specific subfolders are local-only and gitignored.
 
@@ -150,6 +151,11 @@ The novela layer, implemented as a projection over committed events:
 - Persona setup workflow: [`personas/README.md`](personas/README.md)
 - Personality/persona questionnaires: [`notes/persona-assessment-canonical.md`](notes/persona-assessment-canonical.md), [`notes/personality-assessment-research.md`](notes/personality-assessment-research.md), [`notes/friend-questionnaire.md`](notes/friend-questionnaire.md), [`notes/solo-questionnaire.md`](notes/solo-questionnaire.md)
 
+### Stream And Observability
+
+- Delivery gateway stream (event volume, receiver memory bounds, provider-agnostic shape): [`observability-stream.md`](observability-stream.md)
+- Architecture decision records: [`adr/`](adr/)
+
 ### Channel World
 
 - V1 delivery-agnostic runtime: [`architecture/application.md`](architecture/application.md)
@@ -191,7 +197,7 @@ pnpm --filter @perfectman/server simulation --config path/to/config.json
 
 Config format: see [`../examples/simulations/mock.inline-personas.example.json`](../examples/simulations/mock.inline-personas.example.json). For local friend-group personas stored outside git, see [`../examples/simulations/mock.persona-file.example.json`](../examples/simulations/mock.persona-file.example.json), [`../examples/personas/`](../examples/personas/), and [`personas/README.md`](personas/README.md).
 
-`buildConfiguredSimulation` in `packages/server/src/config/simulation-config.ts` is the composition root — it validates the config, wires repositories (in-memory or SQLite), delivery gateways (mock, stdout, or composite), `AgentConfigRegistry`, `AgentRuntime`, and `SimulationRuntime`.
+`buildConfiguredSimulation` in `packages/server/src/config/simulation-config.ts` is the composition root — it validates the config, wires repositories (in-memory or SQLite), delivery gateways (mock, stdout, html-snapshot, or composite), `AgentConfigRegistry`, `AgentRuntime`, and `SimulationRuntime`.
 
 `config/index.json` is gitignored. Copy the example, fill in your agents, and set the appropriate API key env vars if not using `providerType: "mock"`. To keep real people out of git, put compiled persona files in `config/personas/*.persona.json` and reference them from `config/index.json` using `personaFile`.
 

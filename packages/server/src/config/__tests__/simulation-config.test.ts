@@ -9,6 +9,7 @@ import {
   parseSimulationConfig,
   type SimulationAppConfig,
 } from "../simulation-config.js";
+import { MockDeliveryGateway } from "../../delivery/index.js";
 
 const persona = {
   id: "ana",
@@ -243,6 +244,80 @@ describe("simulation config", () => {
     } finally {
       await handle.close();
     }
+  });
+
+  it("injects runtime metadata into mock gateway construction (US-003 ACC-1)", async () => {
+    const handle = await buildConfiguredSimulation(baseConfig());
+    try {
+      const meta = (handle.gateways["mock"] as MockDeliveryGateway).runtimeMetadata;
+      expect(meta).toEqual({
+        simulationId: "sim_config_test",
+        simulationName: "Config Test",
+        agents: { ana: { name: "Ana", archetype: "observer" } },
+        channels: { general: { name: "general" } },
+      });
+    } finally {
+      await handle.close();
+    }
+  });
+
+  it("maps a 4-persona scenario's names and archetypes into metadata (US-003 ACC-2)", async () => {
+    const config = baseConfig();
+    const fourPersona = parseSimulationConfig({
+      ...config,
+      agents: [
+        config.agents[0],
+        { id: "bruno", persona: { ...persona, id: "bruno", name: "Bruno" }, promptProfile: { ...promptProfile, personaId: "bruno", displayName: "Bruno" }, llm },
+        { id: "carla", persona: { ...persona, id: "carla", name: "Carla", archetype: "provocateur" }, promptProfile: { ...promptProfile, personaId: "carla", displayName: "Carla" }, llm },
+        { id: "diego", persona: { ...persona, id: "diego", name: "Diego", archetype: "strategist" }, promptProfile: { ...promptProfile, personaId: "diego", displayName: "Diego" }, llm },
+      ],
+    });
+    const handle = await buildConfiguredSimulation(fourPersona);
+    try {
+      const meta = (handle.gateways["mock"] as MockDeliveryGateway).runtimeMetadata;
+      expect(meta?.agents).toEqual({
+        ana: { name: "Ana", archetype: "observer" },
+        bruno: { name: "Bruno", archetype: "observer" },
+        carla: { name: "Carla", archetype: "provocateur" },
+        diego: { name: "Diego", archetype: "strategist" },
+      });
+      expect(meta?.channels).toEqual({ general: { name: "general" } });
+      expect(meta?.simulationId).toBe("sim_config_test");
+    } finally {
+      await handle.close();
+    }
+  });
+
+  it("parses an html-snapshot gateway with a required outputPath (US-004 ACC-1)", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      deliveryGateways: [
+        { id: "mock", type: "mock" },
+        { id: "html", type: "html-snapshot", outputPath: "tmp/out.html" },
+      ],
+    });
+    expect(parsed.deliveryGateways).toContainEqual({
+      id: "html",
+      type: "html-snapshot",
+      outputPath: "tmp/out.html",
+    });
+  });
+
+  it("rejects an html-snapshot gateway without an outputPath", () => {
+    const config = baseConfig();
+    expect(() => parseSimulationConfig({
+      ...config,
+      deliveryGateways: [{ id: "html", type: "html-snapshot" }],
+    })).toThrow("deliveryGateways[0].outputPath must be a non-empty string");
+  });
+
+  it("still rejects unknown gateway types", () => {
+    const config = baseConfig();
+    expect(() => parseSimulationConfig({
+      ...config,
+      deliveryGateways: [{ id: "x", type: "smoke-signals" }],
+    })).toThrow("Unsupported deliveryGateways[0].type: smoke-signals");
   });
 
   it("loads an agent persona and prompt profile from a local personaFile", async () => {

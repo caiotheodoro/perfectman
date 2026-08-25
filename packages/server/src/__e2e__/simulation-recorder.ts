@@ -8,14 +8,17 @@
  *  - Captures the last ActionIntent per agent (for "thinking" panels)
  */
 import type {
-  CommittedEvent,
-  AgentState,
-  OperatorEvent,
-  RelationalState,
   ActionIntent,
   SimulationEvent,
 } from "@perfectman/shared";
-import type { PulseResult } from "../simulation/pulse-scheduler.js";
+import { serializeAgentState, type SerializedAgentState } from "../agent/agent-state-serializer.js";
+export type { SerializedAgentState };
+import type {
+  AgentThinking,
+  PulseFrame,
+  SimulationReplay,
+} from "../html/replay-types.js";
+export type { AgentThinking, PulseFrame, SimulationReplay };
 import type {
   SimulationAppConfig,
   ConfiguredSimulationHandle,
@@ -23,46 +26,6 @@ import type {
 import { buildConfiguredSimulation } from "../config/simulation-config.js";
 import { MockDeliveryGateway } from "../delivery/mock-delivery-gateway.js";
 import { PersonaAwareRuntime } from "./persona-aware-runtime.js";
-
-// ── Serializable types (Maps replaced with plain objects) ─────────────────────
-
-export type SerializedAgentState = Omit<AgentState, "relationalStates"> & {
-  relationalStates: Record<string, RelationalState>;
-};
-
-export type AgentThinking = {
-  agentId: string;
-  intentType: string;
-  visibleContent: string | undefined;
-  privateMotiveSummary: string;
-  emotionDrivers: string[];
-  motivationDrivers: string[];
-};
-
-export type PulseFrame = {
-  pulseIndex: number;
-  result: PulseResult;
-  committedEvents: CommittedEvent[];
-  agentStates: Record<string, SerializedAgentState>;
-  /** Thinking data from the LLM intent — only set if agent had an LLM call this pulse */
-  agentThinking: Record<string, AgentThinking>;
-  operatorEvents: OperatorEvent[];
-};
-
-export type SimulationReplay = {
-  simulationId: string;
-  simulationName: string;
-  agentIds: string[];
-  agentNames: Record<string, string>;
-  agentArchetypes: Record<string, string>;
-  channels: Array<{
-    id: string;
-    name: string;
-    type: string;
-    memberAgentIds: string[];
-  }>;
-  pulses: PulseFrame[];
-};
 
 // ── Recorder ─────────────────────────────────────────────────────────────────
 
@@ -212,13 +175,6 @@ export class SimulationRecorder {
 }
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
-
-function serializeAgentState(state: AgentState): SerializedAgentState {
-  return {
-    ...state,
-    relationalStates: Object.fromEntries(state.relationalStates.entries()),
-  };
-}
 
 function intentToThinking(agentId: string, intent: ActionIntent): AgentThinking {
   return {

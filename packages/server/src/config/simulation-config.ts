@@ -60,6 +60,7 @@ import type {
 } from "../simulation/pulse-scheduler.js";
 import {
   CompositeDeliveryGateway,
+  HtmlSnapshotGateway,
   MockDeliveryGateway,
   StdoutDeliveryGateway,
 } from "../delivery/index.js";
@@ -95,6 +96,7 @@ export type DebugConfig = {
 export type DeliveryGatewayConfig =
   | { id: string; type: "mock" }
   | { id: string; type: "stdout"; debug?: boolean }
+  | { id: string; type: "html-snapshot"; outputPath: string }
   | {
       id: string;
       type: "discord";
@@ -103,6 +105,14 @@ export type DeliveryGatewayConfig =
       managerBotTokenEnv?: string;
       setupMode?: "readonly_existing" | "manage_channels";
     };
+
+/** Construction-time runtime metadata (US-003 / FR-004): the stream carries ids only. */
+export type GatewayRuntimeMetadata = {
+  simulationId: string;
+  simulationName: string;
+  agents: Record<string, { name: string; archetype: string }>;
+  channels: Record<string, { name: string }>;
+};
 
 export type InitialChannelConfig = {
   id: string;
@@ -349,7 +359,10 @@ export async function buildConfiguredSimulation(
 ): Promise<ConfiguredSimulationHandle> {
   const simulationId = config.simulation.id ?? createId();
   const persistence = createRepositories(config.persistence);
-  const gateways = await createGateways(config);
+  const gateways = await createGateways(
+    config,
+    buildGatewayRuntimeMetadata(config, simulationId),
+  );
   const delivery = new CompositeDeliveryGateway(Object.values(gateways));
   const configuredAgents = config.agents.map<ConfiguredAgent>((agent) => ({
     id: agent.id,
@@ -431,16 +444,23 @@ function createRepositories(config: PersistenceConfig): {
 type GatewayFactory = (
   cfg: DeliveryGatewayConfig,
   debug: DebugConfig | undefined,
+  meta: GatewayRuntimeMetadata,
 ) => IDeliveryGateway | Promise<IDeliveryGateway>;
 
 const GATEWAY_FACTORIES: Record<DeliveryGatewayConfig["type"], GatewayFactory> =
   {
-    mock: () => new MockDeliveryGateway(),
-    stdout: (cfg, debug) =>
+    mock: (_cfg, _debug, meta) => new MockDeliveryGateway(meta),
+    "html-snapshot": (cfg, _debug, meta) =>
+      new HtmlSnapshotGateway(
+        meta,
+        (cfg as Extract<DeliveryGatewayConfig, { type: "html-snapshot" }>).outputPath,
+      ),
+    stdout: (cfg, debug, meta) =>
       new StdoutDeliveryGateway(
         (cfg as Extract<DeliveryGatewayConfig, { type: "stdout" }>).debug ??
           debug?.operatorEvents ??
           false,
+        meta,
       ),
     discord: async (cfg) => {
       const discordCfg = cfg as Extract<DeliveryGatewayConfig, { type: "discord" }>;
@@ -507,12 +527,40 @@ const GATEWAY_FACTORIES: Record<DeliveryGatewayConfig["type"], GatewayFactory> =
     },
   };
 
+function buildGatewayRuntimeMetadata(
+  config: SimulationAppConfig,
+  simulationId: string,
+): GatewayRuntimeMetadata {
+  const agents: GatewayRuntimeMetadata["agents"] = {};
+  for (const agent of config.agents) {
+    agents[agent.id] = {
+      name: agent.persona.name,
+      archetype: agent.persona.archetype,
+    };
+  }
+  const channels: GatewayRuntimeMetadata["channels"] = {};
+  for (const channel of config.channels) {
+    channels[channel.id] = { name: channel.name };
+  }
+  return {
+    simulationId,
+    simulationName: config.simulation.name,
+    agents,
+    channels,
+  };
+}
+
 async function createGateways(
   config: SimulationAppConfig,
+  meta: GatewayRuntimeMetadata,
 ): Promise<Record<string, IDeliveryGateway>> {
   const result: Record<string, IDeliveryGateway> = {};
   for (const gateway of config.deliveryGateways) {
-    result[gateway.id] = await GATEWAY_FACTORIES[gateway.type](gateway, config.debug);
+    result[gateway.id] = await GATEWAY_FACTORIES[gateway.type](
+      gateway,
+      config.debug,
+      meta,
+    );
   }
   if (
     config.debug?.stdoutDelivery &&
@@ -611,6 +659,16 @@ function parseGateways(input: unknown): DeliveryGatewayConfig[] {
       `deliveryGateways[${index}].type`,
     );
     if (type === "mock") return { id, type };
+    if (type === "html-snapshot") {
+      return {
+        id,
+        type,
+        outputPath: requiredString(
+          gateway["outputPath"],
+          `deliveryGateways[${index}].outputPath`,
+        ),
+      };
+    }
     if (type === "stdout") {
       return {
         id,

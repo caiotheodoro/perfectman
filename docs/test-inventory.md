@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-24T19:47:52.818Z — audited 99 files, 950 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-25T01:44:27.787Z — audited 102 files, 981 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -10,10 +10,10 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 |---|---|---|---|
 | engine | 22 | 259 | —
 | eval | 17 | 140 | async-pause(1)
-| server | 52 | 457 | console(1), async-pause(1), async-pause(1)
+| server | 55 | 488 | console(1), async-pause(1), async-pause(1)
 | shared | 8 | 94 | —
 
-**Total: 99 files, 950 it/test blocks; 4 files flagged.**
+**Total: 102 files, 981 it/test blocks; 4 files flagged.**
 
 ## Per-file inventory
 
@@ -58,6 +58,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/eval/src/test/probes.test.ts | eval-harness | 23 | 
 | packages/eval/src/test/signal-breakdown.test.ts | eval-harness | 4 | 
 | packages/eval/src/test/sweep-temperature.test.ts | eval-harness | 6 | 
+| packages/server/src/__e2e__/html-receiver-parity.e2e.test.ts | e2e | 7 | 
 | packages/server/src/__e2e__/html-snapshot.e2e.test.ts | e2e | 1 | console(1)
 | packages/server/src/__e2e__/pipeline-invariants.e2e.test.ts | e2e | 10 | 
 | packages/server/src/__e2e__/roleplay-behaviors.e2e.test.ts | e2e | 17 | 
@@ -71,7 +72,8 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/agent/surface/__tests__/action-intent-step.test.ts | integration | 9 | 
 | packages/server/src/cli/__tests__/llm-health-check.test.ts | integration | 4 | 
 | packages/server/src/config/__tests__/judge-config.test.ts | integration | 16 | 
-| packages/server/src/config/__tests__/simulation-config.test.ts | integration | 14 | 
+| packages/server/src/config/__tests__/simulation-config.test.ts | integration | 19 | 
+| packages/server/src/delivery/__tests__/html-snapshot-gateway.test.ts | integration | 7 | 
 | packages/server/src/discord/__tests__/bot-registry.test.ts | integration | 9 | 
 | packages/server/src/discord/__tests__/channel-map.test.ts | integration | 6 | 
 | packages/server/src/discord/__tests__/discord-config.test.ts | integration | 13 | 
@@ -102,6 +104,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/intent-resolver.test.ts | integration | 8 | 
 | packages/server/src/simulation/__tests__/lifecycle-state-machine.test.ts | integration | 18 | 
 | packages/server/src/simulation/__tests__/operator-projection.test.ts | integration | 4 | 
+| packages/server/src/simulation/__tests__/pulse-scheduler-observability.test.ts | integration | 12 | 
 | packages/server/src/simulation/__tests__/pulse-scheduler-resilience.test.ts | integration | 2 | async-pause(1)
 | packages/server/src/simulation/__tests__/pulse-scheduler.test.ts | integration | 7 | 
 | packages/server/src/simulation/__tests__/runtime-input-builder.test.ts | integration | 5 | 

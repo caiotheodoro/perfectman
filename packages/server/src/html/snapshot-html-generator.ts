@@ -5,7 +5,7 @@
  * Each pulse section shows messages → inline thinking → dreaming asides for silent agents.
  * No external dependencies — system fonts only.
  */
-import type { SimulationReplay } from "./simulation-recorder.js";
+import type { SimulationReplay } from "./replay-types.js";
 
 export function generateHtml(replay: SimulationReplay): string {
   const dataJson = JSON.stringify(replay, null, 0);

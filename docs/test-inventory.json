@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-24T19:47:52.822Z",
+  "generatedAt": "2026-08-25T01:44:27.795Z",
   "totals": {
-    "files": 99,
-    "its": 950
+    "files": 102,
+    "its": 981
   },
   "byPackage": {
     "engine": {
@@ -18,8 +18,8 @@
       ]
     },
     "server": {
-      "files": 52,
-      "its": 457,
+      "files": 55,
+      "its": 488,
       "flags": [
         "console(1)",
         "async-pause(1)",
@@ -894,6 +894,28 @@
       "violations": []
     },
     {
+      "file": "packages/server/src/__e2e__/html-receiver-parity.e2e.test.ts",
+      "pkg": "server",
+      "layer": "e2e",
+      "its": 7,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": [],
+      "violations": []
+    },
+    {
       "file": "packages/server/src/__e2e__/html-snapshot.e2e.test.ts",
       "pkg": "server",
       "layer": "e2e",
@@ -1185,7 +1207,7 @@
       "file": "packages/server/src/config/__tests__/simulation-config.test.ts",
       "pkg": "server",
       "layer": "integration",
-      "its": 14,
+      "its": 19,
       "itsEach": 0,
       "forcedCasts": 0,
       "tsBypasses": 0,
@@ -1197,6 +1219,28 @@
       "defined": 0,
       "deadIdTruthy": 0,
       "nonNull": 0,
+      "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/server/src/delivery/__tests__/html-snapshot-gateway.test.ts",
+      "pkg": "server",
+      "layer": "integration",
+      "its": 7,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 2,
       "spies": 0,
       "asyncPauses": 0,
       "weakTerminals": [],
@@ -1860,6 +1904,28 @@
       "deadIdTruthy": 0,
       "nonNull": 0,
       "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/server/src/simulation/__tests__/pulse-scheduler-observability.test.ts",
+      "pkg": "server",
+      "layer": "integration",
+      "its": 12,
+      "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 6,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 5,
       "asyncPauses": 0,
       "weakTerminals": [],
       "flags": [],
