@@ -89,6 +89,30 @@ pnpm freellm:dev        # API on :3001, dashboard on :5173
 
 Add provider keys and create a unified key via the dashboard, then set `FREELLMAPI_KEY` in `.env`.
 
+**Simulation in Docker** (no local Node/pnpm toolchain needed):
+
+```bash
+mkdir -p config
+cp examples/simulations/mock.inline-personas.example.json config/index.json
+docker compose -f docker/app/app.compose.yml up --build
+```
+
+It combines with the auxiliary containers, e.g. Qwen3/Ollama alongside the runtime:
+
+```bash
+docker compose -f docker/qwen3/qwen3.compose.yml \
+               -f docker/app/app.compose.yml up -d simulation
+```
+
+Published images are built for each tagged release and pushed to GHCR (`ghcr.io/caiotheodoro/perfectman:<tag>`) — see [Releases](#releases) below.
+
+This builds a multi-stage image of the runtime itself and runs the same CLI as `pnpm --filter @perfectman/server simulation`. With the mock example it needs no API keys or model — personas converse on stdout. To use a real provider, point your mounted `config/index.json` at it and hand keys to the container with an extra read-only mount of the same `.env` the CLI reads natively:
+
+```bash
+docker compose -f docker/app/app.compose.yml run --rm \
+  -v "$PWD/.env:/app/.env:ro" simulation
+```
+
 ### Bring your own personas
 
 See [`docs/personas/README.md`](docs/personas/README.md) for the plug-and-play persona interview/compile workflow. Real, person-specific persona files live under `config/` and `docs/personas/`, both gitignored — nothing personal gets committed.
@@ -105,6 +129,18 @@ The full design lives in [`docs/README.md`](docs/README.md) — start there for 
 ## Status / open questions
 
 This is an active experiment, not a finished product. See [`docs/README.md`](docs/README.md#current-open-questions) for what's genuinely undecided — private-channel spectator visibility, how much scoring machinery should exist, which symbolic actions are worth keeping. If one of those interests you, that's a good place to start.
+
+## Releases
+
+> Proposal — this convention only exists once this lands and the first tag is cut.
+
+Every tagged release (`v*`) publishes a container image of the runtime to GitHub Container Registry via `docker-release.yml`: `ghcr.io/caiotheodoro/perfectman` gets the exact tag (`v0.1.0` → image tag `0.1.0`, plus `latest` for non-prerelease). Consumers without a Node toolchain can run the simulation directly:
+
+```bash
+docker pull ghcr.io/caiotheodoro/perfectman:latest
+```
+
+Use a tagged image instead of `latest` anywhere reproducibility matters.
 
 ## Contributing
 
