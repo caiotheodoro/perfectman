@@ -132,8 +132,6 @@ This is an active experiment, not a finished product. See [`docs/README.md`](doc
 
 ## Releases
 
-> Proposal — this convention only exists once this lands and the first tag is cut.
-
 Every tagged release (`v*`) publishes a container image of the runtime to GitHub Container Registry via `docker-release.yml`: `ghcr.io/caiotheodoro/perfectman` gets the exact tag (`v0.1.0` → image tag `0.1.0`, plus `latest` for non-prerelease). Consumers without a Node toolchain can run the simulation directly:
 
 ```bash
