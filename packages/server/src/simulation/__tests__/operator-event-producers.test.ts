@@ -18,8 +18,8 @@ import { OPERATOR_EVENT_TYPES } from "@perfectman/shared";
  * the type system already rejects any `type: "..."` that is not a member of
  * the union.
  *
- * This guard exists because `rate_limit_hit` was declared but never
- * emitted anywhere in packages/server/src — removed with this change. The
+ * This guard exists because `rate_limit_hit` was declared but never emitted
+ * anywhere in packages/server/src — removed with this change. The
  * observability-stream types (`agent_state_snapshot`, `action_intent`,
  * `event_visibility`) landed on main with PR #100 and each has a producer.
  */
@@ -44,6 +44,37 @@ function collectSourceFiles(dir: string): string[] {
   return files;
 }
 
+/**
+ * True if `type` is emitted as an OperatorEvent somewhere in `source`.
+ *
+ * A bare `type: "<name>"` occurrence is not proof of an operator emission:
+ * `intent_blocked`, `intent_delayed` and `llm_failure` are also committed
+ * `SimulationEvent` types, and the same `type:` literal appears in their
+ * constructions (`intent-resolver.ts` builds committed events with
+ * `type: "intent_blocked"`/`"intent_delayed"`; `pulse-scheduler.ts` builds a
+ * committed `llm_failure`). `detail` is a required field of `OperatorEvent`
+ * and never appears on `SimulationEvent`, so an occurrence with a `detail`
+ * property nearby is structurally an operator emission; one without (a
+ * committed-event construction, or a stray mention) must not count.
+ *
+ * Residual limitation: a doc comment that happens to mention both the type
+ * literal and `detail` within the window would count — none exists today.
+ */
+function hasOperatorEmission(source: string, type: string): boolean {
+  const needle = `type: "${type}"`;
+  let from = 0;
+  for (;;) {
+    const at = source.indexOf(needle, from);
+    if (at === -1) return false;
+    // `detail` is the operator-only discriminator; match both the explicit
+    // `detail:` form and the shorthand `detail,` (pulse-scheduler.ts uses
+    // shorthand in its schedulerError helper).
+    const window = source.slice(Math.max(0, at - 200), at + 300);
+    if (/detail\s*[:,]/.test(window)) return true;
+    from = at + needle.length;
+  }
+}
+
 describe("operator event producers", () => {
   const sourceFiles = collectSourceFiles(SERVER_SRC);
 
@@ -58,11 +89,63 @@ describe("operator event producers", () => {
 
   it.each(OPERATOR_EVENT_TYPES)(
     "declared operator type %s has an emission site in packages/server/src",
-    (type) => {
+    (type: (typeof OPERATOR_EVENT_TYPES)[number]) => {
       expect(
-        allSource.includes(`type: "${type}"`),
-        `${type} is declared in shared but never emitted in packages/server/src — remove it from OPERATOR_EVENT_TYPES or wire a producer`,
+        hasOperatorEmission(allSource, type),
+        `${type} is declared in shared but never emitted as an OperatorEvent in packages/server/src — remove it from OPERATOR_EVENT_TYPES or wire a producer`,
       ).toBe(true);
     },
   );
+});
+
+describe("hasOperatorEmission discriminates operator events from committed events", () => {
+  it("rejects a committed-event construction that shares the type name", () => {
+    // `llm_failure` exists in BOTH the SimulationEvent and OperatorEvent
+    // unions; a plain substring match for `type: "llm_failure"` would pass
+    // on this committed-event shape (SimulationEvent has no `detail` field)
+    // even though no OperatorEvent is emitted. This is the false-positive
+    // class the guard must reject.
+    const committedEventShape = `
+      const event: SimulationEvent = {
+        simulationId: "sim-1",
+        channelId: "general",
+        actorId: "leo",
+        type: "llm_failure",
+        payload: { reason: "provider error" },
+        sourceEventIds: [],
+        emotionalSalience: "low",
+        visibility: { visibleToAgents: [], visibleToSpectators: false, visibleToOperators: true, visibilityReason: "x" },
+      };
+    `;
+    expect(hasOperatorEmission(committedEventShape, "llm_failure")).toBe(false);
+  });
+
+  it("accepts a real operator-event construction", () => {
+    const operatorEventShape = `
+      const op: OperatorEvent = {
+        type: "llm_failure",
+        simulationId: "sim-1",
+        agentId: "leo",
+        pulseIndex: 3,
+        detail: "LLM provider execution failed",
+        createdAt: 0,
+      };
+    `;
+    expect(hasOperatorEmission(operatorEventShape, "llm_failure")).toBe(true);
+  });
+
+  it("accepts the shorthand-detail form used by schedulerError", () => {
+    const shorthand = `
+      return {
+        type: "scheduler_error",
+        simulationId: this.config.simulation.id,
+        agentId,
+        pulseIndex: this.pulseIndex,
+        detail,
+        data,
+        createdAt: Date.now(),
+      };
+    `;
+    expect(hasOperatorEmission(shorthand, "scheduler_error")).toBe(true);
+  });
 });

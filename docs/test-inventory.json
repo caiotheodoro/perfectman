@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-26T14:57:13.972Z",
+  "generatedAt": "2026-08-26T15:03:10.415Z",
   "totals": {
     "files": 109,
-    "its": 1022
+    "its": 1025
   },
   "byPackage": {
     "engine": {
@@ -19,7 +19,7 @@
     },
     "server": {
       "files": 62,
-      "its": 538,
+      "its": 541,
       "flags": [
         "console(1)",
         "async-pause(1)",
@@ -1892,7 +1892,7 @@
       "file": "packages/server/src/simulation/__tests__/operator-event-producers.test.ts",
       "pkg": "server",
       "layer": "integration",
-      "its": 1,
+      "its": 4,
       "itsEach": 1,
       "forcedCasts": 0,
       "tsBypasses": 0,
