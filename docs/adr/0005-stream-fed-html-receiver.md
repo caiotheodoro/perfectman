@@ -1,6 +1,6 @@
 # ADR-0005: Stream-Fed HTML Receiver in Production
 
-**Status**: Accepted (LOCKED, 2026-08-25) — decision D-6 in `.claude/_output/pipeline/decision-log.md`
+**Status**: Accepted (LOCKED, 2026-08-25) — decision D-6, rationale inline in this ADR
 
 ## Context
 

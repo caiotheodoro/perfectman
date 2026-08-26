@@ -1,6 +1,6 @@
 # ADR-0010: Goal-Layer LLM Slice
 
-**Status**: Accepted (LOCKED, 2026-08-26) — rationale and rejected alternatives inline below; the `.claude/_output/pipeline/decision-log.md` archive (rows D-17..D-23) is a secondary pointer only and is never the home of this decision's rationale.
+**Status**: Accepted (LOCKED, 2026-08-26) — rationale and rejected alternatives inline in this ADR (decisions D-17..D-23).
 
 ## Context
 
@@ -61,5 +61,5 @@ Design constraints carried into this slice: the engine stays pure and untouched 
 - Foundation: [ADR-0008: World Goal Layer](./0008-world-goal-layer.md) — semantics; [ADR-0009: Goal-Layer Runtime Wiring](./0009-goal-layer-runtime-wiring.md) — the seams this slice implements; 0009's "still deferred: the LLM implementations" consequence is superseded by this ADR.
 - Concept: [docs/concepts/goal-layer.md](../concepts/goal-layer.md) — the layer, lifecycle, two-verdict architecture; carries an implementation-status note.
 - Research: [docs/research/goal-layer/](../research/goal-layer/README.md) — source trail and gaps; [docs/research/log.md](../research/log.md) — run chronology.
-- Decisions (secondary pointer): `.claude/_output/pipeline/decision-log.md` rows D-17..D-23, locked 2026-08-26 (Step 3.5), including the D-18 amendment on configured-provider routing.
+- Decisions: D-17..D-23 as recorded in this ADR (locked 2026-08-26, Step 3.5), including the D-18 amendment on configured-provider routing.
 - Code: `packages/server/src/simulation/world/{goal-layer-llm,goal-layer-prompt-builder,goal-synthesizer,world-evaluator,goal-registry,acceptance-gate}.ts`, `packages/server/src/simulation/{pulse-scheduler…}`, `packages/server/src/config/simulation-config.ts`, `packages/shared/src/goal/` (contracts + `goal-layer-config.schema.ts`), `packages/shared/src/{prompt,operator}/` (union growth), tests in the colocated `__tests__/` directories.

@@ -1,6 +1,6 @@
 # ADR-0008: World Goal Layer
 
-**Status**: Accepted (LOCKED, 2026-08-25) — rationale and rejected alternatives inline below; the `.claude/_output/pipeline/decision-log.md` archive is a secondary pointer only and is never the home of this decision's rationale.
+**Status**: Accepted (LOCKED, 2026-08-25) — rationale and rejected alternatives inline in this ADR.
 
 ## Context
 

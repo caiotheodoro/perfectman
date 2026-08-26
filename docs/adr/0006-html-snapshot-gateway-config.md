@@ -1,6 +1,6 @@
 # ADR-0006: `html-snapshot` Gateway Config Variant
 
-**Status**: Accepted (LOCKED, 2026-08-25) — decision D-7 in `.claude/_output/pipeline/decision-log.md`
+**Status**: Accepted (LOCKED, 2026-08-25) — decision D-7, rationale inline in this ADR
 
 ## Context
 

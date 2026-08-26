@@ -1,6 +1,6 @@
 # ADR-0007: `PulseFrame.result` Stream-Derived Approximation
 
-**Status**: Accepted (LOCKED, 2026-08-25) — decision D-9 in `.claude/_output/pipeline/decision-log.md`
+**Status**: Accepted (LOCKED, 2026-08-25) — decision D-9, rationale inline in this ADR
 
 ## Context
 
