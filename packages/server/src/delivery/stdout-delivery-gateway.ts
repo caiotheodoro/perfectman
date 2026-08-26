@@ -2,6 +2,8 @@ import type {
   ChannelType,
   OperatorEvent,
   SpectatorEvent,
+  EndReason,
+  EndingOffer,
 } from "@perfectman/shared";
 import type { GatewayRuntimeMetadata } from "../config/simulation-config.js";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
@@ -42,8 +44,12 @@ export class StdoutDeliveryGateway implements IDeliveryGateway {
     return Promise.resolve();
   }
 
-  onSimulationStopped(simulationId: string): Promise<void> {
-    this.write("simulation_stopped", { simulationId });
+  onSimulationStopped(simulationId: string, endReason?: EndReason, endingOffer?: EndingOffer): Promise<void> {
+    this.write("simulation_stopped", {
+      simulationId,
+      ...(endReason !== undefined ? { endReason } : {}),
+      ...(endingOffer !== undefined ? { endingOffer } : {}),
+    });
     return Promise.resolve();
   }
 

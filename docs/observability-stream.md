@@ -40,6 +40,42 @@ memory lifecycle — and no history/deltas); `action_intent` carries the five
 FR-002 fields verbatim; `event_visibility` carries id/type/actor/channel/
 `visibleToAgents` plus content/channelName where present.
 
+## Goal-Layer Event Volume (per Review)
+
+With `goalLayer.enabled`, the world review — every `reviewEveryPulses`
+pulses, pulse 0 exempt — adds goal-layer events to the stream through the
+same `sendOperatorEvent` channel:
+
+| Event | When | Count |
+| ----- | ---- | ----- |
+| `world_verdict` | every active goal, one per goal in the evaluator's verdict loop | exactly 1 per active goal per review |
+| `delusion_gap_sampled` | same loop, one sample per goal after its verdict | exactly 1 per active goal per review |
+| `goal_proposed` | synthesis intervals only (`pulseIndex % intervalPulses === 0`); per agent, candidates capped at `maxCandidatesPerReview`, reviewer-recommended only, absent from the registry already | `0..maxCandidatesPerReview` per agent |
+| `goal_accepted` | pending proposals decided at review N+1, accepted branch | 0..1 per pending proposal |
+| `goal_declined` | same acceptance loop, declined branch | 0..1 per pending proposal |
+| `ending_offered` | ending gate; the registry's single-offer invariant refuses later claims | 0..1 per run |
+
+So the "≤1 goal event per goal per review" contract holds strictly for
+`world_verdict` and `delusion_gap_sampled` — precisely 1 each per active
+goal per review. Proposal/accepted/declined are per-proposal, and
+`ending_offered` is run-level. `simulation_stopped` is **not** an operator
+event: its `endReason`/`endingOffer` ride the delivery callback
+`onSimulationStopped(simulationId, endReason?, endingOffer?)` (D-24).
+
+The goal end-to-end suite pins the review counts against the committed log
+(`reviewEveryPulses = 1`): verdict and gap counts are equal with identical
+pulse indexes, consecutive verdict pulses are contiguous, and the ending
+offer lands on the review of the final verdict — the deterministic arc
+accepts, verdicts, and ends on the acceptance review, so that review
+carries exactly 1 verdict and 1 gap for the goal.
+
+Every goal-layer event is state-only: its payload carries its own transition
+(proposal, verdict replace, one gap sample, ending), never a replay of
+earlier history. A stream-fed receiver keeps one `GoalPanel` entry per goal
+(constant fields) plus at most one gap sample per review per goal, so
+receiver memory stays linear in reviews × active goals — the same class as
+the per-pulse frame bound below.
+
 ## Receiver Memory Bound
 
 Stream-fed receivers that accumulate per-pulse frames (the `HtmlSnapshotGateway`

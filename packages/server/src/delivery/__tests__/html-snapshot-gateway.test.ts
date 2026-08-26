@@ -105,6 +105,155 @@ function visibility(eventId: string, pulseIndex: number, type: string, extra: Re
   };
 }
 
+function goalProposed(goalId: string, pulseIndex: number, title = "Resolver o impasse"): OperatorEvent {
+  return {
+    type: "goal_proposed",
+    simulationId: "sim_rcv",
+    agentId: "ana",
+    pulseIndex,
+    detail: `Goal proposed: ${goalId}`,
+    data: {
+      goalId,
+      proposal: {
+        id: goalId,
+        agentId: "ana",
+        title,
+        targetState: {
+          id: "pred-1",
+          description: "sem mais bloqueios",
+          observableCriteria: ["sem mais bloqueios"],
+        },
+        kind: "resolve",
+        origin: "crystallized_from",
+        sourceEventIds: ["seed-1"],
+        createdAt: 1,
+      },
+      narrativeFraming: "Ana percebe que precisa resolver o impasse.",
+      confidence: 0.85,
+      synthesizer: "deterministic",
+    },
+    createdAt: 1,
+  };
+}
+
+function goalAccepted(goalId: string, pulseIndex: number): OperatorEvent {
+  return {
+    type: "goal_accepted",
+    simulationId: "sim_rcv",
+    agentId: "ana",
+    pulseIndex,
+    detail: `Goal accepted: ${goalId}`,
+    data: {
+      goalId,
+      goal: {
+        id: goalId,
+        agentId: "ana",
+        title: "Resolver o impasse",
+        targetState: {
+          id: "pred-1",
+          description: "sem mais bloqueios",
+          observableCriteria: ["sem mais bloqueios"],
+        },
+        kind: "resolve",
+        status: "active",
+        origin: "crystallized_from",
+        sourceEventIds: ["seed-1"],
+        createdAt: 1,
+      },
+    },
+    createdAt: 1,
+  };
+}
+
+function goalDeclined(goalId: string, pulseIndex: number, title: string): OperatorEvent {
+  return {
+    type: "goal_declined",
+    simulationId: "sim_rcv",
+    agentId: "ana",
+    pulseIndex,
+    detail: `Goal declined: ${goalId}`,
+    data: {
+      goalId,
+      proposal: {
+        id: goalId,
+        agentId: "ana",
+        title,
+        targetState: {
+          id: "pred-2",
+          description: "sem mais bloqueios",
+          observableCriteria: [],
+        },
+        kind: "resolve",
+        origin: "crystallized_from",
+        sourceEventIds: [],
+        createdAt: 1,
+      },
+    },
+    createdAt: 1,
+  };
+}
+
+function worldVerdict(goalId: string, pulseIndex: number, determination: string, confidence: number): OperatorEvent {
+  return {
+    type: "world_verdict",
+    simulationId: "sim_rcv",
+    pulseIndex,
+    detail: `World verdict: ${determination}`,
+    data: {
+      goalId,
+      verdict: {
+        goalId,
+        objective: { distanceToTarget: 0.2, progressRate: 0.8, plateaued: false },
+        consensus: "ratified",
+        determination,
+        confidence,
+      },
+    },
+    createdAt: 1,
+  };
+}
+
+function gapSampled(
+  goalId: string,
+  pulseIndex: number,
+  sample: { magnitude: number; divergenceFromLog: number; divergenceFromWorld: number },
+): OperatorEvent {
+  return {
+    type: "delusion_gap_sampled",
+    simulationId: "sim_rcv",
+    pulseIndex,
+    detail: `Delusion gap sampled: ${goalId}`,
+    data: {
+      goalId,
+      agentId: "ana",
+      at: 2,
+      magnitude: sample.magnitude,
+      divergenceFromLog: sample.divergenceFromLog,
+      divergenceFromWorld: sample.divergenceFromWorld,
+    },
+    createdAt: 1,
+  };
+}
+
+function endingOffered(goalId: string, pulseIndex: number): OperatorEvent {
+  return {
+    type: "ending_offered",
+    simulationId: "sim_rcv",
+    pulseIndex,
+    detail: `Ending offered: ${goalId}`,
+    data: {
+      goalId,
+      offer: {
+        goalId,
+        reasons: ["world verdict: reached", "beat present"],
+        epilogue: "A história se sustenta.",
+        status: "pending",
+      },
+    },
+    createdAt: 1,
+  };
+}
+
 describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
   const dirs: string[] = [];
 
@@ -264,5 +413,210 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
 
     const flushed = readFileSync(outputPath, "utf-8");
     expect(flushed).toBe(html);
+  });
+
+  it("derives the goal panel from delivered goal-layer events and flushes it with the stop payload", async () => {
+    const { gw, outputPath } = buildGateway();
+    await gw.sendOperatorEvent(goalProposed("g1", 1));
+    await gw.sendOperatorEvent(goalAccepted("g1", 2));
+    // Two verdicts and gaps: only the latest verdict is kept, samples keep arrival order.
+    await gw.sendOperatorEvent(worldVerdict("g1", 3, "not_reached", 0.6));
+    await gw.sendOperatorEvent(gapSampled("g1", 3, { magnitude: 0.4, divergenceFromLog: 0.3, divergenceFromWorld: 0.5 }));
+    await gw.sendOperatorEvent(worldVerdict("g1", 4, "reached", 0.9));
+    await gw.sendOperatorEvent(gapSampled("g1", 4, { magnitude: 0.1, divergenceFromLog: 0.05, divergenceFromWorld: 0.15 }));
+    await gw.sendOperatorEvent(endingOffered("g1", 5));
+    await gw.onSimulationStopped("sim_rcv", "goal_end_offered", {
+      goalId: "g1",
+      reasons: ["world verdict: reached"],
+      epilogue: "A história se sustenta.",
+      status: "pending",
+    });
+
+    const replay = gw.toReplay();
+    expect(replay.goals).toEqual([
+      {
+        goalId: "g1",
+        agentId: "ana",
+        title: "Resolver o impasse",
+        kind: "resolve",
+        targetStateDescription: "sem mais bloqueios",
+        narrativeFraming: "Ana percebe que precisa resolver o impasse.",
+        synthesizer: "deterministic",
+        confidence: 0.85,
+        status: "ended",
+        proposalPulse: 1,
+        acceptedPulse: 2,
+        latestVerdict: {
+          distanceToTarget: 0.2,
+          progressRate: 0.8,
+          plateaued: false,
+          consensus: "ratified",
+          determination: "reached",
+          confidence: 0.9,
+        },
+        gapSamples: [
+          { pulseIndex: 3, magnitude: 0.4, divergenceFromLog: 0.3, divergenceFromWorld: 0.5 },
+          { pulseIndex: 4, magnitude: 0.1, divergenceFromLog: 0.05, divergenceFromWorld: 0.15 },
+        ],
+        ending: {
+          goalId: "g1",
+          reasons: ["world verdict: reached", "beat present"],
+          epilogue: "A história se sustenta.",
+          status: "pending",
+        },
+      },
+    ]);
+    expect(replay.endReason).toBe("goal_end_offered");
+    expect(replay.endingOffer?.epilogue).toBe("A história se sustenta.");
+
+    // Flushed artifact carries the panel section, the panel data, and the end line.
+    const html = readFileSync(outputPath, "utf-8");
+    expect(html).toContain("goal-panel");
+    expect(html).toContain("Resolver o impasse");
+    expect(html).toContain("goal_end_offered");
+    expect(html).toContain("A história se sustenta.");
+  });
+
+  it("ends a declined goal as declined with no verdict, samples, or ending", async () => {
+    const { gw } = buildGateway();
+    await gw.sendOperatorEvent(goalProposed("g2", 1, "Abandonar o fórum"));
+    await gw.sendOperatorEvent(goalDeclined("g2", 2, "Abandonar o fórum"));
+    await gw.onSimulationStopped("sim_rcv");
+
+    const replay = gw.toReplay();
+    expect(replay.goals).toHaveLength(1);
+    const panel = replay.goals![0]!;
+    expect(panel.status).toBe("declined");
+    expect(panel.acceptedPulse).toBeUndefined();
+    expect(panel.latestVerdict).toBeUndefined();
+    expect(panel.gapSamples).toEqual([]);
+    expect(panel.ending).toBeUndefined();
+    expect(replay.endReason).toBeUndefined();
+  });
+
+  it("keeps separate run-level panels per goalId across frames, interleaved streams intact", async () => {
+    const { gw } = buildGateway();
+    // Events on distant pulses: the run-level map must merge them, and each
+    // frame must still carry its own pulse's operator events (no per-frame
+    // drops). Goal gx ends; goal gy is accepted with a single gap sample.
+    await gw.sendOperatorEvent(goalProposed("gx", 1));
+    await gw.sendOperatorEvent(worldVerdict("gx", 3, "reached", 0.9));
+    await gw.sendOperatorEvent(gapSampled("gx", 3, { magnitude: 0.4, divergenceFromLog: 0.3, divergenceFromWorld: 0.5 }));
+    await gw.sendOperatorEvent(goalProposed("gy", 7, "Seguir em frente"));
+    await gw.sendOperatorEvent(worldVerdict("gy", 8, "not_reached", 0.6));
+    await gw.sendOperatorEvent(gapSampled("gy", 8, { magnitude: 0.7, divergenceFromLog: 0.6, divergenceFromWorld: 0.8 }));
+    await gw.sendOperatorEvent(goalAccepted("gy", 9));
+    await gw.sendOperatorEvent(endingOffered("gx", 10));
+    await gw.onSimulationStopped("sim_rcv");
+
+    const replay = gw.toReplay();
+    expect(replay.goals).toHaveLength(2);
+
+    const gx = replay.goals!.find((g) => g.goalId === "gx")!;
+    expect(gx.status).toBe("ended");
+    expect(gx.proposalPulse).toBe(1);
+    expect(gx.acceptedPulse).toBeUndefined();
+    expect(gx.latestVerdict?.determination).toBe("reached");
+    // Single-sample trajectory: one sample, on the verdict's pulse.
+    expect(gx.gapSamples).toEqual([
+      { pulseIndex: 3, magnitude: 0.4, divergenceFromLog: 0.3, divergenceFromWorld: 0.5 },
+    ]);
+    expect(gx.ending?.reasons).toEqual(["world verdict: reached", "beat present"]);
+
+    const gy = replay.goals!.find((g) => g.goalId === "gy")!;
+    expect(gy.status).toBe("accepted");
+    expect(gy.proposalPulse).toBe(7);
+    expect(gy.acceptedPulse).toBe(9);
+    expect(gy.latestVerdict?.determination).toBe("not_reached");
+    expect(gy.gapSamples).toHaveLength(1);
+    expect(gy.ending).toBeUndefined();
+
+    // Frames keep the per-pulse stream: one frame per event pulse, each
+    // holding only its own events; the verdict for gx must not land on gy's
+    // frame or panel.
+    expect(replay.pulses.map((p) => p.pulseIndex)).toEqual([1, 3, 7, 8, 9, 10]);
+    const frame7 = replay.pulses.find((p) => p.pulseIndex === 7)!;
+    expect(frame7.operatorEvents.map((e) => e.type)).toEqual(["goal_proposed"]);
+    expect(frame7.operatorEvents[0]!.data?.["goalId"]).toBe("gy");
+    const frame3 = replay.pulses.find((p) => p.pulseIndex === 3)!;
+    expect(frame3.operatorEvents.map((e) => e.type)).toEqual(["world_verdict", "delusion_gap_sampled"]);
+  });
+
+  it("ignores malformed goal payloads and falls back for missing optional fields", async () => {
+    const { gw } = buildGateway();
+    // No goalId: proposal is dropped entirely (no entry, no throw).
+    await gw.sendOperatorEvent({
+      type: "goal_proposed",
+      simulationId: "sim_rcv",
+      agentId: "ana",
+      pulseIndex: 1,
+      detail: "Goal proposed: unknown",
+      data: { proposal: { title: "sem id" } },
+      createdAt: 1,
+    });
+    // Events for a goal the receiver never saw a proposal for: ignored.
+    await gw.sendOperatorEvent(worldVerdict("ghost", 2, "reached", 0.9));
+    await gw.sendOperatorEvent(goalAccepted("ghost", 3));
+    await gw.sendOperatorEvent(gapSampled("ghost", 3, { magnitude: 1, divergenceFromLog: 1, divergenceFromWorld: 1 }));
+    // Minimal proposal: every optional field falls back, no throw.
+    await gw.sendOperatorEvent({
+      type: "goal_proposed",
+      simulationId: "sim_rcv",
+      agentId: "bruno",
+      pulseIndex: 4,
+      detail: "Goal proposed: g3",
+      data: { goalId: "g3", proposal: { agentId: "bruno" } },
+      createdAt: 1,
+    });
+    // Unknown endReason-adjacent fields on the stop: keys stay absent.
+    await gw.onSimulationStopped("sim_rcv");
+
+    const replay = gw.toReplay();
+    expect(replay.goals).toHaveLength(1);
+    const g3 = replay.goals![0]!;
+    expect(g3).toEqual({
+      goalId: "g3",
+      agentId: "bruno",
+      title: "",
+      kind: "",
+      targetStateDescription: "",
+      narrativeFraming: "",
+      synthesizer: "",
+      confidence: 0,
+      status: "proposed",
+      proposalPulse: 4,
+      gapSamples: [],
+    });
+    expect("acceptedPulse" in g3).toBe(false);
+    expect("latestVerdict" in g3).toBe(false);
+    expect("endReason" in replay).toBe(false);
+    expect("endingOffer" in replay).toBe(false);
+  });
+
+  it("stays byte-identical for no-goal runs: no goal keys in the replay, no goal markers in the artifact", async () => {
+    const { gw, outputPath } = buildGateway();
+    await gw.sendOperatorEvent(snapshot("ana", 0));
+    await gw.sendOperatorEvent(snapshot("bruno", 0));
+    await gw.sendOperatorEvent(intent("ana", 0));
+    await gw.sendOperatorEvent(visibility("ev_m1", 0, "message_sent", { content: "oi gente" }));
+    await gw.sendOperatorEvent(visibility("ev_noop", 0, "no_op_recorded", { actorId: "bruno", visibleToAgents: [] }));
+    await gw.onSimulationStopped("sim_rcv");
+
+    const replay = gw.toReplay();
+    expect("goals" in replay).toBe(false);
+    expect("endReason" in replay).toBe(false);
+    expect("endingOffer" in replay).toBe(false);
+
+    // The no-goal artifact carries no goal-panel shell, CSS, or JS — the
+    // byte-identity invariant behind the `!goals || goals.length === 0` guard.
+    const html = readFileSync(outputPath, "utf-8");
+    expect(html).not.toContain("goal-panel");
+    expect(html).not.toContain("camada de objetivos");
+    expect(html).not.toContain("GOAL_CSS");
+    expect(html).not.toContain("GOAL_JS");
+    // Pre-existing sections stay untouched when no goals are present.
+    expect(html).toContain("REPLAY_DATA");
+    expect(html).toContain("PULSES");
+    expect(html).toContain("oi gente");
   });
 });

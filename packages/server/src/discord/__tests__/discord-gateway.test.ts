@@ -170,6 +170,51 @@ describe("DiscordDeliveryGateway", () => {
     expect(sent.at(-1)!.content).toContain("[operator:llm_failure]");
   });
 
+  it("sendOperatorEvent renders goal_proposed via the generic operator formatter", async () => {
+    await gateway.createChannel("__operator", "operator_channel", []);
+    const event: OperatorEvent = {
+      type: "goal_proposed",
+      simulationId: "sim-1",
+      agentId: "alice",
+      pulseIndex: 6,
+      detail: "Goal proposed: goal_1",
+      data: { goalId: "goal_1" },
+      createdAt: 1000,
+    };
+    await gateway.sendOperatorEvent(event);
+
+    const entry = channelMap.get("sim-1", "__operator")!;
+    const sent = guildPort.getSentMessages(entry.discordChannelId);
+    expect(sent.at(-1)!.content).toBe("[operator:goal_proposed] Goal proposed: goal_1");
+  });
+
+  it("onSimulationStopped appends end reason and epilogue when offered", async () => {
+    await gateway.createChannel("__operator", "operator_channel", []);
+
+    await gateway.onSimulationStopped("sim-1", "goal_end_offered", {
+      goalId: "goal_1",
+      reasons: ["the story holds"],
+      epilogue: "The baker waves first.",
+      status: "pending",
+    });
+
+    const opEntry = channelMap.get("sim-1", "__operator")!;
+    const opSent = guildPort.getSentMessages(opEntry.discordChannelId);
+    expect(opSent.at(-1)!.content).toContain("goal_end_offered");
+    expect(opSent.at(-1)!.content).toContain("The baker waves first.");
+  });
+
+  it("onSimulationStopped appends a bare end reason without an epilogue", async () => {
+    await gateway.createChannel("__operator", "operator_channel", []);
+
+    await gateway.onSimulationStopped("sim-1", "operator_command");
+
+    const opEntry = channelMap.get("sim-1", "__operator")!;
+    const opSent = guildPort.getSentMessages(opEntry.discordChannelId);
+    expect(opSent.at(-1)!.content).toContain("End reason: operator_command");
+    expect(opSent.at(-1)!.content).not.toContain("Epilogue");
+  });
+
   it("onSimulationStopped locks channels and sends final message", async () => {
     await gateway.createChannel("secret", "private_channel", ["alice"]);
     await gateway.createChannel("__operator", "operator_channel", []);

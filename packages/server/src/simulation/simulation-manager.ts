@@ -87,7 +87,7 @@ export class SimulationManager {
   ): Promise<void> {
     const sim = await this.getOrThrow(simulationId);
     await this.lifecycle.stop(sim, pulseIndex, endReason, endingOffer);
-    await this.gateway.onSimulationStopped(simulationId);
+    await this.gateway.onSimulationStopped(simulationId, endReason, endingOffer);
   }
 
   async get(simulationId: string): Promise<Simulation | null> {

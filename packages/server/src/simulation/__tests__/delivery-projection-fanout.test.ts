@@ -16,6 +16,8 @@
  */
 
 import { describe, it, expect, beforeEach } from "vitest";
+import * as compositeDeliveryGateway from "../../delivery/composite-delivery-gateway.js";
+import * as mockDeliveryGateway from "../../delivery/mock-delivery-gateway.js";
 import type {
   CommittedEvent,
   Channel,
@@ -562,5 +564,52 @@ describe("DeliveryProjection Fan-Out — Each event type only triggers its own g
 
     expect(gateway.calls.filter((c) => c.method === "sendAgentMessage")).toHaveLength(0);
     expect(gateway.calls.filter((c) => c.method === "addMember")).toHaveLength(0);
+  });
+});
+
+describe("DeliveryProjection Fan-Out — onSimulationStopped endReason/endingOffer delivery", () => {
+  const OFFER = {
+    goalId: "goal_1",
+    reasons: ["the story holds"],
+    epilogue: "The baker waves first.",
+    status: "pending" as const,
+  };
+
+  it("CompositeDeliveryGateway passes endReason and endingOffer to every child", async () => {
+    const childA = new mockDeliveryGateway.MockDeliveryGateway();
+    const childB = new mockDeliveryGateway.MockDeliveryGateway();
+    const composite = new compositeDeliveryGateway.CompositeDeliveryGateway([childA, childB]);
+
+    await composite.onSimulationStopped(SIM_ID, "goal_end_offered", OFFER);
+
+    for (const child of [childA, childB]) {
+      expect(child.stoppedSimulations).toHaveLength(1);
+      expect(child.stoppedSimulations[0]).toEqual({
+        simulationId: SIM_ID,
+        endReason: "goal_end_offered",
+        endingOffer: OFFER,
+      });
+    }
+  });
+
+  it("CompositeDeliveryGateway passes no-opts stop unchanged", async () => {
+    const childA = new mockDeliveryGateway.MockDeliveryGateway();
+    const composite = new compositeDeliveryGateway.CompositeDeliveryGateway([childA]);
+
+    await composite.onSimulationStopped(SIM_ID);
+
+    expect(childA.stoppedSimulations[0]).toEqual({ simulationId: SIM_ID });
+  });
+
+  it("MockDeliveryGateway records enriched stop payload on stoppedSimulations", async () => {
+    const gateway = new mockDeliveryGateway.MockDeliveryGateway();
+
+    await gateway.onSimulationStopped(SIM_ID, "goal_end_offered", OFFER);
+    await gateway.onSimulationStopped("sim-other");
+
+    expect(gateway.stoppedSimulations).toEqual([
+      { simulationId: SIM_ID, endReason: "goal_end_offered", endingOffer: OFFER },
+      { simulationId: "sim-other" },
+    ]);
   });
 });
