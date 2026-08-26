@@ -41,6 +41,36 @@ export type {
 } from "./simulation/scheduler-contracts.js";
 export type { AgentContext } from "./simulation/pulse-scheduler.js";
 
+// Dev2 - Goal-layer eval surface (additive exports only; the eval harness
+// wires GoalLayerRuntime directly per the goal-end-to-end test recipe)
+export {
+  WorldEvaluator,
+  resolveGoalLayerConfig,
+} from "./simulation/world/world-evaluator.js";
+export type {
+  GoalLayerRuntime,
+  GoalLayerRuntimeConfig,
+  WorldLLMRuntime,
+  WorldReview,
+} from "./simulation/world/world-evaluator.js";
+export { GoalLayerLLMClient } from "./simulation/world/goal-layer-llm.js";
+export type {
+  GoalLayerLLMClientParams,
+  GoalLayerCallInput,
+  GoalLayerLLMOutcome,
+  GoalLayerLLMResult,
+} from "./simulation/world/goal-layer-llm.js";
+export type { GoalLayerClientFactory } from "./simulation/world/goal-synthesizer.js";
+export { GoalRegistry } from "./simulation/world/goal-registry.js";
+export { ChannelRegistry } from "./simulation/channel-registry.js";
+export {
+  InMemoryEventRepository,
+  InMemoryAgentStateRepository,
+  InMemorySimulationRepository,
+  InMemoryChannelRepository,
+  InMemoryMemoryRepository,
+} from "./simulation/in-memory-stores.js";
+
 // Dev3 - Config composition root (used by eval harness and CLI)
 export {
   buildConfiguredSimulation,
