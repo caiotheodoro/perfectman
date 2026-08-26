@@ -53,7 +53,7 @@ Atomic findings per research thread, paraphrased unless marked verbatim. Every f
 
 **The llm-wiki bar.** "The knowledge is compiled once and then *kept current*, not re-derived on every query"; raw sources are immutable and the wiki links back to them; an append-only `log.md` with `## [YYYY-MM-DD]` prefixes is parseable with `grep "^## \["` (Karpathy gist, fetched raw).
 
-**The repo's external-source trail is dead in three places.** Committed ADRs point at `.claude/_output/pipeline/decision-log.md`, which archiving moves — rationale links now resolve to nothing; bare-vendor citations ("ScienceDirect", "arxivUpenn") in `docs/notes/design-conversation-history.md` are unrecoverable; `architecture/emotion.md` cites Russell's Circumplex with no URL.
+**The repo's external-source trail is dead in two places.** Bare-vendor citations ("ScienceDirect", "arxivUpenn") in `docs/notes/design-conversation-history.md` are unrecoverable; `architecture/emotion.md` cites Russell's Circumplex with no URL. (The third dead link — ADRs pointing at the pipeline's `.claude/_output/pipeline/decision-log.md` — was repaired on 2026-08-26: decisions D-1..D-23 now resolve inside the ADRs themselves in `docs/adr/`.)
 
 **The pattern already exists in-repo.** `docs/notes/discord/` (README + source-map with URLs, fetch dates, verification status, freshness notes, gaps) is a fully realized llm-wiki raw-source loop; `eval/README.md` "Calibration-pending (honest list)" is the audit-loop precedent.
 

@@ -1,6 +1,6 @@
 # ADR-0003: Shared Agent-State Serializer
 
-**Status**: Accepted (LOCKED, 2026-08-25) — decision D-4 in `.claude/_output/pipeline/decision-log.md`
+**Status**: Accepted (LOCKED, 2026-08-25) — decision D-4, rationale inline in this ADR
 
 ## Context
 

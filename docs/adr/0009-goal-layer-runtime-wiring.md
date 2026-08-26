@@ -1,6 +1,6 @@
 # ADR-0009: Goal-Layer Runtime Wiring
 
-**Status**: Accepted (LOCKED, 2026-08-25) — rationale and rejected alternatives inline below; the `.claude/_output/pipeline/decision-log.md` archive is a secondary pointer only and is never the home of this decision's rationale.
+**Status**: Accepted (LOCKED, 2026-08-25) — rationale and rejected alternatives inline in this ADR.
 
 ## Context
 
@@ -8,7 +8,7 @@
 
 Scope changed during planning (Step-2 revision): the acceptance path (does the sim end) depends on whether proposals are agent-legible, so the **LLM goal-synthesis seam was committed up-front** — shared contracts, config slots, server seam interfaces, call sites — while its *implementation* stays deferred. What remains deferred as one future slice (D-13): the real LLM synthesizer, `"agent"` acceptance wiring, and LLM self-verdicts. They co-require each other: agent acceptance is meaningful only for LLM-framed (agent-legible) proposals, and LLM self-verdicts share the same prompt surface.
 
-The engine layer stays pure and untouched (G4) — only index type re-exports close the server's signature gap (D-2). All decisions below are LOCKED; each row cites its decision-log ID as a secondary pointer, with the rationale itself inline here.
+The engine layer stays pure and untouched (G4) — only index type re-exports close the server's signature gap (D-2). All decisions below are LOCKED and recorded in this ADR; the rationale lives inline here.
 
 ## Decision
 

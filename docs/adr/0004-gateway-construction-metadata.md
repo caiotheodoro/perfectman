@@ -1,6 +1,6 @@
 # ADR-0004: Runtime Metadata at Gateway Construction
 
-**Status**: Accepted (LOCKED, 2026-08-25) — decision D-5 in `.claude/_output/pipeline/decision-log.md`
+**Status**: Accepted (LOCKED, 2026-08-25) — decision D-5, rationale inline in this ADR
 
 ## Context
 

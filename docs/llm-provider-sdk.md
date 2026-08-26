@@ -1,6 +1,6 @@
 # LLM Provider SDK — Research and Recommendation (US-001 / FR-001)
 
-**Status**: Recommendation for the approval gate (D-1/D-2). No dependency may be added to any `package.json` until this document is reviewed and the gate records LOCKED in `.claude/_output/pipeline/decision-log.md`.
+**Status**: Recommendation for the approval gate (D-1/D-2). No dependency may be added to any `package.json` until this document is reviewed and the gate records LOCKED in the ADR record that this decision produces (`docs/adr/`).
 
 **Scope**: Issue #89 (adopt an external AI provider SDK, retire the three hand-rolled transports). This is the written comparison required by US-001/FR-001/SC-001: Vercel AI SDK vs alternatives, covering OpenAI-compatible chat completions, Ollama native `/api/chat`, structured/JSON-Schema output, no-API-key local mode, non-streaming single-shot calls, TypeScript types, maintenance status, and bundle/transitive weight — plus the two seam constraints the migration depends on (test-seam `fetch` override and raw response-header capture), the cost of not adding, and the removal cost.
 

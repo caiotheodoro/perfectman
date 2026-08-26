@@ -1,6 +1,6 @@
 # ADR-0001: Per-Committed-Event Visibility Signal
 
-**Status**: Accepted (LOCKED, 2026-08-25) — decision D-1 in `.claude/_output/pipeline/decision-log.md`
+**Status**: Accepted (LOCKED, 2026-08-25) — decision D-1, rationale inline in this ADR
 
 ## Context
 
