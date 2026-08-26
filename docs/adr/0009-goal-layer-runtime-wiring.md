@@ -62,9 +62,14 @@ The engine layer stays pure and untouched (G4) — only index type re-exports cl
 - Crystallization input isolation is a standing invariant of the subsystem: the world layer can never propose goals off its own event trail; system-authored diagnostics and the six goal-layer types are excluded at the evaluator's single call site.
 - Executed from 0008's deferred list: pulse-loop wiring, `simulation_stopped` end-reason emission, `goalLayer` config surface, and the LLM-seam plan. Still deferred: sqlite registry persistence, `adopt_goal`/`decline_goal` intent types, the LLM implementations, and the engine test/docs packs.
 
+## Calibration note (appended 2026-08-26)
+
+The #96 mock-run calibration granted the G4 exception for `packages/engine/src/goal/` default values and recorded it as **granted-and-unexercised**: the evidence produced no warrant for any numeric change, so the engine diff stayed empty and the exception stands as a record ([ADR-0011](./0011-goal-layer-threshold-calibration.md), D-24) — not a license to edit engine constants.
+
 ## Cross-links
 
 - Foundation: [ADR-0008: World Goal Layer](./0008-world-goal-layer.md) — the semantics this wiring executes; 0008's "deferred" consequences for pulse-loop/lifecycle/config are superseded by this ADR (its cross-link section records the update).
 - Concept: [docs/concepts/goal-layer.md](../concepts/goal-layer.md) — the layer, lifecycle, two-verdict architecture; carries an implementation-status note.
+- Calibration: [ADR-0011: Goal-Layer Threshold Calibration](./0011-goal-layer-threshold-calibration.md) — the G4 exception's grant record (D-24) and the calibration outcome for the thresholds this ADR wired.
 - Research: [docs/research/goal-layer/](../research/goal-layer/README.md) — source trail and gaps.
 - Code: `packages/server/src/simulation/world/` (registry, evaluator, goal-synthesizer, acceptance-gate), `packages/server/src/simulation/{pulse-scheduler,simulation-runtime,simulation-lifecycle,simulation-manager}.ts`, `packages/server/src/config/simulation-config.ts`, `packages/shared/src/goal/` (contracts + config schema), `packages/engine/src/index.ts` (type re-exports only).
