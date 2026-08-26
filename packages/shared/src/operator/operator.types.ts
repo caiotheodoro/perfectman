@@ -1,18 +1,32 @@
 import type { EventPayload, EventType } from "../event/event.types.js";
 import type { IntentType } from "../intent/intent.types.js";
 
-export type OperatorEventType =
-  | "llm_failure"
-  | "llm_budget_exceeded"
-  | "intent_blocked"
-  | "intent_delayed"
-  | "rate_limit_hit"
-  | "stagnation_warning"
-  | "scheduler_error"
-  | "pulse_metrics"
-  | "agent_state_snapshot"
-  | "action_intent"
-  | "event_visibility";
+/**
+ * Operator event types the server may emit. Declared once here — the single
+ * source of truth — and enforced by the producer guard in packages/server
+ * (`operator-event-producers.test.ts`): a type with no emission site in
+ * packages/server/src is dead and must be removed, not kept "for later".
+ * Deriving the type from the array keeps the runtime-iterable list and the
+ * type in one place.
+ *
+ * `rate_limit_hit` was removed — the one type declared with no producer
+ * anywhere in packages/server/src (RateLimitGate computes block state but
+ * never emits an operator event for it).
+ */
+export const OPERATOR_EVENT_TYPES = [
+  "llm_failure",
+  "llm_budget_exceeded",
+  "intent_blocked",
+  "intent_delayed",
+  "stagnation_warning",
+  "scheduler_error",
+  "pulse_metrics",
+  "agent_state_snapshot",
+  "action_intent",
+  "event_visibility",
+] as const;
+
+export type OperatorEventType = (typeof OPERATOR_EVENT_TYPES)[number];
 
 export type OperatorEvent = {
   type: OperatorEventType;
