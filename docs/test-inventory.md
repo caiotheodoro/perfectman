@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-26T17:24:43.912Z — audited 110 files, 1079 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-26T17:26:16.691Z — audited 111 files, 1083 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -10,10 +10,10 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 |---|---|---|---|
 | engine | 22 | 259 | —
 | eval | 17 | 140 | async-pause(1)
-| server | 63 | 584 | console(1), async-pause(1), async-pause(1), async-pause(2)
+| server | 64 | 588 | console(1), async-pause(1), async-pause(1), async-pause(2)
 | shared | 8 | 96 | —
 
-**Total: 110 files, 1079 it/test blocks; 5 files flagged.**
+**Total: 111 files, 1083 it/test blocks; 5 files flagged.**
 
 ## Per-file inventory
 
@@ -103,6 +103,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/intent-resolver-fallback.test.ts | integration | 10 | 
 | packages/server/src/simulation/__tests__/intent-resolver.test.ts | integration | 8 | 
 | packages/server/src/simulation/__tests__/lifecycle-state-machine.test.ts | integration | 18 | 
+| packages/server/src/simulation/__tests__/operator-event-producers.test.ts | integration | 4 | 
 | packages/server/src/simulation/__tests__/operator-projection.test.ts | integration | 4 | 
 | packages/server/src/simulation/__tests__/pulse-scheduler-observability.test.ts | integration | 12 | 
 | packages/server/src/simulation/__tests__/pulse-scheduler-resilience.test.ts | integration | 2 | async-pause(1)

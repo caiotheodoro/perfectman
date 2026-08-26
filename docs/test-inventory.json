@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-08-26T17:24:43.916Z",
+  "generatedAt": "2026-08-26T17:26:16.697Z",
   "totals": {
-    "files": 110,
-    "its": 1079
+    "files": 111,
+    "its": 1083
   },
   "byPackage": {
     "engine": {
@@ -18,8 +18,8 @@
       ]
     },
     "server": {
-      "files": 63,
-      "its": 584,
+      "files": 64,
+      "its": 588,
       "flags": [
         "console(1)",
         "async-pause(1)",
@@ -1872,6 +1872,28 @@
       "layer": "integration",
       "its": 18,
       "itsEach": 0,
+      "forcedCasts": 0,
+      "tsBypasses": 0,
+      "eslintDisables": 0,
+      "onlys": 0,
+      "skips": 0,
+      "consoleLogs": 0,
+      "truthy": 0,
+      "defined": 0,
+      "deadIdTruthy": 0,
+      "nonNull": 0,
+      "spies": 0,
+      "asyncPauses": 0,
+      "weakTerminals": [],
+      "flags": [],
+      "violations": []
+    },
+    {
+      "file": "packages/server/src/simulation/__tests__/operator-event-producers.test.ts",
+      "pkg": "server",
+      "layer": "integration",
+      "its": 4,
+      "itsEach": 1,
       "forcedCasts": 0,
       "tsBypasses": 0,
       "eslintDisables": 0,
