@@ -13,8 +13,8 @@ import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type { Simulation, SimulationSettings, AgentState, PersonaConfig, ActionIntent, EndingOffer, GoalSynthesisResult, SimulationEvent } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
-import { resolveGoalLayerConfig } from "../world/world-evaluator.js";
-import type { GoalLayerRuntime, WorldEvaluator, WorldReview } from "../world/world-evaluator.js";
+import { resolveGoalLayerConfig, WorldEvaluator } from "../world/world-evaluator.js";
+import type { GoalLayerRuntime, WorldReview } from "../world/world-evaluator.js";
 
 const SETTINGS: SimulationSettings = {
   omniscientSpectatorMode: false,
@@ -331,7 +331,9 @@ describe("PulseScheduler", () => {
           return next ?? { events: [], endingOffer: null };
         },
       );
-      return { evaluator: { runReview } as unknown as WorldEvaluator, runReview };
+      const evaluator = Object.create(WorldEvaluator.prototype) as WorldEvaluator;
+      evaluator.runReview = runReview;
+      return { evaluator, runReview };
     }
 
     function buildGoalLayerScheduler(opts: {

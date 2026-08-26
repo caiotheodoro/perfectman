@@ -100,8 +100,10 @@ async function startAndStop(
   await runtime.stop(simId, opts);
   const events = await runtime.getEventLog().getCommittedThrough(simId, Number.MAX_SAFE_INTEGER);
   const stopped = events.find(e => e.type === "simulation_stopped");
-  expect(stopped).toBeDefined();
-  return { simId, payload: stopped!.payload as Record<string, unknown> };
+  if (stopped === undefined) {
+    throw new Error("goal test run produced no simulation_stopped event");
+  }
+  return { simId, payload: stopped.payload as Record<string, unknown> };
 }
 
 describe("SimulationRuntime stop payload (T402)", () => {

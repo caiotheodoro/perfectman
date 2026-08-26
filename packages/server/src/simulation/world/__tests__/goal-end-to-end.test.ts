@@ -1,11 +1,17 @@
 import { describe, expect, it } from "vitest";
 import type { CommittedEvent, SimulationEvent } from "@perfectman/shared";
+import type { SimulationRuntime } from "../../simulation-runtime.js";
 import {
   buildConfiguredSimulation,
   parseSimulationConfig,
   type ConfiguredSimulationHandle,
   type SimulationAppConfig,
 } from "../../../config/simulation-config.js";
+
+type RuntimeWithActiveSims = SimulationRuntime & { active: Map<string, unknown> };
+function activeSimulationIds(runtime: SimulationRuntime): Map<string, unknown> {
+  return (runtime as RuntimeWithActiveSims).active;
+}
 
 const SIM_ID = "sim_goal_e2e";
 const CHANNEL_ID = "general";
@@ -111,9 +117,7 @@ async function waitForEnd(
       Number.MAX_SAFE_INTEGER,
     );
     const stopped = log.find((event) => event.type === "simulation_stopped");
-    const active = (
-      handle.runtime as unknown as { active: Map<string, unknown> }
-    ).active;
+    const active = activeSimulationIds(handle.runtime);
     if (stopped && !active.has(handle.simulationId)) return stopped;
     if (Date.now() > deadline) {
       throw new Error(
@@ -182,14 +186,10 @@ describe("goal layer end-to-end", () => {
         expect(offer?.epilogue).toContain("the story holds");
         expect(offer?.reasons).toContain("world verdict: reached");
 
-        const active = (
-          handle.runtime as unknown as { active: Map<string, unknown> }
-        ).active;
+        const active = activeSimulationIds(handle.runtime);
         expect(active.has(handle.simulationId)).toBe(false);
       } finally {
-        const active = (
-          handle.runtime as unknown as { active: Map<string, unknown> }
-        ).active;
+        const active = activeSimulationIds(handle.runtime);
         if (active.has(handle.simulationId)) {
           await handle.runtime.stop(handle.simulationId);
         }

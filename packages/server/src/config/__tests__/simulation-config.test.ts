@@ -234,29 +234,24 @@ describe("simulation config", () => {
     expect(parsed.goalLayer?.acceptance?.mode).toBe("agent");
   });
 
-  it("build rejects unwired synthesizer.mode llm with the D-13 deferral message", async () => {
+  it.each([
+    [
+      "synthesizer.mode \"llm\"",
+      { synthesizer: { mode: "llm", intervalPulses: 10, maxCandidatesPerReview: 3 } },
+      /synthesizer\.mode "llm" is not wired in this slice/,
+    ],
+    [
+      "acceptance.mode \"agent\"",
+      { acceptance: { mode: "agent" } },
+      /acceptance\.mode "agent" is not wired in this slice/,
+    ],
+  ] as const)("build rejects unwired %s with the D-13 deferral message", async (name, patch, message) => {
     const config = baseConfig();
     const parsed = parseSimulationConfig({
       ...config,
-      goalLayer: {
-        enabled: true,
-        synthesizer: { mode: "llm", intervalPulses: 10, maxCandidatesPerReview: 3 },
-      },
+      goalLayer: { enabled: true, ...patch },
     });
-    await expect(buildConfiguredSimulation(parsed)).rejects.toThrow(
-      /synthesizer\.mode "llm" is not wired in this slice; lands with the LLM synthesizer slice/,
-    );
-  });
-
-  it("build rejects unwired acceptance.mode agent with the D-13 deferral message", async () => {
-    const config = baseConfig();
-    const parsed = parseSimulationConfig({
-      ...config,
-      goalLayer: { enabled: true, acceptance: { mode: "agent" } },
-    });
-    await expect(buildConfiguredSimulation(parsed)).rejects.toThrow(
-      /acceptance\.mode "agent" is not wired in this slice; lands with the LLM synthesizer slice/,
-    );
+    await expect(buildConfiguredSimulation(parsed)).rejects.toThrow(message);
   });
 
   it("builds unchanged when goalLayer is disabled even with unwired modes", async () => {
@@ -297,7 +292,11 @@ describe("simulation config", () => {
     expect(parsed.agents[0]?.llm.modelName).toBe("qwen3:1.7b");
   });
 
-  it("defaults extraBody.think to false for the ollama provider when omitted", () => {
+  it.each([
+    ["defaults extraBody.think to false for the ollama provider when omitted", "ollama", undefined, { think: false }],
+    ["does not override an explicit extraBody.think for the ollama provider", "ollama", { think: true, top_p: 0.9 }, { think: true, top_p: 0.9 }],
+    ["does not inject think for non-ollama providers", "openai-compatible", undefined, undefined],
+  ] as const)("%s", (name, providerType, extraBody, expected) => {
     const config = baseConfig();
     const parsed = parseSimulationConfig({
       ...config,
@@ -305,54 +304,15 @@ describe("simulation config", () => {
         ...config.agents[0],
         llm: {
           ...llm,
-          providerType: "ollama",
+          providerType,
           baseUrl: "http://localhost:11434/v1",
           modelName: "qwen3:1.7b",
-          // no extraBody at all — this is the real-world gap: a config
-          // that doesn't know to opt into think:false previously hit the
-          // exact same 100%-fallback bug the eval harness had.
+          ...(extraBody ? { extraBody } : {}),
         },
       }],
     });
 
-    expect(parsed.agents[0]?.llm.extraBody).toEqual({ think: false });
-  });
-
-  it("does not override an explicit extraBody.think for the ollama provider", () => {
-    const config = baseConfig();
-    const parsed = parseSimulationConfig({
-      ...config,
-      agents: [{
-        ...config.agents[0],
-        llm: {
-          ...llm,
-          providerType: "ollama",
-          baseUrl: "http://localhost:11434/v1",
-          modelName: "qwen3:1.7b",
-          extraBody: { think: true, top_p: 0.9 },
-        },
-      }],
-    });
-
-    expect(parsed.agents[0]?.llm.extraBody).toEqual({ think: true, top_p: 0.9 });
-  });
-
-  it("does not inject think for non-ollama providers", () => {
-    const config = baseConfig();
-    const parsed = parseSimulationConfig({
-      ...config,
-      agents: [{
-        ...config.agents[0],
-        llm: {
-          ...llm,
-          providerType: "openai-compatible",
-          baseUrl: "http://localhost:11434/v1",
-          modelName: "qwen3:1.7b",
-        },
-      }],
-    });
-
-    expect(parsed.agents[0]?.llm.extraBody).toBeUndefined();
+    expect(parsed.agents[0]?.llm.extraBody).toEqual(expected);
   });
 
   it("rejects simulation calibration fields in persona config", () => {
