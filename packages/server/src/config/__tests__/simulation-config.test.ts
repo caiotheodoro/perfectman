@@ -9,6 +9,7 @@ import {
   parseSimulationConfig,
   type SimulationAppConfig,
 } from "../simulation-config.js";
+import { resolveGoalLayerConfig } from "../../simulation/world/world-evaluator.js";
 import { MockDeliveryGateway } from "../../delivery/index.js";
 
 const persona = {
@@ -220,7 +221,7 @@ describe("simulation config", () => {
     }
   });
 
-  it("parses llm/agent synthesizer and acceptance modes as contract-defined (build rejects them later)", () => {
+  it("parses llm/agent synthesizer and acceptance modes as contract-defined (wired by buildGoalLayerRuntime)", () => {
     const config = baseConfig();
     const parsed = parseSimulationConfig({
       ...config,
@@ -234,24 +235,45 @@ describe("simulation config", () => {
     expect(parsed.goalLayer?.acceptance?.mode).toBe("agent");
   });
 
-  it.each([
-    [
-      "synthesizer.mode \"llm\"",
-      { synthesizer: { mode: "llm", intervalPulses: 10, maxCandidatesPerReview: 3 } },
-      /synthesizer\.mode "llm" is not wired in this slice/,
-    ],
-    [
-      "acceptance.mode \"agent\"",
-      { acceptance: { mode: "agent" } },
-      /acceptance\.mode "agent" is not wired in this slice/,
-    ],
-  ] as const)("build rejects unwired %s with the D-13 deferral message", async (name, patch, message) => {
+  it("builds a sim with synthesizer.mode \"llm\" wired (mock-provider fixture)", async () => {
     const config = baseConfig();
     const parsed = parseSimulationConfig({
       ...config,
-      goalLayer: { enabled: true, ...patch },
+      goalLayer: {
+        enabled: true,
+        synthesizer: { mode: "llm", intervalPulses: 10, maxCandidatesPerReview: 3 },
+      },
     });
-    await expect(buildConfiguredSimulation(parsed)).rejects.toThrow(message);
+    const handle = await buildConfiguredSimulation(parsed);
+    try {
+      await handle.runtime.start(handle.simulationId);
+      await handle.runtime.stop(handle.simulationId);
+    } finally {
+      await handle.close();
+    }
+  });
+
+  it("resolveGoalLayerConfig no longer rejects acceptance.mode \"agent\" (the Wave-4 gate factory owns the throw)", () => {
+    const resolved = resolveGoalLayerConfig({
+      enabled: true,
+      acceptance: { mode: "agent" },
+    });
+    expect(resolved.acceptance.mode).toBe("agent");
+  });
+
+  it("builds a sim with acceptance.mode \"agent\" wired", async () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      goalLayer: { enabled: true, acceptance: { mode: "agent" } },
+    });
+    const handle = await buildConfiguredSimulation(parsed);
+    try {
+      await handle.runtime.start(handle.simulationId);
+      await handle.runtime.stop(handle.simulationId);
+    } finally {
+      await handle.close();
+    }
   });
 
   it("builds unchanged when goalLayer is disabled even with unwired modes", async () => {

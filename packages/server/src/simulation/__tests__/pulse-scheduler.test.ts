@@ -328,7 +328,7 @@ describe("PulseScheduler", () => {
         }): Promise<WorldReview> => {
           const next = script.shift();
           if (next instanceof Error) throw next;
-          return next ?? { events: [], endingOffer: null };
+          return next ?? { events: [], endingOffer: null, operatorEvents: [] };
         },
       );
       const evaluator = Object.create(WorldEvaluator.prototype) as WorldEvaluator;
@@ -381,8 +381,8 @@ describe("PulseScheduler", () => {
       const { scheduler, runReview, onEndOffered, stepResolver } = buildGoalLayerScheduler({
         reviewEveryPulses: 1,
         script: [
-          { events: [reviewProposalEvent(1), reviewEndingEvent(1)], endingOffer: OFFER },
-          { events: [], endingOffer: null },
+          { events: [reviewProposalEvent(1), reviewEndingEvent(1)], endingOffer: OFFER, operatorEvents: [] },
+          { events: [], endingOffer: null, operatorEvents: [] },
         ],
       });
 
@@ -418,9 +418,9 @@ describe("PulseScheduler", () => {
       const { scheduler, runReview, onEndOffered } = buildGoalLayerScheduler({
         reviewEveryPulses: 1,
         script: [
-          { events: [reviewProposalEvent(1)], endingOffer: OFFER },
-          { events: [], endingOffer: null },
-          { events: [], endingOffer: null },
+          { events: [reviewProposalEvent(1)], endingOffer: OFFER, operatorEvents: [] },
+          { events: [], endingOffer: null, operatorEvents: [] },
+          { events: [], endingOffer: null, operatorEvents: [] },
         ],
       });
 
@@ -446,8 +446,8 @@ describe("PulseScheduler", () => {
       const { scheduler, runReview, onEndOffered } = buildGoalLayerScheduler({
         reviewEveryPulses: 2,
         script: [
-          { events: [reviewProposalEvent(2)], endingOffer: null },
-          { events: [], endingOffer: null },
+          { events: [reviewProposalEvent(2)], endingOffer: null, operatorEvents: [] },
+          { events: [], endingOffer: null, operatorEvents: [] },
         ],
       });
 
@@ -486,11 +486,11 @@ describe("PulseScheduler", () => {
         eventRepoOverride: failingAppendRepo,
         script: [
           // Pulse 1: offer-creation review — its ending_offered never commits.
-          { events: [reviewEndingEvent(1)], endingOffer: OFFER },
+          { events: [reviewEndingEvent(1)], endingOffer: OFFER, operatorEvents: [] },
           // Pulse 2: the pending offer is re-delivered (no events to commit).
-          { events: [], endingOffer: OFFER },
+          { events: [], endingOffer: OFFER, operatorEvents: [] },
           // Pulse 3: delivered — silence.
-          { events: [], endingOffer: null },
+          { events: [], endingOffer: null, operatorEvents: [] },
         ],
       });
 
@@ -508,6 +508,40 @@ describe("PulseScheduler", () => {
 
       await scheduler.runPulse();
       expect(onEndOffered).toHaveBeenCalledTimes(1);
+    });
+
+    it("review operatorEvents (incl. a goal-path llm_failure literal) reach the operator channel; empty arrays emit nothing", async () => {
+      const { scheduler, runReview } = buildGoalLayerScheduler({
+        reviewEveryPulses: 1,
+        script: [
+          {
+            events: [reviewProposalEvent(1)],
+            endingOffer: null,
+            operatorEvents: [
+              {
+                type: "llm_failure",
+                simulationId: "sim_test",
+                agentId: "agent_1",
+                pulseIndex: 1,
+                detail: "goal-layer llm call failed",
+                createdAt: 1,
+              },
+            ],
+          },
+          { events: [], endingOffer: null, operatorEvents: [] },
+        ],
+      });
+
+      await scheduler.runPulse(); // pulse 0 — review-exempt
+      await scheduler.runPulse(); // pulse 1 — review emits the llm_failure
+      await scheduler.runPulse(); // pulse 2 — empty operatorEvents emit nothing
+
+      const failures = gateway.operatorEvents.filter((e) => e.type === "llm_failure");
+      expect(failures).toHaveLength(1);
+      expect(failures[0]!.detail).toBe("goal-layer llm call failed");
+      expect(failures[0]!.agentId).toBe("agent_1");
+      expect(failures[0]!.pulseIndex).toBe(1);
+      expect(runReview).toHaveBeenCalledTimes(2);
     });
   });
 });

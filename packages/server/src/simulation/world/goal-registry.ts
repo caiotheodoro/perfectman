@@ -4,16 +4,24 @@ import type {
   EmergentGoal,
   EndingOffer,
   GoalProposal,
+  SelfVerdict,
   WorldVerdict,
 } from "@perfectman/shared";
 
 const GAP_HISTORY_CAP = 32;
+
+export type StoredSelfVerdict = {
+  verdict: SelfVerdict;
+  source: "llm" | "deterministic";
+};
 
 export type GoalRegistryState = {
   proposals: Map<string, GoalProposal>;
   goals: Map<string, EmergentGoal>;
   verdicts: Map<string, WorldVerdict>;
   gapHistory: Map<string, DelusionGapSample[]>;
+  /** LLM/non-committed self-verdict junction (D-23); never rebuilt from log. */
+  selfVerdicts: Map<string, StoredSelfVerdict>;
   pendingOffer: { offer: EndingOffer; offeredAtPulse: number } | null;
 };
 
@@ -36,6 +44,7 @@ export class GoalRegistry {
       goals: new Map(),
       verdicts: new Map(),
       gapHistory: new Map(),
+      selfVerdicts: new Map(),
       pendingOffer: null,
     };
     for (const event of log) {
@@ -142,6 +151,21 @@ export class GoalRegistry {
 
   getGapHistory(goalId: string): DelusionGapSample[] {
     return this.state.gapHistory.get(goalId) ?? [];
+  }
+
+  /** D-23 junction: LLM output is not committed-event-replayable, so
+   *  rebuildFromLog leaves it empty; a restart degrades to structural V1
+   *  until the next genuine interval outcome. */
+  recordSelfVerdict(
+    goalId: string,
+    verdict: SelfVerdict,
+    source: "llm" | "deterministic",
+  ): void {
+    this.state.selfVerdicts.set(goalId, { verdict, source });
+  }
+
+  getSelfVerdict(goalId: string): StoredSelfVerdict | undefined {
+    return this.state.selfVerdicts.get(goalId);
   }
 
   /** Single-offer invariant: a second offer is refused. */

@@ -45,7 +45,7 @@ export type LLMUsage = {
   inputTokens: number;
   outputTokens: number;
   latencyMs: number;
-  callType: "cognition" | "reflection" | "recap" | "interpretation";
+  callType: "cognition" | "reflection" | "recap" | "interpretation" | "goal";
   pulseIndex: number;
   createdAt: number;
   /** Deterministic content hash of the prompt that produced this call. */

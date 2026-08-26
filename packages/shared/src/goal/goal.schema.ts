@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { CommittedEventSchema } from "../event/event.schema.js";
 
 export const GoalKindSchema = z.enum([
   "task_claim",
@@ -143,6 +144,7 @@ export const SynthesizerConfigSchema = z.object({
   mode: SynthesizerModeSchema,
   intervalPulses: z.number().int().positive(),
   maxCandidatesPerReview: z.number().int().positive(),
+  maxSelfVerdictsPerReview: z.number().int().positive().optional(),
 });
 
 export const AgentContextDigestSchema = z.object({
@@ -169,9 +171,26 @@ export const GoalSynthesisResultSchema = z.object({
   synthesizer: SynthesizerModeSchema,
 });
 
+export const GoalLayerProposalEntrySchema = z.object({
+  proposalId: z.string().min(1),
+  narrativeFraming: z.string().min(1),
+  confidence: z.number().min(0).max(1),
+  synthesizer: z.literal("llm"),
+});
+
+export const GoalLayerLLMResponseSchema = z.object({
+  proposals: z.array(GoalLayerProposalEntrySchema),
+  selfVerdicts: z.array(SelfVerdictSchema),
+});
+
 export const AcceptanceModeSchema = z.enum(["auto", "agent"]);
 
 export const GoalAcceptanceDecisionSchema = z.object({
   decision: z.enum(["accept", "decline"]),
   reason: z.string().optional(),
+});
+
+export const AgentAcceptanceContextSchema = z.object({
+  behaviorWindow: z.array(CommittedEventSchema),
+  digest: AgentContextDigestSchema,
 });

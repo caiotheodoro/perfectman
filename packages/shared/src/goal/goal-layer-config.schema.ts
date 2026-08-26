@@ -26,6 +26,7 @@ export const GoalLayerConfigSchema = z.object({
       mode: SynthesizerModeSchema.optional(),
       intervalPulses: z.number().int().positive().optional(),
       maxCandidatesPerReview: z.number().int().positive().optional(),
+      maxSelfVerdictsPerReview: z.number().int().positive().optional(),
     })
     .optional(),
   acceptance: z

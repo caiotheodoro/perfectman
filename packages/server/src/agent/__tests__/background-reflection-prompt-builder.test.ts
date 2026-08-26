@@ -152,6 +152,11 @@ describe("BackgroundReflectionPromptBuilder", () => {
     expect(purposeToCallType("background_reflection")).toBe("reflection");
   });
 
+  it("maps goal_synthesis to the goal call type", async () => {
+    const { purposeToCallType } = await import("../surface/llm-step.js");
+    expect(purposeToCallType("goal_synthesis")).toBe("goal");
+  });
+
   it("assigns a deterministic promptVersion (stable across identical builds)", () => {
     const a = BackgroundReflectionPromptBuilder.build(input(), profile);
     const b = BackgroundReflectionPromptBuilder.build(input(), profile);

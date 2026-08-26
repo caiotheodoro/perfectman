@@ -1,3 +1,5 @@
+import type { CommittedEvent } from "../event/event.types.js";
+
 // Goal lifecycle unions — the emergent goal layer sits above the agent level:
 // goals are never seeded, they crystallize from the canonical event log mid-run.
 
@@ -132,6 +134,7 @@ export type SynthesizerConfig = {
   mode: SynthesizerMode;
   intervalPulses: number; // LLM-mode cost gate — synthesis cadence
   maxCandidatesPerReview: number;
+  maxSelfVerdictsPerReview?: number; // LLM-mode cap on self-verdicts per interval review
 };
 
 export type AgentContextDigest = {
@@ -153,9 +156,32 @@ export type GoalSynthesisResult = {
   synthesizer: SynthesizerMode;
 };
 
+// Combined interval-call wire contract (synthesis + self-verdicts on one call).
+// The wire references items by id — the prompt renders every candidate and
+// active goal with its bracketed id, and the client reattaches the canonical
+// objects by id after validation (engine owns the proposal set).
+export type GoalLayerProposalEntry = {
+  proposalId: string;
+  narrativeFraming: string;
+  confidence: number; // 0..1
+  synthesizer: "llm";
+};
+
+export type GoalLayerLLMResponse = {
+  proposals: GoalLayerProposalEntry[];
+  selfVerdicts: SelfVerdict[];
+};
+
 export type AcceptanceMode = "auto" | "agent";
 
 export type GoalAcceptanceDecision = {
   decision: "accept" | "decline";
   reason?: string;
+};
+
+// Agent-mode acceptance context: the gate resolves accept/decline from the
+// target agent's post-proposal behavior window plus its committed digest.
+export type AgentAcceptanceContext = {
+  behaviorWindow: CommittedEvent[];
+  digest: AgentContextDigest;
 };

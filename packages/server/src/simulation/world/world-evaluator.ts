@@ -1,5 +1,6 @@
 import type {
   AcceptanceMode,
+  AgentAcceptanceContext,
   AgentContextDigest,
   AgentState,
   Channel,
@@ -10,6 +11,7 @@ import type {
   EndingOffer,
   GoalLayerConfig,
   GoalProposal,
+  OperatorEvent,
   SelfVerdict,
   Simulation,
   SimulationEvent,
@@ -33,7 +35,9 @@ import { EngineEventBuilder } from "../engine-event-builder.js";
 import { payloadString } from "../payload-readers.js";
 import type { GoalRegistry } from "./goal-registry.js";
 import { createGoalSynthesizer } from "./goal-synthesizer.js";
-import type { GoalSynthesizer } from "./goal-synthesizer.js";
+import type { GoalSynthesizer, GoalLayerClientFactory, LLMGoalSynthesizer } from "./goal-synthesizer.js";
+import type { LLMConfig } from "../../llm/llm-config.js";
+import type { LLMBudgetTracker } from "../../llm/llm-budget.js";
 import { createAcceptanceGate } from "./acceptance-gate.js";
 import type { AcceptanceGate } from "./acceptance-gate.js";
 
@@ -55,9 +59,17 @@ export type GoalLayerRuntime = {
 export type WorldReview = {
   events: SimulationEvent[];
   endingOffer: EndingOffer | null;
+  /** Scheduler-emitted operator events; always [] on deterministic paths. */
+  operatorEvents: OperatorEvent[];
 };
 
-const UNWIRED_SLICE = "not wired in this slice; lands with the LLM synthesizer slice";
+/** LLM-mode wiring (D-18): the evaluator's injected per-agent providers + shared budget. */
+export type WorldLLMRuntime = {
+  simulationId: string;
+  llmConfigs: ReadonlyMap<string, LLMConfig>;
+  budget: LLMBudgetTracker;
+  clientFactory?: GoalLayerClientFactory;
+};
 
 const RATING_CONTEXT: GoalRatingContext = {
   currentDistance: 1,
@@ -95,9 +107,9 @@ const RIDICULE_EMOJI = new Set(["👎", "😠", "❌", "🙄", "💢"]);
 const CHALLENGE_MARKERS = ["no", "not", "stop", "refuse", "won't", "never", "doubt"];
 
 /**
- * Defaults + config-file merge. Schema-valid but unwired modes ("llm" /
- * "agent") are rejected here: loud failure beats silent degradation into the
- * deterministic behavior.
+ * Defaults + config-file merge. The resolver accepts every mode; each
+ * implementation owns its own wiring guard (the acceptance gate for
+ * "agent", the evaluator's llmRuntime requirement for "llm").
  */
 export function resolveGoalLayerConfig(
   parsed: GoalLayerConfig | undefined,
@@ -113,15 +125,11 @@ export function resolveGoalLayerConfig(
       mode: parsed?.synthesizer?.mode ?? "deterministic",
       intervalPulses: parsed?.synthesizer?.intervalPulses ?? 1,
       maxCandidatesPerReview: parsed?.synthesizer?.maxCandidatesPerReview ?? 3,
+      maxSelfVerdictsPerReview:
+        parsed?.synthesizer?.maxSelfVerdictsPerReview ?? 3,
     },
     acceptance: { mode: parsed?.acceptance?.mode ?? "auto" },
   };
-  if (config.synthesizer.mode === "llm") {
-    throw new Error(`synthesizer.mode "llm" is ${UNWIRED_SLICE}`);
-  }
-  if (config.acceptance.mode === "agent") {
-    throw new Error(`acceptance.mode "agent" is ${UNWIRED_SLICE}`);
-  }
   return config;
 }
 
@@ -166,6 +174,7 @@ export function buildAgentContextDigest(
 export class WorldEvaluator {
   private readonly builder = new EngineEventBuilder();
   private readonly synthesizer: GoalSynthesizer;
+  private readonly llmSynthesizer: LLMGoalSynthesizer | null;
   private readonly acceptanceGate: AcceptanceGate;
   private offerDelivered = false;
 
@@ -175,9 +184,34 @@ export class WorldEvaluator {
     private readonly channelRegistry: ChannelRegistry,
     private readonly registry: GoalRegistry,
     private readonly config: GoalLayerRuntimeConfig,
+    llmRuntime?: WorldLLMRuntime,
   ) {
-    this.synthesizer = createGoalSynthesizer(config.synthesizer.mode);
+    // The factory's "llm" branch fails closed on missing deps; the evaluator
+    // names the requirement so the config error cites the wiring, not an
+    // absent provider detail.
+    if (config.synthesizer.mode === "llm" && !llmRuntime) {
+      throw new Error(
+        'synthesizer.mode "llm" requires a goal-layer LLM runtime (per-agent LLM configs + budget)',
+      );
+    }
+    this.synthesizer = createGoalSynthesizer(
+      config.synthesizer.mode,
+      llmRuntime
+        ? {
+            simulationId: llmRuntime.simulationId,
+            llmConfigs: llmRuntime.llmConfigs,
+            budget: llmRuntime.budget,
+            registry: this.registry,
+            synthesizerConfig: config.synthesizer,
+            clientFactory: llmRuntime.clientFactory,
+          }
+        : undefined,
+    );
     this.acceptanceGate = createAcceptanceGate(config.acceptance.mode);
+    this.llmSynthesizer =
+      config.synthesizer.mode === "llm"
+        ? (this.synthesizer as LLMGoalSynthesizer)
+        : null;
   }
 
   async runReview(input: {
@@ -202,19 +236,22 @@ export class WorldEvaluator {
         // delivery marker. Absent one, the creation append failed and the
         // offer is still owed — re-deliver until a commit sticks.
         if (log.some((event) => event.type === "ending_offered")) {
-          return { events: [], endingOffer: null };
+          return { events: [], endingOffer: null, operatorEvents: [] };
         }
-        return { events: [], endingOffer: pending.offer };
+        return { events: [], endingOffer: pending.offer, operatorEvents: [] };
       }
-      if (this.offerDelivered) return { events: [], endingOffer: null };
+      if (this.offerDelivered) {
+        return { events: [], endingOffer: null, operatorEvents: [] };
+      }
       if (pulseIndex - pending.offeredAtPulse >= this.config.ending.offerAcceptPulses) {
         this.offerDelivered = true;
-        return { events: [], endingOffer: pending.offer };
+        return { events: [], endingOffer: pending.offer, operatorEvents: [] };
       }
-      return { events: [], endingOffer: null };
+      return { events: [], endingOffer: null, operatorEvents: [] };
     }
 
     const events: SimulationEvent[] = [];
+    const operatorEvents: OperatorEvent[] = [];
     const [channels, membership] = await Promise.all([
       this.channelRegistry.getChannels(simulation.id),
       this.channelRegistry.getMembershipsForSimulation(simulation.id),
@@ -229,8 +266,12 @@ export class WorldEvaluator {
     // decides; acceptance is a config-selected policy.
     for (const proposal of this.registry.getProposals()) {
       const rating = rateGoalProposal(proposal, RATING_CONTEXT);
-      const decision = this.acceptanceGate.decide(proposal, rating);
       const channelId = goalChannelIdOf(proposal, log, simulation);
+      const decision = this.acceptanceGate.decide(
+        proposal,
+        rating,
+        buildAcceptanceContext(proposal, log, channelId, agentStateById),
+      );
       const ctx = { simulationId: simulation.id, channelId, pulseIndex };
       if (decision.decision === "accept") {
         const goal = this.registry.promoteProposal(proposal.id);
@@ -252,11 +293,17 @@ export class WorldEvaluator {
           this.config.synthesizer.maxCandidatesPerReview,
         );
         if (candidates.length === 0) continue;
-        const results = this.synthesizer.synthesize({
+        // Per-review pulse/time for the operator-event literals and usage
+        // records; deterministic paths have no llmSynthesizer to set.
+        this.llmSynthesizer?.setReviewContext(pulseIndex, now);
+        const results = await this.synthesizer.synthesize({
           agentId: agent.id,
           candidates,
           context: buildAgentContextDigest(agentState, log),
         });
+        if (this.llmSynthesizer) {
+          operatorEvents.push(...this.llmSynthesizer.takeOperatorEvents());
+        }
         for (const result of results) {
           if (
             this.registry.hasProposal(result.proposal.id) ||
@@ -303,7 +350,13 @@ export class WorldEvaluator {
         }),
       );
 
-      const selfVerdict = synthesizeSelfVerdict(agentState, goal, now);
+      // Stored-first (D-23): the combined call's LLM verdict rides the
+      // registry junction between intervals; the structural V1 producer is
+      // only the fallback. Deterministic paths are unaffected — nothing
+      // ever stores into the junction.
+      const selfVerdict =
+        this.registry.getSelfVerdict(goal.id)?.verdict ??
+        synthesizeSelfVerdict(agentState, goal, now);
       const divergenceFromLog = deriveDivergenceFromLog(
         goal.agentId,
         log,
@@ -363,7 +416,7 @@ export class WorldEvaluator {
       break;
     }
 
-    return { events, endingOffer };
+    return { events, endingOffer, operatorEvents };
   }
 }
 
@@ -593,6 +646,41 @@ function deriveMeaningMade(
 
 function deriveNextGoalAvailable(registry: GoalRegistry): boolean {
   return registry.getProposals().length > 0;
+}
+
+/**
+ * Agent-mode acceptance context (D-21): the target agent's post-proposal
+ * behavior window — the log slice from its goal_proposed commit position to
+ * log end (ADR-0009 positional rule), scoped to the agent and its channel —
+ * plus the agent's committed digest. Engagement before the proposal commit
+ * never counts: only behavior after perceiving the goal is ownership.
+ */
+function buildAcceptanceContext(
+  proposal: GoalProposal,
+  log: CommittedEvent[],
+  channelId: string,
+  agentStateById: ReadonlyMap<string, AgentState>,
+): AgentAcceptanceContext {
+  const proposedAt = log.findIndex(
+    (event) =>
+      event.type === "goal_proposed" && event.payload["goalId"] === proposal.id,
+  );
+  const behaviorWindow =
+    proposedAt < 0
+      ? []
+      : log.slice(proposedAt + 1).filter(
+          (event) =>
+            event.actorId === proposal.agentId && event.channelId === channelId,
+        );
+  const agentState = agentStateById.get(proposal.agentId);
+  return {
+    behaviorWindow,
+    // The gate decides from the window alone; a proposal whose agent is no
+    // longer in the review's agent set still gets a digest it never reads.
+    digest: agentState
+      ? buildAgentContextDigest(agentState, log, behaviorWindow)
+      : { personaId: "", recentMemories: [], privateMotiveSummaries: [] },
+  };
 }
 
 function goalChannelIdOf(
