@@ -13,8 +13,10 @@ import {
   EventTypeSchema,
 } from "../event/event.schema.js";
 import {
+  AgentAcceptanceContextSchema,
   DelusionWeightsSchema,
   GoalAcceptanceDecisionSchema,
+  GoalLayerLLMResponseSchema,
   GoalSynthesisResultSchema,
   SynthesizerConfigSchema,
 } from "../goal/goal.schema.js";
@@ -381,6 +383,30 @@ describe("GoalLayerConfigSchema", () => {
       expect(result.error.message).toMatch(/reviewEveryPulses/);
     }
   });
+
+  it("accepts maxSelfVerdictsPerReview in the synthesizer section", () => {
+    const result = GoalLayerConfigSchema.safeParse({
+      synthesizer: { mode: "deterministic", intervalPulses: 1, maxCandidatesPerReview: 3, maxSelfVerdictsPerReview: 2 },
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.synthesizer?.maxSelfVerdictsPerReview).toBe(2);
+    }
+  });
+
+  it("rejects a zero maxSelfVerdictsPerReview in the synthesizer section", () => {
+    const result = GoalLayerConfigSchema.safeParse({
+      synthesizer: { mode: "deterministic", intervalPulses: 1, maxCandidatesPerReview: 3, maxSelfVerdictsPerReview: 0 },
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a negative maxSelfVerdictsPerReview in the synthesizer section", () => {
+    const result = GoalLayerConfigSchema.safeParse({
+      synthesizer: { mode: "deterministic", intervalPulses: 1, maxCandidatesPerReview: 3, maxSelfVerdictsPerReview: -1 },
+    });
+    expect(result.success).toBe(false);
+  });
 });
 
 describe("SynthesizerConfigSchema", () => {
@@ -394,6 +420,84 @@ describe("SynthesizerConfigSchema", () => {
     if (valid && result.success) {
       expect(result.data.mode).toBe("deterministic");
     }
+  });
+
+  it("accepts maxSelfVerdictsPerReview when present", () => {
+    const result = SynthesizerConfigSchema.safeParse({
+      mode: "deterministic",
+      intervalPulses: 1,
+      maxCandidatesPerReview: 3,
+      maxSelfVerdictsPerReview: 2,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.maxSelfVerdictsPerReview).toBe(2);
+    }
+  });
+
+  it("rejects a zero maxSelfVerdictsPerReview", () => {
+    const result = SynthesizerConfigSchema.safeParse({
+      mode: "deterministic",
+      intervalPulses: 1,
+      maxCandidatesPerReview: 3,
+      maxSelfVerdictsPerReview: 0,
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a negative maxSelfVerdictsPerReview", () => {
+    const result = SynthesizerConfigSchema.safeParse({
+      mode: "deterministic",
+      intervalPulses: 1,
+      maxCandidatesPerReview: 3,
+      maxSelfVerdictsPerReview: -1,
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("GoalLayerLLMResponseSchema", () => {
+  const validVerdict = {
+    agentId: "a1",
+    goalId: "goal-1",
+    claim: "in_progress" as const,
+    confidence: 0.8,
+    feltSignal: 0.7,
+    narrative: "making steady visible progress",
+  };
+  const validLlmResult = {
+    proposalId: "goal-1",
+    narrativeFraming: "no more blocked intents from a1 in ch1",
+    confidence: 0.8,
+    synthesizer: "llm" as const,
+  };
+
+  it("accepts a combined response with proposals and self-verdicts", () => {
+    const result = GoalLayerLLMResponseSchema.safeParse({
+      proposals: [validLlmResult],
+      selfVerdicts: [validVerdict],
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.proposals).toHaveLength(1);
+      expect(result.data.selfVerdicts[0].claim).toBe("in_progress");
+    }
+  });
+
+  it("rejects a proposal entry without the proposalId the prompt carries", () => {
+    const result = GoalLayerLLMResponseSchema.safeParse({
+      proposals: [{ ...validLlmResult, proposalId: undefined }],
+      selfVerdicts: [validVerdict],
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects a proposal with confidence above 1", () => {
+    const result = GoalLayerLLMResponseSchema.safeParse({
+      proposals: [{ ...validLlmResult, confidence: 1.5 }],
+      selfVerdicts: [validVerdict],
+    });
+    expect(result.success).toBe(false);
   });
 });
 
@@ -434,6 +538,38 @@ describe("GoalAcceptanceDecisionSchema", () => {
     expect(result.success).toBe(ok);
     if (ok && result.success) {
       expect(result.data.reason).toBe(expectedReason);
+    }
+  });
+});
+
+describe("AgentAcceptanceContextSchema", () => {
+  const digest = {
+    personaId: "p1",
+    recentMemories: [{ summary: "met ch1 members", sourceEventIds: ["ev9"] }],
+    privateMotiveSummaries: ["curious about ch1"],
+  };
+
+  it("parses a behavior window containing one committed event plus a digest", () => {
+    const result = AgentAcceptanceContextSchema.safeParse({
+      behaviorWindow: [committedEventFor("message_sent")],
+      digest,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.behaviorWindow).toHaveLength(1);
+      expect(result.data.behaviorWindow[0].type).toBe("message_sent");
+      expect(result.data.digest.personaId).toBe("p1");
+    }
+  });
+
+  it("accepts an empty behavior window", () => {
+    const result = AgentAcceptanceContextSchema.safeParse({
+      behaviorWindow: [],
+      digest,
+    });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.behaviorWindow).toEqual([]);
     }
   });
 });

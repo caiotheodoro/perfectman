@@ -326,6 +326,12 @@ describe("PromptBuilder", () => {
       ).toThrow("Unsupported prompt purpose: spectator_recap");
     });
 
+    it("goal_synthesis is reserved and fails closed until the goal builder wires it", () => {
+      expect(() =>
+        PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "goal_synthesis")
+      ).toThrow("Unsupported prompt purpose: goal_synthesis");
+    });
+
     it("background_reflection dispatches to its dedicated builder", () => {
       const built = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "background_reflection");
       expect(built.purpose).toBe("background_reflection");

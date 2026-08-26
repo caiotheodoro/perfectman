@@ -364,6 +364,12 @@ export class PulseScheduler {
         } else if (review.endingOffer) {
           await this.config.onEndOffered?.(review.endingOffer, this.pulseIndex);
         }
+        // World-layer operator events ride the same channel as the agent
+        // loop's: goal-path failures stay observable without entering the
+        // committed log the crystallizer reads.
+        for (const opEv of review.operatorEvents) {
+          await this.emitOperatorEvent(opEv);
+        }
       } catch (err) {
         await this.emitOperatorEvent(this.schedulerError("World review failed", err));
       }

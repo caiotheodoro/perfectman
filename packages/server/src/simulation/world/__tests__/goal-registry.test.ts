@@ -224,4 +224,40 @@ describe("GoalRegistry", () => {
     expect(registry.getGoals()).toHaveLength(1);
     expect(registry.getProposals()).toEqual([]);
   });
+
+  it("rebuildFromLog leaves the LLM self-verdict junction empty — a restart degrades to structural V1 (A-2)", () => {
+    const proposal = makeProposal();
+    const log: CommittedEvent[] = [
+      makeCommitted("goal_proposed", { goalId: proposal.id, proposal }, 1),
+      makeCommitted(
+        "goal_accepted",
+        {
+          goalId: proposal.id,
+          goal: { ...proposal, status: "active" },
+        },
+        2,
+      ),
+    ];
+    const registry = new GoalRegistry(log);
+    registry.recordSelfVerdict(
+      proposal.id,
+      {
+        agentId: AGENT,
+        goalId: proposal.id,
+        claim: "reached",
+        confidence: 1,
+        feltSignal: 0.8,
+        narrative: "reached",
+      },
+      "llm",
+    );
+    expect(registry.getSelfVerdict(proposal.id)?.verdict.claim).toBe("reached");
+
+    // LLM output is not committed-event-replayable (D-4/D-23); a restarted
+    // registry from the same log holds no belief until the next interval
+    // success.
+    const rebuilt = new GoalRegistry(log);
+    expect(rebuilt.getSelfVerdict(proposal.id)).toBeUndefined();
+    expect(rebuilt.getGoals()).toHaveLength(1);
+  });
 });

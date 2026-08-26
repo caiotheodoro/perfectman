@@ -4,7 +4,9 @@ import type {
   Channel,
   CommittedEvent,
   EmergentGoal,
+  GoalProposal,
   Memory,
+  OperatorEvent,
   SelfVerdict,
   Simulation,
   SimulationEvent,
@@ -24,7 +26,12 @@ import {
   buildAgentContextDigest,
   resolveGoalLayerConfig,
 } from "../world-evaluator.js";
-import type { GoalLayerRuntimeConfig } from "../world-evaluator.js";
+import type { GoalLayerRuntimeConfig, WorldLLMRuntime } from "../world-evaluator.js";
+import { GoalLayerLLMClient, deterministicPassthrough } from "../goal-layer-llm.js";
+import type { GoalLayerCallInput, GoalLayerLLMOutcome } from "../goal-layer-llm.js";
+import type { GoalLayerClientFactory } from "../goal-synthesizer.js";
+import type { LLMConfig } from "../../../llm/llm-config.js";
+import { LLMBudgetTracker } from "../../../llm/llm-budget.js";
 
 const SIM_ID = "sim_1";
 const CHANNEL_ID = "ch_public";
@@ -97,6 +104,7 @@ function makeSim(): Simulation {
 
 async function makeHarness(
   config?: GoalLayerRuntimeConfig,
+  llmRuntime?: WorldLLMRuntime,
 ): Promise<Harness> {
   const eventRepo = new InMemoryEventRepository();
   const agentStateRepo = new InMemoryAgentStateRepository();
@@ -133,6 +141,7 @@ async function makeHarness(
     channelRegistry,
     registry,
     config ?? resolveGoalLayerConfig({ enabled: true, reviewEveryPulses: 1 }),
+    llmRuntime,
   );
   return { eventRepo, sim: makeSim(), agents, evaluator, registry };
 }
@@ -278,7 +287,11 @@ async function runReview(
   harness: Harness,
   pulseIndex: number,
   now: number,
-): Promise<{ events: SimulationEvent[]; endingOffer: WorldReviewEnding }> {
+): Promise<{
+  events: SimulationEvent[];
+  endingOffer: WorldReviewEnding;
+  operatorEvents: OperatorEvent[];
+}> {
   const result = await harness.evaluator.runReview({
     simulation: harness.sim,
     agents: harness.agents,
@@ -301,6 +314,130 @@ function asEndingOffer(value: unknown): WorldReviewEnding {
     goalId: String(offer.goalId),
     reasons: Array.isArray(offer.reasons) ? offer.reasons.map(String) : [],
     epilogue: String(offer.epilogue ?? ""),
+  };
+}
+
+function makeProposal(id: string): GoalProposal {
+  return {
+    id,
+    agentId: AGENT_1,
+    title: `Goal ${id}`,
+    targetState: {
+      id: `predicate-${id}`,
+      description: `no more blocked intents from ${AGENT_1} in ${CHANNEL_ID}`,
+      observableCriteria: [`no more blocked intents from ${AGENT_1} in ${CHANNEL_ID}`],
+    },
+    kind: "resolve",
+    origin: "crystallized_from",
+    sourceEventIds: [],
+    createdAt: 1000,
+  };
+}
+
+const FAKE_MOCK_LLM: LLMConfig = {
+  providerType: "mock",
+  modelName: "mock-model",
+  baseUrl: "http://localhost",
+  maxInputTokens: 2000,
+  maxOutputTokens: 512,
+  temperature: 1,
+  timeoutMs: 5000,
+  retryCount: 0,
+};
+
+type FakeCallRecord = {
+  params: { agentId: string; pulseIndex: number };
+  input: GoalLayerCallInput;
+};
+
+/** Deterministic canned outcome mirroring the client's mock leg (D-19). */
+function cannedLlmOutcome(input: GoalLayerCallInput): GoalLayerLLMOutcome {
+  return {
+    result: {
+      proposals: input.candidates.map((candidate) => ({
+        proposal: candidate,
+        narrativeFraming: `${candidate.title} — ${candidate.targetState.description}`,
+        confidence: 0.8,
+        synthesizer: "llm" as const,
+      })),
+      selfVerdicts: input.activeGoals.map((goal) => ({
+        agentId: goal.agentId,
+        goalId: goal.id,
+        claim: "in_progress" as const,
+        confidence: 0.8,
+        feltSignal: 0.5,
+        narrative: `${goal.title}: in progress`,
+      })),
+    },
+    operatorEvents: [],
+  };
+}
+
+/** Deluded canned outcome: a genuine LLM claim of "reached" for every active goal (D-19/D-23). */
+function deludedLlmOutcome(input: GoalLayerCallInput): GoalLayerLLMOutcome {
+  return {
+    result: {
+      proposals: input.candidates.map((candidate) => ({
+        proposal: candidate,
+        narrativeFraming: `${candidate.title} — ${candidate.targetState.description}`,
+        confidence: 0.8,
+        synthesizer: "llm" as const,
+      })),
+      selfVerdicts: input.activeGoals.map((goal) => ({
+        agentId: goal.agentId,
+        goalId: goal.id,
+        claim: "reached" as const,
+        confidence: 1,
+        feltSignal: 0.8,
+        narrative: `${goal.title}: reached`,
+      })),
+    },
+    operatorEvents: [],
+  };
+}
+
+/** Budget-blocked canned outcome: passthrough + no verdicts, nothing stored (D-19). */
+function blockedLlmOutcome(input: GoalLayerCallInput): GoalLayerLLMOutcome {
+  return {
+    result: deterministicPassthrough(input.candidates),
+    operatorEvents: [
+      {
+        type: "llm_budget_exceeded",
+        simulationId: SIM_ID,
+        agentId: AGENT_1,
+        pulseIndex: 1,
+        detail: `LLM budget pre-check blocked goal synthesis for agent ${AGENT_1}`,
+        createdAt: 1000,
+      },
+    ],
+  };
+}
+
+function makeFakeLLMRuntime(opts: {
+  throwOnCall?: boolean;
+  outcome?: (input: GoalLayerCallInput) => GoalLayerLLMOutcome;
+}): { llmRuntime: WorldLLMRuntime; calls: FakeCallRecord[] } {
+  const calls: FakeCallRecord[] = [];
+  const clientFactory: GoalLayerClientFactory = (params) => {
+    const caller = Object.create(GoalLayerLLMClient.prototype) as GoalLayerLLMClient;
+    caller.call = async (input: GoalLayerCallInput): Promise<GoalLayerLLMOutcome> => {
+      calls.push({ params: { agentId: params.agentId, pulseIndex: params.pulseIndex }, input });
+      if (opts.throwOnCall) throw new Error("client boom");
+      return opts.outcome ? opts.outcome(input) : cannedLlmOutcome(input);
+    };
+    return caller;
+  };
+  return {
+    llmRuntime: {
+      simulationId: SIM_ID,
+      llmConfigs: new Map([
+        [AGENT_1, FAKE_MOCK_LLM],
+        [AGENT_2, FAKE_MOCK_LLM],
+      ]),
+      budget: new LLMBudgetTracker(),
+      clientFactory,
+    },
+    calls,
   };
 }
 
@@ -718,5 +855,400 @@ describe("WorldEvaluator.runReview — deterministic gate timeline", () => {
     });
     expect(r7.events).toEqual([]);
     expect(asEndingOffer(r7.endingOffer)?.goalId).toBe(RESOLVE_GOAL_ID);
+  });
+});
+
+describe("WorldEvaluator.runReview — llm-mode wiring (TT301)", () => {
+  const LLM_INTERVAL_CONFIG = (extra: {
+    intervalPulses?: number;
+    maxSelfVerdictsPerReview?: number;
+    maxCandidatesPerReview?: number;
+  }) =>
+    resolveGoalLayerConfig({
+      enabled: true,
+      reviewEveryPulses: 1,
+      synthesizer: {
+        mode: "llm",
+        intervalPulses: extra.intervalPulses ?? 1,
+        maxCandidatesPerReview: extra.maxCandidatesPerReview ?? 10,
+        maxSelfVerdictsPerReview: extra.maxSelfVerdictsPerReview,
+      },
+    });
+
+  it("(a) interval cadence gates the combined call: zero off-interval, one per agent on interval with candidates AND active goals", async () => {
+    const fake = makeFakeLLMRuntime({});
+    const harness = await makeHarness(LLM_INTERVAL_CONFIG({ intervalPulses: 2 }), fake.llmRuntime);
+    await seedBlocks(harness.eventRepo);
+
+    await runReview(harness, 1, 1000);
+    expect(fake.calls).toHaveLength(0);
+
+    await runReview(harness, 2, 2000);
+    expect(fake.calls).toHaveLength(1);
+    expect(fake.calls[0]!.params.pulseIndex).toBe(2);
+
+    // Review 3 (off-interval) accepts the proposal — a goal becomes active,
+    // yet no new client call happens off-cadence.
+    await runReview(harness, 3, 3000);
+    expect(fake.calls).toHaveLength(1);
+    expect(harness.registry.getGoals()).toHaveLength(1);
+
+    // Review 4 (interval) re-crystallizes the same candidate AND has an
+    // active goal: exactly one call — the combined call (#94-8), not 1 + n.
+    await runReview(harness, 4, 4000);
+    expect(fake.calls).toHaveLength(2);
+    expect(fake.calls[1]!.params.pulseIndex).toBe(4);
+    expect(fake.calls[1]!.input.candidates.length).toBeGreaterThan(0);
+    expect(fake.calls[1]!.input.activeGoals).toHaveLength(1);
+  });
+
+  it("(b) maxSelfVerdictsPerReview caps the active goals fed to the client", async () => {
+    const fake = makeFakeLLMRuntime({});
+    const harness = await makeHarness(LLM_INTERVAL_CONFIG({ maxSelfVerdictsPerReview: 1 }), fake.llmRuntime);
+    harness.registry.recordProposal(makeProposal("goal-1"));
+    harness.registry.promoteProposal("goal-1");
+    harness.registry.recordProposal(makeProposal("goal-2"));
+    harness.registry.promoteProposal("goal-2");
+    expect(harness.registry.getGoals()).toHaveLength(2);
+
+    await seedBlocks(harness.eventRepo);
+    await runReview(harness, 1, 1000);
+
+    expect(fake.calls).toHaveLength(1);
+    expect(fake.calls[0]!.input.candidates.length).toBeGreaterThan(0);
+    expect(fake.calls[0]!.input.activeGoals).toHaveLength(1);
+  });
+
+  it("(c) a throwing client is contained: deterministic proposals emit, llm_failure surfaces, nothing is recorded", async () => {
+    const fake = makeFakeLLMRuntime({ throwOnCall: true });
+    const harness = await makeHarness(LLM_INTERVAL_CONFIG({}), fake.llmRuntime);
+    await seedBlocks(harness.eventRepo);
+
+    const review = await runReview(harness, 1, 1000);
+    const proposed = review.events.find((e) => e.type === "goal_proposed")!;
+    expect(proposed.payload["synthesizer"]).toBe("deterministic");
+    const failure = review.operatorEvents.find((e) => e.type === "llm_failure");
+    expect(failure).toBeDefined();
+    expect(failure!.detail).toContain("client boom");
+    const proposalId = (proposed.payload["proposal"] as { id: string }).id;
+    expect(harness.registry.getSelfVerdict(proposalId)).toBeUndefined();
+  });
+
+  it("(d) a budget-blocked client outcome surfaces llm_budget_exceeded and records nothing", async () => {
+    const fake = makeFakeLLMRuntime({
+      outcome: (input) => ({
+        result: {
+          proposals: input.candidates.map((candidate) => ({
+            proposal: candidate,
+            narrativeFraming: candidate.targetState.description,
+            confidence: 1,
+            synthesizer: "deterministic" as const,
+          })),
+          selfVerdicts: [],
+        },
+        operatorEvents: [
+          {
+            type: "llm_budget_exceeded" as const,
+            simulationId: SIM_ID,
+            agentId: AGENT_1,
+            pulseIndex: 1,
+            detail: "LLM budget pre-check blocked goal synthesis for agent " + AGENT_1,
+            createdAt: 1000,
+          },
+        ],
+      }),
+    });
+    const harness = await makeHarness(LLM_INTERVAL_CONFIG({}), fake.llmRuntime);
+    await seedBlocks(harness.eventRepo);
+
+    const review = await runReview(harness, 1, 1000);
+    const exceeded = review.operatorEvents.find((e) => e.type === "llm_budget_exceeded");
+    expect(exceeded).toBeDefined();
+    expect(review.operatorEvents.some((e) => e.type === "llm_failure")).toBe(false);
+    const proposed = review.events.find((e) => e.type === "goal_proposed");
+    expect(proposed).toBeDefined();
+    const proposalId = (proposed!.payload["proposal"] as { id: string }).id;
+    expect(harness.registry.getSelfVerdict(proposalId)).toBeUndefined();
+  });
+
+  it("(e) deterministic mode never invokes the client factory and keeps operatorEvents empty", async () => {
+    const fake = makeFakeLLMRuntime({});
+    const harness = await makeHarness(
+      resolveGoalLayerConfig({
+        enabled: true,
+        reviewEveryPulses: 1,
+        synthesizer: { mode: "deterministic", intervalPulses: 1, maxCandidatesPerReview: 10 },
+      }),
+      fake.llmRuntime,
+    );
+    await seedBlocks(harness.eventRepo);
+
+    const review = await runReview(harness, 1, 1000);
+    expect(review.events.some((e) => e.type === "goal_proposed")).toBe(true);
+    expect(fake.calls).toHaveLength(0);
+    expect(review.operatorEvents).toEqual([]);
+  });
+});
+
+describe("WorldEvaluator.runReview — agent-mode acceptance (TT402)", () => {
+  const AGENT_CONFIG = () =>
+    resolveGoalLayerConfig({
+      enabled: true,
+      reviewEveryPulses: 1,
+      acceptance: { mode: "agent" },
+    });
+
+  function makeEngagementEvent(
+    id: string,
+    createdAt: number,
+    opts: {
+      type?: "message_sent" | "reply_sent" | "reaction_sent";
+      actorId?: string;
+      channelId?: string;
+    } = {},
+  ): CommittedEvent {
+    return {
+      id,
+      simulationId: SIM_ID,
+      channelId: opts.channelId ?? CHANNEL_ID,
+      actorId: opts.actorId ?? AGENT_1,
+      type: opts.type ?? "message_sent",
+      payload:
+        opts.type === "reaction_sent"
+          ? { emoji: "👍", targetEventId: "seed-1" }
+          : { content: "I will fix this" },
+      sourceEventIds: [],
+      emotionalSalience: "low",
+      pulseIndex: 0,
+      createdAt,
+      visibility: publicVisibility(),
+    };
+  }
+
+  it("(a) accepts on post-proposal engagement: goal_proposed reaches the target agent and review N+1 promotes", async () => {
+    const harness = await makeHarness(AGENT_CONFIG());
+    await seedBlocks(harness.eventRepo);
+
+    // Review 1 proposes; D-11 keeps acceptance at review N+1 — no goal
+    // event commits on the proposing review.
+    const r1 = await runReview(harness, 1, 1000);
+    expect(r1.events.map((e) => e.type)).toEqual(["goal_proposed"]);
+    const proposed = r1.events[0]!;
+    expect(proposed.payload["goalId"]).toBe(RESOLVE_GOAL_ID);
+    // Perception leg (#94-2): the proposal is visible to the target agent only.
+    expect(proposed.visibility.visibleToAgents).toEqual([AGENT_1]);
+    expect(proposed.visibility.visibilityReason).toBe("goal_proposal");
+
+    // The agent engages its channel between reviews. reaction_sent counts
+    // as engagement but crystallizes no new proposal.
+    await harness.eventRepo.append(SIM_ID, [
+      makeEngagementEvent("engage-1", Date.now(), { type: "reaction_sent" }),
+    ]);
+
+    const r2 = await runReview(harness, 2, 2000);
+    const accepted = r2.events.find((e) => e.type === "goal_accepted");
+    expect(accepted).toBeDefined();
+    expect(accepted!.payload["goalId"]).toBe(RESOLVE_GOAL_ID);
+    expect((accepted!.payload["goal"] as { status: string }).status).toBe("active");
+    expect(harness.registry.getGoals()).toHaveLength(1);
+    expect(harness.registry.getGoal(RESOLVE_GOAL_ID)?.status).toBe("active");
+    // Promoted, not re-proposed: the proposal left the pending set.
+    expect(harness.registry.getProposals()).toHaveLength(0);
+  });
+
+  it("(b) declines without engagement: goal_declined commits and the registry never promotes — accept vs decline differ", async () => {
+    const harness = await makeHarness(AGENT_CONFIG());
+    await seedBlocks(harness.eventRepo);
+    await runReview(harness, 1, 1000);
+
+    const r2 = await runReview(harness, 2, 2000);
+    expect(r2.events[0]!.type).toBe("goal_declined");
+    expect(r2.events[0]!.payload["goalId"]).toBe(RESOLVE_GOAL_ID);
+    expect(harness.registry.getGoal(RESOLVE_GOAL_ID)).toBeUndefined();
+    // The latent lack re-crystallizes on the same review, so the goal can
+    // surface again once the agent engages — decline is not a ban.
+    expect(r2.events[1]!.type).toBe("goal_proposed");
+  });
+
+  it("(c) engagement by a different agent is not ownership — declined", async () => {
+    const harness = await makeHarness(AGENT_CONFIG());
+    await seedBlocks(harness.eventRepo);
+    await runReview(harness, 1, 1000);
+
+    await harness.eventRepo.append(SIM_ID, [
+      makeEngagementEvent("engage-other", Date.now(), {
+        type: "message_sent",
+        actorId: AGENT_2,
+      }),
+    ]);
+
+    const r2 = await runReview(harness, 2, 2000);
+    expect(r2.events[0]!.type).toBe("goal_declined");
+    expect(harness.registry.getGoal(RESOLVE_GOAL_ID)).toBeUndefined();
+  });
+
+  it("(d) engagement in a different channel is not ownership — declined", async () => {
+    const harness = await makeHarness(AGENT_CONFIG());
+    await seedBlocks(harness.eventRepo);
+    await runReview(harness, 1, 1000);
+
+    await harness.eventRepo.append(SIM_ID, [
+      makeEngagementEvent("engage-elsewhere", Date.now(), {
+        type: "reaction_sent",
+        channelId: "ch_other",
+      }),
+    ]);
+
+    const r2 = await runReview(harness, 2, 2000);
+    expect(r2.events[0]!.type).toBe("goal_declined");
+    expect(harness.registry.getGoal(RESOLVE_GOAL_ID)).toBeUndefined();
+  });
+
+  it("(e) window boundary: engagement before the proposal commit position is excluded (ADR-0009 positional rule)", async () => {
+    const harness = await makeHarness(AGENT_CONFIG());
+    await seedBlocks(harness.eventRepo);
+    // The agent messaged before the goal was proposed — pre-perception
+    // behavior sits before the goal_proposed commit position in the log.
+    await harness.eventRepo.append(SIM_ID, [
+      makeEngagementEvent("early-1", Date.now(), { type: "reply_sent" }),
+    ]);
+    await runReview(harness, 1, 1000);
+
+    const r2 = await runReview(harness, 2, 2000);
+    expect(r2.events[0]!.type).toBe("goal_declined");
+    expect(harness.registry.getGoal(RESOLVE_GOAL_ID)).toBeUndefined();
+  });
+});
+
+describe("WorldEvaluator.runReview — LLM self-verdicts (TT501)", () => {
+  const LLM_CONFIG = (extra: {
+    intervalPulses?: number;
+    maxSelfVerdictsPerReview?: number;
+    maxCandidatesPerReview?: number;
+  }) =>
+    resolveGoalLayerConfig({
+      enabled: true,
+      reviewEveryPulses: 1,
+      synthesizer: {
+        mode: "llm",
+        intervalPulses: extra.intervalPulses ?? 1,
+        maxCandidatesPerReview: extra.maxCandidatesPerReview ?? 10,
+        maxSelfVerdictsPerReview: extra.maxSelfVerdictsPerReview,
+      },
+    });
+
+  function seedRidicule(harness: Harness): Promise<void> {
+    return harness.eventRepo.append(SIM_ID, [makeRidiculeEvent("ridicule-1", 1500)]);
+  }
+
+  it("(a) an LLM 'reached' claim drives the delusion gap while the world verdict stays not_reached", async () => {
+    const fake = makeFakeLLMRuntime({ outcome: deludedLlmOutcome });
+    const harness = await makeHarness(LLM_CONFIG({ intervalPulses: 1 }), fake.llmRuntime);
+    await seedBlocks(harness.eventRepo);
+    await runReview(harness, 1, 1000);
+    await seedRidicule(harness);
+
+    const r2 = await runReview(harness, 2, 2000);
+    const verdictEvent = r2.events.find((e) => e.type === "world_verdict")!;
+    expect(
+      (verdictEvent.payload["verdict"] as Record<string, unknown>)["determination"],
+    ).toBe("not_reached");
+
+    // The stored LLM belief drives the gap: divergenceFromWorld 1 (reached vs
+    // not_reached), magnitude > 0 — the two-verdict divergence stays legible.
+    const gapEvent = r2.events.find((e) => e.type === "delusion_gap_sampled")!;
+    expect(gapEvent.payload["divergenceFromWorld"]).toBe(1);
+    expect(gapEvent.payload["magnitude"]).toBeGreaterThan(0);
+    const stored = harness.registry.getSelfVerdict(RESOLVE_GOAL_ID)!;
+    expect(stored.verdict.claim).toBe("reached");
+    expect(stored.source).toBe("llm");
+  });
+
+  it("(b) the interval-2 arc: structural V1 before the first success, stored 'reached', persistence, clobber protection", async () => {
+    let callCount = 0;
+    const fake = makeFakeLLMRuntime({
+      outcome: (input) => {
+        callCount += 1;
+        // Call 1 (review 2) rides no active goal; call 2 (review 4) is the
+        // genuine success storing the deluded claim; call 3 (review 6) is
+        // budget-blocked and must record nothing (D-19 record gate).
+        return callCount === 3 ? blockedLlmOutcome(input) : deludedLlmOutcome(input);
+      },
+    });
+    const harness = await makeHarness(LLM_CONFIG({ intervalPulses: 2 }), fake.llmRuntime);
+    await seedBlocks(harness.eventRepo);
+    await runReview(harness, 1, 1000); // off-interval: no synthesis
+    await seedRidicule(harness);
+    await runReview(harness, 2, 2000); // interval: proposes only; call 1
+    expect(fake.calls).toHaveLength(1);
+
+    // Review 3 (off-interval) accepts; no genuine outcome has stored
+    // anything, so the verdict block serves structural V1: claim in_progress
+    // ⇒ divergenceFromWorld 0, magnitude 0.
+    const r3 = await runReview(harness, 3, 3000);
+    expect(harness.registry.getSelfVerdict(RESOLVE_GOAL_ID)).toBeUndefined();
+    expect(fake.calls).toHaveLength(1);
+    const r3Gap = r3.events.find((e) => e.type === "delusion_gap_sampled")!;
+    expect(r3Gap.payload["divergenceFromWorld"]).toBe(0);
+    expect(r3Gap.payload["magnitude"]).toBe(0);
+
+    // A genuine interval success at review 4 stores the deluded claim, which
+    // immediately drives the gap against the not_reached world verdict.
+    const r4 = await runReview(harness, 4, 4000);
+    expect(fake.calls).toHaveLength(2);
+    expect(harness.registry.getSelfVerdict(RESOLVE_GOAL_ID)?.verdict.claim).toBe("reached");
+    expect(
+      r4.events.find((e) => e.type === "delusion_gap_sampled")!.payload["divergenceFromWorld"],
+    ).toBe(1);
+
+    // Fresh witnessed events keep a next goal pending so the plateau branch
+    // never arms on the later reviews (A-2 precondition).
+    await harness.eventRepo.append(SIM_ID, [makeWitnessedEvent("witness-5", Date.now(), "ch_w5")]);
+
+    // Review 5 (off-interval): zero new calls, yet the stored claim still
+    // drives the gap — belief persistence across intervals.
+    const r5 = await runReview(harness, 5, 5000);
+    expect(fake.calls).toHaveLength(2);
+    expect(
+      r5.events.find((e) => e.type === "delusion_gap_sampled")!.payload["divergenceFromWorld"],
+    ).toBe(1);
+    expect(r5.events.some((e) => e.type === "ending_offered")).toBe(false);
+
+    await harness.eventRepo.append(SIM_ID, [makeWitnessedEvent("witness-6", Date.now(), "ch_w6")]);
+
+    // Review 6 (interval): the budget-blocked outcome records nothing — the
+    // persisted "reached" belief survives (V-1/D-19) and stored-first keeps
+    // serving it.
+    const r6 = await runReview(harness, 6, 6000);
+    expect(harness.registry.getSelfVerdict(RESOLVE_GOAL_ID)?.verdict.claim).toBe("reached");
+    expect(r6.operatorEvents.some((e) => e.type === "llm_budget_exceeded")).toBe(true);
+    expect(r6.operatorEvents.some((e) => e.type === "llm_failure")).toBe(false);
+    expect(
+      r6.events.find((e) => e.type === "delusion_gap_sampled")!.payload["divergenceFromWorld"],
+    ).toBe(1);
+    expect(r6.events.some((e) => e.type === "ending_offered")).toBe(false);
+  });
+
+  it("(e) deterministic mode never consults or populates the self-verdict junction (V1 unchanged)", async () => {
+    const fake = makeFakeLLMRuntime({ outcome: deludedLlmOutcome });
+    const harness = await makeHarness(
+      resolveGoalLayerConfig({
+        enabled: true,
+        reviewEveryPulses: 1,
+        synthesizer: { mode: "deterministic", intervalPulses: 1, maxCandidatesPerReview: 10 },
+      }),
+      fake.llmRuntime,
+    );
+    await seedBlocks(harness.eventRepo);
+    await runReview(harness, 1, 1000);
+
+    const r2 = await runReview(harness, 2, 2000);
+    expect(fake.calls).toHaveLength(0);
+    expect(harness.registry.getSelfVerdict(RESOLVE_GOAL_ID)).toBeUndefined();
+    // Structural V1 claim (in_progress): divergenceFromWorld 0, magnitude 0 —
+    // byte-identical to the pre-slice verdict block (G9).
+    const gapEvent = r2.events.find((e) => e.type === "delusion_gap_sampled")!;
+    expect(gapEvent.payload["divergenceFromWorld"]).toBe(0);
+    expect(gapEvent.payload["magnitude"]).toBe(0);
   });
 });

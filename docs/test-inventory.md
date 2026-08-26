@@ -1,6 +1,6 @@
 # Test Inventory & Hygiene Snapshot
 
-Generated: 2026-08-26T14:52:29.123Z — audited 108 files, 1021 `it`/`test` blocks (some it.each expand further at runtime).
+Generated: 2026-08-26T17:24:43.912Z — audited 110 files, 1079 `it`/`test` blocks (some it.each expand further at runtime).
 
 Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundary, once per package) / `integration` (through public surface, the honeycomb's big middle) / `e2e` (max 6 suites) / `eval-harness` (vitest tests of the eval tooling — the 123-task *benchmark* is out of scope).
 
@@ -10,10 +10,10 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 |---|---|---|---|
 | engine | 22 | 259 | —
 | eval | 17 | 140 | async-pause(1)
-| server | 61 | 537 | console(1), async-pause(1), async-pause(1), async-pause(2)
-| shared | 8 | 85 | —
+| server | 63 | 584 | console(1), async-pause(1), async-pause(1), async-pause(2)
+| shared | 8 | 96 | —
 
-**Total: 108 files, 1021 it/test blocks; 5 files flagged.**
+**Total: 110 files, 1079 it/test blocks; 5 files flagged.**
 
 ## Per-file inventory
 
@@ -63,16 +63,16 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/__e2e__/pipeline-invariants.e2e.test.ts | e2e | 10 | 
 | packages/server/src/__e2e__/roleplay-behaviors.e2e.test.ts | e2e | 17 | 
 | packages/server/src/agent/__tests__/agent-runtime.test.ts | integration | 11 | 
-| packages/server/src/agent/__tests__/background-reflection-prompt-builder.test.ts | integration | 11 | 
+| packages/server/src/agent/__tests__/background-reflection-prompt-builder.test.ts | integration | 12 | 
 | packages/server/src/agent/__tests__/intent-parser-null.test.ts | integration | 4 | 
 | packages/server/src/agent/__tests__/intent-parser.test.ts | integration | 16 | 
 | packages/server/src/agent/__tests__/persona-loader.test.ts | integration | 7 | 
-| packages/server/src/agent/__tests__/prompt-builder.test.ts | integration | 17 | 
+| packages/server/src/agent/__tests__/prompt-builder.test.ts | integration | 18 | 
 | packages/server/src/agent/__tests__/repetition-guard.test.ts | integration | 8 | 
 | packages/server/src/agent/surface/__tests__/action-intent-step.test.ts | integration | 9 | 
 | packages/server/src/cli/__tests__/llm-health-check.test.ts | integration | 4 | 
 | packages/server/src/config/__tests__/judge-config.test.ts | integration | 16 | 
-| packages/server/src/config/__tests__/simulation-config.test.ts | integration | 22 | 
+| packages/server/src/config/__tests__/simulation-config.test.ts | integration | 25 | 
 | packages/server/src/delivery/__tests__/html-snapshot-gateway.test.ts | integration | 7 | 
 | packages/server/src/discord/__tests__/bot-registry.test.ts | integration | 9 | 
 | packages/server/src/discord/__tests__/channel-map.test.ts | integration | 6 | 
@@ -106,7 +106,7 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/operator-projection.test.ts | integration | 4 | 
 | packages/server/src/simulation/__tests__/pulse-scheduler-observability.test.ts | integration | 12 | 
 | packages/server/src/simulation/__tests__/pulse-scheduler-resilience.test.ts | integration | 2 | async-pause(1)
-| packages/server/src/simulation/__tests__/pulse-scheduler.test.ts | integration | 12 | 
+| packages/server/src/simulation/__tests__/pulse-scheduler.test.ts | integration | 13 | 
 | packages/server/src/simulation/__tests__/runtime-input-builder.test.ts | integration | 5 | 
 | packages/server/src/simulation/__tests__/simulation-lifecycle.test.ts | integration | 10 | 
 | packages/server/src/simulation/__tests__/simulation-manager.test.ts | integration | 4 | 
@@ -114,17 +114,19 @@ Layer classification follows `docs/testing-strategy.md`: `contract` (zod/boundar
 | packages/server/src/simulation/__tests__/spectator-projection.test.ts | integration | 6 | 
 | packages/server/src/simulation/__tests__/visibility-invariants.test.ts | integration | 13 | 
 | packages/server/src/simulation/__tests__/world-signals-builder.test.ts | integration | 7 | 
-| packages/server/src/simulation/world/__tests__/acceptance-gate.test.ts | integration | 4 | 
-| packages/server/src/simulation/world/__tests__/goal-end-to-end.test.ts | integration | 1 | async-pause(2)
-| packages/server/src/simulation/world/__tests__/goal-registry.test.ts | integration | 8 | 
-| packages/server/src/simulation/world/__tests__/goal-synthesizer.test.ts | integration | 7 | 
-| packages/server/src/simulation/world/__tests__/world-evaluator.test.ts | integration | 12 | 
+| packages/server/src/simulation/world/__tests__/acceptance-gate.test.ts | integration | 11 | 
+| packages/server/src/simulation/world/__tests__/goal-end-to-end.test.ts | integration | 3 | async-pause(2)
+| packages/server/src/simulation/world/__tests__/goal-layer-llm.test.ts | integration | 9 | 
+| packages/server/src/simulation/world/__tests__/goal-layer-prompt-builder.test.ts | integration | 8 | 
+| packages/server/src/simulation/world/__tests__/goal-registry.test.ts | integration | 9 | 
+| packages/server/src/simulation/world/__tests__/goal-synthesizer.test.ts | integration | 8 | 
+| packages/server/src/simulation/world/__tests__/world-evaluator.test.ts | integration | 25 | 
 | packages/shared/src/__tests__/constants.test.ts | contract | 13 | 
 | packages/shared/src/__tests__/contracts.test.ts | contract | 3 | 
 | packages/shared/src/__tests__/intent-packet-schema.test.ts | contract | 9 | 
 | packages/shared/src/__tests__/judge-config.test.ts | contract | 18 | 
 | packages/shared/src/__tests__/prompt-syntax.test.ts | contract | 5 | 
-| packages/shared/src/__tests__/schemas.test.ts | contract | 13 | 
+| packages/shared/src/__tests__/schemas.test.ts | contract | 24 | 
 | packages/shared/src/persona-packs/persona-packs.test.ts | contract | 16 | 
 | packages/shared/src/scenarios/library.test.ts | contract | 8 | 
 

@@ -21,6 +21,7 @@ export class PromptBuilder {
         return BackgroundReflectionPromptBuilder.build(input, profile);
       case "social_interpretation":
       case "spectator_recap":
+      case "goal_synthesis":
         throw new Error(`Unsupported prompt purpose: ${purpose}`);
     }
   }

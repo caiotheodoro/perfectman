@@ -34,6 +34,7 @@ import { AgentRuntime } from "../agent/agent-runtime.js";
 import type { PersonaPromptProfile } from "../agent/persona-prompt-profile.js";
 import type { LLMConfig } from "../llm/llm-config.js";
 import { llmBudget } from "../llm/llm-budget.js";
+import type { LLMBudgetTracker } from "../llm/llm-budget.js";
 import {
   InMemoryAgentStateRepository,
   InMemoryChannelRepository,
@@ -409,6 +410,11 @@ export async function buildConfiguredSimulation(
         config.goalLayer,
         simulationId,
         persistence.repositories,
+        configuredAgents,
+        // The goal client routes through canCall/recordUsage, which live on
+        // the tracker (the singleton and the injected test seam are both
+        // LLMBudgetTracker instances typed as the minimal getPriority seam).
+        budget as LLMBudgetTracker,
       )
     : undefined;
 
@@ -440,15 +446,17 @@ export async function buildConfiguredSimulation(
 }
 
 /**
- * Goal-layer runtime wiring: resolve defaults (rejects schema-valid but
- * unwired "llm"/"agent" modes — loud failure beats silent degradation),
- * rebuild the registry from the committed log (empty for fresh sims), and
- * hand the evaluator to the runtime for the pulse hook.
+ * Goal-layer runtime wiring: resolve defaults, rebuild the registry from the
+ * committed log (empty for fresh sims), wire per-agent LLM configs + the
+ * shared budget into the evaluator for llm mode, and hand the evaluator to
+ * the runtime for the pulse hook.
  */
 async function buildGoalLayerRuntime(
   parsed: GoalLayerConfig,
   simulationId: string,
   repositories: SimulationRuntimeRepositories,
+  agents: ConfiguredAgent[],
+  budget: LLMBudgetTracker,
 ): Promise<GoalLayerRuntime> {
   const config = resolveGoalLayerConfig(parsed);
   const log = await repositories.eventRepo.getCommittedThrough(
@@ -462,6 +470,11 @@ async function buildGoalLayerRuntime(
     new ChannelRegistry(repositories.channelRepo),
     registry,
     config,
+    {
+      simulationId,
+      llmConfigs: new Map(agents.map((agent) => [agent.id, agent.llm])),
+      budget,
+    },
   );
   return { config, evaluator };
 }

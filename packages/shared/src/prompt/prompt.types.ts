@@ -32,4 +32,5 @@ export type PromptPurpose =
   | "action_intent"           // Full persona + voice + style + output contract
   | "social_interpretation"   // Identity + relationship context only (reserved)
   | "background_reflection"   // Identity + relationship + memory only (reserved)
-  | "spectator_recap";        // Narrator style only (reserved)
+  | "spectator_recap"        // Narrator style only (reserved)
+  | "goal_synthesis";         // Goal-layer LLM surface; built by the goal prompt builder (reserved)

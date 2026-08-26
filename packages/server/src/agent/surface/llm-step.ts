@@ -51,5 +51,6 @@ export function purposeToCallType(purpose: PromptPurpose): LLMUsage["callType"] 
     case "social_interpretation": return "interpretation";
     case "background_reflection": return "reflection";
     case "spectator_recap":       return "recap";
+    case "goal_synthesis":        return "goal";
   }
 }
