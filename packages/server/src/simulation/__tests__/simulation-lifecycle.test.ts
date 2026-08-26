@@ -84,6 +84,52 @@ describe("SimulationLifecycle", () => {
     expect(events.some(e => e.type === "simulation_stopped")).toBe(true);
   });
 
+  it("stop without reason/offer commits the payload without them", async () => {
+    const sim = makeSim("running");
+    await lifecycle.stop(sim, 3);
+    const events = await eventLog.getAfter("sim_1");
+    const stopped = events.find(e => e.type === "simulation_stopped");
+    expect(stopped?.payload).toEqual({ simulationId: "sim_1" });
+  });
+
+  it("stop with endReason and endingOffer commits them in the payload", async () => {
+    const sim = makeSim("running");
+    await lifecycle.stop(sim, 3, "goal_end_offered", {
+      goalId: "goal_1",
+      reasons: ["story complete"],
+      epilogue: "Ana found her footing.",
+      status: "pending",
+    });
+    const events = await eventLog.getAfter("sim_1");
+    const stopped = events.find(e => e.type === "simulation_stopped");
+    expect(stopped?.payload).toMatchObject({
+      simulationId: "sim_1",
+      endReason: "goal_end_offered",
+    });
+    expect(stopped?.payload.endingOffer).toEqual({
+      goalId: "goal_1",
+      reasons: ["story complete"],
+      epilogue: "Ana found her footing.",
+      status: "pending",
+    });
+  });
+
+  it("double stop with reason commits a single stopped event (idempotent guard first)", async () => {
+    const sim = makeSim("running");
+    await lifecycle.stop(sim, 3, "goal_end_offered", {
+      goalId: "goal_1",
+      reasons: [],
+      epilogue: "ep",
+      status: "pending",
+    });
+    // The guard reads the caller-supplied object; SimulationManager re-fetches
+    // from the repo before each stop, so present the persisted status.
+    const persisted = await simRepo.get("sim_1");
+    await lifecycle.stop(persisted!, 4, "operator_command");
+    const events = await eventLog.getAfter("sim_1");
+    expect(events.filter(e => e.type === "simulation_stopped")).toHaveLength(1);
+  });
+
   it("start throws if simulation is not initializing", async () => {
     const sim = makeSim("running");
     await expect(lifecycle.start(sim, 0)).rejects.toThrow();

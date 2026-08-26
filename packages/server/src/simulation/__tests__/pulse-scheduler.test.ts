@@ -11,8 +11,10 @@ import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
-import type { Simulation, SimulationSettings, AgentState, PersonaConfig, ActionIntent } from "@perfectman/shared";
+import type { Simulation, SimulationSettings, AgentState, PersonaConfig, ActionIntent, EndingOffer, GoalSynthesisResult, SimulationEvent } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
+import { resolveGoalLayerConfig, WorldEvaluator } from "../world/world-evaluator.js";
+import type { GoalLayerRuntime, WorldReview } from "../world/world-evaluator.js";
 
 const SETTINGS: SimulationSettings = {
   omniscientSpectatorMode: false,
@@ -266,5 +268,246 @@ describe("PulseScheduler", () => {
     });
     await sched.runPulse();
     expect(mockAgentRuntime.generateIntent).toHaveBeenCalled();
+  });
+
+  describe("goal-layer wiring (TT401)", () => {
+    const GOAL_SETTINGS: SimulationSettings = { ...SETTINGS, omniscientSpectatorMode: true };
+    const GOAL_SIM: Simulation = { ...SIM, settings: GOAL_SETTINGS };
+    const OFFER: EndingOffer = {
+      goalId: "crystal-agent_1-resolve-ch_public-1",
+      reasons: ["progress plateaued"],
+      epilogue: "The conversation found its footing again.",
+      status: "pending",
+    };
+
+    function reviewProposalEvent(pulseIndex: number): SimulationEvent {
+      const result: GoalSynthesisResult = {
+        proposal: {
+          id: OFFER.goalId,
+          agentId: "agent_1",
+          title: "Recover the conversation",
+          targetState: {
+            id: "predicate-resolve-ch_public",
+            description: "no more blocked intents from agent_1 in ch_public",
+            observableCriteria: ["no more blocked intents from agent_1 in ch_public"],
+          },
+          kind: "resolve",
+          origin: "crystallized_from",
+          sourceEventIds: [],
+          createdAt: 0,
+        },
+        narrativeFraming: "no more blocked intents from agent_1 in ch_public",
+        confidence: 1,
+        synthesizer: "deterministic",
+      };
+      return engineEventBuilder.fromGoalProposed(result, {
+        simulationId: GOAL_SIM.id,
+        channelId: "ch_public",
+        pulseIndex,
+      });
+    }
+
+    function reviewEndingEvent(pulseIndex: number): SimulationEvent {
+      return engineEventBuilder.fromEndingOffered(OFFER, {
+        simulationId: GOAL_SIM.id,
+        channelId: "ch_public",
+        pulseIndex,
+      });
+    }
+
+    function makeFakeEvaluator(script: Array<WorldReview | Error>): {
+      evaluator: WorldEvaluator;
+      runReview: ReturnType<typeof vi.fn>;
+    } {
+      const runReview = vi.fn(
+        async (input: {
+          simulation: Simulation;
+          agents: Array<{ id: string; state: AgentState }>;
+          pulseIndex: number;
+          now: number;
+        }): Promise<WorldReview> => {
+          const next = script.shift();
+          if (next instanceof Error) throw next;
+          return next ?? { events: [], endingOffer: null };
+        },
+      );
+      const evaluator = Object.create(WorldEvaluator.prototype) as WorldEvaluator;
+      evaluator.runReview = runReview;
+      return { evaluator, runReview };
+    }
+
+    function buildGoalLayerScheduler(opts: {
+      reviewEveryPulses: number;
+      script: Array<WorldReview | Error>;
+      eventRepoOverride?: InMemoryEventRepository;
+    }): {
+      scheduler: PulseScheduler;
+      runReview: ReturnType<typeof vi.fn>;
+      onEndOffered: ReturnType<typeof vi.fn>;
+      stepResolver: ReturnType<typeof vi.fn>;
+    } {
+      const { evaluator, runReview } = makeFakeEvaluator(opts.script);
+      const stepResolver = vi.fn(() => makeCannedStep());
+      const onEndOffered = vi.fn(async () => {});
+      const goalLayer: GoalLayerRuntime = {
+        config: resolveGoalLayerConfig({ enabled: true, reviewEveryPulses: opts.reviewEveryPulses }),
+        evaluator,
+      };
+      const sched = new PulseScheduler({
+        simulation: GOAL_SIM,
+        agents: [AGENT],
+        defaultPublicChannelId: "ch_public",
+        eventRepo: opts.eventRepoOverride ?? eventRepo,
+        agentStateRepo,
+        channelRegistry,
+        rateLimitGate: new RateLimitGate(GOAL_SETTINGS),
+        intentResolver,
+        engineSnapshotProjection: new EngineSnapshotProjection(),
+        deliveryProjection: new DeliveryProjection(gateway),
+        spectatorProjection: new SpectatorProjection(gateway),
+        operatorProjection: new OperatorProjection(gateway),
+        engineEventBuilder,
+        agentRuntime: mockAgentRuntime,
+        llmBudget: mockLLMBudget,
+        pulseIntervalMs: GOAL_SETTINGS.pulseIntervalMs,
+        stepResolver,
+        goalLayer,
+        onEndOffered,
+      });
+      return { scheduler: sched, runReview, onEndOffered, stepResolver };
+    }
+
+    it("pulse 0 is exempt; on cadence 1 the review runs after the agent loop, commits through appendAndProject, and fires onEndOffered with the offer", async () => {
+      const { scheduler, runReview, onEndOffered, stepResolver } = buildGoalLayerScheduler({
+        reviewEveryPulses: 1,
+        script: [
+          { events: [reviewProposalEvent(1), reviewEndingEvent(1)], endingOffer: OFFER },
+          { events: [], endingOffer: null },
+        ],
+      });
+
+      await scheduler.runPulse();
+      expect(runReview).not.toHaveBeenCalled();
+
+      const result = await scheduler.runPulse();
+      expect(runReview).toHaveBeenCalledTimes(1);
+      expect(runReview.mock.calls[0]![0]).toMatchObject({
+        pulseIndex: 1,
+        simulation: { id: "sim_test" },
+      });
+      expect(runReview.mock.calls[0]![0].agents).toEqual([{ id: "agent_1", state: expect.any(Object) }]);
+      // The review runs after the agent loop: the step resolver is invoked first.
+      expect(stepResolver.mock.invocationCallOrder[0]).toBeLessThan(runReview.mock.invocationCallOrder[0]!);
+
+      const committed = await eventRepo.getAfter(GOAL_SIM.id);
+      // Tail of the log pins commit ORDER: agent-loop event first, then the
+      // review's events — world events commit through the same appendAndProject.
+      expect(committed.slice(-3).map(e => e.type)).toEqual(["no_op_recorded", "goal_proposed", "ending_offered"]);
+      expect(committed.slice(-3).every(e => e.pulseIndex === 1)).toBe(true);
+      expect(result.eventsCommitted).toBe(3);
+
+      const visibility = gateway.operatorEvents.filter(e => e.type === "event_visibility");
+      expect(visibility.some(e => e.data?.eventType === "goal_proposed")).toBe(true);
+      expect(gateway.spectatorEvents.some(e => e.type === "goal_proposed")).toBe(true);
+
+      expect(onEndOffered).toHaveBeenCalledTimes(1);
+      expect(onEndOffered).toHaveBeenCalledWith(OFFER, 1);
+    });
+
+    it("once the evaluator's gate closes, later pulses commit no review events and never refire the offer", async () => {
+      const { scheduler, runReview, onEndOffered } = buildGoalLayerScheduler({
+        reviewEveryPulses: 1,
+        script: [
+          { events: [reviewProposalEvent(1)], endingOffer: OFFER },
+          { events: [], endingOffer: null },
+          { events: [], endingOffer: null },
+        ],
+      });
+
+      await scheduler.runPulse();
+      await scheduler.runPulse();
+      const reviewEventsAfterOffer = (await eventRepo.getAfter(GOAL_SIM.id)).filter(
+        e => e.type === "goal_proposed" || e.type === "ending_offered",
+      );
+
+      const gatedResult = await scheduler.runPulse();
+      expect(runReview).toHaveBeenLastCalledWith(expect.objectContaining({ pulseIndex: 2 }));
+      const reviewEventsAfterGated = (await eventRepo.getAfter(GOAL_SIM.id)).filter(
+        e => e.type === "goal_proposed" || e.type === "ending_offered",
+      );
+      expect(reviewEventsAfterGated).toEqual(reviewEventsAfterOffer);
+      expect(reviewEventsAfterGated.map(e => e.type)).toEqual(["goal_proposed"]);
+      expect(gatedResult.eventsCommitted).toBe(1); // agent-loop no_op_recorded only
+      expect(onEndOffered).toHaveBeenCalledTimes(1);
+      expect(onEndOffered).toHaveBeenCalledWith(OFFER, 1);
+    });
+
+    it("cadence boundary: reviewEveryPulses 2 reviews only even pulses (and never pulse 0)", async () => {
+      const { scheduler, runReview, onEndOffered } = buildGoalLayerScheduler({
+        reviewEveryPulses: 2,
+        script: [
+          { events: [reviewProposalEvent(2)], endingOffer: null },
+          { events: [], endingOffer: null },
+        ],
+      });
+
+      for (let i = 0; i < 5; i += 1) await scheduler.runPulse();
+
+      expect(runReview).toHaveBeenCalledTimes(2);
+      expect(runReview.mock.calls[0]![0].pulseIndex).toBe(2);
+      expect(runReview.mock.calls[1]![0].pulseIndex).toBe(4);
+      expect(onEndOffered).not.toHaveBeenCalled();
+    });
+
+    it("resilience: a throwing evaluator emits a scheduler_error and the pulse survives", async () => {
+      const { scheduler, runReview } = buildGoalLayerScheduler({
+        reviewEveryPulses: 1,
+        script: [new Error("review boom")],
+      });
+
+      await scheduler.runPulse();
+      const result = await scheduler.runPulse();
+      expect(result.pulseIndex).toBe(1);
+      expect(result.eventsCommitted).toBe(1); // agent-loop event still counted
+      expect(runReview).toHaveBeenCalledTimes(1);
+
+      const errors = gateway.operatorEvents.filter(e => e.type === "scheduler_error");
+      expect(errors.some(e => e.detail === "World review failed" && e.data?.reason === "review boom")).toBe(true);
+
+      const next = await scheduler.runPulse();
+      expect(next.pulseIndex).toBe(2);
+    });
+
+    it("append failure on the offer-creation review: onEndOffered waits for a committed offer event, then the retry delivers", async () => {
+      const failingAppendRepo = Object.create(eventRepo) as InMemoryEventRepository;
+      failingAppendRepo.append = () => Promise.reject(new Error("append boom"));
+      const { scheduler, onEndOffered } = buildGoalLayerScheduler({
+        reviewEveryPulses: 1,
+        eventRepoOverride: failingAppendRepo,
+        script: [
+          // Pulse 1: offer-creation review — its ending_offered never commits.
+          { events: [reviewEndingEvent(1)], endingOffer: OFFER },
+          // Pulse 2: the pending offer is re-delivered (no events to commit).
+          { events: [], endingOffer: OFFER },
+          // Pulse 3: delivered — silence.
+          { events: [], endingOffer: null },
+        ],
+      });
+
+      await scheduler.runPulse(); // pulse 0 — review-exempt
+      const offerPulse = await scheduler.runPulse();
+      expect(offerPulse.pulseIndex).toBe(1);
+      expect(onEndOffered).not.toHaveBeenCalled();
+      const errors = gateway.operatorEvents.filter(e => e.type === "scheduler_error");
+      expect(errors.some(e => e.detail === "Failed to append events" && e.data?.reason === "append boom")).toBe(true);
+
+      const retryPulse = await scheduler.runPulse();
+      expect(retryPulse.pulseIndex).toBe(2);
+      expect(onEndOffered).toHaveBeenCalledTimes(1);
+      expect(onEndOffered).toHaveBeenCalledWith(OFFER, 2);
+
+      await scheduler.runPulse();
+      expect(onEndOffered).toHaveBeenCalledTimes(1);
+    });
   });
 });

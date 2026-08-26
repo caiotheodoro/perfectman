@@ -1338,6 +1338,12 @@ Future docs:
 - `agent-config.md`: personas, thresholds, objectives, capabilities.
 - `safety-model.md`: socket chat safety and intervention rules.
 
+## Concept 42: Emergent Goal Layer
+
+A world layer above the agent level that gives the simulation a principled ending: goals crystallize from the run's own event history (never seeded), the world judges them independently of the agents who pursue them, and termination is offered, world-verified, and earned. Two-verdict architecture (self vs world) with a derived delusion gap; the deluded achiever re-goals and never terminates. Full page: [`goal-layer.md`](goal-layer.md). Sources: [research pack](../research/goal-layer/README.md); decision: [ADR-0008](../adr/0008-world-goal-layer.md).
+
+Stands in contrast to the experiment-brief-era framing (goals as conflicting preset objectives); this layer replaces preset objectives with emergent ones.
+
 ## Final Integrated Model
 
 Perfectman should be understood as five interlocking systems:

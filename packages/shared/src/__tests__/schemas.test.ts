@@ -10,7 +10,15 @@ import {
 import {
   SimulationEventSchema,
   CommittedEventSchema,
+  EventTypeSchema,
 } from "../event/event.schema.js";
+import {
+  DelusionWeightsSchema,
+  GoalAcceptanceDecisionSchema,
+  GoalSynthesisResultSchema,
+  SynthesizerConfigSchema,
+} from "../goal/goal.schema.js";
+import { GoalLayerConfigSchema } from "../goal/goal-layer-config.schema.js";
 import {
   ActionIntentSchema,
   MemoryWriteProposalSchema,
@@ -52,28 +60,26 @@ describe("SimulationSchema", () => {
     expect(() => SimulationSchema.parse(sim)).not.toThrow();
   });
 
-  it("rejects invalid status", () => {
-    const sim = {
-      id: "sim1",
-      name: "Test",
-      status: "invalid_status",
-      agentIds: [],
-      channelIds: [],
-      settings: validSettings,
-      seed: 1,
-      createdAt: 1700000000000,
-      updatedAt: 1700000000000,
-    };
-    expect(() => SimulationSchema.parse(sim)).toThrow();
-  });
+  const invalidStatusSim = {
+    id: "sim1",
+    name: "Test",
+    status: "invalid_status",
+    agentIds: [],
+    channelIds: [],
+    settings: validSettings,
+    seed: 1,
+    createdAt: 1700000000000,
+    updatedAt: 1700000000000,
+  };
 
-  it("rejects negative maxPrivateChannelsPerAgent", () => {
-    expect(() =>
-      SimulationSettingsSchema.parse({
-        ...validSettings,
-        maxPrivateChannelsPerAgent: -1,
-      })
-    ).toThrow();
+  it.each([
+    ["invalid status", invalidStatusSim],
+    [
+      "negative maxPrivateChannelsPerAgent",
+      { ...invalidStatusSim, settings: { ...validSettings, maxPrivateChannelsPerAgent: -1 } },
+    ],
+  ] as const)("rejects %s", (name, sim) => {
+    expect(() => SimulationSchema.parse(sim)).toThrow();
   });
 });
 
@@ -148,48 +154,26 @@ describe("CommittedEventSchema", () => {
 
 // --- Intent ---
 describe("ActionIntentSchema", () => {
+  const validIntent = {
+    id: "i1",
+    actorId: "a1",
+    intentType: "send_message",
+    personTargets: [],
+    privateMotiveSummary: "Feeling bored, opening conversation",
+    emotionDrivers: ["boredom"],
+    motivationDrivers: ["curiosity"],
+    memoryWrites: [],
+  };
+
   it("validates a valid intent", () => {
-    const intent = {
-      id: "i1",
-      actorId: "a1",
-      intentType: "send_message",
-      personTargets: [],
-      privateMotiveSummary: "Feeling bored, opening conversation",
-      emotionDrivers: ["boredom"],
-      motivationDrivers: ["curiosity"],
-      memoryWrites: [],
-    };
-    expect(() => ActionIntentSchema.parse(intent)).not.toThrow();
+    expect(() => ActionIntentSchema.parse(validIntent)).not.toThrow();
   });
 
-  it("rejects empty privateMotiveSummary", () => {
-    expect(() =>
-      ActionIntentSchema.parse({
-        id: "i1",
-        actorId: "a1",
-        intentType: "no_op",
-        personTargets: [],
-        privateMotiveSummary: "", // MUST NOT be empty
-        emotionDrivers: [],
-        motivationDrivers: [],
-        memoryWrites: [],
-      })
-    ).toThrow();
-  });
-
-  it("rejects unsupported intentType", () => {
-    expect(() =>
-      ActionIntentSchema.parse({
-        id: "i1",
-        actorId: "a1",
-        intentType: "hack_system",
-        personTargets: [],
-        privateMotiveSummary: "test",
-        emotionDrivers: [],
-        motivationDrivers: [],
-        memoryWrites: [],
-      })
-    ).toThrow();
+  it.each([
+    ["empty privateMotiveSummary", { ...validIntent, privateMotiveSummary: "" }],
+    ["unsupported intentType", { ...validIntent, intentType: "hack_system" }],
+  ] as const)("rejects %s", (name, intent) => {
+    expect(() => ActionIntentSchema.parse(intent)).toThrow();
   });
 });
 
@@ -210,34 +194,22 @@ describe("CoreMoodSchema", () => {
     ).not.toThrow();
   });
 
-  it("rejects valence out of range", () => {
-    expect(() =>
-      CoreMoodSchema.parse({
-        valence: 1.5, // > 1
-        arousal: 0.5,
-        stability: 0.5,
-        energy: 0.5,
-        circumplexAngle: 0,
-        circumplexRadius: 0.5,
-        momentumValence: 0,
-        momentumArousal: 0,
-      })
-    ).toThrow();
-  });
+  const moodBase = {
+    valence: 0,
+    arousal: 0.5,
+    stability: 0.5,
+    energy: 0.5,
+    circumplexAngle: 0,
+    circumplexRadius: 0.5,
+    momentumValence: 0,
+    momentumArousal: 0,
+  };
 
-  it("rejects stability below floor 0.1", () => {
-    expect(() =>
-      CoreMoodSchema.parse({
-        valence: 0,
-        arousal: 0.5,
-        stability: 0.05, // < 0.1
-        energy: 0.5,
-        circumplexAngle: 0,
-        circumplexRadius: 0.5,
-        momentumValence: 0,
-        momentumArousal: 0,
-      })
-    ).toThrow();
+  it.each([
+    ["valence out of range", { ...moodBase, valence: 1.5 }],
+    ["stability below floor 0.1", { ...moodBase, stability: 0.05 }],
+  ] as const)("rejects %s", (name, mood) => {
+    expect(() => CoreMoodSchema.parse(mood)).toThrow();
   });
 });
 
@@ -264,37 +236,236 @@ describe("SocialEmotionsSchema", () => {
   });
 });
 
-// --- Utils ---
-describe("SeededRng", () => {
-  it("produces deterministic output for same seed", () => {
-    const rng1 = createSeededRng(42);
-    const rng2 = createSeededRng(42);
-    expect(rng1.next()).toBe(rng2.next());
-    expect(rng1.next()).toBe(rng2.next());
+// --- Goal Layer ---
+const validGoalProposal = {
+  id: "goal-1",
+  agentId: "a1",
+  title: "Recover from block",
+  targetState: {
+    id: "ts-1",
+    description: "no more blocked intents from a1 in ch1",
+    observableCriteria: ["no more blocked intents from a1 in ch1"],
+  },
+  kind: "resolve",
+  origin: "crystallized_from",
+  sourceEventIds: ["ev1", "ev2"],
+  createdAt: 1700000000000,
+};
+
+const committedEventFor = (type: string) => ({
+  id: `ev-${type}`,
+  simulationId: "sim1",
+  channelId: "ch1",
+  actorId: "a1",
+  type,
+  payload: {},
+  createdAt: 1700000000000,
+  pulseIndex: 5,
+  sourceEventIds: [],
+  emotionalSalience: "low",
+  visibility: {
+    visibleToAgents: [],
+    visibleToSpectators: true,
+    visibleToOperators: true,
+    visibilityReason: "test",
+  },
+});
+
+describe("EventTypeSchema — goal layer members", () => {
+  const goalEventTypes = [
+    "goal_proposed",
+    "goal_accepted",
+    "goal_declined",
+    "world_verdict",
+    "delusion_gap_sampled",
+    "ending_offered",
+  ] as const;
+
+  it.each(goalEventTypes)("accepts %s", (type) => {
+    expect(EventTypeSchema.parse(type)).toBe(type);
+    expect(CommittedEventSchema.parse(committedEventFor(type)).type).toBe(type);
   });
 
-  it("produces different output for different seeds", () => {
-    const rng1 = createSeededRng(42);
-    const rng2 = createSeededRng(43);
-    expect(rng1.next()).not.toBe(rng2.next());
+  it("rejects an invented goal-layer type", () => {
+    expect(EventTypeSchema.safeParse("goal_fabricated").success).toBe(false);
   });
+});
 
-  it("next() returns value in [0, 1)", () => {
-    const rng = createSeededRng(100);
-    for (let i = 0; i < 50; i++) {
-      const v = rng.next();
-      expect(v).toBeGreaterThanOrEqual(0);
-      expect(v).toBeLessThan(1);
+describe("DelusionWeightsSchema", () => {
+  const validWeights = {
+    wSignal: 0.5,
+    wSocial: 0.3,
+    wIdentity: 0.2,
+    revisionThreshold: 0.4,
+  };
+
+  it.each([
+    ["accepts an unchanged valid weights object", validWeights, true],
+    ["rejects a weight above 1", { ...validWeights, wSignal: 1.5 }, false],
+  ] as const)("%s", (name, weights, valid) => {
+    const result = DelusionWeightsSchema.safeParse(weights);
+    expect(result.success).toBe(valid);
+    if (valid && result.success) {
+      expect(result.data).toEqual(validWeights);
+    }
+  });
+});
+
+describe("GoalLayerConfigSchema", () => {
+  it.each([
+    [
+      "an empty object (all fields optional)",
+      {},
+      { enabled: undefined, synthesizer: undefined, acceptance: undefined },
+    ],
+    [
+      "a full valid section",
+      {
+        enabled: true,
+        reviewEveryPulses: 3,
+        delusionWeightsByAgent: {
+          a1: { wSignal: 0.5, wSocial: 0.3, wIdentity: 0.2, revisionThreshold: 0.4 },
+        },
+        ending: { offerAcceptPulses: 2 },
+        synthesizer: { mode: "deterministic", intervalPulses: 5, maxCandidatesPerReview: 2 },
+        acceptance: { mode: "auto" },
+      },
+      {
+        enabled: true,
+        reviewEveryPulses: 3,
+        synthesizer: { mode: "deterministic", intervalPulses: 5 },
+        acceptance: { mode: "auto" },
+      },
+    ],
+    [
+      "unwired-but-contract-defined modes (D-3: parse-valid, build-rejected later)",
+      { synthesizer: { mode: "llm", intervalPulses: 5, maxCandidatesPerReview: 2 }, acceptance: { mode: "agent" } },
+      { synthesizer: { mode: "llm" }, acceptance: { mode: "agent" } },
+    ],
+  ] as const)("parses %s", (name, input, expected) => {
+    const parsed = GoalLayerConfigSchema.parse(input) as Record<string, unknown>;
+    for (const [key, value] of Object.entries(expected)) {
+      if (value === undefined) {
+        expect(parsed[key]).toBeUndefined();
+      } else {
+        expect(parsed).toMatchObject({ [key]: value });
+      }
     }
   });
 
-  it("nextInt() returns integer in [0, max)", () => {
+  it.each([
+    ["zero reviewEveryPulses", { reviewEveryPulses: 0 }, true],
+    [
+      "zero intervalPulses",
+      { synthesizer: { mode: "deterministic", intervalPulses: 0, maxCandidatesPerReview: 3 } },
+      false,
+    ],
+    [
+      "zero maxCandidatesPerReview",
+      { synthesizer: { mode: "deterministic", intervalPulses: 1, maxCandidatesPerReview: 0 } },
+      false,
+    ],
+    [
+      "a delusion weight above 1",
+      {
+        delusionWeightsByAgent: {
+          a1: { wSignal: 0.5, wSocial: 1.2, wIdentity: 0.2, revisionThreshold: 0.4 },
+        },
+      },
+      false,
+    ],
+  ] as const)("rejects %s", (name, input, expectFieldMessage) => {
+    const result = GoalLayerConfigSchema.safeParse(input);
+    expect(result.success).toBe(false);
+    if (expectFieldMessage && !result.success) {
+      expect(result.error.message).toMatch(/reviewEveryPulses/);
+    }
+  });
+});
+
+describe("SynthesizerConfigSchema", () => {
+  it.each([
+    ["accepts a valid deterministic config", { mode: "deterministic", intervalPulses: 1, maxCandidatesPerReview: 3 }, true],
+    ["rejects intervalPulses 0", { mode: "deterministic", intervalPulses: 0, maxCandidatesPerReview: 3 }, false],
+    ["rejects an unknown mode", { mode: "quantum", intervalPulses: 1, maxCandidatesPerReview: 3 }, false],
+  ] as const)("%s", (name, input, valid) => {
+    const result = SynthesizerConfigSchema.safeParse(input);
+    expect(result.success).toBe(valid);
+    if (valid && result.success) {
+      expect(result.data.mode).toBe("deterministic");
+    }
+  });
+});
+
+describe("GoalSynthesisResultSchema", () => {
+  it.each([
+    [
+      "accepts a valid deterministic result",
+      {
+        proposal: validGoalProposal,
+        narrativeFraming: "no more blocked intents from a1 in ch1",
+        confidence: 1,
+        synthesizer: "deterministic",
+      },
+      true,
+    ],
+    [
+      "rejects confidence above 1",
+      { proposal: validGoalProposal, narrativeFraming: "framing", confidence: 1.5, synthesizer: "deterministic" },
+      false,
+    ],
+  ] as const)("%s", (name, input, valid) => {
+    const result = GoalSynthesisResultSchema.safeParse(input);
+    expect(result.success).toBe(valid);
+    if (valid && result.success) {
+      expect(result.data.synthesizer).toBe("deterministic");
+      expect(result.data.proposal.id).toBe("goal-1");
+    }
+  });
+});
+
+describe("GoalAcceptanceDecisionSchema", () => {
+  it.each([
+    ["accepts { decision: 'accept' } without a reason (reason optional)", { decision: "accept" }, true, undefined],
+    ["accepts a decline with a reason", { decision: "decline", reason: "critic pre-filter" }, true, "critic pre-filter"],
+    ["rejects an unknown decision", { decision: "maybe" }, false, undefined],
+  ] as const)("%s", (name, input, ok, expectedReason) => {
+    const result = GoalAcceptanceDecisionSchema.safeParse(input);
+    expect(result.success).toBe(ok);
+    if (ok && result.success) {
+      expect(result.data.reason).toBe(expectedReason);
+    }
+  });
+});
+
+// --- Utils ---
+describe("SeededRng", () => {
+  it.each([
+    ["deterministic output for the same seed", 42, 42, true],
+    ["different output for different seeds", 42, 43, false],
+  ] as const)("produces %s", (name, seedA, seedB, same) => {
+    const rngA = createSeededRng(seedA);
+    const rngB = createSeededRng(seedB);
+    if (same) {
+      expect(rngA.next()).toBe(rngB.next());
+      expect(rngA.next()).toBe(rngB.next());
+    } else {
+      expect(rngA.next()).not.toBe(rngB.next());
+    }
+  });
+
+  it.each([
+    ["next()", 1, false],
+    ["nextInt(5)", 5, true],
+  ] as const)("%s returns a value in [0, max)", (name, max, isInteger) => {
     const rng = createSeededRng(7);
     for (let i = 0; i < 50; i++) {
-      const v = rng.nextInt(5);
+      const v = name === "next()" ? rng.next() : rng.nextInt(max);
       expect(v).toBeGreaterThanOrEqual(0);
-      expect(v).toBeLessThan(5);
-      expect(Number.isInteger(v)).toBe(true);
+      expect(v).toBeLessThan(max);
+      if (isInteger) {
+        expect(Number.isInteger(v)).toBe(true);
+      }
     }
   });
 });

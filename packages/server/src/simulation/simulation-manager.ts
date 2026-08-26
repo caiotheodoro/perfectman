@@ -2,6 +2,8 @@ import type {
   Simulation,
   SimulationSettings,
   Channel,
+  EndReason,
+  EndingOffer,
 } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 import type { ISimulationRepository, CreateSimulationInput } from "../persistence/repositories.js";
@@ -77,9 +79,14 @@ export class SimulationManager {
     await this.lifecycle.resume(sim, pulseIndex);
   }
 
-  async stop(simulationId: string, pulseIndex: number): Promise<void> {
+  async stop(
+    simulationId: string,
+    pulseIndex: number,
+    endReason?: EndReason,
+    endingOffer?: EndingOffer,
+  ): Promise<void> {
     const sim = await this.getOrThrow(simulationId);
-    await this.lifecycle.stop(sim, pulseIndex);
+    await this.lifecycle.stop(sim, pulseIndex, endReason, endingOffer);
     await this.gateway.onSimulationStopped(simulationId);
   }
 

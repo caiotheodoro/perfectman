@@ -7,6 +7,12 @@ export * from "./utils/rng.js";
 export * from "./simulation/simulation.types.js";
 export * from "./simulation/simulation.schema.js";
 
+// Goal
+export * from "./goal/goal.types.js";
+export * from "./goal/goal.schema.js";
+export * from "./goal/goal-layer-config.types.js";
+export * from "./goal/goal-layer-config.schema.js";
+
 // Channel
 export * from "./channel/channel.types.js";
 export * from "./channel/channel.schema.js";

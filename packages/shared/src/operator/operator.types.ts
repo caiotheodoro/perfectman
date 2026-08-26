@@ -1,4 +1,5 @@
-import type { EventPayload } from "../event/event.types.js";
+import type { EventPayload, EventType } from "../event/event.types.js";
+import type { IntentType } from "../intent/intent.types.js";
 
 export type OperatorEventType =
   | "llm_failure"
@@ -9,7 +10,9 @@ export type OperatorEventType =
   | "stagnation_warning"
   | "scheduler_error"
   | "pulse_metrics"
-  | "agent_state_snapshot";
+  | "agent_state_snapshot"
+  | "action_intent"
+  | "event_visibility";
 
 export type OperatorEvent = {
   type: OperatorEventType;
@@ -59,4 +62,26 @@ export type OperatorMetrics = {
   llmCallsMade: number;
   budgetUsedPercent: number;
   stagnation?: StagnationMetrics;
+};
+
+/** `action_intent` payload — the LLM thinking payload for one agent in one
+ *  pulse, emitted post-resolution (truthful, including fallback `no_op`). */
+export type ActionIntentOperatorData = {
+  intentType: IntentType;
+  visibleContent?: string;
+  privateMotiveSummary: string;
+  emotionDrivers: string[];
+  motivationDrivers: string[];
+};
+
+/** `event_visibility` payload — per-committed-event visibility/recipient
+ *  data, the perspective-filter signal for receivers. */
+export type EventVisibilityData = {
+  eventId: string;
+  eventType: EventType;
+  actorId: string;
+  channelId: string;
+  visibleToAgents: string[];
+  content?: string;
+  channelName?: string;
 };

@@ -1,5 +1,7 @@
 export type SimulationStatus = "initializing" | "running" | "paused" | "stopped";
 
+export type EndReason = "operator_command" | "goal_end_offered";
+
 export type SimulationSettings = {
   omniscientSpectatorMode: boolean;
   allowPrivateChannels: boolean;

@@ -3,10 +3,14 @@ import type {
   OperatorEvent,
   SpectatorEvent,
 } from "@perfectman/shared";
+import type { GatewayRuntimeMetadata } from "../config/simulation-config.js";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 
 export class StdoutDeliveryGateway implements IDeliveryGateway {
-  constructor(private readonly debug = false) {}
+  constructor(
+    private readonly debug = false,
+    private readonly runtimeMetadata?: GatewayRuntimeMetadata,
+  ) {}
 
   sendAgentMessage(channelId: string, message: DeliveryMessage): Promise<void> {
     this.write("agent_message", { channelId, message });

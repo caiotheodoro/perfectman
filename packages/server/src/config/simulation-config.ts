@@ -5,6 +5,7 @@ import type {
   AgentState,
   ChannelType,
   CoreMood,
+  GoalLayerConfig,
   JudgeAppConfig,
   Memory,
   PersonaConfig,
@@ -16,6 +17,7 @@ import type {
 import {
   ChannelTypeSchema,
   CoreMoodSchema,
+  GoalLayerConfigSchema,
   JudgeAppConfigSchema,
   PresenceModeSchema,
   RelationalStateSchema,
@@ -53,6 +55,13 @@ import {
   SimulationRuntime,
   type SimulationRuntimeRepositories,
 } from "../simulation/simulation-runtime.js";
+import { ChannelRegistry } from "../simulation/channel-registry.js";
+import { GoalRegistry } from "../simulation/world/goal-registry.js";
+import {
+  WorldEvaluator,
+  resolveGoalLayerConfig,
+  type GoalLayerRuntime,
+} from "../simulation/world/world-evaluator.js";
 import type { IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 import type {
   AgentRuntime as SchedulerAgentRuntime,
@@ -60,6 +69,7 @@ import type {
 } from "../simulation/pulse-scheduler.js";
 import {
   CompositeDeliveryGateway,
+  HtmlSnapshotGateway,
   MockDeliveryGateway,
   StdoutDeliveryGateway,
 } from "../delivery/index.js";
@@ -78,6 +88,8 @@ export type SimulationAppConfig = {
   agents: AgentConfig[];
   /** Optional judge section — the same file describes agents AND judge. */
   judge?: JudgeAppConfig;
+  /** Optional goal-layer section — emergent goal review, verdicts, ending gate. */
+  goalLayer?: GoalLayerConfig;
   /** If set, a synthetic host message is injected into the default channel before pulse 0. */
   hostStartingMessage?: string;
 };
@@ -95,6 +107,7 @@ export type DebugConfig = {
 export type DeliveryGatewayConfig =
   | { id: string; type: "mock" }
   | { id: string; type: "stdout"; debug?: boolean }
+  | { id: string; type: "html-snapshot"; outputPath: string }
   | {
       id: string;
       type: "discord";
@@ -103,6 +116,14 @@ export type DeliveryGatewayConfig =
       managerBotTokenEnv?: string;
       setupMode?: "readonly_existing" | "manage_channels";
     };
+
+/** Construction-time runtime metadata (US-003 / FR-004): the stream carries ids only. */
+export type GatewayRuntimeMetadata = {
+  simulationId: string;
+  simulationName: string;
+  agents: Record<string, { name: string; archetype: string }>;
+  channels: Record<string, { name: string }>;
+};
 
 export type InitialChannelConfig = {
   id: string;
@@ -337,6 +358,14 @@ export function parseSimulationConfig(input: unknown): SimulationAppConfig {
             root["judge"],
             "judge",
           ),
+    goalLayer:
+      root["goalLayer"] === undefined
+        ? undefined
+        : parseWithSchema<GoalLayerConfig>(
+            GoalLayerConfigSchema,
+            root["goalLayer"],
+            "goalLayer",
+          ),
   };
 
   validateCrossReferences(config);
@@ -349,7 +378,10 @@ export async function buildConfiguredSimulation(
 ): Promise<ConfiguredSimulationHandle> {
   const simulationId = config.simulation.id ?? createId();
   const persistence = createRepositories(config.persistence);
-  const gateways = await createGateways(config);
+  const gateways = await createGateways(
+    config,
+    buildGatewayRuntimeMetadata(config, simulationId),
+  );
   const delivery = new CompositeDeliveryGateway(Object.values(gateways));
   const configuredAgents = config.agents.map<ConfiguredAgent>((agent) => ({
     id: agent.id,
@@ -372,6 +404,14 @@ export async function buildConfiguredSimulation(
     repositories: persistence.repositories,
   });
 
+  const goalLayer = config.goalLayer?.enabled
+    ? await buildGoalLayerRuntime(
+        config.goalLayer,
+        simulationId,
+        persistence.repositories,
+      )
+    : undefined;
+
   const agentContexts = config.agents.map((agent) => ({
     id: agent.id,
     state: makeAgentState(agent, simulationId),
@@ -385,6 +425,7 @@ export async function buildConfiguredSimulation(
     settings: config.simulation.settings,
     agentContexts,
     channels: config.channels,
+    ...(goalLayer ? { goalLayer } : {}),
   });
 
   return {
@@ -396,6 +437,33 @@ export async function buildConfiguredSimulation(
       if (persistence.db) closeDatabase(persistence.db);
     },
   };
+}
+
+/**
+ * Goal-layer runtime wiring: resolve defaults (rejects schema-valid but
+ * unwired "llm"/"agent" modes — loud failure beats silent degradation),
+ * rebuild the registry from the committed log (empty for fresh sims), and
+ * hand the evaluator to the runtime for the pulse hook.
+ */
+async function buildGoalLayerRuntime(
+  parsed: GoalLayerConfig,
+  simulationId: string,
+  repositories: SimulationRuntimeRepositories,
+): Promise<GoalLayerRuntime> {
+  const config = resolveGoalLayerConfig(parsed);
+  const log = await repositories.eventRepo.getCommittedThrough(
+    simulationId,
+    Number.MAX_SAFE_INTEGER,
+  );
+  const registry = new GoalRegistry(log);
+  const evaluator = new WorldEvaluator(
+    repositories.eventRepo,
+    repositories.agentStateRepo,
+    new ChannelRegistry(repositories.channelRepo),
+    registry,
+    config,
+  );
+  return { config, evaluator };
 }
 
 function createRepositories(config: PersistenceConfig): {
@@ -431,16 +499,23 @@ function createRepositories(config: PersistenceConfig): {
 type GatewayFactory = (
   cfg: DeliveryGatewayConfig,
   debug: DebugConfig | undefined,
+  meta: GatewayRuntimeMetadata,
 ) => IDeliveryGateway | Promise<IDeliveryGateway>;
 
 const GATEWAY_FACTORIES: Record<DeliveryGatewayConfig["type"], GatewayFactory> =
   {
-    mock: () => new MockDeliveryGateway(),
-    stdout: (cfg, debug) =>
+    mock: (_cfg, _debug, meta) => new MockDeliveryGateway(meta),
+    "html-snapshot": (cfg, _debug, meta) =>
+      new HtmlSnapshotGateway(
+        meta,
+        (cfg as Extract<DeliveryGatewayConfig, { type: "html-snapshot" }>).outputPath,
+      ),
+    stdout: (cfg, debug, meta) =>
       new StdoutDeliveryGateway(
         (cfg as Extract<DeliveryGatewayConfig, { type: "stdout" }>).debug ??
           debug?.operatorEvents ??
           false,
+        meta,
       ),
     discord: async (cfg) => {
       const discordCfg = cfg as Extract<DeliveryGatewayConfig, { type: "discord" }>;
@@ -507,12 +582,40 @@ const GATEWAY_FACTORIES: Record<DeliveryGatewayConfig["type"], GatewayFactory> =
     },
   };
 
+function buildGatewayRuntimeMetadata(
+  config: SimulationAppConfig,
+  simulationId: string,
+): GatewayRuntimeMetadata {
+  const agents: GatewayRuntimeMetadata["agents"] = {};
+  for (const agent of config.agents) {
+    agents[agent.id] = {
+      name: agent.persona.name,
+      archetype: agent.persona.archetype,
+    };
+  }
+  const channels: GatewayRuntimeMetadata["channels"] = {};
+  for (const channel of config.channels) {
+    channels[channel.id] = { name: channel.name };
+  }
+  return {
+    simulationId,
+    simulationName: config.simulation.name,
+    agents,
+    channels,
+  };
+}
+
 async function createGateways(
   config: SimulationAppConfig,
+  meta: GatewayRuntimeMetadata,
 ): Promise<Record<string, IDeliveryGateway>> {
   const result: Record<string, IDeliveryGateway> = {};
   for (const gateway of config.deliveryGateways) {
-    result[gateway.id] = await GATEWAY_FACTORIES[gateway.type](gateway, config.debug);
+    result[gateway.id] = await GATEWAY_FACTORIES[gateway.type](
+      gateway,
+      config.debug,
+      meta,
+    );
   }
   if (
     config.debug?.stdoutDelivery &&
@@ -611,6 +714,16 @@ function parseGateways(input: unknown): DeliveryGatewayConfig[] {
       `deliveryGateways[${index}].type`,
     );
     if (type === "mock") return { id, type };
+    if (type === "html-snapshot") {
+      return {
+        id,
+        type,
+        outputPath: requiredString(
+          gateway["outputPath"],
+          `deliveryGateways[${index}].outputPath`,
+        ),
+      };
+    }
     if (type === "stdout") {
       return {
         id,

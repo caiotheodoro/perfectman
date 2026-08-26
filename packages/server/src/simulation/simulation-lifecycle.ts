@@ -3,6 +3,8 @@ import type {
   SimulationStatus,
   SimulationEvent,
   EventVisibility,
+  EndReason,
+  EndingOffer,
 } from "@perfectman/shared";
 import type { ISimulationRepository } from "../persistence/repositories.js";
 import type { EventLog } from "./event-log.js";
@@ -71,7 +73,12 @@ export class SimulationLifecycle {
     await this.eventLog.append(simulation.id, [event]);
   }
 
-  async stop(simulation: Simulation, pulseIndex: number): Promise<void> {
+  async stop(
+    simulation: Simulation,
+    pulseIndex: number,
+    endReason?: EndReason,
+    endingOffer?: EndingOffer,
+  ): Promise<void> {
     if (simulation.status === "stopped") return;
     await this.simRepo.updateStatus(simulation.id, "stopped");
     const event: SimulationEvent = {
@@ -79,7 +86,11 @@ export class SimulationLifecycle {
       channelId: simulation.channelIds[0] ?? "default",
       actorId: "system",
       type: "simulation_stopped",
-      payload: { simulationId: simulation.id },
+      payload: {
+        simulationId: simulation.id,
+        ...(endReason !== undefined ? { endReason } : {}),
+        ...(endingOffer !== undefined ? { endingOffer } : {}),
+      },
       sourceEventIds: [],
       emotionalSalience: "low",
       pulseIndex,

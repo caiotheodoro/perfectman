@@ -3,6 +3,8 @@ import type {
   SimulationSettings,
   Channel,
   ChannelType,
+  EndReason,
+  EndingOffer,
 } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 import {
@@ -30,6 +32,7 @@ import { EngineEventBuilder } from "./engine-event-builder.js";
 import { PulseScheduler } from "./pulse-scheduler.js";
 import type { IDeliveryGateway } from "./scheduler-contracts.js";
 import type { AgentRuntime, LLMBudget, AgentContext, PulseResult } from "./pulse-scheduler.js";
+import type { GoalLayerRuntime } from "./world/world-evaluator.js";
 
 export type SimulationRuntimeConfig = {
   delivery: IDeliveryGateway;
@@ -97,6 +100,7 @@ export class SimulationRuntime {
     settings: SimulationSettings;
     seed: number;
     channels?: ConfiguredInitialChannel[];
+    goalLayer?: GoalLayerRuntime;
   }): Promise<Simulation> {
     const { simulation, defaultChannel } =
       params.channels && params.channels.length > 0
@@ -130,6 +134,9 @@ export class SimulationRuntime {
       agentRuntime: this.config.agentRuntime,
       llmBudget: this.config.llmBudget,
       pulseIntervalMs: params.settings.pulseIntervalMs,
+      ...(params.goalLayer ? { goalLayer: params.goalLayer } : {}),
+      onEndOffered: (offer) =>
+        this.stop(simulation.id, { endReason: "goal_end_offered", endingOffer: offer }),
     });
 
     this.active.set(simulation.id, {
@@ -266,7 +273,10 @@ export class SimulationRuntime {
     }]);
   }
 
-  async stop(simulationId: string): Promise<void> {
+  async stop(
+    simulationId: string,
+    opts?: { endReason?: EndReason; endingOffer?: EndingOffer },
+  ): Promise<void> {
     const entry = this.active.get(simulationId);
     if (!entry) throw new Error(`Simulation not found: ${simulationId}`);
     entry.scheduler.stop();
@@ -276,7 +286,11 @@ export class SimulationRuntime {
       channelId: entry.defaultPublicChannelId,
       actorId: "system",
       type: "simulation_stopped",
-      payload: { simulationId },
+      payload: {
+        simulationId,
+        ...(opts?.endReason !== undefined ? { endReason: opts.endReason } : {}),
+        ...(opts?.endingOffer !== undefined ? { endingOffer: opts.endingOffer } : {}),
+      },
       sourceEventIds: [],
       emotionalSalience: "low",
       pulseIndex: entry.scheduler.getPulseIndex(),

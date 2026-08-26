@@ -17,8 +17,8 @@ import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SimulationRecorder } from "./simulation-recorder.js";
 import { FOUR_PERSONA_CONFIG } from "./4-persona-scenario.js";
-import { generateHtml } from "./snapshot-html-generator.js";
-import type { SimulationReplay } from "./simulation-recorder.js";
+import { generateHtml } from "../html/snapshot-html-generator.js";
+import type { SimulationReplay } from "../html/replay-types.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 // Test evidence only — written to a gitignored tmp dir so the tree stays clean.
