@@ -45,7 +45,7 @@ export type GoalLayerRuntimeConfig = {
   enabled: boolean;
   reviewEveryPulses: number;
   delusionWeightsByAgent: ReadonlyMap<string, DelusionWeights>;
-  ending: { offerAcceptPulses: number };
+  ending: { offerAcceptPulses: number; meaningMadeMaxDivergence: number };
   synthesizer: SynthesizerConfig;
   acceptance: { mode: AcceptanceMode };
 };
@@ -120,7 +120,14 @@ export function resolveGoalLayerConfig(
     delusionWeightsByAgent: new Map(
       Object.entries(parsed?.delusionWeightsByAgent ?? {}),
     ),
-    ending: { offerAcceptPulses: parsed?.ending?.offerAcceptPulses ?? 0 },
+    ending: {
+      offerAcceptPulses: parsed?.ending?.offerAcceptPulses ?? 0,
+      // Meaning-made gate ceiling for divergenceFromLog (issue #106). The
+      // default is the pre-config scaffold value (ADR-0011 D-28 routed the
+      // dedicated calibration here); the sweep overrides it per cell.
+      meaningMadeMaxDivergence:
+        parsed?.ending?.meaningMadeMaxDivergence ?? 0.33,
+    },
     synthesizer: {
       mode: parsed?.synthesizer?.mode ?? "deterministic",
       intervalPulses: parsed?.synthesizer?.intervalPulses ?? 1,
@@ -398,7 +405,11 @@ export class WorldEvaluator {
           log,
           goalChannelIdOf(goal, log, simulation),
         ),
-        meaningMade: deriveMeaningMade(goal, verdict, data.divergenceFromLog),
+        meaningMade: deriveMeaningMade(
+          verdict,
+          data.divergenceFromLog,
+          this.config.ending.meaningMadeMaxDivergence,
+        ),
         nextGoalAvailable: deriveNextGoalAvailable(this.registry),
       });
       if (result.kind !== "end_offered") continue;
@@ -634,13 +645,22 @@ function deriveCompletionBeat(
   );
 }
 
-function deriveMeaningMade(
-  goal: EmergentGoal,
+/**
+ * The meaning-made gate (issue #106, routed by ADR-0011 D-28): a reached
+ * world verdict only counts as meaning-made when the agent's narrative stays
+ * strictly under the configured divergence ceiling. The ceiling lives in
+ * config (`ending.meaningMadeMaxDivergence`, default 0.33) so the calibration
+ * sweep can move it; this predicate is the single derivation — the eval
+ * harness's end-condition recorder consumes it through the eval surface.
+ */
+export function deriveMeaningMade(
   worldVerdict: WorldVerdict,
   divergenceFromLog: number,
+  maxDivergence: number,
 ): boolean {
   return (
-    worldVerdict.determination === "reached" && divergenceFromLog < 0.33
+    worldVerdict.determination === "reached" &&
+    divergenceFromLog < maxDivergence
   );
 }
 

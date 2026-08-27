@@ -19,6 +19,7 @@ export const GoalLayerConfigSchema = z.object({
   ending: z
     .object({
       offerAcceptPulses: z.number().int().nonnegative().optional(),
+      meaningMadeMaxDivergence: z.number().min(0).max(1).optional(),
     })
     .optional(),
   synthesizer: z
