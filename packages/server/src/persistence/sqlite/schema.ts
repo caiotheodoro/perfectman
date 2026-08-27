@@ -97,4 +97,13 @@ CREATE TABLE IF NOT EXISTS memories (
 );
 
 CREATE INDEX IF NOT EXISTS idx_memories_agent_id ON memories(agent_id, simulation_id);
+
+CREATE TABLE IF NOT EXISTS goal_self_verdicts (
+  simulation_id TEXT NOT NULL REFERENCES simulations(id) ON DELETE CASCADE,
+  goal_id       TEXT NOT NULL,
+  verdict       TEXT NOT NULL,    -- JSON
+  source        TEXT NOT NULL,
+  updated_at    INTEGER NOT NULL,
+  PRIMARY KEY (simulation_id, goal_id)
+);
 `;

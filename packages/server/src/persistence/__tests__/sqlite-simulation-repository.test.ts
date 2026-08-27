@@ -46,6 +46,15 @@ describe("SqliteSimulationRepository", () => {
     expect(result).toBeNull();
   });
 
+  it("create on an existing id rejects (simulations.id PK)", async () => {
+    const repo = new SqliteSimulationRepository(db);
+    await repo.create(makeSimulationInput("sim1"));
+
+    // create is a sync method: the SqliteError throws before a promise
+    // exists, so the async wrapper turns it into a rejection.
+    await expect(async () => repo.create(makeSimulationInput("sim1"))).rejects.toThrow();
+  });
+
   it("updateStatus changes status", async () => {
     const repo = new SqliteSimulationRepository(db);
     await repo.create(makeSimulationInput("sim1"));

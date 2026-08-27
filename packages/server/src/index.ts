@@ -8,6 +8,8 @@ export { SqliteAgentStateRepository } from "./persistence/sqlite/agent-state-rep
 export { SqliteMemoryRepository } from "./persistence/sqlite/memory-repository.js";
 export { SqliteSimulationRepository } from "./persistence/sqlite/simulation-repository.js";
 export { SqliteChannelRepository } from "./persistence/sqlite/channel-repository.js";
+export { SqliteGoalRegistryRepository } from "./persistence/sqlite/goal-registry-repository.js";
+export type { GoalSelfVerdictEntry } from "./persistence/sqlite/goal-registry-repository.js";
 export type {
   IEventRepository,
   IAgentStateRepository,

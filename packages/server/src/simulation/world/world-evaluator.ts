@@ -63,6 +63,19 @@ export type WorldReview = {
   operatorEvents: OperatorEvent[];
 };
 
+/** D-32 seam: the evaluator's optional DB dependency, typed without importing
+ *  the sqlite implementation (world never imports persistence impls). */
+export type GoalSelfVerdictEntry = {
+  goalId: string;
+  verdict: SelfVerdict;
+  source: "llm" | "deterministic";
+};
+
+export type GoalRegistryPersister = {
+  saveSelfVerdicts(simulationId: string, entries: GoalSelfVerdictEntry[]): Promise<void>;
+  loadSelfVerdicts(simulationId: string): Promise<GoalSelfVerdictEntry[]>;
+};
+
 /** LLM-mode wiring (D-18): the evaluator's injected per-agent providers + shared budget. */
 export type WorldLLMRuntime = {
   simulationId: string;
@@ -192,6 +205,7 @@ export class WorldEvaluator {
     private readonly registry: GoalRegistry,
     private readonly config: GoalLayerRuntimeConfig,
     llmRuntime?: WorldLLMRuntime,
+    private readonly registryPersister?: GoalRegistryPersister,
   ) {
     // The factory's "llm" branch fails closed on missing deps; the evaluator
     // names the requirement so the config error cites the wiring, not an
@@ -219,6 +233,21 @@ export class WorldEvaluator {
       config.synthesizer.mode === "llm"
         ? (this.synthesizer as LLMGoalSynthesizer)
         : null;
+  }
+
+  /** Review-end write-through (D-31): whole-junction serialization over the
+   *  registry's live state; reads only getGoals()/getSelfVerdict, so replay
+   *  stays the authority. No-op in memory mode (no persister injected). */
+  async persistRegistryState(simulationId: string): Promise<void> {
+    if (!this.registryPersister) return;
+    const entries: GoalSelfVerdictEntry[] = [];
+    for (const goal of this.registry.getGoals()) {
+      const stored = this.registry.getSelfVerdict(goal.id);
+      if (stored) {
+        entries.push({ goalId: goal.id, verdict: stored.verdict, source: stored.source });
+      }
+    }
+    await this.registryPersister.saveSelfVerdicts(simulationId, entries);
   }
 
   async runReview(input: {
