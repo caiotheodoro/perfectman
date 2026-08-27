@@ -245,6 +245,8 @@ pnpm qwen:dev
 
 The script starts `ollama/ollama` from the portable base compose file, pulls `qwen3:1.7b` by default into a Docker-managed volume, and exposes the OpenAI-compatible API on `http://localhost:11434/v1`. Use it with `config/index.json` copied from `examples/simulations/qwen3-local.example.json`. For the 8B model, run `pnpm qwen:dev:8b` and use a config with `modelName: "qwen3:8b"`. NVIDIA machines can opt into GPU passthrough with `-f docker/qwen3/qwen3.gpu.compose.yml` (see the root README).
 
+For running the simulation runtime itself as a container (multi-stage build from this repo, same CLI entrypoint as the pnpm workflow), see **Simulation in Docker** and **Releases** in the root README.
+
 ## Current Open Questions
 
 - How much private-channel visibility should spectators get?

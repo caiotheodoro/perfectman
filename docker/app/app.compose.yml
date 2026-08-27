@@ -1,0 +1,22 @@
+name: perfectman
+
+services:
+  simulation:
+    build:
+      # Relative paths resolve against the directory of the first compose
+      # file on the command line, so these assume this file's own dir
+      # (docker/app/) as the project directory.
+      context: ../..
+      dockerfile: docker/app/Dockerfile
+    image: perfectman-app:local
+    container_name: perfectman-simulation
+    # Lets provider baseURLs reach services on the host (e.g. native Ollama)
+    # from inside the container on Linux too.
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: "no"
+    volumes:
+      # Simulation config discovered via the existing walk-up lookup
+      # (/app/config/index.json). Real provider keys go through a mounted
+      # /app/.env (same dotenv file the CLI reads natively).
+      - ../../config:/app/config:ro
