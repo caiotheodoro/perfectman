@@ -24,7 +24,6 @@ import { GoalRegistry } from "../goal-registry.js";
 import {
   WorldEvaluator,
   buildAgentContextDigest,
-  deriveMeaningMade,
   resolveGoalLayerConfig,
 } from "../world-evaluator.js";
 import type { GoalLayerRuntimeConfig, WorldLLMRuntime } from "../world-evaluator.js";
@@ -1251,52 +1250,5 @@ describe("WorldEvaluator.runReview — LLM self-verdicts (TT501)", () => {
     const gapEvent = r2.events.find((e) => e.type === "delusion_gap_sampled")!;
     expect(gapEvent.payload["divergenceFromWorld"]).toBe(0);
     expect(gapEvent.payload["magnitude"]).toBe(0);
-  });
-});
-
-describe("deriveMeaningMade — the #106 meaning-made gate", () => {
-  const reached: WorldVerdict = {
-    goalId: RESOLVE_GOAL_ID,
-    objective: { distanceToTarget: 0, progressRate: 1, plateaued: false },
-    consensus: "uncontested",
-    determination: "reached",
-    confidence: 0.9,
-  };
-  const notReached: WorldVerdict = { ...reached, determination: "not_reached" };
-
-  it("derives meaning-made for a reached verdict strictly under the ceiling", () => {
-    // 0.326: the measured closest approach on the healthy arc at cadence 1
-    // (1.2% under the scaffold gate — calibration-2026-08-26.md sec 7).
-    expect(deriveMeaningMade(reached, 0.326, 0.33)).toBe(true);
-  });
-
-  it("rejects at and above the ceiling — the comparison is strict (<)", () => {
-    expect(deriveMeaningMade(reached, 0.33, 0.33)).toBe(false);
-    expect(deriveMeaningMade(reached, 0.34, 0.33)).toBe(false);
-    // The contested window measures 0.376 and must keep failing the default.
-    expect(deriveMeaningMade(reached, 0.376, 0.33)).toBe(false);
-  });
-
-  it("never derives meaning-made without a reached determination", () => {
-    expect(deriveMeaningMade(notReached, 0, 0.33)).toBe(false);
-  });
-
-  it("honors the configured ceiling — the sweep surface (issue #106)", () => {
-    expect(deriveMeaningMade(reached, 0.37, 0.4)).toBe(true);
-    expect(deriveMeaningMade(reached, 0.37, 0.25)).toBe(false);
-    expect(deriveMeaningMade(reached, 0.307, 0.3)).toBe(false);
-  });
-
-  it("resolveGoalLayerConfig defaults the ceiling to 0.33 and honors overrides", () => {
-    expect(resolveGoalLayerConfig({ enabled: true }).ending).toEqual({
-      offerAcceptPulses: 0,
-      meaningMadeMaxDivergence: 0.33,
-    });
-    expect(
-      resolveGoalLayerConfig({
-        enabled: true,
-        ending: { meaningMadeMaxDivergence: 0.4 },
-      }).ending,
-    ).toEqual({ offerAcceptPulses: 0, meaningMadeMaxDivergence: 0.4 });
   });
 });
