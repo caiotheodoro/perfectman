@@ -25,7 +25,7 @@ Read these in order:
 - [`concepts/`](concepts/) - product thesis, concept synthesis, and experiment framing.
 - [`notes/`](notes/) - raw source notes, transcripts, and meeting material.
 - [`implementation/`](implementation/) - post-merge implementation notes per dev stream.
-- [`adr/`](adr/) - architecture decision records (LOCKED pipeline decisions with lasting architectural consequence).
+- [`adr/README.md`](adr/README.md) - architecture decision records (LOCKED pipeline decisions with lasting architectural consequence).
 - [`plans/`](plans/) - cross-boundary contracts and per-dev implementation plans.
 - [`personas/`](personas/) - generic persona setup docs and templates only. Real/person-specific subfolders are local-only and gitignored.
 
@@ -284,3 +284,10 @@ MemorySystem
 ```
 
 Avoid starting with heavy day/night simulation, full RL, large dashboards, mandatory sleep, external platform API complexity, or overbuilt tick scheduling.
+
+## Documentation Conventions
+
+- **Research packs** live in `docs/research/<topic>/` as README.md + source-map.md + notes.md + gaps.md; every research run appends one entry to `docs/research/log.md` with a `## [YYYY-MM-DD] <topic> | <one-line>` prefix (grep-parseable with `grep "^## \["`).
+- **Citations in cited docs**: a `## Sources / Related decisions` footer carries one row per external claim with URL / type / fetch date / verification status (source-map column shape — see [research/goal-layer/source-map.md](research/goal-layer/source-map.md)).
+- **Concept pages** are atomic files in `docs/concepts/` with exactly one catalog row in [concepts/concept-map.md](concepts/concept-map.md); no new `## Concept N` appends (freeze).
+- **Staging links**: rows pointing at the per-run `_output/research/` staging area are allowed only with "staging source" evidence in the row (goal-layer pack precedent), never as the durable home of research output.
