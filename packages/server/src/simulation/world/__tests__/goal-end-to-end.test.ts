@@ -1,4 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import type {
   ActionIntent,
   AgentState,
@@ -34,6 +37,7 @@ import {
   buildConfiguredSimulation,
   parseSimulationConfig,
   type ConfiguredSimulationHandle,
+  type DeliveryGatewayConfig,
   type SimulationAppConfig,
 } from "../../../config/simulation-config.js";
 
@@ -55,7 +59,7 @@ const SEQUENCE = [
   "simulation_stopped",
 ] as const;
 
-function makeConfig(): SimulationAppConfig {
+function makeConfig(deliveryGateways?: DeliveryGatewayConfig[]): SimulationAppConfig {
   return parseSimulationConfig({
     simulation: {
       id: SIM_ID,
@@ -72,7 +76,7 @@ function makeConfig(): SimulationAppConfig {
       },
     },
     persistence: { type: "memory" },
-    deliveryGateways: [{ id: "mock", type: "mock" }],
+    deliveryGateways: deliveryGateways ?? [{ id: "mock", type: "mock" }],
     channels: [{
       id: CHANNEL_ID,
       type: "public_channel",
@@ -227,7 +231,167 @@ describe("goal layer end-to-end", () => {
     },
     20_000,
   );
+
+  it(
+    "renders the goal panel from the delivered stream alone, matching the committed log (AC-1)",
+    async () => {
+      const dir = mkdtempSync(join(tmpdir(), "perfectman-goal-panel-"));
+      try {
+        const outputPath = join(dir, "snapshot.html");
+        const handle = await buildConfiguredSimulation(
+          makeConfig([
+            { id: "mock", type: "mock" },
+            { id: "html", type: "html-snapshot", outputPath },
+          ]),
+        );
+        try {
+          const seeds: SimulationEvent[] = [1, 2, 3].map(blockedEvent);
+          await handle.runtime.getEventLog().append(handle.simulationId, seeds);
+          await handle.runtime.start(handle.simulationId);
+
+          const stopped = await waitForEnd(handle, 15_000);
+          const log = await handle.repositories.eventRepo.getCommittedThrough(
+            handle.simulationId,
+            Number.MAX_SAFE_INTEGER,
+          );
+
+          const proposed = log.find((event) => event.type === "goal_proposed")!;
+          const accepted = log.find((event) => event.type === "goal_accepted")!;
+          const endingOffered = log.find((event) => event.type === "ending_offered")!;
+          const verdicts = log.filter((event) => event.type === "world_verdict");
+          const gaps = log.filter((event) => event.type === "delusion_gap_sampled");
+          const proposal = proposed.payload["proposal"] as {
+            id: string;
+            agentId: string;
+            title: string;
+            kind: string;
+            targetState: { description: string };
+          };
+
+          // AC-4 count pins: reviewEveryPulses=1 → exactly one verdict and
+          // one gap per review per active goal — the deterministic arc
+          // accepts, verdicts, and ends on the same review.
+          expect(verdicts.length).toBeGreaterThanOrEqual(1);
+          expect(gaps.length).toBe(verdicts.length);
+          expect(verdicts[0]!.pulseIndex).toBe(accepted.pulseIndex);
+          for (let i = 1; i < verdicts.length; i++) {
+            expect(verdicts[i]!.pulseIndex).toBe(verdicts[i - 1]!.pulseIndex + 1);
+          }
+          expect(gaps.map((event) => event.pulseIndex)).toEqual(
+            verdicts.map((event) => event.pulseIndex),
+          );
+          expect(endingOffered.pulseIndex).toBe(verdicts[verdicts.length - 1]!.pulseIndex);
+
+          // The artifact exists and carries the stop payload.
+          expect(stopped.payload["endReason"]).toBe("goal_end_offered");
+          const html = readFileSync(outputPath, "utf-8");
+          expect(html).toContain("goal-panel");
+          expect(html).toContain("goal_end_offered");
+
+          // Panel parity with the committed log (stream-fed receiver contract).
+          const replay = parseArtifactReplay(html);
+          const panel = replay.goals?.find((g) => g.goalId === proposal.id);
+          expect(panel).toBeDefined();
+          expect(panel!.agentId).toBe(AGENT_ID);
+          expect(panel!.title).toBe(proposal.title);
+          expect(panel!.kind).toBe(proposal.kind);
+          expect(panel!.targetStateDescription).toBe(proposal.targetState.description);
+          expect(panel!.narrativeFraming).toBe(proposed.payload["narrativeFraming"]);
+          expect(panel!.synthesizer).toBe("deterministic");
+          expect(panel!.confidence).toBe(1);
+          expect(panel!.status).toBe("ended");
+          expect(panel!.proposalPulse).toBe(proposed.pulseIndex);
+          expect(panel!.acceptedPulse).toBe(accepted.pulseIndex);
+
+          const latestVerdict = verdicts[verdicts.length - 1]!.payload["verdict"] as WorldVerdict;
+          expect(panel!.latestVerdict).toEqual({
+            distanceToTarget: latestVerdict.objective.distanceToTarget,
+            progressRate: latestVerdict.objective.progressRate,
+            plateaued: latestVerdict.objective.plateaued,
+            consensus: latestVerdict.consensus,
+            determination: latestVerdict.determination,
+            confidence: latestVerdict.confidence,
+          });
+          expect(panel!.gapSamples).toEqual(
+            gaps.map((event) => ({
+              pulseIndex: event.pulseIndex,
+              magnitude: event.payload["magnitude"] as number,
+              divergenceFromLog: event.payload["divergenceFromLog"] as number,
+              divergenceFromWorld: event.payload["divergenceFromWorld"] as number,
+            })),
+          );
+          const offer = endingOffered.payload["offer"] as {
+            goalId: string;
+            reasons: string[];
+            epilogue: string;
+            status: string;
+          };
+          expect(panel!.ending).toEqual({
+            goalId: offer.goalId,
+            reasons: offer.reasons,
+            epilogue: offer.epilogue,
+            status: offer.status,
+          });
+          expect(panel!.ending!.epilogue).toContain("the story holds");
+          expect(replay.endReason).toBe("goal_end_offered");
+          expect(replay.endingOffer?.epilogue).toContain("the story holds");
+        } finally {
+          const active = activeSimulationIds(handle.runtime);
+          if (active.has(handle.simulationId)) {
+            await handle.runtime.stop(handle.simulationId);
+          }
+          await handle.close();
+        }
+      } finally {
+        rmSync(dir, { recursive: true, force: true });
+      }
+    },
+    20_000,
+  );
 });
+
+const PANEL_VERDICT = {
+  distanceToTarget: 0,
+  progressRate: 0,
+  plateaued: false,
+  consensus: "",
+  determination: "",
+  confidence: 0,
+};
+
+type ArtifactReplay = {
+  goals?: Array<{
+    goalId: string;
+    agentId: string;
+    title: string;
+    kind: string;
+    targetStateDescription: string;
+    narrativeFraming: string;
+    synthesizer: string;
+    confidence: number;
+    status: string;
+    proposalPulse: number;
+    acceptedPulse?: number;
+    latestVerdict?: typeof PANEL_VERDICT;
+    gapSamples: Array<{
+      pulseIndex: number;
+      magnitude: number;
+      divergenceFromLog: number;
+      divergenceFromWorld: number;
+    }>;
+    ending?: { goalId: string; reasons: string[]; epilogue: string; status: string };
+  }>;
+  endReason?: string;
+  endingOffer?: { epilogue: string };
+};
+
+function parseArtifactReplay(html: string): ArtifactReplay {
+  const match = html.match(
+    /<script id="REPLAY_DATA" type="application\/json">\n([\s\S]*?)\n<\/script>/,
+  );
+  expect(match).not.toBeNull();
+  return JSON.parse(match![1]!) as ArtifactReplay;
+}
 
 const BEN_ID = "ben";
 

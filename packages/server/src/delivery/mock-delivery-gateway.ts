@@ -2,6 +2,8 @@ import type {
   ChannelType,
   OperatorEvent,
   SpectatorEvent,
+  EndReason,
+  EndingOffer,
 } from "@perfectman/shared";
 import type { GatewayRuntimeMetadata } from "../config/simulation-config.js";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
@@ -15,7 +17,11 @@ export class MockDeliveryGateway implements IDeliveryGateway {
   readonly removedMembers: Array<{ channelId: string; agentId: string }> = [];
   readonly spectatorEvents: SpectatorEvent[] = [];
   readonly operatorEvents: OperatorEvent[] = [];
-  readonly stoppedSimulations: string[] = [];
+  readonly stoppedSimulations: Array<{
+    simulationId: string;
+    endReason?: EndReason;
+    endingOffer?: EndingOffer;
+  }> = [];
 
   sendAgentMessage(channelId: string, message: DeliveryMessage): Promise<void> {
     this.agentMessages.push({ channelId, message });
@@ -47,8 +53,8 @@ export class MockDeliveryGateway implements IDeliveryGateway {
     return Promise.resolve();
   }
 
-  onSimulationStopped(simulationId: string): Promise<void> {
-    this.stoppedSimulations.push(simulationId);
+  onSimulationStopped(simulationId: string, endReason?: EndReason, endingOffer?: EndingOffer): Promise<void> {
+    this.stoppedSimulations.push({ simulationId, endReason, endingOffer });
     return Promise.resolve();
   }
 

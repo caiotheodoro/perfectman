@@ -2,6 +2,8 @@ import type {
   ChannelType,
   SpectatorEvent,
   OperatorEvent,
+  EndReason,
+  EndingOffer,
 } from "@perfectman/shared";
 import type { EmotionalSalience } from "@perfectman/shared";
 
@@ -17,5 +19,5 @@ export type IDeliveryGateway = {
   removeMember(channelId: string, agentId: string): Promise<void>;
   sendSpectatorEvent(event: SpectatorEvent): Promise<void>;
   sendOperatorEvent(event: OperatorEvent): Promise<void>;
-  onSimulationStopped(simulationId: string): Promise<void>;
+  onSimulationStopped(simulationId: string, endReason?: EndReason, endingOffer?: EndingOffer): Promise<void>;
 };

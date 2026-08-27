@@ -10,6 +10,17 @@ import type { SimulationReplay } from "./replay-types.js";
 export function generateHtml(replay: SimulationReplay): string {
   const dataJson = JSON.stringify(replay, null, 0);
 
+  const goals = replay.goals;
+  const hasGoals = !!goals && goals.length > 0;
+  const endLine = replay.endReason
+    ? `  <div class="goal-panel-ended">Fim: ${escapeHtml(replay.endReason)}${replay.endingOffer?.epilogue ? ` — ${escapeHtml(replay.endingOffer.epilogue)}` : ""}</div>\n`
+    : "";
+  // Static shell + appended CSS/JS only when the run had goals: a no-goal
+  // run's artifact stays byte-identical.
+  const goalPanelMarkup = hasGoals
+    ? `\n<section class="goal-panel" id="goal-panel">\n  <div class="goal-panel-head">🎯 camada de objetivos</div>\n${endLine}</section>\n`
+    : "";
+
   const agentOptions = replay.agentIds
     .map(id => `<option value="${escapeHtml(id)}">${escapeHtml(replay.agentNames[id] ?? id)}</option>`)
     .join("\n        ");
@@ -21,7 +32,7 @@ export function generateHtml(replay: SimulationReplay): string {
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>${escapeHtml(replay.simulationName)} — Replay da Simulação</title>
 <style>
-${CSS}
+${CSS}${hasGoals ? GOAL_CSS : ""}
 </style>
 </head>
 <body>
@@ -49,12 +60,12 @@ ${CSS}
   <div class="story-col" id="story-col"></div>
   <div class="agent-panel" id="agent-panel"></div>
 </div>
-
+${goalPanelMarkup}
 <script id="REPLAY_DATA" type="application/json">
 ${dataJson}
 </script>
 <script>
-${JS}
+${JS}${hasGoals ? GOAL_JS : ""}
 </script>
 </body>
 </html>`;
@@ -357,6 +368,71 @@ body { display: flex; flex-direction: column; }
   font-size: 10px; color: var(--text2);
   font-style: italic; line-height: 1.4;
   min-height: 20px;
+}
+`;
+
+// ── Goal panel ────────────────────────────────────────────────────────────────
+
+const GOAL_CSS = `
+/* ── GOAL PANEL ── */
+.goal-panel {
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  padding: 10px 14px;
+}
+.goal-panel-head {
+  font-size: 10px; color: var(--accent);
+  letter-spacing: 0.12em; text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.goal-panel-ended {
+  font-size: 10px; color: var(--ana);
+  margin-bottom: 8px;
+}
+.goal-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 4px; padding: 8px 10px; margin-bottom: 8px;
+}
+.goal-card-head {
+  display: flex; align-items: baseline; gap: 8px;
+  flex-wrap: wrap; margin-bottom: 4px;
+}
+.goal-card-title {
+  font-family: var(--font-sans); font-size: 12px;
+  font-weight: 700; color: var(--text);
+}
+.goal-card-status {
+  font-size: 9px; padding: 0 5px; border-radius: 2px;
+  border: 1px solid var(--accent); color: var(--accent);
+}
+.goal-card-status.ended { border-color: #4ade80; color: #4ade80; }
+.goal-card-status.declined { border-color: #f87171; color: #f87171; }
+.goal-card-meta { font-size: 9px; color: var(--text3); margin-bottom: 5px; }
+.goal-card-framing {
+  font-family: var(--font-sans); font-size: 11px;
+  color: var(--text2); font-style: italic; margin-bottom: 6px;
+}
+.goal-card-label {
+  font-size: 8px; color: var(--text3);
+  text-transform: uppercase; letter-spacing: 0.1em;
+  margin: 6px 0 2px;
+}
+.goal-card-verdict { font-size: 11px; color: var(--text); }
+.goal-card-objective { font-size: 10px; color: var(--text3); }
+.goal-card-gaps { display: flex; flex-wrap: wrap; gap: 3px; }
+.goal-gap-sample {
+  font-size: 9px; color: var(--text2);
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 2px; padding: 0 4px;
+}
+.goal-card-epilogue {
+  font-family: var(--font-sans); font-size: 11px;
+  color: var(--text); line-height: 1.4;
+}
+.goal-card-reasons { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 4px; }
+.goal-reason {
+  font-size: 9px; color: var(--text3);
+  border: 1px solid var(--border); border-radius: 2px; padding: 0 4px;
 }
 `;
 
@@ -781,4 +857,52 @@ document.addEventListener('keydown', e => {
 });
 
 init();
+`;
+
+// ── Goal panel render (appended to the main script only when the run had goals) ──
+
+const GOAL_JS = `
+(function () {
+  const panel = document.getElementById('goal-panel');
+  if (!panel) return;
+  const statusLabel = { proposed: 'proposta', accepted: 'aceita', declined: 'declinada', ended: 'encerrada' };
+
+  for (const goal of (DATA.goals || [])) {
+    const card = document.createElement('div');
+    card.className = 'goal-card';
+    const agentName = AGENT_NAMES[goal.agentId] || goal.agentId;
+    let inner = '<div class="goal-card-head">' +
+      '<span class="goal-card-title">' + escHtml(goal.title) + '</span>' +
+      '<span class="goal-card-status ' + escHtml(goal.status) + '">' + (statusLabel[goal.status] || goal.status) + '</span>' +
+    '</div>';
+    inner += '<div class="goal-card-meta">' + escHtml(agentName) + ' · ' + escHtml(goal.kind) +
+      (goal.proposalPulse !== undefined ? ' · proposta no pulso ' + goal.proposalPulse : '') +
+      (goal.acceptedPulse !== undefined ? ' · aceita no pulso ' + goal.acceptedPulse : '') + '</div>';
+    if (goal.narrativeFraming) {
+      inner += '<div class="goal-card-framing">' + escHtml(goal.narrativeFraming) + '</div>';
+    }
+    if (goal.latestVerdict) {
+      const v = goal.latestVerdict;
+      inner += '<div class="goal-card-label">veredito do mundo</div>' +
+        '<div class="goal-card-verdict">' + escHtml(v.determination) + ' · ' + escHtml(v.consensus) + ' · confiança ' + Math.round(v.confidence * 100) + '%</div>' +
+        '<div class="goal-card-objective">distância ' + v.distanceToTarget.toFixed(2) + ' · progresso ' + Math.round(v.progressRate * 100) + '%' + (v.plateaued ? ' · platô' : '') + '</div>';
+    }
+    if (goal.gapSamples && goal.gapSamples.length > 0) {
+      const count = goal.gapSamples.length + (goal.gapSamples.length === 1 ? ' amostra' : ' amostras');
+      inner += '<div class="goal-card-label">trajetória da lacuna (' + count + ')</div>' +
+        '<div class="goal-card-gaps">' + goal.gapSamples.map(s =>
+          '<span class="goal-gap-sample" title="pulso ' + s.pulseIndex + ' · log ' + s.divergenceFromLog.toFixed(2) + ' · mundo ' + s.divergenceFromWorld.toFixed(2) + '">' + s.pulseIndex + ' → ' + s.magnitude.toFixed(2) + '</span>'
+        ).join('') + '</div>';
+    }
+    if (goal.ending && goal.ending.epilogue) {
+      inner += '<div class="goal-card-label">epílogo</div>' +
+        '<div class="goal-card-epilogue">' + escHtml(goal.ending.epilogue) + '</div>';
+      if (goal.ending.reasons && goal.ending.reasons.length > 0) {
+        inner += '<div class="goal-card-reasons">' + goal.ending.reasons.map(r => '<span class="goal-reason">' + escHtml(r) + '</span>').join(' ') + '</div>';
+      }
+    }
+    card.innerHTML = inner;
+    panel.appendChild(card);
+  }
+}());
 `;

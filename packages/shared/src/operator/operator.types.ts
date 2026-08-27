@@ -24,6 +24,12 @@ export const OPERATOR_EVENT_TYPES = [
   "agent_state_snapshot",
   "action_intent",
   "event_visibility",
+  "goal_proposed",
+  "goal_accepted",
+  "goal_declined",
+  "world_verdict",
+  "delusion_gap_sampled",
+  "ending_offered",
 ] as const;
 
 export type OperatorEventType = (typeof OPERATOR_EVENT_TYPES)[number];

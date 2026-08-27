@@ -2,6 +2,8 @@ import type {
   ChannelType,
   SpectatorEvent,
   OperatorEvent,
+  EndReason,
+  EndingOffer,
 } from "@perfectman/shared";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 import type { BotRegistry } from "./bot-registry.js";
@@ -157,7 +159,7 @@ export class DiscordDeliveryGateway implements IDeliveryGateway {
     if (ch) await ch.send(formatted);
   }
 
-  async onSimulationStopped(simulationId: string): Promise<void> {
+  async onSimulationStopped(simulationId: string, endReason?: EndReason, endingOffer?: EndingOffer): Promise<void> {
     await this.roleManager.lockAllChannels(simulationId);
     this.rateLimiter.clear();
 
@@ -167,8 +169,12 @@ export class DiscordDeliveryGateway implements IDeliveryGateway {
     );
     const ch = await this.managerGuildPort.fetchTextChannel(operatorChannelId);
     if (ch) {
+      const suffix =
+        endReason !== undefined
+          ? ` End reason: ${endReason}${endingOffer ? ` — Epilogue: ${endingOffer.epilogue}` : ""}`
+          : "";
       await ch.send({
-        content: `[operator:simulation_stopped] Simulation ${simulationId} has been stopped.`,
+        content: `[operator:simulation_stopped] Simulation ${simulationId} has been stopped.${suffix}`,
         allowedMentions: { parse: [] },
       });
     }

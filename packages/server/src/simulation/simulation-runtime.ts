@@ -296,7 +296,7 @@ export class SimulationRuntime {
       pulseIndex: entry.scheduler.getPulseIndex(),
       visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "lifecycle" },
     }]);
-    await this.config.delivery.onSimulationStopped(simulationId);
+    await this.config.delivery.onSimulationStopped(simulationId, opts?.endReason, opts?.endingOffer);
     this.active.delete(simulationId);
   }
 

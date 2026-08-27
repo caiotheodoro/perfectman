@@ -15,7 +15,12 @@ import { dirname } from "node:path";
 import type {
   ChannelType,
   CommittedEvent,
+  EndReason,
+  EndingOffer,
+  EndingOfferStatus,
+  EventPayload,
   EventPayloadValue,
+  GoalKind,
   OperatorEvent,
   SpectatorEvent,
 } from "@perfectman/shared";
@@ -23,7 +28,7 @@ import type { GatewayRuntimeMetadata } from "../config/simulation-config.js";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 import { payloadString, payloadStringArray } from "../simulation/payload-readers.js";
 import type { SerializedAgentState } from "../agent/agent-state-serializer.js";
-import type { AgentThinking, PulseFrame, SimulationReplay } from "../html/replay-types.js";
+import type { AgentThinking, GoalPanel, PulseFrame, SimulationReplay } from "../html/replay-types.js";
 import { generateHtml } from "../html/snapshot-html-generator.js";
 
 function serializedState(value: EventPayloadValue | undefined): SerializedAgentState | null {
@@ -31,6 +36,15 @@ function serializedState(value: EventPayloadValue | undefined): SerializedAgentS
   // The scheduler emits the output of the shared serializer directly (D-4);
   // EventPayload is loose, so the deep object needs a structural double cast.
   return value as unknown as SerializedAgentState;
+}
+
+function payloadRecord(value: EventPayloadValue | undefined): EventPayload {
+  return value && typeof value === "object" && !Array.isArray(value) ? value : {};
+}
+
+function payloadNumber(payload: EventPayload, key: string, fallback = 0): number {
+  const value = payload[key];
+  return typeof value === "number" ? value : fallback;
 }
 
 type ChannelView = {
@@ -41,6 +55,9 @@ type ChannelView = {
 export class HtmlSnapshotGateway implements IDeliveryGateway {
   private readonly frames = new Map<number, PulseFrame>();
   private readonly channels = new Map<string, ChannelView>();
+  private readonly goals = new Map<string, GoalPanel>();
+  private endReason: EndReason | undefined;
+  private endingOffer: EndingOffer | undefined;
 
   constructor(
     private readonly meta: GatewayRuntimeMetadata,
@@ -99,6 +116,84 @@ export class HtmlSnapshotGateway implements IDeliveryGateway {
         frame.result.eventsCommitted += 1;
         break;
       }
+      case "goal_proposed": {
+        const data = event.data ?? {};
+        const goalId = payloadString(data, "goalId");
+        if (!goalId) break;
+        const proposal = payloadRecord(data["proposal"]);
+        const targetState = payloadRecord(proposal["targetState"]);
+        this.goals.set(goalId, {
+          goalId,
+          agentId: payloadString(proposal, "agentId", event.agentId ?? ""),
+          title: payloadString(proposal, "title"),
+          kind: payloadString(proposal, "kind") as GoalKind,
+          targetStateDescription: payloadString(targetState, "description"),
+          narrativeFraming: payloadString(data, "narrativeFraming"),
+          synthesizer: payloadString(data, "synthesizer"),
+          confidence: payloadNumber(data, "confidence"),
+          status: "proposed",
+          proposalPulse: event.pulseIndex,
+          gapSamples: [],
+        });
+        break;
+      }
+      case "goal_accepted": {
+        const entry = this.goals.get(payloadString(event.data ?? {}, "goalId"));
+        if (!entry) break;
+        entry.status = "accepted";
+        entry.acceptedPulse = event.pulseIndex;
+        break;
+      }
+      case "goal_declined": {
+        const entry = this.goals.get(payloadString(event.data ?? {}, "goalId"));
+        if (!entry) break;
+        entry.status = "declined";
+        break;
+      }
+      case "world_verdict": {
+        const data = event.data ?? {};
+        const entry = this.goals.get(payloadString(data, "goalId"));
+        if (!entry) break;
+        const verdict = payloadRecord(data["verdict"]);
+        const objective = payloadRecord(verdict["objective"]);
+        // State-only (D-8): the latest verdict replaces the previous one.
+        entry.latestVerdict = {
+          distanceToTarget: payloadNumber(objective, "distanceToTarget"),
+          progressRate: payloadNumber(objective, "progressRate"),
+          plateaued: objective["plateaued"] === true,
+          consensus: payloadString(verdict, "consensus"),
+          determination: payloadString(verdict, "determination"),
+          confidence: payloadNumber(verdict, "confidence"),
+        };
+        break;
+      }
+      case "delusion_gap_sampled": {
+        const data = event.data ?? {};
+        const entry = this.goals.get(payloadString(data, "goalId"));
+        if (!entry) break;
+        entry.gapSamples.push({
+          pulseIndex: event.pulseIndex,
+          magnitude: payloadNumber(data, "magnitude"),
+          divergenceFromLog: payloadNumber(data, "divergenceFromLog"),
+          divergenceFromWorld: payloadNumber(data, "divergenceFromWorld"),
+        });
+        break;
+      }
+      case "ending_offered": {
+        const data = event.data ?? {};
+        const goalId = payloadString(data, "goalId");
+        const entry = this.goals.get(goalId);
+        if (!entry) break;
+        const offer = payloadRecord(data["offer"]);
+        entry.status = "ended";
+        entry.ending = {
+          goalId: payloadString(offer, "goalId", goalId),
+          reasons: payloadStringArray(offer, "reasons"),
+          epilogue: payloadString(offer, "epilogue"),
+          status: payloadString(offer, "status") as EndingOfferStatus,
+        };
+        break;
+      }
       default:
         break;
     }
@@ -106,7 +201,9 @@ export class HtmlSnapshotGateway implements IDeliveryGateway {
   }
 
   /** Flushes the artifact on simulation stop (partial frames included). */
-  async onSimulationStopped(_simulationId: string): Promise<void> {
+  async onSimulationStopped(simulationId: string, endReason?: EndReason, endingOffer?: EndingOffer): Promise<void> {
+    this.endReason = endReason;
+    this.endingOffer = endingOffer;
     const html = generateHtml(this.toReplay());
     await mkdir(dirname(this.outputPath), { recursive: true });
     await writeFile(this.outputPath, html, "utf-8");
@@ -133,6 +230,10 @@ export class HtmlSnapshotGateway implements IDeliveryGateway {
         memberAgentIds: [...channel.memberAgentIds],
       })),
       pulses: [...this.frames.values()].sort((a, b) => a.pulseIndex - b.pulseIndex),
+      // Omitted when empty so a no-goal run's artifact stays byte-identical.
+      ...(this.goals.size > 0 ? { goals: [...this.goals.values()] } : {}),
+      ...(this.endReason !== undefined ? { endReason: this.endReason } : {}),
+      ...(this.endingOffer !== undefined ? { endingOffer: this.endingOffer } : {}),
     };
   }
 

@@ -71,6 +71,79 @@ export class OperatorProjection {
           data: event.payload satisfies EventPayload,
           createdAt: event.createdAt,
         };
+      case "goal_proposed": {
+        const goalId = payloadString(event.payload, "goalId", "?");
+        return {
+          type: "goal_proposed",
+          simulationId: event.simulationId,
+          agentId: event.actorId,
+          pulseIndex: event.pulseIndex,
+          detail: `Goal proposed: ${goalId}`,
+          data: event.payload satisfies EventPayload,
+          createdAt: event.createdAt,
+        };
+      }
+      case "goal_accepted": {
+        const goalId = payloadString(event.payload, "goalId", "?");
+        return {
+          type: "goal_accepted",
+          simulationId: event.simulationId,
+          agentId: event.actorId,
+          pulseIndex: event.pulseIndex,
+          detail: `Goal accepted: ${goalId}`,
+          data: event.payload satisfies EventPayload,
+          createdAt: event.createdAt,
+        };
+      }
+      case "goal_declined": {
+        const goalId = payloadString(event.payload, "goalId", "?");
+        return {
+          type: "goal_declined",
+          simulationId: event.simulationId,
+          agentId: event.actorId,
+          pulseIndex: event.pulseIndex,
+          detail: `Goal declined: ${goalId}`,
+          data: event.payload satisfies EventPayload,
+          createdAt: event.createdAt,
+        };
+      }
+      case "world_verdict": {
+        const determination = payloadString(
+          (event.payload["verdict"] ?? {}) as EventPayload,
+          "determination",
+          "?",
+        );
+        return {
+          type: "world_verdict",
+          simulationId: event.simulationId,
+          pulseIndex: event.pulseIndex,
+          detail: `World verdict: ${determination}`,
+          data: event.payload satisfies EventPayload,
+          createdAt: event.createdAt,
+        };
+      }
+      case "delusion_gap_sampled": {
+        const goalId = payloadString(event.payload, "goalId", "?");
+        return {
+          type: "delusion_gap_sampled",
+          simulationId: event.simulationId,
+          pulseIndex: event.pulseIndex,
+          detail: `Delusion gap sampled: ${goalId}`,
+          data: event.payload satisfies EventPayload,
+          createdAt: event.createdAt,
+        };
+      }
+      case "ending_offered": {
+        const goalId = payloadString(event.payload, "goalId", "?");
+        return {
+          type: "ending_offered",
+          simulationId: event.simulationId,
+          pulseIndex: event.pulseIndex,
+          detail: `Ending offered: ${goalId}`,
+          data: event.payload satisfies EventPayload,
+          createdAt: event.createdAt,
+        };
+      }
       default:
         return null;
     }
