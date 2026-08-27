@@ -370,6 +370,14 @@ export class PulseScheduler {
         for (const opEv of review.operatorEvents) {
           await this.emitOperatorEvent(opEv);
         }
+        // Write-through on every review, committed or not: the junction can
+        // mutate on candidate-less/zero-commit reviews. Contained — a persist
+        // failure degrades restart to replay-only, never fails the pulse.
+        try {
+          await this.config.goalLayer.evaluator.persistRegistryState(sim.id);
+        } catch (err) {
+          await this.emitOperatorEvent(this.schedulerError("Registry persist failed", err));
+        }
       } catch (err) {
         await this.emitOperatorEvent(this.schedulerError("World review failed", err));
       }

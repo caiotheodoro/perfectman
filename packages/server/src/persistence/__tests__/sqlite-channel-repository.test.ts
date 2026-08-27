@@ -40,6 +40,15 @@ describe("SqliteChannelRepository", () => {
     expect(fetched?.simulationId).toBe("sim1");
   });
 
+  it("create on an existing id rejects (channels.id PK)", async () => {
+    const repo = new SqliteChannelRepository(db);
+    await repo.create(makeChannel("ch1", "sim1"));
+
+    // create is a sync method: the SqliteError throws before a promise
+    // exists, so the async wrapper turns it into a rejection.
+    await expect(async () => repo.create(makeChannel("ch1", "sim1"))).rejects.toThrow();
+  });
+
   it("getById returns null for missing channel", async () => {
     const repo = new SqliteChannelRepository(db);
     expect(await repo.getById("ghost")).toBeNull();

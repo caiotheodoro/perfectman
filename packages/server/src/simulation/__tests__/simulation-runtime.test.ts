@@ -1,6 +1,15 @@
 import { describe, it, expect, vi } from "vitest";
-import { SimulationRuntime } from "../simulation-runtime.js";
+import {
+  SimulationRuntime,
+  type ConfiguredInitialChannel,
+} from "../simulation-runtime.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
+import {
+  InMemoryAgentStateRepository,
+  InMemoryChannelRepository,
+  InMemoryEventRepository,
+  InMemorySimulationRepository,
+} from "../in-memory-stores.js";
 import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type { SimulationSettings, AgentState, PersonaConfig, EndingOffer } from "@perfectman/shared";
 
@@ -105,6 +114,103 @@ async function startAndStop(
   }
   return { simId, payload: stopped.payload as Record<string, unknown> };
 }
+
+const ATTACH_CHANNEL: ConfiguredInitialChannel = {
+  id: "general",
+  type: "public_channel",
+  name: "general",
+  default: true,
+  memberAgentIds: ["agent_1"],
+};
+
+/** Explicit in-memory repos so the sim/channel row counts stay assertable. */
+function buildRuntimeWithRepos(simRepo: InMemorySimulationRepository): SimulationRuntime {
+  return new SimulationRuntime({
+    delivery: new MockDeliveryGateway(),
+    agentRuntime: mockAgentRuntime,
+    llmBudget: mockLLMBudget,
+    repositories: {
+      eventRepo: new InMemoryEventRepository(),
+      agentStateRepo: new InMemoryAgentStateRepository(),
+      simRepo,
+      channelRepo: new InMemoryChannelRepository(),
+    },
+  });
+}
+
+describe("SimulationRuntime attachExisting (T412)", () => {
+  it("attachExisting on an existing id returns the stored row (get-or-create, memory mode)", async () => {
+    const simRepo = new InMemorySimulationRepository();
+    const runtime = buildRuntimeWithRepos(simRepo);
+
+    const first = await runtime.createSimulation({
+      id: "sim_attach",
+      name: "phase one",
+      agentContexts: [AGENT],
+      settings: SETTINGS,
+      seed: 42,
+      channels: [ATTACH_CHANNEL],
+    });
+
+    // Resumed with a different name: the attach branch must return the
+    // surviving row (get-or-create), not a freshly created simulation.
+    const resumed = await runtime.createSimulation({
+      id: "sim_attach",
+      name: "phase two",
+      agentContexts: [AGENT],
+      settings: SETTINGS,
+      seed: 42,
+      channels: [ATTACH_CHANNEL],
+      attachExisting: true,
+    });
+    expect(resumed.id).toBe(first.id);
+    expect(resumed.name).toBe("phase one");
+    expect(await simRepo.list()).toHaveLength(1);
+
+    // Without the flag the create path runs; memory create is an idempotent
+    // Map.set, so the row is silently overwritten — the documented repo-level
+    // divergence the attach branch routes around for restart callers (sqlite
+    // fails loudly with the PK instead; T412 contract rows pin that side).
+    const overwritten = await runtime.createSimulation({
+      id: "sim_attach",
+      name: "phase three",
+      agentContexts: [AGENT],
+      settings: SETTINGS,
+      seed: 42,
+      channels: [ATTACH_CHANNEL],
+    });
+    expect(overwritten.name).toBe("phase three");
+  });
+
+  it("attachExisting with a missing default channel raises the named error", async () => {
+    const simRepo = new InMemorySimulationRepository();
+    const runtime = buildRuntimeWithRepos(simRepo);
+
+    await runtime.createSimulation({
+      id: "sim_attach",
+      name: "phase one",
+      agentContexts: [AGENT],
+      settings: SETTINGS,
+      seed: 42,
+      channels: [ATTACH_CHANNEL],
+    });
+
+    await expect(
+      runtime.createSimulation({
+        id: "sim_attach",
+        name: "phase two",
+        agentContexts: [AGENT],
+        settings: SETTINGS,
+        seed: 42,
+        attachExisting: true,
+        channels: [{ ...ATTACH_CHANNEL, id: "ghost", name: "ghost" }],
+      }),
+    ).rejects.toThrow(/Channel ghost not found for existing simulation sim_attach/);
+
+    // The failed attach must not have inserted anything.
+    expect(await simRepo.list()).toHaveLength(1);
+  });
+});
 
 describe("SimulationRuntime stop payload (T402)", () => {
   it("stop without options commits the payload WITHOUT endReason/endingOffer — operator SIGINT path unchanged", async () => {

@@ -101,6 +101,7 @@ export class SimulationRuntime {
     seed: number;
     channels?: ConfiguredInitialChannel[];
     goalLayer?: GoalLayerRuntime;
+    attachExisting?: boolean;
   }): Promise<Simulation> {
     const { simulation, defaultChannel } =
       params.channels && params.channels.length > 0
@@ -177,6 +178,7 @@ export class SimulationRuntime {
     settings: SimulationSettings;
     seed: number;
     channels?: ConfiguredInitialChannel[];
+    attachExisting?: boolean;
   }): Promise<{ simulation: Simulation; defaultChannel: Channel }> {
     const now = Date.now();
     const channels = params.channels ?? [];
@@ -189,8 +191,30 @@ export class SimulationRuntime {
       throw new Error("At least one initial channel is required");
     }
 
+    // Restart resume (get-or-create): attach to the surviving row instead of
+    // hitting the simulations.id PK. Mode-agnostic — simRepo.get and
+    // channelRepo.getById exist in both persistence implementations.
+    const simId = params.id ?? createId();
+    const existing = params.attachExisting ? await this.simRepo.get(simId) : null;
+    if (existing) {
+      for (const channelConfig of channels) {
+        await this.config.delivery.createChannel(
+          channelConfig.id,
+          channelConfig.type,
+          channelConfig.memberAgentIds,
+        );
+      }
+      const defaultChannel = await this.channelRepo.getById(defaultChannelConfig.id);
+      if (!defaultChannel) {
+        throw new Error(
+          `Channel ${defaultChannelConfig.id} not found for existing simulation ${simId}`,
+        );
+      }
+      return { simulation: existing, defaultChannel };
+    }
+
     const simulation = await this.simRepo.create({
-      id: params.id ?? createId(),
+      id: simId,
       name: params.name,
       agentIds: params.agentContexts.map(a => a.id),
       channelIds: channels.map(channel => channel.id),

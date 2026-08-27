@@ -50,6 +50,7 @@ import {
   SqliteAgentStateRepository,
   SqliteChannelRepository,
   SqliteEventRepository,
+  SqliteGoalRegistryRepository,
   SqliteSimulationRepository,
 } from "../persistence/sqlite/index.js";
 import {
@@ -62,6 +63,7 @@ import {
   WorldEvaluator,
   resolveGoalLayerConfig,
   type GoalLayerRuntime,
+  type GoalRegistryPersister,
 } from "../simulation/world/world-evaluator.js";
 import type { IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 import type {
@@ -168,6 +170,10 @@ export type BuildConfiguredSimulationOptions = {
     registry: AgentConfigRegistry,
   ) => SchedulerAgentRuntime;
   llmBudget?: LLMBudget;
+  /** Restart resume: attach to an existing simulations row instead of
+   *  inserting (a fixed-id create against a surviving row without this flag
+   *  keeps the loud PK failure). */
+  attachExisting?: boolean;
 };
 
 export type ConfigPersona = Pick<
@@ -431,6 +437,7 @@ export async function buildConfiguredSimulation(
     settings: config.simulation.settings,
     agentContexts,
     channels: config.channels,
+    attachExisting: options.attachExisting,
     ...(goalLayer ? { goalLayer } : {}),
   });
 
@@ -445,16 +452,23 @@ export async function buildConfiguredSimulation(
   };
 }
 
+/** The goal-registry persister rides the existing single repo-selection point
+ *  (D-33): present only in the sqlite branch; memory stays byte-identical. */
+type SimulationRepositoriesWithGoalRegistry = SimulationRuntimeRepositories & {
+  goalRegistryRepo?: GoalRegistryPersister;
+};
+
 /**
  * Goal-layer runtime wiring: resolve defaults, rebuild the registry from the
- * committed log (empty for fresh sims), wire per-agent LLM configs + the
- * shared budget into the evaluator for llm mode, and hand the evaluator to
- * the runtime for the pulse hook.
+ * committed log (empty for fresh sims), overlay the stored self-verdict
+ * junction (sqlite mode), wire per-agent LLM configs + the shared budget into
+ * the evaluator for llm mode, and hand the evaluator to the runtime for the
+ * pulse hook.
  */
 async function buildGoalLayerRuntime(
   parsed: GoalLayerConfig,
   simulationId: string,
-  repositories: SimulationRuntimeRepositories,
+  repositories: SimulationRepositoriesWithGoalRegistry,
   agents: ConfiguredAgent[],
   budget: LLMBudgetTracker,
 ): Promise<GoalLayerRuntime> {
@@ -464,6 +478,12 @@ async function buildGoalLayerRuntime(
     Number.MAX_SAFE_INTEGER,
   );
   const registry = new GoalRegistry(log);
+  for (const entry of (await repositories.goalRegistryRepo?.loadSelfVerdicts(simulationId)) ?? []) {
+    // Drop rows whose goal never re-emerged on this log (failed-append
+    // reviews or older runs leave orphaned junction rows behind).
+    if (!registry.getGoal(entry.goalId)) continue;
+    registry.recordSelfVerdict(entry.goalId, entry.verdict, entry.source);
+  }
   const evaluator = new WorldEvaluator(
     repositories.eventRepo,
     repositories.agentStateRepo,
@@ -475,12 +495,13 @@ async function buildGoalLayerRuntime(
       llmConfigs: new Map(agents.map((agent) => [agent.id, agent.llm])),
       budget,
     },
+    repositories.goalRegistryRepo,
   );
   return { config, evaluator };
 }
 
 function createRepositories(config: PersistenceConfig): {
-  repositories: SimulationRuntimeRepositories;
+  repositories: SimulationRepositoriesWithGoalRegistry;
   db?: DB;
 } {
   if (config.type === "sqlite") {
@@ -495,6 +516,7 @@ function createRepositories(config: PersistenceConfig): {
         agentStateRepo: new SqliteAgentStateRepository(db),
         simRepo: new SqliteSimulationRepository(db),
         channelRepo: new SqliteChannelRepository(db),
+        goalRegistryRepo: new SqliteGoalRegistryRepository(db),
       },
     };
   }
