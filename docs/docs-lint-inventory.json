@@ -1,0 +1,27 @@
+{
+  "generatedAt": "2026-08-27T15:23:42.645Z",
+  "files": 66,
+  "checks": {
+    "L1": [],
+    "L2": {
+      "violations": [],
+      "informational": [
+        "docs/adr/0008-world-goal-layer.md:50",
+        "docs/research/goal-layer/README.md:15",
+        "docs/research/goal-layer/notes.md:56",
+        "docs/research/goal-layer/notes.md:60",
+        "docs/research/goal-layer/source-map.md:82",
+        "docs/research/goal-layer/source-map.md:83",
+        "docs/research/goal-layer/source-map.md:84",
+        "docs/research/goal-layer/source-map.md:85"
+      ]
+    },
+    "L3": [],
+    "L4": [],
+    "L5": []
+  },
+  "totals": {
+    "violations": 0,
+    "informational": 8
+  }
+}

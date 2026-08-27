@@ -1450,3 +1450,11 @@ Pulse 150-180 (recovery):
 
 No agent perceived system intervention.
 ```
+
+## Sources / Related decisions
+
+The Russell (1980) circumplex model of affect is the mathematical substrate of this document (Purpose). Citation re-verified 2026-08-27 (issue #98); row columns follow the research-pack source-map convention ([source-map.md](../research/goal-layer/source-map.md)).
+
+| Topic | Source | Type / Version | Fetch Date | Verification Status |
+| --- | --- | --- | --- | --- |
+| Circumplex model of affect | https://doi.org/10.1037/h0077714 | Journal article (Russell, *Journal of Personality and Social Psychology* 39(6), 1161-1178, 1980) | 2026-08-27 | DOI metadata via Crossref/OpenAlex API; full text paywalled |
