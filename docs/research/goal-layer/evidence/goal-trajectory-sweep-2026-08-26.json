@@ -1,0 +1,4082 @@
+{
+  "version": "goal-layer-sweep-v1",
+  "mode": "mock",
+  "pulseCap": 120,
+  "scenarios": [
+    "healthy-achiever",
+    "deluded-achiever",
+    "premature-closer",
+    "contested-consensus",
+    "hollow-completion",
+    "world-briefly-wrong"
+  ],
+  "limitations": "Trajectories sample at review cadence (reviewEveryPulses), not per pulse; pulse 0 is review-exempt. Crystallizer minima (2 blocked / 3 gaze) are engine module-locals with no per-run config path — measured at scaffold values only, never swept. revisionThreshold (0.5) is carried in the engine's default weights but consumed nowhere in runtime code — recorded as a measured no-op (RD-5). Self-claims are canned (deterministic in_progress or the reached-claim client), so arcs exercise the goal-layer machinery, not model behavior. Per-cell trajectories list the recipe's resolve goal (the calibration signal). Excluded from trajectories and counted in witnessedLegacyTrajectories/GapRows are the per-review witnessed-event legacy proposals on the four non-terminating arcs (they keep nextGoalAvailable true) and, on the terminating deterministic cells (healthy-achiever, world-briefly-wrong), organic-signal goals crystallized from ambient chatter — no witness event is injected there (rerun with --full-trajectories for the unfiltered report).",
+  "grid": [
+    {
+      "scenario": "healthy-achiever",
+      "cell": "defaults",
+      "mode": "deterministic",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 4,
+      "goalsAccepted": 4,
+      "goalsDeclined": 0,
+      "gapRows": 8,
+      "termination": "reached",
+      "pulsesRun": 31,
+      "capped": false,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 3,
+      "witnessedLegacyGapRows": 6,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.12624113475177304,
+              "divergenceFromLog": 0.3156028368794326,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.12000000000000002,
+              "divergenceFromLog": 0.30000000000000004,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "reached"
+        }
+      ]
+    },
+    {
+      "scenario": "deluded-achiever",
+      "cell": "defaults",
+      "mode": "llm",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 12,
+      "goalsAccepted": 11,
+      "goalsDeclined": 0,
+      "gapRows": 65,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 11,
+      "witnessedLegacyGapRows": 55,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.9261016949152543,
+              "divergenceFromLog": 0.9152542372881356,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.9300934579439253,
+              "divergenceFromLog": 0.9252336448598131,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.9336842105263159,
+              "divergenceFromLog": 0.9342105263157895,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.9358793969849247,
+              "divergenceFromLog": 0.9396984924623115,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.937049180327869,
+              "divergenceFromLog": 0.9426229508196722,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.9380068728522337,
+              "divergenceFromLog": 0.9450171821305842,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.9385714285714286,
+              "divergenceFromLog": 0.9464285714285714,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.9391122715404701,
+              "divergenceFromLog": 0.9477806788511749,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.9394392523364486,
+              "divergenceFromLog": 0.9485981308411215,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.9397894736842106,
+              "divergenceFromLog": 0.9494736842105264,
+              "divergenceFromWorld": 1
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "premature-closer",
+      "cell": "defaults",
+      "mode": "llm",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 13,
+      "goalsAccepted": 12,
+      "goalsDeclined": 0,
+      "gapRows": 72,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 12,
+      "witnessedLegacyGapRows": 62,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.9162500000000001,
+              "divergenceFromLog": 0.890625,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.9178947368421053,
+              "divergenceFromLog": 0.8947368421052632,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.9212121212121213,
+              "divergenceFromLog": 0.9030303030303031,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.9234703196347033,
+              "divergenceFromLog": 0.908675799086758,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.9224548736462095,
+              "divergenceFromLog": 0.9061371841155235,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.921904761904762,
+              "divergenceFromLog": 0.9047619047619048,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.9217128463476071,
+              "divergenceFromLog": 0.9042821158690176,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.9217391304347827,
+              "divergenceFromLog": 0.9043478260869565,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.921612284069098,
+              "divergenceFromLog": 0.9040307101727447,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.9216438356164385,
+              "divergenceFromLog": 0.904109589041096,
+              "divergenceFromWorld": 1
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "contested-consensus",
+      "cell": "defaults",
+      "mode": "llm",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 14,
+      "goalsAccepted": 13,
+      "goalsDeclined": 0,
+      "gapRows": 79,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 13,
+      "witnessedLegacyGapRows": 69,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.7219047619047619,
+              "divergenceFromLog": 0.9047619047619048,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.7210619469026549,
+              "divergenceFromLog": 0.9026548672566371,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.7234146341463416,
+              "divergenceFromLog": 0.9085365853658537,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.725296803652968,
+              "divergenceFromLog": 0.91324200913242,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.7214285714285714,
+              "divergenceFromLog": 0.9035714285714286,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.7189442815249267,
+              "divergenceFromLog": 0.8973607038123167,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.7174257425742575,
+              "divergenceFromLog": 0.8935643564356436,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.7165031982942431,
+              "divergenceFromLog": 0.8912579957356077,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.715639097744361,
+              "divergenceFromLog": 0.8890977443609023,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.7151088777219431,
+              "divergenceFromLog": 0.8877721943048577,
+              "divergenceFromWorld": 0.5
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "hollow-completion",
+      "cell": "defaults",
+      "mode": "deterministic",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 13,
+      "goalsAccepted": 12,
+      "goalsDeclined": 0,
+      "gapRows": 74,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 12,
+      "witnessedLegacyGapRows": 64,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.3705263157894737,
+              "divergenceFromLog": 0.9263157894736842,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.366896551724138,
+              "divergenceFromLog": 0.9172413793103449,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.36363636363636365,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.36349206349206353,
+              "divergenceFromLog": 0.9087301587301587,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.36363636363636365,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.36353591160220994,
+              "divergenceFromLog": 0.9088397790055248,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.36363636363636365,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.36355932203389835,
+              "divergenceFromLog": 0.9088983050847458,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.36363636363636365,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.36357388316151207,
+              "divergenceFromLog": 0.9089347079037801,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "world-briefly-wrong",
+      "cell": "defaults",
+      "mode": "deterministic",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 7,
+      "goalsAccepted": 7,
+      "goalsDeclined": 0,
+      "gapRows": 15,
+      "termination": "reached",
+      "pulsesRun": 41,
+      "capped": false,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 6,
+      "witnessedLegacyGapRows": 12,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.12624113475177304,
+              "divergenceFromLog": 0.3156028368794326,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.12968036529680368,
+              "divergenceFromLog": 0.32420091324200917,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.12395309882747069,
+              "divergenceFromLog": 0.3098827470686767,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "reached"
+        }
+      ]
+    },
+    {
+      "scenario": "healthy-achiever",
+      "cell": "reviewEveryPulses=1",
+      "mode": "deterministic",
+      "reviewEveryPulses": 1,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 4,
+      "goalsAccepted": 4,
+      "goalsDeclined": 0,
+      "gapRows": 8,
+      "termination": "reached",
+      "pulsesRun": 4,
+      "capped": false,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 3,
+      "witnessedLegacyGapRows": 6,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 3000,
+              "magnitude": 0.13043478260869565,
+              "divergenceFromLog": 0.32608695652173914,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 4000,
+              "magnitude": 0.10114942528735633,
+              "divergenceFromLog": 0.25287356321839083,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "reached"
+        }
+      ]
+    },
+    {
+      "scenario": "deluded-achiever",
+      "cell": "reviewEveryPulses=1",
+      "mode": "llm",
+      "reviewEveryPulses": 1,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 120,
+      "goalsAccepted": 119,
+      "goalsDeclined": 0,
+      "gapRows": 7139,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 119,
+      "witnessedLegacyGapRows": 7021,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 3000,
+              "magnitude": 0.8600000000000001,
+              "divergenceFromLog": 0.75,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 4000,
+              "magnitude": 0.8600000000000001,
+              "divergenceFromLog": 0.75,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 5000,
+              "magnitude": 0.8711111111111112,
+              "divergenceFromLog": 0.7777777777777778,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 6000,
+              "magnitude": 0.8800000000000001,
+              "divergenceFromLog": 0.8,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 7000,
+              "magnitude": 0.8872727272727273,
+              "divergenceFromLog": 0.8181818181818181,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 8000,
+              "magnitude": 0.8933333333333334,
+              "divergenceFromLog": 0.8333333333333334,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 9000,
+              "magnitude": 0.8984615384615385,
+              "divergenceFromLog": 0.8461538461538461,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 10000,
+              "magnitude": 0.9028571428571429,
+              "divergenceFromLog": 0.8571428571428572,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 11000,
+              "magnitude": 0.9066666666666667,
+              "divergenceFromLog": 0.8666666666666667,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 12000,
+              "magnitude": 0.91,
+              "divergenceFromLog": 0.875,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 13000,
+              "magnitude": 0.9129411764705883,
+              "divergenceFromLog": 0.8823529411764706,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 14000,
+              "magnitude": 0.9155555555555556,
+              "divergenceFromLog": 0.8888888888888888,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 15000,
+              "magnitude": 0.9178947368421053,
+              "divergenceFromLog": 0.8947368421052632,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 16000,
+              "magnitude": 0.92,
+              "divergenceFromLog": 0.9,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 17000,
+              "magnitude": 0.921904761904762,
+              "divergenceFromLog": 0.9047619047619048,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 18000,
+              "magnitude": 0.9236363636363637,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 19000,
+              "magnitude": 0.9252173913043479,
+              "divergenceFromLog": 0.9130434782608696,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 20000,
+              "magnitude": 0.9266666666666667,
+              "divergenceFromLog": 0.9166666666666666,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 21000,
+              "magnitude": 0.928,
+              "divergenceFromLog": 0.92,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 22000,
+              "magnitude": 0.9292307692307693,
+              "divergenceFromLog": 0.9230769230769231,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 23000,
+              "magnitude": 0.9301782820097245,
+              "divergenceFromLog": 0.9254457050243112,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 24000,
+              "magnitude": 0.9310843373493977,
+              "divergenceFromLog": 0.927710843373494,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 25000,
+              "magnitude": 0.9319495091164096,
+              "divergenceFromLog": 0.9298737727910238,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 26000,
+              "magnitude": 0.9327748691099477,
+              "divergenceFromLog": 0.9319371727748691,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 27000,
+              "magnitude": 0.9335618115055081,
+              "divergenceFromLog": 0.93390452876377,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 28000,
+              "magnitude": 0.9343119266055047,
+              "divergenceFromLog": 0.9357798165137614,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 29000,
+              "magnitude": 0.9350269106566201,
+              "divergenceFromLog": 0.93756727664155,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 30000,
+              "magnitude": 0.9357085020242916,
+              "divergenceFromLog": 0.9392712550607287,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.9363584366062918,
+              "divergenceFromLog": 0.9408960915157293,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 32000,
+              "magnitude": 0.9369784172661871,
+              "divergenceFromLog": 0.9424460431654677,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 33000,
+              "magnitude": 0.937570093457944,
+              "divergenceFromLog": 0.9439252336448598,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 34000,
+              "magnitude": 0.9381350482315113,
+              "divergenceFromLog": 0.9453376205787781,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 35000,
+              "magnitude": 0.9386747905559788,
+              "divergenceFromLog": 0.9466869763899467,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 36000,
+              "magnitude": 0.9391907514450868,
+              "divergenceFromLog": 0.9479768786127167,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 37000,
+              "magnitude": 0.9396842827728209,
+              "divergenceFromLog": 0.9492107069320521,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 38000,
+              "magnitude": 0.9401566579634465,
+              "divergenceFromLog": 0.9503916449086162,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 39000,
+              "magnitude": 0.9406090739589809,
+              "divergenceFromLog": 0.9515226848974518,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 40000,
+              "magnitude": 0.9410426540284361,
+              "divergenceFromLog": 0.95260663507109,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.9414584511023177,
+              "divergenceFromLog": 0.9536461277557943,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 42000,
+              "magnitude": 0.9418574514038878,
+              "divergenceFromLog": 0.9546436285097192,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 43000,
+              "magnitude": 0.9422405782137326,
+              "divergenceFromLog": 0.9556014455343315,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 44000,
+              "magnitude": 0.942608695652174,
+              "divergenceFromLog": 0.9565217391304348,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 45000,
+              "magnitude": 0.9429626123994321,
+              "divergenceFromLog": 0.9574065309985802,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 46000,
+              "magnitude": 0.9433030852994556,
+              "divergenceFromLog": 0.9582577132486388,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 47000,
+              "magnitude": 0.943630822812364,
+              "divergenceFromLog": 0.9590770570309098,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 48000,
+              "magnitude": 0.9439464882943145,
+              "divergenceFromLog": 0.959866220735786,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 49000,
+              "magnitude": 0.9442507030936119,
+              "divergenceFromLog": 0.9606267577340297,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 50000,
+              "magnitude": 0.9445440494590418,
+              "divergenceFromLog": 0.9613601236476044,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.9448270732614356,
+              "divergenceFromLog": 0.9620676831535887,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 52000,
+              "magnitude": 0.9451002865329513,
+              "divergenceFromLog": 0.9627507163323782,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 53000,
+              "magnitude": 0.9453641698308596,
+              "divergenceFromLog": 0.9634104245771488,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 54000,
+              "magnitude": 0.9456191744340879,
+              "divergenceFromLog": 0.9640479360852197,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 55000,
+              "magnitude": 0.9458657243816255,
+              "divergenceFromLog": 0.9646643109540636,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 56000,
+              "magnitude": 0.946104218362283,
+              "divergenceFromLog": 0.9652605459057072,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 57000,
+              "magnitude": 0.9463350314653881,
+              "divergenceFromLog": 0.9658375786634702,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 58000,
+              "magnitude": 0.9465585168018541,
+              "divergenceFromLog": 0.966396292004635,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 59000,
+              "magnitude": 0.9467750070047634,
+              "divergenceFromLog": 0.9669375175119082,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 60000,
+              "magnitude": 0.9469848156182213,
+              "divergenceFromLog": 0.9674620390455532,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.9471882383827778,
+              "divergenceFromLog": 0.9679705959569441,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 62000,
+              "magnitude": 0.947385554425229,
+              "divergenceFromLog": 0.9684638860630722,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 63000,
+              "magnitude": 0.9475770273601184,
+              "divergenceFromLog": 0.9689425684002958,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 64000,
+              "magnitude": 0.9477629063097516,
+              "divergenceFromLog": 0.9694072657743786,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 65000,
+              "magnitude": 0.9479434268490611,
+              "divergenceFromLog": 0.9698585671226524,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 66000,
+              "magnitude": 0.9481188118811882,
+              "divergenceFromLog": 0.9702970297029703,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 67000,
+              "magnitude": 0.9482892724492026,
+              "divergenceFromLog": 0.9707231811230064,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 68000,
+              "magnitude": 0.9484550084889644,
+              "divergenceFromLog": 0.9711375212224108,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 69000,
+              "magnitude": 0.9486162095277377,
+              "divergenceFromLog": 0.9715405238193442,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 70000,
+              "magnitude": 0.9487730553327988,
+              "divergenceFromLog": 0.9719326383319968,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.9489257165139404,
+              "divergenceFromLog": 0.9723142912848508,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 72000,
+              "magnitude": 0.9490743550834598,
+              "divergenceFromLog": 0.9726858877086495,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 73000,
+              "magnitude": 0.9492191249769245,
+              "divergenceFromLog": 0.9730478124423112,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 74000,
+              "magnitude": 0.9493601725377427,
+              "divergenceFromLog": 0.9734004313443566,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 75000,
+              "magnitude": 0.9494976369683179,
+              "divergenceFromLog": 0.9737440924207946,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 76000,
+              "magnitude": 0.9496316507503412,
+              "divergenceFromLog": 0.9740791268758526,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 77000,
+              "magnitude": 0.9497623400365631,
+              "divergenceFromLog": 0.9744058500914077,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 78000,
+              "magnitude": 0.9498898250162023,
+              "divergenceFromLog": 0.9747245625405055,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 79000,
+              "magnitude": 0.9500142202559647,
+              "divergenceFromLog": 0.9750355506399115,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 80000,
+              "magnitude": 0.9501356350184957,
+              "divergenceFromLog": 0.9753390875462392,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.9502541735599339,
+              "divergenceFromLog": 0.9756354338998345,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 82000,
+              "magnitude": 0.9503699354081034,
+              "divergenceFromLog": 0.9759248385202584,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 83000,
+              "magnitude": 0.9504830156227606,
+              "divergenceFromLog": 0.9762075390569013,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 84000,
+              "magnitude": 0.9505935050391938,
+              "divergenceFromLog": 0.9764837625979843,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 85000,
+              "magnitude": 0.9507014904963764,
+              "divergenceFromLog": 0.9767537262409408,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 86000,
+              "magnitude": 0.9508070550507751,
+              "divergenceFromLog": 0.9770176376269375,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 87000,
+              "magnitude": 0.9509102781768317,
+              "divergenceFromLog": 0.9772756954420792,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 88000,
+              "magnitude": 0.9510112359550562,
+              "divergenceFromLog": 0.9775280898876404,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 89000,
+              "magnitude": 0.9511100012485955,
+              "divergenceFromLog": 0.9777750031214884,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 90000,
+              "magnitude": 0.9512066438690768,
+              "divergenceFromLog": 0.9780166096726918,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.9513012307324651,
+              "divergenceFromLog": 0.9782530768311626,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 92000,
+              "magnitude": 0.9513938260056128,
+              "divergenceFromLog": 0.9784845650140318,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 93000,
+              "magnitude": 0.9514844912441343,
+              "divergenceFromLog": 0.9787112281103354,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 94000,
+              "magnitude": 0.9515732855221875,
+              "divergenceFromLog": 0.9789332138054684,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 95000,
+              "magnitude": 0.9516602655547022,
+              "divergenceFromLog": 0.9791506638867552,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 96000,
+              "magnitude": 0.9517454858125538,
+              "divergenceFromLog": 0.9793637145313844,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 97000,
+              "magnitude": 0.9518289986311468,
+              "divergenceFromLog": 0.9795724965778667,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 98000,
+              "magnitude": 0.9519108543128354,
+              "divergenceFromLog": 0.9797771357820884,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 99000,
+              "magnitude": 0.9519911012235819,
+              "divergenceFromLog": 0.9799777530589544,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 100000,
+              "magnitude": 0.952069785884219,
+              "divergenceFromLog": 0.9801744647105471,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.9521469530566625,
+              "divergenceFromLog": 0.9803673826416561,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 102000,
+              "magnitude": 0.9522226458253908,
+              "divergenceFromLog": 0.980556614563477,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 103000,
+              "magnitude": 0.9522969056744882,
+              "divergenceFromLog": 0.9807422641862205,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 104000,
+              "magnitude": 0.9523697725605283,
+              "divergenceFromLog": 0.9809244314013206,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 105000,
+              "magnitude": 0.9524412849815532,
+              "divergenceFromLog": 0.9811032124538829,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 106000,
+              "magnitude": 0.952511480042388,
+              "divergenceFromLog": 0.9812787001059696,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 107000,
+              "magnitude": 0.9525803935165121,
+              "divergenceFromLog": 0.9814509837912803,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 108000,
+              "magnitude": 0.9526480599046971,
+              "divergenceFromLog": 0.9816201497617427,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 109000,
+              "magnitude": 0.9527145124906008,
+              "divergenceFromLog": 0.9817862812265018,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 110000,
+              "magnitude": 0.9527797833935019,
+              "divergenceFromLog": 0.9819494584837545,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.9528439036183416,
+              "divergenceFromLog": 0.9821097590458538,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 112000,
+              "magnitude": 0.95290690310323,
+              "divergenceFromLog": 0.9822672577580748,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 113000,
+              "magnitude": 0.9529688107645641,
+              "divergenceFromLog": 0.9824220269114101,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 114000,
+              "magnitude": 0.9530296545398961,
+              "divergenceFromLog": 0.9825741363497401,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 115000,
+              "magnitude": 0.9530894614286788,
+              "divergenceFromLog": 0.9827236535716969,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 116000,
+              "magnitude": 0.9531482575310101,
+              "divergenceFromLog": 0.9828706438275251,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 117000,
+              "magnitude": 0.9532060680844887,
+              "divergenceFromLog": 0.9830151702112216,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 118000,
+              "magnitude": 0.9532629174992864,
+              "divergenceFromLog": 0.9831572937482158,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 119000,
+              "magnitude": 0.9533188293915363,
+              "divergenceFromLog": 0.9832970734788407,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 120000,
+              "magnitude": 0.9533738266151298,
+              "divergenceFromLog": 0.9834345665378244,
+              "divergenceFromWorld": 1
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "premature-closer",
+      "cell": "reviewEveryPulses=1",
+      "mode": "llm",
+      "reviewEveryPulses": 1,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 121,
+      "goalsAccepted": 120,
+      "goalsDeclined": 0,
+      "gapRows": 7254,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 120,
+      "witnessedLegacyGapRows": 7136,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 3000,
+              "magnitude": 0.8327272727272729,
+              "divergenceFromLog": 0.6818181818181819,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 4000,
+              "magnitude": 0.8266666666666668,
+              "divergenceFromLog": 0.6666666666666667,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 5000,
+              "magnitude": 0.8345098039215687,
+              "divergenceFromLog": 0.6862745098039216,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 6000,
+              "magnitude": 0.8440579710144928,
+              "divergenceFromLog": 0.7101449275362319,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 7000,
+              "magnitude": 0.8457142857142858,
+              "divergenceFromLog": 0.7142857142857143,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 8000,
+              "magnitude": 0.8477192982456141,
+              "divergenceFromLog": 0.7192982456140351,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 9000,
+              "magnitude": 0.8506474820143884,
+              "divergenceFromLog": 0.7266187050359711,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 10000,
+              "magnitude": 0.853975903614458,
+              "divergenceFromLog": 0.7349397590361446,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 11000,
+              "magnitude": 0.8574358974358974,
+              "divergenceFromLog": 0.7435897435897436,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 12000,
+              "magnitude": 0.8608849557522125,
+              "divergenceFromLog": 0.752212389380531,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 13000,
+              "magnitude": 0.8642471042471044,
+              "divergenceFromLog": 0.7606177606177607,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 14000,
+              "magnitude": 0.867482993197279,
+              "divergenceFromLog": 0.7687074829931972,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 15000,
+              "magnitude": 0.8705740181268883,
+              "divergenceFromLog": 0.7764350453172205,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 16000,
+              "magnitude": 0.8735135135135136,
+              "divergenceFromLog": 0.7837837837837838,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 17000,
+              "magnitude": 0.8763017031630171,
+              "divergenceFromLog": 0.7907542579075426,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 18000,
+              "magnitude": 0.8789427312775331,
+              "divergenceFromLog": 0.7973568281938326,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 19000,
+              "magnitude": 0.8814428857715432,
+              "divergenceFromLog": 0.8036072144288577,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 20000,
+              "magnitude": 0.8838095238095239,
+              "divergenceFromLog": 0.8095238095238095,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 21000,
+              "magnitude": 0.8860504201680673,
+              "divergenceFromLog": 0.8151260504201681,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 22000,
+              "magnitude": 0.8881733746130032,
+              "divergenceFromLog": 0.8204334365325078,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 23000,
+              "magnitude": 0.8901859799713877,
+              "divergenceFromLog": 0.8254649499284692,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 24000,
+              "magnitude": 0.8920954907161804,
+              "divergenceFromLog": 0.830238726790451,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 25000,
+              "magnitude": 0.8939087546239212,
+              "divergenceFromLog": 0.8347718865598027,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 26000,
+              "magnitude": 0.895632183908046,
+              "divergenceFromLog": 0.8390804597701149,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 27000,
+              "magnitude": 0.8972717508055855,
+              "divergenceFromLog": 0.8431793770139635,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 28000,
+              "magnitude": 0.8988329979879276,
+              "divergenceFromLog": 0.8470824949698189,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 29000,
+              "magnitude": 0.9003210576015109,
+              "divergenceFromLog": 0.8508026440037771,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 30000,
+              "magnitude": 0.9017406749555951,
+              "divergenceFromLog": 0.8543516873889876,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.9030962343096235,
+              "divergenceFromLog": 0.8577405857740585,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 32000,
+              "magnitude": 0.904391785150079,
+              "divergenceFromLog": 0.8609794628751974,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 33000,
+              "magnitude": 0.9056310679611651,
+              "divergenceFromLog": 0.8640776699029127,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 34000,
+              "magnitude": 0.9068175388967469,
+              "divergenceFromLog": 0.867043847241867,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 35000,
+              "magnitude": 0.9079543930248156,
+              "divergenceFromLog": 0.8698859825620389,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 36000,
+              "magnitude": 0.9090445859872612,
+              "divergenceFromLog": 0.8726114649681529,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 37000,
+              "magnitude": 0.9100908540278619,
+              "divergenceFromLog": 0.8752271350696548,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 38000,
+              "magnitude": 0.9110957324106114,
+              "divergenceFromLog": 0.8777393310265282,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 39000,
+              "magnitude": 0.9120615722924684,
+              "divergenceFromLog": 0.880153930731171,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 40000,
+              "magnitude": 0.91299055613851,
+              "divergenceFromLog": 0.8824763903462749,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.9138847117794487,
+              "divergenceFromLog": 0.8847117794486216,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 42000,
+              "magnitude": 0.914745925215724,
+              "divergenceFromLog": 0.8868648130393096,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 43000,
+              "magnitude": 0.9155759522716843,
+              "divergenceFromLog": 0.8889398806792106,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 44000,
+              "magnitude": 0.9163764291996482,
+              "divergenceFromLog": 0.8909410729991205,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 45000,
+              "magnitude": 0.9171488823281316,
+              "divergenceFromLog": 0.892872205820329,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 46000,
+              "magnitude": 0.9178947368421053,
+              "divergenceFromLog": 0.8947368421052632,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 47000,
+              "magnitude": 0.9186153247763517,
+              "divergenceFromLog": 0.8965383119408791,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 48000,
+              "magnitude": 0.9193118922961856,
+              "divergenceFromLog": 0.8982797307404637,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 49000,
+              "magnitude": 0.9199856063332135,
+              "divergenceFromLog": 0.8999640158330334,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 50000,
+              "magnitude": 0.9206375606375607,
+              "divergenceFromLog": 0.9015939015939016,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.9212687813021704,
+              "divergenceFromLog": 0.9031719532554257,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 52000,
+              "magnitude": 0.9218802318094013,
+              "divergenceFromLog": 0.9047005795235029,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 53000,
+              "magnitude": 0.9224728176452315,
+              "divergenceFromLog": 0.9061820441130786,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 54000,
+              "magnitude": 0.9230473905218957,
+              "divergenceFromLog": 0.907618476304739,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 55000,
+              "magnitude": 0.9236047522457259,
+              "divergenceFromLog": 0.9090118806143147,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 56000,
+              "magnitude": 0.9241456582633054,
+              "divergenceFromLog": 0.9103641456582633,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 57000,
+              "magnitude": 0.924670820915741,
+              "divergenceFromLog": 0.9116770522893525,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 58000,
+              "magnitude": 0.9251809124278972,
+              "divergenceFromLog": 0.912952281069743,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 59000,
+              "magnitude": 0.9256765676567658,
+              "divergenceFromLog": 0.9141914191419142,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 60000,
+              "magnitude": 0.9261583866207576,
+              "divergenceFromLog": 0.9153959665518938,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.9266269368295591,
+              "divergenceFromLog": 0.9165673420738975,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 62000,
+              "magnitude": 0.92708275543227,
+              "divergenceFromLog": 0.917706888580675,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 63000,
+              "magnitude": 0.9275263511998206,
+              "divergenceFromLog": 0.9188158779995514,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 64000,
+              "magnitude": 0.9279582063561168,
+              "divergenceFromLog": 0.9198955158902917,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 65000,
+              "magnitude": 0.9283787782709787,
+              "divergenceFromLog": 0.9209469456774466,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 66000,
+              "magnitude": 0.9287885010266941,
+              "divergenceFromLog": 0.9219712525667351,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 67000,
+              "magnitude": 0.9291877868688885,
+              "divergenceFromLog": 0.9229694671722211,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 68000,
+              "magnitude": 0.9295770275514165,
+              "divergenceFromLog": 0.923942568878541,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 69000,
+              "magnitude": 0.9299565955840725,
+              "divergenceFromLog": 0.9248914889601811,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 70000,
+              "magnitude": 0.9303268453911128,
+              "divergenceFromLog": 0.9258171134777818,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.9306881143878464,
+              "divergenceFromLog": 0.9267202859696158,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 72000,
+              "magnitude": 0.9310407239819005,
+              "divergenceFromLog": 0.9276018099547512,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 73000,
+              "magnitude": 0.9313849805051705,
+              "divergenceFromLog": 0.9284624512629259,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 74000,
+              "magnitude": 0.9317211760819294,
+              "divergenceFromLog": 0.9293029402048233,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 75000,
+              "magnitude": 0.9320495894380938,
+              "divergenceFromLog": 0.9301239735952342,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 76000,
+              "magnitude": 0.932370486656201,
+              "divergenceFromLog": 0.9309262166405023,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 77000,
+              "magnitude": 0.9326841218802634,
+              "divergenceFromLog": 0.9317103047006584,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 78000,
+              "magnitude": 0.9329907379743054,
+              "divergenceFromLog": 0.9324768449357633,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 79000,
+              "magnitude": 0.9332905671380668,
+              "divergenceFromLog": 0.9332264178451669,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 80000,
+              "magnitude": 0.933583831483063,
+              "divergenceFromLog": 0.9339595787076573,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.933870743571925,
+              "divergenceFromLog": 0.9346768589298123,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 82000,
+              "magnitude": 0.9341515069237035,
+              "divergenceFromLog": 0.9353787673092587,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 83000,
+              "magnitude": 0.9344263164875979,
+              "divergenceFromLog": 0.9360657912189946,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 84000,
+              "magnitude": 0.9346953590873737,
+              "divergenceFromLog": 0.936738397718434,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 85000,
+              "magnitude": 0.9349588138385503,
+              "divergenceFromLog": 0.9373970345963756,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 86000,
+              "magnitude": 0.9352168525402726,
+              "divergenceFromLog": 0.9380421313506815,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 87000,
+              "magnitude": 0.9354696400436312,
+              "divergenceFromLog": 0.9386741001090777,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 88000,
+              "magnitude": 0.9357173345980555,
+              "divergenceFromLog": 0.9392933364951387,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 89000,
+              "magnitude": 0.9359600881772828,
+              "divergenceFromLog": 0.9399002204432069,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 90000,
+              "magnitude": 0.9361980467862822,
+              "divergenceFromLog": 0.9404951169657052,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.936431350750417,
+              "divergenceFromLog": 0.9410783768760422,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 92000,
+              "magnitude": 0.9366601349880254,
+              "divergenceFromLog": 0.9416503374700631,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 93000,
+              "magnitude": 0.9368845292675126,
+              "divergenceFromLog": 0.9422113231687813,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 94000,
+              "magnitude": 0.9371046584499687,
+              "divergenceFromLog": 0.9427616461249216,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 95000,
+              "magnitude": 0.937320642718248,
+              "divergenceFromLog": 0.9433016067956197,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 96000,
+              "magnitude": 0.9375325977933803,
+              "divergenceFromLog": 0.9438314944834504,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 97000,
+              "magnitude": 0.9377406351391211,
+              "divergenceFromLog": 0.9443515878478026,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 98000,
+              "magnitude": 0.9379448621553885,
+              "divergenceFromLog": 0.9448621553884712,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 99000,
+              "magnitude": 0.9381453823612819,
+              "divergenceFromLog": 0.9453634559032045,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 100000,
+              "magnitude": 0.9383422955683294,
+              "divergenceFromLog": 0.9458557389208233,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.9385356980445658,
+              "divergenceFromLog": 0.9463392451114143,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 102000,
+              "magnitude": 0.9387256826699982,
+              "divergenceFromLog": 0.9468142066749955,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 103000,
+              "magnitude": 0.938912339083983,
+              "divergenceFromLog": 0.9472808477099571,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 104000,
+              "magnitude": 0.9390957538249958,
+              "divergenceFromLog": 0.9477393845624893,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 105000,
+              "magnitude": 0.9392760104632522,
+              "divergenceFromLog": 0.9481900261581301,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 106000,
+              "magnitude": 0.939453189726595,
+              "divergenceFromLog": 0.9486329743164872,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 107000,
+              "magnitude": 0.9396273696200472,
+              "divergenceFromLog": 0.9490684240501179,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 108000,
+              "magnitude": 0.939798625539396,
+              "divergenceFromLog": 0.9494965638484897,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 109000,
+              "magnitude": 0.9399670303791507,
+              "divergenceFromLog": 0.9499175759478766,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 110000,
+              "magnitude": 0.9401326546351998,
+              "divergenceFromLog": 0.9503316365879994,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.9402955665024632,
+              "divergenceFromLog": 0.9507389162561576,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 112000,
+              "magnitude": 0.9404558319678237,
+              "divergenceFromLog": 0.9511395799195591,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 113000,
+              "magnitude": 0.9406135148986018,
+              "divergenceFromLog": 0.9515337872465042,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 114000,
+              "magnitude": 0.9407686771268174,
+              "divergenceFromLog": 0.9519216928170433,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 115000,
+              "magnitude": 0.9409213785294742,
+              "divergenceFromLog": 0.9523034463236855,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 116000,
+              "magnitude": 0.9410716771050801,
+              "divergenceFromLog": 0.9526791927627001,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 117000,
+              "magnitude": 0.9412196290466088,
+              "divergenceFromLog": 0.9530490726165218,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 118000,
+              "magnitude": 0.9413652888110947,
+              "divergenceFromLog": 0.9534132220277366,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 119000,
+              "magnitude": 0.9415087091860389,
+              "divergenceFromLog": 0.9537717729650971,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 120000,
+              "magnitude": 0.9416499413527956,
+              "divergenceFromLog": 0.9541248533819888,
+              "divergenceFromWorld": 1
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "contested-consensus",
+      "cell": "reviewEveryPulses=1",
+      "mode": "llm",
+      "reviewEveryPulses": 1,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 122,
+      "goalsAccepted": 121,
+      "goalsDeclined": 0,
+      "gapRows": 7369,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 121,
+      "witnessedLegacyGapRows": 7251,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 3000,
+              "magnitude": 0.6457142857142858,
+              "divergenceFromLog": 0.7142857142857143,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 4000,
+              "magnitude": 0.6342857142857143,
+              "divergenceFromLog": 0.6857142857142857,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 5000,
+              "magnitude": 0.64,
+              "divergenceFromLog": 0.7,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 6000,
+              "magnitude": 0.6498550724637682,
+              "divergenceFromLog": 0.7246376811594203,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 7000,
+              "magnitude": 0.6451063829787235,
+              "divergenceFromLog": 0.7127659574468085,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 8000,
+              "magnitude": 0.6423529411764706,
+              "divergenceFromLog": 0.7058823529411764,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 9000,
+              "magnitude": 0.6421917808219179,
+              "divergenceFromLog": 0.7054794520547945,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 10000,
+              "magnitude": 0.6434285714285715,
+              "divergenceFromLog": 0.7085714285714286,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 11000,
+              "magnitude": 0.6454368932038835,
+              "divergenceFromLog": 0.7135922330097088,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 12000,
+              "magnitude": 0.6478661087866109,
+              "divergenceFromLog": 0.7196652719665272,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 13000,
+              "magnitude": 0.6505109489051095,
+              "divergenceFromLog": 0.7262773722627738,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 14000,
+              "magnitude": 0.6532475884244373,
+              "divergenceFromLog": 0.7331189710610932,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 15000,
+              "magnitude": 0.656,
+              "divergenceFromLog": 0.74,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 16000,
+              "magnitude": 0.6587212276214834,
+              "divergenceFromLog": 0.7468030690537084,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 17000,
+              "magnitude": 0.6613824884792627,
+              "divergenceFromLog": 0.7534562211981567,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 18000,
+              "magnitude": 0.6639665970772443,
+              "divergenceFromLog": 0.7599164926931107,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 19000,
+              "magnitude": 0.6664638783269963,
+              "divergenceFromLog": 0.7661596958174905,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 20000,
+              "magnitude": 0.6688695652173914,
+              "divergenceFromLog": 0.7721739130434783,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 21000,
+              "magnitude": 0.6711821086261981,
+              "divergenceFromLog": 0.7779552715654952,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 22000,
+              "magnitude": 0.6734020618556701,
+              "divergenceFromLog": 0.7835051546391752,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 23000,
+              "magnitude": 0.6755313351498639,
+              "divergenceFromLog": 0.7888283378746594,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 24000,
+              "magnitude": 0.6775726927939317,
+              "divergenceFromLog": 0.7939317319848294,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 25000,
+              "magnitude": 0.6795294117647059,
+              "divergenceFromLog": 0.7988235294117647,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 26000,
+              "magnitude": 0.6814050493962679,
+              "divergenceFromLog": 0.8035126234906695,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 27000,
+              "magnitude": 0.6832032854209446,
+              "divergenceFromLog": 0.8080082135523614,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 28000,
+              "magnitude": 0.6849278152069298,
+              "divergenceFromLog": 0.8123195380173244,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 29000,
+              "magnitude": 0.6865822784810127,
+              "divergenceFromLog": 0.8164556962025317,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 30000,
+              "magnitude": 0.6881702127659576,
+              "divergenceFromLog": 0.8204255319148936,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.6896950240770466,
+              "divergenceFromLog": 0.8242375601926164,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 32000,
+              "magnitude": 0.6911599696739955,
+              "divergenceFromLog": 0.8278999241849886,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 33000,
+              "magnitude": 0.6925681492109039,
+              "divergenceFromLog": 0.8314203730272597,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 34000,
+              "magnitude": 0.6939225016995242,
+              "divergenceFromLog": 0.8348062542488104,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 35000,
+              "magnitude": 0.6952258064516129,
+              "divergenceFromLog": 0.8380645161290323,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 36000,
+              "magnitude": 0.696480686695279,
+              "divergenceFromLog": 0.8412017167381974,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 37000,
+              "magnitude": 0.6976896149358227,
+              "divergenceFromLog": 0.8442240373395566,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 38000,
+              "magnitude": 0.6988549193996666,
+              "divergenceFromLog": 0.8471372984991662,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 39000,
+              "magnitude": 0.6999787910922588,
+              "divergenceFromLog": 0.8499469777306469,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 40000,
+              "magnitude": 0.7010632911392406,
+              "divergenceFromLog": 0.8526582278481013,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.7021103581800582,
+              "divergenceFromLog": 0.8552758954501452,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 42000,
+              "magnitude": 0.7031218156553961,
+              "divergenceFromLog": 0.8578045391384901,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 43000,
+              "magnitude": 0.7040993788819877,
+              "divergenceFromLog": 0.860248447204969,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 44000,
+              "magnitude": 0.705044661846023,
+              "divergenceFromLog": 0.8626116546150574,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 45000,
+              "magnitude": 0.7059591836734694,
+              "divergenceFromLog": 0.8648979591836734,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 46000,
+              "magnitude": 0.7068443747549981,
+              "divergenceFromLog": 0.8671109368874951,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 47000,
+              "magnitude": 0.7077015825169556,
+              "divergenceFromLog": 0.8692539562923889,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 48000,
+              "magnitude": 0.7085320768394346,
+              "divergenceFromLog": 0.8713301920985864,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 49000,
+              "magnitude": 0.7093370551290998,
+              "divergenceFromLog": 0.8733426378227495,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 50000,
+              "magnitude": 0.7101176470588236,
+              "divergenceFromLog": 0.8752941176470588,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.7108749189889826,
+              "divergenceFromLog": 0.8771872974724563,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 52000,
+              "magnitude": 0.7116098780869021,
+              "divergenceFromLog": 0.8790246952172553,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 53000,
+              "magnitude": 0.7123234761617382,
+              "divergenceFromLog": 0.8808086904043452,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 54000,
+              "magnitude": 0.7130166132322938,
+              "divergenceFromLog": 0.8825415330807345,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 55000,
+              "magnitude": 0.7136901408450705,
+              "divergenceFromLog": 0.884225352112676,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 56000,
+              "magnitude": 0.7143448651593572,
+              "divergenceFromLog": 0.8858621628983928,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 57000,
+              "magnitude": 0.7149815498154982,
+              "divergenceFromLog": 0.8874538745387454,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 58000,
+              "magnitude": 0.7156009186016842,
+              "divergenceFromLog": 0.8890022965042103,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 59000,
+              "magnitude": 0.7162036579337617,
+              "divergenceFromLog": 0.8905091448344044,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 60000,
+              "magnitude": 0.7167904191616766,
+              "divergenceFromLog": 0.8919760479041916,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.7173618207152811,
+              "divergenceFromLog": 0.8934045517882026,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 62000,
+              "magnitude": 0.7179184501013742,
+              "divergenceFromLog": 0.8947961252534354,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 63000,
+              "magnitude": 0.7184608657630084,
+              "divergenceFromLog": 0.8961521644075208,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 64000,
+              "magnitude": 0.7189895988112928,
+              "divergenceFromLog": 0.8974739970282318,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 65000,
+              "magnitude": 0.7195051546391753,
+              "divergenceFromLog": 0.8987628865979381,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 66000,
+              "magnitude": 0.7200080144259667,
+              "divergenceFromLog": 0.9000200360649169,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 67000,
+              "magnitude": 0.720498636540709,
+              "divergenceFromLog": 0.9012465913517725,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 68000,
+              "magnitude": 0.720977457851866,
+              "divergenceFromLog": 0.9024436446296648,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 69000,
+              "magnitude": 0.7214448949502396,
+              "divergenceFromLog": 0.9036122373755989,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 70000,
+              "magnitude": 0.7219013452914799,
+              "divergenceFromLog": 0.9047533632286996,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.7223471882640587,
+              "divergenceFromLog": 0.9058679706601467,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 72000,
+              "magnitude": 0.7227827861881273,
+              "divergenceFromLog": 0.9069569654703181,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 73000,
+              "magnitude": 0.7232084852502486,
+              "divergenceFromLog": 0.9080212131256215,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 74000,
+              "magnitude": 0.7236246163786141,
+              "divergenceFromLog": 0.9090615409465352,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 75000,
+              "magnitude": 0.7240314960629922,
+              "divergenceFromLog": 0.9100787401574804,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 76000,
+              "magnitude": 0.7244294271233298,
+              "divergenceFromLog": 0.9110735678083244,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 77000,
+              "magnitude": 0.7248186994306264,
+              "divergenceFromLog": 0.9120467485765658,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 78000,
+              "magnitude": 0.7251995905834187,
+              "divergenceFromLog": 0.9129989764585466,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 79000,
+              "magnitude": 0.7255723665429633,
+              "divergenceFromLog": 0.913930916357408,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 80000,
+              "magnitude": 0.7259372822299652,
+              "divergenceFromLog": 0.9148432055749129,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.7262945820854888,
+              "divergenceFromLog": 0.9157364552137217,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 82000,
+              "magnitude": 0.726644500598484,
+              "divergenceFromLog": 0.9166112514962096,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 83000,
+              "magnitude": 0.7269872628021835,
+              "divergenceFromLog": 0.9174681570054588,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 84000,
+              "magnitude": 0.727323084741456,
+              "divergenceFromLog": 0.9183077118536399,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 85000,
+              "magnitude": 0.7276521739130436,
+              "divergenceFromLog": 0.9191304347826087,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 86000,
+              "magnitude": 0.7279747296804763,
+              "divergenceFromLog": 0.9199368242011906,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 87000,
+              "magnitude": 0.7282909436653198,
+              "divergenceFromLog": 0.9207273591632993,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 88000,
+              "magnitude": 0.7286010001162927,
+              "divergenceFromLog": 0.9215025002907314,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 89000,
+              "magnitude": 0.7289050762576827,
+              "divergenceFromLog": 0.9222626906442067,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 90000,
+              "magnitude": 0.7292033426183845,
+              "divergenceFromLog": 0.923008356545961,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.7294959633427885,
+              "divergenceFromLog": 0.9237399083569714,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 92000,
+              "magnitude": 0.7297830964846672,
+              "divergenceFromLog": 0.9244577412116679,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 93000,
+              "magnitude": 0.7300648942851162,
+              "divergenceFromLog": 0.9251622357127904,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 94000,
+              "magnitude": 0.730341503435545,
+              "divergenceFromLog": 0.9258537585888627,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 95000,
+              "magnitude": 0.7306130653266333,
+              "divergenceFromLog": 0.9265326633165829,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 96000,
+              "magnitude": 0.73087971628411,
+              "divergenceFromLog": 0.9271992907102748,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 97000,
+              "magnitude": 0.7311415877921577,
+              "divergenceFromLog": 0.927853969480394,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 98000,
+              "magnitude": 0.7313988067051805,
+              "divergenceFromLog": 0.928497016762951,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 99000,
+              "magnitude": 0.7316514954486347,
+              "divergenceFromLog": 0.9291287386215865,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 100000,
+              "magnitude": 0.7318997722095673,
+              "divergenceFromLog": 0.929749430523918,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.7321437511174683,
+              "divergenceFromLog": 0.9303593777936706,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 102000,
+              "magnitude": 0.7323835424160015,
+              "divergenceFromLog": 0.9309588560400035,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 103000,
+              "magnitude": 0.7326192526261409,
+              "divergenceFromLog": 0.9315481315653522,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 104000,
+              "magnitude": 0.7328509847012087,
+              "divergenceFromLog": 0.9321274617530217,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 105000,
+              "magnitude": 0.733078838174274,
+              "divergenceFromLog": 0.9326970954356847,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 106000,
+              "magnitude": 0.7333029092983457,
+              "divergenceFromLog": 0.9332572732458643,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 107000,
+              "magnitude": 0.7335232911797663,
+              "divergenceFromLog": 0.9338082279494158,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 108000,
+              "magnitude": 0.7337400739051813,
+              "divergenceFromLog": 0.9343501847629531,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 109000,
+              "magnitude": 0.7339533446624441,
+              "divergenceFromLog": 0.93488336165611,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 110000,
+              "magnitude": 0.7341631878557876,
+              "divergenceFromLog": 0.9354079696394687,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.7343696852155751,
+              "divergenceFromLog": 0.9359242130389378,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 112000,
+              "magnitude": 0.7345729159029255,
+              "divergenceFromLog": 0.9364322897573136,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 113000,
+              "magnitude": 0.7347729566094855,
+              "divergenceFromLog": 0.9369323915237134,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 114000,
+              "magnitude": 0.7349698816526115,
+              "divergenceFromLog": 0.9374247041315286,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 115000,
+              "magnitude": 0.7351637630662021,
+              "divergenceFromLog": 0.9379094076655052,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 116000,
+              "magnitude": 0.7353546706874101,
+              "divergenceFromLog": 0.9383866767185252,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 117000,
+              "magnitude": 0.7355426722394499,
+              "divergenceFromLog": 0.9388566805986248,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 118000,
+              "magnitude": 0.7357278334107037,
+              "divergenceFromLog": 0.939319583526759,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 119000,
+              "magnitude": 0.7359102179303146,
+              "divergenceFromLog": 0.9397755448257863,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 120000,
+              "magnitude": 0.7360898876404495,
+              "divergenceFromLog": 0.9402247191011236,
+              "divergenceFromWorld": 0.5
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "hollow-completion",
+      "cell": "reviewEveryPulses=1",
+      "mode": "deterministic",
+      "reviewEveryPulses": 1,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 121,
+      "goalsAccepted": 120,
+      "goalsDeclined": 0,
+      "gapRows": 7256,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 120,
+      "witnessedLegacyGapRows": 7138,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 3000,
+              "magnitude": 0.27272727272727276,
+              "divergenceFromLog": 0.6818181818181819,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 4000,
+              "magnitude": 0.2666666666666667,
+              "divergenceFromLog": 0.6666666666666667,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 5000,
+              "magnitude": 0.26415094339622647,
+              "divergenceFromLog": 0.6603773584905661,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 6000,
+              "magnitude": 0.27042253521126763,
+              "divergenceFromLog": 0.676056338028169,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 7000,
+              "magnitude": 0.27692307692307694,
+              "divergenceFromLog": 0.6923076923076923,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 8000,
+              "magnitude": 0.2831858407079646,
+              "divergenceFromLog": 0.7079646017699115,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 9000,
+              "magnitude": 0.28905109489051095,
+              "divergenceFromLog": 0.7226277372262774,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 10000,
+              "magnitude": 0.294478527607362,
+              "divergenceFromLog": 0.7361963190184049,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 11000,
+              "magnitude": 0.2994764397905759,
+              "divergenceFromLog": 0.7486910994764397,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 12000,
+              "magnitude": 0.3040723981900453,
+              "divergenceFromLog": 0.7601809954751131,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 13000,
+              "magnitude": 0.308300395256917,
+              "divergenceFromLog": 0.7707509881422925,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 14000,
+              "magnitude": 0.31219512195121957,
+              "divergenceFromLog": 0.7804878048780488,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 15000,
+              "magnitude": 0.31578947368421056,
+              "divergenceFromLog": 0.7894736842105263,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 16000,
+              "magnitude": 0.3191135734072022,
+              "divergenceFromLog": 0.7977839335180055,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 17000,
+              "magnitude": 0.32219451371571073,
+              "divergenceFromLog": 0.8054862842892768,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 18000,
+              "magnitude": 0.3250564334085779,
+              "divergenceFromLog": 0.8126410835214447,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 19000,
+              "magnitude": 0.32772073921971256,
+              "divergenceFromLog": 0.8193018480492813,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 20000,
+              "magnitude": 0.3302063789868668,
+              "divergenceFromLog": 0.8255159474671669,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 21000,
+              "magnitude": 0.33253012048192776,
+              "divergenceFromLog": 0.8313253012048193,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 22000,
+              "magnitude": 0.3347068145800317,
+              "divergenceFromLog": 0.8367670364500792,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 23000,
+              "magnitude": 0.3367496339677892,
+              "divergenceFromLog": 0.8418740849194729,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 24000,
+              "magnitude": 0.3386702849389417,
+              "divergenceFromLog": 0.8466757123473542,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 25000,
+              "magnitude": 0.3404791929382094,
+              "divergenceFromLog": 0.8511979823455234,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 26000,
+              "magnitude": 0.3421856639247944,
+              "divergenceFromLog": 0.8554641598119859,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 27000,
+              "magnitude": 0.3437980241492865,
+              "divergenceFromLog": 0.8594950603732162,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 28000,
+              "magnitude": 0.34532374100719426,
+              "divergenceFromLog": 0.8633093525179856,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 29000,
+              "magnitude": 0.3467695274831244,
+              "divergenceFromLog": 0.866923818707811,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 30000,
+              "magnitude": 0.34814143245693563,
+              "divergenceFromLog": 0.8703535811423391,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.34944491887275836,
+              "divergenceFromLog": 0.8736122971818958,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 32000,
+              "magnitude": 0.3506849315068493,
+              "divergenceFromLog": 0.8767123287671232,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 33000,
+              "magnitude": 0.3518659558263519,
+              "divergenceFromLog": 0.8796648895658796,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 34000,
+              "magnitude": 0.35299206921413123,
+              "divergenceFromLog": 0.882480173035328,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 35000,
+              "magnitude": 0.35406698564593303,
+              "divergenceFromLog": 0.8851674641148325,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 36000,
+              "magnitude": 0.35509409474367293,
+              "divergenceFromLog": 0.8877352368591823,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 37000,
+              "magnitude": 0.3560764959901296,
+              "divergenceFromLog": 0.8901912399753239,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 38000,
+              "magnitude": 0.357017028772754,
+              "divergenceFromLog": 0.8925425719318849,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 39000,
+              "magnitude": 0.35791829882484616,
+              "divergenceFromLog": 0.8947957470621153,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 40000,
+              "magnitude": 0.35878270154831826,
+              "divergenceFromLog": 0.8969567538707955,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.35961244263131054,
+              "divergenceFromLog": 0.8990311065782763,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 42000,
+              "magnitude": 0.3604095563139932,
+              "divergenceFromLog": 0.9010238907849829,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 43000,
+              "magnitude": 0.3611759216052264,
+              "divergenceFromLog": 0.9029398040130658,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 44000,
+              "magnitude": 0.36191327670987933,
+              "divergenceFromLog": 0.9047831917746982,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 45000,
+              "magnitude": 0.36262323189027007,
+              "divergenceFromLog": 0.9065580797256751,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 46000,
+              "magnitude": 0.36330728095433984,
+              "divergenceFromLog": 0.9082682023858495,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 47000,
+              "magnitude": 0.36396681153694194,
+              "divergenceFromLog": 0.9099170288423548,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 48000,
+              "magnitude": 0.3646031143182682,
+              "divergenceFromLog": 0.9115077857956704,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 49000,
+              "magnitude": 0.3652173913043479,
+              "divergenceFromLog": 0.9130434782608696,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 50000,
+              "magnitude": 0.36581076327822726,
+              "divergenceFromLog": 0.914526908195568,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.3663842765164351,
+              "divergenceFromLog": 0.9159606912910878,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 52000,
+              "magnitude": 0.3669389088533159,
+              "divergenceFromLog": 0.9173472721332898,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 53000,
+              "magnitude": 0.3674755751654586,
+              "divergenceFromLog": 0.9186889379136464,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 54000,
+              "magnitude": 0.36799513233951936,
+              "divergenceFromLog": 0.9199878308487983,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 55000,
+              "magnitude": 0.36849838377901856,
+              "divergenceFromLog": 0.9212459594475463,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 56000,
+              "magnitude": 0.36898608349900597,
+              "divergenceFromLog": 0.9224652087475149,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 57000,
+              "magnitude": 0.36945893985168915,
+              "divergenceFromLog": 0.9236473496292228,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 58000,
+              "magnitude": 0.3699176189210736,
+              "divergenceFromLog": 0.924794047302684,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 59000,
+              "magnitude": 0.3703627476202727,
+              "divergenceFromLog": 0.9259068690506818,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 60000,
+              "magnitude": 0.3707949165213058,
+              "divergenceFromLog": 0.9269872913032644,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.3712146824438542,
+              "divergenceFromLog": 0.9280367061096354,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 62000,
+              "magnitude": 0.37162257082650435,
+              "divergenceFromLog": 0.9290564270662608,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 63000,
+              "magnitude": 0.37201907790143085,
+              "divergenceFromLog": 0.9300476947535771,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 64000,
+              "magnitude": 0.37240467269120564,
+              "divergenceFromLog": 0.9310116817280141,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 65000,
+              "magnitude": 0.37277979884442547,
+              "divergenceFromLog": 0.9319494971110636,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 66000,
+              "magnitude": 0.37314487632508836,
+              "divergenceFromLog": 0.9328621908127208,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 67000,
+              "magnitude": 0.37350030296909714,
+              "divergenceFromLog": 0.9337507574227428,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 68000,
+              "magnitude": 0.3738464559198901,
+              "divergenceFromLog": 0.9346161397997251,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 69000,
+              "magnitude": 0.3741836929539813,
+              "divergenceFromLog": 0.9354592323849532,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 70000,
+              "magnitude": 0.37451235370611186,
+              "divergenceFromLog": 0.9362808842652796,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.3748327608027482,
+              "divergenceFromLog": 0.9370819020068704,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 72000,
+              "magnitude": 0.37514522091181135,
+              "divergenceFromLog": 0.9378630522795283,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 73000,
+              "magnitude": 0.3754500257157552,
+              "divergenceFromLog": 0.938625064289388,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 74000,
+              "magnitude": 0.3757474528144313,
+              "divergenceFromLog": 0.9393686320360781,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 75000,
+              "magnitude": 0.37603776656356835,
+              "divergenceFromLog": 0.9400944164089208,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 76000,
+              "magnitude": 0.37632121885415015,
+              "divergenceFromLog": 0.9408030471353753,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 77000,
+              "magnitude": 0.37659804983748646,
+              "divergenceFromLog": 0.9414951245937161,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 78000,
+              "magnitude": 0.3768684886003322,
+              "divergenceFromLog": 0.9421712215008304,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 79000,
+              "magnitude": 0.377132753794018,
+              "divergenceFromLog": 0.942831884485045,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 80000,
+              "magnitude": 0.3773910542211995,
+              "divergenceFromLog": 0.9434776355529987,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.37764358938351356,
+              "divergenceFromLog": 0.9441089734587839,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 82000,
+              "magnitude": 0.37789054999314226,
+              "divergenceFromLog": 0.9447263749828556,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 83000,
+              "magnitude": 0.3781321184510251,
+              "divergenceFromLog": 0.9453302961275627,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 84000,
+              "magnitude": 0.3783684692942255,
+              "divergenceFromLog": 0.9459211732355637,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 85000,
+              "magnitude": 0.3785997696147447,
+              "divergenceFromLog": 0.9464994240368616,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 86000,
+              "magnitude": 0.3788261794518834,
+              "divergenceFromLog": 0.9470654486297084,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 87000,
+              "magnitude": 0.37904785216007836,
+              "divergenceFromLog": 0.9476196304001958,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 88000,
+              "magnitude": 0.37926493475398065,
+              "divergenceFromLog": 0.9481623368849516,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 89000,
+              "magnitude": 0.37947756823240014,
+              "divergenceFromLog": 0.9486939205810003,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 90000,
+              "magnitude": 0.3796858878826092,
+              "divergenceFromLog": 0.9492147197065229,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.3798900235663787,
+              "divergenceFromLog": 0.9497250589159466,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 92000,
+              "magnitude": 0.3800900999890122,
+              "divergenceFromLog": 0.9502252499725306,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 93000,
+              "magnitude": 0.38028623695254493,
+              "divergenceFromLog": 0.9507155923813623,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 94000,
+              "magnitude": 0.38047854959418154,
+              "divergenceFromLog": 0.9511963739854538,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 95000,
+              "magnitude": 0.3806671486109677,
+              "divergenceFromLog": 0.9516678715274192,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 96000,
+              "magnitude": 0.3808521404716122,
+              "divergenceFromLog": 0.9521303511790304,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 97000,
+              "magnitude": 0.38103362761630793,
+              "divergenceFromLog": 0.9525840690407698,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 98000,
+              "magnitude": 0.381211708645337,
+              "divergenceFromLog": 0.9530292716133424,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 99000,
+              "magnitude": 0.381386478497187,
+              "divergenceFromLog": 0.9534661962429675,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 100000,
+              "magnitude": 0.3815580286168522,
+              "divergenceFromLog": 0.9538950715421304,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.3817264471149436,
+              "divergenceFromLog": 0.9543161177873589,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 102000,
+              "magnitude": 0.38189181891818924,
+              "divergenceFromLog": 0.954729547295473,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 103000,
+              "magnitude": 0.38205422591186083,
+              "divergenceFromLog": 0.955135564779652,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 104000,
+              "magnitude": 0.38221374707462946,
+              "divergenceFromLog": 0.9555343676865736,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 105000,
+              "magnitude": 0.3823704586063133,
+              "divergenceFromLog": 0.9559261465157832,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 106000,
+              "magnitude": 0.38252443404895164,
+              "divergenceFromLog": 0.9563110851223791,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 107000,
+              "magnitude": 0.3826757444016078,
+              "divergenceFromLog": 0.9566893610040194,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 108000,
+              "magnitude": 0.3828244582292758,
+              "divergenceFromLog": 0.9570611455731894,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 109000,
+              "magnitude": 0.382970641766242,
+              "divergenceFromLog": 0.957426604415605,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 110000,
+              "magnitude": 0.38311435901422686,
+              "divergenceFromLog": 0.9577858975355671,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.38325567183561227,
+              "divergenceFromLog": 0.9581391795890306,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 112000,
+              "magnitude": 0.38339464004203894,
+              "divergenceFromLog": 0.9584866001050972,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 113000,
+              "magnitude": 0.38353132147863944,
+              "divergenceFromLog": 0.9588283036965985,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 114000,
+              "magnitude": 0.3836657721041561,
+              "divergenceFromLog": 0.9591644302603902,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 115000,
+              "magnitude": 0.3837980460671754,
+              "divergenceFromLog": 0.9594951151679384,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 116000,
+              "magnitude": 0.38392819577869713,
+              "divergenceFromLog": 0.9598204894467428,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 117000,
+              "magnitude": 0.3840562719812427,
+              "divergenceFromLog": 0.9601406799531067,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 118000,
+              "magnitude": 0.38418232381469175,
+              "divergenceFromLog": 0.9604558095367293,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 119000,
+              "magnitude": 0.3843063988790285,
+              "divergenceFromLog": 0.9607659971975713,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 120000,
+              "magnitude": 0.38442854329416404,
+              "divergenceFromLog": 0.96107135823541,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "world-briefly-wrong",
+      "cell": "reviewEveryPulses=1",
+      "mode": "deterministic",
+      "reviewEveryPulses": 1,
+      "offerAcceptPulses": 0,
+      "weights": "default",
+      "goalsProposed": 7,
+      "goalsAccepted": 7,
+      "goalsDeclined": 0,
+      "gapRows": 15,
+      "termination": "reached",
+      "pulsesRun": 5,
+      "capped": false,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 6,
+      "witnessedLegacyGapRows": 12,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 3000,
+              "magnitude": 0.13043478260869565,
+              "divergenceFromLog": 0.32608695652173914,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 4000,
+              "magnitude": 0.15058823529411766,
+              "divergenceFromLog": 0.3764705882352941,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 5000,
+              "magnitude": 0.12283464566929135,
+              "divergenceFromLog": 0.30708661417322836,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "reached"
+        }
+      ]
+    },
+    {
+      "scenario": "healthy-achiever",
+      "cell": "adjusted-weights",
+      "mode": "deterministic",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "adjusted",
+      "goalsProposed": 4,
+      "goalsAccepted": 4,
+      "goalsDeclined": 0,
+      "gapRows": 8,
+      "termination": "reached",
+      "pulsesRun": 31,
+      "capped": false,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 3,
+      "witnessedLegacyGapRows": 6,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.18936170212765954,
+              "divergenceFromLog": 0.3156028368794326,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.18000000000000002,
+              "divergenceFromLog": 0.30000000000000004,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "reached"
+        }
+      ]
+    },
+    {
+      "scenario": "deluded-achiever",
+      "cell": "adjusted-weights",
+      "mode": "llm",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "adjusted",
+      "goalsProposed": 12,
+      "goalsAccepted": 11,
+      "goalsDeclined": 0,
+      "gapRows": 65,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 11,
+      "witnessedLegacyGapRows": 55,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.9291525423728815,
+              "divergenceFromLog": 0.9152542372881356,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.935140186915888,
+              "divergenceFromLog": 0.9252336448598131,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.9405263157894737,
+              "divergenceFromLog": 0.9342105263157895,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.9438190954773868,
+              "divergenceFromLog": 0.9396984924623115,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.9455737704918032,
+              "divergenceFromLog": 0.9426229508196722,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.9470103092783506,
+              "divergenceFromLog": 0.9450171821305842,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.947857142857143,
+              "divergenceFromLog": 0.9464285714285714,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.948668407310705,
+              "divergenceFromLog": 0.9477806788511749,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.949158878504673,
+              "divergenceFromLog": 0.9485981308411215,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.9496842105263159,
+              "divergenceFromLog": 0.9494736842105264,
+              "divergenceFromWorld": 1
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "premature-closer",
+      "cell": "adjusted-weights",
+      "mode": "llm",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "adjusted",
+      "goalsProposed": 13,
+      "goalsAccepted": 12,
+      "goalsDeclined": 0,
+      "gapRows": 72,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 12,
+      "witnessedLegacyGapRows": 62,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.9143749999999999,
+              "divergenceFromLog": 0.890625,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.9168421052631579,
+              "divergenceFromLog": 0.8947368421052632,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.9218181818181819,
+              "divergenceFromLog": 0.9030303030303031,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.9252054794520548,
+              "divergenceFromLog": 0.908675799086758,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.9236823104693141,
+              "divergenceFromLog": 0.9061371841155235,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.9228571428571428,
+              "divergenceFromLog": 0.9047619047619048,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.9225692695214107,
+              "divergenceFromLog": 0.9042821158690176,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.922608695652174,
+              "divergenceFromLog": 0.9043478260869565,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.9224184261036468,
+              "divergenceFromLog": 0.9040307101727447,
+              "divergenceFromWorld": 1
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.9224657534246576,
+              "divergenceFromLog": 0.904109589041096,
+              "divergenceFromWorld": 1
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "contested-consensus",
+      "cell": "adjusted-weights",
+      "mode": "llm",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "adjusted",
+      "goalsProposed": 14,
+      "goalsAccepted": 13,
+      "goalsDeclined": 0,
+      "gapRows": 79,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 13,
+      "witnessedLegacyGapRows": 69,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.7728571428571429,
+              "divergenceFromLog": 0.9047619047619048,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.7715929203539822,
+              "divergenceFromLog": 0.9026548672566371,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.7751219512195122,
+              "divergenceFromLog": 0.9085365853658537,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.777945205479452,
+              "divergenceFromLog": 0.91324200913242,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.7721428571428572,
+              "divergenceFromLog": 0.9035714285714286,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.7684164222873899,
+              "divergenceFromLog": 0.8973607038123167,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.7661386138613862,
+              "divergenceFromLog": 0.8935643564356436,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.7647547974413647,
+              "divergenceFromLog": 0.8912579957356077,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.7634586466165414,
+              "divergenceFromLog": 0.8890977443609023,
+              "divergenceFromWorld": 0.5
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.7626633165829146,
+              "divergenceFromLog": 0.8877721943048577,
+              "divergenceFromWorld": 0.5
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "hollow-completion",
+      "cell": "adjusted-weights",
+      "mode": "deterministic",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "adjusted",
+      "goalsProposed": 13,
+      "goalsAccepted": 12,
+      "goalsDeclined": 0,
+      "gapRows": 74,
+      "termination": "pulse-cap-stop",
+      "pulsesRun": 120,
+      "capped": true,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 12,
+      "witnessedLegacyGapRows": 64,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.5557894736842105,
+              "divergenceFromLog": 0.9263157894736842,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.550344827586207,
+              "divergenceFromLog": 0.9172413793103449,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.5454545454545454,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 51000,
+              "magnitude": 0.5452380952380952,
+              "divergenceFromLog": 0.9087301587301587,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 61000,
+              "magnitude": 0.5454545454545454,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 71000,
+              "magnitude": 0.5453038674033148,
+              "divergenceFromLog": 0.9088397790055248,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 81000,
+              "magnitude": 0.5454545454545454,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 91000,
+              "magnitude": 0.5453389830508475,
+              "divergenceFromLog": 0.9088983050847458,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 101000,
+              "magnitude": 0.5454545454545454,
+              "divergenceFromLog": 0.9090909090909091,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 111000,
+              "magnitude": 0.545360824742268,
+              "divergenceFromLog": 0.9089347079037801,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "pulse-cap-stop"
+        }
+      ]
+    },
+    {
+      "scenario": "world-briefly-wrong",
+      "cell": "adjusted-weights",
+      "mode": "deterministic",
+      "reviewEveryPulses": 10,
+      "offerAcceptPulses": 0,
+      "weights": "adjusted",
+      "goalsProposed": 7,
+      "goalsAccepted": 7,
+      "goalsDeclined": 0,
+      "gapRows": 15,
+      "termination": "reached",
+      "pulsesRun": 41,
+      "capped": false,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 6,
+      "witnessedLegacyGapRows": 12,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 21000,
+              "magnitude": 0.18936170212765954,
+              "divergenceFromLog": 0.3156028368794326,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 31000,
+              "magnitude": 0.19452054794520549,
+              "divergenceFromLog": 0.32420091324200917,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 41000,
+              "magnitude": 0.185929648241206,
+              "divergenceFromLog": 0.3098827470686767,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "reached"
+        }
+      ]
+    },
+    {
+      "scenario": "healthy-achiever",
+      "cell": "offerAcceptPulses=2",
+      "mode": "deterministic",
+      "reviewEveryPulses": 1,
+      "offerAcceptPulses": 2,
+      "weights": "default",
+      "goalsProposed": 4,
+      "goalsAccepted": 4,
+      "goalsDeclined": 0,
+      "gapRows": 8,
+      "termination": "reached",
+      "pulsesRun": 6,
+      "capped": false,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 3,
+      "witnessedLegacyGapRows": 6,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 3000,
+              "magnitude": 0.13043478260869565,
+              "divergenceFromLog": 0.32608695652173914,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 4000,
+              "magnitude": 0.10114942528735633,
+              "divergenceFromLog": 0.25287356321839083,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "reached"
+        }
+      ]
+    },
+    {
+      "scenario": "healthy-achiever",
+      "cell": "offerAcceptPulses=8",
+      "mode": "deterministic",
+      "reviewEveryPulses": 1,
+      "offerAcceptPulses": 8,
+      "weights": "default",
+      "goalsProposed": 4,
+      "goalsAccepted": 4,
+      "goalsDeclined": 0,
+      "gapRows": 8,
+      "termination": "reached",
+      "pulsesRun": 12,
+      "capped": false,
+      "providerCalls": 0,
+      "llmCalls": 0,
+      "goalCalls": 0,
+      "witnessedLegacyTrajectories": 3,
+      "witnessedLegacyGapRows": 6,
+      "trajectories": [
+        {
+          "goalId": "crystal-ana-resolve-general",
+          "agentId": "ana",
+          "proposed": true,
+          "accepted": true,
+          "declined": false,
+          "gapSamples": [
+            {
+              "at": 3000,
+              "magnitude": 0.13043478260869565,
+              "divergenceFromLog": 0.32608695652173914,
+              "divergenceFromWorld": 0
+            },
+            {
+              "at": 4000,
+              "magnitude": 0.10114942528735633,
+              "divergenceFromLog": 0.25287356321839083,
+              "divergenceFromWorld": 0
+            }
+          ],
+          "termination": "reached"
+        }
+      ]
+    }
+  ]
+}

@@ -19,6 +19,7 @@
     "calibrate": "node dist/cli/calibrate.js",
     "narrate": "node dist/cli/narrate.js",
     "sweep:repetition": "node dist/cli/sweep-repetition.js",
+    "sweep:goal-layer": "node dist/cli/sweep-goal-layer.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "sweep:temperature": "node dist/cli/sweep-temperature.js"
