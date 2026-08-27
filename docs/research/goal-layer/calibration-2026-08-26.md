@@ -175,3 +175,69 @@ Finalized under the Step 3.5 lock: every verdict row above is locked (CONFIRMED/
 slate); the G4 exception is granted-and-unexercised (engine diff empty — no numeric change
 warranted); the durable decision record is [ADR-0011](../../adr/0011-goal-layer-threshold-calibration.md)
 (D-24..D-25).
+
+## 11. Issue #106 — meaning-made gate dedicated sweep (2026-08-27)
+
+Freshness-dated addendum: measured on branch `feat/goal-layer-meaning-made-gate-106` @
+b7a540e (a stack on this record's calibration branch), through the same mock-only harness
+(version `goal-layer-sweep-v1`, mode `mock`, pulse cap 120). The gate's ceiling now
+travels through `goalLayer` config (`ending.meaningMadeMaxDivergence`, default 0.33 —
+[ADR-0012](../../adr/0012-goal-layer-meaning-made-gate.md) D-29). The dedicated grid is
+5 ceilings (0.25/0.30/0.33/0.36/0.40) × 3 gate-relevant arcs (healthy-achiever /
+world-briefly-wrong / hollow-completion) × 2 cadences (1/10) = 30 cells, appended to the
+#96 grid in the same CLI (50 cells total). Committed artifact:
+[evidence/meaning-made-gate-sweep-2026-08-27.json](evidence/meaning-made-gate-sweep-2026-08-27.json)
+— zero wire calls in 50/50 cells, byte-identical re-run (md5 `b3b74ad9ea02…`), and the 20
+#96 cells field-identical to §9's artifact: the grid append perturbs nothing.
+
+### 11.1 Termination matrix (the decisive grid)
+
+| Arc | Cadence | 0.25 | 0.30 | 0.33 | 0.36 | 0.40 |
+| --- | --- | --- | --- | --- | --- | --- |
+| healthy-achiever | 1 | continue @6 | reached @4 | reached @4 | reached @4 | reached @4 |
+| healthy-achiever | 10 | continue @51 | continue @51 | reached @31 | reached @31 | reached @31 |
+| world-briefly-wrong | 1 | continue @6 | continue @6 | reached @5 | reached @5 | reached @5 |
+| world-briefly-wrong | 10 | continue @51 | continue @51 | reached @41 | reached @41 | reached @41 |
+| hollow-completion | 1 | cap @120 | cap @120 | cap @120 | cap @120 | cap @120 |
+| hollow-completion | 10 | cap @120 | cap @120 | cap @120 | cap @120 | cap @120 |
+
+`reached` = the earned `goal_end_offered`; `continue` = the arc never receives an ending
+(the gate rejected its flip; the reached-but-unearned verdict re-goals and the run stops
+early without an offer — `evaluateEndCondition`'s "world verdict reached but completion is
+un-earned" branch); `cap` = pulse-cap-stop at 120.
+
+### 11.2 Gate consultations at 0.33 (flip margins)
+
+| Arc | Cadence | Flip divergence (gate-consulted) | Margin under 0.33 | Pre-flip reviews (not gate-passing) |
+| --- | --- | --- | --- | --- |
+| healthy-achiever | 1 | 0.252874 | 23.4% | 0.326087 (continue) |
+| healthy-achiever | 10 | 0.300000 | 9.1% | 0.315603 (continue) |
+| world-briefly-wrong | 1 | 0.307087 | 6.9% | 0.326087, 0.376471 (ratified-contested window) |
+| world-briefly-wrong | 10 | 0.309883 | **6.1% (tightest)** | 0.315603, 0.324201 |
+
+### 11.3 Findings
+
+- **False-reject is the gate's real failure mode.** 0.25 rejects all four terminating
+  cells; 0.30 rejects three of four — world-briefly-wrong at both cadences (flips
+  0.307087/0.309883) and healthy-achiever at cadence 10, whose flip (0.300000) sits
+  exactly at the ceiling and the comparison is strict `<`. A rejected flip does not
+  delay the ending — it deletes it: the arc stops at 6/51 pulses with termination
+  `continue` and no `ending_offered` ever emitted.
+- **0.33 is the minimum calibrated-safe ceiling.** Every terminating cell reaches at the
+  calibrated pulse counts (healthy 4/31, wbw 5/41); tightest gate-decisive margin 6.1%
+  (the §7 headline "7%" was the cadence-1 flip; the dedicated grid measured the
+  cadence-10 flip tighter).
+- **Zero false-accept measured.** 0.36/0.40 cells are identical to 0.33 in every field
+  except the cell label. Structural reason: `deriveMeaningMade` requires
+  `determination === "reached"` before the divergence comparison, so the
+  ratified-contested-window samples (0.376471 at cadence 1, 0.324201 at cadence 10)
+  consult and fail the gate on the determination clause regardless of ceiling;
+  hollow-completion's divergenceFromLog (0.660→0.961 at cadence 1, 0.909→0.926 at
+  cadence 10) sits far above every tested ceiling.
+- **The measured class separation is wide.** Genuine-completion flips top out at
+  0.309883; the hollow band starts at 0.660377 — 0.33 sits inside that dead zone, and
+  any value in (0.31, 0.66) behaves identically on this grid.
+- **Verdict (D-29): 0.33 confirmed — negative result is the outcome.** No evidence
+  warrant to move the value; the scaffold value carries a 6.1% margin floor on the tight
+  side and maximal measured distance from the hollow band. Recorded in
+  [ADR-0012](../../adr/0012-goal-layer-meaning-made-gate.md).

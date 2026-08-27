@@ -39,6 +39,7 @@ import {
   MockDeliveryGateway,
   SimulationRuntime,
   WorldEvaluator,
+  deriveMeaningMade,
   resolveGoalLayerConfig,
   type GoalLayerCallInput,
   type GoalLayerClientFactory,
@@ -102,7 +103,6 @@ export type GoalTrajectory = {
 };
 
 const DEFAULT_PULSE_CAP = 120;
-const MEANING_MADE_DIVERGENCE_MAX = 0.33;
 
 /**
  * Harness stamping: recipe and injected events commit with run-scoped
@@ -250,13 +250,6 @@ function deriveCompletionBeat(
   );
 }
 
-function deriveMeaningMade(
-  verdict: { determination: string },
-  divergenceFromLog: number,
-): boolean {
-  return verdict.determination === "reached" && divergenceFromLog < MEANING_MADE_DIVERGENCE_MAX;
-}
-
 /**
  * Wrapped WorldEvaluator (RD-2): records the end-condition decision per goal
  * per review by reconstructing it from registry state + the committed log
@@ -273,6 +266,7 @@ export class EndConditionRecorder extends WorldEvaluator {
       agentStateRepo: InMemoryAgentStateRepository;
       channelRegistry: ChannelRegistry;
       registry: GoalRegistry;
+      meaningMadeMaxDivergence: number;
     },
   ) {
     // The super() instance is an orphan — only the inner evaluator reviews.
@@ -292,7 +286,8 @@ export class EndConditionRecorder extends WorldEvaluator {
     now: number;
   }): Promise<WorldReview> {
     const review = await this.inner.runReview(input);
-    const { eventRepo, agentStateRepo, channelRegistry, registry } = this.deps;
+    const { eventRepo, agentStateRepo, channelRegistry, registry, meaningMadeMaxDivergence } =
+      this.deps;
     const log = await eventRepo.getCommittedThrough(
       input.simulation.id,
       Number.MAX_SAFE_INTEGER,
@@ -320,7 +315,11 @@ export class EndConditionRecorder extends WorldEvaluator {
       );
       const result = evaluateEndCondition(goal, selfVerdict, verdict, {
         completionBeatPresent: deriveCompletionBeat(goal, log, channelId),
-        meaningMade: deriveMeaningMade(verdict, divergenceFromLog),
+        meaningMade: deriveMeaningMade(
+          verdict,
+          divergenceFromLog,
+          meaningMadeMaxDivergence,
+        ),
         nextGoalAvailable: registry.getProposals().length > 0,
       });
       this.records.push({
@@ -341,7 +340,7 @@ const RECORDER_STUB_CONFIG: GoalLayerRuntimeConfig = {
   enabled: true,
   reviewEveryPulses: 1,
   delusionWeightsByAgent: new Map(),
-  ending: { offerAcceptPulses: 0 },
+  ending: { offerAcceptPulses: 0, meaningMadeMaxDivergence: 0.33 },
   synthesizer: {
     mode: "deterministic",
     intervalPulses: 1,
@@ -418,6 +417,7 @@ export class GoalScenarioRunner {
       agentStateRepo,
       channelRegistry,
       registry,
+      meaningMadeMaxDivergence: config.ending.meaningMadeMaxDivergence,
     });
     const goalLayer: GoalLayerRuntime = {
       config,

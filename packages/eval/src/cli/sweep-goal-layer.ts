@@ -79,6 +79,32 @@ function buildCells(): CellSpec[] {
       },
     });
   }
+  // Issue #106: the meaning-made gate's dedicated grid — 5 ceilings × the 3
+  // gate-relevant arcs × 2 cadences. 0.33 is the scaffold default the sweep
+  // must re-justify (ADR-0011 D-28); 0.326 is the healthy arc's closest
+  // approach at cadence 1, so 0.30/0.25 probe false-reject and 0.36/0.40
+  // probe false-accept against the contested window (0.376).
+  const MEANING_MADE_CEILINGS = [0.25, 0.3, 0.33, 0.36, 0.4];
+  const MEANING_MADE_ARCS: GoalScenarioId[] = [
+    "healthy-achiever",
+    "world-briefly-wrong",
+    "hollow-completion",
+  ];
+  for (const ceiling of MEANING_MADE_CEILINGS) {
+    for (const arc of MEANING_MADE_ARCS) {
+      for (const reviewEveryPulses of [1, 10]) {
+        cells.push({
+          scenario: arc,
+          label: `meaningMade=${ceiling}@cadence${reviewEveryPulses}`,
+          overrides: {
+            enabled: true,
+            reviewEveryPulses,
+            ending: { meaningMadeMaxDivergence: ceiling },
+          },
+        });
+      }
+    }
+  }
   return cells;
 }
 

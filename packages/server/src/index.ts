@@ -45,6 +45,7 @@ export type { AgentContext } from "./simulation/pulse-scheduler.js";
 // wires GoalLayerRuntime directly per the goal-end-to-end test recipe)
 export {
   WorldEvaluator,
+  deriveMeaningMade,
   resolveGoalLayerConfig,
 } from "./simulation/world/world-evaluator.js";
 export type {

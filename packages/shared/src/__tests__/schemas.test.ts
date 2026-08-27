@@ -344,6 +344,11 @@ describe("GoalLayerConfigSchema", () => {
       { synthesizer: { mode: "llm", intervalPulses: 5, maxCandidatesPerReview: 2 }, acceptance: { mode: "agent" } },
       { synthesizer: { mode: "llm" }, acceptance: { mode: "agent" } },
     ],
+    [
+      "a meaning-made ceiling in the ending section (issue #106)",
+      { ending: { offerAcceptPulses: 2, meaningMadeMaxDivergence: 0.4 } },
+      { ending: { offerAcceptPulses: 2, meaningMadeMaxDivergence: 0.4 } },
+    ],
   ] as const)("parses %s", (name, input, expected) => {
     const parsed = GoalLayerConfigSchema.parse(input) as Record<string, unknown>;
     for (const [key, value] of Object.entries(expected)) {
@@ -376,6 +381,8 @@ describe("GoalLayerConfigSchema", () => {
       },
       false,
     ],
+    ["a meaning-made ceiling above 1", { ending: { meaningMadeMaxDivergence: 1.2 } }, false],
+    ["a negative meaning-made ceiling", { ending: { meaningMadeMaxDivergence: -0.1 } }, false],
   ] as const)("rejects %s", (name, input, expectFieldMessage) => {
     const result = GoalLayerConfigSchema.safeParse(input);
     expect(result.success).toBe(false);
