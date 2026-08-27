@@ -3,8 +3,11 @@ name: perfectman
 services:
   simulation:
     build:
-      context: ..
-      dockerfile: app/Dockerfile
+      # Relative paths resolve against the directory of the first compose
+      # file on the command line, so these assume this file's own dir
+      # (docker/app/) as the project directory.
+      context: ../..
+      dockerfile: docker/app/Dockerfile
     image: perfectman-app:local
     container_name: perfectman-simulation
     # Lets provider baseURLs reach services on the host (e.g. native Ollama)

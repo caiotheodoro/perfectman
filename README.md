@@ -97,11 +97,13 @@ cp examples/simulations/mock.inline-personas.example.json config/index.json
 docker compose -f docker/app/app.compose.yml up --build
 ```
 
-It combines with the auxiliary containers, e.g. Qwen3/Ollama alongside the runtime:
+It combines with the auxiliary containers — putting the app file first keeps every relative path anchored to `docker/app/`. With Ollama running as an in-project service, point your config's provider `baseURL` at `http://qwen3:11434/v1` (container DNS), not localhost:
 
 ```bash
-docker compose -f docker/qwen3/qwen3.compose.yml \
-               -f docker/app/app.compose.yml up -d simulation
+docker compose -f docker/app/app.compose.yml \
+               -f docker/qwen3/qwen3.compose.yml up -d
+docker compose -f docker/app/app.compose.yml \
+               -f docker/qwen3/qwen3.compose.yml logs -f simulation
 ```
 
 Published images are built for each tagged release and pushed to GHCR (`ghcr.io/caiotheodoro/perfectman:<tag>`) — see [Releases](#releases) below.
