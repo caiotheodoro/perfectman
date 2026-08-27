@@ -30,7 +30,6 @@ import {
 } from "@perfectman/engine";
 import type { DeferenceSignal, GoalRatingContext, WorldStateSnapshot } from "@perfectman/engine";
 import type { IAgentStateRepository, IEventRepository } from "../../persistence/repositories.js";
-import type { GoalSelfVerdictEntry } from "../../persistence/sqlite/goal-registry-repository.js";
 import type { ChannelRegistry } from "../channel-registry.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { payloadString } from "../payload-readers.js";
@@ -66,6 +65,12 @@ export type WorldReview = {
 
 /** D-32 seam: the evaluator's optional DB dependency, typed without importing
  *  the sqlite implementation (world never imports persistence impls). */
+export type GoalSelfVerdictEntry = {
+  goalId: string;
+  verdict: SelfVerdict;
+  source: "llm" | "deterministic";
+};
+
 export type GoalRegistryPersister = {
   saveSelfVerdicts(simulationId: string, entries: GoalSelfVerdictEntry[]): Promise<void>;
   loadSelfVerdicts(simulationId: string): Promise<GoalSelfVerdictEntry[]>;

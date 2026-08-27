@@ -162,6 +162,24 @@ describe("SqliteGoalRegistryRepository", () => {
     expect(loaded[0]?.source).toBe("llm");
   });
 
+  it("saveSelfVerdicts replaces the whole junction: dropped goals are deleted, not resurrected", async () => {
+    const repo = new SqliteGoalRegistryRepository(db);
+    await repo.saveSelfVerdicts(SIM_ID, [
+      makeEntry("goal-a", "in_progress"),
+      makeEntry("goal-b", "reached"),
+    ]);
+
+    // Next write-through drops goal-a from the junction.
+    await repo.saveSelfVerdicts(SIM_ID, [makeEntry("goal-b", "reached")]);
+
+    const loaded = await repo.loadSelfVerdicts(SIM_ID);
+    expect(loaded.map((entry) => entry.goalId)).toEqual(["goal-b"]);
+
+    // Empty write-through clears the simulation's whole junction.
+    await repo.saveSelfVerdicts(SIM_ID, []);
+    expect(await repo.loadSelfVerdicts(SIM_ID)).toEqual([]);
+  });
+
   it("keeps one row per goal and orders by goal_id", async () => {
     const repo = new SqliteGoalRegistryRepository(db);
     await repo.saveSelfVerdicts(SIM_ID, [

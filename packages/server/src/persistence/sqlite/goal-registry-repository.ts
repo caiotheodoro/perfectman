@@ -6,13 +6,9 @@
  */
 
 import type { SelfVerdict } from "@perfectman/shared";
+import type { GoalSelfVerdictEntry, GoalRegistryPersister } from "../../simulation/world/world-evaluator.js";
+export type { GoalSelfVerdictEntry } from "../../simulation/world/world-evaluator.js";
 import type { DB } from "./database.js";
-
-export type GoalSelfVerdictEntry = {
-  goalId: string;
-  verdict: SelfVerdict;
-  source: "llm" | "deterministic";
-};
 
 type GoalSelfVerdictRow = {
   simulation_id: string;
@@ -37,25 +33,27 @@ export class SqliteGoalRegistryRepository {
     simulationId: string,
     entries: GoalSelfVerdictEntry[],
   ): Promise<void> {
-    for (const entry of entries) {
+    const persist = this.db.transaction(() => {
       this.db
-        .prepare(
-          `INSERT INTO goal_self_verdicts
-             (simulation_id, goal_id, verdict, source, updated_at)
-           VALUES (?, ?, ?, ?, ?)
-           ON CONFLICT(simulation_id, goal_id) DO UPDATE SET
-             verdict    = excluded.verdict,
-             source     = excluded.source,
-             updated_at = excluded.updated_at`,
-        )
-        .run(
+        .prepare(`DELETE FROM goal_self_verdicts WHERE simulation_id = ?`)
+        .run(simulationId);
+      const insert = this.db.prepare(
+        `INSERT INTO goal_self_verdicts
+           (simulation_id, goal_id, verdict, source, updated_at)
+         VALUES (?, ?, ?, ?, ?)`,
+      );
+      const now = Date.now();
+      for (const entry of entries) {
+        insert.run(
           simulationId,
           entry.goalId,
           JSON.stringify(entry.verdict),
           entry.source,
-          Date.now(),
+          now,
         );
-    }
+      }
+    });
+    persist();
     return Promise.resolve();
   }
 
