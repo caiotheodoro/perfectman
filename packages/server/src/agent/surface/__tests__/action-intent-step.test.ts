@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from "vitest";
-import type { AgentRuntimeInput, LLMProviderResult } from "@perfectman/shared";
+import type { AgentRuntimeInput, CommittedEvent, LLMProviderResult } from "@perfectman/shared";
 import type { LLMConfig } from "../../llm/llm-config.js";
 import { ActionIntentStep } from "../action-intent-step.js";
 import { llmSurfaceRegistry } from "../index.js";
@@ -86,6 +86,7 @@ const prompt = {
 
 function runStep(
   provider: { generateIntent: unknown },
+  input: AgentRuntimeInput = makeInput(),
 ): Promise<ReturnType<ActionIntentStep["execute"]>> {
   const step = new ActionIntentStep();
   const ctx: StepRunContext = {
@@ -96,7 +97,7 @@ function runStep(
     profile: {} as StepRunContext["profile"],
     prompt,
   };
-  return step.execute(makeInput(), ctx);
+  return step.execute(input, ctx);
 }
 
 describe("ActionIntentStep", () => {
@@ -230,5 +231,146 @@ describe("ActionIntentStep", () => {
     const failure = outcome.value.operatorEvents.find((e) => e.type === "llm_failure");
     expect(failure).toBeDefined();
     expect(outcome.value.operatorEvents.some((e) => e.type === "intent_blocked")).toBe(false);
+  });
+
+  describe("reply/reaction target resolution", () => {
+    const trigger: CommittedEvent = {
+      id: "evt_trigger",
+      simulationId: "sim-1",
+      channelId: "general",
+      actorId: "agent-peer",
+      type: "message_sent",
+      payload: { content: "did you see this?" },
+      createdAt: 1,
+      pulseIndex: 2,
+      sourceEventIds: [],
+      emotionalSalience: "low",
+      visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "public" },
+    };
+
+    function targetInput(overrides: Partial<AgentRuntimeInput["perceptionPacket"]> = {}): AgentRuntimeInput {
+      const base = makeInput({
+        availableActions: [
+          { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
+          { intentType: "send_message", channelTargets: ["general"], personTargets: [], blocked: false },
+          { intentType: "reply_to_message", channelTargets: ["general"], personTargets: ["agent-peer"], blocked: false },
+          { intentType: "react", channelTargets: ["general"], personTargets: [], blocked: false },
+        ],
+      });
+      return {
+        ...base,
+        perceptionPacket: {
+          ...base.perceptionPacket,
+          ownRecentUtterances: [],
+          triggeringEvent: trigger,
+          visibleContextEvents: [trigger],
+          eventHandles: { e1: "evt_trigger" },
+          ...overrides,
+        },
+      };
+    }
+
+    function replyJson(replyToEventId: string): string {
+      return JSON.stringify({
+        intentType: "reply_to_message",
+        channelTarget: "general",
+        personTargets: ["agent-peer"],
+        visibleContent: "yes I did",
+        replyToEventId,
+        privateMotiveSummary: "engage",
+        emotionDrivers: [],
+        motivationDrivers: [],
+      });
+    }
+
+    it("commits a valid-handle reply with the real event id and resolved actor, no retry", async () => {
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(replyJson("e1"))) };
+      const outcome = await runStep(provider, targetInput());
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.value.fallbackApplied).toBe(false);
+      expect(outcome.value.intent.intentType).toBe("reply_to_message");
+      expect(outcome.value.intent.replyToEventId).toBe("evt_trigger");
+      expect(outcome.value.intent.replyToActorId).toBe("agent-peer");
+      expect(provider.generateIntent).toHaveBeenCalledTimes(1);
+    });
+
+    it("retries exactly once with a correction note naming the bad handle, then accepts a corrected handle", async () => {
+      const provider = {
+        generateIntent: vi
+          .fn()
+          .mockResolvedValueOnce(jsonResponse(replyJson("marianas-message")))
+          .mockResolvedValueOnce(jsonResponse(replyJson("e1"))),
+      };
+      const outcome = await runStep(provider, targetInput());
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(provider.generateIntent).toHaveBeenCalledTimes(2);
+      const retryPrompt = provider.generateIntent.mock.calls[1]![2] as { system: string };
+      expect(retryPrompt.system).toContain("marianas-message");
+      expect(retryPrompt.system).toContain("e1");
+      expect(retryPrompt.system).toContain("send_message");
+      expect(outcome.value.fallbackApplied).toBe(false);
+      expect(outcome.value.intent.replyToEventId).toBe("evt_trigger");
+      expect(outcome.value.intent.replyToActorId).toBe("agent-peer");
+    });
+
+    it("falls to the triggering-event floor after one failed retry (no empty target committed)", async () => {
+      const provider = {
+        generateIntent: vi
+          .fn()
+          .mockResolvedValueOnce(jsonResponse(replyJson("bogus-1")))
+          .mockResolvedValueOnce(jsonResponse(replyJson("bogus-2"))),
+      };
+      const outcome = await runStep(provider, targetInput());
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(provider.generateIntent).toHaveBeenCalledTimes(2);
+      expect(outcome.value.intent.intentType).toBe("reply_to_message");
+      expect(outcome.value.intent.replyToEventId).toBe("evt_trigger");
+      expect(outcome.value.intent.replyToActorId).toBe("agent-peer");
+      expect(outcome.value.fallbackApplied).toBe(false);
+    });
+
+    it("drops a reaction with an unresolvable target and no triggering event / visible message", async () => {
+      const reactJson = JSON.stringify({
+        intentType: "react",
+        channelTarget: "general",
+        emoji: "🔥",
+        targetEventId: "some-slug",
+        privateMotiveSummary: "approve",
+        emotionDrivers: [],
+        motivationDrivers: [],
+      });
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(reactJson)) };
+      const outcome = await runStep(
+        provider,
+        targetInput({ triggeringEvent: null, visibleContextEvents: [], eventHandles: {} }),
+      );
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.value.intent.intentType).toBe("no_op");
+      expect(outcome.value.intent.targetEventId).toBeUndefined();
+      expect(outcome.value.fallbackApplied).toBe(true);
+      expect(outcome.value.operatorEvents.some((e) => e.type === "llm_failure")).toBe(true);
+    });
+
+    it("downgrades a reply to send_message when there is no event to target", async () => {
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(replyJson("nope"))) };
+      const outcome = await runStep(
+        provider,
+        targetInput({ triggeringEvent: null, visibleContextEvents: [], eventHandles: {} }),
+      );
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.value.intent.intentType).toBe("send_message");
+      expect(outcome.value.intent.replyToEventId).toBeUndefined();
+      expect(outcome.value.intent.visibleContent).toBe("yes I did");
+    });
   });
 });

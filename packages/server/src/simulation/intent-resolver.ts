@@ -206,12 +206,18 @@ function buildReplyEvent(
   const channelId = intent.channelTarget ?? ctx.channelId;
   const replyToEventId = intent.replyToEventId;
   const vis = channelVisibility(channelId, ctx);
+  const payload: Record<string, unknown> = {
+    content: intent.visibleContent ?? "",
+    replyToEventId: replyToEventId ?? "",
+    ...vis.payload,
+  };
+  if (intent.replyToActorId) payload["replyToActorId"] = intent.replyToActorId;
   return {
     simulationId: ctx.simulationId,
     channelId,
     actorId: intent.actorId,
     type: "reply_sent",
-    payload: { content: intent.visibleContent ?? "", replyToEventId: replyToEventId ?? "", ...vis.payload },
+    payload: payload as SimulationEvent["payload"],
     sourceIntentId: intent.id,
     sourceEventIds: replyToEventId ? [replyToEventId] : [],
     emotionalSalience: salience,
@@ -354,6 +360,7 @@ function deriveFallbackIntent(
   }
   if (fallbackType === "reply_to_message") {
     derived.replyToEventId = primary.replyToEventId;
+    derived.replyToActorId = primary.replyToActorId;
   }
   if (fallbackType === "react") {
     derived.channelTarget = primary.channelTarget;

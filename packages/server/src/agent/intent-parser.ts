@@ -1,11 +1,37 @@
 import { ModelIntentPacketSchema, composeIntentPacket } from "@perfectman/shared";
-import type { ActionIntent, AvailableAction, IntentType } from "@perfectman/shared";
+import type { ActionIntent, AvailableAction, CommittedEvent, IntentType } from "@perfectman/shared";
+
+type TargetField = "replyToEventId" | "targetEventId";
+
+/**
+ * Everything `parse` needs to turn a model-supplied event handle ("e1") into
+ * the real `evt_*` id it stands for. Only the `action_intent` step passes
+ * this; without it the parser leaves reply/react target strings untouched
+ * (legacy passthrough).
+ */
+export type TargetResolutionContext = {
+  eventHandles: Record<string, string>; // "e1" -> real event id, as shown to the model this render
+  events: CommittedEvent[]; // triggering event followed by visible-context events (for actor + floor lookup)
+  triggeringEventId?: string; // retry-exhausted floor: infer this as the target
+};
 
 export type IntentParserResult = {
   intent: ActionIntent;
   fallbackApplied: boolean;
   errorDetail?: string;
+  // Set when the intent is a reply/react whose target handle could not be
+  // resolved against `TargetResolutionContext.eventHandles`. The caller
+  // re-prompts once with a targeted note, then applies `floorTargets`.
+  unresolvedTarget?: { field: TargetField; badHandle: string; validHandles: string[] };
 };
+
+type TargetResolution =
+  | { kind: "not_applicable" }
+  | { kind: "resolved" }
+  | { kind: "unresolved"; field: TargetField; badHandle: string; validHandles: string[] }
+  | { kind: "floored"; detail: string }
+  | { kind: "downgraded"; detail: string }
+  | { kind: "dropped"; detail: string };
 
 export class IntentParser {
   /**
@@ -22,6 +48,7 @@ export class IntentParser {
     actorId: string,
     availableActions: AvailableAction[],
     preferredFallbackType: "no_op" | "delay_response" = "no_op",
+    targetContext?: TargetResolutionContext,
   ): IntentParserResult {
     let cleanedText = rawText;
 
@@ -130,6 +157,26 @@ export class IntentParser {
         }
       }
 
+      // 7. Resolve a reply/react target handle ("e1") to the real event id.
+      // Runs only when the step supplies the render's handle map. An
+      // unresolvable handle is a retriable failure, not a fallback: the
+      // original intent is returned so the caller can re-prompt then floor.
+      if (targetContext) {
+        const resolution = this.resolveTargets(intent, targetContext, { floor: false });
+        if (resolution.kind === "unresolved") {
+          return {
+            intent,
+            fallbackApplied: false,
+            errorDetail: `Unresolvable ${resolution.field}: '${resolution.badHandle || "(empty)"}'`,
+            unresolvedTarget: {
+              field: resolution.field,
+              badHandle: resolution.badHandle,
+              validHandles: resolution.validHandles,
+            },
+          };
+        }
+      }
+
       return { intent, fallbackApplied: false };
     } catch (error: any) {
       const errorMsg = error instanceof Error ? error.message : String(error);
@@ -179,5 +226,103 @@ export class IntentParser {
       intentType: fallbackType,
       reason,
     });
+  }
+
+  /**
+   * Retry-exhausted floor for an unresolved reply/react target. Infers the
+   * triggering event (or, failing that, the most recent visible message) as
+   * the target. With neither available, a reply downgrades to send_message
+   * and a reaction is dropped. Never leaves the target empty or unresolved.
+   * Mutates a copy — the input intent is left untouched.
+   */
+  static floorTargets(
+    intent: ActionIntent,
+    targetContext: TargetResolutionContext,
+  ): { intent: ActionIntent; detail?: string; droppedReaction?: boolean } {
+    const working: ActionIntent = { ...intent };
+    const resolution = this.resolveTargets(working, targetContext, { floor: true });
+    if (resolution.kind === "dropped") {
+      return { intent: working, detail: resolution.detail, droppedReaction: true };
+    }
+    if (resolution.kind === "floored" || resolution.kind === "downgraded") {
+      return { intent: working, detail: resolution.detail };
+    }
+    return { intent: working };
+  }
+
+  /**
+   * Resolves `replyToEventId` / `targetEventId` from a per-render handle
+   * ("e1") to the real event id, mutating `intent` in place. `floor: false`
+   * reports an unresolvable handle for the caller to retry; `floor: true`
+   * applies the triggering-event / visible-message / downgrade floor.
+   */
+  private static resolveTargets(
+    intent: ActionIntent,
+    ctx: TargetResolutionContext,
+    opts: { floor: boolean },
+  ): TargetResolution {
+    const isReply = intent.intentType === "reply_to_message";
+    const isReact = intent.intentType === "react";
+    if (!isReply && !isReact) return { kind: "not_applicable" };
+
+    const field: TargetField = isReply ? "replyToEventId" : "targetEventId";
+    const raw = (intent[field] ?? "").trim();
+    const handles = ctx.eventHandles ?? {};
+    const validHandles = Object.keys(handles);
+    const realIds = new Set(Object.values(handles));
+    const normalized = raw.replace(/^\[+/, "").replace(/\]+$/, "").trim();
+
+    let realId: string | undefined;
+    if (normalized && handles[normalized]) realId = handles[normalized];
+    else if (normalized && realIds.has(normalized)) realId = normalized;
+
+    if (realId) {
+      this.assignTarget(intent, field, realId, ctx);
+      return { kind: "resolved" };
+    }
+
+    if (!opts.floor) {
+      return { kind: "unresolved", field, badHandle: raw, validHandles };
+    }
+
+    const lastVisibleMessageId = [...ctx.events]
+      .reverse()
+      .find((e) => e.type === "message_sent" || e.type === "reply_sent")?.id;
+    const floorId = ctx.triggeringEventId ?? lastVisibleMessageId;
+
+    if (floorId) {
+      this.assignTarget(intent, field, floorId, ctx);
+      return {
+        kind: "floored",
+        detail: `unresolvable ${field} '${raw || "(empty)"}'; inferred triggering/visible event ${floorId} as the target`,
+      };
+    }
+
+    if (isReply) {
+      intent.intentType = "send_message";
+      delete intent.replyToEventId;
+      delete intent.replyToActorId;
+      return {
+        kind: "downgraded",
+        detail: `unresolvable replyToEventId '${raw || "(empty)"}' with no event to target; downgraded to send_message`,
+      };
+    }
+    return {
+      kind: "dropped",
+      detail: `unresolvable targetEventId '${raw || "(empty)"}' with no event to target; reaction dropped`,
+    };
+  }
+
+  private static assignTarget(
+    intent: ActionIntent,
+    field: TargetField,
+    realEventId: string,
+    ctx: TargetResolutionContext,
+  ): void {
+    intent[field] = realEventId;
+    if (field === "replyToEventId") {
+      const actor = ctx.events.find((e) => e.id === realEventId)?.actorId;
+      if (actor) intent.replyToActorId = actor;
+    }
   }
 }

@@ -11,7 +11,7 @@ import type {
 import type { LLMConfig } from "../../llm/llm-config.js";
 import type { LLMProvider } from "../../llm/llm-provider.js";
 import { llmBudget } from "../../llm/llm-budget.js";
-import { IntentParser } from "../intent-parser.js";
+import { IntentParser, type TargetResolutionContext } from "../intent-parser.js";
 import {
   DEFAULT_REPETITION_MAX_RETRIES,
   isNearRepeat,
@@ -37,6 +37,17 @@ type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
  */
 function retryCorrectionNote(lastAttempt: string): string {
   return `IMPORTANT: your last attempt this turn ("${lastAttempt}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — while staying true to what you actually want right now; do not invent novelty that your current motive and emotional state wouldn't justify. Or choose "no_op" if you truly have nothing new to add.`;
+}
+
+/**
+ * Correction appended to the system prompt on the single reply/react target
+ * retry: names the unresolvable handle, lists the valid handle set for this
+ * render, and offers the send_message escape hatch. The retry prompt version
+ * hash covers this text.
+ */
+function targetRetryCorrectionNote(field: string, badHandle: string, validHandles: string[]): string {
+  const valid = validHandles.length > 0 ? validHandles.join(", ") : "(no event handles are available this turn)";
+  return `IMPORTANT: you set "${field}" to "${badHandle || "(empty)"}", which is not one of the event handles shown in <events>. The only valid handles this turn are: ${valid}. Either set "${field}" to exactly one of those handles, or — if this was not actually a reply/reaction to one specific message — set "intentType" to "send_message" and omit "${field}".`;
 }
 
 /**
@@ -130,7 +141,16 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       };
     }
 
-    let parseResult = IntentParser.parse(providerResult.content, agentId, input.availableActions, "no_op");
+    const targetContext: TargetResolutionContext = {
+      eventHandles: input.perceptionPacket.eventHandles ?? {},
+      events: [
+        ...(input.perceptionPacket.triggeringEvent ? [input.perceptionPacket.triggeringEvent] : []),
+        ...input.perceptionPacket.visibleContextEvents,
+      ],
+      triggeringEventId: input.perceptionPacket.triggeringEvent?.id,
+    };
+
+    let parseResult = IntentParser.parse(providerResult.content, agentId, input.availableActions, "no_op", targetContext);
 
     // Repetition guard: the prompt already tells the model not to repeat
     // itself and shows it the exact text to avoid, but empirically small
@@ -193,7 +213,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
             latencyMs: retryResult.latencyMs,
             promptVersion: retryPrompt.version,
           });
-          const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op");
+          const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext);
           if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent)) {
             parseResult = retryParse;
             intent = retryParse.intent;
@@ -235,6 +255,77 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         "no_op",
         `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, ${retryPhrase} — blocked structurally.`,
       );
+    }
+
+    // Reply/reaction target resolution: the model referenced an event handle
+    // that does not resolve. One pointed retry (budget permitting), then the
+    // triggering-event floor — the target is never committed empty or
+    // unresolved, and no_op is not this failure path (a reaction with
+    // nothing left to target is the sole exception: it is dropped).
+    if (!fallbackApplied && !repetitionBlocked && parseResult.unresolvedTarget) {
+      const bad = parseResult.unresolvedTarget;
+      let resolvedOnRetry = false;
+      const budgetDecision = llmBudget.canCall({
+        simulationId,
+        agentId,
+        priority: input.budgetPriority,
+        inputTokensEstimate: prompt.inputTokensEstimate,
+      });
+      if (budgetDecision.allowed) {
+        const note = targetRetryCorrectionNote(bad.field, bad.badHandle, bad.validHandles);
+        const retryPrompt = {
+          ...prompt,
+          version: promptVersionHash([`${prompt.system}\n\n${note}`, prompt.user]),
+          system: `${prompt.system}\n\n${note}`,
+        };
+        try {
+          const retryResult = await provider.generateIntent(input, runtimeContext, retryPrompt);
+          retriesAttempted++;
+          totalInputTokens += retryResult.usage.inputTokens;
+          totalOutputTokens += retryResult.usage.outputTokens;
+          retryUsages.push({
+            inputTokens: retryResult.usage.inputTokens,
+            outputTokens: retryResult.usage.outputTokens,
+            latencyMs: retryResult.latencyMs,
+            promptVersion: retryPrompt.version,
+          });
+          const retryParse = IntentParser.parse(
+            retryResult.content,
+            agentId,
+            input.availableActions,
+            "no_op",
+            targetContext,
+          );
+          if (!retryParse.fallbackApplied && !retryParse.unresolvedTarget) {
+            parseResult = retryParse;
+            intent = retryParse.intent;
+            resolvedOnRetry = true;
+          }
+        } catch {
+          // Retry call failed — fall through to the floor below.
+        }
+      }
+
+      if (!resolvedOnRetry) {
+        const floored = IntentParser.floorTargets(intent, targetContext);
+        if (floored.droppedReaction) {
+          fallbackApplied = true;
+          retryKind = "parse_failed";
+          parseResult = {
+            ...parseResult,
+            errorDetail: floored.detail ?? "Reaction target unresolvable; reaction dropped.",
+            unresolvedTarget: undefined,
+          };
+          intent = IntentParser.createFallback(
+            agentId,
+            "no_op",
+            floored.detail ?? "Reaction target unresolvable; reaction dropped.",
+          );
+        } else {
+          intent = floored.intent;
+          parseResult = { ...parseResult, errorDetail: undefined, unresolvedTarget: undefined };
+        }
+      }
     }
 
     const model = providerResult.model || llmConfig.modelName;
