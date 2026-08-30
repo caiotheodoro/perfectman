@@ -53,7 +53,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
   render(input: AgentRuntimeInput, ctx: StepRunContext): BuiltPrompt {
     // Route through the dispatcher so unused prompt purposes still fail
     // closed (see prompt-builder.ts) and the render entry stays singular.
-    return PromptBuilder.build(input, ctx.profile, "action_intent");
+    return PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens);
   }
 
   gate(input: AgentRuntimeInput, ctx: StepRunContext): StepOutcome<AgentRuntimeOutput> | undefined {
@@ -103,6 +103,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const { agentId, simulationId } = input;
     const startTime = Date.now();
 
+    const trimEvent = this.promptTrimEvent(prompt, simulationId, agentId, ctx.pulseIndex, ctx.now);
+
     let providerResult;
     try {
       providerResult = await provider.generateIntent(input, runtimeContext, prompt);
@@ -124,7 +126,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           llmUsage: null,
           latencyMs: Date.now() - startTime,
           fallbackApplied: true,
-          operatorEvents: [opEvent],
+          operatorEvents: trimEvent ? [trimEvent, opEvent] : [opEvent],
         },
         errorDetail: `Provider failed: ${error.message || String(error)}`,
       };
@@ -281,6 +283,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     });
 
     const operatorEvents: OperatorEvent[] = [];
+    if (trimEvent) operatorEvents.push(trimEvent);
     operatorEvents.push({
       type: "pulse_metrics",
       simulationId,
@@ -340,5 +343,42 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     };
 
     return { ok: true, value: output };
+  }
+
+  /**
+   * Operator record for a prompt whose raw assembly exceeded the agent's
+   * `maxInputTokens` and was trimmed to fit (see ActionIntentPromptBuilder).
+   * Returns null when no trim happened.
+   */
+  private promptTrimEvent(
+    prompt: BuiltPrompt,
+    simulationId: string,
+    agentId: string,
+    pulseIndex: number,
+    now: number,
+  ): OperatorEvent | null {
+    const { trim } = prompt;
+    if (!trim) return null;
+    return {
+      type: "prompt_trimmed",
+      simulationId,
+      agentId,
+      pulseIndex,
+      detail:
+        `Prompt assembly for agent ${agentId} exceeded maxInputTokens ` +
+        `(${trim.rawInputTokensEstimate} > ${trim.maxInputTokens} est. tokens); dropped ` +
+        `${trim.droppedMemories} lowest-salience memory(ies) and ${trim.droppedEvents} oldest ` +
+        `context event(s) (~${trim.droppedInputTokensEstimate} tokens) to fit ` +
+        `${trim.finalInputTokensEstimate}.`,
+      createdAt: now,
+      data: {
+        maxInputTokens: trim.maxInputTokens,
+        rawInputTokensEstimate: trim.rawInputTokensEstimate,
+        finalInputTokensEstimate: trim.finalInputTokensEstimate,
+        droppedEvents: trim.droppedEvents,
+        droppedMemories: trim.droppedMemories,
+        droppedInputTokensEstimate: trim.droppedInputTokensEstimate,
+      },
+    };
   }
 }

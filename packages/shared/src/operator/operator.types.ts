@@ -18,6 +18,7 @@ export const OPERATOR_EVENT_TYPES = [
   "llm_budget_exceeded",
   "intent_blocked",
   "intent_delayed",
+  "prompt_trimmed",
   "stagnation_warning",
   "scheduler_error",
   "pulse_metrics",

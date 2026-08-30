@@ -86,6 +86,7 @@ const prompt = {
 
 function runStep(
   provider: { generateIntent: unknown },
+  promptOverride: StepRunContext["prompt"] = prompt,
 ): Promise<ReturnType<ActionIntentStep["execute"]>> {
   const step = new ActionIntentStep();
   const ctx: StepRunContext = {
@@ -94,7 +95,7 @@ function runStep(
     provider: provider as StepRunContext["provider"],
     llmConfig,
     profile: {} as StepRunContext["profile"],
-    prompt,
+    prompt: promptOverride,
   };
   return step.execute(makeInput(), ctx);
 }
@@ -132,6 +133,51 @@ describe("ActionIntentStep", () => {
     expect(outcome.value.fallbackApplied).toBe(false);
     expect(outcome.value.intent.intentType).toBe("no_op");
     expect(outcome.value.llmUsage?.inputTokens).toBe(50);
+  });
+
+  it("records a prompt_trimmed operator event when the built prompt carries a trim", async () => {
+    const trimmedPrompt = {
+      ...prompt,
+      trim: {
+        maxInputTokens: 2048,
+        rawInputTokensEstimate: 3041,
+        finalInputTokensEstimate: 2040,
+        droppedEvents: 5,
+        droppedMemories: 2,
+        droppedInputTokensEstimate: 1001,
+      },
+    };
+    const outcome = await runStep(
+      {
+        generateIntent: vi.fn().mockResolvedValue(
+          jsonResponse(
+            JSON.stringify({ intentType: "no_op", privateMotiveSummary: "Quiet.", emotionDrivers: [], motivationDrivers: [] }),
+          ),
+        ),
+      },
+      trimmedPrompt,
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    const trimEvent = outcome.value.operatorEvents.find((e) => e.type === "prompt_trimmed");
+    expect(trimEvent).toBeDefined();
+    expect(trimEvent!.pulseIndex).toBe(3);
+    expect(trimEvent!.data).toMatchObject({ droppedEvents: 5, droppedMemories: 2, maxInputTokens: 2048 });
+    expect(trimEvent!.detail).toContain("exceeded maxInputTokens");
+  });
+
+  it("emits no prompt_trimmed operator event when the prompt was not trimmed", async () => {
+    const outcome = await runStep({
+      generateIntent: vi.fn().mockResolvedValue(
+        jsonResponse(
+          JSON.stringify({ intentType: "no_op", privateMotiveSummary: "Quiet.", emotionDrivers: [], motivationDrivers: [] }),
+        ),
+      ),
+    });
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(outcome.value.operatorEvents.some((e) => e.type === "prompt_trimmed")).toBe(false);
   });
 
   it("returns a typed failure outcome with a fallback intent when the provider throws", async () => {

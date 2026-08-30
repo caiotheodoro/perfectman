@@ -5,6 +5,15 @@ export type AgentRuntimeContext = {
   now: number;
 };
 
+export type PromptTrim = {
+  maxInputTokens: number;
+  rawInputTokensEstimate: number;
+  finalInputTokensEstimate: number;
+  droppedEvents: number;
+  droppedMemories: number;
+  droppedInputTokensEstimate: number;
+};
+
 export type BuiltPrompt = {
   system: string;
   user: string;
@@ -14,6 +23,11 @@ export type BuiltPrompt = {
   version: string;
   /** Manually-bumped structure identifier, stable across renders that share the same template. */
   templateVersion: string;
+  /**
+   * Set only when the raw assembly exceeded `maxInputTokens` and per-pulse
+   * context was dropped to bring it within the cap.
+   */
+  trim?: PromptTrim;
 };
 
 export type AgentRuntimeOutput = {

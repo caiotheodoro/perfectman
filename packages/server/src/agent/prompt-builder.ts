@@ -12,11 +12,12 @@ export class PromptBuilder {
   static build(
     input: AgentRuntimeInput,
     profile: PersonaPromptProfile,
-    purpose: PromptPurpose
+    purpose: PromptPurpose,
+    maxInputTokens?: number
   ): BuiltPrompt {
     switch (purpose) {
       case "action_intent":
-        return ActionIntentPromptBuilder.build(input, profile);
+        return ActionIntentPromptBuilder.build(input, profile, maxInputTokens);
       case "background_reflection":
         return BackgroundReflectionPromptBuilder.build(input, profile);
       case "social_interpretation":
