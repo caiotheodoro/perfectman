@@ -22,52 +22,43 @@ export class DeliveryProjection {
 
     switch (event.type) {
       case "message_sent": {
+        if (!this.visibleToAnyMember(event, memberAgentIds, channels, membership)) break;
         const content = payloadString(event.payload, "content");
-        for (const agentId of memberAgentIds) {
-          const visible = filterVisibleEventsForAgent([event], agentId, channels, membership);
-          if (visible.length === 0) continue;
-          const msg: DeliveryMessage = {
-            kind: "message",
-            agentId: event.actorId,
-            content,
-            salience: event.emotionalSalience,
-          };
-          await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
-        }
+        const msg: DeliveryMessage = {
+          kind: "message",
+          agentId: event.actorId,
+          content,
+          salience: event.emotionalSalience,
+        };
+        await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
         break;
       }
       case "reply_sent": {
+        if (!this.visibleToAnyMember(event, memberAgentIds, channels, membership)) break;
         const content = payloadString(event.payload, "content");
         const replyToEventId = payloadString(event.payload, "replyToEventId");
-        for (const agentId of memberAgentIds) {
-          const visible = filterVisibleEventsForAgent([event], agentId, channels, membership);
-          if (visible.length === 0) continue;
-          const msg: DeliveryMessage = {
-            kind: "reply",
-            agentId: event.actorId,
-            content,
-            replyToEventId,
-            salience: event.emotionalSalience,
-          };
-          await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
-        }
+        const msg: DeliveryMessage = {
+          kind: "reply",
+          agentId: event.actorId,
+          content,
+          replyToEventId,
+          salience: event.emotionalSalience,
+        };
+        await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
         break;
       }
       case "reaction_sent": {
+        if (!this.visibleToAnyMember(event, memberAgentIds, channels, membership)) break;
         const emoji = payloadString(event.payload, "emoji", "👍");
         const targetEventId = payloadString(event.payload, "targetEventId");
-        for (const agentId of memberAgentIds) {
-          const visible = filterVisibleEventsForAgent([event], agentId, channels, membership);
-          if (visible.length === 0) continue;
-          const msg: DeliveryMessage = {
-            kind: "reaction",
-            agentId: event.actorId,
-            emoji,
-            targetEventId,
-            salience: event.emotionalSalience,
-          };
-          await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
-        }
+        const msg: DeliveryMessage = {
+          kind: "reaction",
+          agentId: event.actorId,
+          emoji,
+          targetEventId,
+          salience: event.emotionalSalience,
+        };
+        await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
         break;
       }
       case "channel_created": {
@@ -92,6 +83,17 @@ export class DeliveryProjection {
       default:
         break;
     }
+  }
+
+  private visibleToAnyMember(
+    event: CommittedEvent,
+    memberAgentIds: string[],
+    channels: Channel[],
+    membership: ChannelMembership[],
+  ): boolean {
+    return memberAgentIds.some(
+      agentId => filterVisibleEventsForAgent([event], agentId, channels, membership).length > 0,
+    );
   }
 
   private getMemberAgentIds(channelId: string, membership: ChannelMembership[]): string[] {
