@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import {
+  buildOpenAiCompatibleRequestBody,
   generateOpenAiCompatibleIntent,
   generateOllamaIntent,
 } from "../sdk-transport.js";
@@ -181,7 +182,7 @@ describe("sdk-transport OpenAI-compatible path", () => {
     const fetchSpy = vi.fn().mockResolvedValue(openAiOkResponse({ choices: [{ message: { content: "{}" } }], model: "m" }));
 
     await generateOpenAiCompatibleIntent(
-      openAiConfig({ extraBody: { custom_flag: true, seed: 7 } }),
+      openAiConfig({ extraBody: { custom_flag: true, seed: 7, thinking: { type: "disabled" } } }),
       prompt,
       startTime(),
       { fetch: fetchSpy },
@@ -190,6 +191,7 @@ describe("sdk-transport OpenAI-compatible path", () => {
     const body = JSON.parse(fetchSpy.mock.calls[0]![1]!.body as string);
     expect(body.custom_flag).toBe(true);
     expect(body.seed).toBe(7);
+    expect(body.thinking).toEqual({ type: "disabled" });
   });
 
   it("sends no response_format when responseFormatJson is not enabled", async () => {
@@ -343,6 +345,76 @@ describe("sdk-transport OpenAI-compatible path", () => {
     await expect(
       generateOpenAiCompatibleIntent(openAiConfig(), prompt, startTime(), { fetch: fetchSpy }),
     ).rejects.toThrow(LLMError);
+  });
+});
+
+describe("buildOpenAiCompatibleRequestBody", () => {
+  const probeMessages = [
+    { role: "system", content: "sys" },
+    { role: "user", content: "user" },
+  ];
+
+  it("spreads reasoning-disable and sampling extraBody entries onto the body root", () => {
+    const body = buildOpenAiCompatibleRequestBody(
+      openAiConfig({ extraBody: { thinking: { type: "disabled" }, seed: 7, top_p: 0.9 } }),
+      probeMessages,
+      8,
+    );
+
+    expect(body).toEqual({
+      model: "gemini/gemini-2.5-flash",
+      messages: probeMessages,
+      stream: false,
+      max_tokens: 8,
+      temperature: 0.7,
+      thinking: { type: "disabled" },
+      seed: 7,
+      top_p: 0.9,
+    });
+  });
+
+  it("adds no reasoning-control field when the config has no extraBody", () => {
+    const body = buildOpenAiCompatibleRequestBody(openAiConfig(), probeMessages, 8);
+
+    expect(body).toEqual({
+      model: "gemini/gemini-2.5-flash",
+      messages: probeMessages,
+      stream: false,
+      max_tokens: 8,
+      temperature: 0.7,
+    });
+    expect(body).not.toHaveProperty("thinking");
+    expect(body).not.toHaveProperty("think");
+    expect(body).not.toHaveProperty("response_format");
+  });
+
+  it("keeps the reasoning-disable entry at the body root through a proxy-style baseUrl", () => {
+    const body = buildOpenAiCompatibleRequestBody(
+      openAiConfig({
+        baseUrl: "https://api.freellmapi.com/v1",
+        extraBody: { thinking: { type: "disabled" } },
+      }),
+      probeMessages,
+      8,
+    );
+
+    expect(body.thinking).toEqual({ type: "disabled" });
+  });
+
+  it("lets an extraBody max_tokens override the passed cap via spread order", () => {
+    const body = buildOpenAiCompatibleRequestBody(
+      openAiConfig({ extraBody: { max_tokens: 4096 } }),
+      probeMessages,
+      8,
+    );
+
+    expect(body.max_tokens).toBe(4096);
+  });
+
+  it("passes an empty messages array through unchanged", () => {
+    const body = buildOpenAiCompatibleRequestBody(openAiConfig(), [], 8);
+
+    expect(body.messages).toEqual([]);
   });
 });
 
