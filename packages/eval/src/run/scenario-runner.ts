@@ -368,6 +368,12 @@ export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | 
           // (stronger for hot personas) plus presence_penalty to kill loops.
           frequency_penalty: Math.min(2, (sampling.repetitionPenalty - 1) * 2.5),
           presence_penalty: 0.4,
+          // deepseek-v4-* models reason by default at effort `high`, spending
+          // the output-token budget on a thinking block before the intent
+          // JSON — every intent call then fails to parse. This is DeepSeek's
+          // OpenAI-format key to disable that phase; `reasoning_effort: "none"`
+          // returns HTTP 400 on DeepSeek.
+          thinking: { type: "disabled" },
         }
       : {
           seed: benchSeed(),

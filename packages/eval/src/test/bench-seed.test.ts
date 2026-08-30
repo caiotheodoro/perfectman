@@ -36,6 +36,7 @@ describe("bench seed wiring (#45)", () => {
     const config = localLLMConfig(undefined);
     expect(config.providerType).toBe("ollama");
     expect(config.extraBody?.["seed"]).toBe(benchSeed());
+    expect(config.extraBody?.["thinking"]).toBeUndefined();
   });
 
   it("pins seed into the deepseek-path extraBody", () => {
@@ -43,5 +44,6 @@ describe("bench seed wiring (#45)", () => {
     const config = localLLMConfig(undefined);
     expect(config.providerType).toBe("openai-compatible");
     expect(config.extraBody?.["seed"]).toBe(benchSeed());
+    expect(config.extraBody?.["thinking"]).toEqual({ type: "disabled" });
   });
 });

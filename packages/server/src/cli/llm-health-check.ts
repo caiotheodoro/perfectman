@@ -1,8 +1,19 @@
 import type { SimulationAppConfig } from "../config/simulation-config.js";
 import type { LLMConfig } from "../llm/llm-config.js";
 import { resolveEndpointShape } from "../llm/provider-factory.js";
+import { buildOpenAiCompatibleRequestBody } from "../llm/sdk-transport.js";
 
 type Fetch = typeof fetch;
+
+const PROBE_MAX_OUTPUT_TOKENS = 8;
+
+/**
+ * Marks a probe failure that already carries an actionable cause+fix message.
+ * The generic catch in `assertTinyGenerationAvailable` rethrows it unwrapped so
+ * the reasoning-overflow guidance is not buried behind the "check your API key"
+ * hint.
+ */
+class ReasoningOverflowError extends Error {}
 
 export type FreellmApiHealthCheckDeps = {
   env?: NodeJS.ProcessEnv | Record<string, string | undefined>;
@@ -110,15 +121,9 @@ async function assertTinyGenerationAvailable(
           think: false,
           ...llm.extraBody,
         })
-      : JSON.stringify({
-          model: llm.modelName,
-          messages: tinyPrompt,
-          temperature: 0,
-          max_tokens: 8,
-          stream: false,
-          think: false,
-          ...llm.extraBody,
-        });
+      : JSON.stringify(
+          buildOpenAiCompatibleRequestBody(llm, tinyPrompt, PROBE_MAX_OUTPUT_TOKENS),
+        );
 
   try {
     const response = await fetchImpl(url, {
@@ -132,7 +137,31 @@ async function assertTinyGenerationAvailable(
       const detail = await response.text().catch(() => "");
       throw new Error(`generation health check returned HTTP ${response.status}: ${detail.slice(0, 240)}`);
     }
+
+    if (shape !== "ollama") {
+      const raw = await response.text().catch(() => "");
+      let content: unknown;
+      try {
+        content = (
+          JSON.parse(raw) as { choices?: Array<{ message?: { content?: unknown } }> }
+        )?.choices?.[0]?.message?.content;
+      } catch {
+        content = undefined;
+      }
+      if (typeof content !== "string" || !hasParseableJsonObject(content)) {
+        throw new ReasoningOverflowError(
+          `The tiny generation at ${normalizedBaseUrl} returned an OK response with no parseable ` +
+            `JSON object. The likely cause is that model reasoning is not disabled, so the reasoning ` +
+            `block consumed the ${PROBE_MAX_OUTPUT_TOKENS}-token budget before any JSON was emitted. ` +
+            `Add a reasoning-disable entry to the agent's llm.extraBody — for DeepSeek: ` +
+            `{ "thinking": { "type": "disabled" } }.`,
+        );
+      }
+    }
   } catch (err) {
+    if (err instanceof ReasoningOverflowError) {
+      throw err;
+    }
     const detail = err instanceof Error ? err.message : String(err);
     const prefix =
       `Qwen service is reachable only if it can complete a tiny generation at ${normalizedBaseUrl}. `;
@@ -143,5 +172,20 @@ async function assertTinyGenerationAvailable(
     throw new Error(`${prefix}${hint}Details: ${detail}`);
   } finally {
     clearTimeout(timeoutId);
+  }
+}
+
+function hasParseableJsonObject(s: string): boolean {
+  const trimmed = s.trim();
+  const start = trimmed.indexOf("{");
+  const end = trimmed.lastIndexOf("}");
+  if (start === -1 || end === -1 || end < start) {
+    return false;
+  }
+  try {
+    const parsed: unknown = JSON.parse(trimmed.slice(start, end + 1));
+    return typeof parsed === "object" && parsed !== null;
+  } catch {
+    return false;
   }
 }

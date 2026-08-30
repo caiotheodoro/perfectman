@@ -179,6 +179,32 @@ function captureResponseHeaders(headers: Record<string, string> | undefined): Re
   return captured;
 }
 
+/**
+ * The OpenAI-compatible `POST .../chat/completions` request body, assembled
+ * from an LLMConfig in one place so the startup health probe and the runtime
+ * intent call cannot drift on their reasoning- and sampling-control fields.
+ * `extraBody` is spread onto the root the same way the SDK does at runtime
+ * (`providerOptions["openai-compatible"]`), so an operator's reasoning-disable
+ * entry (DeepSeek's `{ thinking: { type: "disabled" } }`) reaches the wire
+ * unchanged. Injects no reasoning field of its own. Callers override only
+ * `maxOutputTokens` — the probe caps it low; every other field comes from the
+ * real config.
+ */
+export function buildOpenAiCompatibleRequestBody(
+  config: LLMConfig,
+  messages: Array<{ role: string; content: string }>,
+  maxOutputTokens: number,
+): Record<string, unknown> {
+  return {
+    model: config.modelName,
+    messages,
+    stream: false,
+    max_tokens: maxOutputTokens,
+    temperature: config.temperature,
+    ...config.extraBody,
+  };
+}
+
 export async function generateOpenAiCompatibleIntent(
   config: LLMConfig,
   prompt: BuiltPrompt,
