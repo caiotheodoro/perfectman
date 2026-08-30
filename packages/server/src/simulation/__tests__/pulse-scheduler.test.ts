@@ -270,6 +270,86 @@ describe("PulseScheduler", () => {
     expect(mockAgentRuntime.generateIntent).toHaveBeenCalled();
   });
 
+  describe("lastActionAt stamping", () => {
+    function makeIntent(
+      intentType: ActionIntent["intentType"],
+      extra: Partial<ActionIntent> = {},
+    ): ActionIntent {
+      return {
+        id: createId(),
+        actorId: "agent_1",
+        intentType,
+        personTargets: [],
+        privateMotiveSummary: "test motive",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+        ...extra,
+      };
+    }
+
+    async function runAndReadState(
+      intent: ActionIntent,
+      outcome: import("@perfectman/shared").ResolvedIntentOutcome,
+    ): Promise<AgentState | null> {
+      const sched = buildScheduler(() => ({
+        ...makeCannedStep(),
+        decision: { outcome: "act", needsLLM: true, initiativeProceed: false },
+        noOpRecord: null,
+      }));
+      mockAgentRuntime.generateIntent = vi.fn().mockResolvedValue({
+        intent,
+        llmUsage: null,
+        latencyMs: 10,
+        fallbackApplied: false,
+        operatorEvents: [],
+      });
+      vi.spyOn(intentResolver, "resolve").mockResolvedValue({
+        outcome,
+        committedEvents: [],
+        operatorEvents: [],
+      });
+      await sched.runPulse();
+      return agentStateRepo.get("sim_test", "agent_1");
+    }
+
+    for (const intentType of ["send_message", "reply_to_message", "react", "create_channel"] as const) {
+      it(`stamps lastActionAt after a committed ${intentType}`, async () => {
+        const state = await runAndReadState(makeIntent(intentType), "committed");
+        expect(state?.lastActionAt).toBe(SETTINGS.pulseIntervalMs);
+      });
+    }
+
+    it("does not stamp lastActionAt for a committed no_op", async () => {
+      const state = await runAndReadState(makeIntent("no_op"), "committed");
+      expect(state?.lastActionAt).toBeNull();
+    });
+
+    it("does not stamp lastActionAt for a committed write_memory (memory-only)", async () => {
+      const state = await runAndReadState(makeIntent("write_memory"), "committed");
+      expect(state?.lastActionAt).toBeNull();
+    });
+
+    it("does not stamp lastActionAt when an outward act is blocked", async () => {
+      const state = await runAndReadState(makeIntent("send_message"), "blocked");
+      expect(state?.lastActionAt).toBeNull();
+    });
+
+    it("stamps on fallback_committed only when the fallback itself is an outward act", async () => {
+      const noOpFallback = await runAndReadState(
+        makeIntent("send_message", { fallbackIfBlocked: "no_op" }),
+        "fallback_committed",
+      );
+      expect(noOpFallback?.lastActionAt).toBeNull();
+
+      const socialFallback = await runAndReadState(
+        makeIntent("react", { fallbackIfBlocked: "send_message" }),
+        "fallback_committed",
+      );
+      expect(socialFallback?.lastActionAt).toBe(SETTINGS.pulseIntervalMs);
+    });
+  });
+
   describe("goal-layer wiring (TT401)", () => {
     const GOAL_SETTINGS: SimulationSettings = { ...SETTINGS, omniscientSpectatorMode: true };
     const GOAL_SIM: Simulation = { ...SIM, settings: GOAL_SETTINGS };
