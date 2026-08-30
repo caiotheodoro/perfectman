@@ -102,7 +102,7 @@ describe("intentEntropyScore (#32)", () => {
   });
 
   it("ignores operator and spectator event types", () => {
-    const noisy = [ev("llm_failure"), ev("recap_generated"), ev("operator_warning")];
+    const noisy = [ev("llm_failure"), ev("reflection_completed"), ev("operator_warning")];
     expect(intentEntropyScore(noisy)).toBe(0);
   });
 

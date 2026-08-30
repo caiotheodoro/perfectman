@@ -23,7 +23,7 @@ const EVENT_TYPES = new Set([
   "presence_changed", "intent_delayed", "intent_blocked", "memory_written",
   "no_op_recorded", "private_motive_summary", "operator_warning",
   "llm_failure", "simulation_started", "simulation_paused",
-  "simulation_resumed", "simulation_stopped", "recap_generated",
+  "simulation_resumed", "simulation_stopped",
   "reflection_completed", "stagnation_detected",
 ]);
 

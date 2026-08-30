@@ -101,8 +101,8 @@ describe("Personas", () => {
 
 // --- Emotion Rules ---
 describe("EVENT_IMPULSE_TABLE", () => {
-  it("has 15 well-formed impulse rules", () => {
-    expect(EVENT_IMPULSE_TABLE).toHaveLength(15);
+  it("has 14 well-formed impulse rules", () => {
+    expect(EVENT_IMPULSE_TABLE).toHaveLength(14);
     for (const rule of EVENT_IMPULSE_TABLE) {
       expect(["actor", "target", "bystander"]).toContain(rule.role);
       expectAllInRange([rule.magnitude], 0, 1, `${rule.role}.magnitude`, { exclusiveMin: true });
