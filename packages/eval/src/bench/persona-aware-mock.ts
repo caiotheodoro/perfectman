@@ -371,6 +371,7 @@ export class PersonaAwareMockProvider implements LLMProvider {
         summary: memory.summary,
         emotionalTone: memory.emotionalTone,
         confidence: memory.confidence,
+        intensity: 0,
         unresolved: memory.unresolved,
       },
     ];

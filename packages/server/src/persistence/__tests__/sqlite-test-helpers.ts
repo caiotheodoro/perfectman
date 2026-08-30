@@ -127,6 +127,7 @@ export function makeMemory(id: string, agentId: string, simulationId: string): M
     summary: "a2 was friendly to me",
     emotionalTone: "positive",
     confidence: 0.9,
+    intensity: 0,
     unresolved: false,
     createdAt: Date.now(),
     lastReinforcedAt: Date.now(),

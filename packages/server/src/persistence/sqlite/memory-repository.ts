@@ -16,6 +16,7 @@ type MemoryRow = {
   summary: string;
   emotional_tone: string;
   confidence: number;
+  intensity: number;
   unresolved: number;
   created_at: number;
   last_reinforced_at: number;
@@ -32,6 +33,7 @@ function rowToMemory(row: MemoryRow): Memory {
     summary: row.summary,
     emotionalTone: row.emotional_tone as Memory["emotionalTone"],
     confidence: row.confidence,
+    intensity: row.intensity,
     unresolved: row.unresolved === 1,
     createdAt: row.created_at,
     lastReinforcedAt: row.last_reinforced_at,
@@ -58,8 +60,8 @@ export class SqliteMemoryRepository implements IMemoryRepository {
       .prepare(
         `INSERT INTO memories
            (id, agent_id, simulation_id, type, subject_agent_ids, source_event_ids,
-            summary, emotional_tone, confidence, unresolved, created_at, last_reinforced_at)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            summary, emotional_tone, confidence, intensity, unresolved, created_at, last_reinforced_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
          ON CONFLICT(id) DO UPDATE SET
            type               = excluded.type,
            subject_agent_ids  = excluded.subject_agent_ids,
@@ -67,6 +69,7 @@ export class SqliteMemoryRepository implements IMemoryRepository {
            summary            = excluded.summary,
            emotional_tone     = excluded.emotional_tone,
            confidence         = excluded.confidence,
+           intensity          = excluded.intensity,
            unresolved         = excluded.unresolved,
            last_reinforced_at = excluded.last_reinforced_at`,
       )
@@ -80,6 +83,7 @@ export class SqliteMemoryRepository implements IMemoryRepository {
         memory.summary,
         memory.emotionalTone,
         memory.confidence,
+        memory.intensity,
         memory.unresolved ? 1 : 0,
         memory.createdAt,
         memory.lastReinforcedAt,

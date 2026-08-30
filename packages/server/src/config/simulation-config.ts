@@ -142,6 +142,7 @@ export type InitialChannelConfig = {
 
 export type InitialMemory = Pick<Memory, "type" | "subjectAgentIds" | "summary" | "emotionalTone"> & {
   confidence?: number;
+  intensity?: number;
 };
 
 export type AgentConfig = {
@@ -696,6 +697,7 @@ function makeAgentState(agent: AgentConfig, simulationId: string): AgentState {
       summary: m.summary,
       emotionalTone: m.emotionalTone,
       confidence: m.confidence ?? 0.8,
+      intensity: m.intensity ?? 0,
       unresolved: false,
       createdAt: now - 1,
       lastReinforcedAt: now - 1,

@@ -459,6 +459,7 @@ function buildAgentState(spec: AgentSeedSpec, scenario: RoleplayScenario): Agent
     summary: m.summary,
     emotionalTone: m.emotionalTone,
     confidence: m.confidence ?? 0.8,
+    intensity: m.intensity ?? 0,
     unresolved: m.unresolved ?? false,
     createdAt: now,
     lastReinforcedAt: now,

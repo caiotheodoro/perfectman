@@ -240,6 +240,7 @@ export function makeMemory(
   summary: string,
   emotionalTone: Memory["emotionalTone"] = "neutral",
   confidence = 0.8,
+  intensity = 0,
 ): Memory {
   return {
     id,
@@ -251,6 +252,7 @@ export function makeMemory(
     summary,
     emotionalTone,
     confidence,
+    intensity,
     unresolved: false,
     createdAt: Date.now(),
     lastReinforcedAt: Date.now(),

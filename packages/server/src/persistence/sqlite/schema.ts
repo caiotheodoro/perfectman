@@ -91,6 +91,7 @@ CREATE TABLE IF NOT EXISTS memories (
   summary             TEXT NOT NULL,
   emotional_tone      TEXT NOT NULL DEFAULT 'neutral',
   confidence          REAL NOT NULL DEFAULT 0.8,
+  intensity           REAL NOT NULL DEFAULT 0,
   unresolved          INTEGER NOT NULL DEFAULT 0,   -- boolean
   created_at          INTEGER NOT NULL,
   last_reinforced_at  INTEGER NOT NULL

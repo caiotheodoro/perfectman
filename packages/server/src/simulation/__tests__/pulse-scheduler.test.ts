@@ -123,7 +123,7 @@ function makeCannedStep({ memory = false } = {}): import("@perfectman/shared").E
     availableActions: [],
     initiativeCandidates: [],
     memoryProposals: memory
-      ? [{ type: "relationship", subjectAgentIds: ["agent-B"], summary: "agent-B seems untrustworthy", emotionalTone: "suspicious", confidence: 0.7, unresolved: true }]
+      ? [{ type: "relationship", subjectAgentIds: ["agent-B"], summary: "agent-B seems untrustworthy", emotionalTone: "suspicious", confidence: 0.7, intensity: 0, unresolved: true }]
       : [],
     noOpRecord: { agentId: "agent_1", pulseIndex: 0, privateMotiveSummary: "nothing to do", reason: "test" },
     operatorMetrics: { pulseIndex: 0, pulseDurationMs: 10, agentsCalled: 1, eventsCommitted: 0, llmCallsMade: 0, budgetUsedPercent: 0 },

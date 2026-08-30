@@ -16,6 +16,7 @@ export type Memory = {
   summary: string;
   emotionalTone: string;
   confidence: number; // [0, 1]
+  intensity: number; // [0, 1]
   unresolved: boolean;
   createdAt: number;
   lastReinforcedAt: number;
@@ -27,5 +28,6 @@ export type MemoryWriteProposal = {
   summary: string;
   emotionalTone: string;
   confidence: number;
+  intensity: number; // [0, 1]
   unresolved: boolean;
 };

@@ -34,6 +34,7 @@ export type MemorySeedSpec = {
   summary: string;
   emotionalTone: string;
   confidence?: number;
+  intensity?: number;
   unresolved?: boolean;
 };
 
