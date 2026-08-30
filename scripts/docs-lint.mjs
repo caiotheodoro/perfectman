@@ -50,7 +50,7 @@ const FRESHNESS_DAYS = 90;
 // that legitimately needs an exception updates this list (and the research log).
 const INFORMATIONAL_EXCEPTIONS = [
   "docs/adr/0008-world-goal-layer.md:50",   // prose: archiving-survival rule
-  "docs/research/goal-layer/README.md:15",  // prose: staging-copies note
+  "docs/research/goal-layer/README.md:16",  // prose: staging-copies note
   "docs/research/goal-layer/notes.md:56",   // prose: historical dead-link note
   "docs/research/goal-layer/notes.md:60",   // prose: staging-only rule (two mentions, one line)
   "docs/research/goal-layer/source-map.md:82", // link target: staging source R1
