@@ -332,6 +332,37 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     expect(html).toContain("Preciso marcar presença sem chamar atenção.");
   });
 
+  it("carries the reaction emoji from event_visibility into the replay and artifact", async () => {
+    const { gw, outputPath } = buildGateway();
+    await gw.sendOperatorEvent(snapshot("ana", 0));
+    await gw.sendOperatorEvent({
+      type: "event_visibility",
+      simulationId: "sim_rcv",
+      agentId: "ana",
+      pulseIndex: 0,
+      detail: "Event visibility: reaction_sent",
+      data: {
+        eventId: "ev_react",
+        eventType: "reaction_sent",
+        actorId: "ana",
+        channelId: "general",
+        visibleToAgents: [],
+        emoji: "🎉",
+        targetEventId: "ev_m1",
+      },
+      createdAt: 1,
+    });
+    await gw.onSimulationStopped("sim_rcv");
+
+    const row = gw.toReplay().pulses[0]!.committedEvents[0]!;
+    expect(row.type).toBe("reaction_sent");
+    expect(row.payload["emoji"]).toBe("🎉");
+    expect(row.payload["targetEventId"]).toBe("ev_m1");
+
+    const html = readFileSync(outputPath, "utf-8");
+    expect(html).toContain("🎉");
+  });
+
   it("keeps the partial frame when stopped mid-pulse", async () => {
     const { gw } = buildGateway();
     await gw.sendOperatorEvent(snapshot("ana", 0));

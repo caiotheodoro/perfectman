@@ -271,6 +271,8 @@ export class HtmlSnapshotGateway implements IDeliveryGateway {
     const data = event.data ?? {};
     const content = payloadString(data, "content");
     const channelName = payloadString(data, "channelName");
+    const emoji = payloadString(data, "emoji");
+    const targetEventId = payloadString(data, "targetEventId");
     return {
       id: payloadString(data, "eventId"),
       simulationId: event.simulationId,
@@ -280,6 +282,8 @@ export class HtmlSnapshotGateway implements IDeliveryGateway {
       payload: {
         ...(content ? { content } : {}),
         ...(channelName ? { channelName } : {}),
+        ...(emoji ? { emoji } : {}),
+        ...(targetEventId ? { targetEventId } : {}),
       },
       sourceEventIds: [],
       emotionalSalience: "low",

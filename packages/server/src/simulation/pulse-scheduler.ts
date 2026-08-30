@@ -418,6 +418,8 @@ export class PulseScheduler {
   private async emitEventVisibility(event: CommittedEvent): Promise<void> {
     const content = payloadString(event.payload, "content");
     const channelName = payloadString(event.payload, "channelName");
+    const emoji = payloadString(event.payload, "emoji");
+    const targetEventId = payloadString(event.payload, "targetEventId");
     const data: EventVisibilityData = {
       eventId: event.id,
       eventType: event.type,
@@ -426,6 +428,8 @@ export class PulseScheduler {
       visibleToAgents: event.visibility.visibleToAgents,
       ...(content ? { content } : {}),
       ...(channelName ? { channelName } : {}),
+      ...(emoji ? { emoji } : {}),
+      ...(targetEventId ? { targetEventId } : {}),
     };
     await this.emitOperatorEvent({
       type: "event_visibility",

@@ -273,7 +273,38 @@ export async function loadSimulationConfig(
     );
   }
   const hydrated = await hydrateAgentPersonaFiles(parsed, path);
-  return parseSimulationConfig(hydrated);
+  const config = parseSimulationConfig(hydrated);
+  anchorHtmlSnapshotOutputPaths(config, path);
+  return config;
+}
+
+/**
+ * `html-snapshot` `outputPath` values are authored relative to the checkout,
+ * but the simulation runs with `process.cwd()` at `packages/server`. Anchor
+ * relative paths to the workspace root (the `pnpm-workspace.yaml` directory),
+ * falling back to the config file's own directory outside a workspace.
+ */
+function anchorHtmlSnapshotOutputPaths(
+  config: SimulationAppConfig,
+  configPath: string,
+): void {
+  const configDir = dirname(configPath);
+  const base = findWorkspaceRoot(configDir) ?? configDir;
+  for (const gateway of config.deliveryGateways) {
+    if (gateway.type === "html-snapshot" && !isAbsolute(gateway.outputPath)) {
+      gateway.outputPath = resolve(base, gateway.outputPath);
+    }
+  }
+}
+
+function findWorkspaceRoot(startDir: string): string | undefined {
+  let current = startDir;
+  const root = parse(current).root;
+  while (true) {
+    if (existsSync(join(current, "pnpm-workspace.yaml"))) return current;
+    if (current === root) return undefined;
+    current = dirname(current);
+  }
 }
 
 async function hydrateAgentPersonaFiles(

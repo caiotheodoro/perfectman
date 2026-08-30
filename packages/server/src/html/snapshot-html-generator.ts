@@ -570,7 +570,7 @@ function renderStory() {
 
     // Count meaningful events
     const visibleEvts = frame.committedEvents.filter(
-      e => e.type === 'message_sent' || e.type === 'reply_sent' || e.type === 'channel_created'
+      e => e.type === 'message_sent' || e.type === 'reply_sent' || e.type === 'channel_created' || e.type === 'reaction_sent'
     );
 
     // ── Divider ──
@@ -590,7 +590,7 @@ function renderStory() {
     let hasContent = false;
 
     for (const evt of frame.committedEvents) {
-      if (evt.type !== 'message_sent' && evt.type !== 'reply_sent' && evt.type !== 'channel_created') continue;
+      if (evt.type !== 'message_sent' && evt.type !== 'reply_sent' && evt.type !== 'channel_created' && evt.type !== 'reaction_sent') continue;
 
       const agentId = evt.actorId || '';
       const agentName = AGENT_NAMES[agentId] || agentId;
@@ -608,11 +608,12 @@ function renderStory() {
       msgRow.dataset.channelId = evt.channelId || '';
       msgRow.dataset.visibleTo = JSON.stringify(visibleTo);
 
-      const sigil = evt.type === 'reply_sent' ? '↩' : (evt.type === 'channel_created' ? '📢' : '💬');
-      const content = (evt.payload && (evt.payload.content || evt.payload.channelName)) || '';
+      const sigil = evt.type === 'reply_sent' ? '↩' : (evt.type === 'channel_created' ? '📢' : (evt.type === 'reaction_sent' ? '+' : '💬'));
+      const content = (evt.payload && (evt.payload.content || evt.payload.channelName || evt.payload.emoji)) || '';
       const typeTag = evt.type === 'reply_sent'
         ? '<span class="msg-type-tag">↳reply</span>'
-        : (evt.type === 'channel_created' ? '<span class="msg-type-tag">canal criado</span>' : '');
+        : (evt.type === 'channel_created' ? '<span class="msg-type-tag">canal criado</span>'
+        : (evt.type === 'reaction_sent' ? '<span class="msg-type-tag">reação</span>' : ''));
       const channelTag = isPrivate
         ? '<span class="msg-channel-tag">🔒 ' + escHtml(ch.name || ch.id) + '</span>'
         : '';

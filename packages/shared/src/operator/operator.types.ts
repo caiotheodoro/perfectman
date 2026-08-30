@@ -104,4 +104,6 @@ export type EventVisibilityData = {
   visibleToAgents: string[];
   content?: string;
   channelName?: string;
+  emoji?: string;
+  targetEventId?: string;
 };
