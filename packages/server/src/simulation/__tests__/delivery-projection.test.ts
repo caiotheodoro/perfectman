@@ -96,7 +96,7 @@ describe("DeliveryProjection", () => {
     expect(gateway.agentMessages[0]!.channelId).toBe(PUB_CHANNEL_ID);
   });
 
-  it("private channel event does NOT reach non-member agent", async () => {
+  it("emits once when a visibleToAgents-restricted event is visible to a channel member", async () => {
     const event = makeCommittedEvent({
       channelId: PRIV_CHANNEL_ID,
       type: "message_sent",
@@ -109,18 +109,24 @@ describe("DeliveryProjection", () => {
     });
     gateway.reset();
     await projection.project(event, [PUBLIC_CHANNEL, PRIVATE_CHANNEL], MEMBERSHIPS, SETTINGS);
-    // Delivery only fans out to members of PRIV_CHANNEL (only AGENT_1)
-    // AGENT_2 is not in PRIV_CHANNEL membership so it should never appear as recipient
-    // Since DeliveryProjection uses getMemberAgentIds which filters by membership,
-    // agent_2 will never be iterated over for this private channel event.
-    // The gateway receives at most 1 message (for agent_1), never for agent_2.
-    expect(gateway.agentMessages.length).toBeLessThanOrEqual(1);
-    // All messages must be to the private channel (agent_2 is not a member)
-    // agent_2's absence from PRIV_CHANNEL membership is the invariant
-    const membersOfPrivate = MEMBERSHIPS
-      .filter(m => m.channelId === PRIV_CHANNEL_ID && !m.leftAt)
-      .map(m => m.agentId);
-    expect(membersOfPrivate).not.toContain(AGENT_2);
+    expect(gateway.agentMessages).toHaveLength(1);
+    expect(gateway.agentMessages[0]!.channelId).toBe(PRIV_CHANNEL_ID);
+  });
+
+  it("does not emit when a visibleToAgents-restricted event names only a non-member", async () => {
+    const event = makeCommittedEvent({
+      channelId: PRIV_CHANNEL_ID,
+      type: "message_sent",
+      visibility: {
+        visibleToAgents: [AGENT_2],
+        visibleToSpectators: false,
+        visibleToOperators: true,
+        visibilityReason: "private",
+      },
+    });
+    gateway.reset();
+    await projection.project(event, [PUBLIC_CHANNEL, PRIVATE_CHANNEL], MEMBERSHIPS, SETTINGS);
+    expect(gateway.agentMessages).toHaveLength(0);
   });
 
   it("reply_sent produces a reply delivery message", async () => {
