@@ -23,7 +23,7 @@ export type PerceptionPacket = {
   // ("e1", "e2", …) to the real event id it stands for, covering the
   // triggering event and every visible-context event. The model is asked to
   // reference a handle for replyToEventId / targetEventId; IntentParser
-  // resolves it back to the real id against this map. Absent on packets not
-  // built by buildPerceptionPacket (treat as empty).
-  eventHandles?: Record<string, string>;
+  // resolves it back to the real id against this map. Empty when nothing is
+  // in view, never absent.
+  eventHandles: Record<string, string>;
 };

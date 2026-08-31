@@ -52,7 +52,7 @@ describe("AgentRuntime Orchestration", () => {
     perceptionPacket: {
       agentId: "example-friend",
       triggeringEvent: null,
-      visibleContextEvents: [], ownRecentUtterances: [],
+      visibleContextEvents: [], eventHandles: {}, ownRecentUtterances: [],
       involvedPeople: [],
       relevantChannels: ["general"],
       relevantMemories: [],

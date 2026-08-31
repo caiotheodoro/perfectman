@@ -37,6 +37,7 @@ function makeInput(overrides: Partial<AgentRuntimeInput> = {}): AgentRuntimeInpu
       agentId: "agent-a",
       triggeringEvent: null,
       visibleContextEvents: [],
+      eventHandles: {},
       ownRecentUtterances: [REPEAT_TEXT],
       involvedPeople: [],
       relevantChannels: ["general"],
@@ -333,6 +334,17 @@ describe("ActionIntentStep", () => {
       expect(outcome.value.intent.replyToEventId).toBe("evt_trigger");
       expect(outcome.value.intent.replyToActorId).toBe("agent-peer");
       expect(outcome.value.fallbackApplied).toBe(false);
+
+      const floorEvent = outcome.value.operatorEvents.find((e) => e.type === "target_resolution_floored");
+      expect(floorEvent).toBeDefined();
+      expect(floorEvent!.detail).toContain("bogus-1");
+      expect(floorEvent!.data).toMatchObject({
+        field: "replyToEventId",
+        badHandle: "bogus-1",
+        outcome: "triggering_or_visible_event",
+        resolvedEventId: "evt_trigger",
+      });
+      expect(outcome.value.operatorEvents.some((e) => e.type === "llm_failure")).toBe(false);
     });
 
     it("drops a reaction with an unresolvable target and no triggering event / visible message", async () => {
@@ -371,6 +383,15 @@ describe("ActionIntentStep", () => {
       expect(outcome.value.intent.intentType).toBe("send_message");
       expect(outcome.value.intent.replyToEventId).toBeUndefined();
       expect(outcome.value.intent.visibleContent).toBe("yes I did");
+
+      const floorEvent = outcome.value.operatorEvents.find((e) => e.type === "target_resolution_floored");
+      expect(floorEvent).toBeDefined();
+      expect(floorEvent!.data).toMatchObject({
+        field: "replyToEventId",
+        badHandle: "nope",
+        outcome: "downgraded_to_send_message",
+      });
+      expect(floorEvent!.data?.resolvedEventId).toBeUndefined();
     });
   });
 });

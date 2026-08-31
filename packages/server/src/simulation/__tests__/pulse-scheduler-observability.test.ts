@@ -106,7 +106,7 @@ function makeCannedStep(agentId: string): EngineStepResult {
     newEvents: [],
     attentionResults: { noticed: false, dueScore: 0, reasons: [], needsLLM: false, triggeringReason: "test" },
     perceptionPacket: {
-      agentId, triggeringEvent: null, visibleContextEvents: [], ownRecentUtterances: [], involvedPeople: [],
+      agentId, triggeringEvent: null, visibleContextEvents: [], eventHandles: {}, ownRecentUtterances: [], involvedPeople: [],
       relevantChannels: [], relevantMemories: [],
       translatedEmotionalState: { summary: "", emotions: [] },
       availableActions: [],

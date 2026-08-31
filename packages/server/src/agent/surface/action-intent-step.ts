@@ -2,6 +2,7 @@ import type {
   AgentRuntimeInput,
   LLMUsage,
   OperatorEvent,
+  TargetResolutionFlooredData,
 } from "@perfectman/shared";
 import type {
   AgentRuntimeContext,
@@ -142,7 +143,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     }
 
     const targetContext: TargetResolutionContext = {
-      eventHandles: input.perceptionPacket.eventHandles ?? {},
+      eventHandles: input.perceptionPacket.eventHandles,
       events: [
         ...(input.perceptionPacket.triggeringEvent ? [input.perceptionPacket.triggeringEvent] : []),
         ...input.perceptionPacket.visibleContextEvents,
@@ -262,6 +263,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     // triggering-event floor — the target is never committed empty or
     // unresolved, and no_op is not this failure path (a reaction with
     // nothing left to target is the sole exception: it is dropped).
+    let targetFloor: { detail: string; data: TargetResolutionFlooredData } | undefined;
     if (!fallbackApplied && !repetitionBlocked && parseResult.unresolvedTarget) {
       const bad = parseResult.unresolvedTarget;
       let resolvedOnRetry = false;
@@ -308,7 +310,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
       if (!resolvedOnRetry) {
         const floored = IntentParser.floorTargets(intent, targetContext);
-        if (floored.droppedReaction) {
+        if (floored.outcome === "dropped") {
           fallbackApplied = true;
           retryKind = "parse_failed";
           parseResult = {
@@ -324,6 +326,20 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         } else {
           intent = floored.intent;
           parseResult = { ...parseResult, errorDetail: undefined, unresolvedTarget: undefined };
+          if (floored.outcome === "floored" || floored.outcome === "downgraded") {
+            targetFloor = {
+              detail: floored.detail ?? "",
+              data: {
+                field: floored.field,
+                badHandle: bad.badHandle,
+                outcome:
+                  floored.outcome === "downgraded"
+                    ? "downgraded_to_send_message"
+                    : "triggering_or_visible_event",
+                ...(floored.resolvedEventId ? { resolvedEventId: floored.resolvedEventId } : {}),
+              },
+            };
+          }
         }
       }
     }
@@ -389,6 +405,18 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         outputTokens: totalOutputTokens,
       },
     });
+
+    if (targetFloor) {
+      operatorEvents.push({
+        type: "target_resolution_floored",
+        simulationId,
+        agentId,
+        pulseIndex: ctx.pulseIndex,
+        detail: `Reply/reaction target for agent ${agentId} could not be resolved; engine floor applied: ${targetFloor.detail}`,
+        createdAt: ctx.now,
+        data: targetFloor.data,
+      });
+    }
 
     if (fallbackApplied && !repetitionBlocked) {
       const detail =

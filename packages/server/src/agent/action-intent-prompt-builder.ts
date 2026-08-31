@@ -40,6 +40,7 @@ export const CANONICAL_TEMPLATE_VERSION_INPUT: AgentRuntimeInput = {
     agentId: "template-version",
     triggeringEvent: null,
     visibleContextEvents: [],
+    eventHandles: {},
     ownRecentUtterances: [],
     involvedPeople: [],
     relevantChannels: [],
@@ -190,7 +191,7 @@ export class ActionIntentPromptBuilder {
   private static renderEvents(s: PromptSection, input: AgentRuntimeInput, perceptionPacket: AgentRuntimeInput["perceptionPacket"]): void {
     s.heading("What you noticed");
     const handleByEventId = new Map(
-      Object.entries(perceptionPacket.eventHandles ?? {}).map(([handle, eventId]) => [eventId, handle]),
+      Object.entries(perceptionPacket.eventHandles).map(([handle, eventId]) => [eventId, handle]),
     );
     if (perceptionPacket.triggeringEvent) {
       s.raw(`Triggering event (what just happened that caught your attention):\n${this.formatEvent(perceptionPacket.triggeringEvent, handleByEventId.get(perceptionPacket.triggeringEvent.id))}`);

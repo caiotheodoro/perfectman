@@ -56,6 +56,7 @@ function input(memories: Memory[] = []): AgentRuntimeInput {
       agentId: "goulart",
       triggeringEvent: null,
       visibleContextEvents: [],
+      eventHandles: {},
       ownRecentUtterances: [],
       involvedPeople: [],
       relevantChannels: ["general"],

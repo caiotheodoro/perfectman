@@ -133,7 +133,10 @@ describe("IntentParser reply/react target resolution", () => {
       const parsed = IntentParser.parse(replyJson("bogus"), actorId, availableActions, "no_op", targetContext());
       const floored = IntentParser.floorTargets(parsed.intent, targetContext());
 
-      expect(floored.droppedReaction).toBeFalsy();
+      expect(floored.outcome).toBe("floored");
+      expect(floored.field).toBe("replyToEventId");
+      expect(floored.resolvedEventId).toBe("evt_trigger");
+      expect(floored.detail).toContain("evt_trigger");
       expect(floored.intent.intentType).toBe("reply_to_message");
       expect(floored.intent.replyToEventId).toBe("evt_trigger");
       expect(floored.intent.replyToActorId).toBe("agent-peer");
@@ -153,6 +156,7 @@ describe("IntentParser reply/react target resolution", () => {
       const parsed = IntentParser.parse(replyJson("bogus"), actorId, availableActions, "no_op", ctx);
       const floored = IntentParser.floorTargets(parsed.intent, ctx);
 
+      expect(floored.outcome).toBe("downgraded");
       expect(floored.intent.intentType).toBe("send_message");
       expect(floored.intent.replyToEventId).toBeUndefined();
       expect(floored.intent.replyToActorId).toBeUndefined();
@@ -164,7 +168,8 @@ describe("IntentParser reply/react target resolution", () => {
       const parsed = IntentParser.parse(reactJson("bogus"), actorId, availableActions, "no_op", ctx);
       const floored = IntentParser.floorTargets(parsed.intent, ctx);
 
-      expect(floored.droppedReaction).toBe(true);
+      expect(floored.outcome).toBe("dropped");
+      expect(floored.field).toBe("targetEventId");
     });
 
     it("does not mutate the intent passed in", () => {

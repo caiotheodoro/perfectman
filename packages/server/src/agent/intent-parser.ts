@@ -233,21 +233,38 @@ export class IntentParser {
    * triggering event (or, failing that, the most recent visible message) as
    * the target. With neither available, a reply downgrades to send_message
    * and a reaction is dropped. Never leaves the target empty or unresolved.
-   * Mutates a copy — the input intent is left untouched.
+   * Mutates a copy — the input intent is left untouched. The `outcome` and
+   * `resolvedEventId` let the caller emit floor telemetry.
    */
   static floorTargets(
     intent: ActionIntent,
     targetContext: TargetResolutionContext,
-  ): { intent: ActionIntent; detail?: string; droppedReaction?: boolean } {
+  ): {
+    intent: ActionIntent;
+    outcome: "resolved" | "floored" | "downgraded" | "dropped";
+    field: TargetField;
+    detail?: string;
+    resolvedEventId?: string;
+  } {
+    const field: TargetField = intent.intentType === "react" ? "targetEventId" : "replyToEventId";
     const working: ActionIntent = { ...intent };
     const resolution = this.resolveTargets(working, targetContext, { floor: true });
-    if (resolution.kind === "dropped") {
-      return { intent: working, detail: resolution.detail, droppedReaction: true };
+    switch (resolution.kind) {
+      case "dropped":
+        return { intent: working, outcome: "dropped", field, detail: resolution.detail };
+      case "floored":
+        return {
+          intent: working,
+          outcome: "floored",
+          field,
+          detail: resolution.detail,
+          resolvedEventId: working[field],
+        };
+      case "downgraded":
+        return { intent: working, outcome: "downgraded", field, detail: resolution.detail };
+      default:
+        return { intent: working, outcome: "resolved", field };
     }
-    if (resolution.kind === "floored" || resolution.kind === "downgraded") {
-      return { intent: working, detail: resolution.detail };
-    }
-    return { intent: working };
   }
 
   /**
@@ -267,7 +284,7 @@ export class IntentParser {
 
     const field: TargetField = isReply ? "replyToEventId" : "targetEventId";
     const raw = (intent[field] ?? "").trim();
-    const handles = ctx.eventHandles ?? {};
+    const handles = ctx.eventHandles;
     const validHandles = Object.keys(handles);
     const realIds = new Set(Object.values(handles));
     const normalized = raw.replace(/^\[+/, "").replace(/\]+$/, "").trim();
