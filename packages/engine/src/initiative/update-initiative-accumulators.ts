@@ -75,6 +75,14 @@ const SOURCE_EMOTION_MAP: Partial<Record<InitiativeSource, keyof ActionEmotions>
  *    fixed point `growth / (decayRate * 0.5)` well below 1.0. The `0.5`
  *    coefficient is provisional — it is retuned in #129.
  *
+ *    `cold_start_bootstrap` is exempt and stays growth-only on the silent
+ *    branch. Its threshold (0.30) sits below the passive-decay ceiling
+ *    `0.4 * energy`, so at typical persona energy (~0.3–0.5) the decayed
+ *    fixed point never reaches the threshold. Decaying it would gate an
+ *    always-on silence-breaker for a room that hasn't warmed up behind agent
+ *    energy — for a calm agent the source would never cross and
+ *    `scoreInitiativeCandidates` would never return `proceed` for it.
+ *
  * 3. Global relief on action: when the agent committed an outward social act
  *    on the previous pulse (`justActed`), ALL 17 accumulators are multiplied
  *    by `1 - decayRate * 2`. Relief is deliberately global, not
@@ -127,7 +135,13 @@ export function updateInitiativeAccumulators(
 
     // Passive decay on the silent branch so unspoken motives also relax and
     // don't re-saturate at 1.0. The 0.5 coefficient is provisional (#129).
-    const decayed = acc.value * (1 - acc.decayRate * 0.5);
+    // cold_start_bootstrap is exempt: its 0.30 threshold sits below the
+    // passive-decay ceiling 0.4*energy, so decaying it would gate the
+    // always-on cold-start stagger behind agent energy.
+    const decayed =
+      source === "cold_start_bootstrap"
+        ? acc.value
+        : acc.value * (1 - acc.decayRate * 0.5);
     const newValue = clamp(decayed + growth, 0, 1);
 
     return {
