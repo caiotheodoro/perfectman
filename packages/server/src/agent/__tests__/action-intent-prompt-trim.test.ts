@@ -218,5 +218,43 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
     expect(built.trim!.droppedMemories).toBe(MEMORY_COUNT);
     expect(built.trim!.droppedEvents).toBe(EVENT_COUNT);
     expect(built.user).toContain(TRIGGER_CONTENT);
+    expect(built.trim!.withinCap).toBe(true);
+    expect(built.trim!.phase).toBe("assembly");
+  });
+
+  it("flags an irreducible over-cap prompt with withinCap:false after shedding everything droppable", () => {
+    // Cap below the floor render: the drop loop exhausts every memory and
+    // event and the persona + contract + decision + triggering event alone
+    // still blow the cap.
+    const cap = Math.floor(floorBuild.inputTokensEstimate / 2);
+    const built = PromptBuilder.build(fullInput, EXAMPLE_PROMPT_PROFILE, "action_intent", cap);
+
+    expect(built.trim).toBeDefined();
+    expect(built.trim!.withinCap).toBe(false);
+    expect(built.trim!.droppedMemories).toBe(MEMORY_COUNT);
+    expect(built.trim!.droppedEvents).toBe(EVENT_COUNT);
+    expect(built.trim!.finalInputTokensEstimate).toBeGreaterThan(cap);
+    expect(built.inputTokensEstimate).toBe(built.trim!.finalInputTokensEstimate);
+    expect(built.user).toContain(TRIGGER_CONTENT);
+  });
+
+  it("records a trim even when the raw render is over-cap with nothing droppable", () => {
+    // No context events and no memories to begin with — the trimmer has
+    // nothing to shed, but the render is still over-cap and the send must be
+    // logged rather than shipped silently.
+    const cap = 10;
+    const built = PromptBuilder.build(
+      makeInput([triggeringEvent], []),
+      EXAMPLE_PROMPT_PROFILE,
+      "action_intent",
+      cap,
+    );
+
+    expect(built.trim).toBeDefined();
+    expect(built.trim!.withinCap).toBe(false);
+    expect(built.trim!.droppedEvents).toBe(0);
+    expect(built.trim!.droppedMemories).toBe(0);
+    expect(built.trim!.rawInputTokensEstimate).toBe(built.trim!.finalInputTokensEstimate);
+    expect(built.trim!.finalInputTokensEstimate).toBeGreaterThan(cap);
   });
 });
