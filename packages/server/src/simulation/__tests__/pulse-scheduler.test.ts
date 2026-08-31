@@ -253,6 +253,7 @@ describe("PulseScheduler", () => {
     const mem = events.filter((e) => e.type === "memory_written");
     expect(mem).toHaveLength(1);
     expect(mem[0]!.payload["summary"]).toBe("agent-B seems untrustworthy");
+    expect(mem[0]!.payload["intensity"]).toBe(0);
     // noOpRecord present with needsLLM=false — the LLM path must not be invoked
     expect(mockAgentRuntime.generateIntent).not.toHaveBeenCalled();
   });

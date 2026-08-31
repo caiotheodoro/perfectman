@@ -91,6 +91,10 @@ CREATE TABLE IF NOT EXISTS memories (
   summary             TEXT NOT NULL,
   emotional_tone      TEXT NOT NULL DEFAULT 'neutral',
   confidence          REAL NOT NULL DEFAULT 0.8,
+  -- TODO(perfectman): no migration runner exists — CREATE TABLE IF NOT EXISTS
+  -- will not add this column to an aged on-disk DB. Before SqliteMemoryRepository
+  -- is wired into createRepositories, run:
+  --   ALTER TABLE memories ADD COLUMN intensity REAL NOT NULL DEFAULT 0
   intensity           REAL NOT NULL DEFAULT 0,
   unresolved          INTEGER NOT NULL DEFAULT 0,   -- boolean
   created_at          INTEGER NOT NULL,

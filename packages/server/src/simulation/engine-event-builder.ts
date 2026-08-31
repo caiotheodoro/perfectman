@@ -67,6 +67,7 @@ export class EngineEventBuilder {
           summary: proposal.summary,
           emotionalTone: proposal.emotionalTone,
           confidence: proposal.confidence,
+          intensity: proposal.intensity,
           unresolved: proposal.unresolved,
           subjectAgentIds: proposal.subjectAgentIds,
         },
