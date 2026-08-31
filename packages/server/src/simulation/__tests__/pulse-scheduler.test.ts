@@ -13,6 +13,7 @@ import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type { Simulation, SimulationSettings, AgentState, PersonaConfig, ActionIntent, EndingOffer, GoalSynthesisResult, SimulationEvent } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
+import { runEngineStep } from "@perfectman/engine";
 import { resolveGoalLayerConfig, WorldEvaluator } from "../world/world-evaluator.js";
 import type { GoalLayerRuntime, WorldReview } from "../world/world-evaluator.js";
 
@@ -347,6 +348,72 @@ describe("PulseScheduler", () => {
         "fallback_committed",
       );
       expect(socialFallback?.lastActionAt).toBe(SETTINGS.pulseIntervalMs);
+    });
+  });
+
+  describe("stamp → relief seam (real engine step)", () => {
+    it("a committed act stamps lastActionAt and the next real engine step relieves the accumulators", async () => {
+      const ACT_PULSE = 3;
+      const sched = buildScheduler((snap) => {
+        const real = runEngineStep(snap);
+        if (snap.pulseIndex === ACT_PULSE) {
+          return {
+            ...real,
+            decision: { ...real.decision, outcome: "act", needsLLM: true, initiativeProceed: false },
+          };
+        }
+        return real;
+      });
+
+      mockAgentRuntime.generateIntent = vi.fn().mockResolvedValue({
+        intent: {
+          id: createId(),
+          actorId: "agent_1",
+          intentType: "send_message",
+          visibleContent: "hi",
+          personTargets: [],
+          privateMotiveSummary: "test motive",
+          emotionDrivers: [],
+          motivationDrivers: [],
+          memoryWrites: [],
+        },
+        llmUsage: null,
+        latencyMs: 10,
+        fallbackApplied: false,
+        operatorEvents: [],
+      });
+      vi.spyOn(intentResolver, "resolve").mockResolvedValue({
+        outcome: "committed",
+        committedEvents: [],
+        operatorEvents: [],
+      });
+
+      for (let i = 0; i <= ACT_PULSE; i++) await sched.runPulse();
+
+      const afterAct = await agentStateRepo.get("sim_test", "agent_1");
+      expect(afterAct?.lastActionAt).toBe(SETTINGS.pulseIntervalMs * (ACT_PULSE + 1));
+      const before = new Map((afterAct?.initiativeAccumulators ?? []).map((a) => [a.source, a.value]));
+      expect(before.size).toBeGreaterThan(0);
+
+      // Next pulse: now - lastActionAt = pulseIntervalMs < pulseIntervalMs * 1.5,
+      // so run-engine-step derives justActed === true and applies global relief.
+      await sched.runPulse();
+
+      const afterRelief = await agentStateRepo.get("sim_test", "agent_1");
+      const after = new Map((afterRelief?.initiativeAccumulators ?? []).map((a) => [a.source, a.value]));
+
+      // cold_start_bootstrap is passive-decay exempt, so any drop here is the
+      // justActed relief, not silent decay.
+      expect(before.get("cold_start_bootstrap")!).toBeGreaterThan(0);
+      expect(after.get("cold_start_bootstrap")!).toBeLessThan(before.get("cold_start_bootstrap")!);
+
+      let totalBefore = 0;
+      let totalAfter = 0;
+      for (const [source, value] of before) {
+        totalBefore += value;
+        totalAfter += after.get(source)!;
+      }
+      expect(totalAfter).toBeLessThan(totalBefore);
     });
   });
 
