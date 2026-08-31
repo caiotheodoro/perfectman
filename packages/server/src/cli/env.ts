@@ -1,6 +1,5 @@
-import { existsSync } from "node:fs";
-import { dirname, join, parse } from "node:path";
 import { config as loadDotenv } from "dotenv";
+import { findUp } from "../config/simulation-config.js";
 
 type LoadDotenv = typeof loadDotenv;
 
@@ -12,16 +11,4 @@ export function loadEnvFile(
   if (!envPath) return;
 
   load({ path: envPath, quiet: true });
-}
-
-export function findUp(filename: string, startDir: string): string | null {
-  let current = startDir;
-  const root = parse(current).root;
-
-  while (true) {
-    const candidate = join(current, filename);
-    if (existsSync(candidate)) return candidate;
-    if (current === root) return null;
-    current = dirname(current);
-  }
 }

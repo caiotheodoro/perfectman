@@ -237,6 +237,19 @@ const DEFAULT_PERSONA_CALIBRATION: Omit<PersonaConfig, keyof ConfigPersona> = {
 
 export const DEFAULT_SIMULATION_CONFIG_FILENAME = "config/index.json";
 
+/** Walk up from `startDir` for the nearest ancestor containing `filename`. */
+export function findUp(filename: string, startDir: string): string | null {
+  let current = startDir;
+  const root = parse(current).root;
+
+  while (true) {
+    const candidate = join(current, filename);
+    if (existsSync(candidate)) return candidate;
+    if (current === root) return null;
+    current = dirname(current);
+  }
+}
+
 export function findDefaultConfigPath(
   filename: string,
   startDir = process.cwd(),
@@ -298,13 +311,8 @@ function anchorHtmlSnapshotOutputPaths(
 }
 
 function findWorkspaceRoot(startDir: string): string | undefined {
-  let current = startDir;
-  const root = parse(current).root;
-  while (true) {
-    if (existsSync(join(current, "pnpm-workspace.yaml"))) return current;
-    if (current === root) return undefined;
-    current = dirname(current);
-  }
+  const found = findUp("pnpm-workspace.yaml", startDir);
+  return found ? dirname(found) : undefined;
 }
 
 async function hydrateAgentPersonaFiles(
