@@ -65,10 +65,10 @@ presence_changed, intent_delayed, intent_blocked,
 memory_written, no_op_recorded,
 private_motive_summary, operator_warning, llm_failure,
 simulation_started, simulation_paused, simulation_resumed, simulation_stopped,
-recap_generated, reflection_completed, stagnation_detected
+reflection_completed, stagnation_detected
 ```
 
-23 total. Dev2 and Dev1 consume these — never invent new event types outside shared.
+22 total. Dev2 and Dev1 consume these — never invent new event types outside shared.
 
 ## Command / Intent / Event Split
 
