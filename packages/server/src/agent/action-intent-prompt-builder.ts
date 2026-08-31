@@ -99,18 +99,22 @@ export class ActionIntentPromptBuilder {
     let trim: PromptTrim | undefined;
     if (typeof maxInputTokens === "number" && maxInputTokens > 0 && rawEstimate > maxInputTokens) {
       const trimmed = this.trimToFit(input, profile, maxInputTokens);
-      if (trimmed.droppedEvents + trimmed.droppedMemories > 0) {
-        rendered = trimmed.rendered;
-        const finalEstimate = this.estimateTokens(rendered.systemPrompt, rendered.userPrompt);
-        trim = {
-          maxInputTokens,
-          rawInputTokensEstimate: rawEstimate,
-          finalInputTokensEstimate: finalEstimate,
-          droppedEvents: trimmed.droppedEvents,
-          droppedMemories: trimmed.droppedMemories,
-          droppedInputTokensEstimate: rawEstimate - finalEstimate,
-        };
-      }
+      rendered = trimmed.rendered;
+      const finalEstimate = this.estimateTokens(rendered.systemPrompt, rendered.userPrompt);
+      // A trim record is always attached once the raw render was over-cap,
+      // even when nothing was droppable (irreducible content) or every
+      // droppable item was shed and it still does not fit — `withinCap`
+      // distinguishes those from a clean trim so the over-cap send is logged.
+      trim = {
+        maxInputTokens,
+        rawInputTokensEstimate: rawEstimate,
+        finalInputTokensEstimate: finalEstimate,
+        droppedEvents: trimmed.droppedEvents,
+        droppedMemories: trimmed.droppedMemories,
+        droppedInputTokensEstimate: rawEstimate - finalEstimate,
+        withinCap: finalEstimate <= maxInputTokens,
+        phase: "assembly",
+      };
     }
 
     const { systemPrompt, userPrompt } = rendered;
