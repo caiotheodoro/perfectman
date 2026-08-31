@@ -64,7 +64,7 @@ export class GoalLayerLLMClient {
     if (candidates.length === 0) {
       return { result: { proposals: [], selfVerdicts: [] }, operatorEvents: [] };
     }
-    const { simulationId, agentId, pulseIndex, now } = this.params;
+    const { simulationId, agentId, pulseIndex } = this.params;
     const prompt = buildGoalLayerPrompt({
       agentId,
       digest: input.digest,
@@ -89,7 +89,7 @@ export class GoalLayerLLMClient {
             agentId,
             pulseIndex,
             detail: `LLM budget pre-check blocked goal synthesis for agent ${agentId}: ${budgetDecision.reason ?? "unknown reason"}`,
-            createdAt: now,
+            createdAt: Date.now(),
           },
         ],
       };
@@ -126,7 +126,7 @@ export class GoalLayerLLMClient {
             agentId,
             pulseIndex,
             detail: `Goal-layer LLM call failed for agent ${agentId}: ${errorMessage(error)}`,
-            createdAt: now,
+            createdAt: Date.now(),
           },
         ],
       };
@@ -187,6 +187,8 @@ export class GoalLayerLLMClient {
       latencyMs: usage.latencyMs,
       callType: "goal",
       pulseIndex,
+      // Sim time, not Date.now(): this record only feeds llmBudget's rate
+      // window, and a deterministic clock keeps scenario replays identical.
       createdAt: now,
       promptVersion: prompt.version,
       promptTemplateVersion: prompt.templateVersion,

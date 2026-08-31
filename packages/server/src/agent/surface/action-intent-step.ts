@@ -78,7 +78,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       agentId: input.agentId,
       pulseIndex: ctx.pulseIndex,
       detail: `LLM budget pre-check blocked call for agent ${input.agentId}: ${budgetDecision.reason}`,
-      createdAt: ctx.now,
+      createdAt: Date.now(),
     };
     return {
       ok: false,
@@ -115,7 +115,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         agentId,
         pulseIndex: ctx.pulseIndex,
         detail: `LLM provider execution failed for agent ${agentId}: ${error.message || String(error)}`,
-        createdAt: ctx.now,
+        createdAt: Date.now(),
       };
       return {
         ok: false,
@@ -252,6 +252,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       latencyMs: u.latencyMs,
       callType: purposeToCallType("action_intent"),
       pulseIndex: ctx.pulseIndex,
+      // Sim time, not Date.now(): this record only feeds llmBudget's rate
+      // window, and a deterministic clock keeps scenario replays identical.
       createdAt: ctx.now,
       promptVersion: u.promptVersion,
       promptTemplateVersion: prompt.templateVersion,
@@ -287,7 +289,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       agentId,
       pulseIndex: ctx.pulseIndex,
       detail: `LLM cognition call completed for agent ${agentId}`,
-      createdAt: ctx.now,
+      createdAt: Date.now(),
       data: {
         model: providerResult.model || llmConfig.modelName,
         requestedModel: providerResult.requestedModel || llmConfig.modelName,
@@ -310,7 +312,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         agentId,
         pulseIndex: ctx.pulseIndex,
         detail,
-        createdAt: ctx.now,
+        createdAt: Date.now(),
         data: {
           errorDetail: parseResult.errorDetail ?? null,
           requestedModel: providerResult.requestedModel || llmConfig.modelName,
@@ -327,7 +329,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         agentId,
         pulseIndex: ctx.pulseIndex,
         detail: `Repetition guard blocked a near-duplicate message from agent ${agentId}; substituted no_op.`,
-        createdAt: ctx.now,
+        createdAt: Date.now(),
       });
     }
 

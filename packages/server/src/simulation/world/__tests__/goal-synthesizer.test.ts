@@ -193,4 +193,29 @@ describe("LLMGoalSynthesizer", () => {
     expect(registry.getSelfVerdict("goal-capped")).toBeUndefined();
     expect(registry.getSelfVerdict("hallucinated-9")).toBeUndefined();
   });
+
+  it("stamps the llm_failure operator event from a throwing client with wall-clock time, not the review's sim clock", async () => {
+    const registry = new GoalRegistry();
+    promote(registry, "goal-1");
+    const clientFactory: GoalLayerClientFactory = () => {
+      const caller = Object.create(GoalLayerLLMClient.prototype) as GoalLayerLLMClient;
+      caller.call = async (): Promise<GoalLayerLLMOutcome> => {
+        throw new Error("client blew up");
+      };
+      return caller;
+    };
+    const synthesizer = makeSynthesizer(registry, clientFactory);
+    synthesizer.setReviewContext(7, 5000);
+
+    await synthesizer.synthesize({
+      agentId: AGENT,
+      candidates: [makeCandidate("candidate-1")],
+      context: { personaId: "p1", recentMemories: [], privateMotiveSummaries: [] },
+    });
+
+    const events = synthesizer.takeOperatorEvents();
+    const failure = events.find((e) => e.type === "llm_failure");
+    expect(failure!.pulseIndex).toBe(7);
+    expect(failure!.createdAt).toBeGreaterThan(1_600_000_000_000);
+  });
 });

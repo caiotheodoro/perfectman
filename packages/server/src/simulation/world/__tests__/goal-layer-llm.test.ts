@@ -51,12 +51,16 @@ function makeGoal(id: string): EmergentGoal {
   };
 }
 
-function makeClient(budget: LLMBudgetTracker, llmConfig: LLMConfig): GoalLayerLLMClient {
+function makeClient(
+  budget: LLMBudgetTracker,
+  llmConfig: LLMConfig,
+  now = Date.now(),
+): GoalLayerLLMClient {
   return new GoalLayerLLMClient({
     simulationId: SIM,
     agentId: AGENT,
     pulseIndex: PULSE,
-    now: Date.now(),
+    now,
     llmConfig,
     budget,
   });
@@ -202,6 +206,31 @@ describe("GoalLayerLLMClient", () => {
     const event = outcome.operatorEvents.find((e) => e.type === "llm_failure");
     expect(event?.detail).toContain("network down");
     expect(budget.getStatus(SIM).callsThisMinute).toBe(0);
+  });
+
+  it("stamps llm_budget_exceeded and llm_failure createdAt with wall-clock time, not the sim clock", async () => {
+    const simClock = 5000;
+
+    const blockedBudget = new LLMBudgetTracker();
+    blockedBudget.registerLimits(SIM, { llmCallBudgetPerMinute: 0, tokenBudgetPerHour: 100000 });
+    const blockedOutcome = await makeClient(blockedBudget, MOCK_CONFIG, simClock).call({
+      candidates: [makeCandidate("candidate-1")],
+      activeGoals: [makeGoal("goal-1")],
+      digest: makeDigest(),
+    });
+    const budgetEvent = blockedOutcome.operatorEvents.find(
+      (e) => e.type === "llm_budget_exceeded",
+    );
+    expect(budgetEvent!.createdAt).toBeGreaterThan(1_600_000_000_000);
+
+    vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
+    const failureOutcome = await makeClient(freshBudget(), OPENAI_CONFIG, simClock).call({
+      candidates: [makeCandidate("candidate-1")],
+      activeGoals: [],
+      digest: makeDigest(),
+    });
+    const failureEvent = failureOutcome.operatorEvents.find((e) => e.type === "llm_failure");
+    expect(failureEvent!.createdAt).toBeGreaterThan(1_600_000_000_000);
   });
 
   it("unparseable JSON: whole-call fallback via llm_failure, nothing recorded", async () => {
