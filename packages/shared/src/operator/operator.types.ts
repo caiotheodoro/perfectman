@@ -1,5 +1,6 @@
 import type { EventPayload, EventType } from "../event/event.types.js";
 import type { IntentType } from "../intent/intent.types.js";
+import type { AttractorState } from "../constants/stagnation.js";
 
 /**
  * Operator event types the server may emit. Declared once here — the single
@@ -116,5 +117,5 @@ export type StagnationMetricsOperatorData = StagnationMetrics;
 /** `attractor_detected` payload — one event per detected attractor signature.
  *  Independent of the composite `level`, which it never overrides. */
 export type AttractorDetectedOperatorData = {
-  signature: string;
+  signature: AttractorState;
 };

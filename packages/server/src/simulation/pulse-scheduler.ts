@@ -13,7 +13,7 @@ import type {
   EngineStepResult,
   EndingOffer,
 } from "@perfectman/shared";
-import { createSeededRng } from "@perfectman/shared";
+import { createSeededRng, ATTRACTOR_THRESHOLDS, STAGNATION_WINDOW_PULSES } from "@perfectman/shared";
 import { runEngineStep, computeStagnationMetrics, detectAttractorStates, filterVisibleEventsForAgent } from "@perfectman/engine";
 import type { IEventRepository, IAgentStateRepository } from "../persistence/repositories.js";
 import type { ChannelRegistry } from "./channel-registry.js";
@@ -29,6 +29,7 @@ import { serializeAgentState } from "../agent/agent-state-serializer.js";
 import type {
   ActionIntentOperatorData,
   AttractorDetectedOperatorData,
+  AttractorState,
   EventVisibilityData,
   StagnationMetricsOperatorData,
 } from "@perfectman/shared";
@@ -91,12 +92,6 @@ export class PulseScheduler {
   private pulseIndex = 0;
   /** Rolling context limit: how many recent events the LLM sees. */
   private static readonly CONTEXT_WINDOW_PULSES_LIMIT = 40;
-  /**
-   * Rolling window (in pulses) of committed events fed to the stagnation
-   * detectors. Bounds the input so early-run activity cannot mask a room that
-   * has since gone flat.
-   */
-  private static readonly STAGNATION_WINDOW_PULSES_LIMIT = 40;
   /**
    * Simulated simulation clock (monotonic, ms). Advances pulseIntervalMs per
    * pulse. All emotion/attention/cooldown math uses SIM time — wall clock
@@ -331,7 +326,7 @@ export class PulseScheduler {
     // Every 10 pulses: compute stagnation metrics
     if (this.pulseIndex > 0 && this.pulseIndex % 10 === 0) {
       const committedThrough = await this.config.eventRepo.getCommittedThrough(sim.id, this.pulseIndex);
-      const windowFloor = this.pulseIndex - PulseScheduler.STAGNATION_WINDOW_PULSES_LIMIT;
+      const windowFloor = this.pulseIndex - STAGNATION_WINDOW_PULSES;
       const recentEvents = committedThrough.filter((e) => e.pulseIndex > windowFloor);
       const agentStatesMap = new Map<string, AgentState>();
       for (const agent of this.config.agents) {
@@ -364,7 +359,10 @@ export class PulseScheduler {
       });
 
       for (const signature of detectAttractorStates(recentEvents, agentStatesMap)) {
-        const attractorData: AttractorDetectedOperatorData = { signature };
+        // detectAttractorStates is typed string[] engine-side; keep only the
+        // known signatures so the operator payload holds a real AttractorState.
+        if (!(signature in ATTRACTOR_THRESHOLDS)) continue;
+        const attractorData: AttractorDetectedOperatorData = { signature: signature as AttractorState };
         await this.emitOperatorEvent({
           type: "attractor_detected",
           simulationId: sim.id,
