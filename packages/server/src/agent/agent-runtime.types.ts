@@ -11,6 +11,11 @@ export type PromptTrim = {
   finalInputTokensEstimate: number;
   droppedEvents: number;
   droppedMemories: number;
+  /**
+   * Own recent utterances shed oldest-first (perception assembles them in
+   * chronological order), after memories and events were not enough.
+   */
+  droppedUtterances: number;
   droppedInputTokensEstimate: number;
   /**
    * False when the drop loop exhausted every trimmable item and the render

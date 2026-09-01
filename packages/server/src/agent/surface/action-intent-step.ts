@@ -20,6 +20,7 @@ import {
   REPETITION_SIMILARITY_THRESHOLD,
 } from "../repetition-guard.js";
 import { promptVersionHash } from "../prompt-version.js";
+import { ActionIntentPromptBuilder } from "../action-intent-prompt-builder.js";
 import { PromptBuilder } from "../prompt-builder.js";
 import {
   LLMStep,
@@ -380,8 +381,6 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
   ): BuiltPrompt {
     const suffix = `\n\n${retryCorrectionNote(lastAttempt)}`;
     const cap = ctx.llmConfig.maxInputTokens;
-    const estimate = (system: string, user: string): number =>
-      Math.ceil((system.length + user.length) / 4);
 
     if (typeof cap !== "number" || cap <= 0) {
       const system = `${basePrompt.system}${suffix}`;
@@ -389,7 +388,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         ...basePrompt,
         system,
         user: basePrompt.user,
-        inputTokensEstimate: estimate(system, basePrompt.user),
+        inputTokensEstimate: ActionIntentPromptBuilder.estimateTokens(system, basePrompt.user),
         version: promptVersionHash([system, basePrompt.user]),
       };
     }
@@ -399,7 +398,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const rebuilt = PromptBuilder.build(input, ctx.profile, "action_intent", adjustedCap);
     const system = `${rebuilt.system}${suffix}`;
     const user = rebuilt.user;
-    const finalEstimate = estimate(system, user);
+    const finalEstimate = ActionIntentPromptBuilder.estimateTokens(system, user);
 
     let trim: PromptTrim | undefined;
     if (rebuilt.trim) {
@@ -410,6 +409,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         finalInputTokensEstimate: finalEstimate,
         droppedEvents: rebuilt.trim.droppedEvents,
         droppedMemories: rebuilt.trim.droppedMemories,
+        droppedUtterances: rebuilt.trim.droppedUtterances,
         droppedInputTokensEstimate: rawRetryEstimate - finalEstimate,
         withinCap: finalEstimate <= cap,
         phase: "repetition_retry",
@@ -447,12 +447,13 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const detail = trim.withinCap
       ? `${where} for agent ${agentId} exceeded maxInputTokens ` +
         `(${trim.rawInputTokensEstimate} > ${trim.maxInputTokens} est. tokens); dropped ` +
-        `${trim.droppedMemories} lowest-salience memory(ies) and ${trim.droppedEvents} oldest ` +
-        `context event(s) (~${trim.droppedInputTokensEstimate} tokens) to fit ` +
-        `${trim.finalInputTokensEstimate}.`
+        `${trim.droppedMemories} lowest-salience memory(ies), ${trim.droppedEvents} oldest ` +
+        `context event(s) and ${trim.droppedUtterances} oldest own utterance(s) ` +
+        `(~${trim.droppedInputTokensEstimate} tokens) to fit ${trim.finalInputTokensEstimate}.`
       : `${where} for agent ${agentId} could NOT be trimmed below maxInputTokens ` +
         `(${trim.maxInputTokens} est. tokens); dropped every trimmable item ` +
-        `(${trim.droppedMemories} memory(ies), ${trim.droppedEvents} context event(s)) but ` +
+        `(${trim.droppedMemories} memory(ies), ${trim.droppedEvents} context event(s), ` +
+        `${trim.droppedUtterances} own utterance(s)) but ` +
         `irreducible content still estimates ~${trim.finalInputTokensEstimate} tokens — sent over cap.`;
     return {
       type: "prompt_trimmed",
@@ -469,6 +470,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         finalInputTokensEstimate: trim.finalInputTokensEstimate,
         droppedEvents: trim.droppedEvents,
         droppedMemories: trim.droppedMemories,
+        droppedUtterances: trim.droppedUtterances,
         droppedInputTokensEstimate: trim.droppedInputTokensEstimate,
       },
     };

@@ -1,9 +1,7 @@
 import { describe, it, expect, vi } from "vitest";
 import type {
   AgentRuntimeInput,
-  CommittedEvent,
   LLMProviderResult,
-  Memory,
 } from "@perfectman/shared";
 import type { LLMConfig } from "../../llm/llm-config.js";
 import { ActionIntentStep } from "../action-intent-step.js";
@@ -11,6 +9,11 @@ import { llmSurfaceRegistry } from "../index.js";
 import type { StepRunContext } from "../llm-step.js";
 import { PromptBuilder } from "../../prompt-builder.js";
 import { EXAMPLE_PROMPT_PROFILE } from "../../persona-prompt-profile.js";
+import {
+  makeAgentRuntimeInput,
+  makeContextEvent,
+  makeContextMemory,
+} from "../../__tests__/agent-input-test-helpers.js";
 
 function jsonResponse(content: string, promptTokens = 50, completionTokens = 10): LLMProviderResult {
   return {
@@ -151,6 +154,7 @@ describe("ActionIntentStep", () => {
         finalInputTokensEstimate: 2040,
         droppedEvents: 5,
         droppedMemories: 2,
+        droppedUtterances: 0,
         droppedInputTokensEstimate: 1001,
         withinCap: true,
         phase: "assembly" as const,
@@ -288,114 +292,13 @@ describe("ActionIntentStep", () => {
   });
 });
 
-const CTX_EVENT_CONTENT = "x".repeat(140);
-const CTX_MEMORY_SUMMARY = "m".repeat(180);
-
-function heavyEvent(i: number): CommittedEvent {
-  return {
-    id: `evt-${String(i).padStart(3, "0")}`,
-    simulationId: "sim-cap",
-    channelId: "general",
-    actorId: `agent-${i % 3}`,
-    type: "message_sent",
-    payload: { content: `event-${i} ${CTX_EVENT_CONTENT}` },
-    createdAt: 1000 + i,
-    pulseIndex: i,
-    sourceEventIds: [],
-    emotionalSalience: "low",
-    visibility: {
-      visibleToAgents: [],
-      visibleToSpectators: true,
-      visibleToOperators: true,
-      visibilityReason: "public message",
-    },
-  };
-}
-
-function heavyMemory(i: number): Memory {
-  return {
-    id: `mem-${String(i).padStart(3, "0")}`,
-    agentId: "example-friend",
-    simulationId: "sim-cap",
-    type: "episodic",
-    subjectAgentIds: ["agent-1"],
-    sourceEventIds: [],
-    summary: `memory-${i} ${CTX_MEMORY_SUMMARY}`,
-    emotionalTone: "neutral",
-    confidence: (i + 1) / 100,
-    unresolved: false,
-    createdAt: 5000 + i,
-    lastReinforcedAt: 5000 + i,
-  };
-}
-
 function heavyInput(): AgentRuntimeInput {
-  return {
+  return makeAgentRuntimeInput({
     simulationId: "sim-cap",
-    agentId: "example-friend",
-    personaConfig: {
-      id: "example-friend",
-      name: "Example Friend",
-      archetype: "careful-observer",
-      writingStyle: "lowercase blunt",
-      styleExamples: [],
-      baselineValence: 0,
-      baselineArousal: 0,
-      baselineStability: 0.5,
-      baselineEnergy: 0.5,
-      emotionalReactivity: 1,
-      moodInertia: 0.5,
-      maxMoodRotation: 0.5,
-      energyRegen: 0.05,
-      exclusionSensitivity: 1,
-      praiseSensitivity: 1,
-      conflictSensitivity: 1,
-      boredomSensitivity: 1,
-      intimacySensitivity: 1,
-      socialSensitivities: {},
-    },
-    perceptionPacket: {
-      agentId: "example-friend",
-      triggeringEvent: null,
-      visibleContextEvents: Array.from({ length: 6 }, (_, i) => heavyEvent(i)),
-      ownRecentUtterances: [REPEAT_TEXT],
-      involvedPeople: [],
-      relevantChannels: ["general"],
-      relevantMemories: Array.from({ length: 4 }, (_, i) => heavyMemory(i)),
-      translatedEmotionalState: {
-        moodDescription: "You feel steady.",
-        socialContext: "The room is active.",
-        relationalFlavors: [],
-        pressureDescriptions: [],
-        inhibitionDescriptions: [],
-      },
-      availableActions: [
-        { intentType: "send_message", channelTargets: ["general"], personTargets: [], blocked: false },
-      ],
-    },
-    emotionalState: {
-      coreMood: {
-        valence: 0, arousal: 0, stability: 0.5, energy: 0.5,
-        circumplexAngle: 0, circumplexRadius: 0, momentumValence: 0, momentumArousal: 0,
-      },
-      socialEmotions: {
-        jealousy: 0, envy: 0, humiliation: 0, pride: 0, shame: 0,
-        affection: 0, resentment: 0, suspicion: 0, admiration: 0,
-        contempt: 0, neediness: 0, socialAnxiety: 0, fearOfExclusion: 0,
-        desireForStatus: 0, desireForIntimacy: 0,
-      },
-      relationalStates: new Map(),
-    },
-    activeMotivations: [],
-    activePressures: [],
-    activeInhibitions: [],
-    relevantMemories: [],
-    availableActions: [
-      { intentType: "send_message", channelTargets: ["general"], personTargets: [], blocked: false },
-    ],
-    budgetPriority: "normal",
-    triggeringReason: "attention_event",
-  };
+    visibleContextEvents: Array.from({ length: 6 }, (_, i) => makeContextEvent(i, "sim-cap")),
+    ownRecentUtterances: [REPEAT_TEXT],
+    relevantMemories: Array.from({ length: 4 }, (_, i) => makeContextMemory(i, "sim-cap")),
+  });
 }
 
 function cappedCtx(

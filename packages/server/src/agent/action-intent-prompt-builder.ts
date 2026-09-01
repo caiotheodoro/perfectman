@@ -111,6 +111,7 @@ export class ActionIntentPromptBuilder {
         finalInputTokensEstimate: finalEstimate,
         droppedEvents: trimmed.droppedEvents,
         droppedMemories: trimmed.droppedMemories,
+        droppedUtterances: trimmed.droppedUtterances,
         droppedInputTokensEstimate: rawEstimate - finalEstimate,
         withinCap: finalEstimate <= maxInputTokens,
         phase: "assembly",
@@ -129,7 +130,12 @@ export class ActionIntentPromptBuilder {
     };
   }
 
-  private static estimateTokens(systemPrompt: string, userPrompt: string): number {
+  /**
+   * Single owner of the chars/4 input estimate. `ActionIntentStep.buildRetryPrompt`
+   * reuses it for its retry-cap arithmetic so the retry recomputation can never
+   * drift from the assembly heuristic.
+   */
+  static estimateTokens(systemPrompt: string, userPrompt: string): number {
     return Math.ceil((systemPrompt.length + userPrompt.length) / 4);
   }
 
@@ -143,6 +149,11 @@ export class ActionIntentPromptBuilder {
    *   2. recent context events, oldest first — `pulseIndex` ascending, then
    *      `createdAt` ascending, then `id`. The triggering event is the floor
    *      and is never dropped.
+   *   3. own recent utterances, oldest first (array order — perception
+   *      assembles them chronologically). The step-level repetition guard
+   *      checks the full utterance list regardless of what the prompt shows,
+   *      so shedding these only weakens the preemptive no-repeat hint, never
+   *      the structural enforcement.
    * Memories yield before the live transcript because a stale, low-confidence
    * memory is the most expendable grounding for the next action. Persona, the
    * output contract and the decision question are structural and are never
@@ -152,17 +163,32 @@ export class ActionIntentPromptBuilder {
     input: AgentRuntimeInput,
     profile: PersonaPromptProfile,
     maxInputTokens: number,
-  ): { rendered: { systemPrompt: string; userPrompt: string }; droppedEvents: number; droppedMemories: number } {
+  ): {
+    rendered: { systemPrompt: string; userPrompt: string };
+    droppedEvents: number;
+    droppedMemories: number;
+    droppedUtterances: number;
+  } {
     const { perceptionPacket } = input;
     const triggeringEventId = perceptionPacket.triggeringEvent?.id;
     const events = [...perceptionPacket.visibleContextEvents];
     const memories = [...perceptionPacket.relevantMemories];
+    const utterances = [...perceptionPacket.ownRecentUtterances];
     let droppedEvents = 0;
     let droppedMemories = 0;
+    let droppedUtterances = 0;
 
     const renderCandidate = (): { systemPrompt: string; userPrompt: string } =>
       this.render(
-        { ...input, perceptionPacket: { ...perceptionPacket, visibleContextEvents: events, relevantMemories: memories } },
+        {
+          ...input,
+          perceptionPacket: {
+            ...perceptionPacket,
+            visibleContextEvents: events,
+            relevantMemories: memories,
+            ownRecentUtterances: utterances,
+          },
+        },
         profile,
       );
     const fits = (r: { systemPrompt: string; userPrompt: string }): boolean =>
@@ -184,7 +210,13 @@ export class ActionIntentPromptBuilder {
       rendered = renderCandidate();
     }
 
-    return { rendered, droppedEvents, droppedMemories };
+    while (!fits(rendered) && utterances.length > 0) {
+      utterances.shift();
+      droppedUtterances++;
+      rendered = renderCandidate();
+    }
+
+    return { rendered, droppedEvents, droppedMemories, droppedUtterances };
   }
 
   private static lowestSalienceMemoryIndex(memories: Memory[]): number {

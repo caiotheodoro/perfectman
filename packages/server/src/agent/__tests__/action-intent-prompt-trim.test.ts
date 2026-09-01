@@ -1,138 +1,40 @@
 import { describe, it, expect } from "vitest";
 import { PromptBuilder } from "../prompt-builder.js";
 import { EXAMPLE_PROMPT_PROFILE } from "../persona-prompt-profile.js";
-import type { AgentRuntimeInput, CommittedEvent, Memory } from "@perfectman/shared";
+import type { CommittedEvent } from "@perfectman/shared";
+import {
+  makeAgentRuntimeInput,
+  makeContextEvent,
+  makeContextMemory,
+} from "./agent-input-test-helpers.js";
 
 const TRIGGER_ID = "evt-trigger";
 const TRIGGER_CONTENT = "TRIGGER_CONTENT_UNIQUE_MARKER";
 
-function makeEvent(i: number): CommittedEvent {
-  return {
-    id: `evt-${String(i).padStart(3, "0")}`,
-    simulationId: "sim-1",
-    channelId: "general",
-    actorId: `agent-${i % 3}`,
-    type: "message_sent",
-    payload: { content: `event-${i}-marker ${"x".repeat(140)}` },
-    createdAt: 1000 + i,
-    pulseIndex: i,
-    sourceEventIds: [],
-    emotionalSalience: "low",
-    visibility: {
-      visibleToAgents: [],
-      visibleToSpectators: true,
-      visibleToOperators: true,
-      visibilityReason: "public message",
-    },
-  };
-}
-
 const triggeringEvent: CommittedEvent = {
-  ...makeEvent(999),
+  ...makeContextEvent(999),
   id: TRIGGER_ID,
   pulseIndex: 999,
   createdAt: 999999,
   payload: { content: TRIGGER_CONTENT },
 };
 
-function makeMemory(i: number): Memory {
-  return {
-    id: `mem-${String(i).padStart(3, "0")}`,
-    agentId: "example-friend",
-    simulationId: "sim-1",
-    type: "episodic",
-    subjectAgentIds: ["agent-1"],
-    sourceEventIds: [],
-    summary: `memory-${i}-marker ${"m".repeat(180)}`,
-    emotionalTone: "neutral",
-    confidence: (i + 1) / 100,
-    unresolved: false,
-    createdAt: 5000 + i,
-    lastReinforcedAt: 5000 + i,
-  };
-}
-
 const EVENT_COUNT = 24;
 const MEMORY_COUNT = 8;
 
-function makeInput(events: CommittedEvent[], memories: Memory[]): AgentRuntimeInput {
-  return {
-    simulationId: "sim-1",
-    agentId: "example-friend",
-    personaConfig: {
-      id: "example-friend",
-      name: "Example Friend",
-      archetype: "careful-observer",
-      writingStyle: "lowercase blunt",
-      styleExamples: [],
-      baselineValence: 0,
-      baselineArousal: 0,
-      baselineStability: 0.5,
-      baselineEnergy: 0.5,
-      emotionalReactivity: 1,
-      moodInertia: 0.5,
-      maxMoodRotation: 0.5,
-      energyRegen: 0.05,
-      exclusionSensitivity: 1,
-      praiseSensitivity: 1,
-      conflictSensitivity: 1,
-      boredomSensitivity: 1,
-      intimacySensitivity: 1,
-      socialSensitivities: {},
-    },
-    perceptionPacket: {
-      agentId: "example-friend",
-      triggeringEvent,
-      visibleContextEvents: events,
-      ownRecentUtterances: [],
-      involvedPeople: [],
-      relevantChannels: ["general"],
-      relevantMemories: memories,
-      translatedEmotionalState: {
-        moodDescription: "You feel steady.",
-        socialContext: "The room is active.",
-        relationalFlavors: [],
-        pressureDescriptions: [],
-        inhibitionDescriptions: [],
-      },
-      availableActions: [
-        { intentType: "send_message", channelTargets: ["general"], personTargets: [], blocked: false },
-      ],
-    },
-    emotionalState: {
-      coreMood: {
-        valence: 0, arousal: 0, stability: 0.5, energy: 0.5,
-        circumplexAngle: 0, circumplexRadius: 0, momentumValence: 0, momentumArousal: 0,
-      },
-      socialEmotions: {
-        jealousy: 0, envy: 0, humiliation: 0, pride: 0, shame: 0,
-        affection: 0, resentment: 0, suspicion: 0, admiration: 0,
-        contempt: 0, neediness: 0, socialAnxiety: 0, fearOfExclusion: 0,
-        desireForStatus: 0, desireForIntimacy: 0,
-      },
-      relationalStates: new Map(),
-    },
-    activeMotivations: [],
-    activePressures: [],
-    activeInhibitions: [],
-    relevantMemories: [],
-    availableActions: [
-      { intentType: "send_message", channelTargets: ["general"], personTargets: [], blocked: false },
-    ],
-    budgetPriority: "normal",
-    triggeringReason: "attention_event",
-  };
-}
+const allEvents = [triggeringEvent, ...Array.from({ length: EVENT_COUNT }, (_, i) => makeContextEvent(i))];
+const allMemories = Array.from({ length: MEMORY_COUNT }, (_, i) => makeContextMemory(i));
 
-const allEvents = [triggeringEvent, ...Array.from({ length: EVENT_COUNT }, (_, i) => makeEvent(i))];
-const allMemories = Array.from({ length: MEMORY_COUNT }, (_, i) => makeMemory(i));
-
-const fullInput = makeInput(allEvents, allMemories);
+const fullInput = makeAgentRuntimeInput({
+  triggeringEvent,
+  visibleContextEvents: allEvents,
+  relevantMemories: allMemories,
+});
 const rawBuild = PromptBuilder.build(fullInput, EXAMPLE_PROMPT_PROFILE, "action_intent");
 // Floor render: only the triggering event, no memories — the trimmer can never
 // go below this, since it never drops the triggering event.
 const floorBuild = PromptBuilder.build(
-  makeInput([triggeringEvent], []),
+  makeAgentRuntimeInput({ triggeringEvent, visibleContextEvents: [triggeringEvent] }),
   EXAMPLE_PROMPT_PROFILE,
   "action_intent",
 );
@@ -183,6 +85,7 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
     const cap = rawBuild.inputTokensEstimate - 20;
     const built = PromptBuilder.build(fullInput, EXAMPLE_PROMPT_PROFILE, "action_intent", cap);
 
+    expect(built.trim).toBeDefined();
     expect(built.trim!.droppedMemories).toBeGreaterThan(0);
     expect(built.trim!.droppedEvents).toBe(0);
     // The lowest-confidence memory (mem-000) goes first; the highest stays.
@@ -193,14 +96,18 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
   it("drops oldest recent events first and always keeps the triggering event", () => {
     // Force every memory out plus a partial slice of the oldest events.
     const perEvent =
-      PromptBuilder.build(makeInput([triggeringEvent, makeEvent(0)], []), EXAMPLE_PROMPT_PROFILE, "action_intent")
-        .inputTokensEstimate - floorBuild.inputTokensEstimate;
+      PromptBuilder.build(
+        makeAgentRuntimeInput({ triggeringEvent, visibleContextEvents: [triggeringEvent, makeContextEvent(0)] }),
+        EXAMPLE_PROMPT_PROFILE,
+        "action_intent",
+      ).inputTokensEstimate - floorBuild.inputTokensEstimate;
     const keepEvents = 6;
     const cap = floorBuild.inputTokensEstimate + perEvent * keepEvents;
 
     const built = PromptBuilder.build(fullInput, EXAMPLE_PROMPT_PROFILE, "action_intent", cap);
 
     expect(built.inputTokensEstimate).toBeLessThanOrEqual(cap);
+    expect(built.trim).toBeDefined();
     expect(built.trim!.droppedMemories).toBe(MEMORY_COUNT);
     expect(built.trim!.droppedEvents).toBeGreaterThan(0);
     expect(built.trim!.droppedEvents).toBeLessThan(EVENT_COUNT);
@@ -215,11 +122,108 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
     const built = PromptBuilder.build(fullInput, EXAMPLE_PROMPT_PROFILE, "action_intent", cap);
 
     expect(built.inputTokensEstimate).toBeLessThanOrEqual(cap);
+    expect(built.trim).toBeDefined();
     expect(built.trim!.droppedMemories).toBe(MEMORY_COUNT);
     expect(built.trim!.droppedEvents).toBe(EVENT_COUNT);
     expect(built.user).toContain(TRIGGER_CONTENT);
     expect(built.trim!.withinCap).toBe(true);
     expect(built.trim!.phase).toBe("assembly");
+  });
+
+  it("sheds oldest own utterances when memories and events are already exhausted", () => {
+    const firstUtterance = `utterance-0-marker ${"u".repeat(120)}`;
+    const utterances = [
+      firstUtterance,
+      `utterance-1-marker ${"u".repeat(120)}`,
+      `utterance-2-marker ${"u".repeat(120)}`,
+      `utterance-3-marker ${"u".repeat(120)}`,
+    ];
+    const floorBuild = PromptBuilder.build(
+      makeAgentRuntimeInput({ triggeringEvent, visibleContextEvents: [triggeringEvent] }),
+      EXAMPLE_PROMPT_PROFILE,
+      "action_intent",
+    );
+    const perUtterance =
+      PromptBuilder.build(
+        makeAgentRuntimeInput({
+          triggeringEvent,
+          visibleContextEvents: [triggeringEvent],
+          ownRecentUtterances: [firstUtterance],
+        }),
+        EXAMPLE_PROMPT_PROFILE,
+        "action_intent",
+      ).inputTokensEstimate - floorBuild.inputTokensEstimate;
+    // Cap fits the fence with exactly one utterance left: three must be shed.
+    const cap = floorBuild.inputTokensEstimate + perUtterance;
+
+    const built = PromptBuilder.build(
+      makeAgentRuntimeInput({
+        triggeringEvent,
+        visibleContextEvents: [triggeringEvent],
+        ownRecentUtterances: utterances,
+      }),
+      EXAMPLE_PROMPT_PROFILE,
+      "action_intent",
+      cap,
+    );
+
+    expect(built.trim).toBeDefined();
+    expect(built.trim!.droppedMemories).toBe(0);
+    expect(built.trim!.droppedEvents).toBe(0);
+    expect(built.trim!.droppedUtterances).toBe(utterances.length - 1);
+    expect(built.trim!.withinCap).toBe(true);
+    expect(built.inputTokensEstimate).toBeLessThanOrEqual(cap);
+    // Oldest utterances shed; the newest stays in the no-repeat fence (system).
+    expect(built.system).not.toContain("utterance-0-marker");
+    expect(built.system).not.toContain("utterance-1-marker");
+    expect(built.system).toContain(`utterance-${utterances.length - 1}-marker`);
+  });
+
+  it("sheds own utterances only after memories and events", () => {
+    const utterance = `utterance-0-marker ${"u".repeat(120)}`;
+    const baseInput = {
+      triggeringEvent,
+      visibleContextEvents: [triggeringEvent, makeContextEvent(0)],
+      relevantMemories: [makeContextMemory(0)],
+      ownRecentUtterances: [utterance],
+    };
+    const floorBuild = PromptBuilder.build(
+      makeAgentRuntimeInput({ triggeringEvent, visibleContextEvents: [triggeringEvent] }),
+      EXAMPLE_PROMPT_PROFILE,
+      "action_intent",
+    );
+    const withUtteranceOnly = PromptBuilder.build(
+      makeAgentRuntimeInput({
+        triggeringEvent,
+        visibleContextEvents: [triggeringEvent],
+        ownRecentUtterances: [utterance],
+      }),
+      EXAMPLE_PROMPT_PROFILE,
+      "action_intent",
+    );
+    // Cap sits just above the one-utterance render, so fitting requires
+    // shedding both the memory and the event first — utterances yield last.
+    const cap = withUtteranceOnly.inputTokensEstimate + 5;
+    expect(cap).toBeLessThan(
+      PromptBuilder.build(makeAgentRuntimeInput(baseInput), EXAMPLE_PROMPT_PROFILE, "action_intent")
+        .inputTokensEstimate,
+    );
+
+    const built = PromptBuilder.build(
+      makeAgentRuntimeInput(baseInput),
+      EXAMPLE_PROMPT_PROFILE,
+      "action_intent",
+      cap,
+    );
+
+    expect(built.trim).toBeDefined();
+    expect(built.trim!.droppedMemories).toBe(1);
+    expect(built.trim!.droppedEvents).toBe(1);
+    expect(built.trim!.droppedUtterances).toBe(0);
+    expect(built.trim!.withinCap).toBe(true);
+    expect(built.user).not.toContain("memory-0-marker");
+    expect(built.user).not.toContain("event-0-marker");
+    expect(built.system).toContain("utterance-0-marker");
   });
 
   it("flags an irreducible over-cap prompt with withinCap:false after shedding everything droppable", () => {
@@ -244,7 +248,7 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
     // logged rather than shipped silently.
     const cap = 10;
     const built = PromptBuilder.build(
-      makeInput([triggeringEvent], []),
+      makeAgentRuntimeInput({ triggeringEvent, visibleContextEvents: [triggeringEvent] }),
       EXAMPLE_PROMPT_PROFILE,
       "action_intent",
       cap,
