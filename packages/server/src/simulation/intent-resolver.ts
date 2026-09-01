@@ -2,6 +2,7 @@ import type {
   ActionIntent,
   CommittedEvent,
   SimulationEvent,
+  EventPayload,
   AgentState,
   Channel,
   ChannelMembership,
@@ -206,7 +207,7 @@ function buildReplyEvent(
   const channelId = intent.channelTarget ?? ctx.channelId;
   const replyToEventId = intent.replyToEventId;
   const vis = channelVisibility(channelId, ctx);
-  const payload: Record<string, unknown> = {
+  const payload: EventPayload = {
     content: intent.visibleContent ?? "",
     replyToEventId: replyToEventId ?? "",
     ...vis.payload,
@@ -217,7 +218,7 @@ function buildReplyEvent(
     channelId,
     actorId: intent.actorId,
     type: "reply_sent",
-    payload: payload as SimulationEvent["payload"],
+    payload,
     sourceIntentId: intent.id,
     sourceEventIds: replyToEventId ? [replyToEventId] : [],
     emotionalSalience: salience,
