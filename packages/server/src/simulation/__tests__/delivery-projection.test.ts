@@ -173,16 +173,27 @@ describe("DeliveryProjection — one emission per committed message", () => {
   const AGENT_3 = "agent_3";
   const AGENT_4 = "agent_4";
   const BIG_CHANNEL_ID = "ch_big";
+  const NOW = 1_700_000_000_000;
+
+  let gateway: MockDeliveryGateway;
+  let projection: DeliveryProjection;
+
+  beforeEach(() => {
+    gateway = new MockDeliveryGateway();
+    projection = new DeliveryProjection(gateway);
+  });
 
   const bigChannel: Channel = {
     ...PUBLIC_CHANNEL,
     id: BIG_CHANNEL_ID,
     memberAgentIds: [AGENT_1, AGENT_2, AGENT_3, AGENT_4],
+    createdAt: NOW,
+    updatedAt: NOW,
   };
   const bigMembership: ChannelMembership[] = [AGENT_1, AGENT_2, AGENT_3, AGENT_4].map(agentId => ({
     channelId: BIG_CHANNEL_ID,
     agentId,
-    joinedAt: Date.now(),
+    joinedAt: NOW,
   }));
   const bigChannelEvent = (type: CommittedEvent["type"]): CommittedEvent =>
     makeCommittedEvent({
@@ -192,15 +203,11 @@ describe("DeliveryProjection — one emission per committed message", () => {
     });
 
   it("a message to a 4-member channel produces exactly one sendAgentMessage call", async () => {
-    const gateway = new MockDeliveryGateway();
-    const projection = new DeliveryProjection(gateway);
     await projection.project(bigChannelEvent("message_sent"), [bigChannel], bigMembership, SETTINGS);
     expect(gateway.agentMessages).toHaveLength(1);
   });
 
   it("reply and reaction events each emit exactly once on an N-member channel", async () => {
-    const gateway = new MockDeliveryGateway();
-    const projection = new DeliveryProjection(gateway);
     await projection.project(bigChannelEvent("reply_sent"), [bigChannel], bigMembership, SETTINGS);
     await projection.project(bigChannelEvent("reaction_sent"), [bigChannel], bigMembership, SETTINGS);
     expect(gateway.agentMessages).toHaveLength(2);
@@ -214,7 +221,7 @@ describe("DeliveryProjection — one emission per committed message", () => {
       return true;
     });
     try {
-      const projection = new DeliveryProjection(new StdoutDeliveryGateway());
+      projection = new DeliveryProjection(new StdoutDeliveryGateway());
       await projection.project(bigChannelEvent("message_sent"), [bigChannel], bigMembership, SETTINGS);
     } finally {
       spy.mockRestore();
