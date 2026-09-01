@@ -16,6 +16,7 @@ function memory(overrides: Partial<Memory> = {}): Memory {
     summary: "bruno me ignorou de propósito",
     emotionalTone: "resentful",
     confidence: 0.8,
+    intensity: 0,
     unresolved: true,
     createdAt: 1,
     lastReinforcedAt: Date.now(),

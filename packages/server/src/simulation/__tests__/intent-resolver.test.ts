@@ -132,6 +132,27 @@ describe("IntentResolver", () => {
     expect(result.committedEvents[0]!.type).toBe("message_sent");
   });
 
+  it("carries a memory proposal's intensity onto the committed memory_written payload", async () => {
+    const intent = makeIntent({
+      intentType: "send_message",
+      channelTarget: CHANNEL_ID,
+      memoryWrites: [{
+        type: "emotional_residue",
+        subjectAgentIds: ["agent_2"],
+        summary: "that exchange stung",
+        emotionalTone: "hurt",
+        confidence: 0.8,
+        intensity: 0.9,
+        unresolved: true,
+      }],
+    });
+    const result = await resolver.resolve(intent, ctx());
+    const memoryEvent = result.committedEvents.find((e) => e.type === "memory_written");
+    expect(memoryEvent).toBeDefined();
+    expect(memoryEvent!.payload["intensity"]).toBe(0.9);
+    expect(memoryEvent!.payload["proposalIndex"]).toBe(0);
+  });
+
   it("blocks intent with missing motive summary", async () => {
     const intent = makeIntent({ privateMotiveSummary: "" });
     const result = await resolver.resolve(intent, ctx());

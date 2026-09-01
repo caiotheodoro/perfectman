@@ -84,6 +84,7 @@ describe("PromptBuilder", () => {
           summary: "This friend is often quiet and indirect",
           emotionalTone: "suspicion",
           confidence: 0.8,
+          intensity: 0,
           unresolved: true,
           createdAt: Date.now(),
           lastReinforcedAt: Date.now(),

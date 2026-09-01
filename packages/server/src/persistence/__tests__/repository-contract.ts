@@ -120,6 +120,7 @@ function makeMemory(id: string, agentId: string, simulationId = "sim1", subjectI
     summary: `Memory ${id}`,
     emotionalTone: "neutral",
     confidence: 0.8,
+    intensity: 0,
     unresolved: false,
     createdAt: 1700000000000,
     lastReinforcedAt: 1700000000000,

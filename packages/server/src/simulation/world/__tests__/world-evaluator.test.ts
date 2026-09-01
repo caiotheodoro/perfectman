@@ -672,6 +672,7 @@ describe("WorldEvaluator.runReview — deterministic gate timeline", () => {
         summary: `memory summary ${i}`,
         emotionalTone: "neutral",
         confidence: 0.8,
+        intensity: 0,
         unresolved: false,
         createdAt: 100 + i,
         lastReinforcedAt: 100 + i,

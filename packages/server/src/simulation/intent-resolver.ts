@@ -15,6 +15,7 @@ import type {
 } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 import { validateIntentPure } from "@perfectman/engine";
+import { memoryWrittenPayload } from "./memory-written-payload.js";
 import type { RateLimitGate } from "./rate-limit-gate.js";
 import type { ChannelRegistry } from "./channel-registry.js";
 
@@ -558,15 +559,7 @@ export class IntentResolver {
       channelId: ctx.channelId,
       actorId: intent.actorId,
       type: "memory_written" as const,
-      payload: {
-        memoryType: proposal.type,
-        summary: proposal.summary,
-        emotionalTone: proposal.emotionalTone,
-        confidence: proposal.confidence,
-        unresolved: proposal.unresolved,
-        subjectAgentIds: proposal.subjectAgentIds,
-        proposalIndex: i,
-      },
+      payload: { ...memoryWrittenPayload(proposal), proposalIndex: i },
       sourceIntentId: intent.id,
       sourceEventIds: [],
       emotionalSalience: "low",

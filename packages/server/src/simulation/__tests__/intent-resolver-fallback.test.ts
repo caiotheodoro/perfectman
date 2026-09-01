@@ -231,6 +231,7 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
         summary: "I told bruno everything",
         emotionalTone: "neutral",
         confidence: 0.9,
+        intensity: 0,
         unresolved: false,
       }],
     });
