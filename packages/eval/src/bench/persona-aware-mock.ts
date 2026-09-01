@@ -8,7 +8,7 @@
  * quality from prompt/persona quality on the bench.
  */
 
-import type { AgentRuntimeInput, AvailableAction } from "@perfectman/shared";
+import type { AgentRuntimeInput, AvailableAction, MemoryWriteProposal } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt, LLMConfig, LLMProvider, LLMProviderResult } from "@perfectman/server";
 import { createLLMProvider } from "@perfectman/server";
 import type { PersonaPack } from "@perfectman/shared";
@@ -351,7 +351,7 @@ export class PersonaAwareMockProvider implements LLMProvider {
     return pickLexicon(lexicon) ?? "This is not for the whole room.";
   }
 
-  private maybeMemoryWrite(agentId: string): unknown[] {
+  private maybeMemoryWrite(agentId: string): MemoryWriteProposal[] {
     // Charged scenes (suspicion/resentment/affection ≥ 0.3) produce biased
     // memory; neutral scenes write only occasionally.
     const social = this.lastInput?.emotionalState.socialEmotions;
@@ -371,7 +371,7 @@ export class PersonaAwareMockProvider implements LLMProvider {
         summary: memory.summary,
         emotionalTone: memory.emotionalTone,
         confidence: memory.confidence,
-        intensity: 0,
+        intensity: memory.intensity ?? 0,
         unresolved: memory.unresolved,
       },
     ];

@@ -87,6 +87,10 @@ describe("PersonaPacks", () => {
         expect(VALID_MEMORY_TYPES).toContain(seed.type);
         expect(seed.confidence, `${pack.personaId}.seed.confidence`).toBeGreaterThanOrEqual(0);
         expect(seed.confidence, `${pack.personaId}.seed.confidence`).toBeLessThanOrEqual(1);
+        if (seed.intensity !== undefined) {
+          expect(seed.intensity, `${pack.personaId}.seed.intensity`).toBeGreaterThanOrEqual(0);
+          expect(seed.intensity, `${pack.personaId}.seed.intensity`).toBeLessThanOrEqual(1);
+        }
         expect(seed.summary.length, `${pack.personaId}.seed.summary`).toBeGreaterThan(0);
       }
     }
