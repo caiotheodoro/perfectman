@@ -192,8 +192,6 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
   const initiativeCandidates = scoreInitiativeCandidates(
     updatedAccumulators,
     pulseIndex,
-    agentState.lastActionAt,
-    simulation.settings.pulseIntervalMs,
     agentState.arrivalPulse,
   );
   const isOffline = agentState.presence === "offline";

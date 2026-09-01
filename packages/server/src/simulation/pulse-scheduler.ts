@@ -37,6 +37,19 @@ import { buildWorldSignals } from "./world-signals-builder.js";
 import type { AgentRuntimeContext, AgentRuntimeOutput } from "../agent/agent-runtime.types.js";
 import type { GoalLayerRuntime } from "./world/world-evaluator.js";
 
+/**
+ * Intent types that count as an outward social act for the purpose of
+ * stamping `AgentState.lastActionAt`. The engine reads that field to grant
+ * initiative-accumulator relief on the next pulse (`justActed`); `no_op`,
+ * `write_memory`, and typing/lifecycle intents must not trigger it.
+ */
+const OUTWARD_SOCIAL_ACT_TYPES: ReadonlySet<ActionIntent["intentType"]> = new Set([
+  "send_message",
+  "reply_to_message",
+  "react",
+  "create_channel",
+]);
+
 export type AgentContext = {
   id: string;
   state: AgentState;
@@ -316,6 +329,19 @@ export class PulseScheduler {
 
         for (const opEv of [...resolved.operatorEvents, ...runtimeOutput.operatorEvents]) {
           await this.emitOperatorEvent(opEv);
+        }
+
+        // Stamp lastActionAt when the act that actually committed is an
+        // outward social act. On fallback_committed the primary intent was
+        // blocked and the fallback ran, so fallbackIfBlocked is what landed.
+        const committedActType =
+          resolved.outcome === "committed"
+            ? intent.intentType
+            : resolved.outcome === "fallback_committed"
+              ? intent.fallbackIfBlocked
+              : undefined;
+        if (committedActType && OUTWARD_SOCIAL_ACT_TYPES.has(committedActType)) {
+          stepResult.updatedAgentState.lastActionAt = now;
         }
       }
 

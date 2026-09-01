@@ -180,6 +180,77 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
     expect(afterAct).toBeLessThan(beforeAct);
   });
 
+  it("passive decay: a silent pulse relaxes every accumulator that is above its fixed point", () => {
+    const agent = makeAgent();
+    const saturated: InitiativeAccumulator[] = (
+      updateInitiativeAccumulators([], ZERO_ACTIONS, agent, CAIO, 0, false)
+    ).map(a => ({ ...a, value: 0.9 }));
+
+    const next = updateInitiativeAccumulators(saturated, ZERO_ACTIONS, agent, CAIO, 1, false);
+
+    for (const acc of next) {
+      if (acc.source === "cold_start_bootstrap") {
+        // passive-decay exempt: growth-only, so it rises instead of relaxing
+        expect(acc.value).toBeGreaterThan(0.9);
+        continue;
+      }
+      expect(acc.value).toBeLessThan(0.9);
+    }
+  });
+
+  it("passive decay: a silent agent's accumulators converge below 1.0 instead of re-saturating", () => {
+    const agent = makeAgent();
+    let accumulators: InitiativeAccumulator[] = [];
+    for (let i = 0; i < 100; i++) {
+      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+    }
+    // cold_start_bootstrap is passive-decay exempt (its 0.30 threshold sits
+    // below the 0.4*energy ceiling); every other source relaxes below 1.0.
+    for (const acc of accumulators) {
+      if (acc.source === "cold_start_bootstrap") continue;
+      expect(acc.value).toBeLessThan(1);
+    }
+    // reply_pressure is the fastest grower; its fixed point is
+    // growth/(decayRate*0.5) = (0.08*energy)/0.20, still well under 1.0.
+    const replyPressure = accumulators.find(a => a.source === "reply_pressure");
+    expect(replyPressure!.value).toBeLessThan(0.6);
+  });
+
+  it("no initiative source stays at 1.0 across consecutive pulses over a 40-pulse silent run", () => {
+    const agent = makeAgent();
+    let accumulators: InitiativeAccumulator[] = [];
+    let prev: Map<string, number> | null = null;
+    for (let i = 0; i < 40; i++) {
+      accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+      const current = new Map(accumulators.map(a => [a.source, a.value]));
+      if (prev) {
+        for (const [source, value] of current) {
+          if (source === "cold_start_bootstrap") continue;
+          const stuckAtCeiling = value >= 1 && prev.get(source)! >= 1;
+          expect(stuckAtCeiling, `${source} pinned at 1.0 on pulse ${i}`).toBe(false);
+        }
+      }
+      prev = current;
+    }
+  });
+
+  it("cold_start_bootstrap still crosses its threshold within ~2 silent pulses for a calm agent", () => {
+    // Passive-decay exemption regression: with universal passive decay,
+    // cold_start_bootstrap's fixed point (0.4*energy) sits under its 0.30
+    // threshold for typical persona energy, so proceed would never fire.
+    for (const energy of [0.3, 0.5]) {
+      const agent = makeAgent("cold", { coreMood: { ...BASE_MOOD, energy } });
+      let accumulators: InitiativeAccumulator[] = [];
+      let proceeded = false;
+      for (let i = 0; i < 2; i++) {
+        accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
+        const candidates = scoreInitiativeCandidates(accumulators, i, null);
+        if (candidates.find(c => c.source === "cold_start_bootstrap")!.proceed) proceeded = true;
+      }
+      expect(proceeded, `energy ${energy}`).toBe(true);
+    }
+  });
+
   it("accumulator values stay in [0, 1]", () => {
     const agent = makeAgent();
     let accumulators: InitiativeAccumulator[] = [];
@@ -198,11 +269,21 @@ describe("updateInitiativeAccumulators + scoreInitiativeCandidates", () => {
     for (let i = 0; i < 5; i++) {
       accumulators = updateInitiativeAccumulators(accumulators, ZERO_ACTIONS, agent, CAIO, i, false);
     }
-    const candidates = scoreInitiativeCandidates(accumulators, 5, null, 3000);
+    const candidates = scoreInitiativeCandidates(accumulators, 5, null);
     const bootstrap = candidates.find(c => c.source === "cold_start_bootstrap");
     expect(bootstrap).toBeDefined();
     // May or may not proceed depending on accumulation, but score should be > 0
     expect(bootstrap!.score).toBeGreaterThan(0);
+  });
+
+  it("scoreInitiativeCandidates takes 3 args and still gates on arrivalPulse as the third", () => {
+    expect(scoreInitiativeCandidates.length).toBe(3);
+    const accumulators = updateInitiativeAccumulators([], ZERO_ACTIONS, makeAgent(), CAIO, 0, false)
+      .map(a => ({ ...a, value: 0.99 }));
+    const beforeArrival = scoreInitiativeCandidates(accumulators, 2, 5);
+    const afterArrival = scoreInitiativeCandidates(accumulators, 6, 5);
+    expect(beforeArrival.every(c => !c.proceed)).toBe(true);
+    expect(afterArrival.some(c => c.proceed)).toBe(true);
   });
 
   it("anyInitiativeProceed returns true when any candidate proceeds", () => {
