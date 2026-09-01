@@ -13,8 +13,8 @@ import type {
   EngineStepResult,
   EndingOffer,
 } from "@perfectman/shared";
-import { createSeededRng } from "@perfectman/shared";
-import { runEngineStep, computeStagnationMetrics, filterVisibleEventsForAgent } from "@perfectman/engine";
+import { createSeededRng, STAGNATION_WINDOW_PULSES } from "@perfectman/shared";
+import { runEngineStep, computeStagnationMetrics, detectAttractorStates, filterVisibleEventsForAgent } from "@perfectman/engine";
 import type { IEventRepository, IAgentStateRepository } from "../persistence/repositories.js";
 import type { ChannelRegistry } from "./channel-registry.js";
 import type { RateLimitGate } from "./rate-limit-gate.js";
@@ -26,7 +26,12 @@ import type { OperatorProjection } from "./projections/operator-projection.js";
 import type { EngineEventBuilder } from "./engine-event-builder.js";
 import { payloadString } from "./payload-readers.js";
 import { serializeAgentState } from "../agent/agent-state-serializer.js";
-import type { ActionIntentOperatorData, EventVisibilityData } from "@perfectman/shared";
+import type {
+  ActionIntentOperatorData,
+  AttractorDetectedOperatorData,
+  EventVisibilityData,
+  StagnationMetricsOperatorData,
+} from "@perfectman/shared";
 import { buildAgentRuntimeInput } from "./runtime-input-builder.js";
 import { buildWorldSignals } from "./world-signals-builder.js";
 import type { AgentRuntimeContext, AgentRuntimeOutput } from "../agent/agent-runtime.types.js";
@@ -319,13 +324,52 @@ export class PulseScheduler {
 
     // Every 10 pulses: compute stagnation metrics
     if (this.pulseIndex > 0 && this.pulseIndex % 10 === 0) {
-      const recentEvents = await this.config.eventRepo.getCommittedThrough(sim.id, this.pulseIndex);
+      const committedThrough = await this.config.eventRepo.getCommittedThrough(sim.id, this.pulseIndex);
+      const windowFloor = this.pulseIndex - STAGNATION_WINDOW_PULSES;
+      const recentEvents = committedThrough.filter((e) => e.pulseIndex > windowFloor);
       const agentStatesMap = new Map<string, AgentState>();
       for (const agent of this.config.agents) {
         const stored = await this.config.agentStateRepo.get(sim.id, agent.id);
         if (stored) agentStatesMap.set(agent.id, stored);
       }
       const metrics = computeStagnationMetrics(sim.id, this.pulseIndex, recentEvents, agentStatesMap);
+
+      const metricsData: StagnationMetricsOperatorData = {
+        simulationId: metrics.simulationId,
+        pulseIndex: metrics.pulseIndex,
+        bdi: metrics.bdi,
+        rdv: metrics.rdv,
+        ige: metrics.ige,
+        cue: metrics.cue,
+        eri: metrics.eri,
+        isd: metrics.isd,
+        cns: metrics.cns,
+        compositeScore: metrics.compositeScore,
+        level: metrics.level,
+      };
+      await this.emitOperatorEvent({
+        type: "stagnation_metrics",
+        simulationId: sim.id,
+        agentId: "system",
+        pulseIndex: this.pulseIndex,
+        detail: `Stagnation metrics: ${metrics.level} (${metrics.compositeScore.toFixed(3)})`,
+        data: metricsData,
+        createdAt: Date.now(),
+      });
+
+      for (const signature of detectAttractorStates(recentEvents, agentStatesMap)) {
+        const attractorData: AttractorDetectedOperatorData = { signature };
+        await this.emitOperatorEvent({
+          type: "attractor_detected",
+          simulationId: sim.id,
+          agentId: "system",
+          pulseIndex: this.pulseIndex,
+          detail: `Attractor state detected: ${signature}`,
+          data: attractorData,
+          createdAt: Date.now(),
+        });
+      }
+
       if (metrics.level !== "normal") {
         const stagnationEvent = this.config.engineEventBuilder.fromStagnation(metrics, {
           simulationId: sim.id,

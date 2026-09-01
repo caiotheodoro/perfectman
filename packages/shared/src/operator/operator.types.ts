@@ -1,5 +1,6 @@
 import type { EventPayload, EventType } from "../event/event.types.js";
 import type { IntentType } from "../intent/intent.types.js";
+import type { AttractorState } from "../constants/stagnation.js";
 
 /**
  * Operator event types the server may emit. Declared once here — the single
@@ -19,6 +20,8 @@ export const OPERATOR_EVENT_TYPES = [
   "intent_blocked",
   "intent_delayed",
   "stagnation_warning",
+  "stagnation_metrics",
+  "attractor_detected",
   "scheduler_error",
   "pulse_metrics",
   "agent_state_snapshot",
@@ -104,4 +107,15 @@ export type EventVisibilityData = {
   visibleToAgents: string[];
   content?: string;
   channelName?: string;
+};
+
+/** `stagnation_metrics` payload — the full composite + 7 sub-metrics, emitted
+ *  every stagnation cadence regardless of `level` (per-cadence telemetry).
+ *  `stagnation_warning` still fires only on a non-normal `level`. */
+export type StagnationMetricsOperatorData = StagnationMetrics;
+
+/** `attractor_detected` payload — one event per detected attractor signature.
+ *  Independent of the composite `level`, which it never overrides. */
+export type AttractorDetectedOperatorData = {
+  signature: AttractorState;
 };

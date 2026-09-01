@@ -11,6 +11,7 @@ import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import { StdoutDeliveryGateway } from "../../delivery/stdout-delivery-gateway.js";
+import { STAGNATION_METRIC_KEYS } from "./fixtures.js";
 import { serializeAgentState } from "../../agent/agent-state-serializer.js";
 import type { AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type {
@@ -23,9 +24,11 @@ import type {
   EngineSnapshot,
   OperatorEvent,
   CommittedEvent,
+  SimulationEvent,
   AgentRuntimeInput,
 } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
+import { computeStagnationMetrics } from "@perfectman/engine";
 
 const SETTINGS: SimulationSettings = {
   omniscientSpectatorMode: false,
@@ -527,5 +530,53 @@ describe("PulseScheduler observability events", () => {
     for (const line of snapshotLines) {
       expect(line.payload.type).toBe("agent_state_snapshot");
     }
+  });
+
+  it("emits per-cadence stagnation_metrics and a distinct attractor_detected on a message-loop run", async () => {
+    const h = await buildScheduler({
+      step: (snap) => makeCannedStep(snap.agentState.agentId),
+    });
+
+    const seeds: SimulationEvent[] = [];
+    for (let p = 1; p <= 9; p += 1) {
+      seeds.push({
+        id: `seed_${p}`,
+        simulationId: "sim_obs",
+        channelId: "ch_public",
+        actorId: p % 2 === 0 ? "agent_1" : "agent_2",
+        type: "message_sent",
+        payload: { content: "so anyway what do you think" },
+        sourceEventIds: [],
+        emotionalSalience: "low",
+        pulseIndex: p,
+        visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "public_channel" },
+      });
+    }
+    const committed = await h.eventRepo.append("sim_obs", seeds);
+
+    for (let i = 0; i < 11; i += 1) await h.scheduler.runPulse();
+
+    const metricsEvents = h.gateway.operatorEvents.filter((e) => e.type === "stagnation_metrics");
+    expect(metricsEvents).toHaveLength(1);
+    const m = metricsEvents[0]!;
+    expect(m.pulseIndex).toBe(10);
+    for (const key of STAGNATION_METRIC_KEYS) {
+      expect(typeof m.data?.[key]).toBe("number");
+    }
+    expect(["normal", "yellow", "red", "critical"]).toContain(m.data?.["level"]);
+
+    const attractorEvents = h.gateway.operatorEvents.filter((e) => e.type === "attractor_detected");
+    expect(attractorEvents.some((e) => e.data?.["signature"] === "message_loop")).toBe(true);
+    for (const e of attractorEvents) expect(e.pulseIndex).toBe(10);
+
+    // level and composite ride the composite pipeline untouched — the attractor
+    // hit produces its own event and never overrides them.
+    const agentStates = new Map([
+      ["agent_1", (await h.agentStateRepo.get("sim_obs", "agent_1"))!],
+      ["agent_2", (await h.agentStateRepo.get("sim_obs", "agent_2"))!],
+    ]);
+    const independent = computeStagnationMetrics("sim_obs", 10, committed, agentStates);
+    expect(m.data?.["level"]).toBe(independent.level);
+    expect(m.data?.["compositeScore"]).toBe(independent.compositeScore);
   });
 });
