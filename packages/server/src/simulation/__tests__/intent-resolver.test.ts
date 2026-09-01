@@ -150,6 +150,7 @@ describe("IntentResolver", () => {
     const memoryEvent = result.committedEvents.find((e) => e.type === "memory_written");
     expect(memoryEvent).toBeDefined();
     expect(memoryEvent!.payload["intensity"]).toBe(0.9);
+    expect(memoryEvent!.payload["proposalIndex"]).toBe(0);
   });
 
   it("blocks intent with missing motive summary", async () => {
