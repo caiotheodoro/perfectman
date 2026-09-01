@@ -1,0 +1,20 @@
+{
+  "scenarioId": "edge_public_mock",
+  "category": "edge_chaos",
+  "rubricId": "edge-chaos",
+  "pulses": 8,
+  "events": 22,
+  "fallbackCount": 0,
+  "repetitionBlocked": 3,
+  "realContentEvents": 4,
+  "signalPassRate": 1,
+  "probePassRate": 0.9230769230769231,
+  "axisScores": {
+    "dramatic_tension": 5,
+    "unpredictability": 3,
+    "believability_under_pressure": 3,
+    "no_ai_leak": 4
+  },
+  "elapsedMs": 107438,
+  "transcript": "p  0 goulart   message_sent       \"kkkk bruno você não manda nem em você mesmo\"\np  1 caio      reaction_sent     \np  0 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  0 bruno     no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  0 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  1 goulart   message_sent       \"kkkk não acredito nesse take\"\np  1 bruno     message_sent       \"hm\"\np  2 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  2 bruno     no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  2 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  3 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  3 bruno     no_op_recorded      [motive: noop-shame_about_desire]\np  4 goulart   message_sent       \"kkkk não acredito nesse take, mas essa vez vou fazer um jeito de mostrar que sou o único com coragem suficiente para falar quando todo mundo está quieto.\"\np  4 bruno     no_op_recorded      [motive: noop-shame_about_desire]\np  5 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  5 bruno     no_op_recorded      [motive: noop-shame_about_desire]\np  5 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  6 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  6 bruno     no_op_recorded      [motive: noop-shame_about_desire]\np  6 caio      no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  7 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  7 bruno     no_op_recorded      [motive: noop-shame_about_desire]"
+}

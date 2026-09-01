@@ -1,0 +1,24 @@
+{
+  "scenarioId": "motive_conflict",
+  "category": "motive_archetype",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 17,
+  "fallbackCount": 0,
+  "repetitionBlocked": 4,
+  "realContentEvents": 5,
+  "signalPassRate": 0.5,
+  "probePassRate": 0.9230769230769231,
+  "axisScores": {
+    "in_character": 3,
+    "voice_match": 3,
+    "motive_authenticity": 3,
+    "interpretation": 3,
+    "creativity_unhinged": 3,
+    "memory_continuity": 3,
+    "no_ai_leak": 3,
+    "narrative_cohesion": 3
+  },
+  "elapsedMs": 107396,
+  "transcript": "p  0 goulart   message_sent       \"caio você é fraco, sempre foi\"\np  0 goulart   message_sent       \"kkkkk não acredito nesse take\"\np  0 caio      no_op_recorded      [motive: noop-social_anxiety_block]\np  1 goulart   message_sent       \"ALGUÉM VIU ISSO??\"\np  1 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  2 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  2 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  3 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  3 caio      message_sent       \"Poxa que situação, Goulart. Você tá meio estranho hoje, né? O que aconteceu?\"\np  4 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  4 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  5 goulart   message_sent       \"Bom, mais uma vez eu que tenho que falar né. O que aconteceu aqui, Caio? Você tá meio estranho hoje, né?\"\np  5 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  6 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  7 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]"
+}

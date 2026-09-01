@@ -8,6 +8,7 @@ import type {
   AgentRuntimeContext,
   AgentRuntimeOutput,
   BuiltPrompt,
+  PromptTrim,
 } from "../agent-runtime.types.js";
 import type { LLMConfig } from "../../llm/llm-config.js";
 import type { LLMProvider } from "../../llm/llm-provider.js";
@@ -20,6 +21,7 @@ import {
   REPETITION_SIMILARITY_THRESHOLD,
 } from "../repetition-guard.js";
 import { promptVersionHash } from "../prompt-version.js";
+import { ActionIntentPromptBuilder } from "../action-intent-prompt-builder.js";
 import { PromptBuilder } from "../prompt-builder.js";
 import {
   LLMStep,
@@ -66,7 +68,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
   render(input: AgentRuntimeInput, ctx: StepRunContext): BuiltPrompt {
     // Route through the dispatcher so unused prompt purposes still fail
     // closed (see prompt-builder.ts) and the render entry stays singular.
-    return PromptBuilder.build(input, ctx.profile, "action_intent");
+    return PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens);
   }
 
   gate(input: AgentRuntimeInput, ctx: StepRunContext): StepOutcome<AgentRuntimeOutput> | undefined {
@@ -93,6 +95,16 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       detail: `LLM budget pre-check blocked call for agent ${input.agentId}: ${budgetDecision.reason}`,
       createdAt: Date.now(),
     };
+    // A trim runs in render(), before this gate. When the gate blocks, execute()
+    // never runs, so this is the only place the trim that already happened can
+    // be logged on the blocked path.
+    const trimEvent = this.promptTrimEvent(
+      ctx.prompt,
+      input.simulationId,
+      input.agentId,
+      ctx.pulseIndex,
+      ctx.now,
+    );
     return {
       ok: false,
       gateBlocked: true,
@@ -101,7 +113,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         llmUsage: null,
         latencyMs: Date.now() - startTime,
         fallbackApplied: true,
-        operatorEvents: [opEvent],
+        operatorEvents: trimEvent ? [trimEvent, opEvent] : [opEvent],
       },
     };
   }
@@ -115,6 +127,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const runtimeContext: AgentRuntimeContext = { pulseIndex: ctx.pulseIndex, now: ctx.now };
     const { agentId, simulationId } = input;
     const startTime = Date.now();
+
+    const trimEvent = this.promptTrimEvent(prompt, simulationId, agentId, ctx.pulseIndex, ctx.now);
 
     let providerResult;
     try {
@@ -137,7 +151,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           llmUsage: null,
           latencyMs: Date.now() - startTime,
           fallbackApplied: true,
-          operatorEvents: [opEvent],
+          operatorEvents: trimEvent ? [trimEvent, opEvent] : [opEvent],
         },
         errorDetail: `Provider failed: ${error.message || String(error)}`,
       };
@@ -176,6 +190,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const mainInputTokens = providerResult.usage.inputTokens;
     const mainOutputTokens = providerResult.usage.outputTokens;
     const retryUsages: { inputTokens: number; outputTokens: number; latencyMs: number; promptVersion: string }[] = [];
+    const retryTrimEvents: OperatorEvent[] = [];
 
     const isRepeat = (candidateIntent: typeof intent): boolean =>
       (candidateIntent.intentType === "send_message" || candidateIntent.intentType === "reply_to_message") &&
@@ -184,6 +199,18 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     if (!fallbackApplied && (isRepeat(intent) || parseResult.unresolvedTarget)) {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
+        // The correction note re-inflates the (already-capped) base prompt, so
+        // the retry prompt is re-assembled and re-trimmed against the same cap
+        // before it goes anywhere near the wire.
+        const retryPrompt = this.buildRetryPrompt(input, ctx, prompt, intent.visibleContent ?? "");
+        const retryTrimEvent = this.promptTrimEvent(
+          retryPrompt,
+          simulationId,
+          agentId,
+          ctx.pulseIndex,
+          ctx.now,
+        );
+        if (retryTrimEvent) retryTrimEvents.push(retryTrimEvent);
         // The gate's budget check runs once before the first call; each retry
         // is a further wire call it did not authorize, so re-check before
         // issuing one. A denial must not turn into a free retry. With a
@@ -193,7 +220,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           simulationId,
           agentId,
           priority: input.budgetPriority,
-          inputTokensEstimate: prompt.inputTokensEstimate,
+          inputTokensEstimate: retryPrompt.inputTokensEstimate,
         });
         if (!budgetDecision.allowed) {
           if (isRepeat(intent)) {
@@ -364,6 +391,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     });
 
     const operatorEvents: OperatorEvent[] = [];
+    if (trimEvent) operatorEvents.push(trimEvent);
+    operatorEvents.push(...retryTrimEvents);
     operatorEvents.push({
       type: "pulse_metrics",
       simulationId,
@@ -435,5 +464,117 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     };
 
     return { ok: true, value: output };
+  }
+
+  /**
+   * Assemble the repetition-guard retry prompt with the cap re-enforced.
+   * `retryCorrectionNote` is appended to the system text *after* the base
+   * render, so a base prompt that `trimToFit` left just under the cap would
+   * cross it once the note is added. The base is therefore rebuilt against a
+   * cap lowered by the note's own token estimate; `base + note` is then within
+   * the original cap by construction. Falls back to a plain append when the
+   * agent has no configured cap.
+   */
+  private buildRetryPrompt(
+    input: AgentRuntimeInput,
+    ctx: StepRunContext,
+    basePrompt: BuiltPrompt,
+    lastAttempt: string,
+  ): BuiltPrompt {
+    const suffix = `\n\n${retryCorrectionNote(lastAttempt)}`;
+    const cap = ctx.llmConfig.maxInputTokens;
+
+    if (typeof cap !== "number" || cap <= 0) {
+      const system = `${basePrompt.system}${suffix}`;
+      return {
+        ...basePrompt,
+        system,
+        user: basePrompt.user,
+        inputTokensEstimate: ActionIntentPromptBuilder.estimateTokens(system, basePrompt.user),
+        version: promptVersionHash([system, basePrompt.user]),
+      };
+    }
+
+    const suffixTokens = Math.ceil(suffix.length / 4);
+    const adjustedCap = Math.max(1, cap - suffixTokens);
+    const rebuilt = PromptBuilder.build(input, ctx.profile, "action_intent", adjustedCap);
+    const system = `${rebuilt.system}${suffix}`;
+    const user = rebuilt.user;
+    const finalEstimate = ActionIntentPromptBuilder.estimateTokens(system, user);
+
+    let trim: PromptTrim | undefined;
+    if (rebuilt.trim) {
+      const rawRetryEstimate = rebuilt.trim.rawInputTokensEstimate + suffixTokens;
+      trim = {
+        maxInputTokens: cap,
+        rawInputTokensEstimate: rawRetryEstimate,
+        finalInputTokensEstimate: finalEstimate,
+        droppedEvents: rebuilt.trim.droppedEvents,
+        droppedMemories: rebuilt.trim.droppedMemories,
+        droppedUtterances: rebuilt.trim.droppedUtterances,
+        droppedInputTokensEstimate: rawRetryEstimate - finalEstimate,
+        withinCap: finalEstimate <= cap,
+        phase: "repetition_retry",
+      };
+    }
+
+    return {
+      ...basePrompt,
+      system,
+      user,
+      inputTokensEstimate: finalEstimate,
+      version: promptVersionHash([system, user]),
+      ...(trim ? { trim } : {}),
+    };
+  }
+
+  /**
+   * Operator record for a prompt whose raw assembly exceeded the agent's
+   * `maxInputTokens` (see ActionIntentPromptBuilder). Returns null when no
+   * trim happened. The `detail` wording splits on `trim.withinCap`: a clean
+   * trim reports what it dropped to fit; an irreducible one states plainly
+   * that the cap could not be met, so an operator scanning `prompt_trimmed`
+   * events never has to hand-compare the raw and final numbers.
+   */
+  private promptTrimEvent(
+    prompt: BuiltPrompt,
+    simulationId: string,
+    agentId: string,
+    pulseIndex: number,
+    now: number,
+  ): OperatorEvent | null {
+    const { trim } = prompt;
+    if (!trim) return null;
+    const where = trim.phase === "repetition_retry" ? "Repetition-retry prompt" : "Prompt assembly";
+    const detail = trim.withinCap
+      ? `${where} for agent ${agentId} exceeded maxInputTokens ` +
+        `(${trim.rawInputTokensEstimate} > ${trim.maxInputTokens} est. tokens); dropped ` +
+        `${trim.droppedMemories} lowest-salience memory(ies), ${trim.droppedEvents} oldest ` +
+        `context event(s) and ${trim.droppedUtterances} oldest own utterance(s) ` +
+        `(~${trim.droppedInputTokensEstimate} tokens) to fit ${trim.finalInputTokensEstimate}.`
+      : `${where} for agent ${agentId} could NOT be trimmed below maxInputTokens ` +
+        `(${trim.maxInputTokens} est. tokens); dropped every trimmable item ` +
+        `(${trim.droppedMemories} memory(ies), ${trim.droppedEvents} context event(s), ` +
+        `${trim.droppedUtterances} own utterance(s)) but ` +
+        `irreducible content still estimates ~${trim.finalInputTokensEstimate} tokens — sent over cap.`;
+    return {
+      type: "prompt_trimmed",
+      simulationId,
+      agentId,
+      pulseIndex,
+      detail,
+      createdAt: now,
+      data: {
+        phase: trim.phase,
+        withinCap: trim.withinCap,
+        maxInputTokens: trim.maxInputTokens,
+        rawInputTokensEstimate: trim.rawInputTokensEstimate,
+        finalInputTokensEstimate: trim.finalInputTokensEstimate,
+        droppedEvents: trim.droppedEvents,
+        droppedMemories: trim.droppedMemories,
+        droppedUtterances: trim.droppedUtterances,
+        droppedInputTokensEstimate: trim.droppedInputTokensEstimate,
+      },
+    };
   }
 }

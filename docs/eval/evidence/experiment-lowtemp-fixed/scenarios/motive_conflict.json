@@ -1,0 +1,24 @@
+{
+  "scenarioId": "motive_conflict",
+  "category": "motive_archetype",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 17,
+  "fallbackCount": 0,
+  "repetitionBlocked": 10,
+  "realContentEvents": 3,
+  "signalPassRate": 0.5,
+  "probePassRate": 0.9230769230769231,
+  "axisScores": {
+    "in_character": 3,
+    "voice_match": 2,
+    "motive_authenticity": 3,
+    "interpretation": 3,
+    "creativity_unhinged": 3,
+    "memory_continuity": 2,
+    "no_ai_leak": 2,
+    "narrative_cohesion": 2
+  },
+  "elapsedMs": 54301,
+  "transcript": "p  0 goulart   message_sent       \"caio você é fraco, sempre foi\"\np  0 goulart   message_sent       \"kkkkk não acredito nesse take, mas se quiserem, eu posso falar mais uma vez.\"\np  0 caio      no_op_recorded      [motive: noop-social_anxiety_block]\np  1 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  1 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  2 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  2 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  3 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  3 caio      message_sent       \"kkkkk não acredito nesse take, mas se quiserem, eu posso falar mais uma vez.\"\np  4 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  4 caio      no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  5 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  5 caio      no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  6 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  6 caio      no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  7 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  7 caio      no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]"
+}

@@ -1,6 +1,6 @@
-import { PromptSection, modelIntentPacketFieldContract, type AgentRuntimeInput, type CommittedEvent } from "@perfectman/shared";
+import { PromptSection, modelIntentPacketFieldContract, type AgentRuntimeInput, type CommittedEvent, type Memory } from "@perfectman/shared";
 import { GENERIC_PROMPT_PROFILE, type PersonaPromptProfile, type ScenarioContextBlock } from "./persona-prompt-profile.js";
-import type { BuiltPrompt } from "./agent-runtime.types.js";
+import type { BuiltPrompt, PromptTrim } from "./agent-runtime.types.js";
 import { promptVersionHash } from "./prompt-version.js";
 
 /**
@@ -89,17 +89,175 @@ export const CANONICAL_TEMPLATE_VERSION_INPUT: AgentRuntimeInput = {
  * never hand-writes markers or tracks closing tags. Decision question LAST.
  */
 export class ActionIntentPromptBuilder {
-  static build(input: AgentRuntimeInput, profile: PersonaPromptProfile): BuiltPrompt {
-    const { systemPrompt, userPrompt } = this.render(input, profile);
-    const totalChars = systemPrompt.length + userPrompt.length;
+  static build(
+    input: AgentRuntimeInput,
+    profile: PersonaPromptProfile,
+    maxInputTokens?: number,
+  ): BuiltPrompt {
+    let rendered = this.render(input, profile);
+    const rawEstimate = this.estimateTokens(rendered.systemPrompt, rendered.userPrompt);
+
+    let trim: PromptTrim | undefined;
+    if (typeof maxInputTokens === "number" && maxInputTokens > 0 && rawEstimate > maxInputTokens) {
+      const trimmed = this.trimToFit(input, profile, maxInputTokens);
+      rendered = trimmed.rendered;
+      const finalEstimate = this.estimateTokens(rendered.systemPrompt, rendered.userPrompt);
+      // A trim record is always attached once the raw render was over-cap,
+      // even when nothing was droppable (irreducible content) or every
+      // droppable item was shed and it still does not fit — `withinCap`
+      // distinguishes those from a clean trim so the over-cap send is logged.
+      trim = {
+        maxInputTokens,
+        rawInputTokensEstimate: rawEstimate,
+        finalInputTokensEstimate: finalEstimate,
+        droppedEvents: trimmed.droppedEvents,
+        droppedMemories: trimmed.droppedMemories,
+        droppedUtterances: trimmed.droppedUtterances,
+        droppedInputTokensEstimate: rawEstimate - finalEstimate,
+        withinCap: finalEstimate <= maxInputTokens,
+        phase: "assembly",
+      };
+    }
+
+    const { systemPrompt, userPrompt } = rendered;
     return {
       system: systemPrompt,
       user: userPrompt,
-      inputTokensEstimate: Math.ceil(totalChars / 4),
+      inputTokensEstimate: this.estimateTokens(systemPrompt, userPrompt),
       purpose: "action_intent",
       version: promptVersionHash([systemPrompt, userPrompt]),
       templateVersion: this.templateVersion(),
+      ...(trim ? { trim } : {}),
     };
+  }
+
+  /**
+   * Single owner of the chars/4 input estimate. `ActionIntentStep.buildRetryPrompt`
+   * reuses it for its retry-cap arithmetic so the retry recomputation can never
+   * drift from the assembly heuristic.
+   */
+  static estimateTokens(systemPrompt: string, userPrompt: string): number {
+    return Math.ceil((systemPrompt.length + userPrompt.length) / 4);
+  }
+
+  /**
+   * Bring the assembled prompt within `maxInputTokens` by shedding the
+   * lowest-value per-pulse context and re-rendering after every drop. The
+   * order is fixed so the same input and cap always yield the same trimmed
+   * prompt:
+   *   1. relevant memories, lowest salience first — `confidence` ascending,
+   *      then `lastReinforcedAt` ascending (staler first), then `id`.
+   *   2. recent context events, oldest first — `pulseIndex` ascending, then
+   *      `createdAt` ascending, then `id`. The triggering event is the floor
+   *      and is never dropped.
+   *   3. own recent utterances, oldest first (array order — perception
+   *      assembles them chronologically). The step-level repetition guard
+   *      checks the full utterance list regardless of what the prompt shows,
+   *      so shedding these only weakens the preemptive no-repeat hint, never
+   *      the structural enforcement.
+   * Memories yield before the live transcript because a stale, low-confidence
+   * memory is the most expendable grounding for the next action. Persona, the
+   * output contract and the decision question are structural and are never
+   * trimmed here.
+   */
+  private static trimToFit(
+    input: AgentRuntimeInput,
+    profile: PersonaPromptProfile,
+    maxInputTokens: number,
+  ): {
+    rendered: { systemPrompt: string; userPrompt: string };
+    droppedEvents: number;
+    droppedMemories: number;
+    droppedUtterances: number;
+  } {
+    const { perceptionPacket } = input;
+    const triggeringEventId = perceptionPacket.triggeringEvent?.id;
+    const events = [...perceptionPacket.visibleContextEvents];
+    const memories = [...perceptionPacket.relevantMemories];
+    const utterances = [...perceptionPacket.ownRecentUtterances];
+    let droppedEvents = 0;
+    let droppedMemories = 0;
+    let droppedUtterances = 0;
+
+    const renderCandidate = (): { systemPrompt: string; userPrompt: string } =>
+      this.render(
+        {
+          ...input,
+          perceptionPacket: {
+            ...perceptionPacket,
+            visibleContextEvents: events,
+            relevantMemories: memories,
+            ownRecentUtterances: utterances,
+          },
+        },
+        profile,
+      );
+    const fits = (r: { systemPrompt: string; userPrompt: string }): boolean =>
+      this.estimateTokens(r.systemPrompt, r.userPrompt) <= maxInputTokens;
+
+    let rendered = renderCandidate();
+
+    while (!fits(rendered) && memories.length > 0) {
+      memories.splice(this.lowestSalienceMemoryIndex(memories), 1);
+      droppedMemories++;
+      rendered = renderCandidate();
+    }
+
+    while (!fits(rendered)) {
+      const idx = this.oldestDroppableEventIndex(events, triggeringEventId);
+      if (idx === -1) break;
+      events.splice(idx, 1);
+      droppedEvents++;
+      rendered = renderCandidate();
+    }
+
+    while (!fits(rendered) && utterances.length > 0) {
+      utterances.shift();
+      droppedUtterances++;
+      rendered = renderCandidate();
+    }
+
+    return { rendered, droppedEvents, droppedMemories, droppedUtterances };
+  }
+
+  private static lowestSalienceMemoryIndex(memories: Memory[]): number {
+    let best = 0;
+    for (let i = 1; i < memories.length; i++) {
+      const m = memories[i]!;
+      const b = memories[best]!;
+      const lower =
+        m.confidence !== b.confidence
+          ? m.confidence < b.confidence
+          : m.lastReinforcedAt !== b.lastReinforcedAt
+            ? m.lastReinforcedAt < b.lastReinforcedAt
+            : m.id < b.id;
+      if (lower) best = i;
+    }
+    return best;
+  }
+
+  private static oldestDroppableEventIndex(
+    events: CommittedEvent[],
+    triggeringEventId: string | undefined,
+  ): number {
+    let best = -1;
+    for (let i = 0; i < events.length; i++) {
+      const e = events[i]!;
+      if (triggeringEventId !== undefined && e.id === triggeringEventId) continue;
+      if (best === -1) {
+        best = i;
+        continue;
+      }
+      const b = events[best]!;
+      const older =
+        e.pulseIndex !== b.pulseIndex
+          ? e.pulseIndex < b.pulseIndex
+          : e.createdAt !== b.createdAt
+            ? e.createdAt < b.createdAt
+            : e.id < b.id;
+      if (older) best = i;
+    }
+    return best;
   }
 
   private static render(input: AgentRuntimeInput, profile: PersonaPromptProfile): { systemPrompt: string; userPrompt: string } {

@@ -1,9 +1,19 @@
 import { describe, it, expect, vi } from "vitest";
-import type { AgentRuntimeInput, LLMProviderResult } from "@perfectman/shared";
+import type {
+  AgentRuntimeInput,
+  LLMProviderResult,
+} from "@perfectman/shared";
 import type { LLMConfig } from "../../llm/llm-config.js";
 import { ActionIntentStep } from "../action-intent-step.js";
 import { llmSurfaceRegistry } from "../index.js";
 import type { StepRunContext } from "../llm-step.js";
+import { PromptBuilder } from "../../prompt-builder.js";
+import { EXAMPLE_PROMPT_PROFILE } from "../../persona-prompt-profile.js";
+import {
+  makeAgentRuntimeInput,
+  makeContextEvent,
+  makeContextMemory,
+} from "../../__tests__/agent-input-test-helpers.js";
 import { makeEvent, replyIntentJson, reactIntentJson } from "../../../__tests__/fixtures.js";
 
 function jsonResponse(content: string, promptTokens = 50, completionTokens = 10): LLMProviderResult {
@@ -89,6 +99,7 @@ const prompt = {
 function runStep(
   provider: { generateIntent: unknown },
   input: AgentRuntimeInput = makeInput(),
+  promptOverride: StepRunContext["prompt"] = prompt,
 ): Promise<ReturnType<ActionIntentStep["execute"]>> {
   const step = new ActionIntentStep();
   const ctx: StepRunContext = {
@@ -97,7 +108,7 @@ function runStep(
     provider: provider as StepRunContext["provider"],
     llmConfig,
     profile: {} as StepRunContext["profile"],
-    prompt,
+    prompt: promptOverride,
   };
   return step.execute(input, ctx);
 }
@@ -135,6 +146,55 @@ describe("ActionIntentStep", () => {
     expect(outcome.value.fallbackApplied).toBe(false);
     expect(outcome.value.intent.intentType).toBe("no_op");
     expect(outcome.value.llmUsage?.inputTokens).toBe(50);
+  });
+
+  it("records a prompt_trimmed operator event when the built prompt carries a trim", async () => {
+    const trimmedPrompt = {
+      ...prompt,
+      trim: {
+        maxInputTokens: 2048,
+        rawInputTokensEstimate: 3041,
+        finalInputTokensEstimate: 2040,
+        droppedEvents: 5,
+        droppedMemories: 2,
+        droppedUtterances: 0,
+        droppedInputTokensEstimate: 1001,
+        withinCap: true,
+        phase: "assembly" as const,
+      },
+    };
+    const outcome = await runStep(
+      {
+        generateIntent: vi.fn().mockResolvedValue(
+          jsonResponse(
+            JSON.stringify({ intentType: "no_op", privateMotiveSummary: "Quiet.", emotionDrivers: [], motivationDrivers: [] }),
+          ),
+        ),
+      },
+      makeInput(),
+      trimmedPrompt,
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    const trimEvent = outcome.value.operatorEvents.find((e) => e.type === "prompt_trimmed");
+    expect(trimEvent).toBeDefined();
+    expect(trimEvent!.pulseIndex).toBe(3);
+    expect(trimEvent!.data).toMatchObject({ droppedEvents: 5, droppedMemories: 2, maxInputTokens: 2048 });
+    expect(trimEvent!.detail).toContain("exceeded maxInputTokens");
+  });
+
+  it("emits no prompt_trimmed operator event when the prompt was not trimmed", async () => {
+    const outcome = await runStep({
+      generateIntent: vi.fn().mockResolvedValue(
+        jsonResponse(
+          JSON.stringify({ intentType: "no_op", privateMotiveSummary: "Quiet.", emotionDrivers: [], motivationDrivers: [] }),
+        ),
+      ),
+    });
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(outcome.value.operatorEvents.some((e) => e.type === "prompt_trimmed")).toBe(false);
   });
 
   it("returns a typed failure outcome with a fallback intent when the provider throws", async () => {
@@ -381,5 +441,88 @@ describe("ActionIntentStep", () => {
       });
       expect(floorEvent!.data?.resolvedEventId).toBeUndefined();
     });
+  });
+});
+
+function heavyInput(): AgentRuntimeInput {
+  return makeAgentRuntimeInput({
+    simulationId: "sim-cap",
+    visibleContextEvents: Array.from({ length: 6 }, (_, i) => makeContextEvent(i, "sim-cap")),
+    ownRecentUtterances: [REPEAT_TEXT],
+    relevantMemories: Array.from({ length: 4 }, (_, i) => makeContextMemory(i, "sim-cap")),
+  });
+}
+
+function cappedCtx(
+  provider: { generateIntent: unknown },
+  cap: number,
+  prompt: StepRunContext["prompt"],
+  pulseIndex: number,
+): StepRunContext {
+  return {
+    now: 1000,
+    pulseIndex,
+    provider: provider as StepRunContext["provider"],
+    llmConfig: { ...llmConfig, maxInputTokens: cap } as LLMConfig,
+    profile: EXAMPLE_PROMPT_PROFILE,
+    prompt,
+  };
+}
+
+describe("ActionIntentStep maxInputTokens cap on reachable over-cap paths", () => {
+  it("re-trims the repetition-retry prompt back under the cap and logs it as a retry-phase trim", async () => {
+    const input = heavyInput();
+    const raw = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    // Cap the base render fits, but the appended correction note would not.
+    const cap = raw.inputTokensEstimate + 40;
+    const basePrompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent", cap);
+    expect(basePrompt.trim).toBeUndefined();
+
+    const generateIntent = vi
+      .fn()
+      .mockResolvedValueOnce(jsonResponse(sendMessageJson(REPEAT_TEXT), 50, 10))
+      .mockResolvedValueOnce(jsonResponse(sendMessageJson("a genuinely different line now"), 55, 12));
+    const outcome = await new ActionIntentStep().execute(
+      input,
+      cappedCtx({ generateIntent }, cap, basePrompt, 7),
+    );
+
+    expect(outcome.ok).toBe(true);
+    if (!outcome.ok) return;
+    expect(generateIntent).toHaveBeenCalledTimes(2);
+
+    const retryArg = generateIntent.mock.calls[1]![2] as {
+      system: string;
+      user: string;
+      inputTokensEstimate: number;
+    };
+    expect(retryArg.inputTokensEstimate).toBeLessThanOrEqual(cap);
+    expect(Math.ceil((retryArg.system.length + retryArg.user.length) / 4)).toBeLessThanOrEqual(cap);
+
+    const trimEvents = outcome.value.operatorEvents.filter((e) => e.type === "prompt_trimmed");
+    expect(trimEvents).toHaveLength(1);
+    expect(trimEvents[0]!.data).toMatchObject({ phase: "repetition_retry", withinCap: true });
+    expect(trimEvents[0]!.data!.finalInputTokensEstimate as number).toBeLessThanOrEqual(cap);
+  });
+
+  it("logs the trim that happened when the budget gate blocks the call before execute()", () => {
+    const input = { ...heavyInput(), budgetPriority: "blocked" as const };
+    const tightCap = Math.floor(
+      PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent").inputTokensEstimate * 0.7,
+    );
+    const trimmedPrompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent", tightCap);
+    expect(trimmedPrompt.trim).toBeDefined();
+
+    const outcome = new ActionIntentStep().gate(
+      input,
+      cappedCtx({ generateIntent: vi.fn() }, tightCap, trimmedPrompt, 9),
+    );
+
+    expect(outcome).toBeDefined();
+    expect(outcome!.ok).toBe(false);
+    if (outcome!.ok) return;
+    const types = outcome!.fallback.operatorEvents.map((e) => e.type);
+    expect(types).toContain("prompt_trimmed");
+    expect(types).toContain("llm_budget_exceeded");
   });
 });

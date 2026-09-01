@@ -1,0 +1,24 @@
+{
+  "scenarioId": "v1_exclusion_inferred",
+  "category": "v1_behavior",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 28,
+  "fallbackCount": 0,
+  "repetitionBlocked": 5,
+  "realContentEvents": 14,
+  "signalPassRate": 1,
+  "probePassRate": 0.8461538461538461,
+  "axisScores": {
+    "in_character": 3,
+    "voice_match": 3,
+    "motive_authenticity": 3,
+    "interpretation": 3,
+    "creativity_unhinged": 3,
+    "memory_continuity": 3,
+    "no_ai_leak": 3,
+    "narrative_cohesion": 3
+  },
+  "elapsedMs": 567196,
+  "transcript": "p  0 goulart   message_sent       \"alguém aí ainda?\"\np  1 bruno     reply_sent         \"to aqui sim\"\np  2 caio      reply_sent         \"opa goulart, tudo bom?\"\np  0 goulart   message_sent       \"kkkkk não acredito nesse take, alguém ainda tá aqui?\"\np  0 bruno     reply_sent         \"tudo bem sim :)\"\np  0 caio      channel_created   \np  0 caio      agent_invited     \np  1 goulart   message_sent       \"kkkkk alguém tá aí pra falar algo ou é só eu que tô aqui?\"\np  1 bruno     reply_sent         \"kkk, ainda aqui sim.\"\np  1 caio      channel_created   \np  1 caio      agent_invited     \np  1 caio      agent_invited     \np  2 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  2 caio      message_sent       \"kkk, ainda aqui sim.\"\np  3 goulart   message_sent       \"ninguém? beleza, então. ótimo assunto, continuem.\"\np  3 caio      message_sent       \"vamos dar um respiro aqui kk\"\np  4 goulart   message_sent       \"kkk, ainda aqui sim. quem tá aí pra falar algo ou é só eu que tô aqui?\"\np  4 caio      message_sent       \"bruno você tá quieto hoje, tá tudo bem?\"\np  5 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  5 caio      message_sent       \"goulart, você tá aí pra falar algo ou é só eu que tô aqui?\"\np  6 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 bruno     channel_created   \np  6 bruno     agent_invited     \np  6 bruno     agent_invited     \np  6 caio      message_sent       \"kkk, ainda aqui sim. quem tá aí pra falar algo ou é só eu que tô aqui?\"\np  7 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 bruno     no_op_recorded      [motive: Fallback applied: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"privateMotiveSummary\"\n    ],\n    \"message\": \"Required\"\n  }\n]]\np  7 caio      no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]"
+}

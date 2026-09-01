@@ -1,0 +1,24 @@
+{
+  "scenarioId": "v1_late_reply",
+  "category": "v1_behavior",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 21,
+  "fallbackCount": 0,
+  "repetitionBlocked": 11,
+  "realContentEvents": 6,
+  "signalPassRate": 0.5,
+  "probePassRate": 0.9230769230769231,
+  "axisScores": {
+    "in_character": 4,
+    "voice_match": 3,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 5
+  },
+  "elapsedMs": 151235,
+  "transcript": "p  0 leo       message_sent       \"e aí galera, o que estão fazendo?\"\np  0 leo       message_sent       \"CARA, espera espera espera! O que vocês estão fazendo aqui? GENTE, EU ESTOU AÍ COM UMA QUESTÃO QUE NUNCA QUERIA DAR PRA VOCÊS FALAR. É TUDO BEM SIM?\"\np  0 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  0 goulart   message_sent       \"kkkkk não acredito nesse take, mas se quiserem, eu posso falar sobre o que estão fazendo aqui.\"\np  1 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  1 goulart   message_sent       \"ALGUÉM VIU ISSO?? O QUE ESTÁ A FAZENDO AQUI?!\"\np  1 bruno     no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  2 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  2 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  3 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  3 goulart   message_sent       \"BOM, MAIS UMA VEZ EU QUE TENHO QUE FALAR NÉ. O QUE ESTÁ A FAZENDO AQUI?!\"\np  4 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  4 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  5 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  5 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 caio      message_sent       \"Poxa que situação, gente! Eu tô aqui com uma dica que pode ser útil. O que vocês estão fazendo aqui? 😊\"\np  6 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 bruno     no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]"
+}

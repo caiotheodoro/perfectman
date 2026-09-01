@@ -1,0 +1,24 @@
+{
+  "scenarioId": "v1_recap_source",
+  "category": "v1_behavior",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 29,
+  "fallbackCount": 0,
+  "repetitionBlocked": 4,
+  "realContentEvents": 11,
+  "signalPassRate": 1,
+  "probePassRate": 0.6923076923076923,
+  "axisScores": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 4,
+    "narrative_cohesion": 4
+  },
+  "elapsedMs": 305968,
+  "transcript": "p  0 caio      message_sent       \"goulart, sua piada ontem foi boa demais\"\np  1 caio      message_sent       \"alguém mais viu aquele filme novo?\"\np  0 goulart   message_sent       \"kkkkk não acredito que caio tá falando isso... tava tão quieto aqui que eu até pensei que tinha morrido (tô nem aí)\"\np  0 caio      message_sent       \"vamos dar um respiro aqui kk, gente\"\np  0 mariana   channel_created   \np  0 mariana   agent_invited     \np  1 goulart   message_sent       \"kkkkk caio, você tá falando como se tivesse sido eu quem morreu... (tô nem aí)\"\np  1 mariana   message_sent       \"curioso. curioso mesmo.\"\np  1 bruno     channel_created   \np  1 bruno     agent_invited     \np  1 bruno     agent_invited     \np  2 goulart   reply_sent         \"kkkkk bruno, você criou um canal privado? tá me ignorando ou só querendo que eu te procure? (tô nem aí)\"\np  2 mariana   message_sent       \"entendo a intenção.\"\np  3 goulart   reply_sent         \"kkkkk bruno, você tá me ignorando de propósito ou só não viu meu último msg? (tô nem aí)\"\np  3 mariana   channel_created   \np  3 mariana   agent_invited     \np  4 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  4 mariana   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"privateMotiveSummary\"\n    ],\n    \"message\": \"Required\"\n  }\n]]\np  5 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  5 mariana   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"string\",\n    \"received\": \"undefined\",\n    \"path\": [\n      \"privateMotiveSummary\"\n    ],\n    \"message\": \"Required\"\n  }\n]]\np  6 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 caio      message_sent       \"kkkkk bruno, você tá me ignorando de propósito ou só não viu meu último msg? (tô nem aí)\"\np  6 mariana   message_sent       \"já vi isso antes.\"\np  6 bruno     no_op_recorded      [motive: Fallback applied: Channel target 'msOb6HF40ybRkDxhg2Gs9 🔒(private)' is not permitted for intent type 'reply_to_message']\np  7 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 mariana   channel_created   \np  7 mariana   agent_invited     \np  7 mariana   agent_invited     \np  7 bruno     no_op_recorded      [motive: Fallback applied: Channel target 'msOb6HF40ybRkDxhg2Gs9 🔒(private)' is not permitted for intent type 'reply_to_message']"
+}

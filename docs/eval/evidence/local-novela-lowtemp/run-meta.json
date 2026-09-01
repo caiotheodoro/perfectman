@@ -1,0 +1,16 @@
+{
+  "scenarioId": "novela_one_long_afternoon",
+  "temperature": 0.25,
+  "model": "qwen3:1.7b",
+  "pulses": 40,
+  "events": 201,
+  "fallbacks": 0,
+  "llmCalls": {
+    "goulart": 40,
+    "bruno": 33,
+    "caio": 40,
+    "mariana": 40,
+    "leo": 40
+  },
+  "elapsedMs": 1251281
+}
