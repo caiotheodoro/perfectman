@@ -26,7 +26,7 @@ import type {
 } from "@perfectman/shared";
 import type { GatewayRuntimeMetadata } from "../config/simulation-config.js";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
-import { payloadString, payloadStringArray } from "../simulation/payload-readers.js";
+import { payloadDisplayFields, payloadString, payloadStringArray } from "../simulation/payload-readers.js";
 import type { SerializedAgentState } from "../agent/agent-state-serializer.js";
 import type { AgentThinking, GoalPanel, PulseFrame, SimulationReplay } from "../html/replay-types.js";
 import { generateHtml } from "../html/snapshot-html-generator.js";
@@ -269,22 +269,13 @@ export class HtmlSnapshotGateway implements IDeliveryGateway {
 
   private eventRowFromVisibility(event: OperatorEvent): CommittedEvent {
     const data = event.data ?? {};
-    const content = payloadString(data, "content");
-    const channelName = payloadString(data, "channelName");
-    const emoji = payloadString(data, "emoji");
-    const targetEventId = payloadString(data, "targetEventId");
     return {
       id: payloadString(data, "eventId"),
       simulationId: event.simulationId,
       channelId: payloadString(data, "channelId"),
       actorId: payloadString(data, "actorId", event.agentId ?? ""),
       type: payloadString(data, "eventType") as CommittedEvent["type"],
-      payload: {
-        ...(content ? { content } : {}),
-        ...(channelName ? { channelName } : {}),
-        ...(emoji ? { emoji } : {}),
-        ...(targetEventId ? { targetEventId } : {}),
-      },
+      payload: payloadDisplayFields(data),
       sourceEventIds: [],
       emotionalSalience: "low",
       visibility: {
