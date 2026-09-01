@@ -18,47 +18,34 @@ export class DeliveryProjection {
     membership: ChannelMembership[],
     settings: SimulationSettings,
   ): Promise<void> {
-    const memberAgentIds = this.getMemberAgentIds(event.channelId, membership);
-
     switch (event.type) {
       case "message_sent": {
-        if (!this.visibleToAnyMember(event, memberAgentIds, channels, membership)) break;
-        const content = payloadString(event.payload, "content");
-        const msg: DeliveryMessage = {
+        await this.deliverIfVisible(event, channels, membership, () => ({
           kind: "message",
           agentId: event.actorId,
-          content,
+          content: payloadString(event.payload, "content"),
           salience: event.emotionalSalience,
-        };
-        await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
+        }));
         break;
       }
       case "reply_sent": {
-        if (!this.visibleToAnyMember(event, memberAgentIds, channels, membership)) break;
-        const content = payloadString(event.payload, "content");
-        const replyToEventId = payloadString(event.payload, "replyToEventId");
-        const msg: DeliveryMessage = {
+        await this.deliverIfVisible(event, channels, membership, () => ({
           kind: "reply",
           agentId: event.actorId,
-          content,
-          replyToEventId,
+          content: payloadString(event.payload, "content"),
+          replyToEventId: payloadString(event.payload, "replyToEventId"),
           salience: event.emotionalSalience,
-        };
-        await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
+        }));
         break;
       }
       case "reaction_sent": {
-        if (!this.visibleToAnyMember(event, memberAgentIds, channels, membership)) break;
-        const emoji = payloadString(event.payload, "emoji", "👍");
-        const targetEventId = payloadString(event.payload, "targetEventId");
-        const msg: DeliveryMessage = {
+        await this.deliverIfVisible(event, channels, membership, () => ({
           kind: "reaction",
           agentId: event.actorId,
-          emoji,
-          targetEventId,
+          emoji: payloadString(event.payload, "emoji", "👍"),
+          targetEventId: payloadString(event.payload, "targetEventId"),
           salience: event.emotionalSalience,
-        };
-        await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
+        }));
         break;
       }
       case "channel_created": {
@@ -83,6 +70,18 @@ export class DeliveryProjection {
       default:
         break;
     }
+  }
+
+  private async deliverIfVisible(
+    event: CommittedEvent,
+    channels: Channel[],
+    membership: ChannelMembership[],
+    buildMessage: () => DeliveryMessage,
+  ): Promise<void> {
+    const memberAgentIds = this.getMemberAgentIds(event.channelId, membership);
+    if (!this.visibleToAnyMember(event, memberAgentIds, channels, membership)) return;
+    const msg = buildMessage();
+    await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
   }
 
   private visibleToAnyMember(
