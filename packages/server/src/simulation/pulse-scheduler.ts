@@ -13,7 +13,7 @@ import type {
   EngineStepResult,
   EndingOffer,
 } from "@perfectman/shared";
-import { createSeededRng, ATTRACTOR_THRESHOLDS, STAGNATION_WINDOW_PULSES } from "@perfectman/shared";
+import { createSeededRng, STAGNATION_WINDOW_PULSES } from "@perfectman/shared";
 import { runEngineStep, computeStagnationMetrics, detectAttractorStates, filterVisibleEventsForAgent } from "@perfectman/engine";
 import type { IEventRepository, IAgentStateRepository } from "../persistence/repositories.js";
 import type { ChannelRegistry } from "./channel-registry.js";
@@ -29,7 +29,6 @@ import { serializeAgentState } from "../agent/agent-state-serializer.js";
 import type {
   ActionIntentOperatorData,
   AttractorDetectedOperatorData,
-  AttractorState,
   EventVisibilityData,
   StagnationMetricsOperatorData,
 } from "@perfectman/shared";
@@ -359,10 +358,7 @@ export class PulseScheduler {
       });
 
       for (const signature of detectAttractorStates(recentEvents, agentStatesMap)) {
-        // detectAttractorStates is typed string[] engine-side; keep only the
-        // known signatures so the operator payload holds a real AttractorState.
-        if (!(signature in ATTRACTOR_THRESHOLDS)) continue;
-        const attractorData: AttractorDetectedOperatorData = { signature: signature as AttractorState };
+        const attractorData: AttractorDetectedOperatorData = { signature };
         await this.emitOperatorEvent({
           type: "attractor_detected",
           simulationId: sim.id,
