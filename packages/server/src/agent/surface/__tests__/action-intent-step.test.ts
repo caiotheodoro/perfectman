@@ -1,9 +1,10 @@
 import { describe, it, expect, vi } from "vitest";
-import type { AgentRuntimeInput, CommittedEvent, LLMProviderResult } from "@perfectman/shared";
+import type { AgentRuntimeInput, LLMProviderResult } from "@perfectman/shared";
 import type { LLMConfig } from "../../llm/llm-config.js";
 import { ActionIntentStep } from "../action-intent-step.js";
 import { llmSurfaceRegistry } from "../index.js";
 import type { StepRunContext } from "../llm-step.js";
+import { makeEvent, replyIntentJson, reactIntentJson } from "../../../__tests__/fixtures.js";
 
 function jsonResponse(content: string, promptTokens = 50, completionTokens = 10): LLMProviderResult {
   return {
@@ -235,19 +236,7 @@ describe("ActionIntentStep", () => {
   });
 
   describe("reply/reaction target resolution", () => {
-    const trigger: CommittedEvent = {
-      id: "evt_trigger",
-      simulationId: "sim-1",
-      channelId: "general",
-      actorId: "agent-peer",
-      type: "message_sent",
-      payload: { content: "did you see this?" },
-      createdAt: 1,
-      pulseIndex: 2,
-      sourceEventIds: [],
-      emotionalSalience: "low",
-      visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "public" },
-    };
+    const trigger = makeEvent({ id: "evt_trigger", actorId: "agent-peer" });
 
     function targetInput(overrides: Partial<AgentRuntimeInput["perceptionPacket"]> = {}): AgentRuntimeInput {
       const base = makeInput({
@@ -271,21 +260,8 @@ describe("ActionIntentStep", () => {
       };
     }
 
-    function replyJson(replyToEventId: string): string {
-      return JSON.stringify({
-        intentType: "reply_to_message",
-        channelTarget: "general",
-        personTargets: ["agent-peer"],
-        visibleContent: "yes I did",
-        replyToEventId,
-        privateMotiveSummary: "engage",
-        emotionDrivers: [],
-        motivationDrivers: [],
-      });
-    }
-
     it("commits a valid-handle reply with the real event id and resolved actor, no retry", async () => {
-      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(replyJson("e1"))) };
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(replyIntentJson("e1"))) };
       const outcome = await runStep(provider, targetInput());
 
       expect(outcome.ok).toBe(true);
@@ -301,8 +277,8 @@ describe("ActionIntentStep", () => {
       const provider = {
         generateIntent: vi
           .fn()
-          .mockResolvedValueOnce(jsonResponse(replyJson("marianas-message")))
-          .mockResolvedValueOnce(jsonResponse(replyJson("e1"))),
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("marianas-message")))
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("e1"))),
       };
       const outcome = await runStep(provider, targetInput());
 
@@ -322,8 +298,8 @@ describe("ActionIntentStep", () => {
       const provider = {
         generateIntent: vi
           .fn()
-          .mockResolvedValueOnce(jsonResponse(replyJson("bogus-1")))
-          .mockResolvedValueOnce(jsonResponse(replyJson("bogus-2"))),
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("bogus-1")))
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("bogus-2"))),
       };
       const outcome = await runStep(provider, targetInput());
 
@@ -337,27 +313,39 @@ describe("ActionIntentStep", () => {
 
       const floorEvent = outcome.value.operatorEvents.find((e) => e.type === "target_resolution_floored");
       expect(floorEvent).toBeDefined();
-      expect(floorEvent!.detail).toContain("bogus-1");
+      // Telemetry describes the floored intent — the model's final answer —
+      // so the second bad handle is the one reported.
+      expect(floorEvent!.detail).toContain("bogus-2");
       expect(floorEvent!.data).toMatchObject({
         field: "replyToEventId",
-        badHandle: "bogus-1",
+        badHandle: "bogus-2",
         outcome: "triggering_or_visible_event",
         resolvedEventId: "evt_trigger",
       });
       expect(outcome.value.operatorEvents.some((e) => e.type === "llm_failure")).toBe(false);
     });
 
+    it("blocks the retry instead of committing when a corrected handle comes back with near-duplicate content", async () => {
+      const provider = {
+        generateIntent: vi
+          .fn()
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("marianas-message")))
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("e1", { visibleContent: REPEAT_TEXT }))),
+      };
+      const outcome = await runStep(provider, targetInput({ ownRecentUtterances: [REPEAT_TEXT] }));
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(provider.generateIntent).toHaveBeenCalledTimes(2);
+      expect(outcome.value.fallbackApplied).toBe(true);
+      expect(outcome.value.intent.intentType).toBe("no_op");
+      expect(outcome.value.intent.replyToEventId).toBeUndefined();
+      expect(outcome.value.operatorEvents.some((e) => e.type === "intent_blocked")).toBe(true);
+      expect(outcome.value.operatorEvents.some((e) => e.type === "llm_failure")).toBe(false);
+    });
+
     it("drops a reaction with an unresolvable target and no triggering event / visible message", async () => {
-      const reactJson = JSON.stringify({
-        intentType: "react",
-        channelTarget: "general",
-        emoji: "🔥",
-        targetEventId: "some-slug",
-        privateMotiveSummary: "approve",
-        emotionDrivers: [],
-        motivationDrivers: [],
-      });
-      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(reactJson)) };
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(reactIntentJson("some-slug"))) };
       const outcome = await runStep(
         provider,
         targetInput({ triggeringEvent: null, visibleContextEvents: [], eventHandles: {} }),
@@ -372,7 +360,7 @@ describe("ActionIntentStep", () => {
     });
 
     it("downgrades a reply to send_message when there is no event to target", async () => {
-      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(replyJson("nope"))) };
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(replyIntentJson("nope"))) };
       const outcome = await runStep(
         provider,
         targetInput({ triggeringEvent: null, visibleContextEvents: [], eventHandles: {} }),
