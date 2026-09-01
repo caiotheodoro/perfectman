@@ -65,10 +65,10 @@ presence_changed, intent_delayed, intent_blocked,
 memory_written, no_op_recorded,
 private_motive_summary, operator_warning, llm_failure,
 simulation_started, simulation_paused, simulation_resumed, simulation_stopped,
-recap_generated, reflection_completed, stagnation_detected
+reflection_completed, stagnation_detected
 ```
 
-23 total. Dev2 and Dev1 consume these — never invent new event types outside shared.
+22 total. Dev2 and Dev1 consume these — never invent new event types outside shared.
 
 ## Command / Intent / Event Split
 
@@ -327,15 +327,15 @@ type ResolvedIntent = {
 // Dev1 defines in packages/server/src/agent/agent-runtime.types.ts
 type AgentRuntimeContext = {
   pulseIndex: number;
-  now: number;                      // deterministic wall-clock ms supplied by scheduler
+  now: number;                      // simulated clock ms from the scheduler (pulse-relative, replay-deterministic — never wall clock)
 };
 
 type AgentRuntimeOutput = {
   intent: ActionIntent;             // validated intent or safe fallback
-  llmUsage: LlmUsage | null;        // null when no provider call happened
+  llmUsage: LlmUsage | null;        // null when no provider call happened; createdAt stays on the sim clock (rate-window bookkeeping only)
   latencyMs: number;
   fallbackApplied: boolean;
-  operatorEvents: OperatorEvent[];
+  operatorEvents: OperatorEvent[];  // createdAt = Date.now() epoch-ms at emission, never the sim clock
 };
 ```
 

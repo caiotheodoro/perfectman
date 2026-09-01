@@ -132,6 +132,27 @@ describe("IntentResolver", () => {
     expect(result.committedEvents[0]!.type).toBe("message_sent");
   });
 
+  it("carries a memory proposal's intensity onto the committed memory_written payload", async () => {
+    const intent = makeIntent({
+      intentType: "send_message",
+      channelTarget: CHANNEL_ID,
+      memoryWrites: [{
+        type: "emotional_residue",
+        subjectAgentIds: ["agent_2"],
+        summary: "that exchange stung",
+        emotionalTone: "hurt",
+        confidence: 0.8,
+        intensity: 0.9,
+        unresolved: true,
+      }],
+    });
+    const result = await resolver.resolve(intent, ctx());
+    const memoryEvent = result.committedEvents.find((e) => e.type === "memory_written");
+    expect(memoryEvent).toBeDefined();
+    expect(memoryEvent!.payload["intensity"]).toBe(0.9);
+    expect(memoryEvent!.payload["proposalIndex"]).toBe(0);
+  });
+
   it("blocks intent with missing motive summary", async () => {
     const intent = makeIntent({ privateMotiveSummary: "" });
     const result = await resolver.resolve(intent, ctx());
@@ -176,6 +197,34 @@ describe("IntentResolver", () => {
     const event = result.committedEvents[0]!;
     expect(event.type).toBe("message_sent");
     expect(event.actorId).toBe(AGENT_ID);
+  });
+
+  it("carries the resolved reply target's actor into the reply_sent payload", async () => {
+    const intent = makeIntent({
+      intentType: "reply_to_message",
+      channelTarget: CHANNEL_ID,
+      visibleContent: "responding",
+      replyToEventId: "evt_real_42",
+      replyToActorId: "agent_peer",
+    });
+    const result = await resolver.resolve(intent, ctx());
+    expect(result.outcome).toBe("committed");
+    const payload = result.committedEvents[0]!.payload as Record<string, unknown>;
+    expect(payload.replyToEventId).toBe("evt_real_42");
+    expect(payload.replyToActorId).toBe("agent_peer");
+  });
+
+  it("omits replyToActorId from the payload when it was not resolved", async () => {
+    const intent = makeIntent({
+      intentType: "reply_to_message",
+      channelTarget: CHANNEL_ID,
+      visibleContent: "responding",
+      replyToEventId: "evt_real_42",
+    });
+    const result = await resolver.resolve(intent, ctx());
+    const payload = result.committedEvents[0]!.payload as Record<string, unknown>;
+    expect(payload.replyToEventId).toBe("evt_real_42");
+    expect("replyToActorId" in payload).toBe(false);
   });
 });
 

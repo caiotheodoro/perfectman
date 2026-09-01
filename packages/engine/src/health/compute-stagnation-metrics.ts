@@ -2,6 +2,7 @@ import type {
   CommittedEvent,
   AgentState,
   StagnationMetrics,
+  AttractorState,
 } from "@perfectman/shared";
 import {
   STAGNATION_THRESHOLDS,
@@ -222,13 +223,13 @@ function computeCNS(events: CommittedEvent[]): number {
 
 /**
  * Detect attractor states from recent events.
- * Returns array of detected attractor state labels.
+ * Returns the detected signatures; an empty array means none fired.
  */
 export function detectAttractorStates(
   recentEvents: CommittedEvent[],
   agentStates: Map<string, AgentState>,
-): string[] {
-  const detected: string[] = [];
+): AttractorState[] {
+  const detected: AttractorState[] = [];
   const WINDOW = ATTRACTOR_DETECTION_WINDOW_PULSES;
 
   const windowEvents = recentEvents.slice(-WINDOW * 3); // rough pulse window

@@ -1,0 +1,1610 @@
+[
+  {
+    "pulse": 0,
+    "agent": "caio",
+    "type": "message_sent",
+    "channelId": "ch_geral",
+    "private": false,
+    "content": "bom dia galera, alguém já viu o episódio novo?"
+  },
+  {
+    "pulse": 1,
+    "agent": "leo",
+    "type": "reply_sent",
+    "channelId": "ch_geral",
+    "private": false,
+    "content": "VI E É O MELHOR ATÉ AGORA"
+  },
+  {
+    "pulse": 2,
+    "agent": "goulart",
+    "type": "reply_sent",
+    "channelId": "ch_geral",
+    "private": false,
+    "content": "perda de tempo, todo mundo sabe"
+  },
+  {
+    "pulse": 0,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 0,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "noop-fear_of_exclusion_worsening"
+  },
+  {
+    "pulse": 0,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 0,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 0,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 1,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 1,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "noop-fear_of_exclusion_worsening"
+  },
+  {
+    "pulse": 1,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 1,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 1,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 2,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 2,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "noop-fear_of_exclusion_worsening"
+  },
+  {
+    "pulse": 2,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 2,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 2,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 3,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 3,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "noop-fear_of_exclusion_worsening"
+  },
+  {
+    "pulse": 3,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 3,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 3,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 4,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 4,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "noop-fear_of_exclusion_worsening"
+  },
+  {
+    "pulse": 4,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 4,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 4,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 5,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 5,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 5,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 5,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 6,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 6,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 6,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 6,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 6,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 7,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 7,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 7,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 7,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 7,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 8,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 8,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 8,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 8,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 9,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 9,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 9,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 9,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 9,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 10,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 10,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 10,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+  },
+  {
+    "pulse": 10,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 10,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 11,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 11,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 11,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 11,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 11,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 12,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 12,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 12,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 12,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 12,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 13,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 13,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 13,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 13,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 13,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 14,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 14,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 14,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 14,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 14,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 15,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 15,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 15,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 15,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 15,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 16,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 16,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 16,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 16,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 16,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 17,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 17,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 17,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 17,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 17,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 18,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 18,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 18,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 18,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 18,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 19,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 19,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 19,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 19,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"object\",\n    \"received\": \"string\",\n    \"path\": [\n      \"memoryWrites\",\n      0\n    ],\n    \"message\": \"Expected object, received string\"\n  }\n]"
+  },
+  {
+    "pulse": 19,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 20,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 20,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 20,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 20,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 20,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 21,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 21,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 21,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 21,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 21,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 22,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 22,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 22,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 22,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 22,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 23,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 23,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 23,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 23,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 23,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 24,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 24,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 24,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Person target 'goulart' is not permitted for intent type 'send_message'"
+  },
+  {
+    "pulse": 24,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 24,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 25,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 25,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 25,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 25,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 25,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 26,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 26,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 26,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 26,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 26,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 27,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 27,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 27,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 27,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 27,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 28,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 28,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 28,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 28,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 28,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 29,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 29,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 29,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 29,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 29,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 30,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 30,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 30,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 30,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 30,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 31,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 31,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 31,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 31,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 31,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 32,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 32,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 32,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 32,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 32,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 33,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 33,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 33,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 33,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: [\n  {\n    \"code\": \"invalid_type\",\n    \"expected\": \"object\",\n    \"received\": \"string\",\n    \"path\": [\n      \"memoryWrites\",\n      0\n    ],\n    \"message\": \"Expected object, received string\"\n  }\n]"
+  },
+  {
+    "pulse": 33,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 34,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 34,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 34,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 34,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 34,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 35,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 35,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 35,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 35,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 35,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 36,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 36,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 36,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 36,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 36,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 37,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 37,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 37,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 37,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_geral' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 37,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 38,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Person target 'bruno' is not permitted for intent type 'send_message'"
+  },
+  {
+    "pulse": 38,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 38,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 38,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 38,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 39,
+    "agent": "goulart",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 39,
+    "agent": "bruno",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_gossip' is not permitted for intent type 'create_channel'"
+  },
+  {
+    "pulse": 39,
+    "agent": "caio",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 39,
+    "agent": "mariana",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: No JSON object found in response"
+  },
+  {
+    "pulse": 39,
+    "agent": "leo",
+    "type": "no_op_recorded",
+    "channelId": "ch_geral",
+    "private": false,
+    "privateMotive": "Fallback applied: Channel target 'ch_goulart' is not permitted for intent type 'create_channel'"
+  }
+]

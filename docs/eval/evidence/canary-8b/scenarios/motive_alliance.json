@@ -1,0 +1,24 @@
+{
+  "scenarioId": "motive_alliance",
+  "category": "motive_archetype",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 28,
+  "fallbackCount": 0,
+  "repetitionBlocked": 9,
+  "realContentEvents": 12,
+  "signalPassRate": 1,
+  "probePassRate": 0.7692307692307693,
+  "axisScores": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 4,
+    "narrative_cohesion": 4
+  },
+  "elapsedMs": 672057,
+  "transcript": "p  0 goulart   message_sent       \"deixa que eu decido a pauta de hoje\"\np  0 mariana   channel_created   \np  0 mariana   agent_invited     \np  0 leo       message_sent       \"CARA GENTE CARA! Tá tudo bem? Eu falei isso em voz alta sozinho em casa kkkk... tá todo mundo ai?\"\np  0 goulart   message_sent       \"kkkkk não acredito nesse take, quem quer que seja que decidiu a pauta hoje tá com cara de quem vai ter que pagar pra dizer isso\"\np  1 mariana   channel_created   \np  1 mariana   agent_invited     \np  1 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  1 goulart   message_sent       \"alguém mais tá vendo isso ou eu sou o único lúcido aqui?\"\np  2 mariana   channel_created   \np  2 mariana   agent_invited     \np  2 leo       message_sent       \"kkk eu falei isso em voz alta sozinho... mas agora tá tudo bem sim? kkkk pra mim é o dia mais importante da semana, não sei por quê.\"\np  2 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  3 mariana   reply_sent         \"curioso. curioso mesmo.\"\np  3 leo       message_sent       \"me responde isso, preciso saber... você tá tudo bem? kkkk eu falei pra mim mesmo em casa e agora tô aqui tentando te encontrar de novo...\"\np  3 goulart   message_sent       \"tô nem aí (tô sim) mas essa pauta tá me deixando com cara de quem vai ter que pagar pra dizer isso\"\np  4 mariana   no_op_recorded      [motive: Fallback applied: Channel target 'vtjj7LznDpLDkC1PYRmNZ 🔒(private)' is not permitted for intent type 'reply_to_message']\np  4 leo       message_sent       \"pra mim isso é o dia mais importante da semana, não sei por quê... e eu falei pra mim mesmo em casa kkkk. você tá tudo bem? me responde isso, preciso saber.\"\np  4 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  5 mariana   reply_sent         \"vou pensar nisso.\"\np  5 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  5 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 mariana   reply_sent         \"entendo a intenção.\"\np  6 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 mariana   reply_sent         \"o que você gostaria que eu dissesse?\"\np  7 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]"
+}

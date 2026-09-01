@@ -1,0 +1,24 @@
+{
+  "scenarioId": "v1_mention_reply",
+  "category": "v1_behavior",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 19,
+  "fallbackCount": 0,
+  "repetitionBlocked": 0,
+  "realContentEvents": 4,
+  "signalPassRate": 0.5,
+  "probePassRate": 0.9230769230769231,
+  "axisScores": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 2,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4
+  },
+  "elapsedMs": 50230,
+  "transcript": "p  0 goulart   message_sent       \"caio você viu aquele negócio que te mandei?\"\np  0 goulart   message_sent       \"kkkkk não acredito nesse take\"\np  0 bruno     no_op_recorded      [motive: watching, not joining]\np  0 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  1 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  1 bruno     no_op_recorded      [motive: watching, not joining]\np  2 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  2 bruno     no_op_recorded      [motive: watching, not joining]\np  3 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  3 bruno     no_op_recorded      [motive: watching, not joining]\np  4 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  4 bruno     no_op_recorded      [motive: watching, not joining]\np  5 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  5 bruno     no_op_recorded      [motive: watching, not joining]\np  6 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  6 bruno     no_op_recorded      [motive: watching, not joining]\np  6 caio      message_sent       \"poxa que situação... eu tô bem sim!! (só um pouquinho cansado)\"\np  7 goulart   message_sent       \"kkkkk não acredito nesse take (tô sim) - mas agora que você tá aqui, vamos falar sobre o que aconteceu? O que achou da situação?\"\np  7 bruno     no_op_recorded      [motive: watching, not joining]"
+}

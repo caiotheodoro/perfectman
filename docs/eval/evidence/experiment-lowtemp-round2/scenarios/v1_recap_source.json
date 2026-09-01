@@ -1,0 +1,24 @@
+{
+  "scenarioId": "v1_recap_source",
+  "category": "v1_behavior",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 23,
+  "fallbackCount": 0,
+  "repetitionBlocked": 6,
+  "realContentEvents": 10,
+  "signalPassRate": 0.6666666666666666,
+  "probePassRate": 0.8461538461538461,
+  "axisScores": {
+    "in_character": 3,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 3,
+    "no_ai_leak": 4,
+    "narrative_cohesion": 3
+  },
+  "elapsedMs": 155124,
+  "transcript": "p  0 caio      message_sent       \"goulart, sua piada ontem foi boa demais\"\np  1 caio      message_sent       \"alguém mais viu aquele filme novo?\"\np  0 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  0 caio      message_sent       \"gente, o que vocês fizeram juntos foi muito legal, sério\"\np  0 mariana   message_sent       \"Talvez.\"\np  1 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  1 mariana   message_sent       \"Já vi isso antes.\"\np  1 bruno     message_sent       \"hm\"\np  2 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  2 mariana   message_sent       \"O que vocês fizeram hoje? Talvez tenham algo interessante para compartilhar.\"\np  3 goulart   message_sent       \"kkkkk não acredito nesse take, mas o que é melhor que ser o único lúcido aqui? 😂\"\np  3 mariana   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  4 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  4 mariana   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  5 goulart   message_sent       \"ALGUÉM VIU ISSO?? 😂\"\np  5 mariana   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 goulart   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 caio      message_sent       \"kkkkk não acredito nesse take, mas o que é melhor que ser o único lúcido aqui? 😂\"\np  6 mariana   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  6 bruno     no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  7 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  7 mariana   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  7 bruno     no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]"
+}

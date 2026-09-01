@@ -52,6 +52,62 @@ describe("IntentParser", () => {
     expect(result.intent.privateMotiveSummary).toBe("Initiate contact");
   });
 
+  it("carries a memory-write proposal's intensity through into the ActionIntent", () => {
+    const rawText = JSON.stringify({
+      intentType: "send_message",
+      channelTarget: "general-id",
+      personTargets: [],
+      visibleContent: "Hey there!",
+      privateMotiveSummary: "Initiate contact",
+      emotionDrivers: [],
+      motivationDrivers: [],
+      memoryWrites: [
+        {
+          type: "emotional_residue",
+          subjectAgentIds: ["agent-peer"],
+          summary: "that exchange stung",
+          emotionalTone: "hurt",
+          confidence: 0.8,
+          intensity: 0.9,
+          unresolved: true,
+        },
+      ],
+    });
+
+    const result = IntentParser.parse(rawText, actorId, availableActions);
+
+    expect(result.fallbackApplied).toBe(false);
+    expect(result.intent.memoryWrites).toHaveLength(1);
+    expect(result.intent.memoryWrites[0]?.intensity).toBe(0.9);
+  });
+
+  it("applies safe fallback when a memory-write proposal's intensity is out of range", () => {
+    const rawText = JSON.stringify({
+      intentType: "send_message",
+      channelTarget: "general-id",
+      personTargets: [],
+      visibleContent: "Hey there!",
+      privateMotiveSummary: "Initiate contact",
+      emotionDrivers: [],
+      motivationDrivers: [],
+      memoryWrites: [
+        {
+          type: "episodic",
+          subjectAgentIds: [],
+          summary: "x",
+          emotionalTone: "neutral",
+          confidence: 0.5,
+          intensity: 1.5,
+          unresolved: false,
+        },
+      ],
+    });
+
+    const result = IntentParser.parse(rawText, actorId, availableActions);
+
+    expect(result.fallbackApplied).toBe(true);
+  });
+
   it("should successfully parse fenced markdown codeblock JSON", () => {
     const rawText = `
 Here is my response:

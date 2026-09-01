@@ -349,7 +349,7 @@ type EventType =
   | 'memory_written' | 'no_op_recorded'
   | 'private_motive_summary' | 'operator_warning' | 'llm_failure'
   | 'simulation_started' | 'simulation_paused' | 'simulation_resumed' | 'simulation_stopped'
-  | 'recap_generated' | 'reflection_completed' | 'stagnation_detected';
+  | 'reflection_completed' | 'stagnation_detected';
 
 type EmotionalSalience = 'low' | 'medium' | 'high' | 'critical';
 

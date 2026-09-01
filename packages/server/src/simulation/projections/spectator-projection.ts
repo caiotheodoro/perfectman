@@ -20,9 +20,14 @@ function sanitize(event: CommittedEvent): Omit<SpectatorEvent, "narrativeHint"> 
   };
 }
 
+const MOTIVE_SUMMARY_LIMIT = 80;
+const MOTIVE_SUMMARY_ELLIPSIS = "...";
+
 function sanitizeMotiveSummary(summary: string): string {
-  // Truncate private details — keep to a safe length
-  return summary.slice(0, 80);
+  if (summary.length <= MOTIVE_SUMMARY_LIMIT) return summary;
+  const capped = summary.slice(0, MOTIVE_SUMMARY_LIMIT - MOTIVE_SUMMARY_ELLIPSIS.length);
+  const wordSafe = capped.replace(/\s+\S*$/, "");
+  return `${(wordSafe || capped).trimEnd()}${MOTIVE_SUMMARY_ELLIPSIS}`;
 }
 
 function summarizeDelay(event: CommittedEvent): string {
@@ -65,8 +70,13 @@ export class SpectatorProjection {
     switch (event.type) {
       case "message_sent":
       case "reply_sent":
-      case "reaction_sent":
         return { ...sanitize(event), narrativeHint: null };
+      case "reaction_sent":
+        return {
+          ...sanitize(event),
+          visibleContent: payloadString(event.payload, "emoji"),
+          narrativeHint: null,
+        };
       case "no_op_recorded":
         return {
           type: "spectator_hint",

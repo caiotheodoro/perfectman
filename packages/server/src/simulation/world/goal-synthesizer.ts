@@ -85,8 +85,10 @@ export class LLMGoalSynthesizer implements GoalSynthesizer {
 
   /**
    * Package-local per-review context (not on the GoalSynthesizer interface):
-   * the evaluator sets it before each synthesize so the operator-event
-   * literals and usage records carry the review's pulse/time.
+   * the evaluator sets it before each synthesize. `pulseIndex` tags the
+   * operator-event literals and usage records; `now` (sim time) is only the
+   * `createdAt` of usage records. Operator-event `createdAt` is stamped with
+   * `Date.now()` at emission, so it carries wall-clock time, not `now`.
    */
   setReviewContext(pulseIndex: number, now: number): void {
     this.reviewContext = { pulseIndex, now };
@@ -150,7 +152,7 @@ export class LLMGoalSynthesizer implements GoalSynthesizer {
             agentId: input.agentId,
             pulseIndex: this.reviewContext.pulseIndex,
             detail: `Goal-layer LLM call failed for agent ${input.agentId}: ${errorMessage(err)}`,
-            createdAt: this.reviewContext.now,
+            createdAt: Date.now(),
           },
         ],
       };

@@ -51,8 +51,13 @@ export const STAGNATION_WEIGHTS: Readonly<StagnationWeights> = {
 /** Intervention cooldown — minimum pulses between stagnation interventions */
 export const STAGNATION_INTERVENTION_COOLDOWN_PULSES = 20;
 
-/** Window size for computing metrics */
-export const STAGNATION_WINDOW_PULSES = 30;
+/**
+ * Rolling window (in pulses) of committed events fed to the stagnation
+ * detectors — `computeStagnationMetrics` and `detectAttractorStates`. Bounds
+ * the input so early-run activity cannot mask a room that has since gone flat.
+ * Exact N deferred to tuning (decision #125).
+ */
+export const STAGNATION_WINDOW_PULSES = 40;
 
 /**
  * 6 attractor state signatures (behavioral patterns indicating stagnation).

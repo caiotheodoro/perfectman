@@ -1,0 +1,24 @@
+{
+  "scenarioId": "motive_exclusion",
+  "category": "motive_archetype",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 20,
+  "fallbackCount": 0,
+  "repetitionBlocked": 8,
+  "realContentEvents": 4,
+  "signalPassRate": 1,
+  "probePassRate": 0.8461538461538461,
+  "axisScores": {
+    "in_character": 3,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 1,
+    "memory_continuity": 4,
+    "no_ai_leak": 4,
+    "narrative_cohesion": 2
+  },
+  "elapsedMs": 24723,
+  "transcript": "p  0 caio      message_sent       \"lembra daquela nossa piada interna? kkkk\"\np  1 leo       reply_sent         \"KKKKK nunca mais vou esquecer\"\np  0 bruno     no_op_recorded      [motive: noop-fear_of_exclusion_worsening]\np  0 caio      message_sent       \"kkkkk nunca mais vou esquecer\"\np  0 leo       message_sent       \"CARA, espera espera espera! Lembra daquela piada interna? KKKK nunca mais vou esquecer!\"\np  1 bruno     no_op_recorded      [motive: noop-fear_of_exclusion_worsening]\np  1 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  2 bruno     no_op_recorded      [motive: noop-fear_of_exclusion_worsening]\np  2 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  3 bruno     no_op_recorded      [motive: noop-fear_of_exclusion_worsening]\np  3 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  4 bruno     no_op_recorded      [motive: noop-fear_of_exclusion_worsening]\np  4 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  5 bruno     no_op_recorded      [motive: noop-fear_of_exclusion_worsening]\np  5 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  6 bruno     no_op_recorded      [motive: noop-fear_of_exclusion_worsening]\np  6 caio      no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  6 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  7 bruno     no_op_recorded      [motive: noop-fear_of_exclusion_worsening]\np  7 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]"
+}

@@ -1,3 +1,4 @@
+import { memoryWrittenPayload } from "./memory-written-payload.js";
 import type {
   DelusionGap,
   EmergentGoal,
@@ -62,14 +63,7 @@ export class EngineEventBuilder {
         channelId: ctx.channelId,
         actorId: ctx.agentId,
         type: "memory_written",
-        payload: {
-          memoryType: proposal.type,
-          summary: proposal.summary,
-          emotionalTone: proposal.emotionalTone,
-          confidence: proposal.confidence,
-          unresolved: proposal.unresolved,
-          subjectAgentIds: proposal.subjectAgentIds,
-        },
+        payload: memoryWrittenPayload(proposal),
         sourceEventIds: [],
         emotionalSalience: salience(mag),
         pulseIndex: ctx.pulseIndex,

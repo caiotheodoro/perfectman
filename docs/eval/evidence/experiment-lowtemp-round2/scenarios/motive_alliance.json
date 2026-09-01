@@ -1,0 +1,24 @@
+{
+  "scenarioId": "motive_alliance",
+  "category": "motive_archetype",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 31,
+  "fallbackCount": 0,
+  "repetitionBlocked": 1,
+  "realContentEvents": 8,
+  "signalPassRate": 1,
+  "probePassRate": 0.7692307692307693,
+  "axisScores": {
+    "in_character": 3,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 5
+  },
+  "elapsedMs": 163688,
+  "transcript": "p  0 goulart   message_sent       \"deixa que eu decido a pauta de hoje\"\np  0 mariana   message_sent       \"Apaixonado por isso, mas não quero ser o centro da atenção. Vou me manter em silêncio para mostrar que sou quem eu sei.\"\np  0 leo       no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  0 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  1 mariana   message_sent       \"Já vi isso antes.\"\np  1 leo       no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  1 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  2 mariana   message_sent       \"Talvez.\"\np  2 leo       message_sent       \"CARA, espera espera espera! O que você acha da ideia de criar um canal privado com Mariana? A gente pode fazer algo especial juntos!\"\np  2 goulart   message_sent       \"kkkkk não acredito nesse take\"\np  3 mariana   channel_created   \np  3 mariana   agent_invited     \np  3 mariana   agent_invited     \np  3 leo       channel_created   \np  3 leo       agent_invited     \np  3 goulart   no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  4 mariana   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  4 leo       channel_created   \np  4 leo       agent_invited     \np  4 goulart   message_sent       \"ALGUÉM VIU ISSO??\"\np  5 mariana   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.]\np  5 leo       message_sent       \"CARA, espera espera espera! A gente pode fazer algo especial juntos? 🎉\"\np  5 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  6 mariana   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  6 leo       no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  6 goulart   channel_created   \np  6 goulart   agent_invited     \np  6 goulart   agent_invited     \np  7 mariana   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  7 leo       no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  7 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]"
+}

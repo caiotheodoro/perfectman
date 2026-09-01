@@ -1,6 +1,7 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { DeliveryProjection } from "../projections/delivery-projection.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
+import { StdoutDeliveryGateway } from "../../delivery/stdout-delivery-gateway.js";
 import type { CommittedEvent, Channel, ChannelMembership, SimulationSettings } from "@perfectman/shared";
 
 const SIM_ID = "sim_1";
@@ -87,14 +88,15 @@ describe("DeliveryProjection", () => {
     projection = new DeliveryProjection(gateway);
   });
 
-  it("sends a message_sent event to all channel members", async () => {
+  it("emits one agent_message for a message_sent event regardless of member count", async () => {
     const event = makeCommittedEvent({ type: "message_sent" });
     await projection.project(event, [PUBLIC_CHANNEL, PRIVATE_CHANNEL], MEMBERSHIPS, SETTINGS);
-    expect(gateway.agentMessages.length).toBeGreaterThanOrEqual(1);
+    expect(gateway.agentMessages).toHaveLength(1);
     expect(gateway.agentMessages[0]!.message.kind).toBe("message");
+    expect(gateway.agentMessages[0]!.channelId).toBe(PUB_CHANNEL_ID);
   });
 
-  it("private channel event does NOT reach non-member agent", async () => {
+  it("emits once when a visibleToAgents-restricted event is visible to a channel member", async () => {
     const event = makeCommittedEvent({
       channelId: PRIV_CHANNEL_ID,
       type: "message_sent",
@@ -107,18 +109,24 @@ describe("DeliveryProjection", () => {
     });
     gateway.reset();
     await projection.project(event, [PUBLIC_CHANNEL, PRIVATE_CHANNEL], MEMBERSHIPS, SETTINGS);
-    // Delivery only fans out to members of PRIV_CHANNEL (only AGENT_1)
-    // AGENT_2 is not in PRIV_CHANNEL membership so it should never appear as recipient
-    // Since DeliveryProjection uses getMemberAgentIds which filters by membership,
-    // agent_2 will never be iterated over for this private channel event.
-    // The gateway receives at most 1 message (for agent_1), never for agent_2.
-    expect(gateway.agentMessages.length).toBeLessThanOrEqual(1);
-    // All messages must be to the private channel (agent_2 is not a member)
-    // agent_2's absence from PRIV_CHANNEL membership is the invariant
-    const membersOfPrivate = MEMBERSHIPS
-      .filter(m => m.channelId === PRIV_CHANNEL_ID && !m.leftAt)
-      .map(m => m.agentId);
-    expect(membersOfPrivate).not.toContain(AGENT_2);
+    expect(gateway.agentMessages).toHaveLength(1);
+    expect(gateway.agentMessages[0]!.channelId).toBe(PRIV_CHANNEL_ID);
+  });
+
+  it("does not emit when a visibleToAgents-restricted event names only a non-member", async () => {
+    const event = makeCommittedEvent({
+      channelId: PRIV_CHANNEL_ID,
+      type: "message_sent",
+      visibility: {
+        visibleToAgents: [AGENT_2],
+        visibleToSpectators: false,
+        visibleToOperators: true,
+        visibilityReason: "private",
+      },
+    });
+    gateway.reset();
+    await projection.project(event, [PUBLIC_CHANNEL, PRIVATE_CHANNEL], MEMBERSHIPS, SETTINGS);
+    expect(gateway.agentMessages).toHaveLength(0);
   });
 
   it("reply_sent produces a reply delivery message", async () => {
@@ -155,8 +163,76 @@ describe("DeliveryProjection", () => {
       projection.project(event, [PUBLIC_CHANNEL, PRIVATE_CHANNEL], MEMBERSHIPS, SETTINGS),
     ).resolves.toBeUndefined();
 
-    expect(gateway.operatorEvents).toHaveLength(MEMBERSHIPS.filter(m => m.channelId === PUB_CHANNEL_ID).length);
+    expect(gateway.operatorEvents).toHaveLength(1);
     expect(gateway.operatorEvents[0]?.type).toBe("scheduler_error");
     expect(gateway.operatorEvents[0]?.detail).toContain("Delivery gateway failed");
+  });
+});
+
+describe("DeliveryProjection — one emission per committed message", () => {
+  const AGENT_3 = "agent_3";
+  const AGENT_4 = "agent_4";
+  const BIG_CHANNEL_ID = "ch_big";
+  const NOW = 1_700_000_000_000;
+
+  let gateway: MockDeliveryGateway;
+  let projection: DeliveryProjection;
+
+  beforeEach(() => {
+    gateway = new MockDeliveryGateway();
+    projection = new DeliveryProjection(gateway);
+  });
+
+  const bigChannel: Channel = {
+    ...PUBLIC_CHANNEL,
+    id: BIG_CHANNEL_ID,
+    memberAgentIds: [AGENT_1, AGENT_2, AGENT_3, AGENT_4],
+    createdAt: NOW,
+    updatedAt: NOW,
+  };
+  const bigMembership: ChannelMembership[] = [AGENT_1, AGENT_2, AGENT_3, AGENT_4].map(agentId => ({
+    channelId: BIG_CHANNEL_ID,
+    agentId,
+    joinedAt: NOW,
+  }));
+  const bigChannelEvent = (type: CommittedEvent["type"]): CommittedEvent =>
+    makeCommittedEvent({
+      channelId: BIG_CHANNEL_ID,
+      type,
+      payload: { content: "hello", replyToEventId: "evt_0", emoji: "👍", targetEventId: "evt_0" },
+    });
+
+  it("a message to a 4-member channel produces exactly one sendAgentMessage call", async () => {
+    await projection.project(bigChannelEvent("message_sent"), [bigChannel], bigMembership, SETTINGS);
+    expect(gateway.agentMessages).toHaveLength(1);
+  });
+
+  it("reply and reaction events each emit exactly once on an N-member channel", async () => {
+    await projection.project(bigChannelEvent("reply_sent"), [bigChannel], bigMembership, SETTINGS);
+    await projection.project(bigChannelEvent("reaction_sent"), [bigChannel], bigMembership, SETTINGS);
+    expect(gateway.agentMessages).toHaveLength(2);
+    expect(gateway.agentMessages.map(m => m.message.kind)).toEqual(["reply", "reaction"]);
+  });
+
+  it("StdoutDeliveryGateway writes one agent_message line for an N-member channel", async () => {
+    const writes: string[] = [];
+    const spy = vi.spyOn(process.stdout, "write").mockImplementation((chunk: string | Uint8Array) => {
+      writes.push(chunk.toString());
+      return true;
+    });
+    try {
+      projection = new DeliveryProjection(new StdoutDeliveryGateway());
+      await projection.project(bigChannelEvent("message_sent"), [bigChannel], bigMembership, SETTINGS);
+    } finally {
+      spy.mockRestore();
+    }
+    const agentMessageLines = writes.filter(line => {
+      try {
+        return (JSON.parse(line) as { type: string }).type === "agent_message";
+      } catch {
+        return false;
+      }
+    });
+    expect(agentMessageLines).toHaveLength(1);
   });
 });

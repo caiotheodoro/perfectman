@@ -14,6 +14,7 @@ import {
   makeContextEvent,
   makeContextMemory,
 } from "../../__tests__/agent-input-test-helpers.js";
+import { makeEvent, replyIntentJson, reactIntentJson } from "../../../__tests__/fixtures.js";
 
 function jsonResponse(content: string, promptTokens = 50, completionTokens = 10): LLMProviderResult {
   return {
@@ -47,6 +48,7 @@ function makeInput(overrides: Partial<AgentRuntimeInput> = {}): AgentRuntimeInpu
       agentId: "agent-a",
       triggeringEvent: null,
       visibleContextEvents: [],
+      eventHandles: {},
       ownRecentUtterances: [REPEAT_TEXT],
       involvedPeople: [],
       relevantChannels: ["general"],
@@ -96,6 +98,7 @@ const prompt = {
 
 function runStep(
   provider: { generateIntent: unknown },
+  input: AgentRuntimeInput = makeInput(),
   promptOverride: StepRunContext["prompt"] = prompt,
 ): Promise<ReturnType<ActionIntentStep["execute"]>> {
   const step = new ActionIntentStep();
@@ -107,7 +110,7 @@ function runStep(
     profile: {} as StepRunContext["profile"],
     prompt: promptOverride,
   };
-  return step.execute(makeInput(), ctx);
+  return step.execute(input, ctx);
 }
 
 describe("ActionIntentStep", () => {
@@ -168,6 +171,7 @@ describe("ActionIntentStep", () => {
           ),
         ),
       },
+      makeInput(),
       trimmedPrompt,
     );
 
@@ -289,6 +293,154 @@ describe("ActionIntentStep", () => {
     const failure = outcome.value.operatorEvents.find((e) => e.type === "llm_failure");
     expect(failure).toBeDefined();
     expect(outcome.value.operatorEvents.some((e) => e.type === "intent_blocked")).toBe(false);
+  });
+
+  describe("reply/reaction target resolution", () => {
+    const trigger = makeEvent({ id: "evt_trigger", actorId: "agent-peer" });
+
+    function targetInput(overrides: Partial<AgentRuntimeInput["perceptionPacket"]> = {}): AgentRuntimeInput {
+      const base = makeInput({
+        availableActions: [
+          { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
+          { intentType: "send_message", channelTargets: ["general"], personTargets: [], blocked: false },
+          { intentType: "reply_to_message", channelTargets: ["general"], personTargets: ["agent-peer"], blocked: false },
+          { intentType: "react", channelTargets: ["general"], personTargets: [], blocked: false },
+        ],
+      });
+      return {
+        ...base,
+        perceptionPacket: {
+          ...base.perceptionPacket,
+          ownRecentUtterances: [],
+          triggeringEvent: trigger,
+          visibleContextEvents: [trigger],
+          eventHandles: { e1: "evt_trigger" },
+          ...overrides,
+        },
+      };
+    }
+
+    it("commits a valid-handle reply with the real event id and resolved actor, no retry", async () => {
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(replyIntentJson("e1"))) };
+      const outcome = await runStep(provider, targetInput());
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.value.fallbackApplied).toBe(false);
+      expect(outcome.value.intent.intentType).toBe("reply_to_message");
+      expect(outcome.value.intent.replyToEventId).toBe("evt_trigger");
+      expect(outcome.value.intent.replyToActorId).toBe("agent-peer");
+      expect(provider.generateIntent).toHaveBeenCalledTimes(1);
+    });
+
+    it("retries exactly once with a correction note naming the bad handle, then accepts a corrected handle", async () => {
+      const provider = {
+        generateIntent: vi
+          .fn()
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("marianas-message")))
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("e1"))),
+      };
+      const outcome = await runStep(provider, targetInput());
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(provider.generateIntent).toHaveBeenCalledTimes(2);
+      const retryPrompt = provider.generateIntent.mock.calls[1]![2] as { system: string };
+      expect(retryPrompt.system).toContain("marianas-message");
+      expect(retryPrompt.system).toContain("e1");
+      expect(retryPrompt.system).toContain("send_message");
+      expect(outcome.value.fallbackApplied).toBe(false);
+      expect(outcome.value.intent.replyToEventId).toBe("evt_trigger");
+      expect(outcome.value.intent.replyToActorId).toBe("agent-peer");
+    });
+
+    it("falls to the triggering-event floor after one failed retry (no empty target committed)", async () => {
+      const provider = {
+        generateIntent: vi
+          .fn()
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("bogus-1")))
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("bogus-2"))),
+      };
+      const outcome = await runStep(provider, targetInput());
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(provider.generateIntent).toHaveBeenCalledTimes(2);
+      expect(outcome.value.intent.intentType).toBe("reply_to_message");
+      expect(outcome.value.intent.replyToEventId).toBe("evt_trigger");
+      expect(outcome.value.intent.replyToActorId).toBe("agent-peer");
+      expect(outcome.value.fallbackApplied).toBe(false);
+
+      const floorEvent = outcome.value.operatorEvents.find((e) => e.type === "target_resolution_floored");
+      expect(floorEvent).toBeDefined();
+      // Telemetry describes the floored intent — the model's final answer —
+      // so the second bad handle is the one reported.
+      expect(floorEvent!.detail).toContain("bogus-2");
+      expect(floorEvent!.data).toMatchObject({
+        field: "replyToEventId",
+        badHandle: "bogus-2",
+        outcome: "triggering_or_visible_event",
+        resolvedEventId: "evt_trigger",
+      });
+      expect(outcome.value.operatorEvents.some((e) => e.type === "llm_failure")).toBe(false);
+    });
+
+    it("blocks the retry instead of committing when a corrected handle comes back with near-duplicate content", async () => {
+      const provider = {
+        generateIntent: vi
+          .fn()
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("marianas-message")))
+          .mockResolvedValueOnce(jsonResponse(replyIntentJson("e1", { visibleContent: REPEAT_TEXT }))),
+      };
+      const outcome = await runStep(provider, targetInput({ ownRecentUtterances: [REPEAT_TEXT] }));
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(provider.generateIntent).toHaveBeenCalledTimes(2);
+      expect(outcome.value.fallbackApplied).toBe(true);
+      expect(outcome.value.intent.intentType).toBe("no_op");
+      expect(outcome.value.intent.replyToEventId).toBeUndefined();
+      expect(outcome.value.operatorEvents.some((e) => e.type === "intent_blocked")).toBe(true);
+      expect(outcome.value.operatorEvents.some((e) => e.type === "llm_failure")).toBe(false);
+    });
+
+    it("drops a reaction with an unresolvable target and no triggering event / visible message", async () => {
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(reactIntentJson("some-slug"))) };
+      const outcome = await runStep(
+        provider,
+        targetInput({ triggeringEvent: null, visibleContextEvents: [], eventHandles: {} }),
+      );
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.value.intent.intentType).toBe("no_op");
+      expect(outcome.value.intent.targetEventId).toBeUndefined();
+      expect(outcome.value.fallbackApplied).toBe(true);
+      expect(outcome.value.operatorEvents.some((e) => e.type === "llm_failure")).toBe(true);
+    });
+
+    it("downgrades a reply to send_message when there is no event to target", async () => {
+      const provider = { generateIntent: vi.fn().mockResolvedValue(jsonResponse(replyIntentJson("nope"))) };
+      const outcome = await runStep(
+        provider,
+        targetInput({ triggeringEvent: null, visibleContextEvents: [], eventHandles: {} }),
+      );
+
+      expect(outcome.ok).toBe(true);
+      if (!outcome.ok) return;
+      expect(outcome.value.intent.intentType).toBe("send_message");
+      expect(outcome.value.intent.replyToEventId).toBeUndefined();
+      expect(outcome.value.intent.visibleContent).toBe("yes I did");
+
+      const floorEvent = outcome.value.operatorEvents.find((e) => e.type === "target_resolution_floored");
+      expect(floorEvent).toBeDefined();
+      expect(floorEvent!.data).toMatchObject({
+        field: "replyToEventId",
+        badHandle: "nope",
+        outcome: "downgraded_to_send_message",
+      });
+      expect(floorEvent!.data?.resolvedEventId).toBeUndefined();
+    });
   });
 });
 

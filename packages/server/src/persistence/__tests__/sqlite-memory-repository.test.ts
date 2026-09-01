@@ -50,12 +50,13 @@ describe("SqliteMemoryRepository", () => {
     const memory = makeMemory("m1", "a1", "sim1");
     await repo.upsert(memory);
 
-    const updated: Memory = { ...memory, confidence: 0.5, unresolved: true, summary: "updated" };
+    const updated: Memory = { ...memory, confidence: 0.5, intensity: 0.7, unresolved: true, summary: "updated" };
     await repo.upsert(updated);
 
     const memories = await repo.getByAgent("sim1", "a1");
     expect(memories).toHaveLength(1);
     expect(memories[0]?.confidence).toBeCloseTo(0.5);
+    expect(memories[0]?.intensity).toBeCloseTo(0.7);
     expect(memories[0]?.unresolved).toBe(true);
     expect(memories[0]?.summary).toBe("updated");
   });

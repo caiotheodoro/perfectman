@@ -2,6 +2,7 @@ import type {
   ActionIntent,
   CommittedEvent,
   SimulationEvent,
+  EventPayload,
   AgentState,
   Channel,
   ChannelMembership,
@@ -15,6 +16,7 @@ import type {
 } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 import { validateIntentPure } from "@perfectman/engine";
+import { memoryWrittenPayload } from "./memory-written-payload.js";
 import type { RateLimitGate } from "./rate-limit-gate.js";
 import type { ChannelRegistry } from "./channel-registry.js";
 
@@ -206,12 +208,18 @@ function buildReplyEvent(
   const channelId = intent.channelTarget ?? ctx.channelId;
   const replyToEventId = intent.replyToEventId;
   const vis = channelVisibility(channelId, ctx);
+  const payload: EventPayload = {
+    content: intent.visibleContent ?? "",
+    replyToEventId: replyToEventId ?? "",
+    ...vis.payload,
+  };
+  if (intent.replyToActorId) payload["replyToActorId"] = intent.replyToActorId;
   return {
     simulationId: ctx.simulationId,
     channelId,
     actorId: intent.actorId,
     type: "reply_sent",
-    payload: { content: intent.visibleContent ?? "", replyToEventId: replyToEventId ?? "", ...vis.payload },
+    payload,
     sourceIntentId: intent.id,
     sourceEventIds: replyToEventId ? [replyToEventId] : [],
     emotionalSalience: salience,
@@ -354,6 +362,7 @@ function deriveFallbackIntent(
   }
   if (fallbackType === "reply_to_message") {
     derived.replyToEventId = primary.replyToEventId;
+    derived.replyToActorId = primary.replyToActorId;
   }
   if (fallbackType === "react") {
     derived.channelTarget = primary.channelTarget;
@@ -558,15 +567,7 @@ export class IntentResolver {
       channelId: ctx.channelId,
       actorId: intent.actorId,
       type: "memory_written" as const,
-      payload: {
-        memoryType: proposal.type,
-        summary: proposal.summary,
-        emotionalTone: proposal.emotionalTone,
-        confidence: proposal.confidence,
-        unresolved: proposal.unresolved,
-        subjectAgentIds: proposal.subjectAgentIds,
-        proposalIndex: i,
-      },
+      payload: { ...memoryWrittenPayload(proposal), proposalIndex: i },
       sourceIntentId: intent.id,
       sourceEventIds: [],
       emotionalSalience: "low",

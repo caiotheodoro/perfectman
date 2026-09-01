@@ -47,7 +47,7 @@ describe("OpenAiCompatibleProvider", () => {
     perceptionPacket: {
       agentId: "goulart",
       triggeringEvent: null,
-      visibleContextEvents: [], ownRecentUtterances: [],
+      visibleContextEvents: [], eventHandles: {}, ownRecentUtterances: [],
       involvedPeople: [],
       relevantChannels: ["general"],
       relevantMemories: [],

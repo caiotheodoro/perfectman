@@ -34,6 +34,7 @@ export const MemoryWriteProposalSchema = z.object({
   summary: z.string().min(1),
   emotionalTone: z.string().min(1),
   confidence: z.number().min(0).max(1),
+  intensity: z.number().min(0).max(1),
   unresolved: z.boolean(),
 });
 

@@ -13,6 +13,7 @@ function memory(overrides: Partial<Memory> = {}): Memory {
     summary: "something happened",
     emotionalTone: "neutral",
     confidence: 0.5,
+    intensity: 0,
     unresolved: false,
     createdAt: 100,
     lastReinforcedAt: 100,

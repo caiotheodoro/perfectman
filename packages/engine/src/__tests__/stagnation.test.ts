@@ -5,6 +5,7 @@ import type {
   CoreMood,
   SocialEmotions,
 } from "@perfectman/shared";
+import { STAGNATION_THRESHOLDS } from "@perfectman/shared";
 import {
   computeStagnationMetrics,
   detectAttractorStates,
@@ -144,6 +145,26 @@ describe("computeStagnationMetrics", () => {
     for (const key of ["bdi", "rdv", "ige", "cue", "eri", "isd", "cns"] as const) {
       expect(typeof result[key]).toBe("number");
     }
+  });
+
+  // KNOWN, deferred to #129. An empty rolling window — a room silent for the
+  // whole window — leaves every metric on its neutral no-data default, whose
+  // weighted sum is 0.604, already >= STAGNATION_THRESHOLDS.yellow (0.60). The
+  // pulse scheduler then commits stagnation_detected off defaults rather than a
+  // real measurement. Threshold tuning is out of scope for #133 (decision
+  // #125); this test pins the behavior so any fix is a deliberate change.
+  it("scores yellow from neutral defaults on an empty window", () => {
+    const result = computeStagnationMetrics("sim1", 50, [], new Map());
+    expect(result.compositeScore).toBeCloseTo(0.604, 5);
+    expect(result.compositeScore).toBeGreaterThanOrEqual(STAGNATION_THRESHOLDS.yellow);
+    expect(result.level).toBe("yellow");
+  });
+
+  it("scores at or above yellow on a sparse window with no agent states", () => {
+    const events = Array.from({ length: 2 }, (_, i) => makeEvent(`${i}`, "a1", "message_sent"));
+    const result = computeStagnationMetrics("sim1", 50, events, new Map());
+    expect(result.compositeScore).toBeGreaterThanOrEqual(STAGNATION_THRESHOLDS.yellow);
+    expect(result.level).not.toBe("normal");
   });
 });
 

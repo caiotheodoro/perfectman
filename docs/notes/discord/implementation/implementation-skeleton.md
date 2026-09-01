@@ -463,7 +463,6 @@ export function formatCommittedEventForDiscord(event: CommittedEvent): DiscordFo
       return safeContent(String(event.payload.emoji ?? ""));
 
     case "private_motive_summary":
-    case "recap_generated":
       return safeContent(`[recap] ${String(event.payload.summary ?? "")}`);
 
     case "operator_warning":

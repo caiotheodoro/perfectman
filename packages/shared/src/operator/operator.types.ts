@@ -1,5 +1,6 @@
 import type { EventPayload, EventType } from "../event/event.types.js";
 import type { IntentType } from "../intent/intent.types.js";
+import type { AttractorState } from "../constants/stagnation.js";
 
 /**
  * Operator event types the server may emit. Declared once here — the single
@@ -19,7 +20,10 @@ export const OPERATOR_EVENT_TYPES = [
   "intent_blocked",
   "intent_delayed",
   "prompt_trimmed",
+  "target_resolution_floored",
   "stagnation_warning",
+  "stagnation_metrics",
+  "attractor_detected",
   "scheduler_error",
   "pulse_metrics",
   "agent_state_snapshot",
@@ -54,6 +58,12 @@ export type LLMUsage = {
   latencyMs: number;
   callType: "cognition" | "reflection" | "recap" | "interpretation" | "goal";
   pulseIndex: number;
+  /**
+   * Simulated clock in ms (pulse-relative), never wall clock: the record only
+   * feeds rate-window bookkeeping, and a deterministic clock keeps scenario
+   * replays identical. Operator events, by contrast, stamp Date.now() at
+   * emission.
+   */
   createdAt: number;
   /** Deterministic content hash of the prompt that produced this call. */
   promptVersion?: string;
@@ -95,6 +105,18 @@ export type ActionIntentOperatorData = {
   motivationDrivers: string[];
 };
 
+/** `target_resolution_floored` payload — emitted when a reply/react intent's
+ *  target handle could not be resolved and the engine floor took over
+ *  (inferred the triggering/visible event, or downgraded the reply to
+ *  send_message). Makes a model that is systematically bad at targeting
+ *  visible in operator telemetry instead of silently corrected. */
+export type TargetResolutionFlooredData = {
+  field: "replyToEventId" | "targetEventId";
+  badHandle: string;
+  outcome: "triggering_or_visible_event" | "downgraded_to_send_message";
+  resolvedEventId?: string;
+};
+
 /** `event_visibility` payload — per-committed-event visibility/recipient
  *  data, the perspective-filter signal for receivers. */
 export type EventVisibilityData = {
@@ -105,4 +127,17 @@ export type EventVisibilityData = {
   visibleToAgents: string[];
   content?: string;
   channelName?: string;
+  emoji?: string;
+  targetEventId?: string;
+};
+
+/** `stagnation_metrics` payload — the full composite + 7 sub-metrics, emitted
+ *  every stagnation cadence regardless of `level` (per-cadence telemetry).
+ *  `stagnation_warning` still fires only on a non-normal `level`. */
+export type StagnationMetricsOperatorData = StagnationMetrics;
+
+/** `attractor_detected` payload — one event per detected attractor signature.
+ *  Independent of the composite `level`, which it never overrides. */
+export type AttractorDetectedOperatorData = {
+  signature: AttractorState;
 };

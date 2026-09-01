@@ -390,13 +390,22 @@ const RECIPES: Record<GoalScenarioId, GoalScenarioRecipe> = {
     id: "hollow-completion",
     mode: "deterministic",
     agents: makeAgents(),
-    channels: [GENERAL_CHANNEL],
+    channels: [GENERAL_CHANNEL, SIDELINE_CHANNEL],
     settings: SETTINGS,
     // The seeded follow-up commits in the same batch as the blocks, so its
     // createdAt equals goal.createdAt — the completion-beat gate needs a
     // strictly later message, so the seed alone never fires the beat.
     seedEvents: [...RESOLVE_SEEDS, followUpEvent(0)],
-    inject: (review) => [witnessEvent(review), followUpEvent(review)],
+    // Sideline chatter ana cannot see, on every review: the world reads
+    // reached and ana's completion beat fires, but her narrative stays
+    // under-informed, holding log divergence above the meaning-made ceiling
+    // so the goal re-goals as hollow instead of ending. Explicit invisible
+    // events carry this rather than relying on per-pulse operator-only noise.
+    inject: (review) => [
+      witnessEvent(review),
+      followUpEvent(review),
+      ...sidelineBurst(),
+    ],
   },
 
   "world-briefly-wrong": {

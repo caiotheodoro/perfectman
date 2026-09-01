@@ -19,6 +19,7 @@ export type MemorySeed = {
   summary: string;
   emotionalTone: string;
   confidence: number;
+  intensity?: number; // [0, 1]
   unresolved: boolean;
 };
 

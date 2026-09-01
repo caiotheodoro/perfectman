@@ -1,0 +1,24 @@
+{
+  "scenarioId": "v1_biased_memory",
+  "category": "v1_behavior",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 11,
+  "fallbackCount": 0,
+  "repetitionBlocked": 0,
+  "realContentEvents": 1,
+  "signalPassRate": 0.5,
+  "probePassRate": 0.8461538461538461,
+  "axisScores": {
+    "in_character": 3,
+    "voice_match": 3,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 4,
+    "narrative_cohesion": 4
+  },
+  "elapsedMs": 55859,
+  "transcript": "p  0 caio      message_sent       \"hey goulart, tudo bem?\"\np  0 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  0 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  1 goulart   no_op_recorded      [motive: Fallback applied: Expected ',' or ']' after array element in JSON at position 650 (line 16 column 6)]\np  2 goulart   no_op_recorded      [motive: Fallback applied: Expected ',' or ']' after array element in JSON at position 698 (line 16 column 6)]\np  3 goulart   no_op_recorded      [motive: Fallback applied: Expected ',' or ']' after array element in JSON at position 683 (line 17 column 6)]\np  4 goulart   no_op_recorded      [motive: Fallback applied: Expected ',' or ']' after array element in JSON at position 723 (line 17 column 6)]\np  5 goulart   no_op_recorded      [motive: Fallback applied: Expected ',' or ']' after array element in JSON at position 665 (line 17 column 6)]\np  6 goulart   no_op_recorded      [motive: Fallback applied: No JSON object found in response]\np  6 caio      no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  7 goulart   no_op_recorded      [motive: Fallback applied: Expected ',' or ']' after array element in JSON at position 638 (line 17 column 6)]"
+}

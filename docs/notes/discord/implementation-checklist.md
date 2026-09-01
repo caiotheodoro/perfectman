@@ -81,7 +81,7 @@ Independent test: creating a private channel denies `@everyone`, grants private 
 Independent test: committed events become Discord-safe message payloads with mentions disabled and bounded length.
 
 - [ ] T019 [US-005] Create `packages/server/src/discord/discord-formatter.ts`.
-- [ ] T020 [US-005] Format `message_sent`, `reply_sent`, `reaction_sent`, `private_motive_summary`, `recap_generated`, and `operator_warning`.
+- [ ] T020 [US-005] Format `message_sent`, `reply_sent`, `reaction_sent`, `private_motive_summary`, and `operator_warning`.
 - [ ] T021 [US-005] Disable `allowedMentions` by default.
 - [ ] T022 [US-005] Add tests for mention suppression, long text handling, and event-type coverage.
 

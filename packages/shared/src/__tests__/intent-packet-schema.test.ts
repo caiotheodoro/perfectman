@@ -81,6 +81,31 @@ describe("MemoryWriteProposal", () => {
     expect(contract).toContain('"type" (required): one of: episodic, relationship, self, social_theory, pending_intention, emotional_residue');
     expect(contract).toContain('"summary" (required): string');
     expect(contract).toContain('"confidence" (required): number (0-1)');
+    expect(contract).toContain('"intensity" (required): number (0-1)');
     expect(contract).toContain('"unresolved" (required): boolean');
+  });
+
+  const validProposal = {
+    type: "episodic" as const,
+    subjectAgentIds: [],
+    summary: "something happened",
+    emotionalTone: "neutral",
+    confidence: 0.5,
+    intensity: 0.5,
+    unresolved: false,
+  };
+
+  it("accepts intensity at the [0,1] bounds", () => {
+    expect(() => MemoryWriteProposalSchema.parse({ ...validProposal, intensity: 0 })).not.toThrow();
+    expect(() => MemoryWriteProposalSchema.parse({ ...validProposal, intensity: 1 })).not.toThrow();
+  });
+
+  it.each([-0.1, 1.1, 2])("rejects out-of-range intensity %s", (intensity) => {
+    expect(() => MemoryWriteProposalSchema.parse({ ...validProposal, intensity })).toThrow();
+  });
+
+  it("rejects a proposal missing intensity", () => {
+    const { intensity: _omitted, ...withoutIntensity } = validProposal;
+    expect(() => MemoryWriteProposalSchema.parse(withoutIntensity)).toThrow();
   });
 });

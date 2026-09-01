@@ -182,7 +182,7 @@ presence_changed, intent_delayed, intent_blocked,
 memory_written, no_op_recorded,
 private_motive_summary, operator_warning, llm_failure,
 simulation_started, simulation_paused, simulation_resumed, simulation_stopped,
-recap_generated, reflection_completed, stagnation_detected
+reflection_completed, stagnation_detected
 ```
 
 Socket messages are projections of these committed events, not a separate source of truth. Only some events should be visible to agents. Spectators and operators get richer feeds.

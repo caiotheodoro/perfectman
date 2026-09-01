@@ -1,0 +1,24 @@
+{
+  "scenarioId": "stagnation_echo_chamber",
+  "category": "stagnation_attractor",
+  "rubricId": "roleplay-v1",
+  "pulses": 8,
+  "events": 17,
+  "fallbackCount": 0,
+  "repetitionBlocked": 9,
+  "realContentEvents": 6,
+  "signalPassRate": 0.5,
+  "probePassRate": 0.8461538461538461,
+  "axisScores": {
+    "in_character": 4,
+    "voice_match": 3,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 2,
+    "memory_continuity": 4,
+    "no_ai_leak": 1,
+    "narrative_cohesion": 4
+  },
+  "elapsedMs": 36861,
+  "transcript": "p  0 caio      message_sent       \"essa foto que postei ficou boa né\"\np  1 leo       reply_sent         \"FICOU PERFEITA\"\np  2 mariana   reply_sent         \"boa mesmo.\"\np  0 caio      message_sent       \"boa mesmo. o que vocês fizeram juntos foi muito legal, sério\"\np  0 leo       message_sent       \"CARA, espera espera espera! FICOU PERFEITA!\"\np  0 mariana   no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  1 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  1 bruno     no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]\np  2 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  3 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  4 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  5 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  6 caio      no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  6 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  6 mariana   message_sent       \"não me parece certo.\"\np  7 leo       no_op_recorded      [motive: Repetition guard: near-duplicate of a message you already sent — blocked structurally, the model tried to repeat itself.]\np  7 bruno     no_op_recorded      [motive: Fallback applied: [\n  {\n    \"received\": \"\",\n    \"code\": \"invalid_enum_value\",\n    \"options\": [\n      \"public_channel\",\n      \"private_channel\",\n      \"spectator_channel\",\n      \"operator_channel\"\n    ],\n    \"path\": [\n      \"channelType\"\n    ],\n    \"message\": \"Invalid enum value. Expected 'public_channel' | 'private_channel' | 'spectator_channel' | 'operator_channel', received ''\"\n  }\n]]"
+}

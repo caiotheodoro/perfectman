@@ -151,7 +151,8 @@ export function scoreAttention(
   const presencePenalty = PRESENCE_PENALTY[agent.presence] ?? 0;
   dueScore -= presencePenalty;
 
-  // Suppress: recent action cooldown
+  // Suppress: recent action cooldown. The 0.20 magnitude and the
+  // pulseIntervalMs * 3 horizon are provisional — both are tuned in #129.
   if (lastActionAt !== null) {
     const msSinceAction = now - lastActionAt;
     const cooldownRatio = Math.max(0, 1 - msSinceAction / (pulseIntervalMs * 3));
