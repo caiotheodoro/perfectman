@@ -2,6 +2,7 @@ import type {
   AgentRuntimeInput,
   LLMUsage,
   OperatorEvent,
+  TargetResolutionFlooredData,
 } from "@perfectman/shared";
 import type {
   AgentRuntimeContext,
@@ -11,7 +12,7 @@ import type {
 import type { LLMConfig } from "../../llm/llm-config.js";
 import type { LLMProvider } from "../../llm/llm-provider.js";
 import { llmBudget } from "../../llm/llm-budget.js";
-import { IntentParser } from "../intent-parser.js";
+import { IntentParser, type TargetResolutionContext } from "../intent-parser.js";
 import {
   DEFAULT_REPETITION_MAX_RETRIES,
   isNearRepeat,
@@ -40,11 +41,23 @@ function retryCorrectionNote(lastAttempt: string): string {
 }
 
 /**
+ * Correction appended to the system prompt on the single reply/react target
+ * retry: names the unresolvable handle, lists the valid handle set for this
+ * render, and offers the send_message escape hatch. The retry prompt version
+ * hash covers this text.
+ */
+function targetRetryCorrectionNote(field: string, badHandle: string, validHandles: string[]): string {
+  const valid = validHandles.length > 0 ? validHandles.join(", ") : "(no event handles are available this turn)";
+  return `IMPORTANT: you set "${field}" to "${badHandle || "(empty)"}", which is not one of the event handles shown in <events>. The only valid handles this turn are: ${valid}. Either set "${field}" to exactly one of those handles, or — if this was not actually a reply/reaction to one specific message — set "intentType" to "send_message" and omit "${field}".`;
+}
+
+/**
  * The `action_intent` LLM surface as a typed step. This is the canonical
  * implementation of the project's "engine owns structure, model owns language"
  * rule for the one active production surface: the provider call, strict parse,
- * repetition-guard retry arm and controlled fallback all live here as an
- * explicit, closed outcome instead of ad-hoc branches in the runtime.
+ * the single bounded retry arm (repetition guard + target resolution) and
+ * controlled fallback all live here as an explicit, closed outcome instead of
+ * ad-hoc branches in the runtime.
  */
 export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntimeOutput> {
   readonly purpose = "action_intent" as const;
@@ -130,14 +143,25 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       };
     }
 
-    let parseResult = IntentParser.parse(providerResult.content, agentId, input.availableActions, "no_op");
+    const targetContext: TargetResolutionContext = {
+      eventHandles: input.perceptionPacket.eventHandles,
+      events: [
+        ...(input.perceptionPacket.triggeringEvent ? [input.perceptionPacket.triggeringEvent] : []),
+        ...input.perceptionPacket.visibleContextEvents,
+      ],
+      triggeringEventId: input.perceptionPacket.triggeringEvent?.id,
+    };
 
-    // Repetition guard: the prompt already tells the model not to repeat
-    // itself and shows it the exact text to avoid, but empirically small
-    // local models repeat anyway. Give the model a bounded number of pointed
-    // retries (default: one), then block structurally. Outcomes are tracked
-    // separately so a failed retry is reported as an llm_failure, not as a
-    // repetition block.
+    let parseResult = IntentParser.parse(providerResult.content, agentId, input.availableActions, "no_op", targetContext);
+
+    // Single bounded retry arm for the two structural guard violations — a
+    // near-duplicate message and an unresolvable reply/react target. The
+    // prompt already instructs the model on both, but empirically small local
+    // models violate them anyway; the re-prompt names every currently
+    // violated constraint (default: one retry, budget permitting), and the
+    // latest attempt is then judged structurally: repetition block first,
+    // then the target floor. A failed retry is reported as an llm_failure,
+    // not as a repetition block.
     const policy = ctx.repetitionPolicy ?? {};
     const threshold = Math.min(1, Math.max(0, policy.threshold ?? REPETITION_SIMILARITY_THRESHOLD));
     const maxRetries = Math.max(0, Math.floor(policy.maxRetries ?? DEFAULT_REPETITION_MAX_RETRIES));
@@ -158,11 +182,13 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       !!candidateIntent.visibleContent &&
       isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances, threshold);
 
-    if (!fallbackApplied && isRepeat(intent)) {
+    if (!fallbackApplied && (isRepeat(intent) || parseResult.unresolvedTarget)) {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         // The gate's budget check runs once before the first call; each retry
         // is a further wire call it did not authorize, so re-check before
-        // issuing one. A denial must not turn into a free retry.
+        // issuing one. A denial must not turn into a free retry. With a
+        // near-duplicate still on the table the pulse is blocked below; a
+        // merely unresolved target falls to the floor instead.
         const budgetDecision = llmBudget.canCall({
           simulationId,
           agentId,
@@ -170,17 +196,28 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           inputTokensEstimate: prompt.inputTokensEstimate,
         });
         if (!budgetDecision.allowed) {
-          repetitionBlocked = true;
-          retryKind = "repeat_failed";
+          if (isRepeat(intent)) {
+            repetitionBlocked = true;
+            retryKind = "repeat_failed";
+          }
           break;
         }
+        const corrections: string[] = [];
+        if (isRepeat(intent)) corrections.push(retryCorrectionNote(intent.visibleContent ?? ""));
+        if (parseResult.unresolvedTarget) {
+          corrections.push(
+            targetRetryCorrectionNote(
+              parseResult.unresolvedTarget.field,
+              parseResult.unresolvedTarget.badHandle,
+              parseResult.unresolvedTarget.validHandles,
+            ),
+          );
+        }
+        const correction = corrections.join("\n\n");
         const retryPrompt = {
           ...prompt,
-          version: promptVersionHash([
-            `${prompt.system}\n\n${retryCorrectionNote(intent.visibleContent ?? "")}`,
-            prompt.user,
-          ]),
-          system: `${prompt.system}\n\n${retryCorrectionNote(intent.visibleContent ?? "")}`,
+          version: promptVersionHash([`${prompt.system}\n\n${correction}`, prompt.user]),
+          system: `${prompt.system}\n\n${correction}`,
         };
         try {
           const retryResult = await provider.generateIntent(input, runtimeContext, retryPrompt);
@@ -193,24 +230,27 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
             latencyMs: retryResult.latencyMs,
             promptVersion: retryPrompt.version,
           });
-          const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op");
-          if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent)) {
+          const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext);
+          if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent) && !retryParse.unresolvedTarget) {
             parseResult = retryParse;
             intent = retryParse.intent;
             fallbackApplied = false;
             break;
           }
+          // Adopt the latest attempt even when it still violates a guard, so
+          // the structural outcomes below judge the model's final answer: a
+          // still-repeating answer is blocked, a still-unresolved target is
+          // floored. A parse fallback ends the arm as an llm_failure.
+          parseResult = retryParse;
+          intent = retryParse.intent;
           if (retryParse.fallbackApplied) {
-            parseResult = retryParse;
-            intent = retryParse.intent;
             fallbackApplied = true;
             retryKind = "parse_failed";
             break;
           }
-          // Still a repeat; loop again if the retry budget allows.
         } catch {
           fallbackApplied = true;
-          intent = IntentParser.createFallback(agentId, "no_op", "Repetition retry call failed.");
+          intent = IntentParser.createFallback(agentId, "no_op", "Retry call failed.");
           retryKind = "provider_failed";
           break;
         }
@@ -235,6 +275,49 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         "no_op",
         `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, ${retryPhrase} — blocked structurally.`,
       );
+    }
+
+    // Target floor: after the retry arm, an intent whose reply/react target
+    // is still unresolved never commits as-is — the triggering event (or the
+    // most recent visible message) is inferred as the target; with no event
+    // left to target, a reply downgrades to send_message and a reaction is
+    // dropped. The repetition block above takes precedence: a near-duplicate
+    // is never floored into a commit.
+    let targetFloor: { detail: string; data: TargetResolutionFlooredData } | undefined;
+    if (!fallbackApplied && parseResult.unresolvedTarget) {
+      const bad = parseResult.unresolvedTarget;
+      const floored = IntentParser.floorTargets(intent, targetContext);
+      if (floored.outcome === "dropped") {
+        fallbackApplied = true;
+        retryKind = "parse_failed";
+        parseResult = {
+          ...parseResult,
+          errorDetail: floored.detail ?? "Reaction target unresolvable; reaction dropped.",
+          unresolvedTarget: undefined,
+        };
+        intent = IntentParser.createFallback(
+          agentId,
+          "no_op",
+          floored.detail ?? "Reaction target unresolvable; reaction dropped.",
+        );
+      } else {
+        intent = floored.intent;
+        parseResult = { ...parseResult, errorDetail: undefined, unresolvedTarget: undefined };
+        if (floored.outcome === "floored" || floored.outcome === "downgraded") {
+          targetFloor = {
+            detail: floored.detail ?? "",
+            data: {
+              field: floored.field,
+              badHandle: bad.badHandle,
+              outcome:
+                floored.outcome === "downgraded"
+                  ? "downgraded_to_send_message"
+                  : "triggering_or_visible_event",
+              ...(floored.resolvedEventId ? { resolvedEventId: floored.resolvedEventId } : {}),
+            },
+          };
+        }
+      }
     }
 
     const model = providerResult.model || llmConfig.modelName;
@@ -299,10 +382,22 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       },
     });
 
+    if (targetFloor) {
+      operatorEvents.push({
+        type: "target_resolution_floored",
+        simulationId,
+        agentId,
+        pulseIndex: ctx.pulseIndex,
+        detail: `Reply/reaction target for agent ${agentId} could not be resolved; engine floor applied: ${targetFloor.detail}`,
+        createdAt: ctx.now,
+        data: targetFloor.data,
+      });
+    }
+
     if (fallbackApplied && !repetitionBlocked) {
       const detail =
         retryKind === "provider_failed"
-          ? `Repetition retry provider call failed for agent ${agentId}; falling back to no_op.`
+          ? `Retry provider call failed for agent ${agentId}; falling back to no_op.`
           : `LLM parsing or target constraint validation failed for agent ${agentId}: ${parseResult.errorDetail}`;
       operatorEvents.push({
         type: "llm_failure",

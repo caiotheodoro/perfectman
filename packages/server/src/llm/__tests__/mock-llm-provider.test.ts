@@ -66,7 +66,7 @@ describe("MockLLMProvider", () => {
     perceptionPacket: {
       agentId: "agent-beta",
       triggeringEvent: null,
-      visibleContextEvents: [], ownRecentUtterances: [],
+      visibleContextEvents: [], eventHandles: {}, ownRecentUtterances: [],
       involvedPeople: [],
       relevantChannels: ["general"],
       relevantMemories: [],

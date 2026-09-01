@@ -40,6 +40,7 @@ export const CANONICAL_TEMPLATE_VERSION_INPUT: AgentRuntimeInput = {
     agentId: "template-version",
     triggeringEvent: null,
     visibleContextEvents: [],
+    eventHandles: {},
     ownRecentUtterances: [],
     involvedPeople: [],
     relevantChannels: [],
@@ -183,13 +184,17 @@ export class ActionIntentPromptBuilder {
     s.list("Ensure", [
       `"privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").`,
       `Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`,
+      `For reply_to_message set "replyToEventId", and for react set "targetEventId", to one of the bracketed event handles from <events> (e.g. "e1") — copy the handle text exactly, do not invent an id or describe the message.`,
     ]);
   }
 
   private static renderEvents(s: PromptSection, input: AgentRuntimeInput, perceptionPacket: AgentRuntimeInput["perceptionPacket"]): void {
     s.heading("What you noticed");
+    const handleByEventId = new Map(
+      Object.entries(perceptionPacket.eventHandles).map(([handle, eventId]) => [eventId, handle]),
+    );
     if (perceptionPacket.triggeringEvent) {
-      s.raw(`Triggering event (what just happened that caught your attention):\n${this.formatEvent(perceptionPacket.triggeringEvent)}`);
+      s.raw(`Triggering event (what just happened that caught your attention):\n${this.formatEvent(perceptionPacket.triggeringEvent, handleByEventId.get(perceptionPacket.triggeringEvent.id))}`);
     } else {
       s.raw("Triggering event: no specific event triggered this pulse (you have the initiative to speak or act on your own).");
     }
@@ -215,9 +220,14 @@ export class ActionIntentPromptBuilder {
     }
 
     if (perceptionPacket.visibleContextEvents.length > 0) {
-      s.raw(`Recent context (last messages in visible channels):\n${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e)).join("\n")}`);
+      s.raw(`Recent context (last messages in visible channels):\n${perceptionPacket.visibleContextEvents.map((e) => this.formatEvent(e, handleByEventId.get(e.id))).join("\n")}`);
     } else {
       s.raw("Recent context: the chat history is currently empty.");
+    }
+    if (handleByEventId.size > 0) {
+      s.raw(
+        "Each event above starts with a short handle in square brackets (e.g. [e1]). To reply to or react to a specific message, set replyToEventId / targetEventId to exactly that handle text (e.g. \"e1\") — never a paraphrase, a name, or any other id. If you are not replying to one specific message, use send_message and leave replyToEventId unset.",
+      );
     }
   }
 
@@ -360,7 +370,8 @@ export class ActionIntentPromptBuilder {
   }
 
   // Event content is LLM-generated (agent outputs), not untrusted user input — no sanitization needed.
-  private static formatEvent(event: CommittedEvent): string {
+  private static formatEvent(event: CommittedEvent, handle?: string): string {
+    const prefix = handle ? `[${handle}] ` : "";
     const actor = event.actorId;
     const type = event.type;
     const channel = event.channelId ? `#${event.channelId}` : "";
@@ -382,14 +393,14 @@ export class ActionIntentPromptBuilder {
     }
 
     switch (type) {
-      case "message_sent": return `[${actor} in ${channelTag}]: ${content}`;
-      case "reply_sent": return `[${actor} in ${channelTag} (reply)]: ${content}`;
-      case "reaction_sent": return `[${actor} in ${channelTag}]: ${content}`;
-      case "channel_created": return `[System]: ${actor} created a new private channel ${channelTag}`;
-      case "agent_invited": return `[System]: ${actor} invited someone to ${channelTag}`;
-      case "presence_changed": return `[System]: ${actor} changed presence to ${event.payload?.presence || "unknown"}`;
-      case "no_op_recorded": return `[System]: ${actor} chose to lurk silently.`;
-      default: return `[${actor} in ${channelTag} (${type})]: ${content}`;
+      case "message_sent": return `${prefix}[${actor} in ${channelTag}]: ${content}`;
+      case "reply_sent": return `${prefix}[${actor} in ${channelTag} (reply)]: ${content}`;
+      case "reaction_sent": return `${prefix}[${actor} in ${channelTag}]: ${content}`;
+      case "channel_created": return `${prefix}[System]: ${actor} created a new private channel ${channelTag}`;
+      case "agent_invited": return `${prefix}[System]: ${actor} invited someone to ${channelTag}`;
+      case "presence_changed": return `${prefix}[System]: ${actor} changed presence to ${event.payload?.presence || "unknown"}`;
+      case "no_op_recorded": return `${prefix}[System]: ${actor} chose to lurk silently.`;
+      default: return `${prefix}[${actor} in ${channelTag} (${type})]: ${content}`;
     }
   }
 }

@@ -19,6 +19,7 @@ export const OPERATOR_EVENT_TYPES = [
   "llm_budget_exceeded",
   "intent_blocked",
   "intent_delayed",
+  "target_resolution_floored",
   "stagnation_warning",
   "stagnation_metrics",
   "attractor_detected",
@@ -95,6 +96,18 @@ export type ActionIntentOperatorData = {
   privateMotiveSummary: string;
   emotionDrivers: string[];
   motivationDrivers: string[];
+};
+
+/** `target_resolution_floored` payload — emitted when a reply/react intent's
+ *  target handle could not be resolved and the engine floor took over
+ *  (inferred the triggering/visible event, or downgraded the reply to
+ *  send_message). Makes a model that is systematically bad at targeting
+ *  visible in operator telemetry instead of silently corrected. */
+export type TargetResolutionFlooredData = {
+  field: "replyToEventId" | "targetEventId";
+  badHandle: string;
+  outcome: "triggering_or_visible_event" | "downgraded_to_send_message";
+  resolvedEventId?: string;
 };
 
 /** `event_visibility` payload — per-committed-event visibility/recipient

@@ -49,6 +49,19 @@ export function buildPerceptionPacket(
     .slice(-CONTEXT_WINDOW)
     .filter(e => e.id !== triggeringEvent?.id);
 
+  // Short ordinal handles ("e1", "e2", …) for the triggering event and each
+  // visible-context event, in the same order the prompt renders them. The
+  // model references these instead of raw event ids for replyToEventId /
+  // targetEventId; IntentParser resolves them back via this map. One handle
+  // per distinct event id.
+  const eventHandles: Record<string, string> = {};
+  const seenEventIds = new Set<string>();
+  for (const e of triggeringEvent ? [triggeringEvent, ...contextEvents] : contextEvents) {
+    if (seenEventIds.has(e.id)) continue;
+    seenEventIds.add(e.id);
+    eventHandles[`e${seenEventIds.size}`] = e.id;
+  }
+
   // Channels visible to this agent
   const relevantChannels = channels
     .filter(c => c.memberAgentIds.includes(agent.agentId))
@@ -107,5 +120,6 @@ export function buildPerceptionPacket(
     relevantMemories,
     translatedEmotionalState: translatedEmotionalState,
     availableActions,
+    eventHandles,
   };
 }

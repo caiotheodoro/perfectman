@@ -70,6 +70,7 @@ describe("PromptBuilder", () => {
       agentId: "example-friend",
       triggeringEvent: triggeringEvent,
       visibleContextEvents: [triggeringEvent, contextEvent],
+      eventHandles: { e1: "evt-111", e2: "evt-222" },
       ownRecentUtterances: [],
       involvedPeople: ["agent-peer", "agent-peer"],
       relevantChannels: ["general"],
@@ -223,11 +224,21 @@ describe("PromptBuilder", () => {
 
   it("should verify that the prompt includes the triggering event and context", () => {
     const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
-    
+
     expect(prompt.user).toContain("o Example Friend tá sumido hoje né");
     expect(prompt.user).toContain("verdade, deve tá ocupado");
     expect(prompt.user).toContain("agent-peer");
     expect(prompt.user).toContain("agent-peer");
+  });
+
+  it("prefixes context events with their ordinal handle and explains how to reference one", () => {
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+
+    expect(prompt.user).toContain("[e1] [agent-peer in #general]");
+    expect(prompt.user).toContain("[e2] [agent-peer in #general (reply)]");
+    expect(prompt.user).not.toContain("evt-111");
+    expect(prompt.user).toContain("replyToEventId / targetEventId");
+    expect(prompt.system).toContain('set "replyToEventId"');
   });
 
   it("should verify that the prompt includes available actions and target options", () => {

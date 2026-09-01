@@ -29,6 +29,11 @@ export type ActionIntent = {
   memoryWrites: MemoryWriteProposal[];
   spectatorSummary?: string;
   replyToEventId?: string;
+  // Actor of the event replyToEventId resolves to, stamped by IntentParser
+  // once the reply target is resolved (handle lookup, retry, or the
+  // triggering-event floor). Carried into the reply_sent payload for
+  // downstream relational-state accretion.
+  replyToActorId?: string;
   emoji?: string;
   targetEventId?: string;
   channelName?: string;
