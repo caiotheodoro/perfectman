@@ -461,6 +461,14 @@ function escHtml(s) {
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+const STORY_EVENTS = {
+  message_sent: { sigil: '💬', tag: '' },
+  reply_sent: { sigil: '↩', tag: '<span class="msg-type-tag">↳reply</span>' },
+  channel_created: { sigil: '📢', tag: '<span class="msg-type-tag">canal criado</span>' },
+  reaction_sent: { sigil: '+', tag: '<span class="msg-type-tag">reação</span>' },
+};
+const isStoryEvent = evt => !!STORY_EVENTS[evt.type];
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 
 function init() {
@@ -569,9 +577,7 @@ function renderStory() {
     section.dataset.pulse = String(pi);
 
     // Count meaningful events
-    const visibleEvts = frame.committedEvents.filter(
-      e => e.type === 'message_sent' || e.type === 'reply_sent' || e.type === 'channel_created' || e.type === 'reaction_sent'
-    );
+    const visibleEvts = frame.committedEvents.filter(isStoryEvent);
 
     // ── Divider ──
     const divider = document.createElement('div');
@@ -590,7 +596,7 @@ function renderStory() {
     let hasContent = false;
 
     for (const evt of frame.committedEvents) {
-      if (evt.type !== 'message_sent' && evt.type !== 'reply_sent' && evt.type !== 'channel_created' && evt.type !== 'reaction_sent') continue;
+      if (!isStoryEvent(evt)) continue;
 
       const agentId = evt.actorId || '';
       const agentName = AGENT_NAMES[agentId] || agentId;
@@ -608,12 +614,10 @@ function renderStory() {
       msgRow.dataset.channelId = evt.channelId || '';
       msgRow.dataset.visibleTo = JSON.stringify(visibleTo);
 
-      const sigil = evt.type === 'reply_sent' ? '↩' : (evt.type === 'channel_created' ? '📢' : (evt.type === 'reaction_sent' ? '+' : '💬'));
+      const storyStyle = STORY_EVENTS[evt.type];
+      const sigil = storyStyle.sigil;
       const content = (evt.payload && (evt.payload.content || evt.payload.channelName || evt.payload.emoji)) || '';
-      const typeTag = evt.type === 'reply_sent'
-        ? '<span class="msg-type-tag">↳reply</span>'
-        : (evt.type === 'channel_created' ? '<span class="msg-type-tag">canal criado</span>'
-        : (evt.type === 'reaction_sent' ? '<span class="msg-type-tag">reação</span>' : ''));
+      const typeTag = storyStyle.tag;
       const channelTag = isPrivate
         ? '<span class="msg-channel-tag">🔒 ' + escHtml(ch.name || ch.id) + '</span>'
         : '';
