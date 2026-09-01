@@ -127,6 +127,7 @@ describe("AgentRuntime Orchestration", () => {
     // Every other event in the stream (committed events, agent_state_snapshot,
     // action_intent) is epoch ms; pulse_metrics must match, not carry `now`.
     expect(pulseMetrics!.createdAt).toBeGreaterThan(1_600_000_000_000);
+    expect(output.llmUsage).not.toBeNull();
     // LLMUsage stays on the sim clock — it only feeds llmBudget's rate window,
     // and a deterministic clock keeps scenario replays identical.
     expect(output.llmUsage!.createdAt).toBe(simClock);

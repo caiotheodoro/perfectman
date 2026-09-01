@@ -221,6 +221,7 @@ describe("GoalLayerLLMClient", () => {
     const budgetEvent = blockedOutcome.operatorEvents.find(
       (e) => e.type === "llm_budget_exceeded",
     );
+    expect(budgetEvent).toBeDefined();
     expect(budgetEvent!.createdAt).toBeGreaterThan(1_600_000_000_000);
 
     vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new Error("network down")));
@@ -230,6 +231,7 @@ describe("GoalLayerLLMClient", () => {
       digest: makeDigest(),
     });
     const failureEvent = failureOutcome.operatorEvents.find((e) => e.type === "llm_failure");
+    expect(failureEvent).toBeDefined();
     expect(failureEvent!.createdAt).toBeGreaterThan(1_600_000_000_000);
   });
 

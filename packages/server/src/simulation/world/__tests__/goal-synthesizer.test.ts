@@ -161,6 +161,8 @@ describe("LLMGoalSynthesizer", () => {
       narrative: `${goalId}: in progress`,
     });
     const clientFactory: GoalLayerClientFactory = () => {
+      // GoalLayerLLMClient's private constructor params make a literal stub
+      // untypeable, so build from the prototype — only call() is overridden.
       const caller = Object.create(GoalLayerLLMClient.prototype) as GoalLayerLLMClient;
       caller.call = async (input: GoalLayerCallInput): Promise<GoalLayerLLMOutcome> => ({
         result: {
@@ -198,6 +200,8 @@ describe("LLMGoalSynthesizer", () => {
     const registry = new GoalRegistry();
     promote(registry, "goal-1");
     const clientFactory: GoalLayerClientFactory = () => {
+      // GoalLayerLLMClient's private constructor params make a literal stub
+      // untypeable, so build from the prototype — only call() is overridden.
       const caller = Object.create(GoalLayerLLMClient.prototype) as GoalLayerLLMClient;
       caller.call = async (): Promise<GoalLayerLLMOutcome> => {
         throw new Error("client blew up");
