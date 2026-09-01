@@ -24,7 +24,7 @@ import type { DeliveryProjection } from "./projections/delivery-projection.js";
 import type { SpectatorProjection } from "./projections/spectator-projection.js";
 import type { OperatorProjection } from "./projections/operator-projection.js";
 import type { EngineEventBuilder } from "./engine-event-builder.js";
-import { payloadString } from "./payload-readers.js";
+import { payloadDisplayFields } from "./payload-readers.js";
 import { serializeAgentState } from "../agent/agent-state-serializer.js";
 import type {
   ActionIntentOperatorData,
@@ -486,16 +486,13 @@ export class PulseScheduler {
   }
 
   private async emitEventVisibility(event: CommittedEvent): Promise<void> {
-    const content = payloadString(event.payload, "content");
-    const channelName = payloadString(event.payload, "channelName");
     const data: EventVisibilityData = {
       eventId: event.id,
       eventType: event.type,
       actorId: event.actorId,
       channelId: event.channelId,
       visibleToAgents: event.visibility.visibleToAgents,
-      ...(content ? { content } : {}),
-      ...(channelName ? { channelName } : {}),
+      ...payloadDisplayFields(event.payload),
     };
     await this.emitOperatorEvent({
       type: "event_visibility",

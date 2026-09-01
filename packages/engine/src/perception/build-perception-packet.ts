@@ -22,7 +22,7 @@ import { selectRelevantMemories } from "./memory-salience.js";
  */
 
 const CONTEXT_WINDOW = 10;
-const SPECTATOR_EVENT_TYPES = new Set(["recap_generated", "reflection_completed"]);
+const SPECTATOR_EVENT_TYPES = new Set(["reflection_completed"]);
 const OPERATOR_EVENT_TYPES = new Set([
   "operator_warning",
   "llm_failure",

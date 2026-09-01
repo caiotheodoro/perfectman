@@ -126,6 +126,8 @@ export type EventVisibilityData = {
   visibleToAgents: string[];
   content?: string;
   channelName?: string;
+  emoji?: string;
+  targetEventId?: string;
 };
 
 /** `stagnation_metrics` payload — the full composite + 7 sub-metrics, emitted

@@ -238,6 +238,19 @@ const DEFAULT_PERSONA_CALIBRATION: Omit<PersonaConfig, keyof ConfigPersona> = {
 
 export const DEFAULT_SIMULATION_CONFIG_FILENAME = "config/index.json";
 
+/** Walk up from `startDir` for the nearest ancestor containing `filename`. */
+export function findUp(filename: string, startDir: string): string | null {
+  let current = startDir;
+  const root = parse(current).root;
+
+  while (true) {
+    const candidate = join(current, filename);
+    if (existsSync(candidate)) return candidate;
+    if (current === root) return null;
+    current = dirname(current);
+  }
+}
+
 export function findDefaultConfigPath(
   filename: string,
   startDir = process.cwd(),
@@ -274,7 +287,33 @@ export async function loadSimulationConfig(
     );
   }
   const hydrated = await hydrateAgentPersonaFiles(parsed, path);
-  return parseSimulationConfig(hydrated);
+  const config = parseSimulationConfig(hydrated);
+  anchorHtmlSnapshotOutputPaths(config, path);
+  return config;
+}
+
+/**
+ * `html-snapshot` `outputPath` values are authored relative to the checkout,
+ * but the simulation runs with `process.cwd()` at `packages/server`. Anchor
+ * relative paths to the workspace root (the `pnpm-workspace.yaml` directory),
+ * falling back to the config file's own directory outside a workspace.
+ */
+function anchorHtmlSnapshotOutputPaths(
+  config: SimulationAppConfig,
+  configPath: string,
+): void {
+  const configDir = dirname(configPath);
+  const base = findWorkspaceRoot(configDir) ?? configDir;
+  for (const gateway of config.deliveryGateways) {
+    if (gateway.type === "html-snapshot" && !isAbsolute(gateway.outputPath)) {
+      gateway.outputPath = resolve(base, gateway.outputPath);
+    }
+  }
+}
+
+function findWorkspaceRoot(startDir: string): string | undefined {
+  const found = findUp("pnpm-workspace.yaml", startDir);
+  return found ? dirname(found) : undefined;
 }
 
 async function hydrateAgentPersonaFiles(

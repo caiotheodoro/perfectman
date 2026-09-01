@@ -258,7 +258,7 @@ Spectator channel:
 
 - visible to humans/operators,
 - not visible to persona bots unless product explicitly wants them to observe recap narration,
-- receives `recap_generated`, `private_motive_summary`, and narrative summaries after projection.
+- receives `private_motive_summary` and narrative summaries after projection.
 
 If `omniscientSpectatorMode` is false, the projection layer must filter facts before the Discord gateway sees them.
 

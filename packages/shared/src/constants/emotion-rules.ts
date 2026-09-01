@@ -164,16 +164,6 @@ export const EVENT_IMPULSE_TABLE: readonly EventImpulseRule[] = [
     magnitude:          0.18,
     affectedDimensions: ["neediness", "socialAnxiety"],
   },
-
-  // 15. recap_generated — recap reminds agents of past events
-  {
-    eventType:          "recap_generated",
-    role:               "bystander",
-    valenceShift:       0.05,
-    arousalShift:       0.08,
-    magnitude:          0.12,
-    affectedDimensions: ["pride", "resentment"],  // can go either way — engine picks based on valence
-  },
 ];
 
 // ── Social Emotion Decay Rates ────────────────────────────────────────────────

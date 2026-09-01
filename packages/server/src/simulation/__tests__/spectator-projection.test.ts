@@ -115,4 +115,45 @@ describe("SpectatorProjection", () => {
     const result = projection.buildSpectatorEvent(event, omniSettings);
     expect(result).not.toBeNull();
   });
+
+  it("truncates an over-long motive hint on a word boundary with an ellipsis", () => {
+    const summary = `${"x".repeat(50)} ${"y".repeat(50)}`;
+    const event = makeEvent({
+      type: "no_op_recorded",
+      payload: { privateMotiveSummary: summary },
+    });
+    const result = projection.buildSpectatorEvent(event, SETTINGS);
+    expect(result?.visibleContent).toBe(`${"x".repeat(50)}...`);
+    expect(result?.visibleContent?.length ?? 0).toBeLessThanOrEqual(80);
+    expect(result?.visibleContent).not.toContain("y");
+  });
+
+  it("leaves a short motive hint intact with no ellipsis", () => {
+    const event = makeEvent({
+      type: "no_op_recorded",
+      payload: { privateMotiveSummary: "weighing whether to speak" },
+    });
+    const result = projection.buildSpectatorEvent(event, SETTINGS);
+    expect(result?.visibleContent).toBe("weighing whether to speak");
+  });
+
+  it("surfaces the emoji in a reaction_sent spectator event", () => {
+    const event = makeEvent({
+      type: "reaction_sent",
+      payload: { emoji: "🎉", targetEventId: "evt_42" },
+    });
+    const result = projection.buildSpectatorEvent(event, SETTINGS);
+    expect(result?.type).toBe("reaction_sent");
+    expect(result?.visibleContent).toBe("🎉");
+  });
+
+  it("delivers the reaction emoji through project()", async () => {
+    const event = makeEvent({
+      type: "reaction_sent",
+      payload: { emoji: "👍", targetEventId: "evt_42" },
+    });
+    await projection.project(event, [PUBLIC_CHANNEL], SETTINGS);
+    expect(gateway.spectatorEvents).toHaveLength(1);
+    expect(gateway.spectatorEvents[0]?.visibleContent).toBe("👍");
+  });
 });

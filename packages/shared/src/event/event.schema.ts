@@ -22,7 +22,6 @@ export const EventTypeSchema = z.enum([
   "simulation_paused",
   "simulation_resumed",
   "simulation_stopped",
-  "recap_generated",
   "reflection_completed",
   "stagnation_detected",
   "goal_proposed",
