@@ -117,6 +117,22 @@ describe("AgentRuntime Orchestration", () => {
     expect(output.intent.visibleContent).toBe("pois é");
   });
 
+  it("stamps operator-event createdAt with wall-clock time, not the pulse-relative sim clock", async () => {
+    const runtime = new AgentRuntime();
+    const simClock = 5000; // AgentRuntimeContext.now is sim time (pulseIntervalMs multiples)
+    const output = await runtime.generateIntent(baseInput, { pulseIndex: 42, now: simClock });
+
+    const pulseMetrics = output.operatorEvents.find((e) => e.type === "pulse_metrics");
+    expect(pulseMetrics).toBeDefined();
+    // Every other event in the stream (committed events, agent_state_snapshot,
+    // action_intent) is epoch ms; pulse_metrics must match, not carry `now`.
+    expect(pulseMetrics!.createdAt).toBeGreaterThan(1_600_000_000_000);
+    expect(output.llmUsage).not.toBeNull();
+    // LLMUsage stays on the sim clock — it only feeds llmBudget's rate window,
+    // and a deterministic clock keeps scenario replays identical.
+    expect(output.llmUsage!.createdAt).toBe(simClock);
+  });
+
   it("should return a fallback intent when budget is exhausted", async () => {
     // Manually block priority in budget
     const runtime = new AgentRuntime();

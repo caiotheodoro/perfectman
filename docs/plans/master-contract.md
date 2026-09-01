@@ -327,15 +327,15 @@ type ResolvedIntent = {
 // Dev1 defines in packages/server/src/agent/agent-runtime.types.ts
 type AgentRuntimeContext = {
   pulseIndex: number;
-  now: number;                      // deterministic wall-clock ms supplied by scheduler
+  now: number;                      // simulated clock ms from the scheduler (pulse-relative, replay-deterministic — never wall clock)
 };
 
 type AgentRuntimeOutput = {
   intent: ActionIntent;             // validated intent or safe fallback
-  llmUsage: LlmUsage | null;        // null when no provider call happened
+  llmUsage: LlmUsage | null;        // null when no provider call happened; createdAt stays on the sim clock (rate-window bookkeeping only)
   latencyMs: number;
   fallbackApplied: boolean;
-  operatorEvents: OperatorEvent[];
+  operatorEvents: OperatorEvent[];  // createdAt = Date.now() epoch-ms at emission, never the sim clock
 };
 ```
 
