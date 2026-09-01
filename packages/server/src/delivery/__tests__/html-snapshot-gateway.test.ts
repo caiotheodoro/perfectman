@@ -354,7 +354,10 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     });
     await gw.onSimulationStopped("sim_rcv");
 
-    const row = gw.toReplay().pulses[0]!.committedEvents[0]!;
+    const replay = gw.toReplay();
+    expect(replay.pulses).toHaveLength(1);
+    expect(replay.pulses[0]!.committedEvents).toHaveLength(1);
+    const row = replay.pulses[0]!.committedEvents[0]!;
     expect(row.type).toBe("reaction_sent");
     expect(row.payload["emoji"]).toBe("🎉");
     expect(row.payload["targetEventId"]).toBe("ev_m1");
