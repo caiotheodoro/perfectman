@@ -187,8 +187,6 @@ export class GoalLayerLLMClient {
       latencyMs: usage.latencyMs,
       callType: "goal",
       pulseIndex,
-      // Sim time, not Date.now(): this record only feeds llmBudget's rate
-      // window, and a deterministic clock keeps scenario replays identical.
       createdAt: now,
       promptVersion: prompt.version,
       promptTemplateVersion: prompt.templateVersion,

@@ -252,8 +252,6 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       latencyMs: u.latencyMs,
       callType: purposeToCallType("action_intent"),
       pulseIndex: ctx.pulseIndex,
-      // Sim time, not Date.now(): this record only feeds llmBudget's rate
-      // window, and a deterministic clock keeps scenario replays identical.
       createdAt: ctx.now,
       promptVersion: u.promptVersion,
       promptTemplateVersion: prompt.templateVersion,

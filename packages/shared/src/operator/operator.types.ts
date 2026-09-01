@@ -53,6 +53,12 @@ export type LLMUsage = {
   latencyMs: number;
   callType: "cognition" | "reflection" | "recap" | "interpretation" | "goal";
   pulseIndex: number;
+  /**
+   * Simulated clock in ms (pulse-relative), never wall clock: the record only
+   * feeds rate-window bookkeeping, and a deterministic clock keeps scenario
+   * replays identical. Operator events, by contrast, stamp Date.now() at
+   * emission.
+   */
   createdAt: number;
   /** Deterministic content hash of the prompt that produced this call. */
   promptVersion?: string;
