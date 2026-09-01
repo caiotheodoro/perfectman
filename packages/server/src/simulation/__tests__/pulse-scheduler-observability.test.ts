@@ -11,6 +11,7 @@ import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import { StdoutDeliveryGateway } from "../../delivery/stdout-delivery-gateway.js";
+import { STAGNATION_METRIC_KEYS } from "./fixtures.js";
 import { serializeAgentState } from "../../agent/agent-state-serializer.js";
 import type { AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type {
@@ -559,7 +560,7 @@ describe("PulseScheduler observability events", () => {
     expect(metricsEvents).toHaveLength(1);
     const m = metricsEvents[0]!;
     expect(m.pulseIndex).toBe(10);
-    for (const key of ["bdi", "rdv", "ige", "cue", "eri", "isd", "cns", "compositeScore"] as const) {
+    for (const key of STAGNATION_METRIC_KEYS) {
       expect(typeof m.data?.[key]).toBe("number");
     }
     expect(["normal", "yellow", "red", "critical"]).toContain(m.data?.["level"]);

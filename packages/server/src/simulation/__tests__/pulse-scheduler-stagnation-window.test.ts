@@ -22,29 +22,15 @@ import { SpectatorProjection } from "../projections/spectator-projection.js";
 import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
+import { cannedNoOpStep, makeAgentState, makePersona, SETTINGS, STAGNATION_METRIC_KEYS } from "./fixtures.js";
 import type {
-  AgentState,
-  EngineSnapshot,
-  EngineStepResult,
-  PersonaConfig,
   Simulation,
   SimulationEvent,
-  SimulationSettings,
   StagnationMetrics,
 } from "@perfectman/shared";
 
 const computeMock = vi.mocked(computeStagnationMetrics);
 const detectMock = vi.mocked(detectAttractorStates);
-
-const SETTINGS: SimulationSettings = {
-  omniscientSpectatorMode: false,
-  allowPrivateChannels: true,
-  maxPrivateChannelsPerAgent: 3,
-  maxMessagesPerMinutePerAgent: 20,
-  llmCallBudgetPerMinute: 10,
-  pulseIntervalMs: 3000,
-  tokenBudgetPerHour: 1_000_000,
-};
 
 const SIM: Simulation = {
   id: "sim_stag",
@@ -57,85 +43,6 @@ const SIM: Simulation = {
   createdAt: Date.now(),
   updatedAt: Date.now(),
 };
-
-function makeAgentState(agentId: string): AgentState {
-  return {
-    agentId,
-    simulationId: "sim_stag",
-    personaId: `persona_${agentId}`,
-    presence: "active",
-    coreMood: { valence: 0, arousal: 0.5, stability: 0.8, energy: 0.6, circumplexAngle: 0, circumplexRadius: 0.5, momentumValence: 0, momentumArousal: 0 },
-    socialEmotions: { jealousy: 0, envy: 0, humiliation: 0, pride: 0, shame: 0, affection: 0, resentment: 0, suspicion: 0, admiration: 0, contempt: 0, neediness: 0, socialAnxiety: 0, fearOfExclusion: 0, desireForStatus: 0, desireForIntimacy: 0 },
-    relationalStates: new Map(),
-    memories: [],
-    initiativeAccumulators: [],
-    lastProcessedEventId: null,
-    lastActionAt: null,
-    lastRuminationPulse: null,
-    arrivalPulse: null,
-    createdAt: Date.now(),
-    updatedAt: Date.now(),
-  };
-}
-
-function makePersona(agentId: string): PersonaConfig {
-  return {
-    id: `persona_${agentId}`,
-    name: `Agent ${agentId}`,
-    archetype: "test",
-    writingStyle: "casual",
-    styleExamples: [],
-    baselineValence: 0,
-    baselineArousal: 0.5,
-    baselineStability: 0.8,
-    baselineEnergy: 0.6,
-    emotionalReactivity: 0.5,
-    moodInertia: 0.5,
-    maxMoodRotation: 0.5,
-    energyRegen: 0.05,
-    exclusionSensitivity: 0.5,
-    praiseSensitivity: 0.5,
-    conflictSensitivity: 0.5,
-    boredomSensitivity: 0.5,
-    intimacySensitivity: 0.5,
-    socialSensitivities: {},
-  };
-}
-
-const ZERO_ACTION = {
-  defensiveness: 0, warmth: 0, jealousInspection: 0, shameWithdrawal: 0, resentfulColdness: 0,
-  curiousApproach: 0, anxiousOverreach: 0, pridefulPerformance: 0, vulnerableRetreat: 0,
-  contemptuousDismissal: 0, strategicPatience: 0, impulsiveProvocation: 0, comfortSeeking: 0,
-  dominanceAssertion: 0, repairImpulse: 0,
-};
-
-function cannedNoOpStep(snap: EngineSnapshot): EngineStepResult {
-  const agentId = snap.agentState.agentId;
-  return {
-    visibleEvents: [],
-    newEvents: [],
-    attentionResults: { noticed: false, dueScore: 0, reasons: [], needsLLM: false, triggeringReason: "test" },
-    perceptionPacket: {
-      agentId, triggeringEvent: null, visibleContextEvents: [], ownRecentUtterances: [], involvedPeople: [],
-      relevantChannels: [], relevantMemories: [],
-      translatedEmotionalState: { summary: "", emotions: [] },
-      availableActions: [],
-    },
-    interpretations: [],
-    emotionDelta: { coreMoodDelta: {}, socialEmotionDeltas: {}, relationalDeltas: new Map(), ruminationApplied: false },
-    updatedAgentState: makeAgentState(agentId),
-    motivations: [],
-    pressures: [],
-    inhibitions: [],
-    actionEmotions: ZERO_ACTION,
-    decision: { outcome: "no_op", needsLLM: false, initiativeProceed: false, noOpReason: "test", privateMotiveSeed: "x" },
-    availableActions: [],
-    initiativeCandidates: [],
-    memoryProposals: [],
-    noOpRecord: null,
-    operatorMetrics: { pulseIndex: 0, pulseDurationMs: 10, agentsCalled: 0, eventsCommitted: 0, llmCallsMade: 0, budgetUsedPercent: 0 },
-  };
-}
 
 function normalMetrics(): StagnationMetrics {
   return {
@@ -176,7 +83,7 @@ async function buildScheduler(): Promise<Harness> {
     updatedAt: Date.now(),
   });
   await channelRepo.addMembership({ channelId: "ch_public", agentId: "agent_1", joinedAt: Date.now() });
-  await agentStateRepo.upsert(makeAgentState("agent_1"));
+  await agentStateRepo.upsert(makeAgentState());
 
   const rateLimitGate = new RateLimitGate(SETTINGS);
   const agentRuntime: AgentRuntime = { generateIntent: vi.fn() };
@@ -184,7 +91,7 @@ async function buildScheduler(): Promise<Harness> {
 
   const scheduler = new PulseScheduler({
     simulation: SIM,
-    agents: [{ id: "agent_1", state: makeAgentState("agent_1"), persona: makePersona("agent_1") }],
+    agents: [{ id: "agent_1", state: makeAgentState(), persona: makePersona("agent_1") }],
     defaultPublicChannelId: "ch_public",
     eventRepo,
     agentStateRepo,
@@ -241,7 +148,7 @@ describe("PulseScheduler stagnation telemetry", () => {
 
     const first = metricsEvents[0]!;
     expect(first.data?.["level"]).toBe("normal");
-    for (const key of ["bdi", "rdv", "ige", "cue", "eri", "isd", "cns", "compositeScore"] as const) {
+    for (const key of STAGNATION_METRIC_KEYS) {
       expect(typeof first.data?.[key]).toBe("number");
     }
 
