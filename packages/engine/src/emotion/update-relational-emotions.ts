@@ -43,7 +43,12 @@ export function updateRelationalEmotions(
 
     // Observer role
     const isActor = event.actorId === observerId;
-    const isTarget = personTargets.includes(observerId) || mentionedAgentIds.includes(observerId);
+    const isTarget =
+      personTargets.includes(observerId) ||
+      mentionedAgentIds.includes(observerId) ||
+      invitedAgentIds.includes(observerId) ||
+      // agent_invited payloads carry the singular key
+      event.payload["invitedAgentId"] === observerId;
     const isBystander = !isActor && !isTarget;
 
     for (const rule of RELATIONAL_UPDATE_RULES) {
