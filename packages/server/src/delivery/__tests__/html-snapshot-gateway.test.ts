@@ -382,6 +382,9 @@ describe("HtmlSnapshotGateway (stream-fed receiver)", () => {
     expect(replay.pulses[1]!.committedEvents).toHaveLength(0);
     expect(replay.pulses[1]!.agentStates).toEqual({ ana: state("ana") });
     expect(replay.pulses[1]!.agentThinking).toHaveProperty("ana");
+    // The staleness axis: pulse 1 delivered an intent only for ana, so a
+    // receiver leaking bruno's earlier row must fail here.
+    expect(replay.pulses[1]!.agentThinking).not.toHaveProperty("bruno");
   });
 
   it("creates an empty replay when stopped before any pulse", async () => {
