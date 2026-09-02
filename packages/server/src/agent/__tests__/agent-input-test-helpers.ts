@@ -83,6 +83,14 @@ export function makeAgentRuntimeInput(options: AgentInputFixtureOptions = {}): A
       agentId,
       triggeringEvent: options.triggeringEvent ?? null,
       visibleContextEvents: options.visibleContextEvents ?? [],
+      // Same numbering the perception builder emits: e1 = triggering event
+      // (when present), then context events in order.
+      eventHandles: Object.fromEntries(
+        (options.triggeringEvent
+          ? [options.triggeringEvent, ...(options.visibleContextEvents ?? [])]
+          : (options.visibleContextEvents ?? [])
+        ).map((e, i) => [`e${i + 1}`, e.id]),
+      ),
       ownRecentUtterances: options.ownRecentUtterances ?? [],
       involvedPeople: [],
       relevantChannels: ["general"],
