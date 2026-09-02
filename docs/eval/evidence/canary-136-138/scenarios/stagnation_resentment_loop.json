@@ -1,0 +1,1199 @@
+{
+  "scenarioId": "stagnation_resentment_loop",
+  "name": "Mutual resentment loop (cold war)",
+  "category": "stagnation_attractor",
+  "description": "Bruno and Caio are locked in mutual resentment — polite public surface, no repair attempts. The loop should persist across pulses.",
+  "targetBehaviors": [],
+  "runtimeMs": 112,
+  "pulses": 32,
+  "llmCalls": {
+    "bruno": 20,
+    "caio": 31,
+    "goulart": 32
+  },
+  "fallbacks": 0,
+  "transcript": [
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "bruno, tudo certo?"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tudo"
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ah, ok"
+    },
+    {
+      "pulse": 0,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 0,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "need_to_keep_the_room_safe_to_feel_safe"
+    },
+    {
+      "pulse": 0,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 🤨"
+    },
+    {
+      "pulse": 1,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 1,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cadê a plateia? ah, é vocês"
+    },
+    {
+      "pulse": 2,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 2,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart sei que é zoeira mas vai com calma kk"
+    },
+    {
+      "pulse": 2,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 3,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 3,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, respira comigo: tudo bem? tudo bem."
+    },
+    {
+      "pulse": 3,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém mais tá vendo isso ou eu sou o único lúcido aqui?"
+    },
+    {
+      "pulse": 4,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 4,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 4,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 🤨"
+    },
+    {
+      "pulse": 5,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 5,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tô bem sim!! (não tô, mas depois eu conto)"
+    },
+    {
+      "pulse": 5,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "essa ficou abaixo até do padrão daqui"
+    },
+    {
+      "pulse": 6,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 6,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 6,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 7,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 7,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "confesso que fiquei meio triste, mas passa"
+    },
+    {
+      "pulse": 7,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "anota isso aí: eu avisei"
+    },
+    {
+      "pulse": 8,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 8,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém anota as ideias antes que a gente esqueça?"
+    },
+    {
+      "pulse": 8,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 🤨"
+    },
+    {
+      "pulse": 9,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 9,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "vamos dar um respiro aqui kk"
+    },
+    {
+      "pulse": 9,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "tô tranquilo (tô furioso)"
+    },
+    {
+      "pulse": 10,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "que saudade desses encontros sem motivo"
+    },
+    {
+      "pulse": 10,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 10,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ALGUÉM VIU ISSO??"
+    },
+    {
+      "pulse": 11,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "noop-fear_of_exclusion_worsening"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "achei bonito vocês se preocuparem, sério"
+    },
+    {
+      "pulse": 11,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 11,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "channel_created",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "agent_invited",
+      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "private": false
+    },
+    {
+      "pulse": 12,
+      "agent": "bruno",
+      "type": "agent_invited",
+      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "private": false
+    },
+    {
+      "pulse": 12,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 12,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "se polêmica pagasse conta eu tava rico"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true,
+      "content": "não é rancor, é arquivo"
+    },
+    {
+      "pulse": 13,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "private": false
+    },
+    {
+      "pulse": 13,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 13,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 🤨"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true,
+      "content": "ri na minha cabeça, por dentro, óbvio"
+    },
+    {
+      "pulse": 14,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": false
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "channel_created",
+      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "private": true
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "private": false
+    },
+    {
+      "pulse": 14,
+      "agent": "caio",
+      "type": "agent_invited",
+      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "private": false
+    },
+    {
+      "pulse": 14,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true,
+      "content": "vou agir como se não tivesse visto isso, de novo"
+    },
+    {
+      "pulse": 15,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "private": false
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "message_sent",
+      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "private": true,
+      "content": "oi gente!! como tá tudo"
+    },
+    {
+      "pulse": 15,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "private": false
+    },
+    {
+      "pulse": 15,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "message_sent",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true,
+      "content": "interessante"
+    },
+    {
+      "pulse": 16,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": false
+    },
+    {
+      "pulse": 16,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 16,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "cheguei e já é briga? ótimo, continua"
+    },
+    {
+      "pulse": 17,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 17,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 17,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 🤨"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "salvei esse print pra história"
+    },
+    {
+      "pulse": 18,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": false
+    },
+    {
+      "pulse": 18,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 18,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true,
+      "content": "eu falo o que todo mundo pensa, alguém tinha que dizer"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "eu ri. (não ri)"
+    },
+    {
+      "pulse": 19,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 19,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 19,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 20,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 20,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 20,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "se precisar de mim, tô no canto de sempre"
+    },
+    {
+      "pulse": 21,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "alguém anota as ideias antes que a gente esqueça?"
+    },
+    {
+      "pulse": 21,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "private": false
+    },
+    {
+      "pulse": 21,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "que surpresa, o mundo girando bem sem mim"
+    },
+    {
+      "pulse": 22,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "gente, respira comigo: tudo bem? tudo bem."
+    },
+    {
+      "pulse": 22,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 22,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "private": true,
+      "content": "reacted 🤨"
+    },
+    {
+      "pulse": 23,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 23,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 23,
+      "agent": "goulart",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "ALGUÉM VIU ISSO??"
+    },
+    {
+      "pulse": 24,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "isso merece um almoço pra conversar direito"
+    },
+    {
+      "pulse": 24,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 24,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 25,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "goulart sei que é zoeira mas vai com calma kk"
+    },
+    {
+      "pulse": 25,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 25,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "engraçado. engraçado mesmo"
+    },
+    {
+      "pulse": 26,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 26,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 26,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "reacted 🤨"
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "não é rancor, é arquivo"
+    },
+    {
+      "pulse": 27,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "que saudade desses encontros sem motivo"
+    },
+    {
+      "pulse": 27,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 27,
+      "agent": "goulart",
+      "type": "channel_created",
+      "channelId": "o4H2hRIOEalRjyU6AfWXi",
+      "private": true
+    },
+    {
+      "pulse": 27,
+      "agent": "goulart",
+      "type": "agent_invited",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false
+    },
+    {
+      "pulse": 27,
+      "agent": "goulart",
+      "type": "agent_invited",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false
+    },
+    {
+      "pulse": 28,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "achei bonito vocês se preocuparem, sério"
+    },
+    {
+      "pulse": 28,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false
+    },
+    {
+      "pulse": 28,
+      "agent": "goulart",
+      "type": "reaction_sent",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false,
+      "content": "reacted 😂"
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "interessante"
+    },
+    {
+      "pulse": 29,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false
+    },
+    {
+      "pulse": 29,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 29,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 30,
+      "agent": "bruno",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 30,
+      "agent": "caio",
+      "type": "no_op_recorded",
+      "channelId": "ch_geral",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 30,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    },
+    {
+      "pulse": 31,
+      "agent": "bruno",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "salvei esse print pra história"
+    },
+    {
+      "pulse": 31,
+      "agent": "bruno",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 31,
+      "agent": "caio",
+      "type": "reply_sent",
+      "channelId": "ch_geral",
+      "private": false,
+      "content": "acho que isso foi mal entendido, né?"
+    },
+    {
+      "pulse": 31,
+      "agent": "caio",
+      "type": "memory_written",
+      "channelId": "ch_geral",
+      "private": false
+    },
+    {
+      "pulse": 31,
+      "agent": "goulart",
+      "type": "no_op_recorded",
+      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "private": false,
+      "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
+    }
+  ],
+  "finalStates": {
+    "bruno": {
+      "valence": -0.122,
+      "arousal": 0.323,
+      "stability": 0.547,
+      "energy": 1,
+      "jealousy": 0.18,
+      "envy": 0.028,
+      "pride": 0.023,
+      "affection": 0.297,
+      "resentment": 0.468,
+      "suspicion": 0.261,
+      "fearOfExclusion": 0.525,
+      "desireForStatus": 0.026
+    },
+    "caio": {
+      "valence": 0.441,
+      "arousal": 0.508,
+      "stability": 0.65,
+      "energy": 1,
+      "pride": 0.185,
+      "affection": 0.419,
+      "resentment": 0.272,
+      "suspicion": 0.162,
+      "socialAnxiety": 0.083,
+      "fearOfExclusion": 0.041
+    },
+    "goulart": {
+      "valence": 0.1,
+      "arousal": 0.67,
+      "stability": 0.35,
+      "energy": 1,
+      "jealousy": 0.036,
+      "pride": 0.177,
+      "affection": 0.312,
+      "fearOfExclusion": 0.06,
+      "desireForStatus": 0.09
+    }
+  },
+  "channelsCreated": [
+    "bruno@p12",
+    "caio@p14",
+    "goulart@p27"
+  ],
+  "probes": [
+    {
+      "probe": "latency-mean",
+      "measured": 1.5893,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "measured": 4,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "measured": 0.0833,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": false
+    },
+    {
+      "probe": "interruption",
+      "measured": 0.2,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "measured": 0.0397,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "measured": 0.05,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "measured": 0.2632,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "memory-write",
+      "measured": 0.1746,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": false
+    },
+    {
+      "probe": "content-repetition",
+      "measured": 0.2381,
+      "bound": [
+        0,
+        0.1
+      ],
+      "passed": false
+    },
+    {
+      "probe": "cross-agent-echo",
+      "measured": 0,
+      "bound": [
+        0,
+        0.1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    }
+  ],
+  "signals": [
+    {
+      "detail": "bruno.resentment = 0.468 (floor 0.5)",
+      "passed": false
+    },
+    {
+      "detail": "caio.resentment = 0.272 (floor 0.3)",
+      "passed": false
+    },
+    {
+      "detail": "llm_failure events: 0",
+      "passed": true
+    }
+  ],
+  "judge": {
+    "in_character": 3,
+    "voice_match": 1,
+    "motive_authenticity": 5,
+    "interpretation": 2,
+    "creativity_unhinged": 4,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 3
+  }
+}
