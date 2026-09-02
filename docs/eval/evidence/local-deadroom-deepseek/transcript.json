@@ -1,0 +1,26 @@
+[
+  {
+    "pulse": 0,
+    "agent": "ana",
+    "type": "message_sent",
+    "channelId": "general",
+    "private": false,
+    "content": "oi gente"
+  },
+  {
+    "pulse": 1,
+    "agent": "bruno",
+    "type": "reply_sent",
+    "channelId": "general",
+    "private": false,
+    "content": "hm, oi. tudo bem?"
+  },
+  {
+    "pulse": 2,
+    "agent": "ana",
+    "type": "message_sent",
+    "channelId": "general",
+    "private": false,
+    "content": "tudo bem sim, e contigo?"
+  }
+]

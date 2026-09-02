@@ -1,0 +1,4 @@
+p  0 ana        message_sent       "oi gente"
+p  1 bruno      reply_sent         "hm, oi. tudo bem?"
+p  2 ana        message_sent       "tudo bem sim, e contigo?"
+# pulses 3-63 (~5 min): zero cognition calls from either agent - run ends here

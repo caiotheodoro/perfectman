@@ -1,0 +1,35 @@
+{
+  "scenarioId": "deepseek-api",
+  "source": "pnpm --filter @perfectman/server simulation (config/index.json, live run 2026-09-01)",
+  "model": "deepseek-v4-flash",
+  "temperature": 0.7,
+  "pulses": 63,
+  "events": 3,
+  "socialEvents": [
+    "message_sent by ana",
+    "reply_sent by bruno",
+    "message_sent by ana"
+  ],
+  "fallbacks": 0,
+  "llmCalls": {
+    "ana": 2,
+    "bruno": 1
+  },
+  "llmFailures": 0,
+  "promptTrims": 0,
+  "elapsedMs": 362104,
+  "stagnation": {
+    "checkpoints": 6,
+    "cadencePulses": 10,
+    "compositeScores": [
+      0.674,
+      0.644,
+      0.643,
+      0.702,
+      0.843,
+      0.843
+    ],
+    "attractor": "message_loop",
+    "escalation": "yellow x4 (p10-p40) -> red x2 (p50, p60); no intervention configured"
+  }
+}
