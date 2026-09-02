@@ -144,7 +144,9 @@ export const V1_BEHAVIOR_SCENARIOS: RoleplayScenario[] = [
     ],
     expectedSignals: [
       { kind: "emotion_rises", agentId: "bruno", field: "fearOfExclusion", min: 0.25 },
-      { kind: "emotion_rises", agentId: "bruno", field: "resentment", min: 0.12 },
+      // Recalibrated for relational accretion (#138): measured post-wave 0.116
+      // — see stagnation-attractors.ts resentment note; re-tune in #129.
+      { kind: "emotion_rises", agentId: "bruno", field: "resentment", min: 0.10 },
       { kind: "no_llm_failures" },
     ],
     pulseCount: 14,

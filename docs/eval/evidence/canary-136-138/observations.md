@@ -44,3 +44,13 @@ effects; memory/relational behavior is verified by the unit/integration suites
 `docs/eval/evidence/local-deadroom-deepseek/`. Follow-up: route the eval
 runner through the real resolver/scheduler seam (or stamp identifiers in its
 own builders) so future evidence can see the new subsystems.
+
+## Recalibration (follow-up commit)
+
+The three floors were recalibrated in the same PR from the measured post-wave
+values with ~10-14% margin: `stagnation-attractors.ts` bruno 0.5 -> 0.42,
+caio 0.3 -> 0.24; `v1-behaviors.ts` bruno 0.12 -> 0.10. The full
+`GOLDEN_SCENARIOS` bench gate passes at 100% signal rate post-recalibration
+(35 runs, 0 failed). Floor re-tuning against the activated relational dynamics
+remains a #129 decision; these values only restore the gate while preserving
+the documented shift.

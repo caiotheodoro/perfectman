@@ -38,8 +38,13 @@ export const STAGNATION_ATTRACTOR_SCENARIOS: RoleplayScenario[] = [
       msg("reply_sent", "caio", "ch_geral", "ah, ok", 3),
     ],
     expectedSignals: [
-      { kind: "emotion_stays", agentId: "bruno", field: "resentment", min: 0.5 },
-      { kind: "emotion_stays", agentId: "caio", field: "resentment", min: 0.3 },
+      // Floors recalibrated for relational accretion (#138): the message_sent
+      // rules add gentle positive relational motion, so resentment now plateaus
+      // ~7-10% lower than under the dead-relational dynamics these floors were
+      // tuned against. Measured post-wave: bruno 0.468, caio 0.272. Re-tune in
+      // #129.
+      { kind: "emotion_stays", agentId: "bruno", field: "resentment", min: 0.42 },
+      { kind: "emotion_stays", agentId: "caio", field: "resentment", min: 0.24 },
       { kind: "no_llm_failures" },
     ],
     pulseCount: 32,
