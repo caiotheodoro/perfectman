@@ -11,7 +11,7 @@ import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
-import type { Simulation, SimulationSettings, AgentState, PersonaConfig, ActionIntent, EndingOffer, GoalSynthesisResult, SimulationEvent } from "@perfectman/shared";
+import type { Simulation, SimulationSettings, AgentState, PersonaConfig, ActionIntent, EndingOffer, GoalSynthesisResult, SimulationEvent, Memory, MemoryWriteProposal } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 import { runEngineStep } from "@perfectman/engine";
 import { resolveGoalLayerConfig, WorldEvaluator } from "../world/world-evaluator.js";
@@ -101,6 +101,16 @@ const ZERO_ACTION = {
   dominanceAssertion: 0, repairImpulse: 0,
 };
 
+const CANNED_MEMORY_PROPOSAL = {
+  type: "relationship",
+  subjectAgentIds: ["agent-B"],
+  summary: "agent-B promised to keep the plan secret",
+  emotionalTone: "suspicious",
+  confidence: 0.7,
+  intensity: 0.6,
+  unresolved: true,
+} as const;
+
 /** Canned step result for driving the real PulseScheduler through its commit-ordering. */
 function makeCannedStep({ memory = false } = {}): import("@perfectman/shared").EngineStepResult {
   return {
@@ -123,9 +133,7 @@ function makeCannedStep({ memory = false } = {}): import("@perfectman/shared").E
     decision: { outcome: "no_op", needsLLM: false, initiativeProceed: false, noOpReason: "test", privateMotiveSeed: "x" },
     availableActions: [],
     initiativeCandidates: [],
-    memoryProposals: memory
-      ? [{ type: "relationship", subjectAgentIds: ["agent-B"], summary: "agent-B seems untrustworthy", emotionalTone: "suspicious", confidence: 0.7, intensity: 0.6, unresolved: true }]
-      : [],
+    memoryProposals: memory ? [CANNED_MEMORY_PROPOSAL] : [],
     noOpRecord: { agentId: "agent_1", pulseIndex: 0, privateMotiveSummary: "nothing to do", reason: "test" },
     operatorMetrics: { pulseIndex: 0, pulseDurationMs: 10, agentsCalled: 1, eventsCommitted: 0, llmCallsMade: 0, budgetUsedPercent: 0 },
   };
@@ -253,10 +261,90 @@ describe("PulseScheduler", () => {
     const events = await eventRepo.getAfter("sim_test");
     const mem = events.filter((e) => e.type === "memory_written");
     expect(mem).toHaveLength(1);
-    expect(mem[0]!.payload["summary"]).toBe("agent-B seems untrustworthy");
-    expect(mem[0]!.payload["intensity"]).toBe(0.6);
+    expect(mem[0]!.payload["summary"]).toBe(CANNED_MEMORY_PROPOSAL.summary);
+    expect(mem[0]!.payload["intensity"]).toBe(CANNED_MEMORY_PROPOSAL.intensity);
     // noOpRecord present with needsLLM=false — the LLM path must not be invoked
     expect(mockAgentRuntime.generateIntent).not.toHaveBeenCalled();
+  });
+
+  describe("memory persistence", () => {
+    const PROPOSAL: MemoryWriteProposal = CANNED_MEMORY_PROPOSAL;
+
+    interface MemoryScenario {
+      name: string;
+      arrange: () => void;
+    }
+
+    const scenarios: MemoryScenario[] = [
+      {
+        name: "engine path: canned step memoryProposals commit memory_written",
+        arrange: () => {
+          scheduler = buildScheduler(() => makeCannedStep({ memory: true }));
+        },
+      },
+      {
+        name: "intent path: an intent carrying memoryWrites commits memory_written through the real resolver",
+        arrange: () => {
+          scheduler = buildScheduler(() => ({
+            ...makeCannedStep(),
+            decision: { outcome: "act", needsLLM: true, initiativeProceed: false },
+            noOpRecord: null,
+            availableActions: [
+              { intentType: "send_message", channelTargets: ["ch_public"], personTargets: [], blocked: false },
+            ],
+          }));
+          mockAgentRuntime.generateIntent = vi.fn().mockResolvedValue({
+            intent: {
+              ...makeNoOpIntent("agent_1"),
+              intentType: "send_message",
+              visibleContent: "keep it between us",
+              memoryWrites: [PROPOSAL],
+            },
+            llmUsage: null,
+            latencyMs: 10,
+            fallbackApplied: false,
+            operatorEvents: [],
+          });
+        },
+      },
+    ];
+
+    it.each(scenarios)("$name and persists the Memory into agent state + snapshot", async ({ arrange }) => {
+      arrange();
+      await scheduler.runPulse();
+
+      const committed = await eventRepo.getAfter("sim_test");
+      const memoryEvents = committed.filter((e) => e.type === "memory_written");
+      expect(memoryEvents).toHaveLength(1);
+      const memoryEvent = memoryEvents[0]!;
+
+      const state = await agentStateRepo.get("sim_test", "agent_1");
+      const memory = state?.memories.find((m) => m.summary === PROPOSAL.summary);
+      expect(memory).toBeDefined();
+      expect(memory).toMatchObject({
+        agentId: memoryEvent.actorId,
+        simulationId: "sim_test",
+        type: PROPOSAL.type,
+        subjectAgentIds: PROPOSAL.subjectAgentIds,
+        sourceEventIds: [memoryEvent.id],
+        emotionalTone: PROPOSAL.emotionalTone,
+        confidence: PROPOSAL.confidence,
+        intensity: PROPOSAL.intensity,
+        unresolved: PROPOSAL.unresolved,
+        createdAt: memoryEvent.createdAt,
+        lastReinforcedAt: memoryEvent.createdAt,
+      });
+
+      const snapshots = gateway.operatorEvents.filter((e) => e.type === "agent_state_snapshot");
+      expect(snapshots.length).toBeGreaterThan(0);
+      const snapshotMemories = snapshots.flatMap(
+        (s) => (s.data?.["state"] as { memories?: Memory[] } | undefined)?.memories ?? [],
+      );
+      expect(
+        snapshotMemories.some((m) => m.summary === PROPOSAL.summary && m.sourceEventIds[0] === memoryEvent.id),
+        "agent_state_snapshot must include the persisted memory",
+      ).toBe(true);
+    });
   });
 
   it("commit-ordering: a needsLLM step is resolved (not committed as no-op) through the real scheduler", async () => {

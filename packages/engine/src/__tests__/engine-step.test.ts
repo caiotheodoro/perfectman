@@ -245,9 +245,9 @@ describe("runEngineStep", () => {
     expect(result.perceptionPacket.agentId).toBe("a1");
   });
 
-  it("availableActions contains 11 intent types", () => {
+  it("availableActions contains 10 intent types", () => {
     const result = runEngineStep(makeSnapshot());
-    expect(result.availableActions).toHaveLength(11);
+    expect(result.availableActions).toHaveLength(10);
   });
 
   it("deterministic output for same seed and inputs", () => {

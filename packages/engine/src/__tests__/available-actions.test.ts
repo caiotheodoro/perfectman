@@ -100,25 +100,34 @@ describe("computeAvailableActions", () => {
     expect(actions.every(a => a.blockReason === "agent_offline")).toBe(true);
   });
 
-  it("returns all 11 intent types", () => {
+  it("returns all 10 intent types", () => {
     const agent = makeAgent();
     const channels = [makeChannel("ch1")];
     const membership = [makeMembership("ch1")];
     const actions = computeAvailableActions(agent, channels, membership, DEFAULT_SETTINGS, makeRateLimit());
     const types = new Set(actions.map(a => a.intentType));
-    expect(types.size).toBe(11);
+    expect(types.size).toBe(10);
   });
 
-  it("no_op and write_memory always available", () => {
+  it("no_op always available", () => {
     const agent = makeAgent({ presence: "active" });
     const actions = computeAvailableActions(agent, [], [], DEFAULT_SETTINGS, makeRateLimit({
       blocked: true,
       blockReason: "global_block",
     }));
     const noOp = actions.find(a => a.intentType === "no_op");
-    const writeMemory = actions.find(a => a.intentType === "write_memory");
     expect(noOp?.blocked).toBe(false);
-    expect(writeMemory?.blocked).toBe(false);
+  });
+
+  it("write_memory is never a permitted action (memory rides a normal action's memoryWrites)", () => {
+    const agent = makeAgent({ presence: "active" });
+    const channels = [makeChannel("ch1")];
+    const membership = [makeMembership("ch1")];
+    const actions = computeAvailableActions(agent, channels, membership, DEFAULT_SETTINGS, makeRateLimit());
+    expect(
+      actions.some(a => a.intentType === "write_memory"),
+      `write_memory must not appear in permitted actions, got: ${actions.map(a => a.intentType).join(", ")}`,
+    ).toBe(false);
   });
 
   it("send_message blocked when message rate limit reached", () => {

@@ -98,12 +98,13 @@ Command | ActionIntent
   → buildAgentRuntimeInput (dev2 assembles from EngineStepResult + persona + budget)
   → AgentRuntimeInput (dev3 defines type, dev2 builds instance)
   → AgentRuntime.generateIntent (dev1)
+  → memoryWrites on ActionIntent (dev1 prompt contract) → IntentResolver commits memory_written (dev2) → PulseScheduler.applyMemoryProjection appends to agentState.memories before persistAndSnapshot (dev2; deliberately not a projections/ class — ADR-0013 D-37)
   → ActionIntent (dev3 defines type, dev1 produces instance)
 ```
 
 Only `CommittedEvent[]` are appended to the event log. Commands and intents are requests/proposals; the event log contains accepted facts.
 
-Engine-related facts (`memory_written`, `no_op_recorded`, `stagnation_detected`) are committed before the optional LLM path when their source data exists. Current dev3 `runEngineStep()` emits `noOpRecord` and an empty `memoryProposals[]`; memory proposals may be populated by later dev1/parser work. Resolver-emitted facts (`message_sent`, `reply_sent`, `reaction_sent`, `channel_created`, `intent_delayed`, `intent_blocked`) are committed only after `IntentResolver.resolve()`.
+Engine-related facts (`memory_written`, `no_op_recorded`, `stagnation_detected`) are committed before the optional LLM path when their source data exists. Current dev3 `runEngineStep()` emits `noOpRecord` and an empty `memoryProposals[]`. Memory formation now rides the action intent: the model emits `memoryWrites` on a normal action intent (dev1 prompt criteria), the resolver commits `memory_written` after the LLM path, and the scheduler's private `applyMemoryProjection` copies committed events into `agentState.memories` before the end-of-turn `persistAndSnapshot` (the single write point). The engine path — `EngineEventBuilder` committing `memory_written` from `stepResult.memoryProposals` — remains as redundant-but-harmless plumbing; `runEngineStep()` still emits an empty `memoryProposals[]`. Resolver-emitted facts (`message_sent`, `reply_sent`, `reaction_sent`, `channel_created`, `intent_delayed`, `intent_blocked`) are committed only after `IntentResolver.resolve()`.
 
 ## Runtime / Projection / Delivery Boundary
 

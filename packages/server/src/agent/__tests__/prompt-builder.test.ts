@@ -279,6 +279,25 @@ describe("PromptBuilder", () => {
     expect(prompt.system).toContain('"privateMotiveSummary" (required): string');
   });
 
+  describe("memoryWrites emission criteria", () => {
+    it.each([
+      ["first-person framing", "first person"],
+      ["event grounding in <events>", "grounded in what actually happened in <events>"],
+      ["only when the exchange matters", "only when this exchange actually matters"],
+      ["empty when nothing qualifies", 'leave "memoryWrites" empty'],
+    ])("output contract instructs memoryWrites emission: %s", (_label, marker) => {
+      const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+      expect(prompt.system).toContain(marker);
+    });
+  });
+
+  it("renders a relevant memory under the What you remember section", () => {
+    const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    const memoriesSection = prompt.user.split("<memories>")[1]?.split("</memories>")[0] ?? "";
+    expect(memoriesSection).toContain("What you remember");
+    expect(memoriesSection).toContain("[Memory (relationship)] This friend is often quiet and indirect");
+  });
+
   describe("PromptPurpose policy", () => {
     it("action_intent: BuiltPrompt.purpose is 'action_intent'", () => {
       const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");

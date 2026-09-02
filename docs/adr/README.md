@@ -22,6 +22,7 @@ ADR-0001..0007 pre-date this convention and are historical records: their Status
 | [ADR-0008](0008-world-goal-layer.md) | World Goal Layer |
 | [ADR-0009](0009-goal-layer-runtime-wiring.md) | Goal-Layer Runtime Wiring |
 | [ADR-0010](0010-goal-layer-llm-slice.md) | Goal-Layer LLM Slice |
+| [ADR-0013](0013-memory-formation-and-relational-accretion.md) | Memory Formation And Relational Accretion |
 
 ## Template
 

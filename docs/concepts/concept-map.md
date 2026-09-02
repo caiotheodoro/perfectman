@@ -775,7 +775,6 @@ symbolic actions:
   mock
 
 internal actions:
-  write_memory
   delay_response
   type_and_delete
   set_private_focus

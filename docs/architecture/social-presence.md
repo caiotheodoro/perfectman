@@ -1080,7 +1080,6 @@ change_channel_permission
 symbolic_action
 delay_response
 type_and_delete
-write_memory
 set_private_focus
 ```
 
@@ -1474,7 +1473,6 @@ intentBundle:
     - react
     - symbolic_action
   privateActions:
-    - write_memory
     - update_person_focus
     - mark_suspicion
     - request_rest

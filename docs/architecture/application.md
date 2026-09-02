@@ -921,7 +921,6 @@ actionIntent:
 - `leave_channel`
 - `typing_start`
 - `typing_cancel`
-- `write_memory`
 - `delay_response`
 - `no_op`
 

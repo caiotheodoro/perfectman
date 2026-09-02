@@ -160,14 +160,6 @@ export function computeAvailableActions(
       blocked: false,
     },
 
-    // write_memory — always available (no rate limit)
-    {
-      intentType: "write_memory",
-      channelTargets: [],
-      personTargets: [],
-      blocked: false,
-    },
-
     // delay_response — always available
     {
       intentType: "delay_response",

@@ -343,6 +343,7 @@ export class ActionIntentPromptBuilder {
       `"privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").`,
       `Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`,
       `For reply_to_message set "replyToEventId", and for react set "targetEventId", to one of the bracketed event handles from <events> (e.g. "e1") — copy the handle text exactly, do not invent an id or describe the message.`,
+      `Use "memoryWrites" only when this exchange actually matters to your relationships or intentions — not on every turn. Each proposal must be written in first person ("I…") and grounded in what actually happened in <events> (a promise made, a slight received, a revealed preference, a plan formed), filling every field (type, subjectAgentIds, summary, emotionalTone, confidence, intensity, unresolved) per the field contract above. When nothing qualifies, leave "memoryWrites" empty.`,
     ]);
   }
 

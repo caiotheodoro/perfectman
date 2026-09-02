@@ -35,8 +35,9 @@ The e2e 4-persona scenario (Ana, Bruno, Carla, Diego; 15 pulses) stays within:
 - plus the pre-existing `pulse_metrics` per LLM call (≤ ~60)
 
 Payloads stay bounded per the spec's current-state-only framing: snapshots carry
-the full serialized `AgentState` (including `memories` — bounded by the engine's
-memory lifecycle — and no history/deltas); `action_intent` carries the five
+the full serialized `AgentState` (including `memories` — growing with agent
+memory formation; unbounded over long runs by design, see ADR-0013 — and no
+history/deltas); `action_intent` carries the five
 FR-002 fields verbatim; `event_visibility` carries id/type/actor/channel/
 `visibleToAgents` plus content/channelName where present.
 
