@@ -199,10 +199,22 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     if (!fallbackApplied && (isRepeat(intent) || parseResult.unresolvedTarget)) {
       for (let attempt = 0; attempt < maxRetries; attempt++) {
-        // The correction note re-inflates the (already-capped) base prompt, so
+        // The correction notes re-inflate the (already-capped) base prompt, so
         // the retry prompt is re-assembled and re-trimmed against the same cap
-        // before it goes anywhere near the wire.
-        const retryPrompt = this.buildRetryPrompt(input, ctx, prompt, intent.visibleContent ?? "");
+        // before it goes anywhere near the wire; the trim event and the budget
+        // gate below therefore see the corrected, final estimate.
+        const corrections: string[] = [];
+        if (isRepeat(intent)) corrections.push(retryCorrectionNote(intent.visibleContent ?? ""));
+        if (parseResult.unresolvedTarget) {
+          corrections.push(
+            targetRetryCorrectionNote(
+              parseResult.unresolvedTarget.field,
+              parseResult.unresolvedTarget.badHandle,
+              parseResult.unresolvedTarget.validHandles,
+            ),
+          );
+        }
+        const retryPrompt = this.buildRetryPrompt(input, ctx, prompt, corrections.join("\n\n"));
         const retryTrimEvent = this.promptTrimEvent(
           retryPrompt,
           simulationId,
@@ -229,23 +241,6 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           }
           break;
         }
-        const corrections: string[] = [];
-        if (isRepeat(intent)) corrections.push(retryCorrectionNote(intent.visibleContent ?? ""));
-        if (parseResult.unresolvedTarget) {
-          corrections.push(
-            targetRetryCorrectionNote(
-              parseResult.unresolvedTarget.field,
-              parseResult.unresolvedTarget.badHandle,
-              parseResult.unresolvedTarget.validHandles,
-            ),
-          );
-        }
-        const correction = corrections.join("\n\n");
-        const retryPrompt = {
-          ...prompt,
-          version: promptVersionHash([`${prompt.system}\n\n${correction}`, prompt.user]),
-          system: `${prompt.system}\n\n${correction}`,
-        };
         try {
           const retryResult = await provider.generateIntent(input, runtimeContext, retryPrompt);
           retriesAttempted++;
@@ -467,21 +462,21 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
   }
 
   /**
-   * Assemble the repetition-guard retry prompt with the cap re-enforced.
-   * `retryCorrectionNote` is appended to the system text *after* the base
-   * render, so a base prompt that `trimToFit` left just under the cap would
-   * cross it once the note is added. The base is therefore rebuilt against a
-   * cap lowered by the note's own token estimate; `base + note` is then within
-   * the original cap by construction. Falls back to a plain append when the
-   * agent has no configured cap.
+   * Assemble the retry prompt with the cap re-enforced. The composed
+   * correction text is appended to the system text *after* the base render,
+   * so a base prompt that `trimToFit` left just under the cap would cross it
+   * once the correction is added. The base is therefore rebuilt against a cap
+   * lowered by the correction's own token estimate; `base + correction` is
+   * then within the original cap by construction. Falls back to a plain
+   * append when the agent has no configured cap.
    */
   private buildRetryPrompt(
     input: AgentRuntimeInput,
     ctx: StepRunContext,
     basePrompt: BuiltPrompt,
-    lastAttempt: string,
+    correction: string,
   ): BuiltPrompt {
-    const suffix = `\n\n${retryCorrectionNote(lastAttempt)}`;
+    const suffix = correction ? `\n\n${correction}` : "";
     const cap = ctx.llmConfig.maxInputTokens;
 
     if (typeof cap !== "number" || cap <= 0) {
