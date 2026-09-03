@@ -58,6 +58,7 @@ function makeInput(): AgentRuntimeInput {
       agentId: "agent-a",
       triggeringEvent: null,
       visibleContextEvents: [],
+      eventHandles: {},
       ownRecentUtterances: [],
       involvedPeople: [],
       relevantChannels: [],
