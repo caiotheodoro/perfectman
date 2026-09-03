@@ -117,8 +117,13 @@ export class PulseScheduler {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private inFlight: Promise<PulseResult> | null = null;
   private readonly currentChannelIdByAgent = new Map<string, string>();
+  private readonly agentNamesByAgentId: Record<string, string>;
 
-  constructor(private readonly config: PulseSchedulerConfig) {}
+  constructor(private readonly config: PulseSchedulerConfig) {
+    this.agentNamesByAgentId = Object.fromEntries(
+      config.agents.map((agent) => [agent.id, agent.persona.name]),
+    );
+  }
 
   start(): void {
     if (this.running) return;
@@ -298,6 +303,7 @@ export class PulseScheduler {
           membership,
           settings: sim.settings,
           actionEmotions: stepResult.actionEmotions,
+          agentNames: this.agentNamesByAgentId,
         }).catch(async (err) => {
           await this.emitOperatorEvent(this.schedulerError("Intent resolver failed", err, agent.id));
           return null;

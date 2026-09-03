@@ -39,11 +39,11 @@ const SIM: Simulation = {
   updatedAt: Date.now(),
 };
 
-function makeAgentState(): AgentState {
+function makeAgentState(agentId = "agent_1"): AgentState {
   return {
-    agentId: "agent_1",
+    agentId,
     simulationId: "sim_test",
-    personaId: "persona_1",
+    personaId: `persona_${agentId.split("_")[1] ?? "1"}`,
     presence: "active",
     coreMood: { valence: 0, arousal: 0.5, stability: 0.8, energy: 0.6, circumplexAngle: 0, circumplexRadius: 0.5, momentumValence: 0, momentumArousal: 0 },
     socialEmotions: { jealousy: 0, envy: 0, humiliation: 0, pride: 0, shame: 0, affection: 0, resentment: 0, suspicion: 0, admiration: 0, contempt: 0, neediness: 0, socialAnxiety: 0, fearOfExclusion: 0, desireForStatus: 0, desireForIntimacy: 0 },
@@ -112,20 +112,20 @@ const CANNED_MEMORY_PROPOSAL = {
 } as const;
 
 /** Canned step result for driving the real PulseScheduler through its commit-ordering. */
-function makeCannedStep({ memory = false } = {}): import("@perfectman/shared").EngineStepResult {
+function makeCannedStep({ memory = false, agentId = "agent_1" } = {}): import("@perfectman/shared").EngineStepResult {
   return {
     visibleEvents: [],
     newEvents: [],
     attentionResults: { noticed: false, dueScore: 0, reasons: [], needsLLM: false, triggeringReason: "test" },
     perceptionPacket: {
-      agentId: "agent_1", triggeringEvent: null, visibleContextEvents: [], eventHandles: {}, ownRecentUtterances: [], involvedPeople: [],
+      agentId, triggeringEvent: null, visibleContextEvents: [], eventHandles: {}, ownRecentUtterances: [], involvedPeople: [],
       relevantChannels: [], relevantMemories: [],
       translatedEmotionalState: { summary: "", emotions: [] },
       availableActions: [],
     },
     interpretations: [],
     emotionDelta: { coreMoodDelta: {}, socialEmotionDeltas: {}, relationalDeltas: new Map(), ruminationApplied: false },
-    updatedAgentState: makeAgentState(),
+    updatedAgentState: makeAgentState(agentId),
     motivations: [],
     pressures: [],
     inhibitions: [],
@@ -134,7 +134,7 @@ function makeCannedStep({ memory = false } = {}): import("@perfectman/shared").E
     availableActions: [],
     initiativeCandidates: [],
     memoryProposals: memory ? [CANNED_MEMORY_PROPOSAL] : [],
-    noOpRecord: { agentId: "agent_1", pulseIndex: 0, privateMotiveSummary: "nothing to do", reason: "test" },
+    noOpRecord: { agentId, pulseIndex: 0, privateMotiveSummary: "nothing to do", reason: "test" },
     operatorMetrics: { pulseIndex: 0, pulseDurationMs: 10, agentsCalled: 1, eventsCommitted: 0, llmCallsMade: 0, budgetUsedPercent: 0 },
   };
 }
@@ -149,10 +149,10 @@ describe("PulseScheduler", () => {
   let intentResolver: IntentResolver;
   let engineEventBuilder: EngineEventBuilder;
 
-  function buildScheduler(stepResolver?: (snap: import("@perfectman/shared").EngineSnapshot) => import("@perfectman/shared").EngineStepResult): PulseScheduler {
+  function buildScheduler(stepResolver?: (snap: import("@perfectman/shared").EngineSnapshot) => import("@perfectman/shared").EngineStepResult, agents: AgentContext[] = [AGENT]): PulseScheduler {
     return new PulseScheduler({
       simulation: SIM,
-      agents: [AGENT],
+      agents,
       defaultPublicChannelId: "ch_public",
       eventRepo,
       agentStateRepo,
@@ -174,6 +174,12 @@ describe("PulseScheduler", () => {
     id: "agent_1",
     state: makeAgentState(),
     persona: PERSONA,
+  };
+  const PERSONA_2: PersonaConfig = { ...PERSONA, id: "persona_2", name: "Other Agent" };
+  const AGENT_2: AgentContext = {
+    id: "agent_2",
+    state: makeAgentState("agent_2"),
+    persona: PERSONA_2,
   };
 
   const mockAgentRuntime: AgentRuntime = {
@@ -358,6 +364,64 @@ describe("PulseScheduler", () => {
     });
     await sched.runPulse();
     expect(mockAgentRuntime.generateIntent).toHaveBeenCalled();
+  });
+
+  describe("resolver agentNames wiring", () => {
+    function makeMentionIntent(visibleContent: string): ActionIntent {
+      return {
+        id: createId(),
+        actorId: "agent_1",
+        intentType: "send_message",
+        channelTarget: "ch_public",
+        personTargets: [],
+        privateMotiveSummary: "test motive",
+        emotionDrivers: [],
+        motivationDrivers: [],
+        memoryWrites: [],
+        visibleContent,
+      };
+    }
+
+    function buildTwoAgentScheduler(): PulseScheduler {
+      return buildScheduler((snap) => {
+        const step = makeCannedStep({ agentId: snap.agentState.agentId });
+        if (snap.agentState.agentId !== "agent_1") return step;
+        return {
+          ...step,
+          availableActions: [
+            { intentType: "send_message", channelTargets: ["ch_public"], personTargets: ["agent_1", "agent_2"], blocked: false },
+            { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
+          ],
+          decision: { outcome: "act", needsLLM: true, initiativeProceed: false },
+          noOpRecord: null,
+        };
+      }, [AGENT, AGENT_2]);
+    }
+
+    async function committedMessagePayload(visibleContent: string): Promise<Record<string, unknown>> {
+      mockAgentRuntime.generateIntent = vi.fn().mockImplementation(async (input: Parameters<AgentRuntime["generateIntent"]>[0]) =>
+        input.agentId === "agent_1"
+          ? { intent: makeMentionIntent(visibleContent), llmUsage: null, latencyMs: 10, fallbackApplied: false, operatorEvents: [] }
+          : { intent: makeNoOpIntent("agent_2"), llmUsage: null, latencyMs: 10, fallbackApplied: false, operatorEvents: [] },
+      );
+      const sched = buildTwoAgentScheduler();
+      await sched.runPulse();
+      const events = await eventRepo.getAfter("sim_test");
+      const message = events.find((e) => e.type === "message_sent" && e.actorId === "agent_1");
+      expect(message).toBeDefined();
+      return message!.payload;
+    }
+
+    it("the scheduler's agentNames map reaches the resolver: a display-name mention stamps mentionedAgentIds", async () => {
+      const payload = await committedMessagePayload("hey Other Agent, what do you think?");
+      expect(payload["mentionedAgentIds"]).toEqual(["agent_2"]);
+    });
+
+    it("a substring of a display name is not a mention", async () => {
+      const payload = await committedMessagePayload("Other Agentrix was here earlier");
+      // The builder stamps mentionedAgentIds only when non-empty.
+      expect(payload).not.toHaveProperty("mentionedAgentIds");
+    });
   });
 
   describe("lastActionAt stamping", () => {

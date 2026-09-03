@@ -11,6 +11,8 @@ import { BRUNO, CAIO, GOULART } from "@perfectman/shared";
 import { updateCoreMood } from "../emotion/update-core-mood.js";
 import { computeActionEmotions } from "../emotion/compute-action-emotions.js";
 import { updateEmotionStack } from "../emotion/update-emotion-stack.js";
+import { updateRelationalEmotions } from "../emotion/update-relational-emotions.js";
+import { makeEvent as makeFixtureEvent, makeMood, makePersona } from "./fixtures.js";
 
 // --- Helpers ---
 
@@ -222,5 +224,102 @@ describe("updateEmotionStack", () => {
     const agent = makeAgent("a1");
     const result = updateEmotionStack(agent, CAIO, [], 3, Date.now());
     expect(result.emotionDelta.ruminationApplied).toBe(false);
+  });
+});
+
+// --- updateRelationalEmotions accretion ---
+describe("updateRelationalEmotions accretion", () => {
+  const OBSERVER = "a1";
+  const ACTOR = "other";
+  const NOW = 1_700_000_050_000;
+
+  it("accretes the invitee's entry about the creator from a channel_created invite", () => {
+    const event = makeFixtureEvent("channel_created", {
+      actorId: ACTOR,
+      payload: { invitedAgentIds: [OBSERVER] },
+    });
+    const entry = updateRelationalEmotions(new Map(), [event], OBSERVER, makeMood(), makePersona(), NOW).get(ACTOR);
+    expect(entry, "the invited agent must accrete a relational entry about the creator").toBeDefined();
+    expect(entry!.trust, "the channel_created target rule warms the invitee toward the creator").toBeGreaterThan(0);
+  });
+
+  it("does not cast a singularly-invited agent as an excluded bystander", () => {
+    const event = makeFixtureEvent("agent_invited", {
+      actorId: ACTOR,
+      payload: { invitedAgentId: OBSERVER },
+    });
+    const entry = updateRelationalEmotions(new Map(), [event], OBSERVER, makeMood(), makePersona(), NOW).get(ACTOR);
+    expect(entry, "the invitee must not accrete the exclusion-cascade entry about the inviter").toBeUndefined();
+  });
+
+  it("accretes a warm invitee entry for the full create-and-invite scenario", () => {
+    const events = [
+      makeFixtureEvent("channel_created", {
+        actorId: ACTOR,
+        payload: { invitedAgentIds: [OBSERVER] },
+      }),
+      makeFixtureEvent("agent_invited", {
+        actorId: ACTOR,
+        payload: { invitedAgentId: OBSERVER },
+      }),
+    ];
+    const entry = updateRelationalEmotions(new Map(), events, OBSERVER, makeMood(), makePersona(), NOW).get(ACTOR);
+    expect(entry, "creating a channel and inviting the observer must accrete an entry about the creator").toBeDefined();
+    expect(entry!.trust, "the invitee's view of the creator must warm, not turn to the exclusion cascade").toBeGreaterThan(0);
+  });
+
+  it("moves a directed message's target less than a reply does", () => {
+    const reply = makeFixtureEvent("reply_sent", { actorId: ACTOR, payload: { personTargets: [OBSERVER] } });
+    const message = makeFixtureEvent("message_sent", { actorId: ACTOR, payload: { personTargets: [OBSERVER] } });
+    const afterReply = updateRelationalEmotions(new Map(), [reply], OBSERVER, makeMood(), makePersona(), NOW).get(ACTOR);
+    const afterMessage = updateRelationalEmotions(new Map(), [message], OBSERVER, makeMood(), makePersona(), NOW).get(ACTOR);
+    expect(afterMessage, "a directed plain message must accrete an entry about the sender").toBeDefined();
+    expect(afterReply, "a reply must accrete an entry about the sender").toBeDefined();
+    expect(afterReply!.trust - afterMessage!.trust, "a reply must move trust more than a plain message").toBeGreaterThan(0);
+    expect(afterReply!.comfort - afterMessage!.comfort, "a reply must move comfort more than a plain message").toBeGreaterThan(0);
+  });
+
+  it("gives bystanders a small co-presence entry about the sender of an untargeted message", () => {
+    const message = makeFixtureEvent("message_sent", { actorId: ACTOR, payload: {} });
+    const entry = updateRelationalEmotions(new Map(), [message], OBSERVER, makeMood(), makePersona(), NOW).get(ACTOR);
+    const directed = updateRelationalEmotions(
+      new Map(),
+      [makeFixtureEvent("message_sent", { actorId: ACTOR, payload: { personTargets: [OBSERVER] } })],
+      OBSERVER,
+      makeMood(),
+      makePersona(),
+      NOW,
+    ).get(ACTOR);
+    expect(entry, "co-presence must accrete an entry about the sender").toBeDefined();
+    expect(directed, "a directed message must accrete an entry about the sender").toBeDefined();
+    expect(entry!.trust, "the co-presence bump must be positive").toBeGreaterThan(0);
+    expect(entry!.trust, "the co-presence bump must move trust less than a directed message").toBeLessThan(directed!.trust);
+  });
+
+  it("ambient co-presence carries no interaction bookkeeping; a directed message does", () => {
+    const ambient = updateRelationalEmotions(
+      new Map(),
+      [makeFixtureEvent("message_sent", { actorId: ACTOR, payload: {} })],
+      OBSERVER, makeMood(), makePersona(), NOW,
+    ).get(ACTOR);
+    const directed = updateRelationalEmotions(
+      new Map(),
+      [makeFixtureEvent("message_sent", { actorId: ACTOR, payload: { personTargets: [OBSERVER] } })],
+      OBSERVER, makeMood(), makePersona(), NOW,
+    ).get(ACTOR);
+    expect(ambient!.interactionCount, "ambient co-presence is not a discrete interaction").toBe(0);
+    expect(ambient!.lastInteractionAt, "ambient co-presence leaves lastInteractionAt untouched").toBeNull();
+    expect(directed!.interactionCount, "a directed message counts as an interaction").toBe(1);
+    expect(directed!.lastInteractionAt, "a directed message stamps lastInteractionAt").toBe(NOW);
+  });
+
+  it("registers a reaction aimed at the observer as a target event", () => {
+    const reaction = makeFixtureEvent("reaction_sent", {
+      actorId: ACTOR,
+      payload: { personTargets: [OBSERVER], emoji: "🔥" },
+    });
+    const entry = updateRelationalEmotions(new Map(), [reaction], OBSERVER, makeMood(), makePersona(), NOW).get(ACTOR);
+    expect(entry, "a reaction must register in relational state").toBeDefined();
+    expect(entry!.affection, "the reaction target rule warms the receiver toward the reactor").toBeGreaterThan(0);
   });
 });

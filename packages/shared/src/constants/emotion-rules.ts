@@ -204,6 +204,9 @@ export type RelationalUpdateRule = {
   desireForClosenessDelta: number;
   desireForDistanceDelta:  number;
   magnitude:           number;    // scale factor [0, 1]
+  // Ambient rules carry emotional weight but are not a discrete interaction:
+  // they leave interactionCount and lastInteractionAt untouched.
+  ambient?:            boolean;
 };
 
 export const RELATIONAL_UPDATE_RULES: readonly RelationalUpdateRule[] = [
@@ -295,5 +298,36 @@ export const RELATIONAL_UPDATE_RULES: readonly RelationalUpdateRule[] = [
     desireForClosenessDelta:  0.01,
     desireForDistanceDelta:   0.01,
     magnitude:                0.5,
+  },
+
+  // Directed plain message to me → gentle warmth, clearly lighter than a reply
+  {
+    trigger:                  "message_sent",
+    role:                     "target",
+    trustDelta:               0.04,
+    affectionDelta:           0.03,
+    resentmentDelta:          0,
+    suspicionDelta:           -0.01,
+    comfortDelta:             0.03,
+    curiosityDelta:           0.02,
+    desireForClosenessDelta:  0.02,
+    desireForDistanceDelta:   -0.01,
+    magnitude:                0.5,
+  },
+
+  // Ambient co-presence: an untargeted message still nudges the room's view of its sender
+  {
+    trigger:                  "message_sent",
+    role:                     "bystander",
+    trustDelta:               0.01,
+    affectionDelta:           0.01,
+    resentmentDelta:          0,
+    suspicionDelta:           0,
+    comfortDelta:             0.01,
+    curiosityDelta:           0.01,
+    desireForClosenessDelta:  0.01,
+    desireForDistanceDelta:   0,
+    magnitude:                0.3,
+    ambient:                  true,
   },
 ];

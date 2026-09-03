@@ -1,0 +1,39 @@
+{
+  "version": "evidence-v1",
+  "mode": "mock",
+  "generatedAt": "2026-09-02T13:57:01.904Z",
+  "scenarios": [
+    {
+      "id": "v1_exclusion_inferred",
+      "category": "v1_behavior",
+      "signalsPassed": 2,
+      "signalsTotal": 3,
+      "probesPassed": 12,
+      "probesTotal": 15
+    },
+    {
+      "id": "motive_gossip",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 13,
+      "probesTotal": 15
+    },
+    {
+      "id": "motive_conflict",
+      "category": "motive_archetype",
+      "signalsPassed": 2,
+      "signalsTotal": 2,
+      "probesPassed": 13,
+      "probesTotal": 15
+    },
+    {
+      "id": "stagnation_resentment_loop",
+      "category": "stagnation_attractor",
+      "signalsPassed": 1,
+      "signalsTotal": 3,
+      "probesPassed": 12,
+      "probesTotal": 15
+    }
+  ]
+}
