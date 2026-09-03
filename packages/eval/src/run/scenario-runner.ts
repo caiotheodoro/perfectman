@@ -27,6 +27,7 @@ import {
   AgentConfigRegistry,
   MockDeliveryGateway,
   createLLMProvider,
+  llmBudget,
   personaPackToProfile,
 } from "@perfectman/server";
 import type { PersonaPromptProfile } from "@perfectman/server";
@@ -146,6 +147,11 @@ class TrackingRuntime {
 
 export class ScenarioRunner {
   static async run(scenario: RoleplayScenario, opts: RunnerOpts = {}): Promise<ScenarioRunArtifact> {
+    // The cognition path records usage into the shared llmBudget singleton
+    // with wall-clock stamps (#147). Reset this scenario's windows up front
+    // so back-to-back runs in one process (e.g. the pinned-seed replay test)
+    // start from identical budget state and stay deterministic.
+    llmBudget.reset(scenario.id);
     const started = Date.now();
     const packs = new Map<string, import("@perfectman/shared").PersonaPack>();
     for (const p of ALL_PERSONAS) {

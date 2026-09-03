@@ -211,8 +211,58 @@ describe("LLMBudgetTracker", () => {
     expect(budget.getPriority("sim-test", "goulart")).toBe("blocked");
   });
 
-  it("should get complete status", () => {
+  it("accumulates sim-clock usage in the per-minute window (#147)", () => {
+    // Production callers stamp LLMUsage.createdAt with the pulse-relative sim
+    // clock (~10^3-10^6). Those records must still count toward the wall-clock
+    // rate windows — previously cleanup() pruned them instantly because it
+    // compared sim-time stamps against Date.now().
+    for (let i = 0; i < 10; i++) {
+      budget.recordUsage({
+        simulationId: "sim-test",
+        agentId: "goulart",
+        model: "mock-model",
+        inputTokens: 10,
+        outputTokens: 20,
+        latencyMs: 100,
+        callType: "cognition",
+        pulseIndex: i,
+        createdAt: (i + 1) * 3000,
+      });
+    }
+
+    const dec = budget.canCall({
+      simulationId: "sim-test",
+      agentId: "goulart",
+      priority: "high",
+    });
+    expect(dec.allowed).toBe(false);
+    expect(dec.reason).toContain("Call budget exhausted");
+  });
+
+  it("accumulates sim-clock tokens in the per-hour window (#147)", () => {
     budget.recordUsage({
+      simulationId: "sim-test",
+      agentId: "goulart",
+      model: "mock-model",
+      inputTokens: 5000,
+      outputTokens: 5000,
+      latencyMs: 100,
+      callType: "cognition",
+      pulseIndex: 1,
+      createdAt: 3000,
+    });
+
+    const dec = budget.canCall({
+      simulationId: "sim-test",
+      agentId: "goulart",
+      priority: "high",
+      inputTokensEstimate: 50,
+    });
+    expect(dec.allowed).toBe(false);
+    expect(dec.reason).toContain("Token budget exhausted");
+  });
+
+  it("should get complete status", () => {    budget.recordUsage({
       simulationId: "sim-test",
       agentId: "goulart",
       model: "mock-model",
