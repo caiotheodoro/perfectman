@@ -196,6 +196,27 @@ describe("relational accretion through the real resolver", () => {
     expect(noMatchPayload["mentionedAgentIds"], "content naming no known agent must parse no mentions").toBeUndefined();
   });
 
+  it("does not attribute a mention when two agents share a display name", async () => {
+    const ambiguousCtx = {
+      ...ctxFor(makeIntent({})),
+      agentNames: { [ALICE]: "Sam", [BRUNO]: "Sam" } as Record<string, string>,
+    };
+    const result = await resolver.resolve(makeIntent({ visibleContent: "hey Sam" }), ambiguousCtx);
+    expect(
+      result.committedEvents[0]!.payload["mentionedAgentIds"],
+      "an ambiguous name must not be attributed to either agent",
+    ).toBeUndefined();
+  });
+
+  it("ignores a one-character display name", async () => {
+    const shortNameCtx = {
+      ...ctxFor(makeIntent({})),
+      agentNames: { [ALICE]: "A", [BRUNO]: "Bruno" } as Record<string, string>,
+    };
+    const result = await resolver.resolve(makeIntent({ visibleContent: "A and Bruno are here" }), shortNameCtx);
+    expect(result.committedEvents[0]!.payload["mentionedAgentIds"]).toEqual([BRUNO]);
+  });
+
   it("accretes non-empty relational state for both agents of the conversation", async () => {
     const committed = await scriptConversation();
 

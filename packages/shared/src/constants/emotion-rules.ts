@@ -204,6 +204,9 @@ export type RelationalUpdateRule = {
   desireForClosenessDelta: number;
   desireForDistanceDelta:  number;
   magnitude:           number;    // scale factor [0, 1]
+  // Ambient rules carry emotional weight but are not a discrete interaction:
+  // they leave interactionCount and lastInteractionAt untouched.
+  ambient?:            boolean;
 };
 
 export const RELATIONAL_UPDATE_RULES: readonly RelationalUpdateRule[] = [
@@ -325,5 +328,6 @@ export const RELATIONAL_UPDATE_RULES: readonly RelationalUpdateRule[] = [
     desireForClosenessDelta:  0.01,
     desireForDistanceDelta:   0,
     magnitude:                0.3,
+    ambient:                  true,
   },
 ];

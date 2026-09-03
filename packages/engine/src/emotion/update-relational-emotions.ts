@@ -13,7 +13,9 @@ import { clamp, RELATIONAL_UPDATE_RULES } from "@perfectman/shared";
  * Steps:
  *   1. Apply relational update rules triggered by events
  *   2. Mood-congruent distortion (negative mood → worse interpretation)
- *   3. Increment interactionCount for direct interactions
+ *   3. Increment interactionCount / stamp lastInteractionAt — skipped for
+ *      ambient rules (co-presence carries emotional weight, not a discrete
+ *      interaction)
  *   4. Clamp all dimensions
  */
 export function updateRelationalEmotions(
@@ -53,7 +55,7 @@ export function updateRelationalEmotions(
 
     for (const rule of RELATIONAL_UPDATE_RULES) {
       const roleMatches =
-        (rule.trigger === event.type || rule.trigger === event.type) &&
+        rule.trigger === event.type &&
         ((rule.role === "actor" && isActor) ||
          (rule.role === "target" && isTarget) ||
          (rule.role === "bystander" && isBystander));
@@ -93,8 +95,8 @@ export function updateRelationalEmotions(
           curiosity:         clamp(existing.curiosity + rule.curiosityDelta * scale, 0, 1),
           desireForCloseness: clamp(existing.desireForCloseness + rule.desireForClosenessDelta * scale, 0, 1),
           desireForDistance:  clamp(existing.desireForDistance + rule.desireForDistanceDelta * scale, 0, 1),
-          interactionCount:   existing.interactionCount + 1,
-          lastInteractionAt:  now,
+          interactionCount:   rule.ambient ? existing.interactionCount : existing.interactionCount + 1,
+          lastInteractionAt:  rule.ambient ? existing.lastInteractionAt : now,
           lastPositiveAt:
             rule.trustDelta > 0 || rule.affectionDelta > 0 ? now : existing.lastPositiveAt,
           lastNegativeAt:

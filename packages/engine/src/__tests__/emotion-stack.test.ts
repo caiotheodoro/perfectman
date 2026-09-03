@@ -296,6 +296,23 @@ describe("updateRelationalEmotions accretion", () => {
     expect(entry!.trust, "the co-presence bump must move trust less than a directed message").toBeLessThan(directed!.trust);
   });
 
+  it("ambient co-presence carries no interaction bookkeeping; a directed message does", () => {
+    const ambient = updateRelationalEmotions(
+      new Map(),
+      [makeFixtureEvent("message_sent", { actorId: ACTOR, payload: {} })],
+      OBSERVER, makeMood(), makePersona(), NOW,
+    ).get(ACTOR);
+    const directed = updateRelationalEmotions(
+      new Map(),
+      [makeFixtureEvent("message_sent", { actorId: ACTOR, payload: { personTargets: [OBSERVER] } })],
+      OBSERVER, makeMood(), makePersona(), NOW,
+    ).get(ACTOR);
+    expect(ambient!.interactionCount, "ambient co-presence is not a discrete interaction").toBe(0);
+    expect(ambient!.lastInteractionAt, "ambient co-presence leaves lastInteractionAt untouched").toBeNull();
+    expect(directed!.interactionCount, "a directed message counts as an interaction").toBe(1);
+    expect(directed!.lastInteractionAt, "a directed message stamps lastInteractionAt").toBe(NOW);
+  });
+
   it("registers a reaction aimed at the observer as a target event", () => {
     const reaction = makeFixtureEvent("reaction_sent", {
       actorId: ACTOR,

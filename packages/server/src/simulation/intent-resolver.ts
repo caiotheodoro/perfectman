@@ -76,21 +76,33 @@ type ResolveContext = {
 };
 
 const MENTION_BOUNDARY = "[^\\p{L}\\p{N}]";
+const MIN_MENTION_NAME_LENGTH = 2;
 
 /**
  * Exact, case-insensitive display-name mentions over visible content:
  * persona name "Bruno" matches both "Bruno" and "@bruno", but not
  * "BrunoBytes". Names absent from agentNames never match.
+ *
+ * A name is skipped when it is shorter than {@link MIN_MENTION_NAME_LENGTH}
+ * or when two or more agents share it (case-insensitively) — an ambiguous
+ * mention cannot be attributed to one agent, and a wrong attribution feeds
+ * relational deltas to the wrong pair.
  */
 function parseMentionedAgentIds(
   visibleContent: string | undefined,
   agentNames: Record<string, string> | undefined,
 ): string[] {
   if (!visibleContent || !agentNames) return [];
+  const nameCounts = new Map<string, number>();
+  for (const displayName of Object.values(agentNames)) {
+    const key = displayName.trim().toLowerCase();
+    if (key) nameCounts.set(key, (nameCounts.get(key) ?? 0) + 1);
+  }
   const mentioned: string[] = [];
   for (const [agentId, displayName] of Object.entries(agentNames)) {
     const name = displayName.trim();
-    if (!name) continue;
+    if (name.length < MIN_MENTION_NAME_LENGTH) continue;
+    if ((nameCounts.get(name.toLowerCase()) ?? 0) > 1) continue;
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pattern = new RegExp(
       `(^|${MENTION_BOUNDARY})${escaped}($|${MENTION_BOUNDARY})`,
