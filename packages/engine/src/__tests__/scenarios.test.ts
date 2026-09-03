@@ -99,7 +99,7 @@ describe("buildSimulationFixture scenario", () => {
       expect(result.perceptionPacket.agentId).toBe(persona.id);
       expect(result.updatedAgentState.agentId).toBe(persona.id);
       assertEmotionBounds(result.updatedAgentState);
-      expect(result.availableActions).toHaveLength(11);
+      expect(result.availableActions).toHaveLength(10);
       expect(result.initiativeCandidates).toHaveLength(17);
     }
   });

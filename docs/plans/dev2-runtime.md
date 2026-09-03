@@ -203,7 +203,7 @@ Projection invariants:
 
 `runEngineStep()` returns deterministic outputs even when `decision.needsLLM === false`. Dev2 must commit those outputs, when present, before deciding whether to call the LLM:
 
-- `memoryProposals[]` → one `memory_written` event per proposal when present; current dev3 engine returns `[]` and dev1/parser work may populate proposals later
+- `memoryProposals[]` → one `memory_written` event per proposal when present; current dev3 engine returns `[]` and dev1/parser work may populate proposals later — populated instead via the action intent's `memoryWrites` (resolver path); the engine path stays empty
 - `noOpRecord` → one `no_op_recorded` event when present
 - `stagnation_detected` → committed from periodic `computeStagnationMetrics()` when thresholds trip
 

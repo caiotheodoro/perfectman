@@ -12,8 +12,9 @@ import type {
   EngineSnapshot,
   EngineStepResult,
   EndingOffer,
+  Memory,
 } from "@perfectman/shared";
-import { createSeededRng, STAGNATION_WINDOW_PULSES } from "@perfectman/shared";
+import { createId, createSeededRng, STAGNATION_WINDOW_PULSES } from "@perfectman/shared";
 import { runEngineStep, computeStagnationMetrics, detectAttractorStates, filterVisibleEventsForAgent } from "@perfectman/engine";
 import type { IEventRepository, IAgentStateRepository } from "../persistence/repositories.js";
 import type { ChannelRegistry } from "./channel-registry.js";
@@ -264,7 +265,9 @@ export class PulseScheduler {
       });
 
       if (engineEvents.length > 0) {
-        eventsCommitted += await this.appendAndProject(engineEvents, channels, membership);
+        const committed = await this.appendAndProject(engineEvents, channels, membership);
+        eventsCommitted += committed.length;
+        this.applyMemoryProjection(committed, stepResult.updatedAgentState);
       }
 
       if (stepResult.decision.needsLLM) {
@@ -276,7 +279,7 @@ export class PulseScheduler {
           now,
         }).catch(async (err) => {
           const failureEvent = this.llmFailureEvent(agent.id, channelAnchorId, err);
-          eventsCommitted += await this.appendAndProject([failureEvent], channels, membership);
+          eventsCommitted += (await this.appendAndProject([failureEvent], channels, membership)).length;
           return null;
         });
 
@@ -324,7 +327,9 @@ export class PulseScheduler {
         });
 
         if (resolved.committedEvents.length > 0) {
-          eventsCommitted += await this.appendAndProject(resolved.committedEvents, channels, membership);
+          const committed = await this.appendAndProject(resolved.committedEvents, channels, membership);
+          eventsCommitted += committed.length;
+          this.applyMemoryProjection(committed, stepResult.updatedAgentState);
         }
 
         for (const opEv of [...resolved.operatorEvents, ...runtimeOutput.operatorEvents]) {
@@ -404,7 +409,7 @@ export class PulseScheduler {
           pulseIndex: this.pulseIndex,
         });
         if (stagnationEvent) {
-          eventsCommitted += await this.appendAndProject([stagnationEvent], channels, membership);
+          eventsCommitted += (await this.appendAndProject([stagnationEvent], channels, membership)).length;
         }
       }
     }
@@ -425,10 +430,10 @@ export class PulseScheduler {
         });
         if (review.events.length > 0) {
           const committed = await this.appendAndProject(review.events, channels, membership);
-          eventsCommitted += committed;
+          eventsCommitted += committed.length;
           // The ending offer fires only after its events actually commit: a
           // failed append leaves the offer pending for the next review.
-          if (committed > 0 && review.endingOffer) {
+          if (committed.length > 0 && review.endingOffer) {
             await this.config.onEndOffered?.(review.endingOffer, this.pulseIndex);
           }
         } else if (review.endingOffer) {
@@ -466,13 +471,13 @@ export class PulseScheduler {
     events: SimulationEvent[],
     channels: Channel[],
     membership: ChannelMembership[],
-  ): Promise<number> {
+  ): Promise<CommittedEvent[]> {
     let committed: CommittedEvent[];
     try {
       committed = await this.config.eventRepo.append(this.config.simulation.id, events);
     } catch (err) {
       await this.emitOperatorEvent(this.schedulerError("Failed to append events", err));
-      return 0;
+      return [];
     }
 
     for (const ev of committed) {
@@ -482,7 +487,34 @@ export class PulseScheduler {
       await this.emitEventVisibility(ev);
     }
 
-    return committed.length;
+    return committed;
+  }
+
+  /**
+   * Copies committed `memory_written` events into the acting agent's state.
+   * Mutates `updatedAgentState` in place — same-pulse `persistAndSnapshot` is
+   * the single write point, and a failed append never reaches here because
+   * only returned (committed) events are passed in.
+   */
+  private applyMemoryProjection(committed: CommittedEvent[], agentState: AgentState): void {
+    for (const event of committed) {
+      if (event.type !== "memory_written") continue;
+      agentState.memories.push({
+        id: createId(),
+        agentId: event.actorId,
+        simulationId: event.simulationId,
+        type: event.payload["memoryType"] as Memory["type"],
+        subjectAgentIds: event.payload["subjectAgentIds"] as string[],
+        sourceEventIds: [event.id],
+        summary: event.payload["summary"] as string,
+        emotionalTone: event.payload["emotionalTone"] as string,
+        confidence: event.payload["confidence"] as number,
+        intensity: event.payload["intensity"] as number,
+        unresolved: event.payload["unresolved"] as boolean,
+        createdAt: event.createdAt,
+        lastReinforcedAt: event.createdAt,
+      });
+    }
   }
 
   private async emitEventVisibility(event: CommittedEvent): Promise<void> {

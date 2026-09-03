@@ -97,12 +97,6 @@ const SCRIPTS: Record<string, Script> = {
         "Já ouvi o suficiente. Sair sem fazer barulho.",
         "Esse canal perdeu o ponto. Vou embora.",
       ],
-      write_memory: [
-        "Preciso registrar isso. Pode ser útil mais tarde.",
-        "Não quero esquecer essa troca. Vou guardar.",
-        "Algo aqui vale a pena registrar antes que se perca.",
-        "Memória falha. Melhor anotar enquanto ainda está fresco.",
-      ],
       delay_response: [
         "Melhor esperar um pouco antes de responder. Quero pensar.",
         "Não tenho certeza do que dizer. Preciso de mais um segundo.",
@@ -186,12 +180,6 @@ const SCRIPTS: Record<string, Script> = {
         "Cansada desse lugar. Tem coisa mais interessante em outro canto.",
         "Já vi o que precisava ver. Vou embora.",
         "Ficou entediante. Próximo.",
-      ],
-      write_memory: [
-        "Anotando isso aqui — pode virar munição depois.",
-        "Guardando esse momento. Vai ser útil quando precisar.",
-        "Registro. Nunca se sabe quando isso vai servir.",
-        "Não quero esquecer o que aconteceu aqui.",
       ],
       delay_response: [
         "Deixar a tensão crescer um pouco antes de responder.",
@@ -277,12 +265,6 @@ const SCRIPTS: Record<string, Script> = {
         "Saindo antes que o canal esgote qualquer utilidade.",
         "Canal sem mais valor. Meu tempo vale mais em outro lugar.",
       ],
-      write_memory: [
-        "Registrando para análise futura. Informação é poder.",
-        "Guardar isso. Pode mudar o jogo mais tarde.",
-        "Anotando. Padrões aqui revelam muito sobre a dinâmica.",
-        "Isso vai ser útil. Registrar agora.",
-      ],
       delay_response: [
         "Timing é tudo. Esperando o momento mais vantajoso.",
         "Responder agora seria fraco. Deixar marinar.",
@@ -318,7 +300,6 @@ const FALLBACK_SCRIPT: Script = {
     react: ["Deixando uma reação.", "Uma reação breve basta aqui."],
     invite_agent: ["Convidando alguém para o canal.", "Trazendo alguém para essa conversa."],
     leave_channel: ["Saindo deste canal.", "Não preciso mais deste espaço."],
-    write_memory: ["Registrando algo importante.", "Vale guardar esse momento."],
     delay_response: ["Aguardando antes de responder.", "Vou esperar um pouco."],
     typing_start: ["Digitando uma resposta.", "Vou tentar formular algo."],
     typing_cancel: ["Cancelando a resposta.", "Mudei de ideia."],
