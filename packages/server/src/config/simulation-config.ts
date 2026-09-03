@@ -441,6 +441,12 @@ export async function buildConfiguredSimulation(
   if (!options.llmBudget) {
     llmBudget.registerLimits(simulationId, config.simulation.settings);
   }
+  // Fresh simulation, fresh rate windows (#147): the shared singleton keeps
+  // usage keyed by simulationId across builds in one process (CLI reruns,
+  // back-to-back eval runs, restart tests re-attaching the same id), so a
+  // new build must not inherit another run's wall-clock usage. Limits are
+  // kept — reset() only clears recorded calls/tokens.
+  (budget as LLMBudgetTracker).reset(simulationId);
 
   const runtime = new SimulationRuntime({
     delivery,
