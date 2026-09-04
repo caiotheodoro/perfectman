@@ -15,7 +15,15 @@ import type {
   Memory,
 } from "@perfectman/shared";
 import { createId, createSeededRng, STAGNATION_WINDOW_PULSES, OWN_HISTORY_LIMIT } from "@perfectman/shared";
-import { runEngineStep, computeStagnationMetrics, detectAttractorStates, filterVisibleEventsForAgent } from "@perfectman/engine";
+import {
+  runEngineStep,
+  computeStagnationMetrics,
+  detectAttractorStates,
+  filterVisibleEventsForAgent,
+  effectiveConfidence,
+  shouldEvictMemory,
+  MAX_MEMORIES,
+} from "@perfectman/engine";
 import type { IEventRepository, IAgentStateRepository } from "../persistence/repositories.js";
 import type { ChannelRegistry } from "./channel-registry.js";
 import type { RateLimitGate } from "./rate-limit-gate.js";
@@ -31,6 +39,7 @@ import type {
   ActionIntentOperatorData,
   AttractorDetectedOperatorData,
   EventVisibilityData,
+  MemoryReinforcedOperatorData,
   StagnationMetricsOperatorData,
 } from "@perfectman/shared";
 import { buildAgentRuntimeInput } from "./runtime-input-builder.js";
@@ -311,6 +320,15 @@ export class PulseScheduler {
         this.applyMemoryProjection(committed, stepResult.updatedAgentState);
       }
 
+      // Reinforcement (testing effect): every memory this pulse's selection
+      // surfaced gets its decay clock reset, regardless of whether the
+      // perception packet goes on to an LLM call.
+      await this.applyMemoryReinforcement(
+        stepResult.perceptionPacket.relevantMemories ?? [],
+        stepResult.updatedAgentState,
+        now,
+      );
+
       if (stepResult.decision.needsLLM) {
         agentsCalled += 1;
         const budgetPriority = this.config.llmBudget.getPriority(sim.id, agent.id);
@@ -325,7 +343,7 @@ export class PulseScheduler {
         });
 
         if (!runtimeOutput) {
-          await this.persistAndSnapshot(stepResult.updatedAgentState);
+          await this.persistAndSnapshot(stepResult.updatedAgentState, now);
           continue;
         }
 
@@ -346,7 +364,7 @@ export class PulseScheduler {
         });
 
         if (!resolved) {
-          await this.persistAndSnapshot(stepResult.updatedAgentState);
+          await this.persistAndSnapshot(stepResult.updatedAgentState, now);
           continue;
         }
 
@@ -416,7 +434,7 @@ export class PulseScheduler {
         }
       }
 
-      await this.persistAndSnapshot(stepResult.updatedAgentState);
+      await this.persistAndSnapshot(stepResult.updatedAgentState, now);
     }
 
     // Every 10 pulses: compute stagnation metrics
@@ -583,6 +601,55 @@ export class PulseScheduler {
     }
   }
 
+  /**
+   * Reinforcement (testing effect): a memory surfaced by this pulse's memory
+   * selection gets its decay clock (`lastReinforcedAt`) reset to `now`, and a
+   * `memory_reinforced` operator event is emitted per surfaced memory. Mutates
+   * `agentState.memories` in place — same single-write-point rationale as
+   * `applyMemoryProjection`.
+   */
+  private async applyMemoryReinforcement(
+    surfacedMemories: readonly Memory[],
+    agentState: AgentState,
+    now: number,
+  ): Promise<void> {
+    for (const surfaced of surfacedMemories) {
+      const stored = agentState.memories.find((m) => m.id === surfaced.id);
+      if (!stored) continue;
+      stored.lastReinforcedAt = now;
+      const data: MemoryReinforcedOperatorData = { memoryId: stored.id, memoryType: stored.type };
+      await this.emitOperatorEvent({
+        type: "memory_reinforced",
+        simulationId: agentState.simulationId,
+        agentId: agentState.agentId,
+        pulseIndex: this.pulseIndex,
+        detail: `Memory reinforced: ${stored.type}`,
+        data,
+        createdAt: Date.now(),
+      });
+    }
+  }
+
+  /**
+   * Eviction pass over an agent's memory store, run right before persistence
+   * so every pulse's write reflects a decayed-and-capped store regardless of
+   * which code path produced this pulse's `agentState` (LLM failure, resolver
+   * failure, or the full commit path all funnel through `persistAndSnapshot`).
+   * Drops faded, stale, non-open-loop memories first (`shouldEvictMemory`),
+   * then applies the `MAX_MEMORIES` backstop by strength if still over.
+   */
+  private applyMemoryEviction(agentState: AgentState, now: number): void {
+    const pulseIntervalMs = this.config.pulseIntervalMs;
+    agentState.memories = agentState.memories.filter(
+      (m) => !shouldEvictMemory(m, now, pulseIntervalMs),
+    );
+    if (agentState.memories.length > MAX_MEMORIES) {
+      agentState.memories = [...agentState.memories]
+        .sort((a, b) => effectiveConfidence(b, now, pulseIntervalMs) - effectiveConfidence(a, now, pulseIntervalMs))
+        .slice(0, MAX_MEMORIES);
+    }
+  }
+
   private async emitEventVisibility(event: CommittedEvent): Promise<void> {
     const data: EventVisibilityData = {
       eventId: event.id,
@@ -626,7 +693,8 @@ export class PulseScheduler {
     }
   }
 
-  private async persistAndSnapshot(agentState: AgentState): Promise<void> {
+  private async persistAndSnapshot(agentState: AgentState, now: number): Promise<void> {
+    this.applyMemoryEviction(agentState, now);
     try {
       await this.config.agentStateRepo.upsert(agentState);
     } catch (err) {

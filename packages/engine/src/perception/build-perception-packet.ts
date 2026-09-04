@@ -39,6 +39,8 @@ export function buildPerceptionPacket(
   attentionResult: AttentionResult,
   translatedEmotionalState: TranslatedEmotionalState,
   availableActions: AvailableAction[],
+  now: number,
+  pulseIntervalMs: number,
   ownHistoryWindow: readonly CommittedEvent[] = [],
 ): PerceptionPacket {
   // Filter out spectator/operator-only event types
@@ -119,6 +121,8 @@ export function buildPerceptionPacket(
     involvedPeople,
     agent.agentId,
     MAX_MEMORIES,
+    now,
+    pulseIntervalMs,
   );
 
   return {

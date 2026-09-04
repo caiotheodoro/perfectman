@@ -19,6 +19,13 @@ export { scoreAttention } from "./attention/score-attention.js";
 // Perception
 export { buildPerceptionPacket } from "./perception/build-perception-packet.js";
 
+// Memory decay / eviction (used by dev2's memory projection for eviction)
+export {
+  effectiveConfidence,
+  shouldEvictMemory,
+  MAX_MEMORIES,
+} from "./perception/memory-salience.js";
+
 // Available Actions
 export { computeAvailableActions } from "./action/compute-available-actions.js";
 
