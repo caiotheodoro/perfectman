@@ -79,6 +79,11 @@ function buildFinalStates(artifact: ScenarioRunArtifact): Record<string, Record<
       arousal: round3(state.coreMood.arousal),
       stability: round3(state.coreMood.stability),
       energy: round3(state.coreMood.energy),
+      // Both mechanisms are populated by the real scheduler pipeline this
+      // runner drives (applyMemoryProjection, resolver participant-identifier
+      // stamping); their counts were simply never surfaced into evidence.
+      memories: state.memories.length,
+      relationalStates: state.relationalStates.size,
       ...Object.fromEntries(
         Object.entries(state.socialEmotions)
           .filter(([, v]) => v > 0.02)

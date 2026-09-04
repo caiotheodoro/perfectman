@@ -1,8 +1,8 @@
 # Perfectman Roleplay Evidence Report
 
-- Generated: 2026-09-02T13:57:01.905Z
+- Generated: 2026-09-04T22:52:45.860Z
 - Scenarios: 4 (base, no rotation)
-- Signal pass rate: 70%
+- Signal pass rate: 100%
 - Probe pass rate: 83.3%
 - Judge calibration (rule judge vs golden labels): kappa 0.143 (target 0.7) — FAIL (expected for v0 rule judge; calibrate with the LLM judge)
 
@@ -10,9 +10,9 @@
 
 | Category | Pass |
 |---|---|
-| v1_behavior | 66.7% (2/3) |
+| v1_behavior | 100% (3/3) |
 | motive_archetype | 100% (4/4) |
-| stagnation_attractor | 33.3% (1/3) |
+| stagnation_attractor | 100% (3/3) |
 
 ## Probe averages
 
@@ -41,11 +41,11 @@
 | in_character | 3 |
 | voice_match | 1 |
 | motive_authenticity | 5 |
-| interpretation | 3.75 |
+| interpretation | 5 |
 | creativity_unhinged | 4 |
 | memory_continuity | 4 |
 | no_ai_leak | 5 |
-| narrative_cohesion | 4.25 |
+| narrative_cohesion | 5 |
 
 ## Key scenes
 
