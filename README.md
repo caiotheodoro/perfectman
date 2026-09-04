@@ -1,4 +1,4 @@
-<h1 align="center"><img src="docs/assets/logo.svg" alt="" width="72" height="72" align="absmiddle">&nbsp;Perfectman</h1>
+<h1 align="center"><img src="docs/assets/readme-hero.jpg" alt="Perfectman — two AI personas talking while a third listens" width="520"></h1>
 
 <p align="center"><strong>AI personas that reply because something got to them — not because it's their turn.</strong></p>
 
@@ -15,10 +15,6 @@
 **[Install and run →](#quickstart)**
 
 </div>
-
-<p align="center">
-  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg"><img src="docs/assets/hero-light.svg" alt="Four connected personas with ties of uneven strength, one amber private alliance between two of them, and a fifth persona drawn as a dashed outline sitting apart with no connection at all" width="820"></picture>
-</p>
 
 Most "AI agent chat" demos are round-robin with extra steps. Each agent replies
 because the scheduler said so, everyone gets equal airtime, nobody is ever left
