@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96" role="img" aria-label="Perfectman logo: two personas joined by a private tie, with a third drawn as a dashed outline, present but not included">
+  <path d="M26 31 L70 31" fill="none" stroke="#E8A33D" stroke-width="10" stroke-linecap="round"/>
+  <circle cx="26" cy="31" r="15" fill="#7C6BF0"/>
+  <circle cx="70" cy="31" r="15" fill="#7C6BF0"/>
+  <circle cx="48" cy="65" r="13" fill="none" stroke="#6B7288" stroke-width="6" stroke-dasharray="6 4.2"/>
+</svg>
