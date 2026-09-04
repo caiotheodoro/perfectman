@@ -1,6 +1,6 @@
-<h1 align="center"><img src="docs/assets/logo.svg" alt="" width="72" height="72" align="absmiddle">&nbsp;Perfectman</h1>
+<h1 align="center"><img src="docs/assets/readme-logo.png" alt="" width="72" height="72" align="absmiddle">&nbsp;Perfectman</h1>
 
-<p align="center"><strong>AI personas that reply because something got to them — not because it's their turn.</strong></p>
+<p align="center"><strong>AI personas use attention, emotion, and memory to select when they send messages.</strong></p>
 
 <div align="center">
 
@@ -16,36 +16,30 @@
 
 </div>
 
-<p align="center">
-  <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/hero-dark.svg"><img src="docs/assets/hero-light.svg" alt="Four connected personas with ties of uneven strength, one amber private alliance between two of them, and a fifth persona drawn as a dashed outline sitting apart with no connection at all" width="820"></picture>
-</p>
+Perfectman is a social simulation with AI personas in shared chat channels.
+Agents do not take fixed turns. Each agent uses an internal model to select an
+action or remain silent.
 
-Most "AI agent chat" demos are round-robin with extra steps. Each agent replies
-because the scheduler said so, everyone gets equal airtime, nobody is ever left
-out, and nothing is ever awkward. That is not what a group chat is.
+The model uses event visibility, attention, interpretation, motivation, emotion,
+pressure, and inhibition. An agent sends a message only when its pressure is
+sufficient to overcome its inhibition.
 
-**Perfectman agents act because something got to them.** An event has to be
-visible, catch attention, get interpreted, produce motivation and emotion, and
-build enough pressure to overcome inhibition before anything is said at all. The
-result is a chat where someone lurks for twenty minutes, replies late in a way
-that changes what the reply means, starts a private channel out of jealousy, or
-works out they were excluded from something purely because nobody mentioned it.
-
-Nobody scripts those moments. They fall out of the model.
+This model can produce delayed messages, private channels, and inferred
+exclusion. These behaviors result from the model. The system does not use a
+script for each social interaction.
 
 ### Highlights
 
-- 🧠 **Pressure, not turn-taking** — a ten-stage pipeline decides whether to speak at all. Silence is a first-class outcome, not a missing reply.
-- 🚪 **Exclusion is inferred** — an agent works out it wasn't invited from public silence. Nobody tells it.
-- 🤫 **Private alliances** — agents open private channels from curiosity, gossip, jealousy, secrecy, or repair.
-- 🩹 **Memory is biased on purpose** — episodic and relationship memory drift emotionally. It is not a perfect log, because people aren't.
-- 📊 **Measured, not vibes** — 123 deterministic scenarios, [benchmarked offline](#benchmarks) with no API key, gated at 100% behavioral signals in CI.
+- **Action selection:** A ten-stage pipeline selects an action. The agent can remain silent.
+- **Inferred exclusion:** An agent can infer exclusion from the absence of public messages, without an explicit notification.
+- **Private channels:** Agents can create private channels through curiosity, gossip, jealousy, secrecy, or relationship repair.
+- **Biased memory:** Emotion can change the episodic memory and relationship memory. These memories are not exact event records.
+- **Behavior tests:** The reported results cover 123 deterministic scenarios [without a model connection](#benchmarks). CI requires all behavioral signals to pass.
 
 > [!NOTE]
-> **Status:** early, pre-1.0 experiment. The event-oriented runtime and social
-> presence engine work end to end; the interesting behaviors (exclusion,
-> masking, grudges, biased memory) are what we're actively tuning for. Expect
-> rough edges.
+> **Status:** This is an early experiment before version 1.0. The event-oriented
+> runtime and social presence engine operate together. Work continues on
+> exclusion, masking, grudges, and biased memory. Errors and limitations remain.
 
 ## Table of contents
 
@@ -62,65 +56,69 @@ Nobody scripts those moments. They fall out of the model.
 
 ## What this is
 
-Every action an agent takes has to survive this pipeline:
+Each agent action goes through this pipeline:
 
 ```text
 event → visibility → attention → interpretation → motivation
       → emotion → pressure → inhibition → intent → resolver → committed event
 ```
 
-Any stage can stop it. That is the whole point — most of what makes a group chat
-feel human is the messages that *don't* get sent.
+Any stage can stop an action. Silence is a valid result.
 
-Concretely, the pipeline is what lets an agent:
+The pipeline supports these behaviors:
 
 | Behavior | What it looks like |
 |---|---|
-| **Selective attention** | notice a mention and reply — or notice a message and deliberately not reply |
-| **Private alliance** | create or enter a private channel out of curiosity, gossip, jealousy, secrecy, or repair |
-| **Inferred exclusion** | work out it wasn't invited from public silence, without being told |
-| **Meaningful lateness** | reply late in a way that changes what the reply means |
-| **Biased memory** | store an emotionally-colored memory instead of a perfect log |
+| **Selective attention** | An agent can select a message for attention and then send a message or remain silent. |
+| **Private alliance** | An agent can create or enter a private channel through curiosity, gossip, jealousy, secrecy, or relationship repair. |
+| **Inferred exclusion** | An agent can infer exclusion from the absence of public messages. |
+| **Meaningful lateness** | A delay can change the meaning of a message. |
+| **Biased memory** | Emotion can change the memory of an event. |
 
-A rule-based spectator layer turns the committed event log into a narrative
-recap of the hidden social shifts — without leaking backend metrics into the
-story.
+A rule-based spectator layer uses the committed event log to give a narrative
+summary of social changes. This summary does not contain backend metrics.
 
 ## Quickstart
 
-Requires Node.js and [pnpm](https://pnpm.io/).
+The application requires Node.js and [pnpm](https://pnpm.io/).
+
+Install the dependencies. Then build the application:
 
 ```bash
 pnpm install
 pnpm build
 ```
 
-Set up a local simulation config (kept out of git so personas stay private):
+Create the local configuration directories. Then copy the example configuration:
+
+Git ignores these local configuration paths to protect persona data.
 
 ```bash
 mkdir -p config/personas config/persona-notes
 cp examples/simulations/mock.inline-personas.example.json config/index.json
 ```
 
-Run it:
+Start the simulation:
 
 ```bash
 pnpm --filter @perfectman/server simulation
 ```
 
-This uses `providerType: "mock"` by default — **no API key or model needed** to
-see the runtime work.
+The default configuration uses `providerType: "mock"`. This simulation does not
+require an API key or a model.
 
 ## Running with a real model, for free
 
-You don't need a paid API key.
+These options do not require a paid API key.
 
 <details>
 <summary><strong>Native Ollama</strong> — recommended on macOS / Apple Silicon</summary>
 
-Docker Desktop has no GPU passthrough on macOS, and the Docker CPU path is
-dramatically slower (~1.2–1.5 tok/s vs ~40 tok/s native with Metal). Install
-Ollama directly instead:
+Docker Desktop does not support GPU passthrough on macOS. The reported speed is
+approximately 1.2–1.5 tokens per second with Docker on the CPU. The reported
+speed with native Metal is approximately 40 tokens per second.
+
+Install Ollama directly on macOS. Then download the model. Start the server:
 
 ```bash
 brew install ollama        # or download from https://ollama.com
@@ -128,7 +126,7 @@ ollama pull qwen3:1.7b
 ollama serve               # API on :11434
 ```
 
-Then point `config/index.json` at `examples/simulations/qwen3-local.example.json`.
+Copy `examples/simulations/qwen3-local.example.json` to `config/index.json`.
 </details>
 
 <details>
@@ -139,7 +137,7 @@ pnpm qwen:dev              # pulls qwen3:1.7b, portable CPU-safe default
 # or: pnpm qwen:dev:8b for the 8B model
 ```
 
-On a machine with an NVIDIA driver, opt into GPU passthrough:
+If your machine has an NVIDIA driver, enable GPU passthrough with this command:
 
 ```bash
 docker compose -f docker/qwen3/qwen3.compose.yml \
@@ -148,19 +146,19 @@ docker compose -f docker/qwen3/qwen3.compose.yml \
 </details>
 
 <details>
-<summary><strong>FreeLLMAPI</strong> — unified proxy aggregating free-tier provider keys</summary>
+<summary><strong>FreeLLMAPI</strong> — one proxy for free-tier provider keys</summary>
 
 ```bash
 cp .env.example .env   # set FREELLMAPI_ENCRYPTION_KEY
 pnpm freellm:dev       # API on :3001, dashboard on :5173
 ```
 
-Add provider keys and create a unified key via the dashboard, then set
-`FREELLMAPI_KEY` in `.env`.
+Add the provider keys in the dashboard. Create a unified key in the dashboard.
+Set `FREELLMAPI_KEY` in `.env`.
 </details>
 
 <details>
-<summary><strong>Simulation in Docker</strong> — no local Node/pnpm toolchain needed</summary>
+<summary><strong>Simulation in Docker</strong> — local Node.js and pnpm are not necessary</summary>
 
 ```bash
 mkdir -p config
@@ -168,9 +166,14 @@ cp examples/simulations/mock.inline-personas.example.json config/index.json
 docker compose -f docker/app/app.compose.yml up --build
 ```
 
-Putting the app file first keeps every relative path anchored to `docker/app/`.
-With Ollama running as an in-project service, point your config's provider
-`baseURL` at `http://qwen3:11434/v1` (container DNS), not localhost:
+The first Compose file determines the base directory for relative paths. Keep
+`docker/app/app.compose.yml` first so that these paths use `docker/app/`.
+
+If Ollama runs in the same Compose project, set the provider `baseURL` to
+`http://qwen3:11434/v1`. This address uses container DNS. A localhost address
+refers to the simulation container itself.
+
+Start the services. Then display the simulation log:
 
 ```bash
 docker compose -f docker/app/app.compose.yml \
@@ -179,8 +182,8 @@ docker compose -f docker/app/app.compose.yml \
                -f docker/qwen3/qwen3.compose.yml logs -f simulation
 ```
 
-To use a real provider, hand keys to the container with a read-only mount of the
-same `.env` the CLI reads natively:
+For a real provider, give the container read-only access to the `.env` file that
+the CLI uses:
 
 ```bash
 docker compose -f docker/app/app.compose.yml run --rm \
@@ -190,23 +193,26 @@ docker compose -f docker/app/app.compose.yml run --rm \
 
 ## Bring your own personas
 
-See [`docs/personas/README.md`](docs/personas/README.md) for the plug-and-play
-persona interview/compile workflow. Real, person-specific persona files live
-under `config/` and `docs/personas/` — both gitignored, so nothing personal gets
-committed.
+See [`docs/personas/README.md`](docs/personas/README.md) for the persona interview
+and compilation procedure. The local persona paths under `config/` and
+`docs/personas/` contain person-specific files. Git ignores these paths. Generic
+instructions and templates remain in the repository.
 
 ## Benchmarks
 
-The behavioral claims above are measured, not asserted. The full suite runs
-**fully offline** — mock provider, rule judge, no API key, no model server:
+The benchmark suite tests the behaviors above. It uses a mock provider and a
+rule judge. It does not require an API key or a model server.
+
+Run the benchmark suite. Then check the CI acceptance criteria:
 
 ```bash
 pnpm --filter @perfectman/eval bench --mode mock --judge rule --out out/bench.json
 node scripts/ci/check-bench-gate.mjs out/bench.json
 ```
 
-**Scenario coverage** — 123 scenario runs across five behavioral categories,
-every one of them deterministic:
+**Reported scenario results:** 123 deterministic scenario runs cover five
+behavioral categories. These figures describe the existing benchmark report.
+They are not results from a new test run.
 
 | Category | Runs | Signal pass rate |
 |---|---:|---:|
@@ -217,8 +223,8 @@ every one of them deterministic:
 | `edge_chaos` | 12 | 100% |
 | **Total** | **123** | **100%** |
 
-**Behavioral signals** — 276 assertions that the social engine actually did the
-thing, not that it produced plausible text:
+**Reported behavioral signals:** 276 assertions check the actions of the social
+engine. These assertions do not assess the quality of generated text.
 
 | Signal | Passed | Rate |
 |---|---:|---:|
@@ -228,32 +234,39 @@ thing, not that it produced plausible text:
 | `emotion_rises` | 15 / 15 | 100% |
 | `emotion_stays` | 15 / 15 | 100% |
 
-Zero scenario runs failed. **Runtime probes** average **91.0%** — the weakest are
-`content-repetition` (21.1%) and `memory-write` (70.7%), both tracked as trend
-signals rather than gates.
+No scenario runs failed in the report. The mean result for **runtime probes**
+is **91.0%**. The lowest results are `content-repetition` (21.1%) and
+`memory-write` (70.7%). CI records these results for comparison but does not use
+them as acceptance criteria.
 
-### What is and isn't gated
+<a id="what-is-and-isnt-gated"></a>
+
+### CI acceptance criteria
 
 | Layer | Result | Gated in CI? |
 |---|---|---|
-| **Behavioral signals** | 100% | ✅ yes — the merge bar |
-| **Runtime probes** | 91.0% | ⚠️ tracked, not gated |
-| **Judge axis scores** | 6 of 8 targets met | ❌ advisory only |
+| **Behavioral signals** | 100% | Yes. All signals must pass. |
+| **Runtime probes** | 91.0% | No. CI records these results for comparison. |
+| **Judge axis scores** | 6 of 8 targets met | No. These scores are advisory. |
 
 > [!IMPORTANT]
-> Judge axis scores are **deliberately not gated**, because the rule judge has
-> not passed its calibration bar: Cohen's κ against the golden-labeled set is
-> **0.219 against a 0.7 target** (n=39). Until that lands, axis numbers are a
-> trend signal, not evidence. `in_character` (2.99 / 4.0) and `voice_match`
-> (1.16 / 3.8) are the two axes currently below target, and voice_match is
-> where the judge disagrees with the golden labels most.
+> CI does not use judge axis scores as acceptance criteria. The rule judge has
+> not met its calibration target. Cohen's κ against the golden-labeled set is
+> **0.219 against a target of 0.7** (n=39). These scores permit comparisons, but
+> they are not evidence of qualitative accuracy.
+>
+> The reported scores for `in_character` (2.99 / 4.0) and `voice_match`
+> (1.16 / 3.8) are below target. The largest disagreement with the golden labels
+> occurs on `voice_match`.
 
-This is the honest read: **the deterministic parts of the social engine hold at
-100%, and the qualitative scoring of them is not yet trustworthy.** Improving
-judge calibration is [open work](#status--open-questions).
+All reported deterministic behavioral signals passed. The qualitative scores
+are not sufficiently reliable. Judge calibration remains
+[open work](#status--open-questions).
 
-Separately, the unit and hygiene suite covers **1,426 tests across 126 files** and
-passes clean on Node 22:
+The reported unit and hygiene suite contains **1,426 tests across 126 files**.
+The recorded run passed on Node 22.
+
+Check the types. Then run the unit tests and hygiene checks:
 
 ```bash
 pnpm lint       # typecheck, all four packages
@@ -262,43 +275,53 @@ pnpm test:all   # unit tests + hygiene gates
 
 ## Architecture
 
-The full design lives in [`docs/README.md`](docs/README.md) — start there for the
-canonical architecture, the emotion model, the social presence engine, and open
-design questions. Short version:
+The full design is in [`docs/README.md`](docs/README.md). It contains the
+authoritative architecture, the emotion model, the social presence engine, and
+open design questions.
+
+The main layers have these responsibilities:
 
 | Layer | Responsibility |
 |---|---|
-| **Event-oriented runtime** (`packages/server`) | append-only event log, command handlers, intent resolver, per-audience projections (delivery, spectator, operator, engine snapshot), pluggable transports (Socket.IO, Discord, stdout, mock) |
-| **Social presence engine** (`packages/engine`) | pure, I/O-free attention/motivation/emotion/pressure/inhibition model — the behavioral core |
-| **Agent mind** (`packages/server/src/agent`) | persona identity, writing style, relationship beliefs, and the LLM-backed runtime turning perception into intent |
-| **Evaluation harness** (`packages/eval`) | scenario registry, rule and LLM judges, probes, calibration, narration |
-| **Continuity system** | episodic + relationship memory, emotional drift, rumination — biased and emotional on purpose |
+| **Event-oriented runtime** (`packages/server`) | It contains the append-only event log, command handlers, and intent resolver. It creates delivery, spectator, operator, and engine snapshot projections. It supports Socket.IO, Discord, stdout, and mock transports. |
+| **Social presence engine** (`packages/engine`) | It calculates attention, motivation, emotion, pressure, and inhibition without I/O. |
+| **Agent mind** (`packages/server/src/agent`) | It contains persona identity, writing style, and relationship beliefs. Its LLM runtime converts perception into intent. |
+| **Evaluation harness** (`packages/eval`) | It contains the scenario registry, rule and LLM judges, probes, calibration, and narration. |
+| **Continuity system** | It contains episodic memory, relationship memory, emotional drift, and rumination. Emotion can change the memory. |
 
 ## Status / open questions
 
-This is an active experiment, not a finished product. See
-[`docs/README.md`](docs/README.md#current-open-questions) for what's genuinely
-undecided — private-channel spectator visibility, how much scoring machinery
-should exist, which symbolic actions are worth keeping, and closing the judge
-calibration gap above. If one of those interests you, that's a good place to
-start.
+This is an active experiment. It is not a completed product.
+
+The [open design questions](docs/README.md#current-open-questions) include:
+
+- What can spectators see from private channels?
+- How much scoring logic does the system need?
+- Which symbolic actions must the system keep?
+- How can judge calibration meet its target?
+
+Contributors can start with these questions.
 
 ## Releases
 
-Every tagged release (`v*`) publishes a runtime container image to GHCR via
-`docker-release.yml`: `ghcr.io/caiotheodoro/perfectman` gets the exact tag
-(`v0.1.0` → image tag `0.1.0`, plus `latest` for non-prerelease).
+For each tagged release (`v*`), `docker-release.yml` publishes a runtime container
+image to GHCR at `ghcr.io/caiotheodoro/perfectman`. The image tag omits the initial
+`v`. For example, release `v0.1.0` produces image tag `0.1.0`. Releases that are
+not prereleases also update `latest`.
+
+Download the latest release image:
 
 ```bash
 docker pull ghcr.io/caiotheodoro/perfectman:latest
 ```
 
-Use a tagged image instead of `latest` anywhere reproducibility matters.
+For reproducible runs, use a release-specific image tag instead of `latest`.
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md). Issues tagged `good first issue` are
-scoped entry points that don't require reading the full architecture doc first.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). Issues with the `good first issue` label
+have a limited scope. You do not need to read the full architecture document to
+start these issues.
 
 ## Star history
 
