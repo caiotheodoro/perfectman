@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 420" width="880" height="420" role="img" aria-label="Four connected personas with ties of uneven strength, one amber private alliance between two of them, and a fifth persona drawn as a dashed outline sitting apart with no connection at all">
+  <rect width="880" height="420" fill="#0D1117"/>
+  <g fill="none" stroke-linecap="round">
+    <!-- ties of uneven weight: attention is not evenly distributed -->
+    <path d="M235 145 L425 110" stroke="#7C6BF0" stroke-width="17"/>
+    <path d="M235 145 L400 300" stroke="#7C6BF0" stroke-width="12"/>
+    <path d="M425 110 L615 180" stroke="#7C6BF0" stroke-width="9"/>
+    <path d="M425 110 L400 300" stroke="#7C6BF0" stroke-width="5" opacity="0.55"/>
+    <!-- private alliance nobody else can see -->
+    <path d="M615 180 L400 300" stroke="#E8A33D" stroke-width="14"/>
+    <!-- the tie that never formed: inferred exclusion from silence -->
+    <path d="M745 322 L648 246" stroke="#4E5566" stroke-width="7" stroke-dasharray="2 20"/>
+  </g>
+  <g fill="#7C6BF0">
+    <circle cx="235" cy="145" r="36"/>
+    <circle cx="425" cy="110" r="36"/>
+    <circle cx="615" cy="180" r="36"/>
+    <circle cx="400" cy="300" r="36"/>
+  </g>
+  <!-- excluded: present, unconnected, still watching -->
+  <circle cx="790" cy="345" r="32" fill="none" stroke="#4E5566" stroke-width="7" stroke-dasharray="16 13"/>
+</svg>
