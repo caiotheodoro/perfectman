@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from "vitest";
+import { describe, it, expect, beforeEach, vi } from "vitest";
 import { LLMBudgetTracker } from "../llm-budget.js";
 
 describe("LLMBudgetTracker", () => {
@@ -11,6 +11,21 @@ describe("LLMBudgetTracker", () => {
       tokenBudgetPerHour: 10000,
     });
   });
+
+  function makeUsage(overrides: { pulseIndex?: number; createdAt?: number; inputTokens?: number; outputTokens?: number } = {}) {
+    return {
+      simulationId: "sim-test",
+      agentId: "goulart",
+      model: "mock-model",
+      inputTokens: 10,
+      outputTokens: 20,
+      latencyMs: 100,
+      callType: "cognition" as const,
+      pulseIndex: 0,
+      createdAt: Date.now(),
+      ...overrides,
+    };
+  }
 
   it("should allow calls when budget is fresh", () => {
     const dec = budget.canCall({
@@ -209,6 +224,62 @@ describe("LLMBudgetTracker", () => {
       });
     }
     expect(budget.getPriority("sim-test", "goulart")).toBe("blocked");
+  });
+
+  it("accumulates sim-clock usage in the per-minute window (#147)", () => {
+    // Production callers stamp LLMUsage.createdAt with the pulse-relative sim
+    // clock (~10^3-10^6). Those records must still count toward the wall-clock
+    // rate windows — previously cleanup() pruned them instantly because it
+    // compared sim-time stamps against Date.now().
+    for (let i = 0; i < 10; i++) {
+      budget.recordUsage(makeUsage({ pulseIndex: i, createdAt: (i + 1) * 3000 }));
+    }
+
+    const dec = budget.canCall({
+      simulationId: "sim-test",
+      agentId: "goulart",
+      priority: "high",
+    });
+    expect(dec.allowed).toBe(false);
+    expect(dec.reason).toContain("Call budget exhausted");
+  });
+
+  it("accumulates sim-clock tokens in the per-hour window (#147)", () => {
+    budget.recordUsage(makeUsage({ pulseIndex: 1, createdAt: 3000, inputTokens: 5000, outputTokens: 5000 }));
+
+    const dec = budget.canCall({
+      simulationId: "sim-test",
+      agentId: "goulart",
+      priority: "high",
+      inputTokensEstimate: 50,
+    });
+    expect(dec.allowed).toBe(false);
+    expect(dec.reason).toContain("Token budget exhausted");
+  });
+
+  it("expires records outside the wall-clock windows (#147)", () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date("2026-01-01T00:00:00Z"));
+      for (let i = 0; i < 10; i++) {
+        budget.recordUsage(makeUsage({ pulseIndex: i }));
+      }
+      expect(budget.canCall({
+        simulationId: "sim-test",
+        agentId: "goulart",
+        priority: "high",
+      }).allowed).toBe(false);
+
+      // Past the 1-minute call window, the old calls no longer count.
+      vi.setSystemTime(new Date("2026-01-01T00:02:00Z"));
+      expect(budget.canCall({
+        simulationId: "sim-test",
+        agentId: "goulart",
+        priority: "high",
+      }).allowed).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("should get complete status", () => {

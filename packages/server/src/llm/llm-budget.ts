@@ -164,8 +164,15 @@ export class LLMBudgetTracker {
   }
 
   recordUsage(usage: LLMUsage): void {
-    const { simulationId, agentId, inputTokens, outputTokens, createdAt } = usage;
-    const timestamp = createdAt || Date.now();
+    const { simulationId, agentId, inputTokens, outputTokens } = usage;
+    // Rate windows are wall-clock sliding windows, so stamp them with
+    // Date.now() taken here — never with usage.createdAt, which carries the
+    // pulse-relative sim clock (~10^3-10^6). Storing sim-time stamps made
+    // cleanup()'s wall-clock filter prune every record on the next call,
+    // silently disabling both rate limits (#147). createdAt stays on the sim
+    // clock for deterministic replay attribution and never feeds anything
+    // the replay fingerprint covers.
+    const timestamp = Date.now();
 
     // Simulation level calls
     if (!this.calls.has(simulationId)) {
