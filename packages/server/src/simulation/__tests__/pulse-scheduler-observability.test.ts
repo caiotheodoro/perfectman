@@ -218,6 +218,8 @@ describe("PulseScheduler observability events", () => {
     runtime?: AgentRuntime;
     gateway?: MockDeliveryGateway | StdoutDeliveryGateway;
     intentResolver?: IntentResolver;
+    /** Scene display names per agent id (AgentContext.displayName); absent → persona name. */
+    displayNames?: Record<string, string>;
   } = {}): Promise<SchedulerHarness> {
     const eventRepo = new InMemoryEventRepository();
     const agentStateRepo = new InMemoryAgentStateRepository();
@@ -250,7 +252,12 @@ describe("PulseScheduler observability events", () => {
 
     const scheduler = new PulseScheduler({
       simulation: SIM,
-      agents: ["agent_1", "agent_2"].map((id) => ({ id, state: makeAgentState(id), persona: makePersona(id) })),
+      agents: ["agent_1", "agent_2"].map((id) => ({
+        id,
+        state: makeAgentState(id),
+        persona: makePersona(id),
+        ...(options.displayNames?.[id] !== undefined ? { displayName: options.displayNames[id] } : {}),
+      })),
       defaultPublicChannelId: "ch_public",
       eventRepo,
       agentStateRepo,
@@ -583,4 +590,19 @@ describe("PulseScheduler observability events", () => {
     expect(m.data?.["level"]).toBe(independent.level);
     expect(m.data?.["compositeScore"]).toBe(independent.compositeScore);
   });
+
+  it("parses mentions against the scene display name, not the persona name", async () => {
+    const h = await buildScheduler({
+      displayNames: { agent_2: "Íris" },
+      runtime: runtimeWith((agentId) =>
+        agentId === "agent_1" ? makeSendMessageIntent("agent_1", "valeu @iris, depois te conto") : makeNoOpIntent(agentId),
+      ),
+      step: llmStep({ availableActions: [SEND_MESSAGE_SLOT] }),
+    });
+    await h.scheduler.runPulse();
+    const committed = await h.eventRepo.getAfter("sim_obs");
+    const message = committed.find((e) => e.type === "message_sent" && e.actorId === "agent_1");
+    expect(message?.payload["mentionedAgentIds"]).toEqual(["agent_2"]);
+  });
+
 });

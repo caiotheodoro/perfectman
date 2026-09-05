@@ -304,7 +304,23 @@ export function scenarioToConfig(scenario: RoleplayScenario, llmMode: "mock" | "
     const pack = getPersonaPackById(spec.personaId);
     const mood = fullMood(spec, persona);
     const social = fullSocial(spec);
-    const basePromptProfile = pack ? personaPackToProfile(pack) : genericProfile(persona);
+    // Re-skin the pack onto the scene: scene name wins, pack peers survive
+    // only through the cast, and a scene that seeds memories replaces the
+    // pack's unresolved-memory lines.
+    const castDisplayNames = Object.fromEntries(
+      scenario.agents.map(a => [
+        a.agentId,
+        a.scenarioContext?.displayName ?? getPersonaPackById(a.personaId)?.displayName ?? a.agentId,
+      ]),
+    );
+    const basePromptProfile = pack
+      ? personaPackToProfile(pack, {
+          scenarioContext: spec.scenarioContext,
+          castAgentIds: scenario.agents.map(a => a.agentId),
+          castDisplayNames,
+          replacesMemories: (spec.memories?.length ?? 0) > 0,
+        })
+      : genericProfile(persona);
     let promptProfile = basePromptProfile;
     if (spec.hiddenObjective) promptProfile = { ...promptProfile, hiddenObjective: spec.hiddenObjective };
     if (spec.scenarioContext) promptProfile = { ...promptProfile, scenarioContext: spec.scenarioContext };

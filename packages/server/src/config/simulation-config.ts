@@ -1,3 +1,4 @@
+import type { ScenarioContextBlock as ParsedScenarioContextBlock, AgentObjective as ParsedAgentObjective } from "@perfectman/shared";
 import { readFile } from "node:fs/promises";
 import { existsSync, mkdirSync } from "node:fs";
 import { dirname, isAbsolute, join, parse, resolve } from "node:path";
@@ -474,6 +475,9 @@ export async function buildConfiguredSimulation(
     id: agent.id,
     state: makeAgentState(agent, simulationId),
     persona: registry.getPersona(agent.id),
+    // The name the room addresses this agent by: the prompt profile's (a
+    // scene re-skin lands there), which mention parsing must match.
+    displayName: agent.promptProfile.displayName,
   }));
 
   const simulation = await runtime.createSimulation({
@@ -1098,6 +1102,62 @@ function parsePromptProfile(
       profile["sourceRefs"] ?? { assessmentIds: [], lastCompiledAt: "manual-config" },
       `${path}.sourceRefs`,
     ),
+    ...(profile["scenarioContext"] !== undefined
+      ? { scenarioContext: parseScenarioContext(profile["scenarioContext"], `${path}.scenarioContext`) }
+      : {}),
+    ...(profile["hiddenObjective"] !== undefined
+      ? { hiddenObjective: parseHiddenObjective(profile["hiddenObjective"], `${path}.hiddenObjective`) }
+      : {}),
+  };
+}
+
+/**
+ * File-config parity for the two scene fields the eval runner threads
+ * programmatically (`AgentSeedSpec.scenarioContext` / `.hiddenObjective`):
+ * without these a `pnpm simulation` run could never carry a hidden objective.
+ */
+function parseScenarioContext(input: unknown, path: string): ParsedScenarioContextBlock {
+  const ctx = asRecord(input, path);
+  const castMapRaw = ctx["castMap"];
+  let castMap: Record<string, string> | undefined;
+  if (castMapRaw !== undefined) {
+    const record = asRecord(castMapRaw, `${path}.castMap`);
+    castMap = {};
+    for (const [peer, target] of Object.entries(record)) {
+      castMap[peer] = requiredString(target, `${path}.castMap.${peer}`);
+    }
+  }
+  const customNotes = ctx["customNotes"] === undefined ? undefined : asStringArray(ctx["customNotes"], `${path}.customNotes`);
+  return {
+    roomContext: requiredString(ctx["roomContext"], `${path}.roomContext`),
+    startingMood: requiredString(ctx["startingMood"], `${path}.startingMood`),
+    introBehaviorInstruction: requiredString(ctx["introBehaviorInstruction"], `${path}.introBehaviorInstruction`),
+    ...(optionalString(ctx["firstMoveGuidance"], `${path}.firstMoveGuidance`) !== undefined
+      ? { firstMoveGuidance: optionalString(ctx["firstMoveGuidance"], `${path}.firstMoveGuidance`) }
+      : {}),
+    ...(customNotes !== undefined ? { customNotes } : {}),
+    ...(optionalString(ctx["hostStartingMessage"], `${path}.hostStartingMessage`) !== undefined
+      ? { hostStartingMessage: optionalString(ctx["hostStartingMessage"], `${path}.hostStartingMessage`) }
+      : {}),
+    ...(optionalString(ctx["displayName"], `${path}.displayName`) !== undefined
+      ? { displayName: optionalString(ctx["displayName"], `${path}.displayName`) }
+      : {}),
+    ...(castMap !== undefined ? { castMap } : {}),
+  };
+}
+
+function parseHiddenObjective(input: unknown, path: string): ParsedAgentObjective {
+  const o = asRecord(input, path);
+  const optional = (key: "constraint" | "costOfExposure" | "breakingPoint") => {
+    const v = optionalString(o[key], `${path}.${key}`);
+    return v !== undefined ? { [key]: v } : {};
+  };
+  return {
+    description: requiredString(o["description"], `${path}.description`),
+    scarceResourceId: requiredString(o["scarceResourceId"], `${path}.scarceResourceId`),
+    ...optional("constraint"),
+    ...optional("costOfExposure"),
+    ...optional("breakingPoint"),
   };
 }
 

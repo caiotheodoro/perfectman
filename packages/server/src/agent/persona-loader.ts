@@ -1,4 +1,5 @@
 import type { LLMConfig } from "../llm/llm-config.js";
+import type { ScenarioContextBlock } from "@perfectman/shared";
 import {
   getPersonaPackById,
   type PersonaPack,
@@ -63,24 +64,91 @@ export class PersonaLoader {
   }
 }
 
+/**
+ * A scenario re-skin of a pack: the pack supplies temperament, voice and
+ * relationship texture; the scene supplies the name and the cast. Without
+ * it the pack's own friends leak into a room they were never in (a goulart
+ * playing "Íris" once tagged `@caio @leo` in a scene with neither) and the
+ * prompt says "Display Name: Goulart" under a room context that says
+ * "Você é Íris".
+ */
+export type PersonaReskin = {
+  scenarioContext?: ScenarioContextBlock;
+  /** Every agent id in the scene; a pack peer survives only if it maps onto one of these. */
+  castAgentIds: readonly string[];
+  /** Scene display name per cast id, used when rewriting peer names inside free text. */
+  castDisplayNames?: Record<string, string>;
+  /** The scene seeds this agent's memories, so the pack's unresolved-memory lines are dropped. */
+  replacesMemories?: boolean;
+};
+
+const RESKIN_FRAME_PREFIX = (displayName: string): string =>
+  `In this scene you are ${displayName}; the profile below describes your temperament, not your name or history.`;
+
+function escapeRegExp(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
 /** Compiles an authored PersonaPack into the LLM-facing prompt profile. */
-export function personaPackToProfile(pack: PersonaPack): PersonaPromptProfile {
+export function personaPackToProfile(pack: PersonaPack, reskin?: PersonaReskin): PersonaPromptProfile {
+  const castMap = reskin?.scenarioContext?.castMap ?? {};
+  const castIds = new Set(reskin?.castAgentIds ?? []);
+  const resolvePeer = (peer: string): string | undefined => {
+    if (!reskin) return peer;
+    return castMap[peer] ?? (castIds.has(peer) ? peer : undefined);
+  };
+
   const biases: Record<string, import("./persona-prompt-profile.js").RelationshipPromptBias> = {};
   for (const [peer, view] of Object.entries(pack.relationshipBiases)) {
-    biases[peer] = { view, warmth: "medium", trust: "medium", likelyBehaviors: [], triggers: [] };
+    const target = resolvePeer(peer);
+    if (target === undefined) continue;
+    biases[target] = { view, warmth: "medium", trust: "medium", likelyBehaviors: [], triggers: [] };
   }
+
+  // Free-text lines that name a pack peer: rename mapped peers to their
+  // scene name, drop lines about peers outside the cast. A text heuristic —
+  // it matches display names as whole words, case-insensitively — and
+  // documented as such; the structural fix is the biases map above.
+  const renamePeers = (lines: readonly string[]): string[] => {
+    if (!reskin) return [...lines];
+    const out: string[] = [];
+    for (const line of lines) {
+      let renamed = line;
+      let dropped = false;
+      for (const peer of Object.keys(pack.relationshipBiases)) {
+        const peerName = getPersonaPackById(peer)?.displayName ?? peer;
+        const pattern = new RegExp(`\\b${escapeRegExp(peerName)}\\b`, "giu");
+        if (!pattern.test(renamed)) continue;
+        const target = resolvePeer(peer);
+        if (target === undefined) { dropped = true; break; }
+        const targetName = reskin.castDisplayNames?.[target] ?? target;
+        renamed = renamed.replace(pattern, targetName);
+      }
+      if (!dropped) out.push(renamed);
+    }
+    return out;
+  };
+
+  const displayName = reskin?.scenarioContext?.displayName ?? pack.displayName;
+  const identityFrame =
+    displayName !== pack.displayName
+      ? `${RESKIN_FRAME_PREFIX(displayName)} ${pack.identityFrame}`
+      : pack.identityFrame;
+
   return {
     personaId: pack.personaId,
-    displayName: pack.displayName,
+    displayName,
     language: pack.language,
-    identityFrame: pack.identityFrame,
+    identityFrame,
     coreTraits: [pack.archetype],
-    valuesAndMotivations: pack.socialTheory,
+    valuesAndMotivations: renamePeers(pack.socialTheory),
     socialPresence: pack.edgeProfile.maskTells.length > 0
       ? pack.edgeProfile.maskTells.map(t => `Masking tell: ${t}`)
       : [],
     cognitiveStyle: pack.edgeProfile.maskTells.length > 0 ? pack.edgeProfile.maskTells : [],
-    emotionalPatterns: pack.memorySeeds.filter(m => m.unresolved).map(m => `Unresolved: ${m.summary}`),
+    emotionalPatterns: reskin?.replacesMemories
+      ? []
+      : renamePeers(pack.memorySeeds.filter(m => m.unresolved).map(m => `Unresolved: ${m.summary}`)),
     conflictStyle: pack.edgeProfile.triggers.map(t => `Trigger: ${t.trigger} → ${t.behavior}`),
     affectionStyle: [],
     publicPrivateDelta: pack.edgeProfile.maskTells,

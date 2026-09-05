@@ -96,22 +96,25 @@ function parseMentionedAgentIds(
   agentNames: Record<string, string> | undefined,
 ): string[] {
   if (!visibleContent || !agentNames) return [];
+  // Diacritic-insensitive on both sides: "@iris" must find "Íris".
+  const fold = (text: string): string => text.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
   const nameCounts = new Map<string, number>();
   for (const displayName of Object.values(agentNames)) {
-    const key = displayName.trim().toLowerCase();
+    const key = fold(displayName.trim());
     if (key) nameCounts.set(key, (nameCounts.get(key) ?? 0) + 1);
   }
+  const foldedContent = fold(visibleContent);
   const mentioned: string[] = [];
   for (const [agentId, displayName] of Object.entries(agentNames)) {
-    const name = displayName.trim();
+    const name = fold(displayName.trim());
     if (name.length < MIN_MENTION_NAME_LENGTH) continue;
-    if ((nameCounts.get(name.toLowerCase()) ?? 0) > 1) continue;
+    if ((nameCounts.get(name) ?? 0) > 1) continue;
     const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     const pattern = new RegExp(
       `(^|${MENTION_BOUNDARY})${escaped}($|${MENTION_BOUNDARY})`,
       "iu",
     );
-    if (pattern.test(visibleContent)) mentioned.push(agentId);
+    if (pattern.test(foldedContent)) mentioned.push(agentId);
   }
   return mentioned;
 }

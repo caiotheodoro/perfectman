@@ -140,8 +140,8 @@ export function renderTranscriptLine(
   return formatTranscriptLine(toTranscriptLineInput(e, idx, scenario), opts);
 }
 
-function castLine(agentId: string, personaId: string): string {
-  const displayName = getPersonaPackById(personaId)?.displayName ?? agentId;
+function castLine(agentId: string, personaId: string, sceneName?: string): string {
+  const displayName = sceneName ?? getPersonaPackById(personaId)?.displayName ?? agentId;
   return `${agentId} → ${displayName} (${personaId})`;
 }
 
@@ -172,7 +172,9 @@ export function buildTranscriptView(
     .filter((e) => e.type !== "private_motive_summary")
     .map((e) => renderTranscriptLine(e, scenario, idx, opts));
   return {
-    cast: opts.seeds === "full" ? scenario.agents.map((a) => castLine(a.agentId, a.personaId)) : [],
+    cast: opts.seeds === "full"
+      ? scenario.agents.map((a) => castLine(a.agentId, a.personaId, a.scenarioContext?.displayName))
+      : [],
     channels:
       opts.seeds === "full"
         ? scenario.channels.map((c) => `#${c.id} (${c.type === "private_channel" ? "private 🔒" : "public"})`)

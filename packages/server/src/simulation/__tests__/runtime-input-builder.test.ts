@@ -142,3 +142,16 @@ describe("buildAgentRuntimeInput", () => {
     expect(input.emotionalState.coreMood).toEqual(result.updatedAgentState.coreMood);
   });
 });
+
+describe("hasActed", () => {
+  it("is false until the agent has committed an outward act", () => {
+    const input = buildAgentRuntimeInput(makeStepResult(), PERSONA, "normal");
+    expect(input.hasActed).toBe(false);
+  });
+
+  it("is true once lastActionAt has been stamped", () => {
+    const step = makeStepResult();
+    step.updatedAgentState.lastActionAt = 12_000;
+    expect(buildAgentRuntimeInput(step, PERSONA, "normal").hasActed).toBe(true);
+  });
+});

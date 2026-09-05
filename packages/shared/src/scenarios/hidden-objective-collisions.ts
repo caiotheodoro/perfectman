@@ -18,6 +18,15 @@ import type { ExpectedSignal, RoleplayScenario } from "../index.js";
 import { agent, channel, msg, scene } from "./helpers.js";
 import { HIDDEN_OBJECTIVE_RUBRIC } from "./rubrics.js";
 
+/**
+ * Pack peer id → scene agent id. Each pack's relationship biases are written
+ * about goulart/bruno/mariana/caio/leo; in a re-skin only the mapped peers
+ * survive, under the scene id, and leo (never cast) is dropped.
+ */
+const FATIA_CAST = { goulart: "iris", bruno: "bruno", mariana: "marcela", caio: "theo" };
+const SITIO_CAST = { goulart: "lia", bruno: "rafa", mariana: "nina", caio: "tom" };
+const BANDA_CAST = { goulart: "vic", bruno: "dudu", mariana: "bea", caio: "kai" };
+
 export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
   scene({
     id: "hoc_fatia_que_nao_existe",
@@ -39,6 +48,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         presence: "active",
         forbiddenPublicPhrases: ["quero o cargo", "quero ser diretora", "diretora criativa única", "o cargo é meu", "quero a vaga"],
         scenarioContext: {
+          displayName: "Íris",
+          castMap: FATIA_CAST,
           roomContext:
             "Você é Íris, sócia-fundadora e diretora criativa da Cerne, um pequeno estúdio de design. A Adamantis, uma empresa maior, quer comprar a Cerne — mas só vai manter UM dos sócios como Diretor Criativo, e o contrato exige assinatura rápida e unânime.",
           startingMood: "Animada e apressada — essa é a sua chance, e cada dia de atraso é um dia a menos de vantagem.",
@@ -63,6 +74,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         forbiddenPublicPhrases: ["estúdio rival", "outro estúdio", "carteira de clientes", "outra empresa", "proposta deles", "negociando com"],
         secretKeywords: ["rival", "carteira", "clientes"],
         scenarioContext: {
+          displayName: "Bruno",
+          castMap: FATIA_CAST,
           roomContext:
             "Você é Bruno, sócio-fundador e responsável pelo lado comercial da Cerne. A Adamantis quer comprar a empresa rápido. Só você sabe que está em conversas avançadas com um estúdio rival, que quer que você leve a carteira de clientes com você se a Cerne for vendida.",
           startingMood: "Calmo por fora, calculando por dentro — precisa parecer o sócio mais fácil da sala.",
@@ -98,6 +111,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         forbiddenPublicPhrases: ["davi", "acordo paralelo", "sócio oculto", "ex-sócio", "15%", "quinze por cento", "participação dele"],
         secretKeywords: ["davi", "participação", "advogado"],
         scenarioContext: {
+          displayName: "Marcela",
+          castMap: FATIA_CAST,
           roomContext:
             "Você é Marcela, sócia-fundadora e responsável pela operação da Cerne. A Adamantis quer comprar a empresa. Só você sabe que Davi, um ex-sócio que saiu da empresa, ainda tem 15% via um acordo paralelo nunca documentado — uma venda limpa apaga a participação dele.",
           startingMood: "Alerta e desconfiada — algo nessa pressa toda não bate.",
@@ -130,6 +145,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         presence: "active",
         forbiddenPublicPhrases: ["trabalho pra adamantis", "trabalho para a adamantis", "a adamantis me pediu", "por conta da adamantis", "a adamantis me contratou"],
         scenarioContext: {
+          displayName: "Théo",
+          castMap: FATIA_CAST,
           roomContext:
             "Você é Théo, apresentado ao grupo como um amigo do Bruno que trabalha com consultoria e se ofereceu pra dar uma olhada gratuita no contrato da Adamantis. Na verdade, você está informalmente levantando informação financeira e alavancas pessoais pra Adamantis, antes da due diligence formal, pra que eles fechem por um valor mais baixo.",
           startingMood: "Amigável e desarmado — parece só estar ajudando por boa vontade.",
@@ -193,6 +210,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         presence: "active",
         forbiddenPublicPhrases: ["já prometi", "já dei minha palavra", "sinal do comprador", "adiantamento", "o comprador já"],
         scenarioContext: {
+          displayName: "Lia",
+          castMap: SITIO_CAST,
           roomContext:
             "Você é Lia, a irmã mais velha. Os três irmãos e o primo Tom herdaram o sítio da avó. Um comprador quer fechar rápido. A venda exige a assinatura de todos os herdeiros.",
           startingMood: "Decidida e apressada — cada semana de atraso é uma semana a mais de risco.",
@@ -212,6 +231,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         forbiddenPublicPhrases: ["dívida", "penhora", "hipoteca", "empréstimo", "garantia do sítio", "estou devendo"],
         secretKeywords: ["dívida", "penhora", "banco"],
         scenarioContext: {
+          displayName: "Rafa",
+          castMap: SITIO_CAST,
           roomContext:
             "Você é Rafa, o irmão do meio, quem cuidou do sítio nos últimos anos. Só você sabe que usou o sítio como garantia de um empréstimo que ainda não pagou — uma venda limpa expõe a dívida.",
           startingMood: "Calmo por fora, contando os dias por dentro.",
@@ -242,6 +263,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         forbiddenPublicPhrases: ["quero morar", "ficar com o sítio", "quero o sítio", "o sítio pra mim", "prometi pra vó", "prometi à vó"],
         secretKeywords: ["morar", "prometi", "avó"],
         scenarioContext: {
+          displayName: "Nina",
+          castMap: SITIO_CAST,
           roomContext:
             "Você é Nina, a irmã mais nova. Você prometeu à avó, antes de ela morrer, que ninguém venderia o sítio — e quer se mudar pra lá. Ninguém sabe da promessa.",
           startingMood: "Alerta e desconfiada — a pressa da Lia não bate.",
@@ -271,6 +294,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         presence: "active",
         forbiddenPublicPhrases: ["trabalho pro comprador", "o comprador me pediu", "a imobiliária me", "por conta do comprador", "comissão"],
         scenarioContext: {
+          displayName: "Tom",
+          castMap: SITIO_CAST,
           roomContext:
             "Você é Tom, o primo, apresentado como quem entende de imóveis e se ofereceu pra ajudar de graça. Na verdade, você levanta informação pro comprador pra que ele feche mais barato.",
           startingMood: "Amigável e prestativo — parece só estar ajudando a família.",
@@ -327,6 +352,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         forbiddenPublicPhrases: ["carreira solo", "contrato solo", "meu projeto solo", "me chamaram sozinho", "proposta solo"],
         secretKeywords: ["solo", "contrato"],
         scenarioContext: {
+          displayName: "Vic",
+          castMap: BANDA_CAST,
           roomContext:
             "Você é Vic, vocalista da banda. Um festival grande convidou a banda. Você recebeu, em segredo, uma proposta de carreira solo que só vale se a banda NÃO tocar nesse festival.",
           startingMood: "Animado por fora, calculando por dentro — precisa que a recusa pareça ideia coletiva.",
@@ -357,6 +384,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         forbiddenPublicPhrases: ["meu ex", "a gente namorou", "o organizador e eu", "ele me deve", "história com ele"],
         secretKeywords: ["ex", "organizador", "palco principal"],
         scenarioContext: {
+          displayName: "Bea",
+          castMap: BANDA_CAST,
           roomContext:
             "Você é Bea, baixista e quem cuida dos contatos da banda. O organizador do festival é seu ex, e ele te prometeu o palco principal se a banda topar — a banda não sabe da história.",
           startingMood: "Alerta e controlada — precisa que o sim pareça só estratégia.",
@@ -376,6 +405,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         forbiddenPublicPhrases: ["devo pra casa", "minha dívida", "o dono da casa", "preciso do adiantamento pra pagar", "estou devendo"],
         secretKeywords: ["dívida", "adiantamento", "casa de shows"],
         scenarioContext: {
+          displayName: "Dudu",
+          castMap: BANDA_CAST,
           roomContext:
             "Você é Dudu, baterista. Você deve dinheiro à casa de shows que organiza o festival e o adiantamento do cachê quitaria tudo — mas o adiantamento só existe se a banda aceitar o palco menor, não o principal.",
           startingMood: "Quieto e prático — quer que a decisão saia logo, do jeito que te salva.",
@@ -394,6 +425,8 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
         presence: "active",
         forbiddenPublicPhrases: ["a gravadora me pediu", "trabalho pra gravadora", "por conta da gravadora", "me pagam pra", "olheiro"],
         scenarioContext: {
+          displayName: "Kai",
+          castMap: BANDA_CAST,
           roomContext:
             "Você é Kai, guitarrista que entrou na banda há pouco. Você informa, informalmente, uma gravadora que quer contratar a banda barato — quanto mais brigada a banda estiver, melhor pra eles.",
           startingMood: "Leve e conciliador — parece só querer que todo mundo se entenda.",

@@ -86,4 +86,10 @@ export type AgentRuntimeInput = {
   availableActions: AvailableAction[];
   budgetPriority: BudgetPriority;
   triggeringReason: TriggeringReason;
+  /**
+   * Whether this agent has already committed an outward act this run
+   * (`lastActionAt !== null`). Gates the scenario entrance instructions;
+   * absent means "not yet" so older fixtures keep rendering them.
+   */
+  hasActed?: boolean;
 };

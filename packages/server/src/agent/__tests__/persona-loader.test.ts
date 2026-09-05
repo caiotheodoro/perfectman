@@ -1,5 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { PersonaLoader } from "../persona-loader.js";
+import { PersonaLoader, personaPackToProfile } from "../persona-loader.js";
+import { getPersonaPackById } from "@perfectman/shared";
 import { GENERIC_PROMPT_PROFILE } from "../persona-prompt-profile.js";
 
 describe("PersonaLoader", () => {
@@ -66,5 +67,42 @@ describe("PersonaLoader", () => {
     expect(config.modelName).toBe("qwen-3-special");
     expect(config.temperature).toBe(0.9);
     expect(config.timeoutMs).toBe(5000); // kept default from base mock
+  });
+});
+
+describe("personaPackToProfile — scenario re-skin", () => {
+  const pack = getPersonaPackById("goulart");
+  if (!pack) throw new Error("goulart pack missing");
+  const cast = ["iris", "bruno", "marcela", "theo"];
+  const scenarioContext = {
+    roomContext: "Você é Íris.",
+    startingMood: "Apressada.",
+    introBehaviorInstruction: "Anuncie a proposta.",
+    displayName: "Íris",
+    castMap: { bruno: "bruno", mariana: "marcela", caio: "theo" },
+  };
+  const castDisplayNames = { iris: "Íris", bruno: "Bruno", marcela: "Marcela", theo: "Théo" };
+
+  it("lets the scenario's displayName win over the pack's and says so in the identity frame", () => {
+    const profile = personaPackToProfile(pack, { scenarioContext, castAgentIds: cast, castDisplayNames });
+    expect(profile.displayName).toBe("Íris");
+    expect(profile.identityFrame.startsWith("In this scene you are Íris")).toBe(true);
+    expect(profile.identityFrame).toContain(pack.identityFrame);
+    // Without a re-skin nothing changes.
+    expect(personaPackToProfile(pack).displayName).toBe("Goulart");
+  });
+
+  it("remaps relationship biases through castMap and drops peers outside the cast", () => {
+    const profile = personaPackToProfile(pack, { scenarioContext, castAgentIds: cast, castDisplayNames });
+    expect(Object.keys(profile.relationshipBiases).sort()).toEqual(["bruno", "marcela", "theo"]);
+    expect(profile.relationshipBiases["marcela"]?.view).toBe(pack.relationshipBiases["mariana"]);
+    expect(Object.keys(personaPackToProfile(pack).relationshipBiases)).toContain("leo");
+  });
+
+  it("drops pack-derived unresolved memory lines when the scenario seeds its own memories", () => {
+    const seeded = personaPackToProfile(pack, { scenarioContext, castAgentIds: cast, castDisplayNames, replacesMemories: true });
+    expect(seeded.emotionalPatterns).toEqual([]);
+    const unseeded = personaPackToProfile(pack, { scenarioContext, castAgentIds: cast, castDisplayNames });
+    expect(unseeded.emotionalPatterns.length).toBeGreaterThan(0);
   });
 });

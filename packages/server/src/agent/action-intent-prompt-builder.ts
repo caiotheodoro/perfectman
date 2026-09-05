@@ -265,7 +265,7 @@ export class ActionIntentPromptBuilder {
     const { translatedEmotionalState } = perceptionPacket;
 
     const system = new PromptSection()
-      .container("persona", (s) => this.renderPersona(s, profile))
+      .container("persona", (s) => this.renderPersona(s, profile, input.hasActed === true))
       .container("output_contract", (s) => this.renderOutputContract(s, input.agentId));
     if (perceptionPacket.ownRecentUtterances.length > 0) {
       system.container("no_repeat", (s) => this.renderNoRepeat(s, perceptionPacket.ownRecentUtterances));
@@ -306,7 +306,7 @@ export class ActionIntentPromptBuilder {
     return this.cachedTemplateVersion;
   }
 
-  private static renderPersona(s: PromptSection, profile: PersonaPromptProfile): void {
+  private static renderPersona(s: PromptSection, profile: PersonaPromptProfile, hasActed = false): void {
     const language = profile.language === "pt-BR" ? "Portuguese (pt-BR)" : "English";
     s.heading("Identity");
     s.raw("You are roleplaying as a specific person in an online chat room. Stay inside this compact runtime profile; do not mention source notes, assessments, or hidden profile metadata.");
@@ -330,7 +330,7 @@ export class ActionIntentPromptBuilder {
     this.addList(s, "Hard avoids", profile.hardAvoids);
     this.renderRelationshipBiases(s, profile);
 
-    if (profile.scenarioContext) this.renderScenarioContext(s, profile.scenarioContext);
+    if (profile.scenarioContext) this.renderScenarioContext(s, profile.scenarioContext, hasActed);
     if (profile.hiddenObjective) this.renderHiddenObjective(s, profile.hiddenObjective);
   }
 
@@ -553,12 +553,20 @@ export class ActionIntentPromptBuilder {
     s.list(undefined, rendered);
   }
 
-  private static renderScenarioContext(s: PromptSection, ctx: ScenarioContextBlock): void {
+  /**
+   * The intro instruction and first-move guidance are an entrance, not a
+   * standing order: rendered only until the agent's first outward act.
+   * Root-caused via a live capture — "announce the proposal" rendered on all
+   * 32 pulses, and the agent re-announced it at p7, p10, p12, p18 and p28.
+   */
+  private static renderScenarioContext(s: PromptSection, ctx: ScenarioContextBlock, hasActed: boolean): void {
     s.heading("Social context");
     s.raw(ctx.roomContext);
     s.raw(`Humor inicial da sala: ${ctx.startingMood}`);
-    s.raw(ctx.introBehaviorInstruction);
-    if (ctx.firstMoveGuidance) s.raw(ctx.firstMoveGuidance);
+    if (!hasActed) {
+      s.raw(ctx.introBehaviorInstruction);
+      if (ctx.firstMoveGuidance) s.raw(ctx.firstMoveGuidance);
+    }
     if (ctx.hostStartingMessage) s.raw(`Mensagem do anfitrião: "${ctx.hostStartingMessage}"`);
     if (ctx.customNotes?.length) {
       s.list("Regras de comportamento nesta cena", ctx.customNotes);

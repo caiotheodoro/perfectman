@@ -81,10 +81,26 @@ export type AgentObjective = {
 export type ScenarioContextBlock = {
   roomContext: string;
   startingMood: string;
+  /** Rendered only until the agent's first outward act — an entrance, not a standing order. */
   introBehaviorInstruction: string;
+  /** Same gating as `introBehaviorInstruction`. */
   firstMoveGuidance?: string;
   customNotes?: string[];
   hostStartingMessage?: string;
+  /**
+   * The name this agent goes by in the scene. Wins over the persona pack's
+   * `displayName` in the prompt and in mention parsing, so a goulart-pack
+   * agent playing "Íris" is addressed and addressable as Íris.
+   */
+  displayName?: string;
+  /**
+   * Pack peer id → scenario agent id. A pack's relationship biases are
+   * written about its own friends (bruno, caio, mariana, leo); in a re-skin
+   * only the peers that map onto someone in the cast survive, keyed by the
+   * cast id. Unmapped peers are dropped rather than rendered as phantom
+   * people the room never contained.
+   */
+  castMap?: Record<string, string>;
 };
 
 export type AgentSeedSpec = {

@@ -39,3 +39,20 @@ describe("scenarioToConfig — hidden objective threading", () => {
     expect(config.agents[1]!.promptProfile.scenarioContext).toBeUndefined();
   });
 });
+
+describe("scenarioToConfig — persona re-skin", () => {
+  it("gives a re-skinned hoc agent its scene name and only in-cast relationship biases", () => {
+    const scenario = getScenario("hoc_fatia_que_nao_existe");
+    if (!scenario) throw new Error("hoc_fatia_que_nao_existe missing from the scenario registry");
+    const config = scenarioToConfig(scenario, "mock");
+    const iris = config.agents.find(a => a.id === "iris")!;
+    expect(iris.promptProfile.displayName).toBe("Íris");
+    expect(iris.promptProfile.identityFrame).toContain("Íris");
+    const peers = Object.keys(iris.promptProfile.relationshipBiases).sort();
+    expect(peers).toEqual(["bruno", "marcela", "theo"]);
+    // Iris's scene seeds no memories of its own, so the pack's unresolved
+    // lines stay; Bruno's scene does, so his are replaced.
+    const bruno = config.agents.find(a => a.id === "bruno")!;
+    expect(bruno.promptProfile.emotionalPatterns).toEqual([]);
+  });
+});

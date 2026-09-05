@@ -143,3 +143,19 @@ describe("buildTranscriptView / renderTranscript", () => {
     expect((text.match(/\[p\d+\]/g) ?? []).length).toBe(2);
   });
 });
+
+describe("cast display names", () => {
+  it("uses the scenario's displayName over the pack's", () => {
+    const reskinned = scene({
+      ...SCENARIO,
+      agents: [
+        agent("iris", "goulart", {
+          scenarioContext: { roomContext: "r", startingMood: "m", introBehaviorInstruction: "i", displayName: "Íris" },
+        }),
+      ],
+      expectedSignals: [],
+    });
+    const view = buildTranscriptView(reskinned, [], { seeds: "full", motives: "none" });
+    expect(view.cast).toEqual(["iris → Íris (goulart)"]);
+  });
+});

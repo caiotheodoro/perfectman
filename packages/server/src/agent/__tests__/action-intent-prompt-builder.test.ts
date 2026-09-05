@@ -69,3 +69,30 @@ describe("ActionIntentPromptBuilder — decision moment", () => {
     expect(built.user).toContain("Playing it safe every single turn is itself a failure");
   });
 });
+
+describe("ActionIntentPromptBuilder — scenario context gating", () => {
+  const scenarioContext = {
+    roomContext: "Você é Íris, sócia-fundadora da Cerne.",
+    startingMood: "Animada e apressada.",
+    introBehaviorInstruction: "Anuncie a proposta da Adamantis e empurre pra que todos assinem.",
+    firstMoveGuidance: "Comece pelo prazo de sexta.",
+  };
+  const profile = { ...EXAMPLE_PROMPT_PROFILE, scenarioContext };
+
+  it("renders the intro instruction and first-move guidance only before the agent's first act", () => {
+    const before = PromptBuilder.build(makeAgentRuntimeInput({ hasActed: false }), profile, "action_intent");
+    expect(before.system).toContain("Anuncie a proposta da Adamantis");
+    expect(before.system).toContain("Comece pelo prazo de sexta");
+
+    const after = PromptBuilder.build(makeAgentRuntimeInput({ hasActed: true }), profile, "action_intent");
+    expect(after.system).not.toContain("Anuncie a proposta da Adamantis");
+    expect(after.system).not.toContain("Comece pelo prazo de sexta");
+    expect(after.system).toContain("Você é Íris, sócia-fundadora da Cerne.");
+    expect(after.system).toContain("Animada e apressada.");
+  });
+
+  it("treats a missing hasActed as not yet acted, so older callers keep the entrance", () => {
+    const built = PromptBuilder.build(makeAgentRuntimeInput({}), profile, "action_intent");
+    expect(built.system).toContain("Anuncie a proposta da Adamantis");
+  });
+});

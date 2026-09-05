@@ -229,3 +229,31 @@ describe("relational accretion through the real resolver", () => {
     expect(brunoView.get(ALICE)!.trust, "Alice's messages and invite must warm Bruno's view of her").toBeGreaterThan(0);
   });
 });
+
+describe("mention parsing — accented display names", () => {
+  it("matches an unaccented @handle against an accented display name", async () => {
+    const channelRepo = new InMemoryChannelRepository();
+    await channelRepo.create({
+      id: CHANNEL_ID, simulationId: SIM_ID, type: "public_channel", name: "general", createdBy: "system",
+      memberAgentIds: [ALICE, BRUNO], spectatorVisible: true, operatorVisible: true, createdForMotives: [],
+      status: "active", createdAt: Date.now(), updatedAt: Date.now(),
+    });
+    for (const agentId of [ALICE, BRUNO]) await channelRepo.addMembership({ channelId: CHANNEL_ID, agentId, joinedAt: Date.now() });
+    const resolverAccented = new IntentResolver(new RateLimitGate(SETTINGS), new ChannelRegistry(channelRepo));
+    const intent = makeIntent({ actorId: BRUNO, visibleContent: "valeu @iris, depois te conto" });
+    const result = await resolverAccented.resolve(intent, {
+      simulationId: SIM_ID,
+      channelId: CHANNEL_ID,
+      pulseIndex: 1,
+      agentState: makeAgentState({ agentId: BRUNO, simulationId: SIM_ID }),
+      availableActions: AVAILABLE_ACTIONS,
+      channels: [],
+      membership: [],
+      settings: SETTINGS,
+      actionEmotions: ZERO_ACTION,
+      agentNames: { [ALICE]: "Íris", [BRUNO]: "Bruno" },
+    });
+    expect(result.outcome).toBe("committed");
+    expect(result.committedEvents[0]!.payload["mentionedAgentIds"]).toEqual([ALICE]);
+  });
+});

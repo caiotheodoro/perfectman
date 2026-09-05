@@ -27,5 +27,6 @@ export function buildAgentRuntimeInput(
     availableActions: stepResult.availableActions,
     budgetPriority,
     triggeringReason: stepResult.attentionResults.triggeringReason,
+    hasActed: stepResult.updatedAgentState.lastActionAt !== null,
   };
 }

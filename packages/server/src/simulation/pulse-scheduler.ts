@@ -55,6 +55,8 @@ export type AgentContext = {
   id: string;
   state: AgentState;
   persona: PersonaConfig;
+  /** Scene display name for mention parsing; falls back to `persona.name`. */
+  displayName?: string;
 };
 
 // Minimal dev1 interface — concrete impl injected
@@ -121,7 +123,7 @@ export class PulseScheduler {
 
   constructor(private readonly config: PulseSchedulerConfig) {
     this.agentNamesByAgentId = Object.fromEntries(
-      config.agents.map((agent) => [agent.id, agent.persona.name]),
+      config.agents.map((agent) => [agent.id, agent.displayName ?? agent.persona.name]),
     );
   }
 

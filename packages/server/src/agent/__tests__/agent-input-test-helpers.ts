@@ -52,6 +52,8 @@ export type AgentInputFixtureOptions = {
   visibleContextEvents?: CommittedEvent[];
   ownRecentUtterances?: string[];
   relevantMemories?: Memory[];
+  /** Whether the agent has already committed an outward act this run (gates the scenario intro). */
+  hasActed?: boolean;
 };
 
 export function makeAgentRuntimeInput(options: AgentInputFixtureOptions = {}): AgentRuntimeInput {
@@ -83,16 +85,18 @@ export function makeAgentRuntimeInput(options: AgentInputFixtureOptions = {}): A
     perceptionPacket: {
       agentId,
       triggeringEvent: options.triggeringEvent ?? null,
-      eventHandles: options.eventHandles ?? {},
       visibleContextEvents: options.visibleContextEvents ?? [],
       // Same numbering the perception builder emits: e1 = triggering event
-      // (when present), then context events in order.
-      eventHandles: Object.fromEntries(
-        (options.triggeringEvent
-          ? [options.triggeringEvent, ...(options.visibleContextEvents ?? [])]
-          : (options.visibleContextEvents ?? [])
-        ).map((e, i) => [`e${i + 1}`, e.id]),
-      ),
+      // (when present), then context events in order — unless a fixture
+      // supplies its own handle map.
+      eventHandles:
+        options.eventHandles ??
+        Object.fromEntries(
+          (options.triggeringEvent
+            ? [options.triggeringEvent, ...(options.visibleContextEvents ?? [])]
+            : (options.visibleContextEvents ?? [])
+          ).map((e, i) => [`e${i + 1}`, e.id]),
+        ),
       ownRecentUtterances: options.ownRecentUtterances ?? [],
       involvedPeople: [],
       relevantChannels: ["general"],
@@ -130,5 +134,6 @@ export function makeAgentRuntimeInput(options: AgentInputFixtureOptions = {}): A
     ],
     budgetPriority: "normal",
     triggeringReason: "attention_event",
+    ...(options.hasActed !== undefined ? { hasActed: options.hasActed } : {}),
   };
 }
