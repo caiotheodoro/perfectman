@@ -17,14 +17,30 @@ export type GoldenLabel = {
 };
 
 export type CalibrationReport = {
+  /** Golden entries offered for matching. */
+  nGolden: number;
+  /** Golden scenes that actually paired with a judge score on at least one axis. */
   nScenes: number;
+  /** Axes with enough matched pairs (>= 2) to compute a kappa. */
+  nAxisPairs: number;
   kappa: number;
   alpha: number;
   targetKappa: number;
-  passed: boolean;
+  /**
+   * `no_data` when nothing paired: a kappa of 0 over zero pairs is not a
+   * failing judge, it is an unmeasured one — reported as such so a run with
+   * no golden overlap never prints FAIL and never prints PASS.
+   */
+  status: "pass" | "fail" | "no_data";
+  /** `null` iff `status === "no_data"`. */
+  passed: boolean | null;
   perAxisKappa: Record<string, number>;
   disagreements: string[];
 };
+
+export function calibrationVerdict(report: CalibrationReport): string {
+  return report.status === "no_data" ? "NO DATA" : report.status === "pass" ? "PASS" : "FAIL";
+}
 
 function axisValue(scores: Record<string, number>, axis: string): number | undefined {
   const v = scores[axis];
@@ -114,6 +130,7 @@ export function calibrateJudge(
   const axisIds = new Set<string>();
   for (const g of golden) for (const k of Object.keys(g.axes)) axisIds.add(k);
   const perAxisKappa: Record<string, number> = {};
+  const matchedScenes = new Set<string>();
   let axisPairs = 0;
   let kappaSum = 0;
   let allA: number[] = [];
@@ -127,6 +144,7 @@ export function calibrateJudge(
       const j = sceneScores ? axisValue(sceneScores, axis) : undefined;
       const h = axisValue(g.axes, axis);
       if (typeof j === "number" && typeof h === "number") {
+        matchedScenes.add(g.scenarioId);
         a.push(j);
         b.push(h);
         if (Math.abs(j - h) >= 2) {
@@ -146,13 +164,18 @@ export function calibrateJudge(
 
   const kappa = axisPairs > 0 ? kappaSum / axisPairs : 0;
   const alpha = krippendorffAlpha(allA, allB);
+  const status: CalibrationReport["status"] =
+    axisPairs === 0 ? "no_data" : kappa >= targetKappa ? "pass" : "fail";
 
   return {
-    nScenes: golden.length,
+    nGolden: golden.length,
+    nScenes: matchedScenes.size,
+    nAxisPairs: axisPairs,
     kappa: Math.round(kappa * 1000) / 1000,
     alpha: Math.round(alpha * 1000) / 1000,
     targetKappa,
-    passed: kappa >= targetKappa,
+    status,
+    passed: status === "no_data" ? null : status === "pass",
     perAxisKappa,
     disagreements,
   };

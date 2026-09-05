@@ -32,8 +32,12 @@ describe("calibration matching (#24)", () => {
     expect(report.disagreements).toEqual([]);
   });
 
-  it("reports kappa 0 when nothing matches (vacuous case stays detectable)", () => {
+  it("reports no_data when nothing matches — never PASS, never FAIL", () => {
     const report = calibrateJudge(new Map(), GOLDEN_LABELS.slice(0, 1), 0.7);
-    expect(report.passed).toBe(false);
+    expect(report.status).toBe("no_data");
+    expect(report.passed).toBeNull();
+    expect(report.nGolden).toBe(1);
+    expect(report.nScenes).toBe(0);
+    expect(report.nAxisPairs).toBe(0);
   });
 });

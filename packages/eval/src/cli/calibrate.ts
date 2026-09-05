@@ -15,7 +15,7 @@ import { dirname, resolve } from "node:path";
 import { ScenarioRunner } from "../run/scenario-runner.js";
 import { ruleJudge, llmJudge } from "../judge/judge.js";
 import { MockJudgeProvider } from "../judge/mock-judge-provider.js";
-import { calibrateJudge } from "../judge/calibration.js";
+import { calibrateJudge, calibrationVerdict } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import { loadJudgeConfig, applyJudgeShorthand } from "../llm/judge-config.js";
 import { getScenario } from "@perfectman/shared";
@@ -104,7 +104,7 @@ export async function main(): Promise<void> {
 
   const cal = report.calibration;
   console.log(`\n=== Calibration (mock transcripts, ${report.judge} judge, full length) ===`);
-  console.log(`kappa ${cal.kappa} (target ${cal.targetKappa}) ${cal.passed ? "PASS" : "FAIL"} | alpha ${cal.alpha} | n=${cal.nScenes}`);
+  console.log(`kappa ${cal.kappa} (target ${cal.targetKappa}) ${calibrationVerdict(cal)} | alpha ${cal.alpha} | matched ${cal.nScenes}/${cal.nGolden} scenes, ${cal.nAxisPairs} axes`);
   for (const [axis, k] of Object.entries(cal.perAxisKappa)) {
     console.log(`  ${axis.padEnd(26)} ${k.toFixed(3)}`);
   }

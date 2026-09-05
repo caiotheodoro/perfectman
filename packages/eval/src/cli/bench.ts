@@ -10,8 +10,9 @@
  * the LLM judge against the same endpoint.
  */
 
-import { writeFileSync, mkdirSync } from "node:fs";
-import { dirname, resolve } from "node:path";
+import { writeFileSync, mkdirSync, existsSync } from "node:fs";
+import { dirname, resolve, join } from "node:path";
+import { execSync } from "node:child_process";
 import {
   SCENARIO_REGISTRY,
   expandVariants,
@@ -31,7 +32,7 @@ import {
   type JuryVerdict,
 } from "../judge/judge.js";
 import { MockJudgeProvider } from "../judge/mock-judge-provider.js";
-import { calibrateJudge, baseScenarioId } from "../judge/calibration.js";
+import { calibrateJudge, baseScenarioId, calibrationVerdict } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import { GOLDEN_NARRATIONS } from "../judge/golden-narrations.js";
 import { loadJudgeConfig, applyJudgeShorthand } from "../llm/judge-config.js";
@@ -50,10 +51,29 @@ export function judgeConfig(): Promise<import("../judge/judge.js").LLMJudgeConfi
   return loadJudgeConfig([], { envOnly: true }).then((resolved) => resolved.config);
 }
 
+/** A non-fatal failure the bench kept going past; surfaced instead of swallowed. */
+export type BenchWarning = {
+  scenarioId?: string;
+  stage: "narration" | "narration_judge" | "golden_narration";
+  message: string;
+};
+
+export type AxisStats = { mean: number; sd: number; min: number; max: number; n: number };
+
 export type BenchReport = {
   version: "bench-report-v1";
   mode: "mock" | "local";
   generatedAt: string;
+  /** `--run-id`: the evidence directory this report was written to. */
+  runId?: string;
+  /** `--seeds`: every scenario ran once per seed; empty when the default seed was used. */
+  seeds: number[];
+  pulseLimit?: number;
+  warnings: BenchWarning[];
+  /** Per-axis spread over all runs (scenarios × seeds) — the number that decides whether a change beat the noise. */
+  judgeAxisStats: Record<string, AxisStats>;
+  /** Axis means split by rubric id, since a mixed selection aggregates axes that not every rubric scores. */
+  judgeAxisMeansByRubric: Record<string, Record<string, number>>;
   scenariosRun: number;
   scenariosFailed: number;
   signalPassRate: number;
@@ -97,6 +117,7 @@ export type BenchReport = {
     juryVoterCount?: number;
     /** Jury mode only: jurors that errored (label → reason) — non-empty means the verdict degraded. */
     juryFailed?: Record<string, string>;
+    seed?: number;
     narration?: Narration;
     narrativeAxisScores?: AxisScores;
     narrativeSalvaged?: boolean;
@@ -116,7 +137,22 @@ export async function runBench(opts: {
   perTurn?: boolean;
   /** CLI args for --judge-config resolution (defaults to the module args). */
   args?: string[];
+  /** `--seeds 42,43,44`: run every selected scenario once per seed. */
+  seeds?: number[];
+  /** `--pulse-limit N`: cap every run at N pulses (never above the scenario's own count). */
+  pulseLimit?: number;
+  /** `--run-id <id>`: write bench-report.json, run-meta.json and per-run transcripts under `<evidenceRoot>/<id>/`. */
+  runId?: string;
+  /** `--force`: allow `--run-id` to overwrite an existing evidence directory. */
+  force?: boolean;
+  /** Where `--run-id` directories go (default `docs/eval/evidence`). */
+  evidenceRoot?: string;
 }): Promise<BenchReport> {
+  const seeds = opts.seeds && opts.seeds.length > 0 ? opts.seeds : [];
+  const evidenceDir = opts.runId ? resolve(opts.evidenceRoot ?? "docs/eval/evidence", opts.runId) : undefined;
+  if (evidenceDir && existsSync(evidenceDir) && !opts.force) {
+    throw new Error(`Evidence directory already exists: ${evidenceDir} — pass --force to overwrite it`);
+  }
   const mode = opts.mode ?? "mock";
   const perTurn = opts.perTurn ?? false;
 
@@ -177,6 +213,12 @@ export async function runBench(opts: {
     version: "bench-report-v1",
     mode,
     generatedAt: new Date().toISOString(),
+    ...(opts.runId ? { runId: opts.runId } : {}),
+    seeds,
+    ...(opts.pulseLimit !== undefined ? { pulseLimit: opts.pulseLimit } : {}),
+    warnings: [],
+    judgeAxisStats: {},
+    judgeAxisMeansByRubric: {},
     scenariosRun: 0,
     scenariosFailed: 0,
     signalPassRate: 0,
@@ -201,7 +243,9 @@ export async function runBench(opts: {
   // equivalent (see NARRATIVE_RUBRIC's doc comment) — and jury narration
   // scoring is out of scope for now, so it runs only in single-judge
   // openai-compatible mode.
-  const scoreNarratives = !useJury && judgeMode === "openai-compatible";
+  // Under a jury the narration is scored by the primary judge config rather
+  // than dropped — narrative axes are part of the experiment's decision rule.
+  const scoreNarratives = judgeMode === "openai-compatible";
 
   const judgeScores = new Map<string, AxisScores>();
   const narrativeAxisAgg: Record<string, { sum: number; count: number }> = {};
@@ -216,9 +260,18 @@ export async function runBench(opts: {
   const allPromptVersions = new Set<string>();
   const allTemplateVersions = new Set<string>();
 
-  for (const scenario of limited) {
+  const axisValues: Record<string, number[]> = {};
+  const rubricAxisAgg: Record<string, Record<string, { sum: number; count: number }>> = {};
+  const evidenceRecords: Array<{ file: string; record: unknown }> = [];
+  const runSeeds: Array<number | undefined> = seeds.length > 0 ? seeds : [undefined];
+
+  for (const scenario of limited) for (const seed of runSeeds) {
     try {
-      const artifact: ScenarioRunArtifact = await ScenarioRunner.run(scenario, { llmMode: mode });
+      const artifact: ScenarioRunArtifact = await ScenarioRunner.run(scenario, {
+        llmMode: mode,
+        ...(seed !== undefined ? { seed } : {}),
+        ...(opts.pulseLimit !== undefined ? { pulseLimit: opts.pulseLimit } : {}),
+      });
       report.scenariosRun++;
       report.recoveredFallbacks += artifact.recoveredFallbacks ?? 0;
       report.signalsSkipped += artifact.skippedSignals ?? 0;
@@ -258,6 +311,11 @@ export async function runBench(opts: {
         axisAgg[axis] ??= { sum: 0, count: 0 };
         axisAgg[axis]!.sum += v;
         axisAgg[axis]!.count++;
+        (axisValues[axis] ??= []).push(v);
+        const byRubric = (rubricAxisAgg[scenario.rubric.id] ??= {});
+        byRubric[axis] ??= { sum: 0, count: 0 };
+        byRubric[axis]!.sum += v;
+        byRubric[axis]!.count++;
       }
 
       signalsPassed += artifact.passedSignals;
@@ -295,10 +353,14 @@ export async function runBench(opts: {
               narrativeAxisAgg[axis]!.count++;
             }
           }
-        } catch {
-          // Recorded as absent (no narrativeAxisScores) rather than thrown —
-          // consistent with how a single judge/probe failure elsewhere in
-          // this loop does not fail the whole scenario.
+        } catch (err) {
+          // Recorded as absent (no narrativeAxisScores) and as a warning —
+          // never thrown, so one narration failure does not fail the
+          // scenario, and never silent, so a shrinking narrative sample
+          // cannot pass unnoticed.
+          const message = err instanceof Error ? err.message : String(err);
+          report.warnings.push({ scenarioId: scenario.id, stage: narration ? "narration_judge" : "narration", message });
+          console.error(`[bench] ${scenario.id}: ${narration ? "narration judge" : "narration"} failed — ${message}`);
         }
       }
 
@@ -312,6 +374,7 @@ export async function runBench(opts: {
         axisScores,
         fallbackCount: artifact.fallbackCount,
         recoveredFallbacks: artifact.recoveredFallbacks ?? 0,
+        ...(seed !== undefined ? { seed } : {}),
         latencyMs: artifact.latencyMs,
         promptVersions: artifact.promptVersions,
         judgeSalvaged: judgeResult.salvaged,
@@ -321,6 +384,25 @@ export async function runBench(opts: {
         narrativeAxisScores,
         narrativeSalvaged,
       });
+      if (evidenceDir) {
+        evidenceRecords.push({
+          file: `${scenario.id}${seed !== undefined ? `__s${seed}` : ""}.json`,
+          record: {
+            id: scenario.id,
+            seed,
+            events: artifact.events,
+            axisScores,
+            narration,
+            narrativeAxisScores,
+            signalResults: artifact.signalResults,
+            probeResults: artifact.probeResults,
+            llmCalls: Object.fromEntries(artifact.llmCalls),
+            fallbackCount: artifact.fallbackCount,
+            fallbackNoOps: artifact.fallbackNoOps,
+            recoveredFallbacks: artifact.recoveredFallbacks,
+          },
+        });
+      }
     } catch (err) {
       report.scenariosFailed++;
       report.perScenario.push({
@@ -333,6 +415,7 @@ export async function runBench(opts: {
         axisScores: {},
         fallbackCount: 0,
         recoveredFallbacks: 0,
+        ...(seed !== undefined ? { seed } : {}),
         latencyMs: 0,
         promptVersions: [],
         failed: err instanceof Error ? err.message : String(err),
@@ -352,12 +435,36 @@ export async function runBench(opts: {
   report.judgeAxisMeans = Object.fromEntries(
     Object.entries(axisAgg).map(([id, a]) => [id, Math.round((a.sum / a.count) * 1000) / 1000]),
   );
-  const targets = selected[0]?.rubric.targets ?? [];
+  // Targets are the union over every selected rubric — a mixed selection
+  // (roleplay + hidden-objective) must show mask_integrity's bar, not just
+  // whatever the first scenario happened to score. Conflicting mins keep the
+  // stricter one.
+  const targetMin: Record<string, number> = {};
+  for (const scenario of limited) {
+    for (const t of scenario.rubric.targets) {
+      targetMin[t.axisId] = Math.max(targetMin[t.axisId] ?? 0, t.min);
+    }
+  }
   report.judgeAxisTargets = Object.fromEntries(
-    targets.map(t => [t.axisId, {
-      target: t.min,
-      met: (report.judgeAxisMeans[t.axisId] ?? 0) >= t.min,
+    Object.entries(targetMin).map(([axisId, min]) => [axisId, {
+      target: min,
+      met: (report.judgeAxisMeans[axisId] ?? 0) >= min,
     }]),
+  );
+  report.judgeAxisMeansByRubric = Object.fromEntries(
+    Object.entries(rubricAxisAgg).map(([rubricId, axes]) => [
+      rubricId,
+      Object.fromEntries(Object.entries(axes).map(([id, a]) => [id, Math.round((a.sum / a.count) * 1000) / 1000])),
+    ]),
+  );
+  report.judgeAxisStats = Object.fromEntries(
+    Object.entries(axisValues).map(([axis, values]) => {
+      const n = values.length;
+      const mean = values.reduce((s, v) => s + v, 0) / n;
+      const sd = n > 1 ? Math.sqrt(values.reduce((s, v) => s + (v - mean) ** 2, 0) / (n - 1)) : 0;
+      const r = (x: number) => Math.round(x * 1000) / 1000;
+      return [axis, { mean: r(mean), sd: r(sd), min: Math.min(...values), max: Math.max(...values), n }];
+    }),
   );
   report.byCategory = Object.fromEntries(
     Object.entries(catAgg).map(([cat, a]) => [cat, {
@@ -389,9 +496,14 @@ export async function runBench(opts: {
       try {
         const result = await judgeNarration(golden.scenario, golden.events, golden.narration, resolvedJudge.config);
         if (!result.salvaged) narrativeJudgeScores.set(golden.id, result.axes);
-      } catch {
+      } catch (err) {
         // A single golden-narration judging failure must not sink the whole
-        // calibration report — it just contributes no data point for that id.
+        // calibration report — it contributes no data point for that id, and
+        // says so, because a calibration over fewer pairs than the golden
+        // set holds is a different (weaker) measurement.
+        const message = err instanceof Error ? err.message : String(err);
+        report.warnings.push({ scenarioId: golden.id, stage: "golden_narration", message });
+        console.error(`[bench] golden narration ${golden.id}: judge failed — ${message}`);
       }
     }
     report.narrativeCalibration = calibrateJudge(
@@ -406,7 +518,60 @@ export async function runBench(opts: {
     mkdirSync(dirname(outPath), { recursive: true });
     writeFileSync(outPath, JSON.stringify(report, null, 2), "utf8");
   }
+  if (evidenceDir) {
+    writeEvidenceRun(evidenceDir, report, resolvedJudge, evidenceRecords, mode);
+  }
   return report;
+}
+
+/**
+ * `--run-id`: a committed, reproducible evidence directory. `run-meta.json`
+ * records what produced the numbers — git sha, generator and judge routes,
+ * seeds, pulse cap, prompt/template versions — and the NAMES of the
+ * PERFECTMAN_* environment variables in force, never their values.
+ */
+function writeEvidenceRun(
+  dir: string,
+  report: BenchReport,
+  judge: Awaited<ReturnType<typeof loadJudgeConfig>>,
+  records: ReadonlyArray<{ file: string; record: unknown }>,
+  mode: "mock" | "local",
+): void {
+  mkdirSync(join(dir, "scenarios"), { recursive: true });
+  let gitSha: string | null = null;
+  try {
+    gitSha = execSync("git rev-parse HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+  } catch {
+    gitSha = null;
+  }
+  const meta = {
+    runId: report.runId,
+    generatedAt: report.generatedAt,
+    gitSha,
+    mode,
+    generator: {
+      provider: process.env.PERFECTMAN_LLM_PROVIDER ?? null,
+      model: process.env.PERFECTMAN_LLM_MODEL ?? null,
+      baseUrl: process.env.PERFECTMAN_LLM_BASE_URL ?? null,
+    },
+    judge: {
+      providerType: judge.providerType,
+      model: judge.config.model,
+      baseUrl: judge.config.baseUrl,
+      temperature: judge.config.temperature ?? null,
+      jury: (judge.jury ?? []).map(j => ({ label: j.label ?? null, model: j.model, baseUrl: j.baseUrl })),
+    },
+    seeds: report.seeds,
+    pulseLimit: report.pulseLimit ?? null,
+    promptVersions: report.promptVersions,
+    promptTemplateVersions: report.promptTemplateVersions,
+    envVarNames: Object.keys(process.env).filter(k => k.startsWith("PERFECTMAN_")).sort(),
+  };
+  writeFileSync(join(dir, "run-meta.json"), JSON.stringify(meta, null, 2), "utf8");
+  writeFileSync(join(dir, "bench-report.json"), JSON.stringify(report, null, 2), "utf8");
+  for (const { file, record } of records) {
+    writeFileSync(join(dir, "scenarios", file), JSON.stringify(record, null, 2), "utf8");
+  }
 }
 
 function printReport(report: BenchReport): void {
@@ -427,15 +592,21 @@ function printReport(report: BenchReport): void {
   for (const [id, a] of Object.entries(report.probeAverages)) {
     console.log(`  ${id.padEnd(26)} ${a.mean.toFixed(3)} | ${(a.passedPct * 100).toFixed(0)}%`);
   }
-  console.log("\njudge axis means (target):");
+  console.log(`\njudge axis means (target)${report.seeds.length > 0 ? ` — seeds ${report.seeds.join(",")}, mean ± sd [min..max] n` : ""}:`);
   for (const [axis, mean] of Object.entries(report.judgeAxisMeans)) {
     const t = report.judgeAxisTargets[axis];
     const mark = t ? (t.met ? "OK" : "LOW") : "";
-    console.log(`  ${axis.padEnd(26)} ${mean.toFixed(2)} ${t ? `(>=${t.target}) ${mark}` : ""}`);
+    const s = report.judgeAxisStats[axis];
+    const spread = s && s.n > 1 ? ` ± ${s.sd.toFixed(2)} [${s.min}..${s.max}] n=${s.n}` : "";
+    console.log(`  ${axis.padEnd(26)} ${mean.toFixed(2)}${spread} ${t ? `(>=${t.target}) ${mark}` : ""}`);
+  }
+  if (report.warnings.length > 0) {
+    console.log(`\nwarnings (${report.warnings.length}) — recorded, not swallowed:`);
+    for (const w of report.warnings.slice(0, 8)) console.log(`  ${w.stage}${w.scenarioId ? ` ${w.scenarioId}` : ""}: ${w.message}`);
   }
   console.log("\ncalibration (judge vs golden labels):");
   const cal = report.calibration;
-  console.log(`  kappa ${cal.kappa} (target ${cal.targetKappa}) ${cal.passed ? "PASS" : "FAIL"} | alpha ${cal.alpha} | n=${cal.nScenes}`);
+  console.log(`  kappa ${cal.kappa} (target ${cal.targetKappa}) ${calibrationVerdict(cal)} | alpha ${cal.alpha} | matched ${cal.nScenes}/${cal.nGolden} scenes, ${cal.nAxisPairs} axes`);
   if (cal.disagreements.length > 0) {
     console.log("  disagreements:");
     for (const d of cal.disagreements.slice(0, 5)) console.log(`    - ${d}`);
@@ -449,7 +620,7 @@ function printReport(report: BenchReport): void {
     }
     console.log("\nnarrative calibration (judge vs golden narrations):");
     const ncal = report.narrativeCalibration;
-    console.log(`  kappa ${ncal.kappa} (target ${ncal.targetKappa}) ${ncal.passed ? "PASS" : "FAIL"} | alpha ${ncal.alpha} | n=${ncal.nScenes}`);
+    console.log(`  kappa ${ncal.kappa} (target ${ncal.targetKappa}) ${calibrationVerdict(ncal)} | alpha ${ncal.alpha} | matched ${ncal.nScenes}/${ncal.nGolden} scenes, ${ncal.nAxisPairs} axes`);
     if (ncal.disagreements.length > 0) {
       console.log("  disagreements:");
       for (const d of ncal.disagreements.slice(0, 5)) console.log(`    - ${d}`);
@@ -486,8 +657,13 @@ export async function main(): Promise<void> {
     // actually passed — absent, the file (and the rule default) decides.
     judge: args.includes("--judge") ? (argValue("--judge") as "rule" | "llm") : undefined,
     perTurn: args.includes("--per-turn"),
+    seeds: argValue("--seeds") ? (argValue("--seeds") ?? "").split(",").map(Number).filter(n => Number.isFinite(n)) : undefined,
+    pulseLimit: argValue("--pulse-limit") ? Number(argValue("--pulse-limit")) : undefined,
+    runId: argValue("--run-id"),
+    force: args.includes("--force"),
   });
   printReport(report);
+  if (report.runId) console.log(`\nevidence written under docs/eval/evidence/${report.runId}/`);
 }
 
 if (process.argv[1]?.endsWith("bench.js") || process.argv[1]?.endsWith("bench.ts")) {

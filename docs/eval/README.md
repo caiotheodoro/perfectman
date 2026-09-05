@@ -38,12 +38,18 @@ PERFECTMAN_LLM_MODEL=qwen3:8b \
 pnpm --filter @perfectman/eval bench --mode local --judge llm --out out/bench-local.json
 
 # heuristic LLM-as-judge with per-turn narrative-cohesion scoring.
-# The judge defaults to HIGH temperature (PERFECTMAN_JUDGE_TEMPERATURE) —
-# varied, creative reads expose cohesion/voice failures a strict low-temp
-# judge misses. Set it to 0 for deterministic calibration runs.
+# bench and calibrate both default the judge to temperature 0 — a judge
+# sampling creatively cannot gate a change, the same transcript scores
+# differently run to run. PERFECTMAN_JUDGE_TEMPERATURE overrides it.
 PERFECTMAN_LLM_PROVIDER=deepseek \
-PERFECTMAN_JUDGE_TEMPERATURE=1.0 \
 pnpm --filter @perfectman/eval bench --mode local --judge llm --per-turn --limit 6
+
+# experiment runs: N seeds per scenario, a pulse cap, and a committed
+# evidence directory (docs/eval/evidence/<run-id>/ with bench-report.json,
+# run-meta.json and per-scenario transcripts; refuses to overwrite without
+# --force). Per-axis mean/sd/min/max over the seeds lands in judgeAxisStats.
+pnpm --filter @perfectman/eval bench --slice hoc --mode local --judge llm \
+  --seeds 42,43,44 --pulse-limit 32 --run-id hoc-baseline-<sha7>
 
 # slices
 pnpm --filter @perfectman/eval bench --category edge_chaos
@@ -158,8 +164,8 @@ config file describes the experiment, the `.env` holds the secrets:
 3. otherwise the environment (`PERFECTMAN_JUDGE_BASE_URL` / `_MODEL` /
    `_TEMPERATURE`, `PERFECTMAN_LLM_*`, `PERFECTMAN_LLM_PROVIDER=deepseek`
    shortcut) — the env layer stays exactly as documented above;
-4. otherwise defaults (local qwen3:8b endpoint; bench temperature 1.0,
-   calibration 0).
+4. otherwise defaults (local qwen3:8b endpoint; temperature 0 for both
+   bench and calibration).
 
 `providerType` is `"openai-compatible" | "rule" | "mock"` — DeepSeek is
 not a type, it is an openai-compatible endpoint in a file. Secrets are

@@ -32,12 +32,14 @@ describe("narration calibration matching (reuses calibrateJudge, not a new imple
     expect(report.disagreements).toEqual([]);
   });
 
-  it("reports kappa 0 when nothing matches (vacuous case stays detectable)", () => {
+  it("reports no_data when nothing matches — never PASS, never FAIL", () => {
     const report = calibrateJudge(
       new Map(),
       GOLDEN_NARRATIONS.slice(0, 1).map(g => ({ scenarioId: g.id, axes: g.axes, note: g.note })),
       0.7,
     );
-    expect(report.passed).toBe(false);
+    expect(report.status).toBe("no_data");
+    expect(report.passed).toBeNull();
+    expect(report.nScenes).toBe(0);
   });
 });

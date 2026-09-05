@@ -328,7 +328,7 @@ export function writeEvidenceReport(
   md.push(`- Scenarios: ${evidence.length} (base, no rotation)`);
   md.push(`- Signal pass rate: ${pct(signalsPassed, signalsTotal)}`);
   md.push(`- Probe pass rate: ${pct(probesPassed, probesTotal)}`);
-  md.push(`- Judge calibration (rule judge vs golden labels): kappa ${cal.kappa} (target ${cal.targetKappa}) — ${cal.passed ? "PASS" : "FAIL (expected for v0 rule judge; calibrate with the LLM judge)"}\n`);
+  md.push(`- Judge calibration (rule judge vs golden labels): kappa ${cal.kappa} (target ${cal.targetKappa}) — ${cal.status === "pass" ? "PASS" : cal.status === "no_data" ? "NO DATA (no golden scene paired with a judged run)" : "FAIL (expected for v0 rule judge; calibrate with the LLM judge)"}\n`);
 
   md.push(`## By category (signals)\n`);
   md.push(`| Category | Pass |`);

@@ -254,12 +254,17 @@ describe("calibration math", () => {
   });
 
   it("calibration report is honest on disagreement", () => {
+    // Two matched scenes: kappa needs >= 2 pairs per axis to be a measurement
+    // at all (one scene would be no_data, not a fail).
+    const allOnes = { in_character: 1, voice_match: 1, motive_authenticity: 1, interpretation: 1, creativity_unhinged: 1, memory_continuity: 1, no_ai_leak: 1 };
     const report = calibrateJudge(
-      new Map([["v1_casual_chat", { in_character: 1, voice_match: 1, motive_authenticity: 1, interpretation: 1, creativity_unhinged: 1, memory_continuity: 1, no_ai_leak: 1 }]]),
+      new Map([["v1_casual_chat", allOnes], ["v1_exclusion_inferred", allOnes]]),
       GOLDEN_LABELS,
       0.7,
     );
+    expect(report.status).toBe("fail");
     expect(report.passed).toBe(false);
+    expect(report.nScenes).toBe(2);
     expect(report.disagreements.length).toBeGreaterThan(0);
   });
 });
