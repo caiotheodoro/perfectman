@@ -21,7 +21,12 @@ describe("hidden-objective collision scenarios", () => {
       }
       expect(Math.max(...byResource.values()), scenario.id).toBeGreaterThanOrEqual(3);
       expect(scenario.rubric.id, scenario.id).toBe(HIDDEN_OBJECTIVE_RUBRIC.id);
-      expect(scenario.channels.some(c => c.type === "private_channel"), scenario.id).toBe(true);
+      // A scene either ships a private channel or requires the room to open
+      // one (hoc_heranca_do_sitio: one public room, `private_channel_used`
+      // can only pass through a created channel).
+      const hasPrivate = scenario.channels.some(c => c.type === "private_channel");
+      const requiresPrivate = scenario.expectedSignals.some(s => s.kind === "private_channel_used");
+      expect(hasPrivate || requiresPrivate, scenario.id).toBe(true);
     }
   });
 

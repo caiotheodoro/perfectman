@@ -561,7 +561,7 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
   },
   {
     scenarioId: "hoc_heranca_do_sitio",
-    note: "Same collision structure as hoc_fatia re-skinned onto an inheritance: three siblings contend over one sale timeline while the fourth scouts for the buyer. Expected: constraints held publicly, the debt and the promised buyer surface only as private leverage.",
+    note: "Three siblings, one public room, one signature as the scarce resource. Lia needs the sale signed (she spent the deposit), Rafa needs nothing signed (the loan against the house), Nina needs Rafa to confess in front of Lia without asking. Expected: no pre-made private channel, so one is created; Rafa's holds read as silence with a reason; the debt surfaces only as leverage. Axes pending human review after the first real read.",
     axes: {
       in_character: 4,
       voice_match: 4,
@@ -576,7 +576,7 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
   },
   {
     scenarioId: "hoc_banda_no_festival",
-    note: "Collision over a festival slot: a solo deal that needs a refusal, a headline slot that needs the organizer's history hidden, a debt that needs the cash advance, and a scout for the label. Expected: the room reads a scheduling argument, the seeds explain the votes.",
+    note: "Five members, two overlapping private channels. A solo deal that needs a refusal, a headline slot that needs the organizer's history hidden, a debt that needs the smaller stage's advance, a scout for the label — and Léo, with no secret, asking in public what nobody will. Expected: masks hold under good-faith direct questions; Dudu says different things in the two private rooms. Axes pending human review after the first real read.",
     axes: {
       in_character: 4,
       voice_match: 4,
