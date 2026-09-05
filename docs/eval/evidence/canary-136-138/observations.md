@@ -32,18 +32,32 @@ The LLM-call deltas confirm the predicted sustained-attention shift from
 dormant-path activation (every canned agent attentive every pulse), e.g.
 `caio` in motive_gossip 12 → 24.
 
-## Harness gap (follow-up, not a regression)
+## Harness gap — resolved (#152)
 
-`finalStates.memories` and `finalStates.relationalStates` are **empty in both
-pre- and post-wave runs**: the eval scenario-runner commits events through its
-own path and does not ride the scheduler's `applyMemoryProjection` (a
-`PulseScheduler` private method) nor the resolver's participant-identifier
-stamping. The eval harness therefore cannot witness either #136 or #138
-effects; memory/relational behavior is verified by the unit/integration suites
-(1418 -> 1423 tests) and the live run in
-`docs/eval/evidence/local-deadroom-deepseek/`. Follow-up: route the eval
-runner through the real resolver/scheduler seam (or stamp identifiers in its
-own builders) so future evidence can see the new subsystems.
+The original diagnosis above was wrong about the cause: the eval scenario
+runner already drives the real pipeline (`buildConfiguredSimulation` →
+`SimulationRuntime.runPulse` → `PulseScheduler.executePulse`), which calls
+`applyMemoryProjection` and passes `agentNames` into `IntentResolver.resolve`
+exactly as the live path does — confirmed by re-running `v1_biased_memory` in
+mock mode straight off `ScenarioRunner.run`, which returned populated
+`agentState.memories` and `agentState.relationalStates` for both agents. The
+actual gap was in the evidence CLI: `buildFinalStates()`
+(`packages/eval/src/cli/evidence.ts`) only ever read `coreMood` and
+`socialEmotions` off the agent state, so the memory/relational counts were
+never serialized into evidence JSON — the harness wasn't blind, its report
+writer was silent. Fixed by adding `memories` (count) and `relationalStates`
+(count) to each agent's `finalStates` entry. The evidence dir below was
+regenerated with the fix; every scenario now shows non-zero
+`relationalStates` for all agents and non-zero `memories` for at least one
+agent per scenario. No change was needed in `scenario-runner.ts`,
+`pulse-scheduler.ts`, or `intent-resolver.ts`, so ADR-0013 D-37 (scheduler-
+private `applyMemoryProjection`, not a projection class) stands unmodified.
+
+Regenerating also picked up the resentment-floor recalibration merged after
+this canary was first captured, so the before/after signal counts in the
+table above no longer match a fresh run (all four scenarios now pass every
+signal); the table is left as the historical record of the #136/#138
+attribution investigation, not a live status.
 
 ## Recalibration (follow-up commit)
 

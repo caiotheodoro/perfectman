@@ -1,12 +1,12 @@
 {
   "version": "evidence-v1",
   "mode": "mock",
-  "generatedAt": "2026-09-02T13:57:01.904Z",
+  "generatedAt": "2026-09-04T22:52:45.859Z",
   "scenarios": [
     {
       "id": "v1_exclusion_inferred",
       "category": "v1_behavior",
-      "signalsPassed": 2,
+      "signalsPassed": 3,
       "signalsTotal": 3,
       "probesPassed": 12,
       "probesTotal": 15
@@ -30,7 +30,7 @@
     {
       "id": "stagnation_resentment_loop",
       "category": "stagnation_attractor",
-      "signalsPassed": 1,
+      "signalsPassed": 3,
       "signalsTotal": 3,
       "probesPassed": 12,
       "probesTotal": 15

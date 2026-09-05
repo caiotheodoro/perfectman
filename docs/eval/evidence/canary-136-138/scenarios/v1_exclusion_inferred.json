@@ -6,7 +6,7 @@
   "targetBehaviors": [
     "Another agent infers exclusion from public silence"
   ],
-  "runtimeMs": 84,
+  "runtimeMs": 97,
   "pulses": 14,
   "llmCalls": {
     "goulart": 14,
@@ -51,42 +51,42 @@
       "pulse": 0,
       "agent": "bruno",
       "type": "channel_created",
-      "channelId": "jD408ZsqAATbeeD1JcMpL",
+      "channelId": "pLAPp3q7wB2OunnmWbRnR",
       "private": true
     },
     {
       "pulse": 0,
       "agent": "bruno",
       "type": "agent_invited",
-      "channelId": "x3mFZnahBXFLR6uW8snGv",
+      "channelId": "N98322TT0bRePMAAw7TAi",
       "private": false
     },
     {
       "pulse": 0,
       "agent": "bruno",
       "type": "agent_invited",
-      "channelId": "x3mFZnahBXFLR6uW8snGv",
+      "channelId": "N98322TT0bRePMAAw7TAi",
       "private": false
     },
     {
       "pulse": 0,
       "agent": "caio",
       "type": "channel_created",
-      "channelId": "8P8lXwIWXsBi7AdB0CD58",
+      "channelId": "SQq6yL4yHoZGhs3yX9TBY",
       "private": true
     },
     {
       "pulse": 0,
       "agent": "caio",
       "type": "agent_invited",
-      "channelId": "xZy7Y22VemhLN3dPzjt80",
+      "channelId": "XnD05ilgNhsJcjoDfZjps",
       "private": false
     },
     {
       "pulse": 0,
       "agent": "caio",
       "type": "agent_invited",
-      "channelId": "xZy7Y22VemhLN3dPzjt80",
+      "channelId": "XnD05ilgNhsJcjoDfZjps",
       "private": false
     },
     {
@@ -101,7 +101,7 @@
       "pulse": 1,
       "agent": "bruno",
       "type": "message_sent",
-      "channelId": "jD408ZsqAATbeeD1JcMpL",
+      "channelId": "pLAPp3q7wB2OunnmWbRnR",
       "private": true,
       "content": "que surpresa, o mundo girando bem sem mim"
     },
@@ -109,14 +109,14 @@
       "pulse": 1,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "xZy7Y22VemhLN3dPzjt80",
+      "channelId": "XnD05ilgNhsJcjoDfZjps",
       "private": false
     },
     {
       "pulse": 1,
       "agent": "caio",
       "type": "message_sent",
-      "channelId": "8P8lXwIWXsBi7AdB0CD58",
+      "channelId": "SQq6yL4yHoZGhs3yX9TBY",
       "private": true,
       "content": "confesso que fiquei meio triste, mas passa"
     },
@@ -132,7 +132,7 @@
       "pulse": 2,
       "agent": "bruno",
       "type": "message_sent",
-      "channelId": "jD408ZsqAATbeeD1JcMpL",
+      "channelId": "pLAPp3q7wB2OunnmWbRnR",
       "private": true,
       "content": "salvei esse print pra história"
     },
@@ -140,14 +140,14 @@
       "pulse": 2,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "jD408ZsqAATbeeD1JcMpL",
+      "channelId": "pLAPp3q7wB2OunnmWbRnR",
       "private": false
     },
     {
       "pulse": 2,
       "agent": "caio",
       "type": "message_sent",
-      "channelId": "8P8lXwIWXsBi7AdB0CD58",
+      "channelId": "SQq6yL4yHoZGhs3yX9TBY",
       "private": true,
       "content": "goulart sei que é zoeira mas vai com calma kk"
     },
@@ -163,7 +163,7 @@
       "pulse": 3,
       "agent": "bruno",
       "type": "message_sent",
-      "channelId": "jD408ZsqAATbeeD1JcMpL",
+      "channelId": "pLAPp3q7wB2OunnmWbRnR",
       "private": true,
       "content": "eu ri. (não ri)"
     },
@@ -171,14 +171,14 @@
       "pulse": 3,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "jD408ZsqAATbeeD1JcMpL",
+      "channelId": "pLAPp3q7wB2OunnmWbRnR",
       "private": false
     },
     {
       "pulse": 3,
       "agent": "caio",
       "type": "message_sent",
-      "channelId": "8P8lXwIWXsBi7AdB0CD58",
+      "channelId": "SQq6yL4yHoZGhs3yX9TBY",
       "private": true,
       "content": "gente, respira comigo: tudo bem? tudo bem."
     },
@@ -202,14 +202,14 @@
       "pulse": 4,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "jD408ZsqAATbeeD1JcMpL",
+      "channelId": "pLAPp3q7wB2OunnmWbRnR",
       "private": false
     },
     {
       "pulse": 4,
       "agent": "caio",
       "type": "message_sent",
-      "channelId": "8P8lXwIWXsBi7AdB0CD58",
+      "channelId": "SQq6yL4yHoZGhs3yX9TBY",
       "private": true,
       "content": "oi gente!! como tá tudo"
     },
@@ -491,6 +491,8 @@
       "arousal": 0.666,
       "stability": 0.35,
       "energy": 1,
+      "memories": 0,
+      "relationalStates": 2,
       "jealousy": 0.031,
       "affection": 0.211,
       "fearOfExclusion": 0.042
@@ -500,6 +502,8 @@
       "arousal": 0.383,
       "stability": 0.535,
       "energy": 1,
+      "memories": 8,
+      "relationalStates": 2,
       "jealousy": 0.316,
       "envy": 0.022,
       "pride": 0.082,
@@ -516,6 +520,8 @@
       "arousal": 0.517,
       "stability": 0.65,
       "energy": 1,
+      "memories": 5,
+      "relationalStates": 2,
       "pride": 0.163,
       "affection": 0.408,
       "suspicion": 0.038,
@@ -669,8 +675,8 @@
       "passed": true
     },
     {
-      "detail": "bruno.resentment = 0.116 (min 0.12)",
-      "passed": false
+      "detail": "bruno.resentment = 0.116 (min 0.1)",
+      "passed": true
     },
     {
       "detail": "llm_failure events: 0",
@@ -681,10 +687,10 @@
     "in_character": 3,
     "voice_match": 1,
     "motive_authenticity": 5,
-    "interpretation": 3,
+    "interpretation": 5,
     "creativity_unhinged": 4,
     "memory_continuity": 4,
     "no_ai_leak": 5,
-    "narrative_cohesion": 4
+    "narrative_cohesion": 5
   }
 }

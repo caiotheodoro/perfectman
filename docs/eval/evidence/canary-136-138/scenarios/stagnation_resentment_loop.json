@@ -4,7 +4,7 @@
   "category": "stagnation_attractor",
   "description": "Bruno and Caio are locked in mutual resentment — polite public surface, no repair attempts. The loop should persist across pulses.",
   "targetBehaviors": [],
-  "runtimeMs": 112,
+  "runtimeMs": 120,
   "pulses": 32,
   "llmCalls": {
     "bruno": 20,
@@ -335,28 +335,28 @@
       "pulse": 12,
       "agent": "bruno",
       "type": "channel_created",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true
     },
     {
       "pulse": 12,
       "agent": "bruno",
       "type": "agent_invited",
-      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "channelId": "PzefqItDMtmhXYvlE8nkU",
       "private": false
     },
     {
       "pulse": 12,
       "agent": "bruno",
       "type": "agent_invited",
-      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "channelId": "PzefqItDMtmhXYvlE8nkU",
       "private": false
     },
     {
       "pulse": 12,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "channelId": "PzefqItDMtmhXYvlE8nkU",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -372,7 +372,7 @@
       "pulse": 13,
       "agent": "bruno",
       "type": "message_sent",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true,
       "content": "não é rancor, é arquivo"
     },
@@ -380,14 +380,14 @@
       "pulse": 13,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "channelId": "PzefqItDMtmhXYvlE8nkU",
       "private": false
     },
     {
       "pulse": 13,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "OluhfI01pO96PkwjEdPj0",
+      "channelId": "PzefqItDMtmhXYvlE8nkU",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -403,7 +403,7 @@
       "pulse": 14,
       "agent": "bruno",
       "type": "message_sent",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true,
       "content": "ri na minha cabeça, por dentro, óbvio"
     },
@@ -411,35 +411,35 @@
       "pulse": 14,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": false
     },
     {
       "pulse": 14,
       "agent": "caio",
       "type": "channel_created",
-      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "channelId": "X9q4t4UgvNkifMPTm1SeC",
       "private": true
     },
     {
       "pulse": 14,
       "agent": "caio",
       "type": "agent_invited",
-      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "channelId": "NKuuu7mFI0y8bpe9XaZB8",
       "private": false
     },
     {
       "pulse": 14,
       "agent": "caio",
       "type": "agent_invited",
-      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "channelId": "NKuuu7mFI0y8bpe9XaZB8",
       "private": false
     },
     {
       "pulse": 14,
       "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "channelId": "NKuuu7mFI0y8bpe9XaZB8",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -447,7 +447,7 @@
       "pulse": 15,
       "agent": "bruno",
       "type": "message_sent",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true,
       "content": "vou agir como se não tivesse visto isso, de novo"
     },
@@ -455,14 +455,14 @@
       "pulse": 15,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "channelId": "NKuuu7mFI0y8bpe9XaZB8",
       "private": false
     },
     {
       "pulse": 15,
       "agent": "caio",
       "type": "message_sent",
-      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "channelId": "X9q4t4UgvNkifMPTm1SeC",
       "private": true,
       "content": "oi gente!! como tá tudo"
     },
@@ -470,14 +470,14 @@
       "pulse": 15,
       "agent": "caio",
       "type": "memory_written",
-      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "channelId": "NKuuu7mFI0y8bpe9XaZB8",
       "private": false
     },
     {
       "pulse": 15,
       "agent": "goulart",
       "type": "reaction_sent",
-      "channelId": "HDV7dHmBZKC0dYriHR1sC",
+      "channelId": "NKuuu7mFI0y8bpe9XaZB8",
       "private": false,
       "content": "reacted 😂"
     },
@@ -485,7 +485,7 @@
       "pulse": 16,
       "agent": "bruno",
       "type": "message_sent",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true,
       "content": "interessante"
     },
@@ -493,14 +493,14 @@
       "pulse": 16,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": false
     },
     {
       "pulse": 16,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "channelId": "X9q4t4UgvNkifMPTm1SeC",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -516,7 +516,7 @@
       "pulse": 17,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -524,7 +524,7 @@
       "pulse": 17,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "channelId": "X9q4t4UgvNkifMPTm1SeC",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -548,14 +548,14 @@
       "pulse": 18,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": false
     },
     {
       "pulse": 18,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "channelId": "X9q4t4UgvNkifMPTm1SeC",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -563,7 +563,7 @@
       "pulse": 18,
       "agent": "goulart",
       "type": "reply_sent",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true,
       "content": "eu falo o que todo mundo pensa, alguém tinha que dizer"
     },
@@ -586,7 +586,7 @@
       "pulse": 19,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "channelId": "X9q4t4UgvNkifMPTm1SeC",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -594,7 +594,7 @@
       "pulse": 19,
       "agent": "goulart",
       "type": "reaction_sent",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true,
       "content": "reacted 😂"
     },
@@ -610,7 +610,7 @@
       "pulse": 20,
       "agent": "caio",
       "type": "no_op_recorded",
-      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "channelId": "X9q4t4UgvNkifMPTm1SeC",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -618,7 +618,7 @@
       "pulse": 20,
       "agent": "goulart",
       "type": "reaction_sent",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true,
       "content": "reacted 😂"
     },
@@ -649,14 +649,14 @@
       "pulse": 21,
       "agent": "caio",
       "type": "memory_written",
-      "channelId": "YI2a85jiN6yqkk6KqaiN5",
+      "channelId": "X9q4t4UgvNkifMPTm1SeC",
       "private": false
     },
     {
       "pulse": 21,
       "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -694,7 +694,7 @@
       "pulse": 22,
       "agent": "goulart",
       "type": "reaction_sent",
-      "channelId": "jiDcTvg6Q0riUqLI0UvAM",
+      "channelId": "vG1ioUJzwkzOEtCkPngLO",
       "private": true,
       "content": "reacted 🤨"
     },
@@ -849,28 +849,28 @@
       "pulse": 27,
       "agent": "goulart",
       "type": "channel_created",
-      "channelId": "o4H2hRIOEalRjyU6AfWXi",
+      "channelId": "lsceBHgM1nLXHJpwAsjgU",
       "private": true
     },
     {
       "pulse": 27,
       "agent": "goulart",
       "type": "agent_invited",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false
     },
     {
       "pulse": 27,
       "agent": "goulart",
       "type": "agent_invited",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false
     },
     {
       "pulse": 28,
       "agent": "bruno",
       "type": "no_op_recorded",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -886,14 +886,14 @@
       "pulse": 28,
       "agent": "caio",
       "type": "memory_written",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false
     },
     {
       "pulse": 28,
       "agent": "goulart",
       "type": "reaction_sent",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false,
       "content": "reacted 😂"
     },
@@ -909,7 +909,7 @@
       "pulse": 29,
       "agent": "bruno",
       "type": "memory_written",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false
     },
     {
@@ -924,7 +924,7 @@
       "pulse": 29,
       "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -948,7 +948,7 @@
       "pulse": 30,
       "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -986,7 +986,7 @@
       "pulse": 31,
       "agent": "goulart",
       "type": "no_op_recorded",
-      "channelId": "Ek8jDehvVILQ44MCx1uRc",
+      "channelId": "4u81BNGgFQ8GtvYw0SJs3",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     }
@@ -997,6 +997,8 @@
       "arousal": 0.323,
       "stability": 0.547,
       "energy": 1,
+      "memories": 12,
+      "relationalStates": 2,
       "jealousy": 0.18,
       "envy": 0.028,
       "pride": 0.023,
@@ -1011,6 +1013,8 @@
       "arousal": 0.508,
       "stability": 0.65,
       "energy": 1,
+      "memories": 10,
+      "relationalStates": 2,
       "pride": 0.185,
       "affection": 0.419,
       "resentment": 0.272,
@@ -1023,6 +1027,8 @@
       "arousal": 0.67,
       "stability": 0.35,
       "energy": 1,
+      "memories": 0,
+      "relationalStates": 2,
       "jealousy": 0.036,
       "pride": 0.177,
       "affection": 0.312,
@@ -1174,12 +1180,12 @@
   ],
   "signals": [
     {
-      "detail": "bruno.resentment = 0.468 (floor 0.5)",
-      "passed": false
+      "detail": "bruno.resentment = 0.468 (floor 0.42)",
+      "passed": true
     },
     {
-      "detail": "caio.resentment = 0.272 (floor 0.3)",
-      "passed": false
+      "detail": "caio.resentment = 0.272 (floor 0.24)",
+      "passed": true
     },
     {
       "detail": "llm_failure events: 0",
@@ -1190,10 +1196,10 @@
     "in_character": 3,
     "voice_match": 1,
     "motive_authenticity": 5,
-    "interpretation": 2,
+    "interpretation": 5,
     "creativity_unhinged": 4,
     "memory_continuity": 4,
     "no_ai_leak": 5,
-    "narrative_cohesion": 3
+    "narrative_cohesion": 5
   }
 }

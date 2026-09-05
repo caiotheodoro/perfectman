@@ -4,7 +4,7 @@
   "category": "motive_archetype",
   "description": "Mariana wants to dissect Goulart's drama with Caio in private.",
   "targetBehaviors": [],
-  "runtimeMs": 91,
+  "runtimeMs": 102,
   "pulses": 24,
   "llmCalls": {
     "mariana": 20,
@@ -25,21 +25,21 @@
       "pulse": 0,
       "agent": "mariana",
       "type": "channel_created",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": true
     },
     {
       "pulse": 0,
       "agent": "mariana",
       "type": "agent_invited",
-      "channelId": "yoJQ1moRLp5WYlydYcaIV",
+      "channelId": "zlVy6IAvKcqSvtvWoiheI",
       "private": false
     },
     {
       "pulse": 0,
       "agent": "mariana",
       "type": "agent_invited",
-      "channelId": "yoJQ1moRLp5WYlydYcaIV",
+      "channelId": "zlVy6IAvKcqSvtvWoiheI",
       "private": false
     },
     {
@@ -54,7 +54,7 @@
       "pulse": 0,
       "agent": "goulart",
       "type": "reaction_sent",
-      "channelId": "yoJQ1moRLp5WYlydYcaIV",
+      "channelId": "zlVy6IAvKcqSvtvWoiheI",
       "private": false,
       "content": "reacted 🤨"
     },
@@ -62,7 +62,7 @@
       "pulse": 1,
       "agent": "mariana",
       "type": "message_sent",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": true,
       "content": "curioso como ninguém percebeu isso antes."
     },
@@ -70,7 +70,7 @@
       "pulse": 1,
       "agent": "mariana",
       "type": "memory_written",
-      "channelId": "yoJQ1moRLp5WYlydYcaIV",
+      "channelId": "zlVy6IAvKcqSvtvWoiheI",
       "private": false
     },
     {
@@ -93,7 +93,7 @@
       "pulse": 2,
       "agent": "mariana",
       "type": "message_sent",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": true,
       "content": "duas pessoas sabem disso. uma sou eu."
     },
@@ -101,7 +101,7 @@
       "pulse": 2,
       "agent": "mariana",
       "type": "memory_written",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": false
     },
     {
@@ -124,7 +124,7 @@
       "pulse": 3,
       "agent": "mariana",
       "type": "message_sent",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": true,
       "content": "fiquei sabendo disso antes de vocês."
     },
@@ -132,7 +132,7 @@
       "pulse": 3,
       "agent": "mariana",
       "type": "memory_written",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": false
     },
     {
@@ -155,7 +155,7 @@
       "pulse": 4,
       "agent": "mariana",
       "type": "message_sent",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": true,
       "content": "não me parece certo."
     },
@@ -163,7 +163,7 @@
       "pulse": 4,
       "agent": "mariana",
       "type": "memory_written",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": false
     },
     {
@@ -186,7 +186,7 @@
       "pulse": 5,
       "agent": "mariana",
       "type": "no_op_recorded",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": false,
       "privateMotive": "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally."
     },
@@ -218,7 +218,7 @@
       "pulse": 6,
       "agent": "mariana",
       "type": "memory_written",
-      "channelId": "yhLs8ZXTUhuYdDk9lNAUp",
+      "channelId": "fbphMD03niYda83QeSibu",
       "private": false
     },
     {
@@ -669,6 +669,8 @@
       "arousal": 0.449,
       "stability": 0.8,
       "energy": 1,
+      "memories": 11,
+      "relationalStates": 1,
       "jealousy": 0.022,
       "pride": 0.027,
       "affection": 0.229,
@@ -683,6 +685,8 @@
       "arousal": 0.511,
       "stability": 0.65,
       "energy": 1,
+      "memories": 1,
+      "relationalStates": 2,
       "affection": 0.311,
       "fearOfExclusion": 0.04
     },
@@ -691,6 +695,8 @@
       "arousal": 0.657,
       "stability": 0.35,
       "energy": 1,
+      "memories": 0,
+      "relationalStates": 2,
       "jealousy": 0.034,
       "pride": 0.043,
       "affection": 0.223,
