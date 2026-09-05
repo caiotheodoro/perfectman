@@ -11,6 +11,7 @@ import type {
   AvailableAction,
 } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
+import { REPETITION_GUARD_MARKER } from "../../agent/repetition-guard.js";
 
 const SIM_ID = "sim_test";
 const AGENT_ID = "agent_1";
@@ -122,6 +123,51 @@ describe("IntentResolver", () => {
     membership: [],
     settings: SETTINGS,
     actionEmotions: ACTION_EMOTIONS,
+  });
+
+  describe("repetition_blocked is not no_op_recorded", () => {
+    it("commits repetition_blocked when the guard authored the no_op motive", async () => {
+      const intent = makeIntent({
+        intentType: "no_op",
+        channelTarget: CHANNEL_ID,
+        privateMotiveSummary:
+          `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, even after a retry — blocked structurally.`,
+      });
+      const result = await resolver.resolve(intent, ctx());
+
+      const types = result.committedEvents.map(e => e.type);
+      expect(types).toContain("repetition_blocked");
+      // The whole point of the split: a degenerate generator must never be
+      // counted as an agent choosing silence.
+      expect(types).not.toContain("no_op_recorded");
+    });
+
+    it("still commits no_op_recorded when the agent genuinely chose silence", async () => {
+      const intent = makeIntent({
+        intentType: "no_op",
+        channelTarget: CHANNEL_ID,
+        privateMotiveSummary: "nothing worth saying right now; let them come to me.",
+      });
+      const result = await resolver.resolve(intent, ctx());
+
+      const types = result.committedEvents.map(e => e.type);
+      expect(types).toContain("no_op_recorded");
+      expect(types).not.toContain("repetition_blocked");
+    });
+
+    it("keeps repetition_blocked hidden from agents, like the no_op it replaced", async () => {
+      const intent = makeIntent({
+        intentType: "no_op",
+        channelTarget: CHANNEL_ID,
+        privateMotiveSummary: `${REPETITION_GUARD_MARKER}: near-duplicate, blocked structurally.`,
+      });
+      const result = await resolver.resolve(intent, ctx());
+      const blocked = result.committedEvents.find(e => e.type === "repetition_blocked")!;
+
+      expect(blocked.visibility.visibleToAgents).toEqual([]);
+      expect(blocked.visibility.visibleToSpectators).toBe(false);
+      expect(blocked.visibility.visibleToOperators).toBe(true);
+    });
   });
 
   it("commits a valid send_message intent", async () => {

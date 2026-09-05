@@ -92,6 +92,9 @@ export function countGuardBlocks(
   events: readonly { type: string; payload: Record<string, unknown> }[],
 ): number {
   return events.filter(e => {
+    // Guard blocks carry their own event type now; the marker match stays so
+    // runs recorded before the split still measure correctly.
+    if (e.type === "repetition_blocked") return true;
     if (e.type !== "no_op_recorded") return false;
     const motive = e.payload["privateMotiveSummary"];
     return typeof motive === "string" && motive.includes(REPETITION_GUARD_MARKER);

@@ -50,6 +50,11 @@ export type ScenarioRunArtifact = {
   llmCalls: Map<string, number>;
   fallbackCount: number;
   operatorFailures: number;
+  /** Retries that fixed a guard violation on the first attempt — not a
+   *  terminal failure, but not free either (see `llm_retry_recovered` in
+   *  operator.types.ts). Optional so untyped test fixtures built before this
+   *  field existed keep working. */
+  recoveredFallbacks?: number;
   probeResults: ProbeResult[];
   signalResults: SignalOutcome[];
   passedSignals: number;
@@ -205,6 +210,9 @@ export class ScenarioRunner {
 
     const failures = events.filter(e => e.type === "llm_failure").length;
     const fallbackCount = failures;
+    const recoveredFallbacks = gateway instanceof MockDeliveryGateway
+      ? gateway.operatorEvents.filter(e => e.type === "llm_retry_recovered").length
+      : 0;
     const behavioral = eventsToBehavioral(events);
     const probeResults = runAllProbes({
       events: behavioral,
@@ -224,6 +232,7 @@ export class ScenarioRunner {
       llmCalls: new Map(scenario.agents.map(a => [a.agentId, tracking?.callsFor(a.agentId) ?? 0])),
       fallbackCount,
       operatorFailures: failures,
+      recoveredFallbacks,
       probeResults,
       signalResults,
       passedSignals,

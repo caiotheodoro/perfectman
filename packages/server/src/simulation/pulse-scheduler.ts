@@ -351,7 +351,23 @@ export class PulseScheduler {
             : resolved.outcome === "fallback_committed"
               ? intent.fallbackIfBlocked
               : undefined;
-        if (committedActType && OUTWARD_SOCIAL_ACT_TYPES.has(committedActType)) {
+        // A no_op with `runtimeOutput.fallbackApplied` is not a genuine "I
+        // choose silence" decision — the agent's real intent attempt failed
+        // (repetition guard, malformed/truncated JSON, an unresolved target,
+        // a provider retry) and IntentParser substituted it. Without this,
+        // the agent never gets justActed relief, her decay-exempt
+        // cold_start_bootstrap accumulator saturates and never comes back
+        // down, and scoreAttention's cooldown-blind cadence score then forces
+        // needsLLM every subsequent pulse forever — a real production
+        // lockup, root-caused via two separate live captures (a repetition
+        // guard block, then independently a "No JSON object found in
+        // response" parse failure) that both monopolized every pulse after
+        // the affected agent's first blocked turn. `fallbackApplied` is the
+        // general signal IntentParser already computes for exactly this
+        // distinction — prefer it over pattern-matching specific fallback
+        // reasons.
+        const attemptedRealAct = resolved.outcome === "committed" && runtimeOutput.fallbackApplied;
+        if ((committedActType && OUTWARD_SOCIAL_ACT_TYPES.has(committedActType)) || attemptedRealAct) {
           stepResult.updatedAgentState.lastActionAt = now;
         }
       }

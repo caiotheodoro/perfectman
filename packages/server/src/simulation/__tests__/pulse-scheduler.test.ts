@@ -445,6 +445,7 @@ describe("PulseScheduler", () => {
     async function runAndReadState(
       intent: ActionIntent,
       outcome: import("@perfectman/shared").ResolvedIntentOutcome,
+      fallbackApplied = false,
     ): Promise<AgentState | null> {
       const sched = buildScheduler(() => ({
         ...makeCannedStep(),
@@ -455,7 +456,7 @@ describe("PulseScheduler", () => {
         intent,
         llmUsage: null,
         latencyMs: 10,
-        fallbackApplied: false,
+        fallbackApplied,
         operatorEvents: [],
       });
       vi.spyOn(intentResolver, "resolve").mockResolvedValue({
@@ -478,6 +479,30 @@ describe("PulseScheduler", () => {
       const state = await runAndReadState(makeIntent("no_op"), "committed");
       expect(state?.lastActionAt).toBeNull();
     });
+
+    // A no_op with fallbackApplied:true means IntentParser substituted it
+    // because the agent's real intent attempt failed (repetition guard,
+    // malformed/truncated JSON, an unresolved target, a provider error on
+    // retry) — categorically different from a genuine "I choose silence"
+    // no_op (fallbackApplied:false). Root-caused via a live capture where
+    // repetition-guard blocks AND separately "No JSON object found in
+    // response" fallbacks (a real deepseek-v4-flash failure mode observed
+    // live) both denied an agent justActed relief, saturating her
+    // cold_start_bootstrap accumulator and forcing needsLLM on her alone
+    // for the rest of the run — see pulse-scheduler.ts's comment.
+    for (const failureMotive of [
+      "Repetition guard: near-duplicate of a message you already sent, even after a retry — blocked structurally.",
+      "Fallback applied: No JSON object found in response",
+    ]) {
+      it(`stamps lastActionAt for a fallback no_op (${failureMotive.split(":")[0]}) — the agent attempted a real act, unlike a genuine silence choice`, async () => {
+        const state = await runAndReadState(
+          makeIntent("no_op", { privateMotiveSummary: failureMotive }),
+          "committed",
+          true,
+        );
+        expect(state?.lastActionAt).toBe(SETTINGS.pulseIntervalMs);
+      });
+    }
 
     it("does not stamp lastActionAt for a committed write_memory (memory-only)", async () => {
       const state = await runAndReadState(makeIntent("write_memory"), "committed");

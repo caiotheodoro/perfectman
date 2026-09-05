@@ -42,6 +42,8 @@ function kindFor(type: CommittedEvent["type"]): BehavioralEventKind {
       return "react";
     case "no_op_recorded":
       return "silence";
+    case "repetition_blocked":
+      return "blocked_repeat";
     case "channel_created":
       return "private_channel";
     case "memory_written":

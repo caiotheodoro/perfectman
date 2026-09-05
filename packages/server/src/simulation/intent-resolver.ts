@@ -17,6 +17,7 @@ import type {
 import { createId } from "@perfectman/shared";
 import { validateIntentPure } from "@perfectman/engine";
 import { memoryWrittenPayload } from "./memory-written-payload.js";
+import { REPETITION_GUARD_MARKER } from "../agent/repetition-guard.js";
 import type { RateLimitGate } from "./rate-limit-gate.js";
 import type { ChannelRegistry } from "./channel-registry.js";
 
@@ -357,6 +358,21 @@ function buildChannelCreatedEvent(
   return [createEvent, ...inviteEvents];
 }
 
+/**
+ * A no_op that exists only because the repetition guard blocked a degenerate
+ * message is not the same fact as an agent choosing to stay quiet, and the two
+ * must not share an event type — see the `repetition_blocked` note in
+ * event.types.ts. The guard marks its own fallback motive with a documented
+ * prefix (repetition-guard.ts), which is the signal this reads.
+ */
+function isRepetitionBlockedIntent(intent: ActionIntent): boolean {
+  return (
+    intent.intentType === "no_op" &&
+    typeof intent.privateMotiveSummary === "string" &&
+    intent.privateMotiveSummary.startsWith(REPETITION_GUARD_MARKER)
+  );
+}
+
 function buildNoOpEvent(
   intent: ActionIntent,
   ctx: ResolveContext,
@@ -365,7 +381,7 @@ function buildNoOpEvent(
     simulationId: ctx.simulationId,
     channelId: ctx.channelId,
     actorId: intent.actorId,
-    type: "no_op_recorded",
+    type: isRepetitionBlockedIntent(intent) ? "repetition_blocked" : "no_op_recorded",
     payload: {
       intentType: intent.intentType,
       privateMotiveSummary: intent.privateMotiveSummary,

@@ -42,12 +42,18 @@ type Cell = {
   narrativeCohesionMean: number;
 };
 
+/**
+ * Guard blocks are their own event type now, so this is a plain count rather
+ * than a motive-string match. The marker match is kept as a fallback so runs
+ * recorded before the split still measure correctly.
+ */
 function countGuardBlocks(events: { type: string; payload: Record<string, unknown> }[]): number {
   return events.filter(
     e =>
-      e.type === "no_op_recorded" &&
-      typeof e.payload["privateMotiveSummary"] === "string" &&
-      (e.payload["privateMotiveSummary"] as string).includes(REPETITION_GUARD_MARKER),
+      e.type === "repetition_blocked" ||
+      (e.type === "no_op_recorded" &&
+        typeof e.payload["privateMotiveSummary"] === "string" &&
+        (e.payload["privateMotiveSummary"] as string).includes(REPETITION_GUARD_MARKER)),
   ).length;
 }
 

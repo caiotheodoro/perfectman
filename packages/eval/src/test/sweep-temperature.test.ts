@@ -38,7 +38,7 @@ describe("temperature sweep: repetition-guard marker", () => {
     const artifact = await ScenarioRunner.run(scenario, { llmMode: "mock" });
 
     const noOpMotives = artifact.events
-      .filter(e => e.type === "no_op_recorded")
+      .filter(e => e.type === "no_op_recorded" || e.type === "repetition_blocked")
       .map(e => e.payload["privateMotiveSummary"])
       .filter((m): m is string => typeof m === "string");
 

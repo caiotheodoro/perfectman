@@ -191,6 +191,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const mainOutputTokens = providerResult.usage.outputTokens;
     const retryUsages: { inputTokens: number; outputTokens: number; latencyMs: number; promptVersion: string }[] = [];
     const retryTrimEvents: OperatorEvent[] = [];
+    const retryRecoveryEvents: OperatorEvent[] = [];
 
     const isRepeat = (candidateIntent: typeof intent): boolean =>
       (candidateIntent.intentType === "send_message" || candidateIntent.intentType === "reply_to_message") &&
@@ -198,6 +199,15 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances, threshold);
 
     if (!fallbackApplied && (isRepeat(intent) || parseResult.unresolvedTarget)) {
+      // What the *first* attempt got wrong. A retry that fixes it clears every
+      // in-band signal (`fallbackApplied` goes back to false, no llm_failure is
+      // pushed), so without capturing it here the failed attempt vanishes and
+      // the offline counters report a clean run.
+      const firstAttemptViolations = [
+        isRepeat(intent) ? "near_duplicate" : null,
+        parseResult.unresolvedTarget ? "unresolved_target" : null,
+      ].filter((v): v is string => v !== null);
+
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         // The correction notes re-inflate the (already-capped) base prompt, so
         // the retry prompt is re-assembled and re-trimmed against the same cap
@@ -257,6 +267,18 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
             parseResult = retryParse;
             intent = retryParse.intent;
             fallbackApplied = false;
+            retryRecoveryEvents.push({
+              type: "llm_retry_recovered",
+              simulationId,
+              agentId,
+              pulseIndex: ctx.pulseIndex,
+              detail: `Agent ${agentId} recovered on retry ${retriesAttempted} after ${firstAttemptViolations.join(" + ")}.`,
+              createdAt: Date.now(),
+              data: {
+                violations: firstAttemptViolations,
+                retriesAttempted,
+              },
+            });
             break;
           }
           // Adopt the latest attempt even when it still violates a guard, so
@@ -388,6 +410,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const operatorEvents: OperatorEvent[] = [];
     if (trimEvent) operatorEvents.push(trimEvent);
     operatorEvents.push(...retryTrimEvents);
+    operatorEvents.push(...retryRecoveryEvents);
     operatorEvents.push({
       type: "pulse_metrics",
       simulationId,

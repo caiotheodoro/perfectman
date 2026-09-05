@@ -12,6 +12,7 @@ vi.mock("../run/scenario-runner.js", () => ({
       llmCalls: new Map(),
       fallbackCount: 0,
       operatorFailures: 0,
+      recoveredFallbacks: 2,
       probeResults: [],
       signalResults: [],
       passedSignals: 0,
@@ -38,6 +39,17 @@ describe("runBench", () => {
     const written = JSON.parse(readFileSync(outPath, "utf8"));
     expect(written.promptVersions).toEqual(["abc123"]);
     expect(written.promptTemplateVersions).toEqual(["action-intent-hybrid-v1"]);
+  });
+
+  it("counts recovered fallbacks (retry fixed a guard violation) into the report, not just terminal failures", async () => {
+    const outPath = join(mkdtempSync(join(tmpdir(), "bench-report-")), "report.json");
+
+    const report = await runBench({ mode: "mock", limit: 1, out: outPath });
+
+    expect(report.recoveredFallbacks).toBe(2);
+    expect(report.perScenario[0]?.recoveredFallbacks).toBe(2);
+    const written = JSON.parse(readFileSync(outPath, "utf8"));
+    expect(written.recoveredFallbacks).toBe(2);
   });
 });
 

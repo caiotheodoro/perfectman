@@ -12,6 +12,15 @@ export type EventType =
   | "intent_blocked"
   | "memory_written"
   | "no_op_recorded"
+  /**
+   * A turn the repetition guard blocked structurally — the model produced a
+   * near-duplicate of something the agent already said and could not fix it on
+   * retry. Deliberately NOT `no_op_recorded`: a no-op is a social act ("silence
+   * is a social signal"), while this is the generator degenerating. Folding the
+   * two together made both unmeasurable — offline runs showed 72-98% "silence"
+   * that was really the guard firing, and probes read it as chosen lurking.
+   */
+  | "repetition_blocked"
   | "private_motive_summary"
   | "operator_warning"
   | "llm_failure"

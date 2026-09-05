@@ -57,6 +57,9 @@ export type BenchReport = {
   promptTemplateVersions: string[];
   signalsByKind: Record<string, import("../run/signal-checker.js").SignalsByKindEntry>;
   calibration: ReturnType<typeof calibrateJudge>;
+  /** Retries that fixed a guard violation on the first attempt — not free,
+   *  but not a terminal `llm_failure` either (see `llm_retry_recovered`). */
+  recoveredFallbacks: number;
   perScenario: Array<{
     id: string;
     name: string;
@@ -66,6 +69,7 @@ export type BenchReport = {
     probeTotal: number;
     axisScores: AxisScores;
     fallbackCount: number;
+    recoveredFallbacks: number;
     latencyMs: number;
     promptVersions: string[];
     judgeSalvaged?: boolean;
@@ -155,6 +159,7 @@ export async function runBench(opts: {
     promptTemplateVersions: [],
     signalsByKind: {},
     calibration: calibrateJudge(new Map(), []),
+    recoveredFallbacks: 0,
     perScenario: [],
   };
 
@@ -174,6 +179,7 @@ export async function runBench(opts: {
     try {
       const artifact: ScenarioRunArtifact = await ScenarioRunner.run(scenario, { llmMode: mode });
       report.scenariosRun++;
+      report.recoveredFallbacks += artifact.recoveredFallbacks ?? 0;
       artifact.promptVersions.forEach((v) => allPromptVersions.add(v));
       artifact.templateVersions.forEach((v) => allTemplateVersions.add(v));
 
@@ -237,6 +243,7 @@ export async function runBench(opts: {
         probeTotal: artifact.probeResults.length,
         axisScores,
         fallbackCount: artifact.fallbackCount,
+        recoveredFallbacks: artifact.recoveredFallbacks ?? 0,
         latencyMs: artifact.latencyMs,
         promptVersions: artifact.promptVersions,
         judgeSalvaged: judgeResult.salvaged,
@@ -254,6 +261,7 @@ export async function runBench(opts: {
         probeTotal: 0,
         axisScores: {},
         fallbackCount: 0,
+        recoveredFallbacks: 0,
         latencyMs: 0,
         promptVersions: [],
         failed: err instanceof Error ? err.message : String(err),
@@ -301,6 +309,7 @@ export async function runBench(opts: {
 function printReport(report: BenchReport): void {
   console.log(`\n=== Perfectman Roleplay Bench (${report.mode}) ===`);
   console.log(`scenarios: ${report.scenariosRun} run, ${report.scenariosFailed} failed`);
+  console.log(`recovered fallbacks (retry fixed a guard violation): ${report.recoveredFallbacks}`);
   console.log(`signal pass rate: ${(report.signalPassRate * 100).toFixed(1)}%`);
   console.log(`probe pass rate: ${(report.probePassRate * 100).toFixed(1)}%`);
   const byKind = Object.entries(report.signalsByKind).sort((a, b) => a[1].passRate - b[1].passRate);

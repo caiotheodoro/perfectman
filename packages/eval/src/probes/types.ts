@@ -6,7 +6,8 @@ export type BehavioralEventKind =
   | "post"          // message_sent
   | "reply"         // reply_sent
   | "react"         // reaction_sent
-  | "silence"       // no_op_recorded
+  | "silence"       // no_op_recorded — a chosen social act
+  | "blocked_repeat" // repetition_blocked — the generator degenerating, never silence
   | "private_channel" // channel_created
   | "memory"        // memory_written
   | "join"          // agent_invited

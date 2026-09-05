@@ -13,9 +13,17 @@ import type { AttractorState } from "../constants/stagnation.js";
  * `rate_limit_hit` was removed — the one type declared with no producer
  * anywhere in packages/server/src (RateLimitGate computes block state but
  * never emits an operator event for it).
+ *
+ * `llm_retry_recovered` exists because a first attempt that violated a guard
+ * and was fixed by a retry used to emit nothing at all: `llm_failure` covers
+ * only the terminal case, so every offline fallback count was reported as 0
+ * against transcripts full of `Fallback applied` lines. Recovery is not free —
+ * it costs a wire call and it means the model got it wrong once — so it is
+ * recorded rather than swallowed.
  */
 export const OPERATOR_EVENT_TYPES = [
   "llm_failure",
+  "llm_retry_recovered",
   "llm_budget_exceeded",
   "intent_blocked",
   "intent_delayed",

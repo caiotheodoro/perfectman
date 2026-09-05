@@ -117,6 +117,16 @@ function transcriptHtml(evidence: ScenarioEvidence): string {
             `</div>`,
         );
         break;
+      // Rendered distinctly from a no_op on purpose: labelling a blocked
+      // near-duplicate "escolhe o silêncio" told the reader an agent chose
+      // something when the generator had simply repeated itself.
+      case "repetition_blocked":
+        parts.push(
+          `<div class="msg blocked" ${agentAttr}><span class="who" style="color:${color}">${name}</span>` +
+            `<span class="tag">repetição bloqueada</span>` +
+            `</div>`,
+        );
+        break;
       case "channel_created":
         parts.push(
           `<div class="msg system">🔒 <b>${name}</b> abre um canal privado${t.channelId ? ` (${esc(t.channelId)})` : ""} — longe da sala</div>`,
@@ -224,20 +234,21 @@ function chapter(evidence: ScenarioEvidence, narration?: Narration, idPrefix = "
 }
 
 /** Aggregates per-persona stats across all scenes (for the focus select). */
-function personaStats(evidence: ScenarioEvidence[]): Record<string, { msgs: number; noops: number; reacts: number; scenes: number }> {
-  const stats: Record<string, { msgs: number; noops: number; reacts: number; scenes: number }> = {};
+function personaStats(evidence: ScenarioEvidence[]): Record<string, { msgs: number; noops: number; blocked: number; reacts: number; scenes: number }> {
+  const stats: Record<string, { msgs: number; noops: number; blocked: number; reacts: number; scenes: number }> = {};
   const seen = new Set<string>();
   for (const e of evidence) {
     for (const t of e.transcript) {
-      stats[t.agent] ??= { msgs: 0, noops: 0, reacts: 0, scenes: 0 };
+      stats[t.agent] ??= { msgs: 0, noops: 0, blocked: 0, reacts: 0, scenes: 0 };
       if (t.type === "message_sent" || t.type === "reply_sent") stats[t.agent]!.msgs++;
       if (t.type === "no_op_recorded") stats[t.agent]!.noops++;
+      if (t.type === "repetition_blocked") stats[t.agent]!.blocked++;
       if (t.type === "reaction_sent") stats[t.agent]!.reacts++;
     }
     for (const agent of Object.keys(e.finalStates)) {
       if (!seen.has(e.scenarioId + agent)) {
         seen.add(e.scenarioId + agent);
-        stats[agent] ??= { msgs: 0, noops: 0, reacts: 0, scenes: 0 };
+        stats[agent] ??= { msgs: 0, noops: 0, blocked: 0, reacts: 0, scenes: 0 };
         stats[agent]!.scenes++;
       }
     }
@@ -307,7 +318,8 @@ export function renderHtmlPage(data: HtmlPageData): string {
     .sort()
     .map(a => {
       const s = stats[a]!;
-      return `<option value="${esc(a)}">${esc(agentName(a))} — ${s.msgs} msg · ${s.noops} silêncios · ${s.scenes} cenas</option>`;
+      const blockedNote = s.blocked > 0 ? ` · ${s.blocked} bloqueios` : "";
+      return `<option value="${esc(a)}">${esc(agentName(a))} — ${s.msgs} msg · ${s.noops} silêncios${blockedNote} · ${s.scenes} cenas</option>`;
     })
     .join("");
 

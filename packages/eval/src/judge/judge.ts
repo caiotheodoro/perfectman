@@ -163,6 +163,10 @@ export function ruleJudge(
  * is intentionally NOT here: it is the mechanical echo of one
  * `channel_created` decision (N invites from a single create), so counting
  * it would inflate one choice across two buckets.
+ *
+ * `repetition_blocked` is likewise absent on purpose: the guard firing is the
+ * generator failing, not the agent choosing, and counting it as a choice let a
+ * degenerate run score as behaviorally diverse.
  */
 const CHOICE_EVENT_TYPES = new Set([
   "message_sent",
