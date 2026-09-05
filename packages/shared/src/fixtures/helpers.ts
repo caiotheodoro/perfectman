@@ -254,7 +254,8 @@ export function makeMemory(
     confidence,
     intensity,
     unresolved: false,
-    createdAt: Date.now(),
-    lastReinforcedAt: Date.now(),
+    // Simulated clock, not wall-clock — see applyMemoryProjection.
+    createdAt: 0,
+    lastReinforcedAt: 0,
   };
 }

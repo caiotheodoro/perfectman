@@ -13,6 +13,7 @@ import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type { Simulation, SimulationSettings, AgentState, PersonaConfig, ActionIntent, Memory } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
+import { effectiveConfidence } from "@perfectman/engine";
 
 /**
  * Issue #137 — power-law decay, emotional protection, eviction, and
@@ -254,6 +255,41 @@ describe("PulseScheduler memory decay, eviction, and reinforcement (issue #137)"
     expect(
       reinforcedEvents.some((e) => (e.data as { memoryId?: string } | undefined)?.memoryId === "mem_surfaced"),
     ).toBe(true);
+  });
+
+  it("stamps a projected memory on the simulated clock, so it actually ages", async () => {
+    // The gap that let the clock bug through: every other test here injects
+    // memories straight into updatedAgentState. Committed events carry
+    // wall-clock createdAt, so a memory projected from one used to land ~1.7e12
+    // ms ahead of the simTime that reads it — age clamped to 0, decay and
+    // eviction permanently inert on the only path that creates memories live.
+    scheduler = buildScheduler(() => ({
+      ...makeCannedStep(),
+      memoryProposals: [
+        {
+          type: "episodic",
+          subjectAgentIds: [],
+          summary: "caio ignored me in front of everyone",
+          emotionalTone: "stung",
+          confidence: 0.5,
+          intensity: 0,
+          unresolved: false,
+        },
+      ],
+    }));
+    await scheduler.runPulse();
+
+    const state = await agentStateRepo.get("sim_test", "agent_1");
+    const projected = state?.memories.at(-1);
+    expect(projected).toBeDefined();
+    expect(projected!.createdAt).toBe(SETTINGS.pulseIntervalMs); // pulse 0's simulated now
+    expect(projected!.lastReinforcedAt).toBe(SETTINGS.pulseIntervalMs);
+
+    // And it is therefore readable as aging: 30 pulses on, strength is down.
+    const thirtyPulsesOn = 31 * SETTINGS.pulseIntervalMs;
+    expect(effectiveConfidence(projected!, thirtyPulsesOn, SETTINGS.pulseIntervalMs)).toBeLessThan(
+      projected!.confidence,
+    );
   });
 
   it("does not reinforce a memory that memory selection did not surface", async () => {

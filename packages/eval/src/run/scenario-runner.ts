@@ -607,8 +607,10 @@ function buildAgentState(spec: AgentSeedSpec, scenario: RoleplayScenario): Agent
     confidence: m.confidence ?? 0.8,
     intensity: m.intensity ?? 0,
     unresolved: m.unresolved ?? false,
-    createdAt: now,
-    lastReinforcedAt: now,
+    // Simulated-clock epoch, not wall-clock: memory age is measured in pulses
+    // off PulseScheduler.simTime, which starts at 0. See applyMemoryProjection.
+    createdAt: 0,
+    lastReinforcedAt: 0,
   }));
 
   return {

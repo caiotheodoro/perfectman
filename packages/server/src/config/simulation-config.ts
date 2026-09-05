@@ -715,6 +715,9 @@ async function createGateways(
 
 function makeAgentState(agent: AgentConfig, simulationId: string): AgentState {
   const now = Date.now();
+  // Simulated-clock epoch: PulseScheduler starts simTime at 0 and advances it by
+  // pulseIntervalMs per pulse. Memory ages are read against that clock.
+  const SIM_EPOCH = 0;
   const persona = inflatePersonaConfig(agent.persona);
   return {
     agentId: agent.id,
@@ -748,8 +751,12 @@ function makeAgentState(agent: AgentConfig, simulationId: string): AgentState {
       confidence: m.confidence ?? 0.8,
       intensity: m.intensity ?? 0,
       unresolved: false,
-      createdAt: now - 1,
-      lastReinforcedAt: now - 1,
+      // Memory timestamps live on the simulated clock (PulseScheduler.simTime,
+      // which starts at 0), not wall-clock time: decay and eviction measure age
+      // in pulses off that clock. A seeded memory predates pulse 1, so it is
+      // stamped at the simulated epoch.
+      createdAt: SIM_EPOCH,
+      lastReinforcedAt: SIM_EPOCH,
     })),
     initiativeAccumulators: [],
     lastProcessedEventId: null,

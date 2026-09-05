@@ -317,7 +317,7 @@ export class PulseScheduler {
       if (engineEvents.length > 0) {
         const committed = await this.appendAndProject(engineEvents, channels, membership);
         eventsCommitted += committed.length;
-        this.applyMemoryProjection(committed, stepResult.updatedAgentState);
+        this.applyMemoryProjection(committed, stepResult.updatedAgentState, now);
       }
 
       // Reinforcement (testing effect): every memory this pulse's selection
@@ -390,7 +390,7 @@ export class PulseScheduler {
         if (resolved.committedEvents.length > 0) {
           const committed = await this.appendAndProject(resolved.committedEvents, channels, membership);
           eventsCommitted += committed.length;
-          this.applyMemoryProjection(committed, stepResult.updatedAgentState);
+          this.applyMemoryProjection(committed, stepResult.updatedAgentState, now);
         }
 
         for (const opEv of [...resolved.operatorEvents, ...runtimeOutput.operatorEvents]) {
@@ -579,8 +579,14 @@ export class PulseScheduler {
    * Mutates `updatedAgentState` in place — same-pulse `persistAndSnapshot` is
    * the single write point, and a failed append never reaches here because
    * only returned (committed) events are passed in.
+   *
+   * Both timestamps are stamped from the simulated clock (`now`), not from
+   * `event.createdAt`. Committed events carry wall-clock time; decay,
+   * reinforcement and eviction all measure age in pulses off `simTime`, so a
+   * wall-clock stamp would put every memory ~1.7e12 ms in the future of the
+   * clock reading it and nothing would ever age.
    */
-  private applyMemoryProjection(committed: CommittedEvent[], agentState: AgentState): void {
+  private applyMemoryProjection(committed: CommittedEvent[], agentState: AgentState, now: number): void {
     for (const event of committed) {
       if (event.type !== "memory_written") continue;
       agentState.memories.push({
@@ -595,8 +601,8 @@ export class PulseScheduler {
         confidence: event.payload["confidence"] as number,
         intensity: event.payload["intensity"] as number,
         unresolved: event.payload["unresolved"] as boolean,
-        createdAt: event.createdAt,
-        lastReinforcedAt: event.createdAt,
+        createdAt: now,
+        lastReinforcedAt: now,
       });
     }
   }
