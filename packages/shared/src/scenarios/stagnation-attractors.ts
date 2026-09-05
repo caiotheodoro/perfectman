@@ -73,10 +73,16 @@ export const STAGNATION_ATTRACTOR_SCENARIOS: RoleplayScenario[] = [
       // Floors recalibrated for relational accretion (#138): the message_sent
       // rules add gentle positive relational motion, so resentment now plateaus
       // ~7-10% lower than under the dead-relational dynamics these floors were
-      // tuned against. Measured post-wave: bruno 0.468, caio 0.272. Re-tune in
-      // #129.
-      { kind: "emotion_stays", agentId: "bruno", field: "resentment", min: 0.42 },
-      { kind: "emotion_stays", agentId: "caio", field: "resentment", min: 0.24 },
+      // tuned against. Measured post-wave: bruno 0.468, caio 0.272.
+      // Recalibrated again with the concrete opener above: a settled money
+      // transfer plus a "thanks" is positive relational motion the vague
+      // "tudo certo?" exchange never carried, so resentment accretes less.
+      // Measured over the three mock variants: bruno 0.279–0.324, caio
+      // 0.209–0.213; floors sit ~12% under the minimum. Tuning artifacts of
+      // the opener, owned by #129 — not a claim about how much resentment the
+      // loop "should" hold.
+      { kind: "emotion_stays", agentId: "bruno", field: "resentment", min: 0.24 },
+      { kind: "emotion_stays", agentId: "caio", field: "resentment", min: 0.17 },
       { kind: "no_llm_failures" },
     ],
     pulseCount: 32,
