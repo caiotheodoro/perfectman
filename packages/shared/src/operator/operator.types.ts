@@ -1,6 +1,7 @@
 import type { EventPayload, EventType } from "../event/event.types.js";
 import type { IntentType } from "../intent/intent.types.js";
 import type { AttractorState } from "../constants/stagnation.js";
+import type { Memory } from "../memory/memory.types.js";
 
 /**
  * Operator event types the server may emit. Declared once here — the single
@@ -32,6 +33,7 @@ export const OPERATOR_EVENT_TYPES = [
   "stagnation_warning",
   "stagnation_metrics",
   "attractor_detected",
+  "memory_reinforced",
   "scheduler_error",
   "pulse_metrics",
   "agent_state_snapshot",
@@ -150,4 +152,12 @@ export type StagnationMetricsOperatorData = StagnationMetrics;
  *  Independent of the composite `level`, which it never overrides. */
 export type AttractorDetectedOperatorData = {
   signature: AttractorState;
+};
+
+/** `memory_reinforced` payload — one event per memory surfaced by memory
+ *  selection this pulse; the projection uses `memoryId` to bump that
+ *  memory's `lastReinforcedAt`. */
+export type MemoryReinforcedOperatorData = {
+  memoryId: string;
+  memoryType: Memory["type"];
 };

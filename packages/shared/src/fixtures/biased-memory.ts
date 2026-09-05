@@ -74,7 +74,9 @@ export function buildBiasedMemoryScenario(): BiasedMemoryScenario {
   const caioState = makeAgentState("caio", simulationId, "caio");
 
   // Mixed memories of Caio (both positive and negative, same age)
-  const baseTime = Date.now() - 120000;
+  // Simulated-clock epoch: memory age is counted in pulses off
+  // PulseScheduler.simTime (starts at 0), never wall-clock time.
+  const baseTime = 0;
 
   const memories: Memory[] = [
     makeMemory(

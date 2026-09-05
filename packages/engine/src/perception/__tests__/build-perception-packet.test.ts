@@ -36,6 +36,8 @@ describe("buildPerceptionPacket eventHandles", () => {
       attention,
       translated,
       [],
+      0,
+      1000,
     );
 
     expect(packet.eventHandles).toEqual({
@@ -51,13 +53,13 @@ describe("buildPerceptionPacket eventHandles", () => {
     const ctx1 = makeEvent("message_sent", { id: "evt_a", actorId: "agent-x" });
     const ctx2 = makeEvent("message_sent", { id: "evt_b", actorId: "agent-y" });
 
-    const packet = buildPerceptionPacket(makeAgent({ agentId: "agent-me" }), [ctx1, ctx2], null, [], attention, translated, []);
+    const packet = buildPerceptionPacket(makeAgent({ agentId: "agent-me" }), [ctx1, ctx2], null, [], attention, translated, [], 0, 1000);
 
     expect(packet.eventHandles).toEqual({ e1: "evt_a", e2: "evt_b" });
   });
 
   it("returns an empty handle map when nothing is in view", () => {
-    const packet = buildPerceptionPacket(makeAgent({ agentId: "agent-me" }), [], null, [], attention, translated, []);
+    const packet = buildPerceptionPacket(makeAgent({ agentId: "agent-me" }), [], null, [], attention, translated, [], 0, 1000);
     expect(packet.eventHandles).toEqual({});
   });
 });
@@ -78,6 +80,8 @@ describe("buildPerceptionPacket ownRecentUtterances", () => {
       attention,
       translated,
       [],
+      0,
+      1000,
       [old, recent],
     );
     expect(packet.ownRecentUtterances).toEqual(["gente, oficial: a proposta chegou", "bora fechar hoje"]);
@@ -86,7 +90,7 @@ describe("buildPerceptionPacket ownRecentUtterances", () => {
   it("caps at OWN_UTTERANCE_WINDOW newest-last, dedupes by event id and collapses consecutive duplicates", () => {
     const history = Array.from({ length: 15 }, (_, i) => own(`evt_${i}`, i === 7 ? "same" : `line ${i}`, i));
     history.splice(8, 0, own("evt_dup", "same", 7));
-    const packet = buildPerceptionPacket(makeAgent({ agentId: "agent-me" }), history.slice(-3), null, [], attention, translated, [], history);
+    const packet = buildPerceptionPacket(makeAgent({ agentId: "agent-me" }), history.slice(-3), null, [], attention, translated, [], 0, 1000, history);
     expect(packet.ownRecentUtterances).toHaveLength(12);
     expect(packet.ownRecentUtterances[packet.ownRecentUtterances.length - 1]).toBe("line 14");
     expect(packet.ownRecentUtterances.filter(u => u === "same")).toHaveLength(1);

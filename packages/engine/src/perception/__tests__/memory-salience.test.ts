@@ -2,6 +2,8 @@ import { describe, it, expect } from "vitest";
 import { scoreMemorySalience, selectRelevantMemories } from "../memory-salience.js";
 import type { Memory } from "@perfectman/shared";
 
+const PULSE_INTERVAL_MS = 1000;
+
 function memory(overrides: Partial<Memory> = {}): Memory {
   return {
     id: "m",
@@ -31,8 +33,8 @@ describe("scoreMemorySalience", () => {
     const involved = new Set(["bruno"]);
     const oldRelevant = memory({ createdAt: 10, subjectAgentIds: ["bruno"] });
     const newIrrelevant = memory({ createdAt: 200 });
-    expect(scoreMemorySalience(oldRelevant, involved, NOBODY, 200, 10)).toBeGreaterThan(
-      scoreMemorySalience(newIrrelevant, involved, NOBODY, 200, 10),
+    expect(scoreMemorySalience(oldRelevant, involved, NOBODY, 200, 10, 200, PULSE_INTERVAL_MS)).toBeGreaterThan(
+      scoreMemorySalience(newIrrelevant, involved, NOBODY, 200, 10, 200, PULSE_INTERVAL_MS),
     );
   });
 
@@ -44,15 +46,17 @@ describe("scoreMemorySalience", () => {
       confidence: 0,
       unresolved: false,
       createdAt: 0,
+      lastReinforcedAt: 0,
     });
     const bestIrrelevant = memory({
       type: "pending_intention",
       confidence: 1,
       unresolved: true,
       createdAt: 100,
+      lastReinforcedAt: 100,
     });
-    expect(scoreMemorySalience(worstRelevant, involved, NOBODY, 100, 0)).toBeGreaterThan(
-      scoreMemorySalience(bestIrrelevant, involved, NOBODY, 100, 0),
+    expect(scoreMemorySalience(worstRelevant, involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS)).toBeGreaterThan(
+      scoreMemorySalience(bestIrrelevant, involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS),
     );
   });
 
@@ -64,15 +68,15 @@ describe("scoreMemorySalience", () => {
   it("treats a memory about the agent themselves as relevant, even with no one else involved", () => {
     const selfSubject = memory({ subjectAgentIds: ["bruno"] });
     const noSubject = memory({ subjectAgentIds: [] });
-    expect(scoreMemorySalience(selfSubject, new Set(), "bruno", 100, 0)).toBeGreaterThan(
-      scoreMemorySalience(noSubject, new Set(), "bruno", 100, 0),
+    expect(scoreMemorySalience(selfSubject, new Set(), "bruno", 100, 0, 100, PULSE_INTERVAL_MS)).toBeGreaterThan(
+      scoreMemorySalience(noSubject, new Set(), "bruno", 100, 0, 100, PULSE_INTERVAL_MS),
     );
   });
 
   it("does not grant the relevance bonus to a memory about someone else who isn't involved", () => {
     const otherSubject = memory({ subjectAgentIds: ["theo"] });
-    expect(scoreMemorySalience(otherSubject, new Set(), "bruno", 100, 0)).toBe(
-      scoreMemorySalience(memory({ subjectAgentIds: [] }), new Set(), "bruno", 100, 0),
+    expect(scoreMemorySalience(otherSubject, new Set(), "bruno", 100, 0, 100, PULSE_INTERVAL_MS)).toBe(
+      scoreMemorySalience(memory({ subjectAgentIds: [] }), new Set(), "bruno", 100, 0, 100, PULSE_INTERVAL_MS),
     );
   });
 
@@ -80,62 +84,64 @@ describe("scoreMemorySalience", () => {
     const involved = new Set<string>();
     const open = memory({ unresolved: true, createdAt: 50 });
     const settled = memory({ unresolved: false, createdAt: 50 });
-    expect(scoreMemorySalience(open, involved, NOBODY, 100, 0)).toBeGreaterThan(
-      scoreMemorySalience(settled, involved, NOBODY, 100, 0),
+    expect(scoreMemorySalience(open, involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS)).toBeGreaterThan(
+      scoreMemorySalience(settled, involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS),
     );
   });
 
   it("orders type tiers: pending_intention > relationship > episodic", () => {
     const involved = new Set<string>();
-    const pending = scoreMemorySalience(memory({ type: "pending_intention" }), involved, NOBODY, 100, 0);
-    const relationship = scoreMemorySalience(memory({ type: "relationship" }), involved, NOBODY, 100, 0);
-    const episodic = scoreMemorySalience(memory({ type: "episodic" }), involved, NOBODY, 100, 0);
+    const pending = scoreMemorySalience(memory({ type: "pending_intention" }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
+    const relationship = scoreMemorySalience(memory({ type: "relationship" }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
+    const episodic = scoreMemorySalience(memory({ type: "episodic" }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
     expect(pending).toBeGreaterThan(relationship);
     expect(relationship).toBeGreaterThan(episodic);
   });
 
   it("rewards authored confidence", () => {
     const involved = new Set<string>();
-    const high = scoreMemorySalience(memory({ confidence: 0.9 }), involved, NOBODY, 100, 0);
-    const low = scoreMemorySalience(memory({ confidence: 0.1 }), involved, NOBODY, 100, 0);
+    const high = scoreMemorySalience(memory({ confidence: 0.9 }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
+    const low = scoreMemorySalience(memory({ confidence: 0.1 }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
     expect(high).toBeGreaterThan(low);
   });
 
   it("keeps recency as a bounded term, not a dominating one", () => {
     const involved = new Set<string>();
-    // Newest possible vs oldest possible differs by RECENCY_WEIGHT only.
-    const newest = scoreMemorySalience(memory({ createdAt: 100 }), involved, NOBODY, 100, 0);
-    const oldest = scoreMemorySalience(memory({ createdAt: 0 }), involved, NOBODY, 100, 0);
-    expect(newest - oldest).toBeCloseTo(0.5);
+    // Newest possible vs oldest possible differs by RECENCY_WEIGHT only —
+    // both share the default lastReinforcedAt (100) so decay is identical
+    // (zero, at now=100) and cancels out of the comparison.
+    const newest = scoreMemorySalience(memory({ createdAt: 100 }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
+    const oldest = scoreMemorySalience(memory({ createdAt: 0 }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
+    expect(newest - oldest).toBeCloseTo(0.2);
   });
 
   it("decays recency linearly across the store span, not binary newest-or-nothing", () => {
     const involved = new Set<string>();
-    const newest = scoreMemorySalience(memory({ createdAt: 100 }), involved, NOBODY, 100, 0);
-    const middle = scoreMemorySalience(memory({ createdAt: 50 }), involved, NOBODY, 100, 0);
-    const oldest = scoreMemorySalience(memory({ createdAt: 0 }), involved, NOBODY, 100, 0);
+    const newest = scoreMemorySalience(memory({ createdAt: 100 }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
+    const middle = scoreMemorySalience(memory({ createdAt: 50 }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
+    const oldest = scoreMemorySalience(memory({ createdAt: 0 }), involved, NOBODY, 100, 0, 100, PULSE_INTERVAL_MS);
     expect(middle).toBeLessThan(newest);
     expect(middle).toBeGreaterThan(oldest);
-    expect(newest - middle).toBeCloseTo(0.25);
-    expect(middle - oldest).toBeCloseTo(0.25);
+    expect(newest - middle).toBeCloseTo(0.1);
+    expect(middle - oldest).toBeCloseTo(0.1);
   });
 
-  it("is finite for unknown memory types via the fallback weight", () => {
+  it("is finite for unknown memory types via the fallback weight and fallback decay rate", () => {
     const rogue = memory({ type: "alien" as Memory["type"] });
-    expect(Number.isFinite(scoreMemorySalience(rogue, new Set(), NOBODY, 100, 0))).toBe(true);
+    expect(Number.isFinite(scoreMemorySalience(rogue, new Set(), NOBODY, 100, 0, 100, PULSE_INTERVAL_MS))).toBe(true);
   });
 });
 
 describe("selectRelevantMemories", () => {
   it("returns an empty list for an empty store", () => {
-    expect(selectRelevantMemories([], new Set(), NOBODY, 8)).toEqual([]);
+    expect(selectRelevantMemories([], new Set(), NOBODY, 8, 100, PULSE_INTERVAL_MS)).toEqual([]);
   });
 
   it("caps selection at maxMemories", () => {
     const store = Array.from({ length: 20 }, (_, i) =>
       memory({ id: `m${i}`, createdAt: i + 1 }),
     );
-    expect(selectRelevantMemories(store, new Set(), NOBODY, 8)).toHaveLength(8);
+    expect(selectRelevantMemories(store, new Set(), NOBODY, 8, 100, PULSE_INTERVAL_MS)).toHaveLength(8);
   });
 
   it("ranks a salient old memory ahead of fresh noise", () => {
@@ -152,7 +158,7 @@ describe("selectRelevantMemories", () => {
       }),
       memory({ id: "noise-3", createdAt: 103 }),
     ];
-    const selected = selectRelevantMemories(store, new Set(["bruno"]), NOBODY, 2);
+    const selected = selectRelevantMemories(store, new Set(["bruno"]), NOBODY, 2, 103, PULSE_INTERVAL_MS);
     expect(selected[0]!.id).toBe("open-intent");
   });
 
@@ -167,21 +173,23 @@ describe("selectRelevantMemories", () => {
         confidence: 0.9,
         unresolved: true,
         createdAt: 40,
+        lastReinforcedAt: 40,
       }),
       memory({ id: "noise-3", createdAt: 103 }),
     ];
-    const selected = selectRelevantMemories(store, new Set(), "bruno", 2);
+    const selected = selectRelevantMemories(store, new Set(), "bruno", 2, 103, PULSE_INTERVAL_MS);
     expect(selected[0]!.id).toBe("my-secret");
   });
 
   it("breaks exact ties by recency deterministically", () => {
-    // The extra confidence cancels the newer memory's recency advantage exactly,
-    // so the scores tie and createdAt is the only term left to order them.
-    const older = memory({ id: "older", createdAt: 10, confidence: 1.0 });
+    // At zero decay (now == the shared default lastReinforcedAt), a 0.2
+    // confidence gap exactly cancels the full-span recency gap now that
+    // RECENCY_WEIGHT is 0.2 (decay carries most of the former recency term).
+    const older = memory({ id: "older", createdAt: 10, confidence: 0.7 });
     const newer = memory({ id: "newer", createdAt: 20, confidence: 0.5 });
-    expect(scoreMemorySalience(older, new Set(), NOBODY, 20, 10)).toBe(
-      scoreMemorySalience(newer, new Set(), NOBODY, 20, 10),
+    expect(scoreMemorySalience(older, new Set(), NOBODY, 20, 10, 100, PULSE_INTERVAL_MS)).toBe(
+      scoreMemorySalience(newer, new Set(), NOBODY, 20, 10, 100, PULSE_INTERVAL_MS),
     );
-    expect(selectRelevantMemories([older, newer], new Set(), NOBODY, 1)[0]!.id).toBe("newer");
+    expect(selectRelevantMemories([older, newer], new Set(), NOBODY, 1, 100, PULSE_INTERVAL_MS)[0]!.id).toBe("newer");
   });
 });

@@ -277,6 +277,8 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     attentionResults,
     translatedEmotionalState,
     availableActions,
+    now,
+    simulation.settings.pulseIntervalMs,
     snapshot.ownHistoryWindow ?? [],
   );
 

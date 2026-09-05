@@ -337,8 +337,10 @@ describe("PulseScheduler", () => {
         confidence: PROPOSAL.confidence,
         intensity: PROPOSAL.intensity,
         unresolved: PROPOSAL.unresolved,
-        createdAt: memoryEvent.createdAt,
-        lastReinforcedAt: memoryEvent.createdAt,
+        // Simulated clock, not the event's wall-clock createdAt: memory age is
+        // counted in pulses off simTime (issue #137 decay/eviction).
+        createdAt: SETTINGS.pulseIntervalMs,
+        lastReinforcedAt: SETTINGS.pulseIntervalMs,
       });
 
       const snapshots = gateway.operatorEvents.filter((e) => e.type === "agent_state_snapshot");
