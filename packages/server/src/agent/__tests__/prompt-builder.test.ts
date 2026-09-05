@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { PromptBuilder } from "../prompt-builder.js";
 import { EXAMPLE_PROMPT_PROFILE } from "../persona-prompt-profile.js";
+import { makeAgentRuntimeInput } from "./agent-input-test-helpers.js";
 import type { AgentRuntimeInput, CommittedEvent } from "@perfectman/shared";
 
 describe("PromptBuilder", () => {
@@ -370,5 +371,17 @@ describe("PromptBuilder", () => {
       expect(built.system).not.toContain("Tonal/register guide");
       expect(built.system).toContain('"consolidations"');
     });
+  });
+});
+
+describe("no_repeat — earlier utterances", () => {
+  it("renders the newest five own utterances verbatim and older ones as truncated reminders", () => {
+    const utterances = Array.from({ length: 8 }, (_, i) => `utterance number ${i} ${"x".repeat(90)}`);
+    const built = PromptBuilder.build(makeAgentRuntimeInput({ ownRecentUtterances: utterances }), EXAMPLE_PROMPT_PROFILE, "action_intent");
+    for (let i = 3; i < 8; i++) expect(built.system).toContain(`"utterance number ${i} ${"x".repeat(90)}"`);
+    expect(built.system).toContain("Earlier you already said");
+    expect(built.system).toContain("utterance number 0 ");
+    expect(built.system).not.toContain(`"utterance number 0 ${"x".repeat(90)}"`);
+    expect(built.system).toContain("…");
   });
 });

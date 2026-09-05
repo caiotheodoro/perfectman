@@ -277,6 +277,7 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     attentionResults,
     translatedEmotionalState,
     availableActions,
+    snapshot.ownHistoryWindow ?? [],
   );
 
   // ── 14. Updated agent state ───────────────────────────────────────────────

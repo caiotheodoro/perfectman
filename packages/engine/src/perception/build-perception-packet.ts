@@ -9,6 +9,7 @@ import type {
   AttentionResult,
 } from "@perfectman/shared";
 import { selectRelevantMemories } from "./memory-salience.js";
+import { OWN_UTTERANCE_WINDOW } from "@perfectman/shared";
 
 /**
  * Build the PerceptionPacket for an agent this pulse.
@@ -38,6 +39,7 @@ export function buildPerceptionPacket(
   attentionResult: AttentionResult,
   translatedEmotionalState: TranslatedEmotionalState,
   availableActions: AvailableAction[],
+  ownHistoryWindow: readonly CommittedEvent[] = [],
 ): PerceptionPacket {
   // Filter out spectator/operator-only event types
   const cleanEvents = visibleEvents.filter(
@@ -83,15 +85,23 @@ export function buildPerceptionPacket(
     if (replyTarget && replyTarget !== agent.agentId) involvedPeople.add(replyTarget);
   }
 
-  // Own recent utterances — sourced from cleanEvents (full visible history,
-  // pre-CONTEXT_WINDOW-truncation), not contextEvents, so it survives the
-  // shared window filling up with other agents' turns. Deduped consecutively
-  // in case the same content was committed more than once in a row.
-  const OWN_UTTERANCE_WINDOW = 5;
-  const ownRecentUtterances: string[] = [];
-  for (const e of cleanEvents) {
+  // Own recent utterances — the union of the scheduler's own-history window
+  // (whole log, per agent) and whatever own messages are still inside the
+  // shared visible window, deduped by event id, chronological, consecutive
+  // duplicates collapsed, last OWN_UTTERANCE_WINDOW. Before this the source
+  // was the shared window alone: ~8-12 pulses of memory in a 4-agent room,
+  // which is how a pulse-18 re-announcement sailed past the guard.
+  const ownById = new Map<string, CommittedEvent>();
+  for (const e of [...ownHistoryWindow, ...cleanEvents]) {
     if (e.actorId !== agent.agentId) continue;
     if (e.type !== "message_sent" && e.type !== "reply_sent") continue;
+    if (!ownById.has(e.id)) ownById.set(e.id, e);
+  }
+  const ownEvents = [...ownById.values()].sort(
+    (a, b) => (a.pulseIndex ?? 0) - (b.pulseIndex ?? 0) || a.createdAt - b.createdAt,
+  );
+  const ownRecentUtterances: string[] = [];
+  for (const e of ownEvents) {
     const content = (e.payload as Record<string, unknown>)["content"];
     if (typeof content !== "string" || content.length === 0) continue;
     if (ownRecentUtterances[ownRecentUtterances.length - 1] === content) continue;

@@ -514,10 +514,23 @@ export class ActionIntentPromptBuilder {
 
   // Verbatim list of the agent's own last messages, wrapped as literal content
   // the model must not imitate (fence keeps it from reading as instructions).
+  /** Newest own utterances rendered verbatim; older ones as one truncated line each. */
+  private static readonly VERBATIM_UTTERANCES = 5;
+  private static readonly EARLIER_UTTERANCE_CHARS = 80;
+
   private static renderNoRepeat(s: PromptSection, ownRecentUtterances: string[]): void {
+    const verbatim = ownRecentUtterances.slice(-this.VERBATIM_UTTERANCES);
+    const earlier = ownRecentUtterances.slice(0, -this.VERBATIM_UTTERANCES);
     s.heading("Do not repeat yourself");
     s.raw("These are your OWN exact prior messages from earlier in this conversation. Cite-check your draft answer against them and do NOT repeat any of them or send a near-variation:");
-    s.fence(ownRecentUtterances.map((u) => `  - "${u}"`).join("\n"));
+    s.fence(verbatim.map((u) => `  - "${u}"`).join("\n"));
+    if (earlier.length > 0) {
+      s.raw("Earlier you already said (do not raise these again unless something changed):");
+      s.list(
+        undefined,
+        earlier.map((u) => (u.length > this.EARLIER_UTTERANCE_CHARS ? `${u.slice(0, this.EARLIER_UTTERANCE_CHARS)}…` : u)),
+      );
+    }
   }
 
   private static addList(s: PromptSection, title: string, items: string[]): void {

@@ -16,6 +16,8 @@ export type EngineSnapshotInput = {
   pulseIndex: number;
   simulation: Simulation;
   recentEventsWindow: CommittedEvent[];
+  /** See EngineSnapshot.ownHistoryWindow. */
+  ownHistoryWindow?: CommittedEvent[];
   now: number;
   agentState: AgentState;
   persona: PersonaConfig;
@@ -34,6 +36,7 @@ export class EngineSnapshotProjection {
       pulseIndex: input.pulseIndex,
       simulation: input.simulation,
       recentEventsWindow: input.recentEventsWindow,
+      ...(input.ownHistoryWindow ? { ownHistoryWindow: input.ownHistoryWindow } : {}),
       now: input.now,
       agentState: input.agentState,
       persona: input.persona,

@@ -61,3 +61,34 @@ describe("buildPerceptionPacket eventHandles", () => {
     expect(packet.eventHandles).toEqual({});
   });
 });
+
+describe("buildPerceptionPacket ownRecentUtterances", () => {
+  const own = (id: string, content: string, pulseIndex: number) =>
+    makeEvent("message_sent", { id, actorId: "agent-me", pulseIndex, createdAt: 1000 + pulseIndex, payload: { content } });
+
+  it("keeps an own message that fell out of the shared window when the own-history window still holds it", () => {
+    const old = own("evt_old", "gente, oficial: a proposta chegou", 1);
+    const foreign = Array.from({ length: 6 }, (_, i) => makeEvent("message_sent", { id: `evt_f${i}`, actorId: "agent-x", pulseIndex: 10 + i }));
+    const recent = own("evt_recent", "bora fechar hoje", 20);
+    const packet = buildPerceptionPacket(
+      makeAgent({ agentId: "agent-me" }),
+      [...foreign, recent],
+      null,
+      [],
+      attention,
+      translated,
+      [],
+      [old, recent],
+    );
+    expect(packet.ownRecentUtterances).toEqual(["gente, oficial: a proposta chegou", "bora fechar hoje"]);
+  });
+
+  it("caps at OWN_UTTERANCE_WINDOW newest-last, dedupes by event id and collapses consecutive duplicates", () => {
+    const history = Array.from({ length: 15 }, (_, i) => own(`evt_${i}`, i === 7 ? "same" : `line ${i}`, i));
+    history.splice(8, 0, own("evt_dup", "same", 7));
+    const packet = buildPerceptionPacket(makeAgent({ agentId: "agent-me" }), history.slice(-3), null, [], attention, translated, [], history);
+    expect(packet.ownRecentUtterances).toHaveLength(12);
+    expect(packet.ownRecentUtterances[packet.ownRecentUtterances.length - 1]).toBe("line 14");
+    expect(packet.ownRecentUtterances.filter(u => u === "same")).toHaveLength(1);
+  });
+});

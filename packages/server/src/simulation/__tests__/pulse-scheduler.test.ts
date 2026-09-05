@@ -898,4 +898,22 @@ describe("PulseScheduler", () => {
     });
   });
 
+
+  describe("own-history window", () => {
+    it("hands the engine the agent's own messages from the whole log even when the 40-event shared window has scrolled past them", async () => {
+      const mk = (actorId: string, content: string): import("@perfectman/shared").SimulationEvent => ({
+        simulationId: "sim_test", channelId: "ch_public", actorId, type: "message_sent", payload: { content },
+        sourceEventIds: [], emotionalSalience: "low",
+        visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "public" },
+      });
+      await eventRepo.append("sim_test", [mk("agent_1", "gente, oficial: a proposta chegou")]);
+      await eventRepo.append("sim_test", Array.from({ length: 50 }, (_, i) => mk("agent_2", `foreign ${i}`)));
+      let seen: import("@perfectman/shared").EngineSnapshot | undefined;
+      scheduler = buildScheduler((snap) => { seen = snap; return makeCannedStep(); });
+      await scheduler.runPulse();
+      expect(seen?.recentEventsWindow.some((e) => e.actorId === "agent_1")).toBe(false);
+      expect(seen?.ownHistoryWindow?.map((e) => e.payload["content"])).toEqual(["gente, oficial: a proposta chegou"]);
+    });
+  });
+
 });

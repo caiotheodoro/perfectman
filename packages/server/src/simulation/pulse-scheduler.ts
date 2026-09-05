@@ -14,7 +14,7 @@ import type {
   EndingOffer,
   Memory,
 } from "@perfectman/shared";
-import { createId, createSeededRng, STAGNATION_WINDOW_PULSES } from "@perfectman/shared";
+import { createId, createSeededRng, STAGNATION_WINDOW_PULSES, OWN_HISTORY_LIMIT } from "@perfectman/shared";
 import { runEngineStep, computeStagnationMetrics, detectAttractorStates, filterVisibleEventsForAgent } from "@perfectman/engine";
 import type { IEventRepository, IAgentStateRepository } from "../persistence/repositories.js";
 import type { ChannelRegistry } from "./channel-registry.js";
@@ -254,6 +254,15 @@ export class PulseScheduler {
         recentEventsWindow: contextEvents
           .filter((event) => event.visibility.visibilityReason !== "operator_only")
           .slice(-PulseScheduler.CONTEXT_WINDOW_PULSES_LIMIT),
+        // The agent's own recent messages from the whole log: the shared
+        // window is the wrong source for a per-agent repetition memory.
+        ownHistoryWindow: contextEvents
+          .filter(
+            (event) =>
+              event.actorId === agent.id &&
+              (event.type === "message_sent" || event.type === "reply_sent"),
+          )
+          .slice(-OWN_HISTORY_LIMIT),
         now,
         agentState,
         persona: agent.persona,

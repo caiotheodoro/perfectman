@@ -112,4 +112,18 @@ describe("EngineSnapshotProjection", () => {
     expect(snapshot.rng).toBe(rng);
     expect(snapshot.channelMembership).toEqual([]);
   });
+
+  it("passes ownHistoryWindow through and leaves it absent when not supplied", () => {
+    const projection = new EngineSnapshotProjection();
+    const base = {
+      pulseIndex: 1, simulation: SIMULATION, recentEventsWindow: [], now: Date.now(), agentState: makeAgentState(), persona: PERSONA,
+      channels: [], membership: [], relationalStates: new Map(),
+      worldSignals: { highArousalNearby: false, averageChannelArousal: 0.5, activeAgentCount: 1, timeSinceLastPublicMessage: 60, channelMessageRatePerMinute: 0, recentTopicShift: false },
+      rateLimitStatus: { agentId: "agent_1", messagesThisMinute: 0, privateChannelsCreated: 0, lastActionAt: null, blocked: false },
+      dt: 1, rng: createSeededRng(1),
+    };
+    expect(projection.build(base).ownHistoryWindow).toBeUndefined();
+    const own = { ...base, ownHistoryWindow: [] as import("@perfectman/shared").CommittedEvent[] };
+    expect(projection.build(own).ownHistoryWindow).toEqual([]);
+  });
 });

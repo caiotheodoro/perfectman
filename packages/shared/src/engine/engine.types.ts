@@ -41,6 +41,14 @@ export type EngineSnapshot = {
   pulseIndex: number;
   simulation: Simulation;
   recentEventsWindow: CommittedEvent[]; // sliding context window — MUST include the event at agentState.lastProcessedEventId
+  /**
+   * This agent's own recent messages/replies drawn from the whole committed
+   * log (last OWN_HISTORY_LIMIT), independent of the shared window above.
+   * The repetition guard and the prompt's no_repeat block read their own
+   * utterances from here; in a 4-agent room the 40-event shared window only
+   * remembered ~8-12 pulses of them. Optional: absent means "window only".
+   */
+  ownHistoryWindow?: CommittedEvent[];
   now: number; // wall-clock ms at pulse start — pass from scheduler for determinism
   agentState: AgentState;
   persona: PersonaConfig;
