@@ -169,6 +169,24 @@ export class PulseScheduler {
     return this.inFlight;
   }
 
+  /**
+   * Per-pulse agent order, a pure function of (seed, pulseIndex). Later
+   * agents in a pulse see earlier agents' commits (the window refresh in
+   * the loop), so a fixed config order gave agent 0 a permanent first-mover
+   * slot and everyone else a permanent reactor slot. A separate rng stream
+   * (seed mixed with the pulse index by a golden-ratio constant) keeps the
+   * per-agent snapshot rng values unchanged.
+   */
+  private turnOrder(seed: number): AgentContext[] {
+    const rng = createSeededRng((seed ^ Math.imul(this.pulseIndex + 1, 0x9e3779b1)) >>> 0);
+    const order = [...this.config.agents];
+    for (let i = order.length - 1; i > 0; i--) {
+      const j = rng.nextInt(i + 1);
+      [order[i], order[j]] = [order[j]!, order[i]!];
+    }
+    return order;
+  }
+
   private async executePulse(): Promise<PulseResult> {
     this.simTime += this.config.pulseIntervalMs;
     const now = this.simTime;
@@ -221,7 +239,7 @@ export class PulseScheduler {
       }
     }
 
-    for (const agent of this.config.agents) {
+    for (const agent of this.turnOrder(sim.seed)) {
       // Refresh event window so this agent sees actions taken by prior agents this pulse.
       try {
         newEvents = await this.config.eventRepo.getAfter(sim.id, pulseStartEventId);

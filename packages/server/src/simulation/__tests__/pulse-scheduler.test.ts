@@ -916,4 +916,49 @@ describe("PulseScheduler", () => {
     });
   });
 
+
+  describe("seeded turn order", () => {
+    const FOUR = ["agent_1", "agent_2", "agent_3", "agent_4"].map((id) => ({ id, state: makeAgentState(id), persona: AGENT.persona }));
+
+    async function orderTrace(seed: number, pulses: number): Promise<string[][]> {
+      const trace: string[][] = [];
+      let current: string[] = [];
+      const local = new PulseScheduler({
+        simulation: { ...SIM, seed, agentIds: FOUR.map((a) => a.id) },
+        agents: FOUR,
+        defaultPublicChannelId: "ch_public",
+        eventRepo: new InMemoryEventRepository(),
+        agentStateRepo: new InMemoryAgentStateRepository(),
+        channelRegistry,
+        rateLimitGate: new RateLimitGate(SETTINGS),
+        intentResolver,
+        engineSnapshotProjection: new EngineSnapshotProjection(),
+        deliveryProjection: new DeliveryProjection(gateway),
+        spectatorProjection: new SpectatorProjection(gateway),
+        operatorProjection: new OperatorProjection(gateway),
+        engineEventBuilder,
+        agentRuntime: mockAgentRuntime,
+        llmBudget: mockLLMBudget,
+        pulseIntervalMs: SETTINGS.pulseIntervalMs,
+        stepResolver: (snap) => { current.push(snap.agentState.agentId); return makeCannedStep({ agentId: snap.agentState.agentId }); },
+      });
+      for (let p = 0; p < pulses; p++) {
+        current = [];
+        await local.runPulse();
+        trace.push([...current]);
+      }
+      return trace;
+    }
+
+    it("is a pure function of (seed, pulseIndex) and is not constant across pulses", async () => {
+      const a = await orderTrace(11, 8);
+      const b = await orderTrace(11, 8);
+      expect(a).toEqual(b);
+      for (const order of a) expect([...order].sort()).toEqual([...FOUR.map((x) => x.id)].sort());
+      expect(new Set(a.map((o) => o.join(","))).size).toBeGreaterThan(1);
+      const other = await orderTrace(12, 8);
+      expect(other).not.toEqual(a);
+    });
+  });
+
 });
