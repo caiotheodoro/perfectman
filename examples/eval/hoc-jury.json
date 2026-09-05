@@ -1,0 +1,35 @@
+{
+  "providerType": "openai-compatible",
+  "label": "gpt-4.1-mini (primary, non-DeepSeek)",
+  "baseUrl": "https://api.orcarouter.ai/v1",
+  "modelName": "openai/gpt-4.1-mini",
+  "apiKeyEnv": "PERFECTMAN_LLM_API_KEY",
+  "temperature": 0,
+  "timeoutMs": 120000,
+  "jury": [
+    {
+      "label": "gpt-4.1-mini",
+      "baseUrl": "https://api.orcarouter.ai/v1",
+      "modelName": "openai/gpt-4.1-mini",
+      "apiKeyEnv": "PERFECTMAN_LLM_API_KEY",
+      "temperature": 0,
+      "timeoutMs": 120000
+    },
+    {
+      "label": "claude-haiku-4.5",
+      "baseUrl": "https://api.orcarouter.ai/v1",
+      "modelName": "anthropic/claude-haiku-4.5",
+      "apiKeyEnv": "PERFECTMAN_LLM_API_KEY",
+      "temperature": 0,
+      "timeoutMs": 120000
+    },
+    {
+      "label": "deepseek-v4-flash (same family as the generator — flagged)",
+      "baseUrl": "https://api.orcarouter.ai/v1",
+      "modelName": "deepseek/deepseek-v4-flash",
+      "apiKeyEnv": "PERFECTMAN_LLM_API_KEY",
+      "temperature": 0,
+      "timeoutMs": 180000
+    }
+  ]
+}
