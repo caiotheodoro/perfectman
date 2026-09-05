@@ -1,0 +1,40 @@
+{
+  "runId": "hoc-treatment-9a14eb4-one-scene",
+  "gitSha": "9a14eb4f64488903e22c12b104abf97fbf6aacd4",
+  "mode": "local",
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "promptTemplateVersions": [
+    "hn81j7"
+  ],
+  "generator": {
+    "provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1"
+  },
+  "judge": {
+    "providerType": "openai-compatible",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1",
+    "temperature": 0,
+    "jury": [
+      {
+        "label": "glm-5.3-flash",
+        "model": "z-ai/glm-5.3-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1"
+      },
+      {
+        "label": "qwen3.8-27b",
+        "model": "qwen/qwen3.8-27b-free",
+        "baseUrl": "https://api.orcarouter.ai/v1"
+      },
+      {
+        "label": "deepseek-v4-flash (same family as the generator — flagged)",
+        "model": "deepseek/deepseek-v4-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1"
+      }
+    ]
+  }
+}

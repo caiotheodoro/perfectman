@@ -104,6 +104,18 @@ describe("bench hygiene", () => {
     expect(Object.keys(report.judgeAxisMeansByRubric).sort()).toEqual(["hidden-objective-v1", "roleplay-v1"]);
   });
 
+  it("stores letter grades only when a hidden-objective scene ran", async () => {
+    runMock.mockResolvedValue(artifact(undefined));
+    const plain = await runBench({ mode: "mock", scenarios: ["motive_gossip"], limit: 1 });
+    expect(plain.grades).toBeUndefined();
+    const hoc = await runBench({ mode: "mock", scenarios: ["hoc_fatia_que_nao_existe"], limit: 1, seeds: [42, 43] });
+    expect(hoc.grades?.scenes.map(s => s.scenarioId)).toEqual(["hoc_fatia_que_nao_existe"]);
+    expect(hoc.grades?.scenes[0]?.runs.map(r => r.seed)).toEqual([42, 43]);
+    // a mock judge is a single opinion: never a settled grade
+    expect(hoc.grades?.provisional).toBe(true);
+    expect(["A+", "A", "A-", "B", "C", "D", "F"]).toContain(hoc.grades?.grade);
+  });
+
   it("writes an evidence directory for --run-id with run-meta carrying env var names only, and refuses to overwrite without --force", async () => {
     runMock.mockResolvedValue(artifact(undefined));
     process.env.PERFECTMAN_LLM_PROVIDER = "deepseek";

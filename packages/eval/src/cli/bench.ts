@@ -33,6 +33,7 @@ import {
 } from "../judge/judge.js";
 import { MockJudgeProvider } from "../judge/mock-judge-provider.js";
 import { calibrateJudge, baseScenarioId, calibrationVerdict } from "../judge/calibration.js";
+import { formatGradeTable, gradeRound, gradeRun, gradeScene, signalKind, type RoundGrade, type SceneGrade } from "../grade/grade.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import { GOLDEN_NARRATIONS } from "../judge/golden-narrations.js";
 import { loadJudgeConfig, applyJudgeShorthand } from "../llm/judge-config.js";
@@ -100,6 +101,8 @@ export type BenchReport = {
   narrativeAxisMeans: Record<string, number>;
   narrativeAxisTargets: Record<string, { target: number; met: boolean }>;
   narrativeCalibration: ReturnType<typeof calibrateJudge>;
+  /** Letter grades (per run, per scene, round) — only when a hidden-objective rubric ran; see grade/grade.ts. */
+  grades?: RoundGrade;
   perScenario: Array<{
     id: string;
     name: string;
@@ -279,6 +282,7 @@ export async function runBench(opts: {
   const rubricAxisAgg: Record<string, Record<string, { sum: number; count: number }>> = {};
   const evidenceRecords: Array<{ file: string; record: unknown }> = [];
   const runSeeds: Array<number | undefined> = seeds.length > 0 ? seeds : [undefined];
+  const gradeInputs = new Map<string, SceneGrade["runs"]>();
 
   for (const scenario of limited) for (const seed of runSeeds) {
     try {
@@ -388,6 +392,23 @@ export async function runBench(opts: {
         }
       }
 
+      if (scenario.rubric.id === "hidden-objective-v1") {
+        const graded = gradeRun({
+          axes: axisScores,
+          imputedAxes,
+          rubric: scenario.rubric,
+          narrativeAxes: narrativeAxisScores,
+          signals: artifact.signalResults.map((s) => ({ kind: signalKind(s.signal), passed: s.passed, skipped: s.skipped })),
+          probes: artifact.probeResults.map((p) => ({ probe: p.probe, passed: p.passed })),
+          juryVoterCount: juryVerdict?.voterCount,
+          juryAxisVoterCounts: juryVerdict?.axisVoterCounts,
+          judgeSalvaged: judgeResult.salvaged,
+        });
+        const baseId = baseScenarioId(scenario.id);
+        const runs = gradeInputs.get(baseId) ?? [];
+        runs.push({ ...graded, ...(seed !== undefined ? { seed } : {}), runId: scenario.id });
+        gradeInputs.set(baseId, runs);
+      }
       const judgeEvidence = juryVerdict
         ? juryEvidence(juryVerdict)
         : judgeResult.evidence && Object.keys(judgeResult.evidence).length > 0
@@ -479,6 +500,9 @@ export async function runBench(opts: {
     for (const t of scenario.rubric.targets) {
       targetMin[t.axisId] = Math.max(targetMin[t.axisId] ?? 0, t.min);
     }
+  }
+  if (gradeInputs.size > 0) {
+    report.grades = gradeRound([...gradeInputs.entries()].map(([id, runs]) => gradeScene(id, runs)));
   }
   report.judgeAxisTargets = Object.fromEntries(
     Object.entries(targetMin).map(([axisId, min]) => [axisId, {
@@ -698,6 +722,7 @@ export async function main(): Promise<void> {
     force: args.includes("--force"),
   });
   printReport(report);
+  if (report.grades) console.log(`\nletter grades (hidden-objective runs):\n${formatGradeTable(report.grades)}`);
   if (report.runId) console.log(`\nevidence written under docs/eval/evidence/${report.runId}/`);
 }
 

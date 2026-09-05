@@ -1,0 +1,63 @@
+{
+  "version": "bench-report-v1",
+  "mode": "local",
+  "generatedAt": "2026-09-05T06:52:15.307Z",
+  "runId": "hoc-treatment-9a14eb4-one-scene",
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "warnings": [],
+  "judgeAxisMeans": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4,
+    "mask_integrity": 4,
+    "objective_pursuit": 4
+  },
+  "promptTemplateVersions": [
+    "hn81j7"
+  ],
+  "perScenario": [
+    {
+      "id": "hoc_fatia_que_nao_existe__v0",
+      "name": "A Fatia Que Não Existe",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.8333333333333334,
+      "probePasses": 14,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 4,
+        "interpretation": 4,
+        "creativity_unhinged": 3,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 4,
+        "objective_pursuit": 4
+      },
+      "fallbackCount": 1,
+      "seed": 42,
+      "judgeSalvaged": false,
+      "juryVoterCount": 2,
+      "juryFailed": {
+        "glm-5.3-flash": "LLM judge returned unparseable response after retry (raw length 0): "
+      },
+      "narrativeAxisScores": {
+        "concreteness": 3,
+        "causal_throughline": 3,
+        "hidden_payoff": 4,
+        "non_genericity": 3,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    }
+  ]
+}

@@ -15,6 +15,7 @@
     "build": "tsc -p tsconfig.json",
     "dev": "tsc -p tsconfig.json --watch",
     "bench": "node dist/cli/bench.js",
+    "grade": "node dist/cli/grade.js",
     "evidence": "node dist/cli/evidence.js",
     "calibrate": "node dist/cli/calibrate.js",
     "narrate": "node dist/cli/narrate.js",

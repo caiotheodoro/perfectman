@@ -217,6 +217,31 @@ different model families per juror — is a documented obligation, not an
 enforceable config property.
 
 
+## Letter grades (hidden-objective runs)
+
+`pnpm --filter @perfectman/eval grade docs/eval/evidence/<run-id>` grades an evidence directory
+without re-running anything and writes `grades.json` next to it; the bench prints the same block
+when a hidden-objective scene ran. The formula lives in `packages/eval/src/grade/grade.ts` and reads
+only what the bench already writes, so a threshold change re-grades every committed run for free.
+
+Per run: weighted mean over the transcript axes (the rubric's `weight`), narration axes at half
+weight; thesis signals (`forbidden_phrase_absent`, `private_channel_used`, `memory_referenced`,
+`chosen_silence_present`) as a pass rate over what was evaluated; hygiene gates (`fallback-rate`,
+`act-share-max`, a spoken forbidden phrase) void the run. An imputed axis leaves the mean and cannot
+satisfy a minimum. Scene = median over seeds (rounding down); round = worst scene.
+
+| grade | rule |
+|---|---|
+| A+ | every transcript axis ≥ 4.5, signals 100% |
+| A | every transcript axis ≥ 4.0, signals 100% |
+| A- | at most one axis under 4.0 or unscored, none under 3.0, weighted mean ≥ 3.8, signals ≥ 83% |
+| B / C / D | weighted mean ≥ 3.5 / 3.0 / 2.5 |
+| F | below, or a hygiene gate failed |
+
+`provisional` marks a grade fewer than two jurors stood behind, one salvaged from prose, or one
+with an axis decided by a single juror. Thresholds are provisional until the first 3-seed read
+(`docs/superpowers/specs/2026-09-05-hoc-score-refinement-design.md`).
+
 ## Current baseline (mock, 123 tasks)
 
 - Signal pass rate: **100%** (all expected signals across all rotated scenes)
