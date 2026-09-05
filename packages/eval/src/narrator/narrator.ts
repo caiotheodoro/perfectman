@@ -9,35 +9,13 @@
 
 import type { CommittedEvent, RoleplayScenario } from "@perfectman/shared";
 import { PromptSection } from "@perfectman/shared";
-import { REPETITION_GUARD_MARKER } from "@perfectman/server";
+// Engine-authored fallback text is never a character's private motive; the
+// shared predicate is the single owner of that convention (see
+// engine-motive.ts). Without it the rule narrator's "hiddenShift" quotes
+// whichever motive string comes first, parse errors included — which is
+// exactly how a JSON failure gets narrated as tragedy.
+import { isEngineAuthoredMotive as isEngineFallbackMotive } from "@perfectman/server";
 import { chatCompletion } from "../llm/chat-completion-error.js";
-
-/**
- * Engine-authored fallback/error explanations, never a character's private
- * motive — every one is set verbatim as `privateMotiveSummary` by
- * `IntentParser.createFallback` / the retry-exhausted floor in
- * action-intent-step.ts, not written by the model. Committed events carry no
- * separate "this was a fallback" flag (see the no-conflation note on
- * `repetition_blocked` in event.types.ts), so prefix-matching is the only
- * signal available here — the same convention `REPETITION_GUARD_MARKER`
- * already relies on. Without this, the rule narrator's "hiddenShift" — meant
- * to be the room's emotional truth — quotes whichever motive string is first
- * and ≥8 chars, fallback text included, which is exactly how a JSON parse
- * error gets narrated as tragedy.
- */
-const ENGINE_FALLBACK_MOTIVE_PREFIXES = [
-  "Fallback applied:",
-  `${REPETITION_GUARD_MARKER}:`,
-  "LLM budget exceeded:",
-  "Provider failed:",
-  "Retry call failed.",
-  "Reaction target unresolvable",
-  "unresolvable ",
-];
-
-function isEngineFallbackMotive(motive: string): boolean {
-  return ENGINE_FALLBACK_MOTIVE_PREFIXES.some((prefix) => motive.startsWith(prefix));
-}
 
 
 export type Narration = {

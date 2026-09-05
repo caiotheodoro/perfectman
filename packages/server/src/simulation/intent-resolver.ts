@@ -13,11 +13,13 @@ import type {
   EmotionalSalience,
   ActionEmotions,
   IntentViolation,
+  PrivateMotiveSummaryPayload,
 } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 import { validateIntentPure } from "@perfectman/engine";
 import { memoryWrittenPayload } from "./memory-written-payload.js";
 import { REPETITION_GUARD_MARKER } from "../agent/repetition-guard.js";
+import { isEngineAuthoredMotive } from "../agent/engine-motive.js";
 import type { RateLimitGate } from "./rate-limit-gate.js";
 import type { ChannelRegistry } from "./channel-registry.js";
 
@@ -468,6 +470,22 @@ export class IntentResolver {
     intent: ActionIntent,
     ctx: ResolveContext,
   ): Promise<ResolvedIntent> {
+    const resolved = await this.resolveWithFallback(intent, ctx);
+    // Every resolved intent — committed, fallback-committed, blocked or
+    // delayed — leaves its private motive in the log as its own operator-only
+    // event, ordered after the events it explains. The thought was real
+    // whatever happened to the act; a blocked or delayed motive is exactly
+    // the kind of private/public mismatch the spectator layer is for.
+    return {
+      ...resolved,
+      committedEvents: [...resolved.committedEvents, this.privateMotiveEvent(intent, ctx)],
+    };
+  }
+
+  private async resolveWithFallback(
+    intent: ActionIntent,
+    ctx: ResolveContext,
+  ): Promise<ResolvedIntent> {
     const primary = await this.resolveInternal(intent, ctx);
     if (primary.result.outcome !== "blocked") return primary.result;
     if (primary.rateLimited) return primary.result;
@@ -626,6 +644,40 @@ export class IntentResolver {
         operatorEvents: [],
       },
       rateLimited: false,
+    };
+  }
+
+  /**
+   * The intent's private motive as a committed `private_motive_summary`,
+   * operator-only, joined to the act by `sourceIntentId` (same precedent as
+   * `memoryProposalEvents`). Uses the ORIGINAL intent even when a fallback
+   * was derived — the fallback copies the motive verbatim, and the reader
+   * wants the thought behind the attempt, not the mechanics of the retry.
+   */
+  private privateMotiveEvent(intent: ActionIntent, ctx: ResolveContext): SimulationEvent {
+    const payload: PrivateMotiveSummaryPayload = {
+      summary: intent.privateMotiveSummary,
+      intentType: intent.intentType,
+      emotionDrivers: intent.emotionDrivers ?? [],
+      motivationDrivers: intent.motivationDrivers ?? [],
+      engineAuthored: isEngineAuthoredMotive(intent.privateMotiveSummary),
+    };
+    return {
+      simulationId: ctx.simulationId,
+      channelId: intent.channelTarget ?? ctx.channelId,
+      actorId: intent.actorId,
+      type: "private_motive_summary",
+      payload,
+      sourceIntentId: intent.id,
+      sourceEventIds: [],
+      emotionalSalience: "low",
+      pulseIndex: ctx.pulseIndex,
+      visibility: {
+        visibleToAgents: [],
+        visibleToSpectators: false,
+        visibleToOperators: true,
+        visibilityReason: "operator_only",
+      },
     };
   }
 

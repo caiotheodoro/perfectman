@@ -52,17 +52,23 @@ export class SpectatorProjection {
     if (spectatorEvent) {
       // Visibility filter using engine's pure function
       const filtered = filterVisibleEventsForSpectator([event], channels, settings);
-      if (filtered.length === 0 && !this.isAlwaysSpectatorVisible(event.type)) return;
+      if (filtered.length === 0 && !this.isAlwaysSpectatorVisible(event.type, settings)) return;
       await this.gateway.sendSpectatorEvent(spectatorEvent);
     }
   }
 
-  private isAlwaysSpectatorVisible(type: CommittedEvent["type"]): boolean {
+  /**
+   * Hints bypass the channel/visibility filter because they are already
+   * sanitized summaries. A `private_motive_summary` is the raw private truth
+   * of an act, so it bypasses only for an omniscient spectator — a plain
+   * spectator (and any Discord channel behind it) never sees it.
+   */
+  private isAlwaysSpectatorVisible(type: CommittedEvent["type"], settings: SimulationSettings): boolean {
     return (
       type === "no_op_recorded" ||
       type === "intent_delayed" ||
       type === "intent_blocked" ||
-      type === "private_motive_summary"
+      (type === "private_motive_summary" && settings.omniscientSpectatorMode)
     );
   }
 
@@ -113,6 +119,7 @@ export class SpectatorProjection {
       case "channel_created":
         return { ...sanitize(event), narrativeHint: "New private space created" };
       case "private_motive_summary":
+        if (!settings.omniscientSpectatorMode) return null;
         return {
           type: "motive_reveal",
           simulationId: event.simulationId,

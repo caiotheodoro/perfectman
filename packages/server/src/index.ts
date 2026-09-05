@@ -27,6 +27,7 @@ export * from "./agent/persona-prompt-profile.js";
 export * from "./agent/persona-loader.js";
 export * from "./agent/agent-config-registry.js";
 export * from "./agent/repetition-guard.js";
+export * from "./agent/engine-motive.js";
 export * from "./llm/index.js";
 export * from "./delivery/index.js";
 

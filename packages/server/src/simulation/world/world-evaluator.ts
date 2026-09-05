@@ -646,17 +646,28 @@ function synthesizeSelfVerdict(
   };
 }
 
-/** Exposure ratio: the fraction of log events the agent could see. */
+/**
+ * Exposure ratio: the fraction of witnessable log events the agent could
+ * see. Operator-only bookkeeping (no-op records, memory writes, private
+ * motives — one `private_motive_summary` per resolved intent since
+ * ADR-0014) is invisible to every agent by construction, so it is neither
+ * something this agent missed nor part of what the room could have shown
+ * it; counting it inflated divergence with the number of agents in the room
+ * rather than with anything the agent failed to witness.
+ */
 function deriveDivergenceFromLog(
   agentId: string,
   log: CommittedEvent[],
   channels: Channel[],
   membership: ChannelMembership[],
 ): number {
-  if (log.length === 0) return 0;
-  const visible = filterVisibleEventsForAgent(log, agentId, channels, membership)
+  const witnessable = log.filter(
+    (event) => event.visibility.visibilityReason !== "operator_only",
+  );
+  if (witnessable.length === 0) return 0;
+  const visible = filterVisibleEventsForAgent(witnessable, agentId, channels, membership)
     .length;
-  return clamp01(1 - visible / log.length);
+  return clamp01(1 - visible / witnessable.length);
 }
 
 /** The agent returned to the scene after the goal was set. */

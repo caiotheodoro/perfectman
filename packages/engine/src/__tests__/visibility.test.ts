@@ -236,3 +236,20 @@ describe("getLastEventId", () => {
     expect(getLastEventId([])).toBeNull();
   });
 });
+
+describe("private_motive_summary is never agent-visible", () => {
+  it("drops the motive event for a channel member even with public-shaped visibility", () => {
+    const motive: CommittedEvent = {
+      ...makeEvent("9", "ch1"),
+      type: "private_motive_summary",
+      payload: { summary: "counting the exits" },
+    };
+    const visible = filterVisibleEventsForAgent(
+      [motive],
+      "agent1",
+      [makeChannel("ch1")],
+      [makeMembership("ch1", "agent1")],
+    );
+    expect(visible).toEqual([]);
+  });
+});

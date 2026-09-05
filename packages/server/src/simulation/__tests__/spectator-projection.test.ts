@@ -157,3 +157,31 @@ describe("SpectatorProjection", () => {
     expect(gateway.spectatorEvents[0]?.visibleContent).toBe("👍");
   });
 });
+
+describe("SpectatorProjection private_motive_summary gate", () => {
+  const motiveEvent = () =>
+    makeEvent({
+      type: "private_motive_summary",
+      payload: { summary: "counting the exits", intentType: "send_message", emotionDrivers: [], motivationDrivers: [], engineAuthored: false },
+      visibility: { visibleToAgents: [], visibleToSpectators: false, visibleToOperators: true, visibilityReason: "operator_only" },
+    });
+
+  it("never reaches a plain spectator: buildSpectatorEvent is null and project sends nothing", async () => {
+    const gateway = new MockDeliveryGateway();
+    const projection = new SpectatorProjection(gateway);
+    expect(projection.buildSpectatorEvent(motiveEvent(), SETTINGS)).toBeNull();
+    await projection.project(motiveEvent(), [PUBLIC_CHANNEL], SETTINGS);
+    expect(gateway.spectatorEvents).toHaveLength(0);
+  });
+
+  it("becomes a motive_reveal only under omniscientSpectatorMode", async () => {
+    const gateway = new MockDeliveryGateway();
+    const projection = new SpectatorProjection(gateway);
+    const omni = { ...SETTINGS, omniscientSpectatorMode: true };
+    const built = projection.buildSpectatorEvent(motiveEvent(), omni);
+    expect(built?.type).toBe("motive_reveal");
+    expect((built as { summary?: string } | null)?.summary).toBe("counting the exits");
+    await projection.project(motiveEvent(), [PUBLIC_CHANNEL], omni);
+    expect(gateway.spectatorEvents.map(e => e.type)).toEqual(["motive_reveal"]);
+  });
+});

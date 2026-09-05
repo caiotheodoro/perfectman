@@ -86,6 +86,11 @@ const BLOCKED_SEND_ACTIONS: AvailableAction[] = AVAILABLE_ACTIONS.map(a =>
   a.intentType === "send_message" ? { ...a, blocked: true, blockReason: "social cooldown" } : a,
 );
 
+// Every resolved intent also commits its private_motive_summary (ADR-0014);
+// these tests are about the act/denial events, so the motive row is elided.
+const acts = (result: { committedEvents: Array<{ type: string }> }) =>
+  result.committedEvents.filter((e) => e.type !== "private_motive_summary");
+
 describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
   let resolver: IntentResolver;
   let channelRegistry: ChannelRegistry;
@@ -131,7 +136,7 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
 
     expect(result.outcome).toBe("fallback_committed");
-    const types = result.committedEvents.map(e => e.type);
+    const types = acts(result).map(e => e.type);
     expect(types).toContain("intent_blocked");
     expect(types).toContain("no_op_recorded");
   });
@@ -148,9 +153,9 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     const result = await gated.resolve(intent, ctx(AVAILABLE_ACTIONS, zeroMessageSettings));
 
     expect(result.outcome).toBe("blocked");
-    expect(result.committedEvents).toHaveLength(1);
-    expect(result.committedEvents[0]!.type).toBe("intent_blocked");
-    const violations = (result.committedEvents[0]!.payload as { violations: Array<{ type: string }> })
+    expect(acts(result)).toHaveLength(1);
+    expect(acts(result)[0]!.type).toBe("intent_blocked");
+    const violations = (acts(result)[0]!.payload as { violations: Array<{ type: string }> })
       .violations;
     expect(violations[0]!.type).toBe("rate_limited");
   });
@@ -201,9 +206,9 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     const result = await gated.resolve(intent, ctx(availableActions, rateLimitedSettings));
 
     expect(result.outcome).toBe("blocked");
-    expect(result.committedEvents).toHaveLength(1);
-    expect(result.committedEvents[0]!.type).toBe("intent_blocked");
-    const violations = (result.committedEvents[0]!.payload as { violations: Array<{ type: string; detail?: string }> })
+    expect(acts(result)).toHaveLength(1);
+    expect(acts(result)[0]!.type).toBe("intent_blocked");
+    const violations = (acts(result)[0]!.payload as { violations: Array<{ type: string; detail?: string }> })
       .violations;
     expect(violations.some(v => v.detail === "message_rate_limit")).toBe(true);
   });
@@ -215,7 +220,7 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
 
     expect(result.outcome).toBe("blocked");
-    expect(result.committedEvents.map(e => e.type)).toEqual(["intent_blocked"]);
+    expect(acts(result).map(e => e.type)).toEqual(["intent_blocked"]);
   });
 
   it("drops the denied primary's memoryWrites from the committed fallback", async () => {
@@ -240,9 +245,9 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     expect(result.outcome).toBe("fallback_committed");
     // primary block + derived no_op. The denied primary's memory proposal
     // must NOT commit — it would record a message that never happened.
-    expect(result.committedEvents).toHaveLength(2);
-    expect(result.committedEvents.filter(e => e.type === "no_op_recorded")).toHaveLength(1);
-    expect(result.committedEvents.filter(e => e.type === "memory_written")).toHaveLength(0);
+    expect(acts(result)).toHaveLength(2);
+    expect(acts(result).filter(e => e.type === "no_op_recorded")).toHaveLength(1);
+    expect(acts(result).filter(e => e.type === "memory_written")).toHaveLength(0);
   });
 
   it("stands by the denial when a react fallback has no target event", async () => {
@@ -250,7 +255,7 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
 
     expect(result.outcome).toBe("blocked");
-    expect(result.committedEvents.map(e => e.type)).toEqual(["intent_blocked"]);
+    expect(acts(result).map(e => e.type)).toEqual(["intent_blocked"]);
   });
 
   it("stands by the denial when the content-bearing fallback has empty content", async () => {
@@ -258,7 +263,7 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
 
     expect(result.outcome).toBe("blocked");
-    expect(result.committedEvents.map(e => e.type)).toEqual(["intent_blocked"]);
+    expect(acts(result).map(e => e.type)).toEqual(["intent_blocked"]);
   });
 
   it("re-validates the derived intent through the same pipeline (illegal target re-blocks)", async () => {
@@ -268,7 +273,7 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     // Derived reply targets the same non-member channel -> blocked again ->
     // original denial stands.
     expect(result.outcome).toBe("blocked");
-    expect(result.committedEvents).toHaveLength(1);
+    expect(acts(result)).toHaveLength(1);
   });
 
   it("carries channelTarget into a react fallback, so it re-blocks instead of re-homing to ctx.channelId", async () => {
@@ -287,11 +292,11 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
 
     expect(result.outcome).toBe("blocked");
-    expect(result.committedEvents.every(e => e.type === "intent_blocked")).toBe(true);
+    expect(acts(result).every(e => e.type === "intent_blocked")).toBe(true);
     // Both the primary's and the fallback's block events are retained.
-    expect(result.committedEvents).toHaveLength(2);
+    expect(acts(result)).toHaveLength(2);
     const secondaryViolations = (
-      result.committedEvents[1]!.payload as { violations: Array<{ type: string }> }
+      acts(result)[1]!.payload as { violations: Array<{ type: string }> }
     ).violations;
     expect(secondaryViolations.some(v => v.type === "hidden_channel_target")).toBe(true);
   });
@@ -306,6 +311,6 @@ describe("IntentResolver fallbackIfBlocked (#50 policy)", () => {
     const result = await resolver.resolve(intent, ctx(BLOCKED_SEND_ACTIONS));
 
     expect(result.outcome).toBe("blocked");
-    expect(result.committedEvents.map(e => e.type)).toEqual(["intent_blocked"]);
+    expect(acts(result).map(e => e.type)).toEqual(["intent_blocked"]);
   });
 });

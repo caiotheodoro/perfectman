@@ -496,7 +496,11 @@ describe("PulseScheduler observability events", () => {
     const invited = committed.find((e): e is CommittedEvent => e.type === "agent_invited");
     expect(invited).toBeDefined();
 
-    const visEvents = visibility(h.gateway.operatorEvents);
+    // Every LLM-resolved intent also commits its private_motive_summary
+    // (ADR-0014); this test is about the act's visibility rows only.
+    const visEvents = visibility(h.gateway.operatorEvents).filter(
+      (e) => e.data?.["eventType"] !== "private_motive_summary",
+    );
     expect(visEvents).toHaveLength(2); // channel_created + agent_invited
     const createdVis = visEvents.find((e) => e.data?.["eventType"] === "channel_created");
     expect(createdVis).toBeDefined();

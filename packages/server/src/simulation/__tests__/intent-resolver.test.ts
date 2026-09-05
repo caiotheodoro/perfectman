@@ -174,8 +174,8 @@ describe("IntentResolver", () => {
     const intent = makeIntent({ intentType: "send_message", channelTarget: CHANNEL_ID });
     const result = await resolver.resolve(intent, ctx());
     expect(result.outcome).toBe("committed");
-    expect(result.committedEvents).toHaveLength(1);
-    expect(result.committedEvents[0]!.type).toBe("message_sent");
+    // The act plus its private_motive_summary (see intent-resolver-motive.test.ts).
+    expect(result.committedEvents.map(e => e.type)).toEqual(["message_sent", "private_motive_summary"]);
   });
 
   it("carries a memory proposal's intensity onto the committed memory_written payload", async () => {

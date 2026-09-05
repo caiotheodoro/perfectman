@@ -244,7 +244,14 @@ export class PulseScheduler {
       const snapshot = this.config.engineSnapshotProjection.build({
         pulseIndex: this.pulseIndex,
         simulation: sim,
-        recentEventsWindow: contextEvents.slice(-PulseScheduler.CONTEXT_WINDOW_PULSES_LIMIT),
+        // Operator-only events (motives, memory writes, no-op records) can
+        // never reach an agent, so they must not consume slots in the
+        // rolling window the agent's context is cut from — with one
+        // private_motive_summary per resolved intent they would otherwise
+        // halve how far back the room can remember.
+        recentEventsWindow: contextEvents
+          .filter((event) => event.visibility.visibilityReason !== "operator_only")
+          .slice(-PulseScheduler.CONTEXT_WINDOW_PULSES_LIMIT),
         now,
         agentState,
         persona: agent.persona,
@@ -316,6 +323,7 @@ export class PulseScheduler {
 
         const intent = runtimeOutput.intent;
         const intentData: ActionIntentOperatorData = {
+          intentId: intent.id,
           intentType: intent.intentType,
           ...(intent.visibleContent !== undefined ? { visibleContent: intent.visibleContent } : {}),
           privateMotiveSummary: intent.privateMotiveSummary,

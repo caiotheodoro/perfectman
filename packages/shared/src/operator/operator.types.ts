@@ -106,6 +106,8 @@ export type OperatorMetrics = {
 /** `action_intent` payload — the LLM thinking payload for one agent in one
  *  pulse, emitted post-resolution (truthful, including fallback `no_op`). */
 export type ActionIntentOperatorData = {
+  /** Join key to the committed act and its `private_motive_summary` (both carry it as `sourceIntentId`). */
+  intentId: string;
   intentType: IntentType;
   visibleContent?: string;
   privateMotiveSummary: string;

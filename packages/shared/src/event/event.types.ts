@@ -1,3 +1,5 @@
+import type { IntentType } from "../intent/intent.types.js";
+
 export type EventType =
   | "message_sent"
   | "reply_sent"
@@ -42,6 +44,24 @@ export type EmotionalSalience = "low" | "medium" | "high" | "critical";
 export type EventPayloadPrimitive = string | number | boolean | null;
 export type EventPayloadValue = EventPayloadPrimitive | EventPayloadValue[] | { [key: string]: EventPayloadValue };
 export type EventPayload = Record<string, EventPayloadValue>;
+
+/**
+ * `private_motive_summary` payload — one per LLM-resolved intent, committed
+ * operator-only right after the act it explains and joined to it by
+ * `sourceIntentId` (the act's own `sourceIntentId` is the same intent id).
+ * The act's public payload never carries the motive: a visible event stays
+ * fully visible (ADR-0001), so the private half is its own event with its
+ * own visibility. `engineAuthored` is stamped at emission from the shared
+ * prefix convention (`isEngineAuthoredMotive` in @perfectman/server) so no
+ * reader has to re-derive whether "Fallback applied: …" is a feeling.
+ */
+export type PrivateMotiveSummaryPayload = {
+  summary: string;
+  intentType: IntentType;
+  emotionDrivers: string[];
+  motivationDrivers: string[];
+  engineAuthored: boolean;
+};
 
 export type EventVisibility = {
   visibleToAgents: string[]; // agent IDs, empty = all in channel
