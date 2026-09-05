@@ -104,6 +104,14 @@ describe("bench hygiene", () => {
     expect(Object.keys(report.judgeAxisMeansByRubric).sort()).toEqual(["hidden-objective-v1", "roleplay-v1"]);
   });
 
+  it("--variants caps seed variants per scenario where --limit truncates the whole list", async () => {
+    runMock.mockResolvedValue(artifact(undefined));
+    const report = await runBench({ mode: "mock", scenarios: ["hoc_fatia_que_nao_existe", "hoc_banda_no_festival"], variants: 1 });
+    expect(report.perScenario.map(s => s.id)).toEqual(["hoc_fatia_que_nao_existe__v0", "hoc_banda_no_festival__v0"]);
+    const two = await runBench({ mode: "mock", scenarios: ["hoc_fatia_que_nao_existe"], variants: 2 });
+    expect(two.perScenario.map(s => s.id)).toEqual(["hoc_fatia_que_nao_existe__v0", "hoc_fatia_que_nao_existe__v1"]);
+  });
+
   it("stores letter grades only when a hidden-objective scene ran", async () => {
     runMock.mockResolvedValue(artifact(undefined));
     const plain = await runBench({ mode: "mock", scenarios: ["motive_gossip"], limit: 1 });
