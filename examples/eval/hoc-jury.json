@@ -8,6 +8,7 @@
   "timeoutMs": 180000,
   "jury": [
     {
+      "providerType": "openai-compatible",
       "label": "glm-5.3-flash",
       "baseUrl": "https://api.orcarouter.ai/v1",
       "modelName": "z-ai/glm-5.3-flash",
@@ -16,6 +17,7 @@
       "timeoutMs": 180000
     },
     {
+      "providerType": "openai-compatible",
       "label": "qwen3.8-27b",
       "baseUrl": "https://api.orcarouter.ai/v1",
       "modelName": "qwen/qwen3.8-27b-free",
@@ -24,6 +26,7 @@
       "timeoutMs": 180000
     },
     {
+      "providerType": "openai-compatible",
       "label": "deepseek-v4-flash (same family as the generator — flagged)",
       "baseUrl": "https://api.orcarouter.ai/v1",
       "modelName": "deepseek/deepseek-v4-flash",
