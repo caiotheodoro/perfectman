@@ -555,6 +555,8 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
       creativity_unhinged: 4,
       memory_continuity: 4,
       no_ai_leak: 5,
+      mask_integrity: 4,
+      objective_pursuit: 4,
     },
   },
 ];

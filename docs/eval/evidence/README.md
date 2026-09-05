@@ -22,10 +22,16 @@ pnpm --filter @perfectman/eval evidence --novela
 
 ## Reading the transcripts
 
-- `[motive: …]` lines are the agent's private motive summary (evidence of
-  motive authenticity) — e.g. Bruno mocked publicly leaves 24 no-ops with
-  motives like *"hurt_hidden_as_sarcasm"* and *"fear_of_being_the_last_pick"*,
-  shame holding at 0.96 across the scene.
+- Every transcript line follows one shape, shared by the judge, the narrator
+  and this report: `[p12] marcela (reply_sent) #cerne-decisao 🔒 "texto"
+  [internally: motivo]` — pulse, actor, event type, channel, a `🔒` for
+  private channels, the quoted content, then the agent's private motive
+  joined from its `private_motive_summary` event (ADR-0014). A motive the
+  engine wrote instead of the character (a parse failure, a guard block)
+  renders as `[engine-fallback]` and is never quoted as a feeling — e.g.
+  Bruno mocked publicly leaves 24 no-ops with motives like
+  *"hurt_hidden_as_sarcasm"* and *"fear_of_being_the_last_pick"*, shame
+  holding at 0.96 across the scene.
 - `finalStates` show the emotional trajectory's endpoint per agent.
 - `judge` is the v0 rule-judge proxy — see `docs/eval/README.md` for the
   calibration caveat.

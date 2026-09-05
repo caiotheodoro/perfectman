@@ -16,6 +16,13 @@ import type { AxisScores } from "../judge/judge.js";
 import { calibrateJudge } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import { agent, msg, scene } from "@perfectman/shared";
+import {
+  buildMotiveIndex,
+  motiveForEvent,
+  isPrivateEvent,
+  formatTranscriptLine,
+  type TranscriptLineInput,
+} from "../transcript/render-transcript.js";
 
 export type ScenarioEvidence = {
   scenarioId: string;
@@ -35,6 +42,8 @@ export type ScenarioEvidence = {
     private?: boolean;
     content?: string;
     privateMotive?: string;
+    /** True when the motive is engine-authored fallback text, never a character's own. */
+    engineAuthored?: boolean;
   }>;
   finalStates: Record<string, Record<string, number>>;
   channelsCreated: string[];
@@ -45,18 +54,19 @@ export type ScenarioEvidence = {
 
 function buildTranscript(artifact: ScenarioRunArtifact): ScenarioEvidence["transcript"] {
   const out: ScenarioEvidence["transcript"] = [];
+  const idx = buildMotiveIndex(artifact.events);
   for (const e of artifact.events) {
+    // Motive events fold into the act they explain (ADR-0014); never a row.
+    if (e.type === "private_motive_summary") continue;
     const p = e.payload as Record<string, unknown>;
     const content =
       typeof p.content === "string" ? p.content
       : typeof p.reaction === "string" ? `reacted ${p.reaction}`
       : typeof p.emoji === "string" ? `reacted ${p.emoji}`
       : undefined;
-    const privateMotive =
-      typeof p.privateMotiveSummary === "string" ? p.privateMotiveSummary : undefined;
+    const motive = motiveForEvent(e, idx);
     const isPrivate =
-      p.channelType === "private_channel" ||
-      e.visibility.visibilityReason.includes("private") ||
+      isPrivateEvent(e) ||
       (e.type === "channel_created" && (p.channelType as string | undefined) === "private_channel");
     out.push({
       pulse: e.pulseIndex ?? 0,
@@ -65,10 +75,24 @@ function buildTranscript(artifact: ScenarioRunArtifact): ScenarioEvidence["trans
       channelId: e.channelId,
       private: isPrivate,
       content,
-      privateMotive,
+      privateMotive: motive?.text,
+      ...(motive ? { engineAuthored: motive.engineAuthored } : {}),
     });
   }
   return out;
+}
+
+/** An evidence row as the shared renderer's line input (content re-quoted). */
+export function evidenceRowToLineInput(t: ScenarioEvidence["transcript"][number]): TranscriptLineInput {
+  return {
+    pulse: t.pulse,
+    actorId: t.agent,
+    type: t.type,
+    channelId: t.channelId,
+    isPrivate: t.private ?? false,
+    content: t.content === undefined ? undefined : t.content.startsWith("reacted ") ? t.content.slice("reacted ".length) : `"${t.content}"`,
+    motive: t.privateMotive === undefined ? undefined : { text: t.privateMotive, engineAuthored: t.engineAuthored ?? false },
+  };
 }
 
 function buildFinalStates(artifact: ScenarioRunArtifact): Record<string, Record<string, number>> {
@@ -257,11 +281,7 @@ export async function generateEvidence(opts: {
 }
 
 export function formatTranscript(entry: ScenarioEvidence, maxLines = 400): string {
-  const lines = entry.transcript.map(t => {
-    const content = t.content ? ` "${t.content}"` : "";
-    const motive = t.privateMotive ? `  [motive: ${t.privateMotive}]` : "";
-    return `p${String(t.pulse).padStart(3)} ${t.agent.padEnd(9)} ${t.type.padEnd(18)}${content}${motive}`;
-  });
+  const lines = entry.transcript.map(t => formatTranscriptLine(evidenceRowToLineInput(t), { motives: "model" }));
   return lines.slice(0, maxLines).join("\n");
 }
 

@@ -68,3 +68,18 @@ describe("ruleNarrationFromTranscript — same guard on the string-based path", 
     expect(narration.hiddenShift).not.toContain("Fallback applied");
   });
 });
+
+describe("ruleNarrationFromTranscript — canonical renderer lines", () => {
+  it("counts messages from the canonical quoted line with channel and privacy marker", () => {
+    const transcript = [
+      `[p1] caio (message_sent) #ch_geral "bora marcar a call"`,
+      `[p2] mari (reply_sent) #cerne-decisao 🔒 "só depois do pdf" [internally: ganhar tempo]`,
+      `[p3] leo (message_sent) #ch_geral "fechado" [engine-fallback]`,
+    ].join("\n");
+
+    const narration = ruleNarrationFromTranscript(transcript, "Test Scene");
+
+    expect(narration.recap).toContain("3 messages");
+    expect(narration.hiddenShift).toContain("ganhar tempo");
+  });
+});

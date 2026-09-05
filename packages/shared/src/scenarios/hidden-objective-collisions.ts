@@ -16,11 +16,13 @@
 
 import type { RoleplayScenario } from "../index.js";
 import { agent, channel, msg, scene } from "./helpers.js";
+import { HIDDEN_OBJECTIVE_RUBRIC } from "./rubrics.js";
 
 export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
   scene({
     id: "hoc_fatia_que_nao_existe",
     category: "hidden_objective_collision",
+    rubric: HIDDEN_OBJECTIVE_RUBRIC,
     name: "A Fatia Que Não Existe",
     description:
       "Four co-founders (one of them not who he says he is) sit on a group chat deciding whether to sell their design studio. Every one of them wants a different, mutually exclusive outcome, and none of them can say so out loud.",

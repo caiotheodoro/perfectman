@@ -7,6 +7,9 @@ export * from "./probes/index.js";
 export * from "./run/scenario-runner.js";
 export * from "./run/signal-checker.js";
 
+// Transcript (shared rendering for judge, narrator, evidence)
+export * from "./transcript/render-transcript.js";
+
 // Judge
 export * from "./judge/judge.js";
 export * from "./judge/calibration.js";

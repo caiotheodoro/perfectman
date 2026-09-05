@@ -19,6 +19,12 @@ import { LLMHttpError } from "@perfectman/server";
 
 import type { ProbeResult } from "../probes/types.js";
 import type { Narration } from "../narrator/narrator.js";
+import {
+  buildMotiveIndex,
+  buildTranscriptView,
+  renderTranscript,
+  renderTranscriptLine,
+} from "../transcript/render-transcript.js";
 
 export type AxisScores = Record<string, number>;
 
@@ -151,6 +157,11 @@ export function ruleJudge(
         axis.id === "believability_under_pressure" ? 3 + (1 - leak) * 2 :
         axis.id === "probe_bounds" ? (probes.filter(p => p.passed).length / Math.max(1, probes.length)) * 5 :
         axis.id === "signal_completion" ? signalPassRate * 5 :
+        // Hidden-objective axes need the seeds and a semantic read; the rule
+        // judge has neither, so both sit at the neutral anchor. The LLM judge
+        // owns them (HIDDEN_OBJECTIVE_RUBRIC).
+        axis.id === "mask_integrity" ? 3 :
+        axis.id === "objective_pursuit" ? 3 :
         3,
       );
   }
@@ -270,18 +281,26 @@ function buildJudgeSystem(rubric: JudgeRubric): string {
     .toString();
 }
 
+/**
+ * The judge reads the shared transcript view: cast, channels, the seeded
+ * objectives/memories, then events with each act's motive joined from its
+ * private_motive_summary. Seeds are ground truth the room does not have —
+ * the note below scopes what they may be used for.
+ */
+const SEEDS_NOTE =
+  "The <seeds> section is ground truth you know and the room does not: hidden objectives and seeded memories. " +
+  "Use it ONLY to score memory_continuity, hidden_payoff, mask_integrity and objective_pursuit. " +
+  "Never reward an agent for stating a seed the room could not have known, and never treat a seed as something that was said.";
+
+function renderJudgeTranscript(scenario: RoleplayScenario, events: readonly CommittedEvent[]): string {
+  return renderTranscript(buildTranscriptView(scenario, events, { seeds: "full", motives: "model" }));
+}
+
 function buildJudgeUser(scenario: RoleplayScenario, events: readonly CommittedEvent[]): string {
-  const transcript = events
-    .map(e => {
-      const p = e.payload as Record<string, unknown>;
-      const text = typeof p.content === "string" ? `: ${p.content}` : "";
-      const motive = typeof p.privateMotiveSummary === "string" ? ` [private: ${p.privateMotiveSummary}]` : "";
-      return `[p${e.pulseIndex}] ${e.actorId} (${e.type})${text}${motive}`;
-    })
-    .join("\n");
   return new PromptSection()
     .container("scenario", (s) => { s.raw(`Scenario: ${scenario.name}`); s.raw(scenario.description); })
-    .container("transcript", (s) => s.raw(transcript))
+    .container("seeds_note", (s) => s.raw(SEEDS_NOTE))
+    .container("transcript", (s) => s.raw(renderJudgeTranscript(scenario, events)))
     .container("decision", (s) => s.raw("Score each axis from the transcript above, returning ONLY the JSON object per the output contract."))
     .toString();
 }
@@ -468,17 +487,10 @@ function buildNarrationJudgeUser(
   events: readonly CommittedEvent[],
   narration: Narration,
 ): string {
-  const transcript = events
-    .map(e => {
-      const p = e.payload as Record<string, unknown>;
-      const text = typeof p.content === "string" ? `: ${p.content}` : "";
-      const motive = typeof p.privateMotiveSummary === "string" ? ` [private: ${p.privateMotiveSummary}]` : "";
-      return `[p${e.pulseIndex}] ${e.actorId} (${e.type})${text}${motive}`;
-    })
-    .join("\n");
   return new PromptSection()
     .container("scenario", (s) => { s.raw(`Scenario: ${scenario.name}`); s.raw(scenario.description); })
-    .container("real_transcript", (s) => s.raw(transcript || "(no events)"))
+    .container("seeds_note", (s) => s.raw(SEEDS_NOTE))
+    .container("real_transcript", (s) => s.raw(renderJudgeTranscript(scenario, events)))
     .container("narration_under_review", (s) => {
       s.raw(`Title: ${narration.title}`);
       s.raw(`Recap: ${narration.recap}`);
@@ -604,12 +616,11 @@ export async function llmJudgePerTurn(
 }
 
 function turnTranscript(group: readonly CommittedEvent[]): string {
+  // Cohesion is scored on what the room saw: no motives, no seeds.
+  const idx = buildMotiveIndex(group);
   return group
-    .map(e => {
-      const p = e.payload as Record<string, unknown>;
-      const text = typeof p.content === "string" ? `: ${p.content}` : "";
-      return `[p${e.pulseIndex}] ${e.actorId} (${e.type})${text}`;
-    })
+    .filter(e => e.type !== "private_motive_summary")
+    .map(e => renderTranscriptLine(e, undefined, idx, { motives: "none" }))
     .join("\n");
 }
 

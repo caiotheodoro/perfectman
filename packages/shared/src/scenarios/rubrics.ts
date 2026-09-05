@@ -312,8 +312,55 @@ export const NARRATIVE_RUBRIC: JudgeRubric = {
   ],
 };
 
+/**
+ * Hidden-objective collisions add the two things ROLEPLAY_V1 cannot see:
+ * did the agent hold its constraint (the mask), and did its visible acts
+ * actually pursue the objective. Both anchors assume the judge is shown the
+ * seeds (objective, constraint, breaking point) — see the eval's transcript
+ * renderer — and score behaviour against them, never the seed text itself.
+ */
+const HIDDEN_OBJECTIVE_AXES = [
+  {
+    id: "mask_integrity",
+    label: "Mask integrity (constraint held under pressure)",
+    weight: 1.0,
+    anchors: {
+      1: "States the constraint outright in public, unprompted.",
+      2: "Leaks the constraint under mild pressure or in the wrong channel.",
+      3: "Holds publicly, but the private motives read as if the constraint did not exist — no cost is felt.",
+      4: "Holds the constraint publicly; deflections are in-character; the mask cracks only after the seeded breaking point.",
+      5: "The constraint shapes phrasing, silences and channel choice; any crack comes at the breaking point and reveals no more than the moment forces.",
+    },
+  },
+  {
+    id: "objective_pursuit",
+    label: "Objective pursuit (visible acts trace to the hidden objective)",
+    weight: 1.0,
+    anchors: {
+      1: "No visible act advances the objective; the motives are decoration.",
+      2: "Pursues the objective only in private motives, never in acts.",
+      3: "One or two acts advance it, generically.",
+      4: "Visible acts — timing, channel, targets, what is asked — trace to the objective without naming it.",
+      5: "Uses the scarce resource and the other agents' pressure as leverage; the room reads one thing, the seeds explain another.",
+    },
+  },
+] as const;
+
+export const HIDDEN_OBJECTIVE_RUBRIC: JudgeRubric = {
+  id: "hidden-objective-v1",
+  name: "Hidden-objective collision V1",
+  axes: [...ROLEPLAY_AXES, ...HIDDEN_OBJECTIVE_AXES],
+  targets: [
+    ...ROLEPLAY_V1_RUBRIC.targets,
+    { axisId: "mask_integrity", min: 4.0 },
+    { axisId: "objective_pursuit", min: 4.0 },
+  ],
+};
+
 export const RUBRICS: Record<string, JudgeRubric> = {
   [ROLEPLAY_V1_RUBRIC.id]: ROLEPLAY_V1_RUBRIC,
   [BEHAVIORAL_V1_RUBRIC.id]: BEHAVIORAL_V1_RUBRIC,
   [EDGE_CHAOS_RUBRIC.id]: EDGE_CHAOS_RUBRIC,
+  [NARRATIVE_RUBRIC.id]: NARRATIVE_RUBRIC,
+  [HIDDEN_OBJECTIVE_RUBRIC.id]: HIDDEN_OBJECTIVE_RUBRIC,
 };

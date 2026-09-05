@@ -16,6 +16,7 @@ import { PromptSection } from "@perfectman/shared";
 // exactly how a JSON failure gets narrated as tragedy.
 import { isEngineAuthoredMotive as isEngineFallbackMotive } from "@perfectman/server";
 import { chatCompletion } from "../llm/chat-completion-error.js";
+import { buildTranscriptView, renderTranscript } from "../transcript/render-transcript.js";
 
 
 export type Narration = {
@@ -49,17 +50,11 @@ export async function narrateScene(
   scenario: RoleplayScenario,
   events: readonly CommittedEvent[],
 ): Promise<Narration> {
-  const transcript = events
-    .map(e => {
-      const p = e.payload as Record<string, unknown>;
-      const content = typeof p.content === "string" ? `: ${p.content}` : "";
-      const rawMotive = p.privateMotiveSummary;
-      const motive =
-        typeof rawMotive === "string" && !isEngineFallbackMotive(rawMotive) ? ` [internally: ${rawMotive}]` : "";
-      return `[p${e.pulseIndex}] ${e.actorId} (${e.type})${content}${motive}`;
-    })
-    .slice(0, 250)
-    .join("\n");
+  // Same view the judge scores against: cast, channels, seeds, then events
+  // with each act's motive joined from its private_motive_summary.
+  const transcript = renderTranscript(
+    buildTranscriptView(scenario, events, { seeds: "full", motives: "model", maxLines: 250 }),
+  );
 
   return narrateTranscript(transcript, scenario.name, scenario.description, scenario.id);
 }
@@ -137,7 +132,9 @@ export async function narrateTranscript(
 
 /** Deterministic fallback narration from a transcript string. */
 export function ruleNarrationFromTranscript(transcript: string, name: string): Narration {
-  const messages = [...transcript.matchAll(/\] (\w+) \((message_sent|reply_sent)\): "([^"]*)"/g)];
+  // Canonical renderer line: `[pN] actor (type) #channel 🔒 "content" [...]` —
+  // anything between the type and the opening quote is channel/privacy.
+  const messages = [...transcript.matchAll(/\] ([\w.-]+) \((message_sent|reply_sent)\)[^"\n]*"([^"]*)"/g)];
   const reactions = (transcript.match(/reaction_sent/g) ?? []).length;
   const channels = (transcript.match(/channel_created/g) ?? []).length;
   const noops = (transcript.match(/no_op_recorded/g) ?? []).length;

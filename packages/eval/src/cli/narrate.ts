@@ -14,7 +14,8 @@
 
 import { writeFileSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { resolve, join } from "node:path";
-import { generateEvidence, type ScenarioEvidence } from "./evidence.js";
+import { generateEvidence, evidenceRowToLineInput, type ScenarioEvidence } from "./evidence.js";
+import { formatTranscriptLine } from "../transcript/render-transcript.js";
 import { narrateTranscript, type Narration } from "../narrator/narrator.js";
 import { renderHtmlPage } from "../render/html.js";
 
@@ -35,13 +36,9 @@ export function loadEvidenceFromDisk(outDir: string): {
 }
 
 function transcriptText(e: ScenarioEvidence): string {
+  // Same canonical line the live narrator path renders (render-transcript.ts).
   return e.transcript
-    .map(t => {
-      const priv = t.private ? " 🔒PRIVADO" : "";
-      const content = t.content ? `: "${t.content}"` : "";
-      const motive = t.privateMotive ? ` [internally: ${t.privateMotive}]` : "";
-      return `[p${t.pulse}] ${t.agent} (${t.type})${priv}${content}${motive}`;
-    })
+    .map(t => formatTranscriptLine(evidenceRowToLineInput(t), { motives: "model" }))
     .join("\n");
 }
 
