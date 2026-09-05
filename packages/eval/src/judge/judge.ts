@@ -13,10 +13,12 @@
  */
 
 import type { CommittedEvent, JudgeRubric, RoleplayScenario } from "@perfectman/shared";
-import { PromptSection } from "@perfectman/shared";
-import { chatCompletion } from "../llm/chat-completion-error.js";
+import { PromptSection, NARRATIVE_RUBRIC } from "@perfectman/shared";
+import { chatCompletion, ChatCompletionError } from "../llm/chat-completion-error.js";
+import { LLMHttpError } from "@perfectman/server";
 
 import type { ProbeResult } from "../probes/types.js";
+import type { Narration } from "../narrator/narrator.js";
 
 export type AxisScores = Record<string, number>;
 
@@ -243,6 +245,15 @@ export type LLMJudgeConfig = {
   timeoutMs?: number;
 };
 
+// Root-caused via a real capture: a deepseek-v4-flash judge call returned
+// completely empty content (raw length 0) — the same hidden-reasoning-
+// burns-the-budget failure already fixed for the agent path and the
+// narrator, which no judge call site had ever disabled. `includes` (not
+// `startsWith`) because routers namespace model ids by provider.
+function deepseekV4ExtraBody(model: string): Record<string, unknown> | undefined {
+  return model.includes("deepseek-v4") ? { thinking: { type: "disabled" } } : undefined;
+}
+
 function buildJudgeSystem(rubric: JudgeRubric): string {
   const axes = rubric.axes.map(
     (a) => `${a.id}: ${a.label}\n${Object.entries(a.anchors).map(([k, v]) => `  ${k}: ${v}`).join("\n")}`,
@@ -295,19 +306,21 @@ async function callJudge(
     ],
     temperature: config.temperature ?? 0,
     // Generous headroom: a thinking-mode model spends real tokens on
-    //  thinking... response before it ever reaches the answer, and this
-    // endpoint can't suppress that (see extractJsonObject above).
+    // thinking... response before it ever reaches the answer, and not
+    // every such model can be told to skip it (see extractJsonObject
+    // above) — deepseek-v4 can, via extraBody below.
     maxTokens: 1500,
     timeoutMs: config.timeoutMs ?? 60000,
+    extraBody: deepseekV4ExtraBody(config.model),
   });
 }
 
-function parseAxes(raw: string, scenario: RoleplayScenario): { axes: AxisScores; imputedAxes: string[] } {
+function parseAxes(raw: string, rubric: JudgeRubric): { axes: AxisScores; imputedAxes: string[] } {
   const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as { axes?: Record<string, number> };
   const axes: AxisScores = {};
   const imputedAxes: string[] = [];
-  for (const axis of scenario.rubric.axes) {
+  for (const axis of rubric.axes) {
     const v = parsed.axes?.[axis.id];
     if (typeof v === "number") {
       axes[axis.id] = clampScore(v);
@@ -342,25 +355,67 @@ const RETRY_SYSTEM_SUFFIX =
  */
 export type JudgeResult = { axes: AxisScores; salvaged: boolean; imputedAxes: string[] };
 
-export async function llmJudge(
-  scenario: RoleplayScenario,
-  events: readonly CommittedEvent[],
-  config: LLMJudgeConfig,
+function isTransientTransportError(err: unknown): boolean {
+  if (!(err instanceof ChatCompletionError)) return false;
+  const status = err.cause instanceof LLMHttpError ? err.cause.status : undefined;
+  return status === 429 || status === 503;
+}
+
+/**
+ * Retries a transient transport failure (429 rate-limit, 503 capacity) with
+ * backoff. Root-caused via a real canary bench round against a free-tier
+ * endpoint: every scenario was marked "failed" not because generation or
+ * scoring logic was wrong, but because the judge's first HTTP call hit a
+ * 429 and that error propagated straight out of `llmJudge` uncaught —
+ * `runJudgeWithRetrySalvage`'s own retry only ever covered unparseable
+ * *responses*, never a failure on the call itself. A transport error is not
+ * a quality signal; it should not sink an otherwise-valid scenario run.
+ */
+export async function retryOnTransientError<T>(
+  fn: () => Promise<T>,
+  opts: { retries?: number; delayMs?: number } = {},
+): Promise<T> {
+  const retries = opts.retries ?? 2;
+  const delayMs = opts.delayMs ?? 2000;
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastError = err;
+      if (attempt === retries || !isTransientTransportError(err)) throw err;
+      await new Promise(resolve => setTimeout(resolve, delayMs * (attempt + 1)));
+    }
+  }
+  throw lastError;
+}
+
+/**
+ * Shared call/parse/retry/salvage skeleton behind both `llmJudge` (scores the
+ * transcript) and `judgeNarration` (scores the narrator's prose) — same JSON
+ * contract, same one-retry-then-salvage defense, same honest failure. Neither
+ * caller reimplements this; they only supply how to place one call and which
+ * rubric to parse against.
+ */
+async function runJudgeWithRetrySalvage(
+  rubric: JudgeRubric,
+  callOnce: (systemSuffix: string) => Promise<string>,
+  errorLabel: string,
 ): Promise<JudgeResult> {
   const rawAttempts: string[] = [];
-  const axisIds = scenario.rubric.axes.map(a => a.id);
+  const axisIds = rubric.axes.map(a => a.id);
 
-  rawAttempts.push(await callJudge(scenario, events, config));
+  rawAttempts.push(await retryOnTransientError(() => callOnce("")));
   try {
-    const first = parseAxes(rawAttempts[0]!, scenario);
+    const first = parseAxes(rawAttempts[0]!, rubric);
     return { axes: first.axes, salvaged: false, imputedAxes: first.imputedAxes };
   } catch {
     // One strict retry covers judges that burned their budget on reasoning
     // or ignored the JSON instruction on the first pass.
   }
   try {
-    rawAttempts.push(await callJudge(scenario, events, config, RETRY_SYSTEM_SUFFIX));
-    const second = parseAxes(rawAttempts[1]!, scenario);
+    rawAttempts.push(await retryOnTransientError(() => callOnce(RETRY_SYSTEM_SUFFIX)));
+    const second = parseAxes(rawAttempts[1]!, rubric);
     return { axes: second.axes, salvaged: false, imputedAxes: second.imputedAxes };
   } catch {
     // Fall through to prose salvage — a judge that answered in a scored
@@ -372,7 +427,7 @@ export async function llmJudge(
     const salvaged = salvageAxisScoresFromProse(raw, axisIds);
     if (salvaged) {
       const axes: AxisScores = {};
-      for (const axis of scenario.rubric.axes) {
+      for (const axis of rubric.axes) {
         const v = salvaged[axis.id];
         axes[axis.id] = typeof v === "number" ? clampScore(v) : 3;
       }
@@ -382,7 +437,95 @@ export async function llmJudge(
 
   const lastRaw = rawAttempts[rawAttempts.length - 1] ?? "";
   throw new Error(
-    `LLM judge returned unparseable response after retry (raw length ${lastRaw.length}): ${lastRaw.slice(0, 200)}`,
+    `${errorLabel} returned unparseable response after retry (raw length ${lastRaw.length}): ${lastRaw.slice(0, 200)}`,
+  );
+}
+
+export async function llmJudge(
+  scenario: RoleplayScenario,
+  events: readonly CommittedEvent[],
+  config: LLMJudgeConfig,
+): Promise<JudgeResult> {
+  return runJudgeWithRetrySalvage(
+    scenario.rubric,
+    (systemSuffix) => callJudge(scenario, events, config, systemSuffix),
+    "LLM judge",
+  );
+}
+
+// ── Narration judge ──────────────────────────────────────────────────────────
+
+/**
+ * Scores the Narration object (title/recap/hiddenShift) against
+ * NARRATIVE_RUBRIC — the prose a spectator reads, never the raw transcript.
+ * `events` is the real transcript the narration claims to describe: it grounds
+ * the `hidden_payoff` axis, which must catch a hiddenShift that invents a
+ * motive with no seeded fact behind it (see the rubric's own doc comment for
+ * the real evidence this was grounded against).
+ */
+function buildNarrationJudgeUser(
+  scenario: RoleplayScenario,
+  events: readonly CommittedEvent[],
+  narration: Narration,
+): string {
+  const transcript = events
+    .map(e => {
+      const p = e.payload as Record<string, unknown>;
+      const text = typeof p.content === "string" ? `: ${p.content}` : "";
+      const motive = typeof p.privateMotiveSummary === "string" ? ` [private: ${p.privateMotiveSummary}]` : "";
+      return `[p${e.pulseIndex}] ${e.actorId} (${e.type})${text}${motive}`;
+    })
+    .join("\n");
+  return new PromptSection()
+    .container("scenario", (s) => { s.raw(`Scenario: ${scenario.name}`); s.raw(scenario.description); })
+    .container("real_transcript", (s) => s.raw(transcript || "(no events)"))
+    .container("narration_under_review", (s) => {
+      s.raw(`Title: ${narration.title}`);
+      s.raw(`Recap: ${narration.recap}`);
+      s.raw(`Hidden shift: ${narration.hiddenShift}`);
+    })
+    .container("decision", (s) => s.raw(
+      "Score the NARRATION above — not the agents' behavior — against the real transcript it claims to describe, returning ONLY the JSON object per the output contract.",
+    ))
+    .toString();
+}
+
+async function callNarrationJudge(
+  scenario: RoleplayScenario,
+  events: readonly CommittedEvent[],
+  narration: Narration,
+  config: LLMJudgeConfig,
+  systemSuffix = "",
+): Promise<string> {
+  const system = buildJudgeSystem(NARRATIVE_RUBRIC) + systemSuffix;
+  const user = buildNarrationJudgeUser(scenario, events, narration);
+
+  return chatCompletion({
+    baseUrl: config.baseUrl,
+    model: config.model,
+    apiKey: config.apiKey,
+    label: "Narration judge",
+    messages: [
+      { role: "system", content: system },
+      { role: "user", content: user },
+    ],
+    temperature: config.temperature ?? 0,
+    maxTokens: 1200,
+    timeoutMs: config.timeoutMs ?? 60000,
+    extraBody: deepseekV4ExtraBody(config.model),
+  });
+}
+
+export async function judgeNarration(
+  scenario: RoleplayScenario,
+  events: readonly CommittedEvent[],
+  narration: Narration,
+  config: LLMJudgeConfig,
+): Promise<JudgeResult> {
+  return runJudgeWithRetrySalvage(
+    NARRATIVE_RUBRIC,
+    (systemSuffix) => callNarrationJudge(scenario, events, narration, config, systemSuffix),
+    "Narration judge",
   );
 }
 
@@ -511,6 +654,7 @@ async function scoreCohesion(
     // headroom beyond the tiny {"narrative_cohesion": N} answer itself.
     maxTokens: 800,
     timeoutMs: config.timeoutMs ?? 60000,
+    extraBody: deepseekV4ExtraBody(config.model),
   });
   const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as {

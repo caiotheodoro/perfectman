@@ -56,6 +56,15 @@ function envJudgeDefaults(defaultTemperature: number): EnvJudgeDefaults {
   const tempSet =
     process.env.PERFECTMAN_JUDGE_TEMPERATURE !== undefined &&
     process.env.PERFECTMAN_JUDGE_TEMPERATURE.trim() !== "";
+  // 90s is fine against a fast remote endpoint but times out judging a real
+  // transcript on a slow unaccelerated local model (observed: a 14-pulse/
+  // 3-agent scenario's transcript judge call exceeded it) — overridable
+  // rather than raising the hardcoded default for every endpoint.
+  const timeoutRaw = Number(process.env.PERFECTMAN_JUDGE_TIMEOUT_MS);
+  const timeoutSet =
+    process.env.PERFECTMAN_JUDGE_TIMEOUT_MS !== undefined &&
+    process.env.PERFECTMAN_JUDGE_TIMEOUT_MS.trim() !== "" &&
+    Number.isFinite(timeoutRaw);
   return {
     baseUrl:
       process.env.PERFECTMAN_JUDGE_BASE_URL ??
@@ -67,7 +76,7 @@ function envJudgeDefaults(defaultTemperature: number): EnvJudgeDefaults {
       (isDeepseek ? "deepseek-chat" : "qwen3:8b"),
     apiKey: process.env.PERFECTMAN_LLM_API_KEY,
     temperature: tempSet && Number.isFinite(tempRaw) ? tempRaw : defaultTemperature,
-    timeoutMs: 90000,
+    timeoutMs: timeoutSet ? timeoutRaw : 90000,
   };
 }
 

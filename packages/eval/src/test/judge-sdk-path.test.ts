@@ -157,8 +157,73 @@ describe("narrator env routing on the shared path", () => {
     };
     expect(body.model).toBe("narr-model");
     expect(body.response_format).toEqual({ type: "json_object" });
-    expect(body.max_tokens).toBe(350);
+    expect(body.max_tokens).toBe(3000);
     expect(body.temperature).toBe(0.9);
+  });
+
+  // Root-caused via a real capture: the narrator dressed up a line a
+  // character said PUBLICLY as if it were the hiddenShift reveal, even
+  // though a real [internally: ...] line was sitting right there in the
+  // transcript unused — scored hidden_payoff=2. The system prompt's own
+  // checklist already asked for traceability to the transcript; it just
+  // never ruled out a public line satisfying that check.
+  it("instructs the narrator to never use a public line as the hiddenShift reveal", async () => {
+    vi.stubEnv("PERFECTMAN_LLM_API_KEY", "sk-narr");
+    vi.stubEnv("PERFECTMAN_LLM_BASE_URL", "http://narr-host/v1");
+    vi.stubEnv("PERFECTMAN_LLM_MODEL", "narr-model");
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(okResponse(JSON.stringify({ title: "T", recap: "R", hiddenShift: "H" })));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await narrateTranscript("[p0] caio (message_sent): oi", "Scene", "desc", "s1");
+
+    const body = JSON.parse((fetchMock.mock.calls[0]![1] as { body: string }).body) as {
+      messages: Array<{ role: string; content: string }>;
+    };
+    const system = body.messages.find((m) => m.role === "system")!.content;
+    expect(system).toContain("NUNCA pode ser uma frase que alguém já disse em público");
+  });
+
+  // Root-caused via a real capture: a rich 64-event scene truncated the
+  // narrator's response mid-JSON ("Unexpected end of JSON input"), floored
+  // by the rule fallback — the same hidden-reasoning-burns-the-budget
+  // failure already fixed for the agent path (scenario-runner.ts's
+  // `thinking: {type: "disabled"}`) had never been applied to narration,
+  // which has no way to disable it at all.
+  it("disables deepseek-v4 hidden reasoning for narration too, the same way the agent path does", async () => {
+    vi.stubEnv("PERFECTMAN_LLM_API_KEY", "sk-narr");
+    vi.stubEnv("PERFECTMAN_LLM_PROVIDER", "deepseek");
+    vi.stubEnv("PERFECTMAN_LLM_BASE_URL", "http://narr-host/v1");
+    vi.stubEnv("PERFECTMAN_LLM_MODEL", "deepseek/deepseek-v4-flash");
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(okResponse(JSON.stringify({ title: "T", recap: "R", hiddenShift: "H" })));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await narrateTranscript("[p0] caio (message_sent): oi", "Scene", "desc", "s1");
+
+    const body = JSON.parse((fetchMock.mock.calls[0]![1] as { body: string }).body) as {
+      thinking?: unknown;
+    };
+    expect(body.thinking).toEqual({ type: "disabled" });
+  });
+
+  it("does not send the thinking field for a non-deepseek-v4 narration model", async () => {
+    vi.stubEnv("PERFECTMAN_LLM_API_KEY", "sk-narr");
+    vi.stubEnv("PERFECTMAN_LLM_BASE_URL", "http://narr-host/v1");
+    vi.stubEnv("PERFECTMAN_LLM_MODEL", "narr-model");
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(okResponse(JSON.stringify({ title: "T", recap: "R", hiddenShift: "H" })));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await narrateTranscript("[p0] caio (message_sent): oi", "Scene", "desc", "s1");
+
+    const body = JSON.parse((fetchMock.mock.calls[0]![1] as { body: string }).body) as {
+      thinking?: unknown;
+    };
+    expect(body.thinking).toBeUndefined();
   });
 
   it("falls back to rule narration carrying the label-scoped ChatCompletionError", async () => {
@@ -178,13 +243,24 @@ describe("narrator env routing on the shared path", () => {
     expect(narration.model).toContain("fallback:narrator HTTP 500: boom");
   });
 
-  it("skips the LLM entirely when no API key is configured (rule fallback, no request)", async () => {
-    const fetchMock = vi.fn();
+  // Root-caused via a real local capture: narration ALWAYS fell back to the
+  // empty rule template ("0 messages crossed the room...") on every local
+  // Ollama run, even when the same Ollama endpoint was working fine for
+  // every agent's own intent generation. Ollama needs no API key at all —
+  // gating the LLM attempt on "no key = no LLM" was correct for the
+  // deepseek/cloud protocol (which does require one) but silently starved
+  // the local path of ever narrating for real.
+  it("attempts a local LLM call even with no API key configured, since Ollama needs no auth", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      okResponse(JSON.stringify({ title: "T", recap: "R", hiddenShift: "H" })),
+    );
     vi.stubGlobal("fetch", fetchMock);
 
     const narration = await narrateTranscript("[p0] caio (message_sent): oi", "Scene", "desc");
 
-    expect(narration.narrator).toBe("rule");
-    expect(fetchMock).not.toHaveBeenCalled();
+    expect(narration.narrator).toBe("llm");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url] = fetchMock.mock.calls[0]! as [string];
+    expect(url).toBe("http://localhost:11434/v1/chat/completions");
   });
 });

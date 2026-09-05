@@ -29,6 +29,8 @@ export type ChatCompletionOptions = {
   maxTokens: number;
   responseFormatJson?: boolean;
   timeoutMs?: number;
+  /** Spread onto the request body root — e.g. DeepSeek's `thinking: {type: "disabled"}`. */
+  extraBody?: Record<string, unknown>;
 };
 
 export class ChatCompletionError extends Error {
@@ -85,6 +87,7 @@ export async function chatCompletion(opts: ChatCompletionOptions): Promise<strin
     // Never schema-constrained: these callers parse raw text themselves
     // (extractJsonObject) and need the plain json_object form only.
     responseFormatJsonSchema: false,
+    extraBody: opts.extraBody,
   };
 
   const deps: LlmTransportDeps = opts.apiKey ? { env: { [API_KEY_SENTINEL]: opts.apiKey } } : {};

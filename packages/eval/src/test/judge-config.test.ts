@@ -270,6 +270,34 @@ describe("loadJudgeConfig precedence", () => {
     }
   });
 
+  it("env tier: PERFECTMAN_JUDGE_TIMEOUT_MS overrides the 90s default (slow local models need more)", async () => {
+    const dir = await tempDir();
+    vi.stubEnv("PERFECTMAN_JUDGE_TIMEOUT_MS", "300000");
+    try {
+      const resolved = await loadJudgeConfig([], { cwd: dir });
+      expect(resolved.config.timeoutMs).toBe(300000);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+      vi.unstubAllEnvs();
+    }
+  });
+
+  it("env tier: an empty/non-numeric PERFECTMAN_JUDGE_TIMEOUT_MS falls back to the 90s default", async () => {
+    const dir = await tempDir();
+    vi.stubEnv("PERFECTMAN_JUDGE_TIMEOUT_MS", "");
+    try {
+      expect((await loadJudgeConfig([], { cwd: dir })).config.timeoutMs).toBe(90000);
+    } finally {
+      vi.unstubAllEnvs();
+    }
+    vi.stubEnv("PERFECTMAN_JUDGE_TIMEOUT_MS", "not-a-number");
+    try {
+      expect((await loadJudgeConfig([], { cwd: dir })).config.timeoutMs).toBe(90000);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("intentionally does NOT read a judge.json without --judge-config (section is the only file fallback)", async () => {
     const dir = await tempDir();
     await writeFile(join(dir, "judge.json"), JSON.stringify(standalone));

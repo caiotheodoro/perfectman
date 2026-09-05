@@ -17,17 +17,28 @@ import {
   expandVariants,
   scenariosByCategory,
   getScenario,
+  NARRATIVE_RUBRIC,
   type RoleplayScenario,
 } from "@perfectman/shared";
 import { ScenarioRunner } from "../run/scenario-runner.js";
-import { ruleJudge, llmJudge, llmJudgePerTurn, juryJudge, type AxisScores, type JuryVerdict } from "../judge/judge.js";
+import {
+  ruleJudge,
+  llmJudge,
+  llmJudgePerTurn,
+  juryJudge,
+  judgeNarration,
+  type AxisScores,
+  type JuryVerdict,
+} from "../judge/judge.js";
 import { MockJudgeProvider } from "../judge/mock-judge-provider.js";
 import { calibrateJudge, baseScenarioId } from "../judge/calibration.js";
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
+import { GOLDEN_NARRATIONS } from "../judge/golden-narrations.js";
 import { loadJudgeConfig, applyJudgeShorthand } from "../llm/judge-config.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checker.js";
 import { BENCH_SLICES, resolveBenchSlice } from "../bench-slices.js";
+import { narrateScene, type Narration } from "../narrator/narrator.js";
 
 /**
  * Compatibility view of the judge loader for programmatic callers: the
@@ -60,6 +71,13 @@ export type BenchReport = {
   /** Retries that fixed a guard violation on the first attempt — not free,
    *  but not a terminal `llm_failure` either (see `llm_retry_recovered`). */
   recoveredFallbacks: number;
+  /** Scores the Narration object (title/recap/hiddenShift), not the
+   *  transcript — see NARRATIVE_RUBRIC. Only populated in single-judge
+   *  openai-compatible mode (a rule/mock judge has no narrative-quality
+   *  equivalent, and jury narration scoring is out of scope for now). */
+  narrativeAxisMeans: Record<string, number>;
+  narrativeAxisTargets: Record<string, { target: number; met: boolean }>;
+  narrativeCalibration: ReturnType<typeof calibrateJudge>;
   perScenario: Array<{
     id: string;
     name: string;
@@ -77,6 +95,9 @@ export type BenchReport = {
     juryVoterCount?: number;
     /** Jury mode only: jurors that errored (label → reason) — non-empty means the verdict degraded. */
     juryFailed?: Record<string, string>;
+    narration?: Narration;
+    narrativeAxisScores?: AxisScores;
+    narrativeSalvaged?: boolean;
     failed?: string;
   }>;
 };
@@ -97,7 +118,14 @@ export async function runBench(opts: {
   const mode = opts.mode ?? "mock";
   const perTurn = opts.perTurn ?? false;
 
-  const resolvedJudge = await loadJudgeConfig(opts.args ?? args);
+  // A judge sampling creatively cannot be a trustworthy calibration gate —
+  // the same transcript/narration can score wildly differently run to run
+  // for reasons that have nothing to do with quality. calibrate.ts already
+  // pins this for the transcript judge for exactly this reason; bench.ts's
+  // judge calls (transcript and narration) must default the same way. This
+  // is separate from AGENT generation temperature (each persona's own
+  // sampling config), which stays creative/varied as intended.
+  const resolvedJudge = await loadJudgeConfig(opts.args ?? args, { defaultTemperature: 0 });
   const judgeMode = applyJudgeShorthand(resolvedJudge, opts.judge);
   const mockJudge = new MockJudgeProvider();
   const useJury = judgeMode === "openai-compatible" && (resolvedJudge.jury?.length ?? 0) > 0;
@@ -160,10 +188,20 @@ export async function runBench(opts: {
     signalsByKind: {},
     calibration: calibrateJudge(new Map(), []),
     recoveredFallbacks: 0,
+    narrativeAxisMeans: {},
+    narrativeAxisTargets: {},
+    narrativeCalibration: calibrateJudge(new Map(), []),
     perScenario: [],
   };
 
+  // Narrative scoring needs a real semantic judge — there is no rule/mock
+  // equivalent (see NARRATIVE_RUBRIC's doc comment) — and jury narration
+  // scoring is out of scope for now, so it runs only in single-judge
+  // openai-compatible mode.
+  const scoreNarratives = !useJury && judgeMode === "openai-compatible";
+
   const judgeScores = new Map<string, AxisScores>();
+  const narrativeAxisAgg: Record<string, { sum: number; count: number }> = {};
   const probeAgg: Record<string, { sum: number; count: number; passed: number }> = {};
   const axisAgg: Record<string, { sum: number; count: number }> = {};
   const signalKindResults: SignalOutcome[] = [];
@@ -234,6 +272,32 @@ export async function runBench(opts: {
       catAgg[scenario.category]!.signalsPassed += artifact.passedSignals;
       catAgg[scenario.category]!.signalsTotal += artifact.totalSignals;
 
+      let narration: Narration | undefined;
+      let narrativeAxisScores: AxisScores | undefined;
+      let narrativeSalvaged: boolean | undefined;
+      if (scoreNarratives) {
+        // A narration failure (transport error, unparseable judge response)
+        // must not sink the scenario's transcript scoring — narrative
+        // quality is an additional signal, not a new single point of failure.
+        try {
+          narration = await narrateScene(scenario, artifact.events);
+          const narrativeResult = await judgeNarration(scenario, artifact.events, narration, resolvedJudge.config);
+          narrativeAxisScores = narrativeResult.axes;
+          narrativeSalvaged = narrativeResult.salvaged;
+          if (!narrativeResult.salvaged) {
+            for (const [axis, v] of Object.entries(narrativeResult.axes)) {
+              narrativeAxisAgg[axis] ??= { sum: 0, count: 0 };
+              narrativeAxisAgg[axis]!.sum += v;
+              narrativeAxisAgg[axis]!.count++;
+            }
+          }
+        } catch {
+          // Recorded as absent (no narrativeAxisScores) rather than thrown —
+          // consistent with how a single judge/probe failure elsewhere in
+          // this loop does not fail the whole scenario.
+        }
+      }
+
       report.perScenario.push({
         id: scenario.id,
         name: scenario.name,
@@ -249,6 +313,9 @@ export async function runBench(opts: {
         judgeSalvaged: judgeResult.salvaged,
         juryVoterCount: juryVerdict?.voterCount,
         juryFailed: juryVerdict?.failed,
+        narration,
+        narrativeAxisScores,
+        narrativeSalvaged,
       });
     } catch (err) {
       report.scenariosFailed++;
@@ -298,6 +365,38 @@ export async function runBench(opts: {
   report.promptVersions = [...allPromptVersions];
   report.promptTemplateVersions = [...allTemplateVersions];
 
+  if (scoreNarratives) {
+    report.narrativeAxisMeans = Object.fromEntries(
+      Object.entries(narrativeAxisAgg).map(([id, a]) => [id, Math.round((a.sum / a.count) * 1000) / 1000]),
+    );
+    report.narrativeAxisTargets = Object.fromEntries(
+      NARRATIVE_RUBRIC.targets.map(t => [t.axisId, {
+        target: t.min,
+        met: (report.narrativeAxisMeans[t.axisId] ?? 0) >= t.min,
+      }]),
+    );
+
+    // Calibration scores the FIXED golden narration text directly (not a
+    // live run's narration) — same reasoning as GOLDEN_LABELS: this checks
+    // whether the judge agrees with a human, independent of whatever the
+    // pipeline happens to produce this round.
+    const narrativeJudgeScores = new Map<string, AxisScores>();
+    for (const golden of GOLDEN_NARRATIONS) {
+      try {
+        const result = await judgeNarration(golden.scenario, golden.events, golden.narration, resolvedJudge.config);
+        if (!result.salvaged) narrativeJudgeScores.set(golden.id, result.axes);
+      } catch {
+        // A single golden-narration judging failure must not sink the whole
+        // calibration report — it just contributes no data point for that id.
+      }
+    }
+    report.narrativeCalibration = calibrateJudge(
+      narrativeJudgeScores,
+      GOLDEN_NARRATIONS.map(g => ({ scenarioId: g.id, axes: g.axes, note: g.note })),
+      0.7,
+    );
+  }
+
   if (opts.out) {
     const outPath = resolve(opts.out);
     mkdirSync(dirname(outPath), { recursive: true });
@@ -336,6 +435,21 @@ function printReport(report: BenchReport): void {
   if (cal.disagreements.length > 0) {
     console.log("  disagreements:");
     for (const d of cal.disagreements.slice(0, 5)) console.log(`    - ${d}`);
+  }
+  if (Object.keys(report.narrativeAxisMeans).length > 0) {
+    console.log("\nnarrative axis means (target) — scores the narration prose, not the transcript:");
+    for (const [axis, mean] of Object.entries(report.narrativeAxisMeans)) {
+      const t = report.narrativeAxisTargets[axis];
+      const mark = t ? (t.met ? "OK" : "LOW") : "";
+      console.log(`  ${axis.padEnd(26)} ${mean.toFixed(2)} ${t ? `(>=${t.target}) ${mark}` : ""}`);
+    }
+    console.log("\nnarrative calibration (judge vs golden narrations):");
+    const ncal = report.narrativeCalibration;
+    console.log(`  kappa ${ncal.kappa} (target ${ncal.targetKappa}) ${ncal.passed ? "PASS" : "FAIL"} | alpha ${ncal.alpha} | n=${ncal.nScenes}`);
+    if (ncal.disagreements.length > 0) {
+      console.log("  disagreements:");
+      for (const d of ncal.disagreements.slice(0, 5)) console.log(`    - ${d}`);
+    }
   }
   console.log("\nby category (signal pass rate):");
   for (const [cat, a] of Object.entries(report.byCategory)) {

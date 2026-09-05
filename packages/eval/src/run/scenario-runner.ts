@@ -349,6 +349,22 @@ export function benchSeed(): number {
 }
 
 // Exported for tests and local debug tooling.
+/**
+ * Known-working real-model route (as of this writing): OrcaRouter's
+ * `deepseek/deepseek-v4-flash` (paid tier — the free variant shares a
+ * capacity pool that gets rate-limited fast under any sustained run).
+ *   PERFECTMAN_LLM_PROVIDER=deepseek
+ *   PERFECTMAN_LLM_MODEL=deepseek/deepseek-v4-flash
+ *   PERFECTMAN_LLM_BASE_URL=https://api.orcarouter.ai/v1
+ *   PERFECTMAN_LLM_API_KEY=<your key — never commit it>
+ * Ruled out, with reasons, after real captures: OpenCode Zen/Zen Go
+ * (works in isolation, stalls unpredictably on full multi-pulse runs —
+ * cloud-side queueing, not this codebase); Groq (strict per-account
+ * tokens-per-minute cap that a single real call can exhaust); GLM-5.3-flash
+ * (no way to disable its hidden reasoning phase at all — correct output,
+ * impractically slow); most "*-free" models on any router (share a
+ * capacity pool independent of account balance, rate-limit fast).
+ */
 export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | undefined): import("@perfectman/server").LLMConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
@@ -359,6 +375,19 @@ export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | 
     process.env.PERFECTMAN_LLM_MODEL ?? (isDeepseek ? "deepseek-chat" : "qwen3:8b");
   const apiKeyEnv = process.env.PERFECTMAN_LLM_API_KEY ? "PERFECTMAN_LLM_API_KEY" : undefined;
   const sampling = pack?.sampling ?? { temperature: 0.7, repetitionPenalty: 1.1, topP: 0.95, maxTokens: 512 };
+  // `includes` (not `startsWith`) because routers namespace model ids by
+  // provider (e.g. OrcaRouter's "deepseek/deepseek-v4-flash-free") — see the
+  // matching `thinking`-disable gate below, same reasoning. This is
+  // deliberately narrow: `thinking: {type: "disabled"}` is a DeepSeek-format
+  // field specific to the deepseek-v4 API surface, not a generic
+  // "reasoning model" toggle — sending it to an unrelated model risks the
+  // same HTTP 400 this gate was built to avoid in the first place.
+  const isDeepseekV4 = isDeepseek && modelName.includes("deepseek-v4");
+  // Groq-specific: its free `on_demand` tier's token-per-minute accounting
+  // is keyed off *requested* max_tokens, not actual usage (see maxOutputTokens
+  // below) — this is an account/endpoint limit, not a model property, so it
+  // must not be inferred from the model name.
+  const isGroq = baseUrl.includes("groq.com");
   return {
     // providerType only splits the native Ollama /api/chat path from the
     // generic OpenAI-compatible one; DeepSeek is a plain OpenAI-compatible
@@ -369,10 +398,32 @@ export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | 
     apiKeyEnv,
     maxInputTokens: 4096,
     // Intent JSON + motive prose needs headroom; persona packs are tuned
-    // for small local models.
-    maxOutputTokens: Math.max(600, sampling.maxTokens * 2),
+    // for small local models. Reasoning-capable cloud models are a
+    // different animal: they spend thousands of output tokens on a hidden
+    // reasoning phase before ever emitting the visible JSON — confirmed on
+    // deepseek-v4-flash, glm-5.3-flash (no way to turn it off at all), AND
+    // qwen3.8-27b (real capture: mostly "Empty or missing content", an
+    // isolated diagnostic needing 929 output tokens for one call to
+    // complete). This is NOT unique to models named "deepseek-v4" — the
+    // local-tuned budget silently produces EMPTY content (hit
+    // maxOutputTokens mid-reasoning, zero JSON ever reached) on any of them.
+    //
+    // Groq is the one confirmed exception, and for an unrelated reason: its
+    // free `on_demand` tier caps at 8000 tokens-PER-MINUTE and counts the
+    // *requested* max_tokens against that budget, not actual usage (root-
+    // caused via a live capture: a real gpt-oss-120b call needed only ~500
+    // output tokens, but requesting the flat 8000 ceiling burned almost the
+    // whole per-minute budget on ONE call and 429-ed every other agent's
+    // turn for the rest of the run). That is an account/endpoint limit,
+    // not a property of "non-deepseek-v4 models" — keying the small budget
+    // off the model name (an earlier version of this fix) starved every
+    // other reasoning-capable cloud model instead. Every cloud endpoint
+    // gets the large reasoning-headroom ceiling except Groq specifically.
+    maxOutputTokens: isDeepseek
+      ? (isGroq ? 2000 : 8000)
+      : Math.max(600, sampling.maxTokens * 2),
     temperature: sampling.temperature,
-    timeoutMs: 120000,
+    timeoutMs: isDeepseek ? 180000 : 120000,
     retryCount: 2,
     responseFormatJson: true,
     extraBody: isDeepseek
@@ -387,8 +438,17 @@ export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | 
           // the output-token budget on a thinking block before the intent
           // JSON — every intent call then fails to parse. This is DeepSeek's
           // OpenAI-format key to disable that phase; `reasoning_effort: "none"`
-          // returns HTTP 400 on DeepSeek.
-          thinking: { type: "disabled" },
+          // returns HTTP 400 on DeepSeek. `isDeepseek` here really means
+          // "speak the openai-compatible protocol" (any OpenAI-compatible
+          // endpoint can be substituted via PERFECTMAN_LLM_BASE_URL/MODEL,
+          // e.g. Groq/OpenRouter) — this field is specific to the deepseek-v4
+          // model family itself, not the protocol, and other providers
+          // reject the unrecognized key with HTTP 400. `includes` (not
+          // `startsWith`) because routers namespace model ids by provider
+          // (e.g. OrcaRouter's "deepseek/deepseek-v4-flash-free") — a prefix
+          // check silently never matches those, and the model burns its
+          // whole token budget on hidden reasoning instead.
+          ...(isDeepseekV4 ? { thinking: { type: "disabled" } } : {}),
         }
       : {
           seed: benchSeed(),

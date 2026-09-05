@@ -113,13 +113,13 @@ export const ROLEPLAY_V1_RUBRIC: JudgeRubric = {
   axes: [...ROLEPLAY_AXES],
   targets: [
     { axisId: "in_character", min: 4.0 },
-    { axisId: "voice_match", min: 3.8 },
+    { axisId: "voice_match", min: 4.0 },
     { axisId: "motive_authenticity", min: 4.0 },
-    { axisId: "interpretation", min: 3.5 },
-    { axisId: "creativity_unhinged", min: 3.5 },
-    { axisId: "memory_continuity", min: 3.5 },
+    { axisId: "interpretation", min: 4.0 },
+    { axisId: "creativity_unhinged", min: 4.0 },
+    { axisId: "memory_continuity", min: 4.0 },
     { axisId: "no_ai_leak", min: 4.5 },
-    { axisId: "narrative_cohesion", min: 3.5 },
+    { axisId: "narrative_cohesion", min: 4.0 },
   ],
 };
 
@@ -216,6 +216,99 @@ export const EDGE_CHAOS_RUBRIC: JudgeRubric = {
     { axisId: "unpredictability", min: 3.5 },
     { axisId: "believability_under_pressure", min: 4.0 },
     { axisId: "no_ai_leak", min: 4.5 },
+  ],
+};
+
+/**
+ * Scores the Narration object itself (title/recap/hiddenShift) — the prose a
+ * human spectator actually reads — never the raw event transcript. Nothing
+ * else in this file measures that; ROLEPLAY_V1_RUBRIC and friends score
+ * whether the AGENTS behaved well, not whether the NARRATOR wrote well, and a
+ * transcript can score high on those while its narration is generic filler.
+ *
+ * Grounded in real committed output (docs/eval/evidence/deepseek/narrations.json,
+ * 30 real deepseek-chat narrations) and the rule-fallback's own template
+ * (narrator.ts ruleNarrationFromTranscript: "{n} messages crossed the room
+ * ... {n} moments of chosen silence"), not invented from taste:
+ *  - The rule fallback is the literal concreteness=1/no_filler=1 anchor.
+ *  - A recurring pattern across the real evidence — many different scenes'
+ *    hiddenShift converging on "X esconde medo de ser esquecido/excluído"
+ *    with no scene-specific grounding — is the literal non_genericity
+ *    failure this rubric exists to catch; it is not hypothetical.
+ */
+const NARRATIVE_AXES = [
+  {
+    id: "concreteness",
+    label: "Concreteness",
+    weight: 1.0,
+    anchors: {
+      1: "Pure template/boilerplate — e.g. \"{n} messages crossed the room ... {n} moments of chosen silence\" (the rule-fallback's literal output). No named action or content from this scene.",
+      2: "Names actors and event kinds but paraphrases them generically (\"Goulart tentou puxar assunto\") with no real content of what was said or done.",
+      3: "Mentions real topics/actions from the transcript but stays high-level (\"debateram sobre café e filmes\").",
+      4: "Specific, scenario-unique detail tied to an exact object, plan, or line from this scene (\"o Clube do Filme Perdido\", \"o extintor que apaga o passado\").",
+      5: "Dense with unique concrete detail throughout both recap and hiddenShift — a reader could reconstruct real beats of the scene from the prose alone.",
+    },
+  },
+  {
+    id: "causal_throughline",
+    label: "Causal throughline",
+    weight: 1.0,
+    anchors: {
+      1: "A list of events joined by \"and\"/\"then\" with no consequence linking them — could be reordered with no loss of sense.",
+      2: "Occasional \"porque\"/\"então\" connective, but mostly still enumeration.",
+      3: "Some visible cause-effect chains, but at least one major beat floats disconnected from what triggered it.",
+      4: "Each beat visibly follows from the one before — reads as \"because X, then Y, which caused Z.\"",
+      5: "A clear escalating chain end-to-end; the ending is a legible consequence of the opening beat.",
+    },
+  },
+  {
+    id: "hidden_payoff",
+    label: "Hidden payoff (traceable, not invented)",
+    weight: 1.0,
+    anchors: {
+      1: "hiddenShift restates the recap with no new information, OR asserts a motive/emotion with zero grounding in any seeded memory, private motive, or hidden objective actually present in the transcript — invented from nothing.",
+      2: "Adds a claim absent from the recap, but it is generic pop-psychology (\"todos, no fundo, só queriam se sentir parte\") not traceable to a specific seeded fact for a specific named agent.",
+      3: "Traceable to a real private motive or memory for at least one agent, but the connection is asserted rather than shown, or covers only one agent when several had motives on record.",
+      4: "Traces cleanly to a specific seeded private motive, memory, or hidden objective for a named agent, and reveals something the public recap genuinely did not show.",
+      5: "Reveals a specific, checkable hidden fact tied to a real seeded motive/objective/memory AND reframes something that read one way in the public recap — the \"oh, THAT's why\" moment.",
+    },
+  },
+  {
+    id: "non_genericity",
+    label: "Non-genericity (swap test)",
+    weight: 1.0,
+    anchors: {
+      1: "Could be pasted onto almost any other scene in this project unchanged and still sound plausible — pure archetype text (e.g. \"X esconde medo de ser excluído/esquecido\" with no named specifics).",
+      2: "Mostly generic, but one detail (a name or one specific action) anchors it to this scene.",
+      3: "About half the sentences are scenario-specific; the rest is stock social-anxiety narration reusable elsewhere.",
+      4: "Almost every sentence has a detail that would read as wrong if pasted onto a different scene.",
+      5: "Impossible to paste onto another scenario without instantly reading as wrong — inseparable from this cast, setting, and beat.",
+    },
+  },
+  {
+    id: "no_filler",
+    label: "No filler",
+    weight: 0.8,
+    anchors: {
+      1: "Contains a literal template sentence (e.g. the rule-fallback's exact boilerplate).",
+      2: "No literal template, but a stock phrase repeated near-verbatim across many different scenes (e.g. the \"escondendo/mascarando com humor\" formula) that adds no information.",
+      3: "Some filler connective padding, but the core sentences carry content.",
+      4: "Every sentence carries new information; at most one throwaway transition phrase.",
+      5: "Zero padding — every clause does narrative work.",
+    },
+  },
+] as const;
+
+export const NARRATIVE_RUBRIC: JudgeRubric = {
+  id: "narrative-v1",
+  name: "Narration quality V1",
+  axes: [...NARRATIVE_AXES],
+  targets: [
+    { axisId: "concreteness", min: 4.0 },
+    { axisId: "causal_throughline", min: 4.0 },
+    { axisId: "hidden_payoff", min: 4.0 },
+    { axisId: "non_genericity", min: 4.0 },
+    { axisId: "no_filler", min: 4.0 },
   ],
 };
 

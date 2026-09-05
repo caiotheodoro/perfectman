@@ -11,6 +11,17 @@ vi.mock("../judge/judge.js", async (importOriginal) => {
   };
 });
 
+// Narration itself is real code (not under test here), but since narrator.ts
+// now always attempts an LLM call (no more silent skip-when-no-key), leaving
+// this unmocked makes bench.ts try a real network call to a local Ollama
+// that isn't running in CI — see bench-judge-temperature.test.ts for the
+// same fix, needed here for the same reason.
+vi.mock("../narrator/narrator.js", () => ({
+  narrateScene: vi.fn().mockResolvedValue({
+    title: "T", recap: "R", hiddenShift: "H", narrator: "rule",
+  }),
+}));
+
 const { runBench } = await import("../cli/bench.js");
 const { juryJudge } = await import("../judge/judge.js");
 
@@ -29,7 +40,12 @@ describe("runBench judge provider dispatch", () => {
   it("dispatches providerType mock from a judge-config file to the deterministic mock judge", async () => {
     const { dir, path } = await tempJudgeFile({ providerType: "mock", modelName: "mock" });
     try {
-      const report = await runBench({ mode: "mock", args: ["--judge-config", path] });
+      // limit:1, matching this file's other tests — without it this runs the
+      // ENTIRE scenario registry (no slice/scenarios/category given), which
+      // is slow enough under parallel test-file load to flake past the
+      // default 30s timeout. The test only cares about one scenario's
+      // dispatch, not registry breadth.
+      const report = await runBench({ mode: "mock", limit: 1, args: ["--judge-config", path] });
       const axes = report.perScenario[0]!.axisScores;
       expect(Object.values(axes).length).toBeGreaterThan(0);
       for (const v of Object.values(axes)) expect(v).toBe(3);
