@@ -3,7 +3,7 @@ import type { Memory } from "../memory/memory.types.js";
 import type { InitiativeAccumulator } from "../initiative/initiative.types.js";
 import type { PerceptionPacket } from "../perception/perception.types.js";
 import type { Motivation } from "../motivation/motivation.types.js";
-import type { Pressure } from "../pressure/pressure.types.js";
+import type { Pressure, PressureType } from "../pressure/pressure.types.js";
 import type { Inhibition } from "../inhibition/inhibition.types.js";
 import type { AvailableAction } from "../action/action.types.js";
 import type { TriggeringReason } from "../attention/attention.types.js";
@@ -33,6 +33,12 @@ export type AgentState = {
   lastActionAt: number | null;
   lastRuminationPulse: number | null;
   arrivalPulse: number | null;       // pulse index when agent joins; null = present from start
+  /**
+   * Pulse index of the last committed outward act that expressed each urge
+   * (ADR-0016 pressure discharge). Acting spends the urge; it refills over
+   * PRESSURE_REFRACTORY_PULSES. Optional: absent means never discharged.
+   */
+  pressureDischargedAt?: Partial<Record<PressureType, number>>;
   createdAt: number;
   updatedAt: number;
 };

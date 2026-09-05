@@ -379,6 +379,13 @@ export class PulseScheduler {
         const attemptedRealAct = resolved.outcome === "committed" && runtimeOutput.fallbackApplied;
         if ((committedActType && OUTWARD_SOCIAL_ACT_TYPES.has(committedActType)) || attemptedRealAct) {
           stepResult.updatedAgentState.lastActionAt = now;
+          // Pressure discharge (ADR-0016): every urge felt when the act was
+          // chosen is spent by it — not only the top one, since a hot
+          // persona feels provoke/dominate/show_off together and discharging
+          // one would just hand the turn to the next.
+          const discharged = { ...(stepResult.updatedAgentState.pressureDischargedAt ?? {}) };
+          for (const pressure of stepResult.pressures) discharged[pressure.type] = this.pulseIndex;
+          stepResult.updatedAgentState.pressureDischargedAt = discharged;
         }
       }
 

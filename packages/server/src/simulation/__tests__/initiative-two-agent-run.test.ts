@@ -240,4 +240,21 @@ describe("40-pulse two-agent initiative run", () => {
       }
     }
   });
+
+  it("no agent commits messages on more than 2 consecutive pulses without being mentioned", async () => {
+    const { eventRepo } = await runTwoAgentSimulation();
+    const events = await eventRepo.getAfter(SIM.id);
+    for (const agentId of SIM.agentIds) {
+      const pulses = new Set(events.filter(e => e.type === "message_sent" && e.actorId === agentId).map(e => e.pulseIndex));
+      let run = 0;
+      let longest = 0;
+      for (let pulse = 0; pulse < PULSES; pulse++) {
+        run = pulses.has(pulse) ? run + 1 : 0;
+        longest = Math.max(longest, run);
+      }
+      // The canned runtime never mentions anyone, so the bound is strict.
+      expect(longest, `${agentId} longest run of consecutive message pulses`).toBeLessThanOrEqual(2);
+    }
+  });
+
 });

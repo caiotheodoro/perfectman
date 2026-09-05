@@ -63,3 +63,55 @@ describe("computePressures", () => {
     expect(priv?.visibilityPreference).toBe("private");
   });
 });
+
+describe("pressure discharge (ADR-0016)", () => {
+  const felt = (pulseIndex: number, dischargedAt?: number) =>
+    computePressures(
+      makeAgent({
+        socialEmotions: makeSocial(),
+        relationalStates: new Map(),
+        ...(dischargedAt !== undefined ? { pressureDischargedAt: { urge_to_message: dischargedAt } } : {}),
+      }),
+      makeActionEmotions({ warmth: 0.7 }),
+      [],
+      pulseIndex,
+    ).find(p => p.type === "urge_to_message");
+
+  it("demotes a discharged urge on the next pulse and fully recovers after the refractory window", () => {
+    const fresh = felt(10);
+    expect(fresh?.intensity).toBe("high");
+    const next = felt(11, 10);
+    expect(next === undefined || next.intensity === "low" || next.intensity === "medium").toBe(true);
+    expect(next?.intensity).not.toBe("high");
+    expect(felt(17, 10)?.intensity).toBe("high");
+  });
+
+  it("never discharges an overwhelming urge", () => {
+    const overwhelming = computePressures(
+      makeAgent({ socialEmotions: makeSocial(), relationalStates: new Map(), pressureDischargedAt: { urge_to_message: 5 } }),
+      makeActionEmotions({ warmth: 1 }),
+      [],
+      6,
+    ).find(p => p.type === "urge_to_message");
+    expect(overwhelming?.intensity).toBe("overwhelming");
+  });
+
+  it("removes an urge that discharges below the threshold instead of clamping it", () => {
+    const weak = computePressures(
+      makeAgent({ socialEmotions: makeSocial(), relationalStates: new Map(), pressureDischargedAt: { urge_to_message: 3 } }),
+      makeActionEmotions({ warmth: 0.35 }),
+      [],
+      4,
+    ).find(p => p.type === "urge_to_message");
+    expect(weak).toBeUndefined();
+  });
+
+  it("discharges the private-channel drive like any other urge, and ignores the map without a pulse index", () => {
+    const rels = makeRels({ targetAgentId: "b", desireForCloseness: 0.9, curiosity: 0.5, affection: 0.4 });
+    const agent = makeAgent({ socialEmotions: makeSocial(), relationalStates: rels, pressureDischargedAt: { urge_to_create_private_channel: 8 } });
+    const withIndex = computePressures(agent, makeActionEmotions(), [], 9).find(p => p.type === "urge_to_create_private_channel");
+    const without = computePressures(agent, makeActionEmotions(), []).find(p => p.type === "urge_to_create_private_channel");
+    expect(without).toBeDefined();
+    expect(withIndex === undefined || withIndex.intensity !== without?.intensity).toBe(true);
+  });
+});

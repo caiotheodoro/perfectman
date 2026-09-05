@@ -1,4 +1,6 @@
 import { describe, it, expect } from "vitest";
+import { AgentStateSchema } from "../agent/agent.schema.js";
+import { makeAgentState as makeFixtureAgentState } from "../fixtures/helpers.js";
 import {
   SimulationSchema,
   SimulationSettingsSchema,
@@ -628,5 +630,14 @@ describe("Math utils", () => {
     const result = dampedSpring(0, 1, 0.5, 1);
     expect(result).toBeGreaterThan(0);
     expect(result).toBeLessThan(1);
+  });
+});
+
+describe("AgentStateSchema — pressure discharge map", () => {
+  it("accepts a state with and without pressureDischargedAt", () => {
+    const base = makeFixtureAgentState("a1", "sim", "caio");
+    expect(AgentStateSchema.parse(base).pressureDischargedAt).toBeUndefined();
+    const parsed = AgentStateSchema.parse({ ...base, pressureDischargedAt: { urge_to_provoke: 3 } });
+    expect(parsed.pressureDischargedAt).toEqual({ urge_to_provoke: 3 });
   });
 });

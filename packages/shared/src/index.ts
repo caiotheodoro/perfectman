@@ -88,6 +88,7 @@ export * from "./engine/engine.types.js";
 export * from "./constants/circumplex.js";
 export * from "./constants/personas.js";
 export * from "./constants/emotion-rules.js";
+export * from "./constants/pressure-refractory.js";
 export * from "./constants/action-pressure-map.js";
 export * from "./constants/stagnation.js";
 

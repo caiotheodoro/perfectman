@@ -6,7 +6,7 @@ import type {
   PressureIntensity,
   VisibilityPreference,
 } from "@perfectman/shared";
-import { ACTION_PRESSURE_MAP } from "@perfectman/shared";
+import { ACTION_PRESSURE_MAP, PRESSURE_DISCHARGE, PRESSURE_REFRACTORY_PULSES } from "@perfectman/shared";
 
 const PRESSURE_THRESHOLD = 0.20;
 /**
@@ -17,17 +17,46 @@ const PRESSURE_THRESHOLD = 0.20;
  */
 const MAX_SALIENT_PRESSURES = 3;
 
+/** Raw intensity at or above this is `overwhelming` and exempt from discharge. */
+const OVERWHELMING_FLOOR = 0.85;
+
+/**
+ * Pressure discharge (ADR-0016). Pressures are recomputed statelessly from
+ * emotional baselines every pulse, so a persona whose baseline yields a
+ * `high urge_to_provoke` felt it every pulse forever — the monopoly
+ * mechanism. Acting on an urge now spends it: `PRESSURE_DISCHARGE` is
+ * subtracted on the next pulse and refills linearly over
+ * `PRESSURE_REFRACTORY_PULSES`. Subtractive, not multiplicative, so the
+ * shape of the underlying emotion is preserved; overwhelming urges are
+ * exempt at read time, keeping "overwhelming can never be inhibited".
+ */
+export function dischargedIntensity(
+  raw: number,
+  type: PressureType,
+  agentState: AgentState,
+  pulseIndex: number | undefined,
+): number {
+  if (pulseIndex === undefined || raw >= OVERWHELMING_FLOOR) return raw;
+  const dischargedAt = agentState.pressureDischargedAt?.[type];
+  if (dischargedAt === undefined) return raw;
+  const pulsesSince = pulseIndex - dischargedAt;
+  if (pulsesSince < 1) return raw;
+  const remaining = Math.max(0, (PRESSURE_REFRACTORY_PULSES - pulsesSince + 1) / PRESSURE_REFRACTORY_PULSES);
+  return Math.max(0, raw - PRESSURE_DISCHARGE * remaining);
+}
+
 export function computePressures(
   agentState: AgentState,
   actionEmotions: ActionEmotions,
   sourceEventIds: string[],
+  pulseIndex?: number,
 ): Pressure[] {
   const pressures: Pressure[] = [];
 
   for (const mapping of ACTION_PRESSURE_MAP) {
     const value = actionEmotions[mapping.actionEmotion as keyof ActionEmotions] as number;
     if (value === undefined) continue;
-    const intensity = value * mapping.pressureWeight;
+    const intensity = dischargedIntensity(value * mapping.pressureWeight, mapping.pressureType, agentState, pulseIndex);
     if (intensity < PRESSURE_THRESHOLD) continue;
     pressures.push({
       id:                  `${agentState.agentId}:${mapping.pressureType}`,
@@ -61,7 +90,11 @@ export function computePressures(
   // intimacy-shaped; gossip/status/control/secrecy/alliance are strategic).
   // ACTION_PRESSURE_MAP alone under-fires it (vulnerableRetreat needs a
   // negative state).
-  const privateDrive = privateMotiveIntensity(agentState);
+  const rawPrivateDrive = privateMotiveIntensity(agentState);
+  const privateDrive = {
+    ...rawPrivateDrive,
+    drive: dischargedIntensity(rawPrivateDrive.drive, "urge_to_create_private_channel", agentState, pulseIndex),
+  };
   if (privateDrive.drive >= PRESSURE_THRESHOLD) {
     const existing = unique.find(p => p.type === "urge_to_create_private_channel");
     const targetIds = closestTargets(agentState);

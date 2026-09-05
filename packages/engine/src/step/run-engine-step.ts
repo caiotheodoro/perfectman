@@ -167,6 +167,7 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     agentState,
     emotionResult.actionEmotions,
     newEvents.map(e => e.id),
+    pulseIndex,
   );
 
   const tempAgentForInhibitions: AgentState = {

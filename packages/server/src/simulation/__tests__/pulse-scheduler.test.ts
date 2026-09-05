@@ -869,4 +869,33 @@ describe("PulseScheduler", () => {
       expect(runReview).toHaveBeenCalledTimes(2);
     });
   });
+
+  describe("pressure discharge stamping (ADR-0016)", () => {
+    it("stamps pressureDischargedAt for every salient pressure after a committed outward act, never for a genuine no_op", async () => {
+      const pressure = {
+        id: "agent_1:urge_to_message", agentId: "agent_1", type: "urge_to_message" as const, targetAgentIds: [],
+        intensity: "high" as const, sourceEventIds: [], sourceMotivations: [], sourceEmotions: [], visibilityPreference: "either" as const, decayRate: 0.15,
+      };
+      scheduler = buildScheduler(() => ({
+        ...makeCannedStep(),
+        pressures: [pressure, { ...pressure, id: "agent_1:urge_to_provoke", type: "urge_to_provoke" as const }],
+        decision: { outcome: "act", needsLLM: true, initiativeProceed: false, privateMotiveSeed: "x" },
+        noOpRecord: null,
+        availableActions: [{ intentType: "send_message", channelTargets: ["ch_public"], personTargets: [], blocked: false }],
+      }));
+      mockAgentRuntime.generateIntent = vi.fn().mockResolvedValue({
+        intent: { ...makeNoOpIntent("agent_1"), intentType: "send_message", visibleContent: "spending the urge" },
+        llmUsage: null, latencyMs: 10, fallbackApplied: false, operatorEvents: [],
+      });
+      await scheduler.runPulse();
+      const acted = await agentStateRepo.get("sim_test", "agent_1");
+      expect(acted?.pressureDischargedAt).toEqual({ urge_to_message: 0, urge_to_provoke: 0 });
+
+      scheduler = buildScheduler(() => ({ ...makeCannedStep(), pressures: [pressure] }));
+      await scheduler.runPulse();
+      const silent = await agentStateRepo.get("sim_test", "agent_1");
+      expect(silent?.pressureDischargedAt ?? {}).toEqual({});
+    });
+  });
+
 });

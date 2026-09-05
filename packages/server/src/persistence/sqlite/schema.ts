@@ -76,6 +76,7 @@ CREATE TABLE IF NOT EXISTS agent_states (
   last_action_at          INTEGER,
   last_rumination_pulse   INTEGER,
   arrival_pulse           INTEGER,
+  pressure_discharged_at  TEXT,                                -- JSON {pressureType: pulseIndex}
   created_at              INTEGER NOT NULL,
   updated_at              INTEGER NOT NULL,
   PRIMARY KEY (agent_id, simulation_id)

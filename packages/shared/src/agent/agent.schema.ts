@@ -48,6 +48,7 @@ export const AgentStateSchema = z.object({
   lastActionAt:          z.number().nullable(),
   lastRuminationPulse:   z.number().nullable(),
   arrivalPulse:          z.number().nullable(),
+  pressureDischargedAt:  z.record(z.number()).optional(),
   createdAt:             z.number(),
   updatedAt:             z.number(),
 });
