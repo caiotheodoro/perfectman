@@ -254,6 +254,13 @@ export type LLMJudgeConfig = {
   apiKey?: string;
   temperature?: number;
   timeoutMs?: number;
+  /**
+   * Output budget per call. Defaults differ per call site (transcript 1500,
+   * narration 1200). A reasoning model with no thinking switch (GLM-5.3
+   * through OrcaRouter) spends its budget before the JSON and returns empty
+   * content at the defaults — the jury file raises it per juror.
+   */
+  maxTokens?: number;
 };
 
 // Root-caused via a real capture: a deepseek-v4-flash judge call returned
@@ -285,7 +292,9 @@ function buildJudgeSystem(rubric: JudgeRubric): string {
       s.raw(`Rubric: ${rubric.name}`);
       s.list(undefined, axes);
     })
-    .container("output_contract", (s) => s.raw('Return ONLY a JSON object: {"axes": {"<axisId>": score, ...}} with no prose.'))
+    .container("output_contract", (s) => s.raw(
+      'Return ONLY a JSON object: {"axes": {"<axisId>": score, ...}, "evidence": {"<axisId>": "<one short quote or [pNN] reference from the transcript that decided the score>", ...}} with no prose outside the JSON.',
+    ))
     .toString();
 }
 
@@ -335,18 +344,29 @@ async function callJudge(
     // Generous headroom: a thinking-mode model spends real tokens on
     // thinking... response before it ever reaches the answer, and not
     // every such model can be told to skip it (see extractJsonObject
-    // above) — deepseek-v4 and qwen3 can, via extraBody below.
-    maxTokens: 1500,
+    // above) — deepseek-v4 and qwen3 can, via extraBody below. GLM cannot,
+    // so its jury entry raises `maxTokens` instead.
+    maxTokens: config.maxTokens ?? 1500,
     timeoutMs: config.timeoutMs ?? 60000,
     extraBody: thinkingExtraBody(config.model),
   });
 }
 
-function parseAxes(raw: string, rubric: JudgeRubric): { axes: AxisScores; imputedAxes: string[] } {
+/** Per-axis evidence the judge cited: a short quote or `[pNN]` reference. */
+export type AxisEvidence = Record<string, string>;
+
+function parseAxes(raw: string, rubric: JudgeRubric): { axes: AxisScores; imputedAxes: string[]; evidence: AxisEvidence } {
   const jsonText = extractJsonObject(raw);
-  const parsed = JSON.parse(jsonText) as { axes?: Record<string, number> };
+  const parsed = JSON.parse(jsonText) as { axes?: Record<string, number>; evidence?: Record<string, unknown> };
   const axes: AxisScores = {};
   const imputedAxes: string[] = [];
+  // Evidence is requested, never required: an older judge answer (or one
+  // that trims the field to fit) still parses; only string values survive.
+  const evidence: AxisEvidence = {};
+  for (const axis of rubric.axes) {
+    const e = parsed.evidence?.[axis.id];
+    if (typeof e === "string" && e.trim().length > 0) evidence[axis.id] = e.trim();
+  }
   for (const axis of rubric.axes) {
     const v = parsed.axes?.[axis.id];
     if (typeof v === "number") {
@@ -360,7 +380,7 @@ function parseAxes(raw: string, rubric: JudgeRubric): { axes: AxisScores; impute
       imputedAxes.push(axis.id);
     }
   }
-  return { axes, imputedAxes };
+  return { axes, imputedAxes, evidence };
 }
 
 const RETRY_SYSTEM_SUFFIX =
@@ -379,8 +399,9 @@ const RETRY_SYSTEM_SUFFIX =
  * fabricated midpoint would silently compress the agreement signal.
  * `imputedAxes` lists rubric axes the model omitted from its JSON answer
  * (filled with 3 by the single-judge path, but juries exclude them).
+ * `evidence` is whatever the judge cited per axis — absent on salvage.
  */
-export type JudgeResult = { axes: AxisScores; salvaged: boolean; imputedAxes: string[] };
+export type JudgeResult = { axes: AxisScores; salvaged: boolean; imputedAxes: string[]; evidence?: AxisEvidence };
 
 function isTransientTransportError(err: unknown): boolean {
   if (!(err instanceof ChatCompletionError)) return false;
@@ -435,7 +456,7 @@ async function runJudgeWithRetrySalvage(
   rawAttempts.push(await retryOnTransientError(() => callOnce("")));
   try {
     const first = parseAxes(rawAttempts[0]!, rubric);
-    return { axes: first.axes, salvaged: false, imputedAxes: first.imputedAxes };
+    return { axes: first.axes, salvaged: false, imputedAxes: first.imputedAxes, evidence: first.evidence };
   } catch {
     // One strict retry covers judges that burned their budget on reasoning
     // or ignored the JSON instruction on the first pass.
@@ -443,7 +464,7 @@ async function runJudgeWithRetrySalvage(
   try {
     rawAttempts.push(await retryOnTransientError(() => callOnce(RETRY_SYSTEM_SUFFIX)));
     const second = parseAxes(rawAttempts[1]!, rubric);
-    return { axes: second.axes, salvaged: false, imputedAxes: second.imputedAxes };
+    return { axes: second.axes, salvaged: false, imputedAxes: second.imputedAxes, evidence: second.evidence };
   } catch {
     // Fall through to prose salvage — a judge that answered in a scored
     // critique still emitted usable signal. Try every response we hold:
@@ -530,7 +551,7 @@ async function callNarrationJudge(
       { role: "user", content: user },
     ],
     temperature: config.temperature ?? 0,
-    maxTokens: 1200,
+    maxTokens: config.maxTokens ?? 1200,
     timeoutMs: config.timeoutMs ?? 60000,
     extraBody: thinkingExtraBody(config.model),
   });
@@ -714,6 +735,8 @@ export type JuryJuror = {
   salvaged: boolean;
   /** Rubric axes the model omitted from its JSON answer (voted nothing). */
   imputedAxes: string[];
+  /** What this juror cited per axis, when it answered the evidence field. */
+  evidence?: AxisEvidence;
   /** Source of this juror's scores, for the evidence trail. */
   model: string;
   baseUrl: string;
@@ -724,6 +747,12 @@ export type JuryVerdict = {
   axes: AxisScores;
   /** Number of unsalvaged jurors whose votes produced the median. */
   voterCount: number;
+  /**
+   * Votes behind each axis's median. `voterCount` is jury-wide; an axis
+   * every juror but one omitted has a "median" that is a single vote, and
+   * a grade must be able to see that.
+   */
+  axisVoterCounts: Record<string, number>;
   /** Per-judge raw scores + salvage status, keyed by config label. */
   perJudge: Record<string, JuryJuror>;
   /** Judges that errored (transport/timeout/parse), label → reason. */
@@ -800,6 +829,9 @@ export async function juryJudge(
         axes: outcome.value.result.axes,
         salvaged: outcome.value.result.salvaged,
         imputedAxes: outcome.value.result.imputedAxes,
+        ...(outcome.value.result.evidence && Object.keys(outcome.value.result.evidence).length > 0
+          ? { evidence: outcome.value.result.evidence }
+          : {}),
         model: outcome.value.config.model,
         baseUrl: outcome.value.config.baseUrl,
       };
@@ -824,6 +856,7 @@ export async function juryJudge(
   }
 
   const axes: AxisScores = {};
+  const axisVoterCounts: Record<string, number> = {};
   for (const axis of axisIds) {
     const votes = voters
       .filter(juror => !juror.imputedAxes.includes(axis))
@@ -833,7 +866,10 @@ export async function juryJudge(
     // — an unclamped x.5 median would inflate kappa categories if a verdict
     // ever reached computeCalibration, and every other AxisScores value is
     // an integer in [1,5].
-    if (votes.length > 0) axes[axis] = clampScore(median(votes));
+    if (votes.length > 0) {
+      axes[axis] = clampScore(median(votes));
+      axisVoterCounts[axis] = votes.length;
+    }
   }
-  return { axes, voterCount: voters.length, perJudge, failed };
+  return { axes, voterCount: voters.length, axisVoterCounts, perJudge, failed };
 }

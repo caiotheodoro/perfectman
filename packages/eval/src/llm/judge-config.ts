@@ -93,6 +93,8 @@ function resolveEntry(
     apiKey: entry.apiKeyEnv ? process.env[entry.apiKeyEnv] : undefined,
     temperature: entry.temperature ?? envDefaults.temperature,
     timeoutMs: entry.timeoutMs ?? envDefaults.timeoutMs,
+    // Optional per-entry output budget; undefined keeps each call site's default.
+    ...(entry.maxTokens !== undefined ? { maxTokens: entry.maxTokens } : {}),
   };
 }
 
@@ -103,6 +105,7 @@ const KNOWN_JUDGE_KEYS = new Set([
   "apiKeyEnv",
   "temperature",
   "timeoutMs",
+  "maxTokens",
   "retryCount",
   "responseFormatJson",
   "label",
