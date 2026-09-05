@@ -22,6 +22,8 @@ export const BENCH_SLICES: Record<string, readonly string[]> = {
   },
   /** The documented iteration canary — fast before/after loop. */
   canary: ["motive_gossip", "v1_exclusion_inferred", "motive_conflict", "stagnation_resentment_loop"],
+  /** Hidden-objective collisions — the thesis slice for the engine experiment (docs/eval/hoc-experiment-protocol.md). */
+  hoc: ["hoc_fatia_que_nao_existe", "hoc_heranca_do_sitio", "hoc_banda_no_festival"],
 };
 
 /**

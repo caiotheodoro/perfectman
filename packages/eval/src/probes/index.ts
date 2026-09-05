@@ -181,9 +181,25 @@ export function noOpMeaningfulness(events: readonly BehavioralEvent[]): number {
   if (silences.length === 0) return 1; // nothing meaningless recorded → pass
   const meaningful = silences.filter(e => {
     const motive = e.privateContent ?? "";
-    return motive.trim().length > 8;
+    // A parse error is longer than 8 characters and is still not a motive.
+    return motive.trim().length > 8 && !e.engineAuthored;
   });
   return meaningful.length / silences.length;
+}
+
+/**
+ * Largest per-agent share of content turns (posts + replies). 1.0 means one
+ * agent wrote everything; the live monopoly capture sat at 33/64.
+ */
+export function actShareMax(events: readonly BehavioralEvent[], agentIds: readonly string[]): number {
+  const turns = events.filter(e => e.kind === "post" || e.kind === "reply");
+  if (turns.length === 0) return 0;
+  let max = 0;
+  for (const id of agentIds) {
+    const share = turns.filter(e => e.agentId === id).length / turns.length;
+    if (share > max) max = share;
+  }
+  return max;
 }
 
 export function privateChannelDensity(events: readonly BehavioralEvent[]): number {
@@ -387,5 +403,11 @@ export function runAllProbes(input: ProbeInput): ProbeResult[] {
     ),
     checkProbe("fallback-rate", "LLM fallback rate", fallbackRate, PROBE_BANDS["fallback-rate"]!),
     checkProbe("refusal-free", "Refusal-free rate", refusalFree, PROBE_BANDS["refusal-free"]!),
+    checkProbe(
+      "act-share-max",
+      "Largest per-agent share of content turns",
+      actShareMax(events, agentIds),
+      PROBE_BANDS["act-share-max"]!,
+    ),
   ];
 }

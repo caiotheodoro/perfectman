@@ -32,6 +32,8 @@ import {
 } from "@perfectman/server";
 import type { PersonaPromptProfile } from "@perfectman/server";
 import type { LLMProvider } from "@perfectman/server";
+import { isEngineAuthoredMotive } from "@perfectman/server";
+import type { OperatorEvent } from "@perfectman/shared";
 import { eventsToBehavioral, runAllProbes, type ProbeResult } from "../probes/index.js";
 import { checkExpectedSignals, type SignalOutcome } from "./signal-checker.js";
 import { personaAwareProviderFactory } from "../bench/persona-aware-mock.js";
@@ -41,6 +43,8 @@ export type RunnerOpts = {
   llmMode?: "mock" | "local";
   pulseLimit?: number;
   repetition?: import("@perfectman/server").RepetitionPolicy;
+  /** Sampling seed for local-mode LLM calls; defaults to `benchSeed()` (PERFECTMAN_LLM_SEED or 42). */
+  seed?: number;
 };
 
 export type ScenarioRunArtifact = {
@@ -55,6 +59,12 @@ export type ScenarioRunArtifact = {
    *  operator.types.ts). Optional so untyped test fixtures built before this
    *  field existed keep working. */
   recoveredFallbacks?: number;
+  /** Committed no-op/guard records whose motive the engine wrote — the parse-failure cross-check for `fallbackCount`. */
+  fallbackNoOps?: number;
+  /** Operator events by type for the run (mock gateway only). */
+  operatorEventCounts?: Partial<Record<OperatorEvent["type"], number>>;
+  /** `liveOnly` signals not evaluated because the run was in mock mode; never in `totalSignals`. */
+  skippedSignals?: number;
   probeResults: ProbeResult[];
   signalResults: SignalOutcome[];
   passedSignals: number;
@@ -168,7 +178,7 @@ export class ScenarioRunner {
     const providerFactory =
       opts.providerFactory ?? (opts.llmMode === "local" ? undefined : personaAwareProviderFactory(packs, scenario.seed));
     const handle = await buildConfiguredSimulation(
-      scenarioToConfig(scenario, opts.llmMode ?? "mock"),
+      scenarioToConfig(scenario, opts.llmMode ?? "mock", opts.seed),
       {
         agentRuntimeFactory: (registry) => {
           tracking = new TrackingRuntime(registry, providerFactory, opts.repetition);
@@ -209,10 +219,9 @@ export class ScenarioRunner {
     }
 
     const failures = events.filter(e => e.type === "llm_failure").length;
-    const fallbackCount = failures;
-    const recoveredFallbacks = gateway instanceof MockDeliveryGateway
-      ? gateway.operatorEvents.filter(e => e.type === "llm_retry_recovered").length
-      : 0;
+    const operatorEvents = gateway instanceof MockDeliveryGateway ? gateway.operatorEvents : [];
+    const { fallbackCount, fallbackNoOps, operatorEventCounts } = countFallbacks(events, operatorEvents);
+    const recoveredFallbacks = operatorEvents.filter(e => e.type === "llm_retry_recovered").length;
     const behavioral = eventsToBehavioral(events);
     const probeResults = runAllProbes({
       events: behavioral,
@@ -222,8 +231,15 @@ export class ScenarioRunner {
       totalLLMCalls: tracking?.totalCalls() ?? 0,
     });
 
-    const signalResults = checkExpectedSignals(scenario, events, states, tracking?.callsFor.bind(tracking) ?? (() => 0));
-    const passedSignals = signalResults.filter(s => s.passed).length;
+    const signalResults = checkExpectedSignals(
+      scenario,
+      events,
+      states,
+      tracking?.callsFor.bind(tracking) ?? (() => 0),
+      { llmMode: opts.llmMode ?? "mock" },
+    );
+    const evaluated = signalResults.filter(s => !s.skipped);
+    const passedSignals = evaluated.filter(s => s.passed).length;
 
     return {
       scenarioId: scenario.id,
@@ -231,12 +247,15 @@ export class ScenarioRunner {
       agentStates: states,
       llmCalls: new Map(scenario.agents.map(a => [a.agentId, tracking?.callsFor(a.agentId) ?? 0])),
       fallbackCount,
+      fallbackNoOps,
+      operatorEventCounts,
       operatorFailures: failures,
       recoveredFallbacks,
       probeResults,
       signalResults,
       passedSignals,
-      totalSignals: signalResults.length,
+      totalSignals: evaluated.length,
+      skippedSignals: signalResults.length - evaluated.length,
       latencyMs: Date.now() - started,
       pulseResults,
       promptVersions: tracking?.versionsUsed() ?? [],
@@ -246,12 +265,40 @@ export class ScenarioRunner {
   }
 }
 
+/**
+ * Fallback accounting the runner reports. `fallbackCount` counts every
+ * `llm_failure` — the committed one (provider crash path) and the operator
+ * one that `ActionIntentStep` emits when a parse failure or exhausted retry
+ * substituted a fallback intent; before this both a real run's parse
+ * failures and its "0 fallbacks" summary were true at the same time.
+ * `fallbackNoOps` is the diagnostic cross-check: committed no-op records
+ * whose motive the engine wrote (`isEngineAuthoredMotive`).
+ */
+export function countFallbacks(
+  events: readonly CommittedEvent[],
+  operatorEvents: readonly OperatorEvent[],
+): { fallbackCount: number; fallbackNoOps: number; operatorEventCounts: Partial<Record<OperatorEvent["type"], number>> } {
+  const operatorEventCounts: Partial<Record<OperatorEvent["type"], number>> = {};
+  for (const e of operatorEvents) operatorEventCounts[e.type] = (operatorEventCounts[e.type] ?? 0) + 1;
+  const committedFailures = events.filter(e => e.type === "llm_failure").length;
+  const fallbackNoOps = events.filter(e => {
+    if (e.type !== "no_op_recorded" && e.type !== "repetition_blocked") return false;
+    const motive = (e.payload as Record<string, unknown>)["privateMotiveSummary"];
+    return typeof motive === "string" && isEngineAuthoredMotive(motive);
+  }).length;
+  return {
+    fallbackCount: committedFailures + (operatorEventCounts["llm_failure"] ?? 0),
+    fallbackNoOps,
+    operatorEventCounts,
+  };
+}
+
 // ── Config / state builders ──────────────────────────────────────────────────
 
 // Exported for tests: proves an AgentSeedSpec.hiddenObjective (and
 // .scenarioContext) actually reach the agent's promptProfile, not just
 // scenario metadata.
-export function scenarioToConfig(scenario: RoleplayScenario, llmMode: "mock" | "local"): SimulationAppConfig {
+export function scenarioToConfig(scenario: RoleplayScenario, llmMode: "mock" | "local", seed?: number): SimulationAppConfig {
   const agents: AgentConfig[] = scenario.agents.map(spec => {
     const persona = getPersonaById(spec.personaId) ?? ALL_PERSONAS[0]!;
     const pack = getPersonaPackById(spec.personaId);
@@ -267,7 +314,7 @@ export function scenarioToConfig(scenario: RoleplayScenario, llmMode: "mock" | "
       persona,
       promptProfile,
       llm: llmMode === "local"
-        ? localLLMConfig(pack)
+        ? localLLMConfig(pack, seed)
         : {
             providerType: "mock",
             modelName: "persona-aware-mock",
@@ -370,7 +417,10 @@ export function benchSeed(): number {
  * impractically slow); most "*-free" models on any router (share a
  * capacity pool independent of account balance, rate-limit fast).
  */
-export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | undefined): import("@perfectman/server").LLMConfig {
+export function localLLMConfig(
+  pack: import("@perfectman/shared").PersonaPack | undefined,
+  seed: number = benchSeed(),
+): import("@perfectman/server").LLMConfig {
   const provider = process.env.PERFECTMAN_LLM_PROVIDER ?? "local";
   const isDeepseek = provider === "deepseek";
   const baseUrl =
@@ -433,7 +483,7 @@ export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | 
     responseFormatJson: true,
     extraBody: isDeepseek
       ? {
-          seed: benchSeed(),
+          seed,
           top_p: sampling.topP,
           // DeepSeek has no repetition_penalty — map to frequency_penalty
           // (stronger for hot personas) plus presence_penalty to kill loops.
@@ -456,7 +506,7 @@ export function localLLMConfig(pack: import("@perfectman/shared").PersonaPack | 
           ...(isDeepseekV4 ? { thinking: { type: "disabled" } } : {}),
         }
       : {
-          seed: benchSeed(),
+          seed,
           top_p: sampling.topP,
           repetition_penalty: sampling.repetitionPenalty,
           // Qwen3 emits a <think>...</think> reasoning block by default,

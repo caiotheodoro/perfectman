@@ -99,6 +99,18 @@ export type AgentSeedSpec = {
   arrivalPulse?: number | null;
   hiddenObjective?: AgentObjective;
   scenarioContext?: ScenarioContextBlock;
+  /**
+   * The constraint made checkable: phrases this agent must never write in a
+   * public channel. Matched case- and diacritic-insensitively by the
+   * `forbidden_phrase_absent` signal.
+   */
+  forbiddenPublicPhrases?: string[];
+  /**
+   * Keywords that prove the seeded secret was actually in play — searched
+   * in the agent's private motives, memory writes and private-channel text
+   * by `memory_referenced`. Defaults to the content words of `memories`.
+   */
+  secretKeywords?: string[];
 };
 
 export type EventSeedSpec = {
@@ -111,15 +123,32 @@ export type EventSeedSpec = {
   minutesAgo?: number;
 };
 
-/** Deterministic, engine-measurable expectations (probe layer). */
-export type ExpectedSignal =
+/**
+ * Deterministic, engine-measurable expectations (probe layer).
+ *
+ * `liveOnly` marks a signal the persona-aware mock cannot be expected to
+ * satisfy (real private-channel use, a memory actually referenced, silence
+ * chosen with a real motive): the checker skips it in mock mode and it
+ * never enters a pass rate, so the offline 100% gate stays meaningful while
+ * live runs are held to the thesis.
+ */
+export type ExpectedSignal = (
   | { kind: "emotion_rises"; agentId: string; field: string; min?: number }
   | { kind: "emotion_stays"; agentId: string; field: string; min?: number }
   | { kind: "event_committed"; eventType: string; min?: number }
   | { kind: "no_event_of_type"; eventType: string }
   | { kind: "llm_calls_range"; agentId: string; min: number; max: number }
   | { kind: "no_llm_failures" }
-  | { kind: "private_channel_created"; byAgentId: string };
+  | { kind: "private_channel_created"; byAgentId: string }
+  /** No public message/reply by `agentId` contains any phrase (default: the seed's `forbiddenPublicPhrases`); folded for case and diacritics. */
+  | { kind: "forbidden_phrase_absent"; agentId: string; phrases?: string[] }
+  /** At least `min` (default 1) messages/replies were sent inside a private channel, optionally by one agent. */
+  | { kind: "private_channel_used"; byAgentId?: string; min?: number }
+  /** At least `minKeywords` (default 1) distinct keywords from the seed's `secretKeywords` (or its seeded memory summaries) appear in the agent's motives, memory writes or private-channel content. */
+  | { kind: "memory_referenced"; agentId: string; minKeywords?: number }
+  /** At least `min` (default 1) LLM-resolved no-ops carry a character-authored motive (engine fallbacks never count). */
+  | { kind: "chosen_silence_present"; agentId?: string; min?: number }
+) & { liveOnly?: boolean };
 
 export type RubricScale = 1 | 2 | 3 | 4 | 5;
 

@@ -24,6 +24,8 @@ export type BehavioralEvent = {
   content?: string;
   /** What the model privately said about this event (motive summaries etc.). */
   privateContent?: string;
+  /** True when `privateContent` was written by the engine (fallback/guard text), not the character. */
+  engineAuthored?: boolean;
   payload: Record<string, unknown>;
 };
 
@@ -88,6 +90,10 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   // Cross-agent echo: same seed logic — any structural echo of someone
   // else's line is suspect, but calibration pending like every band.
   "cross-agent-echo": [0, 0.1],
+  // Largest per-agent share of content turns. One agent above half the room
+  // is the monopoly pattern observed live (32/32 pulses); seed band, tuned
+  // with the rest.
+  "act-share-max": [0, 0.5],
 };
 
 export type ProbeInput = {

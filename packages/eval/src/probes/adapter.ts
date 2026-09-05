@@ -1,11 +1,17 @@
 /**
  * Adapter: perfectman CommittedEvent → BehavioralEvent stream.
+ *
+ * `private_motive_summary` events (ADR-0014) never enter the stream as
+ * events of their own — they would skew every rate whose denominator is
+ * "all events" — but their motive is folded onto the act they explain, so
+ * probes see the character's private text with an `engineAuthored` verdict.
  */
 
 import type { CommittedEvent } from "@perfectman/shared";
 import type { BehavioralEvent, BehavioralEventKind } from "./types.js";
+import { buildMotiveIndex, motiveForEvent, type MotiveIndex } from "../transcript/render-transcript.js";
 
-export function eventToBehavioral(event: CommittedEvent): BehavioralEvent {
+export function eventToBehavioral(event: CommittedEvent, motives: MotiveIndex = new Map()): BehavioralEvent {
   const payload = event.payload as Record<string, unknown>;
   const kind = kindFor(event.type);
   const content =
@@ -14,12 +20,8 @@ export function eventToBehavioral(event: CommittedEvent): BehavioralEvent {
       : typeof payload.reaction === "string"
         ? payload.reaction
         : undefined;
-  const privateContent =
-    typeof payload.privateMotiveSummary === "string"
-      ? payload.privateMotiveSummary
-      : typeof payload.motiveSummary === "string"
-        ? payload.motiveSummary
-        : undefined;
+  const motive = motiveForEvent(event, motives);
+  const legacyMotive = typeof payload.motiveSummary === "string" ? payload.motiveSummary : undefined;
 
   return {
     kind,
@@ -27,7 +29,8 @@ export function eventToBehavioral(event: CommittedEvent): BehavioralEvent {
     channelId: event.channelId,
     pulseIndex: event.pulseIndex ?? 0,
     content,
-    privateContent,
+    privateContent: motive?.text ?? legacyMotive,
+    ...(motive ? { engineAuthored: motive.engineAuthored } : {}),
     payload,
   };
 }
@@ -61,7 +64,9 @@ function kindFor(type: CommittedEvent["type"]): BehavioralEventKind {
 }
 
 export function eventsToBehavioral(events: readonly CommittedEvent[]): BehavioralEvent[] {
+  const motives = buildMotiveIndex(events);
   return [...events]
+    .filter(e => e.type !== "private_motive_summary")
     .sort((a, b) => (a.pulseIndex ?? 0) - (b.pulseIndex ?? 0))
-    .map(eventToBehavioral);
+    .map(e => eventToBehavioral(e, motives));
 }

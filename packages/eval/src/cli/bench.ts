@@ -71,6 +71,8 @@ export type BenchReport = {
   /** Retries that fixed a guard violation on the first attempt — not free,
    *  but not a terminal `llm_failure` either (see `llm_retry_recovered`). */
   recoveredFallbacks: number;
+  /** `liveOnly` signals skipped because the run was in mock mode — never in a pass rate. */
+  signalsSkipped: number;
   /** Scores the Narration object (title/recap/hiddenShift), not the
    *  transcript — see NARRATIVE_RUBRIC. Only populated in single-judge
    *  openai-compatible mode (a rule/mock judge has no narrative-quality
@@ -188,6 +190,7 @@ export async function runBench(opts: {
     signalsByKind: {},
     calibration: calibrateJudge(new Map(), []),
     recoveredFallbacks: 0,
+    signalsSkipped: 0,
     narrativeAxisMeans: {},
     narrativeAxisTargets: {},
     narrativeCalibration: calibrateJudge(new Map(), []),
@@ -218,6 +221,7 @@ export async function runBench(opts: {
       const artifact: ScenarioRunArtifact = await ScenarioRunner.run(scenario, { llmMode: mode });
       report.scenariosRun++;
       report.recoveredFallbacks += artifact.recoveredFallbacks ?? 0;
+      report.signalsSkipped += artifact.skippedSignals ?? 0;
       artifact.promptVersions.forEach((v) => allPromptVersions.add(v));
       artifact.templateVersions.forEach((v) => allTemplateVersions.add(v));
 
@@ -409,7 +413,7 @@ function printReport(report: BenchReport): void {
   console.log(`\n=== Perfectman Roleplay Bench (${report.mode}) ===`);
   console.log(`scenarios: ${report.scenariosRun} run, ${report.scenariosFailed} failed`);
   console.log(`recovered fallbacks (retry fixed a guard violation): ${report.recoveredFallbacks}`);
-  console.log(`signal pass rate: ${(report.signalPassRate * 100).toFixed(1)}%`);
+  console.log(`signal pass rate: ${(report.signalPassRate * 100).toFixed(1)}%${report.signalsSkipped > 0 ? ` (${report.signalsSkipped} liveOnly signal(s) skipped in mock mode)` : ""}`);
   console.log(`probe pass rate: ${(report.probePassRate * 100).toFixed(1)}%`);
   const byKind = Object.entries(report.signalsByKind).sort((a, b) => a[1].passRate - b[1].passRate);
   if (byKind.length > 0) {
