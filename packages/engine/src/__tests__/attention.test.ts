@@ -188,3 +188,14 @@ describe("scoreAttention", () => {
     expect(result.reasons).toContain("boredom_threshold");
   });
 });
+
+describe("own events and needsLLM", () => {
+  it("a high-salience event authored by the agent itself does not set needsLLM", () => {
+    const agent = makeAgent();
+    const own = makeEvent("e1", { actorId: agent.agentId, emotionalSalience: "high" });
+    const result = scoreAttention(agent, CAIO, [own], DEFAULT_WORLD, new Map(), null, 3000);
+    expect(result.needsLLM).toBe(false);
+    const foreign = makeEvent("e2", { actorId: "other1", emotionalSalience: "high" });
+    expect(scoreAttention(agent, CAIO, [foreign], DEFAULT_WORLD, new Map(), null, 3000).needsLLM).toBe(true);
+  });
+});

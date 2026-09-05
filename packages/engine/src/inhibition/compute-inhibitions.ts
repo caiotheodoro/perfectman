@@ -9,11 +9,6 @@ import type {
 
 const INHIBITION_THRESHOLD = 0.20;
 
-let inhibitionIdCounter = 0;
-function nextId(): string {
-  return `inh${++inhibitionIdCounter}`;
-}
-
 type InhibitionSignal = {
   type: InhibitionType;
   score: number;
@@ -145,7 +140,7 @@ export function computeInhibitions(
     .filter(s => s.score >= INHIBITION_THRESHOLD)
     .sort((a, b) => b.score - a.score)
     .map(s => ({
-      id:               nextId(),
+      id:               `${agentState.agentId}:${s.type}`,
       agentId:          agentState.agentId,
       type:             s.type,
       strength:         toStrength(s.score),

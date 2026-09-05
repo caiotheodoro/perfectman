@@ -1,3 +1,4 @@
+import type { InitiativeCandidate } from "../initiative/initiative.types.js";
 export type DecisionOutcome = "act" | "delay" | "no_op" | "memory_only";
 
 export type NoOpReason =
@@ -23,6 +24,25 @@ export type Decision = {
   initiativeProceed: boolean;
   noOpReason?: NoOpReason;
   privateMotiveSeed: string;
+};
+
+/**
+ * Everything the decision needs besides pressures and inhibitions. The
+ * decision is the single owner of `needsLLM` (ADR-0015): attention feeds it
+ * `addressed` and `salientForeignEvent` as inputs instead of overriding its
+ * output afterwards.
+ */
+export type DecisionContext = {
+  hasNewEvents: boolean;
+  /** A direct mention or a reply to this agent arrived this pulse. */
+  addressed: boolean;
+  /** A high/critical-salience event from ANOTHER actor arrived this pulse. */
+  salientForeignEvent: boolean;
+  initiativeProceed: boolean;
+  pulseIndex: number;
+  initiativeCandidates: InitiativeCandidate[];
+  /** The agent committed an outward act on the previous pulse. */
+  justActed: boolean;
 };
 
 export type NoOpRecord = {

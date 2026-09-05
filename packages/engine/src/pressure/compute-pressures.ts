@@ -17,11 +17,6 @@ const PRESSURE_THRESHOLD = 0.20;
  */
 const MAX_SALIENT_PRESSURES = 3;
 
-let pressureIdCounter = 0;
-function nextId(): string {
-  return `p${++pressureIdCounter}`;
-}
-
 export function computePressures(
   agentState: AgentState,
   actionEmotions: ActionEmotions,
@@ -35,7 +30,7 @@ export function computePressures(
     const intensity = value * mapping.pressureWeight;
     if (intensity < PRESSURE_THRESHOLD) continue;
     pressures.push({
-      id:                  nextId(),
+      id:                  `${agentState.agentId}:${mapping.pressureType}`,
       agentId:             agentState.agentId,
       type:                mapping.pressureType,
       targetAgentIds:      [],
@@ -72,7 +67,7 @@ export function computePressures(
     const targetIds = closestTargets(agentState);
     if (!existing) {
       unique.push({
-        id: nextId(),
+        id: `${agentState.agentId}:urge_to_create_private_channel`,
         agentId: agentState.agentId,
         type: "urge_to_create_private_channel",
         targetAgentIds: targetIds,

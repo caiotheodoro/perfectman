@@ -3,6 +3,7 @@ import type {
   EngineStepResult,
   AgentState,
   NoOpRecord,
+  Decision,
   OperatorMetrics,
 } from "@perfectman/shared";
 
@@ -210,32 +211,36 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     ? initiativeCandidates.map(c => ({ ...c, proceed: false }))
     : initiativeCandidates;
 
-  const rawDecision = resolveDecision(
-    pressures,
-    inhibitions,
-    agentState,
-    persona,
-    hasNewEvents,
-    initiativeProceed,
-    pulseIndex,
-    decisionCandidates,
+  // Attention's verdicts enter the decision as inputs (ADR-0015): being
+  // addressed lifts cooldowns and delay-favoring inhibitions; a salient
+  // event from someone else lifts the low-urge floor. Own events count for
+  // neither — your own outburst does not demand your own attention.
+  const directlyAddressed = attentionResults.reasons.some(
+    r => r === "direct_mention" || r === "reply_to_self",
+  );
+  const salientForeignEvent = newEvents.some(
+    e =>
+      e.actorId !== agentState.agentId &&
+      (e.emotionalSalience === "high" || e.emotionalSalience === "critical"),
   );
 
-  // If attention says needsLLM but decision doesn't (due to low pressures),
-  // propagate needsLLM=true as long as the outcome is not no_op/memory_only.
-  const decision = {
-    ...rawDecision,
-    needsLLM:
-      rawDecision.needsLLM ||
-      (attentionResults.needsLLM && rawDecision.outcome !== "no_op" && rawDecision.outcome !== "memory_only"),
+  // The decision is the single owner of needsLLM: nothing re-raises it
+  // afterwards, so a cooldown or a delay really skips the LLM call.
+  const decision: Decision = {
+    ...resolveDecision(pressures, inhibitions, agentState, persona, {
+      hasNewEvents,
+      addressed: directlyAddressed,
+      salientForeignEvent,
+      initiativeProceed,
+      pulseIndex,
+      initiativeCandidates: decisionCandidates,
+      justActed,
+    }),
   };
 
   // Lurking personas lurk: unless directly addressed (mention/reply-to-self),
   // a lurking agent observes and records silence instead of acting.
   // (docs: "high threshold for speaking, low threshold for observing".)
-  const directlyAddressed = attentionResults.reasons.some(
-    r => r === "direct_mention" || r === "reply_to_self",
-  );
   if (
     agentState.presence === "lurking" &&
     !directlyAddressed &&
@@ -290,8 +295,10 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
   };
 
   // ── 15. No-op record ──────────────────────────────────────────────────────
+  // A delay (cooldown or inhibition) is a chosen silence too: recording it
+  // keeps it visible to operators and to the silence_cascade attractor.
   const noOpRecord: NoOpRecord | null =
-    decision.outcome === "no_op" && decision.noOpReason
+    (decision.outcome === "no_op" || decision.outcome === "delay") && decision.noOpReason
       ? {
           agentId:              agentState.agentId,
           reason:               decision.noOpReason,

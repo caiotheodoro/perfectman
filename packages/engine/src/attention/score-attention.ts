@@ -164,11 +164,17 @@ export function scoreAttention(
   const noticed = dueScore > 0.15 || newEvents.length > 0;
   // A direct mention or reply-to-self ALWAYS deserves the LLM's attention —
   // "an agent notices a mention and replies" is a V1 target behavior.
+  // Own events never count: a high-arousal persona stamps `high` salience on
+  // her own messages, and before this she forced an LLM call on herself
+  // every pulse after speaking. (The decision owns the final needsLLM —
+  // ADR-0015 — this value is attention's own read, reported for operators.)
   const needsLLM =
     dueScore >= ATTENTION_LLM_THRESHOLD ||
     mentionUrgency > 0 ||
     (newEvents.some(
-      e => e.emotionalSalience === "high" || e.emotionalSalience === "critical",
+      e =>
+        e.actorId !== agent.agentId &&
+        (e.emotionalSalience === "high" || e.emotionalSalience === "critical"),
     ));
 
   // Determine triggering reason

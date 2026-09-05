@@ -4,11 +4,10 @@ import type {
   AgentState,
   PersonaConfig,
   Decision,
-  DecisionOutcome,
+  DecisionContext,
   NoOpReason,
   PressureIntensity,
   InhibitionStrength,
-  InitiativeCandidate,
 } from "@perfectman/shared";
 
 const INTENSITY_RANK: Record<PressureIntensity, number> = {
@@ -22,51 +21,85 @@ const STRENGTH_RANK: Record<InhibitionStrength, number> = {
  *  the room is still waking up (cold-start stagger, no burst of messages). */
 const INITIATIVE_OVERRIDE_GRACE_PULSES = 5;
 
+const DELAY_FAVORING = new Set<Inhibition["type"]>([
+  "strategic_patience_hold",
+  "fear_of_escalating",
+  "status_protection",
+  "conflict_avoidance",
+]);
+const NOOP_FAVORING = new Set<Inhibition["type"]>([
+  "fear_of_rejection",
+  "social_anxiety_block",
+  "fear_of_exclusion_worsening",
+  "vulnerability_guard",
+]);
+
 /**
  * Resolve decision from pressures vs inhibitions.
  *
+ * The decision is the single owner of `needsLLM` (ADR-0015): every `act`
+ * carries `needsLLM: true`, everything else carries `false`, and nothing
+ * downstream re-raises it. Attention contributes `addressed` and
+ * `salientForeignEvent` as inputs.
+ *
  * Logic:
- *   1. No pressures → no_op (with reason)
+ *   1. No pressures → act if addressed or initiative pushes, else no_op
  *   2. Strongest inhibition >= strongest pressure → delay or no_op
- *   3. Delay preferred when strategic_patience_hold or fear_of_escalating dominant
- *   4. Otherwise act
- *   5. memory_only when shame_withdrawal overwhelming and no other pressures
- *   6. needsLLM = true when outcome is act or specific delay types
- *   7. initiativeProceed = true when no new events but initiative pushes action
+ *      (being addressed lifts a delay-favoring inhibition, never a
+ *      no-op-favoring one)
+ *   3. Otherwise act — through two gates:
+ *      - cooldown: an agent that just acted and was not addressed waits a
+ *        beat unless the urge is overwhelming (a real 32/32-pulse monopoly
+ *        came from this path re-firing the same pressure every pulse)
+ *      - floor: a merely `low` urge with nothing addressed, nothing salient
+ *        from others and no initiative is silence — "silence is valid"
+ *   4. memory_only when shame withdrawal is overwhelming and alone
  */
 export function resolveDecision(
   pressures: Pressure[],
   inhibitions: Inhibition[],
-  agentState: AgentState,
-  persona: PersonaConfig,
-  hasNewEvents: boolean,
-  initiativeProceed: boolean,
-  pulseIndex: number,
-  initiativeCandidates: InitiativeCandidate[] = [],
+  _agentState: AgentState,
+  _persona: PersonaConfig,
+  ctx: DecisionContext,
 ): Decision {
-  // cold_start_bootstrap can break strategic patience regardless of whether other
-  // accumulators also fired — the agent has been silent long enough that waiting
-  // longer serves nothing. It cannot override deeper inhibitions (fear_of_rejection,
-  // social_anxiety_block, etc.) which remain fully blocking.
-  const coldStartFired = initiativeCandidates.some(
+  const { hasNewEvents, addressed, salientForeignEvent, initiativeProceed, pulseIndex, justActed } = ctx;
+  const coldStartFired = ctx.initiativeCandidates.some(
     c => c.source === "cold_start_bootstrap" && c.proceed,
   );
-  // Genuine (non-bootstrap) initiative — motivation that builds over time
-  // (boredom, curiosity, repair…) — breaks the freeze after the room's
-  // birth grace window.
-  const otherInitiativeFired = initiativeCandidates.some(
+  const otherInitiativeFired = ctx.initiativeCandidates.some(
     c => c.source !== "cold_start_bootstrap" && c.proceed,
   );
-  // No pressures at all
-  if (pressures.length === 0) {
-    if (initiativeProceed) {
+
+  const actOrGate = (privateMotiveSeed: string, initiativeProceedOut: boolean, urgeRank: number): Decision => {
+    if (justActed && !addressed && urgeRank < INTENSITY_RANK.overwhelming) {
       return {
-        outcome: "act",
-        needsLLM: true,
-        initiativeProceed: true,
-        privateMotiveSeed: "initiative-driven",
+        outcome:           "delay",
+        needsLLM:          false,
+        initiativeProceed: false,
+        noOpReason:        "delayed_intention",
+        privateMotiveSeed: `cooldown-${privateMotiveSeed}`,
       };
     }
+    if (urgeRank <= INTENSITY_RANK.low && !addressed && !salientForeignEvent && !initiativeProceedOut) {
+      return {
+        outcome:           "no_op",
+        needsLLM:          false,
+        initiativeProceed: false,
+        noOpReason:        hasNewEvents ? "noticed_but_ignored" : "waited_for_someone_else",
+        privateMotiveSeed: `low-${privateMotiveSeed}`,
+      };
+    }
+    return {
+      outcome:           "act",
+      needsLLM:          true,
+      initiativeProceed: initiativeProceedOut,
+      privateMotiveSeed,
+    };
+  };
+
+  if (pressures.length === 0) {
+    if (addressed) return actOrGate("addressed", initiativeProceed, INTENSITY_RANK.medium);
+    if (initiativeProceed) return actOrGate("initiative-driven", true, INTENSITY_RANK.medium);
     return {
       outcome:           "no_op",
       needsLLM:          false,
@@ -82,7 +115,6 @@ export function resolveDecision(
   const topInhibition = inhibitions[0];
   const topInhibitionRank = topInhibition ? STRENGTH_RANK[topInhibition.strength] : 0;
 
-  // Overwhelming shame withdrawal with no countervailing pressure → memory only
   if (
     topPressure.type === "urge_to_withdraw" &&
     topPressure.intensity === "overwhelming" &&
@@ -97,39 +129,16 @@ export function resolveDecision(
     };
   }
 
-  // Inhibition wins → delay or no_op
   if (topInhibition && topInhibitionRank >= topPressureRank) {
-    const delayFavoring = [
-      "strategic_patience_hold",
-      "fear_of_escalating",
-      "status_protection",
-      "conflict_avoidance",
-    ];
-    const noopFavoring = [
-      "fear_of_rejection",
-      "social_anxiety_block",
-      "fear_of_exclusion_worsening",
-      "vulnerability_guard",
-    ];
-
-    if (delayFavoring.includes(topInhibition.type)) {
-      // cold_start_bootstrap overrides strategic delays when others are actively
-      // talking — the agent is being left out of a live conversation, so patience
-      // serves nothing. When the channel is empty (no new events), strategic
-      // patience holds normally.
-      // Genuine initiative ALSO overrides after the room-birth grace window —
-      // motivation creates action (docs core loop), and a stuck agent's real
-      // drives must break the freeze.
+    if (DELAY_FAVORING.has(topInhibition.type)) {
+      if (addressed) {
+        return actOrGate("addressed", initiativeProceed, topPressureRank);
+      }
       if (
         (coldStartFired && hasNewEvents) ||
         (pulseIndex >= INITIATIVE_OVERRIDE_GRACE_PULSES && otherInitiativeFired)
       ) {
-        return {
-          outcome:           "act",
-          needsLLM:          true,
-          initiativeProceed: true,
-          privateMotiveSeed: `initiative-override-${topInhibition.type}`,
-        };
+        return actOrGate(`initiative-override-${topInhibition.type}`, true, topPressureRank);
       }
       return {
         outcome:           "delay",
@@ -140,7 +149,7 @@ export function resolveDecision(
       };
     }
 
-    if (noopFavoring.includes(topInhibition.type) || topInhibitionRank >= 3) {
+    if (NOOP_FAVORING.has(topInhibition.type) || topInhibitionRank >= 3) {
       const noOpReason: NoOpReason =
         topInhibition.type === "fear_of_rejection"      ? "felt_too_uncertain" :
         topInhibition.type === "social_anxiety_block"    ? "felt_too_uncertain" :
@@ -157,20 +166,8 @@ export function resolveDecision(
       };
     }
 
-    // Inhibition present but manageable → act with LLM
-    return {
-      outcome:           "act",
-      needsLLM:          true,
-      initiativeProceed,
-      privateMotiveSeed: topPressure.type,
-    };
+    return actOrGate(topPressure.type, initiativeProceed, topPressureRank);
   }
 
-  // Pressure wins or no inhibition → act
-  return {
-    outcome:           "act",
-    needsLLM:          true,
-    initiativeProceed,
-    privateMotiveSeed: topPressure.type,
-  };
+  return actOrGate(topPressure.type, initiativeProceed, topPressureRank);
 }

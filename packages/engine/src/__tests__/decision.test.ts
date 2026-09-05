@@ -6,6 +6,7 @@ import type {
   CoreMood,
   SocialEmotions,
   InitiativeAccumulator,
+  DecisionContext,
 } from "@perfectman/shared";
 import { CAIO, GOULART, BRUNO, createSeededRng } from "@perfectman/shared";
 import { resolveDecision } from "../decision/resolve-decision.js";
@@ -76,16 +77,30 @@ function makeInhibition(type: Inhibition["type"], strength: Inhibition["strength
   };
 }
 
+/** Decision context with the quiet defaults: not addressed, nothing salient from others, did not just act. */
+function ctx(overrides: Partial<DecisionContext> = {}): DecisionContext {
+  return {
+    hasNewEvents: false,
+    addressed: false,
+    salientForeignEvent: false,
+    initiativeProceed: false,
+    pulseIndex: 1,
+    initiativeCandidates: [],
+    justActed: false,
+    ...overrides,
+  };
+}
+
 // --- resolveDecision ---
 describe("resolveDecision", () => {
   it("no pressures + no initiative → no_op", () => {
-    const result = resolveDecision([], [], makeAgent(), CAIO, false, false, 1);
+    const result = resolveDecision([], [], makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("no_op");
     expect(result.needsLLM).toBe(false);
   });
 
   it("no pressures + initiative proceed → act with LLM", () => {
-    const result = resolveDecision([], [], makeAgent(), CAIO, false, true, 1);
+    const result = resolveDecision([], [], makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: true, pulseIndex: 1 }));
     expect(result.outcome).toBe("act");
     expect(result.needsLLM).toBe(true);
     expect(result.initiativeProceed).toBe(true);
@@ -93,7 +108,7 @@ describe("resolveDecision", () => {
 
   it("pressure with no inhibition → act with LLM", () => {
     const pressures = [makePressure("urge_to_message", "medium")];
-    const result = resolveDecision(pressures, [], makeAgent(), CAIO, true, false, 1);
+    const result = resolveDecision(pressures, [], makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("act");
     expect(result.needsLLM).toBe(true);
   });
@@ -101,20 +116,20 @@ describe("resolveDecision", () => {
   it("strong inhibition >= pressure → delay or no_op", () => {
     const pressures = [makePressure("urge_to_message", "low")];
     const inhibitions = [makeInhibition("strategic_patience_hold", "medium")];
-    const result = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, true, false, 1);
+    const result = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(["delay", "no_op"]).toContain(result.outcome);
   });
 
   it("strategic_patience_hold inhibition → delay outcome", () => {
     const pressures = [makePressure("urge_to_message", "low")];
     const inhibitions = [makeInhibition("strategic_patience_hold", "high")];
-    const result = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, true, false, 1);
+    const result = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("delay");
   });
 
   it("overwhelming shame withdrawal alone → memory_only", () => {
     const pressures = [makePressure("urge_to_withdraw", "overwhelming")];
-    const result = resolveDecision(pressures, [], makeAgent(), CAIO, false, false, 1);
+    const result = resolveDecision(pressures, [], makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("memory_only");
     expect(result.needsLLM).toBe(false);
   });
@@ -122,13 +137,13 @@ describe("resolveDecision", () => {
   it("high pressure > inhibition → act", () => {
     const pressures = [makePressure("urge_to_provoke", "high")];
     const inhibitions = [makeInhibition("conflict_avoidance", "low")];
-    const result = resolveDecision(pressures, inhibitions, makeAgent(), GOULART, true, false, 1);
+    const result = resolveDecision(pressures, inhibitions, makeAgent(), GOULART, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("act");
   });
 
   it("privateMotiveSeed is set", () => {
     const pressures = [makePressure("urge_to_message", "medium")];
-    const result = resolveDecision(pressures, [], makeAgent(), CAIO, true, false, 1);
+    const result = resolveDecision(pressures, [], makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.privateMotiveSeed.length).toBeGreaterThan(0);
   });
 });

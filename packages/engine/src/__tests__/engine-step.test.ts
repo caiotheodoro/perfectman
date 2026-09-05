@@ -261,3 +261,24 @@ describe("runEngineStep", () => {
     expect(result1.decision.outcome).toBe(result2.decision.outcome);
   });
 });
+
+describe("decision owns needsLLM (ADR-0015)", () => {
+  it("an own high-salience event does not make attention demand the LLM", () => {
+    const own = makeEvent("e1", { actorId: "a1", emotionalSalience: "high" });
+    const result = runEngineStep(makeSnapshot({ recentEventsWindow: [own] }));
+    expect(result.attentionResults.needsLLM).toBe(false);
+  });
+
+  it("needsLLM is exactly outcome === act, and a delay is recorded like a no-op", () => {
+    const windows = [
+      [],
+      [makeEvent("e1", { actorId: "a1", emotionalSalience: "high" })],
+      [makeEvent("e2", { actorId: "a2", emotionalSalience: "critical", payload: { mentionedAgentIds: ["a1"] } })],
+    ];
+    for (const recentEventsWindow of windows) {
+      const result = runEngineStep(makeSnapshot({ recentEventsWindow }));
+      expect(result.decision.needsLLM).toBe(result.decision.outcome === "act");
+      if (result.decision.outcome === "delay") expect(result.noOpRecord).not.toBeNull();
+    }
+  });
+});

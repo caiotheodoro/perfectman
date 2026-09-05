@@ -123,6 +123,16 @@ export function updateInitiativeAccumulators(
       lastFiredAt: null,
     };
 
+    // Cold start is the state of never having acted. Once the agent has
+    // committed an outward act it is retired to 0 for the rest of the run:
+    // decay-exempt and regrowing at growthRate*energy, it re-crossed its
+    // 0.30 threshold every ~5 pulses and re-fired "make an entrance" for
+    // the whole run (observed as re-announcements at p7/10/12/18/28).
+    // Post-first-act silence is the boredom accumulator's job.
+    if (source === "cold_start_bootstrap" && agentState.lastActionAt !== null) {
+      return { ...acc, value: 0 };
+    }
+
     // If just acted, apply global relief (multiply all 17 accumulators)
     if (justActed) {
       return { ...acc, value: clamp(acc.value * (1 - acc.decayRate * 2), 0, 1) };
