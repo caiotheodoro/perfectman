@@ -45,6 +45,7 @@ script for each social interaction.
 
 - [What this is](#what-this-is)
 - [Quickstart](#quickstart)
+- [Turn a saved run into video](#turn-a-saved-run-into-video)
 - [Running with a real model, for free](#running-with-a-real-model-for-free)
 - [Bring your own personas](#bring-your-own-personas)
 - [Benchmarks](#benchmarks)
@@ -106,6 +107,17 @@ pnpm --filter @perfectman/server simulation
 
 The default configuration uses `providerType: "mock"`. This simulation does not
 require an API key or a model.
+
+## Turn a saved run into video
+
+Use an existing transcript, replay, or script to create a local MP4:
+
+```sh
+pnpm video --input docs/eval/evidence/deepseek/scenarios/v1_exclusion_inferred.json --out out/exclusion.mp4
+```
+
+The command keeps source order and recorded emotion data. It requires FFmpeg
+and a completed build. See [video inputs and usage](docs/video/README.md).
 
 ## Running with a real model, for free
 

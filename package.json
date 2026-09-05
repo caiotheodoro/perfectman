@@ -12,7 +12,8 @@
     "test:gate": "node scripts/audit-tests.mjs --check && node scripts/docs-lint.mjs --check",
     "test:all": "pnpm test && pnpm test:gate",
     "test:watch": "vitest",
-    "lint": "pnpm -r typecheck"
+    "lint": "pnpm -r typecheck",
+    "video": "node packages/eval/dist/cli/video.js"
   },
   "devDependencies": {
     "typescript": "^5.5.0",

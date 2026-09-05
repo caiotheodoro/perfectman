@@ -1,0 +1,49 @@
+/** Lossless source order is separate from editorial video timing. */
+export type RecordedEmotion = {
+  source: "snapshot" | "driver" | "authored";
+  label?: string;
+  drivers?: string[];
+  values?: Record<string, number>;
+};
+export type VideoAgent = { id: string; name: string };
+export type VideoStep = {
+  id: string;
+  phase: string;
+  kind: "message" | "private" | "event" | "state" | "narration";
+  text: string;
+  action?: string;
+  actorId?: string;
+  channel?: string;
+  visibility: "public" | "private" | "operator";
+  pulse?: number;
+  emotion?: RecordedEmotion;
+  /** Authored reading hold; the planner may extend it to fit all text. */
+  duration?: number;
+  /** JSON pointers into the input, including folded motive events. */
+  sourceRefs: string[];
+  raw: unknown;
+};
+export type VideoStory = {
+  title: string;
+  sourceKind: "evidence" | "transcript" | "events" | "replay" | "script";
+  agents: VideoAgent[];
+  steps: VideoStep[];
+  notices: string[];
+  sources?: Array<{ file: string; sha256: string }>;
+};
+export type VideoBeat = Omit<VideoStep, "raw"> & {
+  stepIndex: number;
+  pageIndex: number;
+  pageCount: number;
+  start: number;
+  duration: number;
+};
+export type VideoStoryboard = Omit<VideoStory, "steps"> & {
+  version: "perfectman-storyboard-v1";
+  sourceFile: string;
+  sourceSha256: string;
+  steps: VideoStep[];
+  beats: VideoBeat[];
+  duration: number;
+  fps: 30;
+};

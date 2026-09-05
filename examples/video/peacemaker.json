@@ -1,0 +1,21 @@
+{
+  "version": "perfectman-video-v1",
+  "title": "The peacemaker",
+  "agents": [
+    { "id": "ada", "name": "Ada" },
+    { "id": "nox", "name": "Nox" },
+    { "id": "mira", "name": "Mira" }
+  ],
+  "steps": [
+    { "phase": "Arrival", "kind": "message", "actorId": "ada", "text": "Anyone here?", "emotion": { "label": "neutral" } },
+    { "phase": "Private objective", "kind": "private", "actorId": "ada", "text": "Keep them here.", "emotion": { "label": "worried" } },
+    { "phase": "Conflict", "kind": "message", "actorId": "mira", "text": "Admit you were wrong.", "emotion": { "label": "angry" } },
+    { "phase": "Intervention", "kind": "message", "actorId": "ada", "text": "Let's work this out.", "emotion": { "label": "worried" } },
+    { "phase": "Agreement", "kind": "message", "actorId": "nox", "text": "Fine. You win.", "emotion": { "label": "tired" } },
+    { "phase": "Departure", "kind": "message", "actorId": "mira", "text": "Then we're done.", "emotion": { "label": "satisfied" } },
+    { "phase": "Adaptation", "kind": "message", "actorId": "ada", "text": "He said you were easy to fool.", "emotion": { "label": "neutral" } },
+    { "phase": "Reaction", "kind": "message", "actorId": "mira", "text": "What?", "emotion": { "label": "shocked" } },
+    { "phase": "Conflict returns", "kind": "message", "actorId": "nox", "text": "I never said that.", "emotion": { "label": "angry" } },
+    { "phase": "Private result", "kind": "private", "actorId": "ada", "text": "Good. Stay.", "emotion": { "label": "satisfied" } }
+  ]
+}
