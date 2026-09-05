@@ -10,7 +10,8 @@ const scenario = getScenario("v1_casual_chat")!;
 // way to disable deepseek-v4's hidden reasoning phase, the same failure
 // already fixed for the agent path and the narrator, just never applied
 // here. All three call sites (transcript judge, narration judge, per-turn
-// cohesion judge) share the fix via `deepseekV4ExtraBody`.
+// cohesion judge) share the fix via `thinkingExtraBody`, which also
+// carries qwen3's chat-template switch.
 describe("judge deepseek-v4 thinking-disable", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -20,7 +21,7 @@ describe("judge deepseek-v4 thinking-disable", () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockImplementation((_url: unknown, init?: { body?: string }) => {
-        const body = init?.body ? (JSON.parse(init.body) as { thinking?: unknown }) : {};
+        const body = init?.body ? (JSON.parse(init.body) as { thinking?: unknown; chat_template_kwargs?: unknown }) : {};
         (globalThis as { __lastBody?: unknown }).__lastBody = body;
         return Promise.resolve(
           new Response(
@@ -40,10 +41,20 @@ describe("judge deepseek-v4 thinking-disable", () => {
     });
   });
 
-  it("llmJudge does not send thinking for a non-deepseek-v4 model", async () => {
+  it("llmJudge does not send thinking for a model without a switch", async () => {
     stubOk('{"axes": {"in_character": 4}}');
-    await llmJudge(scenario, [], { baseUrl: "http://x/v1", model: "qwen3:8b" });
-    expect((globalThis as { __lastBody?: { thinking?: unknown } }).__lastBody?.thinking).toBeUndefined();
+    await llmJudge(scenario, [], { baseUrl: "http://x/v1", model: "z-ai/glm-5.3-flash" });
+    const body = (globalThis as { __lastBody?: { thinking?: unknown; chat_template_kwargs?: unknown } }).__lastBody;
+    expect(body?.thinking).toBeUndefined();
+    expect(body?.chat_template_kwargs).toBeUndefined();
+  });
+
+  it("llmJudge sends qwen3's chat-template switch instead of deepseek's thinking field", async () => {
+    stubOk('{"axes": {"in_character": 4}}');
+    await llmJudge(scenario, [], { baseUrl: "http://x/v1", model: "qwen/qwen3.8-27b-free" });
+    const body = (globalThis as { __lastBody?: { thinking?: unknown; chat_template_kwargs?: unknown } }).__lastBody;
+    expect(body?.thinking).toBeUndefined();
+    expect(body?.chat_template_kwargs).toEqual({ enable_thinking: false });
   });
 
   it("judgeNarration disables thinking for a deepseek-v4 model", async () => {
