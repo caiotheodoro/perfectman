@@ -58,6 +58,18 @@ describe("JudgeAppConfigSchema", () => {
     expect(config.jury![1]!.apiKeyEnv).toBe("DEEPSEEK_API_KEY");
   });
 
+  it("accepts a per-entry maxTokens and rejects a non-positive one", () => {
+    const ok = JudgeAppConfigSchema.parse({
+      providerType: "openai-compatible",
+      modelName: "m",
+      jury: [{ providerType: "openai-compatible", modelName: "glm", label: "glm", maxTokens: 4000 }],
+    });
+    expect(ok.jury![0]!.maxTokens).toBe(4000);
+    expect(
+      JudgeAppConfigSchema.safeParse({ providerType: "openai-compatible", modelName: "m", maxTokens: 0 }).success,
+    ).toBe(false);
+  });
+
   it("accepts a minimal judge section (only providerType + modelName)", () => {
     const config = JudgeAppConfigSchema.parse({ providerType: "rule", modelName: "rule" });
     expect(config.baseUrl).toBeUndefined();

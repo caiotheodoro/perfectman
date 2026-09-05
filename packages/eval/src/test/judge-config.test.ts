@@ -175,6 +175,31 @@ describe("loadJudgeConfig precedence", () => {
     }
   });
 
+  it("resolves a per-entry maxTokens and leaves it undefined when unset, without warning", async () => {
+    const dir = await tempDir();
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
+    await writeFile(
+      join(dir, "judge.json"),
+      JSON.stringify({
+        ...standalone,
+        jury: [
+          { providerType: "openai-compatible", modelName: "glm", label: "glm", maxTokens: 4000 },
+          { providerType: "openai-compatible", modelName: "qwen", label: "qwen" },
+        ],
+      }),
+    );
+    try {
+      const resolved = await loadJudgeConfig(["--judge-config", "judge.json"], { cwd: dir });
+      expect(resolved.config.maxTokens).toBeUndefined();
+      expect(resolved.jury?.[0]?.maxTokens).toBe(4000);
+      expect(resolved.jury?.[1]?.maxTokens).toBeUndefined();
+      expect(warn).not.toHaveBeenCalled();
+    } finally {
+      warn.mockRestore();
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
+
   it("resolves each jury entry's own apiKeyEnv", async () => {
     const dir = await tempDir();
     vi.stubEnv("JURY_KEY", "sk-jury-secret");

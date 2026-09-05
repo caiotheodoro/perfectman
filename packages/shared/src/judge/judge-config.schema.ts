@@ -20,6 +20,8 @@ const judgeConfigObject = z
     apiKeyEnv: z.string().min(1).optional(),
     temperature: z.number().optional(),
     timeoutMs: z.number().int().positive().optional(),
+    /** Output budget for one judge call; reasoning models without a thinking switch need headroom. */
+    maxTokens: z.number().int().positive().optional(),
     retryCount: z.number().int().nonnegative().optional(),
     responseFormatJson: z.boolean().optional(),
   })

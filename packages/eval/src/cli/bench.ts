@@ -117,6 +117,12 @@ export type BenchReport = {
     juryVoterCount?: number;
     /** Jury mode only: jurors that errored (label → reason) — non-empty means the verdict degraded. */
     juryFailed?: Record<string, string>;
+    /** Jury mode only: votes behind each axis's median (an axis with 1 is a single opinion, not a median). */
+    juryAxisVoterCounts?: Record<string, number>;
+    /** Axes the judge omitted; filled with 3 in `axisScores` for display, excluded from every aggregate. */
+    imputedAxes?: string[];
+    /** What the judge cited per axis (single judge) or per juror label (jury). */
+    judgeEvidence?: Record<string, string> | Record<string, Record<string, string>>;
     seed?: number;
     narration?: Narration;
     narrativeAxisScores?: AxisScores;
@@ -124,6 +130,15 @@ export type BenchReport = {
     failed?: string;
   }>;
 };
+
+/** Per-juror evidence, keyed by label; empty when no juror cited anything. */
+function juryEvidence(verdict: JuryVerdict): Record<string, Record<string, string>> | undefined {
+  const out: Record<string, Record<string, string>> = {};
+  for (const [label, juror] of Object.entries(verdict.perJudge)) {
+    if (juror.evidence && Object.keys(juror.evidence).length > 0) out[label] = juror.evidence;
+  }
+  return Object.keys(out).length > 0 ? out : undefined;
+}
 
 export async function runBench(opts: {
   mode?: "mock" | "local";
@@ -279,14 +294,15 @@ export async function runBench(opts: {
       artifact.templateVersions.forEach((v) => allTemplateVersions.add(v));
 
       let juryVerdict: JuryVerdict | undefined;
-      let judgeResult: { axes: AxisScores; salvaged: boolean };
+      let judgeResult: { axes: AxisScores; salvaged: boolean; imputedAxes?: string[]; evidence?: Record<string, string> };
       if (useJury) {
         // A jury is a median over independently-sourced judges — a juror
         // that errored is dropped and recorded, never silently diluted.
         // voterCount/failed ride into the report so a degraded verdict is
         // traceable (a 3-juror jury with 2 errors is a single-judge read).
         juryVerdict = await juryJudge(scenario, artifact.events, resolvedJudge.jury!);
-        judgeResult = { axes: juryVerdict.axes, salvaged: false };
+        // Axes no juror scored are absent from the verdict, not imputed.
+        judgeResult = { axes: juryVerdict.axes, salvaged: false, imputedAxes: [] };
       } else if (judgeMode === "openai-compatible") {
         judgeResult = perTurn
           ? await llmJudgePerTurn(scenario, artifact.events, resolvedJudge.config)
@@ -300,14 +316,22 @@ export async function runBench(opts: {
         };
       }
       const axisScores = judgeResult.axes;
+      const imputedAxes = judgeResult.imputedAxes ?? [];
+      // An imputed axis is the parser's neutral 3, not a judgment: it stays
+      // in `axisScores` for display but never reaches a mean, a spread, or
+      // the calibration map — a fabricated midpoint would compress kappa
+      // and lift a failing axis to "met".
+      const scoredAxes: AxisScores = Object.fromEntries(
+        Object.entries(axisScores).filter(([axis]) => !imputedAxes.includes(axis)),
+      );
 
       // A salvaged score is a fabricated/imputed read, not a clean parse —
       // feeding it into calibration would silently compress the kappa the
       // golden-label gate depends on.
       if (!judgeResult.salvaged) {
-        judgeScores.set(baseScenarioId(scenario.id), axisScores);
+        judgeScores.set(baseScenarioId(scenario.id), scoredAxes);
       }
-      for (const [axis, v] of Object.entries(axisScores)) {
+      for (const [axis, v] of Object.entries(scoredAxes)) {
         axisAgg[axis] ??= { sum: 0, count: 0 };
         axisAgg[axis]!.sum += v;
         axisAgg[axis]!.count++;
@@ -364,6 +388,11 @@ export async function runBench(opts: {
         }
       }
 
+      const judgeEvidence = juryVerdict
+        ? juryEvidence(juryVerdict)
+        : judgeResult.evidence && Object.keys(judgeResult.evidence).length > 0
+          ? judgeResult.evidence
+          : undefined;
       report.perScenario.push({
         id: scenario.id,
         name: scenario.name,
@@ -380,6 +409,9 @@ export async function runBench(opts: {
         judgeSalvaged: judgeResult.salvaged,
         juryVoterCount: juryVerdict?.voterCount,
         juryFailed: juryVerdict?.failed,
+        ...(juryVerdict ? { juryAxisVoterCounts: juryVerdict.axisVoterCounts } : {}),
+        ...(imputedAxes.length > 0 ? { imputedAxes } : {}),
+        ...(judgeEvidence ? { judgeEvidence } : {}),
         narration,
         narrativeAxisScores,
         narrativeSalvaged,
@@ -392,6 +424,9 @@ export async function runBench(opts: {
             seed,
             events: artifact.events,
             axisScores,
+            imputedAxes,
+            judgeEvidence,
+            juryAxisVoterCounts: juryVerdict?.axisVoterCounts,
             narration,
             narrativeAxisScores,
             signalResults: artifact.signalResults,
@@ -559,7 +594,7 @@ function writeEvidenceRun(
       model: judge.config.model,
       baseUrl: judge.config.baseUrl,
       temperature: judge.config.temperature ?? null,
-      jury: (judge.jury ?? []).map(j => ({ label: j.label ?? null, model: j.model, baseUrl: j.baseUrl })),
+      jury: (judge.jury ?? []).map(j => ({ label: j.label ?? null, model: j.model, baseUrl: j.baseUrl, maxTokens: j.maxTokens ?? null })),
     },
     seeds: report.seeds,
     pulseLimit: report.pulseLimit ?? null,
