@@ -360,8 +360,14 @@ export class PersonaAwareMockProvider implements LLMProvider {
           k => (social[k as keyof typeof social] ?? 0) >= 0.3,
         )
       : false;
-    const roll = charged ? 1 : 3;
-    if (randDigest(agentId, 101) % roll !== 0) return [];
+    // Per act, not per agent: the previous digest-of-agentId roll made a
+    // neutral scene's agent write on every act or never, depending on which
+    // id the variant rotation handed it — the mock-safe "memory formation
+    // happens" signal then hung on the rotation, not on behaviour. First act
+    // always writes (a first impression), then every third act.
+    const actIndex = (this.actCounts.get(agentId) ?? 0) + 1;
+    this.actCounts.set(agentId, actIndex);
+    if (!charged && actIndex % 3 !== 1) return [];
     const memory = this.pack.memorySeeds[randDigest(agentId, 17) % this.pack.memorySeeds.length];
     if (!memory) return [];
     return [
@@ -378,6 +384,7 @@ export class PersonaAwareMockProvider implements LLMProvider {
   }
 
   private lastInput?: AgentRuntimeInput;
+  private readonly actCounts = new Map<string, number>();
 
   private isChargedReact(): boolean {
     const social = this.lastInput?.emotionalState.socialEmotions;
