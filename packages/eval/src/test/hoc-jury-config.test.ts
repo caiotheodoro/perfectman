@@ -8,7 +8,7 @@ import { JudgeAppConfigSchema } from "@perfectman/shared";
 // time on the first real run. Parse it the way the loader does.
 describe("examples/eval/hoc-jury.json", () => {
   const path = fileURLToPath(new URL("../../../../examples/eval/hoc-jury.json", import.meta.url));
-  const raw = JSON.parse(readFileSync(path, "utf8")) as unknown;
+  const raw: unknown = JSON.parse(readFileSync(path, "utf8"));
 
   it("parses under JudgeAppConfigSchema", () => {
     expect(JudgeAppConfigSchema.safeParse(raw).success).toBe(true);
