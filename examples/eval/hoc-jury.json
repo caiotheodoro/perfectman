@@ -1,8 +1,8 @@
 {
   "providerType": "openai-compatible",
-  "label": "glm-5.3-flash (primary, non-DeepSeek)",
+  "label": "deepseek-v4-flash (primary: narration scoring only; thinking disabled)",
   "baseUrl": "https://api.orcarouter.ai/v1",
-  "modelName": "z-ai/glm-5.3-flash",
+  "modelName": "deepseek/deepseek-v4-flash",
   "apiKeyEnv": "PERFECTMAN_LLM_API_KEY",
   "temperature": 0,
   "timeoutMs": 180000,
