@@ -30,8 +30,8 @@ export class LLMHttpError extends LLMError {
 }
 
 export class LLMResponseError extends LLMError {
-  constructor(message: string) {
-    super(message);
+  constructor(message: string, cause?: unknown) {
+    super(message, cause);
     this.name = "LLMResponseError";
   }
 }

@@ -217,7 +217,13 @@ describe("sdk-transport OpenAI-compatible path", () => {
     expect(body.response_format).toEqual({ type: "json_object" });
   });
 
-  it.each([400, 422])(
+  // 503 root-caused via a live probe against OrcaRouter's free deepseek-v4
+  // route: a strict json_schema request consistently 503s ("upstream
+  // provider is temporarily unavailable") while the identical request with
+  // response_format:json_object succeeds — the free tier rejects
+  // schema-constrained decoding specifically and signals it via 503 instead
+  // of 400/422.
+  it.each([400, 422, 503])(
     "falls back to json_object on a %i json_schema rejection on the same budget slot",
     async (status) => {
       const fetchSpy = vi

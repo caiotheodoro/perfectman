@@ -145,7 +145,12 @@ function withDualTimeout(fetchImpl: typeof fetch, timeoutMs: number): typeof fet
               },
             );
         }
-        return Reflect.get(target, prop, receiver);
+        // Getters inherited from Response.prototype (headers, status, ok, ...)
+        // read native private fields via `this`. Forwarding `receiver` (this
+        // Proxy) as `this` throws "Cannot read private member ... whose class
+        // did not declare it" — the getter only works invoked on the real
+        // `target`, so `receiver` is never passed through here.
+        return Reflect.get(target, prop, target);
       },
     });
   }
@@ -323,9 +328,14 @@ export async function generateOpenAiCompatibleIntent(
       } else if (error instanceof APICallError) {
         // A 400/422 on a json_schema request means the proxy does not support
         // schema-constrained decoding — retry once as json_object on this same
-        // budget slot (the schema still validates locally in the parser).
+        // budget slot (the schema still validates locally in the parser). 503
+        // is included on the same evidence: OrcaRouter's free deepseek-v4
+        // route consistently 503s ("upstream provider is temporarily
+        // unavailable") on a strict schema request while the identical
+        // request as json_object succeeds — some free-tier backends reject
+        // schema-constrained decoding via 503 instead of 400/422.
         if (
-          (error.statusCode === 400 || error.statusCode === 422) &&
+          (error.statusCode === 400 || error.statusCode === 422 || error.statusCode === 503) &&
           schemaMode &&
           !jsonObjectFallbackUsed
         ) {
@@ -341,7 +351,17 @@ export async function generateOpenAiCompatibleIntent(
         // The SDK's own choices[0] content extraction throws a TypeError on an
         // empty choices array — surface the same failure the provider used to
         // report from its hand-rolled parse.
-        resolvedError = new LLMResponseError("Empty or missing content in OpenAI completion choices.");
+        //
+        // Any *other* client-side TypeError (a bad argument, a runtime/undici
+        // mismatch, a stubbed fetch the SDK cannot consume) is not an empty
+        // completion, and relabelling it as one turns a real client bug into a
+        // fabricated model failure — the transport-layer version of narrating
+        // an engine error as content. Keep the original message and cause so
+        // the distinction survives into the operator log.
+        resolvedError = new LLMResponseError(
+          `Empty or missing content in OpenAI completion choices. (underlying TypeError: ${error.message})`,
+          error,
+        );
       } else if (error instanceof LLMError) {
         resolvedError = error;
       } else {
