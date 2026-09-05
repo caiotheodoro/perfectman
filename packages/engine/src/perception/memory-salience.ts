@@ -26,10 +26,18 @@ const RECENCY_WEIGHT = 0.5;
 export function scoreMemorySalience(
   memory: Memory,
   involvedPeople: ReadonlySet<string>,
+  selfId: string,
   newestCreatedAt: number,
   oldestCreatedAt: number,
 ): number {
-  const relevant = memory.subjectAgentIds.some(id => involvedPeople.has(id)) ? 1 : 0;
+  // Root-caused via a real capture: `involvedPeople` deliberately excludes
+  // the agent's own id (it means "who ELSE is in this exchange" — see
+  // build-perception-packet.ts). A self-subject memory (subjectAgentIds:
+  // [agent's own id] — exactly the shape used for "my own secret/plan",
+  // the hidden-objective mechanic's bread and butter) could therefore NEVER
+  // earn the dominant relevance bonus, no matter how central it was to the
+  // agent's own behavior. A memory about myself is trivially relevant to me.
+  const relevant = memory.subjectAgentIds.some(id => involvedPeople.has(id) || id === selfId) ? 1 : 0;
   const typeWeight = MEMORY_TYPE_WEIGHTS[memory.type] ?? 0.3;
 
   // Normalized over the whole store's span, not per-memory: a per-memory span
@@ -51,6 +59,7 @@ export function scoreMemorySalience(
 export function selectRelevantMemories(
   memories: readonly Memory[],
   involvedPeople: ReadonlySet<string>,
+  selfId: string,
   maxMemories: number,
 ): Memory[] {
   if (memories.length === 0) return [];
@@ -61,7 +70,7 @@ export function selectRelevantMemories(
   return [...memories]
     .map(memory => ({
       memory,
-      score: scoreMemorySalience(memory, involvedPeople, newestCreatedAt, oldestCreatedAt),
+      score: scoreMemorySalience(memory, involvedPeople, selfId, newestCreatedAt, oldestCreatedAt),
     }))
     .sort((a, b) => b.score - a.score || b.memory.createdAt - a.memory.createdAt)
     .slice(0, maxMemories)

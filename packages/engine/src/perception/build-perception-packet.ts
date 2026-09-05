@@ -107,6 +107,7 @@ export function buildPerceptionPacket(
   const relevantMemories = selectRelevantMemories(
     agent.memories,
     involvedPeople,
+    agent.agentId,
     MAX_MEMORIES,
   );
 
