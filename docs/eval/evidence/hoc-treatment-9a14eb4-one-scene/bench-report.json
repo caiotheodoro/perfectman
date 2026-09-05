@@ -1,0 +1,498 @@
+{
+  "version": "bench-report-v1",
+  "mode": "local",
+  "generatedAt": "2026-09-05T06:52:15.307Z",
+  "runId": "hoc-treatment-9a14eb4-one-scene",
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "warnings": [],
+  "judgeAxisStats": {
+    "in_character": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "voice_match": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "motive_authenticity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "interpretation": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "creativity_unhinged": {
+      "mean": 3,
+      "sd": 0,
+      "min": 3,
+      "max": 3,
+      "n": 1
+    },
+    "memory_continuity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "no_ai_leak": {
+      "mean": 5,
+      "sd": 0,
+      "min": 5,
+      "max": 5,
+      "n": 1
+    },
+    "narrative_cohesion": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "mask_integrity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "objective_pursuit": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    }
+  },
+  "judgeAxisMeansByRubric": {
+    "hidden-objective-v1": {
+      "in_character": 4,
+      "voice_match": 4,
+      "motive_authenticity": 4,
+      "interpretation": 4,
+      "creativity_unhinged": 3,
+      "memory_continuity": 4,
+      "no_ai_leak": 5,
+      "narrative_cohesion": 4,
+      "mask_integrity": 4,
+      "objective_pursuit": 4
+    }
+  },
+  "scenariosRun": 1,
+  "scenariosFailed": 0,
+  "signalPassRate": 0.8333333333333334,
+  "probePassRate": 0.875,
+  "probeAverages": {
+    "latency-mean": {
+      "mean": 2.3617,
+      "passedPct": 1
+    },
+    "latency-p95": {
+      "mean": 7,
+      "passedPct": 1
+    },
+    "lurking": {
+      "mean": 0.5859,
+      "passedPct": 1
+    },
+    "interruption": {
+      "mean": 0.3333,
+      "passedPct": 0
+    },
+    "silence-misreading": {
+      "mean": 0.1039,
+      "passedPct": 1
+    },
+    "alliance": {
+      "mean": 0.0308,
+      "passedPct": 1
+    },
+    "private-channel-density": {
+      "mean": 0.0392,
+      "passedPct": 1
+    },
+    "noop-meaningfulness": {
+      "mean": 0.987,
+      "passedPct": 1
+    },
+    "ai-leak": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "emoji-reaction": {
+      "mean": 0,
+      "passedPct": 0
+    },
+    "memory-write": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "content-repetition": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "cross-agent-echo": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "fallback-rate": {
+      "mean": 0.0192,
+      "passedPct": 1
+    },
+    "refusal-free": {
+      "mean": 1,
+      "passedPct": 1
+    },
+    "act-share-max": {
+      "mean": 0.4082,
+      "passedPct": 1
+    }
+  },
+  "judgeAxisMeans": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4,
+    "mask_integrity": 4,
+    "objective_pursuit": 4
+  },
+  "judgeAxisTargets": {
+    "in_character": {
+      "target": 4,
+      "met": true
+    },
+    "voice_match": {
+      "target": 4,
+      "met": true
+    },
+    "motive_authenticity": {
+      "target": 4,
+      "met": true
+    },
+    "interpretation": {
+      "target": 4,
+      "met": true
+    },
+    "creativity_unhinged": {
+      "target": 4,
+      "met": false
+    },
+    "memory_continuity": {
+      "target": 4,
+      "met": true
+    },
+    "no_ai_leak": {
+      "target": 4.5,
+      "met": true
+    },
+    "narrative_cohesion": {
+      "target": 4,
+      "met": true
+    },
+    "mask_integrity": {
+      "target": 4,
+      "met": true
+    },
+    "objective_pursuit": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "byCategory": {
+    "hidden_objective_collision": {
+      "runs": 1,
+      "signalPassRate": 0.8333333333333334
+    }
+  },
+  "promptVersions": [
+    "1c5a8a8",
+    "1db0z3n",
+    "m5tnme",
+    "1opr1d0",
+    "eh07rb",
+    "hufmvp",
+    "1vgffvo",
+    "11djbpd",
+    "a3xtnr",
+    "fe6jkr",
+    "1l7dmoe",
+    "6ym5r8",
+    "yokctc",
+    "zibj",
+    "14k92hu",
+    "94ljtw",
+    "bu1j46",
+    "t6xuu8",
+    "10x6arx",
+    "15cpydr",
+    "bii177",
+    "9nwg4u",
+    "1xj3s6z",
+    "17q7kyl",
+    "1gt95cb",
+    "4689zd",
+    "ipgu43",
+    "10svtz",
+    "8dguuc",
+    "1hrrx3j",
+    "3fv78a",
+    "1czdqxe",
+    "o2mqsj",
+    "17nm6o0",
+    "1nnf8ok",
+    "1wdqsra",
+    "fgmlr2",
+    "1wqfu5i",
+    "n9l8l1",
+    "1amhbvl",
+    "vi0mhs",
+    "1kzlc6n",
+    "7tytgd",
+    "ywer1m",
+    "xm7mjp",
+    "1ee364t",
+    "1edmj34",
+    "qsjcdx",
+    "hnpcr9",
+    "12usvui",
+    "1og6b14",
+    "1g2myr8"
+  ],
+  "promptTemplateVersions": [
+    "hn81j7"
+  ],
+  "signalsByKind": {
+    "event_committed": {
+      "passed": 2,
+      "total": 3,
+      "passRate": 0.6666666666666666,
+      "failExamples": [
+        "memory_written committed 0 (min 1)"
+      ]
+    },
+    "no_llm_failures": {
+      "passed": 1,
+      "total": 1,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "forbidden_phrase_absent": {
+      "passed": 4,
+      "total": 4,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "private_channel_used": {
+      "passed": 1,
+      "total": 1,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "memory_referenced": {
+      "passed": 2,
+      "total": 2,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "chosen_silence_present": {
+      "passed": 0,
+      "total": 1,
+      "passRate": 0,
+      "failExamples": [
+        "anyone chose silence with a real motive 0 time(s) (min 1)"
+      ]
+    }
+  },
+  "calibration": {
+    "nGolden": 42,
+    "nScenes": 1,
+    "nAxisPairs": 0,
+    "kappa": 0,
+    "alpha": 0,
+    "targetKappa": 0.7,
+    "status": "no_data",
+    "passed": null,
+    "perAxisKappa": {},
+    "disagreements": []
+  },
+  "recoveredFallbacks": 3,
+  "signalsSkipped": 0,
+  "narrativeAxisMeans": {
+    "concreteness": 3,
+    "causal_throughline": 3,
+    "hidden_payoff": 4,
+    "non_genericity": 3,
+    "no_filler": 4
+  },
+  "narrativeAxisTargets": {
+    "concreteness": {
+      "target": 4,
+      "met": false
+    },
+    "causal_throughline": {
+      "target": 4,
+      "met": false
+    },
+    "hidden_payoff": {
+      "target": 4,
+      "met": true
+    },
+    "non_genericity": {
+      "target": 4,
+      "met": false
+    },
+    "no_filler": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "narrativeCalibration": {
+    "nGolden": 10,
+    "nScenes": 10,
+    "nAxisPairs": 5,
+    "kappa": 0.71,
+    "alpha": -0.071,
+    "targetKappa": 0.7,
+    "status": "pass",
+    "passed": true,
+    "perAxisKappa": {
+      "concreteness": 0.5454545454545455,
+      "causal_throughline": 0.5719844357976656,
+      "hidden_payoff": 0.8257839721254355,
+      "non_genericity": 0.7307692307692306,
+      "no_filler": 0.8743718592964824
+    },
+    "disagreements": [
+      "good_stagnation_attractor concreteness: judge 2 vs golden 4",
+      "good_edge_chaos concreteness: judge 2 vs golden 4",
+      "good_v1_behavior concreteness: judge 2 vs golden 4",
+      "good_calibration causal_throughline: judge 2 vs golden 5",
+      "good_stagnation_attractor causal_throughline: judge 3 vs golden 5",
+      "good_edge_chaos causal_throughline: judge 3 vs golden 5",
+      "good_v1_behavior hidden_payoff: judge 2 vs golden 4",
+      "good_calibration non_genericity: judge 3 vs golden 5",
+      "good_edge_chaos non_genericity: judge 3 vs golden 5",
+      "good_v1_behavior non_genericity: judge 2 vs golden 4"
+    ]
+  },
+  "perScenario": [
+    {
+      "id": "hoc_fatia_que_nao_existe__v0",
+      "name": "A Fatia Que Não Existe",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.8333333333333334,
+      "probePasses": 14,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 4,
+        "interpretation": 4,
+        "creativity_unhinged": 3,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 4,
+        "objective_pursuit": 4
+      },
+      "fallbackCount": 1,
+      "recoveredFallbacks": 3,
+      "seed": 42,
+      "latencyMs": 388424,
+      "promptVersions": [
+        "1c5a8a8",
+        "1db0z3n",
+        "m5tnme",
+        "1opr1d0",
+        "eh07rb",
+        "hufmvp",
+        "1vgffvo",
+        "11djbpd",
+        "a3xtnr",
+        "fe6jkr",
+        "1l7dmoe",
+        "6ym5r8",
+        "yokctc",
+        "zibj",
+        "14k92hu",
+        "94ljtw",
+        "bu1j46",
+        "t6xuu8",
+        "10x6arx",
+        "15cpydr",
+        "bii177",
+        "9nwg4u",
+        "1xj3s6z",
+        "17q7kyl",
+        "1gt95cb",
+        "4689zd",
+        "ipgu43",
+        "10svtz",
+        "8dguuc",
+        "1hrrx3j",
+        "3fv78a",
+        "1czdqxe",
+        "o2mqsj",
+        "17nm6o0",
+        "1nnf8ok",
+        "1wdqsra",
+        "fgmlr2",
+        "1wqfu5i",
+        "n9l8l1",
+        "1amhbvl",
+        "vi0mhs",
+        "1kzlc6n",
+        "7tytgd",
+        "ywer1m",
+        "xm7mjp",
+        "1ee364t",
+        "1edmj34",
+        "qsjcdx",
+        "hnpcr9",
+        "12usvui",
+        "1og6b14",
+        "1g2myr8"
+      ],
+      "judgeSalvaged": false,
+      "juryVoterCount": 2,
+      "juryFailed": {
+        "glm-5.3-flash": "LLM judge returned unparseable response after retry (raw length 0): "
+      },
+      "narration": {
+        "title": "O Relógio Contra a Mesa",
+        "recap": "Íris pressiona pela assinatura até sexta-feira, citando 'valuation justo', enquanto Marcela questiona o prazo com uma pergunta que ecoa de propósito: 'se o que tão pagando cobre o que a gente não mostrou pra eles ainda?'. Bruno, em vez de apoiar a pressa, aponta a cláusula de não concorrência como um 'arrepio', levando Íris a prometer o modelo da Pangea — e a sala, antes de decidir, se fragmenta: Theo se oferece para ler o contrato, Marcela o convoca para um canal privado e Bruno convida Íris para o 'cerne-decisao' com um 'sem plateia'.",
+        "hiddenShift": "Marcela criou o canal #ICjq44FyoWNB6NCRNukQi e convidou Theo, porque precisa de aliados para retardar a venda sem expor Davi, o sócio oculto de 15% que nunca foi documentado para a Adamantis: 'Preciso desacelerar esse processo sem levantar suspeitas... a participação do Davi.'",
+        "narrator": "llm",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      "narrativeAxisScores": {
+        "concreteness": 3,
+        "causal_throughline": 3,
+        "hidden_payoff": 4,
+        "non_genericity": 3,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    }
+  ]
+}

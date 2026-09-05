@@ -14,8 +14,8 @@
       "modelName": "z-ai/glm-5.3-flash",
       "apiKeyEnv": "PERFECTMAN_LLM_API_KEY",
       "temperature": 0,
-      "timeoutMs": 180000,
-      "maxTokens": 4000
+      "timeoutMs": 300000,
+      "maxTokens": 8000
     },
     {
       "providerType": "openai-compatible",
