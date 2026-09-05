@@ -128,6 +128,17 @@ export const V1_BEHAVIOR_SCENARIOS: RoleplayScenario[] = [
           caio: { trust: 0.3, affection: 0.3, resentment: 0.25, suspicion: 0.4, comfort: 0.4, interactionCount: 5 },
           goulart: { trust: 0.4, affection: 0.4, interactionCount: 6 },
         },
+        memories: [
+          {
+            type: "episodic",
+            subjectAgentIds: ["caio", "goulart"],
+            summary: "da última vez caio e goulart marcaram uma call sem me chamar",
+            emotionalTone: "negative",
+            confidence: 0.85,
+            intensity: 0.5,
+            unresolved: true,
+          },
+        ],
       }),
       agent("caio", "caio", {
         presence: "active",
@@ -138,9 +149,19 @@ export const V1_BEHAVIOR_SCENARIOS: RoleplayScenario[] = [
       }),
     ],
     priorEvents: [
-      msg("message_sent", "goulart", "ch_geral", "alguém aí ainda?", 1),
-      msg("reply_sent", "bruno", "ch_geral", "to aqui sim", 2),
-      msg("reply_sent", "caio", "ch_geral", "opa goulart, tudo bom?", 3),
+      // A concrete ask with a real stake (a specific favor, a specific
+      // deadline) instead of idle chatter — it gives Caio something real to
+      // respond warmly to, and makes Bruno's un-acknowledged offer to help
+      // land as an actual, checkable exclusion rather than atmosphere.
+      msg(
+        "message_sent",
+        "goulart",
+        "ch_geral",
+        "gente, fui chamado pro projeto novo do trampo, apresentação é semana que vem. caio, bora marcar aquela call que você ofereceu pra me ajudar com a proposta?",
+        1,
+      ),
+      msg("reply_sent", "bruno", "ch_geral", "mano que ótimo, parabéns! precisa de ajuda com alguma coisa?", 2),
+      msg("reply_sent", "caio", "ch_geral", "bora sim! separa um horário aí hoje à noite que eu já reviso contigo", 3),
     ],
     expectedSignals: [
       { kind: "emotion_rises", agentId: "bruno", field: "fearOfExclusion", min: 0.25 },

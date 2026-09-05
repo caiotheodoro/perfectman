@@ -331,6 +331,37 @@ export class ActionIntentPromptBuilder {
     this.renderRelationshipBiases(s, profile);
 
     if (profile.scenarioContext) this.renderScenarioContext(s, profile.scenarioContext);
+    if (profile.hiddenObjective) this.renderHiddenObjective(s, profile.hiddenObjective);
+  }
+
+  /**
+   * Renders last, deliberately: this is the one piece of context the agent
+   * must actually weigh against everything else in the room, not background
+   * flavor. Placed after scenario context so it's the most recent thing the
+   * model reads before the output contract.
+   */
+  private static renderHiddenObjective(s: PromptSection, objective: import("@perfectman/shared").AgentObjective): void {
+    s.heading("Secret objective");
+    s.raw(`Você tem um objetivo pessoal que ninguém na sala sabe: ${objective.description}`);
+    s.raw(
+      "Você nunca declara esse objetivo em voz alta nem o explica diretamente. Persiga-o através de suas ações e palavras normais nesta cena — e se perceber que outra pessoa está indo atrás da mesma coisa, isso muda como você age.",
+    );
+    // The three fields below are optional (older/simpler scenarios only set
+    // description + scarceResourceId) — when present, they're what actually
+    // turns the objective into a constraint instead of flavor text: a
+    // sentence the character cannot honestly say, a real cost if it leaks,
+    // and a defined moment where the performance is allowed to crack.
+    if (objective.constraint) {
+      s.raw(`Isso significa que você nunca pode: ${objective.constraint}.`);
+    }
+    if (objective.costOfExposure) {
+      s.raw(`Se isso vazar antes da hora: ${objective.costOfExposure}.`);
+    }
+    if (objective.breakingPoint) {
+      s.raw(
+        `Você mantém a máscara até que ${objective.breakingPoint} — a partir daí, pode deixar transparecer, mesmo que só por um instante.`,
+      );
+    }
   }
 
   private static renderOutputContract(s: PromptSection, actorId: string): void {
@@ -340,8 +371,9 @@ export class ActionIntentPromptBuilder {
     s.raw("The schema is enforced at decoding time where the provider honors it; where it isn't, these are the only fields you may set — set intentType to one value from <actions> below, set targets/content only where they apply, and never omit privateMotiveSummary:");
     s.list("Fields", modelIntentPacketFieldContract());
     s.list("Ensure", [
-      `"privateMotiveSummary" is fully developed and explains the *actual* raw human driver behind your action (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group").`,
+      `"privateMotiveSummary" is fully developed and names the *actual*, uncomfortable driver behind your action — the specific thought a real person would have but never say out loud, not just a plausible-sounding reason (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group"). If the honest version feels a little petty, insecure, or manipulative, that's the one to write — not a cleaned-up version of it.`,
       `Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`,
+      `"visibleContent" is the final message only — never include your own drafting process in it (no "let me reformulate", "deep breath", "wait, better phrasing:", stray self-corrections, or a first attempt left in before a second one). If you reconsider your wording, do that silently and output only the version you land on.`,
       `For reply_to_message set "replyToEventId", and for react set "targetEventId", to one of the bracketed event handles from <events> (e.g. "e1") — copy the handle text exactly, do not invent an id or describe the message.`,
       `Use "memoryWrites" only when this exchange actually matters to your relationships or intentions — not on every turn. Each proposal must be written in first person ("I…") and grounded in what actually happened in <events> (a promise made, a slight received, a revealed preference, a plan formed), filling every field (type, subjectAgentIds, summary, emotionalTone, confidence, intensity, unresolved) per the field contract above. When nothing qualifies, leave "memoryWrites" empty.`,
     ]);
@@ -464,6 +496,19 @@ export class ActionIntentPromptBuilder {
     s.heading("Decide now");
     s.raw(
       'You can ONLY perform ONE action. Pick exactly one permitted combination from <actions>, fill every relevant field per <output_contract>, and emit the JSON object. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move elsewhere — or choose "no_op".',
+    );
+    // Root-caused via a live capture + a static read of the prompt: nothing
+    // anywhere told agents to take a creative risk, so a real transcript
+    // read as a "sensible negotiation" — safe, agreeable, never provoking —
+    // exactly what the rubric's creativity_unhinged anchor-1 describes. This
+    // is the decision moment, so the nudge belongs here, not in the static
+    // output contract.
+    s.raw(
+      "When there is real pressure, tension, or something at stake in the room, don't default to the safest, most " +
+        "reasonable-sounding response — take a risk that this specific person, with their actual stakes and mood, " +
+        "would take: provoke, push back sharply, escalate, needle someone, let a flash of what you're actually " +
+        "feeling slip through, or make a move that surprises the room while still being believable as you. Playing " +
+        "it safe every single turn is itself a failure to be this character when the stakes call for more.",
     );
   }
 

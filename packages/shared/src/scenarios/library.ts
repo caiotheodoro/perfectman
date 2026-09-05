@@ -17,6 +17,7 @@ import { MOTIVE_ARCHETYPE_SCENARIOS } from "./motive-archetypes.js";
 import { STAGNATION_ATTRACTOR_SCENARIOS } from "./stagnation-attractors.js";
 import { EDGE_CHAOS_SCENARIOS } from "./edge-chaos.js";
 import { CALIBRATION_SCENARIOS } from "./calibration.js";
+import { HIDDEN_OBJECTIVE_COLLISION_SCENARIOS } from "./hidden-objective-collisions.js";
 
 export const SCENARIO_REGISTRY: readonly RoleplayScenario[] = [
   ...V1_BEHAVIOR_SCENARIOS,
@@ -24,6 +25,7 @@ export const SCENARIO_REGISTRY: readonly RoleplayScenario[] = [
   ...STAGNATION_ATTRACTOR_SCENARIOS,
   ...EDGE_CHAOS_SCENARIOS,
   ...CALIBRATION_SCENARIOS,
+  ...HIDDEN_OBJECTIVE_COLLISION_SCENARIOS,
 ];
 
 export function allScenarios(): RoleplayScenario[] {

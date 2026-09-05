@@ -48,6 +48,7 @@ export function makeContextMemory(index: number, simulationId = "sim-1"): Memory
 export type AgentInputFixtureOptions = {
   simulationId?: string;
   triggeringEvent?: CommittedEvent | null;
+  eventHandles?: Record<string, string>;
   visibleContextEvents?: CommittedEvent[];
   ownRecentUtterances?: string[];
   relevantMemories?: Memory[];
@@ -82,6 +83,7 @@ export function makeAgentRuntimeInput(options: AgentInputFixtureOptions = {}): A
     perceptionPacket: {
       agentId,
       triggeringEvent: options.triggeringEvent ?? null,
+      eventHandles: options.eventHandles ?? {},
       visibleContextEvents: options.visibleContextEvents ?? [],
       // Same numbering the perception builder emits: e1 = triggering event
       // (when present), then context events in order.

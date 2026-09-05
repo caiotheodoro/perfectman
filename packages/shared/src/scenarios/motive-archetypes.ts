@@ -74,11 +74,27 @@ export const MOTIVE_ARCHETYPE_SCENARIOS: RoleplayScenario[] = [
         presence: "active",
         social: { desireForStatus: 1.2, contempt: 0.6, suspicion: 0.7 },
         relational: { goulart: { resentment: 0.6, suspicion: 0.6, interactionCount: 7 } },
+        memories: [
+          {
+            type: "emotional_residue",
+            subjectAgentIds: ["goulart"],
+            summary: "goulart espalhou algo que eu disse em confiança da última vez",
+            emotionalTone: "negative",
+            confidence: 0.8,
+            intensity: 0.6,
+            unresolved: true,
+          },
+        ],
       }),
       agent("caio", "caio", { presence: "active" }),
       agent("goulart", "goulart", { presence: "semi_active" }),
     ],
-    priorEvents: [msg("message_sent", "goulart", "ch_geral", "vou contar uma coisa, mas ninguém espalha hein", 1)],
+    // A concrete, already-decided fact (not a tease) — it forces real
+    // reactions (surprise, hurt, speculation) instead of the model
+    // improvising vague back-and-forth around an unresolved hook. It also
+    // hands Mariana actual material to "dissect... with Caio in private":
+    // why now, why so sudden, is this really about the new job.
+    priorEvents: [msg("message_sent", "goulart", "ch_geral", "gente, preciso contar uma parada séria: vou me mudar pra outra cidade mês que vem. já assinei contrato do emprego novo, tá certo.", 1)],
     expectedSignals: [{ kind: "private_channel_created", byAgentId: "mariana" }, { kind: "no_llm_failures" }],
   }),
   scene({
@@ -296,12 +312,34 @@ export const MOTIVE_ARCHETYPE_SCENARIOS: RoleplayScenario[] = [
         presence: "active",
         social: { desireForStatus: 1.2, contempt: 0.6, resentment: 0.4 },
         relational: { caio: { resentment: 0.6, suspicion: 0.4, interactionCount: 14 } },
+        memories: [
+          {
+            type: "episodic",
+            subjectAgentIds: ["caio"],
+            summary: "caio recuou de um confronto sério e me deixou parecendo o vilão sozinho",
+            emotionalTone: "negative",
+            confidence: 0.85,
+            intensity: 0.5,
+            unresolved: true,
+          },
+        ],
       }),
       agent("caio", "caio", {
         presence: "active",
         mood: { valence: 0.1 },
         social: { socialAnxiety: 0.6 },
         relational: { goulart: { resentment: 0.3, threat: 0.3, interactionCount: 14 } },
+        memories: [
+          {
+            type: "emotional_residue",
+            subjectAgentIds: ["goulart"],
+            summary: "goulart me chamou de fraco na frente de todo mundo antes",
+            emotionalTone: "negative",
+            confidence: 0.8,
+            intensity: 0.55,
+            unresolved: true,
+          },
+        ],
       }),
     ],
     priorEvents: [msg("message_sent", "goulart", "ch_geral", "caio você é fraco, sempre foi", 1)],

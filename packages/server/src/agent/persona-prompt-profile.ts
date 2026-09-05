@@ -1,11 +1,10 @@
-export type ScenarioContextBlock = {
-  roomContext: string;
-  startingMood: string;
-  introBehaviorInstruction: string;
-  firstMoveGuidance?: string;
-  customNotes?: string[];
-  hostStartingMessage?: string;
-};
+import type { AgentObjective, ScenarioContextBlock } from "@perfectman/shared";
+
+// Re-exported for existing consumers (e.g. packages/server/src/__e2e__/4-persona-scenario.ts)
+// — the canonical definition now lives in @perfectman/shared so scenario
+// authors in packages/shared can reference it without depending on this
+// package. See ScenarioContextBlock's doc comment there.
+export type { ScenarioContextBlock };
 
 export type RelationshipPromptBias = {
   view: string;
@@ -41,6 +40,8 @@ export type PersonaPromptProfile = {
   hardAvoids: string[];
   relationshipBiases: Record<string, RelationshipPromptBias>;
   scenarioContext?: ScenarioContextBlock;
+  /** Seeded from AgentSeedSpec.hiddenObjective — see its doc comment. */
+  hiddenObjective?: AgentObjective;
   sourceRefs: {
     assessmentIds: string[];
     notesPath?: string;

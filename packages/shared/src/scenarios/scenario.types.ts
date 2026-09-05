@@ -17,7 +17,8 @@ export type ScenarioCategory =
   | "motive_archetype"     // a private-channel human motive (17 archetypes)
   | "stagnation_attractor" // resentment loop, deadlock, collapse, echo, flatline, rumination
   | "edge_chaos"           // unhinged tier: mock, silent treatment, alliance, betrayal, mutation triggers
-  | "calibration";         // neutral scenes used to calibrate judge/bounds
+  | "calibration"          // neutral scenes used to calibrate judge/bounds
+  | "hidden_objective_collision"; // structurally exclusive hidden objectives (see AgentObjective)
 
 export type ChannelSeedSpec = {
   id: string;
@@ -38,6 +39,54 @@ export type MemorySeedSpec = {
   unresolved?: boolean;
 };
 
+/**
+ * A hidden objective seeded onto an agent at scenario-build time — the
+ * structural conflict PERFECTMAN's premise depends on. Two agents sharing
+ * the same `scarceResourceId` cannot both get what they want; the agent
+ * pursues this privately and is never instructed to announce it. Before this
+ * type existed, no such objective reached the acting agent's own prompt
+ * anywhere in the codebase — see `PersonaPromptProfile.hiddenObjective` and
+ * `ActionIntentPromptBuilder.renderHiddenObjective`, the two places that now
+ * carry it from here into the actual generation call.
+ */
+export type AgentObjective = {
+  /** What the agent privately wants, first person, rendered directly into its prompt. */
+  description: string;
+  /** Id of the scarce thing being contended over. Two agents with the same id are in structural conflict. */
+  scarceResourceId: string;
+  /**
+   * The specific thing this agent can never do or say while pursuing the
+   * objective — the actual lever (see the type's own doc comment above):
+   * a hidden objective without a constraint is flavor text, not a pressure
+   * that forces performance or misdirection.
+   */
+  constraint?: string;
+  /** Concrete stakes if the objective leaks before it's achieved. */
+  costOfExposure?: string;
+  /**
+   * The condition under which this agent stops performing and lets the mask
+   * crack, even briefly. Rendered as a standing instruction, not a scripted
+   * trigger — the model decides when the condition is met.
+   */
+  breakingPoint?: string;
+};
+
+/**
+ * Per-scenario re-skinning of a persona: lets an existing, already-authored
+ * persona (voice/traits/style) be recast into a new setting/role without
+ * writing a new persona pack. Mirrors `PersonaPromptProfile.scenarioContext`
+ * in packages/server — defined here so scenario authors (this package) don't
+ * need a dependency on the server package to reference the shape.
+ */
+export type ScenarioContextBlock = {
+  roomContext: string;
+  startingMood: string;
+  introBehaviorInstruction: string;
+  firstMoveGuidance?: string;
+  customNotes?: string[];
+  hostStartingMessage?: string;
+};
+
 export type AgentSeedSpec = {
   agentId: string;
   personaId: string;
@@ -48,6 +97,8 @@ export type AgentSeedSpec = {
   memories?: MemorySeedSpec[];
   initiativeAccumulators?: { source: string; value: number; threshold: number }[];
   arrivalPulse?: number | null;
+  hiddenObjective?: AgentObjective;
+  scenarioContext?: ScenarioContextBlock;
 };
 
 export type EventSeedSpec = {

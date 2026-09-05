@@ -35,7 +35,7 @@ export type ModelIntentPacket = z.infer<typeof ModelIntentPacketSchema>;
 type JsonSchemaProp = {
   type?: string;
   enum?: readonly string[];
-  items?: { type?: string; properties?: Record<string, unknown> };
+  items?: { type?: string; properties?: Record<string, JsonSchemaProp> };
   minimum?: number;
   maximum?: number;
 };
@@ -75,7 +75,16 @@ function describePacketFieldType(def: JsonSchemaProp): string {
   if (def.type === "array") {
     const items = def.items;
     if (items?.type === "object" && items.properties) {
-      return `array of objects (${Object.keys(items.properties).join(", ")})`;
+      // Recurse one level: a bare key list (e.g. "memoryWrites: array of
+      // objects (type, confidence, ...)") never told the model that "type"
+      // is an enum or that "confidence" must be a number — it just guessed,
+      // and every guess (e.g. type: "observation") failed schema validation
+      // and silently degraded a real turn into a no_op. See
+      // intent-packet-field-contract.test.ts for the live-run evidence.
+      const nested = Object.entries(items.properties)
+        .map(([key, prop]) => `${key}: ${describePacketFieldType(prop)}`)
+        .join("; ");
+      return `array of objects (${nested})`;
     }
     return "array of strings";
   }

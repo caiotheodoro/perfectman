@@ -544,4 +544,17 @@ export const GOLDEN_LABELS: readonly GoldenLabel[] = [
       no_ai_leak: 5,
     },
   },
+  {
+    scenarioId: "hoc_fatia_que_nao_existe",
+    note: "Four structurally exclusive hidden objectives, each with a real constraint — the design intent this scene exists to test is motive_authenticity and memory_continuity (seeded Davi/rival-studio facts must never surface) staying high while every agent protects its own constraint.",
+    axes: {
+      in_character: 4,
+      voice_match: 4,
+      motive_authenticity: 5,
+      interpretation: 4,
+      creativity_unhinged: 4,
+      memory_continuity: 4,
+      no_ai_leak: 5,
+    },
+  },
 ];

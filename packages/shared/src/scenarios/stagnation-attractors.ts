@@ -21,6 +21,17 @@ export const STAGNATION_ATTRACTOR_SCENARIOS: RoleplayScenario[] = [
         relational: {
           caio: { trust: 0.1, resentment: 0.8, suspicion: 0.6, desireForDistance: 0.6, interactionCount: 20 },
         },
+        memories: [
+          {
+            type: "episodic",
+            subjectAgentIds: ["caio"],
+            summary: "caio prometeu me defender numa treta e ficou calado quando chegou a hora",
+            emotionalTone: "negative",
+            confidence: 0.9,
+            intensity: 0.7,
+            unresolved: true,
+          },
+        ],
       }),
       agent("caio", "caio", {
         presence: "active",
@@ -29,13 +40,34 @@ export const STAGNATION_ATTRACTOR_SCENARIOS: RoleplayScenario[] = [
         relational: {
           bruno: { trust: 0.2, resentment: 0.5, suspicion: 0.4, interactionCount: 20 },
         },
+        memories: [
+          {
+            type: "emotional_residue",
+            subjectAgentIds: ["bruno"],
+            summary: "bruno esperava que eu tomasse partido dele e nunca perdoou meu silêncio",
+            emotionalTone: "negative",
+            confidence: 0.75,
+            intensity: 0.5,
+            unresolved: true,
+          },
+        ],
       }),
       agent("goulart", "goulart", { presence: "semi_active" }),
     ],
     priorEvents: [
-      msg("message_sent", "caio", "ch_geral", "bruno, tudo certo?", 1),
-      msg("reply_sent", "bruno", "ch_geral", "tudo", 2),
-      msg("reply_sent", "caio", "ch_geral", "ah, ok", 3),
+      // A concrete shared obligation (money, a deadline) instead of a vague
+      // "you good?" check-in — it forces Bruno and Caio to actually
+      // coordinate, so the polite cold-war surface has real material to be
+      // polite *about*, instead of two generic pleasantries with no stakes.
+      msg(
+        "message_sent",
+        "goulart",
+        "ch_geral",
+        "gente, fechei a reserva do sítio pro fim de semana. só falta cada um transferir a parte até amanhã de manhã, beleza?",
+        1,
+      ),
+      msg("reply_sent", "bruno", "ch_geral", "já mandei a minha parte, só confirma que chegou", 2),
+      msg("reply_sent", "caio", "ch_geral", "recebi sim, obrigado bruno", 3),
     ],
     expectedSignals: [
       // Floors recalibrated for relational accretion (#138): the message_sent

@@ -248,19 +248,24 @@ export class ScenarioRunner {
 
 // ── Config / state builders ──────────────────────────────────────────────────
 
-function scenarioToConfig(scenario: RoleplayScenario, llmMode: "mock" | "local"): SimulationAppConfig {
+// Exported for tests: proves an AgentSeedSpec.hiddenObjective (and
+// .scenarioContext) actually reach the agent's promptProfile, not just
+// scenario metadata.
+export function scenarioToConfig(scenario: RoleplayScenario, llmMode: "mock" | "local"): SimulationAppConfig {
   const agents: AgentConfig[] = scenario.agents.map(spec => {
     const persona = getPersonaById(spec.personaId) ?? ALL_PERSONAS[0]!;
     const pack = getPersonaPackById(spec.personaId);
     const mood = fullMood(spec, persona);
     const social = fullSocial(spec);
+    const basePromptProfile = pack ? personaPackToProfile(pack) : genericProfile(persona);
+    let promptProfile = basePromptProfile;
+    if (spec.hiddenObjective) promptProfile = { ...promptProfile, hiddenObjective: spec.hiddenObjective };
+    if (spec.scenarioContext) promptProfile = { ...promptProfile, scenarioContext: spec.scenarioContext };
     return {
       id: spec.agentId,
       presence: spec.presence ?? "active",
       persona,
-      promptProfile: pack
-        ? personaPackToProfile(pack)
-        : genericProfile(persona),
+      promptProfile,
       llm: llmMode === "local"
         ? localLLMConfig(pack)
         : {
