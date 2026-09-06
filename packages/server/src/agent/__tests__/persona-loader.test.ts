@@ -99,6 +99,30 @@ describe("personaPackToProfile — scenario re-skin", () => {
     expect(Object.keys(personaPackToProfile(pack).relationshipBiases)).toContain("leo");
   });
 
+  it("casts the leo pack for the first time: biases about all four peers survive under the band's ids", () => {
+    // hoc_banda_no_festival — Léo is the fifth member, so leo's biases about
+    // goulart/bruno/mariana/caio must all land on vic/dudu/bea/kai, and the
+    // scene name wins over the pack's "Léo" spelling exactly as for others.
+    const leo = getPersonaPackById("leo");
+    if (!leo) throw new Error("leo pack missing");
+    const bandCast = ["vic", "bea", "dudu", "kai", "leo"];
+    const profile = personaPackToProfile(leo, {
+      scenarioContext: {
+        roomContext: "Você é Léo, tecladista.",
+        startingMood: "Elétrico.",
+        introBehaviorInstruction: "Pergunte na cara.",
+        displayName: "Léo",
+        castMap: { goulart: "vic", bruno: "dudu", mariana: "bea", caio: "kai", leo: "leo" },
+      },
+      castAgentIds: bandCast,
+      castDisplayNames: { vic: "Vic", bea: "Bea", dudu: "Dudu", kai: "Kai", leo: "Léo" },
+    });
+    expect(Object.keys(profile.relationshipBiases).sort()).toEqual(["bea", "dudu", "kai", "vic"]);
+    expect(profile.relationshipBiases["vic"]?.view).toBe(leo.relationshipBiases["goulart"]);
+    expect(profile.relationshipBiases["kai"]?.view).toBe(leo.relationshipBiases["caio"]);
+    expect(profile.displayName).toBe("Léo");
+  });
+
   it("drops pack-derived unresolved memory lines when the scenario seeds its own memories", () => {
     const seeded = personaPackToProfile(pack, { scenarioContext, castAgentIds: cast, castDisplayNames, replacesMemories: true });
     expect(seeded.emotionalPatterns).toEqual([]);

@@ -134,6 +134,12 @@ export type BenchReport = {
   }>;
 };
 
+/** `hoc_fatia__v2` → 2; an un-suffixed id is variant 0. */
+function variantIndex(scenarioId: string): number {
+  const m = /__v(\d+)$/.exec(scenarioId);
+  return m ? Number(m[1]) : 0;
+}
+
 /** Per-juror evidence, keyed by label; empty when no juror cited anything. */
 function juryEvidence(verdict: JuryVerdict): Record<string, Record<string, string>> | undefined {
   const out: Record<string, Record<string, string>> = {};
@@ -149,6 +155,8 @@ export async function runBench(opts: {
   slice?: string;
   category?: string;
   limit?: number;
+  /** `--variants N`: keep only the first N seed variants of every selected scenario (a per-scenario cap, unlike `--limit`). */
+  variants?: number;
   out?: string;
   /** `--judge rule|llm` shorthand; absent → the resolved config's providerType. */
   judge?: "rule" | "llm";
@@ -225,7 +233,12 @@ export async function runBench(opts: {
   }
 
   const expanded = expandVariants(selected, 7);
-  const limited = opts.limit && opts.limit > 0 ? expanded.slice(0, opts.limit) : expanded;
+  // `--limit` truncates the expanded list, so "one run per scene" across a
+  // slice needs a per-scenario cap: `--variants 1` keeps v0 of every scene.
+  const capped = opts.variants && opts.variants > 0
+    ? expanded.filter((s) => variantIndex(s.id) < opts.variants!)
+    : expanded;
+  const limited = opts.limit && opts.limit > 0 ? capped.slice(0, opts.limit) : capped;
 
   const report: BenchReport = {
     version: "bench-report-v1",
@@ -711,6 +724,7 @@ export async function main(): Promise<void> {
     slice: args.includes("--slice") ? (argValue("--slice") ?? "") : undefined,
     category: argValue("--category"),
     limit: argValue("--limit") ? Number(argValue("--limit")) : undefined,
+    variants: argValue("--variants") ? Number(argValue("--variants")) : undefined,
     out: argValue("--out"),
     // The shorthand overrides the file's providerType only when the flag is
     // actually passed — absent, the file (and the rule default) decides.

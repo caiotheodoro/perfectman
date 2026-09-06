@@ -34,7 +34,7 @@ pnpm --filter @perfectman/eval bench --slice hoc --mode local --judge llm \
   --seeds 42,43,44 --pulse-limit 32 --run-id hoc-baseline-<sha7>
 ```
 
-3 scenarios (`hoc_fatia_que_nao_existe`, `hoc_heranca_do_sitio`, `hoc_banda_no_festival`) × 3 seeds = 9 runs per arm, n=9 per axis. Seed pinning on a router is best effort; the per-seed spread is reported (`judgeAxisStats`) rather than assumed away.
+3 scenarios (`hoc_fatia_que_nao_existe`, `hoc_heranca_do_sitio`, `hoc_banda_no_festival`) × 3 seeds = 9 runs per arm, n=9 per axis. Add `--variants 1` so each scene runs its canonical v0 only (the bench otherwise expands every scene into its seed variants; `--limit` truncates the whole list, not per scene). An iteration read is `--seeds 42 --variants 1` (3 runs, ~20 min); the 3-seed matrix is for milestones. Seed pinning on a router is best effort; the per-seed spread is reported (`judgeAxisStats`) rather than assumed away.
 
 The run writes `docs/eval/evidence/<run-id>/{bench-report.json, run-meta.json, scenarios/*.json}`. Commit it with an `observations.md` in the `canary-136-138` shape: what moved, what did not, and the attribution.
 

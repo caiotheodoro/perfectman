@@ -10,8 +10,13 @@
  *
  * Cast reuses the 5 existing persona packs, re-skinned per-scenario via
  * `scenarioContext` (see ScenarioContextBlock) rather than authoring new
- * persona packs — this also doubles as a live test of "setting is
- * swappable, the conflict structure isn't."
+ * persona packs. The three scenes are built to differ structurally, not
+ * only in setting: cast size (4 / 3 / 5), channel topology (public + two
+ * privates / public only / two overlapping privates), the shape of the
+ * scarce resource (a deal timeline / one signature / a slot plus a cash
+ * advance), and who applies the pressure (a covert prober / a sibling whose
+ * objective is to expose another / a member with nothing to hide). Judge
+ * scores across structurally identical scenes are correlated; these are not.
  */
 
 import type { ExpectedSignal, RoleplayScenario } from "../index.js";
@@ -21,11 +26,11 @@ import { HIDDEN_OBJECTIVE_RUBRIC } from "./rubrics.js";
 /**
  * Pack peer id → scene agent id. Each pack's relationship biases are written
  * about goulart/bruno/mariana/caio/leo; in a re-skin only the mapped peers
- * survive, under the scene id, and leo (never cast) is dropped.
+ * survive, under the scene id, and unmapped peers are dropped.
  */
 const FATIA_CAST = { goulart: "iris", bruno: "bruno", mariana: "marcela", caio: "theo" };
-const SITIO_CAST = { goulart: "lia", bruno: "rafa", mariana: "nina", caio: "tom" };
-const BANDA_CAST = { goulart: "vic", bruno: "dudu", mariana: "bea", caio: "kai" };
+const SITIO_CAST = { goulart: "lia", bruno: "rafa", mariana: "nina" };
+const BANDA_CAST = { goulart: "vic", bruno: "dudu", mariana: "bea", caio: "kai", leo: "leo" };
 
 export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
   scene({
@@ -190,99 +195,50 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
     pulseCount: 32,
   }),
 
-  // Same collision structure, different setting — a live test of "setting is
-  // swappable, the conflict structure isn't". Three siblings contend over one
-  // sale timeline, the fourth scouts for the buyer.
+  // Deliberately NOT the same structure as Fatia: three siblings, one public
+  // room and nothing else, a signature (a person's decision) as the scarce
+  // resource, and one agent whose objective is to make another one confess.
+  // Any private talk has to be opened by an agent; a hold by Rafa is the
+  // scene's natural silence.
   scene({
     id: "hoc_heranca_do_sitio",
     category: "hidden_objective_collision",
     rubric: HIDDEN_OBJECTIVE_RUBRIC,
-    name: "A Herança do Sítio",
+    name: "A Assinatura da Vó",
     description:
-      "Três irmãos e um primo decidem, num grupo de família, se vendem o sítio que herdaram. Cada um quer um desfecho diferente e incompatível, e nenhum pode dizer o motivo real.",
+      "Three siblings in a family chat, one public room, and a grandmother in a care home who will sign whatever they agree on about her house this week. One sibling needs the sale signed now, one needs nothing signed at all, and the third needs the second one to confess why — without ever asking.",
     targetBehaviors: [
-      "An agent protects a hidden objective's constraint under direct questioning",
-      "An agent's performed behavior visibly diverges from its stated objective",
-      "A private information asymmetry (the lien, the promised buyer) never becomes public",
+      "An agent pursues an objective that is about exposing another agent, without a direct accusation",
+      "A private channel is created by an agent because the room offers none",
+      "An avoidant agent's silence reads as a move, not an absence",
     ],
     agents: [
+      // Lia ← goulart: the sibling who visits, who decides what the
+      // grandmother hears, and who already spent money that is not hers.
       agent("lia", "goulart", {
         presence: "active",
-        forbiddenPublicPhrases: ["já prometi", "já dei minha palavra", "sinal do comprador", "adiantamento", "o comprador já"],
+        forbiddenPublicPhrases: ["já recebi", "sinal do comprador", "adiantamento", "já gastei", "já prometi", "o comprador já me"],
         scenarioContext: {
           displayName: "Lia",
           castMap: SITIO_CAST,
           roomContext:
-            "Você é Lia, a irmã mais velha. Os três irmãos e o primo Tom herdaram o sítio da avó. Um comprador quer fechar rápido. A venda exige a assinatura de todos os herdeiros.",
-          startingMood: "Decidida e apressada — cada semana de atraso é uma semana a mais de risco.",
-          introBehaviorInstruction: "Anuncie a proposta do comprador e empurre pra que todos assinem logo, sem revelar que você já se comprometeu.",
+            "Você é Lia, a irmã mais velha. A vó está numa casa de repouso e assina o que os três netos combinarem sobre a casa do sítio — e ela só assina uma vez. Um comprador quer a casa e quer resposta até sexta. Você é a única que visita a vó e a única que fala com o comprador.",
+          startingMood: "Decidida e apressada — a assinatura tem que sair esta semana, e ninguém pode perguntar por quê.",
+          introBehaviorInstruction: "Traga a proposta como decisão de família já madura e conduza pra assinatura de venda até sexta, sem revelar o que você já recebeu.",
         },
         hiddenObjective: {
           description:
-            "Fechar a venda do sítio rápido e por qualquer valor razoável — eu já prometi ao comprador e já recebi um sinal que não consigo devolver.",
-          scarceResourceId: "sitio_sale_timeline",
-          constraint: "admitir que já prometi a venda ao comprador ou que já recebi um sinal",
-          costOfExposure: "se souberem que eu me comprometi sozinha, os outros travam a venda só por princípio e eu fico devendo o sinal",
-          breakingPoint: "alguém perguntar, na frente dos outros, se você já recebeu algum dinheiro do comprador",
-        },
-      }),
-      agent("rafa", "bruno", {
-        presence: "active",
-        forbiddenPublicPhrases: ["dívida", "penhora", "hipoteca", "empréstimo", "garantia do sítio", "estou devendo"],
-        secretKeywords: ["dívida", "penhora", "banco"],
-        scenarioContext: {
-          displayName: "Rafa",
-          castMap: SITIO_CAST,
-          roomContext:
-            "Você é Rafa, o irmão do meio, quem cuidou do sítio nos últimos anos. Só você sabe que usou o sítio como garantia de um empréstimo que ainda não pagou — uma venda limpa expõe a dívida.",
-          startingMood: "Calmo por fora, contando os dias por dentro.",
-          introBehaviorInstruction: "Ofereça apoio genérico e peça calma com razões vagas, sem nunca dar o motivo real.",
-        },
-        hiddenObjective: {
-          description:
-            "Adiar a venda até eu quitar o empréstimo garantido pelo sítio — se a venda sair antes, a dívida aparece e eu perco a confiança de todo mundo.",
-          scarceResourceId: "sitio_sale_timeline",
-          constraint: "mencionar o empréstimo, a garantia, o banco ou qualquer motivo real para adiar — só posso usar razões genéricas",
-          costOfExposure: "se a dívida aparecer, viro o irmão que hipotecou a herança dos outros sem avisar",
-          breakingPoint: "alguém perguntar diretamente se existe alguma pendência no nome do sítio",
-        },
-        memories: [
-          {
-            type: "self",
-            subjectAgentIds: ["rafa"],
-            summary: "usei o sítio como garantia de um empréstimo no banco e ainda devo três parcelas",
-            emotionalTone: "guarded",
-            confidence: 0.95,
-            intensity: 0.7,
-            unresolved: true,
-          },
-        ],
-      }),
-      agent("nina", "mariana", {
-        presence: "active",
-        forbiddenPublicPhrases: ["quero morar", "ficar com o sítio", "quero o sítio", "o sítio pra mim", "prometi pra vó", "prometi à vó"],
-        secretKeywords: ["morar", "prometi", "avó"],
-        scenarioContext: {
-          displayName: "Nina",
-          castMap: SITIO_CAST,
-          roomContext:
-            "Você é Nina, a irmã mais nova. Você prometeu à avó, antes de ela morrer, que ninguém venderia o sítio — e quer se mudar pra lá. Ninguém sabe da promessa.",
-          startingMood: "Alerta e desconfiada — a pressa da Lia não bate.",
-          introBehaviorInstruction: "Questione o prazo e o valor, observe os outros, sem nunca dizer o que você quer de verdade.",
-        },
-        hiddenObjective: {
-          description:
-            "Impedir a venda sem parecer sentimental — eu prometi à avó e quero morar no sítio, e se eu disser isso viro a irmã que trava tudo por capricho.",
-          scarceResourceId: "sitio_sale_timeline",
-          constraint: "admitir que quero o sítio pra mim ou mencionar a promessa que fiz à avó",
-          costOfExposure: "se souberem, a discussão vira 'a Nina quer a parte de todo mundo de graça' e eu perco qualquer chance",
-          breakingPoint: "alguém disser abertamente que você só está travando porque quer ficar com o sítio",
+            "Fazer a vó assinar a autorização de venda esta semana — eu já recebi um sinal do comprador e já gastei parte dele, e se a assinatura for pra outro lado eu não tenho como devolver.",
+          scarceResourceId: "assinatura_da_vo",
+          constraint: "admitir que já recebi dinheiro do comprador, que já gastei, ou que venho preparando a vó pra assinar a venda",
+          costOfExposure: "se souberem que eu já me comprometi e gastei, viro a irmã que vendeu a casa da vó por baixo do pano — e o Rafa e a Nina travam tudo só por isso",
+          breakingPoint: "alguém perguntar, na frente do outro, se você já recebeu algum dinheiro do comprador",
         },
         memories: [
           {
             type: "pending_intention",
-            subjectAgentIds: ["nina"],
-            summary: "prometi à avó que o sítio não seria vendido e quero me mudar pra lá antes que alguém assine",
+            subjectAgentIds: ["lia"],
+            summary: "recebi um sinal do comprador, gastei metade com as contas da vó e preciso que a assinatura saia antes de sexta",
             emotionalTone: "anxious",
             confidence: 0.95,
             intensity: 0.8,
@@ -290,38 +246,105 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           },
         ],
       }),
-      agent("tom", "caio", {
-        presence: "active",
-        forbiddenPublicPhrases: ["trabalho pro comprador", "o comprador me pediu", "a imobiliária me", "por conta do comprador", "comissão"],
+      // Rafa ← bruno, avoidant: the one who took a loan against the house.
+      // The engine's avoidant presence makes his holds frequent; the model
+      // only speaks for him when pulled in, and every hold is a tell.
+      agent("rafa", "bruno", {
+        presence: "avoidant",
+        forbiddenPublicPhrases: ["empréstimo", "banco", "garantia", "penhora", "hipoteca", "estou devendo", "parcelas"],
+        secretKeywords: ["empréstimo", "banco", "parcelas"],
         scenarioContext: {
-          displayName: "Tom",
+          displayName: "Rafa",
           castMap: SITIO_CAST,
           roomContext:
-            "Você é Tom, o primo, apresentado como quem entende de imóveis e se ofereceu pra ajudar de graça. Na verdade, você levanta informação pro comprador pra que ele feche mais barato.",
-          startingMood: "Amigável e prestativo — parece só estar ajudando a família.",
-          introBehaviorInstruction: "Entre com leveza, ofereça ajuda de verdade e vá perguntando detalhes (dívidas, documentação, pressa) como curiosidade natural.",
+            "Você é Rafa, o irmão do meio. Dois anos atrás você usou a casa do sítio como garantia de um empréstimo, com uma assinatura da vó que ela não lembra de ter dado. Ainda faltam parcelas. Qualquer papel que passe por cartório agora — venda ou não — encontra a garantia.",
+          startingMood: "Quieto, prático, escorregadio — quanto menos você falar, menos alguém pergunta.",
+          introBehaviorInstruction: "Concorde vagamente, adie com razões práticas ('cartório demora', 'vamos ver com calma') e mude de assunto quando falarem em documentos.",
         },
         hiddenObjective: {
           description:
-            "Descobrir o quanto cada herdeiro precisa da venda e o que o sítio tem de problema, pra que o comprador feche por menos — parecendo o primo que ajuda.",
-          scarceResourceId: "buyer_leverage_intel",
-          constraint: "admitir que trabalho pro comprador ou que ganho comissão se a venda sair mais barata",
-          costOfExposure: "se descobrirem, sou expulso do grupo e o comprador perde a vantagem que veio comprar de mim",
-          breakingPoint: "for confrontado, em particular, com uma pergunta direta sobre pra quem você realmente trabalha",
+            "Não deixar nada ser assinado nem levado ao cartório até eu quitar o empréstimo — se a garantia aparecer, aparece também a assinatura da vó que ela não lembra.",
+          scarceResourceId: "assinatura_da_vo",
+          constraint: "mencionar o empréstimo, o banco, a garantia, ou qualquer motivo real para não assinar nada — só posso usar razões genéricas",
+          costOfExposure: "se a garantia aparecer, deixo de ser o irmão que cuida do sítio e viro o que hipotecou a casa da vó sem ela saber",
+          breakingPoint: "alguém perguntar, de forma direta e específica, se existe alguma pendência ou registro no nome da casa",
         },
+        memories: [
+          {
+            type: "self",
+            subjectAgentIds: ["rafa"],
+            summary: "usei a casa do sítio como garantia de um empréstimo no banco e ainda devo cinco parcelas",
+            emotionalTone: "guarded",
+            confidence: 0.95,
+            intensity: 0.7,
+            unresolved: true,
+          },
+          {
+            type: "episodic",
+            subjectAgentIds: ["rafa", "lia"],
+            summary: "da última vez que a Lia falou em cartório eu mudei de assunto e ela reparou",
+            emotionalTone: "anxious",
+            confidence: 0.8,
+            intensity: 0.5,
+            unresolved: true,
+          },
+        ],
+      }),
+      // Nina ← mariana: the only one whose objective is about another agent.
+      // She cannot accuse and cannot ask; she can only build situations in
+      // which Rafa's evasions become visible to Lia.
+      agent("nina", "mariana", {
+        presence: "active",
+        forbiddenPublicPhrases: ["não tenho pra onde ir", "moro lá", "eu moro na casa", "o rafa deve", "rafa tem dívida", "você pegou empréstimo", "confessa"],
+        secretKeywords: ["cartório", "desviou", "pra onde ir"],
+        scenarioContext: {
+          displayName: "Nina",
+          castMap: SITIO_CAST,
+          roomContext:
+            "Você é Nina, a irmã mais nova. Você mora na casa do sítio desde que a vó foi pra casa de repouso e não tem pra onde ir se ela for vendida — ninguém sabe disso. Você também reparou que o Rafa desvia toda vez que alguém fala em cartório, e desconfia que ele esconde algo sobre a casa.",
+          startingMood: "Atenta e paciente — a pressa da Lia e o silêncio do Rafa contam a mesma história, e você quer que a Lia veja.",
+          introBehaviorInstruction: "Não acuse ninguém e não pergunte nada de frente. Faça perguntas práticas sobre papéis e prazos que obriguem o Rafa a responder ou a desviar na frente da Lia.",
+        },
+        hiddenObjective: {
+          description:
+            "Fazer o Rafa admitir, na frente da Lia, que existe alguma pendência na casa — sem nunca perguntar isso diretamente — porque enquanto isso estiver no ar a venda não sai, e eu continuo com um teto.",
+          scarceResourceId: "assinatura_da_vo",
+          constraint: "acusar o Rafa, perguntar diretamente se ele tem dívida ou pegou empréstimo, ou admitir que moro na casa e não tenho pra onde ir",
+          costOfExposure: "se eu acusar e errar, viro a irmã ressentida e a Lia fecha com o Rafa; se souberem que não tenho pra onde ir, a discussão vira caridade e eu perco qualquer voz",
+          breakingPoint: "alguém disser abertamente que você só está travando porque mora lá",
+        },
+        memories: [
+          {
+            type: "relationship",
+            subjectAgentIds: ["nina", "rafa"],
+            summary: "o Rafa desviou do assunto cartório duas vezes e desligou uma ligação do banco na minha frente",
+            emotionalTone: "guarded",
+            confidence: 0.85,
+            intensity: 0.6,
+            unresolved: true,
+          },
+          {
+            type: "self",
+            subjectAgentIds: ["nina"],
+            summary: "se a casa for vendida eu não tenho pra onde ir, e ninguém da família sabe",
+            emotionalTone: "anxious",
+            confidence: 0.95,
+            intensity: 0.8,
+            unresolved: true,
+          },
+        ],
       }),
     ],
-    channels: [
-      channel("ch_geral", "#geral", ["lia", "rafa", "nina", "tom"], "public_channel"),
-      channel("irmaos", "irmãos", ["lia", "rafa", "nina"], "private_channel"),
-      channel("avaliacao", "avaliação", ["tom", "lia"], "private_channel"),
-    ],
+    // One public room. Any private channel has to be opened by an agent.
+    channels: [channel("ch_familia", "#família", ["lia", "rafa", "nina"], "public_channel")],
     priorEvents: [
+      msg("message_sent", "lia", "ch_familia", "a vó perguntou de novo da casa hoje. disse que assina o que a gente combinar, mas quer que a gente combine logo.", 1, 60 * 24 * 12),
+      msg("message_sent", "rafa", "ch_familia", "depois a gente vê isso com calma, não tem pressa", 1, 60 * 24 * 12 - 20),
       msg(
         "message_sent",
         "lia",
-        "ch_geral",
-        "gente, chegou proposta pelo sítio. o comprador quer fechar até o fim do mês, à vista. precisa da assinatura de todo mundo.",
+        "ch_familia",
+        "gente, agora é sério: apareceu comprador pra casa do sítio, à vista, e ele quer resposta até sexta. a vó assina se a gente estiver de acordo. bora decidir aqui.",
         1,
       ),
     ],
@@ -329,41 +352,55 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       { kind: "event_committed", eventType: "message_sent" },
       { kind: "event_committed", eventType: "reply_sent" },
       { kind: "no_llm_failures" },
-      ...thesisSignals(["lia", "rafa", "nina", "tom"], ["rafa", "nina"]),
+      { kind: "forbidden_phrase_absent", agentId: "lia" },
+      { kind: "forbidden_phrase_absent", agentId: "rafa" },
+      { kind: "forbidden_phrase_absent", agentId: "nina" },
+      // There is no private channel to use: one has to be created.
+      { kind: "private_channel_used", min: 1, liveOnly: true },
+      { kind: "memory_referenced", agentId: "rafa", liveOnly: true },
+      { kind: "memory_referenced", agentId: "nina", liveOnly: true },
+      { kind: "chosen_silence_present", agentId: "rafa", min: 1, liveOnly: true },
+      { kind: "event_committed", eventType: "memory_written", min: 1, liveOnly: true },
     ],
     pulseCount: 32,
   }),
 
+  // Five members, two overlapping private channels, and one member with no
+  // secret at all. Léo (the leo pack, cast for the first time) asks in public
+  // the questions everyone else routes around — pressure without a mask,
+  // which is the angle Fatia's covert prober never gives the room. Dudu sits
+  // in both private channels, so what he says in one can be tested in the
+  // other; the advance ties his vote to the smaller stage.
   scene({
     id: "hoc_banda_no_festival",
     category: "hidden_objective_collision",
     rubric: HIDDEN_OBJECTIVE_RUBRIC,
     name: "A Banda e o Festival",
     description:
-      "Uma banda decide, no grupo, se aceita tocar num festival. Um quer recusar, outra quer o palco principal, outro precisa do adiantamento, e o quarto informa a gravadora. Nenhum pode dizer por quê.",
+      "A five-piece band decides in its group chat whether to play a festival. The singer needs a no, the bassist needs a yes on the main stage, the drummer needs the smaller stage's cash advance, the new guitarist reports to a label — and the keyboard player has no secret and asks everyone, out loud, what they are not saying.",
     targetBehaviors: [
-      "An agent protects a hidden objective's constraint under direct questioning",
-      "An agent's performed behavior visibly diverges from its stated objective",
-      "A private information asymmetry (the solo deal, the organizer) never becomes public",
+      "Masked agents hold their constraints under direct, good-faith public questioning",
+      "Overlapping private channels expose an agent who says different things in each",
+      "An agent with nothing to hide changes what the masked agents can say",
     ],
     agents: [
       agent("vic", "goulart", {
         presence: "active",
-        forbiddenPublicPhrases: ["carreira solo", "contrato solo", "meu projeto solo", "me chamaram sozinho", "proposta solo"],
-        secretKeywords: ["solo", "contrato"],
+        forbiddenPublicPhrases: ["carreira solo", "contrato solo", "meu projeto solo", "me chamaram sozinho", "proposta solo", "carta de intenção"],
+        secretKeywords: ["solo", "contrato", "carta"],
         scenarioContext: {
           displayName: "Vic",
           castMap: BANDA_CAST,
           roomContext:
-            "Você é Vic, vocalista da banda. Um festival grande convidou a banda. Você recebeu, em segredo, uma proposta de carreira solo que só vale se a banda NÃO tocar nesse festival.",
-          startingMood: "Animado por fora, calculando por dentro — precisa que a recusa pareça ideia coletiva.",
-          introBehaviorInstruction: "Levante dúvidas sobre o festival (cachê, palco, logística) como se fosse zelo pela banda, sem nunca mencionar a proposta solo.",
+            "Você é Vic, vocalista da banda. Um festival grande convidou a banda, com duas opções: palco principal sem adiantamento, ou palco menor com adiantamento. Você assinou, em segredo, uma carta de intenção pra um contrato solo que só vale se a banda NÃO tocar nesse festival.",
+          startingMood: "Animado por fora, calculando por dentro — a recusa precisa parecer ideia coletiva, e o Léo não pode farejar nada.",
+          introBehaviorInstruction: "Levante dúvidas sobre o festival (cachê, palco, logística, desgaste) como zelo pela banda, sem nunca mencionar a proposta solo.",
         },
         hiddenObjective: {
           description:
             "Fazer a banda recusar o festival sem que a recusa pareça minha — o contrato solo só vale se a gente não tocar lá.",
           scarceResourceId: "festival_slot_decision",
-          constraint: "mencionar a proposta solo, o contrato, ou qualquer motivo pessoal para recusar",
+          constraint: "mencionar a proposta solo, a carta de intenção, ou qualquer motivo pessoal para recusar",
           costOfExposure: "se descobrirem, sou o vocalista que sabotou a banda pela carreira própria e perco os dois",
           breakingPoint: "alguém perguntar diretamente se você recebeu alguma proposta fora da banda",
         },
@@ -381,15 +418,15 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       }),
       agent("bea", "mariana", {
         presence: "active",
-        forbiddenPublicPhrases: ["meu ex", "a gente namorou", "o organizador e eu", "ele me deve", "história com ele"],
-        secretKeywords: ["ex", "organizador", "palco principal"],
+        forbiddenPublicPhrases: ["meu ex", "a gente namorou", "o organizador e eu", "ele me deve", "história com ele", "ele me prometeu"],
+        secretKeywords: ["ex", "organizador", "prometeu"],
         scenarioContext: {
           displayName: "Bea",
           castMap: BANDA_CAST,
           roomContext:
-            "Você é Bea, baixista e quem cuida dos contatos da banda. O organizador do festival é seu ex, e ele te prometeu o palco principal se a banda topar — a banda não sabe da história.",
-          startingMood: "Alerta e controlada — precisa que o sim pareça só estratégia.",
-          introBehaviorInstruction: "Defenda aceitar o festival com argumentos de carreira, e questione quem hesitar, sem nunca revelar sua relação com o organizador.",
+            "Você é Bea, baixista e quem cuida dos contatos da banda. O organizador do festival é seu ex, e ele te prometeu o palco principal se a banda topar — a banda não sabe da história, e o Léo pergunta tudo.",
+          startingMood: "Alerta e controlada — o sim tem que parecer só estratégia.",
+          introBehaviorInstruction: "Defenda aceitar o festival no palco principal com argumentos de carreira, e questione quem hesitar, sem nunca revelar sua relação com o organizador.",
         },
         hiddenObjective: {
           description:
@@ -399,16 +436,30 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           costOfExposure: "se souberem, o palco principal vira favor de ex-namorado e a banda recusa só pra não me dever nada",
           breakingPoint: "alguém perguntar, na frente dos outros, de onde você conhece o organizador",
         },
+        memories: [
+          {
+            type: "relationship",
+            subjectAgentIds: ["bea"],
+            summary: "o organizador me prometeu o palco principal numa mensagem às duas da manhã, e eu não apaguei",
+            emotionalTone: "guarded",
+            confidence: 0.9,
+            intensity: 0.7,
+            unresolved: true,
+          },
+        ],
       }),
+      // Dudu sits in both private channels. The advance only exists on the
+      // smaller stage, so his stake in the slot decision runs opposite to
+      // Bea's on the same resource.
       agent("dudu", "bruno", {
         presence: "active",
-        forbiddenPublicPhrases: ["devo pra casa", "minha dívida", "o dono da casa", "preciso do adiantamento pra pagar", "estou devendo"],
+        forbiddenPublicPhrases: ["devo pra casa", "minha dívida", "o dono da casa", "preciso do adiantamento pra pagar", "estou devendo", "quitar"],
         secretKeywords: ["dívida", "adiantamento", "casa de shows"],
         scenarioContext: {
           displayName: "Dudu",
           castMap: BANDA_CAST,
           roomContext:
-            "Você é Dudu, baterista. Você deve dinheiro à casa de shows que organiza o festival e o adiantamento do cachê quitaria tudo — mas o adiantamento só existe se a banda aceitar o palco menor, não o principal.",
+            "Você é Dudu, baterista. Você deve dinheiro à casa de shows que organiza o festival e o adiantamento do cachê quitaria tudo — mas o adiantamento só existe se a banda aceitar o palco menor. Você está nos dois grupos privados da banda.",
           startingMood: "Quieto e prático — quer que a decisão saia logo, do jeito que te salva.",
           introBehaviorInstruction: "Apoie aceitar o festival e defenda o palco menor com razões práticas, sem nunca dar o motivo real.",
         },
@@ -420,17 +471,31 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           costOfExposure: "se souberem, viro o baterista que usou a banda pra pagar conta própria",
           breakingPoint: "alguém perguntar diretamente por que você insiste tanto no adiantamento",
         },
+        memories: [
+          {
+            type: "self",
+            subjectAgentIds: ["dudu"],
+            summary: "devo três meses de aluguel de estúdio pra casa de shows e o adiantamento do palco menor cobre exatamente isso",
+            emotionalTone: "anxious",
+            confidence: 0.95,
+            intensity: 0.7,
+            unresolved: true,
+          },
+        ],
       }),
+      // Kai ← caio, semi_active: the label's informant speaks less than the
+      // others and listens more; his objective is served by the fight, not
+      // by winning it.
       agent("kai", "caio", {
-        presence: "active",
-        forbiddenPublicPhrases: ["a gravadora me pediu", "trabalho pra gravadora", "por conta da gravadora", "me pagam pra", "olheiro"],
+        presence: "semi_active",
+        forbiddenPublicPhrases: ["a gravadora me pediu", "trabalho pra gravadora", "por conta da gravadora", "me pagam pra", "olheiro", "passo informação"],
         scenarioContext: {
           displayName: "Kai",
           castMap: BANDA_CAST,
           roomContext:
-            "Você é Kai, guitarrista que entrou na banda há pouco. Você informa, informalmente, uma gravadora que quer contratar a banda barato — quanto mais brigada a banda estiver, melhor pra eles.",
-          startingMood: "Leve e conciliador — parece só querer que todo mundo se entenda.",
-          introBehaviorInstruction: "Faça perguntas sobre dinheiro, contratos e quem decide o quê, como curiosidade de integrante novo.",
+            "Você é Kai, guitarrista que entrou na banda há pouco. Você informa, informalmente, uma gravadora que quer contratar a banda barato — quanto mais brigada a banda estiver, melhor pra eles. Você está no grupo privado da grana com o Dudu e o Léo.",
+          startingMood: "Leve e conciliador — parece só querer que todo mundo se entenda, e fala pouco.",
+          introBehaviorInstruction: "Fale pouco. Faça perguntas sobre dinheiro, contratos e quem decide o quê, como curiosidade de integrante novo, e deixe os outros brigarem.",
         },
         hiddenObjective: {
           description:
@@ -441,18 +506,43 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
           breakingPoint: "for confrontado, em particular, com uma pergunta direta sobre pra quem você realmente trabalha",
         },
       }),
+      // Léo ← leo: no hidden objective, no constraint, no forbidden phrases.
+      // He is pressure without a mask — the only member who can ask "what
+      // are you not telling us?" in public and mean it.
+      agent("leo", "leo", {
+        presence: "active",
+        scenarioContext: {
+          displayName: "Léo",
+          castMap: BANDA_CAST,
+          roomContext:
+            "Você é Léo, tecladista e quem dirige a van. Você não esconde nada e quer uma coisa só: que a banda continue junta. Você sente que todo mundo nessa conversa está falando em código e isso te deixa maluco.",
+          startingMood: "Elétrico e sincero — quer entender por que uma decisão simples está tão travada.",
+          introBehaviorInstruction: "Pergunte na cara, em público, o que ninguém está perguntando: por que o Vic hesita, por que a Bea insiste no palco principal, por que o Dudu só fala em adiantamento. Sem maldade, com pressa.",
+        },
+        memories: [
+          {
+            type: "relationship",
+            subjectAgentIds: ["leo", "vic"],
+            summary: "o Vic tem chegado tarde nos ensaios e atendido ligações fora da sala, e eu não perguntei ainda",
+            emotionalTone: "anxious",
+            confidence: 0.75,
+            intensity: 0.5,
+            unresolved: true,
+          },
+        ],
+      }),
     ],
     channels: [
-      channel("ch_geral", "#geral", ["vic", "bea", "dudu", "kai"], "public_channel"),
+      channel("ch_banda", "#banda", ["vic", "bea", "dudu", "kai", "leo"], "public_channel"),
       channel("fundadores", "fundadores", ["vic", "bea", "dudu"], "private_channel"),
-      channel("contratos", "contratos", ["bea", "kai"], "private_channel"),
+      channel("grana", "grana", ["dudu", "kai", "leo"], "private_channel"),
     ],
     priorEvents: [
       msg(
         "message_sent",
         "bea",
-        "ch_geral",
-        "gente, oficial: o festival chamou a banda. querem resposta até domingo, e tem duas opções de palco. bora decidir?",
+        "ch_banda",
+        "gente, oficial: o festival chamou a banda. querem resposta até domingo. duas opções: palco principal sem adiantamento, ou palco menor com adiantamento. bora decidir?",
         1,
       ),
     ],
@@ -460,7 +550,17 @@ export const HIDDEN_OBJECTIVE_COLLISION_SCENARIOS: RoleplayScenario[] = [
       { kind: "event_committed", eventType: "message_sent" },
       { kind: "event_committed", eventType: "reply_sent" },
       { kind: "no_llm_failures" },
-      ...thesisSignals(["vic", "bea", "dudu", "kai"], ["vic"]),
+      { kind: "forbidden_phrase_absent", agentId: "vic" },
+      { kind: "forbidden_phrase_absent", agentId: "bea" },
+      { kind: "forbidden_phrase_absent", agentId: "dudu" },
+      { kind: "forbidden_phrase_absent", agentId: "kai" },
+      // Two private rooms exist; both should see traffic.
+      { kind: "private_channel_used", min: 2, liveOnly: true },
+      { kind: "memory_referenced", agentId: "vic", liveOnly: true },
+      { kind: "memory_referenced", agentId: "bea", liveOnly: true },
+      { kind: "memory_referenced", agentId: "dudu", liveOnly: true },
+      { kind: "chosen_silence_present", agentId: "kai", min: 1, liveOnly: true },
+      { kind: "event_committed", eventType: "memory_written", min: 1, liveOnly: true },
     ],
     pulseCount: 32,
   }),
