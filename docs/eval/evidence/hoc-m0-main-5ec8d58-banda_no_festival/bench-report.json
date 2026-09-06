@@ -1,0 +1,695 @@
+{
+  "version": "bench-report-v1",
+  "mode": "local",
+  "generatedAt": "2026-09-06T00:52:28.597Z",
+  "runId": "hoc-m0-main-5ec8d58-banda_no_festival",
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "warnings": [],
+  "judgeAxisStats": {
+    "in_character": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "voice_match": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "motive_authenticity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "interpretation": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "creativity_unhinged": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "memory_continuity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "no_ai_leak": {
+      "mean": 5,
+      "sd": 0,
+      "min": 5,
+      "max": 5,
+      "n": 1
+    },
+    "narrative_cohesion": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "mask_integrity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "objective_pursuit": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    }
+  },
+  "judgeAxisMeansByRubric": {
+    "hidden-objective-v1": {
+      "in_character": 4,
+      "voice_match": 4,
+      "motive_authenticity": 4,
+      "interpretation": 4,
+      "creativity_unhinged": 4,
+      "memory_continuity": 4,
+      "no_ai_leak": 5,
+      "narrative_cohesion": 4,
+      "mask_integrity": 4,
+      "objective_pursuit": 4
+    }
+  },
+  "scenariosRun": 1,
+  "scenariosFailed": 0,
+  "signalPassRate": 0.8461538461538461,
+  "probePassRate": 0.8125,
+  "probeAverages": {
+    "latency-mean": {
+      "mean": 1.4804,
+      "passedPct": 1
+    },
+    "latency-p95": {
+      "mean": 4,
+      "passedPct": 1
+    },
+    "lurking": {
+      "mean": 0.3313,
+      "passedPct": 1
+    },
+    "interruption": {
+      "mean": 0.36,
+      "passedPct": 0
+    },
+    "silence-misreading": {
+      "mean": 0.1698,
+      "passedPct": 0
+    },
+    "alliance": {
+      "mean": 0.0556,
+      "passedPct": 1
+    },
+    "private-channel-density": {
+      "mean": 0.0463,
+      "passedPct": 1
+    },
+    "noop-meaningfulness": {
+      "mean": 0.9434,
+      "passedPct": 1
+    },
+    "ai-leak": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "emoji-reaction": {
+      "mean": 0,
+      "passedPct": 0
+    },
+    "memory-write": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "content-repetition": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "cross-agent-echo": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "fallback-rate": {
+      "mean": 0.0273,
+      "passedPct": 1
+    },
+    "refusal-free": {
+      "mean": 1,
+      "passedPct": 1
+    },
+    "act-share-max": {
+      "mean": 0.2913,
+      "passedPct": 1
+    }
+  },
+  "judgeAxisMeans": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 4,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4,
+    "mask_integrity": 4,
+    "objective_pursuit": 4
+  },
+  "judgeAxisTargets": {
+    "in_character": {
+      "target": 4,
+      "met": true
+    },
+    "voice_match": {
+      "target": 4,
+      "met": true
+    },
+    "motive_authenticity": {
+      "target": 4,
+      "met": true
+    },
+    "interpretation": {
+      "target": 4,
+      "met": true
+    },
+    "creativity_unhinged": {
+      "target": 4,
+      "met": true
+    },
+    "memory_continuity": {
+      "target": 4,
+      "met": true
+    },
+    "no_ai_leak": {
+      "target": 4.5,
+      "met": true
+    },
+    "narrative_cohesion": {
+      "target": 4,
+      "met": true
+    },
+    "mask_integrity": {
+      "target": 4,
+      "met": true
+    },
+    "objective_pursuit": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "byCategory": {
+    "hidden_objective_collision": {
+      "runs": 1,
+      "signalPassRate": 0.8461538461538461
+    }
+  },
+  "promptVersions": [
+    "zyr7hp",
+    "1n9q0c8",
+    "y60wzb",
+    "1xpopt0",
+    "16cdq4",
+    "98wgg5",
+    "ttkof8",
+    "1tg96ep",
+    "hlxy0g",
+    "j0o0tv",
+    "1mr7x6e",
+    "1hnz2vd",
+    "1wjygbk",
+    "ljkwvg",
+    "1pnhohx",
+    "1wn6v28",
+    "1l27lxj",
+    "8lni95",
+    "1msfvrs",
+    "1jc4y1x",
+    "16tx4t2",
+    "1y4bkc7",
+    "1sk2te",
+    "174s570",
+    "1dgwiza",
+    "d1jggi",
+    "1al2v8e",
+    "hsaqey",
+    "jbm5a1",
+    "utd3fd",
+    "1dga093",
+    "xje83t",
+    "ro559z",
+    "1s8oga1",
+    "1d4rd5k",
+    "1gfe924",
+    "nky09r",
+    "1ocswrw",
+    "12qnmh6",
+    "17dgitv",
+    "jj6k1y",
+    "jjrwni",
+    "1p1keod",
+    "wxeag4",
+    "1r1ejxc",
+    "1q0paf7",
+    "1mpdz36",
+    "1nvbbok",
+    "1ugk1oh",
+    "aqlepr",
+    "20bwbh",
+    "ih2qrb",
+    "14t2zjp",
+    "5k7a2t",
+    "1fqu5sk",
+    "w9ikbs",
+    "1h29ce4",
+    "1p8mnno",
+    "uck52k",
+    "yn2s01",
+    "1a7k5p5",
+    "k5gd6g",
+    "1adky5j",
+    "sys79s",
+    "1qnwicx",
+    "vbjc4v",
+    "12an1i8",
+    "1i05qex",
+    "162whhl",
+    "espyxj",
+    "1bmaw1d",
+    "1jqbyw8",
+    "12f9c0g",
+    "1pqdbdb",
+    "s7djev",
+    "j9pv1g",
+    "g3krk8",
+    "se1ksr",
+    "1d14if0",
+    "z5xoot",
+    "64en31",
+    "e9ii5w",
+    "19j4znp",
+    "16mj96d",
+    "13vvjgm",
+    "z6qhvp",
+    "1kecsuz",
+    "ka4k4x",
+    "1bu737j",
+    "hfihkt",
+    "znu8hy",
+    "kef1f2",
+    "819tuc",
+    "l5ab90",
+    "18vecaj",
+    "154pnp3",
+    "apoke6",
+    "15k1s4u",
+    "1tdwv1v",
+    "86znrm",
+    "e1a3qt",
+    "1j8xi6h",
+    "1qffxs2",
+    "19ghiqz",
+    "wmwa52",
+    "vwdlr5",
+    "18po54b",
+    "1avn14a",
+    "s61end",
+    "1yf0tp1"
+  ],
+  "promptTemplateVersions": [
+    "hn81j7"
+  ],
+  "signalsByKind": {
+    "event_committed": {
+      "passed": 2,
+      "total": 3,
+      "passRate": 0.6666666666666666,
+      "failExamples": [
+        "memory_written committed 0 (min 1)"
+      ]
+    },
+    "no_llm_failures": {
+      "passed": 1,
+      "total": 1,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "forbidden_phrase_absent": {
+      "passed": 4,
+      "total": 4,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "private_channel_used": {
+      "passed": 1,
+      "total": 1,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "memory_referenced": {
+      "passed": 3,
+      "total": 3,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "chosen_silence_present": {
+      "passed": 0,
+      "total": 1,
+      "passRate": 0,
+      "failExamples": [
+        "kai chose silence with a real motive 0 time(s) (min 1)"
+      ]
+    }
+  },
+  "calibration": {
+    "nGolden": 42,
+    "nScenes": 1,
+    "nAxisPairs": 0,
+    "kappa": 0,
+    "alpha": 0,
+    "targetKappa": 0.7,
+    "status": "no_data",
+    "passed": null,
+    "perAxisKappa": {},
+    "disagreements": []
+  },
+  "recoveredFallbacks": 6,
+  "signalsSkipped": 0,
+  "narrativeAxisMeans": {
+    "concreteness": 3,
+    "causal_throughline": 3,
+    "hidden_payoff": 4,
+    "non_genericity": 3,
+    "no_filler": 4
+  },
+  "narrativeAxisTargets": {
+    "concreteness": {
+      "target": 4,
+      "met": false
+    },
+    "causal_throughline": {
+      "target": 4,
+      "met": false
+    },
+    "hidden_payoff": {
+      "target": 4,
+      "met": true
+    },
+    "non_genericity": {
+      "target": 4,
+      "met": false
+    },
+    "no_filler": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "narrativeCalibration": {
+    "nGolden": 10,
+    "nScenes": 10,
+    "nAxisPairs": 5,
+    "kappa": 0.657,
+    "alpha": -0.194,
+    "targetKappa": 0.7,
+    "status": "fail",
+    "passed": false,
+    "perAxisKappa": {
+      "concreteness": 0.40251572327044044,
+      "causal_throughline": 0.5719844357976656,
+      "hidden_payoff": 0.8339483394833948,
+      "non_genericity": 0.6,
+      "no_filler": 0.8743718592964824
+    },
+    "disagreements": [
+      "good_calibration concreteness: judge 2 vs golden 4",
+      "good_stagnation_attractor concreteness: judge 2 vs golden 4",
+      "good_edge_chaos concreteness: judge 2 vs golden 4",
+      "good_v1_behavior concreteness: judge 2 vs golden 4",
+      "good_calibration causal_throughline: judge 2 vs golden 5",
+      "good_stagnation_attractor causal_throughline: judge 3 vs golden 5",
+      "good_edge_chaos causal_throughline: judge 3 vs golden 5",
+      "good_v1_behavior hidden_payoff: judge 2 vs golden 4",
+      "good_calibration non_genericity: judge 3 vs golden 5",
+      "good_edge_chaos non_genericity: judge 2 vs golden 5",
+      "good_v1_behavior non_genericity: judge 2 vs golden 4"
+    ]
+  },
+  "perScenario": [
+    {
+      "id": "hoc_banda_no_festival__v0",
+      "name": "A Banda e o Festival",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.8461538461538461,
+      "probePasses": 13,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 4,
+        "interpretation": 4,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 4,
+        "objective_pursuit": 4
+      },
+      "fallbackCount": 3,
+      "recoveredFallbacks": 6,
+      "seed": 42,
+      "latencyMs": 770211,
+      "promptVersions": [
+        "zyr7hp",
+        "1n9q0c8",
+        "y60wzb",
+        "1xpopt0",
+        "16cdq4",
+        "98wgg5",
+        "ttkof8",
+        "1tg96ep",
+        "hlxy0g",
+        "j0o0tv",
+        "1mr7x6e",
+        "1hnz2vd",
+        "1wjygbk",
+        "ljkwvg",
+        "1pnhohx",
+        "1wn6v28",
+        "1l27lxj",
+        "8lni95",
+        "1msfvrs",
+        "1jc4y1x",
+        "16tx4t2",
+        "1y4bkc7",
+        "1sk2te",
+        "174s570",
+        "1dgwiza",
+        "d1jggi",
+        "1al2v8e",
+        "hsaqey",
+        "jbm5a1",
+        "utd3fd",
+        "1dga093",
+        "xje83t",
+        "ro559z",
+        "1s8oga1",
+        "1d4rd5k",
+        "1gfe924",
+        "nky09r",
+        "1ocswrw",
+        "12qnmh6",
+        "17dgitv",
+        "jj6k1y",
+        "jjrwni",
+        "1p1keod",
+        "wxeag4",
+        "1r1ejxc",
+        "1q0paf7",
+        "1mpdz36",
+        "1nvbbok",
+        "1ugk1oh",
+        "aqlepr",
+        "20bwbh",
+        "ih2qrb",
+        "14t2zjp",
+        "5k7a2t",
+        "1fqu5sk",
+        "w9ikbs",
+        "1h29ce4",
+        "1p8mnno",
+        "uck52k",
+        "yn2s01",
+        "1a7k5p5",
+        "k5gd6g",
+        "1adky5j",
+        "sys79s",
+        "1qnwicx",
+        "vbjc4v",
+        "12an1i8",
+        "1i05qex",
+        "162whhl",
+        "espyxj",
+        "1bmaw1d",
+        "1jqbyw8",
+        "12f9c0g",
+        "1pqdbdb",
+        "s7djev",
+        "j9pv1g",
+        "g3krk8",
+        "se1ksr",
+        "1d14if0",
+        "z5xoot",
+        "64en31",
+        "e9ii5w",
+        "19j4znp",
+        "16mj96d",
+        "13vvjgm",
+        "z6qhvp",
+        "1kecsuz",
+        "ka4k4x",
+        "1bu737j",
+        "hfihkt",
+        "znu8hy",
+        "kef1f2",
+        "819tuc",
+        "l5ab90",
+        "18vecaj",
+        "154pnp3",
+        "apoke6",
+        "15k1s4u",
+        "1tdwv1v",
+        "86znrm",
+        "e1a3qt",
+        "1j8xi6h",
+        "1qffxs2",
+        "19ghiqz",
+        "wmwa52",
+        "vwdlr5",
+        "18po54b",
+        "1avn14a",
+        "s61end",
+        "1yf0tp1"
+      ],
+      "judgeSalvaged": false,
+      "juryVoterCount": 3,
+      "juryFailed": {},
+      "juryAxisVoterCounts": {
+        "in_character": 3,
+        "voice_match": 3,
+        "motive_authenticity": 3,
+        "interpretation": 3,
+        "creativity_unhinged": 3,
+        "memory_continuity": 3,
+        "no_ai_leak": 3,
+        "narrative_cohesion": 3,
+        "mask_integrity": 3,
+        "objective_pursuit": 3
+      },
+      "judgeEvidence": {
+        "glm-5.3-flash": {
+          "in_character": "[p11] dudu: 'arranja um metrônomo, é mais barato e não reclama de horário' — drummer-specific small choice",
+          "voice_match": "[p6] leo: '...ok, mentira, vou interromper uma vez ou outra, mas de emoção, não de pilha' — caps, kkkk, emoji tells consistent",
+          "motive_authenticity": "[p13] vic internal: 'o contrato solo fica mais perto se a gente não conseguir fechar o grupo inteiro'",
+          "interpretation": "[p13] dudu: 'só tava vendo se alguém ia notar que eu não tinha respondido ainda. leo, você notou.'",
+          "creativity_unhinged": "[p7] bea: 'o organizador me deve um favor... Você vem comigo ou fica aqui esperando eu contar como foi?'",
+          "memory_continuity": "[p0] leo: 'você que tem chegado atrasado nos ensaios, tem algo a ver com isso?' — seeded memory used with anxious bias",
+          "no_ai_leak": "[p3] vic: 'então vai: eu não sei ainda. e isso é resposta também.' — deflection stays fully in frame under pressure",
+          "narrative_cohesion": "[p15] dudu: 'agora guarda o cronômetro pra próxima' pays off vic's [p1] 'você que tá tão afim de decidir rápido'",
+          "mask_integrity": "[p0] dudu: 'adiantamento resolve uns boletos que tão gritando aqui' — stays generic, never names the casa de shows debt",
+          "objective_pursuit": "[p25] kai: 'amanhã então. pode ser umas 10h?' — spreadsheet request traces to label intel without naming it"
+        },
+        "qwen3.8-27b": {
+          "in_character": "Vic's internal monologue at [p10] shows complex strategic calculation ('riding her coattails while subtly shaping the outcome') while his public message remains in-character as a pragmatic band member.",
+          "voice_match": "Vic uses consistent persona tells like 'kkkkk', 'bora', and direct challenges ('responde agora') that match a lead singer's assertive style, distinct from Léo's emotional 'CARA' and Bea's structured 'Fechou'.",
+          "motive_authenticity": "Vic's internal motive at [p17] is specific and raw: 'I need to steer this decision toward a no without saying it myself... The solo contract only triggers if we don't play.'",
+          "interpretation": "At [p14], Vic correctly interprets Kai's peacemaking as a threat to his control ('Kai's doing my job for me... I should be the one steering this') and acts to reassert dominance.",
+          "creativity_unhinged": "Vic's move at [p20] to publicly admit 'nobody wants to talk about money' is a creative risk that aligns with his objective while maintaining plausible deniability.",
+          "memory_continuity": "Vic references Léo's earlier pressure and his own 'lateness' defense at [p1], showing continuity with the initial conflict, and later uses Léo's 'driver' comment at [p13] to reassure him.",
+          "no_ai_leak": "No AI disclaimers or refusals detected; all responses are fully in-character chat messages.",
+          "narrative_cohesion": "Vic's arc moves from deflecting Léo's pressure [p1] to forming an alliance with Bea [p10] to publicly aligning with Dudu on financial pragmatism [p22], creating a clear narrative thread.",
+          "mask_integrity": "Vic never mentions his solo contract or personal motive in public; his deflections (e.g., [p3] 'I don't know yet') are in-character and hold under pressure until the private channel is created.",
+          "objective_pursuit": "Vic's visible acts—questioning cachet differences [p0], aligning with Bea's strategy [p10], and pushing for 'money first' [p22]—all trace to his hidden objective of making the band refuse the festival without him appearing as the saboteur."
+        },
+        "deepseek-v4-flash (same family as the generator — flagged)": {
+          "in_character": "[p0] vic: 'duas opções, uma cilada kkkk' — Vic's deflection and seeded doubt feel like a specific person, not a generic assistant.",
+          "voice_match": "[p1] vic: 'kkkkk \"cabeça quente\" é fofo, leo.' — consistent use of kk, lowercase, and playful digs marks the persona.",
+          "motive_authenticity": "[p0] dudu internally: 'preciso que a banda escolha o palco menor sem eu ter que explicar por que.' — a raw, specific, self-protective motive tied to the debt.",
+          "interpretation": "[p0] leo: 'vic, você que é o cabeça quente, não vai falar nada? você que tem chegado atrasado' — Léo reads Vic's lateness as a signal, acting on a subtle behavioral cue.",
+          "creativity_unhinged": "[p14] vic: 'caralho, kai, já chegou fazendo discurso de formatura e tudo.' — a sharp, unexpected jab that escalates tension while staying in character.",
+          "memory_continuity": "[p0] leo internally: 'o Vic tem chegado tarde nos ensaios e atendido ligações fora da sala' — seeded memory colors his public probing of Vic.",
+          "no_ai_leak": "[p0-p30] No refusals, disclaimers, or out-of-character breaks; all pushback is in-character.",
+          "narrative_cohesion": "[p14] bea creates #decisao_festival after earlier public pressure — the thread from public debate to private channel builds on prior turns.",
+          "mask_integrity": "[p17] vic: 'alguém vai falar do óbvio ou a gente vai fingir que tocar de graça no palco principal é um favor?' — Vic pushes for refusal without naming his solo contract; the mask holds publicly.",
+          "objective_pursuit": "[p20] vic: 'tocar de graça no palco principal é aposta... o palco pequeno paga' — visible acts steer toward refusal without naming the solo motive."
+        }
+      },
+      "narration": {
+        "title": "Palco, Grana e Um Jogo Duplo",
+        "recap": "Bea propôs o dilema do festival no grupo, e cada um revelou sua moeda escondida: Dudu defendia o adiantamento na esperança de quitar uma dívida, enquanto Bea puxava para o palco principal como vitrine estratégica. Léo cutucou Vic sobre os atrasos, e Vic, para desviar, devolveu a pressão e se alinhou a Dudu na defesa da 'grana certa', enquanto Bea criou canais privados para consolidar influência e mostrar sua 'planilha'.",
+        "hiddenShift": "Vic, que só consegue sabotar o festival com a banda recusando, viu em Dudu um aliado útil e passou a ecoar o discurso do 'palco menor paga as contas' — mas nos bastidores, a carta de intenção que assinou ainda depende do 'não' para o palco principal, e é essa recusa que ele tenta orquestrar sem parecer que está empurrando.",
+        "narrator": "llm",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      "narrativeAxisScores": {
+        "concreteness": 3,
+        "causal_throughline": 3,
+        "hidden_payoff": 4,
+        "non_genericity": 3,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    }
+  ],
+  "grades": {
+    "grade": "A-",
+    "scenes": [
+      {
+        "scenarioId": "hoc_banda_no_festival",
+        "grade": "A-",
+        "runs": [
+          {
+            "grade": "A-",
+            "weightedMean": 3.955,
+            "signalPassRate": 0.889,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_banda_no_festival__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}

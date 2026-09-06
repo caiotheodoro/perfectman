@@ -1,0 +1,45 @@
+{
+  "version": "grades-v1",
+  "runId": "hoc-m0-main-5ec8d58-heranca_do_sitio",
+  "gitSha": "5ec8d580afdac859cf58b7a7b19d588469c8903b",
+  "promptTemplateVersions": [
+    "hn81j7"
+  ],
+  "gradedAt": "2026-09-06T00:52:28.256Z",
+  "round": {
+    "grade": "F",
+    "scenes": [
+      {
+        "scenarioId": "hoc_heranca_do_sitio",
+        "grade": "F",
+        "runs": [
+          {
+            "grade": "F",
+            "weightedMean": 3.866,
+            "signalPassRate": 0.714,
+            "hygieneFailures": [
+              "probe fallback-rate"
+            ],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: probe fallback-rate",
+              "private_channel_used failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_heranca_do_sitio__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}
