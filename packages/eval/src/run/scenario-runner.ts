@@ -564,6 +564,14 @@ export function localLLMConfig(
     timeoutMs: isDeepseek ? 180000 : 120000,
     retryCount: 2,
     responseFormatJson: true,
+    // deepseek-v4 through the router under `response_format: json_schema`
+    // runs to the token cap (a direct probe: 3,732 chars, finish_reason
+    // "length", unparseable) and never fills memoryWrites; under
+    // `json_object` the same prompt returns a 538-char intent with the
+    // proposal filled. Nine M4 runs had 0 memory writes and 2–12 runaway
+    // turns each with schema mode on. Constrained decoding stays on for
+    // the local and other cloud paths.
+    ...(isDeepseekV4 ? { responseFormatJsonSchema: false } : {}),
     extraBody: isDeepseek
       ? {
           seed,

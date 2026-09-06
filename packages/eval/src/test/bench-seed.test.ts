@@ -52,6 +52,16 @@ describe("bench seed wiring (#45)", () => {
     expect(config.extraBody?.["thinking"]).toBeUndefined();
   });
 
+  it("uses json_object, not json_schema, for deepseek-v4 (schema mode runs it to the cap and drops memoryWrites); other paths keep constrained decoding", () => {
+    process.env.PERFECTMAN_LLM_PROVIDER = "deepseek";
+    process.env.PERFECTMAN_LLM_MODEL = "deepseek/deepseek-v4-flash";
+    expect(localLLMConfig(undefined).responseFormatJsonSchema).toBe(false);
+    process.env.PERFECTMAN_LLM_MODEL = "z-ai/glm-5.3-flash";
+    expect(localLLMConfig(undefined).responseFormatJsonSchema).toBeUndefined();
+    delete process.env.PERFECTMAN_LLM_PROVIDER;
+    expect(localLLMConfig(undefined).responseFormatJsonSchema).toBeUndefined();
+  });
+
   it("caps deepseek-v4 output at 2500 tokens with a 0.6 frequency-penalty floor; other cloud models keep 8000", () => {
     process.env.PERFECTMAN_LLM_PROVIDER = "deepseek";
     process.env.PERFECTMAN_LLM_MODEL = "deepseek/deepseek-v4-flash";
