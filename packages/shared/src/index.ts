@@ -24,6 +24,7 @@ export * from "./event/event.schema.js";
 // Agent
 export * from "./agent/agent.types.js";
 export * from "./agent/agent.schema.js";
+export * from "./agent/engine-motive.js";
 
 // Emotion
 export * from "./emotion/emotion.types.js";

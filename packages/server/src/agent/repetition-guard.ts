@@ -52,7 +52,7 @@ export const REPETITION_SIMILARITY_THRESHOLD = 0.7;
  * is also raised for rate limits and permission denials), so they match this
  * prefix. Keep it as the first token of the blocked motive.
  */
-export const REPETITION_GUARD_MARKER = "Repetition guard";
+export { REPETITION_GUARD_MARKER } from "@perfectman/shared";
 
 /**
  * Repetition-guard policy knobs. Omitting either field reproduces the shipped

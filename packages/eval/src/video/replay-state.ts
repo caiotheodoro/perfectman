@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isEngineAuthoredMotive } from "@perfectman/server";
+import { isEngineAuthoredMotive } from "@perfectman/shared";
 import type { RecordedEmotion, VideoStep } from "./types.js";
 
 const Numbers = z.record(z.number().finite());
