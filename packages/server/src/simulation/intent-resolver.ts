@@ -12,10 +12,11 @@ import type {
   ResolvedIntentOutcome,
   EmotionalSalience,
   ActionEmotions,
+  MemoryWriteProposal,
   IntentViolation,
   PrivateMotiveSummaryPayload,
 } from "@perfectman/shared";
-import { createId } from "@perfectman/shared";
+import { createId, MEMORY_TONE_UNSPECIFIED } from "@perfectman/shared";
 import { validateIntentPure } from "@perfectman/engine";
 import { memoryWrittenPayload } from "./memory-written-payload.js";
 import { REPETITION_GUARD_MARKER } from "../agent/repetition-guard.js";
@@ -97,7 +98,6 @@ function parseMentionedAgentIds(
 ): string[] {
   if (!visibleContent || !agentNames) return [];
   // Diacritic-insensitive on both sides: "@iris" must find "Íris".
-  const fold = (text: string): string => text.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
   const nameCounts = new Map<string, number>();
   for (const displayName of Object.values(agentNames)) {
     const key = fold(displayName.trim());
@@ -117,6 +117,39 @@ function parseMentionedAgentIds(
     if (pattern.test(foldedContent)) mentioned.push(agentId);
   }
   return mentioned;
+}
+
+/** Diacritic- and case-insensitive key for name matching ("@iris" finds "Íris"). */
+function fold(text: string): string {
+  return text.normalize("NFKD").replace(/\p{M}/gu, "").toLowerCase();
+}
+
+/**
+ * Resolve a short proposal's `about` entries (ids or display names as the
+ * model saw them) to agent ids; unknown names are dropped rather than
+ * stored as a subject nobody has.
+ */
+function resolveSubjectAgentIds(subjects: readonly string[], agentNames: Record<string, string> | undefined): string[] {
+  if (!agentNames) return [...subjects];
+  const byName = new Map<string, string>();
+  for (const [agentId, displayName] of Object.entries(agentNames)) byName.set(fold(displayName.trim()), agentId);
+  const out: string[] = [];
+  for (const raw of subjects) {
+    const key = raw.trim().replace(/^@/, "");
+    const id = agentNames[key] !== undefined ? key : byName.get(fold(key));
+    if (id && !out.includes(id)) out.push(id);
+  }
+  return out;
+}
+
+/** The action emotion the agent feels most, with its magnitude — a short proposal's tone. */
+function dominantActionEmotion(actionEmotions: ActionEmotions): { tone: string; magnitude: number } {
+  let tone = "neutral";
+  let magnitude = 0;
+  for (const [key, value] of Object.entries(actionEmotions)) {
+    if (typeof value === "number" && value > magnitude) { tone = key; magnitude = value; }
+  }
+  return magnitude >= 0.2 ? { tone, magnitude } : { tone: "neutral", magnitude };
 }
 
 /** Stamps the participant identifiers relational accretion reads off payloads. */
@@ -685,7 +718,24 @@ export class IntentResolver {
   }
 
   private memoryProposalEvents(intent: ActionIntent, ctx: ResolveContext): SimulationEvent[] {
-    return (intent.memoryWrites ?? []).map((proposal, i) => ({
+    return (intent.memoryWrites ?? []).map((raw, i) => {
+      // A short proposal arrives with structural defaults from the parser:
+      // subjects are whatever the model wrote (ids or names), tone is the
+      // placeholder. Resolve subjects to ids and take tone/intensity from
+      // what the agent is feeling as it acts.
+      // Only a short proposal is refined; a full one is the model's (or the
+      // mock's) own and passes through untouched.
+      const isShort = raw.emotionalTone === MEMORY_TONE_UNSPECIFIED;
+      const subjectAgentIds = isShort ? resolveSubjectAgentIds(raw.subjectAgentIds, ctx.agentNames) : raw.subjectAgentIds;
+      const dominant = isShort ? dominantActionEmotion(ctx.actionEmotions) : undefined;
+      const proposal: MemoryWriteProposal = {
+        ...raw,
+        subjectAgentIds,
+        type: isShort && subjectAgentIds.length === 0 && raw.type === "relationship" ? "self" : raw.type,
+        emotionalTone: dominant ? dominant.tone : raw.emotionalTone,
+        intensity: dominant ? Math.max(0.2, Math.min(1, Math.round(dominant.magnitude * 100) / 100)) : raw.intensity,
+      };
+      return {
       simulationId: ctx.simulationId,
       channelId: ctx.channelId,
       actorId: intent.actorId,
@@ -701,7 +751,8 @@ export class IntentResolver {
         visibleToOperators: true,
         visibilityReason: "operator_only",
       },
-    }));
+      };
+    });
   }
 
   private intentToEvents(intent: ActionIntent, ctx: ResolveContext): SimulationEvent[] {

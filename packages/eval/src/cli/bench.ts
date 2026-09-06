@@ -470,6 +470,7 @@ export async function runBench(opts: {
             fallbackNoOps: artifact.fallbackNoOps,
             recoveredFallbacks: artifact.recoveredFallbacks,
             llmFailures: artifact.llmFailures ?? [],
+            memoryProposals: artifact.memoryProposals ?? { accepted: 0, dropped: 0 },
           },
         });
       }

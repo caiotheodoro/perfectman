@@ -38,6 +38,23 @@ export const MemoryWriteProposalSchema = z.object({
   unresolved: z.boolean(),
 });
 
+/**
+ * The short memory proposal the model is asked for: what changed, about
+ * whom. Twelve real DeepSeek runs answered the seven-field contract with
+ * nothing at all; the parser fills structure from this shape and the
+ * resolver fills tone and intensity from the agent's action emotions.
+ */
+// `.strict()`: a seven-field proposal must not match the short branch by
+// having its extra keys stripped — the union tries this branch first.
+export const MemoryWriteShortSchema = z.object({
+  summary: z.string().min(1),
+  about: z.array(z.string()).optional(),
+}).strict();
+export type MemoryWriteShort = z.infer<typeof MemoryWriteShortSchema>;
+
+/** Tone placeholder on a short proposal until the resolver derives it. */
+export const MEMORY_TONE_UNSPECIFIED = "unspecified";
+
 export const ActionIntentSchema = z.object({
   id: z.string().min(1),
   actorId: z.string().min(1),

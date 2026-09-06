@@ -389,7 +389,7 @@ export class ActionIntentPromptBuilder {
       `Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`,
       `"visibleContent" is the final message only — never include your own drafting process in it (no "let me reformulate", "deep breath", "wait, better phrasing:", stray self-corrections, or a first attempt left in before a second one). If you reconsider your wording, do that silently and output only the version you land on.`,
       `For reply_to_message set "replyToEventId", and for react set "targetEventId", to one of the bracketed event handles from <events> (e.g. "e1") — copy the handle text exactly, do not invent an id or describe the message.`,
-      `Use "memoryWrites" whenever what you believe about someone in this room changed — a promise, a slight, a dodge, a revealed preference, a plan — one line each, in first person ("I…"), grounded in what actually happened in <events>, filling every field (type, subjectAgentIds, summary, emotionalTone, confidence, intensity, unresolved) per the field contract above. If nothing you believe changed, leave "memoryWrites" empty.`,
+      `Use "memoryWrites" whenever what you believe about someone in this room changed — a promise, a slight, a dodge, a revealed preference, a plan — one line each, in first person ("I…"), grounded in what actually happened in <events>. Shape: "memoryWrites": [{"summary": ${pt ? '"o Rafa desviou de novo quando falei em cartório"' : '"Rafa dodged again when I brought up the notary"'}, "about": ["rafa"]}] — "about" lists who it is about, as their ids or names appear in <events>; the system fills the rest. If nothing you believe changed, leave "memoryWrites" empty.`,
     ]);
   }
 

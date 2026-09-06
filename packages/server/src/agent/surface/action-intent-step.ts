@@ -439,6 +439,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         latencyMs: totalLatencyMs,
         inputTokens: totalInputTokens,
         outputTokens: totalOutputTokens,
+        // Memory proposals that matched neither shape; the intent survived.
+        memoryWritesDropped: parseResult.droppedMemoryWrites ?? 0,
       },
     });
 

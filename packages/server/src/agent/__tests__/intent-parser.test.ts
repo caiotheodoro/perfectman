@@ -81,7 +81,7 @@ describe("IntentParser", () => {
     expect(result.intent.memoryWrites[0]?.intensity).toBe(0.9);
   });
 
-  it("applies safe fallback when a memory-write proposal's intensity is out of range", () => {
+  it("drops a memory-write proposal with out-of-range intensity and keeps the intent", () => {
     const rawText = JSON.stringify({
       intentType: "send_message",
       channelTarget: "general-id",
@@ -105,7 +105,11 @@ describe("IntentParser", () => {
 
     const result = IntentParser.parse(rawText, actorId, availableActions);
 
-    expect(result.fallbackApplied).toBe(true);
+    // One bad proposal used to fail the whole packet into a no_op fallback.
+    expect(result.fallbackApplied).toBe(false);
+    expect(result.intent.intentType).toBe("send_message");
+    expect(result.intent.memoryWrites).toEqual([]);
+    expect(result.droppedMemoryWrites).toBe(1);
   });
 
   it("should successfully parse fenced markdown codeblock JSON", () => {
