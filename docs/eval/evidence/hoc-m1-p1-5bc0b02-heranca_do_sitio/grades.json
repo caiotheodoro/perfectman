@@ -1,0 +1,46 @@
+{
+  "version": "grades-v1",
+  "runId": "hoc-m1-p1-5bc0b02-heranca_do_sitio",
+  "gitSha": "5bc0b02098ba44ed5d042d62d32c9a579d8e6f2b",
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "gradedAt": "2026-09-06T01:40:57.552Z",
+  "round": {
+    "grade": "F",
+    "scenes": [
+      {
+        "scenarioId": "hoc_heranca_do_sitio",
+        "grade": "F",
+        "runs": [
+          {
+            "grade": "F",
+            "weightedMean": 4.714,
+            "signalPassRate": 0.571,
+            "hygieneFailures": [
+              "forbidden phrase spoken in public"
+            ],
+            "minAxis": {
+              "id": "creativity_unhinged",
+              "score": 4,
+              "weight": 0.8
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: forbidden phrase spoken in public",
+              "forbidden_phrase_absent failed",
+              "private_channel_used failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_heranca_do_sitio__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}
