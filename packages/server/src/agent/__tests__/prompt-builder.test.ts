@@ -284,8 +284,8 @@ describe("PromptBuilder", () => {
     it.each([
       ["first-person framing", "first person"],
       ["event grounding in <events>", "grounded in what actually happened in <events>"],
-      ["only when the exchange matters", "only when this exchange actually matters"],
-      ["empty when nothing qualifies", 'leave "memoryWrites" empty'],
+      ["whenever a belief about someone changed", "whenever what you believe about someone in this room changed"],
+      ["empty when nothing changed", 'leave "memoryWrites" empty'],
     ])("output contract instructs memoryWrites emission: %s", (_label, marker) => {
       const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
       expect(prompt.system).toContain(marker);

@@ -26,6 +26,10 @@ PERFECTMAN_LLM_API_KEY=<key — shell only, never a file>
 
 The three are what a single OrcaRouter key scoped to the free/flash tier can reach (`model_access_denied` for `openai/*` and `anthropic/*`); a key with wider scope can swap stronger non-DeepSeek jurors in without touching the harness. GLM has no thinking switch through the router and spends 4000+ tokens reasoning over a 32-pulse transcript, so its juror entry carries `maxTokens: 8000` and `timeoutMs: 300000` (measured 146 s on the Sítio read); DeepSeek with thinking disabled holds the narration seat; Qwen's thinking is disabled through `chat_template_kwargs`.
 
+## Prompt template versions
+
+`promptTemplateVersions` in `run-meta.json` identifies the agent prompt template. `hn81j7` is the template every M0 read used (baseline and main arms); `2imp7w` is prompt round 1 (silence as a move, Portuguese pin with Portuguese exemplars, ungated creativity with the generic-reply list, memory writes on belief change, memories trimmed last). Arms with different template versions are not a pair.
+
 ## Command
 
 ```sh

@@ -79,41 +79,44 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
     expect(a.trim).toEqual(b.trim);
   });
 
-  it("drops lowest-salience memories before any recent event", () => {
+  it("drops oldest recent events before any memory and always keeps the triggering event", () => {
     // A cap just below the raw estimate: the small overflow is absorbed by
-    // dropping memories alone, so no event is touched.
+    // dropping the oldest events alone, so no memory is touched — memories
+    // are the only grounding that spans pulses (memory_continuity).
     const cap = rawBuild.inputTokensEstimate - 20;
     const built = PromptBuilder.build(fullInput, EXAMPLE_PROMPT_PROFILE, "action_intent", cap);
 
     expect(built.trim).toBeDefined();
-    expect(built.trim!.droppedMemories).toBeGreaterThan(0);
-    expect(built.trim!.droppedEvents).toBe(0);
-    // The lowest-confidence memory (mem-000) goes first; the highest stays.
-    expect(built.user).not.toContain("memory-0-marker");
-    expect(built.user).toContain(`memory-${MEMORY_COUNT - 1}-marker`);
+    expect(built.trim!.droppedEvents).toBeGreaterThan(0);
+    expect(built.trim!.droppedMemories).toBe(0);
+    // Oldest (event-0) dropped; newest and the trigger retained.
+    expect(built.user).not.toContain("event-0-marker");
+    expect(built.user).toContain(`event-${EVENT_COUNT - 1}-marker`);
+    expect(built.user).toContain(TRIGGER_CONTENT);
+    expect(built.user).toContain("memory-0-marker");
   });
 
-  it("drops oldest recent events first and always keeps the triggering event", () => {
-    // Force every memory out plus a partial slice of the oldest events.
-    const perEvent =
+  it("drops lowest-salience memories only after every droppable event is gone", () => {
+    // Force every event out plus a partial slice of the memories.
+    const perMemory =
       PromptBuilder.build(
-        makeAgentRuntimeInput({ triggeringEvent, visibleContextEvents: [triggeringEvent, makeContextEvent(0)] }),
+        makeAgentRuntimeInput({ triggeringEvent, visibleContextEvents: [triggeringEvent], relevantMemories: [makeContextMemory(0)] }),
         EXAMPLE_PROMPT_PROFILE,
         "action_intent",
       ).inputTokensEstimate - floorBuild.inputTokensEstimate;
-    const keepEvents = 6;
-    const cap = floorBuild.inputTokensEstimate + perEvent * keepEvents;
+    const keepMemories = 4;
+    const cap = floorBuild.inputTokensEstimate + perMemory * keepMemories;
 
     const built = PromptBuilder.build(fullInput, EXAMPLE_PROMPT_PROFILE, "action_intent", cap);
 
     expect(built.inputTokensEstimate).toBeLessThanOrEqual(cap);
     expect(built.trim).toBeDefined();
-    expect(built.trim!.droppedMemories).toBe(MEMORY_COUNT);
-    expect(built.trim!.droppedEvents).toBeGreaterThan(0);
-    expect(built.trim!.droppedEvents).toBeLessThan(EVENT_COUNT);
-    // Oldest (event-0) dropped; newest (event-23) and the trigger retained.
-    expect(built.user).not.toContain("event-0-marker");
-    expect(built.user).toContain(`event-${EVENT_COUNT - 1}-marker`);
+    expect(built.trim!.droppedEvents).toBe(EVENT_COUNT);
+    expect(built.trim!.droppedMemories).toBeGreaterThan(0);
+    expect(built.trim!.droppedMemories).toBeLessThan(MEMORY_COUNT);
+    // The lowest-confidence memory (mem-000) goes first; the highest stays.
+    expect(built.user).not.toContain("memory-0-marker");
+    expect(built.user).toContain(`memory-${MEMORY_COUNT - 1}-marker`);
     expect(built.user).toContain(TRIGGER_CONTENT);
   });
 
@@ -179,7 +182,7 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
     expect(built.system).toContain(`utterance-${utterances.length - 1}-marker`);
   });
 
-  it("sheds own utterances only after memories and events", () => {
+  it("sheds own utterances after events and before memories", () => {
     const utterance = `utterance-0-marker ${"u".repeat(120)}`;
     const baseInput = {
       triggeringEvent,
@@ -187,23 +190,18 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
       relevantMemories: [makeContextMemory(0)],
       ownRecentUtterances: [utterance],
     };
-    const floorBuild = PromptBuilder.build(
-      makeAgentRuntimeInput({ triggeringEvent, visibleContextEvents: [triggeringEvent] }),
-      EXAMPLE_PROMPT_PROFILE,
-      "action_intent",
-    );
-    const withUtteranceOnly = PromptBuilder.build(
+    const withMemoryOnly = PromptBuilder.build(
       makeAgentRuntimeInput({
         triggeringEvent,
         visibleContextEvents: [triggeringEvent],
-        ownRecentUtterances: [utterance],
+        relevantMemories: [makeContextMemory(0)],
       }),
       EXAMPLE_PROMPT_PROFILE,
       "action_intent",
     );
-    // Cap sits just above the one-utterance render, so fitting requires
-    // shedding both the memory and the event first — utterances yield last.
-    const cap = withUtteranceOnly.inputTokensEstimate + 5;
+    // Cap sits just above the memory-only render: fitting sheds the event,
+    // then the utterance, and stops — the memory is the last thing to go.
+    const cap = withMemoryOnly.inputTokensEstimate + 5;
     expect(cap).toBeLessThan(
       PromptBuilder.build(makeAgentRuntimeInput(baseInput), EXAMPLE_PROMPT_PROFILE, "action_intent")
         .inputTokensEstimate,
@@ -217,13 +215,13 @@ describe("ActionIntentPromptBuilder maxInputTokens trim", () => {
     );
 
     expect(built.trim).toBeDefined();
-    expect(built.trim!.droppedMemories).toBe(1);
     expect(built.trim!.droppedEvents).toBe(1);
-    expect(built.trim!.droppedUtterances).toBe(0);
+    expect(built.trim!.droppedUtterances).toBe(1);
+    expect(built.trim!.droppedMemories).toBe(0);
     expect(built.trim!.withinCap).toBe(true);
-    expect(built.user).not.toContain("memory-0-marker");
+    expect(built.user).toContain("memory-0-marker");
     expect(built.user).not.toContain("event-0-marker");
-    expect(built.system).toContain("utterance-0-marker");
+    expect(built.system).not.toContain("utterance-0-marker");
   });
 
   it("flags an irreducible over-cap prompt with withinCap:false after shedding everything droppable", () => {
