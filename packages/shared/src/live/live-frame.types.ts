@@ -76,7 +76,10 @@ export type RunStatus = {
   runId: string | null;
   simulationId: string | null;
   state: RunState;
+  /** Index of the most recent pulse — 0-based, and 0 before anything has run. */
   pulseIndex: number;
+  /** How many pulses have actually settled. This is what to show against `maxPulses`. */
+  pulsesRun: number;
   maxPulses: number;
   startedAt?: number;
   endedAt?: number;

@@ -7,7 +7,8 @@
  * writes the artifacts first.
  */
 import { existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { loadEnvFile } from "../cli/env.js";
 import { createWebServer } from "./server.js";
 import { defaultRunsRoot } from "./run/run-artifacts.js";
@@ -19,7 +20,7 @@ async function main(): Promise<void> {
 
   const port = Number(process.env["PERFECTMAN_WEB_PORT"] ?? DEFAULT_PORT);
   const runsRoot = process.env["PERFECTMAN_RUNS_DIR"] ?? defaultRunsRoot();
-  const staticDir = resolve(process.cwd(), "packages/web/dist");
+  const staticDir = process.env["PERFECTMAN_WEB_STATIC"] ?? defaultStaticDir();
 
   const web = createWebServer({
     runsRoot,
@@ -47,6 +48,16 @@ async function main(): Promise<void> {
   };
   process.on("SIGINT", () => void shutdown("SIGINT"));
   process.on("SIGTERM", () => void shutdown("SIGTERM"));
+}
+
+/**
+ * Resolved from this file, not `process.cwd()`: `pnpm --filter` runs the script
+ * with the package as the working directory, so a cwd-relative path looks for
+ * the bundle inside `packages/server/`.
+ */
+function defaultStaticDir(): string {
+  // dist/http/bootstrap.js -> dist -> packages/server -> packages
+  return resolve(dirname(fileURLToPath(import.meta.url)), "../../../web/dist");
 }
 
 main().catch((err: unknown) => {

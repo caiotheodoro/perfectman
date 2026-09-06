@@ -102,6 +102,7 @@ export class RunController {
       simulationId: params.config.simulation.id ?? params.runId,
       state: "validating",
       pulseIndex: 0,
+      pulsesRun: 0,
       maxPulses: params.maxPulses,
       startedAt: Date.now(),
       counters: { llmFailures: 0, gatewayTimeouts: 0, framesDropped: 0 },
@@ -172,6 +173,7 @@ export class RunController {
           signal: this.abort.signal,
           onPulse: (result) => {
             this.status.pulseIndex = result.pulseIndex;
+            this.status.pulsesRun += 1;
             sseGateway?.commitPulse(result);
             this.publishStatus();
           },
@@ -272,7 +274,9 @@ export class RunController {
       state: this.status.state,
       startedAt: this.status.startedAt ?? Date.now(),
       ...(this.status.endedAt ? { endedAt: this.status.endedAt } : {}),
-      pulsesRun: this.status.pulseIndex,
+      // The count, not `pulseIndex` — a 12-pulse run ends on index 11, and a
+      // manifest reading "11 of 12" says the run stopped a pulse short.
+      pulsesRun: this.status.pulsesRun,
       maxPulses: params.maxPulses,
       ...(this.status.stopReason ? { stopReason: this.status.stopReason } : {}),
       ...(drained ? {} : { dirty: true }),
@@ -310,6 +314,7 @@ function idleStatus(): RunStatus {
     simulationId: null,
     state: "idle",
     pulseIndex: 0,
+    pulsesRun: 0,
     maxPulses: 0,
     counters: { llmFailures: 0, gatewayTimeouts: 0, framesDropped: 0 },
   };
