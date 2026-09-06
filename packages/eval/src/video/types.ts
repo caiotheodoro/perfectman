@@ -1,10 +1,7 @@
 /** Lossless source order is separate from editorial video timing. */
-export type RecordedEmotion = {
-  source: "snapshot" | "driver" | "authored";
-  label?: string;
-  drivers?: string[];
-  values?: Record<string, number>;
-};
+/** Shared with the web stage, which resolves faces from the same reading. */
+import type { RecordedEmotion } from "@perfectman/shared";
+export type { RecordedEmotion };
 export type VideoAgent = { id: string; name: string };
 /** A directory, not a time-indexed record of who attended a channel. */
 export type VideoChannel = {

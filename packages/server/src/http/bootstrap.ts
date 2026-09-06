@@ -21,9 +21,11 @@ async function main(): Promise<void> {
   const port = Number(process.env["PERFECTMAN_WEB_PORT"] ?? DEFAULT_PORT);
   const runsRoot = process.env["PERFECTMAN_RUNS_DIR"] ?? defaultRunsRoot();
   const staticDir = process.env["PERFECTMAN_WEB_STATIC"] ?? defaultStaticDir();
+  const presetsRoot = process.env["PERFECTMAN_PRESETS_DIR"] ?? resolveFromPackage("../../../../examples/presets");
 
   const web = createWebServer({
     runsRoot,
+    presetsRoot,
     ...(existsSync(staticDir) ? { staticDir } : {}),
   });
 
@@ -56,8 +58,12 @@ async function main(): Promise<void> {
  * the bundle inside `packages/server/`.
  */
 function defaultStaticDir(): string {
-  // dist/http/bootstrap.js -> dist -> packages/server -> packages
-  return resolve(dirname(fileURLToPath(import.meta.url)), "../../../web/dist");
+  return resolveFromPackage("../../../web/dist");
+}
+
+/** dist/http/bootstrap.js -> dist -> packages/server -> packages -> repo root */
+function resolveFromPackage(relative: string): string {
+  return resolve(dirname(fileURLToPath(import.meta.url)), relative);
 }
 
 main().catch((err: unknown) => {

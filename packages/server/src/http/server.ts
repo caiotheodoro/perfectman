@@ -13,6 +13,7 @@ import { compileRunInputs, type RunInputs } from "../authoring/compile-run-input
 import { RunAlreadyActiveError, RunController } from "./run/run-controller.js";
 import { listRuns, readManifest, readReplay, safeName } from "./run/run-artifacts.js";
 import { setRunKey } from "./run/secrets.js";
+import { defaultPresetsRoot, loadPresets } from "./run/presets.js";
 import { SSE_HEADERS, type SseSink } from "./sse-hub.js";
 
 /** Uploaded markdown arrives as JSON, so this is the whole request-size story. */
@@ -23,6 +24,8 @@ const HEARTBEAT_MS = 15_000;
 
 export type WebServerDeps = {
   runsRoot: string;
+  /** Ready-made casts and scenes; defaults to `examples/presets`. */
+  presetsRoot?: string;
   /** Built web assets; when absent the server is API-only (Vite serves the UI in dev). */
   staticDir?: string;
   controller?: RunController;
@@ -120,6 +123,11 @@ async function handle(
 
   if (path === "/api/runs" && method === "POST") {
     await startRun(req, res, controller);
+    return;
+  }
+
+  if (path === "/api/presets" && method === "GET") {
+    sendJson(res, 200, await loadPresets(deps.presetsRoot ?? defaultPresetsRoot()));
     return;
   }
 

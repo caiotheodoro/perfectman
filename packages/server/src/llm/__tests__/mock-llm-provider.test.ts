@@ -141,7 +141,10 @@ describe("MockLLMProvider", () => {
 
     expect(parsed.intentType).toBe("reply_to_message");
     expect(parsed.personTargets).toContain("agent-alpha");
-    expect(parsed.visibleContent).toBe("oi tudo bem");
+    // The wording rotates so the repetition guard does not block every turn
+    // after the first; what matters here is that a reply carries something.
+    expect(parsed.visibleContent).toBeTypeOf("string");
+    expect(parsed.visibleContent.length).toBeGreaterThan(0);
 
     const parserResult = IntentParser.parse(res.content, "agent-beta", availableActions);
     expect(parserResult.fallbackApplied).toBe(false);
@@ -238,8 +241,27 @@ describe("MockLLMProvider", () => {
     const parsed = JSON.parse(res.content);
 
     expect(parsed.intentType).toBe("send_message");
-    expect(parsed.visibleContent).toBe("pois é");
-    expect(parsed.privateMotiveSummary).toContain("silence");
+    expect(parsed.visibleContent.length).toBeGreaterThan(0);
+    expect(parsed.privateMotiveSummary.length).toBeGreaterThan(0);
+  });
+
+  it("says something different next turn, so the repetition guard has nothing to block", async () => {
+    // Three canned lines shared by every agent meant a sixteen-turn run
+    // produced three messages and then a room of people saying nothing.
+    const noCreateChannelActions = availableActions.filter((a) => a.intentType !== "create_channel");
+    const input: AgentRuntimeInput = {
+      ...baseInput,
+      availableActions: noCreateChannelActions,
+      perceptionPacket: { ...baseInput.perceptionPacket, availableActions: noCreateChannelActions },
+    };
+
+    // A fresh provider per turn, because that is what the factory does.
+    const said = new Set<string>();
+    for (let pulseIndex = 0; pulseIndex < 4; pulseIndex++) {
+      const res = await new MockLLMProvider().generateIntent(input, { ...context, pulseIndex }, prompt);
+      said.add(JSON.parse(res.content).visibleContent as string);
+    }
+    expect(said.size).toBe(4);
   });
 
   it("should report tokens usage and latency", async () => {

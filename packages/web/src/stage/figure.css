@@ -1,0 +1,104 @@
+/*
+ * A figure is drawn once and never re-mounted; everything that changes is a
+ * transition on an attribute the pose table supplies. Blink and breath are the
+ * only motion nobody asked for, and they exist because a motionless figure
+ * looks broken rather than composed.
+ */
+
+.figure {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  transition: opacity var(--settle) var(--ease), filter var(--settle) var(--ease);
+}
+
+/* Present but not part of this beat. Enough to still be a person in the room. */
+.figure--aside {
+  opacity: 0.62;
+  filter: saturate(0.55);
+}
+
+/* The drawn line. Keeps a pale character legible on warm paper and makes the
+   cast read as illustration rather than flat shapes. */
+.figure__ink {
+  stroke: rgba(28, 27, 27, 0.55);
+  stroke-width: 2;
+  paint-order: stroke fill;
+}
+
+.figure__body {
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  animation: figure-breathe 5.2s ease-in-out infinite;
+}
+
+.figure--speaking .figure__body {
+  animation: figure-breathe 2.6s ease-in-out infinite;
+}
+
+@keyframes figure-breathe {
+  0%,
+  100% {
+    transform: translateY(0) scaleY(1);
+  }
+  50% {
+    transform: translateY(-1.2px) scaleY(1.006);
+  }
+}
+
+.figure__arm {
+  transition: transform var(--settle) var(--ease);
+}
+
+.figure__eye {
+  fill: var(--ink);
+  transition: ry var(--quick) var(--ease);
+  animation: figure-blink 5.9s steps(1, end) infinite;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+/* Staggered so a cast does not blink in unison, which reads as a glitch. */
+.figure:nth-child(3n + 2) .figure__eye {
+  animation-delay: 1.7s;
+}
+.figure:nth-child(3n) .figure__eye {
+  animation-delay: 3.1s;
+}
+
+@keyframes figure-blink {
+  0%,
+  96%,
+  100% {
+    transform: scaleY(1);
+  }
+  98% {
+    transform: scaleY(0.08);
+  }
+}
+
+.figure__brow,
+.figure__mouth {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  transition: d var(--quick) var(--ease), opacity var(--quick) var(--ease);
+}
+
+.figure__gasp {
+  fill: var(--ink);
+  transition: opacity var(--quick) var(--ease);
+}
+
+.figure__name {
+  font-size: 19px;
+  color: var(--ink-70);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.figure--speaking .figure__name {
+  color: var(--ink);
+}

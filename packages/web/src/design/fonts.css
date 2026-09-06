@@ -1,0 +1,16 @@
+/*
+ * Three faces, three kinds of knowledge.
+ *
+ * Fraunces carries what was said out loud and the display type. Instrument Sans
+ * is the interface talking about itself. Caveat is reserved, strictly, for what
+ * only the viewer can see — an agent's private motive and the name tags beside
+ * the figures. That assignment is the point: the engine's claim is that there
+ * is a gap between what someone says and what they want, so the two are not set
+ * in the same voice.
+ *
+ * Self-hosted rather than fetched. This is a localhost tool and it has to work
+ * on a plane.
+ */
+@import "@fontsource-variable/fraunces/full.css";
+@import "@fontsource-variable/instrument-sans/index.css";
+@import "@fontsource-variable/caveat/index.css";

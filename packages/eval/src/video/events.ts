@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { isEngineAuthoredMotive } from "@perfectman/server";
+import { isEngineAuthoredMotive } from "@perfectman/shared";
 import type { VideoStep, VideoStory } from "./types.js";
 import { agentsFromSteps, isRecord, MISSING_EMOTION_NOTICE, OPERATOR_EVENT_TYPES, readablePayload } from "./source-utils.js";
 import { eventChannels, eventSocialMetadata, mergeChannels, recordedChannels, withChannelVisibility, type PriorEventActors } from "./social-metadata.js";

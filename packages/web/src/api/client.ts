@@ -13,6 +13,7 @@ import type {
   RunStatus,
   StartRunRequest,
   StartRunResponse,
+  UploadedFile,
   ViewerReplay,
 } from "@perfectman/shared";
 
@@ -58,6 +59,13 @@ export function stopRun(runId: string): Promise<unknown> {
 
 export function currentStatus(): Promise<RunStatus> {
   return json<RunStatus>("/api/runs/current");
+}
+
+export function listPresets(): Promise<{
+  casts: Array<{ id: string; title: string; blurb: string; cast?: string; files: UploadedFile[] }>;
+  scenes: Array<{ id: string; title: string; blurb: string; cast?: string; files: UploadedFile[] }>;
+}> {
+  return json("/api/presets");
 }
 
 export function listRuns(): Promise<{ runs: RunListEntry[] }> {

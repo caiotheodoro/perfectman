@@ -120,7 +120,7 @@ pnpm web
 ```
 
 Open `http://localhost:4317`, drop in a scenario and its personas, and press
-Run. [`examples/web-runner/`](examples/web-runner/) has a set to start from.
+Run — or pick a ready-made cast and scene from [`examples/presets/`](examples/presets/).
 
 The form compiles the markdown on every change and shows the resulting config
 before anything runs — cast, channels, detected language, and which canonical

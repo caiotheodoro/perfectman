@@ -1,0 +1,98 @@
+.shell {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+}
+
+.shell__bar {
+  display: flex;
+  align-items: center;
+  gap: clamp(20px, 5vw, 56px);
+  padding: 18px clamp(20px, 4vw, 40px);
+  border-bottom: 1px solid var(--rule);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+.shell__mark {
+  font-family: var(--serif);
+  font-variation-settings: "opsz" 40, "SOFT" 40, "WONK" 1;
+  font-weight: 600;
+  font-size: 19px;
+  letter-spacing: -0.02em;
+}
+
+.shell__rail {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  max-width: 460px;
+}
+
+.rail__step {
+  flex: 1;
+  display: grid;
+  gap: 7px;
+  background: none;
+  border: none;
+  padding: 4px 0 0;
+  text-align: left;
+  color: var(--ink-30);
+  transition: color var(--quick) var(--ease);
+}
+.rail__step:not(:disabled):hover {
+  color: var(--ink-70);
+}
+.rail__step--here {
+  color: var(--ink);
+}
+.rail__step:disabled {
+  cursor: default;
+}
+
+.rail__label {
+  font-size: 13px;
+}
+
+/* The rule fills as you get further. It is the only progress indicator. */
+.rail__line {
+  height: 2px;
+  border-radius: var(--r-pill);
+  background: var(--rule);
+  transition: background var(--settle) var(--ease);
+}
+.rail__line--done {
+  background: var(--ink);
+}
+
+.shell__body {
+  min-height: 0;
+}
+
+.step {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: clamp(32px, 6vh, 64px) clamp(20px, 4vw, 40px) 96px;
+  display: grid;
+  gap: 28px;
+  align-content: start;
+}
+
+.step__head {
+  display: grid;
+  gap: 10px;
+}
+
+.step__head p {
+  color: var(--ink-70);
+  font-size: 16px;
+}
+
+.step__foot {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 8px;
+}

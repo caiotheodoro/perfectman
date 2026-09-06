@@ -24,6 +24,7 @@ export * from "./event/event.schema.js";
 // Agent
 export * from "./agent/agent.types.js";
 export * from "./agent/agent.schema.js";
+export * from "./agent/engine-motive.js";
 
 // Emotion
 export * from "./emotion/emotion.types.js";
@@ -110,3 +111,4 @@ export * from "./scenarios/helpers.js";
 // Live protocol (shared with the web app; server types must not reach the browser)
 export * from "./live/live-frame.types.js";
 export * from "./live/run-api.types.js";
+export * from "./stage/index.js";

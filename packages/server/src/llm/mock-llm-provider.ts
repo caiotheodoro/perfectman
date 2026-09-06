@@ -2,6 +2,7 @@ import type { AgentRuntimeInput } from "@perfectman/shared";
 import { createId } from "@perfectman/shared";
 import type { AgentRuntimeContext, BuiltPrompt } from "../agent/agent-runtime.types.js";
 import type { LLMProvider, LLMProviderResult } from "./llm-provider.js";
+import { mockMotive, mockOpener, mockReply } from "./mock-voices.js";
 
 export class MockLLMProvider implements LLMProvider {
   async generateIntent(
@@ -11,6 +12,11 @@ export class MockLLMProvider implements LLMProvider {
   ): Promise<LLMProviderResult> {
     const startTime = Date.now();
     const actorId = input.agentId;
+    const archetype = input.personaConfig?.archetype;
+    // The factory builds a provider per call, so the turn has to come from the
+    // input. Without it every agent repeats its first line and the repetition
+    // guard blocks the rest of the run.
+    const pulseIndex = context.pulseIndex ?? 0;
 
     let intentType: string = "no_op";
     let channelTarget: string | undefined = undefined;
@@ -44,15 +50,15 @@ export class MockLLMProvider implements LLMProvider {
         intentType = "reply_to_message";
         channelTarget = replyMsgAction.channelTargets[0];
         personTargets = [triggerActor];
-        visibleContent = "oi tudo bem";
-        privateMotiveSummary = `Responding to direct mention by ${triggerActor}.`;
+        visibleContent = mockReply(actorId, pulseIndex, archetype);
+        privateMotiveSummary = mockMotive(actorId, pulseIndex, archetype);
         emotionDrivers = ["warmth"];
         motivationDrivers = ["affinity"];
       } else if (sendMsgAction && !sendMsgAction.blocked) {
         intentType = "send_message";
         channelTarget = sendMsgAction.channelTargets[0];
-        visibleContent = "olá";
-        privateMotiveSummary = "Reacting to activity in the channel.";
+        visibleContent = mockOpener(actorId, pulseIndex, archetype);
+        privateMotiveSummary = mockMotive(actorId, pulseIndex, archetype);
         emotionDrivers = ["warmth"];
         motivationDrivers = ["affinity"];
       }
@@ -69,8 +75,8 @@ export class MockLLMProvider implements LLMProvider {
     else if (sendMsgAction && !sendMsgAction.blocked) {
       intentType = "send_message";
       channelTarget = sendMsgAction.channelTargets[0];
-      visibleContent = "pois é";
-      privateMotiveSummary = "Bored, sending a casual opener to break the silence.";
+      visibleContent = mockOpener(actorId, pulseIndex, archetype);
+      privateMotiveSummary = mockMotive(actorId, pulseIndex, archetype);
       emotionDrivers = ["warmth"];
       motivationDrivers = ["boredom"];
     }
