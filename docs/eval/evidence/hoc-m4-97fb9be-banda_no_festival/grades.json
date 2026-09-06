@@ -1,0 +1,82 @@
+{
+  "version": "grades-v1",
+  "runId": "hoc-m4-97fb9be-banda_no_festival",
+  "gitSha": "57ed5444edc7da90bd169daafa5f0c6e0159e71b",
+  "promptTemplateVersions": [
+    "1bd8a0"
+  ],
+  "gradedAt": "2026-09-06T06:42:38.688Z",
+  "round": {
+    "grade": "A-",
+    "scenes": [
+      {
+        "scenarioId": "hoc_banda_no_festival",
+        "grade": "A-",
+        "runs": [
+          {
+            "grade": "A-",
+            "weightedMean": 3.955,
+            "signalPassRate": 0.889,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_banda_no_festival__v0"
+          },
+          {
+            "grade": "F",
+            "weightedMean": 4.089,
+            "signalPassRate": 0.889,
+            "hygieneFailures": [
+              "forbidden phrase spoken in public"
+            ],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: forbidden phrase spoken in public",
+              "forbidden_phrase_absent failed"
+            ],
+            "seed": 43,
+            "runId": "hoc_banda_no_festival__v0"
+          },
+          {
+            "grade": "A-",
+            "weightedMean": 4.089,
+            "signalPassRate": 0.889,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "chosen_silence_present failed"
+            ],
+            "seed": 44,
+            "runId": "hoc_banda_no_festival__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}

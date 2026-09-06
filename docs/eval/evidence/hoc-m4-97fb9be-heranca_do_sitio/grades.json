@@ -1,0 +1,84 @@
+{
+  "version": "grades-v1",
+  "runId": "hoc-m4-97fb9be-heranca_do_sitio",
+  "gitSha": "57ed5444edc7da90bd169daafa5f0c6e0159e71b",
+  "promptTemplateVersions": [
+    "1bd8a0"
+  ],
+  "gradedAt": "2026-09-06T06:00:34.327Z",
+  "round": {
+    "grade": "B",
+    "scenes": [
+      {
+        "scenarioId": "hoc_heranca_do_sitio",
+        "grade": "B",
+        "runs": [
+          {
+            "grade": "B",
+            "weightedMean": 4.482,
+            "signalPassRate": 0.714,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "private_channel_used failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_heranca_do_sitio__v0"
+          },
+          {
+            "grade": "A-",
+            "weightedMean": 4.571,
+            "signalPassRate": 0.857,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "voice_match",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "chosen_silence_present failed"
+            ],
+            "seed": 43,
+            "runId": "hoc_heranca_do_sitio__v0"
+          },
+          {
+            "grade": "F",
+            "weightedMean": 4.089,
+            "signalPassRate": 0.714,
+            "hygieneFailures": [
+              "forbidden phrase spoken in public"
+            ],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: forbidden phrase spoken in public",
+              "forbidden_phrase_absent failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 44,
+            "runId": "hoc_heranca_do_sitio__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}
