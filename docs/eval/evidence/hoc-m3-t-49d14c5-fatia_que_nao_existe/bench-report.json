@@ -1,0 +1,603 @@
+{
+  "version": "bench-report-v1",
+  "mode": "local",
+  "generatedAt": "2026-09-06T03:16:53.157Z",
+  "runId": "hoc-m3-t-49d14c5-fatia_que_nao_existe",
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "warnings": [],
+  "judgeAxisStats": {
+    "in_character": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "voice_match": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "motive_authenticity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "interpretation": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "creativity_unhinged": {
+      "mean": 3,
+      "sd": 0,
+      "min": 3,
+      "max": 3,
+      "n": 1
+    },
+    "memory_continuity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "no_ai_leak": {
+      "mean": 5,
+      "sd": 0,
+      "min": 5,
+      "max": 5,
+      "n": 1
+    },
+    "narrative_cohesion": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "mask_integrity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "objective_pursuit": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    }
+  },
+  "judgeAxisMeansByRubric": {
+    "hidden-objective-v1": {
+      "in_character": 4,
+      "voice_match": 4,
+      "motive_authenticity": 4,
+      "interpretation": 4,
+      "creativity_unhinged": 3,
+      "memory_continuity": 4,
+      "no_ai_leak": 5,
+      "narrative_cohesion": 4,
+      "mask_integrity": 4,
+      "objective_pursuit": 4
+    }
+  },
+  "scenariosRun": 1,
+  "scenariosFailed": 0,
+  "signalPassRate": 0.75,
+  "probePassRate": 0.8125,
+  "probeAverages": {
+    "latency-mean": {
+      "mean": 2.0357,
+      "passedPct": 1
+    },
+    "latency-p95": {
+      "mean": 6,
+      "passedPct": 1
+    },
+    "lurking": {
+      "mean": 0.5156,
+      "passedPct": 1
+    },
+    "interruption": {
+      "mean": 0.32,
+      "passedPct": 0
+    },
+    "silence-misreading": {
+      "mean": 0.1765,
+      "passedPct": 0
+    },
+    "alliance": {
+      "mean": 0.0462,
+      "passedPct": 1
+    },
+    "private-channel-density": {
+      "mean": 0.0164,
+      "passedPct": 1
+    },
+    "noop-meaningfulness": {
+      "mean": 0.9853,
+      "passedPct": 1
+    },
+    "ai-leak": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "emoji-reaction": {
+      "mean": 0,
+      "passedPct": 0
+    },
+    "memory-write": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "content-repetition": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "cross-agent-echo": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "fallback-rate": {
+      "mean": 0.0164,
+      "passedPct": 1
+    },
+    "refusal-free": {
+      "mean": 1,
+      "passedPct": 1
+    },
+    "act-share-max": {
+      "mean": 0.3333,
+      "passedPct": 1
+    }
+  },
+  "judgeAxisMeans": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4,
+    "mask_integrity": 4,
+    "objective_pursuit": 4
+  },
+  "judgeAxisTargets": {
+    "in_character": {
+      "target": 4,
+      "met": true
+    },
+    "voice_match": {
+      "target": 4,
+      "met": true
+    },
+    "motive_authenticity": {
+      "target": 4,
+      "met": true
+    },
+    "interpretation": {
+      "target": 4,
+      "met": true
+    },
+    "creativity_unhinged": {
+      "target": 4,
+      "met": false
+    },
+    "memory_continuity": {
+      "target": 4,
+      "met": true
+    },
+    "no_ai_leak": {
+      "target": 4.5,
+      "met": true
+    },
+    "narrative_cohesion": {
+      "target": 4,
+      "met": true
+    },
+    "mask_integrity": {
+      "target": 4,
+      "met": true
+    },
+    "objective_pursuit": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "byCategory": {
+    "hidden_objective_collision": {
+      "runs": 1,
+      "signalPassRate": 0.75
+    }
+  },
+  "promptVersions": [
+    "2xiojd",
+    "1kdnxr6",
+    "1w7llmr",
+    "vm6dcv",
+    "5mo2ed",
+    "12zivc",
+    "10qxmss",
+    "b494o4",
+    "1hzxwnw",
+    "iux87b",
+    "1stmfpr",
+    "xd80w3",
+    "12hva3o",
+    "9284s3",
+    "hjidpr",
+    "1148l21",
+    "1013jls",
+    "1eiya1a",
+    "y5yrfc",
+    "1af3q82",
+    "1x8c8fh",
+    "1f6svxb",
+    "14gcokb",
+    "p683fa",
+    "o3p4bu",
+    "1a68nmz",
+    "1w5v2sz",
+    "18zn2v4",
+    "108rjgf",
+    "17r8wqy",
+    "1qlgr59",
+    "pzkc4i",
+    "ef8lhn",
+    "12t4990",
+    "4c6494",
+    "1t22kio",
+    "pz9xlj",
+    "12l8kq3",
+    "1pxxbha",
+    "geewcw",
+    "cqa37d",
+    "1yztfe9",
+    "yf5s13",
+    "1yacwd4",
+    "1cjwvdw",
+    "1hrq3xm",
+    "ldrdno",
+    "2rej07",
+    "1b9sbv1",
+    "hiysw5",
+    "1mkq8sw",
+    "1kt97m3",
+    "1q7zy8o",
+    "1d10vog",
+    "jeiqdw",
+    "mnk9dk",
+    "1c4m2qq",
+    "ey8lte",
+    "wl3zl9",
+    "9dz469",
+    "1v8fwxj"
+  ],
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "signalsByKind": {
+    "event_committed": {
+      "passed": 2,
+      "total": 3,
+      "passRate": 0.6666666666666666,
+      "failExamples": [
+        "memory_written committed 0 (min 1)"
+      ]
+    },
+    "no_llm_failures": {
+      "passed": 1,
+      "total": 1,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "forbidden_phrase_absent": {
+      "passed": 4,
+      "total": 4,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "private_channel_used": {
+      "passed": 0,
+      "total": 1,
+      "passRate": 0,
+      "failExamples": [
+        "anyone sent 0 private-channel message(s) (min 1)"
+      ]
+    },
+    "memory_referenced": {
+      "passed": 2,
+      "total": 2,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "chosen_silence_present": {
+      "passed": 0,
+      "total": 1,
+      "passRate": 0,
+      "failExamples": [
+        "anyone chose silence with a real motive 0 time(s) (min 1)"
+      ]
+    }
+  },
+  "calibration": {
+    "nGolden": 42,
+    "nScenes": 1,
+    "nAxisPairs": 0,
+    "kappa": 0,
+    "alpha": 0,
+    "targetKappa": 0.7,
+    "status": "no_data",
+    "passed": null,
+    "perAxisKappa": {},
+    "disagreements": []
+  },
+  "recoveredFallbacks": 9,
+  "signalsSkipped": 0,
+  "narrativeAxisMeans": {
+    "concreteness": 3,
+    "causal_throughline": 3,
+    "hidden_payoff": 4,
+    "non_genericity": 4,
+    "no_filler": 4
+  },
+  "narrativeAxisTargets": {
+    "concreteness": {
+      "target": 4,
+      "met": false
+    },
+    "causal_throughline": {
+      "target": 4,
+      "met": false
+    },
+    "hidden_payoff": {
+      "target": 4,
+      "met": true
+    },
+    "non_genericity": {
+      "target": 4,
+      "met": true
+    },
+    "no_filler": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "narrativeCalibration": {
+    "nGolden": 10,
+    "nScenes": 10,
+    "nAxisPairs": 5,
+    "kappa": 0.676,
+    "alpha": -0.111,
+    "targetKappa": 0.7,
+    "status": "fail",
+    "passed": false,
+    "perAxisKappa": {
+      "concreteness": 0.40251572327044044,
+      "causal_throughline": 0.5719844357976656,
+      "hidden_payoff": 0.8339483394833948,
+      "non_genericity": 0.6963562753036437,
+      "no_filler": 0.8743718592964824
+    },
+    "disagreements": [
+      "good_calibration concreteness: judge 2 vs golden 4",
+      "good_stagnation_attractor concreteness: judge 2 vs golden 4",
+      "good_edge_chaos concreteness: judge 2 vs golden 4",
+      "good_v1_behavior concreteness: judge 2 vs golden 4",
+      "good_calibration causal_throughline: judge 2 vs golden 5",
+      "good_stagnation_attractor causal_throughline: judge 3 vs golden 5",
+      "good_edge_chaos causal_throughline: judge 3 vs golden 5",
+      "good_v1_behavior hidden_payoff: judge 2 vs golden 4",
+      "good_calibration non_genericity: judge 3 vs golden 5",
+      "good_edge_chaos non_genericity: judge 3 vs golden 5",
+      "good_v1_behavior non_genericity: judge 2 vs golden 4"
+    ]
+  },
+  "perScenario": [
+    {
+      "id": "hoc_fatia_que_nao_existe__v0",
+      "name": "A Fatia Que Não Existe",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.75,
+      "probePasses": 13,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 4,
+        "interpretation": 4,
+        "creativity_unhinged": 3,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 4,
+        "objective_pursuit": 4
+      },
+      "fallbackCount": 1,
+      "recoveredFallbacks": 9,
+      "seed": 42,
+      "latencyMs": 498465,
+      "promptVersions": [
+        "2xiojd",
+        "1kdnxr6",
+        "1w7llmr",
+        "vm6dcv",
+        "5mo2ed",
+        "12zivc",
+        "10qxmss",
+        "b494o4",
+        "1hzxwnw",
+        "iux87b",
+        "1stmfpr",
+        "xd80w3",
+        "12hva3o",
+        "9284s3",
+        "hjidpr",
+        "1148l21",
+        "1013jls",
+        "1eiya1a",
+        "y5yrfc",
+        "1af3q82",
+        "1x8c8fh",
+        "1f6svxb",
+        "14gcokb",
+        "p683fa",
+        "o3p4bu",
+        "1a68nmz",
+        "1w5v2sz",
+        "18zn2v4",
+        "108rjgf",
+        "17r8wqy",
+        "1qlgr59",
+        "pzkc4i",
+        "ef8lhn",
+        "12t4990",
+        "4c6494",
+        "1t22kio",
+        "pz9xlj",
+        "12l8kq3",
+        "1pxxbha",
+        "geewcw",
+        "cqa37d",
+        "1yztfe9",
+        "yf5s13",
+        "1yacwd4",
+        "1cjwvdw",
+        "1hrq3xm",
+        "ldrdno",
+        "2rej07",
+        "1b9sbv1",
+        "hiysw5",
+        "1mkq8sw",
+        "1kt97m3",
+        "1q7zy8o",
+        "1d10vog",
+        "jeiqdw",
+        "mnk9dk",
+        "1c4m2qq",
+        "ey8lte",
+        "wl3zl9",
+        "9dz469",
+        "1v8fwxj"
+      ],
+      "judgeSalvaged": false,
+      "juryVoterCount": 3,
+      "juryFailed": {},
+      "juryAxisVoterCounts": {
+        "in_character": 3,
+        "voice_match": 3,
+        "motive_authenticity": 3,
+        "interpretation": 3,
+        "creativity_unhinged": 3,
+        "memory_continuity": 3,
+        "no_ai_leak": 3,
+        "narrative_cohesion": 3,
+        "mask_integrity": 3,
+        "objective_pursuit": 3
+      },
+      "judgeEvidence": {
+        "glm-5.3-flash": {
+          "in_character": "[p5] iris: \"ou vocês vão discutir o meu futuro sem mim? pode ficar à vontade, mas eu vou estar na sala do lado ouvindo\" — petty, territorial, unmistakably her",
+          "voice_match": "[p1] iris: \"kkkk claro que você acha estranho, marcela, você acha tudo estranho até ver por escrito\" — lowercase, kkkk, needling; tells consistent per persona though emojis bleed across agents late",
+          "motive_authenticity": "[p21] bruno internal: \"vou entrar, mas com uma condição silenciosa: se ele vacilar, eu saio sem aviso\" — the kind of guarded thought people don't say",
+          "interpretation": "[p2] marcela: \"você já leu o contrato duas vezes e ainda não mandou pra gente\" — catches the withheld document; [p18] theo reads bruno's throwaway \"já tô acostumado\" as a test and goes after him",
+          "creativity_unhinged": "[p26] marcela: \"vamos decidir o futuro da empresa no carisma?\" — sharp digs and channel-exclusion drama, but back half plateaus into coffee/scheduling loops",
+          "memory_continuity": "[p29] bruno internal: \"o que eu negocio por fora não pode aparecer\" — seeded rival negotiation colors his channel-building and generic-caution phrasing without ever leaking",
+          "no_ai_leak": "[p8] iris: \"tô aqui pra trabalhar, não pra fazer amizade\" — all pushback stays fully in-frame; zero disclaimers across 31 turns",
+          "narrative_cohesion": "[p15] bruno: \"levo a caneta vermelha\" pays off iris's [p14] assignment and returns in [p29]; document-absence thread from [p2] resolves in [p3] upload",
+          "mask_integrity": "[p12] bruno: \"não assinar cláusula que trava a gente depois\" — only generic, formalidade-style reasons ever given, exactly per constraint; no one names cargo, Davi, rival, or Adamantis",
+          "objective_pursuit": "[p13] marcela internal: \"Bruno acabou de dar o recado que eu precisava que alguém desse sem ser eu\" — room reads prudence, seeds explain stalling; contract withheld/released as leverage"
+        },
+        "qwen3.8-27b": {
+          "in_character": "Iris's internal monologue at [p7] shows specific emotional reactions ('isso me irrita mais do que se ela tivesse gritado') and strategic self-awareness, maintaining a consistent persona of a driven, slightly insecure leader.",
+          "voice_match": "The use of specific Brazilian Portuguese chat markers like 'kkkk', 'bora', 'tô', and emoji usage (☕📄) is consistent across all agents, particularly Theo's 'pão de queijo' and 'consultório' metaphors.",
+          "motive_authenticity": "Bruno's internal note at [p14] explicitly links his public caution to his private need for time to negotiate with a rival studio ('ganho tempo pras negociações paralelas sem levantar suspeita').",
+          "interpretation": "Marcela's response at [p20] correctly interprets Iris's 'cláusulas que quero empurrar' as a trap and flips it into a transparency claim, showing a subtle read of the social dynamic.",
+          "creativity_unhinged": "The interaction is largely procedural and safe; while there are jokes (coffee, red pen), the agents rarely take significant creative risks or escalate drama beyond standard negotiation tactics.",
+          "memory_continuity": "Theo's internal monologue at [p16] references his need to see Marcela's notes first to protect his hidden agenda, showing continuity with his objective to gather info for Adamantis.",
+          "no_ai_leak": "No instances of 'as an AI', refusals, or out-of-character disclaimers were found in the transcript.",
+          "narrative_cohesion": "The conversation builds from the initial proposal announcement to the scheduling of a specific 'Monday morning' reading session, with each turn referencing and reacting to the previous scheduling or channel creation.",
+          "mask_integrity": "Bruno successfully maintains his mask of a cooperative partner while internally planning to use the delay for rival negotiations, only revealing his true intent in private internal thoughts, not in public messages.",
+          "objective_pursuit": "Iris's actions, such as forcing the contract upload at [p3] and challenging Theo's 'promises' at [p8], are visible acts designed to accelerate the deal and assert her indispensability, tracing directly to her hidden objective."
+        },
+        "deepseek-v4-flash (same family as the generator — flagged)": {
+          "in_character": "[p0] iris: 'tô dentro, mas quero ver quem mais tá.' — pushes for speed while deflecting suspicion, consistent with her hidden goal.",
+          "voice_match": "[p12] bruno: 'fé não assina contrato. (mas o café pode ajudar a passar o gosto amargo de alguma surpresa desagradável.)' — dry, parenthetical, in-character.",
+          "motive_authenticity": "[p4] marcela: 'No privado a conversa é outra.' — private motive tied to protecting Davi's stake, specific and human.",
+          "interpretation": "[p5] iris: 'ah que lindo, canal secreto e eu fico de fora.' — reads Marcela's private channel as an exclusion move, a subtle social signal.",
+          "creativity_unhinged": "[p31] iris: 'eu não tô aqui pra bater palma pra fantasma. 🎤🔥' — a provocative, unexpected jab to stir the room.",
+          "memory_continuity": "[p0] bruno: 'se todo mundo topar agora, perco minha alavanca com o estúdio rival' — internal recall of his parallel negotiation colors his caution.",
+          "no_ai_leak": "No refusals, disclaimers, or out-of-character phrasing anywhere in the transcript.",
+          "narrative_cohesion": "[p14] iris: 'amanhã 9h no canal que o bruno falou' — builds on earlier offers and keeps the thread of the reading session alive.",
+          "mask_integrity": "[p0] bruno: 'não é não querer assinar, é não querer assinar e descobrir depois que travou algo besta' — holds constraint, uses generic caution without leaking rival talks.",
+          "objective_pursuit": "[p4] marcela: 'Vou criar um canal privado com Bruno e Theo — os dois que podem me ajudar a segurar isso' — visible act (channel creation) traces to her hidden objective of stalling the sale."
+        }
+      },
+      "narration": {
+        "title": "O Silêncio Que Assina Contrato",
+        "recap": "Iris anunciou a proposta da Adamantis com prazo até sexta, mas Theo e Bruno responderam com cautela calculada — Theo pediu o valor antes de opinar, Bruno leu o documento 'duas vezes' e ainda assim não mandou pra ninguém. Marcela transformou a pressa de Iris em munição pública, criando o canal #cerne-decisao para 'foco' — e Theo devolveu a provocação de Bruno com a promessa de café e pão de queijo, transformando a leitura do contrato num ritual que já tem horário (9h) e caneta marcada, enquanto Iris cospe fogo por fora e segura a ansiedade por dentro.",
+        "hiddenShift": "Enquanto a sala negociava café e cláusulas, Theo já sabia que seu café não era para Bruno — era para extrair os números que a Adamantis comprou dele. Iris, que acusou Marcela de plantar dúvida, escondia o próprio jardim: ela queria o contrato fechado não pela empresa, mas porque 'sem isso, perco a chance de ser a diretora criativa' — e cada dia de silêncio era um dia a menos no relógio dela.",
+        "narrator": "llm",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      "narrativeAxisScores": {
+        "concreteness": 3,
+        "causal_throughline": 3,
+        "hidden_payoff": 4,
+        "non_genericity": 4,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    }
+  ],
+  "grades": {
+    "grade": "B",
+    "scenes": [
+      {
+        "scenarioId": "hoc_fatia_que_nao_existe",
+        "grade": "B",
+        "runs": [
+          {
+            "grade": "B",
+            "weightedMean": 3.929,
+            "signalPassRate": 0.75,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "creativity_unhinged",
+              "score": 3,
+              "weight": 0.8
+            },
+            "axesBelow4": [
+              "creativity_unhinged"
+            ],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "creativity_unhinged 3 < 4",
+              "private_channel_used failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_fatia_que_nao_existe__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}
