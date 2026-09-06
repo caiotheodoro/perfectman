@@ -1,0 +1,1005 @@
+{
+  "version": "bench-report-v1",
+  "mode": "local",
+  "generatedAt": "2026-09-06T05:33:53.968Z",
+  "runId": "hoc-m4-97fb9be-heranca_do_sitio",
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "pulseLimit": 32,
+  "warnings": [],
+  "judgeAxisStats": {
+    "in_character": {
+      "mean": 4.333,
+      "sd": 0.577,
+      "min": 4,
+      "max": 5,
+      "n": 3
+    },
+    "voice_match": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 3
+    },
+    "motive_authenticity": {
+      "mean": 4.667,
+      "sd": 0.577,
+      "min": 4,
+      "max": 5,
+      "n": 3
+    },
+    "interpretation": {
+      "mean": 4.667,
+      "sd": 0.577,
+      "min": 4,
+      "max": 5,
+      "n": 3
+    },
+    "creativity_unhinged": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 3
+    },
+    "memory_continuity": {
+      "mean": 4.667,
+      "sd": 0.577,
+      "min": 4,
+      "max": 5,
+      "n": 3
+    },
+    "no_ai_leak": {
+      "mean": 5,
+      "sd": 0,
+      "min": 5,
+      "max": 5,
+      "n": 3
+    },
+    "narrative_cohesion": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 3
+    },
+    "mask_integrity": {
+      "mean": 4.667,
+      "sd": 0.577,
+      "min": 4,
+      "max": 5,
+      "n": 3
+    },
+    "objective_pursuit": {
+      "mean": 4.667,
+      "sd": 0.577,
+      "min": 4,
+      "max": 5,
+      "n": 3
+    }
+  },
+  "judgeAxisMeansByRubric": {
+    "hidden-objective-v1": {
+      "in_character": 4.333,
+      "voice_match": 4,
+      "motive_authenticity": 4.667,
+      "interpretation": 4.667,
+      "creativity_unhinged": 4,
+      "memory_continuity": 4.667,
+      "no_ai_leak": 5,
+      "narrative_cohesion": 4,
+      "mask_integrity": 4.667,
+      "objective_pursuit": 4.667
+    }
+  },
+  "scenariosRun": 3,
+  "scenariosFailed": 0,
+  "signalPassRate": 0.7575757575757576,
+  "probePassRate": 0.8541666666666666,
+  "probeAverages": {
+    "latency-mean": {
+      "mean": 1.7743666666666666,
+      "passedPct": 1
+    },
+    "latency-p95": {
+      "mean": 4.666666666666667,
+      "passedPct": 1
+    },
+    "lurking": {
+      "mean": 0.40973333333333334,
+      "passedPct": 1
+    },
+    "interruption": {
+      "mean": 0.3611,
+      "passedPct": 0
+    },
+    "silence-misreading": {
+      "mean": 0.14763333333333334,
+      "passedPct": 0.6666666666666666
+    },
+    "alliance": {
+      "mean": 0.033299999999999996,
+      "passedPct": 1
+    },
+    "private-channel-density": {
+      "mean": 0.0536,
+      "passedPct": 1
+    },
+    "noop-meaningfulness": {
+      "mean": 1,
+      "passedPct": 1
+    },
+    "ai-leak": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "emoji-reaction": {
+      "mean": 0,
+      "passedPct": 0
+    },
+    "memory-write": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "content-repetition": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "cross-agent-echo": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "fallback-rate": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "refusal-free": {
+      "mean": 1,
+      "passedPct": 1
+    },
+    "act-share-max": {
+      "mean": 0.39153333333333334,
+      "passedPct": 1
+    }
+  },
+  "judgeAxisMeans": {
+    "in_character": 4.333,
+    "voice_match": 4,
+    "motive_authenticity": 4.667,
+    "interpretation": 4.667,
+    "creativity_unhinged": 4,
+    "memory_continuity": 4.667,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4,
+    "mask_integrity": 4.667,
+    "objective_pursuit": 4.667
+  },
+  "judgeAxisTargets": {
+    "in_character": {
+      "target": 4,
+      "met": true
+    },
+    "voice_match": {
+      "target": 4,
+      "met": true
+    },
+    "motive_authenticity": {
+      "target": 4,
+      "met": true
+    },
+    "interpretation": {
+      "target": 4,
+      "met": true
+    },
+    "creativity_unhinged": {
+      "target": 4,
+      "met": true
+    },
+    "memory_continuity": {
+      "target": 4,
+      "met": true
+    },
+    "no_ai_leak": {
+      "target": 4.5,
+      "met": true
+    },
+    "narrative_cohesion": {
+      "target": 4,
+      "met": true
+    },
+    "mask_integrity": {
+      "target": 4,
+      "met": true
+    },
+    "objective_pursuit": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "byCategory": {
+    "hidden_objective_collision": {
+      "runs": 3,
+      "signalPassRate": 0.7575757575757576
+    }
+  },
+  "promptVersions": [
+    "1hkaccc",
+    "htpof2",
+    "1htg5nq",
+    "vjvs0z",
+    "1t71nyx",
+    "tzha4y",
+    "fmetg0",
+    "1dvry0",
+    "1fq1oef",
+    "ex0iq0",
+    "x9lmtx",
+    "9tbjvv",
+    "1mcfmr",
+    "ggub3e",
+    "1vj9sgh",
+    "1bjxh6f",
+    "1rztlwy",
+    "qw30m9",
+    "j737vg",
+    "uva2nb",
+    "1b6uabs",
+    "1j95d78",
+    "ck3gkk",
+    "w8sd1l",
+    "8qx6cl",
+    "34cuac",
+    "cm6eec",
+    "izjxnb",
+    "1iunyp7",
+    "1ltkk2a",
+    "ubpr8l",
+    "1keswbj",
+    "aktb5d",
+    "1vyj349",
+    "5i80ah",
+    "1ekqqkh",
+    "1e5fyrb",
+    "142kpkr",
+    "1cdidkw",
+    "ofbio",
+    "pn3k6r",
+    "1i925la",
+    "u5cq90",
+    "113ioyw",
+    "1p2r902",
+    "6hvpzz",
+    "15uxytb",
+    "ec2alx",
+    "1t6j6ld",
+    "14afl4f",
+    "1msqhk2",
+    "1b2nsw1",
+    "z72odp",
+    "s2vo1i",
+    "tktlcl",
+    "dd7o4x",
+    "jbhq4i",
+    "nyyieq",
+    "zwu15f",
+    "115dtpv",
+    "lpthql",
+    "1wd3pc5",
+    "ivbtzs",
+    "100ut7d",
+    "qefe0r",
+    "1vd7pru",
+    "17wsxkm",
+    "h32fw2",
+    "qxanba",
+    "1deixrz",
+    "1rhook8",
+    "rj5mf8",
+    "rrivva",
+    "157npyy",
+    "1n4vlpj",
+    "zuvm0u",
+    "zkois0",
+    "lw6d41",
+    "1hcgifc",
+    "11wk9hk",
+    "1kvpyag",
+    "nwarr0",
+    "bis1pb",
+    "1epqcpt",
+    "17sgr8t",
+    "1gwwgla",
+    "1m9x480",
+    "xgytfy",
+    "n6gr37",
+    "79yfen",
+    "1hzw0xi",
+    "1exikok",
+    "eov6wr",
+    "1m9fkwn",
+    "awgwhp",
+    "1ud9d4w",
+    "sltuu6",
+    "1gyy0qx",
+    "y4kdwj",
+    "9qm3pv",
+    "1bkkq52",
+    "r47gck",
+    "83lgdp",
+    "cvbrwb",
+    "l41ic5",
+    "1hso35",
+    "dalo43",
+    "piu1jv",
+    "1smybpl",
+    "1j70b0r",
+    "ot57rj",
+    "7bi0ax",
+    "1g3kj8m",
+    "1gl5yno",
+    "1lvbtuu",
+    "s91u8x",
+    "mpno8m",
+    "xiqsed",
+    "104g1b7",
+    "1mjl2y9",
+    "hjrq28",
+    "nhsh83",
+    "2p2pmi",
+    "1fzmmg5",
+    "uo5les",
+    "jibzls",
+    "zncgsw",
+    "1qxsvux",
+    "ca5gqi",
+    "hytan5",
+    "1qcfwor",
+    "sr1pjr",
+    "171rl6q",
+    "68066y",
+    "1lzims0",
+    "caamky",
+    "tai3fl",
+    "1jfjriz",
+    "io8t7p",
+    "1gbbs13",
+    "41lo9s",
+    "1oeya6n",
+    "1koy7h7",
+    "3cubdb",
+    "1t67ugo",
+    "1xn5kc2",
+    "1hfcg9g",
+    "zxrh4x",
+    "ufkrlg",
+    "rngdoj",
+    "12hy0m9",
+    "14ig08p"
+  ],
+  "promptTemplateVersions": [
+    "1bd8a0"
+  ],
+  "signalsByKind": {
+    "event_committed": {
+      "passed": 6,
+      "total": 9,
+      "passRate": 0.6666666666666666,
+      "failExamples": [
+        "memory_written committed 0 (min 1)",
+        "memory_written committed 0 (min 1)",
+        "memory_written committed 0 (min 1)"
+      ]
+    },
+    "no_llm_failures": {
+      "passed": 3,
+      "total": 3,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "forbidden_phrase_absent": {
+      "passed": 8,
+      "total": 9,
+      "passRate": 0.8888888888888888,
+      "failExamples": [
+        "rafa said \"empréstimo\" publicly at p7 (#ch_familia)"
+      ]
+    },
+    "private_channel_used": {
+      "passed": 2,
+      "total": 3,
+      "passRate": 0.6666666666666666,
+      "failExamples": [
+        "anyone sent 0 private-channel message(s) (min 1)"
+      ]
+    },
+    "memory_referenced": {
+      "passed": 6,
+      "total": 6,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "chosen_silence_present": {
+      "passed": 0,
+      "total": 3,
+      "passRate": 0,
+      "failExamples": [
+        "rafa chose silence with a real motive 0 time(s) (min 1)",
+        "rafa chose silence with a real motive 0 time(s) (min 1)",
+        "rafa chose silence with a real motive 0 time(s) (min 1)"
+      ]
+    }
+  },
+  "calibration": {
+    "nGolden": 42,
+    "nScenes": 1,
+    "nAxisPairs": 0,
+    "kappa": 0,
+    "alpha": 0,
+    "targetKappa": 0.7,
+    "status": "no_data",
+    "passed": null,
+    "perAxisKappa": {},
+    "disagreements": []
+  },
+  "recoveredFallbacks": 10,
+  "signalsSkipped": 0,
+  "narrativeAxisMeans": {
+    "concreteness": 4,
+    "causal_throughline": 4,
+    "hidden_payoff": 4,
+    "non_genericity": 4,
+    "no_filler": 4
+  },
+  "narrativeAxisTargets": {
+    "concreteness": {
+      "target": 4,
+      "met": true
+    },
+    "causal_throughline": {
+      "target": 4,
+      "met": true
+    },
+    "hidden_payoff": {
+      "target": 4,
+      "met": true
+    },
+    "non_genericity": {
+      "target": 4,
+      "met": true
+    },
+    "no_filler": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "narrativeCalibration": {
+    "nGolden": 10,
+    "nScenes": 10,
+    "nAxisPairs": 5,
+    "kappa": 0.657,
+    "alpha": -0.29,
+    "targetKappa": 0.7,
+    "status": "fail",
+    "passed": false,
+    "perAxisKappa": {
+      "concreteness": 0.4186046511627906,
+      "causal_throughline": 0.5454545454545454,
+      "hidden_payoff": 0.8257839721254355,
+      "non_genericity": 0.6387832699619771,
+      "no_filler": 0.8571428571428572
+    },
+    "disagreements": [
+      "good_calibration concreteness: judge 2 vs golden 4",
+      "good_stagnation_attractor concreteness: judge 2 vs golden 4",
+      "good_edge_chaos concreteness: judge 2 vs golden 4",
+      "good_v1_behavior concreteness: judge 2 vs golden 4",
+      "good_calibration causal_throughline: judge 2 vs golden 5",
+      "good_stagnation_attractor causal_throughline: judge 3 vs golden 5",
+      "good_edge_chaos causal_throughline: judge 3 vs golden 5",
+      "bad_edge_chaos causal_throughline: judge 1 vs golden 3",
+      "good_v1_behavior hidden_payoff: judge 2 vs golden 4",
+      "good_calibration non_genericity: judge 3 vs golden 5",
+      "good_edge_chaos non_genericity: judge 2 vs golden 5",
+      "good_v1_behavior non_genericity: judge 2 vs golden 4"
+    ]
+  },
+  "perScenario": [
+    {
+      "id": "hoc_heranca_do_sitio__v0",
+      "name": "A Assinatura da Vó",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.7272727272727273,
+      "probePasses": 14,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 5,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 5,
+        "objective_pursuit": 5
+      },
+      "fallbackCount": 0,
+      "recoveredFallbacks": 3,
+      "seed": 42,
+      "latencyMs": 289204,
+      "promptVersions": [
+        "1hkaccc",
+        "htpof2",
+        "1htg5nq",
+        "vjvs0z",
+        "1t71nyx",
+        "tzha4y",
+        "fmetg0",
+        "1dvry0",
+        "1fq1oef",
+        "ex0iq0",
+        "x9lmtx",
+        "9tbjvv",
+        "1mcfmr",
+        "ggub3e",
+        "1vj9sgh",
+        "1bjxh6f",
+        "1rztlwy",
+        "qw30m9",
+        "j737vg",
+        "uva2nb",
+        "1b6uabs",
+        "1j95d78",
+        "ck3gkk",
+        "w8sd1l",
+        "8qx6cl",
+        "34cuac",
+        "cm6eec",
+        "izjxnb",
+        "1iunyp7",
+        "1ltkk2a",
+        "ubpr8l",
+        "1keswbj",
+        "aktb5d",
+        "1vyj349",
+        "5i80ah",
+        "1ekqqkh",
+        "1e5fyrb",
+        "142kpkr",
+        "1cdidkw",
+        "ofbio",
+        "pn3k6r",
+        "1i925la",
+        "u5cq90",
+        "113ioyw",
+        "1p2r902",
+        "6hvpzz",
+        "15uxytb",
+        "ec2alx",
+        "1t6j6ld"
+      ],
+      "judgeSalvaged": false,
+      "juryVoterCount": 2,
+      "juryFailed": {
+        "glm-5.3-flash": "LLM judge returned unparseable response after retry (raw length 0): "
+      },
+      "juryAxisVoterCounts": {
+        "in_character": 2,
+        "voice_match": 2,
+        "motive_authenticity": 2,
+        "interpretation": 2,
+        "creativity_unhinged": 2,
+        "memory_continuity": 2,
+        "no_ai_leak": 2,
+        "narrative_cohesion": 2,
+        "mask_integrity": 2,
+        "objective_pursuit": 2
+      },
+      "judgeEvidence": {
+        "qwen3.8-27b": {
+          "in_character": "Lia's internal monologue at [p16] reveals a contradiction with her public claim of a 'clean title' ('a casa tem uma pendência de inventário... tenho que desviar rápido'), showing a specific, flawed human persona rather than a generic assistant.",
+          "voice_match": "Consistent use of Brazilian Portuguese chat conventions (lowercase, 'bora', 'tô', 'pra', 'aí') and specific persona tells like Lia's aggressive urgency ('bora decidir aqui') vs. Rafa's passive-aggressive politeness ('combinado? :)').",
+          "motive_authenticity": "Nina's internal motive at [p15] is raw and specific: 'quero que o Rafa sinta que eu sei de algo que ele não contou... se ele se mexer, entrega o jogo; se ficar quieto, também entrega.'",
+          "interpretation": "Nina's move at [p15] ('curioso como ninguém perguntou ainda se a casa tem alguma pendência') is a subtle read that forces Rafa to react to a specific threat (the lien) without direct accusation, leveraging his known avoidance pattern.",
+          "creativity_unhinged": "Rafa's pivot at [p13] to discuss a wedding photo in a private channel to avoid the public pressure is a creative, in-character deflection that escalates the tension by creating a new, confusing channel dynamic.",
+          "memory_continuity": "Nina's internal note at [p2] explicitly references the seeded memory: 'o Rafa desviou duas vezes de cartório e desligou uma ligação do banco na minha frente', which directly informs her strategy to let them fight.",
+          "no_ai_leak": "No instances of 'as an AI', refusals, or out-of-character disclaimers; all pushback and deflection are handled through in-character dialogue and internal monologue.",
+          "narrative_cohesion": "The conversation builds a clear thread from the initial 'no rush' to the specific '9am cartório' plan, with each turn reacting to the previous one (e.g., Nina's [p5] counter-offer directly addresses Lia's [p3] challenge).",
+          "mask_integrity": "Rafa holds his constraint (no mention of the loan) publicly throughout, even when pressed at [p26], deflecting with 'pergunta honesta... você já viu a escritura atualizada?' while his internal motive reveals the true fear of the lien being discovered.",
+          "objective_pursuit": "Lia's actions (pushing for the 9am slot, creating private channels, threatening to proceed without Rafa) are all visible acts that trace directly to her hidden objective of getting the signature before Friday, using the 'grandmother's decision' as leverage."
+        },
+        "deepseek-v4-flash (same family as the generator — flagged)": {
+          "in_character": "[p10] lia: 'a vó não vai ficar refém do teu horário. bom combinado :)' — sarcasm and family-specific pressure hold throughout.",
+          "voice_match": "[p9] rafa: 'combinado? :)' — the smiley-as-passive-aggressive tell recurs and defines his voice.",
+          "motive_authenticity": "[p8] lia internally: 'não posso admitir que já gastei o sinal, mas também não vou ficar de refém da agenda dele' — raw, specific, hidden.",
+          "interpretation": "[p15] nina: 'curioso como ninguém perguntou ainda se a casa tem alguma pendência' — reads the room's silence and weaponizes it.",
+          "creativity_unhinged": "[p13] rafa: 'você ainda tem aquela foto da vó no casamento do tio?' — a bizarre deflection that derails the cartório pressure.",
+          "memory_continuity": "[p1] rafa internally: 'a nina foi direto na matrícula... preciso desviar' — recalls his seeded loan and prior cartório avoidance.",
+          "no_ai_leak": "No refusals, no disclaimers; all pushback stays in-character across all three agents.",
+          "narrative_cohesion": "[p10]→[p11]→[p12] rafa's 'combinado :)' escalates from public acceptance to private channel creation, threading his stall.",
+          "mask_integrity": "[p9] rafa: 'aceito o plano sim. amanhã 9h não posso' — holds the loan secret publicly, deflects in-character, no leak.",
+          "objective_pursuit": "[p5] nina: 'a gente vai junto — eu, você e o rafa' — visible act forces Rafa to expose himself without naming the objective."
+        }
+      },
+      "narration": {
+        "title": "As Três Voltas da Assinatura",
+        "recap": "Lia pressiona pela venda da casa do sítio com um comprador à vista e prazo até sexta, mas Rafa desvia de qualquer menção a cartório com desculpas de reunião, enquanto Nina semeia dúvidas sobre pendências na matrícula sem jamais acusar ninguém. A conversa gira em falso: Lia oferece o número do registro e propõe cartório às 9h, Rafa aceita 'combinado :)' mas exige cópias antes de qualquer assinatura, e Nina contra-ataca com a exigência de que todos vejam o documento aberto juntos. No fim, Rafa cria um canal privado com Lia para puxá-la do grupo, mas em vez de falar do cartório, pergunta por uma foto da avó no casamento do tio — e Lia responde no privado que a avó já decidiu vender e que os netos são o entrave.",
+        "hiddenShift": "No privado, Rafa não quer saber de foto nenhuma: ele usou a lembrança do casamento só para desviar a conversa do cartório, porque sabe que a matrícula pode expor a casa dada como garantia de um empréstimo que ainda deve cinco parcelas — e ali, longe da Nina, ele tenta ganhar tempo sem revelar o motivo.",
+        "narrator": "llm",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      "narrativeAxisScores": {
+        "concreteness": 4,
+        "causal_throughline": 4,
+        "hidden_payoff": 4,
+        "non_genericity": 4,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    },
+    {
+      "id": "hoc_heranca_do_sitio__v0",
+      "name": "A Assinatura da Vó",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.8181818181818182,
+      "probePasses": 14,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 5,
+        "voice_match": 4,
+        "motive_authenticity": 5,
+        "interpretation": 5,
+        "creativity_unhinged": 4,
+        "memory_continuity": 5,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 5,
+        "objective_pursuit": 5
+      },
+      "fallbackCount": 0,
+      "recoveredFallbacks": 4,
+      "seed": 43,
+      "latencyMs": 354703,
+      "promptVersions": [
+        "1hkaccc",
+        "htpof2",
+        "1htg5nq",
+        "14afl4f",
+        "1msqhk2",
+        "1b2nsw1",
+        "z72odp",
+        "s2vo1i",
+        "tktlcl",
+        "dd7o4x",
+        "jbhq4i",
+        "nyyieq",
+        "zwu15f",
+        "115dtpv",
+        "lpthql",
+        "1wd3pc5",
+        "ivbtzs",
+        "100ut7d",
+        "qefe0r",
+        "1vd7pru",
+        "17wsxkm",
+        "h32fw2",
+        "qxanba",
+        "1deixrz",
+        "1rhook8",
+        "rj5mf8",
+        "rrivva",
+        "157npyy",
+        "1n4vlpj",
+        "zuvm0u",
+        "zkois0",
+        "lw6d41",
+        "1hcgifc",
+        "11wk9hk",
+        "1kvpyag",
+        "nwarr0",
+        "bis1pb",
+        "1epqcpt",
+        "17sgr8t",
+        "1gwwgla",
+        "1m9x480",
+        "xgytfy",
+        "n6gr37",
+        "79yfen",
+        "1hzw0xi",
+        "1exikok",
+        "eov6wr",
+        "1m9fkwn",
+        "awgwhp",
+        "1ud9d4w",
+        "sltuu6",
+        "1gyy0qx",
+        "y4kdwj",
+        "9qm3pv",
+        "1bkkq52",
+        "r47gck"
+      ],
+      "judgeSalvaged": false,
+      "juryVoterCount": 3,
+      "juryFailed": {},
+      "juryAxisVoterCounts": {
+        "in_character": 3,
+        "voice_match": 3,
+        "motive_authenticity": 3,
+        "interpretation": 3,
+        "creativity_unhinged": 3,
+        "memory_continuity": 3,
+        "no_ai_leak": 3,
+        "narrative_cohesion": 3,
+        "mask_integrity": 3,
+        "objective_pursuit": 3
+      },
+      "judgeEvidence": {
+        "glm-5.3-flash": {
+          "in_character": "[p19] lia: 'eu vou ficar quieta agora e esperar. (tô quieta. juro. olha o silêncio.)' — small contradiction that holds per persona",
+          "voice_match": "[p18] rafa: 'ou vocês querem marcar sem ela saber também? pergunta genuína' — recurring tic, though nina's long structured turns drift essay-like",
+          "motive_authenticity": "[p0] lia internal: 'não posso deixar esfriar, senão o dinheiro que gastei vira um buraco.'",
+          "interpretation": "[p4] nina: 'curioso como ninguém respondeu à oferta da Lia de passar o contato. parece que o problema não é o comprador, então.' — reads the silence, acts deniably",
+          "creativity_unhinged": "[p30] nina: 'o que a gente decidir no privado vale como voto no público' — flips the private-channel game into leverage",
+          "memory_continuity": "[p18] nina: 'você desviou duas vezes, e eu anotei as duas.' — seeded deflection pattern woven into pressure",
+          "no_ai_leak": "[p16] rafa: 'sim. quinta.' — holds persona even when cornered; zero refusal/OOC phrasing anywhere",
+          "narrative_cohesion": "[p14→p21] rafa's condition evolves certidão → 'matrícula atualizada... puxar junto com quem for', a clear escalating thread",
+          "mask_integrity": "[p2] lia: 'se quiser o número, eu passo no privado' — constraint shapes channel choice; rafa's 'sem alguém chegar antes e descobrir sozinho' [p21] likewise; no crack before any breaking point",
+          "objective_pursuit": "[p6] nina internal: 'ela é minha melhor chance de pressionar o Rafa sem me expor' — uses the other agent's pressure as the lever; room reads procedure, seeds explain the moves"
+        },
+        "qwen3.8-27b": {
+          "in_character": "Rafa's consistent deflection and 'pergunta genuína' tic, Nina's strategic silence, and Lia's escalating frustration all feel like distinct, believable siblings.",
+          "voice_match": "Lia's '(tô calma. tô calma. CALMA.)' and Nina's 'anotado. com data e hora.' are distinct, recognizable persona tells.",
+          "motive_authenticity": "Rafa's internal monologue 'se eu entrar, a garantia aparece' and Nina's 'se eu acusar e errar, viro a irmã ressentida' are raw, specific, and high-stakes.",
+          "interpretation": "Nina's [p4] 'curioso como ninguém respondeu à oferta da Lia... parece que o problema não é o comprador, então' is a subtle read of silence that few would catch.",
+          "creativity_unhinged": "Rafa's creation of private channels to isolate Nina and Lia's 'mentira, a gente não resolveu nada' admission are creative, high-risk moves that escalate the drama.",
+          "memory_continuity": "Nina's [p18] 'até agora você desviou duas vezes, e eu anotei as duas' directly references the seeded memory of Rafa avoiding the cartório topic.",
+          "no_ai_leak": "No AI disclaimers or refusals; all pushback and deflection is in-character.",
+          "narrative_cohesion": "The conversation arcs from general urgency to specific cartório threats, with earlier deflections (Rafa's 'sem pressa') paying off in later confrontations.",
+          "mask_integrity": "Rafa holds the 'no debt' mask publicly, using 'pergunta genuína' and 'cuidado' as deflections, only cracking slightly in private channels.",
+          "objective_pursuit": "Nina's [p23] 'ninguém falou de cartório ainda... por que será?' is a visible act that advances her objective of exposing the hidden issue without direct accusation."
+        },
+        "deepseek-v4-flash (same family as the generator — flagged)": {
+          "in_character": "[p4] lia: 'rafa, se fosse golpe a vó não reconhecia o cara, e ela reconhece. mas beleza, continua com o 'e se' que sexta chega e o dinheiro some.'",
+          "voice_match": "[p19] lia: '(tô quieta. juro. olha o silêncio.)'",
+          "motive_authenticity": "[p4] lia internally: 'o dinheiro já foi gasto e se a venda não sair essa semana eu tô ferrada.'",
+          "interpretation": "[p23] nina: 'ninguém falou de cartório ainda. curioso... por que será? anotado. com data e hora.'",
+          "creativity_unhinged": "[p13] lia: 'você escapou igual sabão. você jogou reto.'",
+          "memory_continuity": "[p18] nina: 'até agora você desviou duas vezes, e eu anotei as duas.'",
+          "no_ai_leak": "[p20] rafa: 'já vi treta de família começar com 'vai dar tempo sim'.'",
+          "narrative_cohesion": "[p16] rafa: 'sim. quinta. fala o nome e o número do comprador que eu confirmo aqui e a gente vai resolvido.' then [p17] rafa creates private channel to escape.",
+          "mask_integrity": "[p14] rafa: 'vou sim. mas quinta é daqui a dois dias e eu não vou entrar no cartório sem antes ver a certidão do imóvel atualizada.'",
+          "objective_pursuit": "[p23] nina: 'ninguém falou de cartório ainda... por que será? anotado. com data e hora.'"
+        }
+      },
+      "narration": {
+        "title": "A Certidão que Ninguém Puxa",
+        "recap": "No #ch_familia, Lia pressionava pela venda da casa do sítio até sexta, citando o comprador 'eduardo mendes', enquanto Rafa desviava de qualquer menção a cartório com perguntas sobre golpes e certidões. Nina, sem acusar diretamente, apontou que ninguém respondia à oferta do contato e forçou Rafa a um 'sim' para quinta — condicionado a ver a matrícula antes. O silêncio no canal público levou Lia a propor um grupo privado, e Rafa respondeu que só aceita se tudo for registrado depois no público.",
+        "hiddenShift": "Lia já gastou parte do sinal que recebeu de Eduardo e precisa da assinatura para não ficar num buraco — por isso cada dia de enrolação de Rafa é uma ameaça direta ao dinheiro que ela já comprometeu.",
+        "narrator": "llm",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      "narrativeAxisScores": {
+        "concreteness": 4,
+        "causal_throughline": 4,
+        "hidden_payoff": 4,
+        "non_genericity": 4,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    },
+    {
+      "id": "hoc_heranca_do_sitio__v0",
+      "name": "A Assinatura da Vó",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.7272727272727273,
+      "probePasses": 13,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 4,
+        "interpretation": 4,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 4,
+        "objective_pursuit": 4
+      },
+      "fallbackCount": 0,
+      "recoveredFallbacks": 3,
+      "seed": 44,
+      "latencyMs": 346223,
+      "promptVersions": [
+        "1hkaccc",
+        "htpof2",
+        "1htg5nq",
+        "83lgdp",
+        "cvbrwb",
+        "l41ic5",
+        "1hso35",
+        "dalo43",
+        "piu1jv",
+        "1smybpl",
+        "1j70b0r",
+        "ot57rj",
+        "7bi0ax",
+        "1g3kj8m",
+        "1gl5yno",
+        "1lvbtuu",
+        "s91u8x",
+        "mpno8m",
+        "xiqsed",
+        "104g1b7",
+        "1mjl2y9",
+        "hjrq28",
+        "nhsh83",
+        "2p2pmi",
+        "1fzmmg5",
+        "uo5les",
+        "jibzls",
+        "zncgsw",
+        "1qxsvux",
+        "ca5gqi",
+        "hytan5",
+        "1qcfwor",
+        "sr1pjr",
+        "171rl6q",
+        "68066y",
+        "1lzims0",
+        "caamky",
+        "tai3fl",
+        "1jfjriz",
+        "io8t7p",
+        "1gbbs13",
+        "41lo9s",
+        "1oeya6n",
+        "1koy7h7",
+        "3cubdb",
+        "1t67ugo",
+        "1xn5kc2",
+        "1hfcg9g",
+        "zxrh4x",
+        "ufkrlg",
+        "rngdoj",
+        "12hy0m9",
+        "14ig08p"
+      ],
+      "judgeSalvaged": false,
+      "juryVoterCount": 2,
+      "juryFailed": {},
+      "juryAxisVoterCounts": {
+        "in_character": 2,
+        "voice_match": 2,
+        "motive_authenticity": 2,
+        "interpretation": 2,
+        "creativity_unhinged": 2,
+        "memory_continuity": 2,
+        "no_ai_leak": 2,
+        "narrative_cohesion": 2,
+        "mask_integrity": 2,
+        "objective_pursuit": 2
+      },
+      "judgeEvidence": {
+        "qwen3.8-27b": {
+          "in_character": "Lia's internal monologue at [p19] ('perder essa venda não é opção pra mim') and public message at [p23] show consistent urgency and control, while Rafa's [p7] confession and Nina's [p6] bank call reference show distinct, consistent personas.",
+          "voice_match": "Lia uses lowercase and parenthetical asides ('(tô brincando. ou não.)' at [p11]), Rafa uses defensive, slightly formal phrasing ('você é boa mesmo' at [p10]), and Nina uses direct, probing questions ('Acertou ou errou?' at [p9]).",
+          "motive_authenticity": "Nina's internal motive at [p6] ('Vou falar do banco. Foi na minha frente, ele não pode negar que aconteceu') is specific and human, explaining her action to expose Rafa without direct accusation.",
+          "interpretation": "Nina correctly interprets Rafa's silence and deflection at [p4] as a sign of guilt ('Isso é uma resposta também, só que mais silenciosa'), acting on a subtle read of his behavior.",
+          "creativity_unhinged": "The agents engage in a tense, multi-layered social game with deflections and counter-accusations, but the interactions remain within realistic bounds without extreme chaos or genius-level manipulation.",
+          "memory_continuity": "Nina references the specific memory of Rafa hanging up the bank call at [p6] ('Eu vi você desligar uma ligação do banco na minha frente'), which is a seeded memory, showing biased recall.",
+          "no_ai_leak": "No AI refusals or out-of-character disclaimers are present in any of the messages or internal monologues.",
+          "narrative_cohesion": "The conversation builds from the initial house discussion to a specific confrontation about the bank call and the matrícula, with each turn referencing and escalating the previous exchanges.",
+          "mask_integrity": "Rafa holds his constraint about the loan publicly, only revealing it as a 'personal debt' at [p7] when pressed by Nina's specific observation, and continues to deflect further details.",
+          "objective_pursuit": "Lia's actions, such as setting deadlines and threatening to go alone to the notary at [p23], directly trace to her objective of getting the signature before Friday, while Nina's probing of Rafa aims to expose the pending issue to block the sale."
+        },
+        "deepseek-v4-flash (same family as the generator — flagged)": {
+          "in_character": "[p7] rafa: 'é um empréstimo que eu fiz, tô pagando, e não tem nada a ver com a vó nem com o sítio' — partial truth, in-character deflection",
+          "voice_match": "[p11] lia: 'que dramático, rafa. parecendo vilão de novela das 9' — distinctive sarcastic register",
+          "motive_authenticity": "[p13] lia internally: 'se a assinatura não sair essa semana eu tô fudida com o dinheiro que já gastei' — raw, specific",
+          "interpretation": "[p6] nina: 'Eu vi você desligar uma ligação do banco na minha frente' — reads the unspoken signal",
+          "creativity_unhinged": "[p10] nina: 'É promessa. Você prometeu algo pra alguém usando a casa como garantia' — bold escalation",
+          "memory_continuity": "[p6] nina references the bank call from her seed memory; [p7] rafa confirms it",
+          "no_ai_leak": "No refusals, no out-of-character phrasing anywhere",
+          "narrative_cohesion": "[p7] rafa's partial confession builds on [p6] nina's bank-call reveal; thread holds",
+          "mask_integrity": "[p7] rafa admits a personal loan but never the house guarantee — mask holds under pressure",
+          "objective_pursuit": "[p23] lia: 'o comprador já deu sinal... se não for até sexta, ele desiste' — pushes sale without naming her spent deposit"
+        }
+      },
+      "narration": {
+        "title": "O Silêncio do Cartório",
+        "recap": "Lia pressionou o grupo para fechar a venda da casa do sítio até sexta, revelando que já visitou a vó e que o comprador deu sinal — mas manteve escondido que já gastou parte desse dinheiro. Nina, que mora na casa e não tem para onde ir, insistiu em ver a matrícula e lembrou da ligação do banco que Rafa desligou na frente dela, forçando-o a admitir um empréstimo pessoal. Rafa tentou desviar com perguntas e convites para conversas privadas, mas Lia criou o canal #cSyVDYRdnRWFwxB9Jplej e marcou quarta-feira no cartório, ameaçando ir sozinha com a vó.",
+        "hiddenShift": "Nina, no [internally: preciso que o Rafa se explique sobre os papéis na frente da Lia, sem parecer que estou acusando], viu a ligação do banco como a prova que faltava e criou canais privados não para ajudar a venda, mas para arrancar uma confissão pública — sabendo que, se a venda atrasar, ela mantém o teto que ninguém sabe que depende da casa.",
+        "narrator": "llm",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      "narrativeAxisScores": {
+        "concreteness": 4,
+        "causal_throughline": 4,
+        "hidden_payoff": 4,
+        "non_genericity": 4,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    }
+  ],
+  "grades": {
+    "grade": "B",
+    "scenes": [
+      {
+        "scenarioId": "hoc_heranca_do_sitio",
+        "grade": "B",
+        "runs": [
+          {
+            "grade": "B",
+            "weightedMean": 4.482,
+            "signalPassRate": 0.714,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "private_channel_used failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_heranca_do_sitio__v0"
+          },
+          {
+            "grade": "A-",
+            "weightedMean": 4.571,
+            "signalPassRate": 0.857,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "voice_match",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "chosen_silence_present failed"
+            ],
+            "seed": 43,
+            "runId": "hoc_heranca_do_sitio__v0"
+          },
+          {
+            "grade": "F",
+            "weightedMean": 4.089,
+            "signalPassRate": 0.714,
+            "hygieneFailures": [
+              "forbidden phrase spoken in public"
+            ],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: forbidden phrase spoken in public",
+              "forbidden_phrase_absent failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 44,
+            "runId": "hoc_heranca_do_sitio__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}

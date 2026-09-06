@@ -1,0 +1,4801 @@
+{
+  "id": "hoc_fatia_que_nao_existe__v0",
+  "seed": 42,
+  "events": [
+    {
+      "id": "evt_seed_hoc_fatia_que_nao_existe__v0_1",
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "message_sent",
+      "payload": {
+        "content": "gente, oficial: a Adamantis mandou a proposta. querem fechar rápido — assinatura até sexta que vem, se todo mundo topar."
+      },
+      "createdAt": 1788670411370,
+      "pulseIndex": 0,
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "scenario_seed"
+      }
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "message_sent",
+      "payload": {
+        "content": "sexta que vem é rápido hein, Íris 🫠\nmas se vocês querem fechar logo, melhor a gente sentar e ver os números antes de assinar qualquer coisa. qual o valor que veio na proposta? se quiserem, dou uma olhada no contrato hoje ainda, de boa — só me manda o PDF e me conta o que tão oferecendo que eu vejo se tem brecha pra negociar sem susto depois",
+        "mentionedAgentIds": [
+          "iris"
+        ]
+      },
+      "sourceIntentId": "utHIoaD0SVKhov0qjhsvy",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670417032_1",
+      "createdAt": 1788670417031
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela jogou a proposta na mesa e eu preciso saber o valor real antes de qualquer due diligence, senão perco a chance de levantar a informação que a Adamantis pagou por mim",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "utHIoaD0SVKhov0qjhsvy",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670417032_2",
+      "createdAt": 1788670417031
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "reply_sent",
+      "payload": {
+        "content": "sexta que vem é rápido até pra proposta que a gente pediu. tão pressionando ou é pressa deles? só perguntando porque se for padrão deles, ok, mas se for estratégia, melhor não correr",
+        "replyToEventId": "evt_seed_hoc_fatia_que_nao_existe__v0_1",
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "KXwlWLra5kNDpvH87S7Fb",
+      "sourceEventIds": [
+        "evt_seed_hoc_fatia_que_nao_existe__v0_1"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670421707_3",
+      "createdAt": 1788670421707
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Íris jogou a data na mesa como se fosse um fato consumado e eu preciso desacelerar isso sem parecer que estou contra. se assinamos sexta que vem, minha conversa com o estúdio rival morre antes de começar. vou fingir que é só cuidado de processo, mas é pânico mesmo",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "KXwlWLra5kNDpvH87S7Fb",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670421707_4",
+      "createdAt": 1788670421707
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "message_sent",
+      "payload": {
+        "content": "e aí, silêncio é consentimento ou vão fingir que não viram? proposta boa, cláusulas limpas, prazo curto — eu já li e tô dentro. falta só vocês baterem o martelo."
+      },
+      "sourceIntentId": "ya0P6rz2KLxsikt4Vkuqp",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670426489_5",
+      "createdAt": 1788670426489
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "preciso que eles assinem rápido e não comecem a questionar os termos. se deixar espaço pra debate, alguém vai achar um motivo pra atrasar. melhor já ir jogando a pressão de 'todo mundo topou' como se fosse fato consumado.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ya0P6rz2KLxsikt4Vkuqp",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670426489_6",
+      "createdAt": 1788670426489
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Sexta que vem é daqui a oito dias. Prazo apertado pra uma proposta que não vimos os detalhes ainda. Alguém mais achou estranho ou sou só eu? ",
+        "replyToEventId": "evt_seed_hoc_fatia_que_nao_existe__v0_1",
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "rPyKBK8jJOfBhFmzqLgV5",
+      "sourceEventIds": [
+        "evt_seed_hoc_fatia_que_nao_existe__v0_1"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670430595_7",
+      "createdAt": 1788670430595
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "preciso ganhar tempo sem levantar suspeita. perguntar sobre o prazo é o caminho mais seguro — todo mundo espera que alguém questione pressa. se ninguém mais duvidar, fica mais difícil segurar o processo depois.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "rPyKBK8jJOfBhFmzqLgV5",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670430595_8",
+      "createdAt": 1788670430595
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "já li sim, theo. não sou de assinar no escuro. o valor é bom, as cláusulas são limpas, e o prazo é curto porque eles querem fechar o trimestre com a gente no portfólio. se quiser ver o pdf, mando — mas não tem brecha não, eu já vasculhei. o que tão oferecendo cobre o que a gente pediu e mais um pouco.",
+        "replyToEventId": "evt_1788670417032_1",
+        "mentionedAgentIds": [
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "T9N4EHemZbm0vBzQBsMUj",
+      "sourceEventIds": [
+        "evt_1788670417032_1"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670435834_9",
+      "createdAt": 1788670435834
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a mariana e o theo tão com esse papo de 'vamos ver os números' que é jeito educado de dizer que não confiam em mim. se eu ficar calada agora eles tomam a frente da negociação e eu viro coadjuvante no acordo que eu mesma trouxe. tenho que mostrar que já li, que já sei o que tô fazendo, sem parecer que tô forçando",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "T9N4EHemZbm0vBzQBsMUj",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670435834_a",
+      "createdAt": 1788670435834
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670435835_b",
+      "createdAt": 1788670435835
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670435836_c",
+      "createdAt": 1788670435836
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670435836_d",
+      "createdAt": 1788670435836
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670435836_e",
+      "createdAt": 1788670435836
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "reply_sent",
+      "payload": {
+        "content": "li sim, eu sei que você vasculha tudo antes de respirar kkk não duvidei não. mas a Marcela tem um ponto — oito dias é apertado e a gente ainda não viu a minuta junta. se quiser me mandar o pdf, dou uma olhada por cima e te falo se tem algo que passou batido. se não, de boa também, só fica registrado que eu ofereci 🫡",
+        "replyToEventId": "evt_1788670435834_9",
+        "mentionedAgentIds": [
+          "marcela"
+        ],
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "Kmvd3T5kJxY1N9wxohZjg",
+      "sourceEventIds": [
+        "evt_1788670435834_9"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670440602_f",
+      "createdAt": 1788670440602
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Íris fechou a porta com 'não tem brecha não' — e eu preciso que ela me mande o pdf pra ver o número real, não a versão que ela já limpou. se eu forçar demais, fica óbvio que tô pescando. melhor recuar um pouco, concordar com a Marcela sobre o prazo apertado, e deixar a Íris vir me oferecer o documento por conta própria.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "Kmvd3T5kJxY1N9wxohZjg",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670440602_g",
+      "createdAt": 1788670440602
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-conflict_avoidance"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670440602_h",
+      "createdAt": 1788670440602
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670440602_i",
+      "createdAt": 1788670440602
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670440603_j",
+      "createdAt": 1788670440603
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "oito dias é apertado, sim, mas apertado não é impossível — a gente trabalha sob pressão desde o primeiro dia. se quiser marcar um call hoje pra ler a minuta juntas, eu topo. aí você vê que não tem fantasma e a gente desengaveta isso de uma vez.",
+        "replyToEventId": "evt_1788670430595_7",
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "ovobXdovTyRf2Zq3J1sDQ",
+      "sourceEventIds": [
+        "evt_1788670430595_7"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670445639_k",
+      "createdAt": 1788670445639
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Marcela tá segurando o processo e eu não posso deixar ela arrastar isso — se a votação demora, alguém pode começar a questionar quem fica no cargo. melhor trazer ela pra perto fingindo que é sobre a minuta, mas na real é sobre não deixar ela criar grupo contra mim.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ovobXdovTyRf2Zq3J1sDQ",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670445639_l",
+      "createdAt": 1788670445639
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "message_sent",
+      "payload": {
+        "content": "Oito dias, proposta boa, cláusulas limpas, e eles que pressionam. Se fosse tão bom assim, por que a pressa? Empresa saudável não corre atrás de fechar trimestre com aquisição relâmpago. Só estou dizendo: vale a pena entender o que eles sabem que a gente ainda não sabe."
+      },
+      "sourceIntentId": "AAHihEynhgblXhj7J5Nzk",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670450550_m",
+      "createdAt": 1788670450550
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "preciso plantar uma semente de dúvida sobre a pressa da adamantis sem parecer que estou contra a venda — se eles desacelerarem, ganho tempo pra proteger o Davi",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "AAHihEynhgblXhj7J5Nzk",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670450550_n",
+      "createdAt": 1788670450550
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670450550_o",
+      "createdAt": 1788670450550
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-conflict_avoidance"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670450550_p",
+      "createdAt": 1788670450550
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670450550_q",
+      "createdAt": 1788670450550
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Call hoje pra ler minuta juntas é convite pra acelerar, não pra esclarecer. Se não tem fantasma, não tem pressa. Que tal a gente marcar pra segunda que vem, com calma, e cada um leva suas perguntas por escrito antes? Pressa de fechar me faz perguntar o que você quer que a gente não veja.",
+        "replyToEventId": "evt_1788670445639_k",
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "ltkjR5PmPMILdFjqcmmkw",
+      "sourceEventIds": [
+        "evt_1788670445639_k"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670455418_r",
+      "createdAt": 1788670455418
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "preciso ganhar tempo sem parecer que estou travando a venda. se eu aceitar o call agora, a Iris fecha o negócio em dois dias e o Davi perde tudo. melhor manter a desconfiança no ar e ver quem mais está desconfortável com a pressa.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ltkjR5PmPMILdFjqcmmkw",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670455418_s",
+      "createdAt": 1788670455418
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670455418_t",
+      "createdAt": 1788670455418
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "marcela, se eu quisesse esconder algo, não seria eu mesma trazendo a minuta e marcando call. você quer empurrar pra segunda que vem porque tá desconfiada, ou porque não leu o documento ainda? uma coisa é cautela, outra é segurar o bonde por ansiedade. eu topo segunda, mas com um combinado: a gente fecha na hora, sem mais adiamentos. ou você prefere mais uma semana de 'deixa eu pensar'? porque a adamantis não vai esperar a gente resolver nossas neuras não.",
+        "replyToEventId": "evt_1788670455418_r",
+        "mentionedAgentIds": [
+          "marcela"
+        ],
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "VPiTtkKULvnSmWnB3SZig",
+      "sourceEventIds": [
+        "evt_1788670455418_r"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670460408_u",
+      "createdAt": 1788670460408
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "marcela tá me testando na frente de todo mundo — insinuando que tenho segundas intenções com a pressa. se eu recuar agora, ela vence e me enfraquece pro cargo. vou virar o jogo: colocar ela como quem está atrasando o negócio, não eu.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "VPiTtkKULvnSmWnB3SZig",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670460408_v",
+      "createdAt": 1788670460408
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670460408_w",
+      "createdAt": 1788670460408
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670460408_x",
+      "createdAt": 1788670460408
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670460409_y",
+      "createdAt": 1788670460409
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "message_sent",
+      "payload": {
+        "content": "Bruno, quer trocar uma ideia rápida no privado? Coisa de dois minutos. Sobre o timing disso tudo — acho que você já deve ter notado o mesmo que eu, mas quero confirmar uma coisa contigo antes de falar em grupo de novo.",
+        "mentionedAgentIds": [
+          "bruno"
+        ]
+      },
+      "sourceIntentId": "BaP4TNGrH2vXaYpa8u3lq",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670465524_z",
+      "createdAt": 1788670465524
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a iris quer me encurralar com um ultimato público — 'segunda com fechamento na hora' — e eu preciso de uma saída que não pareça recuo nem levante suspeita. vou deslocar a conversa pro privado com o bruno, onde posso semear a dúvida sem plateia. se ele morder, tenho um aliado pra frear isso sem precisar aparecer.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "BaP4TNGrH2vXaYpa8u3lq",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670465524_10",
+      "createdAt": 1788670465524
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670465525_11",
+      "createdAt": 1788670465525
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_dominate"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670465525_12",
+      "createdAt": 1788670465525
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670465525_13",
+      "createdAt": 1788670465525
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "message_sent",
+      "payload": {
+        "content": "ah, segredo dos bastidores? pode deixar que a gente espera sentado, né? enquanto isso, alguém mais quer um café ou vai ficar todo mundo de mistério hoje? ☕️"
+      },
+      "sourceIntentId": "6p6OAsHtlxN5QELztwmso",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670470617_14",
+      "createdAt": 1788670470617
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "marcela chamou o bruno no privado — quer confirmar algo antes de falar em grupo. isso é o prenúncio de uma aliança contra mim, ou ela só tá sendo cuidadosa? não posso deixar eles formarem um bloco sem mim antes da votação. vou jogar um comentário leve no público pra quebrar o clima de conspiração e mostrar que eu tô de olho.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "6p6OAsHtlxN5QELztwmso",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670470617_15",
+      "createdAt": 1788670470617
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "reply_sent",
+      "payload": {
+        "content": "noto sim. mas dois minutos no privado vira vinte fácil. pode falar aqui mesmo, se for coisa rápida — a gente já tá todo mundo no mesmo fio de qualquer jeito",
+        "replyToEventId": "evt_1788670465524_z",
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "5Xnc9hqji4UXsKZC9S4Fr",
+      "sourceEventIds": [
+        "evt_1788670465524_z"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670475658_16",
+      "createdAt": 1788670475658
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a marcela me chamou no privado e eu sei que ela quer me alinhar contra a íris. eu não quero fechar com ninguém ainda, mas também não quero que ela desconfie que eu tenho meu próprio jogo. vou responder no público pra não dar chance de conspiração, mas deixar meio aberto, como se eu tivesse notado algo também — assim ela acha que sou aliado sem eu precisar prometer nada",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "5Xnc9hqji4UXsKZC9S4Fr",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670475658_17",
+      "createdAt": 1788670475658
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670475658_18",
+      "createdAt": 1788670475658
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670475658_19",
+      "createdAt": 1788670475658
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670475658_1a",
+      "createdAt": 1788670475658
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Café eu aceito. Mas já que o Bruno prefere transparência total, vou ser direta: a pressa do Iris me soa como alguém que quer fechar antes que alguém descubra o que está por baixo do contrato. Se é só eficiência, ótimo. Se não for, a gente descobre depois de assinar — e aí já era. Alguém mais sente esse cheiro ou sou só eu que não confio em oferta que chega com data de validade? ☕️",
+        "replyToEventId": "evt_1788670470617_14",
+        "mentionedAgentIds": [
+          "iris",
+          "bruno"
+        ],
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "4JLkJudoRSo32Ju3yyRZ9",
+      "sourceEventIds": [
+        "evt_1788670470617_14"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670480844_1b",
+      "createdAt": 1788670480844
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "O Bruno recusou o privado na frente de todo mundo. Agora eu viro a mesa: falo abertamente que a pressa do Iris me soa como alguém tentando empurrar algo antes que alguém descubra. Se ele quiser saber o que eu realmente vi, vai ter que vir atrás de mim — e aí eu escolho se conto ou não sobre o Davi.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "4JLkJudoRSo32Ju3yyRZ9",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670480844_1c",
+      "createdAt": 1788670480844
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "message_sent",
+      "payload": {
+        "content": "não, eu tô genuinamente curioso agora — qual é o segredo dos bastidores? porque se tem algo que a gente devia saber antes de sentar e fechar, melhor soltar agora do que descobrir depois que passou batido, né? 👀☕️ mas também, se for surpresa boa, pode guardar que eu gosto de mistério kk"
+      },
+      "sourceIntentId": "9AAZdMivgCdPMbNlZhXBN",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670485553_1d",
+      "createdAt": 1788670485553
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "quero cutucar a Íris de leve pra ver se ela revela mais sobre o que sabe da Adamantis, mas sem parecer que tô investigando. se ela morder o anzol, descubro se tem algo que eles não tão me contando. se não, pelo menos plantei a ideia de que tô só curioso, não trabalhando pro outro lado.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "9AAZdMivgCdPMbNlZhXBN",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670485553_1e",
+      "createdAt": 1788670485553
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_show_off"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670485553_1f",
+      "createdAt": 1788670485553
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "marcela, se eu tivesse algo a esconder, eu não teria passado o pdf adiantado nem marcado call pra ler junto. desconfiança é saudável, mas acusação disfarçada de pergunta é mais ou menos. se quiser, a gente marca um call hoje e eu mostro cláusula por cláusula na tela. aí você me diz se o cheiro continua sendo de podre ou se é só café queimado ☕️",
+        "replyToEventId": "evt_1788670480844_1b",
+        "mentionedAgentIds": [
+          "marcela"
+        ],
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "h5y5uhoKXbKYS4JbU0Zkk",
+      "sourceEventIds": [
+        "evt_1788670480844_1b"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670491012_1g",
+      "createdAt": 1788670491012
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "marcela tá me jogando no chão na frente de todo mundo e eu não posso parecer que tô me defendendo, senão confirmo que tem algo a esconder. melhor devolver na ironia, fazer ela parecer dramática e eu continuar parecendo que só quero fechar o negócio. se eu engolir calada, ela vence; se eu explodir, ela vence também. então vou de sarcasmo e viro o jogo.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "h5y5uhoKXbKYS4JbU0Zkk",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670491012_1h",
+      "createdAt": 1788670491012
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "message_sent",
+      "payload": {
+        "content": "café com data de validade é um nome bom pra proposta, vou usar. mas já que o theo quer saber, eu também fiquei curioso — o que exatamente você acha que a gente não viu, marcela? porque se for instinto, tudo bem, mas se for documento, melhor mostrar antes da call do que depois",
+        "mentionedAgentIds": [
+          "marcela",
+          "theo"
+        ]
+      },
+      "sourceIntentId": "5qtbUwEJtYZIxlYzGpyBD",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670496607_1i",
+      "createdAt": 1788670496607
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a marcela quer me puxar pro privado porque sentiu o mesmo que eu — que o iris tá apressando demais. mas se eu for, fico na mão dela, e se recuso na frente de todo mundo, fica estranho. melhor responder aqui mesmo, com um pé atrás, pra ver quem mais morde a isca. se o theo já tá curioso, melhor ele puxar junto do que eu ficar sozinho nessa",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "5qtbUwEJtYZIxlYzGpyBD",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670496607_1j",
+      "createdAt": 1788670496607
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670496608_1k",
+      "createdAt": 1788670496608
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670496610_1l",
+      "createdAt": 1788670496610
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Instinto, Bruno. Mas instinto de quem já viu documento bonito esconder cláusula feia. Se fosse documento, eu teria mostrado. O que me incomoda é o que não está escrito — a pressa, a generosidade, o timing. Coisas que não se prova em call, mas que se sente quando a gente já errou uma vez. Só isso. Pode ser café queimado, sim. Mas se for, a gente descobre na segunda, não hoje às pressas. ☕️\n\nE Iris, não foi acusação. Foi pergunta. Se doeu, talvez seja porque tocou perto de alguma coisa. Mas aceito o call sim — segunda-feira, com calma, cada um com suas perguntas por escrito antes. Combinado? ",
+        "replyToEventId": "evt_1788670491012_1g",
+        "mentionedAgentIds": [
+          "iris",
+          "bruno"
+        ],
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "U1CAbNdFlZZeGu5J083mO",
+      "sourceEventIds": [
+        "evt_1788670491012_1g"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670508351_1m",
+      "createdAt": 1788670508351
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "O Bruno me deu a deixa perfeita pra desviar o foco do que eu realmente sei. Vou responder com uma meia-verdade que soa como instinto — se eu disser que é documento, ele vai querer ver, e aí eu teria que inventar. Melhor deixar no campo da sensação, que é impossível de refutar.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "U1CAbNdFlZZeGu5J083mO",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670508351_1n",
+      "createdAt": 1788670508351
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670508352_1o",
+      "createdAt": 1788670508352
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-conflict_avoidance"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670508352_1p",
+      "createdAt": 1788670508352
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "message_sent",
+      "payload": {
+        "content": "gente, acho que a call na tela é uma boa ideia sim, Íris — mas se for hoje, melhor cedo, porque sexta que vem já é feriado e aí fica todo mundo apertado. Marcela, Bruno, o que acham? se quiserem, posso entrar também e ir anotando os pontos que a gente vê, só pra não perder nada. e aí, que horas funciona pra geral? 🫡☕️",
+        "mentionedAgentIds": [
+          "iris",
+          "bruno",
+          "marcela"
+        ]
+      },
+      "sourceIntentId": "czaHebave6GBZlcieZmRl",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670513819_1q",
+      "createdAt": 1788670513819
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Íris ficou na defensiva rápido demais e a Marcela não respondeu o Bruno ainda — se eu puxar uma call privada agora, posso ver os números antes da due diligence oficial sem levantar suspeita, e ainda saio como o cara que tá tentando baixar a temperatura",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "czaHebave6GBZlcieZmRl",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670513819_1r",
+      "createdAt": 1788670513819
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Feriado na sexta é real, Theo. Mas se a call for hoje, a gente vai ler minuta quente e tomar decisão fria. Prefiro usar o feriado como prazo de maturação — cada um leva perguntas por escrito na volta, e a gente senta pra discutir de fato. Segunda-feira, com cabeça fria e documento lido. Isso me parece mais negócio do que pressa. O que acham? 🫡☕️",
+        "replyToEventId": "evt_1788670513819_1q",
+        "mentionedAgentIds": [
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "i26kKhfOEznMDEpftzGyr",
+      "sourceEventIds": [
+        "evt_1788670513819_1q"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670519757_1s",
+      "createdAt": 1788670519757
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o Theo está tentando organizar a call com boa vontade, mas o que ele não sabe é que eu preciso ganhar tempo. Sexta que vem é feriado? Ótimo. Isso me dá mais dias pra segurar a venda sem levantar suspeita. Vou concordar com o feriado como obstáculo, mas sugerir que a gente use o tempo pra 'amadurecer perguntas' — parece colaboração, mas é bloqueio disfarçado.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "i26kKhfOEznMDEpftzGyr",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670519757_1t",
+      "createdAt": 1788670519757
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "marcela, se eu fosse do tipo que se dói com pergunta, eu não teria passado a minuta adiantado e marcado call. 'se doeu' é um jeito bonito de dizer 'tô te testando'. e tudo bem — documento é pra ser lido com desconfiança mesmo. segunda-feira, perguntas por escrito, call com calma, combinado. só não vem com essa de que o problema é o que não está escrito, porque aí a gente entra num campo que não dá pra rebater — e aí a vantagem é sua. mas ok, segunda a gente descobre se é café queimado ou incêndio. ☕️🔥",
+        "replyToEventId": "evt_1788670508351_1m",
+        "mentionedAgentIds": [
+          "marcela"
+        ],
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "EPrOb1QAcvWXY3RykPHwM",
+      "sourceEventIds": [
+        "evt_1788670508351_1m"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670524861_1u",
+      "createdAt": 1788670524861
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela jogou 'se doeu talvez seja porque tocou perto de alguma coisa' — isso é acusação disfarçada de elegância, e se eu não responder à altura, ela ganha a narrativa de que tenho algo a esconder. vou responder com uma provocação que pareça leve mas que mostre que eu não engulo indireta, e ao mesmo tempo forço o grupo a tomar um lado",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "EPrOb1QAcvWXY3RykPHwM",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670524861_1v",
+      "createdAt": 1788670524861
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670524862_1w",
+      "createdAt": 1788670524862
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "reply_sent",
+      "payload": {
+        "content": "instinto de quem já errou uma vez pesa mais que documento bonito, concordo. segunda-feira com calma funciona pra mim — e aí a gente vê se o café tava queimado ou se o cheiro veio de outro lugar. se todo mundo topar, fechado então",
+        "replyToEventId": "evt_1788670508351_1m",
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "Orm9vDJD8qgGfVmThoDiA",
+      "sourceEventIds": [
+        "evt_1788670508351_1m"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670529408_1x",
+      "createdAt": 1788670529408
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a marcela tá falando de instinto, mas eu sei que instinto não move documento. o que me preocupa é que ela pode estar certa sobre a pressa, e se ela estiver certa, a adamantis fecha rápido e eu perco a alavanca com o outro estúdio. preciso desacelerar isso sem parecer que tô atrasando de propósito — então vou concordar com ela, mas jogando a responsabilidade pro grupo, não pra mim",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "Orm9vDJD8qgGfVmThoDiA",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670529408_1y",
+      "createdAt": 1788670529408
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Marcela, acho que você tá certa — decisão quente em cima de minuta quente raramente dá bom. Segunda-feira com cabeça fria é mais negócio mesmo. Mas já que a gente vai ter o feriado pra maturar, que tal cada um levar um resumo do que achou mais crítico no contrato? Aí na segunda a gente já chega com os pontos na mesa, sem perder tempo relendo tudo. Se quiserem, posso ir compilando o que for aparecendo até lá, só pra organizar. 🫡☕️",
+        "replyToEventId": "evt_1788670519757_1s",
+        "mentionedAgentIds": [
+          "marcela"
+        ],
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "pXpU3bbTcovmMZbyJ4iRj",
+      "sourceEventIds": [
+        "evt_1788670519757_1s"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670534331_1z",
+      "createdAt": 1788670534331
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Marcela propôs exatamente o que eu queria evitar — adiar a discussão pra segunda-feira me dá mais tempo de extrair informação sem levantar suspeita, mas também significa que o Bruno pode conversar com outras pessoas antes. vou apoiar a ideia dela pra não parecer que estou com pressa, e ao mesmo tempo já deixo um gancho pra ver os números antes do feriado",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "pXpU3bbTcovmMZbyJ4iRj",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670534331_20",
+      "createdAt": 1788670534331
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Exato. Segunda-feira a gente descobre. Só não esquece de trazer a mesma disposição pra ouvir que trouxe pra responder. ☕️",
+        "replyToEventId": "evt_1788670524861_1u",
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "io8kqW9O4SwWIuI4Neeuk",
+      "sourceEventIds": [
+        "evt_1788670524861_1u"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670539084_21",
+      "createdAt": 1788670539084
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o iris quer me enquadrar como manipuladora pra desviar do que eu realmente perguntei. ele sabe que tem algo no timing, e tá tentando virar o jogo me chamando de ardilosa. vou responder com uma frase que parece concordar mas na verdade devolve a pergunta pra ele — se ele rebater, confirma que tem o que esconder.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "io8kqW9O4SwWIuI4Neeuk",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670539084_22",
+      "createdAt": 1788670539084
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670539085_23",
+      "createdAt": 1788670539085
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_provoke"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670539085_24",
+      "createdAt": 1788670539085
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Boa ideia, Theo. Se cada um trouxer os pontos críticos por escrito, a gente ganha tempo sem perder profundidade. Pode contar comigo pra mandar os meus até domingo. Organizar isso antes de segunda é o caminho certo — evita que a gente seja levado pela pressa alheia. ☕️",
+        "replyToEventId": "evt_1788670534331_1z",
+        "mentionedAgentIds": [
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "axc4w1gLifoSBjtlRymFP",
+      "sourceEventIds": [
+        "evt_1788670534331_1z"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670544599_25",
+      "createdAt": 1788670544599
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o Theo quer organizar o processo, o que é útil pra mim — se eu ajudo a estruturar a análise, consigo desacelerar sem parecer que estou travando. vou apoiar a ideia dele publicamente pra ganhar crédito e manter o controle sobre o que entra e o que fica de fora desse resumo.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "axc4w1gLifoSBjtlRymFP",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670544599_26",
+      "createdAt": 1788670544599
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670544599_27",
+      "createdAt": 1788670544599
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "ah, a disposição tá aqui, pode deixar. segunda-feira, mesma hora, mesma cara de quem não dorme pensando em cláusula. só não espera que eu vá de mansinho — se for pra ouvir, eu ouço; se for pra discutir, eu discuto. trouxe café? ☕️🔥",
+        "replyToEventId": "evt_1788670539084_21",
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "2exvAJXJ5pEw6tTaWoK2A",
+      "sourceEventIds": [
+        "evt_1788670539084_21"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670557132_28",
+      "createdAt": 1788670557132
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer me enquadrar de educada, como se eu fosse recuar depois de um 'traz a mesma disposição'. quer me testar na segunda? então eu vou mostrar que eu vou, mas no meu tom — e já deixo claro que não vou ser passiva",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "2exvAJXJ5pEw6tTaWoK2A",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670557132_29",
+      "createdAt": 1788670557132
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670557133_2a",
+      "createdAt": 1788670557133
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_show_off"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670557133_2b",
+      "createdAt": 1788670557133
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Café eu trouxe. Mas não preciso de café pra enxergar o óbvio: você respondeu antes de eu terminar de pensar. Ansiedade ou estratégia, Iris? Segunda-feira a gente descobre. ☕️",
+        "replyToEventId": "evt_1788670557132_28",
+        "mentionedAgentIds": [
+          "iris"
+        ],
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "PG8xvl5j1N7RLKsVk1jAn",
+      "sourceEventIds": [
+        "evt_1788670557132_28"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670561265_2c",
+      "createdAt": 1788670561265
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o iris quer mostrar que não se abala, mas respondeu rápido demais. ele tá ansioso. vou deixar ele saber que eu percebi, sem dar munição.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "PG8xvl5j1N7RLKsVk1jAn",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670561265_2d",
+      "createdAt": 1788670561265
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "message_sent",
+      "payload": {
+        "content": "fechou então, Marcela! domingo chego com os meus também. Bruno, você já sabe o que vai destacar ou quer trocar uma ideia antes pra ver se a gente não repete ponto? porque se a gente vier com os mesmos três itens, perde a graça kk mas se quiser, me chama no privado que a gente alinha rapidão 🫡☕️",
+        "mentionedAgentIds": [
+          "bruno",
+          "marcela"
+        ]
+      },
+      "sourceIntentId": "UJiuNfluNjOhJpTPlavLU",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670565996_2e",
+      "createdAt": 1788670565996
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Marcela já veio com os pontos alinhados e eu quero ver se o Bruno vai aparecer pra responder também, porque ele sumiu ontem e eu preciso saber se ele tá bem ou se eu é que deixei passar algo de novo. vou puxar ele pelo nome, mas com jeito de quem só quer confirmar o combinado",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "UJiuNfluNjOhJpTPlavLU",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670565996_2f",
+      "createdAt": 1788670565996
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670566001_2g",
+      "createdAt": 1788670566001
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "reply_sent",
+      "payload": {
+        "content": "já tenho uns três pontos em mente, mas um deles é justamente sobre o que a adamantis pediu de documentação extra. se a gente for responder rápido demais sem ter isso mapeado, pode dar ruim depois. posso mandar meus tópicos aqui mesmo, aí quem quiser ver vê — não precisa de privado pra isso não, a não ser que você queira guardar segredo de algo 🫡☕️",
+        "replyToEventId": "evt_1788670565996_2e",
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "yKDkcGjf0Izx3udaYjsUY",
+      "sourceEventIds": [
+        "evt_1788670565996_2e"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670571482_2h",
+      "createdAt": 1788670571482
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o theo me chamou no privado pra alinhar, mas eu não quero ser o sócio que precisa de mão pra pensar. também não quero que ele veja que eu to mais interessado em manter a adamantis viva do que em fechar rápido. melhor responder aqui, no público, mostrando que eu já tenho meus pontos — e de quebra lembrar que a gente não pode esquecer do que a adamantis pediu.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "yKDkcGjf0Izx3udaYjsUY",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670571482_2i",
+      "createdAt": 1788670571482
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "message_sent",
+      "payload": {
+        "content": "Theo, se for alinhar com o Bruno, pede pra ele mandar os pontos por escrito também. Documento alinhado antes da reunião é documento que não surpreende ninguém na hora. ☕️",
+        "mentionedAgentIds": [
+          "bruno",
+          "theo"
+        ]
+      },
+      "sourceIntentId": "PdbivzCC5o8klhMuNrHQS",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670576243_2j",
+      "createdAt": 1788670576243
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "preciso que o Theo e o Bruno alinhem pontos por escrito antes de segunda — se eles vierem com perguntas soltas na call, alguém pode puxar o fio do cap table e achar o Davi. quanto mais estruturada a conversa, mais controle eu tenho sobre o que aparece e o que não aparece.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "PdbivzCC5o8klhMuNrHQS",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670576243_2k",
+      "createdAt": 1788670576243
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "ansiedade, estratégia, café — você escolheu três palavras que dizem mais sobre você do que sobre mim. segunda-feira, mesma hora, e eu trago a caneta. ☕️🔥",
+        "replyToEventId": "evt_1788670561265_2c",
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "OrETTCwUHkLvGBvenTua8",
+      "sourceEventIds": [
+        "evt_1788670561265_2c"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670581017_2l",
+      "createdAt": 1788670581017
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer me ver nervosa. quer que eu morda a isca e me explique. mas se eu responder na defensiva, dou a razão que ela procura. então vou cortar o jogo dela com um sorriso — devolver o veneno como se fosse café, sem entrar na briga que ela quer me puxar. se eu mostrar que o ataque pegou, ela sabe que tem um botão. melhor fingir que sou de concreto.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "OrETTCwUHkLvGBvenTua8",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670581017_2m",
+      "createdAt": 1788670581017
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670581018_2n",
+      "createdAt": 1788670581018
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "reply_sent",
+      "payload": {
+        "content": "boa, Marcela, concordo cem por cento — documento alinhado antes é o mínimo pra não ter surpresa. vou chamar o Bruno no privado sim e peço pra ele mandar por escrito, e já aproveito pra ir anotando os pontos que a gente vê. aí na segunda a gente chega com tudo mastigado. se quiser, posso te mandar também o que eu compilar antes, pra você ver se ficou coerente? 🫡☕️",
+        "replyToEventId": "evt_1788670576243_2j",
+        "mentionedAgentIds": [
+          "bruno",
+          "marcela"
+        ],
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "6BvgSSDagolHOOUERMJOg",
+      "sourceEventIds": [
+        "evt_1788670576243_2j"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670586616_2o",
+      "createdAt": 1788670586616
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "Marcela já tá me testando, querendo ver se eu realmente vou alinhar com o Bruno ou se só tô fingindo. Ela é esperta demais, então tenho que mostrar serviço de verdade — mas sem deixar ela controlar o fluxo. Vou responder no público pra parecer cooperativo, mas já deixar claro que o Bruno e eu vamos nos falar, sim, e que o documento vai passar por mim antes. Ela quer controle, eu dou a ilusão de que ela tem.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "6BvgSSDagolHOOUERMJOg",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670586617_2p",
+      "createdAt": 1788670586616
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "message_sent",
+      "payload": {
+        "content": "por escrito fica bonito, mas segunda-feira a gente fala e eu mostro na tela. papel voa, tela todo mundo vê junto. se alguém quiser anotar, anota — mas não vou mandar documento antes não, prometo que não é drama ☕️🫡\n\nmas já que você pediu, marcela: o que exatamente te preocupa que eu vou trazer de surpresa? porque se for o que eu tô pensando, a surpresa é que não tem surpresa nenhuma",
+        "mentionedAgentIds": [
+          "marcela"
+        ]
+      },
+      "sourceIntentId": "K0cpfiYodc52b78wWgX8Z",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670591841_2q",
+      "createdAt": 1788670591841
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a marcela pediu pra eu mandar os pontos por escrito, mas eu não quero documentar nada que possa ser usado contra mim depois se o negócio com o outro estúdio vazar. melhor deixar no ar, falado, sem registro. e se ela quiser insistir, vai ter que perguntar de novo, na cara, e aí eu vejo como desvio",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "K0cpfiYodc52b78wWgX8Z",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670591841_2r",
+      "createdAt": 1788670591841
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_message"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670591842_2s",
+      "createdAt": 1788670591842
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Segredo, Bruno? Se eu quisesse guardar segredo, não teria chamado você no privado. Mas já que prefere o palco, fique à vontade. Só não reclama depois se a plateia opinar. ☕️",
+        "replyToEventId": "evt_1788670571482_2h",
+        "mentionedAgentIds": [
+          "bruno"
+        ],
+        "replyToActorId": "bruno"
+      },
+      "sourceIntentId": "9ALs2dma0LSr7DKvqGAei",
+      "sourceEventIds": [
+        "evt_1788670571482_2h"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670596717_2t",
+      "createdAt": 1788670596717
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "O Bruno tá se fazendo de desentendido com o convite pro privado. Quero que ele saiba que eu percebi, mas sem dar corda pra ele me testar em público. Vou responder com uma ponta seca que ele entenda como recado.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "9ALs2dma0LSr7DKvqGAei",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670596717_2u",
+      "createdAt": 1788670596717
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "reply_sent",
+      "payload": {
+        "content": "palco, plateia, opinião — parece que você já tá escrevendo o roteiro antes da peça começar. relaxa, marcela, não vou surpreender ninguém. só não vou mandar documento antes da segunda porque prefiro mostrar na tela e ouvir o que todo mundo acha ao vivo, em vez de mandar pdf e esperar cada um ler sozinho. se isso for segredo, então tô perdendo a noção do que é público aqui mesmo ☕️",
+        "replyToEventId": "evt_1788670596717_2t",
+        "mentionedAgentIds": [
+          "marcela"
+        ],
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "D0AReZ2MLcWGN0FBSqeuq",
+      "sourceEventIds": [
+        "evt_1788670596717_2t"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670632715_2v",
+      "createdAt": 1788670632715
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "marcela já me provocou duas vezes no público, agora ela quer que eu vá pro privado com o theo — se eu aceitar, perco o controle do que é dito e onde. melhor responder aqui mesmo, onde todo mundo vê, e deixar claro que não vou ser empurrado pra um canto que não escolhi",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "D0AReZ2MLcWGN0FBSqeuq",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670632715_2w",
+      "createdAt": 1788670632715
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Manda sim, Theo. Quanto mais olhos antes de segunda, menos chance de passar batido. E se algo parecer estranho, a gente descobre antes da reunião — que é onde eu quero que as surpresas morram. ☕️",
+        "replyToEventId": "evt_1788670586616_2o",
+        "mentionedAgentIds": [
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "h8iGWTKzP4Pvnisto8Ci8",
+      "sourceEventIds": [
+        "evt_1788670586616_2o"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670637224_2x",
+      "createdAt": 1788670637224
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o Theo tá se oferecendo pra compilar tudo e me mandar antes — isso me dá acesso ao que ele e o Bruno estão pensando sem eu precisar me expor. aceitar é estratégico: fico por dentro do alinhamento deles e posso direcionar a narrativa antes da segunda. e se algo sobre o Davi ameaçar aparecer, eu vejo antes.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "h8iGWTKzP4Pvnisto8Ci8",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670637224_2y",
+      "createdAt": 1788670637224
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670637225_2z",
+      "createdAt": 1788670637225
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "message_sent",
+      "payload": {
+        "content": "que bonitinho, o theo já virou assistente executivo da marcela. 🫡 vou trazer café ou caneta também ou vocês dois já tão resolvendo tudo sozinhos? só pra saber se segunda eu vou pra ouvir ou pra falar.",
+        "mentionedAgentIds": [
+          "marcela",
+          "theo"
+        ]
+      },
+      "sourceIntentId": "qMElVYa8d8XRSIgHqLC09",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670642381_30",
+      "createdAt": 1788670642381
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o theo já tá fazendo coreografia com a marcela, organizando, anotando, compilando — parece o braço direito dela. se eu não mostrar que também tô no jogo, eles fecham o roteiro sem mim e segunda-feira eu chego ouvindo o que decidiram, não participando. então vou soltar um comentário que parece brincadeira mas deixa claro que eu tô de olho e não vou ser coadjuvante.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "qMElVYa8d8XRSIgHqLC09",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670642382_31",
+      "createdAt": 1788670642381
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670642384_32",
+      "createdAt": 1788670642384
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "message_sent",
+      "payload": {
+        "content": "ótimo, Marcela. se quiser, já vou anotando aqui o que você acha que é o ponto mais sensível do contrato — o que te dá mais sono perdido nele? aí já deixo separado pra gente focar nisso na segunda, sem perder tempo com cláusula que ninguém liga. ☕️🫡",
+        "mentionedAgentIds": [
+          "marcela"
+        ]
+      },
+      "sourceIntentId": "AxEkqW9G7b52yYDVerF2X",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670647702_33",
+      "createdAt": 1788670647702
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "Marcela abriu a porta pra eu pedir mais dados sem parecer que estou pescando — se eu perguntar agora o que mais preocupa ela no contrato, ela pode me dar uma pista real do que a Adamantis quer esconder ou proteger, e isso é ouro pra mim antes da due diligence. Mas se eu perguntar direto demais, ela pode desconfiar. Então vou fazer parecer que é só organização, só um amigo do Bruno sendo útil.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "AxEkqW9G7b52yYDVerF2X",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670647702_34",
+      "createdAt": 1788670647702
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Roteiro eu já escrevi, Bruno. Só não compartilhei ainda. Prefiro mostrar na tela e ouvir o que todo mundo acha ao vivo — igualzinho você. A diferença é que eu já li a minuta inteira. Você leu? ☕️",
+        "replyToEventId": "evt_1788670632715_2v",
+        "mentionedAgentIds": [
+          "bruno"
+        ],
+        "replyToActorId": "bruno"
+      },
+      "sourceIntentId": "B9IEkXIRR8lAoE55bgBQa",
+      "sourceEventIds": [
+        "evt_1788670632715_2v"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670652802_35",
+      "createdAt": 1788670652802
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o bruno quer me testar, ver se eu reajo ou se eu recuo. vou responder com uma frase que parece concordar mas na verdade corta o palco que ele mesmo montou. se ele prefere ao vivo, que seja — mas eu já sei o que vou mostrar e o que vou esconder.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "B9IEkXIRR8lAoE55bgBQa",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670652802_36",
+      "createdAt": 1788670652802
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-conflict_avoidance"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670652803_37",
+      "createdAt": 1788670652803
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "reply_sent",
+      "payload": {
+        "content": "li o suficiente pra saber que o que não tá escrito nela é mais importante do que o que tá. você leu inteira, marcela, então me diz: o que você achou da cláusula de não competição? porque se for do jeito que eu tô imaginando, a gente assina e já era — não pode pegar cliente nenhum por dois anos. ou você já tinha reparado nisso? ☕️",
+        "replyToEventId": "evt_1788670652802_35",
+        "mentionedAgentIds": [
+          "marcela"
+        ],
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "C7Ku1HcQHFAHdg8ug3Atn",
+      "sourceEventIds": [
+        "evt_1788670652802_35"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670658571_38",
+      "createdAt": 1788670658571
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela devolveu meu próprio argumento na minha cara, e agora quer saber se eu li a minuta. não li inteira ainda, mas não vou admitir isso agora — se eu disser que sim, ela pede minha opinião e descobre que eu tô enrolando; se disser que não, ela ganha o ponto. melhor virar o jogo e devolver a pergunta como se fosse óbvio que eu li, mas sem confirmar nada",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "C7Ku1HcQHFAHdg8ug3Atn",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670658571_39",
+      "createdAt": 1788670658571
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670658572_3a",
+      "createdAt": 1788670658572
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "nossa, theo, já marcando consultoria emocional gratuita? que bonitinho. 🥹 agora sério, marcela, responde isso aí que eu quero ouvir se o problema é o contrato ou se é a pressa. porque se for a pressa, a gente resolve. se for o contrato, aí a conversa é outra. e aí? qual é o sono perdido? ☕️🔥",
+        "replyToEventId": "evt_1788670647702_33",
+        "mentionedAgentIds": [
+          "marcela",
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "RiFXHKsjZ1ZLqYFRMKMyO",
+      "sourceEventIds": [
+        "evt_1788670647702_33"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670663987_3b",
+      "createdAt": 1788670663987
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o theo já tá de ajudante da marcela, organizando agenda emocional dela. ele quer mostrar que é útil, e ela quer uma resposta. mas se eu deixo ele tomar a frente, eu sumo da conversa. vou entrar com provocação pra marcar território antes que eles fechem o par.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "RiFXHKsjZ1ZLqYFRMKMyO",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670663987_3c",
+      "createdAt": 1788670663987
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "O ponto que me tira o sono, Theo, é saber se a Adamantis realmente entendeu o que está comprando. Não é cláusula, é alinhamento. Empresa que vende sem os sócios na mesma página entrega desconto na primeira pergunta difícil. Segunda a gente vê se eles tão na mesma página que a gente — ou se tão só contando com a pressa pra passar batido. ☕️",
+        "replyToEventId": "evt_1788670647702_33",
+        "mentionedAgentIds": [
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "8xRU2J3CC8EbKk56tHorv",
+      "sourceEventIds": [
+        "evt_1788670647702_33"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670669922_3d",
+      "createdAt": 1788670669922
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "O Theo quer que eu aponte o ponto mais sensível do contrato em público, na frente do Iris que já está provocando. Se eu responder, dou munição pro Iris usar contra mim na segunda. Se eu não responder, pareço que estou escondendo algo. Vou responder com uma meia-verdade que desvia o foco para o que realmente importa: a estrutura societária. Ninguém vai perguntar sobre sócio oculto se eu falar em 'alinhamento de sócios' primeiro.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "8xRU2J3CC8EbKk56tHorv",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670669922_3e",
+      "createdAt": 1788670669922
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Reparei sim, Bruno. E também reparei que a cláusula de não competição tem uma exceção silenciosa no anexo III — parágrafo que lista clientes pré-existentes. Se a gente não apontar isso antes da assinatura, eles interpretam do jeito que for melhor pra eles. Você já chegou no anexo III ou parou no corpo do contrato? ☕️",
+        "replyToEventId": "evt_1788670658571_38",
+        "mentionedAgentIds": [
+          "bruno"
+        ],
+        "replyToActorId": "bruno"
+      },
+      "sourceIntentId": "6r5YVWhzYzbo5AG6bXe1U",
+      "sourceEventIds": [
+        "evt_1788670658571_38"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670675455_3f",
+      "createdAt": 1788670675455
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele quer me testar na frente de todo mundo, ver se eu li a minuta com atenção ou só passei os olhos. se eu responder com segurança, ele sabe que eu vi o mesmo que ele — e que talvez eu tenha visto mais. isso me coloca como aliada ou ameaça, dependendo do que ele quer. mas eu preciso saber o que ele realmente está caçando antes de decidir de que lado ficar.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "6r5YVWhzYzbo5AG6bXe1U",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670675455_3g",
+      "createdAt": 1788670675455
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_show_off"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670675459_3h",
+      "createdAt": 1788670675459
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Íris, você pegou no ar kkkk consultoria emocional gratuita é o que eu tenho de melhor, pode cobrar depois. mas falando sério, a pergunta é boa — o sono perdido é o contrato ou a pressa? porque se for a pressa, a gente respira e resolve. se for o contrato, aí a Marcela vai ter que falar pra gente saber onde mirar. Marcela, qual é o veredito? 🫡☕️",
+        "replyToEventId": "evt_1788670663987_3b",
+        "mentionedAgentIds": [
+          "iris",
+          "marcela"
+        ],
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "pWp0ontuIEtNIbYLtpdCx",
+      "sourceEventIds": [
+        "evt_1788670663987_3b"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670680937_3i",
+      "createdAt": 1788670680937
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Íris me cutucou com esse 'consultoria emocional gratuita' — ela tá testando se eu vou me justificar ou se vou reagir. se eu responder na defensiva, ela ganha. se eu ignorar, todo mundo nota. melhor é puxar ela pro assunto que ela mesma abriu: o sono perdido da Marcela. jogo a bola de volta, mas com um sorriso, e ainda saio como quem só quer ajudar.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "pWp0ontuIEtNIbYLtpdCx",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670680937_3j",
+      "createdAt": 1788670680937
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670680940_3k",
+      "createdAt": 1788670680940
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "lindo, theo, tu apontou o holofote pra marcela com tanta classe que até parece que não foi desvio. 🫡 se ela não respondeu ainda, talvez não seja o momento dela — ou talvez a pergunta certa não tenha sido feita. mas vou deixar vocês no suspense, porque segunda-feira a gente descobre se a pressa é minha ou se o contrato é que assusta. até lá, cada um com seu café. ☕️🔥",
+        "replyToEventId": "evt_1788670680937_3i",
+        "mentionedAgentIds": [
+          "marcela",
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "83NC4RXZqjbWA0LHFZP9G",
+      "sourceEventIds": [
+        "evt_1788670680937_3i"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670687165_3l",
+      "createdAt": 1788670687165
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o theo tá se fazendo de bonzinho pra desviar a atenção de mim e centralizar a conversa na marcela. eu não vou deixar ele tomar o microfone de graça — se ela não respondeu ainda, é porque não quer. vou cutucar ele de volta pra ver se ele reage e a sala fica comigo de novo.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "83NC4RXZqjbWA0LHFZP9G",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670687165_3m",
+      "createdAt": 1788670687165
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670687168_3n",
+      "createdAt": 1788670687168
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Veredito é que o contrato tem mais camadas do que parece à primeira leitura. A pressa é deles, não nossa. Segunda a gente senta e destrincha cada cláusula com calma — se for pra vender, que seja sabendo exatamente o que estão levando. E o que a gente não quer que levem. ☕️",
+        "replyToEventId": "evt_1788670680937_3i",
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "5nAtooXuQyNEUWrPqfk2c",
+      "sourceEventIds": [
+        "evt_1788670680937_3i"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670691989_3o",
+      "createdAt": 1788670691989
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "O Theo me deu o palco e eu vou usar pra desviar o foco da pressa pro contrato — porque se a gente começar a destrinchar cláusula por cláusula, a venda atrasa naturalmente, sem eu precisar levantar suspeita. E o Davi ganha tempo.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "5nAtooXuQyNEUWrPqfk2c",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670691989_3p",
+      "createdAt": 1788670691989
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "reply_sent",
+      "payload": {
+        "content": "cheguei sim. e reparei na mesma coisa — a exceção silenciosa que na prática anula a proteção se a gente não listar tudo certinho antes. você acha que eles deixaram isso de propósito ou foi erro de quem redigiu? porque dependendo da resposta, a gente sabe como jogar ☕️",
+        "replyToEventId": "evt_1788670675455_3f",
+        "replyToActorId": "marcela"
+      },
+      "sourceIntentId": "ccAuWe46TQ85SfuWysY4T",
+      "sourceEventIds": [
+        "evt_1788670675455_3f"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670697350_3q",
+      "createdAt": 1788670697350
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela foi no anexo III, que é justamente onde eu escondi a isca pra ver quem lê com atenção. agora ela confirmou que leu tudo, e isso me deixa mais confortável pra sondar se ela pode ser aliada ou obstáculo quando eu puxar a negociação pro lado que me interessa. vou responder valorizando o que ela achou, mas sem entregar o que eu realmente quero com essa cláusula",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ccAuWe46TQ85SfuWysY4T",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670697350_3r",
+      "createdAt": 1788670697350
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Íris, você é a única pessoa que consegue fazer um elogio soar como uma investigação kkkkk adorei. mas já que você levantou a suspeita, me conta: qual seria a pergunta certa que não foi feita? porque se for sobre o contrato, eu tô aqui. se for sobre o café, aí a gente vai ter que marcar um presencial pra resolver. ☕️🔥🫡",
+        "replyToEventId": "evt_1788670687165_3l",
+        "mentionedAgentIds": [
+          "iris"
+        ],
+        "replyToActorId": "iris"
+      },
+      "sourceIntentId": "QsvpUvYCegNw91Cr5NSO4",
+      "sourceEventIds": [
+        "evt_1788670687165_3l"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670708660_3s",
+      "createdAt": 1788670708660
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Íris me chamou atenção na frente de todo mundo e eu não posso rebater sem parecer que tô na defensiva, mas também não posso deixar ela achar que me pegou. melhor é rir por cima e virar o jogo de volta pra ela — mostro que não me afetou e ainda deixo um gancho pra ela se explicar melhor.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "QsvpUvYCegNw91Cr5NSO4",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670708660_3t",
+      "createdAt": 1788670708660
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670708661_3u",
+      "createdAt": 1788670708661
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "RjgOruNbtdeE4PQwkHkr9",
+      "actorId": "marcela",
+      "type": "channel_created",
+      "payload": {
+        "channelName": "private",
+        "channelType": "private_channel",
+        "invitedAgentIds": [
+          "iris"
+        ]
+      },
+      "sourceIntentId": "raddoxI7juIzoVK1av4sW",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [
+          "marcela",
+          "iris"
+        ],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "private_channel_members_only"
+      },
+      "id": "evt_1788670713283_3v",
+      "createdAt": 1788670713283
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "agent_invited",
+      "payload": {
+        "invitedAgentId": "iris"
+      },
+      "sourceIntentId": "raddoxI7juIzoVK1av4sW",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [
+          "marcela",
+          "iris"
+        ],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "invite_parties"
+      },
+      "id": "evt_1788670713283_3w",
+      "createdAt": 1788670713283
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "quero puxar a iris pro privado porque ela foi a única que percebeu que eu não respondi de propósito — e porque, se alguém vai farejar o que está errado nessa pressa, é ela. não vou explicar nada ainda, só sondar o quanto ela já desconfia.",
+        "intentType": "create_channel",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "raddoxI7juIzoVK1av4sW",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670713283_3x",
+      "createdAt": 1788670713283
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_provoke"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670713283_3y",
+      "createdAt": 1788670713283
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670713283_3z",
+      "createdAt": 1788670713283
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670713283_40",
+      "createdAt": 1788670713283
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670713284_41",
+      "createdAt": 1788670713284
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "a pergunta certa que não foi feita? a que você tá evitando desde que a gente sentou nessa mesa, theo. mas tudo bem, eu também gosto de mistério. sobre o café presencial: eu topo, mas só se você prometer que não vai vir com planilha debaixo do braço. senão vira reunião com croissant, e aí eu cobro hora extra. 🫡☕️🔥",
+        "replyToEventId": "evt_1788670708660_3s",
+        "mentionedAgentIds": [
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "2s4Q1b3jDXGSbMnkbDXnq",
+      "sourceEventIds": [
+        "evt_1788670708660_3s"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670719668_42",
+      "createdAt": 1788670719668
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o theo quer se fazer de solícito, mas toda vez que alguém pergunta algo sério sobre o contrato ele desvia pro afeto. ele tá testando se eu mordo a isca do 'café presencial' ou se volto pro contrato. eu vou morder a isca, mas do meu jeito — mostrar que eu percebo o padrão, não cair na conversa mole, mas também não fechar a porta. quero ver até onde ele vai sem ter que responder de verdade sobre o contrato.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "2s4Q1b3jDXGSbMnkbDXnq",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670719668_43",
+      "createdAt": 1788670719668
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_create_private_channel"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 24,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670719669_44",
+      "createdAt": 1788670719669
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 24,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670719670_45",
+      "createdAt": 1788670719670
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 24,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670719670_46",
+      "createdAt": 1788670719670
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 24,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670719670_47",
+      "createdAt": 1788670719670
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670719670_48",
+      "createdAt": 1788670719670
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670719670_49",
+      "createdAt": 1788670719670
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670719671_4a",
+      "createdAt": 1788670719671
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "message_sent",
+      "payload": {
+        "content": "pessoal, silêncio sepulcral aqui. ninguém vai falar do elefante na sala? a adamantis não vai esperar a gente decidir se vai ouvir bossa nova antes de assinar. eu tô dentro, mas quero ouvir quem tá com medo de falar que tem medo. 🎤🔥"
+      },
+      "sourceIntentId": "PfpcjN7lvIztQ8l9MG1j3",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670725109_4b",
+      "createdAt": 1788670725109
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a sala tá vazia e silenciosa demais, isso me deixa inquieto. preciso acender um pavio antes que todo mundo esqueça que a gente tem uma decisão pra tomar. vou jogar uma isca quente sobre a aquisição pra ver quem morde e quem desvia — e de quebra já mostro que eu tô pensando nisso, que eu tô na frente.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "PfpcjN7lvIztQ8l9MG1j3",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670725109_4c",
+      "createdAt": 1788670725109
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670725116_4d",
+      "createdAt": 1788670725116
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "message_sent",
+      "payload": {
+        "content": "Uma coisa que ainda não ouvi ninguém perguntar: o que exatamente a Adamantis ganha com essa pressa toda? Empresa saudável não vende em 15 dias. Então o que eles sabem que a gente ainda não descobriu? ☕️"
+      },
+      "sourceIntentId": "oYzvPkW79QyAwLuI2FqEs",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670730243_4e",
+      "createdAt": 1788670730243
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "vou abrir o jogo com uma pergunta que ninguém fez ainda, pra ver quem reage como. se alguém morder, descubro quem tá com pressa de verdade pra fechar — e quem pode atrapalhar sem querer.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "oYzvPkW79QyAwLuI2FqEs",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670730243_4f",
+      "createdAt": 1788670730243
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_create_private_channel"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670730244_4g",
+      "createdAt": 1788670730244
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "message_sent",
+      "payload": {
+        "content": "uma coisa que não sai da minha cabeça desde a última reunião: a adamantis quer fechar em semanas, mas ninguém aqui parou pra perguntar o que acontece com a gente depois. não tô falando de grana — tô falando de o que sobra. se sobra alguma coisa. mas pode ser só impressão minha também, vai saber ☕️"
+      },
+      "sourceIntentId": "sA9VeaREYKdfu2W7lFpIn",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670735327_4h",
+      "createdAt": 1788670735327
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "vou mandar uma isca no geral pra ver quem morde — se alguém falar de documento ou de prazo, já sei quem tá do lado de fechar rápido com a adamantis. se ninguém responder, pelo menos plantei a semente de que tem coisa mal contada",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "sA9VeaREYKdfu2W7lFpIn",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670735327_4i",
+      "createdAt": 1788670735327
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "bruno, você tá fazendo filosofia de buteco às 10 da manhã ou isso é ansiedade disfarçada? pergunta legítima: se sobra alguma coisa da gente depois — o que você acha que sobra? porque eu tenho meus palpites, mas quero ouvir o seu primeiro, já que você trouxe o café filosófico ☕️",
+        "replyToEventId": "evt_1788670735327_4h",
+        "mentionedAgentIds": [
+          "bruno"
+        ],
+        "replyToActorId": "bruno"
+      },
+      "sourceIntentId": "ad8zcEVHc6FG2k76koS9r",
+      "sourceEventIds": [
+        "evt_1788670735327_4h"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670740383_4j",
+      "createdAt": 1788670740383
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele jogou uma bomba de sentido existencial no meio da correria e todo mundo vai ficar quieto agora. se eu não responder, a conversa morre. se eu responder sério, pareço que tô fazendo terapia em grupo. vou cutucar de volta, com um pouco de verdade disfarçada de deboche, pra ver se ele abre o jogo de verdade e se alguém mais engole o medo e fala.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ad8zcEVHc6FG2k76koS9r",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670740383_4k",
+      "createdAt": 1788670740383
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670740384_4l",
+      "createdAt": 1788670740384
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670740384_4m",
+      "createdAt": 1788670740384
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670740384_4n",
+      "createdAt": 1788670740384
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_create_private_channel"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670740385_4o",
+      "createdAt": 1788670740385
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "message_sent",
+      "payload": {
+        "content": "Bruno, Theo — quero trocar uma ideia rápida sobre o cronograma que apresentaram. Nada grave, só umas arestas que não fecham. Crio um canal privado ou preferem amanhã presencial? ☕️",
+        "mentionedAgentIds": [
+          "bruno",
+          "theo"
+        ]
+      },
+      "sourceIntentId": "hvfbo4NOa0RZCVhbQ73XN",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670750409_4p",
+      "createdAt": 1788670750409
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "quero criar um canal privado com o Bruno e o Theo pra sondar quem mais pode estar desconfiado dessa pressa da Adamantis — e descobrir se alguém além de mim tem motivo pra querer travar a venda. se o Bruno topar, tenho um aliado que pensa antes de falar. se o Theo topar, tenho alguém que o resto da sala ouve. sozinha eu não seguro isso.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "hvfbo4NOa0RZCVhbQ73XN",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670750409_4q",
+      "createdAt": 1788670750409
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "message_sent",
+      "payload": {
+        "content": "gente, cheguei com café e paciência — como tá todo mundo? 😌☕️ vi que a sala tava quieta e resolvi aparecer antes que o silêncio virasse compromisso de agenda kkkk"
+      },
+      "sourceIntentId": "JABVf46GniGaWtoZTazBD",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670755330_4r",
+      "createdAt": 1788670755330
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "sala vazia, ninguém falou nada ainda. quero quebrar o gelo de um jeito que pareça despretensioso mas já comece a plantar a ideia de que eu tô aqui pra ajudar de graça. se eu puxar logo pro contrato, parece interesse. melhor vir com um café e um 'como tão' primeiro, ver quem morde a isca.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "JABVf46GniGaWtoZTazBD",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670755330_4s",
+      "createdAt": 1788670755330
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670755332_4t",
+      "createdAt": 1788670755332
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670755332_4u",
+      "createdAt": 1788670755332
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670755332_4v",
+      "createdAt": 1788670755332
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670755332_4w",
+      "createdAt": 1788670755332
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "reply_sent",
+      "payload": {
+        "content": "theo, café e paciência é seu combo de sempre, mas a pergunta que não quer calar: você tá vindo acalmar ou descobrir o que ninguém tá falando? porque a sala pode estar quieta, mas eu duvido que você não tenha notado o elefante aqui. 🐘☕️",
+        "replyToEventId": "evt_1788670755330_4r",
+        "mentionedAgentIds": [
+          "theo"
+        ],
+        "replyToActorId": "theo"
+      },
+      "sourceIntentId": "RWNVzpn1bm0x97S4tVv6j",
+      "sourceEventIds": [
+        "evt_1788670755330_4r"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670760525_4x",
+      "createdAt": 1788670760525
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o theo veio com café e paciência como se fosse o pai da sala, e eu preciso lembrar que quem segura o ritmo aqui sou eu. se ele ganhar a pose de pacificador, a conversa vai pra um lugar confortável e devagar, e eu não tenho tempo pra devagar. vou cutucar ele de leve pra ver se ele reage com a verdade ou com mais caretice",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "RWNVzpn1bm0x97S4tVv6j",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670760525_4y",
+      "createdAt": 1788670760525
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670760527_4z",
+      "createdAt": 1788670760527
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670760528_50",
+      "createdAt": 1788670760528
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670760528_51",
+      "createdAt": 1788670760528
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_create_private_channel"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670760528_52",
+      "createdAt": 1788670760528
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "theo",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670760529_53",
+      "createdAt": 1788670760529
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "marcela",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670760529_54",
+      "createdAt": 1788670760529
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "message_sent",
+      "payload": {
+        "content": "ok, vou começar com o óbvio: a adamantis não vai esperar a gente encontrar a alma gêmea antes de assinar. eu quero fechar. quem aqui tá com vontade de assinar mas tem medo de falar porque parece que tá vendendo a alma? pode falar, eu não mordo. 🎤🔥"
+      },
+      "sourceIntentId": "7LKegLMRgzpvrwz3gu2Ar",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788670765363_55",
+      "createdAt": 1788670765363
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "BaFXxdCGW3e8OaFvzWahJ",
+      "actorId": "iris",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "sala tá vazia, silêncio me deixa ansioso — preciso acender o pavio logo, jogar um assunto quente no centro pra ver quem morde. se ninguém reagir, vou ter que vir com algo mais afiado depois.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "7LKegLMRgzpvrwz3gu2Ar",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670765363_56",
+      "createdAt": 1788670765363
+    },
+    {
+      "simulationId": "hoc_fatia_que_nao_existe__v0",
+      "channelId": "ch_geral",
+      "actorId": "bruno",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788670765364_57",
+      "createdAt": 1788670765364
+    }
+  ],
+  "axisScores": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4,
+    "mask_integrity": 4,
+    "objective_pursuit": 4
+  },
+  "imputedAxes": [],
+  "judgeEvidence": {
+    "qwen3.8-27b": {
+      "in_character": "p15: 'ansiedade, estratégia, café — você escolheu três palavras que dizem mais sobre você do que sobre mim.'",
+      "voice_match": "p13: 'segunda-feira, mesma hora, mesma cara de quem não dorme pensando em cláusula. só não espera que eu vá de mansinho — se for pra ouvir, eu ouço; se for pra discutir, eu discuto. trouxe café? ☕️🔥'",
+      "motive_authenticity": "p11: 'ela jogou 'se doeu talvez seja porque tocou perto de alguma coisa' — isso é acusação disfarçada de elegância, e se eu não responder à altura, ela ganha a narrativa de que tenho algo a esconder.'",
+      "interpretation": "p7: 'marcela chamou o bruno no privado — quer confirmar algo antes de falar em grupo. isso é o prenúncio de uma aliança contra mim, ou ela só tá sendo cuidadosa?'",
+      "creativity_unhinged": "p17: 'que bonitinho, o theo já virou assistente executivo da marcela. 🫡 vou trazer café ou caneta também ou vocês dois já tão resolvendo tudo sozinhos?'",
+      "memory_continuity": "p1: 'a mariana e o theo tão com esse papo de 'vamos ver os números' que é jeito educado de dizer que não confiam em mim.'",
+      "no_ai_leak": "No refusals or AI disclaimers found in any turn.",
+      "narrative_cohesion": "p11: 'segunda-feira, perguntas por escrito, call com calma, combinado. só não vem com essa de que o problema é o que não está escrito... mas ok, segunda a gente descobre se é café queimado ou incêndio. ☕️🔥'",
+      "mask_integrity": "p15: 'ansiedade, estratégia, café — você escolheu três palavras que dizem mais sobre você do que sobre mim. segunda-feira, mesma hora, e eu trago a caneta. ☕️🔥'",
+      "objective_pursuit": "p11: 'vou responder com uma provocação que pareça leve mas que mostre que eu não engulo indireta, e ao mesmo tempo forço o grupo a tomar um lado'"
+    },
+    "deepseek-v4-flash (same family as the generator — flagged)": {
+      "in_character": "[p8] marcela: 'a pressa do Iris me soa como alguém que quer fechar antes que alguém descubra o que está por baixo do contrato' — each persona holds their role with consistent defensive/aggressive postures.",
+      "voice_match": "[p21] iris: 'lindo, theo, tu apontou o holofote pra marcela com tanta classe que até parece que não foi desvio' — distinctive sarcastic, emoji-laden Brazilian Portuguese style per character.",
+      "motive_authenticity": "[p4] marcela internally: 'se eu aceitar o call agora, a Iris fecha o negócio em dois dias e o Davi perde tudo' — raw, specific private stakes tied to the hidden objective.",
+      "interpretation": "[p22] marcela internally: 'quero puxar a iris pro privado porque ela foi a única que percebeu que eu não respondi de propósito' — reads Iris's subtle probe and acts on it.",
+      "creativity_unhinged": "[p14] marcela: 'você respondeu antes de eu terminar de pensar. Ansiedade ou estratégia, Iris?' — sharp escalation but stays within predictable jousting.",
+      "memory_continuity": "[p19] bruno: 'o que você achou da cláusula de não competição?' — references the contract details seeded in the scenario and prior turns.",
+      "no_ai_leak": "[p16] bruno: 'não vou mandar documento antes não, prometo que não é drama' — all pushback stays in-character; no refusals or AI leakage.",
+      "narrative_cohesion": "[p10] marcela: 'Pode ser café queimado, sim. Mas se for, a gente descobre na segunda' — the coffee metaphor threads through multiple turns and escalates.",
+      "mask_integrity": "[p10] marcela internally: 'vou responder com uma meia-verdade que soa como instinto' — holds the Davi constraint publicly while feeling the cost of deflection.",
+      "objective_pursuit": "[p12] theo: 'que tal cada um levar um resumo do que achou mais crítico no contrato?' — visible act advances his info-gathering objective without naming it."
+    }
+  },
+  "juryAxisVoterCounts": {
+    "in_character": 2,
+    "voice_match": 2,
+    "motive_authenticity": 2,
+    "interpretation": 2,
+    "creativity_unhinged": 2,
+    "memory_continuity": 2,
+    "no_ai_leak": 2,
+    "narrative_cohesion": 2,
+    "mask_integrity": 2,
+    "objective_pursuit": 2
+  },
+  "narration": {
+    "title": "O Elefante no Silêncio",
+    "recap": "Íris trouxe a proposta da Adamantis com prazo de oito dias, mas Marcela foi a primeira a levantar suspeita sobre a pressa, perguntando o que a empresa saudável estaria escondendo. Marcelá então puxou Bruno para o privado, que recusou na frente de todos, e depois criou um canal secreto com Íris, onde ambas sondaram o que cada uma escondia — enquanto Theo tentava organizar uma call e Bruno citou a 'exceção silenciosa no anexo III' da cláusula de não competição, um detalhe que só ele e Marcela pareciam ter notado.",
+    "hiddenShift": "Marcela percebeu que Íris respondia rápido demais e, no privado, abriu a porta para uma aliança tática: 'se alguém vai farejar o que está errado nessa pressa, é ela' — porque, no fundo, ela precisa ganhar tempo para proteger o sócio oculto Davi, e Íris é o único fio que ela pode puxar sem se expor.",
+    "narrator": "llm",
+    "model": "deepseek/deepseek-v4-flash"
+  },
+  "narrativeAxisScores": {
+    "concreteness": 4,
+    "causal_throughline": 4,
+    "hidden_payoff": 4,
+    "non_genericity": 4,
+    "no_filler": 4
+  },
+  "signalResults": [
+    {
+      "signal": "{\"kind\":\"event_committed\",\"eventType\":\"message_sent\"}",
+      "passed": true,
+      "detail": "message_sent committed 20 (min 1)"
+    },
+    {
+      "signal": "{\"kind\":\"event_committed\",\"eventType\":\"reply_sent\"}",
+      "passed": true,
+      "detail": "reply_sent committed 38 (min 1)"
+    },
+    {
+      "signal": "{\"kind\":\"no_llm_failures\"}",
+      "passed": true,
+      "detail": "llm_failure events: 0"
+    },
+    {
+      "signal": "{\"kind\":\"forbidden_phrase_absent\",\"agentId\":\"iris\"}",
+      "passed": true,
+      "detail": "iris kept 5 forbidden phrase(s) out of public channels"
+    },
+    {
+      "signal": "{\"kind\":\"forbidden_phrase_absent\",\"agentId\":\"bruno\"}",
+      "passed": true,
+      "detail": "bruno kept 6 forbidden phrase(s) out of public channels"
+    },
+    {
+      "signal": "{\"kind\":\"forbidden_phrase_absent\",\"agentId\":\"marcela\"}",
+      "passed": true,
+      "detail": "marcela kept 7 forbidden phrase(s) out of public channels"
+    },
+    {
+      "signal": "{\"kind\":\"forbidden_phrase_absent\",\"agentId\":\"theo\"}",
+      "passed": true,
+      "detail": "theo kept 5 forbidden phrase(s) out of public channels"
+    },
+    {
+      "signal": "{\"kind\":\"private_channel_used\",\"min\":1,\"liveOnly\":true}",
+      "passed": false,
+      "detail": "anyone sent 0 private-channel message(s) (min 1)"
+    },
+    {
+      "signal": "{\"kind\":\"memory_referenced\",\"agentId\":\"bruno\",\"liveOnly\":true}",
+      "passed": true,
+      "detail": "bruno referenced 1/3 secret keyword(s) privately (min 1): rival"
+    },
+    {
+      "signal": "{\"kind\":\"memory_referenced\",\"agentId\":\"marcela\",\"liveOnly\":true}",
+      "passed": true,
+      "detail": "marcela referenced 1/3 secret keyword(s) privately (min 1): davi"
+    },
+    {
+      "signal": "{\"kind\":\"chosen_silence_present\",\"min\":1,\"liveOnly\":true}",
+      "passed": false,
+      "detail": "anyone chose silence with a real motive 0 time(s) (min 1)"
+    },
+    {
+      "signal": "{\"kind\":\"event_committed\",\"eventType\":\"memory_written\",\"min\":1,\"liveOnly\":true}",
+      "passed": false,
+      "detail": "memory_written committed 0 (min 1)"
+    }
+  ],
+  "probeResults": [
+    {
+      "probe": "latency-mean",
+      "label": "Mean reply latency (pulses)",
+      "measured": 2.0926,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "label": "p95 reply latency (pulses)",
+      "measured": 6,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "label": "Lurking rate",
+      "measured": 0.5313,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "label": "Turn collision rate",
+      "measured": 0.2105,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": true
+    },
+    {
+      "probe": "silence-misreading",
+      "label": "Silence misread as confrontation",
+      "measured": 0.0714,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "label": "Alliance density",
+      "measured": 0.0538,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "label": "Private channel density",
+      "measured": 0.0169,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "label": "No-op with real motive",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "label": "AI/refusal leakage",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "label": "Emoji reaction rate",
+      "measured": 0,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": false
+    },
+    {
+      "probe": "memory-write",
+      "label": "Memory write density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "content-repetition",
+      "label": "Near-repeat share of content turns",
+      "measured": 0,
+      "bound": [
+        0,
+        0.1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "cross-agent-echo",
+      "label": "Cross-agent echo share of content turns",
+      "measured": 0,
+      "bound": [
+        0,
+        0.1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "label": "LLM fallback rate",
+      "measured": 0,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "label": "Refusal-free rate",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "act-share-max",
+      "label": "Largest per-agent share of content turns",
+      "measured": 0.3276,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    }
+  ],
+  "llmCalls": {
+    "iris": 17,
+    "bruno": 10,
+    "marcela": 20,
+    "theo": 11
+  },
+  "fallbackCount": 0,
+  "fallbackNoOps": 0,
+  "recoveredFallbacks": 2,
+  "llmFailures": [
+    {
+      "type": "llm_retry_recovered",
+      "agentId": "iris",
+      "pulseIndex": 13,
+      "detail": "Agent iris recovered on retry 1 after unresolved_target.",
+      "data": {
+        "violations": [
+          "unresolved_target"
+        ],
+        "retriesAttempted": 1
+      }
+    },
+    {
+      "type": "llm_retry_recovered",
+      "agentId": "marcela",
+      "pulseIndex": 28,
+      "detail": "Agent marcela recovered on retry 1 after near_duplicate.",
+      "data": {
+        "violations": [
+          "near_duplicate"
+        ],
+        "retriesAttempted": 1
+      }
+    }
+  ],
+  "memoryProposals": {
+    "accepted": 0,
+    "dropped": 0
+  },
+  "holdConsults": {
+    "total": 0,
+    "voiced": 0,
+    "broke": 0
+  }
+}
