@@ -10,7 +10,7 @@ import type {
   ActionEmotions,
   AvailableAction,
 } from "@perfectman/shared";
-import { createId } from "@perfectman/shared";
+import { MEMORY_TONE_UNSPECIFIED, createId } from "@perfectman/shared";
 import { REPETITION_GUARD_MARKER } from "../../agent/repetition-guard.js";
 
 const SIM_ID = "sim_test";
@@ -197,6 +197,55 @@ describe("IntentResolver", () => {
     expect(memoryEvent).toBeDefined();
     expect(memoryEvent!.payload["intensity"]).toBe(0.9);
     expect(memoryEvent!.payload["proposalIndex"]).toBe(0);
+  });
+
+  // Short proposals (ADR-0014's memory path, refined): the parser leaves the
+  // tone placeholder and whatever the model wrote in `about`; the resolver
+  // resolves names to ids and takes tone/intensity from the action emotions.
+  it("resolves a short proposal's `about` names to agent ids and fills tone and intensity from the dominant action emotion", async () => {
+    const intent = makeIntent({
+      intentType: "send_message",
+      channelTarget: CHANNEL_ID,
+      memoryWrites: [{
+        type: "relationship",
+        subjectAgentIds: ["Íris", "agent_2", "ninguém"],
+        summary: "a Íris já falou com o comprador",
+        emotionalTone: MEMORY_TONE_UNSPECIFIED,
+        confidence: 0.7,
+        intensity: 0.5,
+        unresolved: true,
+      }],
+    });
+    const result = await resolver.resolve(intent, { ...ctx(), agentNames: { agent_2: "Bruno", agent_3: "Íris" } });
+    const memoryEvent = result.committedEvents.find((e) => e.type === "memory_written");
+    expect(memoryEvent?.payload["subjectAgentIds"]).toEqual(["agent_3", "agent_2"]);
+    // ACTION_EMOTIONS: warmth 0.3 and curiousApproach 0.3 tie; the first wins.
+    expect(memoryEvent?.payload["emotionalTone"]).toBe("warmth");
+    expect(memoryEvent?.payload["intensity"]).toBe(0.3);
+    expect(memoryEvent?.payload["memoryType"]).toBe("relationship");
+  });
+
+  it("a short proposal whose subjects all resolve to nobody becomes a self memory with a neutral tone when nothing is felt", async () => {
+    const intent = makeIntent({
+      intentType: "send_message",
+      channelTarget: CHANNEL_ID,
+      memoryWrites: [{
+        type: "relationship",
+        subjectAgentIds: ["alguém"],
+        summary: "x",
+        emotionalTone: MEMORY_TONE_UNSPECIFIED,
+        confidence: 0.7,
+        intensity: 0.5,
+        unresolved: true,
+      }],
+    });
+    const flat = { ...ACTION_EMOTIONS, warmth: 0.1, curiousApproach: 0.1 };
+    const result = await resolver.resolve(intent, { ...ctx(), actionEmotions: flat, agentNames: { agent_2: "Bruno" } });
+    const memoryEvent = result.committedEvents.find((e) => e.type === "memory_written");
+    expect(memoryEvent?.payload["subjectAgentIds"]).toEqual([]);
+    expect(memoryEvent?.payload["memoryType"]).toBe("self");
+    expect(memoryEvent?.payload["emotionalTone"]).toBe("neutral");
+    expect(memoryEvent?.payload["intensity"]).toBe(0.2);
   });
 
   it("blocks intent with missing motive summary", async () => {

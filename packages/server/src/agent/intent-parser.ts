@@ -1,4 +1,4 @@
-import { ModelIntentPacketSchema, composeIntentPacket } from "@perfectman/shared";
+import { ModelIntentPacketSchema, composeIntentPacket, MemoryWriteProposalSchema, MemoryWriteShortSchema, normalizeMemoryWriteProposal } from "@perfectman/shared";
 import type { ActionIntent, AvailableAction, CommittedEvent, IntentType } from "@perfectman/shared";
 
 type TargetField = "replyToEventId" | "targetEventId";
@@ -32,6 +32,8 @@ export type IntentParserResult = {
   rawLength?: number;
   /** The JSON never closed (the model ran away inside a string) and the packet was rebuilt from its closed fields. */
   truncationRepaired?: boolean;
+  /** Memory proposals that matched neither the short nor the full shape and were dropped (the intent survives). */
+  droppedMemoryWrites?: number;
   // Set when the intent is a reply/react whose target handle could not be
   // resolved against `TargetResolutionContext.eventHandles`. The caller
   // re-prompts once with a targeted note, then applies `floorTargets`.
@@ -127,6 +129,7 @@ export class IntentParser {
   ): IntentParserResult {
     let cleanedText = rawText;
     let truncationRepaired = false;
+    let droppedMemoryWrites = 0;
 
     try {
       // 1. Narrow repair: strip markdown code fences, find the JSON object.
@@ -159,6 +162,20 @@ export class IntentParser {
       if (!Array.isArray(parsedObject.emotionDrivers)) parsedObject.emotionDrivers = [];
       if (!Array.isArray(parsedObject.motivationDrivers)) parsedObject.motivationDrivers = [];
       if (!Array.isArray(parsedObject.memoryWrites)) parsedObject.memoryWrites = [];
+      // Memory proposals are normalized per element: the full form passes
+      // through, the short form `{summary, about?}` becomes a full proposal
+      // with structural defaults (tone/intensity are filled by the resolver
+      // from the agent's action emotions), anything else is dropped. One bad
+      // proposal used to fail the whole packet into a no_op fallback.
+      const normalizedWrites: unknown[] = [];
+      for (const element of parsedObject.memoryWrites as unknown[]) {
+        const full = MemoryWriteProposalSchema.safeParse(element);
+        if (full.success) { normalizedWrites.push(full.data); continue; }
+        const short = MemoryWriteShortSchema.safeParse(element);
+        if (short.success) { normalizedWrites.push(normalizeMemoryWriteProposal(short.data)); continue; }
+        droppedMemoryWrites++;
+      }
+      parsedObject.memoryWrites = normalizedWrites;
       for (const optional of [
         "channelTarget", "visibleContent", "replyToEventId", "emoji", "targetEventId",
         "channelName", "channelType", "invitedAgentIds", "spectatorSummary",
@@ -261,7 +278,12 @@ export class IntentParser {
         }
       }
 
-      return { intent, fallbackApplied: false, ...(truncationRepaired ? { truncationRepaired: true, rawLength: rawText.length } : {}) };
+      return {
+        intent,
+        fallbackApplied: false,
+        ...(truncationRepaired ? { truncationRepaired: true, rawLength: rawText.length } : {}),
+        ...(droppedMemoryWrites > 0 ? { droppedMemoryWrites } : {}),
+      };
     } catch (error: any) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       const fallbackReason = `Fallback applied: ${errorMsg}`;

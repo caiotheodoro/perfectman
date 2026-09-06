@@ -286,6 +286,7 @@ describe("PromptBuilder", () => {
       ["event grounding in <events>", "grounded in what actually happened in <events>"],
       ["whenever a belief about someone changed", "whenever what you believe about someone in this room changed"],
       ["empty when nothing changed", 'leave "memoryWrites" empty'],
+      ["the short shape the model is asked for", '"memoryWrites": [{"summary":'],
     ])("output contract instructs memoryWrites emission: %s", (_label, marker) => {
       const prompt = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
       expect(prompt.system).toContain(marker);

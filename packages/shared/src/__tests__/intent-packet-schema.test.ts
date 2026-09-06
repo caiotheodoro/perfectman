@@ -6,7 +6,7 @@ import {
   composeIntentPacket,
   memoryWriteProposalFieldContract,
 } from "../intent/intent-packet.schema.js";
-import { MemoryWriteProposalSchema, IntentTypeSchema } from "../intent/intent.schema.js";
+import { MemoryWriteProposalSchema, IntentTypeSchema, MEMORY_TONE_UNSPECIFIED } from "../intent/intent.schema.js";
 
 describe("ModelIntentPacket", () => {
   it("excludes engine-stamped structural fields (id, actorId, preferredDelay, fallbackIfBlocked)", () => {
@@ -45,6 +45,24 @@ describe("ModelIntentPacket", () => {
     expect(intent.visibleContent).toBe("oi");
     expect(intent.preferredDelay).toBe(0);
     expect(intent.fallbackIfBlocked).toBe("no_op");
+  });
+
+  it("schema mode requires only `summary` of a memory proposal; the full form is the second branch", () => {
+    const items = (ModelIntentPacketJsonSchema.properties as Record<string, { items?: { anyOf?: Array<{ required?: string[] }> } }>)["memoryWrites"]?.items;
+    expect(items?.anyOf).toHaveLength(2);
+    expect(items?.anyOf?.[0]?.required).toEqual(["summary"]);
+    expect(items?.anyOf?.[1]?.required).toContain("emotionalTone");
+  });
+
+  it("composeIntentPacket turns a short memory proposal into a full one with the placeholder tone", () => {
+    const packet = ModelIntentPacketSchema.parse({
+      intentType: "send_message",
+      privateMotiveSummary: "m",
+      memoryWrites: [{ summary: "o Rafa desviou", about: ["rafa"] }, { summary: "não tenho pra onde ir" }],
+    });
+    const intent = composeIntentPacket({ kind: "model", packet, agentId: "nina" });
+    expect(intent.memoryWrites[0]).toMatchObject({ type: "relationship", subjectAgentIds: ["rafa"], emotionalTone: MEMORY_TONE_UNSPECIFIED, unresolved: true });
+    expect(intent.memoryWrites[1]).toMatchObject({ type: "self", subjectAgentIds: [] });
   });
 
   it("composeIntentPacket assigns no fallback for types the engine can't usefully soften", () => {

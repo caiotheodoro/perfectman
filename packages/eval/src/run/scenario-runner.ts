@@ -65,6 +65,8 @@ export type ScenarioRunArtifact = {
   operatorEventCounts?: Partial<Record<OperatorEvent["type"], number>>;
   /** Every `llm_failure` / `llm_retry_recovered` with its detail and data (raw head, models) — the fallback forensics trail. */
   llmFailures?: LlmFailureRecord[];
+  /** Memory proposals: committed `memory_written` events vs proposals the parser dropped as malformed. */
+  memoryProposals?: { accepted: number; dropped: number };
   /** `liveOnly` signals not evaluated because the run was in mock mode; never in `totalSignals`. */
   skippedSignals?: number;
   probeResults: ProbeResult[];
@@ -225,6 +227,10 @@ export class ScenarioRunner {
     const { fallbackCount, fallbackNoOps, operatorEventCounts } = countFallbacks(events, operatorEvents);
     const recoveredFallbacks = operatorEvents.filter(e => e.type === "llm_retry_recovered").length;
     const llmFailures = collectLlmFailures(operatorEvents);
+    const memoryProposals = {
+      accepted: events.filter(e => e.type === "memory_written").length,
+      dropped: operatorEvents.reduce((n, e) => n + (e.type === "pulse_metrics" ? Number((e.data as { memoryWritesDropped?: unknown } | undefined)?.memoryWritesDropped ?? 0) : 0), 0),
+    };
     const behavioral = eventsToBehavioral(events);
     const probeResults = runAllProbes({
       events: behavioral,
@@ -253,6 +259,7 @@ export class ScenarioRunner {
       fallbackNoOps,
       operatorEventCounts,
       llmFailures,
+      memoryProposals,
       operatorFailures: failures,
       recoveredFallbacks,
       probeResults,

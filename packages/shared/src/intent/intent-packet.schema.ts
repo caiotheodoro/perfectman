@@ -2,7 +2,8 @@ import { z } from "zod";
 import { zodToJsonSchema } from "zod-to-json-schema";
 import { createId } from "../utils/id.js";
 import type { ActionIntent, IntentType } from "./intent.types.js";
-import { IntentTypeSchema, IntentChannelTypeSchema, MemoryWriteProposalSchema } from "./intent.schema.js";
+import { IntentTypeSchema, IntentChannelTypeSchema, MemoryWriteProposalSchema, MemoryWriteShortSchema, MEMORY_TONE_UNSPECIFIED } from "./intent.schema.js";
+import type { MemoryWriteProposal } from "../memory/memory.types.js";
 
 /**
  * The model-decision packet: only the fields the model legitimately decides.
@@ -20,7 +21,9 @@ export const ModelIntentPacketSchema = z.object({
   privateMotiveSummary: z.string().min(1),
   emotionDrivers: z.array(z.string()).default([]),
   motivationDrivers: z.array(z.string()).default([]),
-  memoryWrites: z.array(MemoryWriteProposalSchema).default([]),
+  // Short form first: it is what the prompt asks for and what schema mode
+  // requires; the seven-field form stays accepted (mock provider, fixtures).
+  memoryWrites: z.array(z.union([MemoryWriteShortSchema, MemoryWriteProposalSchema])).default([]),
   replyToEventId: z.string().optional(),
   emoji: z.string().optional(),
   targetEventId: z.string().optional(),
@@ -32,10 +35,32 @@ export const ModelIntentPacketSchema = z.object({
 
 export type ModelIntentPacket = z.infer<typeof ModelIntentPacketSchema>;
 
+/**
+ * A packet's memory proposal as the full `MemoryWriteProposal`: the seven-
+ * field form passes through; the short form gets structural defaults —
+ * `relationship` when it is about someone, `self` otherwise, the tone
+ * placeholder the resolver replaces from the agent's action emotions.
+ */
+export function normalizeMemoryWriteProposal(element: ModelIntentPacket["memoryWrites"][number]): MemoryWriteProposal {
+  if ("type" in element) return element;
+  const about = (element.about ?? []).map((s) => s.trim()).filter((s) => s.length > 0);
+  return {
+    type: about.length > 0 ? "relationship" : "self",
+    subjectAgentIds: about,
+    summary: element.summary,
+    emotionalTone: MEMORY_TONE_UNSPECIFIED,
+    confidence: 0.7,
+    intensity: 0.5,
+    unresolved: true,
+  };
+}
+
 type JsonSchemaProp = {
   type?: string;
   enum?: readonly string[];
-  items?: { type?: string; properties?: Record<string, JsonSchemaProp> };
+  items?: { type?: string; properties?: Record<string, JsonSchemaProp>; anyOf?: JsonSchemaProp[] };
+  properties?: Record<string, JsonSchemaProp>;
+  anyOf?: JsonSchemaProp[];
   minimum?: number;
   maximum?: number;
 };
@@ -73,7 +98,9 @@ export const ModelIntentPacketJsonSchema = zodToJsonSchema(ModelIntentPacketSche
 function describePacketFieldType(def: JsonSchemaProp): string {
   if (def.enum) return `one of: ${def.enum.join(", ")}`;
   if (def.type === "array") {
-    const items = def.items;
+    // A union of element shapes renders as its first branch: the short form
+    // is the one the model is asked for; the full form is accepted quietly.
+    const items = def.items?.anyOf?.[0] ?? def.items;
     if (items?.type === "object" && items.properties) {
       // Recurse one level: a bare key list (e.g. "memoryWrites: array of
       // objects (type, confidence, ...)") never told the model that "type"
@@ -189,7 +216,7 @@ export function composeIntentPacket(spec: IntentComposeInput): ActionIntent {
     privateMotiveSummary: packet.privateMotiveSummary,
     emotionDrivers: packet.emotionDrivers,
     motivationDrivers: packet.motivationDrivers,
-    memoryWrites: packet.memoryWrites,
+    memoryWrites: packet.memoryWrites.map(normalizeMemoryWriteProposal),
     replyToEventId: packet.replyToEventId,
     emoji: packet.emoji,
     targetEventId: packet.targetEventId,

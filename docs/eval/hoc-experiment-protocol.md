@@ -28,7 +28,7 @@ The three are what a single OrcaRouter key scoped to the free/flash tier can rea
 
 ## Prompt template versions
 
-`promptTemplateVersions` in `run-meta.json` identifies the agent prompt template. `hn81j7` is the template every M0 read used (baseline and main arms); `2imp7w` is prompt round 1 (silence as a move, Portuguese pin with Portuguese exemplars, ungated creativity with the generic-reply list, memory writes on belief change, memories trimmed last). Arms with different template versions are not a pair.
+`promptTemplateVersions` in `run-meta.json` identifies the agent prompt template. `hn81j7` is the template every M0 read used (baseline and main arms); `2imp7w` is prompt round 1 (silence as a move, Portuguese pin with Portuguese exemplars, ungated creativity with the generic-reply list, memory writes on belief change, memories trimmed last); `1bd8a0` is the short memory proposal (`{summary, about}`), the M4 marker. Arms with different template versions are not a pair.
 
 ## Command
 
