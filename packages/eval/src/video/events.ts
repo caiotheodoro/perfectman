@@ -2,6 +2,7 @@ import { z } from "zod";
 import { isEngineAuthoredMotive } from "@perfectman/server";
 import type { VideoStep, VideoStory } from "./types.js";
 import { agentsFromSteps, isRecord, MISSING_EMOTION_NOTICE, OPERATOR_EVENT_TYPES, readablePayload } from "./source-utils.js";
+import { eventChannels, eventSocialMetadata, mergeChannels, recordedChannels, withChannelVisibility, type PriorEventActors } from "./social-metadata.js";
 
 const jsonValue: z.ZodType<unknown> = z.lazy(() => z.union([
   z.string(), z.number().finite(), z.boolean(), z.null(), z.array(jsonValue), z.record(jsonValue),
@@ -45,7 +46,7 @@ function content(type: string, payload: Record<string, unknown>): string {
 }
 
 /** Motives retain their original row position; their source references also join the act. */
-export function normalizeEventSteps(value: unknown, basePointer = "/events"): VideoStep[] {
+export function normalizeEventSteps(value: unknown, basePointer = "/events", prior: PriorEventActors = new Map()): VideoStep[] {
   const events = z.array(eventSchema).min(1).parse(value);
   const original = value as unknown[];
   const motives = new Map<string, number[]>();
@@ -83,7 +84,9 @@ export function normalizeEventSteps(value: unknown, basePointer = "/events"): Vi
     // Private motive text must not appear in the public event's rendered payload.
     const publicPayload = { ...payload };
     delete publicPayload.privateMotiveSummary;
+    const { relatedRefs, ...social } = eventSocialMetadata(event, ref(index), prior);
     const step: VideoStep = {
+      ...social,
       id: `event-${index + 1}`,
       phase: event.phase ?? (typeof payload.phase === "string" ? payload.phase : "Simulation"),
       kind: isMotive && !fallback ? "private"
@@ -93,12 +96,13 @@ export function normalizeEventSteps(value: unknown, basePointer = "/events"): Vi
       actorId: event.actorId, channel: event.channelId, pulse: event.pulseIndex,
       visibility: operator ? "operator" : privateEvent ? "private" : "public",
       emotion: drivers.length && !operator ? { source: "driver", drivers: [...new Set(drivers)] } : undefined,
-      sourceRefs: [...new Set([ref(index), ...linked.map(ref)])], raw: original[index],
+      sourceRefs: [...new Set([ref(index), ...linked.map(ref), ...relatedRefs])], raw: original[index],
     };
     if (!legacyMotive || joined.length) return [step];
     return [step, {
       ...step, id: `${step.id}-motive`, kind: fallback ? "event" : "private", action: "private motive",
       text: legacyMotive, visibility: fallback ? "operator" : "private", emotion: undefined,
+      recipientIds: undefined, audienceIds: undefined, stageAction: undefined, presence: undefined,
     }];
   });
 }
@@ -107,11 +111,13 @@ export function normalizeEvents(value: unknown, fallbackTitle = "Perfectman run"
   const bare = Array.isArray(value);
   if (!bare && !isRecord(value)) throw new Error("Expected an event array or an object with events");
   const record = bare ? {} : value as Record<string, unknown>;
-  const steps = normalizeEventSteps(bare ? value : record.events, bare ? "" : "/events");
+  const channels = mergeChannels(recordedChannels(record.channels), eventChannels(bare ? value : record.events));
+  const steps = withChannelVisibility(normalizeEventSteps(bare ? value : record.events, bare ? "" : "/events"), channels);
   return {
     title: typeof record.title === "string" ? record.title
       : typeof record.name === "string" ? record.name : typeof record.id === "string" ? record.id : fallbackTitle,
-    sourceKind: "events", agents: agentsFromSteps(steps), steps,
+    sourceKind: "events", agents: agentsFromSteps(steps, channels.flatMap(channel => channel.memberIds ?? [])), steps,
+    channels,
     notices: [MISSING_EMOTION_NOTICE,
       "Expressions use recorded emotion drivers; emotional salience is not an emotion label.",
       "Simulation is a display phase when the source has no phase label; source array order is retained."],

@@ -1,25 +1,43 @@
-# Saved run to video
+# Saved story playback
 
-Build a local `pnpm video --input <file> --out <file.mp4>` command. It reads
-an artifact, creates an ordered storyboard, and renders an MP4 with HyperFrames.
-It does not run the simulation or call a model.
+Keep one source-to-storyboard path for the video and interactive viewer. Extend
+the saved-run converter in PR 177; no simulation or model calls are needed.
 
-Inputs: existing evidence JSON, transcript arrays, committed-event run JSON,
-replay JSON or snapshot HTML, and an explicit `perfectman-video-v1` script.
-Generated narratives use the matching saved transcript and retain the original
-recap. A missing transcript is an error; summaries cannot recover all events.
+## Behavior
 
-Keep array order, including seeded pulses before runtime pulse zero. Keep every
-recorded event, private motive, pulse, emotional snapshot, and authored phase.
-Label private and operator material. Do not turn fallback errors into feelings
-or use final states as earlier emotions. Paginate long text without truncation.
-Save source pointers and raw records in the storyboard for review.
+- Default playback follows every source step in order and selects its channel.
+- Public rooms, private conversations, personal thoughts, and operator records
+  have distinct navigation and staging. Channel browsing pauses playback;
+  Follow story restores the chronological cursor.
+- Keep all declared personas in the cast roster. Stage observed speakers and
+  explicit audiences or recipients. Directory membership may describe the end
+  of a run, so it cannot establish earlier attendance.
+- Illustrate directed speech, listening, and explicit arrivals/departures with
+  small gestures. Preserve recorded presence and emotion cues.
+- Use a shared room, a private alcove, and an individual thought space. These
+  are visual interpretations. Authored scripts may name their place.
+- Add three licensed instrumental beds for calm, tension, and warmth, with
+  gentle fades and quiet action sounds. Score decisions remain inspectable.
+- Produce an interactive viewer alongside the MP4 and editable composition.
+  Native controls support keyboard playback, seeking, channel browsing, mute,
+  and volume. Browser playback starts visually; sound follows a user gesture.
 
-Reuse the demo's expressive agents, white/violet palette, moving message cards,
-and camera-driven transitions. Duration follows content. Recorded emotion data
-drives expression; no recorded emotion means no invented reaction.
+## Boundaries
 
-Implement in the eval package: source adapters, timing, composition assets, and
-one CLI. Add a small authored example and usage docs. Keep render outputs out
-of git. Validate source fidelity, hostile text escaping, pagination, argument
-errors, typecheck, the repo gates, and a real render from an existing artifact.
+Legacy transcripts omit recipients and membership. Keep these unknown. Final
+emotional states still appear only at the end. No dialogue-based emotion
+classifier, invented social event, extra simulation, or new frontend framework.
+The interactive viewer and renderer share the same data and seekable animation.
+
+## Changes and checks
+
+Extend the existing adapters and types with optional channels, directed targets,
+audiences, presence, and authored staging. Update the composition and finite
+motion timeline. Add a small viewer controller and soundtrack planner. Reuse
+the installed renderer, GSAP, font, and browser-native controls.
+
+Test source fidelity, recipient scope, channel browsing/resume, seeking, audio
+cue bounds, and safe escaping. Check desktop and narrow viewer layouts in a
+browser. Render a channel-rich script with arrivals, DMs, thoughts, and emotion
+changes; inspect actual frames and decode its full MP4. Recheck a saved run,
+run the repo gates, and update the open PR without merging.

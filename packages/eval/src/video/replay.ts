@@ -3,6 +3,7 @@ import type { VideoStory, VideoStep } from "./types.js";
 import { normalizeEventSteps } from "./events.js";
 import { operatorStep, ReplayOperator, ReplayState, stateStep } from "./replay-state.js";
 import { pointerKey } from "./source-utils.js";
+import { eventChannels, mergeChannels, recordedAudience, recordedChannels, withChannelVisibility, type PriorEventActors } from "./social-metadata.js";
 
 const Frame = z.object({
   pulseIndex: z.number().int(),
@@ -34,7 +35,8 @@ export function normalizeReplaySource(value: unknown, fallbackTitle = "Perfectma
     "Emotional snapshots apply only when their recorded state step is reached. Intermediate attention, interpretation, pressure and inhibition phases were not saved.",
   ]);
   const agents = new Map(replay.agentIds.map(id => [id, { id, name: replay.agentNames?.[id] || id }]));
-  const privateChannels = new Set((replay.channels ?? []).filter(c => c.type === "private_channel").map(c => c.id));
+  const prior: PriorEventActors = new Map();
+  const channels = mergeChannels(recordedChannels(replay.channels), eventChannels(replay.pulses.flatMap(frame => frame.committedEvents)));
   for (const [frameIndex, frame] of replay.pulses.entries()) {
     const ref = `/pulses/${frameIndex}`;
     steps.push({
@@ -42,12 +44,11 @@ export function normalizeReplaySource(value: unknown, fallbackTitle = "Perfectma
       text: `Pulse ${frame.pulseIndex}${frame.committedEvents.length === 0 ? ": no committed events." : "."}`,
       visibility: "operator", sourceRefs: [ref], raw: frame,
     });
-    const eventSteps = frame.committedEvents.length
-      ? normalizeEventSteps(frame.committedEvents, `${ref}/committedEvents`) : [];
+    const eventSteps = withChannelVisibility(frame.committedEvents.length
+      ? normalizeEventSteps(frame.committedEvents, `${ref}/committedEvents`, prior) : [], channels);
     for (const step of eventSteps) {
       step.id = `${ref}/${step.id}`;
       step.pulse ??= frame.pulseIndex;
-      if (step.channel && privateChannels.has(step.channel) && step.visibility === "public") step.visibility = "private";
     }
     steps.push(...eventSteps);
     const snapshots = new Map<string, VideoStep[]>();
@@ -63,6 +64,7 @@ export function normalizeReplaySource(value: unknown, fallbackTitle = "Perfectma
         if (matching) {
           matching.sourceRefs.push(opRef);
           matching.raw = { event: matching.raw, visibilityRecord: op };
+          matching.audienceIds ??= recordedAudience(op.data?.visibleToAgents);
           notices.add("Delivered event visibility may be reconstructed by the HTML receiver. Its default salience and public visibility are not original event measurements; channel privacy is retained separately.");
           continue;
         }
@@ -103,8 +105,10 @@ export function normalizeReplaySource(value: unknown, fallbackTitle = "Perfectma
     sourceRefs: [...(replay.endReason ? ["/endReason"] : []), ...(replay.endingOffer ? ["/endingOffer"] : [])],
     raw: { endReason: replay.endReason, endingOffer: replay.endingOffer },
   });
-  for (const step of steps) if (step.actorId && !agents.has(step.actorId)) {
-    agents.set(step.actorId, { id: step.actorId, name: replay.agentNames?.[step.actorId] || step.actorId });
+  const knownIds = [...steps.flatMap(step => step.actorId ? [step.actorId] : []), ...channels.flatMap(channel => channel.memberIds ?? [])];
+  for (const id of knownIds) if (!agents.has(id) && !["system", "host"].includes(id)) {
+    agents.set(id, { id, name: replay.agentNames?.[id] || id });
   }
-  return { title: replay.simulationName || fallbackTitle, sourceKind: "replay", agents: [...agents.values()], steps, notices: [...notices] };
+  if (channels.some(channel => channel.memberIds)) notices.add("Channel members are recorded directory metadata, not historical attendance. Only explicit event audiences identify who could see an action.");
+  return { title: replay.simulationName || fallbackTitle, sourceKind: "replay", agents: [...agents.values()], channels, steps, notices: [...notices] };
 }

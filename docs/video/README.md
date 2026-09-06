@@ -1,8 +1,8 @@
 # Turn saved runs into video
 
-The video command reads an existing file and renders a local MP4. It does not
-run the simulation or call a model. The output uses the Perfectman demo's
-agents, message board, moving cards, and recorded emotion cues.
+The video command reads an existing file and produces an interactive story
+viewer and a local MP4. It does not run the simulation or call a model. Both
+outputs share the same ordered story, personas, gestures, and emotion cues.
 
 Install Node.js 22 or later, pnpm, and FFmpeg. Then run from the repository root:
 
@@ -55,6 +55,14 @@ Optional fields are `channel`, `visibility`, `emotion`, and `duration`.
 private visibility. Emotion cues use a `label`, `drivers`, or numeric `values`.
 Authored cues are identified as authored in the video.
 
+Scripts may also declare `channels` with `id`, `name`, `kind` (`public`,
+`private`, or `operator`), and optional `memberIds`, plus a `place` name.
+Steps can specify `recipientIds`, `audienceIds`, exact `presence`, and a
+`stageAction` with `kind` (`arrive`, `leave`, or `invite`) and `agentIds`.
+All referenced personas and channels must exist. Private channels provide the
+default message visibility; private thoughts stay separate from conversations.
+See [channels.json](../../examples/video/channels.json) for a complete example.
+
 An optional `duration` sets a minimum hold for the step. Reading time can extend
 it. Long text is split into pages without truncation. A full run can produce a
 long video; the converter does not cut events to fit a short demo.
@@ -62,7 +70,8 @@ long video; the converter does not cut events to fit a short demo.
 ## Inspect the result
 
 For `out/exclusion.mp4`, the command also creates `out/exclusion.hyperframes/`.
-It contains the editable composition, local assets, and `storyboard.json`.
+It contains `viewer.html`, the editable composition, local assets,
+`storyboard.json`, and `soundtrack.json`.
 The storyboard records each source step, page time, raw record, source pointer,
 and input hash. Narrated runs include both source files and their hashes.
 
@@ -72,6 +81,18 @@ Use `--prepare-only` to create that project without rendering:
 pnpm video --input examples/video/peacemaker.json --out out/preview.mp4 --prepare-only
 pnpm --filter @perfectman/eval exec hyperframes preview "$PWD/out/preview.hyperframes" --background
 ```
+
+Open `out/preview.hyperframes/viewer.html` in a browser for the story viewer.
+Playback follows source order and selects each channel automatically. Click a
+channel to pause and browse its messages. **Follow story** returns to the time
+where browsing started. Previous/Next steps and the position slider also seek
+the same animation. The cast roster includes every known persona.
+
+The viewer starts visually with sound off to respect browser autoplay rules.
+Click **Enable sound**, then use the volume control. Reduced-motion preference
+starts playback paused. Narrow screens include a channel picker and a readable
+text panel below the scene. The MP4 includes the soundtrack and automatic channel changes; channel
+selection is available in the HTML viewer.
 
 Existing output files and project directories are never replaced. Choose a new
 `--out` path for a new conversion. A failed render leaves its project available
@@ -96,3 +117,34 @@ and explicit script phases. It cannot recover stages that were not recorded.
 Replay event and operator arrays have no shared ordering; each keeps its own
 order and is shown in a separate phase. Repeated `agentThinking` data stays in
 raw context; only fresh, same-pulse operator intents become new thought steps.
+
+The room, alcove, and gestures are visual staging. Speaking actors and explicit
+recipients/audiences establish observed conversation participants. A channel's
+saved member list can reflect its final state, so it is directory information,
+not evidence that every member attended earlier. Unknown DM partners stay
+unknown. Explicit arrival/leave actions move people through the room; an initial
+presence snapshot alone does not prove an arrival.
+
+## Music and verification
+
+The score uses three instrumental tracks by Kevin MacLeod: *Wallpaper* for
+calm conversation, *Long Note Three* for tension, and *Dream Culture* for warmth.
+They are CC BY 4.0; Kenney's interface sounds are CC0. Each output includes
+[credits and source links](../../packages/eval/assets/video/audio/ATTRIBUTION.md),
+and the MP4 has an eight-second credit ending. Keep those credits when sharing.
+
+Mood choices illustrate recorded or authored emotion cues. Missing cues hold
+the current score; unrecognized explicit cues return to calm. Track gains are
+matched from measured loudness, changes crossfade, and long runs restart tracks
+with fades. `soundtrack.json` records each cue's timing and basis. Music does
+not imply that a missing emotional state was recovered.
+
+After preparing the channel example, run the browser acceptance check:
+
+```sh
+node scripts/check-story-viewer.mjs out/preview.hyperframes
+```
+
+It checks playback, channel browsing/resume, sound, deterministic seeking, narrow
+layout, and reduced motion, and saves screenshots in the project. It uses local
+Chrome; set `CHROME_PATH` if Chrome is installed outside the default macOS path.

@@ -5,6 +5,8 @@ import { basename, dirname, extname, resolve } from "node:path";
 import { renderComposition } from "./composition.js";
 import { readVideoSource } from "./read-source.js";
 import { planVideo } from "./storyboard.js";
+import { renderViewer } from "./viewer.js";
+import { planSoundtrack } from "./soundtrack.js";
 import type { VideoStoryboard } from "./types.js";
 
 const require = createRequire(import.meta.url);
@@ -34,7 +36,7 @@ export function checkTimes(storyboard: VideoStoryboard): string {
 }
 
 /** Prepare locally, then publish the finished MP4 without replacing existing files. */
-export async function createVideo(options: VideoOptions): Promise<{ output: string; project: string; storyboard: VideoStoryboard }> {
+export async function createVideo(options: VideoOptions): Promise<{ output: string; project: string; viewer: string; storyboard: VideoStoryboard }> {
   const input = resolve(options.input), output = resolve(options.output);
   if (extname(output).toLowerCase() !== ".mp4") throw new Error("--out must name an .mp4 file");
   const project = output.slice(0, -4) + ".hyperframes";
@@ -53,8 +55,11 @@ export async function createVideo(options: VideoOptions): Promise<{ output: stri
   await copyFile(resolve(dirname(require.resolve("@fontsource-variable/dm-sans/package.json")), "LICENSE"), resolve(assets, "DM-Sans-LICENSE.txt"));
   await copyFile(new URL("../../../../docs/assets/readme-logo.png", import.meta.url), resolve(assets, "perfectman-logo.png"));
   await writeFile(resolve(project, "index.html"), html, { flag: "wx" });
+  const viewer = resolve(project, "viewer.html");
+  await writeFile(viewer, renderViewer(html), { flag: "wx" });
   await writeFile(resolve(project, "storyboard.json"), JSON.stringify(storyboard, null, 2) + "\n", { flag: "wx" });
-  await writeFile(resolve(project, "README.md"), `# ${storyboard.title}\n\nSource: ${input}\n\n${storyboard.steps.length} source steps, ${storyboard.beats.length} readable pages, ${storyboard.duration.toFixed(2)} seconds.\n\nThe storyboard preserves source references and raw records.\n\n${storyboard.notices.map(notice => `- ${notice}`).join("\n")}\n`, { flag: "wx" });
+  await writeFile(resolve(project, "soundtrack.json"), JSON.stringify(planSoundtrack(storyboard), null, 2) + "\n", { flag: "wx" });
+  await writeFile(resolve(project, "README.md"), `# ${storyboard.title}\n\nSource: ${input}\n\nOpen [viewer.html](viewer.html) for interactive playback and channel browsing. Enable sound after opening it.\n\n${storyboard.steps.length} source steps, ${storyboard.beats.length} readable pages, ${storyboard.duration.toFixed(2)} seconds.\n\nThe storyboard preserves source references and raw records. The soundtrack file records editorial music cues. [Audio credits](assets/audio/ATTRIBUTION.md).\n\n${storyboard.notices.map(notice => `- ${notice}`).join("\n")}\n`, { flag: "wx" });
   if (!options.prepareOnly) {
     const cli = require.resolve("hyperframes/bin/hyperframes.mjs");
     // Generated runs can exceed the authored-HTML length advisory; verification errors still block output.
@@ -65,5 +70,5 @@ export async function createVideo(options: VideoOptions): Promise<{ output: stri
     await link(temporary, output);
     await unlink(temporary);
   }
-  return { output, project, storyboard };
+  return { output, project, viewer, storyboard };
 }

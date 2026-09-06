@@ -39,7 +39,7 @@ export function stateStep(state: State, actorId: string, pulse: number, ref: str
   }
   const strongest = Object.entries(state.socialEmotions ?? {}).sort((a, b) => b[1] - a[1])[0];
   return {
-    id: ref, phase: "Recorded pulse state", kind: "state", actorId, pulse,
+    id: ref, phase: "Recorded pulse state", kind: "state", actorId, pulse, presence: state.presence,
     visibility: "operator", sourceRefs: [ref], raw: state,
     text: lines.join("\n") || "State recorded; no emotional measurements were saved.",
     ...(Object.keys(values).length ? { emotion: {

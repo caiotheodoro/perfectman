@@ -14,8 +14,11 @@ export function readablePayload(payload: Record<string, unknown>): string {
   ).join("\n");
 }
 
-export function agentsFromSteps(steps: VideoStep[]): VideoAgent[] {
-  return [...new Set(steps.flatMap(step => step.actorId ? [step.actorId] : []))]
+export function agentsFromSteps(steps: VideoStep[], knownIds: string[] = []): VideoAgent[] {
+  return [...new Set([...steps.flatMap(step => [
+    ...(step.actorId ? [step.actorId] : []), ...(step.recipientIds ?? []),
+    ...(step.audienceIds ?? []), ...(step.stageAction?.agentIds ?? []),
+  ]), ...knownIds])]
     .map(id => ({ id, name: id }));
 }
 

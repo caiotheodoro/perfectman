@@ -32,7 +32,16 @@ describe("file to video command", () => {
       expect(data.beats[0].sourceRefs).toEqual(["/steps/0"]);
       const html = await readFile(join(result.project, "index.html"), "utf8");
       expect(html).toContain('data-composition-id="run-video"');
-      for (const file of ["styles.css", "gsap.min.js", "dm-sans-latin-wght-normal.woff2", "DM-Sans-LICENSE.txt", "perfectman-logo.png", "tap.wav"]) {
+      const viewer = await readFile(result.viewer, "utf8");
+      expect(viewer).toContain('data-viewer="true"');
+      expect(viewer).toContain('id="channel-history"');
+      expect(viewer).toContain('id="follow"');
+      expect(viewer).toContain('assets/viewer.js');
+      expect(viewer).not.toContain('data-composition-id="run-video"');
+      expect(viewer.match(/<main id="stage"/g)).toHaveLength(1);
+      expect(html).not.toContain('assets/viewer.js');
+      expect(JSON.parse(await readFile(join(result.project, "soundtrack.json"), "utf8")).length).toBeGreaterThan(0);
+      for (const file of ["styles.css", "gsap.min.js", "dm-sans-latin-wght-normal.woff2", "DM-Sans-LICENSE.txt", "perfectman-logo.png", "audio/message.ogg", "audio/ATTRIBUTION.md"]) {
         expect((await stat(join(result.project, "assets", file))).size).toBeGreaterThan(0);
       }
       await expect(stat(output)).rejects.toMatchObject({ code: "ENOENT" });

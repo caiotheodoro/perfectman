@@ -110,7 +110,8 @@ require an API key or a model.
 
 ## Turn a saved run into video
 
-Use an existing transcript, replay, or script to create a local MP4:
+Use an existing transcript, replay, or script to create a local MP4 and an
+interactive story viewer with channels, private conversations, and music:
 
 ```sh
 pnpm video --input docs/eval/evidence/deepseek/scenarios/v1_exclusion_inferred.json --out out/exclusion.mp4

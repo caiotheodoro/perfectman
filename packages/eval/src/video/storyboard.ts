@@ -43,6 +43,6 @@ export function planVideo(story: VideoStory, sourceFile: string, sourceSha256: s
   });
   return {
     ...story, version: "perfectman-storyboard-v1", sourceFile, sourceSha256,
-    beats, duration: frame / fps + 3, fps,
+    beats, duration: frame / fps + 8, outroDuration: 8, fps,
   };
 }

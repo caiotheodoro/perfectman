@@ -30,6 +30,7 @@ export async function main(args = process.argv.slice(2)): Promise<void> {
   for (const notice of result.storyboard.notices) console.log(`Source note: ${notice}`);
   console.log(`${result.storyboard.steps.length} source steps → ${result.storyboard.beats.length} pages · ${result.storyboard.duration.toFixed(2)} seconds`);
   console.log(`Storyboard: ${resolve(result.project, "storyboard.json")}`);
+  console.log(`Interactive viewer: ${result.viewer}`);
   console.log(options.prepareOnly ? `Prepared: ${result.project}` : `Video: ${result.output}`);
 }
 

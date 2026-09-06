@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isEngineAuthoredMotive } from "@perfectman/server";
-import type { VideoStep, VideoStory } from "./types.js";
+import type { VideoChannel, VideoStep, VideoStory } from "./types.js";
+import { mergeChannels } from "./social-metadata.js";
 import { agentsFromSteps, MISSING_EMOTION_NOTICE, OPERATOR_EVENT_TYPES, pointerKey, readablePayload } from "./source-utils.js";
 
 const rowSchema = z.object({
@@ -27,9 +28,16 @@ export function normalizeEvidence(value: unknown, fallbackTitle = "Perfectman ru
   const source = bare ? { transcript: rowsSchema.parse(value) } : evidenceSchema.parse(value);
   const original = bare ? value : (value as { transcript: unknown[] }).transcript;
   const steps: VideoStep[] = [];
+  const channelRows: VideoChannel[] = [];
   source.transcript.forEach((row, index) => {
     const ref = `${bare ? "" : "/transcript"}/${index}`;
-    const fallback = row.engineAuthored === true || isEngineAuthoredMotive(row.privateMotive ?? "");
+    const isMotive = row.type === "private_motive_summary";
+    const fallback = row.engineAuthored === true || isEngineAuthoredMotive(row.privateMotive ?? (isMotive ? row.content : undefined) ?? "");
+    const spokenAct = ["message_sent", "reply_sent", "reaction_sent"].includes(row.type);
+    const operator = (fallback && !spokenAct) || OPERATOR_EVENT_TYPES.has(row.type);
+    if (row.channelId && !isMotive && !operator) {
+      channelRows.push({ id: row.channelId, name: row.channelId, kind: row.private ? "private" : "public" });
+    }
     const base = {
       phase: row.phase ?? "Simulation", actorId: row.agent, channel: row.channelId,
       pulse: row.pulse, sourceRefs: [ref], raw: original[index],
@@ -37,12 +45,12 @@ export function normalizeEvidence(value: unknown, fallbackTitle = "Perfectman ru
     const extra = Object.fromEntries(Object.entries(row).filter(([key]) =>
       !["pulse", "agent", "type", "channelId", "private", "content", "privateMotive", "engineAuthored", "phase"].includes(key),
     ));
-    const spokenAct = ["message_sent", "reply_sent", "reaction_sent"].includes(row.type);
     steps.push({
       ...base, id: `row-${index + 1}`,
-      kind: spokenAct ? "message" : "event", action: row.type.replace(/_/g, " "),
+      kind: isMotive && !fallback ? "private" : spokenAct ? "message" : "event", action: row.type.replace(/_/g, " "),
       text: row.content ?? [row.type.replace(/_/g, " "), readablePayload(extra)].filter(Boolean).join("\n"),
-      visibility: (fallback && !spokenAct) || OPERATOR_EVENT_TYPES.has(row.type) ? "operator" : row.private ? "private" : "public",
+      visibility: operator ? "operator" : isMotive || row.private ? "private" : "public",
+      ...(row.type === "agent_left" && row.channelId ? { stageAction: { kind: "leave" as const, agentIds: [row.agent] } } : {}),
     });
     if (row.privateMotive) steps.push({
       ...base, id: `row-${index + 1}-motive`, kind: fallback ? "event" : "private", action: "private motive",
@@ -59,7 +67,7 @@ export function normalizeEvidence(value: unknown, fallbackTitle = "Perfectman ru
   }
   return {
     title: ("name" in source && source.name) || ("scenarioId" in source && source.scenarioId) || fallbackTitle,
-    sourceKind: bare ? "transcript" : "evidence", agents: agentsFromSteps(steps), steps,
+    sourceKind: bare ? "transcript" : "evidence", agents: agentsFromSteps(steps), channels: mergeChannels(channelRows), steps,
     notices: [MISSING_EMOTION_NOTICE,
       "Legacy transcripts retain final emotional states only. Final values appear only at the end.",
       "Simulation is a display phase when the source has no phase label; source array order is retained."],
