@@ -518,8 +518,14 @@ export function localLLMConfig(
     // off the model name (an earlier version of this fix) starved every
     // other reasoning-capable cloud model instead. Every cloud endpoint
     // gets the large reasoning-headroom ceiling except Groq specifically.
+    // deepseek-v4 with thinking disabled (below) emits the intent JSON and
+    // nothing else, so the reasoning headroom is pure runaway room: every
+    // "No JSON object found" on the first forensic reads was a 25–27k-char
+    // response that opened as valid JSON and never closed — the model
+    // looped inside a string until the 8000-token cap. 2500 tokens is 3–5×
+    // a real intent and cuts the loop at a third of the cost.
     maxOutputTokens: isDeepseek
-      ? (isGroq ? 2000 : 8000)
+      ? (isGroq ? 2000 : isDeepseekV4 ? 2500 : 8000)
       : Math.max(600, sampling.maxTokens * 2),
     temperature: sampling.temperature,
     timeoutMs: isDeepseek ? 180000 : 120000,
@@ -531,7 +537,11 @@ export function localLLMConfig(
           top_p: sampling.topP,
           // DeepSeek has no repetition_penalty — map to frequency_penalty
           // (stronger for hot personas) plus presence_penalty to kill loops.
-          frequency_penalty: Math.min(2, (sampling.repetitionPenalty - 1) * 2.5),
+          // deepseek-v4 loops inside long string fields at the pack default
+          // (0.25); a floor of 0.6 is the second half of the runaway fix.
+          frequency_penalty: isDeepseekV4
+            ? Math.max(0.6, Math.min(2, (sampling.repetitionPenalty - 1) * 2.5))
+            : Math.min(2, (sampling.repetitionPenalty - 1) * 2.5),
           presence_penalty: 0.4,
           // deepseek-v4-* models reason by default at effort `high`, spending
           // the output-token budget on a thinking block before the intent
