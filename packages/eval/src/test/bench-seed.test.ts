@@ -52,6 +52,18 @@ describe("bench seed wiring (#45)", () => {
     expect(config.extraBody?.["thinking"]).toBeUndefined();
   });
 
+  it("caps deepseek-v4 output at 2500 tokens with a 0.6 frequency-penalty floor; other cloud models keep 8000", () => {
+    process.env.PERFECTMAN_LLM_PROVIDER = "deepseek";
+    process.env.PERFECTMAN_LLM_MODEL = "deepseek/deepseek-v4-flash";
+    const v4 = localLLMConfig(undefined);
+    expect(v4.maxOutputTokens).toBe(2500);
+    expect(v4.extraBody?.["frequency_penalty"]).toBe(0.6);
+    process.env.PERFECTMAN_LLM_MODEL = "z-ai/glm-5.3-flash";
+    const other = localLLMConfig(undefined);
+    expect(other.maxOutputTokens).toBe(8000);
+    expect(other.extraBody?.["frequency_penalty"]).toBeLessThan(0.6);
+  });
+
   it("disables `thinking` only for deepseek-v4-* models, not other openai-compatible endpoints", () => {
     process.env.PERFECTMAN_LLM_PROVIDER = "deepseek";
     process.env.PERFECTMAN_LLM_MODEL = "deepseek-v4-flash";
@@ -90,13 +102,21 @@ describe("bench seed wiring (#45)", () => {
   // tokens to complete — the openai-compatible path needs a ceiling an
   // order of magnitude above the local-model tuning, plus a timeout that
   // accommodates the extra generation time.
-  it("gives a deepseek-v4 model a much larger maxOutputTokens ceiling than the local-model tuning, to survive its hidden thinking tokens", () => {
+  // Since `thinking: {type: "disabled"}` (below) deepseek-v4 no longer spends
+  // the budget on a reasoning block, so its ceiling is sized for the intent
+  // JSON alone (2500); the reasoning headroom stays for cloud models that
+  // cannot switch reasoning off.
+  it("gives cloud models a much larger maxOutputTokens ceiling than the local-model tuning; deepseek-v4 (thinking off) sits in between", () => {
     const localConfig = localLLMConfig(undefined);
     process.env.PERFECTMAN_LLM_PROVIDER = "deepseek";
-    process.env.PERFECTMAN_LLM_MODEL = "deepseek-v4-flash";
+    process.env.PERFECTMAN_LLM_MODEL = "z-ai/glm-5.3-flash";
     const cloudConfig = localLLMConfig(undefined);
     expect(cloudConfig.maxOutputTokens).toBeGreaterThanOrEqual(6000);
     expect(cloudConfig.maxOutputTokens).toBeGreaterThan(localConfig.maxOutputTokens);
+    process.env.PERFECTMAN_LLM_MODEL = "deepseek-v4-flash";
+    const v4 = localLLMConfig(undefined);
+    expect(v4.maxOutputTokens).toBe(2500);
+    expect(v4.maxOutputTokens).toBeGreaterThan(localConfig.maxOutputTokens);
   });
 
   // Root-caused via a live capture against Groq specifically: its free
