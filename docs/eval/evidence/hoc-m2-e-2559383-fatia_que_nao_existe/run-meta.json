@@ -1,0 +1,96 @@
+{
+  "runId": "hoc-m2-e-2559383-fatia_que_nao_existe",
+  "generatedAt": "2026-09-06T02:43:53.494Z",
+  "gitSha": "2559383260649ce609124485578540bbb77a19e9",
+  "mode": "local",
+  "generator": {
+    "provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1"
+  },
+  "judge": {
+    "providerType": "openai-compatible",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1",
+    "temperature": 0,
+    "jury": [
+      {
+        "label": "glm-5.3-flash",
+        "model": "z-ai/glm-5.3-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": 8000
+      },
+      {
+        "label": "qwen3.8-27b",
+        "model": "qwen/qwen3.8-27b-free",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": null
+      },
+      {
+        "label": "deepseek-v4-flash (same family as the generator — flagged)",
+        "model": "deepseek/deepseek-v4-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": null
+      }
+    ]
+  },
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "promptVersions": [
+    "2xiojd",
+    "1kdnxr6",
+    "1w7llmr",
+    "vm6dcv",
+    "1v2tpx7",
+    "wx401y",
+    "htyu9p",
+    "1op6gq9",
+    "1bj55zs",
+    "1b2cya",
+    "1i7zh4a",
+    "1jt5r17",
+    "1f4e90n",
+    "1qolm8t",
+    "8a7jwh",
+    "1doc5az",
+    "h3gjj5",
+    "ebgcho",
+    "14bcme9",
+    "16so16z",
+    "1e5ijah",
+    "lwnnzt",
+    "1o75n6e",
+    "fdg8kk",
+    "11wzey3",
+    "g55b3t",
+    "1au0v4u",
+    "1i3ovxt",
+    "tc7cn",
+    "1vwx8fp",
+    "1y54jw0",
+    "effmvd",
+    "nqp4yp",
+    "1yasro8",
+    "137gd2n",
+    "1rurdc",
+    "1v8fcds",
+    "14pcgyc",
+    "3l1edy",
+    "1xg3skf",
+    "51yu1u",
+    "1qm53vl",
+    "14c5idl",
+    "16a3rlh"
+  ],
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "envVarNames": [
+    "PERFECTMAN_LLM_API_KEY",
+    "PERFECTMAN_LLM_BASE_URL",
+    "PERFECTMAN_LLM_MODEL",
+    "PERFECTMAN_LLM_PROVIDER"
+  ]
+}

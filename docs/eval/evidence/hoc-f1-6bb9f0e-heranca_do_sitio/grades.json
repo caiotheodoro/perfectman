@@ -1,0 +1,43 @@
+{
+  "version": "grades-v1",
+  "runId": "hoc-f1-6bb9f0e-heranca_do_sitio",
+  "gitSha": "0c3758f0f6a5d52de19af970b8f3650115ffab8d",
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "gradedAt": "2026-09-06T02:32:17.903Z",
+  "round": {
+    "grade": "B",
+    "scenes": [
+      {
+        "scenarioId": "hoc_heranca_do_sitio",
+        "grade": "B",
+        "runs": [
+          {
+            "grade": "B",
+            "weightedMean": 4.232,
+            "signalPassRate": 0.571,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "private_channel_used failed",
+              "memory_referenced failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_heranca_do_sitio__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}

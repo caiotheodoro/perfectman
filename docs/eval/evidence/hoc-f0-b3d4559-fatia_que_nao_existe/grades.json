@@ -1,0 +1,45 @@
+{
+  "version": "grades-v1",
+  "runId": "hoc-f0-b3d4559-fatia_que_nao_existe",
+  "gitSha": "b3d4559854fc83a9aeaf8013055a9d55210c5604",
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "gradedAt": "2026-09-06T02:18:09.955Z",
+  "round": {
+    "grade": "F",
+    "scenes": [
+      {
+        "scenarioId": "hoc_fatia_que_nao_existe",
+        "grade": "F",
+        "runs": [
+          {
+            "grade": "F",
+            "weightedMean": 4.045,
+            "signalPassRate": 0.75,
+            "hygieneFailures": [
+              "forbidden phrase spoken in public"
+            ],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: forbidden phrase spoken in public",
+              "forbidden_phrase_absent failed",
+              "forbidden_phrase_absent failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_fatia_que_nao_existe__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}

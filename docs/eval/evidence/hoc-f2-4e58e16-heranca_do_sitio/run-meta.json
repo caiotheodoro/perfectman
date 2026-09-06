@@ -1,0 +1,111 @@
+{
+  "runId": "hoc-f2-4e58e16-heranca_do_sitio",
+  "generatedAt": "2026-09-06T02:34:41.614Z",
+  "gitSha": "2559383260649ce609124485578540bbb77a19e9",
+  "mode": "local",
+  "generator": {
+    "provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1"
+  },
+  "judge": {
+    "providerType": "openai-compatible",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1",
+    "temperature": 0,
+    "jury": [
+      {
+        "label": "glm-5.3-flash",
+        "model": "z-ai/glm-5.3-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": 8000
+      },
+      {
+        "label": "qwen3.8-27b",
+        "model": "qwen/qwen3.8-27b-free",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": null
+      },
+      {
+        "label": "deepseek-v4-flash (same family as the generator — flagged)",
+        "model": "deepseek/deepseek-v4-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": null
+      }
+    ]
+  },
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "promptVersions": [
+    "1fpfjk9",
+    "ky0cme",
+    "1yisf7w",
+    "sp08cg",
+    "l779ii",
+    "11mjcm",
+    "10x64bc",
+    "1ig7y1w",
+    "cs771i",
+    "9l4x44",
+    "fe4ajt",
+    "1vge5jp",
+    "aual2q",
+    "1cgumbu",
+    "1d3png0",
+    "f06ehd",
+    "50rrd7",
+    "1ng8sru",
+    "9byo75",
+    "1rn3x7",
+    "ec1ba2",
+    "6j03yg",
+    "1gvci2",
+    "1jtpvo",
+    "1rb4ws8",
+    "oxlnfm",
+    "1qe01w4",
+    "j84h27",
+    "wav66e",
+    "1gr3v18",
+    "1ojnxjv",
+    "110gzl8",
+    "mglybb",
+    "leh00y",
+    "q8bc28",
+    "1kmsko4",
+    "90r806",
+    "16v84az",
+    "86uwiy",
+    "trbrlm",
+    "8v2b23",
+    "khzquq",
+    "3eznzd",
+    "7617f2",
+    "1o17ih2",
+    "7nv1m1",
+    "3y2qx7",
+    "1md3mm6",
+    "egvtbg",
+    "71vx2z",
+    "1e0reye",
+    "10h1n6y",
+    "1waduzw",
+    "16iblyg",
+    "12s0olm",
+    "vwbj5o",
+    "2tv50v",
+    "1pbuyd5",
+    "1m099zk"
+  ],
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "envVarNames": [
+    "PERFECTMAN_LLM_API_KEY",
+    "PERFECTMAN_LLM_BASE_URL",
+    "PERFECTMAN_LLM_MODEL",
+    "PERFECTMAN_LLM_PROVIDER"
+  ]
+}

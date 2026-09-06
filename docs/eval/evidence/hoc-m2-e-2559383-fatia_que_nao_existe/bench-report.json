@@ -1,0 +1,568 @@
+{
+  "version": "bench-report-v1",
+  "mode": "local",
+  "generatedAt": "2026-09-06T02:43:53.494Z",
+  "runId": "hoc-m2-e-2559383-fatia_que_nao_existe",
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "warnings": [],
+  "judgeAxisStats": {
+    "in_character": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "voice_match": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "motive_authenticity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "interpretation": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "creativity_unhinged": {
+      "mean": 3,
+      "sd": 0,
+      "min": 3,
+      "max": 3,
+      "n": 1
+    },
+    "memory_continuity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "no_ai_leak": {
+      "mean": 5,
+      "sd": 0,
+      "min": 5,
+      "max": 5,
+      "n": 1
+    },
+    "narrative_cohesion": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "mask_integrity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "objective_pursuit": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    }
+  },
+  "judgeAxisMeansByRubric": {
+    "hidden-objective-v1": {
+      "in_character": 4,
+      "voice_match": 4,
+      "motive_authenticity": 4,
+      "interpretation": 4,
+      "creativity_unhinged": 3,
+      "memory_continuity": 4,
+      "no_ai_leak": 5,
+      "narrative_cohesion": 4,
+      "mask_integrity": 4,
+      "objective_pursuit": 4
+    }
+  },
+  "scenariosRun": 1,
+  "scenariosFailed": 0,
+  "signalPassRate": 0.8333333333333334,
+  "probePassRate": 0.875,
+  "probeAverages": {
+    "latency-mean": {
+      "mean": 3.2857,
+      "passedPct": 1
+    },
+    "latency-p95": {
+      "mean": 7,
+      "passedPct": 1
+    },
+    "lurking": {
+      "mean": 0.6875,
+      "passedPct": 1
+    },
+    "interruption": {
+      "mean": 0.2143,
+      "passedPct": 1
+    },
+    "silence-misreading": {
+      "mean": 0.0562,
+      "passedPct": 1
+    },
+    "alliance": {
+      "mean": 0.0388,
+      "passedPct": 1
+    },
+    "private-channel-density": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "noop-meaningfulness": {
+      "mean": 0.9551,
+      "passedPct": 1
+    },
+    "ai-leak": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "emoji-reaction": {
+      "mean": 0,
+      "passedPct": 0
+    },
+    "memory-write": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "content-repetition": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "cross-agent-echo": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "fallback-rate": {
+      "mean": 0.0909,
+      "passedPct": 0
+    },
+    "refusal-free": {
+      "mean": 1,
+      "passedPct": 1
+    },
+    "act-share-max": {
+      "mean": 0.4,
+      "passedPct": 1
+    }
+  },
+  "judgeAxisMeans": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 3,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4,
+    "mask_integrity": 4,
+    "objective_pursuit": 4
+  },
+  "judgeAxisTargets": {
+    "in_character": {
+      "target": 4,
+      "met": true
+    },
+    "voice_match": {
+      "target": 4,
+      "met": true
+    },
+    "motive_authenticity": {
+      "target": 4,
+      "met": true
+    },
+    "interpretation": {
+      "target": 4,
+      "met": true
+    },
+    "creativity_unhinged": {
+      "target": 4,
+      "met": false
+    },
+    "memory_continuity": {
+      "target": 4,
+      "met": true
+    },
+    "no_ai_leak": {
+      "target": 4.5,
+      "met": true
+    },
+    "narrative_cohesion": {
+      "target": 4,
+      "met": true
+    },
+    "mask_integrity": {
+      "target": 4,
+      "met": true
+    },
+    "objective_pursuit": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "byCategory": {
+    "hidden_objective_collision": {
+      "runs": 1,
+      "signalPassRate": 0.8333333333333334
+    }
+  },
+  "promptVersions": [
+    "2xiojd",
+    "1kdnxr6",
+    "1w7llmr",
+    "vm6dcv",
+    "1v2tpx7",
+    "wx401y",
+    "htyu9p",
+    "1op6gq9",
+    "1bj55zs",
+    "1b2cya",
+    "1i7zh4a",
+    "1jt5r17",
+    "1f4e90n",
+    "1qolm8t",
+    "8a7jwh",
+    "1doc5az",
+    "h3gjj5",
+    "ebgcho",
+    "14bcme9",
+    "16so16z",
+    "1e5ijah",
+    "lwnnzt",
+    "1o75n6e",
+    "fdg8kk",
+    "11wzey3",
+    "g55b3t",
+    "1au0v4u",
+    "1i3ovxt",
+    "tc7cn",
+    "1vwx8fp",
+    "1y54jw0",
+    "effmvd",
+    "nqp4yp",
+    "1yasro8",
+    "137gd2n",
+    "1rurdc",
+    "1v8fcds",
+    "14pcgyc",
+    "3l1edy",
+    "1xg3skf",
+    "51yu1u",
+    "1qm53vl",
+    "14c5idl",
+    "16a3rlh"
+  ],
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "signalsByKind": {
+    "event_committed": {
+      "passed": 2,
+      "total": 3,
+      "passRate": 0.6666666666666666,
+      "failExamples": [
+        "memory_written committed 0 (min 1)"
+      ]
+    },
+    "no_llm_failures": {
+      "passed": 1,
+      "total": 1,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "forbidden_phrase_absent": {
+      "passed": 4,
+      "total": 4,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "private_channel_used": {
+      "passed": 0,
+      "total": 1,
+      "passRate": 0,
+      "failExamples": [
+        "anyone sent 0 private-channel message(s) (min 1)"
+      ]
+    },
+    "memory_referenced": {
+      "passed": 2,
+      "total": 2,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "chosen_silence_present": {
+      "passed": 1,
+      "total": 1,
+      "passRate": 1,
+      "failExamples": []
+    }
+  },
+  "calibration": {
+    "nGolden": 42,
+    "nScenes": 1,
+    "nAxisPairs": 0,
+    "kappa": 0,
+    "alpha": 0,
+    "targetKappa": 0.7,
+    "status": "no_data",
+    "passed": null,
+    "perAxisKappa": {},
+    "disagreements": []
+  },
+  "recoveredFallbacks": 5,
+  "signalsSkipped": 0,
+  "narrativeAxisMeans": {
+    "concreteness": 4,
+    "causal_throughline": 4,
+    "hidden_payoff": 4,
+    "non_genericity": 4,
+    "no_filler": 4
+  },
+  "narrativeAxisTargets": {
+    "concreteness": {
+      "target": 4,
+      "met": true
+    },
+    "causal_throughline": {
+      "target": 4,
+      "met": true
+    },
+    "hidden_payoff": {
+      "target": 4,
+      "met": true
+    },
+    "non_genericity": {
+      "target": 4,
+      "met": true
+    },
+    "no_filler": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "narrativeCalibration": {
+    "nGolden": 10,
+    "nScenes": 10,
+    "nAxisPairs": 5,
+    "kappa": 0.673,
+    "alpha": -0.142,
+    "targetKappa": 0.7,
+    "status": "fail",
+    "passed": false,
+    "perAxisKappa": {
+      "concreteness": 0.48717948717948717,
+      "causal_throughline": 0.5719844357976656,
+      "hidden_payoff": 0.8339483394833948,
+      "non_genericity": 0.6,
+      "no_filler": 0.8743718592964824
+    },
+    "disagreements": [
+      "good_calibration concreteness: judge 2 vs golden 4",
+      "good_edge_chaos concreteness: judge 2 vs golden 4",
+      "good_v1_behavior concreteness: judge 2 vs golden 4",
+      "good_calibration causal_throughline: judge 2 vs golden 5",
+      "good_stagnation_attractor causal_throughline: judge 3 vs golden 5",
+      "good_edge_chaos causal_throughline: judge 3 vs golden 5",
+      "good_v1_behavior hidden_payoff: judge 2 vs golden 4",
+      "good_calibration non_genericity: judge 3 vs golden 5",
+      "good_edge_chaos non_genericity: judge 2 vs golden 5",
+      "good_v1_behavior non_genericity: judge 2 vs golden 4"
+    ]
+  },
+  "perScenario": [
+    {
+      "id": "hoc_fatia_que_nao_existe__v0",
+      "name": "A Fatia Que Não Existe",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.8333333333333334,
+      "probePasses": 14,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 4,
+        "interpretation": 4,
+        "creativity_unhinged": 3,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 4,
+        "objective_pursuit": 4
+      },
+      "fallbackCount": 4,
+      "recoveredFallbacks": 5,
+      "seed": 42,
+      "latencyMs": 338980,
+      "promptVersions": [
+        "2xiojd",
+        "1kdnxr6",
+        "1w7llmr",
+        "vm6dcv",
+        "1v2tpx7",
+        "wx401y",
+        "htyu9p",
+        "1op6gq9",
+        "1bj55zs",
+        "1b2cya",
+        "1i7zh4a",
+        "1jt5r17",
+        "1f4e90n",
+        "1qolm8t",
+        "8a7jwh",
+        "1doc5az",
+        "h3gjj5",
+        "ebgcho",
+        "14bcme9",
+        "16so16z",
+        "1e5ijah",
+        "lwnnzt",
+        "1o75n6e",
+        "fdg8kk",
+        "11wzey3",
+        "g55b3t",
+        "1au0v4u",
+        "1i3ovxt",
+        "tc7cn",
+        "1vwx8fp",
+        "1y54jw0",
+        "effmvd",
+        "nqp4yp",
+        "1yasro8",
+        "137gd2n",
+        "1rurdc",
+        "1v8fcds",
+        "14pcgyc",
+        "3l1edy",
+        "1xg3skf",
+        "51yu1u",
+        "1qm53vl",
+        "14c5idl",
+        "16a3rlh"
+      ],
+      "judgeSalvaged": false,
+      "juryVoterCount": 3,
+      "juryFailed": {},
+      "juryAxisVoterCounts": {
+        "in_character": 3,
+        "voice_match": 3,
+        "motive_authenticity": 3,
+        "interpretation": 3,
+        "creativity_unhinged": 3,
+        "memory_continuity": 3,
+        "no_ai_leak": 3,
+        "narrative_cohesion": 3,
+        "mask_integrity": 3,
+        "objective_pursuit": 3
+      },
+      "judgeEvidence": {
+        "glm-5.3-flash": {
+          "in_character": "[p16] Íris: 'bruno, lindo, fala assim não que parece que você tá montando um dossiê sobre mim' — provocation-as-defense fits her exactly; Bruno's hedged 'até onde der pra ficar' [p6] likewise",
+          "voice_match": "[p0] Íris '(pergunta genuína, pode falar kkkk)' vs Marcela 'Sexta que vem. Prazo apertado.' — instantly distinct registers per persona",
+          "motive_authenticity": "[p17] Bruno internal: 'ver o quanto ele já sabe — se ele realmente tem algo ou só tá blefando igual eu' — raw, specific, self-aware",
+          "interpretation": "[p8] Théo internal: 'ela quer me usar como consultor de confiança, mas me manter fora do círculo de decisão' — reads the barrier inside Íris's acceptance",
+          "creativity_unhinged": "[p18] Íris drops real ammo with a smirk: 'a adamantis já comprou dois estúdios menores esse ano e demitiu metade do time criativo... relaxa, bruno, tô só observando'",
+          "memory_continuity": "[p13] Íris: 'sala vazia, ninguém falou nada ainda' and 'primeira impressão que o grupo vai ter de mim hoje' — contradicts the busy p0-p9 history and her own dominance",
+          "no_ai_leak": "[p17] Under direct probing ('isso foi específico demais pra ser só um palpite'), Bruno deflects fully in character: 'não, não mapeei nada não'",
+          "narrative_cohesion": "[p24]-[p29] setembro retroactive clause → signer → 'quem pagou por ela' builds a real arc; but [p11]/[p13]/[p20]/[p22] repeat near-identical ice-breakers that ignore prior turns",
+          "mask_integrity": "[p28] Théo internal: 'vou responder no limite: mostrar que eu sei o suficiente pra ser útil, mas não o bastante pra ser ameaça' — the constraint visibly calibrates his phrasing; all four masks hold with no breaking point hit",
+          "objective_pursuit": "[p9] Marcela's accountant question + internal 'vou jogar uma dúvida que ninguém consegue responder rápido, ganhar tempo' — visible act traces cleanly to stalling for Davi without naming it"
+        },
+        "qwen3.8-27b": {
+          "in_character": "Iris's internal monologue at [p11] shows a specific, human need to 'mark territory' to avoid being seen as passive, which drives her public provocation.",
+          "voice_match": "Iris uses distinct chat markers like 'kkkk', 'uai', and emojis (🚬🗿, 📎🔥) consistently, while Marcela uses a more formal, capitalized style ('Sexta que vem. Prazo apertado.').",
+          "motive_authenticity": "Bruno's internal note at [p15] reveals the specific fear of losing leverage with the rival studio if he aligns too quickly, which explains his generic 'palpite' about due diligence.",
+          "interpretation": "Theo at [p16] correctly reads Bruno's 'palpite' as a probe to see if Theo is hiding his deeper involvement, responding by turning the question back to Bruno to test his knowledge.",
+          "creativity_unhinged": "The agents engage in a multi-layered game of 'who knows what' regarding the September due diligence, but the interactions remain largely reactive and safe, lacking a truly chaotic or unexpected escalation.",
+          "memory_continuity": "Marcela's internal motive at [p9] explicitly references the need to protect 'Davi' and her promise to him, which is the core of her seeded memory and objective.",
+          "no_ai_leak": "No agent breaks character or uses AI-like disclaimers; all responses are framed within the roleplay context.",
+          "narrative_cohesion": "The conversation builds a clear thread from the initial proposal to the specific investigation of the 'September due diligence' anomaly, with each turn referencing and escalating the previous points.",
+          "mask_integrity": "Bruno successfully deflects Theo's probe at [p17] by denying he mapped the portfolio, maintaining his mask of a cooperative but cautious partner without revealing his rival studio negotiations.",
+          "objective_pursuit": "Iris's actions, such as sending the PDF and emails at [p9] and [p20], are timed to position her as the indispensable leader who controls the flow of information, directly serving her objective of being named Creative Director."
+        },
+        "deepseek-v4-flash (same family as the generator — flagged)": {
+          "in_character": "[p16] iris: 'bruno, lindo, fala assim não que parece que você tá montando um dossiê sobre mim.' — playful, defensive, and specific to her persona.",
+          "voice_match": "[p11] iris: 'bora, que hoje não é dia de fingir que a gente trabalha, é dia de decidir se a gente vende ou não vende a alma. tô com pressa e tô com opinião, quem entra primeiro? 🚬🗿'",
+          "motive_authenticity": "[p0] marcela internally: 'Preciso de tempo. Sexta que vem é cedo demais — e cedo demais pra mim significa que alguém vai achar o que não devia.'",
+          "interpretation": "[p16] theo: 'bruno, isso foi específico demais pra ser \"só um palpite\" kkkk. você já mapeou o portfólio deles, né?' — catches Bruno's over-specific hint.",
+          "creativity_unhinged": "[p18] iris: 'se quiser, a gente troca uma ideia mais privada sobre isso. mas não vou te dar o roteiro de graça não, lindo. você tem que pedir com jeitinho. 😏💣'",
+          "memory_continuity": "[p24] theo: 'a data de vigência retroativa me pegou. setembro do ano passado.' — builds on the seeded timeline of prior negotiations.",
+          "no_ai_leak": "[p13] bruno: 'vender a alma é fácil, Íris. difícil é saber se quem tá comprando já não tem a metade dela.' — fully in-character pushback.",
+          "narrative_cohesion": "[p24] marcela: 'Reparei, sim. Setembro do ano passado é específico demais pra ser erro de digitação.' — directly builds on Theo's prior reveal.",
+          "mask_integrity": "[p27] marcela: 'Palpite eu tenho. Mas antes de soltar, quero saber: você já viu o nome de quem assinou a diligência...' — deflects without revealing Davi.",
+          "objective_pursuit": "[p9] marcela: 'quem é o contador que assina a due diligence? Se for o mesmo de sempre, ótimo. Se for alguém que a Adamantis indicou, a pressa faz mais sentido' — stalls the sale without naming her hidden motive."
+        }
+      },
+      "narration": {
+        "title": "O Silêncio de Setembro",
+        "recap": "Íris anunciou que a Adamantis quer assinar até sexta-feira e distribuiu o PDF do contrato, mas Marcela desconfiou da pressa e perguntou sobre a due diligence — mencionando 'setembro do ano passado' numa cláusula retroativa. Théo, que na verdade coleta informações para a Adamantis, revelou ter visto o nome de quem assinou a diligência, e Bruno, escondendo conversas com um estúdio rival, devolveu a pergunta com um 'palpite' sobre alguém já ter feito o dever de casa. Por causa da pista de Marcela, Íris lembrou que a Adamantis reestruturou a diretoria criativa em setembro, e agora todos especulam quem sentou à mesa antes deles — sem saber que cada um tem um motivo oculto para travar ou acelerar o acordo.",
+        "hiddenShift": "Enquanto a sala debate a diligência, Marcela pensa: 'preciso garantir que a participação do Davi na Cerne nunca apareça nos documentos da venda antes dele ter advogado próprio' — é por isso que ela plantou a dúvida sobre a pressa, e não por preocupação com o valuation.",
+        "narrator": "llm",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      "narrativeAxisScores": {
+        "concreteness": 4,
+        "causal_throughline": 4,
+        "hidden_payoff": 4,
+        "non_genericity": 4,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    }
+  ],
+  "grades": {
+    "grade": "F",
+    "scenes": [
+      {
+        "scenarioId": "hoc_fatia_que_nao_existe",
+        "grade": "F",
+        "runs": [
+          {
+            "grade": "F",
+            "weightedMean": 4.018,
+            "signalPassRate": 0.875,
+            "hygieneFailures": [
+              "probe fallback-rate"
+            ],
+            "minAxis": {
+              "id": "creativity_unhinged",
+              "score": 3,
+              "weight": 0.8
+            },
+            "axesBelow4": [
+              "creativity_unhinged"
+            ],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: probe fallback-rate",
+              "creativity_unhinged 3 < 4",
+              "private_channel_used failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_fatia_que_nao_existe__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}
