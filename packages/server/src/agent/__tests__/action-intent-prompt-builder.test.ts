@@ -62,11 +62,52 @@ describe("ActionIntentPromptBuilder — decision moment", () => {
   // anywhere told agents to take a creative risk, so a real transcript read
   // as a "sensible negotiation" — safe, agreeable, never provoking — exactly
   // what the rubric's creativity_unhinged anchor-1 describes.
-  it("gives explicit permission to take a creative risk under real pressure", () => {
+  it("gives ungated permission to take a creative risk and names the generic replies that count as failure", () => {
     const built = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 
     expect(built.user).toContain("provoke");
     expect(built.user).toContain("Playing it safe every single turn is itself a failure");
+    // The old gate let the model decide the stakes weren't real.
+    expect(built.user).not.toContain("When there is real pressure");
+    expect(built.user).toContain("agreeing and restating");
+    expect(built.user).toContain("asking a clarifying question instead of taking a position");
+  });
+
+  it("frames silence as a move in the decision and describes no_op in the action list", () => {
+    const withNoOp = {
+      ...input,
+      availableActions: [
+        { intentType: "send_message" as const, channelTargets: ["general"], personTargets: [], blocked: false },
+        { intentType: "no_op" as const, channelTargets: [], personTargets: [], blocked: false },
+      ],
+    };
+    const built = PromptBuilder.build(withNoOp, EXAMPLE_PROMPT_PROFILE, "action_intent");
+
+    expect(built.user).toContain("Withholding is also a move");
+    expect(built.user).toContain("**no_op** — stay silent on purpose");
+    // Other actions keep their bare rendering.
+    expect(built.user).toContain("**send_message** (Channels: general)");
+  });
+
+  it("relaxes memoryWrites to belief change instead of suppressing it", () => {
+    const built = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+
+    expect(built.system).toContain("whenever what you believe about someone in this room changed");
+    expect(built.system).not.toContain("not on every turn");
+  });
+
+  it("pins visibleContent and privateMotiveSummary to Portuguese for pt-BR profiles, with Portuguese exemplars", () => {
+    const pt = PromptBuilder.build(input, { ...EXAMPLE_PROMPT_PROFILE, language: "pt-BR" }, "action_intent");
+    expect(pt.system).toContain('Write "visibleContent" AND "privateMotiveSummary" in Portuguese (pt-BR)');
+    expect(pt.system).toContain("estou ignorando a mensagem dela");
+    expect(pt.system).not.toContain("I am ignoring a friend");
+
+    const en = PromptBuilder.build(input, { ...EXAMPLE_PROMPT_PROFILE, language: "en" }, "action_intent");
+    expect(en.system).toContain("I am ignoring a friend");
+    expect(en.system).not.toContain("in Portuguese (pt-BR) — the motive");
+    // The uncomfortable-driver framing is language-independent.
+    expect(en.system).toContain("petty, insecure, or manipulative");
+    expect(pt.system).toContain("petty, insecure, or manipulative");
   });
 });
 

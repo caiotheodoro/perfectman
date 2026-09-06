@@ -39,7 +39,7 @@ type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
  * prefix (repetition-guard.ts) that the offline sweeps match on.
  */
 function retryCorrectionNote(lastAttempt: string): string {
-  return `IMPORTANT: your last attempt this turn ("${lastAttempt}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — while staying true to what you actually want right now; do not invent novelty that your current motive and emotional state wouldn't justify. Or choose "no_op" if you truly have nothing new to add.`;
+  return `IMPORTANT: your last attempt this turn ("${lastAttempt}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — while staying true to what you actually want right now; do not invent novelty that your current motive and emotional state wouldn't justify. Or choose "no_op" on purpose — letting the point stand unanswered is a move, if it is the move this person would make.`;
 }
 
 /**

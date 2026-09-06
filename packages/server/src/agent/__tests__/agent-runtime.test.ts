@@ -305,7 +305,7 @@ describe("AgentRuntime Orchestration", () => {
       expect(retrySystem).toContain("staying true to what you actually want right now");
       expect(retrySystem).toContain("do not invent novelty");
       // (c) escape hatch — the real sentence, including the standalone "Or choose"
-      expect(retrySystem).toContain('Or choose "no_op" if you truly have nothing new to add');
+      expect(retrySystem).toContain('Or choose "no_op" on purpose');
     });
 
     it("honors maxRetries=2: recovers on the second retry after two repeats", async () => {

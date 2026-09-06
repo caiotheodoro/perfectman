@@ -145,20 +145,21 @@ export class ActionIntentPromptBuilder {
    * lowest-value per-pulse context and re-rendering after every drop. The
    * order is fixed so the same input and cap always yield the same trimmed
    * prompt:
-   *   1. relevant memories, lowest salience first — `confidence` ascending,
-   *      then `lastReinforcedAt` ascending (staler first), then `id`.
-   *   2. recent context events, oldest first — `pulseIndex` ascending, then
+   *   1. recent context events, oldest first — `pulseIndex` ascending, then
    *      `createdAt` ascending, then `id`. The triggering event is the floor
    *      and is never dropped.
-   *   3. own recent utterances, oldest first (array order — perception
+   *   2. own recent utterances, oldest first (array order — perception
    *      assembles them chronologically). The step-level repetition guard
    *      checks the full utterance list regardless of what the prompt shows,
    *      so shedding these only weakens the preemptive no-repeat hint, never
    *      the structural enforcement.
-   * Memories yield before the live transcript because a stale, low-confidence
-   * memory is the most expendable grounding for the next action. Persona, the
-   * output contract and the decision question are structural and are never
-   * trimmed here.
+   *   3. relevant memories, lowest salience first — `confidence` ascending,
+   *      then `lastReinforcedAt` ascending (staler first), then `id`.
+   * Memories yield last: they are the only grounding that spans pulses, and
+   * memory_continuity is judged from what the agent carried forward — an old
+   * public line is more expendable than a seeded secret. Persona, the output
+   * contract and the decision question are structural and are never trimmed
+   * here.
    */
   private static trimToFit(
     input: AgentRuntimeInput,
@@ -197,12 +198,6 @@ export class ActionIntentPromptBuilder {
 
     let rendered = renderCandidate();
 
-    while (!fits(rendered) && memories.length > 0) {
-      memories.splice(this.lowestSalienceMemoryIndex(memories), 1);
-      droppedMemories++;
-      rendered = renderCandidate();
-    }
-
     while (!fits(rendered)) {
       const idx = this.oldestDroppableEventIndex(events, triggeringEventId);
       if (idx === -1) break;
@@ -214,6 +209,12 @@ export class ActionIntentPromptBuilder {
     while (!fits(rendered) && utterances.length > 0) {
       utterances.shift();
       droppedUtterances++;
+      rendered = renderCandidate();
+    }
+
+    while (!fits(rendered) && memories.length > 0) {
+      memories.splice(this.lowestSalienceMemoryIndex(memories), 1);
+      droppedMemories++;
       rendered = renderCandidate();
     }
 
@@ -266,7 +267,7 @@ export class ActionIntentPromptBuilder {
 
     const system = new PromptSection()
       .container("persona", (s) => this.renderPersona(s, profile, input.hasActed === true))
-      .container("output_contract", (s) => this.renderOutputContract(s, input.agentId));
+      .container("output_contract", (s) => this.renderOutputContract(s, profile.language, input.agentId));
     if (perceptionPacket.ownRecentUtterances.length > 0) {
       system.container("no_repeat", (s) => this.renderNoRepeat(s, perceptionPacket.ownRecentUtterances));
     }
@@ -364,18 +365,31 @@ export class ActionIntentPromptBuilder {
     }
   }
 
-  private static renderOutputContract(s: PromptSection, actorId: string): void {
+  private static renderOutputContract(s: PromptSection, language: PersonaPromptProfile["language"], actorId: string): void {
+    // The exemplars pull the model's language: with English examples inside
+    // a Portuguese scene, 21 of 50 motives in the first real read came out in
+    // English. The exemplars follow the profile language, and pt-BR profiles
+    // get the pin stated outright for both fields.
+    const pt = language === "pt-BR";
+    const motiveExamples = pt
+      ? '"estou ignorando a mensagem dela pra ela vir atrás de mim, porque ela me ignorou ontem", "quero fofocar no privado pra fechar aliança com alguém do grupo antes da votação"'
+      : '"I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group"';
     s.heading("Output contract");
     s.raw("You must respond with a SINGLE valid JSON object matching the enforced intent schema. Do not include any conversational introduction, explanations, markdown code fences, or thinking blocks — return ONLY the JSON object.");
     s.raw(`The fields id, actorId, preferredDelay and fallbackIfBlocked are assigned by the system — never set them (actorId is ${actorId}).`);
     s.raw("The schema is enforced at decoding time where the provider honors it; where it isn't, these are the only fields you may set — set intentType to one value from <actions> below, set targets/content only where they apply, and never omit privateMotiveSummary:");
     s.list("Fields", modelIntentPacketFieldContract());
     s.list("Ensure", [
-      `"privateMotiveSummary" is fully developed and names the *actual*, uncomfortable driver behind your action — the specific thought a real person would have but never say out loud, not just a plausible-sounding reason (e.g., "I am ignoring a friend to make them chase me after they ignored my previous message", "I want to gossip privately to build an alliance with someone in the group"). If the honest version feels a little petty, insecure, or manipulative, that's the one to write — not a cleaned-up version of it.`,
+      `"privateMotiveSummary" is fully developed and names the *actual*, uncomfortable driver behind your action — the specific thought a real person would have but never say out loud, not just a plausible-sounding reason (e.g., ${motiveExamples}). If the honest version feels a little petty, insecure, or manipulative, that's the one to write — not a cleaned-up version of it.`,
+      ...(pt
+        ? [
+            `Write "visibleContent" AND "privateMotiveSummary" in Portuguese (pt-BR) — the motive is this person's own thought, in this person's own language, never a translation or an English aside.`,
+          ]
+        : []),
       `Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`,
       `"visibleContent" is the final message only — never include your own drafting process in it (no "let me reformulate", "deep breath", "wait, better phrasing:", stray self-corrections, or a first attempt left in before a second one). If you reconsider your wording, do that silently and output only the version you land on.`,
       `For reply_to_message set "replyToEventId", and for react set "targetEventId", to one of the bracketed event handles from <events> (e.g. "e1") — copy the handle text exactly, do not invent an id or describe the message.`,
-      `Use "memoryWrites" only when this exchange actually matters to your relationships or intentions — not on every turn. Each proposal must be written in first person ("I…") and grounded in what actually happened in <events> (a promise made, a slight received, a revealed preference, a plan formed), filling every field (type, subjectAgentIds, summary, emotionalTone, confidence, intensity, unresolved) per the field contract above. When nothing qualifies, leave "memoryWrites" empty.`,
+      `Use "memoryWrites" whenever what you believe about someone in this room changed — a promise, a slight, a dodge, a revealed preference, a plan — one line each, in first person ("I…"), grounded in what actually happened in <events>, filling every field (type, subjectAgentIds, summary, emotionalTone, confidence, intensity, unresolved) per the field contract above. If nothing you believe changed, leave "memoryWrites" empty.`,
     ]);
   }
 
@@ -471,7 +485,12 @@ export class ActionIntentPromptBuilder {
         const targetsDetail: string[] = [];
         if (act.channelTargets.length > 0) targetsDetail.push(`Channels: ${act.channelTargets.join(", ")}`);
         if (act.personTargets.length > 0) targetsDetail.push(`People: ${act.personTargets.join(", ")}`);
-        return `**${act.intentType}** ${targetsDetail.length > 0 ? `(${targetsDetail.join("; ")})` : ""}${act.blocked ? ` [BLOCKED: ${act.blockReason}]` : ""}`;
+        // Silence is a move, not the absence of one — without this line
+        // the first real read logged 0 chosen silences in 32 pulses.
+        const description = act.intentType === "no_op"
+          ? " — stay silent on purpose: let a question hang, wait someone out, refuse to answer. Put the real reason you are withholding in privateMotiveSummary"
+          : "";
+        return `**${act.intentType}**${description} ${targetsDetail.length > 0 ? `(${targetsDetail.join("; ")})` : ""}${act.blocked ? ` [BLOCKED: ${act.blockReason}]` : ""}`;
       }));
 
       // Private-motive salience: when the engine feels a strong pull to move
@@ -495,7 +514,7 @@ export class ActionIntentPromptBuilder {
   private static renderDecision(s: PromptSection, input: AgentRuntimeInput): void {
     s.heading("Decide now");
     s.raw(
-      'You can ONLY perform ONE action. Pick exactly one permitted combination from <actions>, fill every relevant field per <output_contract>, and emit the JSON object. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move elsewhere — or choose "no_op".',
+      'You can ONLY perform ONE action. Pick exactly one permitted combination from <actions>, fill every relevant field per <output_contract>, and emit the JSON object. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move elsewhere. Withholding is also a move: staying silent while a question hangs, waiting someone out, or refusing to answer is something the room notices — when that is what this person would do, choose "no_op" and say why in privateMotiveSummary.',
     );
     // Root-caused via a live capture + a static read of the prompt: nothing
     // anywhere told agents to take a creative risk, so a real transcript
@@ -503,12 +522,20 @@ export class ActionIntentPromptBuilder {
     // exactly what the rubric's creativity_unhinged anchor-1 describes. This
     // is the decision moment, so the nudge belongs here, not in the static
     // output contract.
+    // The nudge used to be gated on "when there is real pressure" — the model
+    // decided the stakes weren't real in scenes built entirely from stakes
+    // (creativity_unhinged 3 in the first real read). It now always applies,
+    // and the generic replies it is meant to displace are named.
     s.raw(
-      "When there is real pressure, tension, or something at stake in the room, don't default to the safest, most " +
-        "reasonable-sounding response — take a risk that this specific person, with their actual stakes and mood, " +
-        "would take: provoke, push back sharply, escalate, needle someone, let a flash of what you're actually " +
-        "feeling slip through, or make a move that surprises the room while still being believable as you. Playing " +
-        "it safe every single turn is itself a failure to be this character when the stakes call for more.",
+      "Don't default to the safest, most reasonable-sounding response — take a risk that this specific person, " +
+        "with their actual stakes and mood, would take: provoke, push back sharply, escalate, needle someone, let a " +
+        "flash of what you're actually feeling slip through, or make a move that surprises the room while still being " +
+        "believable as you. Playing it safe every single turn is itself a failure to be this character.",
+    );
+    s.raw(
+      "Generic replies count as that failure: agreeing and restating what someone just said, asking a clarifying " +
+        "question instead of taking a position, summarizing what the room already knows, or offering to help in " +
+        "the abstract. Say the specific thing, or choose silence on purpose.",
     );
   }
 
