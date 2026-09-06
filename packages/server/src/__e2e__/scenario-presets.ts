@@ -5,11 +5,9 @@
  * They answer: "What kind of situation are these personas entering?"
  * The persona answers: "Given who I am, how do I behave in that situation?"
  */
-import type { RelationalState } from "@perfectman/shared";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type PairFamiliarity = "close_friends" | "friends" | "acquaintances" | "strangers";
 export type RelationshipMode = "established_friends" | "strangers" | "mixed";
 export type VisibleIntroPolicy = "none" | "system_intro" | "agent_intros" | "host_prompt";
 export type AgentIntroBehavior =
@@ -37,61 +35,18 @@ export type ScenarioConfig = {
   hostStartingMessage?: string;
 };
 
-// ── Relationship seeding helpers ─────────────────────────────────────────────
-
-const FAMILIARITY_OVERRIDES: Record<PairFamiliarity, Partial<RelationalState>> = {
-  close_friends: {
-    trust: 0.85, affection: 0.75, comfort: 0.90, suspicion: 0.05,
-    threat: 0.02, desireForCloseness: 0.80, desireForDistance: 0.05, resentment: 0.03,
-  },
-  friends: {
-    trust: 0.65, affection: 0.50, comfort: 0.65, suspicion: 0.10,
-    threat: 0.05, desireForCloseness: 0.55, desireForDistance: 0.10,
-  },
-  acquaintances: {
-    trust: 0.35, affection: 0.20, comfort: 0.35, suspicion: 0.20,
-    threat: 0.10, desireForCloseness: 0.25, desireForDistance: 0.15,
-  },
-  strangers: {
-    trust: 0.10, affection: 0.00, comfort: 0.10, suspicion: 0.30,
-    threat: 0.20, desireForCloseness: 0.15, desireForDistance: 0.25,
-  },
-};
-
-export function relationalStateFromFamiliarity(
-  targetAgentId: string,
-  familiarity: PairFamiliarity,
-): RelationalState {
-  return {
-    targetAgentId,
-    trust: 0.5, affection: 0.3, resentment: 0, attraction: 0.2,
-    suspicion: 0.1, admiration: 0.2, envy: 0, comfort: 0.5, threat: 0,
-    curiosity: 0.3, desireForCloseness: 0.3, desireForDistance: 0.1,
-    interactionCount: 0, lastInteractionAt: null, lastPositiveAt: null, lastNegativeAt: null,
-    ...FAMILIARITY_OVERRIDES[familiarity],
-  };
-}
-
 /**
- * Builds the initial RelationalState map for one agent, given scenario pairFamiliarity.
- * Looks up symmetric keys in both "a:b" and "b:a" form; defaults to "acquaintances".
+ * Relationship seeding moved to `../authoring/relational-seeding.js` so the
+ * markdown compiler can use it without importing a test directory. Re-exported
+ * here to keep this module's existing surface intact.
  */
-export function buildRelationalStates(
-  agentId: string,
-  allAgentIds: string[],
-  pairFamiliarity: Record<string, PairFamiliarity>,
-): Record<string, RelationalState> {
-  const result: Record<string, RelationalState> = {};
-  for (const otherId of allAgentIds) {
-    if (otherId === agentId) continue;
-    const familiarity =
-      pairFamiliarity[`${agentId}:${otherId}`] ??
-      pairFamiliarity[`${otherId}:${agentId}`] ??
-      "acquaintances";
-    result[otherId] = relationalStateFromFamiliarity(otherId, familiarity);
-  }
-  return result;
-}
+import type { PairFamiliarity } from "../authoring/relational-seeding.js";
+
+export {
+  buildRelationalStates,
+  relationalStateFromFamiliarity,
+  type PairFamiliarity,
+} from "../authoring/relational-seeding.js";
 
 // ── Preset: introBehavior → pt-BR instruction string ─────────────────────────
 

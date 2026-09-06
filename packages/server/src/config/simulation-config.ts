@@ -176,6 +176,16 @@ export type BuildConfiguredSimulationOptions = {
    *  inserting (a fixed-id create against a surviving row without this flag
    *  keeps the loud PK failure). */
   attachExisting?: boolean;
+  /**
+   * Gateways the caller constructs and owns, merged in alongside the
+   * configured ones. A factory rather than an instance because a gateway needs
+   * `GatewayRuntimeMetadata`, which is derived here.
+   *
+   * This exists for gateways that have no file representation — a live SSE
+   * connection cannot be named in `config/index.json` — so they stay out of the
+   * `DeliveryGatewayConfig` union that file-based configs are parsed against.
+   */
+  extraGateways?: Record<string, (meta: GatewayRuntimeMetadata) => IDeliveryGateway>;
 };
 
 export type ConfigPersona = Pick<
@@ -377,7 +387,20 @@ async function hydrateAgentPersonaFiles(
   };
 }
 
-export function parseSimulationConfig(input: unknown): SimulationAppConfig {
+export type ParseSimulationConfigOptions = {
+  /**
+   * Skip the "at least one delivery gateway" rule. For callers that inject
+   * gateways as instances via `BuildConfiguredSimulationOptions.extraGateways`
+   * — those have no file representation, so a config that names none is still
+   * going to deliver somewhere. File-loaded configs keep the rule.
+   */
+  allowNoGateways?: boolean;
+};
+
+export function parseSimulationConfig(
+  input: unknown,
+  options: ParseSimulationConfigOptions = {},
+): SimulationAppConfig {
   const root = asRecord(input, "config");
   const simulation = asRecord(root["simulation"], "simulation");
   const settings = parseWithSchema<SimulationSettings>(
@@ -416,7 +439,7 @@ export function parseSimulationConfig(input: unknown): SimulationAppConfig {
           ),
   };
 
-  validateCrossReferences(config);
+  validateCrossReferences(config, options.allowNoGateways === true);
   return config;
 }
 
@@ -426,10 +449,14 @@ export async function buildConfiguredSimulation(
 ): Promise<ConfiguredSimulationHandle> {
   const simulationId = config.simulation.id ?? createId();
   const persistence = createRepositories(config.persistence);
-  const gateways = await createGateways(
-    config,
-    buildGatewayRuntimeMetadata(config, simulationId),
-  );
+  const meta = buildGatewayRuntimeMetadata(config, simulationId);
+  const gateways = await createGateways(config, meta);
+  for (const [id, factory] of Object.entries(options.extraGateways ?? {})) {
+    if (id in gateways) {
+      throw new Error(`Injected gateway id "${id}" collides with a configured delivery gateway`);
+    }
+    gateways[id] = factory(meta);
+  }
   const delivery = new CompositeDeliveryGateway(Object.values(gateways));
   const configuredAgents = config.agents.map<ConfiguredAgent>((agent) => ({
     id: agent.id,
@@ -1332,7 +1359,7 @@ function parseRelationalStates(
   return result;
 }
 
-function validateCrossReferences(config: SimulationAppConfig): void {
+function validateCrossReferences(config: SimulationAppConfig, allowNoGateways = false): void {
   const agentIds = new Set<string>();
   for (const agent of config.agents) {
     if (agentIds.has(agent.id))
@@ -1370,7 +1397,11 @@ function validateCrossReferences(config: SimulationAppConfig): void {
       throw new Error(`Duplicate delivery gateway id: ${gateway.id}`);
     gatewayIds.add(gateway.id);
   }
-  if (config.deliveryGateways.length === 0 && !config.debug?.stdoutDelivery) {
+  if (
+    config.deliveryGateways.length === 0 &&
+    !config.debug?.stdoutDelivery &&
+    !allowNoGateways
+  ) {
     throw new Error("At least one delivery gateway is required");
   }
 }
