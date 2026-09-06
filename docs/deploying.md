@@ -74,6 +74,10 @@ resolve `@perfectman/shared` from a pnpm workspace; building here and shipping
 the output sidesteps it. The Build Output API config lives in
 `.vercel/output/config.json` and only needs single-page rewrites.
 
+Git-connected deploys build from the repo root and look for a top-level `dist`.
+The root `vercel.json` builds `@perfectman/web` and copies `packages/web/dist`
+there so that lookup succeeds.
+
 Unset `VITE_API_BASE` and every request goes back to being relative, which is
 what the local `pnpm web` path wants — one process serving both.
 
