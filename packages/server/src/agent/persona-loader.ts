@@ -98,17 +98,10 @@ export function personaPackToProfile(pack: PersonaPack, reskin?: PersonaReskin):
     return castMap[peer] ?? (castIds.has(peer) ? peer : undefined);
   };
 
-  const biases: Record<string, import("./persona-prompt-profile.js").RelationshipPromptBias> = {};
-  for (const [peer, view] of Object.entries(pack.relationshipBiases)) {
-    const target = resolvePeer(peer);
-    if (target === undefined) continue;
-    biases[target] = { view, warmth: "medium", trust: "medium", likelyBehaviors: [], triggers: [] };
-  }
-
   // Free-text lines that name a pack peer: rename mapped peers to their
   // scene name, drop lines about peers outside the cast. A text heuristic —
   // it matches display names as whole words, case-insensitively — and
-  // documented as such; the structural fix is the biases map above.
+  // documented as such; the structural fix is the biases map below.
   const renamePeers = (lines: readonly string[]): string[] => {
     if (!reskin) return [...lines];
     const out: string[] = [];
@@ -128,6 +121,20 @@ export function personaPackToProfile(pack: PersonaPack, reskin?: PersonaReskin):
     }
     return out;
   };
+
+  // The bias map is keyed by scene id, but its prose was still the pack's
+  // ("Mariana barely reacts to you…"): in a real read the band called Bea
+  // "mariana" and Kai "caio" — names nobody in the scene has. The prose
+  // goes through the same rename; a view that names a peer outside the
+  // cast is dropped with it.
+  const biases: Record<string, import("./persona-prompt-profile.js").RelationshipPromptBias> = {};
+  for (const [peer, view] of Object.entries(pack.relationshipBiases)) {
+    const target = resolvePeer(peer);
+    if (target === undefined) continue;
+    const [renamedView] = renamePeers([view]);
+    if (renamedView === undefined) continue;
+    biases[target] = { view: renamedView, warmth: "medium", trust: "medium", likelyBehaviors: [], triggers: [] };
+  }
 
   const displayName = reskin?.scenarioContext?.displayName ?? pack.displayName;
   const identityFrame =

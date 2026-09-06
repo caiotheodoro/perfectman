@@ -95,7 +95,10 @@ describe("personaPackToProfile — scenario re-skin", () => {
   it("remaps relationship biases through castMap and drops peers outside the cast", () => {
     const profile = personaPackToProfile(pack, { scenarioContext, castAgentIds: cast, castDisplayNames });
     expect(Object.keys(profile.relationshipBiases).sort()).toEqual(["bruno", "marcela", "theo"]);
-    expect(profile.relationshipBiases["marcela"]?.view).toBe(pack.relationshipBiases["mariana"]);
+    // Same prose, scene names substituted for pack names.
+    expect(profile.relationshipBiases["marcela"]?.view).toBe(
+      pack.relationshipBiases["mariana"]!.replace(/\bMariana\b/g, "Marcela").replace(/\bBruno\b/g, "Bruno").replace(/\bCaio\b/g, "Théo"),
+    );
     expect(Object.keys(personaPackToProfile(pack).relationshipBiases)).toContain("leo");
   });
 
@@ -118,8 +121,14 @@ describe("personaPackToProfile — scenario re-skin", () => {
       castDisplayNames: { vic: "Vic", bea: "Bea", dudu: "Dudu", kai: "Kai", leo: "Léo" },
     });
     expect(Object.keys(profile.relationshipBiases).sort()).toEqual(["bea", "dudu", "kai", "vic"]);
-    expect(profile.relationshipBiases["vic"]?.view).toBe(leo.relationshipBiases["goulart"]);
-    expect(profile.relationshipBiases["kai"]?.view).toBe(leo.relationshipBiases["caio"]);
+    // The prose is re-skinned too: the pack says "Goulart is the best thing
+    // in the chat"; the band member is Vic. A real read had Léo calling Bea
+    // "mariana" and Kai "caio" before this.
+    expect(profile.relationshipBiases["vic"]?.view).toContain("Vic is the best thing");
+    expect(profile.relationshipBiases["vic"]?.view).not.toMatch(/\bGoulart\b/);
+    expect(profile.relationshipBiases["bea"]?.view).toMatch(/^Bea /);
+    expect(profile.relationshipBiases["bea"]?.view).not.toMatch(/\bMariana\b/);
+    expect(profile.relationshipBiases["kai"]?.view).not.toMatch(/\bCaio\b/);
     expect(profile.displayName).toBe("Léo");
   });
 
