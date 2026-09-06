@@ -1,0 +1,47 @@
+{
+  "version": "grades-v1",
+  "runId": "hoc-m2-e-2559383-fatia_que_nao_existe",
+  "gitSha": "2559383260649ce609124485578540bbb77a19e9",
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "gradedAt": "2026-09-06T02:51:08.750Z",
+  "round": {
+    "grade": "F",
+    "scenes": [
+      {
+        "scenarioId": "hoc_fatia_que_nao_existe",
+        "grade": "F",
+        "runs": [
+          {
+            "grade": "F",
+            "weightedMean": 4.018,
+            "signalPassRate": 0.875,
+            "hygieneFailures": [
+              "probe fallback-rate"
+            ],
+            "minAxis": {
+              "id": "creativity_unhinged",
+              "score": 3,
+              "weight": 0.8
+            },
+            "axesBelow4": [
+              "creativity_unhinged"
+            ],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: probe fallback-rate",
+              "creativity_unhinged 3 < 4",
+              "private_channel_used failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_fatia_que_nao_existe__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}

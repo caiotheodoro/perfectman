@@ -1,0 +1,41 @@
+{
+  "version": "grades-v1",
+  "runId": "hoc-m2-e-2559383-banda_no_festival",
+  "gitSha": "49d14c547e6df5dc3fd710c1ecdeae283a2c0a42",
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "gradedAt": "2026-09-06T03:16:16.348Z",
+  "round": {
+    "grade": "A-",
+    "scenes": [
+      {
+        "scenarioId": "hoc_banda_no_festival",
+        "grade": "A-",
+        "runs": [
+          {
+            "grade": "A-",
+            "weightedMean": 3.866,
+            "signalPassRate": 0.889,
+            "hygieneFailures": [],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_banda_no_festival__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}
