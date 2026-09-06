@@ -1,0 +1,99 @@
+{
+  "runId": "hoc-m5-3acda71-heranca_do_sitio",
+  "generatedAt": "2026-09-06T07:04:35.588Z",
+  "gitSha": "3acda7194de4f4865d98223e355d17116f24d8c1",
+  "mode": "local",
+  "generator": {
+    "provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1"
+  },
+  "judge": {
+    "providerType": "openai-compatible",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1",
+    "temperature": 0,
+    "jury": [
+      {
+        "label": "glm-5.3-flash",
+        "model": "z-ai/glm-5.3-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": 8000
+      },
+      {
+        "label": "qwen3.8-27b",
+        "model": "qwen/qwen3.8-27b-free",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": null
+      },
+      {
+        "label": "deepseek-v4-flash (same family as the generator — flagged)",
+        "model": "deepseek/deepseek-v4-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": null
+      }
+    ]
+  },
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "promptVersions": [
+    "1hkaccc",
+    "htpof2",
+    "1htg5nq",
+    "d2tz9l",
+    "dk4a7u",
+    "1t0h4eq",
+    "log334",
+    "r9rbd",
+    "c2mj0h",
+    "7chq5q",
+    "3p1lxf",
+    "1m8mu3q",
+    "160qxla",
+    "1ij0lo7",
+    "dt1i74",
+    "ikxvoe",
+    "1rcg3e1",
+    "yid5pq",
+    "eyc9w9",
+    "9dbrlg",
+    "79boig",
+    "jm2vby",
+    "f21dii",
+    "1vqtrb0",
+    "1etzaem",
+    "1scmzc0",
+    "b8cd7w",
+    "1vi27nb",
+    "ztbv2o",
+    "ah8b4x",
+    "b7689y",
+    "1akv3w0",
+    "1ashmqg",
+    "1rdi41e",
+    "1s6y2ok",
+    "1rocy40",
+    "1wissgn",
+    "fkysgh",
+    "15q4nb3",
+    "w6imzb",
+    "1khlylq",
+    "12a6jqi",
+    "lif5o2",
+    "w01tsq",
+    "1p1zw24",
+    "mk2n8v",
+    "mzihoc"
+  ],
+  "promptTemplateVersions": [
+    "1bd8a0"
+  ],
+  "envVarNames": [
+    "PERFECTMAN_LLM_API_KEY",
+    "PERFECTMAN_LLM_BASE_URL",
+    "PERFECTMAN_LLM_MODEL",
+    "PERFECTMAN_LLM_PROVIDER"
+  ]
+}
