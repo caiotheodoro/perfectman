@@ -35,9 +35,17 @@ export const THESIS_SIGNAL_KINDS: readonly string[] = [
 
 /** Probes whose failure voids the run instead of shading its grade. */
 export const HYGIENE_PROBES: readonly string[] = ["fallback-rate", "act-share-max"];
+/**
+ * `act-share-max` voids a run only at monopoly level. The probe's own band
+ * (0.5) was set against an agent acting on every pulse; in a three-agent
+ * room where two agents choose silence on purpose the talker's share lands
+ * near 0.57 without anyone monopolizing anything (M5 Sítio: Lia 21 of 37
+ * lines, Rafa 9 voiced silences). Below this the probe stays advisory.
+ */
+export const ACT_SHARE_GATE = 0.75;
 
 export type GradeSignal = { kind: string; passed: boolean; skipped?: boolean };
-export type GradeProbe = { probe: string; passed: boolean };
+export type GradeProbe = { probe: string; passed: boolean; measured?: number };
 
 export type RunGradeInput = {
   /** Transcript axis scores as scored (imputed ones still present, listed below). */
@@ -123,7 +131,14 @@ export function gradeRun(input: RunGradeInput): RunGrade {
 
   // Hygiene gates.
   const hygieneFailures: string[] = [];
-  for (const p of input.probes) if (HYGIENE_PROBES.includes(p.probe) && !p.passed) hygieneFailures.push(`probe ${p.probe}`);
+  for (const p of input.probes) {
+    if (!HYGIENE_PROBES.includes(p.probe) || p.passed) continue;
+    if (p.probe === "act-share-max" && typeof p.measured === "number" && p.measured < ACT_SHARE_GATE) {
+      reasons.push(`act-share-max ${p.measured.toFixed(2)} over the probe band, under the ${ACT_SHARE_GATE} gate`);
+      continue;
+    }
+    hygieneFailures.push(`probe ${p.probe}`);
+  }
   if (input.signals.some((s) => s.kind === "forbidden_phrase_absent" && !s.skipped && !s.passed)) {
     hygieneFailures.push("forbidden phrase spoken in public");
   }

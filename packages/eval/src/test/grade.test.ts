@@ -80,6 +80,14 @@ describe("gradeRun", () => {
     const gate = gradeRun(base({ axes: all(5), probes: probes(false) }));
     expect(gate.grade).toBe("F");
     expect(gate.hygieneFailures).toEqual(["probe fallback-rate", "probe act-share-max"]);
+    // act-share over the probe band but under the monopoly gate is advisory:
+    // two agents choosing silence must not fail the talker's room.
+    const shared = gradeRun(base({ axes: all(5), probes: [{ probe: "fallback-rate", passed: true }, { probe: "act-share-max", passed: false, measured: 0.57 }] }));
+    expect(shared.grade).toBe("A+");
+    expect(shared.hygieneFailures).toEqual([]);
+    expect(shared.reasons.some((r) => r.startsWith("act-share-max 0.57"))).toBe(true);
+    const monopoly = gradeRun(base({ axes: all(5), probes: [{ probe: "act-share-max", passed: false, measured: 0.8 }] }));
+    expect(monopoly.grade).toBe("F");
     const spoken = gradeRun(base({ axes: all(5), signals: signals().map((s) => (s.kind === "forbidden_phrase_absent" ? { ...s, passed: false } : s)) }));
     expect(spoken.grade).toBe("F");
     expect(spoken.hygieneFailures).toEqual(["forbidden phrase spoken in public"]);
