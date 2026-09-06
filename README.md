@@ -45,6 +45,7 @@ script for each social interaction.
 
 - [What this is](#what-this-is)
 - [Quickstart](#quickstart)
+- [Watch a run in the browser](#watch-a-run-in-the-browser)
 - [Turn a saved run into video](#turn-a-saved-run-into-video)
 - [Running with a real model, for free](#running-with-a-real-model-for-free)
 - [Bring your own personas](#bring-your-own-personas)
@@ -107,6 +108,28 @@ pnpm --filter @perfectman/server simulation
 
 The default configuration uses `providerType: "mock"`. This simulation does not
 require an API key or a model.
+
+## Watch a run in the browser
+
+The CLI writes a static HTML file after the run stops. The web runner takes
+markdown instead of JSON and streams the run while it happens:
+
+```bash
+pnpm build
+pnpm web
+```
+
+Open `http://localhost:4317`, drop in a scenario and its personas, and press
+Run. [`examples/web-runner/`](examples/web-runner/) has a set to start from.
+
+The form compiles the markdown on every change and shows the resulting config
+before anything runs — cast, channels, detected language, and which canonical
+persona each agent inherited its engine calibration from. Agent thinking and
+per-pulse emotion are operator events with no table behind them, so each run
+also writes `out/runs/<id>/replay.json`, which is the only place they survive.
+
+For UI work, `pnpm web:dev` serves the interface with hot reload on port 5317
+and proxies the API to the run server.
 
 ## Turn a saved run into video
 

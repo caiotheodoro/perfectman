@@ -11,7 +11,7 @@ import type { LLMConfig } from "../llm/llm-config.js";
 import { assembleSimulationConfig, type RunSeeds } from "./assemble-config.js";
 import { DiagnosticBag, blocksRun, type Diagnostic } from "./diagnostics.js";
 import { compilePersonaMarkdown, type CompiledPersona } from "./persona-md-compiler.js";
-import { compileScenarioMarkdown } from "./scenario-md-compiler.js";
+import { compileScenarioMarkdown, type CastMember } from "./scenario-md-compiler.js";
 
 export type UploadedFile = { filename: string; text: string };
 
@@ -31,7 +31,15 @@ export type RunInputs =
     };
 
 export type CompileSummary = {
-  agents: Array<{ id: string; displayName: string; archetype: string; personaFile: string }>;
+  agents: Array<{
+    id: string;
+    displayName: string;
+    archetype: string;
+    /** The uploaded file this agent came from — the key `languages` is under. */
+    personaFile: string;
+    /** Canonical persona the 19 engine calibration fields were inherited from. */
+    calibrationFrom: string;
+  }>;
   channels: Array<{ id: string; name: string; type: string; members: string[] }>;
   maxPulses: number;
   seed: number;
@@ -112,7 +120,9 @@ function compileMarkdown(
     config: validated,
     seeds: assembled.seeds,
     diagnostics,
-    summary: validated ? summarize(validated, scenario.maxPulses, languages) : null,
+    summary: validated
+      ? summarize(validated, scenario.maxPulses, languages, sourceByAgent(scenario.cast, inputs.personas))
+      : null,
   };
 }
 
@@ -147,6 +157,29 @@ function compileRawJson(
   };
 }
 
+/**
+ * A cast member names its persona by uploaded filename *or* by the pack id
+ * inside the file. The summary needs the filename either way, because that is
+ * what the language table is keyed by and what the author recognizes.
+ */
+function sourceByAgent(
+  cast: readonly CastMember[],
+  uploaded: readonly UploadedFile[],
+): Record<string, string> {
+  const byPackId = new Map<string, string>();
+  for (const file of uploaded) {
+    const packId = /^\s*personaId\s*:\s*(\S+)/m.exec(file.text)?.[1];
+    if (packId) byPackId.set(packId, file.filename);
+  }
+  const known = new Set(uploaded.map((f) => f.filename));
+  const out: Record<string, string> = {};
+  for (const member of cast) {
+    const file = known.has(member.persona) ? member.persona : byPackId.get(member.persona);
+    if (file) out[member.agentId] = file;
+  }
+  return out;
+}
+
 /** Runs the real validator and turns its throw into a diagnostic. */
 function validate(
   candidate: unknown,
@@ -171,13 +204,19 @@ function summarize(
   config: SimulationAppConfig,
   maxPulses: number,
   languages: CompileSummary["languages"],
+  /** Agent id → the uploaded file it came from. Empty for a raw-JSON config. */
+  sourceByAgent: Record<string, string> = {},
 ): CompileSummary {
   return {
     agents: config.agents.map((a) => ({
       id: a.id,
       displayName: a.promptProfile.displayName,
       archetype: a.persona.archetype,
-      personaFile: a.persona.id,
+      // The uploaded file, which is also the key `languages` is stored under.
+      // `persona.id` is the *calibration* source and is usually a different
+      // name entirely — the canonical persona the 19 engine fields came from.
+      personaFile: sourceByAgent[a.id] ?? a.persona.id,
+      calibrationFrom: a.persona.id,
     })),
     channels: config.channels.map((c) => ({
       id: c.id,

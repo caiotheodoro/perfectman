@@ -6,20 +6,13 @@
  * author sees *every* problem at once. A thrown error shows the first one.
  */
 
-export type DiagnosticLevel = "error" | "warning" | "info";
-
-export type Diagnostic = {
-  level: DiagnosticLevel;
-  /** Source file the problem came from, as uploaded. */
-  file: string;
-  /** 1-based line, when the problem can be traced to one. */
-  line?: number;
-  /** Dotted path of the field this affects, e.g. `cast[1].hiddenObjective`. */
-  path?: string;
-  message: string;
-  /** What to do about it. Present whenever the fix is expressible in a sentence. */
-  hint?: string;
-};
+/**
+ * The shape is the wire contract in `@perfectman/shared` — the preview panel
+ * reads these straight off `POST /api/compile`, and the browser bundle cannot
+ * import this package.
+ */
+export type { Diagnostic, DiagnosticLevel } from "@perfectman/shared";
+import type { Diagnostic } from "@perfectman/shared";
 
 export class DiagnosticBag {
   private readonly items: Diagnostic[] = [];

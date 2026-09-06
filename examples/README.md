@@ -5,6 +5,7 @@ Examples are organized by use case so local setup is easier to copy without mixi
 ## Folders
 
 - [`simulations/`](simulations/) — runnable simulation config examples.
+- [`web-runner/`](web-runner/) — markdown personas and a scenario for the web runner's run form.
 - [`personas/setup/`](personas/setup/) — persona collection/setup workflow config.
 - [`personas/compiled/`](personas/compiled/) — safe runtime persona file examples.
 - [`personas/source-pack-template/`](personas/source-pack-template/) — sanitized template for local-only persona evidence packs.

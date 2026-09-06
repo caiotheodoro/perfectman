@@ -116,7 +116,11 @@ describe("RunController — a full mock run", () => {
   });
 
   it("runs exactly the requested number of pulses", () => {
-    expect(controller.getStatus().pulseIndex).toBeGreaterThan(0);
+    const status = controller.getStatus();
+    // A 6-pulse run ends on index 5. Reporting the index as the count is what
+    // made a finished run read as "5 of 6".
+    expect(status.pulsesRun).toBe(6);
+    expect(status.pulseIndex).toBe(5);
     const pulses = events.filter((e) => e.type === "pulse");
     expect(pulses).toHaveLength(6);
   });
@@ -137,7 +141,7 @@ describe("RunController — a full mock run", () => {
   it("writes the snapshot HTML and a manifest alongside it", async () => {
     expect(existsSync(join(runsRoot, runId, "snapshot.html"))).toBe(true);
     const manifest = await readManifest(runsRoot, runId);
-    expect(manifest).toMatchObject({ runId, state: "done", maxPulses: 6 });
+    expect(manifest).toMatchObject({ runId, state: "done", maxPulses: 6, pulsesRun: 6 });
     expect(manifest?.dirty).toBeUndefined();
   });
 

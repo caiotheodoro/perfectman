@@ -13,7 +13,9 @@
     "test:all": "pnpm test && pnpm test:gate",
     "test:watch": "vitest",
     "lint": "pnpm -r typecheck",
-    "video": "node packages/eval/dist/cli/video.js"
+    "video": "node packages/eval/dist/cli/video.js",
+    "web": "pnpm --filter @perfectman/server web",
+    "web:dev": "pnpm --filter @perfectman/web dev"
   },
   "devDependencies": {
     "typescript": "^5.5.0",
