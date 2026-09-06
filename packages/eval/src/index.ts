@@ -18,6 +18,8 @@ export * from "./judge/golden-labels.js";
 // Bench
 export * from "./bench/persona-aware-mock.js";
 export { runBench } from "./cli/bench.js";
+export { gradeEvidenceDir, writeGrades } from "./cli/grade.js";
+export * from "./grade/grade.js";
 export { runNarrate } from "./cli/narrate.js";
 export { narrateScene, narrateTranscript, ruleNarrationFromTranscript } from "./narrator/narrator.js";
 export type { Narration } from "./narrator/narrator.js";
