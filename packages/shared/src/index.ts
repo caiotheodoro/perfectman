@@ -106,3 +106,6 @@ export * from "./scenarios/scenario.types.js";
 export * from "./scenarios/rubrics.js";
 export * from "./scenarios/library.js";
 export * from "./scenarios/helpers.js";
+
+// Live protocol (shared with the web app; server types must not reach the browser)
+export * from "./live/live-frame.types.js";
