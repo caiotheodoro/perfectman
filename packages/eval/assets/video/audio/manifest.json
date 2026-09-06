@@ -1,0 +1,83 @@
+[
+  {
+    "path": "calm-social.mp3",
+    "title": "Wallpaper",
+    "artist": "Kevin MacLeod",
+    "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100843",
+    "downloadUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Wallpaper.mp3",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "modifications": "Re-encoded complete track to 128 kbps stereo MP3; no cuts or synthesis.",
+    "sha256": "b01df945bdcf796834d9a42a46b4f222e18a66c8f8b0d44ec9180e2956472ba7",
+    "duration": 220.05551,
+    "size": 3521913
+  },
+  {
+    "path": "tension-conflict.mp3",
+    "title": "Long Note Three",
+    "artist": "Kevin MacLeod",
+    "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100424",
+    "downloadUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Long%20Note%20Three.mp3",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "modifications": "Re-encoded complete track to 128 kbps stereo MP3; no cuts or synthesis.",
+    "sha256": "5a17dc1c29622bb60bc208d24ca25fd354b7e3b265b1e5be7ad432d033ec85d4",
+    "duration": 192.052245,
+    "size": 3073866
+  },
+  {
+    "path": "warmth-relief.mp3",
+    "title": "Dream Culture",
+    "artist": "Kevin MacLeod",
+    "source": "https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300046",
+    "downloadUrl": "https://incompetech.com/music/royalty-free/mp3-royaltyfree/Dream%20Culture.mp3",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+    "modifications": "Re-encoded complete track to 128 kbps stereo MP3; no cuts or synthesis.",
+    "sha256": "09e0fb0a458dddfac01c7fef87cbd71e40ade6e5b924a96c79ad1fe9ccebf420",
+    "duration": 214.360816,
+    "size": 3430802
+  },
+  {
+    "path": "message.ogg",
+    "archivePath": "Audio/click_001.ogg",
+    "title": "message",
+    "artist": "Kenney",
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modifications": "File renamed; audio unchanged.",
+    "sha256": "ccfb7fa0cccdd9faec0eb16033c732b1e308d139d80f799161495d58f7adcdb9",
+    "duration": 0.100023,
+    "size": 4876
+  },
+  {
+    "path": "arrival.ogg",
+    "archivePath": "Audio/confirmation_002.ogg",
+    "title": "arrival",
+    "artist": "Kenney",
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modifications": "File renamed; audio unchanged.",
+    "sha256": "33b17a9a9a2397c62b285c52c33a907fdffb476909c99e42dde603f6a7a8b12c",
+    "duration": 0.539002,
+    "size": 14169
+  },
+  {
+    "path": "departure.ogg",
+    "archivePath": "Audio/close_001.ogg",
+    "title": "departure",
+    "artist": "Kenney",
+    "source": "https://kenney.nl/assets/interface-sounds",
+    "downloadUrl": "https://kenney.nl/media/pages/assets/interface-sounds/fa43c1dd4d-1677589452/kenney_interface-sounds.zip",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "modifications": "File renamed; audio unchanged.",
+    "sha256": "44af8249b933e0fd35ec957a638bb1a0b01f85b53fbe9674bf77bd3ca3168ef4",
+    "duration": 0.147778,
+    "size": 9915
+  }
+]

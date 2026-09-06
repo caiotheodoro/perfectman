@@ -22,16 +22,21 @@
     "sweep:goal-layer": "node dist/cli/sweep-goal-layer.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "sweep:temperature": "node dist/cli/sweep-temperature.js"
+    "sweep:temperature": "node dist/cli/sweep-temperature.js",
+    "video": "node dist/cli/video.js"
   },
   "dependencies": {
     "@perfectman/engine": "workspace:*",
     "@perfectman/server": "workspace:*",
-    "@perfectman/shared": "workspace:*"
+    "@perfectman/shared": "workspace:*",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@fontsource-variable/dm-sans": "5.3.0",
     "@types/node": "^26.2.0",
     "fast-check": "^4.9.0",
+    "gsap": "3.15.0",
+    "hyperframes": "0.8.29",
     "typescript": "^5.5.0",
     "vitest": "^2.0.0"
   }

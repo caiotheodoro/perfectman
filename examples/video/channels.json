@@ -1,0 +1,29 @@
+{
+  "version": "perfectman-video-v1",
+  "title": "One room. Two conversations.",
+  "place": "The common room",
+  "agents": [
+    { "id": "ada", "name": "Ada" },
+    { "id": "nox", "name": "Nox" },
+    { "id": "mira", "name": "Mira" }
+  ],
+  "channels": [
+    { "id": "commons", "name": "Common room", "kind": "public", "memberIds": ["ada", "nox", "mira"] },
+    { "id": "ada-mira", "name": "Ada & Mira", "kind": "private", "memberIds": ["ada", "mira"] }
+  ],
+  "steps": [
+    { "phase": "Arrival", "kind": "event", "actorId": "ada", "channel": "commons", "text": "Ada arrives first.", "stageAction": { "kind": "arrive", "agentIds": ["ada"] }, "emotion": { "label": "neutral" } },
+    { "phase": "Arrival", "kind": "event", "actorId": "nox", "channel": "commons", "text": "Nox and Mira join her.", "stageAction": { "kind": "arrive", "agentIds": ["nox", "mira"] }, "audienceIds": ["ada", "nox", "mira"] },
+    { "phase": "Small talk", "kind": "message", "actorId": "ada", "channel": "commons", "audienceIds": ["ada", "nox", "mira"], "text": "Can we agree on one thing tonight?", "emotion": { "label": "neutral" } },
+    { "phase": "Conflict", "kind": "message", "actorId": "mira", "channel": "commons", "recipientIds": ["nox"], "audienceIds": ["ada", "nox", "mira"], "text": "You could start by admitting what happened.", "emotion": { "label": "angry" } },
+    { "phase": "A private conversation", "kind": "message", "actorId": "ada", "channel": "ada-mira", "visibility": "private", "recipientIds": ["mira"], "audienceIds": ["ada", "mira"], "text": "Give him a minute. I'll talk to him.", "emotion": { "label": "worried" } },
+    { "phase": "A private conversation", "kind": "message", "actorId": "mira", "channel": "ada-mira", "visibility": "private", "recipientIds": ["ada"], "audienceIds": ["ada", "mira"], "text": "All right. But I'm trusting you.", "emotion": { "label": "worried" } },
+    { "phase": "Private thought", "kind": "private", "actorId": "ada", "text": "Keep them in the room. Get them talking.", "emotion": { "label": "worried" } },
+    { "phase": "Back in the room", "kind": "message", "actorId": "ada", "channel": "commons", "recipientIds": ["nox"], "audienceIds": ["ada", "nox", "mira"], "text": "Nox, what did you mean to say?", "emotion": { "label": "neutral" } },
+    { "phase": "An honest answer", "kind": "message", "actorId": "nox", "channel": "commons", "recipientIds": ["mira"], "audienceIds": ["ada", "nox", "mira"], "text": "I was embarrassed. I took it out on you.", "emotion": { "label": "worried" } },
+    { "phase": "Relief", "kind": "message", "actorId": "mira", "channel": "commons", "recipientIds": ["nox"], "audienceIds": ["ada", "nox", "mira"], "text": "That's all I needed to hear.", "emotion": { "label": "relieved" } },
+    { "phase": "Departure", "kind": "event", "actorId": "mira", "channel": "commons", "text": "Mira heads out. The conversation can wait.", "stageAction": { "kind": "leave", "agentIds": ["mira"] }, "emotion": { "label": "relieved" } },
+    { "phase": "Afterward", "kind": "message", "actorId": "nox", "channel": "commons", "recipientIds": ["ada"], "audienceIds": ["ada", "nox"], "text": "Thanks for making us stay.", "emotion": { "label": "happy" } },
+    { "phase": "Private thought", "kind": "private", "actorId": "ada", "text": "This time, staying helped.", "emotion": { "label": "satisfied" } }
+  ]
+}

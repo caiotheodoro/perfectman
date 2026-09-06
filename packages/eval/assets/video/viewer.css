@@ -1,0 +1,30 @@
+body[data-viewer]{height:100dvh;display:flex;flex-direction:column;overflow:hidden;background:#eeeef0}
+#viewer-shell{display:flex;flex:1;min-height:0;min-width:0}
+#viewer-viewport{position:relative;flex:1;min-width:0;min-height:0;overflow:hidden}
+[data-viewer] #stage{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(var(--viewer-scale,1));transform-origin:center}
+[data-viewer] #sidebar{opacity:1!important;z-index:3000}
+[data-viewer] #intro,[data-viewer] #outro{pointer-events:none}
+[data-viewer] #channel-items,[data-viewer] #cast-items{transform:none!important}
+[data-viewer] #channel-window,[data-viewer] #cast-window{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+[data-viewer] button{cursor:pointer}
+[data-viewer] button:focus-visible,[data-viewer] input:focus-visible,[data-viewer] a:focus-visible{outline:3px solid #6b55f5;outline-offset:3px}
+#viewer-controls{position:relative;flex:none;display:flex;align-items:center;flex-wrap:wrap;gap:12px 22px;padding:14px 20px 10px;background:#fafaf9;border-top:1px solid #d9d9df;font-size:14px;z-index:20}
+#viewer-controls button{font:inherit;padding:8px 12px;border:1px solid #c5c5cc;border-radius:6px;background:#fff;color:#202022;white-space:nowrap}
+#viewer-controls #play{background:#202022;color:#fff;border-color:#202022;min-width:70px}
+#viewer-controls #follow{color:#503cc2;border-color:#a89ee1}
+#viewer-controls label{font-size:13px;color:#56545d;white-space:nowrap}
+#viewer-controls input{accent-color:#6b55f5;cursor:pointer;min-width:60px}
+#viewer-controls a{color:#503cc2;text-underline-offset:3px;white-space:nowrap}
+.playback-buttons,.playback-time,.sound-controls{display:flex;align-items:center;gap:10px}
+.playback-time{flex:1;min-width:220px}#seek{flex:1;min-width:90px}#volume{width:72px}#clock{font-variant-numeric:tabular-nums;min-width:90px;white-space:nowrap}
+#playback-status{flex-basis:100%;color:#626268;font-size:13px;line-height:1.3}
+#channel-history{flex:0 0 320px;background:#fafaf9;border-left:1px solid #d9d9df;padding:20px 16px;overflow-y:auto}
+#channel-history[hidden]{display:none}#channel-history h2{font-size:18px;font-weight:600;overflow-wrap:anywhere}#channel-history>p{font-size:13px;color:#626268;margin:8px 0 18px}
+#history-list{display:flex;flex-direction:column}#history-list button{font:inherit;text-align:left;background:none;color:#202022;border:0;border-bottom:1px solid #e0dfe5;padding:14px 8px;white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.45;font-size:14px}
+#history-list button[aria-current=true]{background:#efecfb;border-left:3px solid #6b55f5}#history-list strong{display:block;font-size:12px;font-weight:600;color:#625b73;margin-bottom:6px}
+#reading-pane{display:none}
+#mobile-conversation{display:none}
+@media(max-width:600px){#mobile-conversation{display:flex;align-items:center;gap:12px;background:#fafaf9;padding:8px 12px;font-size:14px}#conversation-picker{font:inherit;color:#202022;background:#fff;min-width:0;flex:1;height:44px;border:1px solid #c5c5cc;border-radius:6px;padding:0 8px}}
+@media(max-width:850px){#viewer-controls{gap:10px;padding:10px 12px}.playback-time{order:3;flex-basis:100%}.sound-controls{margin-left:auto}.sound-controls label,.sound-controls #volume{display:none}#channel-history{flex-basis:260px}.playback-buttons{gap:6px}#viewer-controls button{padding:8px}#viewer-controls a{font-size:12px}}
+@media(max-width:600px){#viewer-shell{flex-direction:column;min-height:200px}#viewer-viewport{min-height:190px}#channel-history{flex:0 0 190px;border-left:0;border-top:1px solid #d9d9df;padding:12px}#channel-history>p{margin:4px 0}#reading-pane{display:block;background:#fff;padding:12px 16px;max-height:180px;overflow-y:auto;border-top:1px solid #e0dfe5;font-size:16px;line-height:1.45;white-space:pre-wrap;overflow-wrap:anywhere}#reading-pane:empty{display:none}.sound-controls{margin-left:0}.sound-controls a{display:none}#playback-status{font-size:12px}}
+@media(prefers-reduced-motion:reduce){[data-viewer] *{scroll-behavior:auto!important;transition:none!important}}

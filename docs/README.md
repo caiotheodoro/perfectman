@@ -28,6 +28,7 @@ Read these in order:
 - [`adr/README.md`](adr/README.md) - architecture decision records (LOCKED pipeline decisions with lasting architectural consequence).
 - [`plans/`](plans/) - cross-boundary contracts and per-dev implementation plans.
 - [`personas/`](personas/) - generic persona setup docs and templates only. Real/person-specific subfolders are local-only and gitignored.
+- [`video/README.md`](video/README.md) - convert saved runs, narratives, and scripts into video.
 
 ## Core Thesis
 
