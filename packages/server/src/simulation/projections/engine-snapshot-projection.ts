@@ -18,6 +18,8 @@ export type EngineSnapshotInput = {
   recentEventsWindow: CommittedEvent[];
   /** See EngineSnapshot.ownHistoryWindow. */
   ownHistoryWindow?: CommittedEvent[];
+  /** See EngineSnapshot.voicedHoldRecently (ADR-0017). */
+  voicedHoldRecently?: boolean;
   now: number;
   agentState: AgentState;
   persona: PersonaConfig;
@@ -37,6 +39,7 @@ export class EngineSnapshotProjection {
       simulation: input.simulation,
       recentEventsWindow: input.recentEventsWindow,
       ...(input.ownHistoryWindow ? { ownHistoryWindow: input.ownHistoryWindow } : {}),
+      ...(input.voicedHoldRecently ? { voicedHoldRecently: true } : {}),
       now: input.now,
       agentState: input.agentState,
       persona: input.persona,

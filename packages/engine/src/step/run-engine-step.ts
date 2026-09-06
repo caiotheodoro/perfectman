@@ -236,6 +236,7 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
       pulseIndex,
       initiativeCandidates: decisionCandidates,
       justActed,
+      voicedHoldRecently: snapshot.voicedHoldRecently === true,
     }),
   };
 

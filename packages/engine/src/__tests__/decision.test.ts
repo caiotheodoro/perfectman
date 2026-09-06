@@ -134,11 +134,31 @@ describe("resolveDecision", () => {
     expect(result.needsLLM).toBe(false);
   });
 
-  it("high pressure > inhibition → act", () => {
+  it("high pressure > inhibition → act; an outranked urge under a delay-favoring inhibition is a voiced hold only on a salient pulse (ADR-0017)", () => {
     const pressures = [makePressure("urge_to_provoke", "high")];
     const inhibitions = [makeInhibition("conflict_avoidance", "low")];
     const result = resolveDecision(pressures, inhibitions, makeAgent(), GOULART, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("act");
+
+    // ADR-0017 voiced hold: strategic patience over a medium urge still
+    // holds, but when something salient just happened the model is consulted
+    // once so the silence carries the character's reason.
+    const held = [makePressure("urge_to_message", "medium")];
+    const patience = [makeInhibition("strategic_patience_hold", "medium")];
+    const base = { hasNewEvents: true, salientForeignEvent: true, initiativeProceed: false, pulseIndex: 3 };
+    const voiced = resolveDecision(held, patience, makeAgent(), CAIO, ctx(base));
+    expect(voiced.outcome).toBe("act");
+    expect(voiced.needsLLM).toBe(true);
+    expect(voiced.holdSuggested).toBe(true);
+    expect(voiced.privateMotiveSeed).toBe("hold-strategic_patience_hold");
+    // Never on the pulse after an act (P1), never without a salient foreign
+    // event, never inside the voice refractory.
+    expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, justActed: true })).outcome).toBe("delay");
+    expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, salientForeignEvent: false })).outcome).toBe("delay");
+    const quiet = resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, voicedHoldRecently: true }));
+    expect(quiet.outcome).toBe("delay");
+    expect(quiet.needsLLM).toBe(false);
+    expect(quiet.holdSuggested).toBeUndefined();
   });
 
   it("privateMotiveSeed is set", () => {

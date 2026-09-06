@@ -873,7 +873,7 @@ describe("PulseScheduler", () => {
   });
 
   describe("pressure discharge stamping (ADR-0016)", () => {
-    it("stamps pressureDischargedAt for every salient pressure after a committed outward act, never for a genuine no_op", async () => {
+    it("stamps pressureDischargedAt for every salient pressure after a committed outward act, never for a genuine no_op; spends urge_to_create_private_channel only on a committed create_channel (ADR-0017)", async () => {
       const pressure = {
         id: "agent_1:urge_to_message", agentId: "agent_1", type: "urge_to_message" as const, targetAgentIds: [],
         intensity: "high" as const, sourceEventIds: [], sourceMotivations: [], sourceEmotions: [], visibilityPreference: "either" as const, decayRate: 0.15,
@@ -897,6 +897,43 @@ describe("PulseScheduler", () => {
       await scheduler.runPulse();
       const silent = await agentStateRepo.get("sim_test", "agent_1");
       expect(silent?.pressureDischargedAt ?? {}).toEqual({});
+
+      // ADR-0017 D-61: a public line does not spend the private-channel
+      // drive; only opening a channel does. The engine arms opened 0–3
+      // private rooms per scene where the baseline opened 6–12 because
+      // every reply stamped it.
+      const privateDrive = {
+        id: "agent_1:urge_to_create_private_channel", agentId: "agent_1", type: "urge_to_create_private_channel" as const, targetAgentIds: [],
+        intensity: "high" as const, sourceEventIds: [], sourceMotivations: [], sourceEmotions: [], visibilityPreference: "private" as const, decayRate: 0.15,
+      };
+      const step = () => ({
+        ...makeCannedStep(),
+        pressures: [privateDrive, { ...privateDrive, id: "agent_1:urge_to_message", type: "urge_to_message" as const }],
+        decision: { outcome: "act" as const, needsLLM: true, initiativeProceed: false, privateMotiveSeed: "x" },
+        noOpRecord: null,
+        availableActions: [
+          { intentType: "send_message" as const, channelTargets: ["ch_public"], personTargets: [], blocked: false },
+          { intentType: "create_channel" as const, channelTargets: [], personTargets: [], blocked: false },
+        ],
+      });
+      scheduler = buildScheduler(step);
+      mockAgentRuntime.generateIntent = vi.fn().mockResolvedValue({
+        intent: { ...makeNoOpIntent("agent_1"), intentType: "send_message", visibleContent: "a public line" },
+        llmUsage: null, latencyMs: 10, fallbackApplied: false, operatorEvents: [],
+      });
+      await scheduler.runPulse();
+      const afterMessage = await agentStateRepo.get("sim_test", "agent_1");
+      expect(afterMessage?.pressureDischargedAt).toEqual({ urge_to_message: 0 });
+
+      scheduler = buildScheduler(step);
+      mockAgentRuntime.generateIntent = vi.fn().mockResolvedValue({
+        intent: { ...makeNoOpIntent("agent_1"), intentType: "create_channel", channelType: "private_channel", personTargets: [] },
+        llmUsage: null, latencyMs: 10, fallbackApplied: false, operatorEvents: [],
+      });
+      await scheduler.runPulse();
+      const afterChannel = await agentStateRepo.get("sim_test", "agent_1");
+      // A fresh scheduler runs pulse 0 again; the stamp is the pulse index.
+      expect(afterChannel?.pressureDischargedAt?.urge_to_create_private_channel).toBe(0);
     });
   });
 

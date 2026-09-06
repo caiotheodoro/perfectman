@@ -26,6 +26,7 @@ ADR-0001..0007 pre-date this convention and are historical records: their Status
 | [ADR-0014](0014-private-motive-committed-event.md) | Private Motive As A Committed Event |
 | [ADR-0015](0015-decision-owns-needs-llm.md) | The Decision Owns `needsLLM` |
 | [ADR-0016](0016-pressure-discharge.md) | Pressure Discharge |
+| [ADR-0017](0017-voiced-hold-and-private-drive.md) | Voiced Hold and the Private-Channel Drive |
 
 ## Template
 

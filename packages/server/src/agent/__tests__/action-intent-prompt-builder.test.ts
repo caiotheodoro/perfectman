@@ -89,6 +89,17 @@ describe("ActionIntentPromptBuilder — decision moment", () => {
     expect(built.user).toContain("**send_message** (Channels: general)");
   });
 
+  it("renders the hold consult only when the engine suggests a hold (ADR-0017)", () => {
+    const plain = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    expect(plain.user).not.toContain("inclined to hold back");
+    const held = PromptBuilder.build({ ...input, holdSuggested: true }, EXAMPLE_PROMPT_PROFILE, "action_intent");
+    expect(held.user).toContain("inclined to hold back");
+    expect(held.user).toContain("the room will read your silence");
+    // The canonical template render never carries the branch: the template
+    // version is stable even though the per-render prompt hash differs.
+    expect(held.templateVersion).toBe(plain.templateVersion);
+  });
+
   it("relaxes memoryWrites to belief change instead of suppressing it", () => {
     const built = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
 

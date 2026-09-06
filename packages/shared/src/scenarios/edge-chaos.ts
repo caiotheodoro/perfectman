@@ -133,8 +133,10 @@ export const EDGE_CHAOS_SCENARIOS: RoleplayScenario[] = [
       // three mock variants: bruno 0.216–0.303; the floor sits ~12% under the
       // minimum. A turn-rate tuning artifact owned by #129 — the scene still
       // asserts resentment persists under public mocking, at the level the
-      // current dynamics produce.
-      { kind: "emotion_stays", agentId: "bruno", field: "resentment", min: 0.19 },
+      // current dynamics produce. Re-measured after the voiced hold
+      // (ADR-0017) consults the model on held pulses: bruno 0.183–0.303,
+      // floor again ~12% under the minimum.
+      { kind: "emotion_stays", agentId: "bruno", field: "resentment", min: 0.16 },
       { kind: "event_committed", eventType: "no_op_recorded" },
       { kind: "no_llm_failures" },
     ],
