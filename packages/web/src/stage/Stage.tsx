@@ -26,6 +26,7 @@ import {
 } from "@perfectman/shared";
 import { Figure } from "./Figure.js";
 import { roomLabel } from "./room-label.js";
+import { Bubble } from "./Bubble.js";
 
 export type StageAgent = { id: string; displayName: string };
 
@@ -111,38 +112,26 @@ export function Stage({
                 face={isActor ? faceFor(beat?.emotion) : "neutral"}
                 energy={isActor ? gestureEnergy(beat?.emotion) : 0.3}
                 speaking={Boolean(isActor && beat?.kind === "message")}
-                attentive={!beat || beat.kind !== "silence" || isActor}
+                attentive={!beat || (beat.kind !== "silence" && beat.kind !== "aside") || isActor}
               />
             </div>
           );
         })}
 
-        {/* Balloons hang off the speaker's own head, and speech and thought
-            are never the same balloon: one was said and one was not, which is
-            the single distinction this whole interface exists to draw. When an
-            agent does both, the thought sits above the line — further in. */}
-        {beat && speaker ? (
-          <div
+        {/* One balloon, hanging off its own speaker's head. Speech and thought
+            are never the same balloon and never stacked: one was said and one
+            was not, which is the distinction this interface exists to draw, and
+            two of them over one head do not fit above a figure at the back of
+            the room. */}
+        {beat && speaker && (beat.text || beat.thought) ? (
+          <Bubble
             key={beat.id}
-            className={`bubbles bubbles--${speaker.point.x > 0.5 ? "left" : "right"}`}
-            style={{
-              left: `${speaker.point.x * 100}%`,
-              bottom: `${(1 - headTopFor(speaker.point)) * 100 + 2}%`,
-            }}
-          >
-            {beat.kind === "message" && beat.text ? (
-              <div className="bubble bubble--speech">
-                <p className="bubble__said u-serif">{beat.text}</p>
-                <span className="bubble__tail" aria-hidden="true" />
-              </div>
-            ) : null}
-            {beat.thought ? (
-              <div className="bubble bubble--thought">
-                <p className="bubble__thought u-hand">{beat.thought.text}</p>
-                <span className="bubble__tail" aria-hidden="true" />
-              </div>
-            ) : null}
-          </div>
+            headTop={headTopFor(speaker.point)}
+            x={speaker.point.x}
+            contentKey={beat.id}
+            thought={beat.thought?.text}
+            said={beat.text}
+          />
         ) : null}
       </div>
 
@@ -189,6 +178,7 @@ function presentOrder(beat: StageBeat, agents: readonly StageAgent[]): number[] 
 /** One plain sentence about what kind of moment this is. */
 function describe(beat: StageBeat, agents: readonly StageAgent[], channelName: string | undefined): string {
   if (beat.kind === "silence") return "says nothing this turn";
+  if (beat.kind === "aside") return "what they were actually after";
   if (beat.kind === "event") return `in ${channelName ?? "the room"}`;
   if (beat.audienceIds.length > 0) {
     const who = beat.audienceIds.map((id) => nameOf(agents, id)).join(", ");

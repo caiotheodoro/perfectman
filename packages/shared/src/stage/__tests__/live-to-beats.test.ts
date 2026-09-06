@@ -48,14 +48,28 @@ describe("pulseToBeats — what was said", () => {
     expect(beat?.audienceIds).toEqual(["marcela"]);
   });
 
-  it("stages a speaker's own thought alongside their line", () => {
-    const [beat] = pulseToBeats(
+  it("puts a speaker's own thought after their line, not on top of it", () => {
+    // Two balloons over one head do not fit above a figure at the back of the
+    // room, and the thought reads better as its own moment anyway.
+    const beats = pulseToBeats(
       frame({ messages: [message()], thinking: { iris: thinking({ agentId: "iris" }) } }),
       CONTEXT,
     );
-    expect(beat?.kind).toBe("message");
-    expect(beat?.thought?.text).toBe("counting who answered him first");
-    expect(beat?.thought?.drivers).toEqual(["suspicion"]);
+    expect(beats.map((b) => b.kind)).toEqual(["message", "aside"]);
+    expect(beats[0]?.thought).toBeUndefined();
+    expect(beats[1]?.thought?.text).toBe("counting who answered him first");
+    expect(beats[1]?.thought?.drivers).toEqual(["suspicion"]);
+    expect(beats[1]?.actorId).toBe("iris");
+  });
+
+  it("splits a long thought across beats so no balloon outgrows the room", () => {
+    const long = "I keep going over it. ".repeat(12);
+    const beats = pulseToBeats(frame({ thinking: { marcela: thinking({ privateMotiveSummary: long }) } }), CONTEXT);
+    expect(beats.length).toBeGreaterThan(1);
+    for (const beat of beats) expect(beat.thought!.text.length).toBeLessThanOrEqual(130);
+    // Drivers belong with the last page, where the caption sits.
+    expect(beats[0]?.thought?.drivers).toEqual([]);
+    expect(beats[beats.length - 1]?.thought?.drivers).toEqual(["suspicion"]);
   });
 
   it("takes participants from the channel the line was said in", () => {
@@ -82,7 +96,7 @@ describe("pulseToBeats — what was not said", () => {
     expect(silence?.thought?.text).toBe("counting who answered him first");
   });
 
-  it("does not double-stage an agent who both thought and spoke", () => {
+  it("does not also stage a speaker as silent", () => {
     const beats = pulseToBeats(
       frame({ messages: [message()], thinking: { iris: thinking({ agentId: "iris" }) } }),
       CONTEXT,

@@ -53,8 +53,11 @@ export function stagingFor(eventType: string): Staging {
   return EVENT_STAGING[eventType] ?? "hidden";
 }
 
-/** Characters per balloon. Above this a line is split across beats. */
+/** Characters per balloon. Above this the text is split across beats. */
 const BALLOON_PAGE = 150;
+
+/** A thought is set larger than speech, so it fits fewer characters. */
+const THOUGHT_PAGE = 120;
 
 const STAGE_ACTIONS: Record<string, "arrive" | "leave" | "invite"> = {
   agent_joined: "arrive",
@@ -137,8 +140,7 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
     // A long line becomes several beats rather than one balloon that has to
     // cover the room. The page size is smaller than the video renderer's 220:
     // a balloon hangs above a figure's head and has a ceiling, where a caption
-    // card in a 1080p frame does not. The thought rides on the first page only,
-    // so it does not repeat behind every page of the same sentence.
+    // card in a 1080p frame does not.
     const pages = staging === "reaction" ? [message.text] : paginate(message.text, BALLOON_PAGE);
     pages.forEach((text, page) => {
       beats.push({
@@ -151,10 +153,24 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
         audienceIds: message.visibleToAgents,
         participantIds,
         ...(emotion ? { emotion } : {}),
-        ...(thought && page === 0 ? { thought } : {}),
         duration: readingSeconds(text),
       });
     });
+
+    // What they were actually after, after the line rather than over it.
+    if (thought) {
+      beats.push(
+        ...thoughtBeats(thought, "aside", {
+          idPrefix: message.eventId,
+          pulseIndex: frame.pulseIndex,
+          channelId: message.channelId,
+          actorId: message.actorId,
+          audienceIds: message.visibleToAgents,
+          participantIds,
+          emotion,
+        }),
+      );
+    }
   }
 
   // Whoever thought something and stayed quiet. This is the beat the frame log
@@ -164,22 +180,54 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
     const thought = toThought(thinking);
     if (!thought) continue;
     const emotion = toRecordedEmotion(frame.emotions[agentId]);
-    beats.push({
-      id: `${frame.pulseIndex}:silence:${agentId}`,
-      kind: "silence",
-      pulseIndex: frame.pulseIndex,
-      channelId: context.defaultChannelId,
-      actorId: agentId,
-      text: "",
-      audienceIds: [],
-      participantIds: membersOf(context.channels, context.defaultChannelId),
-      ...(emotion ? { emotion } : {}),
-      thought,
-      duration: readingSeconds(thought.text),
-    });
+    beats.push(
+      ...thoughtBeats(thought, "silence", {
+        idPrefix: `${frame.pulseIndex}:silence:${agentId}`,
+        pulseIndex: frame.pulseIndex,
+        channelId: context.defaultChannelId,
+        actorId: agentId,
+        audienceIds: [],
+        participantIds: membersOf(context.channels, context.defaultChannelId),
+        emotion,
+      }),
+    );
   }
 
   return beats;
+}
+
+/**
+ * A thought, paginated the same way speech is. A model writes motives as long
+ * as it likes and the bubble has a ceiling.
+ */
+function thoughtBeats(
+  thought: StageThought,
+  kind: "aside" | "silence",
+  at: {
+    idPrefix: string;
+    pulseIndex: number;
+    channelId: string;
+    actorId: string;
+    audienceIds: string[];
+    participantIds: string[];
+    emotion: RecordedEmotion | undefined;
+  },
+): StageBeat[] {
+  const pages = paginate(thought.text, THOUGHT_PAGE);
+  return pages.map((text, page) => ({
+    id: `${at.idPrefix}:thought:${page}`,
+    kind,
+    pulseIndex: at.pulseIndex,
+    channelId: at.channelId,
+    actorId: at.actorId,
+    text: "",
+    audienceIds: at.audienceIds,
+    participantIds: at.participantIds,
+    ...(at.emotion ? { emotion: at.emotion } : {}),
+    // Drivers belong with the last page, where the caption sits.
+    thought: { ...thought, text, ...(page < pages.length - 1 ? { drivers: [] } : {}) },
+    duration: readingSeconds(text),
+  }));
 }
 
 /** Seeded history, so the stage does not open on an empty room. */

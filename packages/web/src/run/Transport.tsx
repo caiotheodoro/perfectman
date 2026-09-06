@@ -65,9 +65,11 @@ export function Transport({
 
       <span className="transport__spacer" />
 
-      {behind > 0 ? (
-        <span className="transport__behind" title="Beats the run has produced that you have not reached yet">
-          {behind} behind
+      {/* Only meaningful while the run is still producing. On a finished run
+          everything is "behind" and saying so reads as a warning. */}
+      {live && behind > 0 ? (
+        <span className="transport__behind" title="Moments the run has produced that you have not reached yet">
+          {behind} ahead of you
         </span>
       ) : null}
       {live ? <span className="transport__live">live</span> : null}

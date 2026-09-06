@@ -10,7 +10,17 @@
  */
 import type { RecordedEmotion } from "./emotion-face.js";
 
-export type StageBeatKind = "message" | "silence" | "event" | "notice";
+/**
+ * Exactly one thing is on screen per beat, which is why a thought is its own
+ * kind rather than a field riding along on a message. Two balloons stacked over
+ * one head reached ~270px, and a figure standing at the back of the room has
+ * about 147px above it — so the pair cropped. Splitting them also reads better:
+ * you hear the line, then you see what was behind it.
+ *
+ * `aside` is a thought belonging to someone who did speak this turn; `silence`
+ * is a thought belonging to someone who did not. The distinction is the caption.
+ */
+export type StageBeatKind = "message" | "aside" | "silence" | "event" | "notice";
 
 /** What an agent was actually thinking, which only the viewer ever sees. */
 export type StageThought = {
