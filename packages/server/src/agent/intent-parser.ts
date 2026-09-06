@@ -30,6 +30,8 @@ export type IntentParserResult = {
   /** Last 240 characters — a truncated or runaway response shows its loop here. */
   rawTail?: string;
   rawLength?: number;
+  /** The JSON never closed (the model ran away inside a string) and the packet was rebuilt from its closed fields. */
+  truncationRepaired?: boolean;
   // Set when the intent is a reply/react whose target handle could not be
   // resolved against `TargetResolutionContext.eventHandles`. The caller
   // re-prompts once with a targeted note, then applies `floorTargets`.
@@ -43,6 +45,68 @@ type TargetResolution =
   | { kind: "floored"; detail: string }
   | { kind: "downgraded"; detail: string }
   | { kind: "dropped"; detail: string };
+
+/** Longest `visibleContent` kept from a runaway response; cut at a sentence end before this. */
+export const TRUNCATION_SALVAGE_MAX_CONTENT = 700;
+const TRUNCATION_SALVAGE_MAX_MOTIVE = 400;
+
+function unescapeJsonString(s: string): string {
+  try {
+    return JSON.parse(`"${s}"`) as string;
+  } catch {
+    return s.replace(/\\n/g, "\n").replace(/\\"/g, '"').replace(/\\\\/g, "\\");
+  }
+}
+
+/** Cut a runaway string at the last sentence end before `max`; null when nothing usable remains. */
+function cutAtSentence(text: string, max: number): string | null {
+  const trimmed = text.trim();
+  if (trimmed.length <= max) return trimmed.length >= 2 ? trimmed : null;
+  const head = trimmed.slice(0, max);
+  const lastEnd = Math.max(
+    head.lastIndexOf(". "),
+    head.lastIndexOf("! "),
+    head.lastIndexOf("? "),
+    head.lastIndexOf("\n"),
+    head.lastIndexOf("… "),
+  );
+  const cut = lastEnd >= 40 ? head.slice(0, lastEnd + 1) : head;
+  return cut.trim().length >= 2 ? cut.trim() : null;
+}
+
+/**
+ * Rebuild a packet from a response whose JSON never closed. Forensic reads
+ * (docs/eval/evidence/hoc-f*) showed every "No JSON object found" was a
+ * response that opened as valid JSON and then ran away inside a string —
+ * sign-offs in parentheses, emoji runs, numbered "edit" lines — until the
+ * token cap. The closed fields are real; the open string is cut at a
+ * sentence end. Returns null when even `intentType` is missing.
+ */
+export function repairTruncatedPacket(text: string): Record<string, unknown> | null {
+  const closed = (key: string): string | undefined => {
+    const m = new RegExp(`"${key}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)"`).exec(text);
+    return m ? unescapeJsonString(m[1]!) : undefined;
+  };
+  const open = (key: string, max: number): string | undefined => {
+    const m = new RegExp(`"${key}"\\s*:\\s*"((?:[^"\\\\]|\\\\.)*)$`).exec(text);
+    if (!m) return undefined;
+    return cutAtSentence(unescapeJsonString(m[1]!), max) ?? undefined;
+  };
+  const intentType = closed("intentType");
+  if (!intentType) return null;
+  const motive = closed("privateMotiveSummary") ?? open("privateMotiveSummary", TRUNCATION_SALVAGE_MAX_MOTIVE);
+  if (!motive) return null;
+  const packet: Record<string, unknown> = { intentType, privateMotiveSummary: motive, personTargets: [], memoryWrites: [] };
+  const content = closed("visibleContent") ?? open("visibleContent", TRUNCATION_SALVAGE_MAX_CONTENT);
+  if (content !== undefined) packet.visibleContent = cutAtSentence(content, TRUNCATION_SALVAGE_MAX_CONTENT) ?? content;
+  for (const key of ["channelTarget", "replyToEventId", "targetEventId", "emoji", "channelName", "channelType"]) {
+    const v = closed(key);
+    if (v !== undefined) packet[key] = v;
+  }
+  const targets = /"personTargets"\s*:\s*\[([^\]]*)\]/.exec(text);
+  if (targets) packet.personTargets = [...targets[1]!.matchAll(/"([^"]+)"/g)].map((m) => m[1]!);
+  return packet;
+}
 
 export class IntentParser {
   /**
@@ -62,20 +126,29 @@ export class IntentParser {
     targetContext?: TargetResolutionContext,
   ): IntentParserResult {
     let cleanedText = rawText;
+    let truncationRepaired = false;
 
     try {
       // 1. Narrow repair: strip markdown code fences, find the JSON object.
       cleanedText = cleanedText.replace(/```[a-zA-Z]*\s*/g, "").replace(/```\s*$/g, "");
       const firstBrace = cleanedText.indexOf("{");
       const lastBrace = cleanedText.lastIndexOf("}");
-      if (firstBrace === -1 || lastBrace === -1 || lastBrace < firstBrace) {
-        throw new Error("No JSON object found in response");
+      let parsedObject: Record<string, unknown>;
+      if (firstBrace !== -1 && (lastBrace === -1 || lastBrace < firstBrace)) {
+        // The object opened and never closed: a runaway inside a string.
+        const repaired = repairTruncatedPacket(cleanedText.slice(firstBrace));
+        if (!repaired) throw new Error("No JSON object found in response");
+        parsedObject = repaired;
+        truncationRepaired = true;
+      } else {
+        if (firstBrace === -1 || lastBrace === -1) {
+          throw new Error("No JSON object found in response");
+        }
+        let jsonText = cleanedText.substring(firstBrace, lastBrace + 1);
+        // 2. Remove trailing commas (stray token emission).
+        jsonText = jsonText.replace(/,\s*([}\]])/g, "$1");
+        parsedObject = JSON.parse(jsonText) as Record<string, unknown>;
       }
-      let jsonText = cleanedText.substring(firstBrace, lastBrace + 1);
-      // 2. Remove trailing commas (stray token emission).
-      jsonText = jsonText.replace(/,\s*([}\]])/g, "$1");
-
-      const parsedObject = JSON.parse(jsonText) as Record<string, unknown>;
 
       // 3. Narrow structural repair on the packet fields. Engine fields
       // (id/actorId) no longer belong to the packet — extra keys are stripped
@@ -188,7 +261,7 @@ export class IntentParser {
         }
       }
 
-      return { intent, fallbackApplied: false };
+      return { intent, fallbackApplied: false, ...(truncationRepaired ? { truncationRepaired: true, rawLength: rawText.length } : {}) };
     } catch (error: any) {
       const errorMsg = error instanceof Error ? error.message : String(error);
       const fallbackReason = `Fallback applied: ${errorMsg}`;

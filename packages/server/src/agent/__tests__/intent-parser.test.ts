@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { IntentParser } from "../intent-parser.js";
+import { IntentParser, repairTruncatedPacket } from "../intent-parser.js";
 import type { AvailableAction } from "@perfectman/shared";
 
 describe("IntentParser", () => {
@@ -458,5 +458,60 @@ describe("IntentParser fallback forensics", () => {
     );
     expect(result.fallbackApplied).toBe(false);
     expect(result.rawHead).toBeUndefined();
+  });
+});
+
+describe("IntentParser truncated-JSON repair", () => {
+  const actorId = "nina";
+  const availableActions: AvailableAction[] = [
+    { intentType: "send_message", channelTargets: ["ch_familia"], personTargets: [], blocked: false },
+    { intentType: "reply_to_message", channelTargets: ["ch_familia"], personTargets: [], blocked: false },
+    { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
+  ];
+  // The shape every forensic no-JSON capture had: valid opening, then a
+  // runaway inside visibleContent until the token cap, never a closing brace.
+  const runaway =
+    '{ "intentType": "send_message", "privateMotiveSummary": "quero que o Rafa responda sobre o cartório na frente da Lia", ' +
+    '"channelTarget": "ch_familia", "personTargets": ["rafa"], "visibleContent": "Rafa, o cartório abre às nove. Você vai comigo amanhã? A Lia quer ver os papéis. ' +
+    "(Parei.)\\n\\n(Ok, tchau.)\\n\\n(To indo.)\\n\\n(Fui.)".repeat(80);
+
+  it("rebuilds the packet from the closed fields and cuts the runaway string at a sentence end", () => {
+    const result = IntentParser.parse(runaway, actorId, availableActions);
+    expect(result.fallbackApplied).toBe(false);
+    expect(result.truncationRepaired).toBe(true);
+    expect(result.rawLength).toBe(runaway.length);
+    expect(result.intent.intentType).toBe("send_message");
+    expect(result.intent.channelTarget).toBe("ch_familia");
+    expect(result.intent.personTargets).toEqual(["rafa"]);
+    expect(result.intent.privateMotiveSummary).toBe("quero que o Rafa responda sobre o cartório na frente da Lia");
+    expect(result.intent.visibleContent?.startsWith("Rafa, o cartório abre às nove.")).toBe(true);
+    expect((result.intent.visibleContent ?? "").length).toBeLessThanOrEqual(700);
+    expect(result.intent.visibleContent).not.toContain("(Fui.)".repeat(3));
+  });
+
+  it("repairs a runaway inside the motive when the content never started", () => {
+    const text = '{ "intentType": "no_op", "privateMotiveSummary": "deixo a pergunta no ar. ' + "kkkk ".repeat(300);
+    const result = IntentParser.parse(text, actorId, availableActions);
+    expect(result.truncationRepaired).toBe(true);
+    expect(result.intent.intentType).toBe("no_op");
+    expect(result.intent.privateMotiveSummary.startsWith("deixo a pergunta no ar.")).toBe(true);
+    expect(result.intent.privateMotiveSummary.length).toBeLessThanOrEqual(400);
+  });
+
+  it("still falls back, with forensics, when the opening has no intentType", () => {
+    const text = "{ " + "🔥".repeat(500);
+    const result = IntentParser.parse(text, actorId, availableActions);
+    expect(result.fallbackApplied).toBe(true);
+    expect(result.errorDetail).toBe("No JSON object found in response");
+    expect(result.rawLength).toBe(text.length);
+    expect(result.truncationRepaired).toBeUndefined();
+    expect(repairTruncatedPacket(text)).toBeNull();
+  });
+
+  it("leaves a well-formed response untouched", () => {
+    const text = JSON.stringify({ intentType: "no_op", privateMotiveSummary: "espero", personTargets: [], memoryWrites: [] });
+    const result = IntentParser.parse(text, actorId, availableActions);
+    expect(result.truncationRepaired).toBeUndefined();
+    expect(result.rawLength).toBeUndefined();
   });
 });

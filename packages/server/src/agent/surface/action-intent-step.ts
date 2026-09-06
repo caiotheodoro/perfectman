@@ -411,6 +411,19 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     if (trimEvent) operatorEvents.push(trimEvent);
     operatorEvents.push(...retryTrimEvents);
     operatorEvents.push(...retryRecoveryEvents);
+    if (parseResult.truncationRepaired && !fallbackApplied) {
+      // The response ran away inside a string and was cut back to a packet:
+      // a real intent, not a fallback, but recorded — the cap was hit.
+      operatorEvents.push({
+        type: "llm_retry_recovered",
+        simulationId,
+        agentId,
+        pulseIndex: ctx.pulseIndex,
+        detail: `Agent ${agentId}'s response never closed its JSON (${parseResult.rawLength ?? "?"} chars); packet rebuilt from the closed fields.`,
+        createdAt: Date.now(),
+        data: { violations: ["truncated_json"], retriesAttempted: 0 },
+      });
+    }
     operatorEvents.push({
       type: "pulse_metrics",
       simulationId,
