@@ -142,6 +142,38 @@ input, select {
 }
 input:focus, select:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
 
+.advanced {
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 10px 12px;
+  background: #131210;
+}
+.advanced summary {
+  cursor: pointer;
+  font: 11px/1 var(--mono);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dim);
+}
+.advanced summary:hover { color: var(--accent); }
+.advanced > p { margin: 10px 0 12px; font-size: 12px; }
+.advanced label { margin-bottom: 12px; }
+.advanced label:last-child { margin-bottom: 0; }
+
+textarea {
+  background: #100f0d;
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  color: var(--text);
+  padding: 7px 9px;
+  font: 12px/1.5 var(--mono);
+  width: 100%;
+  resize: vertical;
+}
+textarea:focus { outline: 1px solid var(--accent); border-color: var(--accent); }
+
+.bad { color: var(--bad); font-size: 11px; font-style: normal; }
+
 .actions { display: flex; gap: 8px; margin-top: 18px; }
 
 button {

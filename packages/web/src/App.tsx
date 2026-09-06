@@ -11,7 +11,7 @@ import { ApiRequestError, compile, startRun, stopRun } from "./api/client.js";
 import { useRunStream } from "./api/useRunStream.js";
 import { CompiledConfigPanel } from "./components/CompiledConfigPanel.js";
 import { FrameLog } from "./components/FrameLog.js";
-import { RunForm, toRunInputs, type RunFormValue } from "./components/RunForm.js";
+import { RunForm, parseExtraBody, toRunInputs, type RunFormValue } from "./components/RunForm.js";
 import { StatusBar } from "./components/StatusBar.js";
 
 /** Long enough that typing a model name does not fire a request per keystroke. */
@@ -22,6 +22,7 @@ const INITIAL: RunFormValue = {
   scenario: null,
   llm: { providerType: "mock", modelName: "mock" },
   maxPulses: null,
+  extraBodyText: "",
 };
 
 export function App(): JSX.Element {
@@ -67,9 +68,14 @@ export function App(): JSX.Element {
   const run = useCallback(() => {
     if (!inputs) return;
     setFailure(null);
+    const extraBody = parseExtraBody(form.extraBodyText);
+    if (extraBody.error) {
+      setFailure(`Extra request body is not valid JSON: ${extraBody.error}`);
+      return;
+    }
     const request: StartRunRequest = {
       inputs,
-      llm: form.llm,
+      llm: { ...form.llm, ...(extraBody.value ? { extraBody: extraBody.value } : {}) },
       ...(form.maxPulses ? { limits: { maxPulses: form.maxPulses } } : {}),
     };
     startRun(request)

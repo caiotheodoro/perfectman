@@ -5,7 +5,7 @@
  * (`*.persona.md` / `*.scenario.md`) and by frontmatter second, because an
  * author who drops five files should not also have to say which is which.
  */
-import { useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { RunInputs, StartRunRequest, UploadedFile } from "@perfectman/shared";
 
 export type RunFormValue = {
@@ -13,6 +13,8 @@ export type RunFormValue = {
   scenario: UploadedFile | null;
   llm: StartRunRequest["llm"];
   maxPulses: number | null;
+  /** Kept as text so a half-typed object does not blank the field. */
+  extraBodyText: string;
 };
 
 const PROVIDERS: Array<{ id: string; label: string; note: string }> = [
@@ -38,6 +40,7 @@ export function RunForm({
 }): JSX.Element {
   const [dragging, setDragging] = useState(false);
   const picker = useRef<HTMLInputElement>(null);
+  const extraBodyError = useMemo(() => parseExtraBody(value.extraBodyText).error, [value.extraBodyText]);
 
   async function absorb(files: FileList | null): Promise<void> {
     if (!files || files.length === 0) return;
@@ -170,6 +173,47 @@ export function RunForm({
           </>
         ) : null}
 
+        {value.llm.providerType !== "mock" ? (
+          <details className="advanced">
+            <summary>Provider quirks</summary>
+            <p className="dim">
+              A hosted model that reasons by default will spend the whole output
+              budget thinking and never emit parseable intent. Two knobs fix
+              almost every such provider.
+            </p>
+
+            <label>
+              <span>JSON mode</span>
+              <select
+                value={jsonMode(value.llm)}
+                onChange={(e) => onChange({ ...value, llm: { ...value.llm, ...fromJsonMode(e.target.value) } })}
+              >
+                <option value="off">off — model returns prose-wrapped JSON</option>
+                <option value="object">json_object — syntax only</option>
+                <option value="schema">json_schema — shape constrained</option>
+              </select>
+              <em className="dim">
+                Some models run to the token cap inside schema mode. `json_object` is the safe choice.
+              </em>
+            </label>
+
+            <label>
+              <span>extra request body</span>
+              <textarea
+                rows={3}
+                spellCheck={false}
+                value={value.extraBodyText}
+                placeholder={'{ "thinking": { "type": "disabled" } }'}
+                onChange={(e) => onChange({ ...value, extraBodyText: e.target.value })}
+              />
+              <em className={extraBodyError ? "bad" : "dim"}>
+                {extraBodyError ??
+                  'Spread onto the request root. DeepSeek: {"thinking":{"type":"disabled"}}. Qwen: {"chat_template_kwargs":{"enable_thinking":false}}.'}
+              </em>
+            </label>
+          </details>
+        ) : null}
+
         <label>
           <span>max pulses</span>
           <input
@@ -195,6 +239,33 @@ export function RunForm({
       </div>
     </section>
   );
+}
+
+/**
+ * The extra body is edited as text and only becomes an object when it parses,
+ * so typing `{` does not wipe what was there. Blank is valid and means none.
+ */
+export function parseExtraBody(text: string): { value?: Record<string, unknown>; error?: string } {
+  if (text.trim() === "") return {};
+  try {
+    const parsed: unknown = JSON.parse(text);
+    if (parsed === null || typeof parsed !== "object" || Array.isArray(parsed)) {
+      return { error: "Must be a JSON object." };
+    }
+    return { value: parsed as Record<string, unknown> };
+  } catch (err) {
+    return { error: (err as Error).message };
+  }
+}
+
+function jsonMode(llm: RunFormValue["llm"]): "off" | "object" | "schema" {
+  if (llm.responseFormatJson !== true) return "off";
+  return llm.responseFormatJsonSchema === false ? "object" : "schema";
+}
+
+function fromJsonMode(mode: string): Partial<RunFormValue["llm"]> {
+  if (mode === "off") return { responseFormatJson: false, responseFormatJsonSchema: undefined };
+  return { responseFormatJson: true, responseFormatJsonSchema: mode === "schema" };
 }
 
 export function toRunInputs(value: RunFormValue): RunInputs | null {

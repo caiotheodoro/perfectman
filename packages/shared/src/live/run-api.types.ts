@@ -75,6 +75,19 @@ export type LlmRequest = {
   apiKey?: string;
   temperature?: number;
   maxOutputTokens?: number;
+  /** Ask the provider to constrain the reply to JSON. */
+  responseFormatJson?: boolean;
+  /**
+   * Shape-constrained `json_schema` decoding. Defaults on where JSON is
+   * requested; some hosted models handle schema mode badly and need `false`,
+   * which falls back to syntax-only `json_object`.
+   */
+  responseFormatJsonSchema?: boolean;
+  /**
+   * Provider-specific keys spread onto the request body root. A hosted model
+   * that reasons by default must be told not to, or the reasoning block eats
+   * the output budget before the intent JSON.
+   */
   extraBody?: Record<string, unknown>;
 };
 

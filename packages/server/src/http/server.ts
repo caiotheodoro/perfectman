@@ -40,6 +40,8 @@ export type StartRunRequest = {
     apiKey?: string;
     temperature?: number;
     maxOutputTokens?: number;
+    responseFormatJson?: boolean;
+    responseFormatJsonSchema?: boolean;
     extraBody?: Record<string, unknown>;
   };
   limits?: { maxPulses?: number; wallClockCapMs?: number };
@@ -247,6 +249,15 @@ function buildLlmConfig(
     temperature: requested.temperature ?? 0.8,
     timeoutMs: 60_000,
     retryCount: 2,
+    // Both are meaningful as `false`, so they pass through whenever set rather
+    // than only when truthy: a hosted model that mishandles schema decoding
+    // needs `responseFormatJsonSchema: false` to reach the transport.
+    ...(requested.responseFormatJson === undefined
+      ? {}
+      : { responseFormatJson: requested.responseFormatJson }),
+    ...(requested.responseFormatJsonSchema === undefined
+      ? {}
+      : { responseFormatJsonSchema: requested.responseFormatJsonSchema }),
     ...(requested.extraBody ? { extraBody: requested.extraBody } : {}),
   };
 }
