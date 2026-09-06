@@ -113,17 +113,20 @@ describe("resolveDecision", () => {
     expect(result.needsLLM).toBe(true);
   });
 
-  it("strong inhibition >= pressure → delay or no_op", () => {
+  it("strong inhibition >= pressure → delay or no_op on a quiet pulse; a new event turns the hold into a voiced-hold consult (D-62)", () => {
     const pressures = [makePressure("urge_to_message", "low")];
     const inhibitions = [makeInhibition("strategic_patience_hold", "medium")];
-    const result = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
-    expect(["delay", "no_op"]).toContain(result.outcome);
+    const quiet = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
+    expect(["delay", "no_op"]).toContain(quiet.outcome);
+    const consulted = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
+    expect(consulted.outcome).toBe("act");
+    expect(consulted.holdSuggested).toBe(true);
   });
 
-  it("strategic_patience_hold inhibition → delay outcome", () => {
+  it("strategic_patience_hold inhibition → delay outcome on a quiet pulse", () => {
     const pressures = [makePressure("urge_to_message", "low")];
     const inhibitions = [makeInhibition("strategic_patience_hold", "high")];
-    const result = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: true, initiativeProceed: false, pulseIndex: 1 }));
+    const result = resolveDecision(pressures, inhibitions, makeAgent(), CAIO, ctx({ hasNewEvents: false, initiativeProceed: false, pulseIndex: 1 }));
     expect(result.outcome).toBe("delay");
   });
 
@@ -151,10 +154,11 @@ describe("resolveDecision", () => {
     expect(voiced.needsLLM).toBe(true);
     expect(voiced.holdSuggested).toBe(true);
     expect(voiced.privateMotiveSeed).toBe("hold-strategic_patience_hold");
-    // Never on the pulse after an act (P1), never without a salient foreign
-    // event, never inside the voice refractory.
+    // Never on the pulse after an act (P1), never without new events, never
+    // inside the voice refractory. A non-salient new event is enough (D-62).
     expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, justActed: true })).outcome).toBe("delay");
-    expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, salientForeignEvent: false })).outcome).toBe("delay");
+    expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, salientForeignEvent: false })).outcome).toBe("act");
+    expect(resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, salientForeignEvent: false, hasNewEvents: false })).outcome).toBe("delay");
     const quiet = resolveDecision(held, patience, makeAgent(), CAIO, ctx({ ...base, voicedHoldRecently: true }));
     expect(quiet.outcome).toBe("delay");
     expect(quiet.needsLLM).toBe(false);
