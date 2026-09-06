@@ -1,0 +1,225 @@
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
+  gap: 12px;
+}
+
+.card {
+  display: grid;
+  gap: 8px;
+  align-content: start;
+  text-align: left;
+  padding: 18px;
+  border: none;
+  border-radius: var(--r-lg);
+  background: var(--paper);
+  box-shadow: var(--ring);
+  transition: box-shadow var(--quick) var(--ease), transform var(--quick) var(--ease);
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: inset 0 0 0 1px var(--rule-strong);
+}
+
+.card--on {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+.card--on:hover {
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.card--ghost {
+  background: transparent;
+  box-shadow: inset 0 0 0 1px var(--rule);
+  cursor: default;
+}
+.card--ghost:hover {
+  transform: none;
+  box-shadow: inset 0 0 0 1px var(--rule);
+}
+
+/* The cast, at the size a decision needs: who is there, not what they said. */
+.card__cast {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  margin-bottom: 4px;
+}
+
+.card__cast .figure {
+  width: 54px;
+  flex: 0 0 auto;
+}
+.card__cast .figure__name {
+  font-size: 13px;
+}
+/* No idle motion on a card; the stage is where things move. */
+.card__cast .figure__body,
+.card__cast .figure__eye {
+  animation: none;
+}
+
+/* The chip is the character colour this cast will use on stage. */
+.card__chip {
+  width: 26px;
+  height: 8px;
+  border-radius: var(--r-pill);
+}
+
+.card__title {
+  font-size: 19px;
+  font-variation-settings: "opsz" 32, "SOFT" 40, "WONK" 1;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+}
+
+.card__blurb {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--ink-70);
+}
+
+.card__count {
+  font-size: 12px;
+  color: var(--ink-30);
+}
+
+.card__ghost-actions {
+  display: flex;
+  gap: 14px;
+  margin-top: 2px;
+}
+
+/* --- selection summary --------------------------------------------------- */
+
+.summary-strip {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding: 16px 18px;
+  border-radius: var(--r-lg);
+  background: var(--paper-warm);
+  box-shadow: var(--ring);
+}
+
+.summary-strip ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+  width: 100%;
+}
+
+.summary-strip li {
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 13px;
+  min-width: 0;
+}
+
+.summary-strip__name {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary-strip li > .u-dim {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* --- editor -------------------------------------------------------------- */
+
+.editor {
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border-radius: var(--r-lg);
+  box-shadow: var(--ring);
+  background: var(--paper-warm);
+}
+
+.editor__files {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.editor__spacer {
+  flex: 1;
+}
+
+.editor__tab {
+  display: flex;
+  align-items: center;
+  border-radius: var(--r-md);
+  box-shadow: var(--ring);
+  background: var(--paper);
+  overflow: hidden;
+}
+
+.editor__tab > button:first-child {
+  border: none;
+  background: none;
+  padding: 6px 4px 6px 11px;
+  font-size: 12.5px;
+  color: var(--ink-70);
+}
+
+.editor__tab--on {
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+.editor__tab--on > button:first-child {
+  color: var(--ink);
+}
+
+.editor__drop {
+  border: none;
+  background: none;
+  color: var(--ink-30);
+  padding: 6px 9px 7px 6px;
+  font-size: 15px;
+  line-height: 1;
+}
+.editor__drop:hover {
+  color: var(--ink);
+}
+
+.editor__name {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+}
+
+.editor__name input {
+  flex: 1;
+  max-width: 320px;
+}
+
+input,
+select,
+textarea {
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--ink);
+  background: var(--paper);
+  border: none;
+  box-shadow: var(--ring);
+  border-radius: var(--r-md);
+  padding: 8px 11px;
+}
+
+.editor__text {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12.5px;
+  line-height: 1.65;
+  resize: vertical;
+  min-height: 300px;
+  tab-size: 2;
+}

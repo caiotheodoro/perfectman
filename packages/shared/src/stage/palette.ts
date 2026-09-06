@@ -25,10 +25,28 @@ export function chipFor(index: number): string {
 }
 
 /**
+ * A character's slot in the palette, stable across views.
+ *
+ * Position in a roster is not enough on its own: the preset card lists persona
+ * files alphabetically while the stage lists agents in the order the scenario
+ * cast them, so the same person would be blue in one place and yellow in the
+ * other. Sorting the ids first makes both sides agree without either needing to
+ * know how the other ordered its list, and still guarantees distinct colours
+ * within a cast of six or fewer.
+ */
+export function chipIndexFor(id: string, allIds: readonly string[]): number {
+  const sorted = [...new Set(allIds)].sort();
+  const at = sorted.indexOf(id);
+  return at < 0 ? 0 : at;
+}
+
+/**
  * Head shape alternates so a cast is distinguishable in silhouette, not only by
- * colour — the same trick the video renderer uses, and what keeps the figures
- * readable for someone who cannot separate the chips.
+ * colour — what keeps the figures readable for someone who cannot separate the
+ * chips. The video renderer alternates every third figure; every other one is
+ * better here, because a web cast is usually three to five people and two
+ * identical silhouettes side by side is the common case.
  */
 export function headShapeFor(index: number): "round" | "speech" {
-  return index % 3 === 0 ? "round" : "speech";
+  return index % 2 === 0 ? "round" : "speech";
 }

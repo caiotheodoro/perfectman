@@ -1,0 +1,228 @@
+.run {
+  gap: 20px;
+}
+
+/* --- provider ------------------------------------------------------------ */
+
+.provider {
+  display: grid;
+  gap: 20px;
+}
+
+.provider__choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.provider__fields {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+
+.provider__fields label,
+.advanced label {
+  display: grid;
+  gap: 5px;
+  font-size: 13px;
+}
+
+.provider__fields label > span,
+.advanced label > span {
+  color: var(--ink-50);
+  font-size: 12.5px;
+}
+
+.provider__fields em,
+.advanced em {
+  font-style: normal;
+  font-size: 11.5px;
+  color: var(--ink-30);
+  line-height: 1.45;
+}
+
+.is-bad {
+  color: #b1120b;
+}
+
+.advanced {
+  border-radius: var(--r-lg);
+  box-shadow: var(--ring);
+  padding: 14px 18px;
+  background: var(--paper-warm);
+}
+
+.advanced summary {
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--ink-70);
+}
+.advanced summary:hover {
+  color: var(--ink);
+}
+
+.advanced > p {
+  margin: 12px 0 14px;
+  font-size: 13.5px;
+  color: var(--ink-70);
+}
+
+.advanced > label {
+  margin-bottom: 14px;
+}
+.advanced > label:last-child {
+  margin-bottom: 0;
+}
+
+.advanced textarea {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+  resize: vertical;
+}
+
+/* --- transport ----------------------------------------------------------- */
+
+.transport {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  padding: 10px 14px;
+  border-radius: var(--r-lg);
+  box-shadow: var(--ring);
+  background: var(--paper);
+  font-size: 13px;
+}
+
+.transport__spacer {
+  flex: 1;
+}
+
+.transport__rooms {
+  display: flex;
+  gap: 6px;
+}
+
+.room {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: none;
+  background: none;
+  border-radius: var(--r-pill);
+  padding: 5px 12px;
+  color: var(--ink-50);
+  box-shadow: var(--ring);
+  transition: color var(--quick) var(--ease), box-shadow var(--quick) var(--ease);
+}
+.room:hover:not(:disabled) {
+  color: var(--ink);
+}
+.room--here {
+  color: var(--paper);
+  background: var(--ink);
+  box-shadow: none;
+}
+.room:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.transport__live {
+  color: #2d7a44;
+}
+.transport__live::before {
+  content: "● ";
+}
+
+.transport__behind {
+  color: var(--ink-50);
+}
+
+.transport__buttons {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.transport__seek {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1 1 260px;
+  min-width: 200px;
+  font-size: 12px;
+}
+
+.transport__seek input {
+  flex: 1;
+  padding: 0;
+  box-shadow: none;
+  background: none;
+  accent-color: var(--ink);
+}
+
+.transport__seek output {
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-50);
+}
+
+.run__foot {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+}
+
+/* --- drawer -------------------------------------------------------------- */
+
+.drawer {
+  border-top: 1px solid var(--rule);
+  padding-top: 14px;
+}
+
+.drawer summary {
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  align-items: baseline;
+  font-size: 13px;
+  color: var(--ink-70);
+}
+.drawer summary:hover {
+  color: var(--ink);
+}
+
+.drawer__body {
+  display: grid;
+  gap: 16px;
+  padding-top: 16px;
+}
+
+.drawer__body code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 12px;
+}
+
+/* --- alerts -------------------------------------------------------------- */
+
+.alert {
+  display: flex;
+  align-items: baseline;
+  gap: 14px;
+  padding: 12px 16px;
+  border-radius: var(--r-lg);
+  box-shadow: inset 0 0 0 1px rgba(177, 18, 11, 0.35);
+  background: #fdf5f4;
+  font-size: 13.5px;
+}
+
+.alert p {
+  margin: 0;
+}
+
+.alert-inline {
+  color: #b1120b;
+}

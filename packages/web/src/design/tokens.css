@@ -1,0 +1,192 @@
+/*
+ * Ground, ink and rule are town.com's, read off its computed styles. The
+ * character chips are its highlighter swatches, reassigned to carry identity
+ * instead of decoration.
+ */
+
+:root {
+  --paper: #fdfdfc;
+  --paper-warm: #faf8f4;
+  --ink: #1c1b1b;
+  --ink-70: rgba(28, 27, 27, 0.7);
+  --ink-50: rgba(28, 27, 27, 0.5);
+  --ink-30: rgba(28, 27, 27, 0.3);
+  --rule: rgba(28, 27, 27, 0.1);
+  --rule-strong: rgba(28, 27, 27, 0.24);
+
+  /* Panels are rings, not shadows. One ambient wash, and only on the stage. */
+  --ring: inset 0 0 0 1px rgba(28, 27, 27, 0.12);
+  --lift: 0 0 160px rgba(0, 0, 0, 0.03);
+
+  --r-xs: 3px;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-xl: 16px;
+  --r-pill: 999px;
+
+  --serif: "Fraunces Variable", Georgia, "Times New Roman", serif;
+  --sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --hand: "Caveat Variable", "Bradley Hand", cursive;
+
+  /* Display Fraunces: soft, slightly wonky, optically sized for large text. */
+  --serif-display: "opsz" 144, "SOFT" 60, "WONK" 1;
+  --serif-text: "opsz" 20, "SOFT" 30, "WONK" 0;
+
+  --step: 4px;
+  --measure: 68ch;
+  --shell: 1200px;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.3, 1);
+  --quick: 160ms;
+  --settle: 380ms;
+
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+}
+
+body {
+  font-family: var(--sans);
+  font-size: 15px;
+  line-height: 1.5;
+  letter-spacing: 0.0175em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-variation-settings: var(--serif-display);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.02;
+  margin: 0;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2.75rem, 6vw, 5rem);
+}
+h2 {
+  font-size: clamp(1.75rem, 3vw, 2.5rem);
+}
+h3 {
+  font-size: 1.25rem;
+  letter-spacing: -0.015em;
+}
+
+p {
+  margin: 0;
+  max-width: var(--measure);
+}
+
+/* --- shared primitives --------------------------------------------------- */
+
+.u-hand {
+  font-family: var(--hand);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.u-dim {
+  color: var(--ink-50);
+}
+
+.u-serif {
+  font-family: var(--serif);
+  font-variation-settings: var(--serif-text);
+}
+
+button {
+  font: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.btn {
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: var(--r-md);
+  padding: 10px 20px;
+  font-weight: 500;
+  transition: transform var(--quick) var(--ease), opacity var(--quick) var(--ease);
+}
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+.btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.btn--quiet {
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--rule-strong);
+}
+.btn--quiet:hover:not(:disabled) {
+  border-color: var(--ink);
+}
+
+.btn--bare {
+  border: none;
+  background: none;
+  color: var(--ink-50);
+  padding: 4px 2px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: var(--rule-strong);
+}
+.btn--bare:hover {
+  color: var(--ink);
+}
+
+.panel {
+  background: var(--paper);
+  border-radius: var(--r-lg);
+  box-shadow: var(--ring);
+  padding: 20px;
+}
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: var(--r-pill);
+  padding: 5px 12px;
+  font-size: 13px;
+  box-shadow: var(--ring);
+  background: var(--paper);
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: var(--r-xs);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

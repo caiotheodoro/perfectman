@@ -13,9 +13,46 @@
 import type { LiveChannel, LiveEmotion, LiveMessage, LivePulseFrame, LiveThinking } from "../live/live-frame.types.js";
 import { isEngineAuthoredMotive } from "../agent/engine-motive.js";
 import type { RecordedEmotion } from "./emotion-face.js";
-import { readingSeconds, type StageBeat, type StageThought } from "./beat.js";
+import { paginate, readingSeconds, type StageBeat, type StageThought } from "./beat.js";
 
-/** Event types that move someone on or off the stage rather than saying a line. */
+/**
+ * `event_visibility` fires for every committed event, including the engine's
+ * own bookkeeping, so the stage has to say which of them a person in the room
+ * would actually have witnessed.
+ *
+ * This is an allowlist on purpose. When it was a passthrough, a sixteen-turn
+ * run with three spoken lines staged seventy-four of them: every recorded
+ * motive, every no-op and every blocked repetition arrived as dialogue.
+ */
+type Staging = "speech" | "reaction" | "action" | "hidden";
+
+const EVENT_STAGING: Record<string, Staging> = {
+  message_sent: "speech",
+  reply_sent: "speech",
+  reaction_sent: "reaction",
+  channel_created: "action",
+  agent_joined: "action",
+  agent_arrived: "action",
+  agent_left: "action",
+  agent_invited: "action",
+  // The motive is the thought, and it reaches the stage through `thinking`.
+  // Staging it again here would put a private sentence in a speech balloon.
+  private_motive_summary: "hidden",
+  // Silence is shown by the agent standing there saying nothing, not by an
+  // event announcing it.
+  no_op_recorded: "hidden",
+  intent_delayed: "hidden",
+  // Engine bookkeeping. Nobody in the room perceives it.
+  repetition_blocked: "hidden",
+  intent_blocked: "hidden",
+  agent_state_snapshot: "hidden",
+};
+
+/** Unknown types are hidden rather than spoken — a new event type must opt in. */
+export function stagingFor(eventType: string): Staging {
+  return EVENT_STAGING[eventType] ?? "hidden";
+}
+
 const STAGE_ACTIONS: Record<string, "arrive" | "leave" | "invite"> = {
   agent_joined: "arrive",
   agent_arrived: "arrive",
@@ -68,23 +105,50 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
   const spoke = new Set<string>();
 
   for (const message of frame.messages) {
-    spoke.add(message.actorId);
-    const action = STAGE_ACTIONS[message.eventType];
+    const staging = stagingFor(message.eventType);
+    if (staging === "hidden") continue;
+
     const emotion = toRecordedEmotion(frame.emotions[message.actorId]);
     const thought = toThought(frame.thinking[message.actorId]);
-    beats.push({
-      id: message.eventId,
-      kind: action ? "event" : "message",
-      pulseIndex: frame.pulseIndex,
-      channelId: message.channelId,
-      actorId: message.actorId,
-      text: message.text,
-      audienceIds: message.visibleToAgents,
-      participantIds: membersOf(context.channels, message.channelId),
-      ...(emotion ? { emotion } : {}),
-      ...(thought ? { thought } : {}),
-      ...(action ? { stageAction: { kind: action, agentIds: [message.actorId] } } : {}),
-      duration: readingSeconds(message.text),
+    const participantIds = membersOf(context.channels, message.channelId);
+
+    if (staging === "action") {
+      beats.push({
+        id: message.eventId,
+        kind: "event",
+        pulseIndex: frame.pulseIndex,
+        channelId: message.channelId,
+        actorId: message.actorId,
+        text: message.text,
+        audienceIds: message.visibleToAgents,
+        participantIds,
+        ...(emotion ? { emotion } : {}),
+        stageAction: { kind: STAGE_ACTIONS[message.eventType] ?? "invite", agentIds: [message.actorId] },
+        duration: readingSeconds(message.text || " "),
+      });
+      continue;
+    }
+
+    spoke.add(message.actorId);
+
+    // A long line becomes several beats rather than one balloon that has to
+    // cover the room. The thought rides on the first page only, so it does not
+    // repeat behind every page of the same sentence.
+    const pages = staging === "reaction" ? [message.text] : paginate(message.text);
+    pages.forEach((text, page) => {
+      beats.push({
+        id: pages.length > 1 ? `${message.eventId}:${page}` : message.eventId,
+        kind: "message",
+        pulseIndex: frame.pulseIndex,
+        channelId: message.channelId,
+        actorId: message.actorId,
+        text,
+        audienceIds: message.visibleToAgents,
+        participantIds,
+        ...(emotion ? { emotion } : {}),
+        ...(thought && page === 0 ? { thought } : {}),
+        duration: readingSeconds(text),
+      });
     });
   }
 
@@ -115,7 +179,9 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
 
 /** Seeded history, so the stage does not open on an empty room. */
 export function priorEventsToBeats(priorEvents: readonly LiveMessage[], context: BeatContext): StageBeat[] {
-  return priorEvents.map((message) => ({
+  return priorEvents
+    .filter((message) => stagingFor(message.eventType) !== "hidden")
+    .map((message) => ({
     id: message.eventId,
     kind: "message" as const,
     pulseIndex: -1,

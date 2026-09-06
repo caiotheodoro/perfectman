@@ -108,8 +108,13 @@ export function emotionLabel(emotion?: RecordedEmotion): string {
   const social = dominantSocial(emotion.values ?? {});
   if (social) values.unshift(social);
   return values.length
-    ? `${prefix} ${values.map(([key, value]) => `${key} ${value}`).join(" · ")}`
+    ? `${prefix} ${values.map(([key, value]) => `${key} ${round(value)}`).join(" · ")}`
     : `${prefix} state`;
+}
+
+/** Two places is all a mood reading means; the rest is float noise. */
+function round(value: number): string {
+  return (Math.round(value * 100) / 100).toString();
 }
 
 /**

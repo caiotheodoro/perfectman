@@ -1,0 +1,119 @@
+/*
+ * The one orchestrated moment in the app. Everything else waits for a click.
+ */
+
+.intro {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: clamp(32px, 7vh, 88px) 32px 64px;
+  display: grid;
+  gap: clamp(32px, 6vw, 72px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+  align-items: center;
+  min-height: 100vh;
+}
+
+@media (max-width: 940px) {
+  .intro {
+    grid-template-columns: minmax(0, 1fr);
+    align-items: start;
+    padding-top: 40px;
+  }
+}
+
+.intro__words {
+  display: grid;
+  gap: 24px;
+  justify-items: start;
+}
+
+.intro__lede {
+  font-size: 18px;
+  line-height: 1.62;
+  color: var(--ink-70);
+  max-width: 46ch;
+}
+
+.intro__actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 4px;
+}
+
+/* --- the scene ----------------------------------------------------------- */
+
+.intro__scene {
+  display: grid;
+  gap: 28px;
+  padding: 36px 28px 28px;
+  border-radius: var(--r-xl);
+  background: var(--paper-warm);
+  box-shadow: var(--ring), var(--lift);
+}
+
+.intro__cast {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: end;
+  gap: 12px;
+  padding: 0 clamp(0px, 3vw, 28px);
+}
+
+.intro__cast .figure:nth-child(2) {
+  transform: translateY(-14px) scale(0.9);
+}
+
+.intro__utterance {
+  min-height: 132px;
+  display: grid;
+  align-content: start;
+}
+
+.intro__line,
+.intro__thought {
+  animation: utterance-in 420ms var(--ease) both;
+}
+
+@keyframes utterance-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.intro__line {
+  font-size: 21px;
+  line-height: 1.45;
+  background: var(--paper);
+  border-radius: var(--r-lg);
+  box-shadow: var(--ring);
+  padding: 16px 20px;
+}
+
+.intro__who {
+  display: block;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink-50);
+  margin-bottom: 6px;
+}
+
+.intro__thought {
+  font-size: 23px;
+  line-height: 1.35;
+  color: var(--ink-70);
+  padding: 14px 22px;
+  /* Dashed, because a thought is not a message and should not look like one. */
+  border-left: 1px dashed var(--rule-strong);
+}
+
+.intro__thought-note {
+  display: block;
+  font-family: var(--sans);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: var(--ink-30);
+  margin-top: 10px;
+}

@@ -6,7 +6,7 @@
 import { describe, expect, it } from "vitest";
 import { assignSlots, slotsFor } from "../slots.js";
 import { bedVolume, canChangeMood, moodFor, BEDS, MINIMUM_MOOD_HOLD_SECONDS } from "../mood.js";
-import { chipFor, headShapeFor, CHARACTER_CHIPS } from "../palette.js";
+import { chipFor, chipIndexFor, headShapeFor, CHARACTER_CHIPS } from "../palette.js";
 
 describe("assignSlots", () => {
   it("keeps everyone where they were when the cast is unchanged", () => {
@@ -86,5 +86,23 @@ describe("character identity", () => {
   it("varies silhouette as well as colour, for anyone who cannot separate the chips", () => {
     const shapes = new Set([headShapeFor(0), headShapeFor(1), headShapeFor(2)]);
     expect(shapes.size).toBeGreaterThan(1);
+  });
+
+  it("gives a character the same colour whatever order the list arrived in", () => {
+    // The preset card lists persona files alphabetically; the stage lists
+    // agents in the order the scenario cast them. Both must agree.
+    const card = ["bruno", "iris", "marcela"];
+    const stage = ["iris", "bruno", "marcela"];
+    for (const id of card) expect(chipIndexFor(id, card)).toBe(chipIndexFor(id, stage));
+  });
+
+  it("gives everyone in a normal cast a different colour", () => {
+    const cast = ["iris", "bruno", "marcela", "theo"];
+    const chips = new Set(cast.map((id) => chipFor(chipIndexFor(id, cast))));
+    expect(chips.size).toBe(cast.length);
+  });
+
+  it("survives an id that is not in the roster rather than throwing", () => {
+    expect(chipIndexFor("ghost", ["iris"])).toBe(0);
   });
 });

@@ -12,27 +12,48 @@
  */
 
 export type StageSlot = { x: number; y: number; scale: number };
+
+/**
+ * How tall a figure stands, as a fraction of the room's height.
+ *
+ * Derived, not measured: a mark is 15% of the room's width, the figure is drawn
+ * 100 wide by 168 tall, and the room is 16:7. Balloons hang off the top of a
+ * head, so they need this to know where a head ends — and it has to agree with
+ * the CSS or a balloon will float or overlap. Change one, change both.
+ */
+export const FIGURE_HEIGHT_FRACTION = 0.15 * 1.68 * (16 / 7);
+
+/** Where the top of a figure's head sits, as a fraction from the room's top. */
+export function headTopFor(slot: StageSlot): number {
+  return slot.y - FIGURE_HEIGHT_FRACTION * slot.scale;
+}
 export type ChannelKind = "public" | "private" | "thought" | "operator";
 
+/*
+ * `y` is where the feet land and `scale` is distance from the viewer, so the
+ * two move together: further up the frame is further back and smaller. The
+ * renderer this came from put its last pair low *and* small, which only worked
+ * because that stage had a sidebar cropping the corners.
+ */
 const PUBLIC_SLOTS: readonly StageSlot[] = [
-  { x: 0.28, y: 0.66, scale: 1.0 },
-  { x: 0.72, y: 0.66, scale: 1.0 },
-  { x: 0.44, y: 0.4, scale: 0.74 },
-  { x: 0.62, y: 0.38, scale: 0.72 },
-  { x: 0.13, y: 0.8, scale: 0.66 },
-  { x: 0.87, y: 0.8, scale: 0.66 },
+  { x: 0.29, y: 0.94, scale: 1.0 },
+  { x: 0.71, y: 0.94, scale: 1.0 },
+  { x: 0.45, y: 0.7, scale: 0.78 },
+  { x: 0.63, y: 0.68, scale: 0.76 },
+  { x: 0.13, y: 0.52, scale: 0.6 },
+  { x: 0.87, y: 0.52, scale: 0.6 },
 ];
 
 const PRIVATE_SLOTS: readonly StageSlot[] = [
-  { x: 0.34, y: 0.66, scale: 1.05 },
-  { x: 0.66, y: 0.66, scale: 1.05 },
-  { x: 0.5, y: 0.38, scale: 0.74 },
-  { x: 0.16, y: 0.8, scale: 0.64 },
-  { x: 0.84, y: 0.8, scale: 0.64 },
+  { x: 0.35, y: 0.94, scale: 1.05 },
+  { x: 0.65, y: 0.94, scale: 1.05 },
+  { x: 0.5, y: 0.68, scale: 0.78 },
+  { x: 0.17, y: 0.52, scale: 0.6 },
+  { x: 0.83, y: 0.52, scale: 0.6 },
 ];
 
-/** A thought has one occupant by definition. */
-const THOUGHT_SLOTS: readonly StageSlot[] = [{ x: 0.5, y: 0.6, scale: 1.3 }];
+/** A thought has one occupant by definition, and it stands closer. */
+const THOUGHT_SLOTS: readonly StageSlot[] = [{ x: 0.5, y: 0.94, scale: 1.25 }];
 
 export function slotsFor(kind: ChannelKind): readonly StageSlot[] {
   if (kind === "thought") return THOUGHT_SLOTS;
