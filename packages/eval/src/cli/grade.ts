@@ -39,7 +39,7 @@ type PerScenarioRecord = {
 
 type ScenarioFile = {
   signalResults?: Array<{ signal: string; passed: boolean; skipped?: boolean }>;
-  probeResults?: Array<{ probe: string; passed: boolean }>;
+  probeResults?: Array<{ probe: string; passed: boolean; measured?: number }>;
 };
 
 export type GradesFile = {
@@ -79,7 +79,7 @@ export function gradeEvidenceDir(dir: string): GradesFile {
       rubric: scenario.rubric,
       narrativeAxes: rec.narrativeAxisScores,
       signals: (scene.signalResults ?? []).map((s) => ({ kind: signalKind(s.signal), passed: s.passed, skipped: s.skipped })),
-      probes: (scene.probeResults ?? []).map((p) => ({ probe: p.probe, passed: p.passed })),
+      probes: (scene.probeResults ?? []).map((p) => ({ probe: p.probe, passed: p.passed, measured: p.measured })),
       juryVoterCount: rec.juryVoterCount,
       juryAxisVoterCounts: rec.juryAxisVoterCounts,
       judgeSalvaged: rec.judgeSalvaged,

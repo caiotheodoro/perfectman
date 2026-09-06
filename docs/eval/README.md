@@ -227,7 +227,8 @@ only what the bench already writes, so a threshold change re-grades every commit
 Per run: weighted mean over the transcript axes (the rubric's `weight`), narration axes at half
 weight; thesis signals (`forbidden_phrase_absent`, `private_channel_used`, `memory_referenced`,
 `chosen_silence_present`) as a pass rate over what was evaluated; hygiene gates (`fallback-rate`,
-`act-share-max`, a spoken forbidden phrase) void the run. An imputed axis leaves the mean and cannot
+`act-share-max` at monopoly level (≥ 0.75; over the probe band but under that is advisory — two agents
+choosing silence must not fail the talker's room), a spoken forbidden phrase) void the run. An imputed axis leaves the mean and cannot
 satisfy a minimum. Scene = median over seeds (rounding down); round = worst scene.
 
 | grade | rule |

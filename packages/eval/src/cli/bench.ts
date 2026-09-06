@@ -412,7 +412,7 @@ export async function runBench(opts: {
           rubric: scenario.rubric,
           narrativeAxes: narrativeAxisScores,
           signals: artifact.signalResults.map((s) => ({ kind: signalKind(s.signal), passed: s.passed, skipped: s.skipped })),
-          probes: artifact.probeResults.map((p) => ({ probe: p.probe, passed: p.passed })),
+          probes: artifact.probeResults.map((p) => ({ probe: p.probe, passed: p.passed, measured: p.measured })),
           juryVoterCount: juryVerdict?.voterCount,
           juryAxisVoterCounts: juryVerdict?.axisVoterCounts,
           judgeSalvaged: judgeResult.salvaged,
