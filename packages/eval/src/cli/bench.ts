@@ -471,6 +471,7 @@ export async function runBench(opts: {
             recoveredFallbacks: artifact.recoveredFallbacks,
             llmFailures: artifact.llmFailures ?? [],
             memoryProposals: artifact.memoryProposals ?? { accepted: 0, dropped: 0 },
+            holdConsults: artifact.holdConsults ?? { total: 0, voiced: 0, broke: 0 },
           },
         });
       }

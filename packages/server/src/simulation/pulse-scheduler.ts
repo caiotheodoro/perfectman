@@ -370,6 +370,7 @@ export class PulseScheduler {
           settings: sim.settings,
           actionEmotions: stepResult.actionEmotions,
           agentNames: this.agentNamesByAgentId,
+          ...(stepResult.decision.holdSuggested === true ? { holdSuggested: true } : {}),
         }).catch(async (err) => {
           await this.emitOperatorEvent(this.schedulerError("Intent resolver failed", err, agent.id));
           return null;

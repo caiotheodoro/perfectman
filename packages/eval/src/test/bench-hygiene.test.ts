@@ -45,6 +45,7 @@ function artifact(seed: unknown) {
       { type: "llm_failure", agentId: "a", pulseIndex: 3, detail: "LLM parsing failed for agent a: No JSON object found in response", data: { errorDetail: "No JSON object found in response", rawHead: "", rawLength: 0 } },
     ],
     memoryProposals: { accepted: 2, dropped: 1 },
+    holdConsults: { total: 3, voiced: 1, broke: 2 },
   };
 }
 
@@ -141,6 +142,7 @@ describe("bench hygiene", () => {
     expect(record.llmFailures).toHaveLength(1);
     expect(record.llmFailures?.[0]?.data?.rawLength).toBe(0);
     expect((record as { memoryProposals?: unknown }).memoryProposals).toEqual({ accepted: 2, dropped: 1 });
+    expect((record as { holdConsults?: unknown }).holdConsults).toEqual({ total: 3, voiced: 1, broke: 2 });
     const meta = JSON.parse(readFileSync(join(dir, "run-meta.json"), "utf8")) as Record<string, unknown>;
     expect(meta["runId"]).toBe("hoc-test");
     expect(meta["seeds"]).toEqual([7]);

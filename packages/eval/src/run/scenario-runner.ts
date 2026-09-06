@@ -67,6 +67,8 @@ export type ScenarioRunArtifact = {
   llmFailures?: LlmFailureRecord[];
   /** Memory proposals: committed `memory_written` events vs proposals the parser dropped as malformed. */
   memoryProposals?: { accepted: number; dropped: number };
+  /** ADR-0017 hold consults: how many the model answered, how many it voiced (`no_op` with its own motive), how many it broke. */
+  holdConsults?: HoldConsultCounts;
   /** `liveOnly` signals not evaluated because the run was in mock mode; never in `totalSignals`. */
   skippedSignals?: number;
   probeResults: ProbeResult[];
@@ -227,6 +229,7 @@ export class ScenarioRunner {
     const { fallbackCount, fallbackNoOps, operatorEventCounts } = countFallbacks(events, operatorEvents);
     const recoveredFallbacks = operatorEvents.filter(e => e.type === "llm_retry_recovered").length;
     const llmFailures = collectLlmFailures(operatorEvents);
+    const holdConsults = countHoldConsults(events);
     const memoryProposals = {
       accepted: events.filter(e => e.type === "memory_written").length,
       dropped: operatorEvents.reduce((n, e) => n + (e.type === "pulse_metrics" ? Number((e.data as { memoryWritesDropped?: unknown } | undefined)?.memoryWritesDropped ?? 0) : 0), 0),
@@ -260,6 +263,7 @@ export class ScenarioRunner {
       operatorEventCounts,
       llmFailures,
       memoryProposals,
+      holdConsults,
       operatorFailures: failures,
       recoveredFallbacks,
       probeResults,
@@ -274,6 +278,28 @@ export class ScenarioRunner {
       providerCalls: tracking?.providerCalls(),
     };
   }
+}
+
+export type HoldConsultCounts = { total: number; voiced: number; broke: number };
+
+/**
+ * ADR-0017: every motive event stamped `holdSuggested` answered a consult. A
+ * character-authored `no_op` there is a voiced hold; any other character-
+ * authored intent broke the hold; engine-authored answers (fallbacks) count
+ * as neither.
+ */
+export function countHoldConsults(events: readonly CommittedEvent[]): HoldConsultCounts {
+  const counts: HoldConsultCounts = { total: 0, voiced: 0, broke: 0 };
+  for (const e of events) {
+    if (e.type !== "private_motive_summary") continue;
+    const p = e.payload as { holdSuggested?: unknown; intentType?: unknown; engineAuthored?: unknown };
+    if (p.holdSuggested !== true) continue;
+    counts.total++;
+    if (p.engineAuthored === true) continue;
+    if (p.intentType === "no_op") counts.voiced++;
+    else counts.broke++;
+  }
+  return counts;
 }
 
 export type LlmFailureRecord = {

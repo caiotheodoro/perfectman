@@ -61,6 +61,8 @@ export type PrivateMotiveSummaryPayload = {
   emotionDrivers: string[];
   motivationDrivers: string[];
   engineAuthored: boolean;
+  /** ADR-0017: this intent answered a hold consult — a `no_op` here is a voiced hold, anything else broke it. */
+  holdSuggested?: boolean;
 };
 
 export type EventVisibility = {
