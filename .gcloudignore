@@ -1,0 +1,13 @@
+# What gets uploaded to Cloud Build. The image's own exclusions live in
+# .dockerignore; this only keeps the upload small.
+.git
+.github
+node_modules
+**/node_modules
+**/dist
+**/*.tsbuildinfo
+out
+.claude
+docs
+packages/web/public/audio
+*.log

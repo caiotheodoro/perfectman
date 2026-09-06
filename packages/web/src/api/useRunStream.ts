@@ -12,6 +12,7 @@
  */
 import { useEffect, useRef, useState } from "react";
 import type { LiveEvent, LiveNotice, RunStatus, ViewerPulse, ViewerReplay } from "@perfectman/shared";
+import { apiUrl } from "./origin.js";
 
 /** Raw envelopes kept for the frame log; enough to debug, bounded so a long run cannot grow forever. */
 const RAW_LOG_CAP = 500;
@@ -56,7 +57,7 @@ export function useRunStream(runId: string | null): RunStream {
     seq.current = 0;
     setState({ ...EMPTY, connected: false });
 
-    const source = new EventSource(`/api/runs/${encodeURIComponent(runId)}/stream`);
+    const source = new EventSource(apiUrl(`/api/runs/${encodeURIComponent(runId)}/stream`));
     const onMessage = (raw: MessageEvent<string>): void => {
       let event: LiveEvent;
       try {

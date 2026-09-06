@@ -1,10 +1,13 @@
-.env
-.freellmapi/
-.git/
-.worktrees/
-node_modules/
-packages/*/dist/
-packages/*/node_modules/
-*.tsbuildinfo
-*.node
-.claude/_output/
+node_modules
+**/node_modules
+**/dist
+# Incremental-build state from the host. With `composite: true` tsc trusts it,
+# skips most of the emit, and leaves a dist with no index.d.ts in it.
+**/*.tsbuildinfo
+out
+.git
+.github
+docs
+.claude
+*.log
+packages/web/public/audio

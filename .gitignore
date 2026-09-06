@@ -1,6 +1,7 @@
 .worktrees/
 node_modules/
 packages/*/dist/
+.vercel
 # Copied from packages/eval/assets at build; one copy in git is enough.
 packages/web/public/audio/
 packages/*/node_modules/
