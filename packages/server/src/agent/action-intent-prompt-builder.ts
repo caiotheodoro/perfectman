@@ -532,6 +532,15 @@ export class ActionIntentPromptBuilder {
         "flash of what you're actually feeling slip through, or make a move that surprises the room while still being " +
         "believable as you. Playing it safe every single turn is itself a failure to be this character.",
     );
+    // ADR-0017: the engine would have held this agent back this pulse; the
+    // consult exists so the silence carries the character's reason.
+    if (input.holdSuggested) {
+      s.raw(
+        "Right now you are inclined to hold back — something just happened and your instinct is not to answer it. " +
+          'If this person would hold, choose "no_op" and put the real reason you are withholding in privateMotiveSummary: ' +
+          "the room will read your silence. Act only if this person would break the hold.",
+      );
+    }
     s.raw(
       "Generic replies count as that failure: agreeing and restating what someone just said, asking a clarifying " +
         "question instead of taking a position, summarizing what the room already knows, or offering to help in " +

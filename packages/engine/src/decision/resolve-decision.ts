@@ -63,6 +63,7 @@ export function resolveDecision(
   ctx: DecisionContext,
 ): Decision {
   const { hasNewEvents, addressed, salientForeignEvent, initiativeProceed, pulseIndex, justActed } = ctx;
+  const voicedHoldRecently = ctx.voicedHoldRecently === true;
   const coldStartFired = ctx.initiativeCandidates.some(
     c => c.source === "cold_start_bootstrap" && c.proceed,
   );
@@ -139,6 +140,19 @@ export function resolveDecision(
         (pulseIndex >= INITIATIVE_OVERRIDE_GRACE_PULSES && otherInitiativeFired)
       ) {
         return actOrGate(`initiative-override-${topInhibition.type}`, true, topPressureRank);
+      }
+      // Voiced hold (ADR-0017): the hold stands, but when something salient
+      // just happened and this agent has not voiced a hold lately, the model
+      // is consulted so the silence carries the character's reason. Never
+      // on the pulse after an act — the cooldown invariant (P1) is kept.
+      if (salientForeignEvent && hasNewEvents && !justActed && !voicedHoldRecently) {
+        return {
+          outcome:           "act",
+          needsLLM:          true,
+          initiativeProceed: false,
+          privateMotiveSeed: `hold-${topInhibition.type}`,
+          holdSuggested:     true,
+        };
       }
       return {
         outcome:           "delay",

@@ -124,6 +124,14 @@ describe("buildAgentRuntimeInput", () => {
     expect(input.personaConfig).toBe(PERSONA);
   });
 
+  it("forwards holdSuggested only when the decision set it (ADR-0017)", () => {
+    const result = makeStepResult();
+    const plain = buildAgentRuntimeInput(result, PERSONA, "normal");
+    expect(plain.holdSuggested).toBeUndefined();
+    const held = buildAgentRuntimeInput({ ...result, decision: { ...result.decision, holdSuggested: true } }, PERSONA, "normal");
+    expect(held.holdSuggested).toBe(true);
+  });
+
   it("maps availableActions from stepResult", () => {
     const result = makeStepResult();
     const input = buildAgentRuntimeInput(result, PERSONA, "high");

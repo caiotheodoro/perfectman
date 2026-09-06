@@ -98,4 +98,6 @@ export type AgentRuntimeInput = {
    * absent means "not yet" so older fixtures keep rendering them.
    */
   hasActed?: boolean;
+  /** ADR-0017: the engine would have held this agent back; the model is asked to voice the hold or break it. */
+  holdSuggested?: boolean;
 };

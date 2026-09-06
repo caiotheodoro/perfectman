@@ -49,6 +49,8 @@ export type EngineSnapshot = {
    * remembered ~8-12 pulses of them. Optional: absent means "window only".
    */
   ownHistoryWindow?: CommittedEvent[];
+  /** The agent voiced a hold (model-authored no_op) within HOLD_VOICE_REFRACTORY_PULSES (ADR-0017). */
+  voicedHoldRecently?: boolean;
   now: number; // wall-clock ms at pulse start — pass from scheduler for determinism
   agentState: AgentState;
   persona: PersonaConfig;

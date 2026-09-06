@@ -24,6 +24,13 @@ export type Decision = {
   initiativeProceed: boolean;
   noOpReason?: NoOpReason;
   privateMotiveSeed: string;
+  /**
+   * ADR-0017: this `act` is a consult on a hold — a delay-favoring
+   * inhibition would have silenced the agent, something salient just
+   * happened, and the model is asked to voice the hold (`no_op` with the
+   * character's reason) or break it.
+   */
+  holdSuggested?: boolean;
 };
 
 /**
@@ -43,6 +50,8 @@ export type DecisionContext = {
   initiativeCandidates: InitiativeCandidate[];
   /** The agent committed an outward act on the previous pulse. */
   justActed: boolean;
+  /** A model-voiced hold by this agent landed within HOLD_VOICE_REFRACTORY_PULSES (ADR-0017); absent means no. */
+  voicedHoldRecently?: boolean;
 };
 
 export type NoOpRecord = {

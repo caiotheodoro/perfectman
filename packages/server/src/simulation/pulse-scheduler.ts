@@ -14,7 +14,8 @@ import type {
   EndingOffer,
   Memory,
 } from "@perfectman/shared";
-import { createId, createSeededRng, STAGNATION_WINDOW_PULSES, OWN_HISTORY_LIMIT } from "@perfectman/shared";
+import { createId, createSeededRng, STAGNATION_WINDOW_PULSES, OWN_HISTORY_LIMIT, HOLD_VOICE_REFRACTORY_PULSES } from "@perfectman/shared";
+import { isEngineAuthoredMotive } from "../agent/engine-motive.js";
 import {
   runEngineStep,
   computeStagnationMetrics,
@@ -290,6 +291,17 @@ export class PulseScheduler {
               (event.type === "message_sent" || event.type === "reply_sent"),
           )
           .slice(-OWN_HISTORY_LIMIT),
+        // ADR-0017: a model-voiced hold (a no_op the model chose, with its own
+        // motive) within the refractory window means no consult this pulse.
+        voicedHoldRecently: contextEvents.some(
+          (event) =>
+            event.actorId === agent.id &&
+            event.type === "no_op_recorded" &&
+            event.sourceIntentId !== undefined &&
+            this.pulseIndex - event.pulseIndex <= HOLD_VOICE_REFRACTORY_PULSES &&
+            typeof (event.payload as { privateMotiveSummary?: unknown }).privateMotiveSummary === "string" &&
+            !isEngineAuthoredMotive((event.payload as { privateMotiveSummary: string }).privateMotiveSummary),
+        ),
         now,
         agentState,
         persona: agent.persona,
@@ -429,7 +441,13 @@ export class PulseScheduler {
           // persona feels provoke/dominate/show_off together and discharging
           // one would just hand the turn to the next.
           const discharged = { ...(stepResult.updatedAgentState.pressureDischargedAt ?? {}) };
-          for (const pressure of stepResult.pressures) discharged[pressure.type] = this.pulseIndex;
+          for (const pressure of stepResult.pressures) {
+            // ADR-0017: the private-channel drive is spent only by opening a
+            // channel. Spending it on every public line is why the engine
+            // arms opened 0–3 private rooms where the baseline opened 6–12.
+            if (pressure.type === "urge_to_create_private_channel" && committedActType !== "create_channel") continue;
+            discharged[pressure.type] = this.pulseIndex;
+          }
           stepResult.updatedAgentState.pressureDischargedAt = discharged;
         }
       }

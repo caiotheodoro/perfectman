@@ -28,5 +28,6 @@ export function buildAgentRuntimeInput(
     budgetPriority,
     triggeringReason: stepResult.attentionResults.triggeringReason,
     hasActed: stepResult.updatedAgentState.lastActionAt !== null,
+    ...(stepResult.decision.holdSuggested === true ? { holdSuggested: true } : {}),
   };
 }
