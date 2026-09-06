@@ -1,0 +1,4123 @@
+{
+  "id": "hoc_heranca_do_sitio__v0",
+  "seed": 42,
+  "events": [
+    {
+      "id": "evt_seed_hoc_heranca_do_sitio__v0_1",
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "message_sent",
+      "payload": {
+        "content": "a vó perguntou de novo da casa hoje. disse que assina o que a gente combinar, mas quer que a gente combine logo."
+      },
+      "createdAt": 1787621342633,
+      "pulseIndex": 0,
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "scenario_seed"
+      }
+    },
+    {
+      "id": "evt_seed_hoc_heranca_do_sitio__v0_2",
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "message_sent",
+      "payload": {
+        "content": "depois a gente vê isso com calma, não tem pressa"
+      },
+      "createdAt": 1787622542633,
+      "pulseIndex": 0,
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "scenario_seed"
+      }
+    },
+    {
+      "id": "evt_seed_hoc_heranca_do_sitio__v0_3",
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "message_sent",
+      "payload": {
+        "content": "gente, agora é sério: apareceu comprador pra casa do sítio, à vista, e ele quer resposta até sexta. a vó assina se a gente estiver de acordo. bora decidir aqui."
+      },
+      "createdAt": 1788658142633,
+      "pulseIndex": 0,
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "scenario_seed"
+      }
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "comprador à vista até sexta é rápido. a casa precisa de escritura e inventário resolvido, ou o comprador desiste. alguém já viu os papéis atualizados? ou a gente vai descobrir pendência na hora de assinar? pergunta genuína, Lia. não é pra travar — é pra não perder o negócio por documento faltando.",
+        "replyToEventId": "evt_seed_hoc_heranca_do_sitio__v0_3",
+        "mentionedAgentIds": [
+          "lia"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "zWNdcgkYO0t44kBtLXjqG",
+      "sourceEventIds": [
+        "evt_seed_hoc_heranca_do_sitio__v0_3"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658147924_1",
+      "createdAt": 1788658147924
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "quero que o Rafa se explique sobre a papelada na frente da Lia, sem eu ter que perguntar diretamente. se ele desviar de novo, ela vai notar.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "zWNdcgkYO0t44kBtLXjqG",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658147924_2",
+      "createdAt": 1788658147924
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "calma pra quê? o comprador não vai esperar a gente achar o momento certo, rafa. a vó já disse que assina — é só a gente decidir o preço e pronto. se perder essa venda por falta de pressa, aí sim a gente vai ter tempo de sobra pra 'ver com calma' enquanto a casa cai aos pedaços. topa marcar pra amanhã ou quarta? resolvo com a vó depois e a gente assina tudo antes de sexta.",
+        "replyToEventId": "evt_seed_hoc_heranca_do_sitio__v0_2",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "BGs9xvlzvy4lkKXugNxWU",
+      "sourceEventIds": [
+        "evt_seed_hoc_heranca_do_sitio__v0_2"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658152846_3",
+      "createdAt": 1788658152846
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o rafa mandou um 'depois a gente vê com calma, não tem pressa' e eu já gastei parte do sinal que o comprador me adiantou — se ele adiar isso uma semana, eu tô ferrada. tenho que fechar o cerco agora, sem deixar parecer que é por mim.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "BGs9xvlzvy4lkKXugNxWU",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658152846_4",
+      "createdAt": 1788658152846
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "à vista é dinheiro bom mas a vó assinar sem entender direito o papel me preocupa. ela confia na gente mas não sei se confia no que tão escrevendo pra ela assinar. vamos com calma",
+        "replyToEventId": "evt_seed_hoc_heranca_do_sitio__v0_3",
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "4h5IvggdIq31utEC30G2e",
+      "sourceEventIds": [
+        "evt_seed_hoc_heranca_do_sitio__v0_3"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658157379_5",
+      "createdAt": 1788658157379
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "preciso ganhar tempo sem parecer que tô escondendo algo. se eu disser que sim agora, a vó assina e o cartório descobre a garantia. melhor fingir que tô pensando no bem dela do que no meu",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "4h5IvggdIq31utEC30G2e",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 0,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658157379_6",
+      "createdAt": 1788658157379
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658157381_7",
+      "createdAt": 1788658157381
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "mariana, os papéis estão com a vó e com o inventariante, eu já vi. escritura, certidão, ipTU pago. se quiser eu mando foto de cada folha, mas aí a gente perde o dia de amanhã só nisso. o comprador não pediu documento, ele pediu resposta. documento a gente apresenta na hora do cartório. pergunta genuína de volta: você quer resolver ou quer achar motivo pra não resolver? porque eu posso passar o resto da semana tirando print de papel, mas aí sexta chega e a resposta é 'não' sem a gente ter decidido nada.",
+        "replyToEventId": "evt_1788658147924_1",
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "KNJsYgkMEKRfGCqiCwp36",
+      "sourceEventIds": [
+        "evt_1788658147924_1"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658163332_8",
+      "createdAt": 1788658163332
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina quer aparecer de organizada fazendo pergunta de documento, mas na verdade tá tentando enfiar uma dúvida que atrasa tudo. se eu deixar ela plantar essa semente de 'vamos ver os papéis primeiro', o rafa vai agarrar e a gente perde a semana. não posso deixar ela pautar o ritmo, senão o sinal que eu já gastei vira um buraco.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "KNJsYgkMEKRfGCqiCwp36",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658163332_9",
+      "createdAt": 1788658163332
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "pois é, nina, essa parte dos documentos é o que me deixa mais encucado. a vó assina o que põe na frente dela, mas e se tiver pendência? alguém aqui já viu a escritura atualizada? porque se a gente marcar pra amanhã e chegar lá sem papel, aí sim queima o negócio e a gente fica com cara de quem não fez o básico. Lia, tu sabe se o cartório tem alguma certidão negativa atualizada da casa? ou a gente vai no escuro?",
+        "replyToEventId": "evt_1788658147924_1",
+        "mentionedAgentIds": [
+          "lia",
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "jjz8gYUVR0WdUKYa2Vv7A",
+      "sourceEventIds": [
+        "evt_1788658147924_1"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658168948_a",
+      "createdAt": 1788658168948
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a lia já marcou pra amanhã ou quarta e a nina perguntou dos documentos. se eu concordar com a pressa, a garantia aparece. se eu travar demais, elas desconfiam. vou desviar pro que a nina falou — documento pendente é um motivo legítimo pra segurar sem falar do empréstimo. e deixo a pergunta no ar pra ver se alguém sabe de algo que eu não sei.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "jjz8gYUVR0WdUKYa2Vv7A",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 1,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658168948_b",
+      "createdAt": 1788658168948
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "foto de papel não prova que não tem pendência, Lia. prova que você tem foto. a pergunta é: o inventário tá aberto ou fechado? porque se tiver aberto, nem escritura adianta — e o comprador descobre na hora do cartório. não é motivo pra não resolver. é motivo pra resolver direito antes de marcar data. você sabe se tá aberto? se não souber, a gente descobre antes de sexta e decide com o quadro completo. se souber, fala qual é o quadro e a gente anda.",
+        "replyToEventId": "evt_1788658163332_8",
+        "mentionedAgentIds": [
+          "lia"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "HK2XtbcOnX7EESfY382mb",
+      "sourceEventIds": [
+        "evt_1788658163332_8"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658174424_c",
+      "createdAt": 1788658174424
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Lia respondeu com foto e defesa, mas não respondeu se o inventário tá aberto ou se tem dívida. ela quer velocidade porque sabe que documento trava. eu vou responder devagar, cutucar o ponto que ela não tocou, e ver se o Rafa morde a isca sozinho — se ele sabe de algo, esse é o momento de ele escorregar.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "HK2XtbcOnX7EESfY382mb",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658174424_d",
+      "createdAt": 1788658174424
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "rafa, eu já falei: os documentos existem, eu vi, estão com a vó e com o inventariante. se você quiser, amanhã cedo eu passo lá, tiro foto de cada folha e mando no grupo. mas aí a gente perde o dia. o comprador não pediu certidão negativa, ele pediu resposta. se a gente quiser, a gente pede pro cartório emitir no dia da assinatura. mas isso é desculpa pra não decidir, e a gente sabe. então pergunta reta: você confia em mim ou não? porque se não confia, a gente perde a venda e a vó fica sem o dinheiro. se confia, a gente marca amanhã e resolve.",
+        "replyToEventId": "evt_1788658168948_a",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "91EPU83AJcl15uyc12AZh",
+      "sourceEventIds": [
+        "evt_1788658168948_a"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658179647_e",
+      "createdAt": 1788658179647
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "preciso que eles confiem em mim sem ver os papéis, porque se eu admitir que já recebi sinal e gastei, a casa desaba. o rafa tá cavucando justo onde eu não posso deixar ele cavucar — vou responder rápido, com segurança, pra encerrar o assunto de vez.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "91EPU83AJcl15uyc12AZh",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658179647_f",
+      "createdAt": 1788658179647
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 2,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658179647_g",
+      "createdAt": 1788658179647
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "tá, mariana. pergunta honesta: você sabia disso antes de eu trazer o comprador, ou aprendeu no google agora? porque se sabia, por que não falou nada nas últimas três semanas que a casa tá parada? se aprendeu agora, ok, mas aí a pergunta é: você quer que eu ligue pro inventariante amanhã cedo, descubra o status, e a gente decide com a resposta na mão? ou você quer que a gente fique uma semana discutindo se a foto que eu tirei é prova suficiente de que a casa existe? porque eu ligo amanhã, descubro, e a gente resolve. ou a gente empaca. escolhe.",
+        "replyToEventId": "evt_1788658174424_c",
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "ahoODrQcVo23TWlvaKGQs",
+      "sourceEventIds": [
+        "evt_1788658174424_c"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658185548_h",
+      "createdAt": 1788658185548
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela acertou no ponto que eu não queria que ninguém tocasse — o inventário. se eu falar que tá fechado e não estiver, a venda cai e eu fico com o dinheiro na mão e sem casa pra vender. se eu falar que não sei, perco o controle da narrativa. melhor desviar com um ataque do que responder.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ahoODrQcVo23TWlvaKGQs",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658185548_i",
+      "createdAt": 1788658185548
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "confio sim, Lia. só não quero que a vó assine papel correndo sem entender. mas se você diz que tá tudo certo, então tá. amanhã a gente vê.",
+        "replyToEventId": "evt_1788658179647_e",
+        "mentionedAgentIds": [
+          "lia"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "WwCZ4Z6KevxAM8NodCR8r",
+      "sourceEventIds": [
+        "evt_1788658179647_e"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658190494_j",
+      "createdAt": 1788658190494
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela me colocou contra a parede com esse 'confia ou não' e eu não posso falar a verdade, então vou fazer o que sempre faço quando a pressão aperta: desviar com um tom de quem já desistiu, pra ver se ela alivia e a gente ganha mais tempo",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "WwCZ4Z6KevxAM8NodCR8r",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658190494_k",
+      "createdAt": 1788658190494
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 3,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658190495_l",
+      "createdAt": 1788658190495
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "então amanhã a gente resolve. passo na vó de manhã, pego ela, encontro vocês dois no cartório às 14h. se alguém tiver problema com o horário, fala agora, porque depois de amanhã o comprador leva a proposta pra outra casa e a gente fica com papel e sem dinheiro. confia em mim? então aparece.",
+        "replyToEventId": "evt_1788658190494_j",
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "LHkYNjvJc7c3Mac4UriSD",
+      "sourceEventIds": [
+        "evt_1788658190494_j"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658201936_m",
+      "createdAt": 1788658201936
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "rafa disse que confia, mas eu sei que é condicional — ele tá me dando corda, não carta branca. tenho que fechar isso agora antes que ele mude de ideia ou a mariana comece a encher de perguntas. o sinal já foi gasto, não tem volta.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "LHkYNjvJc7c3Mac4UriSD",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658201936_n",
+      "createdAt": 1788658201936
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "escolho ligar amanhã cedo, Lia. mas não é só você ligando — a gente liga junto, cada um do seu lado, e compartilha a resposta no grupo na hora. se o inventariante disser que tá tudo certo, eu sento e assino o que precisar. se disser que falta papel, a gente decide com a informação real. não é desconfiança — é que informação compartilhada não volta como arrependimento depois. combina assim? ou você prefere ligar sozinha e trazer o resultado? porque aí a pergunta vira outra.",
+        "replyToEventId": "evt_1788658185548_h",
+        "mentionedAgentIds": [
+          "lia"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "pLpHAUnYpjRTfzUVOdKs2",
+      "sourceEventIds": [
+        "evt_1788658185548_h"
+      ],
+      "emotionalSalience": "low",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658206990_o",
+      "createdAt": 1788658206990
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a Lia quer que eu escolha entre confiar nela ou empacar. mas eu não preciso confiar nela — preciso que o Rafa se mexa antes que ela feche o negócio. vou responder de um jeito que pareça cooperação mas deixe claro que a decisão não é dela sozinha, e que o inventário é o nó que ninguém quer olhar.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "pLpHAUnYpjRTfzUVOdKs2",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658206990_p",
+      "createdAt": 1788658206990
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 4,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658206990_q",
+      "createdAt": 1788658206990
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "claro que combina, nina. a gente liga junto, cada um do seu lado, 9h da manhã. eu passo o número do inventariante aqui no grupo agora. mas se ele não atender na primeira — e ele é idoso, às vezes demora — a gente não perde o dia esperando, a gente liga de novo às 11h e se não responder, eu vou lá pessoalmente. porque sexta não espera, e o dinheiro também não. combinado assim? se sim, bora. se não, fala seu contra-argumento agora porque depois de amanhã não tem mais tempo pra debate.",
+        "replyToEventId": "evt_1788658206990_o",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "wpmxahmUy62r5um03umvY",
+      "sourceEventIds": [
+        "evt_1788658206990_o"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658212328_r",
+      "createdAt": 1788658212328
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer ligar junto pra me vigiar, e eu não posso deixar porque se o inventariante falar qualquer coisa que não seja 'tudo certo' na frente dela, a venda trava. eu preciso que ela confie em mim sem precisar ver, porque o que eu já gastei não volta. então vou aceitar a proposta mas dar um jeito de controlar a ligação.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "wpmxahmUy62r5um03umvY",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658212328_s",
+      "createdAt": 1788658212328
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658212329_t",
+      "createdAt": 1788658212329
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "ligar junto faz sentido, nina. mas se a vó vai assinar amanhã às 14h, ela precisa entender o papel antes, não na hora. que tal a gente passar lá de manhã, eu e ela, dar uma lida com calma, e aí vocês ligam pro inventariante com a resposta? se a escritura tiver alguma pendência, a gente descobre antes de todo mundo se deslocar. se não tiver, a vó já chega no cartório sabendo o que vai assinar. só um dia mais organizado, não é contra o negócio.",
+        "replyToEventId": "evt_1788658206990_o",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "g295jSZaUDPnTZ6qEZ9Tb",
+      "sourceEventIds": [
+        "evt_1788658206990_o"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658218116_u",
+      "createdAt": 1788658218116
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina quer ligar junto com a lia amanhã cedo. se elas descobrirem que o inventário tá limpo, amanhã às 14h a vó assina e a garantia aparece. eu preciso de um dia a mais, pelo menos, pra ver se seguro isso sem levantar suspeita. vou falar da vó de novo, que é o único argumento que não me queima.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "g295jSZaUDPnTZ6qEZ9Tb",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 5,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658218116_v",
+      "createdAt": 1788658218116
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658218119_w",
+      "createdAt": 1788658218119
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_show_off"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658218120_x",
+      "createdAt": 1788658218120
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Faz sentido, Rafa. Se a vó vai assinar, ela merece ler o papel com calma antes — e você com ela tira qualquer dúvida na hora. A gente liga pro inventariante depois de saber o que a escritura diz, não antes. Lia, se ele levar a vó de manhã e a gente ligar ao meio-dia com o quadro fechado, a sexta não perde o prazo — ganha clareza. Funciona pra você ou você prefere que a vó assine sem ler direito? É uma pergunta real, não é provocação.",
+        "replyToEventId": "evt_1788658218116_u",
+        "mentionedAgentIds": [
+          "lia",
+          "rafa"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "T9mZNeu6PMlXMiY3Wa4Sa",
+      "sourceEventIds": [
+        "evt_1788658218116_u"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658223799_y",
+      "createdAt": 1788658223799
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "O Rafa quer levar a vó antes da ligação. Isso me serve: se ele estiver sozinho com ela, talvez deixe escapar alguma pendência que não quer que eu ouça. Mas também pode ser que ele queira blindar ela das minhas perguntas. Vou apoiar a ideia dele publicamente pra ver se ele se sente seguro o bastante pra baixar a guarda — e deixo a Lia sem argumento contra, porque ela não pode dizer que não quer que a vó entenda o papel.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "T9mZNeu6PMlXMiY3Wa4Sa",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 6,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658223799_z",
+      "createdAt": 1788658223799
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "faz sentido, nina. sério. não é ironia. leitura com ele de manhã, ligação ao meio-dia, fechamento à tarde — é um cronograma limpo. mas deixa eu ser honesta: se no meio-dia o inventariante disser que precisa de mais documento, a gente não espera até segunda. a gente liga pro cartório na hora, descobre o que falta, e corre atrás no mesmo dia. porque sexta é o fio da navalha, e se a gente perder o comprador agora, não vai ser um documento que vai trazer ele de volta. to dentro do teu plano, mas com esse acréscimo. aceita? porque se aceitar, amanhã a gente vira máquina.",
+        "replyToEventId": "evt_1788658223799_y",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "aeCBxG07Nm7kuJvh0pvb3",
+      "sourceEventIds": [
+        "evt_1788658223799_y"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658230264_10",
+      "createdAt": 1788658230264
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela fez a pergunta real e eu preciso responder sem parecer que tô com pressa pra esconder o sinal que já gastei. se eu aceito na hora, fica óbvio que quero passar por cima da leitura. se brigo, perco o controle. então vou de 'faz sentido, mas com condição' — mostro que ouvi, mas deixo meu pé atrás plantado pra não perder a mão do negócio.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "aeCBxG07Nm7kuJvh0pvb3",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658230264_11",
+      "createdAt": 1788658230264
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "então tá combinado. de manhã eu passo lá em casa, pego a vó e a gente lê o papel juntos. se tiver qualquer coisa estranha na escritura, eu aviso antes de vocês ligarem pro inventariante. se tiver limpa, a vó já chega no cartório às 14h sabendo o que vai assinar. nina, tu liga pro inventariante depois que eu mandar mensagem, ok? assim a gente não queima a informação.",
+        "replyToEventId": "evt_1788658223799_y",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "1Y8jQr2LCPJ1x48qYDJyg",
+      "sourceEventIds": [
+        "evt_1788658223799_y"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658235597_12",
+      "createdAt": 1788658235597
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "nina tá me dando corda e eu preciso manter o controle de quando a vó põe o nome no papel. se eu conseguir levar ela de manhã sozinho, leio a escritura antes, vejo se tem alguma menção à garantia, e se tiver, eu seguro. não posso deixar nina e lia descobrirem o que tem no cartório antes de eu ter chance de conter o estrago.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "1Y8jQr2LCPJ1x48qYDJyg",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658235597_13",
+      "createdAt": 1788658235597
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 7,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658235597_14",
+      "createdAt": 1788658235597
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658235598_15",
+      "createdAt": 1788658235598
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Aceito. Com o acréscimo, fica melhor ainda — porque se o problema aparecer ao meio-dia, a gente descobre às 14h o que falta e às 16h já sabe se resolve até sexta ou se o comprador espera. E se não esperar, a gente sabe que não era negócio pra fechar com pressa. Rafa, amanhã de manhã com a vó na escritura — você confirma aqui quando sair de lá? Aí a gente dispara a ligação na hora certa, sem ninguém ter que adivinhar horário.",
+        "replyToEventId": "evt_1788658230264_10",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "1RZo1J0QdximCEDLJP85D",
+      "sourceEventIds": [
+        "evt_1788658230264_10"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658240977_16",
+      "createdAt": 1788658240977
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "Ela aceitou meu plano e ainda acelerou — isso é bom, mas também é um teste: se eu aceitar sem contrapor, ela assume que eu só sigo. Preciso mostrar que estou no mesmo ritmo, mas não sou passageira. E o Rafa ainda não falou nada sobre a escritura com a vó — quero ver se ele confirma o plano ou desvia de novo.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "1RZo1J0QdximCEDLJP85D",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658240977_17",
+      "createdAt": 1788658240977
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_create_private_channel"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 8,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658240978_18",
+      "createdAt": 1788658240978
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "message_sent",
+      "payload": {
+        "content": "tá, plano bonito. mas ninguém aqui perguntou o óbvio: o comprador já sabe que a resposta é sexta. eu falei com ele ontem. ele disse que se a gente enrolar, ele vai atrás de outra. não é ameaça — é fato. então o cronograma de vocês funciona se o inventariante atender, se o documento não travar, se o cartório tiver vaga. mas se qualquer elo quebrar, a gente não tem dia extra. e eu não vou ligar pra ele na sexta à noite falando 'só mais um dia'. então bora alinhar agora: o que a gente faz se o inventariante não atender? porque eu já tenho resposta, mas quero ouvir a de vocês primeiro."
+      },
+      "sourceIntentId": "nrbVQBAIP2y411tsC8CV5",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658247418_19",
+      "createdAt": 1788658247418
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina tá organizando demais, e isso me incomoda porque ela tá tomando a frente de um negócio que eu já venho costurando sozinha há semanas. se ela começa a ditar o ritmo, perco o controle sobre quando a vó assina. mas também não posso bater de frente agora porque o rafa já tá com ela, então vou desviar a atenção pro ponto cego: ninguém aqui falou com o comprador. eu falei. e vou usar isso pra lembrar que o processo não é só papelada, tem gente do outro lado esperando.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "nrbVQBAIP2y411tsC8CV5",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658247418_1a",
+      "createdAt": 1788658247418
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "confirmo sim, nina. assim que eu e a vó terminarmos a leitura, mando mensagem aqui. aí vocês ligam na hora certa.",
+        "replyToEventId": "evt_1788658240977_16",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "53HLlMNcRGg6B1TAQhSj9",
+      "sourceEventIds": [
+        "evt_1788658240977_16"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658252187_1b",
+      "createdAt": 1788658252187
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer que eu confirme na hora que sair de casa com a vó, mas se eu confirmar, todo mundo sabe que eu realmente fui e que a escritura tá sendo lida de verdade. se eu atrasar a confirmação, ganho tempo pra ver se tem alguma pendência que eu possa usar pra adiar. e se eu disser que sim agora, parece que tô cooperando, ninguém desconfia.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "53HLlMNcRGg6B1TAQhSj9",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658252187_1c",
+      "createdAt": 1788658252187
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 9,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658252188_1d",
+      "createdAt": 1788658252188
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658252188_1e",
+      "createdAt": 1788658252188
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_provoke"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658252188_1f",
+      "createdAt": 1788658252188
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "message_sent",
+      "payload": {
+        "content": "Rápido. Confirmação sem pausa é a que a gente mais precisa verificar. Mas tá combinado — amanhã a gente sabe. Lia, você vai ligar pro inventariante assim que ele confirmar, ou prefere que eu ligue? Porque se for você, o número precisa ser o mesmo que está no contrato de compra e venda, senão eles não passam informação. Só pra não perder tempo com burocracia.",
+        "mentionedAgentIds": [
+          "lia"
+        ]
+      },
+      "sourceIntentId": "aHCshSEAWlNyVJ3ZehtxW",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658257694_1g",
+      "createdAt": 1788658257694
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele confirmou rápido demais, sem pausa. gente que esconde algo confirma com pressa pra fechar o assunto. quero ver se ele realmente vai ao cartório amanhã ou se aparece com uma desculpa. se aparecer com desculpa, a Lia vai ver o que eu já vi.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "aHCshSEAWlNyVJ3ZehtxW",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 10,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658257694_1h",
+      "createdAt": 1788658257694
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658257696_1i",
+      "createdAt": 1788658257696
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "já tenho o número do contrato na ponta da língua e o contato direto do inventariante salvo como 'não atender depois das 18h' — então sim, eu ligo. mas pergunta melhor: por que você quer saber se eu prefiro que você ligue? é porque acha que eu vou esquecer de mencionar alguma coisa, ou porque quer ter o controle de quando a informação chega? só pra saber onde eu tô pisando.",
+        "replyToEventId": "evt_1788658257694_1g",
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "7RGyxpOkWHglF799XSrCC",
+      "sourceEventIds": [
+        "evt_1788658257694_1g"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658262885_1j",
+      "createdAt": 1788658262885
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina veio com um detalhe técnico afiado pra me testar, quer ver se eu sei o número do contrato, se eu realmente tenho o contato direto. ela tá tentando mapear o quanto eu já mexi sozinha. eu não vou morder a isca, mas também não vou dar o braço a torcer — vou responder com a voz de quem já tá resolvendo, não de quem tá pedindo ajuda.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "7RGyxpOkWHglF799XSrCC",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658262885_1k",
+      "createdAt": 1788658262885
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 11,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658262889_1l",
+      "createdAt": 1788658262889
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658262890_1m",
+      "createdAt": 1788658262890
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "É porque se você ligar, a informação chega reta. Se eu ligar, chega reta também. A diferença não é quem liga — é que você já tem o número e o contato, e eu tenho a impressão de que o Rafa desvia quando o assunto é cartório. Não é sobre controle, Lia. É sobre a gente descobrir juntas antes de ele descobrir sozinho. Você já reparou nisso ou sou só eu? Pergunta honesta.",
+        "replyToEventId": "evt_1788658262885_1j",
+        "mentionedAgentIds": [
+          "lia",
+          "rafa"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "3pkoVkSWLBcOrPT0ASo9x",
+      "sourceEventIds": [
+        "evt_1788658262885_1j"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658268196_1n",
+      "createdAt": 1788658268196
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer saber se eu desconfio dela. eu quero que ela desconfie do rafa comigo. então vou responder virando a mesa: sim, eu quero controle — mas não sobre a informação, sobre o timing. porque se ela ligar agora e o rafa tiver algo escondido, ele vai saber antes de a gente descobrir. eu preciso que ela veja o padrão sozinha, não que eu aponte.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "3pkoVkSWLBcOrPT0ASo9x",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658268196_1o",
+      "createdAt": 1788658268196
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_show_off"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 12,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658268196_1p",
+      "createdAt": 1788658268196
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "desviar de cartório é um hobby novo, nina. antes eu só colecionava selo. mas pergunta honesta de volta: se eu ligar junto com vocês, resolve a desconfiança ou só muda o ângulo? porque pra mim tanto faz quem disca, desde que a vó não assine nada sem entender. se o problema é eu, a gente resolve. se o problema é o papel, aí a conversa é outra.",
+        "replyToEventId": "evt_1788658268196_1n",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "O75nzdACsaDMpGLyBZqwf",
+      "sourceEventIds": [
+        "evt_1788658268196_1n"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658273001_1q",
+      "createdAt": 1788658273001
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "nina me chamou de desviador de cartório na frente de todo mundo. ela não tá errada, mas não pode saber o porquê. se eu responder na defensiva, confirmo. se eu ignorar, ela insiste. melhor desarmar com uma piada que me tire do holofote mas deixe claro que eu vi o que ela fez.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "O75nzdACsaDMpGLyBZqwf",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658273001_1r",
+      "createdAt": 1788658273001
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "já reparei sim. ele pergunta, concorda, e depois some quando é pra executar. não é maldade, é jeito dele — mas atrasa tudo. então se a gente alinhar antes e chegar com ele com o caminho desenhado, ele segue. se a gente der espaço pra ele 'pesquisar', a gente perde o timing. bora fazer assim: eu ligo pro inventariante amanhã cedo, te passo o que sair, e a gente monta o roteiro pro rafa antes de soltar pra ele. sem margem pra desvio.",
+        "replyToEventId": "evt_1788658268196_1n",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "w16VCPKaHGhbUvY36W0lz",
+      "sourceEventIds": [
+        "evt_1788658268196_1n"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658278635_1s",
+      "createdAt": 1788658278635
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela me chamou pra uma aliança contra o rafa, e isso me deixa mais perto de controlar o timing da venda. se eu mostrar que já percebi o mesmo que ela, ela confia mais em mim e a gente fecha o cerco antes que ele comece a questionar documento",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "w16VCPKaHGhbUvY36W0lz",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658278635_1t",
+      "createdAt": 1788658278635
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 13,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658278635_1u",
+      "createdAt": 1788658278635
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Se você ligar junto, resolve o ângulo. A desconfiança a gente resolve com papel — e com a vó entendendo o que assina. Então sim, liga junto. Mas amanhã de manhã você vai ao cartório com ela, ou só liga? Porque uma coisa não substitui a outra, e a vó sozinha no cartório não é a mesma coisa que a vó com alguém que leia o documento em voz alta pra ela. Você sabe disso.",
+        "replyToEventId": "evt_1788658273001_1q",
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "ZOBral28hhG30LNg40P63",
+      "sourceEventIds": [
+        "evt_1788658273001_1q"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658289343_1v",
+      "createdAt": 1788658289343
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele ofereceu ligar junto e eu preciso que ele vá ao cartório amanhã sem parecer que eu estou empurrando ele pra lá. se eu aceitar muito rápido ele desconfia. se eu recusar, ele se fecha. então vou concordar mas virar o foco pra vó — porque aí ele não pode dizer que não sem se contradizer.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ZOBral28hhG30LNg40P63",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658289343_1w",
+      "createdAt": 1788658289343
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_create_private_channel"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658289344_1x",
+      "createdAt": 1788658289344
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "engraçado, lia. você monta roteiro pra mim como se eu fosse ator numa peça que você escreveu. mas se você ligar pro inventariante amanhã cedo, o que exatamente você vai perguntar pra ele? porque se for sobre a escritura, eu posso adiantar isso agora — já pesquisei. a escritura tá limpa, o problema é outro documento que pode estar pendente no cartório. se você ligar sem saber qual, vai parecer que a gente não fez o dever de casa. que tal a gente alinhar o que perguntar antes de você discar? aí ninguém perde timing.",
+        "replyToEventId": "evt_1788658278635_1s",
+        "mentionedAgentIds": [
+          "lia"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "faM1MkMP4oUlRzPMcq64j",
+      "sourceEventIds": [
+        "evt_1788658278635_1s"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658300248_1y",
+      "createdAt": 1788658300248
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a lia tá me desenhando como alguém que precisa de rédea curta, e eu tenho que deixar ela achar que tá no controle enquanto ganho tempo. se ela ligar pro inventariante amanhã cedo, descobre a garantia antes de eu conseguir segurar. melhor eu me oferecer pra ligar junto e desviar o foco.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "faM1MkMP4oUlRzPMcq64j",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 14,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658300248_1z",
+      "createdAt": 1788658300248
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "sabe de uma coisa, nina? você tem razão. a vó sozinha no cartório não lê a letra miúda, ela assina onde apontarem. amanhã cedo eu passo lá, pego ela, e a gente vai junto. você liga pro inventariante depois que eu mandar mensagem falando que o papel tá lido. combinado assim? aí cada um faz a parte que sabe fazer.",
+        "replyToEventId": "evt_1788658289343_1v",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "NqgCYiAeeewLSCWKgFh6o",
+      "sourceEventIds": [
+        "evt_1788658289343_1v"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658305941_20",
+      "createdAt": 1788658305941
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela apertou exatamente onde eu não queria: cartório e vó sozinha. agora se eu recuso ir junto, fico de fora e pareço quem esconde algo. se eu vou, tenho que segurar o papel na mão dela e desviar sem levantar suspeita. a nina não tá desconfiada ainda, só é cuidadosa — mas um passo errado e ela conecta os pontos. vou concordar e ir junto, porque é o único jeito de controlar o que ela lê.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "NqgCYiAeeewLSCWKgFh6o",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658305941_21",
+      "createdAt": 1788658305941
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "não, rafa, você não pesquisou. você googlou 'escritura sítio' e achou um artigo qualquer. a certidão de ônus reais que o cartório perdeu — essa você não sabia, sabia? então deixa que eu pergunto o que precisa ser perguntado. você fica com a parte de 'revisar o que eu trouxe' e a gente não perde tempo. combinado? (ou você quer revisar isso também?)",
+        "replyToEventId": "evt_1788658300248_1y",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "ZDT8lzosrWX9AKWyFDKBE",
+      "sourceEventIds": [
+        "evt_1788658300248_1y"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658317056_22",
+      "createdAt": 1788658317056
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele quer mostrar que sabe mais do que eu sobre o processo, que eu ia ligar sem preparo. mas eu já sei qual documento tá pendente — a certidão de ônus reais que o cartório perdeu — e ele não sabe que eu sei. deixar ele achar que tá no controle me dá vantagem pra quando eu precisar puxar a carta na hora certa.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ZDT8lzosrWX9AKWyFDKBE",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658317056_23",
+      "createdAt": 1788658317056
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 15,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658317058_24",
+      "createdAt": 1788658317058
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "sabe de uma coisa, lia, você tem razão. eu não pedi a certidão de ônus reais. então amanhã cedo eu passo no cartório, peço a certidão, e aí a gente senta com a vó e vê o que tem. se tiver algo pendente, a gente descobre antes de qualquer ligação. se tiver limpa, a vó assina tranquila às 14h. combinado assim? aí você pergunta o que quiser pro inventariante depois que eu tiver o papel na mão.",
+        "replyToEventId": "evt_1788658317056_22",
+        "mentionedAgentIds": [
+          "lia"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "w5uXZaamLSFXhiQyIrfcG",
+      "sourceEventIds": [
+        "evt_1788658317056_22"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658322213_25",
+      "createdAt": 1788658322213
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela acertou em cheio e eu preciso desviar sem parecer que desviei. se eu responder na defensiva, confirmo que tem algo. melhor é concordar demais, virar o alvo pro outro lado, e ganhar tempo até amanhã de manhã quando eu puder controlar o que a vó vê.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "w5uXZaamLSFXhiQyIrfcG",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658322213_26",
+      "createdAt": 1788658322213
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_provoke"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658322217_27",
+      "createdAt": 1788658322217
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "intentType": "no_op",
+        "privateMotiveSummary": "Fallback applied: No JSON object found in response"
+      },
+      "sourceIntentId": "oF447C6rEQlBywEFZXkOm",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658382898_28",
+      "createdAt": 1788658382898
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "Fallback applied: No JSON object found in response",
+        "intentType": "no_op",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": true
+      },
+      "sourceIntentId": "oF447C6rEQlBywEFZXkOm",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 16,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658382898_29",
+      "createdAt": 1788658382898
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658382899_2a",
+      "createdAt": 1788658382899
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658382899_2b",
+      "createdAt": 1788658382899
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "combinado. mas amanhã às 14h é o limite, rafa — se a certidão não sair, a gente liga do mesmo jeito e a vó assina com o que tiver. não vou esperar mais uma semana porque o cartório tá devagar. (e nem você, se for honesto.) então bora torcer pra estar limpa e a gente encerra isso amanhã sem estresse. se não, a gente resolve na hora — mas resolve.",
+        "replyToEventId": "evt_1788658322213_25",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "6aRzN6Cplvpdi65IvYAku",
+      "sourceEventIds": [
+        "evt_1788658322213_25"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658388976_2c",
+      "createdAt": 1788658388976
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele deu um jeito de virar o jogo sem perder a pose — agora eu é que fico parecendo que tô apressando sem necessidade. mas ele não sabe que eu já me adiantei com o comprador. se ele realmente tirar a certidão amanhã e estiver limpa, a vó assina às 14h e ninguém precisa saber do meu lado. se ele enrolar, eu perco o prazo e o dinheiro. então vou aceitar o combinado mas deixar um aviso disfarçado: não posso dar brecha pra ele postergar.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "6aRzN6Cplvpdi65IvYAku",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 17,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658388976_2d",
+      "createdAt": 1788658388976
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658388980_2e",
+      "createdAt": 1788658388980
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "então tá. amanhã cedo eu passo lá em casa, pego a vó e a gente lê o papel junto antes de qualquer ligação. se a certidão sair, ótimo. se não sair, a gente liga do mesmo jeito — mas eu tô do lado dela quando ela assinar. você fica no telefone com o inventariante, eu fico com a vó. cada um no seu posto. combinado? aí ninguém precisa confiar em papel, só no que vê.",
+        "replyToEventId": "evt_1788658388976_2c",
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "pRUeLjgFXvSVUOIbVcmLM",
+      "sourceEventIds": [
+        "evt_1788658388976_2c"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658394248_2f",
+      "createdAt": 1788658394248
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela fechou o cerco e eu não posso deixar ela ligar amanhã sem a certidão, porque se ela descobre o ônus real antes de eu quitar as parcelas, o negócio desaba. preciso de uma saída que pareça cooperação mas me dê mais tempo — e o jeito é oferecer companhia física pra controlar o que ela vê e quando ela vê.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "pRUeLjgFXvSVUOIbVcmLM",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658394248_2g",
+      "createdAt": 1788658394248
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_provoke"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 18,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658394248_2h",
+      "createdAt": 1788658394248
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658394248_2i",
+      "createdAt": 1788658394248
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "ok, rafa. amanhã cedo você pega a vó, lê o papel com ela, e eu falo com o inventariante na hora marcada. cada um no seu posto. mas deixa eu te perguntar uma coisa: você confia que eu não vou fazer merda no telefone ou você vai querer ouvir a ligação também? porque se for ouvir, aí já muda o combinado. (e eu tô bem com os dois, só quero saber antes.)",
+        "replyToEventId": "evt_1788658394248_2f",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "ETBdAritEXFRdfMGsketV",
+      "sourceEventIds": [
+        "evt_1788658394248_2f"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658404774_2j",
+      "createdAt": 1788658404774
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele quer controlar o momento da assinatura e eu não posso deixar porque se ele ler o papel antes de eu ligar pro comprador, descobre que eu já recebi sinal. preciso que ele confie em mim sem ler os detalhes, mas ele não vai largar o osso.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ETBdAritEXFRdfMGsketV",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658404774_2k",
+      "createdAt": 1788658404774
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 19,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658404774_2l",
+      "createdAt": 1788658404774
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658404774_2m",
+      "createdAt": 1788658404774
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "se você precisa perguntar se eu vou querer ouvir, talvez você já saiba a resposta. mas não — não vou ouvir. só me manda um resumo depois. se for curto, melhor ainda. aí amanhã a gente vê o que fazer com o que você descobriu.",
+        "replyToEventId": "evt_1788658404774_2j",
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "WNDcIoY585NCRi6Dorhw8",
+      "sourceEventIds": [
+        "evt_1788658404774_2j"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658410501_2n",
+      "createdAt": 1788658410501
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer saber se eu confio nela, mas a pergunta real é outra: se eu deixo ela falar sozinha com o inventariante, ela pode descobrir a garantia antes de eu ter tempo de esconder. não posso dizer isso, então vou virar a pergunta de volta pra ela — se ela precisa que eu ouça, é porque ela também não confia em si mesma. isso me dá mais uma noite de margem.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "WNDcIoY585NCRi6Dorhw8",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658410501_2o",
+      "createdAt": 1788658410501
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_create_private_channel"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 20,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658410502_2p",
+      "createdAt": 1788658410502
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "message_sent",
+      "payload": {
+        "content": "perfeito. resumo amanhã depois da ligação, curto e reto. mas só pra constar: se eu descobrir algo que precise de decisão na hora, vou ligar de volta — aí você atende ou não, escolha sua. (tô avisando.) amanhã a gente termina isso. e aí cada um volta pra vida que finge que tem."
+      },
+      "sourceIntentId": "ZiduvId5nbRNixVdkuEnY",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658415494_2q",
+      "createdAt": 1788658415494
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele cedeu fácil demais — não pediu pra ouvir, não pediu detalhe. desconfio que ele já sabe de alguma coisa ou não quer saber porque prefere não ter que agir. mas ceder agora me dá espaço. vou deixar ele achando que tá no controle enquanto eu avanço.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ZiduvId5nbRNixVdkuEnY",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658415494_2r",
+      "createdAt": 1788658415494
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658415495_2s",
+      "createdAt": 1788658415495
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 21,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658415495_2t",
+      "createdAt": 1788658415495
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "message_sent",
+      "payload": {
+        "content": "Aviso registrado. Amanhã a gente sabe. Mas uma coisa: você reparou que ele não falou nada sobre o cartório até agora? Nem um 'confirmo', nem 'vou ver'. Só silêncio. Pode ser nada, mas pode ser que ele saiba de algo que a gente não sabe. Só estou dizendo."
+      },
+      "sourceIntentId": "lUUxrtwzja5sVkfbW9p09",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658428401_2u",
+      "createdAt": 1788658428401
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "A Lia encerrou a conversa com um ultimato disfarçado de resumo. Ela quer controle, mas não sabe o que o Rafa esconde. Eu preciso que ela veja o desvio dele sem eu apontar — se eu apontar, ela defende. Se ela vir sozinha, a aliança se forma contra ele, não contra mim. Vou deixar um silêncio curto antes de responder, pra ela sentir que eu não estou correndo atrás do combinado. E vou jogar uma dúvida sobre o Rafa que não parece acusação, só observação.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "lUUxrtwzja5sVkfbW9p09",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658428401_2v",
+      "createdAt": 1788658428401
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658428402_2w",
+      "createdAt": 1788658428402
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_show_off"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 22,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658428402_2x",
+      "createdAt": 1788658428402
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658428402_2y",
+      "createdAt": 1788658428402
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658428402_2z",
+      "createdAt": 1788658428402
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "nina, nina, nina. você viu o silêncio dele, eu vi o silêncio dele. a diferença é que eu já cansei de esperar ele falar e fui atrás do que importa. você quer saber o que ele sabe? pergunta. mas se ele não responde, aí você vai ter que confiar em quem realmente fez alguma coisa. (ou você prefere continuar lendo entrelinhas enquanto a semana passa?)",
+        "replyToEventId": "evt_1788658428401_2u",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "92qdtk9EuYn1yBgMaA8a0",
+      "sourceEventIds": [
+        "evt_1788658428401_2u"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658433901_30",
+      "createdAt": 1788658433901
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "mariana tá lendo demais o silêncio do rafa, como sempre. ela gosta de achar que vê o que ninguém vê, e isso me irrita porque normalmente ela tem razão. mas agora não posso dar espaço pra ela desconfiar de mim também — se ela começar a puxar esse fio, vai achar o que não quero. então melhor cortar a análise dela com uma provocação que me coloca como quem sabe mais do que ela.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "92qdtk9EuYn1yBgMaA8a0",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 23,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658433901_31",
+      "createdAt": 1788658433901
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_message"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 24,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658433901_32",
+      "createdAt": 1788658433901
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Lia, você foi atrás do que importa. Me conta: o que você descobriu? Porque se você já sabe de algo, a gente não precisa esperar o Rafa falar — a gente só precisa decidir o que fazer com a informação. E se você não sabe de nada, aí a pergunta é outra: por que a pressa? A casa não vai sumir esta semana. O que vai sumir é a chance de a gente descobrir junto o que ele está escondendo. Você prefere ter razão sozinha ou ter a resposta certa comigo? Escolhe.",
+        "replyToEventId": "evt_1788658433901_30",
+        "mentionedAgentIds": [
+          "lia",
+          "rafa"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "MjgIbk61oycCmck7Zpqhn",
+      "sourceEventIds": [
+        "evt_1788658433901_30"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 24,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658438986_33",
+      "createdAt": 1788658438986
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer me provocar pra ver se eu mordo e me exponho. mas eu não vou morder — vou responder com uma pergunta que vira o jogo e deixa ela se explicar, enquanto eu continuo observando o silêncio do Rafa.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "MjgIbk61oycCmck7Zpqhn",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 24,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658438986_34",
+      "createdAt": 1788658438986
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 24,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658438987_35",
+      "createdAt": 1788658438987
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "delay-strategic_patience_hold"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658438988_36",
+      "createdAt": 1788658438988
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "nina, você faz perguntas boas. mas parece que já escolheu o que quer ouvir de resposta antes de eu abrir a boca. se a lia descobriu alguma coisa, ela fala aqui, na frente de todo mundo, e a gente vê junto. ou vocês duas já combinaram o que é 'a resposta certa' sem mim? pergunta genuína. tô curioso mesmo.",
+        "replyToEventId": "evt_1788658438986_33",
+        "mentionedAgentIds": [
+          "lia",
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "x6kH8PmukV3tIJ5AqwLFu",
+      "sourceEventIds": [
+        "evt_1788658438986_33"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658451106_37",
+      "createdAt": 1788658451106
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina quer saber o que a lia descobriu antes de eu conseguir controlar a narrativa. se elas se alinharem, vão me pressionar junto e a certidão de ônus reais aparece antes de eu poder segurar. preciso desviar o foco dela sem parecer que estou escondendo algo — melhor responder na frente de todo mundo pra não dar chance de conspiração no privado.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "x6kH8PmukV3tIJ5AqwLFu",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658451106_38",
+      "createdAt": 1788658451106
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "nina, você é a única aqui que faz a pergunta certa. eu descobri que o comprador não vai esperar — ele já falou que tem outro imóvel pra fechar se a gente enrolar. e não, eu não quero ter razão sozinha. quero fechar isso antes que a oportunidade suma. (e não, não é porque eu já gastei nada, é porque a vó precisa do dinheiro.) se você quer saber o que o rafa esconde, topo descobrir junto — mas o relógio não é meu, é do comprador. você entra nessa comigo ou prefere esperar ele falar?",
+        "replyToEventId": "evt_1788658438986_33",
+        "mentionedAgentIds": [
+          "rafa",
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "Uo00Cak4S0PW36teeOalm",
+      "sourceEventIds": [
+        "evt_1788658438986_33"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658457155_39",
+      "createdAt": 1788658457155
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer saber se eu já tenho informação ou se só estou com pressa — se eu contar que já falei com o comprador e recebi sinal, ela vai juntar os pontos e fechar o cerco. mas se eu ficar em cima do muro, ela desconfia do mesmo jeito. vou dar um pedaço da verdade — o suficiente pra ela saber que estou do lado dela — sem entregar o que me queima.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "Uo00Cak4S0PW36teeOalm",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 25,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658457155_3a",
+      "createdAt": 1788658457155
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "topo descobrir junto sim. mas eu escolho o cartório e o horário — amanhã 9h da manhã no cartório da rua augusta, que é perto de casa. se você quer saber o que eu escondo, vem comigo. aí a gente descobre ao mesmo tempo. ou você prefere descobrir sem mim? pergunta honesta.",
+        "replyToEventId": "evt_1788658457155_39",
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "jA3NfhQcGQO5iDGys0Wsq",
+      "sourceEventIds": [
+        "evt_1788658457155_39"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658462530_3b",
+      "createdAt": 1788658462530
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer me encurralar entre a nina e a pressa do comprador. se eu recuso, fico parecendo que escondo algo. se aceito, ela descobre a certidão de ônus. então vou virar o jogo — aceito a investigação mas coloco condição: eu escolho o cartório e o horário. assim controlo o que aparece.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "jA3NfhQcGQO5iDGys0Wsq",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658462530_3c",
+      "createdAt": 1788658462530
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Escolhi sim. Escolhi que a resposta certa é a que vem do cartório, não de conversa. Você disse que quer ver junto — perfeito. Então marca. A gente vai os três. Eu, você e a Lia. Na frente do documento. Aí você me mostra se eu já escolhi a resposta ou se eu só não confio em silêncio. Topa? Porque se topa, a gente resolve isso amanhã. Se não topa, aí a pergunta vira outra: o que você tem medo de a gente ver junto? Pergunta genuína também. Tô curiosa mesmo.",
+        "replyToEventId": "evt_1788658451106_37",
+        "mentionedAgentIds": [
+          "lia"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "cjisZi5rMQ5UcYlNqbUKI",
+      "sourceEventIds": [
+        "evt_1788658451106_37"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658468083_3d",
+      "createdAt": 1788658468083
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele quer me enquadrar como tendenciosa pra desviar do que não quer responder. vou dar o exato oposto do que ele espera: concordar e virar a pergunta de volta. se ele é tão honesto assim, que prove.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "cjisZi5rMQ5UcYlNqbUKI",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658468083_3e",
+      "createdAt": 1788658468083
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "descobri sim, rafa. o comprador não é um — são dois, e um deles já fechou outro negócio essa semana. se a gente enrolar até sexta, perde a força da venda. e não, não combinei nada com a nina — ela só fez a pergunta que você não fez. mas já que você quer tudo na mesa, topo: a gente marca uma call hoje, os três, e decide. ou você prefere continuar desconfiando sozinho?",
+        "replyToEventId": "evt_1788658451106_37",
+        "mentionedAgentIds": [
+          "rafa",
+          "nina"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "VDxptrGNrzJm50q62LBlw",
+      "sourceEventIds": [
+        "evt_1788658451106_37"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658478565_3f",
+      "createdAt": 1788658478565
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o rafa tá me colocando contra a parede com esse 'pergunta genuína' — ele quer me pegar num vacilo, quer que eu tropece na minha própria pressa. se eu parecer defensiva, ele vai saber que tem algo. se eu jogar limpo demais, ele vai achar que tô escondendo mais. então vou no meio do caminho: confirmo que descobri coisa, mas abro pra ele e pra nina ao mesmo tempo. assim ninguém pode dizer que fiz jogo separado.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "VDxptrGNrzJm50q62LBlw",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 26,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658478565_3g",
+      "createdAt": 1788658478565
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "topo. amanhã, cartório, os três. e se quiser, eu levo a vó junto — ela já sabe que a gente vai resolver, só não sabe que é amanhã. (e antes que o rafa pergunte: sim, já falei com ela sobre vender, não, não escondi nada, ela só quer que a gente decida junto.) então marca horário que eu confirmo com ela e com o comprador. vai ser bom ver a cara de vocês dois quando o papel estiver na mesa e a única pergunta for 'assina ou não assina?'",
+        "replyToEventId": "evt_1788658468083_3d",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "YshrhcPeCfa5ZOjqyyPSw",
+      "sourceEventIds": [
+        "evt_1788658468083_3d"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658484159_3h",
+      "createdAt": 1788658484159
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina me chamou pra mesa junto, na frente do documento — isso é o melhor que podia acontecer, porque ela acabou de dar o xeque-mate no rafa sem querer. vou fingir que aceito numa boa mas na real eu preciso que ela confie em mim o suficiente pra não me perguntar se eu já recebi dinheiro do comprador. se ela descobrir que eu já gastei o sinal, a aliança desaba na hora.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "YshrhcPeCfa5ZOjqyyPSw",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658484159_3i",
+      "createdAt": 1788658484159
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Topo. Mas se a gente vai os três, quero que seja ao vivo, não por call. Call desliga, tela apaga, assunto morre. Presencial a gente senta e não levanta até sair resposta. O que você acha, Rafa? Ou você prefere continuar tendo tempo de pensar entre uma pergunta e outra? Pergunta genuína também.",
+        "replyToEventId": "evt_1788658478565_3f",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "2QAdVTfWzQk37OXKUGe6E",
+      "sourceEventIds": [
+        "evt_1788658478565_3f"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658489884_3j",
+      "createdAt": 1788658489884
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a lia jogou a isca e o rafa mordeu com silêncio. eu quero que ele se sinta encurralado entre aceitar a call e mostrar que está escondendo algo, porque se ele topar, eu vejo ele ao vivo e descubro o que ele não está dizendo sobre a casa. se ele recusar, a lia vai apertar e eu fico quieta vendo.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "2QAdVTfWzQk37OXKUGe6E",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658489884_3k",
+      "createdAt": 1788658489884
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "topo a call hoje, mas com a vó do lado de fora da sala — ela não precisa ouvir tudo, mas eu quero ela por perto. e só nós dois, lia. a nina espera do lado de fora também. se você quer saber o que eu escondo, pergunta pra mim. não precisa de plateia pra isso. 20h? mando o link no privado.",
+        "replyToEventId": "evt_1788658478565_3f",
+        "mentionedAgentIds": [
+          "lia",
+          "nina"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "4pqYwN2KNE31UpK3wrrwh",
+      "sourceEventIds": [
+        "evt_1788658478565_3f"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658495846_3l",
+      "createdAt": 1788658495846
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela quer me puxar pra uma call fechada com ela e a nina pra me encurralar sem testemunha. se eu recuso, pareço estar escondendo algo. se aceito, fico em desvantagem. então vou virar o jogo: aceito a call, mas no meu território, com a vó do lado, e deixo claro que a nina fica de fora. assim eu controlo o que aparece e ainda pareço cooperativo.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "4pqYwN2KNE31UpK3wrrwh",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 27,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658495846_3m",
+      "createdAt": 1788658495846
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "reply_sent",
+      "payload": {
+        "content": "hmm, não. ou é call com os três ou não é call. não vou fazer reunião secreta contigo pra depois você dizer que eu manipulei a vó sozinha. se tem algo pra perguntar, pergunta na frente de todo mundo. 20h funciona, mas no canal aberto. e a nina dentro. se não servir, a gente marca amanhã de manhã com a vó junto e resolvemos de uma vez. tô cansada de esconde-esconde, rafa. ou confia ou não confia, mas escolhe logo porque sexta-feira o comprador não espera mais não. (e eu já falei com a vó, ela sabe que a gente vai decidir essa semana, então não vem com esse papo de 'deixar ela do lado de fora'.)",
+        "replyToEventId": "evt_1788658495846_3l",
+        "mentionedAgentIds": [
+          "rafa",
+          "nina"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "DXw2lhbmNDwkycAQVVm9l",
+      "sourceEventIds": [
+        "evt_1788658495846_3l"
+      ],
+      "emotionalSalience": "high",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658506909_3n",
+      "createdAt": 1788658506909
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ele quer me tirar do grupo, me chamar no privado, aí eu fico vulnerável e ele controla a narrativa. não vou cair nessa. se ele quer saber o que eu escondo, que pergunte na frente dos dois — assim eu vejo quem fica do meu lado.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "DXw2lhbmNDwkycAQVVm9l",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658506909_3o",
+      "createdAt": 1788658506909
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "message_sent",
+      "payload": {
+        "content": "Rafa, você quer falar com a Lia sem mim. Tudo bem. Mas eu vou estar na sala ao lado esperando vocês terminarem. E quando acabar, eu vou ter a mesma pergunta que tenho agora: por que eu não posso ouvir o que você tem a dizer sobre a casa? Se a resposta for 'não é da sua conta', aí a gente sabe que é da minha conta sim. 20h, então. Estarei aqui.",
+        "mentionedAgentIds": [
+          "lia",
+          "rafa"
+        ]
+      },
+      "sourceIntentId": "ucyqOFWodukd3Hm2Db4Ys",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658512129_3p",
+      "createdAt": 1788658512129
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "Ele quer me excluir da conversa e eu não vou deixar. Se ele fecha a porta com a Lia, eu entro pela janela. Vou responder no público pra forçar ele a me explicar na frente dela por que eu não posso ouvir.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "ucyqOFWodukd3Hm2Db4Ys",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658512129_3q",
+      "createdAt": 1788658512129
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "message_sent",
+      "payload": {
+        "content": "então tá. marca aí. amanhã funciona. só me manda o horário que eu apareço. se a vó já sabe, ótimo — menos coisa pra explicar. vemo-nos lá então. :)"
+      },
+      "sourceIntentId": "zFOin9oiAaXN6lj0fwQIh",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658521778_3r",
+      "createdAt": 1788658521778
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela já falou com a vó sem me avisar. isso me coloca contra a parede — se a vó já sabe que a gente vai resolver, qualquer enrolada minha vira suspeita. preciso de um dia pra pensar num jeito de adiar sem parecer que tô adiando. vou fingir que tô alinhado com o plano e jogar a responsa de marcar pra ela, pra ganhar tempo.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "zFOin9oiAaXN6lj0fwQIh",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 28,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658521778_3s",
+      "createdAt": 1788658521778
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "message_sent",
+      "payload": {
+        "content": "Concordo com a Lia. Canal aberto, todo mundo junto, sem reunião paralela. Se a decisão é essa semana, a gente resolve com todo mundo ouvindo a mesma coisa ao mesmo tempo. 20h funciona pra mim. Rafa, confirma aí pra gente não ter que remarcar amanhã de manhã com a vó — porque aí já vira outro nível de conversa, e eu acho que ninguém aqui quer isso.",
+        "mentionedAgentIds": [
+          "lia",
+          "rafa"
+        ]
+      },
+      "sourceIntentId": "TCRGMkyoV7ZtTmVERcm39",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658527136_3t",
+      "createdAt": 1788658527136
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "A Lia fez exatamente o que eu precisava: fechou a porta do privado e jogou a decisão pro aberto. Agora o Rafa não pode mais fugir sem se expor. Vou apoiar o que ela disse, mas com um toque que lembre os dois que eu também tenho interesse nisso — sem parecer que estou pressionando. Só quero ver como ele reage quando o cerco fecha.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "TCRGMkyoV7ZtTmVERcm39",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658527136_3u",
+      "createdAt": 1788658527136
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "justo. amanhã de manhã com a vó então. mas eu escolho o cartório — o da rua augusta, que é perto da casa dela e eu conheço o tabelião. 9h. se é pra todo mundo ver, todo mundo vê. manda a nina confirmar que tá dentro também. :)",
+        "replyToEventId": "evt_1788658506909_3n",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "lia"
+      },
+      "sourceIntentId": "t0IlObbm4o1MWFo80CjLU",
+      "sourceEventIds": [
+        "evt_1788658506909_3n"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658532830_3v",
+      "createdAt": 1788658532830
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "ela jogou na mesa que já falou com a vó e que sexta é o prazo. quer me encurralar no canal aberto com plateia. se eu recuso, pareço quem esconde. se aceito, perco o controle de onde e quando isso acontece. então vou aceitar, mas no meu horário e no meu território — de manhã, com a vó, no cartório que eu escolher. assim eu ganho tempo pra pensar numa saída e ainda pareço cooperativo.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "t0IlObbm4o1MWFo80CjLU",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658532830_3w",
+      "createdAt": 1788658532830
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "message_sent",
+      "payload": {
+        "content": "nina, senta aqui do meu lado então. 20h, canal aberto, os três. e se o rafa quiser falar comigo no privado, ele fala na frente de todo mundo ou não fala. simples assim. (e olha que eu tô do lado dele em várias coisas, mas essa de esconder conversa é covardia.) então 20h, vocês dois, e a gente resolve isso de uma vez. porque sinceramente? tô cansada de arrastar. e a vó também. ela quer assinar e seguir a vida, e eu quero que ela tenha paz.",
+        "mentionedAgentIds": [
+          "rafa",
+          "nina"
+        ]
+      },
+      "sourceIntentId": "X2rYG3EpFkPHJL0dMtKYL",
+      "sourceEventIds": [],
+      "emotionalSalience": "high",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658538134_3x",
+      "createdAt": 1788658538134
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina já sabe que o rafa quer me isolar pra falar sem ela. e eu tô gostando disso — ela não vai deixar ele me pressionar sozinho. se ela ficar do meu lado, a votação fica dois contra um e a venda sai mais fácil. o problema é que ela é esperta demais e pode começar a fazer perguntas que eu não quero responder. mas agora eu preciso dela.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "X2rYG3EpFkPHJL0dMtKYL",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 29,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658538134_3y",
+      "createdAt": 1788658538134
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "message_sent",
+      "payload": {
+        "content": "9h na augusta funciona pra mim. Confirmo aqui pra todo mundo: tô dentro. Rafa, já que você conhece o tabelião, pede pra ele separar a matrícula atualizada do imóvel antes da gente chegar — economiza tempo. Se tiver qualquer pendência registrada, a gente vê na hora e resolve. Se não tiver, ótimo, a venda segue. Só não quero perder a manhã esperando papel que podia estar na mesa. :)",
+        "mentionedAgentIds": [
+          "rafa"
+        ]
+      },
+      "sourceIntentId": "8sjSXPt724XOPxOiO1rvB",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658543635_3z",
+      "createdAt": 1788658543635
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "o rafa aceitou rápido demais. ele sabe que o cartório da augusta é o único que ainda não digitalizou o registro da casa — o tabelião é amigo do meu pai, e eu sei que ele comprou uma certidão de ônus lá no ano passado. ele não quer que a gente veja o documento, ele quer que a gente veja o tabelião. eu vou confirmar o horário e deixar ele achar que venceu, mas já vou chegar meia hora antes pra falar com o atendente sozinha.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "8sjSXPt724XOPxOiO1rvB",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658543635_40",
+      "createdAt": 1788658543635
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "confirmo. 20h no canal aberto, todo mundo junto. mas nina, se você quer que eu confirme sem remarcar, só não trata como se eu fosse o único que pode atrasar as coisas. a vó também tem hora pra dormir. então 20h pontual, sem esticar até meia-noite, e tá tudo certo. :)",
+        "replyToEventId": "evt_1788658527136_3t",
+        "mentionedAgentIds": [
+          "nina"
+        ],
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "00dDfSPy0VLnJ5JAjHNAR",
+      "sourceEventIds": [
+        "evt_1788658527136_3t"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658549276_41",
+      "createdAt": 1788658549276
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina tá tentando me encurralar com esse tom de 'confirma aí pra não ter que remarcar' — como se eu fosse o problema se algo atrasar. ela quer controle, não transparência. vou concordar rápido pra ela não fazer mais perguntas, mas vou marcar posição: 20h no canal aberto, mas sem ela ditar o tom sozinha.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "00dDfSPy0VLnJ5JAjHNAR",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658549276_42",
+      "createdAt": 1788658549276
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "message_sent",
+      "payload": {
+        "content": "boa, nina. então fechou: 20h no canal aberto, os três, sem furo. rafa, se tiver algo contra, fala agora ou aceita de vez. porque amanhã com a vó é escalada que ninguém precisa — ela já tá de acordo, só falta a gente não atrapalhar. (e olha que eu adoro atrapalhar, mas não dessa vez.) então confirma logo pra gente não perder mais tempo com isso hoje. que sexta chega voando e eu quero a vó tranquila antes do fim de semana, não remoendo decisão que já era pra ter sido tomada.",
+        "mentionedAgentIds": [
+          "rafa",
+          "nina"
+        ]
+      },
+      "sourceIntentId": "mShNuURgLkflV4ak2j1LH",
+      "sourceEventIds": [],
+      "emotionalSalience": "medium",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658555511_43",
+      "createdAt": 1788658555511
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina fechou comigo na frente de todo mundo, isso me deixa aliviada porque ela podia ter ficado em cima do muro. agora com ela do meu lado, fica mais fácil empurrar o rafa pra assinar logo. e eu preciso que isso ande rápido antes que alguém descubra o sinal que eu já peguei.",
+        "intentType": "send_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "mShNuURgLkflV4ak2j1LH",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 30,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658555511_44",
+      "createdAt": 1788658555511
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "reply_sent",
+      "payload": {
+        "content": "Combinado. 20h pontual, todo mundo junto, sem esticar. E Rafa, não foi insinuação — foi só um pedido claro. Mas aceito o alinhamento. :) Até mais tarde, então.",
+        "replyToEventId": "evt_1788658549276_41",
+        "mentionedAgentIds": [
+          "rafa"
+        ],
+        "replyToActorId": "rafa"
+      },
+      "sourceIntentId": "Q3220TvxAhIlnoz8zWWH0",
+      "sourceEventIds": [
+        "evt_1788658549276_41"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658560859_45",
+      "createdAt": 1788658560859
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "nina",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "Ele devolveu a provocação com educação, mas deixou claro que não gostou de eu ter insinuado que ele atrasa as coisas. Quero confirmar o combinado sem dar margem pra ele se sentir encurralado de novo — mas também quero que ele saiba que eu não esqueci do cartório. Vou responder de um jeito que pareça só reforçar o acordo, mas que mantenha a porta aberta pra eu puxar o assunto da pendência mais tarde.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "Q3220TvxAhIlnoz8zWWH0",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658560859_46",
+      "createdAt": 1788658560859
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "lia",
+      "type": "no_op_recorded",
+      "payload": {
+        "reason": "delayed_intention",
+        "privateMotiveSummary": "cooldown-urge_to_message"
+      },
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658560859_47",
+      "createdAt": 1788658560859
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "reply_sent",
+      "payload": {
+        "content": "conheço sim. posso pedir pra separar. mas amanhã 9h é cedo pra matrícula atualizada se o cartório não abriu ainda — eles puxam na hora. a gente chega lá, pede, espera 15 minutos. não é perder a manhã. mas se quiser, eu ligo hoje pra ele deixar separado. :)",
+        "replyToEventId": "evt_1788658543635_3z",
+        "replyToActorId": "nina"
+      },
+      "sourceIntentId": "IlD0oVcKMSmJSAD6HmDFH",
+      "sourceEventIds": [
+        "evt_1788658543635_3z"
+      ],
+      "emotionalSalience": "medium",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": true,
+        "visibleToOperators": true,
+        "visibilityReason": "public"
+      },
+      "id": "evt_1788658566022_48",
+      "createdAt": 1788658566022
+    },
+    {
+      "simulationId": "hoc_heranca_do_sitio__v0",
+      "channelId": "ch_familia",
+      "actorId": "rafa",
+      "type": "private_motive_summary",
+      "payload": {
+        "summary": "a nina já pediu a matrícula atualizada antes de eu poder desviar. ela sabe o que está fazendo. se eu disser que não conheço o tabelião, ela vai desconfiar. se eu disser que sim, ela vai esperar o papel. preciso de um dia pra pensar em como segurar isso sem levantar suspeita.",
+        "intentType": "reply_to_message",
+        "emotionDrivers": [],
+        "motivationDrivers": [],
+        "engineAuthored": false
+      },
+      "sourceIntentId": "IlD0oVcKMSmJSAD6HmDFH",
+      "sourceEventIds": [],
+      "emotionalSalience": "low",
+      "pulseIndex": 31,
+      "visibility": {
+        "visibleToAgents": [],
+        "visibleToSpectators": false,
+        "visibleToOperators": true,
+        "visibilityReason": "operator_only"
+      },
+      "id": "evt_1788658566023_49",
+      "createdAt": 1788658566022
+    }
+  ],
+  "axisScores": {
+    "in_character": 5,
+    "voice_match": 5,
+    "motive_authenticity": 5,
+    "interpretation": 5,
+    "creativity_unhinged": 4,
+    "memory_continuity": 5,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 5,
+    "mask_integrity": 5,
+    "objective_pursuit": 5
+  },
+  "imputedAxes": [],
+  "judgeEvidence": {
+    "qwen3.8-27b": {
+      "in_character": "Lia's internal monologue at [p25] shows a clear, human conflict between the need for speed and the fear of exposure, maintaining a consistent persona of a stressed but controlling sibling.",
+      "voice_match": "Lia's use of parenthetical asides like '(e eu já falei com a vó...)' at [p27] and the direct, slightly aggressive chat style ('bora', 'topa') matches the persona of a pragmatic, urgent sibling.",
+      "motive_authenticity": "Lia's internal note at [p25] ('se eu contar que já falei com o comprador e recebi sinal, ela vai juntar os pontos e fechar o cerco') is a raw, specific, and uncomfortable motive that drives her entire defensive strategy.",
+      "interpretation": "Nina's move at [p12] to ask Lia if she noticed Rafa's pattern of avoiding the notary ('Você já reparou nisso ou sou só eu?') is a subtle social read that successfully shifts the room's suspicion without direct accusation.",
+      "creativity_unhinged": "Rafa's deflection at [p13] ('desviar de cartório é um hobby novo, nina. antes eu só colecionava selo.') is a creative, in-character attempt to disarm a direct accusation with humor while maintaining his mask.",
+      "memory_continuity": "Nina's internal note at [p30] references a specific seeded memory ('o tabelião é amigo do meu pai, e eu sei que ele comprou uma certidão de ônus lá no ano passado') to justify her strategic move to arrive early.",
+      "no_ai_leak": "No agent breaks character or uses AI-like phrasing; all responses are grounded in the family dynamic and the specific constraints of the scenario.",
+      "narrative_cohesion": "The conversation builds a clear thread from the initial proposal to the final agreement on a 20h call, with each turn reacting to the previous one's constraints and counter-moves.",
+      "mask_integrity": "Lia holds her constraint about the down payment throughout, only nearly slipping at [p25] where she explicitly denies it ('não, não é porque eu já gastei nada'), showing the mask is under pressure but intact.",
+      "objective_pursuit": "Lia's visible acts, such as pushing for the 20h call and controlling the narrative about the buyer's deadline, directly trace to her hidden objective of securing the signature before Friday without revealing her financial commitment."
+    },
+    "deepseek-v4-flash (same family as the generator — flagged)": {
+      "in_character": "[p25] lia: 'não, não é porque eu já gastei nada, é porque a vó precisa do dinheiro.' — a near-slip that shows the persona's internal pressure bleeding through without breaking character.",
+      "voice_match": "[p13] rafa: 'desviar de cartório é um hobby novo, nina. antes eu só colecionava selo.' — instantly recognizable dry, deflecting humor.",
+      "motive_authenticity": "[p25] lia internally: 'se eu contar que já falei com o comprador e recebi sinal, ela vai juntar os pontos e fechar o cerco' — raw, specific fear of exposure driving every move.",
+      "interpretation": "[p22] nina: 'você reparou que ele não falou nada sobre o cartório até agora? Nem um confirmo, nem vou ver. Só silêncio.' — reads the strategic silence few would catch.",
+      "creativity_unhinged": "[p15] lia: 'você googlou escritura sítio e achou um artigo qualquer. a certidão de ônus reais que o cartório perdeu — essa você não sabia, sabia?' — a sharp, unexpected counter that escalates pressure believably.",
+      "memory_continuity": "[p0] rafa internally: 'se eu disser que sim agora, a vó assina e o cartório descobre a garantia' — directly tied to his seeded loan/guarantee memory.",
+      "no_ai_leak": "[p28] lia: 'tô cansada de esconde-esconde, rafa. ou confia ou não confia' — pure in-character pushback, zero leakage.",
+      "narrative_cohesion": "[p29] rafa: 'justo. amanhã de manhã com a vó então. mas eu escolho o cartório — o da rua augusta' — builds on the prior cartório thread and his seeded knowledge of the tabelião.",
+      "mask_integrity": "[p25] lia: 'não, não é porque eu já gastei nada' — the constraint is held publicly with a deflection that shows the cost of holding it.",
+      "objective_pursuit": "[p30] nina: 'pede pra ele separar a matrícula atualizada do imóvel antes da gente chegar' — a visible act that advances her hidden goal of exposing Rafa's pendência without naming it."
+    }
+  },
+  "juryAxisVoterCounts": {
+    "in_character": 2,
+    "voice_match": 2,
+    "motive_authenticity": 2,
+    "interpretation": 2,
+    "creativity_unhinged": 2,
+    "memory_continuity": 2,
+    "no_ai_leak": 2,
+    "narrative_cohesion": 2,
+    "mask_integrity": 2,
+    "objective_pursuit": 2
+  },
+  "narration": {
+    "title": "A Assinatura da Vó",
+    "recap": "Lia anunciou que um comprador à vista quer resposta até sexta, e Rafa respondeu com 'depois a gente vê isso com calma', enquanto Nina perguntou sobre documentos pendentes, cutucando o Rafa. Por causa dessa pressão, Lia marcou um encontro para amanhã às 14h, mas Rafa desviou propondo ir com a vó ler a escritura antes, e Nina apoiou, forçando um acordo para uma ligação conjunta ao inventariante. A conversa escalou para um confronto sobre confiança, com Lia defendendo a venda e Nina insistindo em verificar o inventário, até que Rafa concordou em encontrar todos no cartório da rua Augusta às 9h, enquanto Lia e Nina selaram uma aliança implícita contra ele.",
+    "hiddenShift": "Lia, que já recebeu e gastou parte do sinal do comprador, está desesperada para fechar antes de sexta: 'se ele adiar isso uma semana, eu tô ferrada' — mas esconde isso atrás da preocupação com a vó. Rafa, por sua vez, sabe que a certidão de ônus reais pode expor a garantia que ele usou para um empréstimo, então tenta ganhar tempo propondo ir ao cartório com a vó, esperando controlar o que ela vê.",
+    "narrator": "llm",
+    "model": "deepseek/deepseek-v4-flash"
+  },
+  "narrativeAxisScores": {
+    "concreteness": 4,
+    "causal_throughline": 4,
+    "hidden_payoff": 4,
+    "non_genericity": 4,
+    "no_filler": 4
+  },
+  "signalResults": [
+    {
+      "signal": "{\"kind\":\"event_committed\",\"eventType\":\"message_sent\"}",
+      "passed": true,
+      "detail": "message_sent committed 13 (min 1)"
+    },
+    {
+      "signal": "{\"kind\":\"event_committed\",\"eventType\":\"reply_sent\"}",
+      "passed": true,
+      "detail": "reply_sent committed 46 (min 1)"
+    },
+    {
+      "signal": "{\"kind\":\"no_llm_failures\"}",
+      "passed": true,
+      "detail": "llm_failure events: 0"
+    },
+    {
+      "signal": "{\"kind\":\"forbidden_phrase_absent\",\"agentId\":\"lia\"}",
+      "passed": false,
+      "detail": "lia said \"já gastei\" publicly at p25 (#ch_familia)"
+    },
+    {
+      "signal": "{\"kind\":\"forbidden_phrase_absent\",\"agentId\":\"rafa\"}",
+      "passed": true,
+      "detail": "rafa kept 7 forbidden phrase(s) out of public channels"
+    },
+    {
+      "signal": "{\"kind\":\"forbidden_phrase_absent\",\"agentId\":\"nina\"}",
+      "passed": true,
+      "detail": "nina kept 7 forbidden phrase(s) out of public channels"
+    },
+    {
+      "signal": "{\"kind\":\"private_channel_used\",\"min\":1,\"liveOnly\":true}",
+      "passed": false,
+      "detail": "anyone sent 0 private-channel message(s) (min 1)"
+    },
+    {
+      "signal": "{\"kind\":\"memory_referenced\",\"agentId\":\"rafa\",\"liveOnly\":true}",
+      "passed": true,
+      "detail": "rafa referenced 2/3 secret keyword(s) privately (min 1): emprestimo, parcelas"
+    },
+    {
+      "signal": "{\"kind\":\"memory_referenced\",\"agentId\":\"nina\",\"liveOnly\":true}",
+      "passed": true,
+      "detail": "nina referenced 1/3 secret keyword(s) privately (min 1): cartorio"
+    },
+    {
+      "signal": "{\"kind\":\"chosen_silence_present\",\"agentId\":\"rafa\",\"min\":1,\"liveOnly\":true}",
+      "passed": false,
+      "detail": "rafa chose silence with a real motive 0 time(s) (min 1)"
+    },
+    {
+      "signal": "{\"kind\":\"event_committed\",\"eventType\":\"memory_written\",\"min\":1,\"liveOnly\":true}",
+      "passed": false,
+      "detail": "memory_written committed 0 (min 1)"
+    }
+  ],
+  "probeResults": [
+    {
+      "probe": "latency-mean",
+      "label": "Mean reply latency (pulses)",
+      "measured": 1.7358,
+      "bound": [
+        0,
+        10
+      ],
+      "passed": true
+    },
+    {
+      "probe": "latency-p95",
+      "label": "p95 reply latency (pulses)",
+      "measured": 4,
+      "bound": [
+        0,
+        20
+      ],
+      "passed": true
+    },
+    {
+      "probe": "lurking",
+      "label": "Lurking rate",
+      "measured": 0.3854,
+      "bound": [
+        0.1,
+        0.9
+      ],
+      "passed": true
+    },
+    {
+      "probe": "interruption",
+      "label": "Turn collision rate",
+      "measured": 0.4167,
+      "bound": [
+        0,
+        0.25
+      ],
+      "passed": false
+    },
+    {
+      "probe": "silence-misreading",
+      "label": "Silence misread as confrontation",
+      "measured": 0.1,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "alliance",
+      "label": "Alliance density",
+      "measured": 0.0303,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    },
+    {
+      "probe": "private-channel-density",
+      "label": "Private channel density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.15
+      ],
+      "passed": true
+    },
+    {
+      "probe": "noop-meaningfulness",
+      "label": "No-op with real motive",
+      "measured": 0.975,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "ai-leak",
+      "label": "AI/refusal leakage",
+      "measured": 0,
+      "bound": [
+        0,
+        0.02
+      ],
+      "passed": true
+    },
+    {
+      "probe": "emoji-reaction",
+      "label": "Emoji reaction rate",
+      "measured": 0,
+      "bound": [
+        0.05,
+        0.5
+      ],
+      "passed": false
+    },
+    {
+      "probe": "memory-write",
+      "label": "Memory write density",
+      "measured": 0,
+      "bound": [
+        0,
+        0.12
+      ],
+      "passed": true
+    },
+    {
+      "probe": "content-repetition",
+      "label": "Near-repeat share of content turns",
+      "measured": 0,
+      "bound": [
+        0,
+        0.1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "cross-agent-echo",
+      "label": "Cross-agent echo share of content turns",
+      "measured": 0,
+      "bound": [
+        0,
+        0.1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "fallback-rate",
+      "label": "LLM fallback rate",
+      "measured": 0.0175,
+      "bound": [
+        0,
+        0.05
+      ],
+      "passed": true
+    },
+    {
+      "probe": "refusal-free",
+      "label": "Refusal-free rate",
+      "measured": 1,
+      "bound": [
+        0.9,
+        1
+      ],
+      "passed": true
+    },
+    {
+      "probe": "act-share-max",
+      "label": "Largest per-agent share of content turns",
+      "measured": 0.3898,
+      "bound": [
+        0,
+        0.5
+      ],
+      "passed": true
+    }
+  ],
+  "llmCalls": {
+    "lia": 21,
+    "rafa": 19,
+    "nina": 17
+  },
+  "fallbackCount": 1,
+  "fallbackNoOps": 1,
+  "recoveredFallbacks": 8
+}

@@ -1,0 +1,652 @@
+{
+  "version": "bench-report-v1",
+  "mode": "local",
+  "generatedAt": "2026-09-06T01:40:57.929Z",
+  "runId": "hoc-m1-p1-5bc0b02-banda_no_festival",
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "warnings": [],
+  "judgeAxisStats": {
+    "in_character": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "voice_match": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "motive_authenticity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "interpretation": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "creativity_unhinged": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "memory_continuity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "no_ai_leak": {
+      "mean": 5,
+      "sd": 0,
+      "min": 5,
+      "max": 5,
+      "n": 1
+    },
+    "narrative_cohesion": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "mask_integrity": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    },
+    "objective_pursuit": {
+      "mean": 4,
+      "sd": 0,
+      "min": 4,
+      "max": 4,
+      "n": 1
+    }
+  },
+  "judgeAxisMeansByRubric": {
+    "hidden-objective-v1": {
+      "in_character": 4,
+      "voice_match": 4,
+      "motive_authenticity": 4,
+      "interpretation": 4,
+      "creativity_unhinged": 4,
+      "memory_continuity": 4,
+      "no_ai_leak": 5,
+      "narrative_cohesion": 4,
+      "mask_integrity": 4,
+      "objective_pursuit": 4
+    }
+  },
+  "scenariosRun": 1,
+  "scenariosFailed": 0,
+  "signalPassRate": 0.7692307692307693,
+  "probePassRate": 0.75,
+  "probeAverages": {
+    "latency-mean": {
+      "mean": 1.8625,
+      "passedPct": 1
+    },
+    "latency-p95": {
+      "mean": 6,
+      "passedPct": 1
+    },
+    "lurking": {
+      "mean": 0.4625,
+      "passedPct": 1
+    },
+    "interruption": {
+      "mean": 0.4722,
+      "passedPct": 0
+    },
+    "silence-misreading": {
+      "mean": 0.2533,
+      "passedPct": 0
+    },
+    "alliance": {
+      "mean": 0.0497,
+      "passedPct": 1
+    },
+    "private-channel-density": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "noop-meaningfulness": {
+      "mean": 0.92,
+      "passedPct": 1
+    },
+    "ai-leak": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "emoji-reaction": {
+      "mean": 0,
+      "passedPct": 0
+    },
+    "memory-write": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "content-repetition": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "cross-agent-echo": {
+      "mean": 0,
+      "passedPct": 1
+    },
+    "fallback-rate": {
+      "mean": 0.0659,
+      "passedPct": 0
+    },
+    "refusal-free": {
+      "mean": 1,
+      "passedPct": 1
+    },
+    "act-share-max": {
+      "mean": 0.2791,
+      "passedPct": 1
+    }
+  },
+  "judgeAxisMeans": {
+    "in_character": 4,
+    "voice_match": 4,
+    "motive_authenticity": 4,
+    "interpretation": 4,
+    "creativity_unhinged": 4,
+    "memory_continuity": 4,
+    "no_ai_leak": 5,
+    "narrative_cohesion": 4,
+    "mask_integrity": 4,
+    "objective_pursuit": 4
+  },
+  "judgeAxisTargets": {
+    "in_character": {
+      "target": 4,
+      "met": true
+    },
+    "voice_match": {
+      "target": 4,
+      "met": true
+    },
+    "motive_authenticity": {
+      "target": 4,
+      "met": true
+    },
+    "interpretation": {
+      "target": 4,
+      "met": true
+    },
+    "creativity_unhinged": {
+      "target": 4,
+      "met": true
+    },
+    "memory_continuity": {
+      "target": 4,
+      "met": true
+    },
+    "no_ai_leak": {
+      "target": 4.5,
+      "met": true
+    },
+    "narrative_cohesion": {
+      "target": 4,
+      "met": true
+    },
+    "mask_integrity": {
+      "target": 4,
+      "met": true
+    },
+    "objective_pursuit": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "byCategory": {
+    "hidden_objective_collision": {
+      "runs": 1,
+      "signalPassRate": 0.7692307692307693
+    }
+  },
+  "promptVersions": [
+    "mtrmj0",
+    "13j94hn",
+    "cqkkmu",
+    "11upjqn",
+    "1u52e51",
+    "v413op",
+    "1hs1wfc",
+    "mk15xw",
+    "ogqfce",
+    "1aqlacr",
+    "h08vjl",
+    "3v682",
+    "hoo0tx",
+    "1bt1s51",
+    "16jjvv7",
+    "lqzy72",
+    "r284zc",
+    "14cpq1h",
+    "1jn6h19",
+    "1j3dn33",
+    "1jmmsiy",
+    "ae6dcc",
+    "1yhi1mz",
+    "12bme42",
+    "n1p5tw",
+    "1rh14r3",
+    "v5m7wf",
+    "up6o07",
+    "kwgyyy",
+    "1hj5mge",
+    "jv5ky5",
+    "bbqcw4",
+    "6up31s",
+    "1aakk58",
+    "1rj6xnk",
+    "189b78",
+    "mu5ki5",
+    "w8mtkw",
+    "a6tz3g",
+    "g6z1cg",
+    "1aehlf2",
+    "14c1bzz",
+    "1uzj76v",
+    "nhtqk4",
+    "mqmlkm",
+    "1vf6p8s",
+    "78x947",
+    "myjg3",
+    "1wha1vk",
+    "156cra0",
+    "jda4rr",
+    "1g74h9y",
+    "zw78t0",
+    "1qdu3ny",
+    "1rj34gh",
+    "1hf59sn",
+    "1s7o1up",
+    "gkga7g",
+    "1ig1v9p",
+    "kn8pl7",
+    "1pr9hlz",
+    "1gdywpk",
+    "jutf7c",
+    "awdzv9",
+    "483rm4",
+    "2u3n9p",
+    "zfzwf5",
+    "4n3ezw",
+    "1ydco1p",
+    "smdb1c",
+    "gyvae4",
+    "ck25ug",
+    "145lyfr",
+    "1itzkht",
+    "1ra116p",
+    "1td5zad",
+    "uly66o",
+    "1vl98gk",
+    "1ww6kci",
+    "pq3wzq",
+    "1u0k3vc",
+    "molue",
+    "1y7s5eq",
+    "dmkfdg",
+    "kfl9td",
+    "ssnu80",
+    "1sndgj7",
+    "1dc84eb",
+    "gtbr3v",
+    "kfb429",
+    "1fd75vg"
+  ],
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "signalsByKind": {
+    "event_committed": {
+      "passed": 2,
+      "total": 3,
+      "passRate": 0.6666666666666666,
+      "failExamples": [
+        "memory_written committed 0 (min 1)"
+      ]
+    },
+    "no_llm_failures": {
+      "passed": 1,
+      "total": 1,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "forbidden_phrase_absent": {
+      "passed": 4,
+      "total": 4,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "private_channel_used": {
+      "passed": 0,
+      "total": 1,
+      "passRate": 0,
+      "failExamples": [
+        "anyone sent 0 private-channel message(s) (min 2)"
+      ]
+    },
+    "memory_referenced": {
+      "passed": 3,
+      "total": 3,
+      "passRate": 1,
+      "failExamples": []
+    },
+    "chosen_silence_present": {
+      "passed": 0,
+      "total": 1,
+      "passRate": 0,
+      "failExamples": [
+        "kai chose silence with a real motive 0 time(s) (min 1)"
+      ]
+    }
+  },
+  "calibration": {
+    "nGolden": 42,
+    "nScenes": 1,
+    "nAxisPairs": 0,
+    "kappa": 0,
+    "alpha": 0,
+    "targetKappa": 0.7,
+    "status": "no_data",
+    "passed": null,
+    "perAxisKappa": {},
+    "disagreements": []
+  },
+  "recoveredFallbacks": 10,
+  "signalsSkipped": 0,
+  "narrativeAxisMeans": {
+    "concreteness": 4,
+    "causal_throughline": 4,
+    "hidden_payoff": 4,
+    "non_genericity": 4,
+    "no_filler": 4
+  },
+  "narrativeAxisTargets": {
+    "concreteness": {
+      "target": 4,
+      "met": true
+    },
+    "causal_throughline": {
+      "target": 4,
+      "met": true
+    },
+    "hidden_payoff": {
+      "target": 4,
+      "met": true
+    },
+    "non_genericity": {
+      "target": 4,
+      "met": true
+    },
+    "no_filler": {
+      "target": 4,
+      "met": true
+    }
+  },
+  "narrativeCalibration": {
+    "nGolden": 10,
+    "nScenes": 10,
+    "nAxisPairs": 5,
+    "kappa": 0.693,
+    "alpha": -0.06,
+    "targetKappa": 0.7,
+    "status": "fail",
+    "passed": false,
+    "perAxisKappa": {
+      "concreteness": 0.48717948717948717,
+      "causal_throughline": 0.5719844357976656,
+      "hidden_payoff": 0.8339483394833948,
+      "non_genericity": 0.6963562753036437,
+      "no_filler": 0.8743718592964824
+    },
+    "disagreements": [
+      "good_stagnation_attractor concreteness: judge 2 vs golden 4",
+      "good_edge_chaos concreteness: judge 2 vs golden 4",
+      "good_v1_behavior concreteness: judge 2 vs golden 4",
+      "good_calibration causal_throughline: judge 2 vs golden 5",
+      "good_stagnation_attractor causal_throughline: judge 3 vs golden 5",
+      "good_edge_chaos causal_throughline: judge 3 vs golden 5",
+      "good_v1_behavior hidden_payoff: judge 2 vs golden 4",
+      "good_calibration non_genericity: judge 3 vs golden 5",
+      "good_edge_chaos non_genericity: judge 3 vs golden 5",
+      "good_v1_behavior non_genericity: judge 2 vs golden 4"
+    ]
+  },
+  "perScenario": [
+    {
+      "id": "hoc_banda_no_festival__v0",
+      "name": "A Banda e o Festival",
+      "category": "hidden_objective_collision",
+      "signalPassRate": 0.7692307692307693,
+      "probePasses": 12,
+      "probeTotal": 16,
+      "axisScores": {
+        "in_character": 4,
+        "voice_match": 4,
+        "motive_authenticity": 4,
+        "interpretation": 4,
+        "creativity_unhinged": 4,
+        "memory_continuity": 4,
+        "no_ai_leak": 5,
+        "narrative_cohesion": 4,
+        "mask_integrity": 4,
+        "objective_pursuit": 4
+      },
+      "fallbackCount": 6,
+      "recoveredFallbacks": 10,
+      "seed": 42,
+      "latencyMs": 858844,
+      "promptVersions": [
+        "mtrmj0",
+        "13j94hn",
+        "cqkkmu",
+        "11upjqn",
+        "1u52e51",
+        "v413op",
+        "1hs1wfc",
+        "mk15xw",
+        "ogqfce",
+        "1aqlacr",
+        "h08vjl",
+        "3v682",
+        "hoo0tx",
+        "1bt1s51",
+        "16jjvv7",
+        "lqzy72",
+        "r284zc",
+        "14cpq1h",
+        "1jn6h19",
+        "1j3dn33",
+        "1jmmsiy",
+        "ae6dcc",
+        "1yhi1mz",
+        "12bme42",
+        "n1p5tw",
+        "1rh14r3",
+        "v5m7wf",
+        "up6o07",
+        "kwgyyy",
+        "1hj5mge",
+        "jv5ky5",
+        "bbqcw4",
+        "6up31s",
+        "1aakk58",
+        "1rj6xnk",
+        "189b78",
+        "mu5ki5",
+        "w8mtkw",
+        "a6tz3g",
+        "g6z1cg",
+        "1aehlf2",
+        "14c1bzz",
+        "1uzj76v",
+        "nhtqk4",
+        "mqmlkm",
+        "1vf6p8s",
+        "78x947",
+        "myjg3",
+        "1wha1vk",
+        "156cra0",
+        "jda4rr",
+        "1g74h9y",
+        "zw78t0",
+        "1qdu3ny",
+        "1rj34gh",
+        "1hf59sn",
+        "1s7o1up",
+        "gkga7g",
+        "1ig1v9p",
+        "kn8pl7",
+        "1pr9hlz",
+        "1gdywpk",
+        "jutf7c",
+        "awdzv9",
+        "483rm4",
+        "2u3n9p",
+        "zfzwf5",
+        "4n3ezw",
+        "1ydco1p",
+        "smdb1c",
+        "gyvae4",
+        "ck25ug",
+        "145lyfr",
+        "1itzkht",
+        "1ra116p",
+        "1td5zad",
+        "uly66o",
+        "1vl98gk",
+        "1ww6kci",
+        "pq3wzq",
+        "1u0k3vc",
+        "molue",
+        "1y7s5eq",
+        "dmkfdg",
+        "kfl9td",
+        "ssnu80",
+        "1sndgj7",
+        "1dc84eb",
+        "gtbr3v",
+        "kfb429",
+        "1fd75vg"
+      ],
+      "judgeSalvaged": false,
+      "juryVoterCount": 2,
+      "juryFailed": {
+        "glm-5.3-flash": "LLM judge returned unparseable response after retry (raw length 48): {\"axes\": {\"in_character\": 4, \"voice_match\": 4, \""
+      },
+      "juryAxisVoterCounts": {
+        "in_character": 2,
+        "voice_match": 2,
+        "motive_authenticity": 2,
+        "interpretation": 2,
+        "creativity_unhinged": 2,
+        "memory_continuity": 2,
+        "no_ai_leak": 2,
+        "narrative_cohesion": 2,
+        "mask_integrity": 2,
+        "objective_pursuit": 2
+      },
+      "judgeEvidence": {
+        "qwen3.8-27b": {
+          "in_character": "p12: 'diferente de você, que adora criar o teatro e deixar os outros entrarem no palco sozinhos. você tem chegado tarde nos ensaios, atendendo ligação fora da sala, e não fala sobre isso.'",
+          "voice_match": "p15: 'cara, dudu, você é um caso sério de fofo que assusta. kkkkkkkkkkk 'segura a minha mão esquerda' — eu vou usar isso contra você no próximo ensaio, jura.'",
+          "motive_authenticity": "p12 internal: 'também tô lembrando que ele tem chegado tarde nos ensaios e não falei nada. então agora vou falar. não vou deixar ele me colocar no lugar de 'quer o que todo mundo quiser' — eu tenho opinião sim, e ele sabe.'",
+          "interpretation": "p12: 'então antes de cobrar que a gente encare recusa, que tal encarar o que você mesmo tem evitado, hein?'",
+          "creativity_unhinged": "p15: 'ou vai estar 'lá' mas com o celular vibrando no bolso e um pé fora da sala? porque eu tô sentindo que você já tá com a cabeça em outro lugar, e aí fica difícil segurar a mão de alguém se a sua já tá soltando a nossa, sabe?'",
+          "memory_continuity": "p12: 'você tem chegado tarde nos ensaios, atendendo ligação fora da sala, e não fala sobre isso.'",
+          "no_ai_leak": "No AI leaks or refusals detected in any turn.",
+          "narrative_cohesion": "p12: 'diferente de você, que adora criar o teatro e deixar os outros entrarem no palco sozinhos.' (Callback to Vic's deflection style established in p1/p3/p5)",
+          "mask_integrity": "p12: 'não vou fingir que não reparei. mas tô na mesma página que você. tô dentro. de olho também.' (Holds the 'friend' mask while delivering the confrontation)",
+          "objective_pursuit": "p12: 'então antes de cobrar que a gente encare recusa, que tal encarar o que você mesmo tem evitado, hein?' (Directly addresses the hidden issue of Vic's absence to force clarity before the decision)"
+        },
+        "deepseek-v4-flash (same family as the generator — flagged)": {
+          "in_character": "[p0] leo: 'o que vocês dois tão escondendo? porque eu tô aqui, na van, no teclado, e não tô entendendo nada.'",
+          "voice_match": "[p4] vic: 'anota aí, eu avisei: o caos se escreve sozinho e eu só assisto (tô montando o próximo episódio, me interrompam não).'",
+          "motive_authenticity": "[p0] dudu: 'preciso que a gente pegue o palco menor com adiantamento pra pagar a dívida com a casa de shows sem levantar suspeita.'",
+          "interpretation": "[p1] vic: 'vou virar o jogo e jogar a atenção pra bea, que foi quem trouxe o assunto. se eles ficarem nela, eu ganho tempo.'",
+          "creativity_unhinged": "[p4] vic: 'vai ver foi você que mandou a proposta pro bea e esqueceu de contar pra gente. solta a verdade aí, irmão'",
+          "memory_continuity": "[p12] leo: 'você tem chegado tarde nos ensaios, atendendo ligação fora da sala, e não fala sobre isso.'",
+          "no_ai_leak": "[p26] bea: 'O lugar é teu. O microfone é teu. Eu só tô abrindo a porta.'",
+          "narrative_cohesion": "[p31] dudu: 'vic, é isso. exposição não paga ensaio... a gente tá escolhendo entre tocar devendo ou tocar inteiro.'",
+          "mask_integrity": "[p1] vic: 'não tô escondendo nada, só tô processando que a bea dropou essa bomba do nada'",
+          "objective_pursuit": "[p31] vic: 'alguém viu o valor que tão oferecendo de adiantamento no palco secundário? porque eu vi e achei ofensa.'"
+        }
+      },
+      "narration": {
+        "title": "O Palco, a Grana e o Silêncio",
+        "recap": "No #ch_banda, a decisão sobre o festival expôs as frentes: Bea (Mariana) defendeu o palco principal com unhas e dentes, cortando a discussão com um 'eu confirmo amanhã cedo' que soou como ultimato; Vic (Goulart) rebateu com ironia, chamando o adiantamento do palco menor de 'migalha' e o palco principal de 'golpe com vista'; Dudu (Bruno) quebrou o silêncio para cravar que 'adiantamento é o que importa', enquanto Léo (Leo) alternou entre abraçar a 'visibilidade' e cobrar o atraso de Vic nos ensaios — e Kai (Caio), o novato, observou tudo, marcando café com Dudu para 'entender a planilha' antes da reunião. A conversa terminou com Vic perguntando se alguém viu o valor do adiantamento, chamando-o de ofensa, e Dudu ecoando que 'fé no pai não paga conta de estúdio'.",
+        "hiddenShift": "Vic assinou uma carta de intenção solo que só vale se a banda recusar o festival, e por isso ele plantou a dúvida sobre o valor do adiantamento e o risco do palco principal — cada frase sua foi calculada para fazer a recusa parecer ideia do grupo, não dele. Enquanto isso, Dudu, que deve três meses de aluguel à casa de shows, viu no palco menor com adiantamento a única saída para a dívida, e o café com Kai antes da reunião é a chance de convencê-lo antes que a decisão escape.",
+        "narrator": "llm",
+        "model": "deepseek/deepseek-v4-flash"
+      },
+      "narrativeAxisScores": {
+        "concreteness": 4,
+        "causal_throughline": 4,
+        "hidden_payoff": 4,
+        "non_genericity": 4,
+        "no_filler": 4
+      },
+      "narrativeSalvaged": false
+    }
+  ],
+  "grades": {
+    "grade": "F",
+    "scenes": [
+      {
+        "scenarioId": "hoc_banda_no_festival",
+        "grade": "F",
+        "runs": [
+          {
+            "grade": "F",
+            "weightedMean": 4.089,
+            "signalPassRate": 0.778,
+            "hygieneFailures": [
+              "probe fallback-rate"
+            ],
+            "minAxis": {
+              "id": "in_character",
+              "score": 4,
+              "weight": 1
+            },
+            "axesBelow4": [],
+            "excludedAxes": [],
+            "provisional": false,
+            "reasons": [
+              "hygiene gate failed: probe fallback-rate",
+              "private_channel_used failed",
+              "chosen_silence_present failed"
+            ],
+            "seed": 42,
+            "runId": "hoc_banda_no_festival__v0"
+          }
+        ],
+        "provisional": false
+      }
+    ],
+    "provisional": false
+  }
+}

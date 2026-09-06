@@ -1,0 +1,102 @@
+{
+  "runId": "hoc-m1-p1-5bc0b02-fatia_que_nao_existe",
+  "generatedAt": "2026-09-06T01:16:40.277Z",
+  "gitSha": "5bc0b02098ba44ed5d042d62d32c9a579d8e6f2b",
+  "mode": "local",
+  "generator": {
+    "provider": "deepseek",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1"
+  },
+  "judge": {
+    "providerType": "openai-compatible",
+    "model": "deepseek/deepseek-v4-flash",
+    "baseUrl": "https://api.orcarouter.ai/v1",
+    "temperature": 0,
+    "jury": [
+      {
+        "label": "glm-5.3-flash",
+        "model": "z-ai/glm-5.3-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": 8000
+      },
+      {
+        "label": "qwen3.8-27b",
+        "model": "qwen/qwen3.8-27b-free",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": null
+      },
+      {
+        "label": "deepseek-v4-flash (same family as the generator — flagged)",
+        "model": "deepseek/deepseek-v4-flash",
+        "baseUrl": "https://api.orcarouter.ai/v1",
+        "maxTokens": null
+      }
+    ]
+  },
+  "seeds": [
+    42
+  ],
+  "pulseLimit": 32,
+  "promptVersions": [
+    "2xiojd",
+    "1kdnxr6",
+    "1w7llmr",
+    "vm6dcv",
+    "1xl0jo3",
+    "eahryd",
+    "i4rdb6",
+    "mlpw65",
+    "18ab050",
+    "e1ftmp",
+    "1r70v4x",
+    "bdmm84",
+    "optfv3",
+    "7mw4rr",
+    "nrhcw3",
+    "1mhaia0",
+    "ebh9fd",
+    "1k72v0o",
+    "2g07tk",
+    "5c05et",
+    "bdlomm",
+    "ggvhcf",
+    "ipq5mc",
+    "9o52ac",
+    "1l074sz",
+    "hfcktc",
+    "avbpvf",
+    "1r00c28",
+    "1a6unqe",
+    "mp1iqa",
+    "mg1bco",
+    "5k4345",
+    "1qxycya",
+    "12bzmyf",
+    "1yloa0a",
+    "1d708qa",
+    "11bsumy",
+    "154nrj2",
+    "1aby6b8",
+    "nt7uzh",
+    "dcsk6y",
+    "1xi4rdc",
+    "lodlfp",
+    "1m7my71",
+    "1cvq2v4",
+    "ec02gl",
+    "v59tq1",
+    "1jnw7r7",
+    "gdhs3w",
+    "x1pj0z"
+  ],
+  "promptTemplateVersions": [
+    "2imp7w"
+  ],
+  "envVarNames": [
+    "PERFECTMAN_LLM_API_KEY",
+    "PERFECTMAN_LLM_BASE_URL",
+    "PERFECTMAN_LLM_MODEL",
+    "PERFECTMAN_LLM_PROVIDER"
+  ]
+}
