@@ -19,7 +19,7 @@ and CPU always allocated is the smallest thing that qualifies.
 gcloud run deploy perfectman-server \
   --source . --region=us-central1 \
   --allow-unauthenticated \
-  --port=8080 --cpu=1 --memory=1Gi \
+  --port=8080 --cpu=4 --memory=2Gi \
   --min-instances=0 --max-instances=1 \
   --no-cpu-throttling --timeout=3600 \
   --set-env-vars=PERFECTMAN_RUNS_DIR=/tmp/runs
@@ -33,7 +33,30 @@ Each flag is load-bearing:
 | `--no-cpu-throttling` | The pulse loop runs between requests. Throttled CPU stalls it the moment the POST response is sent. |
 | `--timeout=3600` | The SSE stream stays open for the length of the run. |
 | `--min-instances=0` | Scales to zero when idle. A cold start adds a few seconds; set it to 1 to avoid that and pay for the idle instance. |
+| `--cpu=4` | Measured, not guessed — see below. |
 | `PERFECTMAN_RUNS_DIR=/tmp/runs` | Cloud Run's filesystem is read-only apart from `/tmp`, which does not outlive the instance. Artifacts are readable while it is up and gone afterwards. |
+
+### On the CPU count
+
+One vCPU looks like plenty for a service that spends its time waiting on a
+model, and it is not. Measured on the same scene, model and key within minutes
+of each other:
+
+| Where | One pulse |
+|---|---|
+| Cloud Run, 1 vCPU | 483s |
+| Laptop | 80s |
+| Cloud Run, 4 vCPU | 61s |
+
+A pulse is not one request and a wait. It builds a prompt per agent, opens
+three TLS connections, and parses three large JSON replies, and all of that is
+CPU on a single-threaded runtime. A `mock` run hides it completely — ten pulses
+in under five seconds on the starved instance — because mock skips every part
+that costs anything.
+
+The failure mode is worth recognising because it does not look like slowness:
+`stop` cannot interrupt a pulse already in flight, so a starved instance sits
+in `stopping` for minutes and reads as a hang.
 
 ## The interface, on Vercel
 
