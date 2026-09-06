@@ -1,9 +1,8 @@
 /**
  * Thin fetch wrappers over the run server.
  *
- * Relative URLs throughout: in dev Vite proxies `/api` to the node server, and
- * in production that same server hosts this bundle. One set of URLs, no origin
- * configuration in the app.
+ * Paths go through `apiUrl`, which is a no-op unless the interface is deployed
+ * apart from the server it talks to. See `origin.ts`.
  */
 import type {
   ApiError,
@@ -16,9 +15,10 @@ import type {
   UploadedFile,
   ViewerReplay,
 } from "@perfectman/shared";
+import { apiUrl } from "./origin.js";
 
 async function json<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(path, {
+  const res = await fetch(apiUrl(path), {
     ...init,
     headers: init?.body ? { "content-type": "application/json" } : {},
   });

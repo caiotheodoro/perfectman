@@ -18,7 +18,9 @@ const DEFAULT_PORT = 4317;
 async function main(): Promise<void> {
   loadEnvFile();
 
-  const port = Number(process.env["PERFECTMAN_WEB_PORT"] ?? DEFAULT_PORT);
+  // `PORT` is what container hosts set; the perfectman-specific name wins when
+  // both are present so a local override still works inside a container.
+  const port = Number(process.env["PERFECTMAN_WEB_PORT"] ?? process.env["PORT"] ?? DEFAULT_PORT);
   const runsRoot = process.env["PERFECTMAN_RUNS_DIR"] ?? defaultRunsRoot();
   const staticDir = process.env["PERFECTMAN_WEB_STATIC"] ?? defaultStaticDir();
   const presetsRoot = process.env["PERFECTMAN_PRESETS_DIR"] ?? resolveFromPackage("../../../../examples/presets");
