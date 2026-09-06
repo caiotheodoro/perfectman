@@ -22,7 +22,9 @@ PERFECTMAN_LLM_API_KEY=<key — shell only, never a file>
 
 ## Jury
 
-`examples/eval/hoc-jury.json`: primary judge `openai/gpt-4.1-mini` (also scores narration), jurors `openai/gpt-4.1-mini`, `anthropic/claude-haiku-4.5`, `deepseek/deepseek-v4-flash`. The DeepSeek juror shares the generator's family; its presence is flagged in the label and in `run-meta.json`. Self-preference bias is reduced by the median over three families, not removed. All jurors at temperature 0.
+`examples/eval/hoc-jury.json`: primary judge `deepseek/deepseek-v4-flash` (scores narration only — under a jury the transcript verdict is the jury median), jurors `z-ai/glm-5.3-flash`, `qwen/qwen3.8-27b-free`, `deepseek/deepseek-v4-flash`. The DeepSeek juror shares the generator's family; its presence is flagged in the label and in `run-meta.json`. Self-preference bias is reduced by the median over three families, not removed. All jurors at temperature 0.
+
+The three are what a single OrcaRouter key scoped to the free/flash tier can reach (`model_access_denied` for `openai/*` and `anthropic/*`); a key with wider scope can swap stronger non-DeepSeek jurors in without touching the harness. GLM reasons inside the transcript judge's 1500-token headroom (no router-side switch) but returns empty content on the 1200-token narration judge, so DeepSeek with thinking disabled holds the primary seat; Qwen's thinking is disabled through `chat_template_kwargs`.
 
 ## Command
 

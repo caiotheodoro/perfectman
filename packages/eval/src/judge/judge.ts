@@ -261,8 +261,16 @@ export type LLMJudgeConfig = {
 // burns-the-budget failure already fixed for the agent path and the
 // narrator, which no judge call site had ever disabled. `includes` (not
 // `startsWith`) because routers namespace model ids by provider.
-function deepseekV4ExtraBody(model: string): Record<string, unknown> | undefined {
-  return model.includes("deepseek-v4") ? { thinking: { type: "disabled" } } : undefined;
+// Qwen3 exposes the same switch under a different name: the chat template
+// flag `enable_thinking` (verified on OrcaRouter's `qwen/qwen3.8-27b-free`
+// — `enable_thinking` at the body root and `reasoning.enabled` are both
+// ignored there). GLM-5.3 has no working switch through the router
+// (`thinking.disabled` 502s upstream); it reasons inside the `maxTokens`
+// headroom instead.
+function thinkingExtraBody(model: string): Record<string, unknown> | undefined {
+  if (model.includes("deepseek-v4")) return { thinking: { type: "disabled" } };
+  if (/qwen3/i.test(model)) return { chat_template_kwargs: { enable_thinking: false } };
+  return undefined;
 }
 
 function buildJudgeSystem(rubric: JudgeRubric): string {
@@ -327,10 +335,10 @@ async function callJudge(
     // Generous headroom: a thinking-mode model spends real tokens on
     // thinking... response before it ever reaches the answer, and not
     // every such model can be told to skip it (see extractJsonObject
-    // above) — deepseek-v4 can, via extraBody below.
+    // above) — deepseek-v4 and qwen3 can, via extraBody below.
     maxTokens: 1500,
     timeoutMs: config.timeoutMs ?? 60000,
-    extraBody: deepseekV4ExtraBody(config.model),
+    extraBody: thinkingExtraBody(config.model),
   });
 }
 
@@ -524,7 +532,7 @@ async function callNarrationJudge(
     temperature: config.temperature ?? 0,
     maxTokens: 1200,
     timeoutMs: config.timeoutMs ?? 60000,
-    extraBody: deepseekV4ExtraBody(config.model),
+    extraBody: thinkingExtraBody(config.model),
   });
 }
 
@@ -665,7 +673,7 @@ async function scoreCohesion(
     // headroom beyond the tiny {"narrative_cohesion": N} answer itself.
     maxTokens: 800,
     timeoutMs: config.timeoutMs ?? 60000,
-    extraBody: deepseekV4ExtraBody(config.model),
+    extraBody: thinkingExtraBody(config.model),
   });
   const jsonText = extractJsonObject(raw);
   const parsed = JSON.parse(jsonText) as {
