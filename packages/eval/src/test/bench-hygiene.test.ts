@@ -41,6 +41,9 @@ function artifact(seed: unknown) {
     promptVersions: ["p1"],
     templateVersions: ["t1"],
     seedEcho: seed,
+    llmFailures: [
+      { type: "llm_failure", agentId: "a", pulseIndex: 3, detail: "LLM parsing failed for agent a: No JSON object found in response", data: { errorDetail: "No JSON object found in response", rawHead: "", rawLength: 0 } },
+    ],
   };
 }
 
@@ -132,6 +135,10 @@ describe("bench hygiene", () => {
     const dir = join(root, "hoc-test");
     expect(existsSync(join(dir, "bench-report.json"))).toBe(true);
     expect(existsSync(join(dir, "scenarios", "motive_gossip__v0__s7.json"))).toBe(true);
+    // The fallback forensics trail rides into the per-run record.
+    const record = JSON.parse(readFileSync(join(dir, "scenarios", "motive_gossip__v0__s7.json"), "utf8")) as { llmFailures?: Array<{ data?: { rawLength?: number } }> };
+    expect(record.llmFailures).toHaveLength(1);
+    expect(record.llmFailures?.[0]?.data?.rawLength).toBe(0);
     const meta = JSON.parse(readFileSync(join(dir, "run-meta.json"), "utf8")) as Record<string, unknown>;
     expect(meta["runId"]).toBe("hoc-test");
     expect(meta["seeds"]).toEqual([7]);

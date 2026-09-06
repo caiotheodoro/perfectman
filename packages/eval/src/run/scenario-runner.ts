@@ -63,6 +63,8 @@ export type ScenarioRunArtifact = {
   fallbackNoOps?: number;
   /** Operator events by type for the run (mock gateway only). */
   operatorEventCounts?: Partial<Record<OperatorEvent["type"], number>>;
+  /** Every `llm_failure` / `llm_retry_recovered` with its detail and data (raw head, models) — the fallback forensics trail. */
+  llmFailures?: LlmFailureRecord[];
   /** `liveOnly` signals not evaluated because the run was in mock mode; never in `totalSignals`. */
   skippedSignals?: number;
   probeResults: ProbeResult[];
@@ -222,6 +224,7 @@ export class ScenarioRunner {
     const operatorEvents = gateway instanceof MockDeliveryGateway ? gateway.operatorEvents : [];
     const { fallbackCount, fallbackNoOps, operatorEventCounts } = countFallbacks(events, operatorEvents);
     const recoveredFallbacks = operatorEvents.filter(e => e.type === "llm_retry_recovered").length;
+    const llmFailures = collectLlmFailures(operatorEvents);
     const behavioral = eventsToBehavioral(events);
     const probeResults = runAllProbes({
       events: behavioral,
@@ -249,6 +252,7 @@ export class ScenarioRunner {
       fallbackCount,
       fallbackNoOps,
       operatorEventCounts,
+      llmFailures,
       operatorFailures: failures,
       recoveredFallbacks,
       probeResults,
@@ -263,6 +267,30 @@ export class ScenarioRunner {
       providerCalls: tracking?.providerCalls(),
     };
   }
+}
+
+export type LlmFailureRecord = {
+  type: "llm_failure" | "llm_retry_recovered";
+  agentId: string;
+  pulseIndex: number;
+  detail: string;
+  data?: Record<string, unknown>;
+};
+
+/** The forensics trail: what failed, for whom, at which pulse, and what the model returned. */
+export function collectLlmFailures(operatorEvents: readonly OperatorEvent[]): LlmFailureRecord[] {
+  const out: LlmFailureRecord[] = [];
+  for (const e of operatorEvents) {
+    if (e.type !== "llm_failure" && e.type !== "llm_retry_recovered") continue;
+    out.push({
+      type: e.type,
+      agentId: e.agentId ?? "",
+      pulseIndex: e.pulseIndex,
+      detail: e.detail,
+      ...(e.data ? { data: e.data as Record<string, unknown> } : {}),
+    });
+  }
+  return out;
 }
 
 /**

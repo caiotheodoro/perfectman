@@ -19,6 +19,17 @@ export type IntentParserResult = {
   intent: ActionIntent;
   fallbackApplied: boolean;
   errorDetail?: string;
+  /**
+   * On a parse fallback: the first 240 characters of the raw model response
+   * (whitespace collapsed) and its full length. Two real reads failed the
+   * fallback-rate gate on "No JSON object found" with nothing recording what
+   * the model actually returned — empty content, prose, a reasoning leak
+   * and a truncation all look identical from the fallback alone.
+   */
+  rawHead?: string;
+  /** Last 240 characters — a truncated or runaway response shows its loop here. */
+  rawTail?: string;
+  rawLength?: number;
   // Set when the intent is a reply/react whose target handle could not be
   // resolved against `TargetResolutionContext.eventHandles`. The caller
   // re-prompts once with a targeted note, then applies `floorTargets`.
@@ -207,6 +218,9 @@ export class IntentParser {
         }),
         fallbackApplied: true,
         errorDetail: errorMsg,
+        rawHead: rawText.replace(/\s+/g, " ").trim().slice(0, 240),
+        rawTail: rawText.replace(/\s+/g, " ").trim().slice(-240),
+        rawLength: rawText.length,
       };
     }
   }

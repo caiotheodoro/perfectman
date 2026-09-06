@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { CommittedEvent, OperatorEvent } from "@perfectman/shared";
-import { countFallbacks } from "../run/scenario-runner.js";
+import { countFallbacks, collectLlmFailures } from "../run/scenario-runner.js";
 
 function committed(type: CommittedEvent["type"], motive?: string): CommittedEvent {
   return {
@@ -37,5 +37,20 @@ describe("countFallbacks", () => {
       fallbackNoOps: 2,
       operatorEventCounts: { llm_failure: 2, action_intent: 1 },
     });
+  });
+});
+
+describe("collectLlmFailures", () => {
+  it("keeps every llm_failure and llm_retry_recovered with its raw head, and nothing else", () => {
+    const events: OperatorEvent[] = [
+      { type: "llm_failure", simulationId: "s", agentId: "lia", pulseIndex: 8, detail: "LLM parsing failed: No JSON object found in response", createdAt: 0, data: { errorDetail: "No JSON object found in response", rawHead: "", rawLength: 0 } },
+      { type: "llm_retry_recovered", simulationId: "s", agentId: "nina", pulseIndex: 9, detail: "retry fixed a near-repeat", createdAt: 0 },
+      { type: "prompt_trimmed", simulationId: "s", agentId: "lia", pulseIndex: 8, detail: "trimmed", createdAt: 0 },
+    ];
+    const out = collectLlmFailures(events);
+    expect(out).toHaveLength(2);
+    expect(out[0]).toMatchObject({ type: "llm_failure", agentId: "lia", pulseIndex: 8, data: { rawHead: "", rawLength: 0 } });
+    expect(out[1]).toMatchObject({ type: "llm_retry_recovered", agentId: "nina", pulseIndex: 9 });
+    expect(out[1]?.data).toBeUndefined();
   });
 });
