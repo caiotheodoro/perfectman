@@ -141,11 +141,13 @@ export function resolveDecision(
       ) {
         return actOrGate(`initiative-override-${topInhibition.type}`, true, topPressureRank);
       }
-      // Voiced hold (ADR-0017): the hold stands, but when something salient
-      // just happened and this agent has not voiced a hold lately, the model
-      // is consulted so the silence carries the character's reason. Never
-      // on the pulse after an act — the cooldown invariant (P1) is kept.
-      if (salientForeignEvent && hasNewEvents && !justActed && !voicedHoldRecently) {
+      // Voiced hold (ADR-0017, widened by D-62): the hold stands, but when
+      // anything new happened and this agent has not voiced a hold lately,
+      // the model is consulted so the silence carries the character's
+      // reason. The salient-event gate fired three times in nine real runs
+      // (every one voiced) — too rare to matter. Never on the pulse after an
+      // act — the cooldown invariant (P1) is kept.
+      if (hasNewEvents && !justActed && !voicedHoldRecently) {
         return {
           outcome:           "act",
           needsLLM:          true,

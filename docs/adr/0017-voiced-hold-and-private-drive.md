@@ -1,6 +1,6 @@
 # ADR-0017: Voiced Hold and the Private-Channel Drive
 
-**Status**: Accepted (2026-09-05). Decisions **D-59..D-61**. Provisional constant `HOLD_VOICE_REFRACTORY_PULSES`, owner: the hidden-objective refinement reads (`docs/eval/hoc-experiment-protocol.md`).
+**Status**: Accepted (2026-09-05), amended 2026-09-06 (**D-62**). Decisions **D-59..D-62**. Provisional constant `HOLD_VOICE_REFRACTORY_PULSES`, owner: the hidden-objective refinement reads (`docs/eval/hoc-experiment-protocol.md`).
 
 ## Context
 
@@ -16,6 +16,7 @@ Constraints carried in: the engine stays pure; the scheduler is the single write
 1. **Voiced hold (D-59).** In `resolveDecision`, when a delay-favoring inhibition outranks the top pressure and neither being addressed nor an initiative override lifts it, the decision is still a hold — except that when a salient foreign event arrived this pulse (`salientForeignEvent && hasNewEvents`), the agent did not act on the previous pulse (`!justActed`), and it has not voiced a hold within `HOLD_VOICE_REFRACTORY_PULSES`, the decision becomes `act` with `needsLLM: true`, `holdSuggested: true`, seed `hold-<inhibition>`. The prompt renders one paragraph: hold with `no_op` and the real reason, or break the hold if this person would.
 2. **The refractory is read from the log (D-60).** `EngineSnapshot.voicedHoldRecently` is computed by the scheduler from committed events: a `no_op_recorded` by this agent that carries `sourceIntentId` (a model intent) whose motive is not engine-authored, within the last `HOLD_VOICE_REFRACTORY_PULSES` (4). No new agent-state field, no schema change; the engine reads a boolean.
 3. **The private-channel drive is spent only by opening a channel (D-61).** The ADR-0016 stamp loop skips `urge_to_create_private_channel` unless the committed act is `create_channel`. Every other urge keeps D-57.
+4. **Trigger widened (D-62, 2026-09-06).** The M4 milestone (`docs/eval/evidence/hoc-m4-*`, nine runs) recorded three consults, all voiced, and zero in six of nine runs: the salient-event gate made the consult almost never fire, and when it fired the model held. D-59's condition drops `salientForeignEvent`: any new event on a held pulse consults, still never on the pulse after an act, and `HOLD_VOICE_REFRACTORY_PULSES` goes 4 → 3. The refractory alone bounds the cost (at most one consult per agent per three pulses).
 
 ## Rationale
 

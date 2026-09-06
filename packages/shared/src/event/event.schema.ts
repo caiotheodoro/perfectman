@@ -15,6 +15,7 @@ export const EventTypeSchema = z.enum([
   "intent_blocked",
   "memory_written",
   "no_op_recorded",
+  "repetition_blocked",
   "private_motive_summary",
   "operator_warning",
   "llm_failure",
