@@ -469,6 +469,7 @@ export async function runBench(opts: {
             fallbackCount: artifact.fallbackCount,
             fallbackNoOps: artifact.fallbackNoOps,
             recoveredFallbacks: artifact.recoveredFallbacks,
+            llmFailures: artifact.llmFailures ?? [],
           },
         });
       }

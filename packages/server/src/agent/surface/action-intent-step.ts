@@ -455,6 +455,11 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         createdAt: Date.now(),
         data: {
           errorDetail: parseResult.errorDetail ?? null,
+          // What the model actually returned, so a no-JSON fallback can be
+          // attributed (empty / prose / reasoning leak / truncation).
+          rawHead: parseResult.rawHead ?? null,
+          rawTail: parseResult.rawTail ?? null,
+          rawLength: parseResult.rawLength ?? null,
           requestedModel: providerResult.requestedModel || llmConfig.modelName,
           routedModel: providerResult.routedModel ?? null,
           fallbackAttempts: providerResult.fallbackAttempts ?? null,

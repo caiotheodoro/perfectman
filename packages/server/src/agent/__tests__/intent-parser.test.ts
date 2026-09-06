@@ -424,3 +424,39 @@ Hope you like it!
     });
   });
 });
+
+describe("IntentParser fallback forensics", () => {
+  const actorId = "lia";
+  const availableActions: AvailableAction[] = [
+    { intentType: "send_message", channelTargets: ["ch_familia"], personTargets: [], blocked: false },
+    { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
+  ];
+
+  it("keeps the raw head and length of a response with no JSON object", () => {
+    const raw = "   Desculpa, preciso   pensar melhor antes de responder.\n\n" + "x".repeat(400);
+    const result = IntentParser.parse(raw, actorId, availableActions);
+    expect(result.fallbackApplied).toBe(true);
+    expect(result.errorDetail).toBe("No JSON object found in response");
+    expect(result.rawLength).toBe(raw.length);
+    expect(result.rawHead).toHaveLength(240);
+    expect(result.rawHead?.startsWith("Desculpa, preciso pensar melhor")).toBe(true);
+    expect(result.rawTail).toBe("x".repeat(240));
+  });
+
+  it("records an empty response as rawLength 0", () => {
+    const result = IntentParser.parse("", actorId, availableActions);
+    expect(result.fallbackApplied).toBe(true);
+    expect(result.rawHead).toBe("");
+    expect(result.rawLength).toBe(0);
+  });
+
+  it("carries nothing on a clean parse", () => {
+    const result = IntentParser.parse(
+      JSON.stringify({ intentType: "no_op", privateMotiveSummary: "espero", channelTargets: [], personTargets: [], memoryWrites: [] }),
+      actorId,
+      availableActions,
+    );
+    expect(result.fallbackApplied).toBe(false);
+    expect(result.rawHead).toBeUndefined();
+  });
+});
