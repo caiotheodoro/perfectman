@@ -15,6 +15,48 @@
   gap: 12px;
 }
 
+/* --- known routes -------------------------------------------------------- */
+
+.routes {
+  display: grid;
+  gap: 10px;
+}
+
+.routes > p {
+  font-size: 12.5px;
+}
+
+.routes__list {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.route {
+  display: grid;
+  gap: 3px;
+  text-align: left;
+  border: none;
+  background: var(--paper);
+  box-shadow: var(--ring);
+  border-radius: var(--r-md);
+  padding: 9px 13px;
+  transition: box-shadow var(--quick) var(--ease);
+}
+.route:hover {
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+.route__label {
+  font-size: 13px;
+}
+
+.route__note {
+  font-size: 11.5px;
+  color: var(--ink-30);
+  max-width: 34ch;
+}
+
 .provider__fields {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

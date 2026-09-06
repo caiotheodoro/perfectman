@@ -8,6 +8,7 @@
  */
 import { useMemo } from "react";
 import type { StartRunRequest } from "@perfectman/shared";
+import { KNOWN_ROUTES } from "./known-routes.js";
 
 export type ProviderValue = {
   llm: StartRunRequest["llm"];
@@ -61,6 +62,34 @@ export function ProviderForm({
         ))}
       </div>
 
+      {hosted ? (
+        <div className="routes">
+          <p className="u-dim">
+            Endpoints someone has already got working. Filling one in still
+            leaves you to paste the key.
+          </p>
+          <div className="routes__list">
+            {KNOWN_ROUTES.map((route) => (
+              <button
+                key={route.id}
+                type="button"
+                className="route"
+                onClick={() =>
+                  onChange({
+                    ...value,
+                    llm: { ...value.llm, ...route.llm },
+                    extraBodyText: route.extraBodyText,
+                  })
+                }
+              >
+                <span className="route__label">{route.label}</span>
+                <span className="route__note">{route.note}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      ) : null}
+
       <div className="provider__fields">
         {hosted ? (
           <>
@@ -76,7 +105,7 @@ export function ProviderForm({
               <span>Base URL</span>
               <input
                 value={value.llm.baseUrl ?? ""}
-                placeholder="https://api.example.com/v1"
+                placeholder="https://api.orcarouter.ai/v1"
                 onChange={(e) => set({ baseUrl: e.target.value })}
               />
             </label>

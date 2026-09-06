@@ -1,0 +1,15 @@
+- main [ref=f28e3]:
+  - generic [ref=f28e4]:
+    - heading "Three people in a room. One is not saying what they want." [level=1] [ref=f28e5]: Three people in a room.One is not saying what they want.
+    - paragraph [ref=f28e6]: "Nobody here takes turns. Each character reads the room, weighs what it would cost to speak, and often decides against it. What you see below is the whole product: a line, and the reason behind it."
+    - generic [ref=f28e7]:
+      - button "Build a room" [ref=f28e8] [cursor=pointer]
+      - button "Skip" [ref=f28e9] [cursor=pointer]
+  - generic [aria-hidden] [ref=f28e10]:
+    - generic [ref=f28e11]:
+      - generic [ref=f28e12]: íris
+      - generic [ref=f28e32]: bruno
+      - generic [ref=f28e52]: marcela
+    - paragraph [ref=f28e73]:
+      - generic [ref=f28e74]: íris
+      - text: so are we talking about last night or not
