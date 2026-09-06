@@ -23,4 +23,11 @@ describe("examples/eval/hoc-jury.json", () => {
     expect(deepseek?.label).toMatch(/same family/);
     expect((config.jury ?? []).every((j) => j.apiKeyEnv === "PERFECTMAN_LLM_API_KEY")).toBe(true);
   });
+
+  it("gives glm-5.3-flash the output headroom its un-switchable reasoning needs", () => {
+    const config = JudgeAppConfigSchema.parse(raw);
+    const glm = (config.jury ?? []).find((j) => j.modelName.includes("glm"));
+    expect(glm?.maxTokens).toBe(8000);
+    expect(glm?.timeoutMs).toBe(300000);
+  });
 });

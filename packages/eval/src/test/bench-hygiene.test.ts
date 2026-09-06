@@ -74,6 +74,26 @@ describe("bench hygiene", () => {
     expect(report.warnings[0]!.message).toContain("503");
   });
 
+  it("keeps an imputed axis out of the means, the spread and the calibration map, and records it per scenario", async () => {
+    runMock.mockResolvedValue(artifact(undefined));
+    const judge = await import("../judge/judge.js");
+    vi.mocked(judge.llmJudge).mockResolvedValueOnce({
+      axes: { in_character: 4, voice_match: 3 },
+      salvaged: false,
+      imputedAxes: ["voice_match"],
+      evidence: { in_character: "[p01] a quote" },
+    });
+    const report = await runBench({ mode: "mock", scenarios: ["motive_gossip"], limit: 1, judge: "llm", args: [] });
+    const scene = report.perScenario[0]!;
+    expect(scene.imputedAxes).toEqual(["voice_match"]);
+    expect(scene.axisScores.voice_match).toBe(3);
+    expect(scene.judgeEvidence).toEqual({ in_character: "[p01] a quote" });
+    expect(report.judgeAxisMeans.in_character).toBe(4);
+    expect(report.judgeAxisMeans.voice_match).toBeUndefined();
+    expect(report.judgeAxisStats.voice_match).toBeUndefined();
+    expect(report.judgeAxisTargets.voice_match).toMatchObject({ met: false });
+  });
+
   it("unions judge targets across the selected scenarios' rubrics", async () => {
     runMock.mockResolvedValue(artifact(undefined));
     // --limit truncates AFTER variant expansion (7 per scenario), so 8 runs
