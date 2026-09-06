@@ -77,6 +77,8 @@ type ResolveContext = {
   actionEmotions: ActionEmotions;
   /** agentId → display name; powers mention parsing over visibleContent. */
   agentNames?: Record<string, string>;
+  /** ADR-0017: the engine consulted the model on a hold this pulse; stamped on the motive event so evidence can count consults. */
+  holdSuggested?: boolean;
 };
 
 const MENTION_BOUNDARY = "[^\\p{L}\\p{N}]";
@@ -697,6 +699,7 @@ export class IntentResolver {
       emotionDrivers: intent.emotionDrivers ?? [],
       motivationDrivers: intent.motivationDrivers ?? [],
       engineAuthored: isEngineAuthoredMotive(intent.privateMotiveSummary),
+      ...(ctx.holdSuggested ? { holdSuggested: true } : {}),
     };
     return {
       simulationId: ctx.simulationId,

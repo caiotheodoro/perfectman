@@ -394,7 +394,8 @@ describe("PulseScheduler", () => {
             { intentType: "send_message", channelTargets: ["ch_public"], personTargets: ["agent_1", "agent_2"], blocked: false },
             { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
           ],
-          decision: { outcome: "act", needsLLM: true, initiativeProceed: false },
+          // ADR-0017: the consult flag rides from the decision to the motive event.
+          decision: { outcome: "act", needsLLM: true, initiativeProceed: false, holdSuggested: true },
           noOpRecord: null,
         };
       }, [AGENT, AGENT_2]);
@@ -414,9 +415,15 @@ describe("PulseScheduler", () => {
       return message!.payload;
     }
 
-    it("the scheduler's agentNames map reaches the resolver: a display-name mention stamps mentionedAgentIds", async () => {
+    it("the scheduler's agentNames map reaches the resolver: a display-name mention stamps mentionedAgentIds; a hold consult reaches the motive event", async () => {
       const payload = await committedMessagePayload("hey Other Agent, what do you think?");
       expect(payload["mentionedAgentIds"]).toEqual(["agent_2"]);
+      const events = await eventRepo.getAfter("sim_test");
+      const motive = events.find((e) => e.type === "private_motive_summary" && e.actorId === "agent_1");
+      expect(motive?.payload["holdSuggested"]).toBe(true);
+      // agent_2's step never consults: whatever it committed carries no flag.
+      const other = events.find((e) => e.type === "private_motive_summary" && e.actorId === "agent_2");
+      expect(other?.payload?.["holdSuggested"]).toBeUndefined();
     });
 
     it("a substring of a display name is not a mention", async () => {

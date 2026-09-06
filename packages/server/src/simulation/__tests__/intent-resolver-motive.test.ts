@@ -170,6 +170,16 @@ describe("private_motive_summary per resolved intent", () => {
     expect(result.committedEvents.some(e => e.type === "no_op_recorded")).toBe(true);
   });
 
+  it("stamps holdSuggested on the motive only when the context says the engine consulted on a hold (ADR-0017)", async () => {
+    const plain = await resolver.resolve(makeIntent({ intentType: "no_op", channelTarget: undefined }), ctx());
+    const plainMotive = plain.committedEvents.find((e) => e.type === "private_motive_summary");
+    expect(plainMotive?.payload).not.toHaveProperty("holdSuggested");
+    const held = await resolver.resolve(makeIntent({ intentType: "no_op", channelTarget: undefined }), { ...ctx(), holdSuggested: true });
+    const heldMotive = held.committedEvents.find((e) => e.type === "private_motive_summary");
+    expect(heldMotive?.payload["holdSuggested"]).toBe(true);
+    expect(heldMotive?.payload["intentType"]).toBe("no_op");
+  });
+
   it("still records the thought when the act was blocked", async () => {
     // send_message to a channel the agent is not a member of → not_member block.
     const intent = makeIntent({ channelTarget: "ch_elsewhere" });
