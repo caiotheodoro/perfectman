@@ -53,6 +53,9 @@ export function stagingFor(eventType: string): Staging {
   return EVENT_STAGING[eventType] ?? "hidden";
 }
 
+/** Characters per balloon. Above this a line is split across beats. */
+const BALLOON_PAGE = 150;
+
 const STAGE_ACTIONS: Record<string, "arrive" | "leave" | "invite"> = {
   agent_joined: "arrive",
   agent_arrived: "arrive",
@@ -132,9 +135,11 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
     spoke.add(message.actorId);
 
     // A long line becomes several beats rather than one balloon that has to
-    // cover the room. The thought rides on the first page only, so it does not
-    // repeat behind every page of the same sentence.
-    const pages = staging === "reaction" ? [message.text] : paginate(message.text);
+    // cover the room. The page size is smaller than the video renderer's 220:
+    // a balloon hangs above a figure's head and has a ceiling, where a caption
+    // card in a 1080p frame does not. The thought rides on the first page only,
+    // so it does not repeat behind every page of the same sentence.
+    const pages = staging === "reaction" ? [message.text] : paginate(message.text, BALLOON_PAGE);
     pages.forEach((text, page) => {
       beats.push({
         id: pages.length > 1 ? `${message.eventId}:${page}` : message.eventId,

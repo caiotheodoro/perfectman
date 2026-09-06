@@ -4,7 +4,7 @@
  */
 
 .stage {
-  padding-top: 56px;
+  padding-top: 92px;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 20px;
@@ -19,6 +19,46 @@
   background: var(--paper-warm);
   box-shadow: var(--ring), var(--lift);
   transition: background var(--settle) var(--ease), box-shadow var(--settle) var(--ease);
+}
+
+/* Entering a room is a moment, not a swap: the box is keyed on the channel so
+   it re-mounts and plays this, and the figures inside arrive with it. */
+.stage__room {
+  animation: room-enter 460ms var(--ease) both;
+}
+
+@keyframes room-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+.stage__where {
+  position: absolute;
+  top: 14px;
+  left: 18px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--ink-50);
+  z-index: 500;
+  max-width: none;
+}
+
+.stage__where > span:first-child {
+  color: var(--ink-30);
+}
+
+/* The excluded person, named. A private channel is only interesting because
+   somebody is outside it. */
+.stage__shut-out {
+  color: var(--ink-30);
+  font-style: italic;
+}
+.stage__shut-out::before {
+  content: "— ";
 }
 
 /* A private room is not signalled with a colour. The paper warms and the edge
@@ -43,6 +83,26 @@
 
 /* Scaled about the feet, so a figure standing further back keeps its mark
    instead of drifting up out of the frame. */
+/* Arriving figures walk in with the room rather than appearing in place. */
+.stage__room .stage__mark {
+  animation: figure-arrive 520ms var(--ease) both;
+}
+.stage__room .stage__mark:nth-child(3) {
+  animation-delay: 70ms;
+}
+.stage__room .stage__mark:nth-child(4) {
+  animation-delay: 140ms;
+}
+.stage__room .stage__mark:nth-child(5) {
+  animation-delay: 210ms;
+}
+
+@keyframes figure-arrive {
+  from {
+    opacity: 0;
+  }
+}
+
 .stage__mark {
   position: absolute;
   width: 15%;
@@ -80,7 +140,7 @@
   flex-direction: column-reverse;
   gap: 8px;
   width: max-content;
-  max-width: min(46%, 360px);
+  max-width: min(46%, 340px);
   animation: bubble-in 300ms var(--ease) both;
 }
 
@@ -121,8 +181,8 @@
 }
 
 .bubble__said {
-  font-size: clamp(14px, 1.35vw, 17px);
-  line-height: 1.4;
+  font-size: clamp(13.5px, 1.2vw, 16px);
+  line-height: 1.38;
   max-width: none;
 }
 

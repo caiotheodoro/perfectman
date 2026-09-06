@@ -7,11 +7,13 @@
  * is for.
  */
 import type { LiveChannel, StageBeat } from "@perfectman/shared";
+import { roomLabel, type NamedAgent } from "../stage/room-label.js";
 
 export function Transport({
   beats,
   index,
   channels,
+  agents,
   playing,
   behind,
   live,
@@ -24,6 +26,7 @@ export function Transport({
   beats: readonly StageBeat[];
   index: number;
   channels: readonly LiveChannel[];
+  agents: readonly NamedAgent[];
   playing: boolean;
   behind: number;
   live: boolean;
@@ -50,11 +53,11 @@ export function Transport({
               title={
                 last < 0
                   ? "Nothing said here yet"
-                  : `Jump to the last thing said in ${channel.name}`
+                  : `Jump to the last thing said in ${roomLabel(channel, agents)}`
               }
             >
               <span aria-hidden="true">{channel.type === "private_channel" ? "↔" : "#"}</span>
-              {channel.name}
+              {roomLabel(channel, agents)}
             </button>
           );
         })}

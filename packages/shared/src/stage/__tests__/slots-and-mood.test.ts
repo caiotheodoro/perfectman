@@ -37,6 +37,23 @@ describe("assignSlots", () => {
     expect(next.size).toBe(slotsFor("public").length);
   });
 
+  it("never hands back a slot the new room does not have", () => {
+    // A public room seats six and a private one five, so slot 5 exists in one
+    // and not the other. Carrying it across crashed the stage on the first
+    // private channel a real run opened.
+    const inPublic = assignSlots([0, 1, 2, 3, 4, 5], "public", new Map());
+    const inPrivate = assignSlots([0, 1, 2, 3, 4, 5], "private", inPublic);
+    for (const slot of inPrivate.values()) {
+      expect(slot).toBeLessThan(slotsFor("private").length);
+    }
+  });
+
+  it("reseats everyone when a thought leaves room for one", () => {
+    const inPublic = assignSlots([0, 1, 2], "public", new Map());
+    const alone = assignSlots([2], "thought", inPublic);
+    expect([...alone.values()]).toEqual([0]);
+  });
+
   it("gives a private room fewer places than a public one, and a thought exactly one", () => {
     expect(slotsFor("private").length).toBeLessThan(slotsFor("public").length);
     expect(slotsFor("thought")).toHaveLength(1);

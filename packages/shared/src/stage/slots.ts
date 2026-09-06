@@ -65,6 +65,10 @@ export function slotsFor(kind: ChannelKind): readonly StageSlot[] {
  * Keeps whoever is already placed where they are, and fills the lowest free
  * slot for anyone new. `previous` is this channel's last assignment; pass an
  * empty map for a room being entered for the first time.
+ *
+ * A held slot is only honoured if the new room actually has it. Rooms differ in
+ * size — six places in public, five in private, one in a thought — so carrying
+ * a slot across without checking hands back a position that does not exist.
  */
 export function assignSlots(
   agentIndexes: readonly number[],
@@ -73,7 +77,9 @@ export function assignSlots(
 ): Map<number, number> {
   const points = slotsFor(kind);
   const visible = agentIndexes.slice(0, points.length);
-  const held = new Map([...previous].filter(([index]) => visible.includes(index)));
+  const held = new Map(
+    [...previous].filter(([index, slot]) => visible.includes(index) && slot < points.length),
+  );
 
   for (const index of visible) {
     if (held.has(index)) continue;

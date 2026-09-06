@@ -226,3 +226,42 @@
 .alert-inline {
   color: #b1120b;
 }
+
+/* --- warm-up ------------------------------------------------------------- */
+
+.warmup {
+  display: grid;
+  gap: 14px;
+}
+
+.warmup__note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+}
+
+.warmup__why {
+  font-size: 12.5px;
+  max-width: 56ch;
+}
+
+.warmup__pulse {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ink-30);
+  animation: warmup-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes warmup-pulse {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.8);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}

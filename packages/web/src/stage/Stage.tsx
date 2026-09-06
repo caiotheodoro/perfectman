@@ -22,8 +22,10 @@ import {
   type ChannelKind,
   type LiveChannel,
   type StageBeat,
+  type StageSlot,
 } from "@perfectman/shared";
 import { Figure } from "./Figure.js";
+import { roomLabel } from "./room-label.js";
 
 export type StageAgent = { id: string; displayName: string };
 
@@ -31,29 +33,45 @@ export function Stage({
   beat,
   agents,
   channels,
+  idleChannelId,
 }: {
   beat: StageBeat | undefined;
   agents: readonly StageAgent[];
   channels: readonly LiveChannel[];
+  /** Who stands in the room before anything has been said. */
+  idleChannelId?: string;
 }): JSX.Element {
   // Slot assignment is sticky per channel across beats, so a figure only moves
   // when the room actually changes. A ref, not state: it is a memo of where
   // people already are, and writing it must not cause a render.
   const held = useRef(new Map<string, Map<number, number>>());
 
-  const channel = channels.find((c) => c.id === beat?.channelId);
+  const channelId = beat?.channelId ?? idleChannelId ?? channels[0]?.id ?? "";
+  const channel = channels.find((c) => c.id === channelId);
   const kind = kindOf(channel?.type, beat);
   const points = slotsFor(kind);
 
   const placed = useMemo(() => {
-    if (!beat) return [];
-    const order = presentOrder(beat, agents);
-    const previous = held.current.get(beat.channelId) ?? new Map<number, number>();
+    const order = beat
+      ? presentOrder(beat, agents)
+      : (channel?.memberAgentIds ?? []).map((id) => agents.findIndex((a) => a.id === id)).filter((i) => i >= 0);
+    if (order.length === 0) return [];
+    const previous = held.current.get(channelId) ?? new Map<number, number>();
     const slots = assignSlots(order, kind, previous);
-    held.current.set(beat.channelId, slots);
-    return [...slots].map(([agentIndex, slot]) => ({ agentIndex, point: points[slot]! }));
+    held.current.set(channelId, slots);
+    return [...slots]
+      .map(([agentIndex, slot]) => ({ agentIndex, point: points[slot] }))
+      .filter((placement): placement is { agentIndex: number; point: StageSlot } => placement.point !== undefined);
     // Recomputed per beat; `held` carries the memory between them.
-  }, [beat, agents, kind, points]);
+  }, [beat, agents, kind, points, channelId, channel]);
+
+  // Who is in the run but not in this room. Naming them is the whole point of a
+  // private channel: the interesting fact is not that two people are talking,
+  // it is that a third cannot hear it.
+  const shutOut = useMemo(
+    () => (kind === "private" ? agents.filter((a) => !(channel?.memberAgentIds ?? []).includes(a.id)) : []),
+    [kind, agents, channel],
+  );
 
   const caption = emotionLabel(beat?.emotion);
   const ids = useMemo(() => agents.map((a) => a.id), [agents]);
@@ -61,7 +79,18 @@ export function Stage({
 
   return (
     <div className={`stage stage--${kind}`}>
-      <div className="stage__room">
+      {/* Keyed on the room, so moving to a private channel re-mounts the box
+          and plays its entrance rather than silently swapping the contents. */}
+      <div className="stage__room" key={channelId}>
+        <p className="stage__where">
+          <span aria-hidden="true">{kind === "private" ? "↔" : "#"}</span>
+          {roomLabel(channel, agents)}
+          {shutOut.length > 0 ? (
+            <span className="stage__shut-out">
+              {shutOut.map((a) => a.displayName).join(" and ")} cannot see this
+            </span>
+          ) : null}
+        </p>
         {placed.map(({ agentIndex, point }) => {
           const agent = agents[agentIndex]!;
           const isActor = beat?.actorId === agent.id;
@@ -118,14 +147,14 @@ export function Stage({
       </div>
 
       <div className="stage__utterance">
-        {beat ? (
+        {!beat && idleChannelId ? null : beat ? (
           <p className="attribution">
             <span
               className="attribution__chip"
               style={{ background: chipFor(chipIndexFor(beat.actorId ?? "", ids)) }}
             />
             <strong>{nameOf(agents, beat.actorId)}</strong>
-            <span className="u-dim">{describe(beat, agents, channel?.name)}</span>
+            <span className="u-dim">{describe(beat, agents, roomLabel(channel, agents))}</span>
             {caption ? <span className="attribution__reading">{caption}</span> : null}
           </p>
         ) : (
