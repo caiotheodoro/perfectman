@@ -48,8 +48,9 @@ describe("bubbleBottom", () => {
     expect(bubbleBottom(0.2, 200, 400)).toBe(0);
   });
 
-  it("agrees with the figure height the CSS draws", () => {
-    // If these drift the balloon detaches from the head it belongs to.
+  it("guesses the first paint from the 16:7 drawing before anything is measured", () => {
+    // The real head is measured once laid out; this is only what the balloon
+    // uses on its first frame, so it should be the drawing's own geometry.
     expect(FIGURE_HEIGHT_FRACTION).toBeCloseTo(0.15 * 1.68 * (16 / 7), 10);
   });
 });

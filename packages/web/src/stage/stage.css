@@ -1,13 +1,22 @@
 /*
- * The room is a fixed aspect box so the ported slot geometry keeps working at
- * any width. Everything inside is positioned in percentages of it.
+ * The room is a fixed-aspect box so the slot geometry means what it says.
+ * Everything inside is positioned in percentages of it.
+ *
+ * The aspect is enforced through the width, not a max-height: a box with
+ * `aspect-ratio` and a `max-height` stops being that aspect the moment the cap
+ * bites, and then the figures — sized by width — are the wrong height for the
+ * room. Capping the column's width keeps the room 16:7 at every viewport.
  */
 
-.stage {
-  padding-top: 20px;
+.flipbook {
+  width: min(100%, calc(44vh * 16 / 7));
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 20px;
+  gap: 14px;
+  padding-top: 20px;
+}
+
+.stage {
+  display: grid;
   min-height: 0;
 }
 
@@ -15,23 +24,18 @@
   position: relative;
   overflow: hidden;
   aspect-ratio: 16 / 7;
-  max-height: 44vh;
   border-radius: var(--r-xl);
   background: var(--paper-warm);
   box-shadow: var(--ring), var(--lift);
   transition: background var(--settle) var(--ease), box-shadow var(--settle) var(--ease);
 }
 
-/* Entering a room is a moment, not a swap: the box is keyed on the channel so
-   it re-mounts and plays this, and the figures inside arrive with it. */
-.stage__room {
-  animation: room-enter 460ms var(--ease) both;
-}
-
-@keyframes room-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.985);
+/* A phone is taller than it is wide; so is the room there. The slot fractions
+   are the same, so figures stand shorter against a taller room and balloons
+   have the headroom they never had at 153px. */
+@media (max-width: 640px) {
+  .stage__room {
+    aspect-ratio: 4 / 3;
   }
 }
 
@@ -107,7 +111,6 @@
 .stage__mark {
   position: absolute;
   width: 15%;
-  min-width: 78px;
   transform-origin: 50% 100%;
   transition: left var(--settle) var(--ease), top var(--settle) var(--ease),
     transform var(--settle) var(--ease);

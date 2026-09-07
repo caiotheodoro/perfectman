@@ -6,11 +6,12 @@
  * moves into `details`, still complete, just no longer the thing you are
  * looking at.
  */
-import { useState } from "react";
-import type { CompileResponse, StartRunRequest } from "@perfectman/shared";
+import { useMemo, useState } from "react";
+import { idlePlacement, placeBeats, type CompileResponse, type StartRunRequest } from "@perfectman/shared";
 import type { RunStream } from "../api/useRunStream.js";
-import type { LiveChannel } from "@perfectman/shared";
+import type { LiveChannel, Placement } from "@perfectman/shared";
 import { Stage, type StageAgent } from "../stage/Stage.js";
+import { Attribution } from "../stage/Attribution.js";
 import { useStageClock } from "../stage/useStageClock.js";
 import { useStageBeats } from "./useStageBeats.js";
 import { useSoundtrack } from "./useSoundtrack.js";
@@ -19,6 +20,10 @@ import { DetailsDrawer } from "./DetailsDrawer.js";
 import { ProviderForm, type ProviderValue, DEFAULT_PROVIDER } from "./ProviderForm.js";
 
 const IDLE_STATES = new Set(["idle", "done", "failed"]);
+// Stable empties, so the memos below do not recompute on every render before
+// the run has said hello.
+const EMPTY_AGENTS: readonly StageAgent[] = [];
+const EMPTY_CHANNELS: readonly LiveChannel[] = [];
 
 /**
  * How much of the run to have in hand before the stage starts playing.
@@ -55,8 +60,14 @@ export function RunScreen({
   const sound = useSoundtrack(clock.beat, running || beats.length > 0);
 
   const started = runId !== null;
-  const agents = stream.replay?.agents ?? [];
-  const channels = stream.replay?.channels ?? [];
+  const agents = stream.replay?.agents ?? EMPTY_AGENTS;
+  const channels = stream.replay?.channels ?? EMPTY_CHANNELS;
+  const ids = useMemo(() => agents.map((a) => a.id), [agents]);
+  // Seating for the whole run, decided once. The idle room seeds it so the
+  // first line is a continuation of the warm-up picture, not a reshuffle.
+  const idle = useMemo(() => idlePlacement(channels[0], agents), [channels, agents]);
+  const placements = useMemo(() => placeBeats(beats, agents, channels, { seed: idle }), [beats, agents, channels, idle]);
+  const placement = placements[clock.index] ?? idle;
   // Once it has played, it keeps playing: a mid-run dip below the threshold is
   // the queue working, not a reason to pull the curtain back down.
   const [warm, setWarm] = useState(false);
@@ -92,10 +103,13 @@ export function RunScreen({
           />
         </>
       ) : !ready ? (
-        <Warmup stream={stream} agents={agents} channels={channels} beats={beats.length} />
+        <Warmup stream={stream} agents={agents} channels={channels} ids={ids} idle={idle} beats={beats.length} />
       ) : (
         <>
-          <Stage beat={clock.beat} agents={agents} channels={channels} />
+          <div className="flipbook">
+            <Stage beat={clock.beat} placement={placement} agents={agents} channels={channels} ids={ids} />
+            <Attribution beat={clock.beat} agents={agents} channels={channels} ids={ids} />
+          </div>
           <Transport
             beats={beats}
             index={clock.index}
@@ -137,17 +151,23 @@ function Warmup({
   stream,
   agents,
   channels,
+  ids,
+  idle,
   beats,
 }: {
   stream: RunStream;
   agents: readonly StageAgent[];
   channels: readonly LiveChannel[];
+  ids: readonly string[];
+  idle: Placement;
   beats: number;
 }): JSX.Element {
   const state = stream.status?.state;
   return (
     <div className="warmup">
-      <Stage beat={undefined} agents={agents} channels={channels} idleChannelId={channels[0]?.id} />
+      <div className="flipbook">
+        <Stage beat={undefined} placement={idle} agents={agents} channels={channels} ids={ids} />
+      </div>
       <p className="warmup__note">
         <span className="warmup__pulse" aria-hidden="true" />
         {state === "health_check"

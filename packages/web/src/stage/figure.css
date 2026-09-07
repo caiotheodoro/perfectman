@@ -60,10 +60,10 @@
 }
 
 /* Staggered so a cast does not blink in unison, which reads as a glitch. */
-.figure:nth-child(3n + 2) .figure__eye {
+.stage__mark:nth-child(3n + 2) .figure__eye {
   animation-delay: 1.7s;
 }
-.figure:nth-child(3n) .figure__eye {
+.stage__mark:nth-child(3n) .figure__eye {
   animation-delay: 3.1s;
 }
 
