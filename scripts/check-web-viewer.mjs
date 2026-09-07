@@ -102,6 +102,15 @@ const thinking = text => ({ privateMotiveSummary: text, emotionDrivers: [], moti
 const pulse = (pulseIndex, messages, thoughts = {}, emotions = {}) => emit({ type: 'pulse', frame: { pulseIndex, messages, thinking: Object.fromEntries(Object.entries(thoughts).map(([agentId, thought]) => [agentId, { agentId, ...thought }])), emotions, notices: [], eventsCommitted: messages.length, agentsCalled: 1 } });
 const position = () => page.$eval('[aria-label="Position in the run"]', el => el.textContent.trim());
 const shot = async name => page.screenshot({ path: join(evidence, `${name}.png`), fullPage: true });
+const visibleReading = async name => {
+  if (page.viewport().width > 640) return;
+  await page.waitForFunction(() => {
+    const dialogue = document.querySelector('.pages__page:not([aria-hidden]) .stage__dialogue')?.getBoundingClientRect();
+    const controls = document.querySelector('.transport__buttons')?.getBoundingClientRect();
+    return dialogue && controls && dialogue.top >= 0 && dialogue.top < controls.top && controls.bottom <= innerHeight;
+  }, { timeout: 2000 });
+  await page.screenshot({ path: join(evidence, `${name}-viewport.png`) });
+};
 const geometry = async name => {
   const problems = await page.evaluate(() => {
     const stage = document.querySelector('.pages__page:not([aria-hidden]) .stage');
@@ -124,9 +133,7 @@ try {
   await page.goto(url, { waitUntil: 'networkidle0' });
   await page.evaluate(() => document.fonts.ready);
   await geometry('intro-desktop');
-  const introText = await page.$eval('.intro__scene', el => el.textContent);
-  await new Promise(r => setTimeout(r, 3500));
-  assert.equal(await page.$eval('.intro__scene', el => el.textContent), introText, 'Reduced motion must pause the intro');
+  assert.equal(await page.$eval('.intro__play', el => el.textContent.trim()), 'Play', 'Reduced-motion preference must reach the preview controls');
   for (const width of [390, 320]) {
     await page.setViewport({ width, height: 960 });
     await geometry(`intro-${width}`);
@@ -156,7 +163,6 @@ try {
   hello(); status('running');
   pulse(0, [message('first', 'iris', 'public', 'so are we talking about last night or not')], { iris: thinking('I want to know what happened, but I do not want to ask twice.') });
   await page.waitForSelector('.warmup');
-  await new Promise(r => setTimeout(r, 3500));
   assert.equal(await page.$('.transport'), null, 'Warmup must not reveal a partial buffer');
   await geometry('preparing-desktop');
   pulse(1, [message('private', 'iris', 'private', 'tell me what happened', ['iris', 'marcela'])]);
@@ -165,25 +171,27 @@ try {
   assert.equal(await position(), '1 / 4', 'First intended beat must be visible after warmup');
   assert.equal(await page.$$eval('.stage .figure', figures => figures.every(el => el.dataset.face === 'neutral')), true, 'Missing emotion must stay neutral');
   for (const width of [1280, 390, 320]) {
-    await page.setViewport({ width, height: 960 });
+    await page.setViewport({ width, height: width === 320 ? 568 : width === 390 ? 844 : 960 });
     await page.click('.sheet__frame:first-child');
+    await visibleReading(`public-${width}`);
     await geometry(`public-${width}`);
-    await page.click('[aria-label="Next beat"]'); await geometry(`thought-${width}`);
-    await page.click('[aria-label="Next beat"]'); await geometry(`private-${width}`);
+    await page.click('[aria-label="Next beat"]'); await visibleReading(`thought-${width}`); await geometry(`thought-${width}`);
+    await page.click('[aria-label="Next beat"]'); await visibleReading(`private-${width}`); await geometry(`private-${width}`);
     assert.match(await page.$eval('.stage', el => el.textContent), /cannot (see|hear)/);
-    await page.click('[aria-label="Next beat"]'); await geometry(`silence-${width}`);
+    await page.click('[aria-label="Next beat"]'); await visibleReading(`silence-${width}`); await geometry(`silence-${width}`);
     assert.match(await page.$eval('.stage__utterance', el => el.textContent), /says nothing/);
   }
-  await page.setViewport({ width: 390, height: 960 });
+  await page.setViewport({ width: 390, height: 844 });
   const at = await position();
   pulse(3, [message('long', 'very-long', 'public', 'I kept every detail to myself because I thought that leaving it unsaid might protect the rest of us. Now the whole conversation is about what nobody has been willing to name. ' .repeat(3))]);
   await wait(async () => (await position()) !== at, 'Incoming beats did not enter the queue');
   assert.match(await position(), /^4 \/ /, 'Incoming beats must not move a paused cursor');
-  await page.click('[aria-label="Next beat"]'); await geometry('long-name-dialogue-mobile');
+  await page.click('[aria-label="Next beat"]'); await visibleReading('long-name-dialogue-mobile'); await geometry('long-name-dialogue-mobile');
   await page.focus('.sheet__frame[aria-current]'); await page.keyboard.press('Home');
   assert.match(await position(), /^1 \/ /, 'Keyboard Home must seek to the first beat');
   await clickText('Play');
   await page.waitForFunction(() => !document.querySelector('[aria-label="Position in the run"]').textContent.trim().startsWith('1 /'), { timeout: 10000 });
+  await visibleReading('autoplay-mobile');
   await clickText('Pause');
   await clickText('Sound off');
   await page.waitForFunction(() => window.__fixtureAudio.some(el => !el.paused && el.volume > 0 && el.currentTime > 0));

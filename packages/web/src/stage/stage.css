@@ -240,3 +240,19 @@
   color: #58614e;
   font-size: 12px;
 }
+
+/* The controls stay reachable while a tall cast or long line scrolls on a phone. */
+@media (max-width: 640px) {
+  .intro .intro__controls, .transport .transport__buttons {
+    position: fixed;
+    z-index: 10;
+    inset: auto 0 0;
+    width: auto;
+    margin: 0;
+    padding: 10px 20px calc(10px + env(safe-area-inset-bottom));
+    background: var(--paper);
+    border-top: 1px solid var(--rule-strong);
+  }
+  .intro .intro__controls { justify-content: center; }
+  .intro-shell .intro, .step.run { padding-bottom: 110px; }
+}

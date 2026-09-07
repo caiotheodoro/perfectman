@@ -88,6 +88,7 @@ describe("Stage", () => {
   it("honors an explicit public audience and turns only that audience toward the speaker", () => {
     const b = beat({ audienceIds: ["iris", "marcela"] });
     const [placement] = placeBeats([b], AGENTS, CHANNELS);
+    expect(placement).toBeDefined();
     const { container } = render(<Stage beat={b} placement={placement!} agents={AGENTS} channels={CHANNELS} ids={IDS} />);
     expect(container.querySelector(".stage__shut-out")?.textContent).toBe("bruno cannot see this");
     expect(container.querySelector('[data-agent-id="bruno"] .figure')?.getAttribute("data-gaze-x")).toBe("0");
@@ -98,8 +99,11 @@ describe("Stage", () => {
   it("never gives another agent a listening pose for a viewer-only thought", () => {
     const b = beat({ kind: "aside", text: "", thought: { text: "not now", drivers: [] } });
     const [placement] = placeBeats([b], AGENTS, CHANNELS);
+    expect(placement).toBeDefined();
     const { container } = render(<Stage beat={b} placement={placement!} agents={AGENTS} channels={CHANNELS} ids={IDS} />);
-    expect([...container.querySelectorAll(".figure")].every((f) => f.getAttribute("data-gaze-x") === "0")).toBe(true);
+    for (const figure of container.querySelectorAll(".figure")) {
+      expect(figure.getAttribute("data-gaze-x"), figure.querySelector(".figure__name")?.textContent ?? "unnamed agent").toBe("0");
+    }
     expect(container.querySelector(".bubble__speaker")?.textContent).toContain("Thought · viewer only");
     expect(container.textContent).toContain("The other agents cannot hear it.");
     expect(container.querySelector(".figure--speaking")).toBeNull();
@@ -108,6 +112,7 @@ describe("Stage", () => {
   it("makes an empty silence legible without inventing speech or motive", () => {
     const b = beat({ kind: "silence", text: "" });
     const [placement] = placeBeats([b], AGENTS, CHANNELS);
+    expect(placement).toBeDefined();
     const { container } = render(<Stage beat={b} placement={placement!} agents={AGENTS} channels={CHANNELS} ids={IDS} />);
     expect(container.querySelector(".stage__pause")?.textContent).toBe("íris says nothing this turn.");
     expect(container.querySelector(".bubbles")).toBeNull();
@@ -119,6 +124,7 @@ describe("Stage", () => {
     const channels: LiveChannel[] = [{ id: "many", name: "many", type, memberAgentIds: ids.slice(0, 7) }];
     const b = beat({ actorId: ids[0], channelId: "many", participantIds: ids.slice(0, 7) });
     const [placement] = placeBeats([b], agents, channels);
+    expect(placement).toBeDefined();
     const { container } = render(<Stage beat={b} placement={placement!} agents={agents} channels={channels} ids={ids} />);
     expect(container.querySelectorAll(".stage__mark")).toHaveLength(type === "private_channel" ? 5 : 6);
     expect(container.querySelector(".stage__overflow")?.textContent).toContain("Agent 6");

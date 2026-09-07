@@ -6,10 +6,11 @@
  * invariants worth pinning are the ones a reconnect breaks: a replayed `hello`
  * must not erase folded pulses, and a replayed pulse must not double a row.
  */
-import { act, cleanup, renderHook } from "@testing-library/react";
+import { cleanup, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { LiveEvent, LiveMessage, LivePulseFrame, RunStatus } from "@perfectman/shared";
 import { fold, useRunStream, type RunStream } from "../useRunStream.js";
+import { stubEventSource } from "../../__tests__/event-source.js";
 
 const BASE: RunStream = {
   replay: null,
@@ -24,24 +25,17 @@ const BASE: RunStream = {
 };
 
 it("clears a previous run immediately and ignores delivery from its closed source", () => {
-  const sources: EventTarget[] = [];
-  vi.stubGlobal("EventSource", class extends EventTarget {
-    constructor() { super(); sources.push(this); }
-    close() {}
-  });
+  const { send } = stubEventSource();
   try {
     const { result, rerender } = renderHook(({ id }) => useRunStream(id), { initialProps: { id: "first" } });
-    const send = (at: number, event: LiveEvent) => act(() => {
-      sources[at]!.dispatchEvent(new MessageEvent(event.type, { data: JSON.stringify(event) }));
-    });
-    send(0, hello("first"));
-    send(0, pulse(0, [message("old dialogue", 0)]));
+    send(hello("first"));
+    send(pulse(0, [message("old dialogue", 0)]));
     expect(result.current.replay?.pulses).toHaveLength(1);
     rerender({ id: "second" });
     expect(result.current.replay).toBeNull();
-    send(0, hello("first"));
+    send(hello("first"));
     expect(result.current.helloRunId).toBeNull();
-    send(1, hello("second"));
+    send(hello("second"), 1);
     expect(result.current.helloRunId).toBe("second");
     expect(result.current.replay?.pulses).toEqual([]);
   } finally {

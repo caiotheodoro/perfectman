@@ -17,6 +17,7 @@ import { Attribution } from "../stage/Attribution.js";
 import { ContactSheet } from "../stage/ContactSheet.js";
 import { frameFor, frameLabel } from "../stage/Frame.js";
 import { useStageClock } from "../stage/useStageClock.js";
+import { useReadingPosition } from "../stage/motion.js";
 import { useStageBeats } from "./useStageBeats.js";
 import { useSoundtrack } from "./useSoundtrack.js";
 import { Transport } from "./Transport.js";
@@ -83,6 +84,8 @@ export function RunScreen({
   const ready = runId !== null && (warmRun === runId || beats.length >= WARMUP_BEATS || (finished && beats.length > 0));
   if (ready && warmRun !== runId) setWarmRun(runId);
   const clock = useStageClock(beats, { ready: ready && visible, runId });
+  const reading = useReadingPosition(ready && visible ? clock.beat?.id : undefined);
+  const seek = (index: number): void => { clock.seek(index); reading.reveal(); };
   const sound = useSoundtrack(ready && visible ? clock.beat : undefined, ready && visible && (running || beats.length > 0), ready && visible && clock.playing);
 
   const started = runId !== null;
@@ -171,7 +174,7 @@ export function RunScreen({
           {/* One page for the whole run. The warm-up room is the same Panel as
               the first line, so the first beat continues the picture rather
               than replacing it. */}
-          <div className="flipbook">
+          <div className="flipbook" ref={reading.ref}>
             <Panel
               playing={ready && clock.playing}
               beat={ready ? clock.beat : undefined}
@@ -190,7 +193,7 @@ export function RunScreen({
                   index={clock.index}
                   reached={clock.reached}
                   live={running}
-                  onSeek={clock.seek}
+                  onSeek={seek}
                 />
               </>
             ) : null}
@@ -210,9 +213,9 @@ export function RunScreen({
                 behind={clock.behind}
                 live={running}
                 muted={sound.muted}
-                onPlayPause={() => (clock.playing ? clock.pause() : clock.play())}
-                onStep={clock.step}
-                onSeek={clock.seek}
+                onPlayPause={() => { if (clock.playing) clock.pause(); else { clock.play(); reading.reveal(); } }}
+                onStep={(delta) => { clock.step(delta); reading.reveal(); }}
+                onSeek={seek}
                 onMute={sound.toggle}
               />
             </>
@@ -230,7 +233,7 @@ export function RunScreen({
               </button>
             ) : (
               <>
-                {beats.length > 0 ? <button type="button" className="btn btn--quiet" onClick={() => { clock.seek(0); clock.play(); }}>Watch again</button> : null}
+                {beats.length > 0 ? <button type="button" className="btn btn--quiet" onClick={() => { seek(0); clock.play(); }}>Watch again</button> : null}
                 <button type="button" className="btn" onClick={onReset}>Start another run</button>
               </>
             )}

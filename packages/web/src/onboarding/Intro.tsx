@@ -7,6 +7,7 @@ import { ContactSheet } from "../stage/ContactSheet.js";
 import { frameFor, frameLabel } from "../stage/Frame.js";
 import { Panel } from "../stage/Panel.js";
 import { useStageClock } from "../stage/useStageClock.js";
+import { useReadingPosition } from "../stage/motion.js";
 import { introRun } from "./intro-script.js";
 
 export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
@@ -24,13 +25,15 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
   }, [run]);
   const clock = useStageClock(run.beats);
   const beat = clock.beat!;
+  const reading = useReadingPosition(beat.id);
 
   function togglePlay(): void {
     if (clock.atEnd) {
       clock.seek(0);
       clock.play();
+      reading.reveal();
     } else if (clock.playing) clock.pause();
-    else clock.play();
+    else { clock.play(); reading.reveal(); }
   }
 
   return (
@@ -53,7 +56,7 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
           </button>
         </div>
 
-        <section className="intro__scene flipbook" aria-label="Authored preview">
+        <section className="intro__scene flipbook" aria-label="Authored preview" ref={reading.ref}>
           <Panel
             beat={beat}
             placement={staged.placements[clock.index]!}
@@ -71,7 +74,7 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
             <div className="intro__controls" role="group" aria-label="Preview playback">
               <button
                 type="button" className="btn btn--quiet intro__step"
-                aria-label="Previous beat" disabled={clock.index === 0} onClick={() => clock.step(-1)}
+                aria-label="Previous beat" disabled={clock.index === 0} onClick={() => { clock.step(-1); reading.reveal(); }}
               >
                 <span aria-hidden="true">←</span>
               </button>
@@ -84,7 +87,7 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
               </button>
               <button
                 type="button" className="btn btn--quiet intro__step"
-                aria-label="Next beat" disabled={clock.atEnd} onClick={() => clock.step(1)}
+                aria-label="Next beat" disabled={clock.atEnd} onClick={() => { clock.step(1); reading.reveal(); }}
               >
                 <span aria-hidden="true">→</span>
               </button>
@@ -98,7 +101,7 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
               index={clock.index}
               reached={clock.reached}
               live={false}
-              onSeek={(index) => { clock.pause(); clock.seek(index); }}
+              onSeek={(index) => { clock.pause(); clock.seek(index); reading.reveal(); }}
             />
           </div>
         </section>

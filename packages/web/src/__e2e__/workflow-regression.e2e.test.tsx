@@ -1,7 +1,8 @@
 import { act, cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, expect, it, vi } from "vitest";
-import type { CompileResponse, LiveEvent, LiveMessage } from "@perfectman/shared";
+import type { CompileResponse, LiveMessage } from "@perfectman/shared";
 import { App } from "../App.js";
+import { stubEventSource } from "../__tests__/event-source.js";
 
 afterEach(() => {
   cleanup();
@@ -16,11 +17,7 @@ it("preserves a run through navigation and opens a changed scene only after that
   vi.stubGlobal("localStorage", { getItem: () => "1" });
   vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
   vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
-  const sources: EventTarget[] = [];
-  vi.stubGlobal("EventSource", class extends EventTarget {
-    constructor() { super(); sources.push(this); }
-    close() {}
-  });
+  const { sources, send } = stubEventSource();
   const persona = { filename: "iris.md", text: "---\npersonaId: iris\ndisplayName: Iris\narchetype: connector\n---\n" };
   const compiled: CompileResponse = { ok: true, config: {}, diagnostics: [], summary: null };
   const fetcher: typeof fetch = async (input) => {
@@ -52,10 +49,7 @@ it("preserves a run through navigation and opens a changed scene only after that
   await act(async () => { await vi.advanceTimersByTimeAsync(300); });
   expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(true);
   fireEvent.click(screen.getByRole("button", { name: "Return to the run" }));
-  expect(screen.getByRole("heading", { name: "Dinner scene" })).toBeTruthy();
-  const send = (event: LiveEvent) => act(() => {
-    sources[0]!.dispatchEvent(new MessageEvent(event.type, { data: JSON.stringify(event) }));
-  });
+  expect(screen.getByRole("heading", { name: "Dinner scene" }).textContent).toBe("Dinner scene");
   send({
     type: "hello", runId: "r1", simulationId: "dinner", simulationName: "Dinner", maxPulses: 6,
     agents: [{ id: "iris", displayName: "Iris", archetype: "connector" }],
@@ -76,7 +70,7 @@ it("preserves a run through navigation and opens a changed scene only after that
   fireEvent.click(screen.getByRole("button", { name: "Next beat" }));
   fireEvent.click(screen.getByRole("button", { name: "Next beat" }));
   expect(screen.getByLabelText("Position in the run").textContent).toBe("3 / 4");
-  expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Play" }).textContent).toBe("Play");
   fireEvent.click(screen.getByRole("button", { name: /^Scene/ }));
   fireEvent.click(screen.getByRole("button", { name: "Run" }));
   expect(sources).toHaveLength(1);
@@ -89,16 +83,16 @@ it("preserves a run through navigation and opens a changed scene only after that
   act(() => vi.advanceTimersByTime(60_000));
   fireEvent.click(screen.getByRole("button", { name: "Build a room" }));
   expect(screen.getByLabelText("Position in the run").textContent).toBe("3 / 4");
-  expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Play" }).textContent).toBe("Play");
 
   fireEvent.click(screen.getByRole("button", { name: /^Scene/ }));
   fireEvent.click(screen.getByRole("button", { name: /Reunion scene/ }));
   await act(async () => { await vi.advanceTimersByTimeAsync(300); });
   expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(true);
   fireEvent.click(screen.getByRole("button", { name: "Return to the run" }));
-  expect(screen.getByRole("heading", { name: "Dinner" })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Dinner" }).textContent).toBe("Dinner");
   expect(screen.getByLabelText("Position in the run").textContent).toBe("3 / 4");
-  expect(screen.getByRole("button", { name: "Play" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Play" }).textContent).toBe("Play");
   expect(sources).toHaveLength(1);
 
   send({ type: "status", status: {
@@ -110,7 +104,7 @@ it("preserves a run through navigation and opens a changed scene only after that
   fireEvent.click(screen.getByRole("button", { name: /Reunion scene/ }));
   expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(false);
   fireEvent.click(screen.getByRole("button", { name: "Ready" }));
-  expect(screen.getByRole("heading", { name: "Give your cast a model." })).toBeTruthy();
+  expect(screen.getByRole("heading", { name: "Give your cast a model." }).textContent).toBe("Give your cast a model.");
   expect(screen.queryByLabelText("Position in the run")).toBeNull();
   const key = screen.getByLabelText<HTMLInputElement>(/^API key/);
   expect(key.value).toBe("");

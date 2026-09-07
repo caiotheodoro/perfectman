@@ -19,7 +19,7 @@ function step(files: ReturnType<typeof persona>[]) {
       lede=""
       presets={[]}
       selection={{ presetId: null, files }}
-      onSelect={vi.fn()}
+      onSelect={() => undefined}
       accept=".md"
       emptyHint=""
     >
@@ -59,8 +59,8 @@ it("shows the actual cast a scene requires before selecting it", () => {
       activeCast={{ presetId: "another", files: [] }} selection={{ presetId: null, files: [] }}
       onSelect={onSelect} accept=".md" emptyHint=""><span /></PickStep>,
   );
-  expect(getByText("Changes cast to The partners")).toBeTruthy();
-  expect(getByText("Iris · Bruno")).toBeTruthy();
+  expect(getByText("Changes cast to The partners").textContent).toContain("Changes cast to The partners");
+  expect(getByText("Iris · Bruno").textContent).toBe("Iris · Bruno");
   fireEvent.click(getByRole("button", { name: /The disagreement/ }));
   expect(onSelect).toHaveBeenCalledWith({ presetId: scene.id, files: scene.files });
   cleanup();
@@ -72,8 +72,10 @@ it("reports an unreadable upload without replacing the current files", async () 
     <PickStep title="Cast" lede="" presets={[]} selection={{ presetId: null, files: [] }}
       onSelect={onSelect} accept=".md" emptyHint=""><span /></PickStep>,
   );
+  const picker = container.querySelector('input[type="file"]');
+  expect(picker).not.toBeNull();
   await act(async () => {
-    fireEvent.change(container.querySelector('input[type="file"]')!, {
+    fireEvent.change(picker!, {
       target: { files: [{ name: "persona.md", text: () => Promise.reject(new Error("unreadable")) }] },
     });
   });
