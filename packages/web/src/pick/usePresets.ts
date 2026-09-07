@@ -25,7 +25,13 @@ export function usePresets(): { library: PresetLibrary; loading: boolean; error:
     let live = true;
     listPresets()
       .then((next) => {
-        if (live) setLibrary(next);
+        if (!live) return;
+        // A static host that answers /api with its own index page gives back
+        // something that is not a library. Say so rather than render nothing.
+        if (!next || !Array.isArray(next.casts) || !Array.isArray(next.scenes)) {
+          throw new Error("The presets endpoint did not answer with a library.");
+        }
+        setLibrary(next);
       })
       .catch((err: unknown) => {
         if (live) setError(err instanceof Error ? err.message : String(err));
