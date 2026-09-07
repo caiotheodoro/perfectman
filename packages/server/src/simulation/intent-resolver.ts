@@ -658,9 +658,14 @@ export class IntentResolver {
         spectatorVisible: false,
         createdForMotives: [intent.privateMotiveSummary.slice(0, 80)],
       });
-      // Rewrite the committed event with the real registered channel id.
+      // Rewrite every event of this intent with the real registered channel
+      // id — the creation and each invite. Rewriting only the creation left
+      // the invites on the id minted before registration, and the anchor
+      // update that follows an invite then parked both parties in a channel
+      // that did not exist: their next lines committed there, unmarked as
+      // private, with no members, and the stage drew a lone figure "somewhere".
       for (const evt of primaryEvents) {
-        if (evt.type === "channel_created") {
+        if (evt.type === "channel_created" || evt.type === "agent_invited") {
           evt.channelId = channel.id;
         }
       }

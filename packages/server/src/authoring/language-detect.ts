@@ -20,7 +20,7 @@ export type LanguageDetection = {
   confidence: number;
   /** Markers that fired, for the UI to show its work. */
   markers: string[];
-  source: "frontmatter" | "heuristic" | "override";
+  source: "frontmatter" | "heuristic" | "override" | "scenario";
 };
 
 /**
@@ -101,21 +101,29 @@ export function detectLanguage(text: string): LanguageDetection {
 }
 
 /**
- * Resolves the language for one authored file: an explicit value wins, an
- * override wins over that, and detection is the fallback.
+ * Resolves the language for one authored file: an override wins, then the
+ * file's own explicit value, then the scene's language, and detection is the
+ * fallback. The scene sits above detection because a persona whose Identity
+ * is written in English but who lives in a pt-BR scene should speak pt-BR —
+ * a guess from prose must not outrank what the author said about the scene.
  */
 export function resolveLanguage(params: {
   explicit?: string | undefined;
   override?: string | undefined;
+  /** The scene's language, for a persona that states none of its own. */
+  scenario?: string | undefined;
   proseForDetection: string;
 }): LanguageDetection & { invalidExplicit?: string } {
-  const { explicit, override, proseForDetection } = params;
+  const { explicit, override, scenario, proseForDetection } = params;
 
   if (override === "pt-BR" || override === "en") {
     return { language: override, confidence: 1, markers: [], source: "override" };
   }
   if (explicit === "pt-BR" || explicit === "en") {
     return { language: explicit, confidence: 1, markers: [], source: "frontmatter" };
+  }
+  if ((scenario === "pt-BR" || scenario === "en") && !explicit) {
+    return { language: scenario, confidence: 1, markers: [], source: "scenario" };
   }
 
   const detected = detectLanguage(proseForDetection);

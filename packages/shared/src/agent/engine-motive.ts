@@ -32,6 +32,8 @@ export const ENGINE_MOTIVE_PREFIXES: readonly string[] = [
   "Retry call failed.",
   "Reaction target unresolvable",
   "unresolvable ",
+  // Written by the operator command handlers for a forced join or leave.
+  "operator-directed",
 ];
 
 export function isEngineAuthoredMotive(motive: string): boolean {

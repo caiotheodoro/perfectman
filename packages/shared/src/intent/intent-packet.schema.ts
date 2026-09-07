@@ -17,8 +17,11 @@ export const ModelIntentPacketSchema = z.object({
   intentType: IntentTypeSchema,
   channelTarget: z.string().optional(),
   personTargets: z.array(z.string()).default([]),
-  visibleContent: z.string().optional(),
-  privateMotiveSummary: z.string().min(1),
+  visibleContent: z.string().optional().describe("What this person says out loud, in this person's own language."),
+  privateMotiveSummary: z
+    .string()
+    .min(1)
+    .describe("This person's own private thought behind the action, in this person's own language."),
   emotionDrivers: z.array(z.string()).default([]),
   motivationDrivers: z.array(z.string()).default([]),
   // Short form first: it is what the prompt asks for and what schema mode
@@ -57,6 +60,7 @@ export function normalizeMemoryWriteProposal(element: ModelIntentPacket["memoryW
 
 type JsonSchemaProp = {
   type?: string;
+  description?: string;
   enum?: readonly string[];
   items?: { type?: string; properties?: Record<string, JsonSchemaProp>; anyOf?: JsonSchemaProp[] };
   properties?: Record<string, JsonSchemaProp>;
@@ -138,7 +142,9 @@ export function modelIntentPacketFieldContract(): string[] {
   const { properties, required } = ModelIntentPacketJsonSchema;
   return Object.entries(properties).map(([name, def]) => {
     const isRequired = (required as readonly string[]).includes(name);
-    return `"${name}" (${isRequired ? "required" : "optional"}): ${describePacketFieldType(def as JsonSchemaProp)}`;
+    const prop = def as JsonSchemaProp;
+    const note = prop.description ? ` — ${prop.description}` : "";
+    return `"${name}" (${isRequired ? "required" : "optional"}): ${describePacketFieldType(prop)}${note}`;
   });
 }
 

@@ -89,7 +89,7 @@ export type CompiledPersona = {
 export function compilePersonaMarkdown(
   text: string,
   filename: string,
-  options: { languageOverride?: string } = {},
+  options: { languageOverride?: string; scenarioLanguage?: string } = {},
 ): CompiledPersona {
   const bag = new DiagnosticBag(filename);
 
@@ -140,6 +140,7 @@ export function compilePersonaMarkdown(
   const language = resolveLanguage({
     explicit: typeof fm["language"] === "string" ? fm["language"] : undefined,
     override: options.languageOverride,
+    scenario: options.scenarioLanguage,
     proseForDetection: [identityFrame, ...voiceGuidelines, ...styleExamples].join("\n"),
   });
   if (language.invalidExplicit !== undefined) {
