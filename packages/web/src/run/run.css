@@ -189,26 +189,11 @@
   gap: 14px;
 }
 
-.transport__seek {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1 1 260px;
-  min-width: 200px;
-  font-size: 12px;
-}
-
-.transport__seek input {
-  flex: 1;
-  padding: 0;
-  box-shadow: none;
-  background: none;
-  accent-color: var(--ink);
-}
-
-.transport__seek output {
+.transport__count {
   font-variant-numeric: tabular-nums;
   color: var(--ink-50);
+  font-size: 12px;
+  padding-left: 4px;
 }
 
 .run__foot {

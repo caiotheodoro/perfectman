@@ -13,6 +13,8 @@ import type { LiveChannel } from "@perfectman/shared";
 import type { StageAgent } from "../stage/Stage.js";
 import { Panel } from "../stage/Panel.js";
 import { Attribution } from "../stage/Attribution.js";
+import { ContactSheet } from "../stage/ContactSheet.js";
+import { frameFor, frameLabel } from "../stage/Frame.js";
 import { useStageClock } from "../stage/useStageClock.js";
 import { useStageBeats } from "./useStageBeats.js";
 import { useSoundtrack } from "./useSoundtrack.js";
@@ -69,6 +71,11 @@ export function RunScreen({
   const idle = useMemo(() => idlePlacement(channels[0], agents), [channels, agents]);
   const placements = useMemo(() => placeBeats(beats, agents, channels, { seed: idle }), [beats, agents, channels, idle]);
   const placement = placements[clock.index] ?? idle;
+  const frames = useMemo(() => beats.map((b, i) => frameFor(b, placements[i] ?? idle, ids)), [beats, placements, idle, ids]);
+  const labels = useMemo(
+    () => beats.map((b) => frameLabel(b, agents, channels.find((c) => c.id === b.channelId))),
+    [beats, agents, channels],
+  );
   // Once it has played, it keeps playing: a mid-run dip below the threshold is
   // the queue working, not a reason to pull the curtain back down.
   const [warm, setWarm] = useState(false);
@@ -117,7 +124,19 @@ export function RunScreen({
               channels={channels}
               ids={ids}
             />
-            {ready ? <Attribution beat={clock.beat} agents={agents} channels={channels} ids={ids} /> : null}
+            {ready ? (
+              <>
+                <Attribution beat={clock.beat} agents={agents} channels={channels} ids={ids} />
+                <ContactSheet
+                  frames={frames}
+                  labels={labels}
+                  index={clock.index}
+                  reached={clock.reached}
+                  live={running}
+                  onSeek={clock.seek}
+                />
+              </>
+            ) : null}
           </div>
           {!ready ? (
             <WarmupNote stream={stream} agents={agents} beats={beats.length} />

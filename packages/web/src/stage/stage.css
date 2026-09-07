@@ -322,6 +322,108 @@
   right: 0;
 }
 
+/* --- the contact sheet --------------------------------------------------- */
+
+/*
+ * A strip of frames as wide as the page above it. Frames are 16:7 like the
+ * room, so a dot lands where the figure stood. The current frame is ringed in
+ * ink; nothing else on the strip says anything, because it is an index of the
+ * run, not a transcript of it.
+ */
+.sheet {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: var(--r-lg);
+  background: var(--paper-warm);
+  box-shadow: var(--ring);
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+
+.sheet__frame {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: var(--r-xs);
+  display: block;
+  transition: box-shadow var(--quick) var(--ease), transform var(--quick) var(--ease);
+}
+.sheet__frame:hover {
+  box-shadow: 0 0 0 1px var(--ink-50);
+}
+.sheet__frame--here,
+.sheet__frame--here:hover {
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+.sheet__frame:focus-visible {
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .sheet__frame {
+    width: 48px;
+    height: 21px;
+  }
+}
+
+.frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.frame__ground {
+  fill: var(--paper-warm);
+  stroke: var(--rule-strong);
+  stroke-width: 0.6;
+}
+.frame--private .frame__ground {
+  fill: #f7f3ec;
+}
+.frame--thought .frame__ground {
+  fill: var(--paper);
+}
+.frame__inset {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 0.5;
+  stroke-dasharray: 1.2 1;
+}
+
+.frame__dot {
+  stroke: rgba(28, 27, 27, 0.4);
+  stroke-width: 0.5;
+}
+.frame__ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.8;
+}
+.frame__glyph--speech {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 0.7;
+}
+.frame__glyph--thought {
+  fill: var(--paper);
+  stroke: var(--ink-50);
+  stroke-width: 0.7;
+}
+.frame__glyph--move {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 /* --- attribution --------------------------------------------------------- */
 
 .attribution {
