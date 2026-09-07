@@ -87,13 +87,15 @@ The committed HTTP regression is
 Suppressing partial publication makes it fail at the bounded early-delivery
 check. Late emotion revisions also update the music bed without repeating
 one-shot message sounds; the existing eight-second mood hold remains in place.
+A native Chrome check confirmed that a same-beat revision starts the actual
+tension track. Hiding or muting the scene pauses in-flight cues as well as beds.
 
 The hub retains 256 historical messages, with bootstrap metadata separate and
 only the latest revision of each pulse retained. New live messages that exceed
 64 pending entries disconnect the client rather than silently dropping distinct
 pulse content. Initial reconnect queues can contain the retained history plus
-bootstrap metadata; final draining is bounded at 30 seconds. Long disconnections can exceed retained
-history; reopening or hydrating a complete stored replay is a separate viewer
+bootstrap metadata; final draining is bounded at 30 seconds. Long disconnections
+can exceed retained history; reopening or hydrating a complete stored replay is a separate viewer
 capability. Latest channel membership is still used when rendering historical
 beats. Reading time and genuine model latency remain visible waits.
 
@@ -105,14 +107,19 @@ pinned PR head.
 
 | Round | Head | Standards | Spec | Disposition |
 | --- | --- | --- | --- | --- |
-| 1 | `4b1ca15` | Pass; 106 independently run focused tests | One P2; 102 independently run focused tests | A same-ID emotion revision did not update the soundtrack. Mood evaluation now runs before the once-per-beat sound guard, with a focused regression. |
-| 2 | Pending | Pending | Pending | Two fresh reviewers inspect the revised PR before merge. |
+| 1 | `4b1ca15` | Pass; 106 independently run focused tests | One P2; 102 independently run focused tests | Same-ID emotion revisions did not update the soundtrack. Fixed in `a3a9fd8`; the original reviewer reproduced the fix and confirmed the eight-second hold and single cue. |
+| 2 | `a3a9fd8` | Pass; 95 independently run focused tests | Pass; 106 independently run focused tests; one nonblocking P3 | A cue could finish after hiding or muting. The follow-up pauses cue elements too, with parameterized hidden/muted regressions. |
 
 At the first review head, the full Node 22 suite passed 2,077 tests across 210
 files, the build/typecheck/hygiene/docs gates passed, and GitHub PR gate run
 `34169678948` succeeded. The mock/rule benchmark passed its structural gate with
-35 scenarios and 100% signal pass; rule-judge scores remain advisory. Later
-review changes are rechecked before merge.
+35 scenarios and 100% signal pass; rule-judge scores remain advisory. GitHub PR
+gate run `34170030396` also passed at the second review head.
+
+After the cue follow-up, **2,080 tests across 211 files** passed locally on Node
+22, including hygiene and documentation checks. The web production build passed;
+the earlier full workspace build and typecheck also passed. The final commit's
+review confirmation and CI outcome are recorded on [PR #214](https://github.com/caiotheodoro/perfectman/pull/214).
 
 ## Sources / Related decisions
 

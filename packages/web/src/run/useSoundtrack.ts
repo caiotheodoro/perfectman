@@ -92,6 +92,9 @@ export function useSoundtrack(beat: StageBeat | undefined, active: boolean, play
 
   useEffect(() => {
     const on = wantBeds.current;
+    if (muted || !active) {
+      for (const audio of Object.values(cues.current)) audio.pause();
+    }
     for (const [key, audio] of Object.entries(beds.current)) {
       const target = key === mood.current && on ? bedVolume(key as Mood) : 0;
       fade(audio, target);
