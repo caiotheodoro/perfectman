@@ -49,14 +49,19 @@ function emptyFrame(): PartialFrame {
 
 export class SseDeliveryGateway implements IDeliveryGateway {
   private frames = new Map<number, PartialFrame>();
-  /** Channels created mid-run, so the viewer can add tabs as they appear. */
-  private readonly knownChannels = new Set<string>();
+  /**
+   * Every channel the viewer has been told about, with the members it was
+   * told. The viewer draws a room from its member list, so a membership
+   * change is republished; a room whose members did not change is not.
+   */
+  private readonly channels = new Map<string, { type: ChannelType; members: Set<string> }>();
 
   constructor(
     private readonly hub: SseHub,
     private readonly meta: GatewayRuntimeMetadata,
   ) {
-    for (const id of Object.keys(meta.channels)) this.knownChannels.add(id);
+    // Announced by `hello`; only a change in membership needs republishing.
+    for (const id of Object.keys(meta.channels)) this.channels.set(id, { type: "public_channel", members: new Set() });
   }
 
   /**
@@ -74,14 +79,11 @@ export class SseDeliveryGateway implements IDeliveryGateway {
       agentsCalled: result.agentsCalled,
       ...partial,
     };
-    this.hub.publish({
-      type: "pulse",
-      data: { type: "pulse", frame },
-      id: result.pulseIndex,
-      // Coalescable: a client that falls behind should see the newest pulse,
-      // not work through a backlog. Gaps are filled from the stored replay.
-      coalesceKey: "pulse",
-    });
+    // Not coalescable. A replaced frame takes every line in it with it, and
+    // a private aside is often one pulse long, so coalescing erased whole
+    // private conversations for a client that fell a frame behind. The hub's
+    // backlog cap bounds the queue; a slow client works through it.
+    this.hub.publish({ type: "pulse", data: { type: "pulse", frame }, id: result.pulseIndex });
     return frame;
   }
 
@@ -93,25 +95,43 @@ export class SseDeliveryGateway implements IDeliveryGateway {
   }
 
   createChannel(channelId: string, type: ChannelType, memberAgentIds: string[]): Promise<void> {
-    if (!this.knownChannels.has(channelId)) {
-      this.knownChannels.add(channelId);
-      const channel: LiveChannel = {
-        id: channelId,
-        name: this.meta.channels[channelId]?.name ?? channelId,
-        type,
-        memberAgentIds,
-      };
-      this.hub.publish({ type: "channel", data: { type: "channel", channel } });
+    const known = this.channels.get(channelId);
+    if (!known) {
+      this.channels.set(channelId, { type, members: new Set(memberAgentIds) });
+      this.publishChannel(channelId);
+      return Promise.resolve();
+    }
+    const before = known.members.size;
+    for (const id of memberAgentIds) known.members.add(id);
+    if (known.members.size !== before) this.publishChannel(channelId);
+    return Promise.resolve();
+  }
+
+  addMember(channelId: string, agentId: string): Promise<void> {
+    const known = this.channels.get(channelId);
+    if (known && !known.members.has(agentId)) {
+      known.members.add(agentId);
+      this.publishChannel(channelId);
     }
     return Promise.resolve();
   }
 
-  addMember(_channelId: string, _agentId: string): Promise<void> {
+  removeMember(channelId: string, agentId: string): Promise<void> {
+    const known = this.channels.get(channelId);
+    if (known?.members.delete(agentId)) this.publishChannel(channelId);
     return Promise.resolve();
   }
 
-  removeMember(_channelId: string, _agentId: string): Promise<void> {
-    return Promise.resolve();
+  private publishChannel(channelId: string): void {
+    const known = this.channels.get(channelId);
+    if (!known) return;
+    const channel: LiveChannel = {
+      id: channelId,
+      name: this.meta.channels[channelId]?.name ?? channelId,
+      type: known.type,
+      memberAgentIds: [...known.members],
+    };
+    this.hub.publish({ type: "channel", data: { type: "channel", channel } });
   }
 
   sendSpectatorEvent(_event: SpectatorEvent): Promise<void> {
