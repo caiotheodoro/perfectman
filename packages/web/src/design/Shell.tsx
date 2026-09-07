@@ -17,12 +17,15 @@ export function Shell({
   step,
   furthest,
   onStep,
+  onHome,
   children,
 }: {
   step: StepId;
   /** How far the user has actually got; later steps are not clickable yet. */
   furthest: StepId;
   onStep: (step: StepId) => void;
+  /** The mark is the way home: it shows the landing again, keeping what was picked. */
+  onHome: () => void;
   children: React.ReactNode;
 }): JSX.Element {
   const reached = STEPS.findIndex((s) => s.id === furthest);
@@ -31,7 +34,9 @@ export function Shell({
   return (
     <div className="shell">
       <header className="shell__bar">
-        <span className="shell__mark">perfectman</span>
+        <button type="button" className="shell__mark" onClick={onHome} title="Back to the landing">
+          perfectman
+        </button>
         <nav className="shell__rail" aria-label="Progress">
           {STEPS.map((s, i) => (
             <button

@@ -15,6 +15,7 @@ import type {
 } from "@perfectman/shared";
 import { HtmlSnapshotGateway } from "../../delivery/html-snapshot-gateway.js";
 import { SseDeliveryGateway } from "../../delivery/sse-delivery-gateway.js";
+import { LlmHealthGateway, LlmHealthWatch, type LlmFatal } from "./llm-health-watch.js";
 import { timeboxGateway, type TimeboxCounter } from "../../delivery/timeboxed-gateway.js";
 import { messageFromCommitted } from "../../delivery/live-frame-assembly.js";
 import { buildConfiguredSimulation } from "../../config/simulation-config.js";
@@ -69,6 +70,8 @@ export class RunController {
   private artifacts: RunArtifacts | null = null;
   private finished: Promise<void> | null = null;
   private stopped = false;
+  /** Set when the model failed the run's first calls; the run ends as failed. */
+  private fatal: LlmFatal | null = null;
 
   constructor(private readonly runsRoot: string) {}
 
@@ -96,6 +99,7 @@ export class RunController {
     this.abort = new AbortController();
     this.inFlight = { current: null };
     this.stopped = false;
+    this.fatal = null;
     this.artifacts = new RunArtifacts(this.runsRoot, params.runId);
     this.status = {
       runId: params.runId,
@@ -149,6 +153,14 @@ export class RunController {
             sseGateway = new SseDeliveryGateway(this.hub, meta);
             return timeboxGateway(sseGateway, GATEWAY_TIMEOUT_MS, gatewayCounter);
           },
+          // Watches the first model calls; a model that answers nothing
+          // usable fails the run instead of playing out as a silent room.
+          health: () =>
+            new LlmHealthGateway(new LlmHealthWatch(), (fatal) => {
+              if (this.fatal) return;
+              this.fatal = fatal;
+              this.abort.abort();
+            }),
         },
       });
       this.handle = handle;
@@ -181,6 +193,13 @@ export class RunController {
         this.inFlight,
       );
 
+      if (this.fatal) {
+        this.status.stopReason = "error";
+        this.status.error = this.fatal;
+        this.hub.publish({ type: "error", data: { type: "error", message: this.fatal.message, hint: this.fatal.hint } satisfies LiveEvent });
+        await this.teardown(params, replayGateway, gatewayCounter, "failed");
+        return;
+      }
       this.status.stopReason = outcome.reason;
       if (outcome.error) {
         this.status.error = { message: outcome.error.message };

@@ -1,12 +1,14 @@
 /**
  * Who answers, and for how long.
  *
- * Kept to four visible fields. Everything a hosted reasoning model needs to
- * behave — JSON mode, a reasoning-disable key — is real and load-bearing but
- * belongs behind a disclosure, because getting it wrong is a specific failure
- * with a specific message rather than something to warn everyone about.
+ * One way to answer: an OpenAI-compatible endpoint with a key. The mock and
+ * the local daemon were developer conveniences that put a "run" on screen
+ * with nothing behind it. Everything a hosted reasoning model needs to behave
+ * — JSON mode, a reasoning-disable key — is real and load-bearing but belongs
+ * behind a disclosure, because getting it wrong is a specific failure with a
+ * specific message rather than something to warn everyone about.
  */
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import type { StartRunRequest } from "@perfectman/shared";
 import { KNOWN_ROUTES } from "./known-routes.js";
 
@@ -17,52 +19,39 @@ export type ProviderValue = {
   extraBodyText: string;
 };
 
+/** Opens on the first route that is known to work; the key is always yours to paste. */
 export const DEFAULT_PROVIDER: ProviderValue = {
-  llm: { providerType: "mock", modelName: "mock" },
+  llm: { providerType: "openai-compatible", ...KNOWN_ROUTES[0]?.llm },
   maxPulses: null,
-  extraBodyText: "",
+  extraBodyText: KNOWN_ROUTES[0]?.extraBodyText ?? "",
 };
-
-const PROVIDERS = [
-  { id: "mock", label: "Mock", note: "Instant, no key, no network. Shows the shape of a run." },
-  { id: "ollama", label: "Ollama", note: "A model on this machine. Needs the daemon running." },
-  { id: "openai-compatible", label: "Any /v1 endpoint", note: "OpenAI-compatible. Bring a base URL and a key." },
-];
 
 export function ProviderForm({
   value,
   onChange,
   onRun,
   ready,
+  focusKey = false,
 }: {
   value: ProviderValue;
   onChange: (next: ProviderValue) => void;
   onRun: () => void;
   ready: boolean;
+  /** Put the cursor in the key field: the last run failed and it is probably the key. */
+  focusKey?: boolean;
 }): JSX.Element {
   const extraBodyError = useMemo(() => parseExtraBody(value.extraBodyText).error, [value.extraBodyText]);
-  const hosted = value.llm.providerType !== "mock";
+  const keyField = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (focusKey) keyField.current?.focus();
+  }, [focusKey]);
+  const hasKey = (value.llm.apiKey ?? "").trim() !== "";
   const set = (llm: Partial<StartRunRequest["llm"]>): void =>
     onChange({ ...value, llm: { ...value.llm, ...llm } });
 
   return (
     <div className="provider">
-      <div className="provider__choices">
-        {PROVIDERS.map((p) => (
-          <button
-            key={p.id}
-            type="button"
-            className={`card${value.llm.providerType === p.id ? " card--on" : ""}`}
-            aria-pressed={value.llm.providerType === p.id}
-            onClick={() => set({ providerType: p.id, modelName: p.id === "mock" ? "mock" : value.llm.modelName })}
-          >
-            <span className="card__title u-serif">{p.label}</span>
-            <span className="card__blurb">{p.note}</span>
-          </button>
-        ))}
-      </div>
-
-      {hosted ? (
+      {(
         <div className="routes">
           <p className="u-dim">
             Endpoints someone has already got working. Filling one in still
@@ -88,10 +77,10 @@ export function ProviderForm({
             ))}
           </div>
         </div>
-      ) : null}
+      )}
 
       <div className="provider__fields">
-        {hosted ? (
+        {(
           <>
             <label>
               <span>Model</span>
@@ -112,15 +101,17 @@ export function ProviderForm({
             <label>
               <span>API key</span>
               <input
+                ref={keyField}
                 type="password"
                 value={value.llm.apiKey ?? ""}
-                placeholder="Leave blank to use the server's .env"
+                placeholder="Paste the key for this endpoint"
+                autoComplete="off"
                 onChange={(e) => set({ apiKey: e.target.value })}
               />
               <em>Held for this run only. The saved config keeps the variable name, never the key.</em>
             </label>
           </>
-        ) : null}
+        )}
 
         <label>
           <span>Turns</span>
@@ -135,7 +126,7 @@ export function ProviderForm({
         </label>
       </div>
 
-      {hosted ? (
+      {(
         <details className="advanced">
           <summary>If the model answers with nothing</summary>
           <p>
@@ -170,13 +161,13 @@ export function ProviderForm({
             </em>
           </label>
         </details>
-      ) : null}
+      )}
 
       <div className="step__foot">
         <button
           type="button"
           className="btn"
-          disabled={!ready || Boolean(extraBodyError)}
+          disabled={!ready || !hasKey || Boolean(extraBodyError)}
           onClick={() => {
             const extra = parseExtraBody(value.extraBodyText);
             onChange({ ...value, llm: { ...value.llm, ...(extra.value ? { extraBody: extra.value } : {}) } });
@@ -185,7 +176,11 @@ export function ProviderForm({
         >
           Start the run
         </button>
-        {!ready ? <span className="u-dim">The cast and scene need to fit together first.</span> : null}
+        {!ready ? (
+          <span className="u-dim">The cast and scene need to fit together first.</span>
+        ) : !hasKey ? (
+          <span className="u-dim">Paste a key to start.</span>
+        ) : null}
       </div>
     </div>
   );

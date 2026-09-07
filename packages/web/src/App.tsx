@@ -108,7 +108,7 @@ export function App(): JSX.Element {
   }
 
   return (
-    <Shell step={step} furthest={furthest} onStep={setStep}>
+    <Shell step={step} furthest={furthest} onStep={setStep} onHome={() => setIntroDone(false)}>
       {presetsError ? (
         <div className="alert alert--shell" role="alert">
           <p>
@@ -165,6 +165,7 @@ export function App(): JSX.Element {
           onRun={run}
           onStop={stop}
           onDismissError={() => setFailure(null)}
+          onReset={() => setRunId(null)}
         />
       ) : null}
     </Shell>

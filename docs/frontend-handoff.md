@@ -106,7 +106,8 @@ Forty files. These are the ones that carry weight.
 | File | What it does |
 |---|---|
 | `run/RunScreen.tsx` | Warm-up gate, stage, transport, drawer. |
-| `run/known-routes.ts` | One-click provider prefills. Never holds a key. |
+| `run/known-routes.ts` | One-click endpoint prefills. Never holds a key. |
+| `run/ProviderForm.tsx` | Endpoint, model, key, turns. Start is disabled without a key. |
 | `run/useSoundtrack.ts` | Mood beds with an 8 s hold, plus cues. `unlock()` runs in the Run click; a refusal flips the control but is not saved. |
 | `run/sfx-cue.ts` | Which cue a beat makes: once per line, none for a thought, none while paused. |
 | `run/DetailsDrawer.tsx` | Compiled config, diagnostics, raw frame log. Kept, just demoted. |
@@ -266,13 +267,14 @@ pnpm web                              # run server on :4317
 pnpm --filter @perfectman/web dev     # interface on :5317, hot reload
 ```
 
-Pick the **Mock** provider for a run that finishes in seconds and needs no key.
-For a real one, the form has a one-click prefill for OrcaRouter + Qwen3.5-27B;
-you supply only the key.
-
-Mock is a bad proxy for the real path — it skips prompt building, TLS and
-response parsing, which is where the time actually goes. Check anything
-performance-shaped against a real model.
+The run form takes one thing: an OpenAI-compatible endpoint and a key. It
+opens on the OrcaRouter + Qwen3.5-27B route; you supply only the key. The mock
+and Ollama choices are gone from the interface (the mock provider still exists
+server-side for tests). A run whose key, endpoint or output format does not
+work comes straight back to the form with the reason and the key field
+cleared: the health check catches a dead endpoint or bad key before the run,
+and `LlmHealthWatch` fails the run if its first three model calls all come
+back as engine fallbacks.
 
 ### Redeploying
 
