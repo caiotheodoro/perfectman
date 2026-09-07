@@ -6,11 +6,15 @@
  * moves into `details`, still complete, just no longer the thing you are
  * looking at.
  */
-import { useState } from "react";
-import type { CompileResponse, StartRunRequest } from "@perfectman/shared";
+import { useMemo, useState } from "react";
+import { idlePlacement, placeBeats, type CompileResponse, type StartRunRequest } from "@perfectman/shared";
 import type { RunStream } from "../api/useRunStream.js";
 import type { LiveChannel } from "@perfectman/shared";
-import { Stage, type StageAgent } from "../stage/Stage.js";
+import type { StageAgent } from "../stage/Stage.js";
+import { Panel } from "../stage/Panel.js";
+import { Attribution } from "../stage/Attribution.js";
+import { ContactSheet } from "../stage/ContactSheet.js";
+import { frameFor, frameLabel } from "../stage/Frame.js";
 import { useStageClock } from "../stage/useStageClock.js";
 import { useStageBeats } from "./useStageBeats.js";
 import { useSoundtrack } from "./useSoundtrack.js";
@@ -19,6 +23,10 @@ import { DetailsDrawer } from "./DetailsDrawer.js";
 import { ProviderForm, type ProviderValue, DEFAULT_PROVIDER } from "./ProviderForm.js";
 
 const IDLE_STATES = new Set(["idle", "done", "failed"]);
+// Stable empties, so the memos below do not recompute on every render before
+// the run has said hello.
+const EMPTY_AGENTS: readonly StageAgent[] = [];
+const EMPTY_CHANNELS: readonly LiveChannel[] = [];
 
 /**
  * How much of the run to have in hand before the stage starts playing.
@@ -52,11 +60,22 @@ export function RunScreen({
   const beats = useStageBeats(stream.replay);
   const clock = useStageClock(beats);
   const running = stream.status ? !IDLE_STATES.has(stream.status.state) : false;
-  const sound = useSoundtrack(clock.beat, running || beats.length > 0);
+  const sound = useSoundtrack(clock.beat, running || beats.length > 0, clock.playing);
 
   const started = runId !== null;
-  const agents = stream.replay?.agents ?? [];
-  const channels = stream.replay?.channels ?? [];
+  const agents = stream.replay?.agents ?? EMPTY_AGENTS;
+  const channels = stream.replay?.channels ?? EMPTY_CHANNELS;
+  const ids = useMemo(() => agents.map((a) => a.id), [agents]);
+  // Seating for the whole run, decided once. The idle room seeds it so the
+  // first line is a continuation of the warm-up picture, not a reshuffle.
+  const idle = useMemo(() => idlePlacement(channels[0], agents), [channels, agents]);
+  const placements = useMemo(() => placeBeats(beats, agents, channels, { seed: idle }), [beats, agents, channels, idle]);
+  const placement = placements[clock.index] ?? idle;
+  const frames = useMemo(() => beats.map((b, i) => frameFor(b, placements[i] ?? idle, ids)), [beats, placements, idle, ids]);
+  const labels = useMemo(
+    () => beats.map((b) => frameLabel(b, agents, channels.find((c) => c.id === b.channelId))),
+    [beats, agents, channels],
+  );
   // Once it has played, it keeps playing: a mid-run dip below the threshold is
   // the queue working, not a reason to pull the curtain back down.
   const [warm, setWarm] = useState(false);
@@ -87,39 +106,73 @@ export function RunScreen({
           <ProviderForm
             value={provider}
             onChange={setProvider}
-            onRun={() => onRun(provider.llm, provider.maxPulses ? { maxPulses: provider.maxPulses } : undefined)}
+            onRun={() => {
+              // Inside the click, before anything async: this is the gesture
+              // the browser will let the soundtrack play under later.
+              sound.unlock();
+              onRun(provider.llm, provider.maxPulses ? { maxPulses: provider.maxPulses } : undefined);
+            }}
             ready={Boolean(compiled?.ok)}
           />
         </>
-      ) : !ready ? (
-        <Warmup stream={stream} agents={agents} channels={channels} beats={beats.length} />
       ) : (
         <>
-          <Stage beat={clock.beat} agents={agents} channels={channels} />
-          <Transport
-            beats={beats}
-            index={clock.index}
-            channels={channels}
-            agents={agents}
-            playing={clock.playing}
-            behind={clock.behind}
-            live={running}
-            muted={sound.muted}
-            onPlayPause={() => (clock.playing ? clock.pause() : clock.play())}
-            onStep={clock.step}
-            onSeek={clock.seek}
-            onMute={sound.toggle}
-          />
-          <div className="run__foot">
-            <RunState stream={stream} running={running} />
-            <span className="transport__spacer" />
-            {running ? (
-              <button type="button" className="btn--quiet" onClick={onStop}>
-                Stop the run
-              </button>
+          {/* One page for the whole run. The warm-up room is the same Panel as
+              the first line, so the first beat continues the picture rather
+              than replacing it. */}
+          <div className="flipbook">
+            <Panel
+              beat={ready ? clock.beat : undefined}
+              placement={ready ? placement : idle}
+              index={ready ? clock.index : 0}
+              agents={agents}
+              channels={channels}
+              ids={ids}
+            />
+            {ready ? (
+              <>
+                <Attribution beat={clock.beat} agents={agents} channels={channels} ids={ids} />
+                <ContactSheet
+                  frames={frames}
+                  labels={labels}
+                  index={clock.index}
+                  reached={clock.reached}
+                  live={running}
+                  onSeek={clock.seek}
+                />
+              </>
             ) : null}
           </div>
-          <DetailsDrawer compiled={compiled} stream={stream} runId={runId} />
+          {!ready ? (
+            <WarmupNote stream={stream} agents={agents} beats={beats.length} />
+          ) : (
+            <>
+              <Transport
+                beats={beats}
+                index={clock.index}
+                channels={channels}
+                agents={agents}
+                playing={clock.playing}
+                behind={clock.behind}
+                live={running}
+                muted={sound.muted}
+                onPlayPause={() => (clock.playing ? clock.pause() : clock.play())}
+                onStep={clock.step}
+                onSeek={clock.seek}
+                onMute={sound.toggle}
+              />
+              <div className="run__foot">
+                <RunState stream={stream} running={running} />
+                <span className="transport__spacer" />
+                {running ? (
+                  <button type="button" className="btn--quiet" onClick={onStop}>
+                    Stop the run
+                  </button>
+                ) : null}
+              </div>
+              <DetailsDrawer compiled={compiled} stream={stream} runId={runId} />
+            </>
+          )}
         </>
       )}
     </section>
@@ -129,25 +182,22 @@ export function RunScreen({
 /**
  * The wait, with something to look at.
  *
- * The cast is already known from `hello`, so the room can be set before anyone
- * has spoken — which also means the first real beat is a continuation rather
- * than the picture appearing from nothing.
+ * The cast is already known from `hello`, so the room above is set before
+ * anyone has spoken — which also means the first real beat is a continuation
+ * rather than the picture appearing from nothing. This is only the note.
  */
-function Warmup({
+function WarmupNote({
   stream,
   agents,
-  channels,
   beats,
 }: {
   stream: RunStream;
   agents: readonly StageAgent[];
-  channels: readonly LiveChannel[];
   beats: number;
 }): JSX.Element {
   const state = stream.status?.state;
   return (
     <div className="warmup">
-      <Stage beat={undefined} agents={agents} channels={channels} idleChannelId={channels[0]?.id} />
       <p className="warmup__note">
         <span className="warmup__pulse" aria-hidden="true" />
         {state === "health_check"

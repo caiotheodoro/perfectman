@@ -1,51 +1,138 @@
 /*
- * The room is a fixed aspect box so the ported slot geometry keeps working at
- * any width. Everything inside is positioned in percentages of it.
+ * The room is a fixed-aspect box so the slot geometry means what it says.
+ * Everything inside is positioned in percentages of it.
+ *
+ * The height cap lives on the column's width rather than on the room's
+ * max-height so that everything in the column — the caption, the contact
+ * sheet — is exactly as wide as the room it describes. The room itself would
+ * have been 16:7 either way: a browser transfers a max-height through an
+ * aspect-ratio into the width.
  */
 
-.stage {
-  padding-top: 20px;
+.flipbook {
+  width: min(100%, calc(44vh * 16 / 7));
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  gap: 20px;
+  gap: 14px;
+  padding-top: 20px;
+}
+
+.stage {
+  display: grid;
   min-height: 0;
+}
+
+/* --- the pages ----------------------------------------------------------- */
+
+/*
+ * Two pages at most, stacked in one grid cell: the one leaving and the one
+ * arriving. The leaving page is a snapshot that keeps its own DOM, so figures
+ * keep breathing while it goes.
+ */
+.pages {
+  display: grid;
+  perspective: 1200px;
+}
+
+/* On a phone the column is the whole width, so the 6% slide would give the
+   document a horizontal scrollbar for half a second. Clip it there, and drop
+   the room's ambient shadow, which a clip would cut into bands. */
+@media (max-width: 640px) {
+  .pages {
+    overflow-x: clip;
+  }
+  .stage__room {
+    box-shadow: var(--ring);
+  }
+}
+
+.pages__page {
+  grid-area: 1 / 1;
+  min-width: 0;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+.pages__page--leave-forward {
+  animation: page-leave-forward var(--turn) var(--ease) both;
+  pointer-events: none;
+}
+.pages__page--enter-forward {
+  animation: page-enter-forward var(--turn) var(--ease) both;
+}
+.pages__page--leave-back {
+  animation: page-leave-back var(--turn) var(--ease) both;
+  pointer-events: none;
+}
+.pages__page--enter-back {
+  animation: page-enter-back var(--turn) var(--ease) both;
+}
+
+@keyframes page-leave-forward {
+  to {
+    opacity: 0;
+    transform: translateX(-6%) rotateY(-6deg);
+  }
+}
+@keyframes page-enter-forward {
+  from {
+    opacity: 0;
+    transform: translateX(6%);
+  }
+}
+@keyframes page-leave-back {
+  to {
+    opacity: 0;
+    transform: translateX(6%) rotateY(6deg);
+  }
+}
+@keyframes page-enter-back {
+  from {
+    opacity: 0;
+    transform: translateX(-6%);
+  }
 }
 
 .stage__room {
   position: relative;
   overflow: hidden;
+  /* Name tags are sized against the room, see figure.css. */
+  container-type: inline-size;
   aspect-ratio: 16 / 7;
-  max-height: 44vh;
   border-radius: var(--r-xl);
   background: var(--paper-warm);
   box-shadow: var(--ring), var(--lift);
   transition: background var(--settle) var(--ease), box-shadow var(--settle) var(--ease);
 }
 
-/* Entering a room is a moment, not a swap: the box is keyed on the channel so
-   it re-mounts and plays this, and the figures inside arrive with it. */
-.stage__room {
-  animation: room-enter 460ms var(--ease) both;
-}
-
-@keyframes room-enter {
-  from {
-    opacity: 0;
-    transform: scale(0.985);
+/* A phone is taller than it is wide; so is the room there. The slot fractions
+   are the same, so figures stand shorter against a taller room and balloons
+   have the headroom they never had at 153px. */
+@media (max-width: 640px) {
+  .stage__room {
+    aspect-ratio: 4 / 3;
   }
 }
 
+/* Above the balloons, on its own paper: a balloon that could not fit above a
+   back-row head reaches the top of the room, and the room's name must still
+   be readable over it. */
 .stage__where {
   position: absolute;
-  top: 14px;
-  left: 18px;
+  top: 10px;
+  left: 12px;
   display: flex;
   align-items: baseline;
   gap: 8px;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--paper-warm);
   font-size: 12.5px;
   color: var(--ink-50);
   z-index: 500;
   max-width: none;
+}
+.stage--thought .stage__where {
+  background: var(--paper);
 }
 
 .stage__where > span:first-child {
@@ -107,7 +194,6 @@
 .stage__mark {
   position: absolute;
   width: 15%;
-  min-width: 78px;
   transform-origin: 50% 100%;
   transition: left var(--settle) var(--ease), top var(--settle) var(--ease),
     transform var(--settle) var(--ease);
@@ -147,6 +233,16 @@
 }
 .bubbles--left {
   transform: translateX(-84%);
+}
+
+/* Beside the head rather than over it, when there was no room above. The
+   inner edge sits just clear of the figure and the tail still hangs on that
+   side, pointing down at whose line it is. */
+.bubbles--right.bubbles--beside {
+  transform: translateX(0);
+}
+.bubbles--left.bubbles--beside {
+  transform: translateX(-100%);
 }
 
 @keyframes bubble-in {
@@ -256,6 +352,108 @@
 .bubbles--left .bubble--thought .bubble__tail::after {
   left: auto;
   right: 0;
+}
+
+/* --- the contact sheet --------------------------------------------------- */
+
+/*
+ * A strip of frames as wide as the page above it. Frames are 16:7 like the
+ * room, so a dot lands where the figure stood. The current frame is ringed in
+ * ink; nothing else on the strip says anything, because it is an index of the
+ * run, not a transcript of it.
+ */
+.sheet {
+  display: flex;
+  gap: 6px;
+  padding: 8px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-radius: var(--r-lg);
+  background: var(--paper-warm);
+  box-shadow: var(--ring);
+  scrollbar-width: thin;
+  scrollbar-color: var(--rule-strong) transparent;
+}
+
+.sheet__frame {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  background: none;
+  border-radius: var(--r-xs);
+  display: block;
+  transition: box-shadow var(--quick) var(--ease), transform var(--quick) var(--ease);
+}
+.sheet__frame:hover {
+  box-shadow: 0 0 0 1px var(--ink-50);
+}
+.sheet__frame--here,
+.sheet__frame--here:hover {
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+.sheet__frame:focus-visible {
+  outline-offset: 3px;
+}
+
+@media (max-width: 640px) {
+  .sheet__frame {
+    width: 48px;
+    height: 21px;
+  }
+}
+
+.frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.frame__ground {
+  fill: var(--paper-warm);
+  stroke: var(--rule-strong);
+  stroke-width: 0.6;
+}
+.frame--private .frame__ground {
+  fill: #f7f3ec;
+}
+.frame--thought .frame__ground {
+  fill: var(--paper);
+}
+.frame__inset {
+  fill: none;
+  stroke: var(--rule-strong);
+  stroke-width: 0.5;
+  stroke-dasharray: 1.2 1;
+}
+
+.frame__dot {
+  stroke: rgba(28, 27, 27, 0.4);
+  stroke-width: 0.5;
+}
+.frame__ring {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.8;
+}
+.frame__glyph--speech {
+  fill: var(--paper);
+  stroke: var(--ink);
+  stroke-width: 0.7;
+}
+.frame__glyph--thought {
+  fill: var(--paper);
+  stroke: var(--ink-50);
+  stroke-width: 0.7;
+}
+.frame__glyph--move {
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 0.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 /* --- attribution --------------------------------------------------------- */

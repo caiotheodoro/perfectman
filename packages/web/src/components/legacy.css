@@ -64,6 +64,10 @@
   border-collapse: collapse;
   font: 12px var(--mono);
   white-space: nowrap;
+  /* Wide by nature; scrolls in place rather than widening the page. */
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
 }
 .grid th {
   text-align: left;

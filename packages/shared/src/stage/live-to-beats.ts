@@ -131,6 +131,7 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
         ...(emotion ? { emotion } : {}),
         stageAction: { kind: STAGE_ACTIONS[message.eventType] ?? "invite", agentIds: [message.actorId] },
         duration: readingSeconds(message.text || " "),
+        page: 0,
       });
       continue;
     }
@@ -154,6 +155,7 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
         participantIds,
         ...(emotion ? { emotion } : {}),
         duration: readingSeconds(text),
+        page,
       });
     });
 
@@ -227,6 +229,7 @@ function thoughtBeats(
     // Drivers belong with the last page, where the caption sits.
     thought: { ...thought, text, ...(page < pages.length - 1 ? { drivers: [] } : {}) },
     duration: readingSeconds(text),
+    page,
   }));
 }
 
@@ -244,5 +247,6 @@ export function priorEventsToBeats(priorEvents: readonly LiveMessage[], context:
     audienceIds: message.visibleToAgents,
     participantIds: membersOf(context.channels, message.channelId),
     duration: readingSeconds(message.text),
+    page: 0,
   }));
 }

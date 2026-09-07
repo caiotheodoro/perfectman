@@ -23,6 +23,11 @@ export type StageClock = {
   playing: boolean;
   /** Beats waiting behind the one on stage. */
   behind: number;
+  /**
+   * The furthest beat that has been on stage. Unlike `behind`, seeking back
+   * does not lower it: what has been shown has been shown.
+   */
+  reached: number;
   atEnd: boolean;
   play: () => void;
   pause: () => void;
@@ -40,6 +45,8 @@ export function useStageClock(beats: readonly StageBeat[], speed = 1): StageCloc
   const bounded = Math.min(index, Math.max(0, beats.length - 1));
   const beat = beats[bounded];
   const atEnd = bounded >= beats.length - 1;
+  const [reached, setReached] = useState(0);
+  if (bounded > reached) setReached(bounded);
 
   useEffect(() => {
     if (!playing || !beat || atEnd) return;
@@ -75,6 +82,7 @@ export function useStageClock(beats: readonly StageBeat[], speed = 1): StageCloc
     beat,
     playing,
     behind: Math.max(0, beats.length - 1 - bounded),
+    reached: Math.max(reached, bounded),
     atEnd,
     play,
     pause: () => setPlaying(false),

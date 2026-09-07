@@ -144,6 +144,7 @@
 
 .transport__rooms {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 
@@ -151,6 +152,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
   border: none;
   background: none;
   border-radius: var(--r-pill);
@@ -189,31 +191,17 @@
   gap: 14px;
 }
 
-.transport__seek {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 1 1 260px;
-  min-width: 200px;
-  font-size: 12px;
-}
-
-.transport__seek input {
-  flex: 1;
-  padding: 0;
-  box-shadow: none;
-  background: none;
-  accent-color: var(--ink);
-}
-
-.transport__seek output {
+.transport__count {
   font-variant-numeric: tabular-nums;
   color: var(--ink-50);
+  font-size: 12px;
+  padding-left: 4px;
 }
 
 .run__foot {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 14px;
   font-size: 13px;
 }
@@ -241,6 +229,16 @@
   display: grid;
   gap: 16px;
   padding-top: 16px;
+  min-width: 0;
+  overflow-x: auto;
+}
+
+/* Compiled config and raw frames are wide by nature; they scroll inside their
+   own box rather than giving the page a horizontal scrollbar on a phone. */
+.drawer__body .panel {
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: auto;
 }
 
 .drawer__body code {

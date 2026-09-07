@@ -4,7 +4,8 @@
  * The channel row is a readout, not a filter: the stage follows the beat into
  * whichever room it happens in, and clicking a channel scrubs to the last thing
  * said there. Filtering the run down to one channel is what the details drawer
- * is for.
+ * is for. Scrubbing by position is the contact sheet's job, so there is no
+ * slider here; the count is a readout too.
  */
 import type { LiveChannel, StageBeat } from "@perfectman/shared";
 import { roomLabel, type NamedAgent } from "../stage/room-label.js";
@@ -93,22 +94,10 @@ export function Transport({
         >
           {muted ? "Sound off" : "Sound on"}
         </button>
-      </div>
-
-      <label className="transport__seek">
-        <span className="u-dim">position</span>
-        <input
-          type="range"
-          min={0}
-          max={Math.max(0, beats.length - 1)}
-          value={index}
-          onChange={(e) => onSeek(Number(e.target.value))}
-          aria-label="Position in the run"
-        />
-        <output>
+        <output className="transport__count" aria-label="Position in the run">
           {beats.length === 0 ? "0 / 0" : `${index + 1} / ${beats.length}`}
         </output>
-      </label>
+      </div>
     </div>
   );
 }

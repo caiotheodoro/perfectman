@@ -4,14 +4,14 @@ A React SPA that turns a live simulation into a scene: characters as drawn
 figures whose faces move with recorded emotion, speech on paper, private motive
 in handwriting.
 
-Written against `main` @ `477f62a`. Everything below was read off the repo or
+Written against `main` @ `477f62a`, revised for the flipbook stage. Everything below was read off the repo or
 measured in a browser; the gaps are stated as found, not as planned.
 
 | | |
 |---|---|
 | Path | `packages/web` |
 | Stack | Vite 5 · React 18 · TypeScript |
-| Tests | 28 passing (`pnpm --filter @perfectman/web test`) |
+| Tests | 64 passing (`pnpm --filter @perfectman/web test`) |
 | Bundle | ~340 kB, ~100 kB gzipped |
 | Interface | https://web-rli81upwa-caiotheodoros-projects.vercel.app |
 | Run server | https://perfectman-server-46159542194.us-central1.run.app |
@@ -20,14 +20,14 @@ measured in a browser; the gaps are stated as found, not as planned.
 
 ## The one idea to preserve
 
-Three typefaces carry three kinds of knowledge. That mapping is the design, not
+Two typefaces carry three kinds of knowledge. That mapping is the design, not
 decoration on it.
 
 | Face | Carries |
 |---|---|
 | Fraunces | What was said out loud — dialogue, headings |
 | Instrument Sans | The interface talking about itself — labels, controls, counts |
-| Caveat | What only the viewer can see — private motive, character name tags |
+| Fraunces italic | What only the viewer can see — private motive, character name tags |
 
 The engine's whole claim is that there is a gap between what an agent says and
 what it wants. Setting both in one face throws that away.
@@ -59,9 +59,12 @@ specific hop.
 6. **Clock** holds each beat for its reading time, then yields. A queue, not a
    timeline.
    `stage/useStageClock.ts`
-7. **Stage** places figures in slots and hangs one balloon off the speaker's
-   head.
-   `stage/Stage.tsx`, `stage/Bubble.tsx`
+7. **Place** every beat's seating in one pass, sticky per room.
+   `packages/shared/src/stage/placement.ts`
+8. **Stage** draws the placement and hangs one balloon off the speaker's
+   measured head; `Panel` turns the page when the room changes; the
+   `ContactSheet` under it is the run as a strip of pictures.
+   `stage/Panel.tsx`, `stage/Stage.tsx`, `stage/Bubble.tsx`, `stage/ContactSheet.tsx`
 
 ---
 
@@ -89,10 +92,13 @@ Forty files. These are the ones that carry weight.
 
 | File | What it does |
 |---|---|
-| `stage/Stage.tsx` | Slot placement, room kind, who is excluded. The busiest file. |
+| `stage/Panel.tsx` | The page. Keeps the leaving room mounted for the turn, with direction; instant under reduced motion. |
+| `stage/Stage.tsx` | Draws a `Placement`: figures on their marks, the excluded named, one balloon. Room only. |
+| `stage/Attribution.tsx` | The caption under the room. Separate so the turn rotates the picture, not the text. |
+| `stage/ContactSheet.tsx`, `stage/Frame.tsx` | The scrubber: one SVG frame per beat, no words, `aria-label` per frame, arrow keys. |
 | `stage/Figure.tsx` | The drawn character. Face is a pose lookup; every change is a CSS transition. |
-| `stage/useBubbleAnchor.ts` | Measures the balloon and clamps it inside the room. The pure function is tested. |
-| `stage/useStageClock.ts` | Live queue and replay seeking, one machine. |
+| `stage/useBubbleAnchor.ts` | Measures the speaker's drawn head and the balloon, clamps inside the room, moves beside the head when it cannot fit above. The pure functions are tested. |
+| `stage/useStageClock.ts` | Live queue and replay seeking, one machine. `reached` is the high-water mark the sheet draws up to. |
 | `stage/room-label.ts` | Names a private room by its members, because the engine names it with an id. |
 
 ### Run controls and the debug drawer
@@ -101,7 +107,8 @@ Forty files. These are the ones that carry weight.
 |---|---|
 | `run/RunScreen.tsx` | Warm-up gate, stage, transport, drawer. |
 | `run/known-routes.ts` | One-click provider prefills. Never holds a key. |
-| `run/useSoundtrack.ts` | Mood beds with an 8 s hold, plus SFX. See gaps — unverified by ear. |
+| `run/useSoundtrack.ts` | Mood beds with an 8 s hold, plus cues. `unlock()` runs in the Run click; a refusal flips the control but is not saved. |
+| `run/sfx-cue.ts` | Which cue a beat makes: once per line, none for a thought, none while paused. |
 | `run/DetailsDrawer.tsx` | Compiled config, diagnostics, raw frame log. Kept, just demoted. |
 
 ### Shared contract — outside `packages/web`
@@ -110,7 +117,8 @@ Forty files. These are the ones that carry weight.
 |---|---|
 | `shared/src/stage/live-to-beats.ts` | Pulse → beats. The event allowlist lives here. |
 | `shared/src/stage/emotion-face.ts` | Recorded emotion → face. Shared with the MP4 renderer so both agree. |
-| `shared/src/stage/slots.ts` | Where figures stand, as fractions. Also the figure-height constant the CSS mirrors. |
+| `shared/src/stage/slots.ts` | Where figures stand, as fractions. The figure-height constant is only the first-paint guess. |
+| `shared/src/stage/placement.ts` | `placeBeats`: seating for the whole run in one pass, memory keyed by room, not channel. |
 
 ---
 
@@ -139,9 +147,31 @@ order. Sorting first is what makes a character the same colour in both.
 Public seats six, private five. Carrying a slot index across without checking
 crashed on the first private channel a real run opened.
 
-**`FIGURE_HEIGHT_FRACTION` mirrors the CSS.**
-Balloon anchoring derives from it. Change the figure's width or the room's
-aspect ratio and you must change both, or balloons detach from heads.
+**A room is `kind/channel`, not the channel.**
+A silence renders the same channel as a one-seat thought room. Keying seating
+memory by channel let that overwrite the public room's seats, and the next
+spoken line moved everyone. `placeBeats` keys by room and walks the whole
+list, so seeking back also shows the seating a beat had the first time.
+
+**Balloon anchoring is measured; the constant is a guess.**
+`FIGURE_HEIGHT_FRACTION` knows the drawn figure and not the name tag under it,
+so a balloon placed from it sat 6–14px onto the head on every beat, and on a
+phone — where the mark's old 78px minimum made figures taller than the room —
+the balloon was clipped out of the frame. The hook measures the speaker's
+`.figure__body` against the room and re-measures on resize. When it still
+cannot fit above the head it goes beside it, never over the face.
+
+**One scrubber, and it has no words in it.**
+The contact sheet is the run as pictures: ground per room kind, a dot per
+person where they stood, a ring on the speaker. It replaced the range input.
+Anything readable in it would make it a transcript, which is what the details
+drawer is for. `reached` is not `behind`: seeking back does not un-draw.
+
+**Mute flips, only the toggle persists.**
+A refused `play()` turns the control off so it never claims sound that is not
+there, but does not write to `localStorage` — a missing file today must not
+mute every run tomorrow. An `AbortError` is a `play()` interrupted by
+`pause()`, which `unlock()` does on purpose, and is not a refusal.
 
 ---
 
@@ -149,24 +179,33 @@ aspect ratio and you must change both, or balloons detach from heads.
 
 Ranked by how likely it is to matter. Nothing here is secretly done.
 
-**Eight files have no test coverage.**
-`App`, `Stage`, `Figure`, `RunScreen`, `useSoundtrack`, `useStageClock`,
-`PickStep`, `preview.ts`. The 28 passing tests cover pure logic only — the
-fold, the balloon clamp, room naming. There is no DOM testing setup at all;
-adding jsdom and Testing Library is step one. `useStageClock` is the
-highest-value target: it is pure-ish and its queue behaviour is load-bearing.
+**Five files have no test coverage.**
+`App`, `Figure`, `RunScreen`, `useSoundtrack`, `PickStep`, `preview.ts`.
+`.test.tsx` files run under jsdom with Testing Library; `.test.ts` stay in
+node. `Stage`, `Panel`, `ContactSheet` and the clock's high-water mark have DOM
+tests; the fold, the balloon clamp, the cue rule, room naming and seating are
+pure. `useSoundtrack` is the largest untested surface and needs a fake
+`HTMLMediaElement`.
 
-**The soundtrack has never been heard.**
-Mood selection, the 8-second hold and the LUFS levelling are ported and
-typechecked, and the mute toggle works. Nobody has confirmed a bed actually
-plays or that the crossfade sounds like anything. Assume it is broken until you
-listen.
+**iOS ignores element volume.**
+The LUFS levelling and the crossfade are `HTMLMediaElement.volume` ramps, which
+iPhone Safari treats as read-only. The hook detects that and keeps beds off
+there rather than play one at full level over the dialogue; cues still play.
+A `GainNode` is the fix, and needs its own gesture-scoped `resume()`.
 
-**One breakpoint in the whole app.**
-940 px, and only in `intro.css`. Everything else leans on `auto-fill` grids and
-`clamp()`. Measured at 390 px: no horizontal scroll and balloons stay inside the
-room, but the stage compresses to 153 px tall and the transport wraps to three
-rows. Functional, not designed.
+**The page turn has not been seen on a real run.**
+The mock never leaves the public channel, so the room never changes in a mock
+run and the turn is covered by seven unit tests and a keyframe check only.
+Watch the first real run with a private channel.
+
+**Two breakpoints in the whole app.**
+940 px in `intro.css`, 640 px in `stage.css` where the room goes 4:3 and the
+sheet's frames shrink. Measured at 390 px: no horizontal scroll, the balloon is
+inside the room, and the longest mid-row name tag touches the front figure by
+1 px. The transport still wraps to rows. Functional, not designed.
+
+**The sheet stops being scannable past a few hundred beats.**
+A 40-beat run is ~2800 px of strip. Nothing paginates or groups it.
 
 **No way to open a past run.**
 `GET /api/runs` and `/api/runs/:id/replay` both exist, and the viewer already
