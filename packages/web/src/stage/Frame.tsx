@@ -1,26 +1,26 @@
 /**
  * One frame of the contact sheet: a beat as a picture with no words in it.
  *
- * The ground says which kind of room it was, a dot per person says who stood
- * where — the same seating the stage drew, from the same placement — and one
- * dot is ringed for whose moment it was, with a glyph above it for what kind
+ * The ground says which kind of conversation it was. The same silhouettes
+ * and reading order as the stage identify the cast, and one
+ * agent is ringed for whose moment it was, with a glyph above it for what kind
  * of moment: a box for something said, a cloud for something only thought, an
  * arrow for someone arriving or leaving. Nothing here is readable, on purpose:
  * the strip is for finding your place in the run, not for reading it again.
  */
 import { memo } from "react";
 import {
-  chipFor,
   chipIndexFor,
-  FIGURE_HEIGHT_FRACTION,
   type ChannelKind,
   type LiveChannel,
   type Placement,
   type StageBeat,
 } from "@perfectman/shared";
 import { roomLabel, type NamedAgent } from "./room-label.js";
+import { AgentSilhouette } from "./Figure.js";
+import { castPoint } from "./Stage.js";
 
-/** 16:7, like the room, so the dots land where the figures stood. */
+/** Compact, fixed-size index; the stage itself grows to fit the words. */
 export const FRAME_W = 64;
 export const FRAME_H = 28;
 
@@ -38,12 +38,12 @@ export type FrameModel = {
 };
 
 export function frameFor(beat: StageBeat, placement: Placement, ids: readonly string[]): FrameModel {
-  const dots = placement.marks.map(({ agentId, point }) => {
-    const r = 3 * point.scale;
+  const dots = placement.marks.map(({ agentId }, index) => {
+    const point = castPoint(index, placement.marks.length);
+    const r = placement.marks.length > 3 ? 3.5 : 5;
     return {
-      x: point.x * FRAME_W,
-      // The dot stands for the whole figure, so it sits at the figure's middle.
-      y: (point.y - (FIGURE_HEIGHT_FRACTION * point.scale) / 2) * FRAME_H,
+      x: (0.1 + point.x * .8) * FRAME_W,
+      y: placement.marks.length > 3 ? 12 + point.y * 10 : 18,
       r,
       chip: chipIndexFor(agentId, ids),
       speaker: agentId === beat.actorId,
@@ -60,7 +60,7 @@ export function frameFor(beat: StageBeat, placement: Placement, ids: readonly st
 
 function glyphFor(beat: StageBeat): FrameGlyph {
   if (beat.kind === "message") return "speech";
-  if (beat.kind === "aside" || beat.kind === "silence") return "thought";
+  if (beat.kind === "aside" || beat.kind === "silence") return beat.thought?.text || beat.text ? "thought" : null;
   if (beat.kind === "event") return beat.stageAction?.kind ?? null;
   return null;
 }
@@ -97,7 +97,9 @@ export const Frame = memo(
         {blank
           ? null
           : model.dots.map((d, i) => (
-              <circle key={i} className="frame__dot" cx={d.x} cy={d.y} r={d.r} fill={chipFor(d.chip)} />
+              <g key={i} className="frame__dot" transform={`translate(${d.x - d.r} ${d.y - d.r}) scale(${d.r / 110})`}>
+                <AgentSilhouette index={d.chip} />
+              </g>
             ))}
         {!blank && speaker ? (
           <>

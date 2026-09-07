@@ -201,6 +201,10 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
     }
   }
 
+  // An unfinished pulse can still commit a speaker's line. Do not stage their
+  // intent as silence yet, or insert silence before later committed messages.
+  if (frame.complete === false) return beats;
+
   // Whoever thought something and stayed quiet. This is the beat the frame log
   // could never show, and the reason the stage exists.
   for (const [agentId, thinking] of Object.entries(frame.thinking)) {

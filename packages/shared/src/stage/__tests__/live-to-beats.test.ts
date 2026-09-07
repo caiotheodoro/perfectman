@@ -88,6 +88,20 @@ describe("pulseToBeats — what was said", () => {
 });
 
 describe("pulseToBeats — what was not said", () => {
+  it("extends unfinished pulses without premature silence or moving existing beats", () => {
+    const partial = frame({ complete: false, messages: [message()], thinking: {
+      iris: thinking({ agentId: "iris", intentType: "send_message" }), marcela: thinking(),
+    } });
+    const first = pulseToBeats(partial, CONTEXT);
+    const grown = { ...partial, messages: [...partial.messages, message({ eventId: "e2", actorId: "bruno" })] };
+    const next = pulseToBeats(grown, CONTEXT);
+    const complete = pulseToBeats({ ...grown, complete: true }, CONTEXT);
+    expect(first.map((beat) => beat.kind)).toEqual(["message", "aside"]);
+    expect(next.map((beat) => beat.id).slice(0, first.length)).toEqual(first.map((beat) => beat.id));
+    expect(complete.map((beat) => beat.id).slice(0, next.length)).toEqual(next.map((beat) => beat.id));
+    expect(complete.slice(next.length).map((beat) => [beat.kind, beat.actorId])).toEqual([["silence", "marcela"]]);
+  });
+
   it("gives a silent agent's thought its own beat", () => {
     const beats = pulseToBeats(frame({ messages: [message()], thinking: { marcela: thinking() } }), CONTEXT);
     const silence = beats.find((b) => b.kind === "silence");

@@ -3,7 +3,7 @@
  * browser must never slow down or hang the simulation. These tests are the
  * enforcement.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { SseHub, type SseSink } from "../sse-hub.js";
 
 type FakeSink = SseSink & {
@@ -85,11 +85,6 @@ describe("SseHub — never blocks the producer", () => {
     expect(Date.now() - started).toBeLessThan(500);
   });
 
-  it("keeps publishing with no clients attached at all", () => {
-    const hub = new SseHub();
-    expect(() => hub.publish({ type: "pulse", data: { n: 1 } })).not.toThrow();
-  });
-
   it("drops a client whose write throws instead of propagating", () => {
     const hub = new SseHub();
     const sink = fakeSink();
@@ -103,6 +98,34 @@ describe("SseHub — never blocks the producer", () => {
 });
 
 describe("SseHub — backpressure policy", () => {
+  it("disconnects a stalled client before distinct pulse content grows without bound", () => {
+    const hub = new SseHub(256);
+    const stalled = fakeSink(false);
+    hub.subscribe(stalled);
+    for (let i = 0; i < 100; i++) hub.publish({ type: "pulse", data: { n: i }, replayKey: `pulse:${i}` });
+    expect(stalled.destroyed).toBe(true);
+    expect(hub.clientCount).toBe(0);
+    const resumed = fakeSink();
+    hub.subscribe(resumed);
+    expect(resumed.events.map((event) => event["n"])).toEqual(Array.from({ length: 100 }, (_, i) => i));
+  });
+
+  it("replaces cumulative revisions without losing different pulses or reordering channel updates", () => {
+    const hub = new SseHub(256);
+    const sink = fakeSink(false);
+    hub.subscribe(sink);
+    hub.publish({ type: "hello", data: { type: "hello" } });
+    hub.publish({ type: "pulse", data: { type: "pulse", n: 0, revision: 1 }, replayKey: "pulse:0" });
+    hub.publish({ type: "channel", data: { type: "channel" } });
+    hub.publish({ type: "pulse", data: { type: "pulse", n: 0, revision: 2 }, replayKey: "pulse:0" });
+    hub.publish({ type: "pulse", data: { type: "pulse", n: 1, revision: 1 }, replayKey: "pulse:1" });
+    sink.setAccept(true);
+    sink.drain();
+    expect(sink.events.map((e) => e["type"])).toEqual(["hello", "channel", "pulse", "pulse"]);
+    expect(sink.events.filter((e) => e["type"] === "pulse").map((e) => [e["n"], e["revision"]])).toEqual([[0, 2], [1, 1]]);
+    expect(hub.droppedTotal()).toBe(0);
+  });
+
   it("coalesces pulse frames to the newest, rather than queueing a backlog", () => {
     const hub = new SseHub();
     const sink = fakeSink(false);
@@ -180,6 +203,48 @@ describe("SseHub — backpressure policy", () => {
 });
 
 describe("SseHub — late joiners", () => {
+  it("waits for stopped rather than terminal status, then ends late subscribers after replay", () => {
+    const hub = new SseHub(4);
+    hub.publish({ type: "status", data: { type: "status", status: { state: "done" } } });
+    const duringTeardown = fakeSink();
+    hub.subscribe(duringTeardown);
+    expect(duringTeardown.ended).toBe(false);
+    hub.publish({ type: "stopped", data: { type: "stopped" } });
+    hub.closeAll();
+    expect(duringTeardown.events.at(-1)).toEqual({ type: "stopped" });
+    expect(duringTeardown.ended).toBe(true);
+    const afterTeardown = fakeSink();
+    hub.subscribe(afterTeardown);
+    expect(afterTeardown.events.at(-1)).toEqual({ type: "stopped" });
+    expect(afterTeardown.ended).toBe(true);
+    hub.resetBacklog();
+    const nextRun = fakeSink();
+    hub.subscribe(nextRun);
+    expect(nextRun.ended).toBe(false);
+  });
+
+  it("keeps bootstrap state and the latest pulse revisions, and announces expired history", () => {
+    const hub = new SseHub(2);
+    hub.publish({ type: "channel", data: { type: "channel", members: ["a"] }, bootstrapKey: "channel:dm" });
+    hub.publish({ type: "hello", data: { type: "hello" }, bootstrapKey: "hello" });
+    for (let n = 0; n < 3; n++) {
+      for (let revision = 1; revision <= 5; revision++) {
+        hub.publish({ type: "pulse", data: { type: "pulse", n, revision }, replayKey: `pulse:${n}` });
+      }
+    }
+    hub.publish({ type: "channel", data: { type: "channel", members: ["a", "b"] }, bootstrapKey: "channel:dm" });
+    const sink = fakeSink();
+    hub.subscribe(sink);
+    expect(sink.events.map((e) => e["type"])).toEqual(["hello", "channel", "notice", "pulse", "pulse"]);
+    expect(sink.events[1]?.["members"]).toEqual(["a", "b"]);
+    expect(sink.events[2]?.["notice"]).toMatchObject({ type: "history_truncated" });
+    expect(sink.events.filter((e) => e["type"] === "pulse").map((e) => [e["n"], e["revision"]])).toEqual([[1, 5], [2, 5]]);
+    hub.resetBacklog();
+    const next = fakeSink();
+    hub.subscribe(next);
+    expect(next.events).toEqual([]);
+  });
+
   it("replays the backlog so a client connecting after start still gets hello", () => {
     const hub = new SseHub(16);
     hub.publish({ type: "hello", data: { type: "hello" } });
@@ -197,7 +262,7 @@ describe("SseHub — late joiners", () => {
 
     const sink = fakeSink();
     hub.subscribe(sink);
-    expect(sink.events).toHaveLength(4);
+    expect(sink.events.filter((event) => event["notice"] === undefined)).toHaveLength(4);
   });
 
   it("does not replay a previous run's frames after a reset", () => {
@@ -221,6 +286,42 @@ describe("SseHub — late joiners", () => {
 });
 
 describe("SseHub — wire format", () => {
+  it("delivers the terminal event after a full socket drains, before ending", () => {
+    const hub = new SseHub();
+    const sink = fakeSink(false);
+    hub.subscribe(sink);
+    hub.publish({ type: "pulse", data: { type: "pulse", n: 0 }, replayKey: "pulse:0" });
+    hub.publish({ type: "pulse", data: { type: "pulse", n: 1 }, replayKey: "pulse:1" });
+    hub.publish({ type: "stopped", data: { type: "stopped" } });
+    hub.closeAll();
+    expect(sink.ended).toBe(false);
+    hub.resetBacklog();
+    hub.publish({ type: "hello", data: { type: "hello", run: "next" } });
+    sink.setAccept(true);
+    sink.drain();
+    expect(sink.events.map((event) => event["type"])).toEqual(["pulse", "pulse", "stopped"]);
+    expect(sink.ended).toBe(true);
+    expect(hub.clientCount).toBe(0);
+  });
+
+  it("destroys a terminal socket that never drains without waiting in closeAll", () => {
+    vi.useFakeTimers();
+    try {
+      const hub = new SseHub();
+      const sink = fakeSink(false);
+      hub.subscribe(sink);
+      hub.publish({ type: "pulse", data: { n: 0 } });
+      hub.publish({ type: "stopped", data: { type: "stopped" } });
+      hub.closeAll();
+      expect(sink.destroyed).toBe(false);
+      vi.advanceTimersByTime(30_000);
+      expect(sink.destroyed).toBe(true);
+      expect(hub.clientCount).toBe(0);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("emits well-formed SSE frames", () => {
     const hub = new SseHub();
     const sink = fakeSink();

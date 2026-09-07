@@ -31,12 +31,14 @@ export function ProviderForm({
   onChange,
   onRun,
   ready,
+  busy = false,
   focusKey = false,
 }: {
   value: ProviderValue;
   onChange: (next: ProviderValue) => void;
-  onRun: () => void;
+  onRun: (value: ProviderValue) => void;
   ready: boolean;
+  busy?: boolean;
   /** Put the cursor in the key field: the last run failed and it is probably the key. */
   focusKey?: boolean;
 }): JSX.Element {
@@ -50,12 +52,18 @@ export function ProviderForm({
     onChange({ ...value, llm: { ...value.llm, ...llm } });
 
   return (
-    <div className="provider">
+    <form className="provider" onSubmit={(event) => {
+      event.preventDefault();
+      const extra = parseExtraBody(value.extraBodyText);
+      if (!ready || busy || !hasKey || extra.error) return;
+      const next = { ...value, llm: { ...value.llm, extraBody: extra.value } };
+      onChange(next);
+      onRun(next);
+    }}>
       {(
         <div className="routes">
           <p className="u-dim">
-            Endpoints someone has already got working. Filling one in still
-            leaves you to paste the key.
+            Use a saved setup, or enter your own endpoint below.
           </p>
           <div className="routes__list">
             {KNOWN_ROUTES.map((route) => (
@@ -85,6 +93,7 @@ export function ProviderForm({
             <label>
               <span>Model</span>
               <input
+                required
                 value={value.llm.modelName ?? ""}
                 placeholder="deepseek/deepseek-v4-flash"
                 onChange={(e) => set({ modelName: e.target.value })}
@@ -93,6 +102,8 @@ export function ProviderForm({
             <label>
               <span>Base URL</span>
               <input
+                type="url"
+                required
                 value={value.llm.baseUrl ?? ""}
                 placeholder="https://api.orcarouter.ai/v1"
                 onChange={(e) => set({ baseUrl: e.target.value })}
@@ -103,12 +114,13 @@ export function ProviderForm({
               <input
                 ref={keyField}
                 type="password"
+                required
                 value={value.llm.apiKey ?? ""}
                 placeholder="Paste the key for this endpoint"
                 autoComplete="off"
                 onChange={(e) => set({ apiKey: e.target.value })}
               />
-              <em>Held for this run only. The saved config keeps the variable name, never the key.</em>
+              <em>Used for this run. The saved configuration never contains your key.</em>
             </label>
           </>
         )}
@@ -119,6 +131,7 @@ export function ProviderForm({
             type="number"
             min={1}
             max={200}
+            step={1}
             value={value.maxPulses ?? ""}
             placeholder="as written in the scene"
             onChange={(e) => onChange({ ...value, maxPulses: e.target.value ? Number(e.target.value) : null })}
@@ -165,24 +178,21 @@ export function ProviderForm({
 
       <div className="step__foot">
         <button
-          type="button"
+          type="submit"
           className="btn"
-          disabled={!ready || !hasKey || Boolean(extraBodyError)}
-          onClick={() => {
-            const extra = parseExtraBody(value.extraBodyText);
-            onChange({ ...value, llm: { ...value.llm, ...(extra.value ? { extraBody: extra.value } : {}) } });
-            onRun();
-          }}
+          disabled={!ready || busy || !hasKey || Boolean(extraBodyError)}
         >
           Start the run
         </button>
         {!ready ? (
           <span className="u-dim">The cast and scene need to fit together first.</span>
+        ) : busy ? (
+          <span className="u-dim">Waiting for the current run to finish.</span>
         ) : !hasKey ? (
           <span className="u-dim">Paste a key to start.</span>
         ) : null}
       </div>
-    </div>
+    </form>
   );
 }
 

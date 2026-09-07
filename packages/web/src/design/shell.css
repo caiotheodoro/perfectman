@@ -1,103 +1,69 @@
-.shell {
-  min-height: 100vh;
-  display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
-}
-
+.shell { min-height: 100vh; }
 .shell__bar {
   display: flex;
   align-items: center;
-  gap: clamp(20px, 5vw, 56px);
-  padding: 18px clamp(20px, 4vw, 40px);
+  justify-content: space-between;
+  gap: 24px;
+  min-height: 94px;
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: 16px 32px;
   border-bottom: 1px solid var(--rule);
-  background: var(--paper);
-  position: sticky;
-  top: 0;
-  z-index: 20;
 }
-
-.shell__mark {
-  border: none;
-  background: none;
-  padding: 0;
-  color: var(--ink);
-  cursor: pointer;
-  font-family: var(--serif);
-  font-variation-settings: "opsz" 40, "SOFT" 40, "WONK" 1;
-  font-weight: 600;
-  font-size: 19px;
-  letter-spacing: -0.02em;
-}
-
-.shell__rail {
-  display: flex;
-  gap: 4px;
-  flex: 1;
-  max-width: 460px;
-}
-
+.shell__mark { border: none; background: none; padding: 0; min-height: 44px; color: var(--forest); }
+.brand { display: inline-flex; align-items: center; gap: 9px; white-space: nowrap; }
+.brand svg { width: 30px; height: 34px; }
+.brand > span { color: var(--ink); font-size: 28px; font-weight: 750; letter-spacing: -1.6px; }
+.shell__rail { display: flex; align-items: center; gap: 26px; }
 .rail__step {
-  flex: 1;
-  display: grid;
-  gap: 7px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 44px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  padding: 10px 0;
   background: none;
-  border: none;
-  padding: 4px 0 0;
-  text-align: left;
-  color: var(--ink-30);
-  transition: color var(--quick) var(--ease);
+  color: var(--ink-50);
+  font-size: 14px;
 }
-.rail__step:not(:disabled):hover {
-  color: var(--ink-70);
-}
-.rail__step--here {
-  color: var(--ink);
-}
-.rail__step:disabled {
-  cursor: default;
-}
-
-.rail__label {
-  font-size: 13px;
-}
-
-/* The rule fills as you get further. It is the only progress indicator. */
-.rail__line {
-  height: 2px;
-  border-radius: var(--r-pill);
-  background: var(--rule);
-  transition: background var(--settle) var(--ease);
-}
-.rail__line--done {
-  background: var(--ink);
-}
-
-.shell__body {
-  min-height: 0;
-}
-
+.rail__step:not(:disabled):hover { color: var(--ink); }
+.rail__step--here { border-bottom-color: var(--ink); color: var(--ink); font-weight: 600; }
+.rail__step:disabled { cursor: default; color: var(--ink-30); }
+.rail__arrow { font-size: 12px; }
+.shell__body { min-width: 0; }
 .step {
   max-width: var(--shell);
   margin: 0 auto;
-  padding: clamp(32px, 6vh, 64px) clamp(20px, 4vw, 40px) 96px;
+  padding: 36px 32px 64px;
   display: grid;
   gap: 28px;
   align-content: start;
 }
-
-.step__head {
-  display: grid;
-  gap: 10px;
-}
-
-.step__head p {
-  color: var(--ink-70);
-  font-size: 16px;
-}
-
+.step__head { display: grid; gap: 14px; }
+.step__head p { color: var(--ink-70); font-size: 16px; max-width: 66ch; }
 .step__foot {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 16px;
-  padding-top: 8px;
+  padding-top: 24px;
+  border-top: 1px solid var(--rule);
+}
+@media (max-width: 640px) {
+  .shell__bar { min-height: 76px; gap: 16px; padding: 14px 20px; }
+  .brand { gap: 6px; }
+  .brand svg { width: 24px; height: 29px; }
+  .brand > span { font-size: 23px; letter-spacing: -1.3px; }
+  .shell__rail { gap: 16px; }
+  .rail__step { font-size: 12px; }
+  .rail__arrow { display: none; }
+  .step { padding: 28px 20px 40px; gap: 24px; }
+  .step__foot { gap: 12px; }
+  .step__foot .btn { width: 100%; }
+}
+@media (max-width: 360px) {
+  .shell__bar { gap: 12px; padding-inline: 16px; }
+  .brand > span { font-size: 21px; }
+  .shell__rail { gap: 12px; }
 }

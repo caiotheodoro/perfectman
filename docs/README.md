@@ -24,7 +24,8 @@ Read these in order:
 - [`architecture/`](architecture/) - canonical system designs and runtime specifications.
 - [`concepts/`](concepts/) - product thesis, concept synthesis, and experiment framing.
 - [`notes/`](notes/) - raw source notes, transcripts, and meeting material.
-- [`implementation/`](implementation/) - post-merge implementation notes per dev stream.
+- [`implementation/`](implementation/) - implementation notes per dev stream.
+- [`implementation/live-streaming.md`](implementation/live-streaming.md) - live delivery, playback timing, reconnect boundaries and streaming regressions.
 - [`adr/README.md`](adr/README.md) - architecture decision records (LOCKED pipeline decisions with lasting architectural consequence).
 - [`plans/`](plans/) - cross-boundary contracts and per-dev implementation plans.
 - [`personas/`](personas/) - generic persona setup docs and templates only. Real/person-specific subfolders are local-only and gitignored.
@@ -166,6 +167,7 @@ The novela layer, implemented as a projection over committed events:
 
 ### Spectator And Narrator
 
+- Frontend comparison, before/after evidence and validation: [`frontend-gauntlet-review.md`](frontend-gauntlet-review.md)
 - Recaps: [`concepts/concept-map.md`](concepts/concept-map.md), [`notes/design-conversation-history.md`](notes/design-conversation-history.md)
 - Novela framing: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
 - Anti-gamification stance: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)

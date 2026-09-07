@@ -35,6 +35,7 @@ export function Panel({
   agents,
   channels,
   ids,
+  playing = false,
 }: {
   beat: StageBeat | undefined;
   placement: Placement;
@@ -43,6 +44,7 @@ export function Panel({
   agents: readonly StageAgent[];
   channels: readonly LiveChannel[];
   ids: readonly string[];
+  playing?: boolean;
 }): JSX.Element {
   const current: Page = { roomKey: placement.roomKey, index, beat, placement };
   // What was on the page last render, held in state rather than a ref: React
@@ -80,7 +82,7 @@ export function Panel({
         </div>
       ) : null}
       <div key={current.roomKey} className={`pages__page pages__page--enter-${direction}`}>
-        <Stage beat={beat} placement={placement} agents={agents} channels={channels} ids={ids} />
+        <Stage beat={beat} placement={placement} agents={agents} channels={channels} ids={ids} playing={playing} />
       </div>
     </div>
   );

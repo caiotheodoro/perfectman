@@ -147,6 +147,10 @@ async function handle(
     const action = runMatch[2];
 
     if (action === "stream") {
+      if (controller.getStatus().runId !== runId) {
+        sendJson(res, 404, { error: { message: `Run ${runId} is not the current live run` } });
+        return;
+      }
       streamRun(req, res, controller);
       return;
     }

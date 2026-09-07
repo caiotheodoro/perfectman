@@ -92,6 +92,9 @@ export function useSoundtrack(beat: StageBeat | undefined, active: boolean, play
 
   useEffect(() => {
     const on = wantBeds.current;
+    if (muted || !active) {
+      for (const audio of Object.values(cues.current)) audio.pause();
+    }
     for (const [key, audio] of Object.entries(beds.current)) {
       const target = key === mood.current && on ? bedVolume(key as Mood) : 0;
       fade(audio, target);
@@ -101,8 +104,7 @@ export function useSoundtrack(beat: StageBeat | undefined, active: boolean, play
   }, [muted, active, start]);
 
   useEffect(() => {
-    if (!beat || beat.id === lastBeatId.current) return;
-    lastBeatId.current = beat.id;
+    if (!beat) return;
 
     const now = Date.now() / 1000;
     const next = moodFor(beat.emotion);
@@ -117,6 +119,11 @@ export function useSoundtrack(beat: StageBeat | undefined, active: boolean, play
         if (arriving.paused) start(arriving);
       }
     }
+
+    // Recorded emotion can arrive after the line. Revisit its bed without
+    // replaying the one-shot cue for the same beat.
+    if (beat.id === lastBeatId.current) return;
+    lastBeatId.current = beat.id;
 
     // Cues only while the run is playing itself: stepping through beats by
     // hand should not click.

@@ -76,18 +76,18 @@ export function Transport({
       {live ? <span className="transport__live">live</span> : null}
 
       <div className="transport__buttons">
-        <button type="button" className="btn--bare" onClick={() => onStep(-1)} aria-label="Previous beat">
+        <button type="button" className="btn btn--quiet transport__step" onClick={() => onStep(-1)} aria-label="Previous beat" disabled={index <= 0}>
           ◂
         </button>
-        <button type="button" className="btn--bare" onClick={onPlayPause}>
+        <button type="button" className="btn transport__play" onClick={onPlayPause}>
           {playing ? "Pause" : "Play"}
         </button>
-        <button type="button" className="btn--bare" onClick={() => onStep(1)} aria-label="Next beat">
+        <button type="button" className="btn btn--quiet transport__step" onClick={() => onStep(1)} aria-label="Next beat" disabled={index >= beats.length - 1}>
           ▸
         </button>
         <button
           type="button"
-          className="btn--bare"
+          className="btn btn--quiet transport__sound"
           onClick={onMute}
           aria-pressed={!muted}
           title={muted ? "Turn the soundtrack on" : "Mute the soundtrack"}

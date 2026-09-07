@@ -6,8 +6,8 @@
  * gateway calls are awaited inside the pulse and have no timeout — an SSE
  * gateway that waited on a socket would throttle the simulation itself.
  *
- * It accumulates a frame as operator events arrive and publishes it when the
- * loop seals the pulse. Sealing is the loop's job because `PulseResult` is
+ * It publishes cumulative frames as committed events and state arrive. The
+ * loop seals the pulse because `PulseResult` is
  * never delivered to gateways — it is the return value of `runPulse`.
  */
 import type {
@@ -41,10 +41,11 @@ type PartialFrame = {
   thinking: Record<string, LiveThinking>;
   emotions: Record<string, LiveEmotion>;
   notices: LiveNotice[];
+  revision: number;
 };
 
 function emptyFrame(): PartialFrame {
-  return { messages: [], thinking: {}, emotions: {}, notices: [] };
+  return { messages: [], thinking: {}, emotions: {}, notices: [], revision: 0 };
 }
 
 export class SseDeliveryGateway implements IDeliveryGateway {
@@ -71,19 +72,30 @@ export class SseDeliveryGateway implements IDeliveryGateway {
    */
   commitPulse(result: PulseResult): LivePulseFrame {
     const partial = this.frames.get(result.pulseIndex) ?? emptyFrame();
+    const frame = this.publishFrame(result, partial, true);
     this.frames.delete(result.pulseIndex);
+    return frame;
+  }
 
+  private publishFrame(result: PulseResult, partial: PartialFrame, complete: boolean): LivePulseFrame {
     const frame: LivePulseFrame = {
       pulseIndex: result.pulseIndex,
       eventsCommitted: result.eventsCommitted,
       agentsCalled: result.agentsCalled,
-      ...partial,
+      messages: [...partial.messages],
+      thinking: { ...partial.thinking },
+      emotions: { ...partial.emotions },
+      notices: [...partial.notices],
+      revision: ++partial.revision,
+      complete,
     };
-    // Not coalescable. A replaced frame takes every line in it with it, and
-    // a private aside is often one pulse long, so coalescing erased whole
-    // private conversations for a client that fell a frame behind. The hub's
-    // backlog cap bounds the queue; a slow client works through it.
-    this.hub.publish({ type: "pulse", data: { type: "pulse", frame }, id: result.pulseIndex });
+    // Revisions of this pulse are cumulative; different pulses must survive.
+    this.hub.publish({
+      type: "pulse",
+      data: { type: "pulse", frame },
+      id: `${result.pulseIndex}:${frame.revision}`,
+      replayKey: `pulse:${result.pulseIndex}`,
+    });
     return frame;
   }
 
@@ -131,7 +143,7 @@ export class SseDeliveryGateway implements IDeliveryGateway {
       type: known.type,
       memberAgentIds: [...known.members],
     };
-    this.hub.publish({ type: "channel", data: { type: "channel", channel } });
+    this.hub.publish({ type: "channel", data: { type: "channel", channel }, bootstrapKey: `channel:${channelId}` });
   }
 
   sendSpectatorEvent(_event: SpectatorEvent): Promise<void> {
@@ -149,7 +161,9 @@ export class SseDeliveryGateway implements IDeliveryGateway {
       case "action_intent": {
         const thinking = thinkingFromIntent(event);
         if (thinking) frame.thinking[thinking.agentId] = thinking;
-        break;
+        // The intent is not a committed fact yet. Include it with visibility
+        // or the agent's final snapshot, rather than showing an unaccepted act.
+        return Promise.resolve();
       }
       case "event_visibility": {
         const message = messageFromVisibility(event);
@@ -160,9 +174,14 @@ export class SseDeliveryGateway implements IDeliveryGateway {
         if (isNoticeType(event.type)) {
           const notice = noticeFrom(event);
           if (notice) frame.notices.push(notice);
-        }
+        } else return Promise.resolve();
       }
     }
+    this.publishFrame({
+      pulseIndex: event.pulseIndex,
+      eventsCommitted: frame.messages.length,
+      agentsCalled: Object.keys(frame.thinking).length,
+    }, frame, false);
     return Promise.resolve();
   }
 
@@ -171,8 +190,8 @@ export class SseDeliveryGateway implements IDeliveryGateway {
     _endReason?: EndReason,
     _endingOffer?: EndingOffer,
   ): Promise<void> {
-    // The controller publishes `stopped` once artifacts are on disk, so the
-    // event carries a replay URL that actually resolves.
+    // The controller publishes `stopped` after artifact attempts and cleanup,
+    // and includes a replay URL only when writing the replay succeeded.
     return Promise.resolve();
   }
 
