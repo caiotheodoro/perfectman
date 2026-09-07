@@ -20,6 +20,7 @@ import { useStageBeats } from "./useStageBeats.js";
 import { useSoundtrack } from "./useSoundtrack.js";
 import { Transport } from "./Transport.js";
 import { DetailsDrawer } from "./DetailsDrawer.js";
+import { useServerBusy } from "./useServerBusy.js";
 import { ProviderForm, type ProviderValue, DEFAULT_PROVIDER } from "./ProviderForm.js";
 
 const IDLE_STATES = new Set(["idle", "done", "failed"]);
@@ -70,6 +71,8 @@ export function RunScreen({
   const sound = useSoundtrack(clock.beat, running || beats.length > 0, clock.playing);
 
   const started = runId !== null;
+  // Only worth asking while a start is actually possible.
+  const server = useServerBusy(!started);
   const agents = stream.replay?.agents ?? EMPTY_AGENTS;
   const channels = stream.replay?.channels ?? EMPTY_CHANNELS;
   const ids = useMemo(() => agents.map((a) => a.id), [agents]);
@@ -131,6 +134,7 @@ export function RunScreen({
               </p>
             </div>
           ) : null}
+          {server.busy ? <ServerBusyNotice server={server} /> : null}
           <ProviderForm
             value={provider}
             onChange={setProvider}
@@ -141,7 +145,7 @@ export function RunScreen({
               setFailure(null);
               onRun(provider.llm, provider.maxPulses ? { maxPulses: provider.maxPulses } : undefined);
             }}
-            ready={Boolean(compiled?.ok)}
+            ready={Boolean(compiled?.ok) && !server.busy}
             focusKey={failure !== null}
           />
         </>
@@ -250,6 +254,32 @@ function WarmupNote({
         A real model thinks for a while before anyone speaks. Waiting for a few
         turns means the scene plays through instead of stopping between lines.
       </p>
+    </div>
+  );
+}
+
+/**
+ * The server takes one run at a time, and on a shared link the run in progress
+ * is usually somebody else's. Say whose, how far in, and offer the only action
+ * that helps — rather than letting Start fail with a 409.
+ */
+function ServerBusyNotice({ server }: { server: ReturnType<typeof useServerBusy> }): JSX.Element {
+  const status = server.status;
+  const turns =
+    status && status.maxPulses > 0 ? `${status.pulsesRun} of ${status.maxPulses} turns in` : "just started";
+
+  return (
+    <div className="busy" role="status">
+      <div className="busy__words">
+        <b>A run is already going.</b>
+        <span>
+          {turns}. The server takes one at a time, so this one has to finish or
+          be stopped first.
+        </span>
+      </div>
+      <button type="button" className="btn--quiet" disabled={server.stopping} onClick={() => void server.release()}>
+        {server.stopping ? "Stopping…" : "Stop it"}
+      </button>
     </div>
   );
 }
