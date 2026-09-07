@@ -19,7 +19,7 @@ function walk(dir, acc = []) {
     if (e.name === "node_modules" || e.name === "dist" || e.name === ".stryker-tmp") continue;
     const p = join(dir, e.name);
     if (e.isDirectory()) walk(p, acc);
-    else if (e.name.endsWith(".test.ts")) acc.push(p);
+    else if (/\.test\.tsx?$/.test(e.name)) acc.push(p);
   }
   return acc;
 }
