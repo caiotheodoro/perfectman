@@ -9,8 +9,9 @@
 import { useMemo, useState } from "react";
 import { idlePlacement, placeBeats, type CompileResponse, type StartRunRequest } from "@perfectman/shared";
 import type { RunStream } from "../api/useRunStream.js";
-import type { LiveChannel, Placement } from "@perfectman/shared";
-import { Stage, type StageAgent } from "../stage/Stage.js";
+import type { LiveChannel } from "@perfectman/shared";
+import type { StageAgent } from "../stage/Stage.js";
+import { Panel } from "../stage/Panel.js";
 import { Attribution } from "../stage/Attribution.js";
 import { useStageClock } from "../stage/useStageClock.js";
 import { useStageBeats } from "./useStageBeats.js";
@@ -102,38 +103,52 @@ export function RunScreen({
             ready={Boolean(compiled?.ok)}
           />
         </>
-      ) : !ready ? (
-        <Warmup stream={stream} agents={agents} channels={channels} ids={ids} idle={idle} beats={beats.length} />
       ) : (
         <>
+          {/* One page for the whole run. The warm-up room is the same Panel as
+              the first line, so the first beat continues the picture rather
+              than replacing it. */}
           <div className="flipbook">
-            <Stage beat={clock.beat} placement={placement} agents={agents} channels={channels} ids={ids} />
-            <Attribution beat={clock.beat} agents={agents} channels={channels} ids={ids} />
+            <Panel
+              beat={ready ? clock.beat : undefined}
+              placement={ready ? placement : idle}
+              index={ready ? clock.index : 0}
+              agents={agents}
+              channels={channels}
+              ids={ids}
+            />
+            {ready ? <Attribution beat={clock.beat} agents={agents} channels={channels} ids={ids} /> : null}
           </div>
-          <Transport
-            beats={beats}
-            index={clock.index}
-            channels={channels}
-            agents={agents}
-            playing={clock.playing}
-            behind={clock.behind}
-            live={running}
-            muted={sound.muted}
-            onPlayPause={() => (clock.playing ? clock.pause() : clock.play())}
-            onStep={clock.step}
-            onSeek={clock.seek}
-            onMute={sound.toggle}
-          />
-          <div className="run__foot">
-            <RunState stream={stream} running={running} />
-            <span className="transport__spacer" />
-            {running ? (
-              <button type="button" className="btn--quiet" onClick={onStop}>
-                Stop the run
-              </button>
-            ) : null}
-          </div>
-          <DetailsDrawer compiled={compiled} stream={stream} runId={runId} />
+          {!ready ? (
+            <WarmupNote stream={stream} agents={agents} beats={beats.length} />
+          ) : (
+            <>
+              <Transport
+                beats={beats}
+                index={clock.index}
+                channels={channels}
+                agents={agents}
+                playing={clock.playing}
+                behind={clock.behind}
+                live={running}
+                muted={sound.muted}
+                onPlayPause={() => (clock.playing ? clock.pause() : clock.play())}
+                onStep={clock.step}
+                onSeek={clock.seek}
+                onMute={sound.toggle}
+              />
+              <div className="run__foot">
+                <RunState stream={stream} running={running} />
+                <span className="transport__spacer" />
+                {running ? (
+                  <button type="button" className="btn--quiet" onClick={onStop}>
+                    Stop the run
+                  </button>
+                ) : null}
+              </div>
+              <DetailsDrawer compiled={compiled} stream={stream} runId={runId} />
+            </>
+          )}
         </>
       )}
     </section>
@@ -143,31 +158,22 @@ export function RunScreen({
 /**
  * The wait, with something to look at.
  *
- * The cast is already known from `hello`, so the room can be set before anyone
- * has spoken — which also means the first real beat is a continuation rather
- * than the picture appearing from nothing.
+ * The cast is already known from `hello`, so the room above is set before
+ * anyone has spoken — which also means the first real beat is a continuation
+ * rather than the picture appearing from nothing. This is only the note.
  */
-function Warmup({
+function WarmupNote({
   stream,
   agents,
-  channels,
-  ids,
-  idle,
   beats,
 }: {
   stream: RunStream;
   agents: readonly StageAgent[];
-  channels: readonly LiveChannel[];
-  ids: readonly string[];
-  idle: Placement;
   beats: number;
 }): JSX.Element {
   const state = stream.status?.state;
   return (
     <div className="warmup">
-      <div className="flipbook">
-        <Stage beat={undefined} placement={idle} agents={agents} channels={channels} ids={ids} />
-      </div>
       <p className="warmup__note">
         <span className="warmup__pulse" aria-hidden="true" />
         {state === "health_check"

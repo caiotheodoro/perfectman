@@ -20,6 +20,67 @@
   min-height: 0;
 }
 
+/* --- the page ------------------------------------------------------------ */
+
+/*
+ * Two pages at most, stacked in one grid cell: the one leaving and the one
+ * arriving. The leaving page is a snapshot that keeps its own DOM, so figures
+ * keep breathing while it goes. `clip` rather than `hidden`, because the 6%
+ * slide must not give the whole document a horizontal scrollbar.
+ */
+.panel {
+  display: grid;
+  perspective: 1200px;
+  overflow-x: clip;
+}
+
+.panel__page {
+  grid-area: 1 / 1;
+  min-width: 0;
+  transform-origin: 50% 50%;
+  will-change: transform, opacity;
+}
+
+.panel__page--leave-forward {
+  animation: page-leave-forward var(--turn) var(--ease) both;
+  pointer-events: none;
+}
+.panel__page--enter-forward {
+  animation: page-enter-forward var(--turn) var(--ease) both;
+}
+.panel__page--leave-back {
+  animation: page-leave-back var(--turn) var(--ease) both;
+  pointer-events: none;
+}
+.panel__page--enter-back {
+  animation: page-enter-back var(--turn) var(--ease) both;
+}
+
+@keyframes page-leave-forward {
+  to {
+    opacity: 0;
+    transform: translateX(-6%) rotateY(-6deg);
+  }
+}
+@keyframes page-enter-forward {
+  from {
+    opacity: 0;
+    transform: translateX(6%);
+  }
+}
+@keyframes page-leave-back {
+  to {
+    opacity: 0;
+    transform: translateX(6%) rotateY(6deg);
+  }
+}
+@keyframes page-enter-back {
+  from {
+    opacity: 0;
+    transform: translateX(-6%);
+  }
+}
+
 .stage__room {
   position: relative;
   overflow: hidden;
