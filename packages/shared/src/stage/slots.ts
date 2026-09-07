@@ -14,12 +14,11 @@
 export type StageSlot = { x: number; y: number; scale: number };
 
 /**
- * How tall a figure stands, as a fraction of the room's height.
- *
- * Derived, not measured: a mark is 15% of the room's width, the figure is drawn
- * 100 wide by 168 tall, and the room is 16:7. Balloons hang off the top of a
- * head, so they need this to know where a head ends — and it has to agree with
- * the CSS or a balloon will float or overlap. Change one, change both.
+ * How tall a figure's drawing stands, as a fraction of the room's height, in a
+ * 16:7 room: a mark is 15% of the room's width and the figure is drawn 100
+ * wide by 168 tall. This is the first-paint guess for where a head begins; the
+ * stage measures the real thing once it has laid out, because the name tag
+ * under the figure is set in pixels and the room is not 16:7 on a phone.
  */
 export const FIGURE_HEIGHT_FRACTION = 0.15 * 1.68 * (16 / 7);
 
@@ -38,8 +37,10 @@ export type ChannelKind = "public" | "private" | "thought" | "operator";
 const PUBLIC_SLOTS: readonly StageSlot[] = [
   { x: 0.29, y: 0.94, scale: 1.0 },
   { x: 0.71, y: 0.94, scale: 1.0 },
-  { x: 0.45, y: 0.7, scale: 0.78 },
-  { x: 0.63, y: 0.68, scale: 0.76 },
+  // The mid pair sits inside the front pair's gap so their name tags clear the
+  // front figures' torsos: a tag under .63 landed inside the figure at .71.
+  { x: 0.42, y: 0.7, scale: 0.78 },
+  { x: 0.58, y: 0.68, scale: 0.76 },
   { x: 0.13, y: 0.52, scale: 0.6 },
   { x: 0.87, y: 0.52, scale: 0.6 },
 ];

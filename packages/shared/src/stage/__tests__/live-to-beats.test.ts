@@ -143,3 +143,32 @@ describe("priorEventsToBeats", () => {
     expect(beat?.duration).toBeGreaterThan(0);
   });
 });
+
+describe("pulseToBeats — pages", () => {
+  it("numbers a single-page line page 0", () => {
+    const [beat] = pulseToBeats(frame({ messages: [message()] }), CONTEXT);
+    expect(beat?.page).toBe(0);
+  });
+
+  it("numbers the pages of a long line so only the first can cue a sound", () => {
+    const text = Array.from({ length: 60 }, (_, i) => `word${i}`).join(" ");
+    const beats = pulseToBeats(frame({ messages: [message({ text })] }), CONTEXT);
+    const spoken = beats.filter((b) => b.kind === "message");
+    expect(spoken.length).toBeGreaterThan(1);
+    expect(spoken.map((b) => b.page)).toEqual(spoken.map((_, i) => i));
+  });
+
+  it("numbers thought pages too", () => {
+    const motive = Array.from({ length: 50 }, (_, i) => `reason${i}`).join(" ");
+    const beats = pulseToBeats(
+      frame({ thinking: { marcela: thinking({ privateMotiveSummary: motive }) } }),
+      CONTEXT,
+    );
+    expect(beats.map((b) => b.page)).toEqual(beats.map((_, i) => i));
+  });
+
+  it("gives seeded history page 0", () => {
+    const [beat] = priorEventsToBeats([message()], CONTEXT);
+    expect(beat?.page).toBe(0);
+  });
+});

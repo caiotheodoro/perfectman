@@ -48,6 +48,12 @@ export type StageBeat = {
   stageAction?: { kind: "arrive" | "leave" | "invite"; agentIds: string[] };
   /** Seconds this beat holds before the next one takes the stage. */
   duration: number;
+  /**
+   * Which page of a paginated line this is, from 0. A long line becomes several
+   * beats; anything that should happen once per line — a sound cue, a frame on
+   * the contact sheet — checks for page 0.
+   */
+  page: number;
 };
 
 /** Keep every code point and newline; split at a word boundary when possible. */
