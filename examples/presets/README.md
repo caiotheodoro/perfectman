@@ -25,12 +25,12 @@ pt-BR group chat, mouths already broken. Six scenes were written for them,
 each with two scarce resources so at least two people are in structural
 conflict:
 
-- `ultimo-thread` — last hour on a dying board
-- `ultima-proteina` — day 11 on the island, corn pretending to be meat
-- `velorio-no-grupo` — the wake in the group chat
-- `live-que-nao-cai` — the stream that cannot drop
-- `o-print` — they find the corpus
-- `cinco-gorilas` — the rifle hypothetical covering the kilo
+- `ultimo-thread` — midnight turns the board into evidence
+- `ultima-proteina` — day 11, they are dying, the sixth is under the tarp
+- `velorio-no-grupo` — the body is at the wake now; they were there that night
+- `live-que-nao-cai` — chat donates because it thinks someone is dying
+- `o-print` — a private audio already reached someone of flesh
+- `cinco-gorilas` — wedding tomorrow, the kilo is still in the gallery
 
 **`studio-partners` / `the-slice`** stays as the polite control: three partners,
 a dinner, a sale. Same compiler, lower temperature.
