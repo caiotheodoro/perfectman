@@ -27,7 +27,8 @@
 
   --serif: "Fraunces Variable", Georgia, "Times New Roman", serif;
   --sans: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --hand: "Caveat Variable", "Bradley Hand", cursive;
+  /* Private motive and name tags: italic Fraunces, not a script face. */
+  --hand: "Fraunces Variable", Georgia, "Times New Roman", serif;
 
   /* Display Fraunces: soft, slightly wonky, optically sized for large text. */
   --serif-display: "opsz" 144, "SOFT" 60, "WONK" 1;
@@ -96,8 +97,10 @@ p {
 
 .u-hand {
   font-family: var(--hand);
-  font-weight: 500;
-  letter-spacing: 0;
+  font-variation-settings: var(--serif-text);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: -0.01em;
 }
 
 .u-dim {

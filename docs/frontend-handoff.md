@@ -20,14 +20,14 @@ measured in a browser; the gaps are stated as found, not as planned.
 
 ## The one idea to preserve
 
-Three typefaces carry three kinds of knowledge. That mapping is the design, not
+Two typefaces carry three kinds of knowledge. That mapping is the design, not
 decoration on it.
 
 | Face | Carries |
 |---|---|
 | Fraunces | What was said out loud — dialogue, headings |
 | Instrument Sans | The interface talking about itself — labels, controls, counts |
-| Caveat | What only the viewer can see — private motive, character name tags |
+| Fraunces italic | What only the viewer can see — private motive, character name tags |
 
 The engine's whole claim is that there is a gap between what an agent says and
 what it wants. Setting both in one face throws that away.
