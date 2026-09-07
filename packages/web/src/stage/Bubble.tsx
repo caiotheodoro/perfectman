@@ -27,14 +27,12 @@ export function Bubble({
   said: string;
   thought?: string;
 }): JSX.Element {
-  const { ref, bottom, beside } = useBubbleAnchor(speaker, headTopGuess, contentKey);
-  // Balloons open away from the nearest wall, so an edge figure's does not run
-  // off the side of the room.
-  const side = x > 0.5 ? "left" : "right";
   // A balloon that could not fit above the head sits beside it instead, clear
-  // of the figure: half a mark's width plus a little, on the open side.
-  const clearance = beside ? 0.075 * scale + 0.015 : 0;
-  const left = side === "right" ? x + clearance : x - clearance;
+  // of the figure: half a mark's width plus a little. Balloons open away from
+  // the nearest wall, unless that would run them off the side of the room.
+  const clearance = 0.075 * scale + 0.015;
+  const { ref, bottom, beside, side } = useBubbleAnchor(speaker, headTopGuess, contentKey, x, clearance);
+  const left = !beside ? x : side === "right" ? x + clearance : x - clearance;
 
   return (
     <div

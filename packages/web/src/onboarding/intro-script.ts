@@ -9,7 +9,7 @@
  * These are the same beat and emotion shapes a real run produces, so the intro
  * renders through the same components as the stage.
  */
-import type { FaceState, RecordedEmotion } from "@perfectman/shared";
+import type { FaceState, LiveChannel, RecordedEmotion, StageBeat } from "@perfectman/shared";
 
 export type IntroBeat = {
   /** Roster index of whoever holds the beat. */
@@ -72,3 +72,45 @@ export const INTRO_BEATS: IntroBeat[] = [
     hold: 3600,
   },
 ];
+
+export type IntroRun = {
+  agents: Array<{ id: string; displayName: string }>;
+  channels: LiveChannel[];
+  beats: StageBeat[];
+};
+
+/**
+ * The script as a run: the same beat shape a live pulse produces, so the intro
+ * plays through the real page, caption and contact sheet rather than a copy of
+ * them. A line is speech with the room reacting; a thought is a silence.
+ */
+export function introRun(): IntroRun {
+  const agents = INTRO_CAST.map((name) => ({ id: name, displayName: name }));
+  const ids = agents.map((a) => a.id);
+  const channel: LiveChannel = { id: "kitchen", name: "the kitchen", type: "public_channel", memberAgentIds: ids };
+  const beats = INTRO_BEATS.map((beat, i): StageBeat => {
+    const actorId = INTRO_CAST[beat.actor]!;
+    const reactions: Record<string, RecordedEmotion> = {};
+    ids.forEach((id, at) => {
+      const emotion = beat.emotions[at];
+      if (id !== actorId && emotion) reactions[id] = emotion;
+    });
+    const emotion = beat.emotions[beat.actor];
+    return {
+      id: `intro:${i}`,
+      kind: beat.line ? "message" : "silence",
+      pulseIndex: i,
+      channelId: channel.id,
+      actorId,
+      text: beat.line ?? "",
+      audienceIds: [],
+      participantIds: ids,
+      ...(emotion ? { emotion } : {}),
+      reactions,
+      ...(beat.thought ? { thought: { text: beat.thought, drivers: [] } } : {}),
+      duration: beat.hold / 1000,
+      page: 0,
+    };
+  });
+  return { agents, channels: [channel], beats };
+}

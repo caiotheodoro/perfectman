@@ -85,8 +85,9 @@ Forty files. These are the ones that carry weight.
 
 | File | What it does |
 |---|---|
-| `onboarding/Intro.tsx` | Plays a scene instead of explaining one. Shown once; flag in `localStorage`. |
-| `onboarding/intro-script.ts` | Six hand-written beats. No server involved — safe to edit freely. |
+| `onboarding/Intro.tsx` | Plays a scene instead of explaining one, through the run's own `Panel`, caption and `ContactSheet`. Shown once; flag in `localStorage`. |
+| `onboarding/intro-script.ts` | Six hand-written beats, and `introRun()` turning them into `StageBeat`s. No server involved — safe to edit freely. |
+| `pick/RoomPreview.tsx` | `CastRoom` stands the chosen cast in the room; `SceneRooms` draws one room per compiled channel with the shut-out named. |
 
 ### The stage — where the work is
 
@@ -115,7 +116,7 @@ Forty files. These are the ones that carry weight.
 
 | File | What it does |
 |---|---|
-| `shared/src/stage/live-to-beats.ts` | Pulse → beats. The event allowlist lives here. |
+| `shared/src/stage/live-to-beats.ts` | Pulse → beats. The event allowlist lives here. Fills `reactions` so listeners wear what was recorded about them. |
 | `shared/src/stage/emotion-face.ts` | Recorded emotion → face. Shared with the MP4 renderer so both agree. |
 | `shared/src/stage/slots.ts` | Where figures stand, as fractions. The figure-height constant is only the first-paint guess. |
 | `shared/src/stage/placement.ts` | `placeBeats`: seating for the whole run in one pass, memory keyed by room, not channel. |
@@ -166,6 +167,18 @@ The contact sheet is the run as pictures: ground per room kind, a dot per
 person where they stood, a ring on the speaker. It replaced the range input.
 Anything readable in it would make it a transcript, which is what the details
 drawer is for. `reached` is not `behind`: seeking back does not un-draw.
+
+**The landing is the product, not a picture of it.**
+The intro renders through `Panel`, `Attribution` and `ContactSheet` with beats
+from `introRun()`. A separate intro layout drifted from the stage the moment the
+stage changed; now it cannot. The provenance reading in the caption is hidden
+there by CSS, because on the landing everything is authored.
+
+**The previous page lives in state, not a ref.**
+React renders twice in development. A ref written during the first pass made
+the second pass see no room change, and the turn was silently dropped in dev
+while passing its tests. `Panel` keeps the last page in state and resets it
+during render; the StrictMode test pins it.
 
 **Mute flips, only the toggle persists.**
 A refused `play()` turns the control off so it never claims sound that is not

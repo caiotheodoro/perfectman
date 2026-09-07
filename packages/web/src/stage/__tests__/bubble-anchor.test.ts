@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { FIGURE_HEIGHT_FRACTION, headTopFor, slotsFor } from "@perfectman/shared";
-import { BUBBLE_MARGIN, bubbleBottom, bubbleClamped } from "../useBubbleAnchor.js";
+import { BUBBLE_MARGIN, besideSide, besideWidth, bubbleBottom, bubbleClamped } from "../useBubbleAnchor.js";
 
 const ROOM = 300;
 
@@ -65,5 +65,24 @@ describe("bubbleClamped", () => {
     // and the caller should move it beside the head instead.
     const headTop = headTopFor(slotsFor("public")[4]!);
     expect(bubbleClamped(headTop, ROOM, 150)).toBe(true);
+  });
+});
+
+describe("beside the head", () => {
+  it("opens away from the nearest wall", () => {
+    expect(besideSide(0.3)).toBe("right");
+    expect(besideSide(0.7)).toBe("left");
+    expect(besideSide(0.5)).toBe("right");
+  });
+
+  it("gets exactly the room left on that side, so it wraps rather than leaves the frame", () => {
+    // A centre figure at scale 1.25 in a 607px room: the balloon starts at
+    // (0.5 + 0.109) of the width and may use what remains, minus a margin.
+    expect(besideWidth(0.5, 0.109, 607, "right")).toBeCloseTo((1 - 0.609) * 607 - BUBBLE_MARGIN, 3);
+    expect(besideWidth(0.7, 0.09, 600, "left")).toBeCloseTo((0.7 - 0.09) * 600 - BUBBLE_MARGIN, 3);
+  });
+
+  it("never goes below a readable minimum", () => {
+    expect(besideWidth(0.95, 0.09, 300, "right")).toBe(124);
   });
 });

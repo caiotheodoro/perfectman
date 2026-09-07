@@ -44,6 +44,12 @@ export type StageBeat = {
   /** Everyone in frame for this beat, actor included. */
   participantIds: string[];
   emotion?: RecordedEmotion;
+  /**
+   * What everyone else in the room was feeling at this moment, by agent id.
+   * The speaker's face comes from `emotion`; these are the faces of the people
+   * listening. Absent for a room that has recorded nothing about them.
+   */
+  reactions?: Record<string, RecordedEmotion>;
   thought?: StageThought;
   stageAction?: { kind: "arrive" | "leave" | "invite"; agentIds: string[] };
   /** Seconds this beat holds before the next one takes the stage. */

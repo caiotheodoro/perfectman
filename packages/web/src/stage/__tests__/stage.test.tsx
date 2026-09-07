@@ -64,10 +64,38 @@ describe("Stage", () => {
     expect(container.querySelector(".stage__shut-out")?.textContent).toContain("bruno");
   });
 
+  it("lists three shut-out people the way a sentence would", () => {
+    const five = [...AGENTS, { id: "d", displayName: "Dora" }, { id: "e", displayName: "Eli" }];
+    const channels: LiveChannel[] = [
+      ...CHANNELS,
+      { id: "dm", name: "dm", type: "private_channel", memberAgentIds: ["iris", "marcela"] },
+    ];
+    const b = beat({ channelId: "dm", participantIds: ["iris", "marcela"] });
+    const [placement] = placeBeats([b], five, channels);
+    const { container } = render(<Stage beat={b} placement={placement!} agents={five} channels={channels} ids={five.map((a) => a.id)} />);
+    expect(container.querySelector(".stage__shut-out")?.textContent).toBe("bruno, Dora and Eli cannot see this");
+  });
+
   it("seats the idle room with nobody lit and no balloon", () => {
     const placement = idlePlacement(CHANNELS[0], AGENTS);
     const { container } = render(<Stage beat={undefined} placement={placement} agents={AGENTS} channels={CHANNELS} ids={IDS} />);
     expect(container.querySelectorAll(".stage__mark")).toHaveLength(3);
     expect(container.querySelectorAll(".bubbles")).toHaveLength(0);
+  });
+});
+
+describe("Stage reactions", () => {
+  it("lets a non-speaker wear the face they recorded", () => {
+    const b = beat({
+      emotion: { source: "authored", label: "neutral" },
+      reactions: { marcela: { source: "authored", label: "worried" } },
+    });
+    const [placement] = placeBeats([b], AGENTS, CHANNELS);
+    const { container } = render(<Stage beat={b} placement={placement!} agents={AGENTS} channels={CHANNELS} ids={IDS} />);
+    const faces = Object.fromEntries(
+      [...container.querySelectorAll(".figure")].map((f) => [f.querySelector(".figure__name")?.textContent, f.getAttribute("data-face")]),
+    );
+    expect(faces["marcela"]).toBe("worried");
+    expect(faces["bruno"]).toBe("neutral");
   });
 });

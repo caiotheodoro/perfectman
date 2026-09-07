@@ -31,7 +31,7 @@ export function Figure({ index, name, face, energy, speaking, attentive }: Figur
   const swing = (face === "worried" ? -26 : face === "angry" ? -10 : 6) * (0.65 + energy * 0.35);
 
   return (
-    <div className={`figure${speaking ? " figure--speaking" : ""}${attentive ? "" : " figure--aside"}`}>
+    <div className={`figure${speaking ? " figure--speaking" : ""}${attentive ? "" : " figure--aside"}`} data-face={face}>
       <svg viewBox="0 0 100 168" className="figure__body" aria-hidden="true">
         {/* Every part carries the same hairline the page uses, so a pale
             character still reads as a drawn figure on warm paper. */}

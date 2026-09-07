@@ -94,6 +94,26 @@
 
 /* --- selection summary --------------------------------------------------- */
 
+/* --- the room, before anything happens ----------------------------------- */
+
+.rooms {
+  display: grid;
+  gap: 12px;
+}
+
+.rooms .flipbook {
+  padding-top: 0;
+}
+
+/* Several rooms side by side: each is smaller, and the name tags scale with
+   the room because they are sized in container units. */
+.rooms--many {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+.rooms--many .flipbook {
+  width: 100%;
+}
+
 .summary-strip {
   display: grid;
   gap: 10px;
