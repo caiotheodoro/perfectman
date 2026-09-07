@@ -105,7 +105,7 @@ const status = state => emit({ type: 'status', status: { runId: `fixture-${runNu
 const hello = () => emit({ type: 'hello', runId: `fixture-${runNumber}`, simulationId: 'fixture', simulationName: 'Authored browser fixture', agents: agents.map(agent => ({ ...agent, archetype: 'fixture' })), channels, maxPulses: 8, priorEvents: [] });
 const message = (eventId, actorId, channelId, text, visibleToAgents = []) => ({ eventId, actorId, channelId, eventType: 'message_sent', text, visibleToAgents, pulseIndex: 0, createdAt: 0 });
 const thinking = text => ({ privateMotiveSummary: text, emotionDrivers: [], motivationDrivers: [], intentType: 'no_op' });
-const pulse = (pulseIndex, messages, thoughts = {}, emotions = {}) => emit({ type: 'pulse', frame: { pulseIndex, messages, thinking: Object.fromEntries(Object.entries(thoughts).map(([agentId, thought]) => [agentId, { agentId, ...thought }])), emotions, notices: [], eventsCommitted: messages.length, agentsCalled: 1 } });
+const pulse = (pulseIndex, messages, thoughts = {}, emotions = {}, progress = {}) => emit({ type: 'pulse', frame: { ...progress, pulseIndex, messages, thinking: Object.fromEntries(Object.entries(thoughts).map(([agentId, thought]) => [agentId, { agentId, ...thought }])), emotions, notices: [], eventsCommitted: messages.length, agentsCalled: 1 } });
 const position = () => page.$eval('[aria-label="Position in the run"]', el => el.textContent.trim());
 const shot = async name => page.screenshot({ path: join(evidence, `${name}.png`), fullPage: true });
 const visibleReading = async name => {
@@ -174,14 +174,15 @@ try {
   await clickText('Start the run');
   await wait(() => streams.has('fixture-2'), 'Second run stream did not connect');
   hello(); status('running');
-  pulse(0, [message('first', 'iris', 'public', 'so are we talking about last night or not')], { iris: thinking('I want to know what happened, but I do not want to ask twice.') });
   await page.waitForSelector('.warmup');
-  assert.equal(await page.$('.transport'), null, 'Warmup must not reveal a partial buffer');
   await geometry('preparing-desktop');
+  pulse(0, [message('first', 'iris', 'public', 'so are we talking about last night or not')], { iris: thinking('I want to know what happened, but I do not want to ask twice.') }, {}, { complete: false, revision: 1 });
+  await page.waitForSelector('.transport');
+  assert.equal(await position(), '1 / 2', 'First available line must reach the actual viewer immediately');
   pulse(1, [message('private', 'iris', 'private', 'tell me what happened', ['iris', 'marcela'])]);
   pulse(2, [], { marcela: thinking('if i say it now it sounds like i counted. i counted.') }, { marcela: { valence: -0.7, arousal: 0.8, top: [{ key: 'anger', value: 0.9 }] } });
   await page.waitForSelector('.transport');
-  assert.equal(await position(), '1 / 4', 'First intended beat must be visible after warmup');
+  await page.waitForFunction(() => document.querySelector('[aria-label="Position in the run"]')?.textContent === '1 / 4');
   assert.equal(await page.$$eval('.stage .figure', figures => figures.every(el => el.dataset.face === 'neutral')), true, 'Missing emotion must stay neutral');
   for (const width of [1280, 390, 320]) {
     await page.setViewport({ width, height: width === 320 ? 568 : width === 390 ? 844 : 960 });
@@ -222,7 +223,7 @@ try {
   assert.match(await page.$eval('.run', el => el.textContent), /Authored fixture failure/);
   await shot('failure-mobile');
   assert.deepEqual(errors, []);
-  await writeFile(join(evidence, 'checks.json'), JSON.stringify({ passed: true, evidence: 'Authored local HTTP/SSE fixtures through the real React app; no provider execution', checks: ['intro reduced motion', 'cast/scene/provider journey', 'cancel pending start', 'current extraBody request', 'preparation buffer', 'first beat', 'neutral missing emotion', 'desktop/mobile public/private/thought/silence geometry', 'long names/dialogue', 'incoming beats preserve pause', 'keyboard seek', 'play/pause', 'actual audio and mute', 'completion/retry', 'early failure recovery'] }, null, 2));
+  await writeFile(join(evidence, 'checks.json'), JSON.stringify({ passed: true, evidence: 'Authored local HTTP/SSE fixtures through the real React app; no provider execution', checks: ['intro reduced motion', 'cast/scene/provider journey', 'cancel pending start', 'current extraBody request', 'first partial pulse before later turns', 'first beat', 'neutral missing emotion', 'desktop/mobile public/private/thought/silence geometry', 'long names/dialogue', 'incoming beats preserve pause', 'keyboard seek', 'play/pause', 'actual audio and mute', 'completion/retry', 'early failure recovery'] }, null, 2));
   console.log(`PASS: real React app with authored SSE fixtures. Evidence: ${evidence}`);
 } catch (error) {
   await shot('failure-diagnostic');

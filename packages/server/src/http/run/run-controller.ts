@@ -173,6 +173,7 @@ export class RunController {
       this.hub.publish({
         type: "hello",
         data: helloEvent(params, handle, applied.priorEvents.map(messageFromCommitted)),
+        bootstrapKey: "hello",
       });
 
       this.setState("running");
@@ -257,24 +258,16 @@ export class RunController {
     this.status.counters.gatewayTimeouts = gatewayCounter.timeouts;
     this.status.counters.framesDropped = this.hub.droppedTotal();
     this.status.endedAt = Date.now();
-    this.setState(finalState);
 
-    await this.artifacts?.writeManifest(this.manifest(params, drained));
-
-    // 4. Tell the clients, now that the replay URL resolves.
-    if (replayWritten) {
-      this.hub.publish({
-        type: "stopped",
-        data: {
-          type: "stopped",
-          ...(this.status.stopReason ? { stopReason: this.status.stopReason } : {}),
-          replayUrl: `/api/runs/${params.runId}/replay`,
-        } satisfies LiveEvent,
-      });
+    try {
+      await this.artifacts?.writeManifest({ ...this.manifest(params, drained), state: finalState });
+    } catch (err) {
+      this.status.error ??= { message: `Failed to write manifest: ${(err as Error).message}` };
+      this.publishStatus();
     }
-    this.hub.closeAll();
 
-    // 5. The key must not outlive the run.
+    // 4. Keep the run unavailable until every awaited cleanup step finishes.
+    // Otherwise a new start can replace this handle and hub during teardown.
     clearRunKey(params.runId);
 
     try {
@@ -283,6 +276,19 @@ export class RunController {
       // Memory persistence has nothing to close.
     }
     this.handle = null;
+
+    // 5. Publish final status and terminate together, including failures
+    // without a replay. There must be no await after the run becomes available.
+    this.setState(finalState);
+    this.hub.publish({
+      type: "stopped",
+      data: {
+        type: "stopped",
+        ...(this.status.stopReason ? { stopReason: this.status.stopReason } : {}),
+        ...(replayWritten ? { replayUrl: `/api/runs/${params.runId}/replay` } : {}),
+      } satisfies LiveEvent,
+    });
+    this.hub.closeAll();
   }
 
   private manifest(params: StartRunParams, drained: boolean): RunManifest {
@@ -314,6 +320,7 @@ export class RunController {
       type: "status",
       data: { type: "status", status: this.getStatus() } satisfies LiveEvent,
       coalesceKey: "status",
+      replayKey: "status",
     });
   }
 }

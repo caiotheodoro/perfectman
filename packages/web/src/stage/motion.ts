@@ -1,4 +1,16 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+
+/** Keep unread beats on stage while the reader is in another browser tab. */
+export function useDocumentVisible(): boolean {
+  const [visible, setVisible] = useState(() => !document.hidden);
+  useEffect(() => {
+    const update = (): void => setVisible(!document.hidden);
+    document.addEventListener("visibilitychange", update);
+    update();
+    return () => document.removeEventListener("visibilitychange", update);
+  }, []);
+  return visible;
+}
 
 /**
  * Whether the reader asked for less motion. Read in JS as well as CSS because

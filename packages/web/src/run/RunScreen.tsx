@@ -17,7 +17,7 @@ import { Attribution } from "../stage/Attribution.js";
 import { ContactSheet } from "../stage/ContactSheet.js";
 import { frameFor, frameLabel } from "../stage/Frame.js";
 import { useStageClock } from "../stage/useStageClock.js";
-import { useReadingPosition } from "../stage/motion.js";
+import { useDocumentVisible, useReadingPosition } from "../stage/motion.js";
 import { useStageBeats } from "./useStageBeats.js";
 import { useSoundtrack } from "./useSoundtrack.js";
 import { Transport } from "./Transport.js";
@@ -30,17 +30,6 @@ const IDLE_STATES = new Set(["idle", "done", "failed"]);
 // the run has said hello.
 const EMPTY_AGENTS: readonly StageAgent[] = [];
 const EMPTY_CHANNELS: readonly LiveChannel[] = [];
-
-/**
- * How much of the run to have in hand before the stage starts playing.
- *
- * A real model takes tens of seconds per turn. Cutting straight to the stage
- * means watching an empty room and concluding it is broken, and once the first
- * beat finally lands the queue drains faster than the model refills it, so it
- * stutters for the rest of the run. Holding a few beats back costs the viewer
- * nothing — the run is still going — and buys a scene that plays continuously.
- */
-const WARMUP_BEATS = 4;
 
 export function RunScreen({
   sceneTitle,
@@ -76,19 +65,18 @@ export function RunScreen({
   // format does not work, the fix is almost always the key.
   const [failure, setFailure] = useState<{ message: string; hint?: string } | null>(null);
   const beats = useStageBeats(stream.replay);
-  const running = stream.status ? !IDLE_STATES.has(stream.status.state) && stream.stoppedReason === null : false;
+  const running = stream.status ? !IDLE_STATES.has(stream.status.state) && stream.stoppedReason === null && !stream.error : false;
   const finished = stream.status?.state === "done" || stream.status?.state === "failed" || stream.stoppedReason !== null;
-  // Readiness belongs to a run. Retrying must not inherit its previous
-  // buffer, clock position or contact-sheet high-water mark.
-  const [warmRun, setWarmRun] = useState<string | null>(null);
-  const ready = runId !== null && (warmRun === runId || beats.length >= WARMUP_BEATS || (finished && beats.length > 0));
-  if (ready && warmRun !== runId) setWarmRun(runId);
-  const clock = useStageClock(beats, { ready: ready && visible, runId });
-  const reading = useReadingPosition(ready && visible ? clock.beat?.id : undefined);
+  const ready = runId !== null && beats.length > 0;
+  const documentVisible = useDocumentVisible();
+  const onStage = ready && visible && documentVisible;
+  const clock = useStageClock(beats, { ready: onStage, runId });
+  const reading = useReadingPosition(onStage ? clock.beat?.id : undefined);
   const seek = (index: number): void => { clock.seek(index); reading.reveal(); };
-  const sound = useSoundtrack(ready && visible ? clock.beat : undefined, ready && visible && (running || beats.length > 0), ready && visible && clock.playing);
+  const sound = useSoundtrack(onStage ? clock.beat : undefined, onStage, onStage && clock.playing);
 
   const started = runId !== null;
+  const historyNotice = stream.notices.find((notice) => notice.type === "history_truncated");
   // Only poll while the provider form can be used. Hidden runs stay mounted.
   const server = useServerBusy(visible && !started && !starting);
   useEffect(() => {
@@ -123,6 +111,7 @@ export function RunScreen({
 
   return (
     <section className="step run">
+      {historyNotice ? <p className="alert" role="status">{historyNotice.detail}</p> : null}
       {error ? (
         <div className="alert" role="alert">
           <p>{error}</p>
@@ -177,7 +166,7 @@ export function RunScreen({
               than replacing it. */}
           <div className="flipbook" ref={reading.ref}>
             <Panel
-              playing={ready && clock.playing}
+              playing={onStage && clock.playing}
               beat={ready ? clock.beat : undefined}
               placement={ready ? placement : idle}
               index={ready ? clock.index : 0}
@@ -202,7 +191,7 @@ export function RunScreen({
           {!ready ? (
             cancelling ? <p className="warmup" role="status">Cancelling as soon as the server answers…</p>
               : finished ? <p className="warmup" role="status">This run ended without any dialogue.</p>
-                : <WarmupNote stream={stream} agents={agents} beats={beats.length} />
+                : <WarmupNote stream={stream} agents={agents} />
           ) : (
             <>
               <Transport
@@ -256,11 +245,9 @@ export function RunScreen({
 function WarmupNote({
   stream,
   agents,
-  beats,
 }: {
   stream: RunStream;
   agents: readonly StageAgent[];
-  beats: number;
 }): JSX.Element {
   const state = stream.status?.state;
   return (
@@ -274,11 +261,11 @@ function WarmupNote({
             ? "Setting the room up…"
             : agents.length === 0
               ? "Starting…"
-              : `Letting the first few turns play out — ${beats} of ${WARMUP_BEATS} ready`}
+              : "Waiting for the first line…"}
       </p>
       <p className="u-dim warmup__why">
-        A real model thinks for a while before anyone speaks. Waiting for a few
-        turns means the scene plays through instead of stopping between lines.
+        The scene starts as soon as the first line arrives. Each line stays
+        long enough to read while the model prepares the next turn.
       </p>
     </div>
   );
@@ -311,6 +298,7 @@ function ServerBusyNotice({ server }: { server: ReturnType<typeof useServerBusy>
 }
 
 function RunState({ stream, running }: { stream: RunStream; running: boolean }): JSX.Element {
+  if (stream.error) return <span className="alert-inline" role="alert">{stream.error}</span>;
   const status = stream.status;
   if (!status) return <span className="u-dim">{stream.stoppedReason ? "The run has ended." : "Starting…"}</span>;
   if (running) {

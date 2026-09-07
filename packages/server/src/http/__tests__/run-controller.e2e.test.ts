@@ -9,13 +9,13 @@ import { readFile, rm } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { LiveEvent } from "@perfectman/shared";
 import { compileRunInputs } from "../../authoring/compile-run-inputs.js";
 import type { LLMConfig } from "../../llm/llm-config.js";
 import { RunController } from "../run/run-controller.js";
 import type { SseSink } from "../sse-hub.js";
-import { readManifest, readReplay } from "../run/run-artifacts.js";
+import { readManifest, readReplay, RunArtifacts } from "../run/run-artifacts.js";
 
 const FIXTURES = join(__dirname, "../../authoring/__tests__/fixtures");
 
@@ -121,7 +121,7 @@ describe("RunController — a full mock run", () => {
     // made a finished run read as "5 of 6".
     expect(status.pulsesRun).toBe(6);
     expect(status.pulseIndex).toBe(5);
-    const pulses = events.filter((e) => e.type === "pulse");
+    const pulses = events.filter((e) => e.type === "pulse" && e.frame.complete !== false);
     expect(pulses).toHaveLength(6);
   });
 
@@ -239,4 +239,84 @@ describe("RunController — stopping", () => {
     controller.stop();
     await controller.completion();
   }, 60_000);
+
+  it("refuses a new run while its predecessor is still writing the manifest", async () => {
+    const inputs = await readFixtures();
+    const compiled = compileRunInputs(inputs, { llm: MOCK_LLM, simulationId: "teardown-a" });
+    if (!compiled.config) throw new Error("fixture failed to compile");
+    const controller = new RunController(runsRoot);
+    const params = { config: compiled.config, seeds: compiled.seeds, maxPulses: 1, wallClockCapMs: 60_000, diagnostics: [], inputFiles: [], skipHealthCheck: true };
+    let releaseManifest!: () => void;
+    let enteredManifest!: () => void;
+    const pendingManifest = new Promise<void>((resolve) => { releaseManifest = resolve; });
+    const manifestStarted = new Promise<void>((resolve) => { enteredManifest = resolve; });
+    const originalWrite = RunArtifacts.prototype.writeManifest;
+    const write = vi.spyOn(RunArtifacts.prototype, "writeManifest").mockImplementationOnce(async function (manifest) {
+      enteredManifest();
+      await pendingManifest;
+      await originalWrite.call(this, manifest);
+    });
+    try {
+      await controller.start({ runId: "teardown-a", ...params });
+      await manifestStarted;
+      expect(controller.getStatus().state).toBe("stopping");
+      expect(controller.isActive()).toBe(true);
+      await expect(controller.start({ runId: "teardown-b", ...params })).rejects.toThrow(/already active/);
+      releaseManifest();
+      await controller.completion();
+      expect((await readManifest(runsRoot, "teardown-a"))?.state).toBe("done");
+      await controller.start({ runId: "teardown-b", ...params });
+      await controller.completion();
+      expect(controller.getStatus()).toMatchObject({ runId: "teardown-b", state: "done", pulsesRun: 1 });
+    } finally {
+      releaseManifest();
+      await controller.completion();
+      write.mockRestore();
+    }
+  });
+});
+
+describe("RunController — failure termination", () => {
+  const runsRoot = join(tmpdir(), `perfectman-web-failures-${Date.now()}`);
+
+  afterAll(async () => {
+    await rm(runsRoot, { recursive: true, force: true });
+  });
+
+  it.each(["writeReplay", "writeManifest"] as const)("still terminates when %s fails", async (method) => {
+    const inputs = await readFixtures();
+    const compiled = compileRunInputs(inputs, { llm: MOCK_LLM, simulationId: method });
+    if (!compiled.config) throw new Error("fixture failed to compile");
+    const controller = new RunController(runsRoot);
+    const recorder = recordingSink();
+    controller.currentHub().subscribe(recorder.sink);
+    const failure = vi.spyOn(RunArtifacts.prototype, method).mockRejectedValueOnce(new Error("disk unavailable"));
+    try {
+      await controller.start({ runId: method, config: compiled.config, seeds: compiled.seeds, maxPulses: 1, wallClockCapMs: 60_000, diagnostics: [], inputFiles: [], skipHealthCheck: true });
+      await controller.completion();
+      expect(controller.getStatus().error?.message).toContain("disk unavailable");
+      const stopped = recorder.events.find((event) => event.type === "stopped");
+      expect(stopped).toBeDefined();
+      if (stopped?.type !== "stopped") throw new Error("missing terminal event");
+      expect(stopped.replayUrl).toBe(method === "writeReplay" ? undefined : `/api/runs/${method}/replay`);
+      expect(controller.currentHub().clientCount).toBe(0);
+    } finally {
+      failure.mockRestore();
+    }
+  });
+
+  it("terminates a build failure even when no replay gateway was created", async () => {
+    const inputs = await readFixtures();
+    const compiled = compileRunInputs(inputs, { llm: MOCK_LLM, simulationId: "build-failure" });
+    if (!compiled.config) throw new Error("fixture failed to compile");
+    compiled.config.deliveryGateways = [{ id: "replay", type: "mock" }];
+    const controller = new RunController(runsRoot);
+    const recorder = recordingSink();
+    controller.currentHub().subscribe(recorder.sink);
+    await controller.start({ runId: "build-failure", config: compiled.config, seeds: compiled.seeds, maxPulses: 1, wallClockCapMs: 60_000, diagnostics: [], inputFiles: [], skipHealthCheck: true });
+    await controller.completion();
+    expect(controller.getStatus().state).toBe("failed");
+    expect(recorder.events.at(-1)).toEqual({ type: "stopped", stopReason: "error" });
+    expect(controller.currentHub().clientCount).toBe(0);
+  });
 });

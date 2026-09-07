@@ -7,7 +7,7 @@ import { ContactSheet } from "../stage/ContactSheet.js";
 import { frameFor, frameLabel } from "../stage/Frame.js";
 import { Panel } from "../stage/Panel.js";
 import { useStageClock } from "../stage/useStageClock.js";
-import { useReadingPosition } from "../stage/motion.js";
+import { useDocumentVisible, useReadingPosition } from "../stage/motion.js";
 import { introRun } from "./intro-script.js";
 
 export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
@@ -23,9 +23,10 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
       labels: run.beats.map((beat, i) => `Beat ${i + 1}: ${frameLabel(beat, run.agents, run.channels[0])}`),
     };
   }, [run]);
-  const clock = useStageClock(run.beats);
+  const visible = useDocumentVisible();
+  const clock = useStageClock(run.beats, { ready: visible });
   const beat = clock.beat!;
-  const reading = useReadingPosition(beat.id);
+  const reading = useReadingPosition(visible ? beat.id : undefined);
 
   function togglePlay(): void {
     if (clock.atEnd) {
@@ -61,7 +62,7 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
             beat={beat}
             placement={staged.placements[clock.index]!}
             index={clock.index}
-            playing={clock.playing && !clock.atEnd}
+            playing={visible && clock.playing && !clock.atEnd}
             agents={run.agents}
             channels={run.channels}
             ids={staged.ids}

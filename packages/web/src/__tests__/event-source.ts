@@ -6,8 +6,10 @@ import type { LiveEvent } from "@perfectman/shared";
 export function stubEventSource() {
   const sources: EventTarget[] = [];
   vi.stubGlobal("EventSource", class extends EventTarget {
+    static readonly CLOSED = 2;
+    readyState = 0;
     constructor() { super(); sources.push(this); }
-    close() {}
+    close() { this.readyState = 2; }
   });
   return {
     sources,

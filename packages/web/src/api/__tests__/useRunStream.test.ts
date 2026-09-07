@@ -6,7 +6,7 @@
  * invariants worth pinning are the ones a reconnect breaks: a replayed `hello`
  * must not erase folded pulses, and a replayed pulse must not double a row.
  */
-import { cleanup, renderHook } from "@testing-library/react";
+import { act, cleanup, renderHook } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 import type { LiveEvent, LiveMessage, LivePulseFrame, RunStatus } from "@perfectman/shared";
 import { fold, useRunStream, type RunStream } from "../useRunStream.js";
@@ -38,6 +38,21 @@ it("clears a previous run immediately and ignores delivery from its closed sourc
     send(hello("second"), 1);
     expect(result.current.helloRunId).toBe("second");
     expect(result.current.replay?.pulses).toEqual([]);
+  } finally {
+    cleanup(); vi.unstubAllGlobals();
+  }
+});
+
+it.each([0, 2])("distinguishes a retrying transport from a permanently closed stream (state %i)", (readyState) => {
+  const { sources } = stubEventSource();
+  try {
+    const { result } = renderHook(() => useRunStream("first"));
+    const source = sources[0];
+    expect(source).toBeInstanceOf(EventTarget);
+    Object.defineProperty(source, "readyState", { value: readyState });
+    act(() => { source?.dispatchEvent(new Event("error")); });
+    expect(result.current.connected).toBe(false);
+    expect(result.current.error).toBe(readyState === 2 ? "This live stream is no longer available. Start another run to reconnect." : null);
   } finally {
     cleanup(); vi.unstubAllGlobals();
   }
@@ -123,6 +138,16 @@ describe("fold — hello", () => {
 });
 
 describe("fold — pulses", () => {
+  it("retains complete metadata and ignores older partial revisions on reconnect", () => {
+    const frame: LivePulseFrame = {
+      pulseIndex: 0, revision: 2, complete: true, eventsCommitted: 1, agentsCalled: 1,
+      messages: [message("committed", 0)], thinking: {}, emotions: {}, notices: [],
+    };
+    const complete = fold(fold(BASE, hello("run_1")), { type: "pulse", frame });
+    const stale = fold(complete, { type: "pulse", frame: { ...frame, revision: 1, complete: false, messages: [] } });
+    expect(stale.replay?.pulses).toEqual([frame]);
+  });
+
   it("ignores a pulse that arrives before hello", () => {
     expect(fold(BASE, pulse(0, [message("a", 0)])).replay).toBeNull();
   });

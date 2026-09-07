@@ -55,7 +55,7 @@ export function emotionFromState(state: SerializedAgentState): LiveEmotion {
 export function thinkingFromIntent(event: OperatorEvent): LiveThinking | null {
   if (!event.agentId) return null;
   const data = event.data ?? {};
-  const visibleContent = data["content"];
+  const visibleContent = data["visibleContent"];
   return {
     agentId: event.agentId,
     intentType: payloadString(data, "intentType", "unknown"),

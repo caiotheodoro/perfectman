@@ -5,7 +5,7 @@
  * import `@perfectman/server` — that would pull `better-sqlite3`, `discord.js`
  * and `ollama` into the browser build graph.
  *
- * One curated frame per pulse, not the raw operator firehose: the stream
+ * Cumulative curated frames per pulse, not the raw operator firehose: the stream
  * carries a full serialized `AgentState` per agent per pulse, which is far more
  * than a viewer needs on the wire. The complete state stays server-side and
  * lands in `replay.json`.
@@ -51,6 +51,10 @@ export type LiveNotice = { type: string; agentId?: string; detail: string };
 /** One pulse, as the viewer sees it. */
 export type LivePulseFrame = {
   pulseIndex: number;
+  /** Monotonically increasing within a pulse; absent on older stored replays. */
+  revision?: number;
+  /** False while the pulse is still running. Absent means a sealed legacy frame. */
+  complete?: boolean;
   eventsCommitted: number;
   agentsCalled: number;
   messages: LiveMessage[];
@@ -109,7 +113,7 @@ export type LiveEvent =
   | { type: "pulse"; frame: LivePulseFrame }
   | { type: "channel"; channel: LiveChannel }
   | { type: "notice"; notice: LiveNotice }
-  | { type: "stopped"; stopReason?: string; replayUrl: string }
+  | { type: "stopped"; stopReason?: string; replayUrl?: string }
   | { type: "error"; message: string; hint?: string };
 
 /**
@@ -118,6 +122,8 @@ export type LiveEvent =
  */
 export type ViewerPulse = {
   pulseIndex: number;
+  revision?: number;
+  complete?: boolean;
   eventsCommitted: number;
   agentsCalled: number;
   messages: LiveMessage[];

@@ -6,9 +6,8 @@
  * keeps the "did the browser see this" question answerable against a single
  * object rather than a pile of events.
  *
- * Pulses are coalescable on the wire, so a client that falls behind gets the
- * newest one and a `droppedBefore` count. Gaps are not reconstructed here —
- * `replay.json` has them, and the UI says how many are missing.
+ * Each pulse grows through cumulative revisions. A replayed older revision
+ * must not replace content the browser already received.
  */
 import { useEffect, useRef, useState } from "react";
 import type { LiveEvent, LiveNotice, RunStatus, ViewerPulse, ViewerReplay } from "@perfectman/shared";
@@ -92,10 +91,14 @@ export function useRunStream(runId: string | null): RunStream {
       if (!live) return;
       setState((prev) => ({ ...prev, connected: true, error: null }));
     });
-    source.addEventListener("error", () => {
+    source.addEventListener("error", (event) => {
       if (!live) return;
-      // EventSource reconnects on its own; this is a status, not a terminal state.
-      setState((prev) => ({ ...prev, connected: false }));
+      // A named server error is handled by fold. Transport failures retry
+      // unless EventSource is CLOSED, e.g. a run URL that now returns 404.
+      if (event instanceof MessageEvent) return;
+      setState((prev) => ({ ...prev, connected: false,
+        ...(source.readyState === EventSource.CLOSED ? { error: "This live stream is no longer available. Start another run to reconnect." } : {}),
+      }));
     });
 
     return () => {
@@ -161,6 +164,8 @@ export function fold(state: RunStream, event: LiveEvent): RunStream {
       if (!state.replay) return state;
       const pulse: ViewerPulse = {
         pulseIndex: event.frame.pulseIndex,
+        ...(event.frame.revision !== undefined ? { revision: event.frame.revision } : {}),
+        ...(event.frame.complete !== undefined ? { complete: event.frame.complete } : {}),
         eventsCommitted: event.frame.eventsCommitted,
         agentsCalled: event.frame.agentsCalled,
         messages: event.frame.messages,
@@ -207,13 +212,13 @@ function stopReasonOf(stopReason: string | undefined): { stopReason?: string } {
 }
 
 /**
- * Coalescing means a pulse can arrive out of order relative to a reconnect, and
- * a reconnect can replay one already held. Keyed by index, sorted, so neither
- * duplicates a row.
+ * A reconnect can replay a pulse already held. Preserve its newest revision
+ * and keep pulse order without duplicating rows.
  */
 function upsertPulse(pulses: ViewerPulse[], pulse: ViewerPulse): ViewerPulse[] {
   const at = pulses.findIndex((p) => p.pulseIndex === pulse.pulseIndex);
   if (at >= 0) {
+    if ((pulses[at]?.revision ?? 0) > (pulse.revision ?? 0)) return pulses;
     const next = [...pulses];
     next[at] = pulse;
     return next;

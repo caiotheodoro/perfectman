@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { LiveMessage, RunStatus } from "@perfectman/shared";
 import { fold, type RunStream } from "../../api/useRunStream.js";
@@ -39,7 +39,7 @@ beforeEach(() => {
   localStorage.setItem("perfectman.sound.muted", "1");
   vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(ignore);
 });
-afterEach(() => { cleanup(); localStorage.clear(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); localStorage.clear(); vi.useRealTimers(); vi.restoreAllMocks(); vi.unstubAllGlobals(); });
 
 describe("run lifecycle", () => {
   it("shows the compiled cast while the start request is pending, before a stream exists", () => {
@@ -55,10 +55,10 @@ describe("run lifecycle", () => {
     expect(getByRole("button", { name: "Cancel preparation" }).hasAttribute("disabled")).toBe(false);
   });
 
-  it("keeps a short seeded history in preparation until the server confirms the run state", () => {
+  it("shows the first available beat without waiting for more turns or terminal status", () => {
     const { queryByLabelText, getByRole, rerender } = render(screen(streamWith(1)));
-    expect(queryByLabelText("Position in the run")).toBeNull();
-    expect(getByRole("button", { name: "Cancel preparation" }).hasAttribute("disabled")).toBe(false);
+    expect(queryByLabelText("Position in the run")?.textContent).toBe("1 / 1");
+    expect(getByRole("button", { name: "Stop the run" }).hasAttribute("disabled")).toBe(false);
     rerender(screen(streamWith(1, "done")));
     expect(queryByLabelText("Position in the run")?.textContent).toBe("1 / 1");
   });
@@ -72,6 +72,13 @@ describe("run lifecycle", () => {
     expect(onReset).toHaveBeenCalledOnce();
   });
 
+  it("discloses expired live history without requiring the reader to open Details", () => {
+    const stream = streamWith(1, "running");
+    stream.notices = [{ type: "history_truncated", detail: "Earlier live history has expired." }];
+    const { getAllByRole } = render(screen(stream));
+    expect(getAllByRole("status").map((node) => node.textContent)).toContain("Earlier live history has expired.");
+  });
+
   it.each([0, 4])("reports an interruption with %i buffered beats while keeping cancellation available", (count) => {
     const onStop = vi.fn();
     const stream = { ...streamWith(count, "running"), connected: false };
@@ -80,4 +87,28 @@ describe("run lifecycle", () => {
     fireEvent.click(getByRole("button", { name: count === 0 ? "Cancel preparation" : "Stop the run" }));
     expect(onStop).toHaveBeenCalledOnce();
   });
+});
+
+
+it.each([true, false])("keeps incoming beats unread in a hidden tab and preserves playing=%s", (playing) => {
+  vi.useFakeTimers();
+  const hidden = vi.spyOn(document, "hidden", "get").mockReturnValue(false);
+  const { container, getByLabelText, getByRole, rerender } = render(screen(streamWith(4)));
+  if (!playing) fireEvent.click(getByRole("button", { name: "Pause" }));
+  act(() => vi.advanceTimersByTime(1000));
+
+  hidden.mockReturnValue(true);
+  fireEvent(document, new Event("visibilitychange"));
+  rerender(screen(streamWith(5)));
+  act(() => vi.advanceTimersByTime(10_000));
+  expect(getByLabelText("Position in the run").textContent).toBe("1 / 5");
+  expect(container.querySelector(".stage--playing")).toBeNull();
+
+  hidden.mockReturnValue(false);
+  fireEvent(document, new Event("visibilitychange"));
+  act(() => vi.advanceTimersByTime(2499));
+  expect(getByLabelText("Position in the run").textContent).toBe("1 / 5");
+  act(() => vi.advanceTimersByTime(1));
+  expect(getByLabelText("Position in the run").textContent).toBe(playing ? "2 / 5" : "1 / 5");
+  expect(getByRole("button", { name: playing ? "Pause" : "Play" }).textContent).toBe(playing ? "Pause" : "Play");
 });

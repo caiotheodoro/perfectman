@@ -76,6 +76,12 @@ describe("web server", () => {
     await expect(response.json()).resolves.toEqual({ ok: true });
   });
 
+  it("404s a stale stream URL instead of subscribing to a different run", async () => {
+    const response = await fetch(`${base}/api/runs/not-current/stream`);
+    expect(response.status).toBe(404);
+    expect(web.controller.currentHub().clientCount).toBe(0);
+  });
+
   it("compiles markdown without starting anything", async () => {
     const response = await fetch(`${base}/api/compile`, {
       method: "POST",
@@ -137,6 +143,12 @@ describe("web server", () => {
     expect(hello).toBeDefined();
     expect(events.filter((e) => e.type === "pulse").length).toBeGreaterThan(0);
     expect(events.some((e) => e.type === "stopped")).toBe(true);
+
+    // The hub, rather than an early final-status update, determines when a
+    // late stream may end. Read all the way to EOF without cancelling at stopped.
+    await web.controller.completion();
+    const late = await readSse(`${base}${streamUrl}`, () => false);
+    expect(late.at(-1)?.type).toBe("stopped");
 
     // The replay the stopped frame points at actually resolves.
     const replay = await (await fetch(`${base}/api/runs/${runId}/replay`)).json();

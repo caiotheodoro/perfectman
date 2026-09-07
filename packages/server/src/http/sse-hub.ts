@@ -9,8 +9,8 @@
  * down, and a browser that stopped reading entirely would hang the run forever.
  *
  * Therefore: `publish` is synchronous and never fails. It appends to per-client
- * buffers and kicks a writer that drains on its own. Backpressure is absorbed
- * by dropping, not by waiting.
+ * buffers and kicks a writer that drains on its own. Overloaded clients
+ * reconnect to retained history; producers never wait for them.
  */
 
 /** The bits of `ServerResponse` used here, so tests need no socket. */
@@ -27,20 +27,26 @@ export type SseMessage = {
   /** SSE `event:` name. */
   type: string;
   data: unknown;
-  /** SSE `id:`, for `Last-Event-ID` resumption. */
+  /** SSE `id:`. Reconnects replay retained revisions, which the client deduplicates. */
   id?: string | number;
   /**
    * Coalescing key. A newer message with the same key replaces a pending one
    * rather than queueing behind it, so a slow client sees the latest state
-   * instead of an ever-growing backlog. Unset means "never drop me".
+   * instead of an ever-growing backlog. Distinct pulse content never uses it.
    */
   coalesceKey?: string;
+  /** Cumulative revisions replace only the same logical message, without loss. */
+  replayKey?: string;
+  /** Current bootstrap state survives eviction of historical pulse frames. */
+  bootstrapKey?: string;
 };
 
-/** Control messages are never coalesced away; this caps the rest. */
+/** Disconnect a slow client rather than silently dropping distinct pulse content. */
 const MAX_QUEUE = 64;
 /** Past this many buffered bytes the client is not keeping up at all. */
 const MAX_BUFFERED_BYTES = 1_000_000;
+/** Final delivery gets a chance to drain, but a dead socket must not outlive a run. */
+const FINAL_DRAIN_TIMEOUT_MS = 30_000;
 
 type Client = {
   id: number;
@@ -51,6 +57,9 @@ type Client = {
   /** Socket reported full; only a `drain` resumes writing. */
   paused: boolean;
   closed: boolean;
+  closing: boolean;
+  closeTimer?: NodeJS.Timeout;
+  drain?: () => void;
 };
 
 export class SseHub {
@@ -59,12 +68,15 @@ export class SseHub {
 
   /** Replayed to a client that connects mid-run, before anything live. */
   private backlog: SseMessage[] = [];
+  private readonly bootstrap = new Map<string, SseMessage>();
+  private historyTruncated = false;
+  private ended = false;
   private backlogLimit = 0;
 
   /**
-   * @param backlogLimit how many past messages a late joiner receives. Frames
-   * beyond it are not resent — the client refetches the replay instead, which
-   * is cheaper than keeping the whole run in two places.
+   * @param backlogLimit how many historical messages a late joiner receives,
+   * keeping only the latest cumulative revision for a replay key. Bootstrap
+   * state is retained separately; an expired pulse history is announced.
    */
   constructor(backlogLimit = 0) {
     this.backlogLimit = backlogLimit;
@@ -81,17 +93,28 @@ export class SseHub {
    */
   resetBacklog(): void {
     this.backlog = [];
+    this.bootstrap.clear();
+    this.historyTruncated = false;
+    this.ended = false;
   }
 
   subscribe(sink: SseSink): () => void {
     const client: Client = {
       id: this.nextId++,
       sink,
-      queue: [...this.backlog],
+      queue: [
+        ...[...this.bootstrap.values()].sort((a, b) => Number(b.type === "hello") - Number(a.type === "hello")),
+        ...(this.historyTruncated ? [{ type: "notice", data: { type: "notice", notice: {
+          type: "history_truncated",
+          detail: "Earlier live history has expired. This view starts at the oldest retained turn.",
+        } } }] : []),
+        ...this.backlog,
+      ],
       dropped: 0,
       writing: false,
       paused: false,
       closed: false,
+      closing: false,
     };
     this.clients.set(client.id, client);
 
@@ -99,7 +122,8 @@ export class SseHub {
     sink.on("close", close);
     sink.on("error", close);
 
-    this.flush(client);
+    if (this.ended) this.finishClient(client);
+    else this.flush(client);
     return close;
   }
 
@@ -109,9 +133,17 @@ export class SseHub {
    * is nothing useful it could do about a slow browser.
    */
   publish(message: SseMessage): void {
-    if (this.backlogLimit > 0) {
+    if (message.bootstrapKey) {
+      this.bootstrap.set(message.bootstrapKey, message);
+    } else if (this.backlogLimit > 0) {
+      const previous = message.replayKey
+        ? this.backlog.findIndex((entry) => entry.replayKey === message.replayKey)
+        : -1;
+      if (previous !== -1) this.backlog.splice(previous, 1);
       this.backlog.push(message);
-      if (this.backlog.length > this.backlogLimit) this.backlog.shift();
+      if (this.backlog.length > this.backlogLimit) {
+        if (this.backlog.shift()?.type === "pulse") this.historyTruncated = true;
+      }
     }
     for (const client of this.clients.values()) {
       this.enqueue(client, message);
@@ -119,20 +151,20 @@ export class SseHub {
     }
   }
 
-  /** Best-effort final write, then close every client. */
+  /** Finish queued delivery before ending; only the writer waits for a drain. */
   closeAll(): void {
+    this.ended = true;
     for (const client of [...this.clients.values()]) {
-      // A paused client still gets one last attempt: the `stopped` frame is
-      // the one message worth pushing at a socket that is behind.
-      client.paused = false;
-      this.flush(client);
-      try {
-        client.sink.end();
-      } catch {
-        // A client that vanished mid-teardown is not a problem worth reporting.
-      }
-      this.clients.delete(client.id);
+      this.finishClient(client);
     }
+  }
+
+  private finishClient(client: Client): void {
+    if (client.closing || client.closed) return;
+    client.closing = true;
+    client.closeTimer = setTimeout(() => this.remove(client, true), FINAL_DRAIN_TIMEOUT_MS);
+    client.closeTimer.unref();
+    this.flush(client);
   }
 
   /** Frames dropped across all clients, for the run's counters. */
@@ -143,7 +175,16 @@ export class SseHub {
   }
 
   private enqueue(client: Client, message: SseMessage): void {
-    if (client.closed) return;
+    if (client.closed || client.closing) return;
+
+    if (message.replayKey) {
+      const existing = client.queue.findIndex((m) => m.replayKey === message.replayKey);
+      if (existing !== -1) {
+        client.queue.splice(existing, 1);
+        client.queue.push(message);
+        return;
+      }
+    }
 
     if (message.coalesceKey) {
       const existing = client.queue.findIndex((m) => m.coalesceKey === message.coalesceKey);
@@ -162,6 +203,10 @@ export class SseHub {
       if (victim !== -1) {
         client.queue.splice(victim, 1);
         client.dropped++;
+      } else {
+        // EventSource reconnects to retained history; an expired history is
+        // explicitly announced to the new subscriber rather than concealed.
+        this.remove(client, true);
       }
     }
   }
@@ -170,7 +215,7 @@ export class SseHub {
     // `paused` is what makes backpressure real. Without it a later `publish`
     // would call `flush` again and write straight into a socket that already
     // said stop — so nothing would ever queue, and nothing would ever coalesce.
-    if (client.writing || client.closed || client.paused) return;
+    if (client.writing || client.closed || (client.paused && client.queue.length > 0)) return;
     client.writing = true;
 
     while (client.queue.length > 0) {
@@ -189,26 +234,41 @@ export class SseHub {
           this.remove(client, true);
           return;
         }
+        // write(false) still accepted the chunk. end() will flush it; only
+        // messages that have not been written need a later drain callback.
+        if (client.closing && client.queue.length === 0) break;
         // Only the writer waits. Producers keep enqueuing into the bounded
         // buffer and never block on this.
         client.paused = true;
         client.writing = false;
         const resume = (): void => {
           client.sink.off?.("drain", resume);
+          client.drain = undefined;
           client.paused = false;
           this.flush(client);
         };
+        client.drain = resume;
         client.sink.on("drain", resume);
         return;
       }
     }
 
     client.writing = false;
+    if (client.closing) {
+      this.remove(client);
+      try {
+        client.sink.end();
+      } catch {
+        // A client that vanished during teardown needs no further delivery.
+      }
+    }
   }
 
   private remove(client: Client, destroy = false): void {
     if (client.closed) return;
     client.closed = true;
+    if (client.closeTimer) clearTimeout(client.closeTimer);
+    if (client.drain) client.sink.off?.("drain", client.drain);
     this.clients.delete(client.id);
     if (destroy) {
       try {
