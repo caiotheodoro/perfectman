@@ -49,17 +49,4 @@ export const KNOWN_ROUTES: KnownRoute[] = [
     },
     extraBodyText: '{ "thinking": { "type": "disabled" } }',
   },
-  {
-    id: "ollama-local",
-    label: "Ollama on this machine",
-    note: "Needs the daemon running. No key.",
-    llm: {
-      providerType: "ollama",
-      modelName: "qwen3:8b",
-      baseUrl: "http://localhost:11434/v1",
-      responseFormatJson: true,
-      responseFormatJsonSchema: false,
-    },
-    extraBodyText: "",
-  },
 ];

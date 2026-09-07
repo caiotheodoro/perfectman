@@ -6,7 +6,7 @@
  * moves into `details`, still complete, just no longer the thing you are
  * looking at.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { idlePlacement, placeBeats, type CompileResponse, type StartRunRequest } from "@perfectman/shared";
 import type { RunStream } from "../api/useRunStream.js";
 import type { LiveChannel } from "@perfectman/shared";
@@ -47,6 +47,7 @@ export function RunScreen({
   onRun,
   onStop,
   onDismissError,
+  onReset,
 }: {
   compiled: CompileResponse | null;
   stream: RunStream;
@@ -55,8 +56,14 @@ export function RunScreen({
   onRun: (llm: StartRunRequest["llm"], limits?: StartRunRequest["limits"]) => void;
   onStop: () => void;
   onDismissError: () => void;
+  /** Forget the current run id, so the form comes back. */
+  onReset: () => void;
 }): JSX.Element {
   const [provider, setProvider] = useState<ProviderValue>(DEFAULT_PROVIDER);
+  // What the last run died of, kept across the reset that brings the form
+  // back. The key is cleared with it: when the model, the key or the output
+  // format does not work, the fix is almost always the key.
+  const [failure, setFailure] = useState<{ message: string; hint?: string } | null>(null);
   const beats = useStageBeats(stream.replay);
   const clock = useStageClock(beats);
   const running = stream.status ? !IDLE_STATES.has(stream.status.state) : false;
@@ -82,6 +89,20 @@ export function RunScreen({
   const ready = warm || beats.length >= WARMUP_BEATS || (!running && beats.length > 0);
   if (ready && !warm) setWarm(true);
 
+  const status = stream.status;
+  const failedEarly = started && !warm && (status?.state === "failed" || stream.error !== null);
+  const giveUp = (why: { message: string; hint?: string }): void => {
+    setFailure(why);
+    setProvider((p) => ({ ...p, llm: { ...p.llm, apiKey: "" } }));
+    onReset();
+  };
+  useEffect(() => {
+    if (!failedEarly) return;
+    giveUp(status?.error ?? { message: stream.error ?? "The run stopped before anything was said." });
+    // The reset changes `started`; the effect must not fire again for the same failure.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [failedEarly]);
+
   return (
     <section className="step run">
       {error ? (
@@ -98,11 +119,18 @@ export function RunScreen({
           <header className="step__head">
             <h2>Who is answering?</h2>
             <p>
-              Mock replies instantly and needs no key — it is the fastest way to
-              see the shape of a run. A real model takes minutes and says
-              something worth reading.
+              An OpenAI-compatible endpoint and a key. A real model takes a
+              while per turn and says something worth reading.
             </p>
           </header>
+          {failure ? (
+            <div className="alert" role="alert">
+              <p>
+                The run stopped: {failure.message}
+                {failure.hint ? ` ${failure.hint}` : ""} Paste the key again and start over.
+              </p>
+            </div>
+          ) : null}
           <ProviderForm
             value={provider}
             onChange={setProvider}
@@ -110,9 +138,11 @@ export function RunScreen({
               // Inside the click, before anything async: this is the gesture
               // the browser will let the soundtrack play under later.
               sound.unlock();
+              setFailure(null);
               onRun(provider.llm, provider.maxPulses ? { maxPulses: provider.maxPulses } : undefined);
             }}
             ready={Boolean(compiled?.ok)}
+            focusKey={failure !== null}
           />
         </>
       ) : (
@@ -167,6 +197,14 @@ export function RunScreen({
                 {running ? (
                   <button type="button" className="btn--quiet" onClick={onStop}>
                     Stop the run
+                  </button>
+                ) : status?.state === "failed" ? (
+                  <button
+                    type="button"
+                    className="btn--quiet"
+                    onClick={() => giveUp(status.error ?? { message: "The run stopped." })}
+                  >
+                    Try another key
                   </button>
                 ) : null}
               </div>
@@ -227,7 +265,12 @@ function RunState({ stream, running }: { stream: RunStream; running: boolean }):
     );
   }
   if (status.state === "failed") {
-    return <span className="alert-inline">The run stopped: {status.error?.message ?? "unknown reason"}</span>;
+    return (
+      <span className="alert-inline">
+        The run stopped: {status.error?.message ?? "unknown reason"}
+        {status.error?.hint ? ` ${status.error.hint}` : ""}
+      </span>
+    );
   }
   return (
     <span className="u-dim">

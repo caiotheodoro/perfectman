@@ -165,6 +165,7 @@ export function App(): JSX.Element {
           onRun={run}
           onStop={stop}
           onDismissError={() => setFailure(null)}
+          onReset={() => setRunId(null)}
         />
       ) : null}
     </Shell>
