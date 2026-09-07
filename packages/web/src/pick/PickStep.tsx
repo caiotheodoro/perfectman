@@ -128,6 +128,8 @@ export function PickStep({
         </div>
       </div>
 
+      <CastRow files={selection.files} />
+
       {editing ? (
         <MarkdownEditor
           files={selection.files}
@@ -140,6 +142,32 @@ export function PickStep({
 
       <footer className="step__foot">{children}</footer>
     </section>
+  );
+}
+
+/**
+ * The cast as it is now. Read off the files themselves, so an uploaded, edited
+ * or dropped persona shows up here at once, while the editor is open — the
+ * cards above show what a preset offers, this shows what you have.
+ */
+function CastRow({ files }: { files: UploadedFile[] }): JSX.Element | null {
+  const cast = charactersIn(files);
+  if (cast.length === 0) return null;
+  const ids = cast.map((c) => c.id);
+  return (
+    <div className="card__cast cast-row" aria-hidden="true">
+      {cast.map((character) => (
+        <Figure
+          key={character.id}
+          index={chipIndexFor(character.id, ids)}
+          name={character.name}
+          face="neutral"
+          energy={0.3}
+          speaking={false}
+          attentive
+        />
+      ))}
+    </div>
   );
 }
 
