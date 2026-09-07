@@ -21,14 +21,16 @@ To add one, drop a folder in and reload — nothing is bundled into the web buil
 ## Default library
 
 **`the-group`** is the headline cast: Goulart, Caio, Jota, Ian Bruno, and Rex.
-Five scenes were written for them, each with two scarce resources so at least
-two people are in structural conflict:
+pt-BR group chat, mouths already broken. Six scenes were written for them,
+each with two scarce resources so at least two people are in structural
+conflict:
 
 - `ultimo-thread` — last hour on a dying board
-- `ultima-proteina` — day 11 on the island
+- `ultima-proteina` — day 11 on the island, corn pretending to be meat
 - `velorio-no-grupo` — the wake in the group chat
 - `live-que-nao-cai` — the stream that cannot drop
 - `o-print` — they find the corpus
+- `cinco-gorilas` — the rifle hypothetical covering the kilo
 
 **`studio-partners` / `the-slice`** stays as the polite control: three partners,
 a dinner, a sale. Same compiler, lower temperature.

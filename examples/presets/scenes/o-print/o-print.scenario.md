@@ -46,13 +46,14 @@ priorEvents:
     channelId: geral
     pulseIndex: 0
     minutesAgo: 30
-    payload: { content: "isso aqui é um print ou é o prompt" }
+    payload: { content: "isso aqui é um print ou é o prompt. foda-se. alguém fala" }
 ---
 
 ## Room Context
 Alguém encaminhou um áudio privado pra um chat que não é este. Pior: um de
 vocês anda alimentando este grupo pra uma simulação. O print está no thread.
-Ninguém disse de quem é o corpus. Ninguém disse quem assinou.
+Ninguém disse de quem é o corpus. Ninguém disse quem assinou. A sala está
+quieta demais pra uma coisa que já vazou.
 
 ## Starting Mood
 quieto demais, depois rápido demais
@@ -76,7 +77,7 @@ Breaking point: o Rex posta um caminho que está quase certo
 ### Hidden Objective
 Ficar no dataset. Ser o personagem principal (resource: the_corpus)
 Constraint: não pode pedir pra ser mantido. Tem que ser indispensável.
-Cost of exposure: ele precisou de uma máquina pra achar ele interessante
+Cost of exposure: ele precisou de uma máquina pra achar ele interessante, porra
 Breaking point: o Caio diz "a gente apaga o goulart primeiro" como piada
 
 ## Agent: caio

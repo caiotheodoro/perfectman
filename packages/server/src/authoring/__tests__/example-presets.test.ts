@@ -26,6 +26,7 @@ describe("example presets compile when a scene is paired with its named cast", (
     const library = await loadPresets(PRESETS_ROOT);
     expect(library.casts.map((c) => c.id).sort()).toEqual(["studio-partners", "the-group"]);
     expect(library.scenes.map((s) => s.id).sort()).toEqual([
+      "cinco-gorilas",
       "live-que-nao-cai",
       "o-print",
       "the-slice",

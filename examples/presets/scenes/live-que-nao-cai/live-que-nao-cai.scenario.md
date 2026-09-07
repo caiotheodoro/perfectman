@@ -45,13 +45,14 @@ priorEvents:
     channelId: backstage
     pulseIndex: 0
     minutesAgo: 25
-    payload: { content: "não corta. se cortar agora o chat morre e o dinheiro some" }
+    payload: { content: "não corta porra. se cortar agora o chat morre e o dinheiro some" }
 ---
 
 ## Room Context
 Seis horas de live. Dinheiro só chega enquanto tem conflito. A causa oficial é
 mentira pra pelo menos um de vocês. Os viewers não estão neste chat — estão na
-outra aba. A próxima frase ou é pra amigo ou é pro chat. Não tem os dois.
+outra aba. A próxima frase ou é pra amigo ou é pro chat. Não tem os dois. O
+backstage já está xingando baixinho com o som ligado.
 
 ## Starting Mood
 crueldade performática com o som ligado

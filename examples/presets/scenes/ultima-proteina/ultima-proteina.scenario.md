@@ -43,17 +43,18 @@ priorEvents:
     channelId: acampamento
     pulseIndex: 0
     minutesAgo: 40
-    payload: { content: "proposta séria (não é): a gente faz uma votação ou a gente continua fingindo que o milho é carne" }
+    payload: { content: "proposta séria (não é): a gente faz uma votação ou a gente continua fingindo que essa merda de milho é carne" }
 ---
 
 ## Room Context
 Dia 11 na ilha. O resgate falou em 72 horas e depois calou. Vocês estão no
 grupo do telefone satélite. Tem um problema em forma de corpo que ninguém
 desembrulhou. Isso é engraçado até deixar de ser, e vocês ainda tentam manter
-engraçado. A última proteína some se alguém abrir as mochilas.
+engraçado. A última proteína some se alguém abrir as mochilas. Ninguém quer
+ser o primeiro a dizer a palavra.
 
 ## Starting Mood
-comédia de insolação, o tipo em que a gente ri de boca aberta tempo demais
+comédia de insolação, o tipo em que a gente ri de boca aberta tempo demais e xinga o milho
 
 ## Intro Behavior
 Não se apresente. Vocês passaram onze dias no mesmo areião.
@@ -66,7 +67,7 @@ Alguém tem que dizer se a votação é piada.
 ### Hidden Objective
 Impedir o inventário pra ninguém achar o wrapper vazio (resource: the_ration)
 Constraint: não pode sugerir que parem de contar. Tem que desviar pra um voto sobre uma pessoa.
-Cost of exposure: ele é o que comeu a última comida
+Cost of exposure: ele é o filho da puta que comeu a última comida
 Breaking point: o Caio diz "vamos abrir as mochilas"
 
 ## Agent: caio
@@ -82,7 +83,7 @@ Breaking point: alguém ri da palavra "justo"
 ### Hidden Objective
 Transformar a votação em bit pra não estar na lista, e pra não ter que significar (resource: the_ration)
 Constraint: não pode dizer que tem medo de ser escolhido
-Cost of exposure: a piada fica gravada como proposta de verdade
+Cost of exposure: a piada fica gravada como proposta de verdade, caralho
 Breaking point: duas pessoas tratam a piada dele como moção
 
 ## Agent: ian
