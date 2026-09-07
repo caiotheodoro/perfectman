@@ -55,19 +55,25 @@ export const Stage = memo(function Stage({ beat, placement, agents, channels, id
   return (
     <div className={`stage stage--${kind}`}>
       <div className="stage__room">
-        <p className="stage__where">
-          <span aria-hidden="true">{kind === "private" ? "↔" : "#"}</span>
+        <p
+          className="stage__where"
+          title={`${roomLabel(channel, agents)}${shutOut.length > 0 ? ` — ${listNames(shutOut.map((a) => a.displayName))} cannot see this` : ""}`}
+        >
+          <span className="stage__glyph" aria-hidden="true">
+            {kind === "private" ? "↔" : "#"}
+          </span>
           {roomLabel(channel, agents)}
           {shutOut.length > 0 ? (
-            <span className="stage__shut-out">
-              {shutOut.map((a) => a.displayName).join(" and ")} cannot see this
-            </span>
+            <span className="stage__shut-out">{listNames(shutOut.map((a) => a.displayName))} cannot see this</span>
           ) : null}
         </p>
         {marks.map(({ agentId, point }) => {
           const agent = agents.find((a) => a.id === agentId);
           if (!agent) return null;
           const isActor = beat?.actorId === agent.id;
+          // The speaker wears the recorded emotion; everyone else wears what
+          // was recorded about them at that moment, if anything.
+          const feeling = isActor ? beat?.emotion : beat?.reactions?.[agent.id];
           return (
             <div
               key={agent.id}
@@ -83,8 +89,8 @@ export const Stage = memo(function Stage({ beat, placement, agents, channels, id
               <Figure
                 index={chipIndexFor(agent.id, ids)}
                 name={agent.displayName}
-                face={isActor ? faceFor(beat?.emotion) : "neutral"}
-                energy={isActor ? gestureEnergy(beat?.emotion) : 0.3}
+                face={faceFor(feeling)}
+                energy={feeling ? gestureEnergy(feeling) : 0.3}
                 speaking={Boolean(isActor && beat?.kind === "message")}
                 attentive={!beat || (beat.kind !== "silence" && beat.kind !== "aside") || isActor}
               />
@@ -113,3 +119,9 @@ export const Stage = memo(function Stage({ beat, placement, agents, channels, id
     </div>
   );
 });
+
+/** "a", "a and b", "a, b and c" — the way a sentence would say it. */
+function listNames(names: readonly string[]): string {
+  if (names.length <= 1) return names[0] ?? "";
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}

@@ -96,6 +96,21 @@ function toThought(thinking: LiveThinking | undefined): StageThought | undefined
   };
 }
 
+/** Everyone in the room except the actor, with whatever the pulse recorded about them. */
+function reactionsIn(
+  frame: LivePulseFrame,
+  participantIds: readonly string[],
+  actorId: string | undefined,
+): Record<string, RecordedEmotion> | undefined {
+  const reactions: Record<string, RecordedEmotion> = {};
+  for (const id of participantIds) {
+    if (id === actorId) continue;
+    const emotion = toRecordedEmotion(frame.emotions[id]);
+    if (emotion) reactions[id] = emotion;
+  }
+  return Object.keys(reactions).length > 0 ? reactions : undefined;
+}
+
 function membersOf(channels: readonly LiveChannel[], channelId: string): string[] {
   return channels.find((c) => c.id === channelId)?.memberAgentIds ?? [];
 }
@@ -117,6 +132,7 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
     const emotion = toRecordedEmotion(frame.emotions[message.actorId]);
     const thought = toThought(frame.thinking[message.actorId]);
     const participantIds = membersOf(context.channels, message.channelId);
+    const reactions = reactionsIn(frame, participantIds, message.actorId);
 
     if (staging === "action") {
       beats.push({
@@ -129,6 +145,7 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
         audienceIds: message.visibleToAgents,
         participantIds,
         ...(emotion ? { emotion } : {}),
+        ...(reactions ? { reactions } : {}),
         stageAction: { kind: STAGE_ACTIONS[message.eventType] ?? "invite", agentIds: [message.actorId] },
         duration: readingSeconds(message.text || " "),
         page: 0,
@@ -154,6 +171,7 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
         audienceIds: message.visibleToAgents,
         participantIds,
         ...(emotion ? { emotion } : {}),
+        ...(reactions ? { reactions } : {}),
         duration: readingSeconds(text),
         page,
       });
@@ -170,6 +188,7 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
           audienceIds: message.visibleToAgents,
           participantIds,
           emotion,
+          reactions,
         }),
       );
     }
@@ -182,6 +201,7 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
     const thought = toThought(thinking);
     if (!thought) continue;
     const emotion = toRecordedEmotion(frame.emotions[agentId]);
+    const participantIds = membersOf(context.channels, context.defaultChannelId);
     beats.push(
       ...thoughtBeats(thought, "silence", {
         idPrefix: `${frame.pulseIndex}:silence:${agentId}`,
@@ -189,8 +209,9 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
         channelId: context.defaultChannelId,
         actorId: agentId,
         audienceIds: [],
-        participantIds: membersOf(context.channels, context.defaultChannelId),
+        participantIds,
         emotion,
+        reactions: reactionsIn(frame, participantIds, agentId),
       }),
     );
   }
@@ -213,6 +234,7 @@ function thoughtBeats(
     audienceIds: string[];
     participantIds: string[];
     emotion: RecordedEmotion | undefined;
+    reactions: Record<string, RecordedEmotion> | undefined;
   },
 ): StageBeat[] {
   const pages = paginate(thought.text, THOUGHT_PAGE);
@@ -226,6 +248,7 @@ function thoughtBeats(
     audienceIds: at.audienceIds,
     participantIds: at.participantIds,
     ...(at.emotion ? { emotion: at.emotion } : {}),
+    ...(at.reactions ? { reactions: at.reactions } : {}),
     // Drivers belong with the last page, where the caption sits.
     thought: { ...thought, text, ...(page < pages.length - 1 ? { drivers: [] } : {}) },
     duration: readingSeconds(text),

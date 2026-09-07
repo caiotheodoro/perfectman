@@ -4,22 +4,32 @@
  * The claim is that these agents decide when to speak, and that what they want
  * is not what they say. Asserting that in a paragraph is cheap; showing a room
  * where someone stays quiet on purpose costs six beats and is the only version
- * anyone believes. So the hero is the scene, and the prose beside it is short
+ * anyone believes. So the hero is the scene, played through the very page a
+ * run plays on — the same room and caption — and the prose beside it is short
  * enough to read while it plays.
  */
-import { useEffect, useState } from "react";
-import { gestureEnergy } from "@perfectman/shared";
-import { Figure } from "../stage/Figure.js";
-import { INTRO_BEATS, INTRO_CAST } from "./intro-script.js";
+import { useEffect, useMemo, useState } from "react";
+import { idlePlacement, placeBeats } from "@perfectman/shared";
+import { Attribution } from "../stage/Attribution.js";
+import { Panel } from "../stage/Panel.js";
+import { introRun } from "./intro-script.js";
 
 export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
-  const [index, setIndex] = useState(0);
-  const beat = INTRO_BEATS[index] ?? INTRO_BEATS[0]!;
+  const run = useMemo(introRun, []);
+  const staged = useMemo(() => {
+    const ids = run.agents.map((a) => a.id);
+    const idle = idlePlacement(run.channels[0], run.agents);
+    return { ids, placements: placeBeats(run.beats, run.agents, run.channels, { seed: idle }) };
+  }, [run]);
 
+  const [index, setIndex] = useState(0);
+  const beat = run.beats[index] ?? run.beats[0]!;
+
+  // Loops, the way it always did.
   useEffect(() => {
-    const timer = setTimeout(() => setIndex((i) => (i + 1) % INTRO_BEATS.length), beat.hold);
+    const timer = setTimeout(() => setIndex((i) => (i + 1) % run.beats.length), beat.duration * 1000);
     return () => clearTimeout(timer);
-  }, [index, beat.hold]);
+  }, [index, beat.duration, run.beats.length]);
 
   return (
     <main className="intro">
@@ -31,8 +41,8 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
         </h1>
         <p className="intro__lede u-serif">
           Nobody here takes turns. Each character reads the room, weighs what it
-          would cost to speak, and often decides against it. What you see below
-          is the whole product: a line, and the reason behind it.
+          would cost to speak, and often decides against it. The scene beside
+          this is the whole product: a line, and the reason behind it.
         </p>
         <div className="intro__actions">
           <button type="button" className="btn" onClick={onDone}>
@@ -44,36 +54,16 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
         </div>
       </div>
 
-      <div className="intro__scene" aria-hidden="true">
-        <div className="intro__cast">
-          {INTRO_CAST.map((name, i) => (
-            <Figure
-              key={name}
-              index={i}
-              name={name}
-              face={beat.faces[i] ?? "neutral"}
-              energy={gestureEnergy(beat.emotions[i])}
-              speaking={beat.actor === i && Boolean(beat.line)}
-              attentive={beat.actor === i || !beat.thought}
-            />
-          ))}
-        </div>
-
-        <div className="intro__utterance">
-          {beat.line ? (
-            <p key={`line-${index}`} className="intro__line u-serif">
-              <span className="intro__who">{INTRO_CAST[beat.actor]}</span>
-              {beat.line}
-            </p>
-          ) : (
-            <p key={`thought-${index}`} className="intro__thought u-hand">
-              {beat.thought}
-              <span className="intro__thought-note">
-                {INTRO_CAST[beat.actor]} says nothing this turn
-              </span>
-            </p>
-          )}
-        </div>
+      <div className="intro__scene flipbook">
+        <Panel
+          beat={beat}
+          placement={staged.placements[index] ?? staged.placements[0]!}
+          index={index}
+          agents={run.agents}
+          channels={run.channels}
+          ids={staged.ids}
+        />
+        <Attribution beat={beat} agents={run.agents} channels={run.channels} ids={staged.ids} />
       </div>
     </main>
   );

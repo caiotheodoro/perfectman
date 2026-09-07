@@ -11,7 +11,7 @@
  * document, so the breathing figures and the sheet's scroll would freeze for
  * the turn, and it cannot be tested in jsdom. Two keyed pages and a timer can.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import type { LiveChannel, Placement, StageBeat } from "@perfectman/shared";
 import { reducedMotion } from "./motion.js";
 import { Stage, type StageAgent } from "./Stage.js";
@@ -45,20 +45,24 @@ export function Panel({
   ids: readonly string[];
 }): JSX.Element {
   const current: Page = { roomKey: placement.roomKey, index, beat, placement };
-  // What was on the page last render. A ref, not state: it is a memo of the
-  // previous picture, and writing it must not cause a render of its own.
-  const last = useRef<Page>(current);
-  const direction = useRef<Direction>("forward");
+  // What was on the page last render, held in state rather than a ref: React
+  // renders a component twice in development, and a ref written during the
+  // first pass would make the second pass see no change and drop the turn.
+  // Setting state during render is how React wants a derived reset done — it
+  // re-renders this component at once, before any child is committed.
+  const [last, setLast] = useState<Page>(current);
+  const [direction, setDirection] = useState<Direction>("forward");
   const [leaving, setLeaving] = useState<(Page & { dir: Direction }) | null>(null);
 
-  if (last.current.roomKey !== current.roomKey) {
-    const dir: Direction = index >= last.current.index ? "forward" : "back";
-    direction.current = dir;
-    // Setting state during render is how React wants a derived reset done: it
-    // re-renders this component at once, before any child is committed.
-    if (!reducedMotion()) setLeaving({ ...last.current, dir });
+  if (last.roomKey !== current.roomKey) {
+    const dir: Direction = index >= last.index ? "forward" : "back";
+    setDirection(dir);
+    setLast(current);
+    if (!reducedMotion()) setLeaving({ ...last, dir });
+  } else if (last.beat !== beat || last.placement !== placement || last.index !== index) {
+    // Same room, newer picture: remember it, so a later turn snapshots this.
+    setLast(current);
   }
-  last.current = current;
 
   // A timer rather than `animationend`: the room's own children animate too and
   // their end events bubble, and a page can be replaced before its turn ends.
@@ -75,7 +79,7 @@ export function Panel({
           <Stage beat={leaving.beat} placement={leaving.placement} agents={agents} channels={channels} ids={ids} />
         </div>
       ) : null}
-      <div key={current.roomKey} className={`pages__page pages__page--enter-${direction.current}`}>
+      <div key={current.roomKey} className={`pages__page pages__page--enter-${direction}`}>
         <Stage beat={beat} placement={placement} agents={agents} channels={channels} ids={ids} />
       </div>
     </div>

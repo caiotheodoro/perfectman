@@ -85,8 +85,8 @@ Forty files. These are the ones that carry weight.
 
 | File | What it does |
 |---|---|
-| `onboarding/Intro.tsx` | Plays a scene instead of explaining one. Shown once; flag in `localStorage`. |
-| `onboarding/intro-script.ts` | Six hand-written beats. No server involved — safe to edit freely. |
+| `onboarding/Intro.tsx` | Plays a scene instead of explaining one, through the run's own `Panel` and caption. Shown once; flag in `localStorage`. |
+| `onboarding/intro-script.ts` | Six hand-written beats, and `introRun()` turning them into `StageBeat`s. No server involved — safe to edit freely. |
 
 ### The stage — where the work is
 
@@ -96,7 +96,7 @@ Forty files. These are the ones that carry weight.
 | `stage/Stage.tsx` | Draws a `Placement`: figures on their marks, the excluded named, one balloon. Room only. |
 | `stage/Attribution.tsx` | The caption under the room. Separate so the turn rotates the picture, not the text. |
 | `stage/ContactSheet.tsx`, `stage/Frame.tsx` | The scrubber: one SVG frame per beat, no words, `aria-label` per frame, arrow keys. |
-| `stage/Figure.tsx` | The drawn character. Face is a pose lookup; every change is a CSS transition. |
+| `stage/Figure.tsx` | The drawn character: a face and a name, no body. Pose is a lookup; the head tilts, the cheeks colour, the mouth moves while speaking. All CSS transitions. |
 | `stage/useBubbleAnchor.ts` | Measures the speaker's drawn head and the balloon, clamps inside the room, moves beside the head when it cannot fit above. The pure functions are tested. |
 | `stage/useStageClock.ts` | Live queue and replay seeking, one machine. `reached` is the high-water mark the sheet draws up to. |
 | `stage/room-label.ts` | Names a private room by its members, because the engine names it with an id. |
@@ -115,7 +115,7 @@ Forty files. These are the ones that carry weight.
 
 | File | What it does |
 |---|---|
-| `shared/src/stage/live-to-beats.ts` | Pulse → beats. The event allowlist lives here. |
+| `shared/src/stage/live-to-beats.ts` | Pulse → beats. The event allowlist lives here. Fills `reactions` so listeners wear what was recorded about them. |
 | `shared/src/stage/emotion-face.ts` | Recorded emotion → face. Shared with the MP4 renderer so both agree. |
 | `shared/src/stage/slots.ts` | Where figures stand, as fractions. The figure-height constant is only the first-paint guess. |
 | `shared/src/stage/placement.ts` | `placeBeats`: seating for the whole run in one pass, memory keyed by room, not channel. |
@@ -166,6 +166,26 @@ The contact sheet is the run as pictures: ground per room kind, a dot per
 person where they stood, a ring on the speaker. It replaced the range input.
 Anything readable in it would make it a transcript, which is what the details
 drawer is for. `reached` is not `behind`: seeking back does not un-draw.
+
+**The landing is the product, not a picture of it.**
+The intro renders through `Panel` and `Attribution` with beats from
+`introRun()`. A separate intro layout drifted from the stage the moment the
+stage changed; now it cannot. The provenance reading in the caption is hidden
+there by CSS, because on the landing everything is authored. Nothing else was
+added to the landing or the pick steps on purpose: the direction is to sharpen
+what is there, not to add to it.
+
+**A character is a face.**
+The body never carried information and, at the sizes the stage and the cards
+draw, only made the face smaller. Marks are 18% of the room; the rows sit at
+`.92 / .66 / .46` so five faces fill a page. `FIGURE_HEIGHT_FRACTION` is the
+face's height and still only the first-paint guess.
+
+**The previous page lives in state, not a ref.**
+React renders twice in development. A ref written during the first pass made
+the second pass see no room change, and the turn was silently dropped in dev
+while passing its tests. `Panel` keeps the last page in state and resets it
+during render; the StrictMode test pins it.
 
 **Mute flips, only the toggle persists.**
 A refused `play()` turns the control off so it never claims sound that is not

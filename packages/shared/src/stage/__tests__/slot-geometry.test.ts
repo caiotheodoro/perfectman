@@ -4,16 +4,15 @@
  * figure's box, the name is hidden by a torso.
  *
  * Geometry in fractions of the room's width (W) with H = 7/16 W. A mark is 15%
- * of W wide, scaled; the figure is 168 tall in a 100-wide box plus a 19px tag,
- * so at scale s a mark spans [x − .075s, x + .075s] × [y − .616s·(16/7)/… , y].
- * The tag is budgeted at ten italic characters (~0.55em of 19px each).
+ * of W wide — 18% — scaled; the face is a 100×100 drawing plus a 19px tag. The tag is
+ * budgeted at ten italic characters (~0.55em of 19px each).
  */
 import { describe, expect, it } from "vitest";
 import { slotsFor, type StageSlot } from "../slots.js";
 
 const H_OVER_W = 7 / 16;
-/** Figure height as a fraction of H at scale 1 — SVG 168 over a 100-wide mark at 15% of W. */
-const FIGURE_H = 0.15 * 1.68 / H_OVER_W;
+/** Figure height as a fraction of H at scale 1 — a 100×100 face on a mark 15% of W. */
+const FIGURE_H = 0.18 * 1.0 / H_OVER_W;
 /** Name tag: ten characters at ~0.55em × 19px, in a 1200px-wide room. */
 const TAG_HALF_W = (10 * 0.55 * 19) / 2 / 1200;
 const TAG_H = 22 / (1200 * H_OVER_W);
@@ -22,8 +21,8 @@ type Box = { left: number; right: number; top: number; bottom: number };
 
 function markBox(slot: StageSlot): Box {
   return {
-    left: slot.x - 0.075 * slot.scale,
-    right: slot.x + 0.075 * slot.scale,
+    left: slot.x - 0.09 * slot.scale,
+    right: slot.x + 0.09 * slot.scale,
     top: slot.y - FIGURE_H * slot.scale - TAG_H * slot.scale,
     bottom: slot.y,
   };

@@ -172,3 +172,25 @@ describe("pulseToBeats — pages", () => {
     expect(beat?.page).toBe(0);
   });
 });
+
+describe("pulseToBeats — reactions", () => {
+  it("carries everyone else's recorded emotion so the room can react to a line", () => {
+    const emotions = {
+      iris: { valence: 0.2, arousal: 0.3, top: [{ key: "neutral", value: 0.5 }] },
+      marcela: { valence: -0.6, arousal: 0.7, top: [{ key: "fear_of_exclusion", value: 0.8 }] },
+    };
+    const [beat] = pulseToBeats(frame({ messages: [message()], emotions }), CONTEXT);
+    expect(beat?.emotion?.label).toBe("neutral");
+    expect(beat?.reactions?.["marcela"]?.label).toBe("fear_of_exclusion");
+    expect(beat?.reactions?.["iris"]).toBeUndefined();
+  });
+
+  it("only includes people in the room", () => {
+    const emotions = { marcela: { valence: 0, arousal: 0, top: [{ key: "calm", value: 1 }] } };
+    const [beat] = pulseToBeats(
+      frame({ messages: [message({ channelId: "dm", actorId: "iris" })], emotions: { ...emotions, bruno: emotions.marcela } }),
+      CONTEXT,
+    );
+    expect(Object.keys(beat?.reactions ?? {})).toEqual(["marcela"]);
+  });
+});

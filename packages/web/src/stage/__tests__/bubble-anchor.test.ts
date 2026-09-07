@@ -2,13 +2,13 @@
  * The balloon hangs off a head, and must not leave the frame doing it.
  *
  * The numbers here are the real ones: a room around 300px tall, and the slot
- * geometry from `slots.ts` — a figure occupies 57.6% of the room's height, so
- * a back-row figure at y 0.52 and scale 0.6 has its head about 52px below the
- * room's top edge. A full page of text is twice that.
+ * geometry from `slots.ts` — a face occupies 41% of the room's height, so a
+ * back-row face at y 0.46 and scale 0.6 has its top about 64px below the
+ * room's top edge. A full page of text is more than that.
  */
 import { describe, expect, it } from "vitest";
 import { FIGURE_HEIGHT_FRACTION, headTopFor, slotsFor } from "@perfectman/shared";
-import { BUBBLE_MARGIN, bubbleBottom, bubbleClamped } from "../useBubbleAnchor.js";
+import { BUBBLE_MARGIN, besideSide, besideWidth, bubbleBottom, bubbleClamped } from "../useBubbleAnchor.js";
 
 const ROOM = 300;
 
@@ -51,7 +51,7 @@ describe("bubbleBottom", () => {
   it("guesses the first paint from the 16:7 drawing before anything is measured", () => {
     // The real head is measured once laid out; this is only what the balloon
     // uses on its first frame, so it should be the drawing's own geometry.
-    expect(FIGURE_HEIGHT_FRACTION).toBeCloseTo(0.15 * 1.68 * (16 / 7), 10);
+    expect(FIGURE_HEIGHT_FRACTION).toBeCloseTo(0.18 * 1.0 * (16 / 7), 10);
   });
 });
 
@@ -65,5 +65,24 @@ describe("bubbleClamped", () => {
     // and the caller should move it beside the head instead.
     const headTop = headTopFor(slotsFor("public")[4]!);
     expect(bubbleClamped(headTop, ROOM, 150)).toBe(true);
+  });
+});
+
+describe("beside the head", () => {
+  it("opens away from the nearest wall", () => {
+    expect(besideSide(0.3)).toBe("right");
+    expect(besideSide(0.7)).toBe("left");
+    expect(besideSide(0.5)).toBe("right");
+  });
+
+  it("gets exactly the room left on that side, so it wraps rather than leaves the frame", () => {
+    // A centre figure at scale 1.25 in a 607px room: the balloon starts at
+    // (0.5 + 0.109) of the width and may use what remains, minus a margin.
+    expect(besideWidth(0.5, 0.109, 607, "right")).toBeCloseTo((1 - 0.609) * 607 - BUBBLE_MARGIN, 3);
+    expect(besideWidth(0.7, 0.09, 600, "left")).toBeCloseTo((0.7 - 0.09) * 600 - BUBBLE_MARGIN, 3);
+  });
+
+  it("never goes below a readable minimum", () => {
+    expect(besideWidth(0.95, 0.09, 300, "right")).toBe(124);
   });
 });

@@ -120,22 +120,27 @@
   position: absolute;
   top: 10px;
   left: 12px;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+  max-width: calc(100% - 24px);
   padding: 3px 8px;
   border-radius: var(--r-pill);
   background: var(--paper-warm);
   font-size: 12.5px;
   color: var(--ink-50);
   z-index: 500;
-  max-width: none;
+  /* One line. A small room shows the start and the title has the rest. */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage__glyph {
+  margin-right: 7px;
 }
 .stage--thought .stage__where {
   background: var(--paper);
 }
 
-.stage__where > span:first-child {
+.stage__glyph {
   color: var(--ink-30);
 }
 
@@ -144,6 +149,7 @@
 .stage__shut-out {
   color: var(--ink-30);
   font-style: italic;
+  margin-left: 8px;
 }
 .stage__shut-out::before {
   content: "— ";
@@ -193,7 +199,7 @@
 
 .stage__mark {
   position: absolute;
-  width: 15%;
+  width: 18%;
   transform-origin: 50% 100%;
   transition: left var(--settle) var(--ease), top var(--settle) var(--ease),
     transform var(--settle) var(--ease);

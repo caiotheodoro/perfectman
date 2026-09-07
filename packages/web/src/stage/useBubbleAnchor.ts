@@ -17,8 +17,12 @@
  */
 import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 
-/** Breathing room between a balloon and the top of the frame. */
-export const BUBBLE_MARGIN = 8;
+/**
+ * Room between a balloon and the top of the frame: the row the room's name
+ * sits on, so a balloon that reaches the ceiling stops under the label rather
+ * than behind it.
+ */
+export const BUBBLE_MARGIN = 36;
 
 /**
  * Distance from the room's floor to put the balloon's bottom edge.
@@ -52,6 +56,29 @@ export function bubbleClamped(
   return wanted > roomHeight - bubbleHeight - margin;
 }
 
+/** A balloon beside a head opens away from the nearest wall. */
+export function besideSide(x: number): "left" | "right" {
+  return x > 0.5 ? "left" : "right";
+}
+
+/** The narrowest a beside-the-head balloon is allowed to get. Matches `.bubble`'s min-width. */
+export const BUBBLE_MIN_WIDTH = 124;
+
+/**
+ * How wide a balloon beside the head may be: the room left on its side, less
+ * a margin, so it wraps into more lines rather than leaving the frame.
+ */
+export function besideWidth(
+  x: number,
+  clearance: number,
+  roomWidth: number,
+  side: "left" | "right",
+  margin = BUBBLE_MARGIN,
+): number {
+  const room = side === "right" ? (1 - x - clearance) * roomWidth : (x - clearance) * roomWidth;
+  return Math.max(BUBBLE_MIN_WIDTH, room - margin);
+}
+
 /**
  * Where the drawn head begins, as a fraction of the room's height, from the
  * figure's and the room's on-screen boxes. Both boxes move together under a
@@ -69,10 +96,14 @@ export function useBubbleAnchor(
   headTopGuess: number,
   /** Changes whenever the content does, so the measurement is redone. */
   key: string,
-): { ref: RefObject<HTMLDivElement>; bottom: string; beside: boolean } {
+  /** The speaker's x and the clearance a beside-the-head balloon needs. */
+  x: number,
+  clearance: number,
+): { ref: RefObject<HTMLDivElement>; bottom: string; beside: boolean; side: "left" | "right" } {
   const ref = useRef<HTMLDivElement>(null);
   const [bottom, setBottom] = useState(`${(1 - headTopGuess) * 100 + 2}%`);
   const [beside, setBeside] = useState(false);
+  const side = besideSide(x);
 
   useLayoutEffect(() => {
     const node = ref.current;
@@ -85,8 +116,17 @@ export function useBubbleAnchor(
       const figure = speaker.current?.querySelector<SVGElement>(".figure__body");
       const headTop =
         (figure && measuredHeadTop(figure.getBoundingClientRect(), room.getBoundingClientRect())) ?? headTopGuess;
+      // Measured at its natural width first. If it has to go beside the head
+      // it is capped to the room on that side and measured again, because the
+      // cap changes how many lines it wraps to, and so how tall it is.
+      node.style.maxWidth = "";
+      let clamped = bubbleClamped(headTop, roomHeight, node.offsetHeight);
+      if (clamped) {
+        node.style.maxWidth = `${besideWidth(x, clearance, room.clientWidth, side)}px`;
+        clamped = bubbleClamped(headTop, roomHeight, node.offsetHeight) || true;
+      }
+      setBeside(clamped);
       setBottom(`${bubbleBottom(headTop, roomHeight, node.offsetHeight)}px`);
-      setBeside(bubbleClamped(headTop, roomHeight, node.offsetHeight));
     };
     place();
 
@@ -95,7 +135,7 @@ export function useBubbleAnchor(
     const watcher = new ResizeObserver(place);
     watcher.observe(room);
     return () => watcher.disconnect();
-  }, [speaker, headTopGuess, key]);
+  }, [speaker, headTopGuess, key, x, clearance, side]);
 
-  return { ref, bottom, beside };
+  return { ref, bottom, beside, side };
 }

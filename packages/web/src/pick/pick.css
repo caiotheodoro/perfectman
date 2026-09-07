@@ -8,6 +8,7 @@
   display: grid;
   gap: 8px;
   align-content: start;
+  min-width: 0;
   text-align: left;
   padding: 18px;
   border: none;
@@ -40,19 +41,26 @@
 }
 
 /* The cast, at the size a decision needs: who is there, not what they said. */
+/* A row of faces that shrinks to fit rather than overflowing the card: five
+   people at full size are wider than a card, and a face still reads at 34px. */
 .card__cast {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 4px;
   margin-bottom: 4px;
+  min-width: 0;
 }
 
 .card__cast .figure {
-  width: 54px;
-  flex: 0 0 auto;
+  flex: 0 1 52px;
+  min-width: 34px;
+  width: 52px;
 }
 .card__cast .figure__name {
-  font-size: 13px;
+  font-size: 12.5px;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 /* No idle motion on a card; the stage is where things move. */
 .card__cast .figure__body,
@@ -102,6 +110,22 @@
   border-radius: var(--r-lg);
   background: var(--paper-warm);
   box-shadow: var(--ring);
+}
+
+/* The selection's faces, between the cards and the files. Larger than on a
+   card — these are the people you are about to put in a room. */
+.cast-row {
+  margin: 4px 0 -8px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.cast-row .figure {
+  flex-basis: 64px;
+  width: 64px;
+}
+.cast-row .figure__name {
+  font-size: 14px;
+  max-width: none;
 }
 
 .summary-strip ul {

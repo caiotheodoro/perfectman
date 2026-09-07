@@ -4,6 +4,7 @@
  * comes in behind it. Same room, new line: no turn, the room just updates.
  */
 import { act, render } from "@testing-library/react";
+import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { placeBeats, type LiveChannel, type StageBeat } from "@perfectman/shared";
 import { Panel, TURN_MS } from "../Panel.js";
@@ -86,6 +87,16 @@ describe("Panel", () => {
     rerender(panelAt(0));
     rerender(panelAt(3));
     expect(container.querySelectorAll(".pages__page")).toHaveLength(2);
+  });
+
+  it("still turns when React renders twice, as it does in development", () => {
+    const { container, rerender } = render(<StrictMode>{panelAt(1)}</StrictMode>);
+    rerender(<StrictMode>{panelAt(2)}</StrictMode>);
+    expect(container.querySelectorAll(".pages__page")).toHaveLength(2);
+    act(() => {
+      vi.advanceTimersByTime(TURN_MS + 1);
+    });
+    expect(container.querySelectorAll(".pages__page")).toHaveLength(1);
   });
 
   it("swaps instantly when the reader asked for less motion", () => {
