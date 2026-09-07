@@ -311,3 +311,30 @@
     transform: scale(1);
   }
 }
+
+/* --- server busy --------------------------------------------------------- */
+
+/* Not an error — nothing is broken, someone else is just using it. Reads as
+   information with an action, not as a failure. */
+.busy {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+  padding: 13px 16px;
+  border-radius: var(--r-lg);
+  background: var(--paper-warm);
+  box-shadow: var(--ring);
+}
+
+.busy__words {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1 1 22ch;
+  font-size: 13.5px;
+}
+
+.busy__words span {
+  color: var(--ink-70);
+}

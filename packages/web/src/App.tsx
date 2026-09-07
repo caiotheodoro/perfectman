@@ -87,7 +87,16 @@ export function App(): JSX.Element {
       setRunId(null);
       startRun({ inputs, llm, ...(limits ? { limits } : {}) })
         .then((res) => setRunId(res.runId))
-        .catch((err: unknown) => setFailure(messageOf(err)));
+        .catch((err: unknown) => {
+          // The busy check runs on a poll, so a start can still lose a race
+          // with someone else's. Say what happened in the app's own words —
+          // the server's sentence is written for an API caller.
+          if (err instanceof ApiRequestError && err.status === 409) {
+            setFailure("Someone else started a run just before you. Stop it above, or wait for it to finish.");
+            return;
+          }
+          setFailure(messageOf(err));
+        });
     },
     [inputs],
   );
