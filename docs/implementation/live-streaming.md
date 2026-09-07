@@ -82,10 +82,17 @@ beat-ID prefix and the private channel audience. A separate real Chrome probe
 verified that hidden-tab playback and audio stop while incoming SSE continues.
 These are controlled runtime checks; no paid provider was used.
 
+The committed HTTP regression is
+[`live-streaming.e2e.test.ts`](../../packages/server/src/http/__tests__/live-streaming.e2e.test.ts).
+Suppressing partial publication makes it fail at the bounded early-delivery
+check. Late emotion revisions also update the music bed without repeating
+one-shot message sounds; the existing eight-second mood hold remains in place.
+
 The hub retains 256 historical messages, with bootstrap metadata separate and
-only the latest revision of each pulse retained. A queue exceeding 64 pending
-messages disconnects rather than silently dropping distinct pulse content;
-final draining is bounded at 30 seconds. Long disconnections can exceed retained
+only the latest revision of each pulse retained. New live messages that exceed
+64 pending entries disconnect the client rather than silently dropping distinct
+pulse content. Initial reconnect queues can contain the retained history plus
+bootstrap metadata; final draining is bounded at 30 seconds. Long disconnections can exceed retained
 history; reopening or hydrating a complete stored replay is a separate viewer
 capability. Latest channel membership is still used when rendering historical
 beats. Reading time and genuine model latency remain visible waits.
@@ -93,9 +100,19 @@ beats. Reading time and genuine model latency remain visible waits.
 ## Review record
 
 The maintainer requested two rounds of two independent reviewers before merge.
-Each round checks Standards and Spec separately against a pinned PR head. Review
-findings, their disposition and the final tested head are recorded here when the
-two rounds complete.
+Each round checks Standards and Spec separately against base `3f1d6a6` and a
+pinned PR head.
+
+| Round | Head | Standards | Spec | Disposition |
+| --- | --- | --- | --- | --- |
+| 1 | `4b1ca15` | Pass; 106 independently run focused tests | One P2; 102 independently run focused tests | A same-ID emotion revision did not update the soundtrack. Mood evaluation now runs before the once-per-beat sound guard, with a focused regression. |
+| 2 | Pending | Pending | Pending | Two fresh reviewers inspect the revised PR before merge. |
+
+At the first review head, the full Node 22 suite passed 2,077 tests across 210
+files, the build/typecheck/hygiene/docs gates passed, and GitHub PR gate run
+`34169678948` succeeded. The mock/rule benchmark passed its structural gate with
+35 scenarios and 100% signal pass; rule-judge scores remain advisory. Later
+review changes are rechecked before merge.
 
 ## Sources / Related decisions
 
