@@ -166,6 +166,7 @@ The novela layer, implemented as a projection over committed events:
 
 ### Spectator And Narrator
 
+- Frontend comparison, before/after evidence and validation: [`frontend-gauntlet-review.md`](frontend-gauntlet-review.md)
 - Recaps: [`concepts/concept-map.md`](concepts/concept-map.md), [`notes/design-conversation-history.md`](notes/design-conversation-history.md)
 - Novela framing: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
 - Anti-gamification stance: [`notes/meeting-synthesis.md`](notes/meeting-synthesis.md), [`concepts/concept-map.md`](concepts/concept-map.md)
