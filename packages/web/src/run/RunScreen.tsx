@@ -60,7 +60,7 @@ export function RunScreen({
   const beats = useStageBeats(stream.replay);
   const clock = useStageClock(beats);
   const running = stream.status ? !IDLE_STATES.has(stream.status.state) : false;
-  const sound = useSoundtrack(clock.beat, running || beats.length > 0);
+  const sound = useSoundtrack(clock.beat, running || beats.length > 0, clock.playing);
 
   const started = runId !== null;
   const agents = stream.replay?.agents ?? EMPTY_AGENTS;
@@ -106,7 +106,12 @@ export function RunScreen({
           <ProviderForm
             value={provider}
             onChange={setProvider}
-            onRun={() => onRun(provider.llm, provider.maxPulses ? { maxPulses: provider.maxPulses } : undefined)}
+            onRun={() => {
+              // Inside the click, before anything async: this is the gesture
+              // the browser will let the soundtrack play under later.
+              sound.unlock();
+              onRun(provider.llm, provider.maxPulses ? { maxPulses: provider.maxPulses } : undefined);
+            }}
             ready={Boolean(compiled?.ok)}
           />
         </>
