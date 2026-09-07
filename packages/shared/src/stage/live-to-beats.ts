@@ -59,6 +59,9 @@ const BALLOON_PAGE = 150;
 /** A thought is set larger than speech, so it fits fewer characters. */
 const THOUGHT_PAGE = 120;
 
+/** How long someone arriving, leaving or opening a room stays on stage. */
+const STAGE_ACTION_SECONDS = 1.8;
+
 const STAGE_ACTIONS: Record<string, "arrive" | "leave" | "invite"> = {
   agent_joined: "arrive",
   agent_arrived: "arrive",
@@ -135,19 +138,23 @@ export function pulseToBeats(frame: LivePulseFrame, context: BeatContext): Stage
     const reactions = reactionsIn(frame, participantIds, message.actorId);
 
     if (staging === "action") {
+      // A stage action is a movement, not a line: nobody said anything. The
+      // display text on these events is the channel's name, and putting it in
+      // a balloon read as the character saying "conversa_privada". The caption
+      // tells the story; the beat holds only long enough to see who moved.
       beats.push({
         id: message.eventId,
         kind: "event",
         pulseIndex: frame.pulseIndex,
         channelId: message.channelId,
         actorId: message.actorId,
-        text: message.text,
+        text: "",
         audienceIds: message.visibleToAgents,
         participantIds,
         ...(emotion ? { emotion } : {}),
         ...(reactions ? { reactions } : {}),
         stageAction: { kind: STAGE_ACTIONS[message.eventType] ?? "invite", agentIds: [message.actorId] },
-        duration: readingSeconds(message.text || " "),
+        duration: STAGE_ACTION_SECONDS,
         page: 0,
       });
       continue;

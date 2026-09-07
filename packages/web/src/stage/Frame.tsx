@@ -73,8 +73,9 @@ export function frameLabel(beat: StageBeat, agents: readonly NamedAgent[], chann
   if (beat.kind === "aside") return `what ${who} was after`;
   if (beat.kind === "event") {
     if (beat.stageAction?.kind === "leave") return `${who} leaves ${where}`;
-    if (beat.stageAction?.kind === "arrive") return `${who} arrives in ${where}`;
-    return `${who} opens ${where}`;
+    if (beat.stageAction?.kind === "arrive") return `${who} joins ${where}`;
+    const others = beat.audienceIds.filter((id) => id !== beat.actorId).map((id) => agents.find((a) => a.id === id)?.displayName ?? id);
+    return others.length > 0 ? `${who} opens a private room with ${others.join(" and ")}` : `${who} opens ${where}`;
   }
   return `${who} speaks in ${where}`;
 }
