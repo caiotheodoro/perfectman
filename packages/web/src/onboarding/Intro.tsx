@@ -1,17 +1,12 @@
-/**
- * First run, once.
- *
- * The claim is that these agents decide when to speak, and that what they want
- * is not what they say. Asserting that in a paragraph is cheap; showing a room
- * where someone stays quiet on purpose costs six beats and is the only version
- * anyone believes. So the hero is the scene, played through the very page a
- * run plays on — the same room and caption — and the prose beside it is short
- * enough to read while it plays.
- */
-import { useEffect, useMemo, useState } from "react";
+/** Six authored moments, rendered and played by the same components as a run. */
+import { useMemo } from "react";
 import { idlePlacement, placeBeats } from "@perfectman/shared";
+import { BrandMark } from "../design/Shell.js";
 import { Attribution } from "../stage/Attribution.js";
+import { ContactSheet } from "../stage/ContactSheet.js";
+import { frameFor, frameLabel } from "../stage/Frame.js";
 import { Panel } from "../stage/Panel.js";
+import { useStageClock } from "../stage/useStageClock.js";
 import { introRun } from "./intro-script.js";
 
 export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
@@ -19,52 +14,95 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
   const staged = useMemo(() => {
     const ids = run.agents.map((a) => a.id);
     const idle = idlePlacement(run.channels[0], run.agents);
-    return { ids, placements: placeBeats(run.beats, run.agents, run.channels, { seed: idle }) };
+    const placements = placeBeats(run.beats, run.agents, run.channels, { seed: idle });
+    return {
+      ids,
+      placements,
+      frames: run.beats.map((beat, i) => frameFor(beat, placements[i]!, ids)),
+      labels: run.beats.map((beat, i) => `Beat ${i + 1}: ${frameLabel(beat, run.agents, run.channels[0])}`),
+    };
   }, [run]);
+  const clock = useStageClock(run.beats);
+  const beat = clock.beat!;
 
-  const [index, setIndex] = useState(0);
-  const beat = run.beats[index] ?? run.beats[0]!;
-
-  // Loops, the way it always did.
-  useEffect(() => {
-    const timer = setTimeout(() => setIndex((i) => (i + 1) % run.beats.length), beat.duration * 1000);
-    return () => clearTimeout(timer);
-  }, [index, beat.duration, run.beats.length]);
+  function togglePlay(): void {
+    if (clock.atEnd) {
+      clock.seek(0);
+      clock.play();
+    } else if (clock.playing) clock.pause();
+    else clock.play();
+  }
 
   return (
-    <main className="intro">
-      <div className="intro__words">
-        <h1>
-          Three people in a room.
-          <br />
-          One is not saying what they want.
-        </h1>
-        <p className="intro__lede u-serif">
-          Nobody here takes turns. Each character reads the room, weighs what it
-          would cost to speak, and often decides against it. The scene beside
-          this is the whole product: a line, and the reason behind it.
-        </p>
-        <div className="intro__actions">
-          <button type="button" className="btn" onClick={onDone}>
+    <div className="intro-shell">
+      <header className="shell__bar intro__bar">
+        <BrandMark />
+        <span className="intro__about">An AI social simulation</span>
+      </header>
+      <main className="intro">
+        <div className="intro__words">
+          <div className="intro__premise">
+            <h1>Nobody says everything.</h1>
+            <p className="intro__lede">
+              Three AI agents. One awkward conversation.<br />
+              Watch what they say. See what they keep to themselves.
+            </p>
+          </div>
+          <button type="button" className="btn intro__start" aria-label="Build a room" onClick={onDone}>
             Build a room
           </button>
-          <button type="button" className="btn--bare" onClick={onDone}>
-            Skip
-          </button>
         </div>
-      </div>
 
-      <div className="intro__scene flipbook">
-        <Panel
-          beat={beat}
-          placement={staged.placements[index] ?? staged.placements[0]!}
-          index={index}
-          agents={run.agents}
-          channels={run.channels}
-          ids={staged.ids}
-        />
-        <Attribution beat={beat} agents={run.agents} channels={run.channels} ids={staged.ids} />
-      </div>
-    </main>
+        <section className="intro__scene flipbook" aria-label="Authored preview">
+          <Panel
+            beat={beat}
+            placement={staged.placements[clock.index]!}
+            index={clock.index}
+            playing={clock.playing && !clock.atEnd}
+            agents={run.agents}
+            channels={run.channels}
+            ids={staged.ids}
+          />
+          <div className="intro__caption">
+            <Attribution beat={beat} agents={run.agents} channels={run.channels} ids={staged.ids} />
+            <p className="intro__provenance">Authored preview · no model connected</p>
+          </div>
+          <div className="intro__playback">
+            <div className="intro__controls" role="group" aria-label="Preview playback">
+              <button
+                type="button" className="btn btn--quiet intro__step"
+                aria-label="Previous beat" disabled={clock.index === 0} onClick={() => clock.step(-1)}
+              >
+                <span aria-hidden="true">←</span>
+              </button>
+              <button
+                type="button" className="btn intro__play"
+                aria-label={clock.atEnd ? "Replay preview" : clock.playing ? "Pause preview" : "Play preview"}
+                onClick={togglePlay}
+              >
+                {clock.atEnd ? "Replay" : clock.playing ? "Pause" : "Play"}
+              </button>
+              <button
+                type="button" className="btn btn--quiet intro__step"
+                aria-label="Next beat" disabled={clock.atEnd} onClick={() => clock.step(1)}
+              >
+                <span aria-hidden="true">→</span>
+              </button>
+              <span className="intro__position" aria-label={`Beat ${clock.index + 1} of ${run.beats.length}`}>
+                {clock.index + 1} / {run.beats.length}
+              </span>
+            </div>
+            <ContactSheet
+              frames={staged.frames}
+              labels={staged.labels}
+              index={clock.index}
+              reached={clock.reached}
+              live={false}
+              onSeek={(index) => { clock.pause(); clock.seek(index); }}
+            />
+          </div>
+        </section>
+      </main>
+    </div>
   );
 }

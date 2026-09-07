@@ -1,63 +1,28 @@
-/*
- * The one orchestrated moment in the app: the page turns in, the cast arrives,
- * the first line lands. Everything else waits for a click.
- */
-
-.intro {
-  max-width: var(--shell);
-  margin: 0 auto;
-  padding: clamp(28px, 6vh, 72px) clamp(20px, 4vw, 40px) 64px;
-  display: grid;
-  gap: clamp(28px, 5vw, 64px);
-  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
-  align-items: center;
-  min-height: 100vh;
-}
-
-@media (max-width: 940px) {
-  .intro {
-    grid-template-columns: minmax(0, 1fr);
-    align-items: start;
-    padding-top: 28px;
-  }
-  /* The scene is the argument; on a narrow screen it goes first. */
-  .intro__scene {
-    order: -1;
-  }
-}
-
-.intro__words {
-  display: grid;
-  gap: 24px;
-  justify-items: start;
-}
-
-.intro__lede {
-  font-size: 18px;
-  line-height: 1.62;
-  color: var(--ink-70);
-  max-width: 46ch;
-}
-
-.intro__actions {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  margin-top: 4px;
-}
-
-/* --- the scene ----------------------------------------------------------- */
-
-/* The scene is the same flipbook column the run uses, sized by its grid cell
-   rather than by the viewport's height. */
-.intro__scene.flipbook {
-  width: 100%;
-  padding-top: 0;
-}
-
-/* The caption's provenance reading ("Authored: worried") is for a run, where
-   recorded and authored must never be confused. On the landing everything is
-   authored, and saying so reads as debugging. */
-.intro .attribution__reading {
-  display: none;
+.intro { max-width: var(--shell); margin: 0 auto; padding: 34px 32px 44px; }
+.intro__bar > .brand { color: var(--forest); }
+.intro__about { color: var(--ink-50); font-size: 13px; }
+.intro__words { display: flex; align-items: center; justify-content: space-between; gap: 32px; margin-bottom: 30px; }
+.intro__premise { display: grid; gap: 14px; }
+.intro__lede { color: var(--ink-70); font-size: 16px; line-height: 1.55; }
+.intro__start { flex: 0 0 auto; min-width: 180px; }
+.intro__start::after { content: "→"; margin-left: 14px; font-size: 22px; line-height: 1; }
+.intro__scene.flipbook { width: 100%; min-width: 0; grid-template-columns: minmax(0, 1fr); padding-top: 0; }
+.intro__caption { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 24px; padding: 14px 0 18px; }
+.intro__caption .stage__utterance { padding: 0; min-width: 0; }
+.intro__caption .attribution__reading { display: none; }
+.intro__provenance { color: var(--ink-50); font-size: 12px; }
+.intro__playback { min-width: 0; display: flex; align-items: center; justify-content: space-between; gap: 24px; border-top: 1px solid var(--rule); padding-top: 16px; }
+.intro__controls { display: flex; align-items: center; gap: 8px; flex: 0 0 auto; }
+.intro__step { width: 44px; min-height: 44px; padding: 7px; font-size: 20px; }
+.intro__play { min-height: 44px; min-width: 98px; padding: 8px 18px; }
+.intro__position { margin-left: 16px; color: var(--ink-50); font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.intro__playback .sheet { min-width: 0; max-width: 50%; }
+@media (max-width: 760px) {
+  .intro { padding: 28px 20px 32px; }
+  .intro__words { align-items: stretch; flex-direction: column; gap: 20px; margin-bottom: 24px; }
+  .intro__start { justify-content: space-between; width: 100%; }
+  .intro__about { max-width: 14ch; font-size: 11px; line-height: 1.3; text-align: right; }
+  .intro__caption { align-items: flex-start; flex-direction: column; padding-block: 12px 16px; }
+  .intro__playback { flex-wrap: wrap; gap: 12px; }
+  .intro__playback .sheet { max-width: 100%; width: 100%; }
 }

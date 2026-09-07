@@ -1,249 +1,101 @@
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(268px, 1fr));
-  gap: 12px;
-}
-
+.cards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
 .card {
-  display: grid;
-  gap: 8px;
-  align-content: start;
-  min-width: 0;
-  text-align: left;
-  padding: 18px;
-  border: none;
-  border-radius: var(--r-lg);
-  background: var(--paper);
-  box-shadow: var(--ring);
-  transition: box-shadow var(--quick) var(--ease), transform var(--quick) var(--ease);
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  box-shadow: inset 0 0 0 1px var(--rule-strong);
-}
-
-.card--on {
-  box-shadow: inset 0 0 0 2px var(--ink);
-}
-.card--on:hover {
-  box-shadow: inset 0 0 0 2px var(--ink);
-}
-
-.card--ghost {
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--rule);
-  cursor: default;
-}
-.card--ghost:hover {
-  transform: none;
-  box-shadow: inset 0 0 0 1px var(--rule);
-}
-
-/* The cast, at the size a decision needs: who is there, not what they said. */
-/* A row of faces that shrinks to fit rather than overflowing the card: five
-   people at full size are wider than a card, and a face still reads at 34px. */
-.card__cast {
+  position: relative;
   display: flex;
-  align-items: flex-end;
-  gap: 4px;
-  margin-bottom: 4px;
+  flex-direction: column;
+  align-items: stretch;
   min-width: 0;
-}
-
-.card__cast .figure {
-  flex: 0 1 52px;
-  min-width: 34px;
-  width: 52px;
-}
-.card__cast .figure__name {
-  font-size: 12.5px;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-/* No idle motion on a card; the stage is where things move. */
-.card__cast .figure__body,
-.card__cast .figure__eye {
-  animation: none;
-}
-
-/* The chip is the character colour this cast will use on stage. */
-.card__chip {
-  width: 26px;
-  height: 8px;
-  border-radius: var(--r-pill);
-}
-
-.card__title {
-  font-size: 19px;
-  font-variation-settings: "opsz" 32, "SOFT" 40, "WONK" 1;
-  font-weight: 600;
-  letter-spacing: -0.015em;
-  line-height: 1.15;
-}
-
-.card__blurb {
-  font-size: 13.5px;
-  line-height: 1.5;
-  color: var(--ink-70);
-}
-
-.card__count {
-  font-size: 12px;
-  color: var(--ink-30);
-}
-
-.card__ghost-actions {
-  display: flex;
-  gap: 14px;
-  margin-top: 2px;
-}
-
-/* --- selection summary --------------------------------------------------- */
-
-.summary-strip {
-  display: grid;
-  gap: 10px;
-  justify-items: start;
-  padding: 16px 18px;
-  border-radius: var(--r-lg);
-  background: var(--paper-warm);
-  box-shadow: var(--ring);
-}
-
-/* The selection's faces, between the cards and the files. Larger than on a
-   card — these are the people you are about to put in a room. */
-.cast-row {
-  margin: 4px 0 -8px;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-.cast-row .figure {
-  flex-basis: 64px;
-  width: 64px;
-}
-.cast-row .figure__name {
-  font-size: 14px;
-  max-width: none;
-}
-
-.summary-strip ul {
-  list-style: none;
-  margin: 0;
   padding: 0;
-  display: grid;
-  gap: 6px;
-  width: 100%;
-}
-
-.summary-strip li {
-  display: flex;
-  gap: 12px;
-  align-items: baseline;
-  font-size: 13px;
-  min-width: 0;
-}
-
-.summary-strip__name {
-  flex: 0 0 auto;
-  font-variant-numeric: tabular-nums;
-}
-
-.summary-strip li > .u-dim {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* --- editor -------------------------------------------------------------- */
-
-.editor {
-  display: grid;
-  gap: 12px;
-  padding: 16px;
+  text-align: left;
+  border: 1px solid var(--rule);
   border-radius: var(--r-lg);
-  box-shadow: var(--ring);
-  background: var(--paper-warm);
-}
-
-.editor__files {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.editor__spacer {
-  flex: 1;
-}
-
-.editor__tab {
-  display: flex;
-  align-items: center;
-  border-radius: var(--r-md);
-  box-shadow: var(--ring);
-  background: var(--paper);
+  background: transparent;
+  color: var(--ink);
+  transition: border-color var(--quick) var(--ease), background var(--quick) var(--ease);
   overflow: hidden;
 }
-
-.editor__tab > button:first-child {
-  border: none;
-  background: none;
-  padding: 6px 4px 6px 11px;
-  font-size: 12.5px;
-  color: var(--ink-70);
-}
-
-.editor__tab--on {
-  box-shadow: inset 0 0 0 1.5px var(--ink);
-}
-.editor__tab--on > button:first-child {
-  color: var(--ink);
-}
-
-.editor__drop {
-  border: none;
-  background: none;
-  color: var(--ink-30);
-  padding: 6px 9px 7px 6px;
-  font-size: 15px;
-  line-height: 1;
-}
-.editor__drop:hover {
-  color: var(--ink);
-}
-
-.editor__name {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-size: 12px;
-}
-
-.editor__name input {
-  flex: 1;
-  max-width: 320px;
-}
-
-input,
-select,
-textarea {
-  font: inherit;
-  letter-spacing: inherit;
-  color: var(--ink);
+.card:hover { border-color: var(--rule-strong); background: #f1f1e7; }
+.card--on, .card--on:hover { border-color: var(--forest); outline: 2px solid var(--forest); outline-offset: 3px; }
+.card__choice {
+  position: absolute;
+  right: 18px;
+  top: 18px;
+  display: grid;
+  place-items: center;
+  width: 21px;
+  height: 21px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 50%;
   background: var(--paper);
-  border: none;
-  box-shadow: var(--ring);
-  border-radius: var(--r-md);
-  padding: 8px 11px;
+  color: var(--forest);
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  z-index: 1;
 }
-
-.editor__text {
-  font-family: ui-monospace, "SF Mono", Menlo, monospace;
-  font-size: 12.5px;
-  line-height: 1.65;
-  resize: vertical;
-  min-height: 300px;
-  tab-size: 2;
+.card--on .card__choice { border-color: var(--forest); }
+.card__cast { display: flex; justify-content: center; align-items: flex-end; gap: 12px; min-width: 0; }
+.card--cast > .card__cast { min-height: 230px; padding: 42px 22px 24px; background: var(--stage-ground); }
+.card--cast:nth-child(even) > .card__cast { background: #eee8df; }
+.card__cast .figure { flex: 0 1 132px; min-width: 0; width: 132px; }
+.card__cast .figure__name { font-size: 14px; overflow-wrap: anywhere; }
+.card__cast .figure__body, .card__cast .figure__eye { animation: none; }
+.card__copy { display: grid; gap: 12px; padding: 24px; }
+.card__title { font-size: 24px; line-height: 1.15; font-weight: 700; letter-spacing: -0.035em; }
+.card__blurb { font-size: 15px; line-height: 1.5; color: var(--ink-70); }
+.card__count { padding-top: 4px; font-size: 13px; color: var(--ink-50); }
+.card--scene .card__copy { height: 100%; padding: 24px; }
+.card--scene .card__title { padding-right: 25px; }
+.card__context { display: grid; align-content: end; gap: 3px; margin-top: auto; padding-top: 10px; color: var(--ink-50); font-size: 13px; }
+.card__context > span { font-size: 12px; }
+.card__context--changes { color: var(--forest); }
+.pick-authoring { display: flex; align-items: center; justify-content: space-between; gap: 24px; padding-block: 18px; border-block: 1px solid var(--rule); }
+.pick-authoring h3 { font-size: 18px; margin-bottom: 4px; }
+.pick-authoring p { font-size: 14px; color: var(--ink-50); }
+.pick-authoring__actions { display: flex; flex-shrink: 0; gap: 20px; }
+.pick-selection { display: grid; gap: 16px; }
+.cast-row { justify-content: flex-start; flex-wrap: wrap; gap: 20px; }
+.cast-row .figure { flex: 0 0 76px; width: 76px; }
+.cast-row .figure__name { max-width: none; }
+.pick-cast-context { display: flex; align-items: center; gap: 22px; padding-bottom: 24px; border-bottom: 1px solid var(--rule); }
+.pick-cast-context .cast-row { gap: 10px; flex-wrap: nowrap; }
+.pick-cast-context .figure { flex: 0 0 40px; width: 40px; }
+.pick-cast-context .figure__name { display: none; }
+.pick-cast-context p { font-size: 14px; }
+.summary-strip { display: grid; gap: 8px; justify-items: start; }
+.summary-strip ul { list-style: none; margin: 0; padding: 0; display: grid; width: 100%; }
+.summary-strip li { display: grid; grid-template-columns: minmax(160px, 0.6fr) minmax(0, 1.4fr); gap: 24px; padding-block: 12px; border-bottom: 1px solid var(--rule); font-size: 13px; min-width: 0; }
+.summary-strip__name { display: grid; align-content: start; gap: 3px; overflow-wrap: anywhere; }
+.summary-strip__name > span { color: var(--ink-50); font-size: 12px; }
+.summary-strip__name > strong { font-weight: 600; }
+.summary-strip li > .u-dim { overflow-wrap: anywhere; }
+.editor { display: grid; gap: 14px; padding: 20px; border: 1px solid var(--rule-strong); border-radius: var(--r-lg); background: var(--paper-warm); min-width: 0; }
+.editor__files { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; min-width: 0; }
+.editor__spacer { flex: 1; }
+.editor__tab { display: flex; align-items: center; min-width: 0; max-width: 100%; border: 1px solid var(--rule-strong); border-radius: var(--r-md); background: var(--paper); overflow: hidden; }
+.editor__tab > button:first-child { min-width: 0; min-height: 44px; border: none; background: none; padding: 9px 8px 9px 12px; font-size: 13px; color: var(--ink-70); overflow-wrap: anywhere; text-align: left; }
+.editor__tab--on { border-color: var(--forest); box-shadow: inset 0 0 0 1px var(--forest); }
+.editor__tab--on > button:first-child { color: var(--ink); }
+.editor__drop { min-width: 44px; min-height: 44px; border: none; background: none; color: var(--ink-50); padding: 8px; font-size: 20px; line-height: 1; }
+.editor__drop:hover { color: var(--ink); background: var(--paper-warm); }
+.editor__name { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.editor__name input { flex: 1; max-width: 360px; }
+.editor__text { width: 100%; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; line-height: 1.65; resize: vertical; min-height: 300px; tab-size: 2; }
+@media (max-width: 760px) {
+  .cards { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .card--cast > .card__cast { min-height: 180px; gap: 8px; padding: 40px 18px 20px; }
+  .card__cast .figure__name { font-size: 13px; }
+  .card__copy, .card--scene .card__copy { padding: 20px; }
+  .card__title { font-size: 23px; }
+  .pick-authoring { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .pick-authoring__actions { flex-wrap: wrap; gap: 20px; }
+  .pick-cast-context { flex-wrap: wrap; gap: 12px; }
+  .pick-cast-context .card__cast .figure { flex-basis: 38px; width: 38px; }
+  .cast-row { gap: 14px; }
+  .cast-row .figure { flex-basis: 62px; width: 62px; }
+  .summary-strip li { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .editor { padding: 14px; }
+  .editor__name { flex-wrap: wrap; }
+  .editor__name input { flex-basis: 100%; max-width: none; }
+  .editor__text { font-size: 16px; }
 }

@@ -21,7 +21,7 @@ export type IntroBeat = {
   hold: number;
 };
 
-export const INTRO_CAST = ["íris", "bruno", "marcela"];
+export const INTRO_CAST = ["iris", "bruno", "marcela"];
 
 const calm: RecordedEmotion = { source: "authored", label: "neutral" };
 const warm: RecordedEmotion = { source: "authored", label: "smile" };
@@ -85,7 +85,7 @@ export type IntroRun = {
  * them. A line is speech with the room reacting; a thought is a silence.
  */
 export function introRun(): IntroRun {
-  const agents = INTRO_CAST.map((name) => ({ id: name, displayName: name }));
+  const agents = INTRO_CAST.map((id) => ({ id, displayName: id === "iris" ? "íris" : id }));
   const ids = agents.map((a) => a.id);
   const channel: LiveChannel = { id: "kitchen", name: "the kitchen", type: "public_channel", memberAgentIds: ids };
   const beats = INTRO_BEATS.map((beat, i): StageBeat => {

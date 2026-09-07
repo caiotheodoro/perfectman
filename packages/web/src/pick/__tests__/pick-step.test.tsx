@@ -3,7 +3,7 @@
  * picked — not the preset that was clicked, and they stay up while the editor
  * is open. Add a file and a face appears; drop one and it goes.
  */
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { PickStep } from "../PickStep.js";
 
@@ -47,4 +47,37 @@ describe("PickStep", () => {
     expect(container.querySelectorAll(".cast-row .figure")).toHaveLength(1);
     expect(container.querySelector(".editor")).not.toBeNull();
   });
+});
+
+
+it("shows the actual cast a scene requires before selecting it", () => {
+  const cast = { id: "partners", title: "The partners", blurb: "", files: [persona("iris", "Iris"), persona("bruno", "Bruno")] };
+  const scene = { id: "scene", title: "The disagreement", blurb: "They disagree.", cast: cast.id, files: [{ filename: "room.scenario.md", text: "" }] };
+  const onSelect = vi.fn();
+  const { getByRole, getByText } = render(
+    <PickStep kind="scene" title="Choose a scene" lede="" presets={[scene]} casts={[cast]}
+      activeCast={{ presetId: "another", files: [] }} selection={{ presetId: null, files: [] }}
+      onSelect={onSelect} accept=".md" emptyHint=""><span /></PickStep>,
+  );
+  expect(getByText("Changes cast to The partners")).toBeTruthy();
+  expect(getByText("Iris · Bruno")).toBeTruthy();
+  fireEvent.click(getByRole("button", { name: /The disagreement/ }));
+  expect(onSelect).toHaveBeenCalledWith({ presetId: scene.id, files: scene.files });
+  cleanup();
+});
+
+it("reports an unreadable upload without replacing the current files", async () => {
+  const onSelect = vi.fn();
+  const { container, getByRole } = render(
+    <PickStep title="Cast" lede="" presets={[]} selection={{ presetId: null, files: [] }}
+      onSelect={onSelect} accept=".md" emptyHint=""><span /></PickStep>,
+  );
+  await act(async () => {
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [{ name: "persona.md", text: () => Promise.reject(new Error("unreadable")) }] },
+    });
+  });
+  expect(getByRole("alert").textContent).toContain("Could not read those files");
+  expect(onSelect).not.toHaveBeenCalled();
+  cleanup();
 });

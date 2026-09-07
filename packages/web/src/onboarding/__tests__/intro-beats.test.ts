@@ -9,8 +9,16 @@ describe("introRun", () => {
   const run = introRun();
 
   it("has one beat per scripted moment, in order", () => {
-    expect(run.beats).toHaveLength(INTRO_BEATS.length);
+    expect(run.beats).toHaveLength(6);
     expect(run.beats.map((b) => b.actorId)).toEqual(INTRO_BEATS.map((b) => INTRO_CAST[b.actor]));
+  });
+
+  it("keeps canonical cast IDs consistent with presets while preserving authored names", () => {
+    expect(run.agents).toEqual([
+      { id: "iris", displayName: "íris" },
+      { id: "bruno", displayName: "bruno" },
+      { id: "marcela", displayName: "marcela" },
+    ]);
   });
 
   it("stages a line as speech and a private thought as silence", () => {

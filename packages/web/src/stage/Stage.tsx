@@ -1,126 +1,99 @@
-/**
- * The run, as a scene.
- *
- * One beat is on stage at a time. Whoever is in the channel stands in their
- * slot; whoever is speaking is lit and the rest recede. A line appears on paper.
- * A thought appears in italic, and never on paper, because a thought was not
- * said.
- *
- * Nothing here decides what a beat means — `live-to-beats` already did that —
- * and nothing here decides where anyone stands — `placeBeats` did that for the
- * whole run at once. This only draws the placement it is handed, which is what
- * lets the contact sheet and the room agree, and lets an outgoing page keep
- * drawing a frozen beat while the next one turns in.
- */
-import { memo, useMemo, useRef } from "react";
-import {
-  chipIndexFor,
-  faceFor,
-  gestureEnergy,
-  headTopFor,
-  type LiveChannel,
-  type Placement,
-  type StageBeat,
-} from "@perfectman/shared";
+/** One recorded beat, with separate flow space for its words and its cast. */
+import { memo, type CSSProperties } from "react";
+import { chipIndexFor, faceFor, gestureEnergy, type LiveChannel, type Placement, type StageBeat } from "@perfectman/shared";
 import { Figure } from "./Figure.js";
 import { roomLabel } from "./room-label.js";
 import { Bubble } from "./Bubble.js";
 
 export type StageAgent = { id: string; displayName: string };
-
 export type StageProps = {
   beat: StageBeat | undefined;
   placement: Placement;
   agents: readonly StageAgent[];
   channels: readonly LiveChannel[];
-  /** Every agent id in the run; chips are assigned from the sorted list. */
   ids: readonly string[];
+  playing?: boolean;
 };
 
-export const Stage = memo(function Stage({ beat, placement, agents, channels, ids }: StageProps): JSX.Element {
-  const { kind, channelId, marks, speaker } = placement;
-  const channel = channels.find((c) => c.id === channelId);
-  // The speaker's mark, so the balloon can measure where the head actually is
-  // rather than trusting a constant that assumes a 16:7 room.
-  const speakerRef = useRef<HTMLDivElement>(null);
+/** Fixed reading order at every width; the contact sheet uses these same rows. */
+export function castPoint(index: number, count: number): { x: number; y: number; columns: number } {
+  const columns = count === 4 ? 2 : Math.max(1, Math.min(count, 3));
+  const row = Math.floor(index / columns);
+  const inRow = Math.min(columns, count - row * columns);
+  return { x: (index % columns + (columns - inRow) / 2 + .5) / columns, y: row, columns };
+}
 
-  // Who is in the run but not in this room. Naming them is the whole point of a
-  // private channel: the interesting fact is not that two people are talking,
-  // it is that a third cannot hear it.
-  const shutOut = useMemo(
-    () => (kind === "private" ? agents.filter((a) => !(channel?.memberAgentIds ?? []).includes(a.id)) : []),
-    [kind, agents, channel],
-  );
+/** Visibility is independent of how many agents fit on the drawing. */
+export function audienceFor(beat: StageBeat | undefined, channel: LiveChannel | undefined): string[] {
+  if (beat?.kind === "aside" || beat?.kind === "silence") return beat.actorId ? [beat.actorId] : [];
+  const audience = beat?.audienceIds.length ? beat.audienceIds
+    : beat?.participantIds.length ? beat.participantIds : channel?.memberAgentIds ?? [];
+  return [...new Set([...(beat?.actorId ? [beat.actorId] : []), ...audience])];
+}
+
+export const Stage = memo(function Stage({ beat, placement, agents, channels, ids, playing = false }: StageProps): JSX.Element {
+  const { kind, channelId, marks } = placement;
+  const channel = channels.find((c) => c.id === channelId);
+  const thought = beat?.kind === "aside" || beat?.kind === "silence";
+  const hasThought = thought && Boolean(beat?.thought?.text || beat?.text);
+  const audience = audienceFor(beat, channel);
+  const isConversation = kind !== "operator" && !thought;
+  const shutOut = isConversation && (kind === "private" || Boolean(beat?.audienceIds.length))
+    ? agents.filter((a) => !audience.includes(a.id)) : [];
+  const overflow = isConversation ? audience.filter((id) => !marks.some((mark) => mark.agentId === id)) : [];
+  const name = (id: string): string => agents.find((agent) => agent.id === id)?.displayName ?? id;
+  const speakerIndex = marks.findIndex((m) => m.agentId === beat?.actorId);
+  const speaker = marks[speakerIndex];
+  const speakerPoint = castPoint(speakerIndex, marks.length);
+  const listeners = marks.flatMap((mark, i) => mark.agentId !== beat?.actorId && audience.includes(mark.agentId) ? [castPoint(i, marks.length)] : []);
+  const target = listeners.length ? {
+    x: listeners.reduce((sum, point) => sum + point.x, 0) / listeners.length,
+    y: listeners.reduce((sum, point) => sum + point.y, 0) / listeners.length,
+  } : undefined;
 
   return (
-    <div className={`stage stage--${kind}`}>
+    <div className={`stage stage--${kind}${thought ? " stage--unspoken" : ""}${playing ? " stage--playing" : ""}`}>
       <div className="stage__room">
-        <p
-          className="stage__where"
-          title={`${roomLabel(channel, agents)}${shutOut.length > 0 ? ` — ${listNames(shutOut.map((a) => a.displayName))} cannot see this` : ""}`}
-        >
-          <span className="stage__glyph" aria-hidden="true">
-            {kind === "private" ? "↔" : "#"}
-          </span>
-          {roomLabel(channel, agents)}
-          {shutOut.length > 0 ? (
-            <span className="stage__shut-out">{listNames(shutOut.map((a) => a.displayName))} cannot see this</span>
-          ) : null}
+        <p className="stage__where">
+          <span className="stage__glyph" aria-hidden="true">{thought ? "○" : kind === "private" ? "↔" : "#"}</span>
+          {thought ? hasThought ? "Unspoken thought" : "Silence" : kind === "private" ? "Private conversation" : kind === "operator" ? "Operator record" : "Public conversation"}
+          {!thought ? <span className="stage__channel">{roomLabel(channel, agents)}</span> : null}
         </p>
-        {marks.map(({ agentId, point }) => {
-          const agent = agents.find((a) => a.id === agentId);
-          if (!agent) return null;
-          const isActor = beat?.actorId === agent.id;
-          // The speaker wears the recorded emotion; everyone else wears what
-          // was recorded about them at that moment, if anything.
-          const feeling = isActor ? beat?.emotion : beat?.reactions?.[agent.id];
-          return (
-            <div
-              key={agent.id}
-              ref={isActor ? speakerRef : undefined}
-              className="stage__mark"
-              style={{
-                left: `${point.x * 100}%`,
-                top: `${point.y * 100}%`,
-                transform: `translate(-50%, -100%) scale(${point.scale})`,
-                zIndex: Math.round(point.y * 100),
-              }}
-            >
-              <Figure
-                index={chipIndexFor(agent.id, ids)}
-                name={agent.displayName}
-                face={faceFor(feeling)}
-                energy={feeling ? gestureEnergy(feeling) : 0.3}
-                speaking={Boolean(isActor && beat?.kind === "message")}
-                attentive={!beat || (beat.kind !== "silence" && beat.kind !== "aside") || isActor}
-              />
-            </div>
-          );
-        })}
-
-        {/* One balloon, hanging off its own speaker's head. Speech and thought
-            are never the same balloon and never stacked: one was said and one
-            was not, which is the distinction this interface exists to draw, and
-            two of them over one head do not fit above a figure at the back of
-            the room. */}
-        {beat && speaker && beat.kind !== "event" && (beat.text || beat.thought) ? (
-          <Bubble
-            key={beat.id}
-            speaker={speakerRef}
-            headTopGuess={headTopFor(speaker.point)}
-            x={speaker.point.x}
-            scale={speaker.point.scale}
-            contentKey={beat.id}
-            thought={beat.thought?.text}
-            said={beat.text}
-          />
-        ) : null}
+        <div className="stage__dialogue">
+          {beat && beat.kind !== "event" && (beat.text || beat.thought) ? (
+            <Bubble key={beat.id} name={beat.actorId ? name(beat.actorId) : "System"}
+              said={beat.text} thought={thought ? beat.thought?.text ?? beat.text : undefined}
+              visibility={kind === "operator" ? "Operator record" : kind === "private" ? "Private" : beat.audienceIds.length ? "Limited audience" : "Out loud"} />
+          ) : <p className="stage__pause u-serif">{beat?.kind === "silence" ? `${beat.actorId ? name(beat.actorId) : "An agent"} says nothing this turn.` : beat ? "A change in the conversation." : "Waiting for the first move."}</p>}
+        </div>
+        <div className="stage__cast" data-count={marks.length} style={{ "--cast-columns": castPoint(0, marks.length).columns } as CSSProperties}>
+          {marks.map(({ agentId }, i) => {
+            const agent = agents.find((a) => a.id === agentId);
+            if (!agent) return null;
+            const isActor = beat?.actorId === agent.id;
+            const feeling = isActor ? beat?.emotion : beat?.reactions?.[agent.id];
+            const point = castPoint(i, marks.length);
+            const lookingAt = beat?.kind === "message" && audience.includes(agent.id) && speaker
+              ? isActor ? target : speakerPoint : undefined;
+            const gaze = lookingAt ? { x: Math.sign(lookingAt.x - point.x), y: Math.sign(lookingAt.y - point.y) } : { x: 0, y: 0 };
+            return <div key={agent.id} className="stage__mark" data-agent-id={agent.id} data-visible={audience.includes(agent.id)}>
+              <Figure index={chipIndexFor(agent.id, ids)} name={agent.displayName} face={faceFor(feeling)}
+                energy={feeling ? gestureEnergy(feeling) : .3} speaking={Boolean(isActor && beat?.kind === "message")}
+                attentive={!beat || isActor || (!thought && audience.includes(agent.id))} gaze={gaze} />
+              <span className="stage__expression">{!thought && !audience.includes(agent.id) ? "cannot see this" : isActor && thought ? hasThought ? "unspoken" : "silent" : isActor && beat?.kind === "message" ? "speaking" : feeling ? faceFor(feeling) === "smile" ? "smiling" : faceFor(feeling) : ""}</span>
+            </div>;
+          })}
+        </div>
+        <div className="stage__visibility">
+          {hasThought ? <p>Only you can read this thought. The other agents cannot hear it.</p> : null}
+          {shutOut.length > 0 ? <p className="stage__shut-out">{listNames(shutOut.map((a) => a.displayName))} cannot see this</p> : null}
+          {overflow.length > 0 ? <p className="stage__overflow">Also in this conversation: {listNames(overflow.map(name))}</p> : null}
+        </div>
       </div>
     </div>
   );
 });
 
-/** "a", "a and b", "a, b and c" — the way a sentence would say it. */
 function listNames(names: readonly string[]): string {
   if (names.length <= 1) return names[0] ?? "";
   return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;

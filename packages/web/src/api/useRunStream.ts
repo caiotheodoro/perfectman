@@ -47,7 +47,15 @@ const EMPTY: RunStream = {
 
 export function useRunStream(runId: string | null): RunStream {
   const [state, setState] = useState<RunStream>(EMPTY);
+  const [currentRun, setCurrentRun] = useState(runId);
   const seq = useRef(0);
+
+  // Reset before children commit: the previous run's terminal status must not
+  // briefly finish a newly started run while its effect is still connecting.
+  if (currentRun !== runId) {
+    setCurrentRun(runId);
+    setState(EMPTY);
+  }
 
   useEffect(() => {
     if (!runId) {
@@ -56,9 +64,11 @@ export function useRunStream(runId: string | null): RunStream {
     }
     seq.current = 0;
     setState({ ...EMPTY, connected: false });
+    let live = true;
 
     const source = new EventSource(apiUrl(`/api/runs/${encodeURIComponent(runId)}/stream`));
     const onMessage = (raw: MessageEvent<string>): void => {
+      if (!live) return;
       let event: LiveEvent;
       try {
         event = JSON.parse(raw.data) as LiveEvent;
@@ -79,14 +89,17 @@ export function useRunStream(runId: string | null): RunStream {
       source.addEventListener(name, onMessage as EventListener);
     }
     source.addEventListener("open", () => {
+      if (!live) return;
       setState((prev) => ({ ...prev, connected: true, error: null }));
     });
     source.addEventListener("error", () => {
+      if (!live) return;
       // EventSource reconnects on its own; this is a status, not a terminal state.
       setState((prev) => ({ ...prev, connected: false }));
     });
 
     return () => {
+      live = false;
       source.close();
     };
   }, [runId]);

@@ -7,7 +7,7 @@
  * still reachable — compiled config, diagnostics, the raw frame stream — but it
  * lives behind `details` on the run screen instead of competing with the scene.
  */
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CompileResponse, StartRunRequest, UploadedFile } from "@perfectman/shared";
 import { ApiRequestError, compile, startRun, stopRun } from "./api/client.js";
 import { API_BASE, IS_SPLIT_DEPLOY } from "./api/origin.js";
@@ -16,6 +16,7 @@ import { Shell, type StepId } from "./design/Shell.js";
 import { Intro } from "./onboarding/Intro.js";
 import { PickStep, type Selection } from "./pick/PickStep.js";
 import { usePresets } from "./pick/usePresets.js";
+import { sceneTitleIn } from "./pick/preview.js";
 import { RunScreen } from "./run/RunScreen.js";
 
 const INTRO_SEEN = "perfectman.intro.seen";
@@ -28,49 +29,62 @@ export function App(): JSX.Element {
   const [step, setStep] = useState<StepId>("cast");
   const [furthest, setFurthest] = useState<StepId>("cast");
 
-  const { library, error: presetsError } = usePresets();
+  const { library, loading: presetsLoading, error: presetsError } = usePresets();
   const [cast, setCast] = useState<Selection>(NOTHING);
   const [scene, setScene] = useState<Selection>(NOTHING);
 
-  const [compiled, setCompiled] = useState<CompileResponse | null>(null);
-  const [compiling, setCompiling] = useState(false);
+  const [compilation, setCompilation] = useState<{
+    key: string; result?: CompileResponse; error?: string;
+  } | null>(null);
   const [runId, setRunId] = useState<string | null>(null);
+  const [runPlan, setRunPlan] = useState<{ key: string; title: string; compiled: CompileResponse } | null>(null);
   const [failure, setFailure] = useState<string | null>(null);
+  const [castChange, setCastChange] = useState<string | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
+  const pendingStart = useRef<{ cancelled: boolean } | null>(null);
   const stream = useRunStream(runId);
 
   const inputs = useMemo(() => toInputs(cast.files, scene.files), [cast.files, scene.files]);
   const inputKey = useMemo(() => JSON.stringify(inputs), [inputs]);
+  const sceneTitle = library.scenes.find((preset) => preset.id === scene.presetId)?.title ?? sceneTitleIn(scene.files) ?? "Your scene";
+  const currentCompilation = compilation?.key === inputKey ? compilation : null;
+  const compiled = currentCompilation?.result ?? null;
+  const compiling = Boolean(inputs && !currentCompilation);
+  const activeRun = starting || (runId !== null && stream.stoppedReason === null &&
+    stream.status?.state !== "done" && stream.status?.state !== "failed");
+  const changedRunInputs = runPlan !== null && runPlan.key !== inputKey;
 
   useEffect(() => {
     if (!inputs) {
-      setCompiled(null);
+      setCompilation(null);
       return;
     }
     let live = true;
-    setCompiling(true);
     const timer = setTimeout(() => {
       compile(inputs)
-        .then((result) => live && setCompiled(result))
-        .catch((err: unknown) => live && setFailure(messageOf(err)))
-        .finally(() => live && setCompiling(false));
+        .then((result) => live && setCompilation({ key: inputKey, result }))
+        .catch((err: unknown) => live && setCompilation({ key: inputKey, error: messageOf(err) }));
     }, COMPILE_DEBOUNCE_MS);
     return () => {
       live = false;
       clearTimeout(timer);
     };
-    // Keyed by file contents; the compile call reads `inputs` fresh.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputKey]);
+  }, [inputKey, inputs]);
 
   // A scene names its people by id, so picking one pulls in the cast it was
   // written for rather than failing validation a step later.
   const pickScene = useCallback(
     (next: Selection) => {
       setScene(next);
+      setCastChange(null);
       const required = library.scenes.find((s) => s.id === next.presetId)?.cast;
       if (!required || cast.presetId === required) return;
       const match = library.casts.find((c) => c.id === required);
-      if (match) setCast({ presetId: match.id, files: match.files });
+      if (match) {
+        setCast({ presetId: match.id, files: match.files });
+        setCastChange(`This scene uses ${match.title}. Your cast has changed to match.`);
+      }
     },
     [library, cast.presetId],
   );
@@ -81,43 +95,57 @@ export function App(): JSX.Element {
   }, []);
 
   const run = useCallback(
-    (llm: StartRunRequest["llm"], limits?: StartRunRequest["limits"]) => {
-      if (!inputs) return;
+    async (llm: StartRunRequest["llm"], limits?: StartRunRequest["limits"]) => {
+      if (!inputs || !compiled?.ok || pendingStart.current) return;
+      const request = { cancelled: false };
+      pendingStart.current = request;
+      setStarting(true);
+      setCancelling(false);
       setFailure(null);
       setRunId(null);
-      startRun({ inputs, llm, ...(limits ? { limits } : {}) })
-        .then((res) => setRunId(res.runId))
-        .catch((err: unknown) => {
-          // The busy check runs on a poll, so a start can still lose a race
-          // with someone else's. Say what happened in the app's own words —
-          // the server's sentence is written for an API caller.
-          if (err instanceof ApiRequestError && err.status === 409) {
-            setFailure("Someone else started a run just before you. Stop it above, or wait for it to finish.");
-            return;
-          }
-          setFailure(messageOf(err));
-        });
+      setRunPlan({ key: inputKey, title: sceneTitle, compiled });
+      try {
+        const res = await startRun({ inputs, llm, ...(limits ? { limits } : {}) });
+        // Aborting fetch would not cancel an accepted server run. If the user
+        // cancels before its id arrives, stop that run as soon as it does.
+        setRunId(res.runId);
+        if (request.cancelled) await stopRun(res.runId);
+      } catch (err) {
+        // A poll can lose a race to another start; preserve the server-busy explanation.
+        setFailure(err instanceof ApiRequestError && err.status === 409
+          ? "Someone else started a run just before you. Stop it above, or wait for it to finish."
+          : messageOf(err));
+      } finally {
+        pendingStart.current = null;
+        setStarting(false);
+        setCancelling(false);
+      }
     },
-    [inputs],
+    [inputs, inputKey, sceneTitle, compiled],
   );
 
   const stop = useCallback(() => {
+    if (pendingStart.current) {
+      pendingStart.current.cancelled = true;
+      setCancelling(true);
+      return;
+    }
     if (runId) void stopRun(runId).catch((err: unknown) => setFailure(messageOf(err)));
   }, [runId]);
 
-  if (!introDone) {
-    return (
+  return (
+    <>
+      {!introDone ? (
       <Intro
         onDone={() => {
           writeFlag(INTRO_SEEN);
           setIntroDone(true);
         }}
       />
-    );
-  }
-
-  return (
+      ) : null}
+      <div hidden={!introDone}>
     <Shell step={step} furthest={furthest} onStep={setStep} onHome={() => setIntroDone(false)}>
+      {presetsLoading ? <p role="status">Loading casts and scenes…</p> : null}
       {presetsError ? (
         <div className="alert alert--shell" role="alert">
           <p>
@@ -126,13 +154,18 @@ export function App(): JSX.Element {
           </p>
         </div>
       ) : null}
+      {step === "scene" && castChange ? <p className="selection-note" role="status">{castChange}</p> : null}
+      {step === "scene" && currentCompilation?.error ? (
+        <p className="alert" role="alert">Could not check this scene: {currentCompilation.error}. Edit it to retry.</p>
+      ) : null}
       {step === "cast" ? (
         <PickStep
-          title="Who is in the room?"
-          lede="Each character decides for themselves whether to speak. Pick a group, or write your own."
+          kind="cast"
+          title="Who’s in the room?"
+          lede="A cast of AI agents, each with a different way of seeing things. Choose a group, or write your own."
           presets={library.casts}
           selection={cast}
-          onSelect={setCast}
+          onSelect={(next) => { setCast(next); setCastChange(null); }}
           accept=".md,text/markdown"
           emptyHint="One markdown file per character: how they see themselves, how they talk, what they remember."
         >
@@ -145,8 +178,11 @@ export function App(): JSX.Element {
 
       {step === "scene" ? (
         <PickStep
-          title="What is happening?"
-          lede="The situation, who can see which channel, and what each of them wants but will not say."
+          kind="scene"
+          casts={library.casts}
+          activeCast={cast}
+          title="Give them something to talk about."
+          lede="Choose a situation. Each agent decides what to say, and what to keep to themselves."
           presets={library.scenes}
           selection={scene}
           onSelect={pickScene}
@@ -156,28 +192,45 @@ export function App(): JSX.Element {
           <button
             type="button"
             className="btn"
-            disabled={!compiled?.ok}
-            onClick={() => advance("run")}
+            disabled={!compiled?.ok || (activeRun && changedRunInputs)}
+            onClick={() => {
+              if (changedRunInputs && !activeRun) {
+                setRunId(null);
+                setRunPlan(null);
+                setFailure(null);
+              }
+              advance("run");
+            }}
           >
             Ready
           </button>
-          <StepStatus compiled={compiled} compiling={compiling} hasScene={scene.files.length > 0} />
+          {activeRun && changedRunInputs ? (
+            <span className="u-dim">Your current run is still going. <button type="button" className="btn--bare" onClick={() => advance("run")}>Return to the run</button> to finish or stop it first.</span>
+          ) : <StepStatus compiled={compiled} compiling={compiling} hasScene={scene.files.length > 0} />}
         </PickStep>
       ) : null}
 
-      {step === "run" ? (
+      {furthest === "run" ? (
+        <div hidden={step !== "run"}>
         <RunScreen
-          compiled={compiled}
+          visible={introDone && step === "run"}
+          sceneTitle={(runId || starting) && runPlan ? runPlan.title : sceneTitle}
+          compiled={(runId || starting) && runPlan ? runPlan.compiled : compiled}
           stream={stream}
           runId={runId}
+          starting={starting}
+          cancelling={cancelling}
           error={failure ?? stream.error}
           onRun={run}
           onStop={stop}
           onDismissError={() => setFailure(null)}
-          onReset={() => setRunId(null)}
+          onReset={() => { setRunId(null); setFailure(null); }}
         />
+        </div>
       ) : null}
     </Shell>
+      </div>
+    </>
   );
 }
 

@@ -1,152 +1,19 @@
-/*
- * A face is drawn once and never re-mounted; everything that changes is a
- * transition on an attribute the pose table supplies, or a transform on the
- * head. Blink and breath are the only motion nobody asked for, and they exist
- * because a motionless face looks broken rather than composed.
- */
-
-.figure {
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  transition: opacity var(--settle) var(--ease), filter var(--settle) var(--ease);
-}
-
-/* Present but not part of this beat. Enough to still be a person in the room. */
-.figure--aside {
-  opacity: 0.62;
-  filter: saturate(0.55);
-}
-
-/* The drawn line. Keeps a pale character legible on warm paper and makes the
-   cast read as illustration rather than flat shapes. */
-.figure__ink {
-  stroke: rgba(28, 27, 27, 0.55);
-  stroke-width: 2;
-  paint-order: stroke fill;
-}
-
-.figure__body {
-  width: 100%;
-  height: auto;
-  overflow: visible;
-  animation: figure-breathe 5.2s ease-in-out infinite;
-}
-
-.figure--speaking .figure__body {
-  animation: figure-breathe 2.6s ease-in-out infinite;
-}
-
-@keyframes figure-breathe {
-  0%,
-  100% {
-    transform: translateY(0) scaleY(1);
-  }
-  50% {
-    transform: translateY(-1.2px) scaleY(1.006);
-  }
-}
-
-/* --- the feeling, in the head itself ------------------------------------- */
-
-/* The head tilts with the feeling. Worry leans away, anger squares up and
-   comes forward, a smile lifts, shock recoils. The pose table moves the
-   features; this moves the whole face, which is what a person reads first. */
-.figure__head {
-  transform-box: fill-box;
-  transform-origin: 50% 62%;
-  transition: transform var(--settle) var(--ease);
-}
-.figure--worried .figure__head {
-  transform: rotate(-7deg) translateY(1px);
-}
-.figure--angry .figure__head {
-  transform: rotate(4deg) scale(1.04);
-}
-.figure--smile .figure__head {
-  transform: rotate(3deg) translateY(-1px);
-}
-.figure--shock .figure__head {
-  transform: scale(1.06) translateY(-2px);
-}
-.figure--tired .figure__head {
-  transform: rotate(-3deg) translateY(3px);
-}
-
-.figure__blush {
-  fill: rgba(228, 104, 118, 0.32);
-  transition: opacity var(--settle) var(--ease);
-}
-
-.figure__eye {
-  fill: var(--ink);
-  transition: ry var(--quick) var(--ease), cx var(--settle) var(--ease);
-  animation: figure-blink 5.9s steps(1, end) infinite;
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-/* Staggered so a cast does not blink in unison, which reads as a glitch. */
-.stage__mark:nth-child(3n + 2) .figure__eye {
-  animation-delay: 1.7s;
-}
-.stage__mark:nth-child(3n) .figure__eye {
-  animation-delay: 3.1s;
-}
-
-@keyframes figure-blink {
-  0%,
-  96%,
-  100% {
-    transform: scaleY(1);
-  }
-  98% {
-    transform: scaleY(0.08);
-  }
-}
-
-.figure__brow,
-.figure__mouth {
-  fill: none;
-  stroke: var(--ink);
-  stroke-width: 3.2;
-  stroke-linecap: round;
-  transition: d var(--quick) var(--ease), opacity var(--quick) var(--ease);
-}
-
-/* Talking: the mouth opens and closes while the line is up. Steps, not a
-   ramp — a mouth does not ease. */
-.figure__mouth {
-  transform-box: fill-box;
-  transform-origin: center;
-}
-.figure--speaking .figure__mouth {
-  animation: figure-talk 340ms steps(2, end) infinite;
-}
-@keyframes figure-talk {
-  0%,
-  100% {
-    transform: scaleY(1);
-  }
-  50% {
-    transform: scaleY(2.2) translateY(1px);
-  }
-}
-
-.figure__gasp {
-  fill: var(--ink);
-  transition: opacity var(--quick) var(--ease);
-}
-
-/* Sized against the room, not the viewport: a 19px tag on a 300px-wide room
-   is a third of a face's width and hides behind whoever stands in front. */
-.figure__name {
-  font-size: clamp(11px, 2.4cqw, 19px);
-  color: var(--ink-70);
-  line-height: 1;
-  white-space: nowrap;
-}
-
-.figure--speaking .figure__name {
-  color: var(--ink);
-}
+.figure { display: grid; justify-items: center; gap: 3px; min-width: 0; width: 100%; }
+.figure__body { display: block; width: 100%; height: auto; overflow: visible; }
+.figure__shadow { fill: #485b32; opacity: .13; }
+.figure__head { transform-origin: 110px 185px; transform: rotate(var(--gaze-tilt, 0deg)); transition: transform var(--settle) var(--ease); }
+.figure--worried .figure__head { transform: rotate(calc(var(--gaze-tilt, 0deg) - 3deg)); }
+.figure--angry .figure__head { transform: rotate(calc(var(--gaze-tilt, 0deg) + 2deg)) scale(1.015); }
+.figure--smile .figure__head { transform: rotate(calc(var(--gaze-tilt, 0deg) + 2deg)); }
+.figure--tired .figure__head { transform: translateY(3px) scaleY(.97); }
+.figure--shock .figure__head { transform: translateY(-2px) scale(1.025); }
+.figure__look { transition: transform var(--settle) var(--ease); }
+.figure__socket { fill: #fffbed; }
+.figure__eye, .figure__gasp { fill: #262920; transition: ry var(--quick) var(--ease), cx var(--settle) var(--ease), cy var(--settle) var(--ease); }
+.figure__brow, .figure__mouth { fill: none; stroke: #262920; stroke-width: 2.6; stroke-linecap: round; transition: d var(--quick) var(--ease), opacity var(--quick) var(--ease); }
+.figure__name { max-width: 100%; font-size: clamp(12px, 1.35vw, 15px); line-height: 1.3; text-align: center; font-weight: 650; color: var(--ink); overflow-wrap: anywhere; }
+.figure--speaking .figure__name { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+.figure--aside .figure__body { filter: saturate(.7); }
+.stage--playing .figure--speaking .figure__mouth, .stage--playing .figure--speaking .figure__gasp { transform-box: fill-box; transform-origin: center; animation: figure-talk 420ms steps(2, end) infinite; }
+@keyframes figure-talk { 50% { transform: scaleY(.75); } }
+@media (prefers-reduced-motion: reduce) { .figure *, .figure { transition: none !important; animation: none !important; } }

@@ -1,26 +1,6 @@
-/*
- * The room is a fixed-aspect box so the slot geometry means what it says.
- * Everything inside is positioned in percentages of it.
- *
- * The height cap lives on the column's width rather than on the room's
- * max-height so that everything in the column — the caption, the contact
- * sheet — is exactly as wide as the room it describes. The room itself would
- * have been 16:7 either way: a browser transfers a max-height through an
- * aspect-ratio into the width.
- */
-
-.flipbook {
-  width: min(100%, calc(44vh * 16 / 7));
-  display: grid;
-  gap: 14px;
-  padding-top: 20px;
-}
-
-.stage {
-  display: grid;
-  min-height: 0;
-}
-
+/* Words and cast are separate flow rows; neither can overlap the other. */
+.flipbook { width: 100%; min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; padding-top: 20px; }
+.stage { display: grid; min-width: 0; }
 /* --- the pages ----------------------------------------------------------- */
 
 /*
@@ -30,6 +10,7 @@
  */
 .pages {
   display: grid;
+  min-width: 0;
   perspective: 1200px;
 }
 
@@ -92,272 +73,45 @@
   }
 }
 
-.stage__room {
-  position: relative;
-  overflow: hidden;
-  /* Name tags are sized against the room, see figure.css. */
-  container-type: inline-size;
-  aspect-ratio: 16 / 7;
-  border-radius: var(--r-xl);
-  background: var(--paper-warm);
-  box-shadow: var(--ring), var(--lift);
-  transition: background var(--settle) var(--ease), box-shadow var(--settle) var(--ease);
-}
 
-/* A phone is taller than it is wide; so is the room there. The slot fractions
-   are the same, so figures stand shorter against a taller room and balloons
-   have the headroom they never had at 153px. */
+.stage__room { container-type: inline-size; min-width: 0; background: #ecefdf; border: 1px solid #d4dac5; padding: 20px 24px 16px; }
+.stage--private .stage__room { background: #f0e7df; border-color: #d4c5b6; }
+.stage--unspoken .stage__room { background: #edf0e3; }
+.stage__where { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; max-width: none; color: #48523d; font-size: 13px; line-height: 1.4; }
+.stage__channel { margin-left: auto; font-size: 12px; color: #58624d; overflow-wrap: anywhere; }
+.stage__dialogue { display: grid; place-items: start center; min-height: 165px; padding: 28px 0 30px; }
+.stage__pause { align-self: center; font-size: 23px; color: #505843; }
+.stage__cast { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px 24px; align-items: flex-start; width: min(100%, calc(var(--cast-columns) * 230px + (var(--cast-columns) - 1) * 24px)); margin: 0 auto; }
+.stage__mark { position: relative; flex: 0 0 calc((100% - (var(--cast-columns) - 1) * 24px) / var(--cast-columns)); max-width: 230px; min-width: 0; text-align: center; }
+.stage__cast[data-count="1"] .stage__mark { flex-basis: 220px; }
+.stage__cast[data-count="4"], .stage__cast[data-count="5"], .stage__cast[data-count="6"] { max-width: calc(var(--cast-columns) * 170px + (var(--cast-columns) - 1) * 24px); }
+.stage__cast[data-count="4"] .stage__mark, .stage__cast[data-count="5"] .stage__mark, .stage__cast[data-count="6"] .stage__mark { max-width: 170px; }
+.stage__expression { display: block; font-size: 12px; line-height: 1.3; color: #525b47; min-height: 16px; margin-top: 6px; overflow-wrap: anywhere; }
+.stage__visibility { font-size: 12px; line-height: 1.5; color: #48513d; text-align: center; }
+.stage__visibility:has(p) { border-top: 1px solid #c7cfb6; padding-top: 12px; margin-top: 16px; }
+.stage__visibility p { max-width: none; overflow-wrap: anywhere; }
+.stage__visibility p + p { margin-top: 5px; }
+.stage__utterance { min-height: 24px; }
+.bubbles { width: min(100%, 555px); }
+.bubble { background: #fffef7; border: 1.5px solid #373a2f; border-radius: 12px; padding: 18px 26px 22px; box-shadow: 0 3px 0 #d6dccb; }
+.bubble--thought { border-style: dashed; border-color: #596e43; border-radius: 34px; box-shadow: none; }
+.bubble__speaker { max-width: none; font-size: 12px; line-height: 1.45; margin-bottom: 8px; overflow-wrap: anywhere; color: #30372b; }
+.bubble__said, .bubble__thought { max-width: none; color: #262920; font-size: clamp(21px, 2.45vw, 29px); line-height: 1.25; overflow-wrap: anywhere; white-space: pre-wrap; }
+.bubble__thought { font-size: clamp(21px, 2.3vw, 27px); }
 @media (max-width: 640px) {
-  .stage__room {
-    aspect-ratio: 4 / 3;
-  }
-}
-
-/* Above the balloons, on its own paper: a balloon that could not fit above a
-   back-row head reaches the top of the room, and the room's name must still
-   be readable over it. */
-.stage__where {
-  position: absolute;
-  top: 10px;
-  left: 12px;
-  max-width: calc(100% - 24px);
-  padding: 3px 8px;
-  border-radius: var(--r-pill);
-  background: var(--paper-warm);
-  font-size: 12.5px;
-  color: var(--ink-50);
-  z-index: 500;
-  /* One line. A small room shows the start and the title has the rest. */
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.stage__glyph {
-  margin-right: 7px;
-}
-.stage--thought .stage__where {
-  background: var(--paper);
-}
-
-.stage__glyph {
-  color: var(--ink-30);
-}
-
-/* The excluded person, named. A private channel is only interesting because
-   somebody is outside it. */
-.stage__shut-out {
-  color: var(--ink-30);
-  font-style: italic;
-  margin-left: 8px;
-}
-.stage__shut-out::before {
-  content: "— ";
-}
-
-/* A private room is not signalled with a colour. The paper warms and the edge
-   goes dashed, which reads as "somewhere else" without adding a hue. */
-.stage--private .stage__room {
-  background: #f7f3ec;
-  box-shadow: inset 0 0 0 1px var(--rule-strong), var(--lift);
-}
-.stage--private .stage__room::after {
-  content: "";
-  position: absolute;
-  inset: 9px;
-  border: 1px dashed var(--rule-strong);
-  border-radius: calc(var(--r-xl) - 6px);
-  pointer-events: none;
-}
-
-/* A thought is one person and nowhere in particular. */
-.stage--thought .stage__room {
-  background: var(--paper);
-}
-
-/* Scaled about the feet, so a figure standing further back keeps its mark
-   instead of drifting up out of the frame. */
-/* Arriving figures walk in with the room rather than appearing in place. */
-.stage__room .stage__mark {
-  animation: figure-arrive 520ms var(--ease) both;
-}
-.stage__room .stage__mark:nth-child(3) {
-  animation-delay: 70ms;
-}
-.stage__room .stage__mark:nth-child(4) {
-  animation-delay: 140ms;
-}
-.stage__room .stage__mark:nth-child(5) {
-  animation-delay: 210ms;
-}
-
-@keyframes figure-arrive {
-  from {
-    opacity: 0;
-  }
-}
-
-.stage__mark {
-  position: absolute;
-  width: 18%;
-  transform-origin: 50% 100%;
-  transition: left var(--settle) var(--ease), top var(--settle) var(--ease),
-    transform var(--settle) var(--ease);
-}
-
-.stage__utterance {
-  display: grid;
-  gap: 10px;
-  align-content: start;
-  min-height: 34px;
-}
-
-/* --- balloons ------------------------------------------------------------ */
-
-/*
- * A balloon belongs to a person, so it hangs off their mark and points back at
- * them. Speech is paper with a hard tail; thought is a soft cloud with a trail
- * of dots, in the marker hand — the two must never be mistakable for each
- * other, because the whole point is that one was said and one was not.
- */
-/*
- * One stack per beat, its bottom pinned just above the speaker's head. Growing
- * upward from there means two balloons need no hand-tuned offset and cannot
- * overlap each other; column-reverse keeps the spoken line nearest the mouth
- * and the thought further back, which is the order they should be read in.
- */
-.bubbles {
-  position: absolute;
-  z-index: 400;
-  width: max-content;
-  max-width: min(46%, 340px);
-  animation: bubble-in 300ms var(--ease) both;
-}
-
-.bubbles--right {
-  transform: translateX(-16%);
-}
-.bubbles--left {
-  transform: translateX(-84%);
-}
-
-/* Beside the head rather than over it, when there was no room above. The
-   inner edge sits just clear of the figure and the tail still hangs on that
-   side, pointing down at whose line it is. */
-.bubbles--right.bubbles--beside {
-  transform: translateX(0);
-}
-.bubbles--left.bubbles--beside {
-  transform: translateX(-100%);
-}
-
-@keyframes bubble-in {
-  from {
-    opacity: 0;
-  }
-}
-
-.bubble {
-  position: relative;
-  min-width: 124px;
-  max-width: 100%;
-  padding: 11px 15px;
-  animation: bubble-rise 300ms var(--ease) both;
-}
-
-@keyframes bubble-rise {
-  from {
-    opacity: 0;
-    transform: translateY(7px) scale(0.97);
-  }
-}
-
-.bubble--speech {
-  background: var(--paper);
-  border-radius: var(--r-lg);
-  box-shadow: inset 0 0 0 1.5px rgba(28, 27, 27, 0.55);
-}
-
-.bubble__said {
-  font-size: clamp(13.5px, 1.2vw, 16px);
-  line-height: 1.38;
-  max-width: none;
-}
-
-/* A hard tail, drawn as a triangle with the same ink line as the balloon. */
-.bubble--speech .bubble__tail {
-  position: absolute;
-  bottom: -9px;
-  width: 18px;
-  height: 10px;
-  background: var(--paper);
-  clip-path: polygon(0 0, 100% 0, 22% 100%);
-  border-bottom: 1.5px solid rgba(28, 27, 27, 0.55);
-}
-.bubbles--right .bubble--speech .bubble__tail {
-  left: 22px;
-}
-.bubbles--left .bubble--speech .bubble__tail {
-  right: 22px;
-  clip-path: polygon(0 0, 100% 0, 78% 100%);
-}
-
-/* Thought: no straight edges anywhere, and it trails away instead of pointing. */
-.bubble--thought {
-  /* No straight edges and no hard line: a thought is soft-bordered so it can
-     never be mistaken for something that was actually said. */
-  background: var(--paper-warm);
-  border-radius: 26px 24px 28px 22px / 24px 28px 22px 26px;
-  box-shadow: inset 0 0 0 1.5px var(--rule-strong);
-  padding: 12px 18px;
-}
-
-.bubble__thought {
-  font-size: clamp(16px, 1.6vw, 20px);
-  line-height: 1.3;
-  color: var(--ink-70);
-  max-width: none;
-}
-
-.bubble--thought .bubble__tail {
-  position: absolute;
-  bottom: -22px;
-  width: 30px;
-  height: 24px;
-}
-.bubbles--right .bubble--thought .bubble__tail {
-  left: 20px;
-}
-.bubbles--left .bubble--thought .bubble__tail {
-  right: 20px;
-}
-.bubble--thought .bubble__tail::before,
-.bubble--thought .bubble__tail::after {
-  content: "";
-  position: absolute;
-  border-radius: 50%;
-  background: var(--paper);
-  box-shadow: inset 0 0 0 1.5px var(--rule-strong);
-}
-.bubble--thought .bubble__tail::before {
-  width: 11px;
-  height: 11px;
-  top: 0;
-  left: 2px;
-}
-.bubble--thought .bubble__tail::after {
-  width: 6px;
-  height: 6px;
-  top: 14px;
-  left: 0;
-}
-.bubbles--left .bubble--thought .bubble__tail::before {
-  left: auto;
-  right: 2px;
-}
-.bubbles--left .bubble--thought .bubble__tail::after {
-  left: auto;
-  right: 0;
+  .stage__room { padding: 16px 12px 14px; }
+  .stage__where { font-size: 11px; gap: 5px; }
+  .stage__channel { font-size: 11px; }
+  .stage__dialogue { padding: 22px 3px 28px; min-height: 175px; }
+  .bubble { padding: 16px 19px 20px; border-radius: 10px; }
+  .bubble--thought { border-radius: 28px; }
+  .bubble__said, .bubble__thought { font-size: 23px; }
+  .bubble__speaker { font-size: 11px; }
+  .stage__cast { gap: 20px 5px; }
+  .stage__mark { flex-basis: calc((100% - (var(--cast-columns) - 1) * 5px) / var(--cast-columns)); }
+  .stage__cast[data-count="1"] .stage__mark { flex-basis: 160px; }
+  .stage__expression { font-size: 11px; margin-top: 5px; }
+  .stage__visibility { font-size: 11px; }
 }
 
 /* --- the contact sheet --------------------------------------------------- */
@@ -370,6 +124,7 @@
  */
 .sheet {
   display: flex;
+  min-width: 0;
   gap: 6px;
   padding: 8px;
   overflow-x: auto;
@@ -384,8 +139,8 @@
 .sheet__frame {
   flex: 0 0 auto;
   width: 64px;
-  height: 28px;
-  padding: 0;
+  height: 44px;
+  padding: 8px 0;
   border: 0;
   background: none;
   border-radius: var(--r-xs);
@@ -406,7 +161,8 @@
 @media (max-width: 640px) {
   .sheet__frame {
     width: 48px;
-    height: 21px;
+    height: 44px;
+    padding: 11.5px 0;
   }
 }
 
@@ -481,6 +237,6 @@
 }
 
 .attribution__reading {
-  color: var(--ink-30);
-  font-size: 11.5px;
+  color: #58614e;
+  font-size: 12px;
 }

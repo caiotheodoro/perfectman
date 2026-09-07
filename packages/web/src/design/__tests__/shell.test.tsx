@@ -9,6 +9,14 @@ import { Shell } from "../Shell.js";
 describe("Shell", () => {
   afterEach(cleanup);
 
+  it("focuses the new step heading when moving through the flow", () => {
+    const props = { furthest: "scene" as const, onStep: vi.fn(), onHome: vi.fn() };
+    const { getByRole, rerender } = render(<Shell {...props} step="cast"><h2>Cast</h2></Shell>);
+    expect(document.activeElement).toBe(getByRole("heading", { name: "Cast" }));
+    rerender(<Shell {...props} step="scene"><h2>Scene</h2></Shell>);
+    expect(document.activeElement).toBe(getByRole("heading", { name: "Scene" }));
+  });
+
   it("shows the landing when the mark is clicked", () => {
     const onHome = vi.fn();
     const { getByRole } = render(

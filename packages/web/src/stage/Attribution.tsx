@@ -4,9 +4,10 @@
  * Separate from the room so a page turn rotates the picture and not the
  * caption: the caption is the reader's, the picture is the scene's.
  */
-import { chipFor, chipIndexFor, emotionLabel, type LiveChannel, type StageBeat } from "@perfectman/shared";
+import { chipIndexFor, emotionLabel, type LiveChannel, type StageBeat } from "@perfectman/shared";
 import { roomLabel } from "./room-label.js";
-import type { StageAgent } from "./Stage.js";
+import { audienceFor, type StageAgent } from "./Stage.js";
+import { agentColor } from "./Figure.js";
 
 export function Attribution({
   beat,
@@ -31,9 +32,9 @@ export function Attribution({
   return (
     <div className="stage__utterance">
       <p className="attribution">
-        <span className="attribution__chip" style={{ background: chipFor(chipIndexFor(beat.actorId ?? "", ids)) }} />
+        <span className="attribution__chip" style={{ background: agentColor(chipIndexFor(beat.actorId ?? "", ids)) }} />
         <strong>{nameOf(agents, beat.actorId)}</strong>
-        <span className="u-dim">{describe(beat, agents, roomLabel(channel, agents))}</span>
+        <span className="u-dim">{describe(beat, agents, channel)}</span>
         {caption ? <span className="attribution__reading">{caption}</span> : null}
       </p>
     </div>
@@ -41,15 +42,16 @@ export function Attribution({
 }
 
 /** One plain sentence about what kind of moment this is. */
-function describe(beat: StageBeat, agents: readonly StageAgent[], channelName: string | undefined): string {
-  if (beat.kind === "silence") return "says nothing this turn";
-  if (beat.kind === "aside") return "what they were actually after";
+function describe(beat: StageBeat, agents: readonly StageAgent[], channel: LiveChannel | undefined): string {
+  const channelName = roomLabel(channel, agents);
+  if (beat.kind === "silence") return `says nothing this turn${beat.thought?.text || beat.text ? " · viewer-only thought" : ""}`;
+  if (beat.kind === "aside") return "unspoken thought · viewer only";
   if (beat.kind === "event") return describeAction(beat, agents, channelName);
-  if (beat.audienceIds.length > 0) {
-    const who = beat.audienceIds.map((id) => nameOf(agents, id)).join(", ");
+  if (beat.audienceIds.length > 0 || channel?.type === "private_channel") {
+    const who = audienceFor(beat, channel).map((id) => nameOf(agents, id)).join(", ");
     return `— only ${who} can see this`;
   }
-  return channelName ? `in ${channelName}` : "";
+  return channelName ? `out loud in ${channelName}` : "out loud";
 }
 
 /**
