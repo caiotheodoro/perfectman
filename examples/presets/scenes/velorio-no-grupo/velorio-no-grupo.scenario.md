@@ -44,13 +44,14 @@ priorEvents:
     channelId: grupo
     pulseIndex: 0
     minutesAgo: 40
-    payload: { content: "pin this. ele ia querer. honrem o bit" }
+    payload: { content: "pin this. ele ia querer. honrem o bit pqp não tira" }
 ---
 
 ## Room Context
 Um sexto amigo morreu. O enterro é amanhã. A família pediu pra vocês não irem.
 Um print da última piada dele está pinado há quarenta minutos. O luto está
-tentando ser banter, e está falhando.
+tentando ser banter, e está falhando. Ninguém sabe se xingar é respeito ou se
+calar é pior.
 
 ## Starting Mood
 luto se apresentando como zoação, e não aguentando
@@ -74,7 +75,7 @@ Breaking point: o Goulart diz "a gente vai" no grupo
 ### Hidden Objective
 Todos vão e fazem roast, porque silêncio significa que a pessoa realmente foi (resource: the_funeral)
 Constraint: não pode dizer que não aguenta sentar numa sala quieta
-Cost of exposure: o homem que precisou de show num enterro
+Cost of exposure: o homem que precisou de show num enterro, caralho
 Breaking point: o Caio encaminha a mensagem da mãe
 
 ## Agent: jota
