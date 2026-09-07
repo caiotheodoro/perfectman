@@ -103,7 +103,7 @@ export const Stage = memo(function Stage({ beat, placement, agents, channels, id
             was not, which is the distinction this interface exists to draw, and
             two of them over one head do not fit above a figure at the back of
             the room. */}
-        {beat && speaker && (beat.text || beat.thought) ? (
+        {beat && speaker && beat.kind !== "event" && (beat.text || beat.thought) ? (
           <Bubble
             key={beat.id}
             speaker={speakerRef}

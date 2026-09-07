@@ -194,3 +194,16 @@ describe("pulseToBeats — reactions", () => {
     expect(Object.keys(beat?.reactions ?? {})).toEqual(["marcela"]);
   });
 });
+
+describe("pulseToBeats — a stage action is not a line", () => {
+  it("never puts the channel's name in a balloon when a room is opened", () => {
+    const beats = pulseToBeats(
+      frame({ messages: [message({ eventType: "channel_created", channelId: "dm", text: "conversa_privada", visibleToAgents: ["iris", "marcela"] })] }),
+      CONTEXT,
+    );
+    expect(beats[0]?.kind).toBe("event");
+    expect(beats[0]?.stageAction?.kind).toBe("invite");
+    expect(beats[0]?.text).toBe("");
+    expect(beats[0]?.duration).toBeLessThanOrEqual(2);
+  });
+});

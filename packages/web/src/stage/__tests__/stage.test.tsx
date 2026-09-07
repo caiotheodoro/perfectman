@@ -99,3 +99,12 @@ describe("Stage reactions", () => {
     expect(faces["bruno"]).toBe("neutral");
   });
 });
+
+describe("Stage events", () => {
+  it("draws no balloon for someone arriving, leaving or opening a room", () => {
+    const b = beat({ kind: "event", text: "conversa_privada", stageAction: { kind: "invite", agentIds: ["iris"] } });
+    const [placement] = placeBeats([b], AGENTS, CHANNELS);
+    const { container } = render(<Stage beat={b} placement={placement!} agents={AGENTS} channels={CHANNELS} ids={IDS} />);
+    expect(container.querySelector(".bubbles")).toBeNull();
+  });
+});
