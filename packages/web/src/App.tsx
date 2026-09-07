@@ -10,6 +10,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import type { CompileResponse, StartRunRequest, UploadedFile } from "@perfectman/shared";
 import { ApiRequestError, compile, startRun, stopRun } from "./api/client.js";
+import { API_BASE, IS_SPLIT_DEPLOY } from "./api/origin.js";
 import { useRunStream } from "./api/useRunStream.js";
 import { Shell, type StepId } from "./design/Shell.js";
 import { Intro } from "./onboarding/Intro.js";
@@ -27,7 +28,7 @@ export function App(): JSX.Element {
   const [step, setStep] = useState<StepId>("cast");
   const [furthest, setFurthest] = useState<StepId>("cast");
 
-  const { library } = usePresets();
+  const { library, error: presetsError } = usePresets();
   const [cast, setCast] = useState<Selection>(NOTHING);
   const [scene, setScene] = useState<Selection>(NOTHING);
 
@@ -108,6 +109,14 @@ export function App(): JSX.Element {
 
   return (
     <Shell step={step} furthest={furthest} onStep={setStep}>
+      {presetsError ? (
+        <div className="alert alert--shell" role="alert">
+          <p>
+            Could not reach the run server{IS_SPLIT_DEPLOY ? ` at ${API_BASE}` : ""}: {presetsError}. You can still
+            write your own cast and scene below.
+          </p>
+        </div>
+      ) : null}
       {step === "cast" ? (
         <PickStep
           title="Who is in the room?"

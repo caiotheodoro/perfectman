@@ -263,6 +263,12 @@
   margin: 0;
 }
 
+/* Above a step rather than inside one. */
+.alert--shell {
+  max-width: var(--shell);
+  margin: 20px auto 0;
+}
+
 .alert-inline {
   color: #b1120b;
 }
