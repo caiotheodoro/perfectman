@@ -69,13 +69,13 @@ export function Panel({
   }, [leaving]);
 
   return (
-    <div className="panel">
+    <div className="pages">
       {leaving ? (
-        <div key={leaving.roomKey} className={`panel__page panel__page--leave-${leaving.dir}`} aria-hidden="true">
+        <div key={leaving.roomKey} className={`pages__page pages__page--leave-${leaving.dir}`} aria-hidden="true">
           <Stage beat={leaving.beat} placement={leaving.placement} agents={agents} channels={channels} ids={ids} />
         </div>
       ) : null}
-      <div key={current.roomKey} className={`panel__page panel__page--enter-${direction.current}`}>
+      <div key={current.roomKey} className={`pages__page pages__page--enter-${direction.current}`}>
         <Stage beat={beat} placement={placement} agents={agents} channels={channels} ids={ids} />
       </div>
     </div>

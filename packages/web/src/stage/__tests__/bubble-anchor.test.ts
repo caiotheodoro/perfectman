@@ -8,7 +8,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { FIGURE_HEIGHT_FRACTION, headTopFor, slotsFor } from "@perfectman/shared";
-import { BUBBLE_MARGIN, bubbleBottom } from "../useBubbleAnchor.js";
+import { BUBBLE_MARGIN, bubbleBottom, bubbleClamped } from "../useBubbleAnchor.js";
 
 const ROOM = 300;
 
@@ -52,5 +52,18 @@ describe("bubbleBottom", () => {
     // The real head is measured once laid out; this is only what the balloon
     // uses on its first frame, so it should be the drawing's own geometry.
     expect(FIGURE_HEIGHT_FRACTION).toBeCloseTo(0.15 * 1.68 * (16 / 7), 10);
+  });
+});
+
+describe("bubbleClamped", () => {
+  it("is false when the balloon fits above the head", () => {
+    expect(bubbleClamped(0.6, ROOM, 60)).toBe(false);
+  });
+
+  it("is true when the balloon had to slide down over the figure", () => {
+    // Back row, a full page of text: the only place it fits is over the face,
+    // and the caller should move it beside the head instead.
+    const headTop = headTopFor(slotsFor("public")[4]!);
+    expect(bubbleClamped(headTop, ROOM, 150)).toBe(true);
   });
 });

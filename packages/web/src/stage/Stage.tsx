@@ -103,6 +103,7 @@ export const Stage = memo(function Stage({ beat, placement, agents, channels, id
             speaker={speakerRef}
             headTopGuess={headTopFor(speaker.point)}
             x={speaker.point.x}
+            scale={speaker.point.scale}
             contentKey={beat.id}
             thought={beat.thought?.text}
             said={beat.text}

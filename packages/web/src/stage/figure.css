@@ -92,8 +92,10 @@
   transition: opacity var(--quick) var(--ease);
 }
 
+/* Sized against the room, not the viewport: a 19px tag on a 300px-wide room
+   is a third of a figure's width and hides behind whoever stands in front. */
 .figure__name {
-  font-size: 19px;
+  font-size: clamp(11px, 2.4cqw, 19px);
   color: var(--ink-70);
   line-height: 1;
   white-space: nowrap;

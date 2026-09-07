@@ -2,10 +2,11 @@
  * The room is a fixed-aspect box so the slot geometry means what it says.
  * Everything inside is positioned in percentages of it.
  *
- * The aspect is enforced through the width, not a max-height: a box with
- * `aspect-ratio` and a `max-height` stops being that aspect the moment the cap
- * bites, and then the figures — sized by width — are the wrong height for the
- * room. Capping the column's width keeps the room 16:7 at every viewport.
+ * The height cap lives on the column's width rather than on the room's
+ * max-height so that everything in the column — the caption, the contact
+ * sheet — is exactly as wide as the room it describes. The room itself would
+ * have been 16:7 either way: a browser transfers a max-height through an
+ * aspect-ratio into the width.
  */
 
 .flipbook {
@@ -20,39 +21,49 @@
   min-height: 0;
 }
 
-/* --- the page ------------------------------------------------------------ */
+/* --- the pages ----------------------------------------------------------- */
 
 /*
  * Two pages at most, stacked in one grid cell: the one leaving and the one
  * arriving. The leaving page is a snapshot that keeps its own DOM, so figures
- * keep breathing while it goes. `clip` rather than `hidden`, because the 6%
- * slide must not give the whole document a horizontal scrollbar.
+ * keep breathing while it goes.
  */
-.panel {
+.pages {
   display: grid;
   perspective: 1200px;
-  overflow-x: clip;
 }
 
-.panel__page {
+/* On a phone the column is the whole width, so the 6% slide would give the
+   document a horizontal scrollbar for half a second. Clip it there, and drop
+   the room's ambient shadow, which a clip would cut into bands. */
+@media (max-width: 640px) {
+  .pages {
+    overflow-x: clip;
+  }
+  .stage__room {
+    box-shadow: var(--ring);
+  }
+}
+
+.pages__page {
   grid-area: 1 / 1;
   min-width: 0;
   transform-origin: 50% 50%;
   will-change: transform, opacity;
 }
 
-.panel__page--leave-forward {
+.pages__page--leave-forward {
   animation: page-leave-forward var(--turn) var(--ease) both;
   pointer-events: none;
 }
-.panel__page--enter-forward {
+.pages__page--enter-forward {
   animation: page-enter-forward var(--turn) var(--ease) both;
 }
-.panel__page--leave-back {
+.pages__page--leave-back {
   animation: page-leave-back var(--turn) var(--ease) both;
   pointer-events: none;
 }
-.panel__page--enter-back {
+.pages__page--enter-back {
   animation: page-enter-back var(--turn) var(--ease) both;
 }
 
@@ -84,6 +95,8 @@
 .stage__room {
   position: relative;
   overflow: hidden;
+  /* Name tags are sized against the room, see figure.css. */
+  container-type: inline-size;
   aspect-ratio: 16 / 7;
   border-radius: var(--r-xl);
   background: var(--paper-warm);
@@ -100,17 +113,26 @@
   }
 }
 
+/* Above the balloons, on its own paper: a balloon that could not fit above a
+   back-row head reaches the top of the room, and the room's name must still
+   be readable over it. */
 .stage__where {
   position: absolute;
-  top: 14px;
-  left: 18px;
+  top: 10px;
+  left: 12px;
   display: flex;
   align-items: baseline;
   gap: 8px;
+  padding: 3px 8px;
+  border-radius: var(--r-pill);
+  background: var(--paper-warm);
   font-size: 12.5px;
   color: var(--ink-50);
   z-index: 500;
   max-width: none;
+}
+.stage--thought .stage__where {
+  background: var(--paper);
 }
 
 .stage__where > span:first-child {
@@ -211,6 +233,16 @@
 }
 .bubbles--left {
   transform: translateX(-84%);
+}
+
+/* Beside the head rather than over it, when there was no room above. The
+   inner edge sits just clear of the figure and the tail still hangs on that
+   side, pointing down at whose line it is. */
+.bubbles--right.bubbles--beside {
+  transform: translateX(0);
+}
+.bubbles--left.bubbles--beside {
+  transform: translateX(-100%);
 }
 
 @keyframes bubble-in {

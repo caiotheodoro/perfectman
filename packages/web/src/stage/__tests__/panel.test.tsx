@@ -42,24 +42,24 @@ describe("Panel", () => {
 
   it("shows one page in one room", () => {
     const { container } = render(panelAt(0));
-    expect(container.querySelectorAll(".panel__page")).toHaveLength(1);
+    expect(container.querySelectorAll(".pages__page")).toHaveLength(1);
   });
 
   it("does not turn between two lines in the same room", () => {
     const { container, rerender } = render(panelAt(0));
     rerender(panelAt(1));
-    expect(container.querySelectorAll(".panel__page")).toHaveLength(1);
+    expect(container.querySelectorAll(".pages__page")).toHaveLength(1);
     expect(container.textContent).toContain("line b");
   });
 
   it("keeps the leaving page up for the turn, still showing its own line", () => {
     const { container, rerender } = render(panelAt(1));
     rerender(panelAt(2));
-    const pages = container.querySelectorAll(".panel__page");
+    const pages = container.querySelectorAll(".pages__page");
     expect(pages).toHaveLength(2);
-    expect(pages[0]?.className).toContain("panel__page--leave-forward");
+    expect(pages[0]?.className).toContain("pages__page--leave-forward");
     expect(pages[0]?.textContent).toContain("line b");
-    expect(pages[1]?.className).toContain("panel__page--enter-forward");
+    expect(pages[1]?.className).toContain("pages__page--enter-forward");
     expect(pages[1]?.textContent).toContain("line c");
   });
 
@@ -69,15 +69,15 @@ describe("Panel", () => {
     act(() => {
       vi.advanceTimersByTime(TURN_MS + 1);
     });
-    expect(container.querySelectorAll(".panel__page")).toHaveLength(1);
+    expect(container.querySelectorAll(".pages__page")).toHaveLength(1);
   });
 
   it("turns the other way when seeking backwards", () => {
     const { container, rerender } = render(panelAt(3));
     rerender(panelAt(0));
-    const pages = container.querySelectorAll(".panel__page");
-    expect(pages[0]?.className).toContain("panel__page--leave-back");
-    expect(pages[1]?.className).toContain("panel__page--enter-back");
+    const pages = container.querySelectorAll(".pages__page");
+    expect(pages[0]?.className).toContain("pages__page--leave-back");
+    expect(pages[1]?.className).toContain("pages__page--enter-back");
   });
 
   it("never holds more than one leaving page under rapid seeks", () => {
@@ -85,14 +85,14 @@ describe("Panel", () => {
     rerender(panelAt(2));
     rerender(panelAt(0));
     rerender(panelAt(3));
-    expect(container.querySelectorAll(".panel__page")).toHaveLength(2);
+    expect(container.querySelectorAll(".pages__page")).toHaveLength(2);
   });
 
   it("swaps instantly when the reader asked for less motion", () => {
     vi.spyOn(motion, "reducedMotion").mockReturnValue(true);
     const { container, rerender } = render(panelAt(1));
     rerender(panelAt(2));
-    expect(container.querySelectorAll(".panel__page")).toHaveLength(1);
+    expect(container.querySelectorAll(".pages__page")).toHaveLength(1);
     expect(container.textContent).toContain("line c");
   });
 });

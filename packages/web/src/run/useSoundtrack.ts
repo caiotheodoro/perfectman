@@ -82,9 +82,12 @@ export function useSoundtrack(beat: StageBeat | undefined, active: boolean, play
   wantBeds.current = active && !muted && !volumeLocked.current;
 
   // A refusal to play is shown, not stored: the control stops claiming sound
-  // that is not there, and the next run gets to try again.
+  // that is not there, and the next run gets to try again. An interrupted
+  // play() is not a refusal — unlock pauses elements on purpose.
   const start = useCallback((audio: HTMLAudioElement) => {
-    void audio.play().catch(() => setMuted(true));
+    void audio.play().catch((error: unknown) => {
+      if (isPlaybackRefusal(error)) setMuted(true);
+    });
   }, []);
 
   useEffect(() => {
@@ -169,6 +172,17 @@ export function useSoundtrack(beat: StageBeat | undefined, active: boolean, play
       });
     },
   };
+}
+
+/**
+ * Whether a rejected play() means the browser said no. Autoplay policy and an
+ * unplayable file are refusals. An AbortError is a play() interrupted by a
+ * pause() — which `unlock` does deliberately while a bed may already be
+ * starting — and means nothing about whether sound is allowed.
+ */
+export function isPlaybackRefusal(error: unknown): boolean {
+  const name = error instanceof Error ? error.name : "";
+  return name === "NotAllowedError" || name === "NotSupportedError";
 }
 
 /** Whatever fade is running on an element; a new target cancels it. */

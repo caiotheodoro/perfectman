@@ -11,6 +11,7 @@ export function Bubble({
   speaker,
   headTopGuess,
   x,
+  scale,
   contentKey,
   said,
   thought,
@@ -20,17 +21,27 @@ export function Bubble({
   /** Fraction from the room's top, used until the mark has been laid out. */
   headTopGuess: number;
   x: number;
+  /** The speaker's slot scale; a mark is 15% of the room wide at scale 1. */
+  scale: number;
   contentKey: string;
   said: string;
   thought?: string;
 }): JSX.Element {
-  const { ref, bottom } = useBubbleAnchor(speaker, headTopGuess, contentKey);
+  const { ref, bottom, beside } = useBubbleAnchor(speaker, headTopGuess, contentKey);
   // Balloons open away from the nearest wall, so an edge figure's does not run
   // off the side of the room.
   const side = x > 0.5 ? "left" : "right";
+  // A balloon that could not fit above the head sits beside it instead, clear
+  // of the figure: half a mark's width plus a little, on the open side.
+  const clearance = beside ? 0.075 * scale + 0.015 : 0;
+  const left = side === "right" ? x + clearance : x - clearance;
 
   return (
-    <div ref={ref} className={`bubbles bubbles--${side}`} style={{ left: `${x * 100}%`, bottom }}>
+    <div
+      ref={ref}
+      className={`bubbles bubbles--${side}${beside ? " bubbles--beside" : ""}`}
+      style={{ left: `${left * 100}%`, bottom }}
+    >
       {thought !== undefined ? (
         <div className="bubble bubble--thought">
           <p className="bubble__thought u-hand">{thought}</p>

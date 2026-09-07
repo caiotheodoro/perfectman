@@ -38,6 +38,21 @@ export function bubbleBottom(
 }
 
 /**
+ * Whether the balloon could not fit above the head and had to slide down over
+ * the figure. The caller moves it beside the head instead: a balloon over a
+ * picture is fine, a balloon over the speaker's face is not.
+ */
+export function bubbleClamped(
+  headTop: number,
+  roomHeight: number,
+  bubbleHeight: number,
+  margin = BUBBLE_MARGIN,
+): boolean {
+  const wanted = (1 - headTop) * roomHeight + roomHeight * 0.02;
+  return wanted > roomHeight - bubbleHeight - margin;
+}
+
+/**
  * Where the drawn head begins, as a fraction of the room's height, from the
  * figure's and the room's on-screen boxes. Both boxes move together under a
  * page turn's translate, and the ratio cancels it.
@@ -54,9 +69,10 @@ export function useBubbleAnchor(
   headTopGuess: number,
   /** Changes whenever the content does, so the measurement is redone. */
   key: string,
-): { ref: RefObject<HTMLDivElement>; bottom: string } {
+): { ref: RefObject<HTMLDivElement>; bottom: string; beside: boolean } {
   const ref = useRef<HTMLDivElement>(null);
   const [bottom, setBottom] = useState(`${(1 - headTopGuess) * 100 + 2}%`);
+  const [beside, setBeside] = useState(false);
 
   useLayoutEffect(() => {
     const node = ref.current;
@@ -70,6 +86,7 @@ export function useBubbleAnchor(
       const headTop =
         (figure && measuredHeadTop(figure.getBoundingClientRect(), room.getBoundingClientRect())) ?? headTopGuess;
       setBottom(`${bubbleBottom(headTop, roomHeight, node.offsetHeight)}px`);
+      setBeside(bubbleClamped(headTop, roomHeight, node.offsetHeight));
     };
     place();
 
@@ -80,5 +97,5 @@ export function useBubbleAnchor(
     return () => watcher.disconnect();
   }, [speaker, headTopGuess, key]);
 
-  return { ref, bottom };
+  return { ref, bottom, beside };
 }
