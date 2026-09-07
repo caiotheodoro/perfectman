@@ -28,7 +28,6 @@ export function PickStep({
   onSelect,
   accept,
   emptyHint,
-  preview,
   children,
 }: {
   title: string;
@@ -39,8 +38,6 @@ export function PickStep({
   /** File-extension hint for the upload control. */
   accept: string;
   emptyHint: string;
-  /** The selection, shown as a room. Sits between the cards and the files. */
-  preview?: React.ReactNode;
   /** The step's footer — continue button and anything beside it. */
   children: React.ReactNode;
 }): JSX.Element {
@@ -130,8 +127,6 @@ export function PickStep({
           </div>
         </div>
       </div>
-
-      {preview}
 
       {editing ? (
         <MarkdownEditor

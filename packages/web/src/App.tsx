@@ -14,7 +14,6 @@ import { useRunStream } from "./api/useRunStream.js";
 import { Shell, type StepId } from "./design/Shell.js";
 import { Intro } from "./onboarding/Intro.js";
 import { PickStep, type Selection } from "./pick/PickStep.js";
-import { CastRoom, SceneRooms } from "./pick/RoomPreview.js";
 import { usePresets } from "./pick/usePresets.js";
 import { RunScreen } from "./run/RunScreen.js";
 
@@ -118,7 +117,6 @@ export function App(): JSX.Element {
           onSelect={setCast}
           accept=".md,text/markdown"
           emptyHint="One markdown file per character: how they see themselves, how they talk, what they remember."
-          preview={<CastRoom files={cast.files} />}
         >
           <button type="button" className="btn" disabled={cast.files.length === 0} onClick={() => advance("scene")}>
             Choose a scene
@@ -136,7 +134,6 @@ export function App(): JSX.Element {
           onSelect={pickScene}
           accept=".md,text/markdown"
           emptyHint="One markdown file: the room, the channels, and a hidden objective per character."
-          preview={<SceneRooms summary={compiled?.ok ? compiled.summary : null} />}
         >
           <button
             type="button"

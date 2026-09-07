@@ -39,7 +39,7 @@ export type FrameModel = {
 
 export function frameFor(beat: StageBeat, placement: Placement, ids: readonly string[]): FrameModel {
   const dots = placement.marks.map(({ agentId, point }) => {
-    const r = 2.6 * point.scale;
+    const r = 3 * point.scale;
     return {
       x: point.x * FRAME_W,
       // The dot stands for the whole figure, so it sits at the figure's middle.

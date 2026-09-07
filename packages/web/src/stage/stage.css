@@ -199,7 +199,7 @@
 
 .stage__mark {
   position: absolute;
-  width: 15%;
+  width: 18%;
   transform-origin: 50% 100%;
   transition: left var(--settle) var(--ease), top var(--settle) var(--ease),
     transform var(--settle) var(--ease);

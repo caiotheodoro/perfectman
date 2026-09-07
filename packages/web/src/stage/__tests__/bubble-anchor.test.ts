@@ -2,9 +2,9 @@
  * The balloon hangs off a head, and must not leave the frame doing it.
  *
  * The numbers here are the real ones: a room around 300px tall, and the slot
- * geometry from `slots.ts` — a figure occupies 57.6% of the room's height, so
- * a back-row figure at y 0.52 and scale 0.6 has its head about 52px below the
- * room's top edge. A full page of text is twice that.
+ * geometry from `slots.ts` — a face occupies 41% of the room's height, so a
+ * back-row face at y 0.46 and scale 0.6 has its top about 64px below the
+ * room's top edge. A full page of text is more than that.
  */
 import { describe, expect, it } from "vitest";
 import { FIGURE_HEIGHT_FRACTION, headTopFor, slotsFor } from "@perfectman/shared";
@@ -51,7 +51,7 @@ describe("bubbleBottom", () => {
   it("guesses the first paint from the 16:7 drawing before anything is measured", () => {
     // The real head is measured once laid out; this is only what the balloon
     // uses on its first frame, so it should be the drawing's own geometry.
-    expect(FIGURE_HEIGHT_FRACTION).toBeCloseTo(0.15 * 1.68 * (16 / 7), 10);
+    expect(FIGURE_HEIGHT_FRACTION).toBeCloseTo(0.18 * 1.0 * (16 / 7), 10);
   });
 });
 

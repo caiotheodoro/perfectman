@@ -21,7 +21,7 @@ export function Bubble({
   /** Fraction from the room's top, used until the mark has been laid out. */
   headTopGuess: number;
   x: number;
-  /** The speaker's slot scale; a mark is 15% of the room wide at scale 1. */
+  /** The speaker's slot scale; a mark is 18% of the room wide at scale 1. */
   scale: number;
   contentKey: string;
   said: string;
@@ -30,7 +30,7 @@ export function Bubble({
   // A balloon that could not fit above the head sits beside it instead, clear
   // of the figure: half a mark's width plus a little. Balloons open away from
   // the nearest wall, unless that would run them off the side of the room.
-  const clearance = 0.075 * scale + 0.015;
+  const clearance = 0.09 * scale + 0.015;
   const { ref, bottom, beside, side } = useBubbleAnchor(speaker, headTopGuess, contentKey, x, clearance);
   const left = !beside ? x : side === "right" ? x + clearance : x - clearance;
 

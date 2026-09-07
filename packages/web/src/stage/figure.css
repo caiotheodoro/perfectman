@@ -1,14 +1,14 @@
 /*
- * A figure is drawn once and never re-mounted; everything that changes is a
- * transition on an attribute the pose table supplies. Blink and breath are the
- * only motion nobody asked for, and they exist because a motionless figure
- * looks broken rather than composed.
+ * A face is drawn once and never re-mounted; everything that changes is a
+ * transition on an attribute the pose table supplies, or a transform on the
+ * head. Blink and breath are the only motion nobody asked for, and they exist
+ * because a motionless face looks broken rather than composed.
  */
 
 .figure {
   display: grid;
   justify-items: center;
-  gap: 2px;
+  gap: 4px;
   transition: opacity var(--settle) var(--ease), filter var(--settle) var(--ease);
 }
 
@@ -47,13 +47,40 @@
   }
 }
 
-.figure__arm {
+/* --- the feeling, in the head itself ------------------------------------- */
+
+/* The head tilts with the feeling. Worry leans away, anger squares up and
+   comes forward, a smile lifts, shock recoils. The pose table moves the
+   features; this moves the whole face, which is what a person reads first. */
+.figure__head {
+  transform-box: fill-box;
+  transform-origin: 50% 62%;
   transition: transform var(--settle) var(--ease);
+}
+.figure--worried .figure__head {
+  transform: rotate(-7deg) translateY(1px);
+}
+.figure--angry .figure__head {
+  transform: rotate(4deg) scale(1.04);
+}
+.figure--smile .figure__head {
+  transform: rotate(3deg) translateY(-1px);
+}
+.figure--shock .figure__head {
+  transform: scale(1.06) translateY(-2px);
+}
+.figure--tired .figure__head {
+  transform: rotate(-3deg) translateY(3px);
+}
+
+.figure__blush {
+  fill: rgba(228, 104, 118, 0.32);
+  transition: opacity var(--settle) var(--ease);
 }
 
 .figure__eye {
   fill: var(--ink);
-  transition: ry var(--quick) var(--ease);
+  transition: ry var(--quick) var(--ease), cx var(--settle) var(--ease);
   animation: figure-blink 5.9s steps(1, end) infinite;
   transform-box: fill-box;
   transform-origin: center;
@@ -82,9 +109,28 @@
 .figure__mouth {
   fill: none;
   stroke: var(--ink);
-  stroke-width: 2.6;
+  stroke-width: 3.2;
   stroke-linecap: round;
   transition: d var(--quick) var(--ease), opacity var(--quick) var(--ease);
+}
+
+/* Talking: the mouth opens and closes while the line is up. Steps, not a
+   ramp — a mouth does not ease. */
+.figure__mouth {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.figure--speaking .figure__mouth {
+  animation: figure-talk 340ms steps(2, end) infinite;
+}
+@keyframes figure-talk {
+  0%,
+  100% {
+    transform: scaleY(1);
+  }
+  50% {
+    transform: scaleY(2.2) translateY(1px);
+  }
 }
 
 .figure__gasp {
@@ -93,7 +139,7 @@
 }
 
 /* Sized against the room, not the viewport: a 19px tag on a 300px-wide room
-   is a third of a figure's width and hides behind whoever stands in front. */
+   is a third of a face's width and hides behind whoever stands in front. */
 .figure__name {
   font-size: clamp(11px, 2.4cqw, 19px);
   color: var(--ink-70);

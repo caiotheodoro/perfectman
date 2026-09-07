@@ -17,8 +17,12 @@
  */
 import { useLayoutEffect, useRef, useState, type RefObject } from "react";
 
-/** Breathing room between a balloon and the top of the frame. */
-export const BUBBLE_MARGIN = 8;
+/**
+ * Room between a balloon and the top of the frame: the row the room's name
+ * sits on, so a balloon that reaches the ceiling stops under the label rather
+ * than behind it.
+ */
+export const BUBBLE_MARGIN = 36;
 
 /**
  * Distance from the room's floor to put the balloon's bottom edge.

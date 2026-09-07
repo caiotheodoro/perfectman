@@ -5,14 +5,12 @@
  * is not what they say. Asserting that in a paragraph is cheap; showing a room
  * where someone stays quiet on purpose costs six beats and is the only version
  * anyone believes. So the hero is the scene, played through the very page a
- * run plays on — the same room, caption and strip of frames — and the prose
- * beside it is short enough to read while it plays.
+ * run plays on — the same room and caption — and the prose beside it is short
+ * enough to read while it plays.
  */
 import { useEffect, useMemo, useState } from "react";
 import { idlePlacement, placeBeats } from "@perfectman/shared";
 import { Attribution } from "../stage/Attribution.js";
-import { ContactSheet } from "../stage/ContactSheet.js";
-import { frameFor, frameLabel } from "../stage/Frame.js";
 import { Panel } from "../stage/Panel.js";
 import { introRun } from "./intro-script.js";
 
@@ -21,21 +19,13 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
   const staged = useMemo(() => {
     const ids = run.agents.map((a) => a.id);
     const idle = idlePlacement(run.channels[0], run.agents);
-    const placements = placeBeats(run.beats, run.agents, run.channels, { seed: idle });
-    return {
-      ids,
-      placements,
-      frames: run.beats.map((b, i) => frameFor(b, placements[i]!, ids)),
-      labels: run.beats.map((b) => frameLabel(b, run.agents, run.channels[0])),
-    };
+    return { ids, placements: placeBeats(run.beats, run.agents, run.channels, { seed: idle }) };
   }, [run]);
 
   const [index, setIndex] = useState(0);
   const beat = run.beats[index] ?? run.beats[0]!;
-  const last = run.beats.length - 1;
 
-  // Loops. The strip under the room makes the loop legible: you can see where
-  // you are in the six beats, and click any of them.
+  // Loops, the way it always did.
   useEffect(() => {
     const timer = setTimeout(() => setIndex((i) => (i + 1) % run.beats.length), beat.duration * 1000);
     return () => clearTimeout(timer);
@@ -74,14 +64,6 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
           ids={staged.ids}
         />
         <Attribution beat={beat} agents={run.agents} channels={run.channels} ids={staged.ids} />
-        <ContactSheet
-          frames={staged.frames}
-          labels={staged.labels}
-          index={index}
-          reached={last}
-          live={false}
-          onSeek={setIndex}
-        />
       </div>
     </main>
   );
