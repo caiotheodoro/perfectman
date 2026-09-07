@@ -17,6 +17,11 @@
 }
 
 .shell__mark {
+  border: none;
+  background: none;
+  padding: 0;
+  color: var(--ink);
+  cursor: pointer;
   font-family: var(--serif);
   font-variation-settings: "opsz" 40, "SOFT" 40, "WONK" 1;
   font-weight: 600;
