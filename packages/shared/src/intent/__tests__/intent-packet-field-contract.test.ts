@@ -18,3 +18,11 @@ describe("modelIntentPacketFieldContract — memoryWrites", () => {
     expect(full).toMatch(/confidence.*number/);
   });
 });
+
+describe("field contract — language", () => {
+  it("tells the model the motive is in the character's own language", async () => {
+    const { modelIntentPacketFieldContract } = await import("../intent-packet.schema.js");
+    const motive = modelIntentPacketFieldContract().find((line) => line.startsWith('"privateMotiveSummary"'));
+    expect(motive).toMatch(/own language/);
+  });
+});

@@ -74,14 +74,28 @@ function compileMarkdown(
   const diagnostics: Diagnostic[] = [];
   const personas = new Map<string, CompiledPersona>();
   const languages: CompileSummary["languages"] = {};
+  // The scene's language is the default for any persona that states none,
+  // and a persona that states a different one is flagged: a room where the
+  // cast and the scene disagree on language produces lines in both.
+  const sceneLanguage = scenarioLanguageOf(inputs.scenario.text);
 
   for (const file of inputs.personas) {
     const compiled = compilePersonaMarkdown(file.text, file.filename, {
       ...(inputs.languageOverrides?.[file.filename]
         ? { languageOverride: inputs.languageOverrides[file.filename] }
         : {}),
+      ...(sceneLanguage ? { scenarioLanguage: sceneLanguage } : {}),
     });
     diagnostics.push(...compiled.diagnostics);
+    if (compiled.pack && sceneLanguage && compiled.pack.language !== sceneLanguage) {
+      diagnostics.push({
+        level: "warning",
+        file: file.filename,
+        path: "language",
+        message: `${file.filename} is written for \`${compiled.pack.language}\` but the scene is \`${sceneLanguage}\`; this character will speak a different language from the room.`,
+        hint: "Set the same `language:` on the scene and every persona, or leave it off the personas to inherit the scene's.",
+      });
+    }
     // Reachable by filename and by the persona id inside it, so a scenario can
     // name either without the author having to think about which.
     personas.set(file.filename, compiled);
@@ -124,6 +138,13 @@ function compileMarkdown(
       ? summarize(validated, scenario.maxPulses, languages, sourceByAgent(scenario.cast, inputs.personas))
       : null,
   };
+}
+
+/** The scene's `language:` from its frontmatter, read before the personas compile. */
+function scenarioLanguageOf(text: string): "pt-BR" | "en" | undefined {
+  const front = text.split(/^---\s*$/m)[1] ?? "";
+  const match = /^language:\s*["']?(pt-BR|en)["']?\s*$/m.exec(front);
+  return match ? (match[1] as "pt-BR" | "en") : undefined;
 }
 
 function compileRawJson(

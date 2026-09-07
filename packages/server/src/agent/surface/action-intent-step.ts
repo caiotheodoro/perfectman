@@ -38,7 +38,13 @@ type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
  * new prompt version; the block motive keeps its own "Repetition guard"
  * prefix (repetition-guard.ts) that the offline sweeps match on.
  */
-function retryCorrectionNote(lastAttempt: string): string {
+export function retryCorrectionNote(lastAttempt: string, language: "pt-BR" | "en"): string {
+  // In the profile's language: this is appended to the system prompt as its
+  // newest instruction, and in English it pulled pt-BR characters into
+  // English on exactly the turns that retried.
+  if (language === "pt-BR") {
+    return `IMPORTANTE: sua última tentativa nesta rodada ("${lastAttempt}") ficou parecida demais com algo que você já disse. Diga algo genuinamente diferente — outro ângulo, uma reação a outra pessoa, uma mudança de assunto — sem deixar de ser fiel ao que você realmente quer agora; não invente novidade que seu motivo e seu estado emocional atuais não justifiquem. Ou escolha "no_op" de propósito — deixar o ponto sem resposta é uma jogada, se for a jogada que essa pessoa faria.`;
+  }
   return `IMPORTANT: your last attempt this turn ("${lastAttempt}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — while staying true to what you actually want right now; do not invent novelty that your current motive and emotional state wouldn't justify. Or choose "no_op" on purpose — letting the point stand unanswered is a move, if it is the move this person would make.`;
 }
 
@@ -48,7 +54,16 @@ function retryCorrectionNote(lastAttempt: string): string {
  * render, and offers the send_message escape hatch. The retry prompt version
  * hash covers this text.
  */
-function targetRetryCorrectionNote(field: string, badHandle: string, validHandles: string[]): string {
+export function targetRetryCorrectionNote(
+  field: string,
+  badHandle: string,
+  validHandles: string[],
+  language: "pt-BR" | "en",
+): string {
+  if (language === "pt-BR") {
+    const valid = validHandles.length > 0 ? validHandles.join(", ") : "(nenhum identificador de evento disponível nesta rodada)";
+    return `IMPORTANTE: você colocou "${field}" como "${badHandle || "(vazio)"}", que não é um dos identificadores de evento mostrados em <events>. Os únicos identificadores válidos nesta rodada são: ${valid}. Ou coloque em "${field}" exatamente um desses identificadores, ou — se isso não era de fato uma resposta/reação a uma mensagem específica — use "intentType" "send_message" e omita "${field}".`;
+  }
   const valid = validHandles.length > 0 ? validHandles.join(", ") : "(no event handles are available this turn)";
   return `IMPORTANT: you set "${field}" to "${badHandle || "(empty)"}", which is not one of the event handles shown in <events>. The only valid handles this turn are: ${valid}. Either set "${field}" to exactly one of those handles, or — if this was not actually a reply/reaction to one specific message — set "intentType" to "send_message" and omit "${field}".`;
 }
@@ -214,13 +229,14 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         // before it goes anywhere near the wire; the trim event and the budget
         // gate below therefore see the corrected, final estimate.
         const corrections: string[] = [];
-        if (isRepeat(intent)) corrections.push(retryCorrectionNote(intent.visibleContent ?? ""));
+        if (isRepeat(intent)) corrections.push(retryCorrectionNote(intent.visibleContent ?? "", ctx.profile.language));
         if (parseResult.unresolvedTarget) {
           corrections.push(
             targetRetryCorrectionNote(
               parseResult.unresolvedTarget.field,
               parseResult.unresolvedTarget.badHandle,
               parseResult.unresolvedTarget.validHandles,
+              ctx.profile.language,
             ),
           );
         }

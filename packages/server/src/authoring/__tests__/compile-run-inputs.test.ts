@@ -97,3 +97,31 @@ describe("compileRunInputs — the summary the preview panel reads", () => {
     expect(result.config?.simulation.id).toBe("sim_test");
   });
 });
+
+describe("compileRunInputs — one language per scene", () => {
+  const withoutLanguage = (text: string) => text.replace(/^language: .*\n/m, "");
+
+  it("gives a persona with no language the scene's, not a guess from its prose", () => {
+    const { summary } = compile({
+      ...markdown(),
+      personas: [
+        { filename: "iris.persona.md", text: withoutLanguage(IRIS) },
+        { filename: "bruno.persona.md", text: withoutLanguage(BRUNO) },
+      ],
+    });
+    expect(summary?.languages["iris.persona.md"]?.language).toBe("pt-BR");
+    expect(summary?.languages["iris.persona.md"]?.source).toBe("scenario");
+  });
+
+  it("keeps a persona's own explicit language and says when it differs from the scene", () => {
+    const { summary, diagnostics } = compile({
+      ...markdown(),
+      personas: [
+        { filename: "iris.persona.md", text: IRIS.replace("language: pt-BR", "language: en") },
+        { filename: "bruno.persona.md", text: BRUNO },
+      ],
+    });
+    expect(summary?.languages["iris.persona.md"]?.language).toBe("en");
+    expect(diagnostics.some((d) => d.level === "warning" && /language/i.test(d.message) && /iris/.test(d.message + (d.file ?? "")))).toBe(true);
+  });
+});

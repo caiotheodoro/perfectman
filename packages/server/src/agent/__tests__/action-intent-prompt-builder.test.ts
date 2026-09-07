@@ -148,3 +148,30 @@ describe("ActionIntentPromptBuilder — scenario context gating", () => {
     expect(built.system).toContain("Anuncie a proposta da Adamantis");
   });
 });
+
+describe("ActionIntentPromptBuilder — the language is the last thing the model reads", () => {
+  // The pin used to be one sentence in the middle of the system prompt, under
+  // an English user prompt that named privateMotiveSummary twice. Motives
+  // came out in English. The pin now closes the decision block.
+  it("ends the user prompt with the pt-BR pin for both fields", () => {
+    const built = PromptBuilder.build(input, { ...EXAMPLE_PROMPT_PROFILE, language: "pt-BR" }, "action_intent");
+    const tail = built.user.trim().slice(-260);
+    expect(tail).toContain("visibleContent");
+    expect(tail).toContain("privateMotiveSummary");
+    expect(tail).toMatch(/português|Portuguese/);
+  });
+
+  it("pins English the same way for an English profile", () => {
+    const built = PromptBuilder.build(input, { ...EXAMPLE_PROMPT_PROFILE, language: "en" }, "action_intent");
+    expect(built.user.trim().slice(-200)).toMatch(/in English/);
+  });
+
+  it("writes the secret objective and scene labels in the profile's language", () => {
+    const objective = { description: "be picked as leader before Mari is", scarceResourceId: "lead" };
+    const en = PromptBuilder.build(input, { ...EXAMPLE_PROMPT_PROFILE, language: "en", hiddenObjective: objective }, "action_intent");
+    expect(en.system).not.toContain("Você tem um objetivo");
+    expect(en.system).toContain("be picked as leader before Mari is");
+    const pt = PromptBuilder.build(input, { ...EXAMPLE_PROMPT_PROFILE, language: "pt-BR", hiddenObjective: objective }, "action_intent");
+    expect(pt.system).toContain("Você tem um objetivo");
+  });
+});

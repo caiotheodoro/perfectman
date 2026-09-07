@@ -280,7 +280,7 @@ export class ActionIntentPromptBuilder {
       .container("pressures", (s) => this.renderPressures(s, translatedEmotionalState, input.activeMotivations))
       .container("memories", (s) => this.renderMemories(s, perceptionPacket.relevantMemories))
       .container("actions", (s) => this.renderActions(s, input))
-      .container("decision", (s) => this.renderDecision(s, input));
+      .container("decision", (s) => this.renderDecision(s, input, profile.language));
     const userPrompt = user.toString();
 
     return { systemPrompt, userPrompt };
@@ -331,8 +331,8 @@ export class ActionIntentPromptBuilder {
     this.addList(s, "Hard avoids", profile.hardAvoids);
     this.renderRelationshipBiases(s, profile);
 
-    if (profile.scenarioContext) this.renderScenarioContext(s, profile.scenarioContext, hasActed);
-    if (profile.hiddenObjective) this.renderHiddenObjective(s, profile.hiddenObjective);
+    if (profile.scenarioContext) this.renderScenarioContext(s, profile.scenarioContext, hasActed, profile.language);
+    if (profile.hiddenObjective) this.renderHiddenObjective(s, profile.hiddenObjective, profile.language);
   }
 
   /**
@@ -341,11 +341,24 @@ export class ActionIntentPromptBuilder {
    * flavor. Placed after scenario context so it's the most recent thing the
    * model reads before the output contract.
    */
-  private static renderHiddenObjective(s: PromptSection, objective: import("@perfectman/shared").AgentObjective): void {
+  private static renderHiddenObjective(
+    s: PromptSection,
+    objective: import("@perfectman/shared").AgentObjective,
+    language: PersonaPromptProfile["language"],
+  ): void {
+    // In the profile's language: this block was hardcoded pt-BR, so an
+    // English cast read Portuguese instructions inside an English prompt.
+    const pt = language === "pt-BR";
     s.heading("Secret objective");
-    s.raw(`Você tem um objetivo pessoal que ninguém na sala sabe: ${objective.description}`);
     s.raw(
-      "Você nunca declara esse objetivo em voz alta nem o explica diretamente. Persiga-o através de suas ações e palavras normais nesta cena — e se perceber que outra pessoa está indo atrás da mesma coisa, isso muda como você age.",
+      pt
+        ? `Você tem um objetivo pessoal que ninguém na sala sabe: ${objective.description}`
+        : `You have a personal objective nobody in the room knows about: ${objective.description}`,
+    );
+    s.raw(
+      pt
+        ? "Você nunca declara esse objetivo em voz alta nem o explica diretamente. Persiga-o através de suas ações e palavras normais nesta cena — e se perceber que outra pessoa está indo atrás da mesma coisa, isso muda como você age."
+        : "You never state this objective out loud or explain it directly. Pursue it through your ordinary words and actions in this scene — and if you notice someone else is after the same thing, that changes how you act.",
     );
     // The three fields below are optional (older/simpler scenarios only set
     // description + scarceResourceId) — when present, they're what actually
@@ -353,14 +366,16 @@ export class ActionIntentPromptBuilder {
     // sentence the character cannot honestly say, a real cost if it leaks,
     // and a defined moment where the performance is allowed to crack.
     if (objective.constraint) {
-      s.raw(`Isso significa que você nunca pode: ${objective.constraint}.`);
+      s.raw(pt ? `Isso significa que você nunca pode: ${objective.constraint}.` : `Which means you can never: ${objective.constraint}.`);
     }
     if (objective.costOfExposure) {
-      s.raw(`Se isso vazar antes da hora: ${objective.costOfExposure}.`);
+      s.raw(pt ? `Se isso vazar antes da hora: ${objective.costOfExposure}.` : `If it comes out too early: ${objective.costOfExposure}.`);
     }
     if (objective.breakingPoint) {
       s.raw(
-        `Você mantém a máscara até que ${objective.breakingPoint} — a partir daí, pode deixar transparecer, mesmo que só por um instante.`,
+        pt
+          ? `Você mantém a máscara até que ${objective.breakingPoint} — a partir daí, pode deixar transparecer, mesmo que só por um instante.`
+          : `You keep the mask on until ${objective.breakingPoint} — from then on it may show, even if only for a moment.`,
       );
     }
   }
@@ -511,7 +526,7 @@ export class ActionIntentPromptBuilder {
   }
 
   // The actionable decision question goes LAST (context first, decision last).
-  private static renderDecision(s: PromptSection, input: AgentRuntimeInput): void {
+  private static renderDecision(s: PromptSection, input: AgentRuntimeInput, language: PersonaPromptProfile["language"]): void {
     s.heading("Decide now");
     s.raw(
       'You can ONLY perform ONE action. Pick exactly one permitted combination from <actions>, fill every relevant field per <output_contract>, and emit the JSON object. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move elsewhere. Withholding is also a move: staying silent while a question hangs, waiting someone out, or refusing to answer is something the room notices — when that is what this person would do, choose "no_op" and say why in privateMotiveSummary.',
@@ -545,6 +560,16 @@ export class ActionIntentPromptBuilder {
       "Generic replies count as that failure: agreeing and restating what someone just said, asking a clarifying " +
         "question instead of taking a position, summarizing what the room already knows, or offering to help in " +
         "the abstract. Say the specific thing, or choose silence on purpose.",
+    );
+    // Last on purpose. The pin used to be one sentence in the middle of the
+    // system prompt, under a user prompt written entirely in English that
+    // named privateMotiveSummary twice; on a pt-BR cast the motive came out
+    // in English often enough to be reported. The last line the model reads
+    // before it writes is now the language it writes in.
+    s.raw(
+      language === "pt-BR"
+        ? 'Escreva "visibleContent" e "privateMotiveSummary" em português (pt-BR) — o pensamento é dessa pessoa, na língua dessa pessoa, nunca uma tradução nem um comentário em inglês.'
+        : 'Write "visibleContent" and "privateMotiveSummary" in English — the thought is this person\'s own, in this person\'s own language.',
     );
   }
 
@@ -608,17 +633,23 @@ export class ActionIntentPromptBuilder {
    * Root-caused via a live capture — "announce the proposal" rendered on all
    * 32 pulses, and the agent re-announced it at p7, p10, p12, p18 and p28.
    */
-  private static renderScenarioContext(s: PromptSection, ctx: ScenarioContextBlock, hasActed: boolean): void {
+  private static renderScenarioContext(
+    s: PromptSection,
+    ctx: ScenarioContextBlock,
+    hasActed: boolean,
+    language: PersonaPromptProfile["language"],
+  ): void {
+    const pt = language === "pt-BR";
     s.heading("Social context");
     s.raw(ctx.roomContext);
-    s.raw(`Humor inicial da sala: ${ctx.startingMood}`);
+    s.raw(`${pt ? "Humor inicial da sala" : "Mood of the room at the start"}: ${ctx.startingMood}`);
     if (!hasActed) {
       s.raw(ctx.introBehaviorInstruction);
       if (ctx.firstMoveGuidance) s.raw(ctx.firstMoveGuidance);
     }
-    if (ctx.hostStartingMessage) s.raw(`Mensagem do anfitrião: "${ctx.hostStartingMessage}"`);
+    if (ctx.hostStartingMessage) s.raw(`${pt ? "Mensagem do anfitrião" : "Host's opening message"}: "${ctx.hostStartingMessage}"`);
     if (ctx.customNotes?.length) {
-      s.list("Regras de comportamento nesta cena", ctx.customNotes);
+      s.list(pt ? "Regras de comportamento nesta cena" : "Rules of behaviour in this scene", ctx.customNotes);
     }
   }
 
