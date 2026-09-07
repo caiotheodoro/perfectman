@@ -31,12 +31,14 @@ export function ProviderForm({
   onChange,
   onRun,
   ready,
+  busy = false,
   focusKey = false,
 }: {
   value: ProviderValue;
   onChange: (next: ProviderValue) => void;
   onRun: (value: ProviderValue) => void;
   ready: boolean;
+  busy?: boolean;
   /** Put the cursor in the key field: the last run failed and it is probably the key. */
   focusKey?: boolean;
 }): JSX.Element {
@@ -53,7 +55,7 @@ export function ProviderForm({
     <form className="provider" onSubmit={(event) => {
       event.preventDefault();
       const extra = parseExtraBody(value.extraBodyText);
-      if (!ready || !hasKey || extra.error) return;
+      if (!ready || busy || !hasKey || extra.error) return;
       const next = { ...value, llm: { ...value.llm, extraBody: extra.value } };
       onChange(next);
       onRun(next);
@@ -178,12 +180,14 @@ export function ProviderForm({
         <button
           type="submit"
           className="btn"
-          disabled={!ready || !hasKey || Boolean(extraBodyError)}
+          disabled={!ready || busy || !hasKey || Boolean(extraBodyError)}
         >
           Start the run
         </button>
         {!ready ? (
           <span className="u-dim">The cast and scene need to fit together first.</span>
+        ) : busy ? (
+          <span className="u-dim">Waiting for the current run to finish.</span>
         ) : !hasKey ? (
           <span className="u-dim">Paste a key to start.</span>
         ) : null}

@@ -43,6 +43,7 @@ const summary = {
   maxPulses: 8, seed: 0, languages: {},
 };
 let runNumber = 0, startBody, pendingResponse, holdStart = false;
+let serverBusy = true;
 const streams = new Map(), stopped = [], errors = [], requests = [];
 const json = (res, body) => { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify(body)); };
 const api = httpServer(async (req, res) => {
@@ -50,6 +51,11 @@ const api = httpServer(async (req, res) => {
   try {
     if (req.url === '/api/presets') return json(res, library);
     if (req.url === '/api/compile') return json(res, { ok: true, config: {}, diagnostics: [], summary });
+    if (req.url === '/api/runs/current') return json(res, {
+      runId: serverBusy ? 'fixture-0' : null, state: serverBusy ? 'running' : 'idle',
+      pulseIndex: 0, pulsesRun: 2, maxPulses: 8,
+      counters: { llmFailures: 0, gatewayTimeouts: 0, framesDropped: 0 },
+    });
     if (req.url === '/api/runs' && req.method === 'POST') {
       let body = ''; for await (const chunk of req) body += chunk;
       startBody = JSON.parse(body); runNumber++;
@@ -58,7 +64,7 @@ const api = httpServer(async (req, res) => {
       return;
     }
     const match = req.url.match(/^\/api\/runs\/(fixture-\d+)\/(stream|stop)$/);
-    if (match?.[2] === 'stop') { stopped.push(match[1]); return json(res, { ok: true }); }
+    if (match?.[2] === 'stop') { stopped.push(match[1]); if (match[1] === 'fixture-0') serverBusy = false; return json(res, { ok: true }); }
     if (match?.[2] === 'stream') {
       res.writeHead(200, { 'content-type': 'text/event-stream', 'cache-control': 'no-cache', connection: 'keep-alive' });
       res.write(': authored browser fixture\n\n'); streams.set(match[1], res);
@@ -144,6 +150,13 @@ try {
   await clickText('Choose a scene'); await page.click('.card'); await shot('scene-desktop');
   await clickText('Ready');
   await page.type('input[type="password"]', 'authored-browser-fixture');
+  await page.waitForSelector('.busy');
+  assert.equal(await page.$eval('.provider button[type="submit"]', el => el.disabled), true, 'Busy server must disable Start');
+  assert.match(await page.$eval('.provider .step__foot', el => el.textContent), /Waiting for the current run/, 'Busy must not be reported as invalid cast files');
+  await shot('server-busy-desktop');
+  await clickText('Stop it');
+  await page.waitForSelector('.busy', { hidden: true });
+  assert.ok(stopped.includes('fixture-0'), 'Busy notice must stop the reported run');
   await page.click('.advanced summary');
   await page.$eval('.advanced textarea', el => { const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; setter.call(el, '{"fixtureOption":true}'); el.dispatchEvent(new Event('input', { bubbles: true })); });
   await shot('provider-desktop');

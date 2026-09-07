@@ -31,13 +31,15 @@ A–C explored the stage; D–F also provided authored selection-to-watch sample
 
 The selected implementation keeps one SVG renderer. A style picker was evaluated and deferred: multiple renderers add expression and identity validation without a demonstrated user need. Both 3D studies required about 167 KB gzipped of Three.js before other assets. The soft 3D study measured about 20 fps median and a 133 ms desktop frame-interval p95 in headless Chrome/SwiftShader. Those software-rendered measurements do not establish physical-phone performance. No new application dependency was added.
 
-The integrated production build emits 361.97 KB JavaScript (107.70 KB gzip) and 28.62 KB CSS (7.13 KB gzip), plus the existing fonts and audio assets. These are build sizes, not measured page-load latency.
+The integrated production build emits 363.61 KB JavaScript (108.29 KB gzip) and 28.91 KB CSS (7.18 KB gzip), plus the existing fonts and audio assets. These are build sizes, not measured page-load latency.
 
 ## Integrated behavior
 
 The same artwork appears in the authored intro, actual preset previews, provider setup, run stage and timeline. Shapes remain stable by sorted cast identity; facial states use the existing recorded/authored emotion mapping. Missing emotion stays neutral. Gaze is theatrical orientation toward an audible speaker or audience, not a claim of physical action or location.
 
-Cast changes are stated before selection and after a scene changes the cast. Edits immediately invalidate stale compilation. Preparation displays the compiled cast and can be cancelled even before the start request returns its run ID. Playback begins at the first intended beat after buffering. Navigation preserves the paused position; starting a changed scene cannot silently replace an active run. Completed and failed runs have recovery controls, and returning to the provider form clears the key.
+Cast changes are stated before selection and after a scene changes the cast. Edits immediately invalidate stale compilation. Preparation displays the compiled cast and can be cancelled even before the start request returns its run ID. Playback begins at the first intended beat after buffering. Navigation preserves the paused position; starting a changed scene cannot silently replace an active run. Completed and failed runs have recovery controls. Resetting a completed or failed accepted run clears the key; a rejected start request leaves the form available for correction.
+
+The branch was synchronized with `main` at `3f1d6a6` before delivery, preserving its [server-busy notice](evidence/frontend-gauntlet/server-busy.png), disabled Start button and conflict explanation. The existing busy check runs only while the provider form is visible and usable. A busy server is described separately from invalid cast/scene files.
 
 | Cast | Scene | Provider |
 | --- | --- | --- |
@@ -59,6 +61,8 @@ The final visual critic initially rejected mobile stepping because the next line
 
 Use Node 22, matching CI. The browser check also requires Chrome (`CHROME_PATH` overrides the macOS default); it reuses the existing renderer's Puppeteer dependency and launches its own local fixture server and Vite instance.
 
+Verified locally after synchronization: **2,058 tests across 209 files**, full workspace build/typecheck, test-hygiene and documentation gates. The real-app browser check passed separately.
+
 ```sh
 pnpm install --frozen-lockfile
 pnpm -r build
@@ -67,7 +71,7 @@ pnpm test:all
 node scripts/check-web-viewer.mjs
 ```
 
-The browser check writes disposable screenshots and its report under `out/gauntlet/app-browser-checks/`. It covers the real intro/cast/scene/provider wiring, cancellation, first beat, public/private/thought/silence, 320/390/1280px layouts, viewport reading position, long text/names, missing emotion, incoming beats, keyboard seek, play/pause, actual audio/mute, completion and early failure. Deterministic timing invariants remain in the focused clock and lifecycle tests.
+The browser check writes disposable screenshots and its report under `out/gauntlet/app-browser-checks/`. It covers the real intro/cast/scene/provider wiring, server-busy recovery, cancellation, first beat, public/private/thought/silence, 320/390/1280px layouts, viewport reading position, long text/names, missing emotion, incoming beats, keyboard seek, play/pause, actual audio/mute, completion and early failure. Deterministic timing invariants remain in the focused clock and lifecycle tests.
 
 The complete PR workflow's mock/rule benchmark and `scripts/ci/check-bench-gate.mjs` were also run with its eleven golden scenario IDs. The current CLI ran 35 scenarios: zero failures, 100% signal pass and 95.4% probe pass. The structural gate passed. Rule-judge calibration remained below its threshold, so its scores are advisory and do not establish model quality.
 

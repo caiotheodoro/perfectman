@@ -164,7 +164,8 @@ export function RunScreen({
               setFailure(null);
               onRun(next.llm, next.maxPulses ? { maxPulses: next.maxPulses } : undefined);
             }}
-            ready={Boolean(compiled?.ok) && !server.busy}
+            ready={Boolean(compiled?.ok)}
+            busy={server.busy}
             focusKey={failure !== null}
           />
         </>
@@ -302,7 +303,7 @@ function ServerBusyNotice({ server }: { server: ReturnType<typeof useServerBusy>
           be stopped first.
         </span>
       </div>
-      <button type="button" className="btn--quiet" disabled={server.stopping} onClick={() => void server.release()}>
+      <button type="button" className="btn btn--quiet" disabled={server.stopping} onClick={() => void server.release()}>
         {server.stopping ? "Stopping…" : "Stop it"}
       </button>
     </div>
