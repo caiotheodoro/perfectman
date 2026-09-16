@@ -1,6 +1,9 @@
 # Web Runner Presets
 
 What the run flow offers when you'd rather not write markdown from scratch.
+All bundled casts and scenes are in English. Stable folder and character IDs
+stay unchanged so saved references keep working. Uploaded files keep their own language.
+
 Everything here is ordinary authoring input — the server reads these files and
 hands them to the same compiler an upload goes through, so a preset and a file
 you wrote behave identically.
@@ -21,7 +24,7 @@ To add one, drop a folder in and reload — nothing is bundled into the web buil
 ## Default library
 
 **`the-group`** is the headline cast: Goulart, Caio, Jota, Ian Bruno, and Rex.
-pt-BR group chat, mouths already broken. Six scenes were written for them,
+English group chat, with distinct, abrasive voices. Six scenes were written for them,
 each with two scarce resources so at least two people are in structural
 conflict:
 

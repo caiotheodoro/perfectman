@@ -81,7 +81,7 @@ it("preserves a run through navigation and opens a changed scene only after that
 
   fireEvent.click(screen.getByTitle("Back to the introduction"));
   act(() => vi.advanceTimersByTime(60_000));
-  fireEvent.click(screen.getByRole("button", { name: "Build a room" }));
+  fireEvent.click(screen.getByRole("button", { name: "Browse casts and scenes" }));
   expect(screen.getByLabelText("Position in the run").textContent).toBe("3 / 4");
   expect(screen.getByRole("button", { name: "Play" }).textContent).toBe("Play");
 

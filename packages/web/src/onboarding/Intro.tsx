@@ -1,5 +1,5 @@
 /** Six authored moments, rendered and played by the same components as a run. */
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { idlePlacement, placeBeats } from "@perfectman/shared";
 import { BrandMark } from "../design/Shell.js";
 import { Attribution } from "../stage/Attribution.js";
@@ -8,9 +8,12 @@ import { frameFor, frameLabel } from "../stage/Frame.js";
 import { Panel } from "../stage/Panel.js";
 import { useStageClock } from "../stage/useStageClock.js";
 import { useDocumentVisible, useReadingPosition } from "../stage/motion.js";
+import { RoomBuilder } from "./RoomBuilder.js";
+import type { RoomFiles } from "./room-draft.js";
 import { introRun } from "./intro-script.js";
 
-export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
+export function Intro({ onDone, onCreate }: { onDone: () => void; onCreate?: (files: RoomFiles) => void }): JSX.Element {
+  const [creating, setCreating] = useState(false);
   const run = useMemo(introRun, []);
   const staged = useMemo(() => {
     const ids = run.agents.map((a) => a.id);
@@ -24,7 +27,7 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
     };
   }, [run]);
   const visible = useDocumentVisible();
-  const clock = useStageClock(run.beats, { ready: visible });
+  const clock = useStageClock(run.beats, { ready: visible && !creating });
   const beat = clock.beat!;
   const reading = useReadingPosition(visible ? beat.id : undefined);
 
@@ -37,6 +40,8 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
     else { clock.play(); reading.reveal(); }
   }
 
+  if (creating) return <RoomBuilder onBack={() => setCreating(false)} onCreate={files => { onCreate?.(files); onDone(); }} />;
+
   return (
     <div className="intro-shell">
       <header className="shell__bar intro__bar">
@@ -48,15 +53,28 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
           <div className="intro__premise">
             <h1>Nobody says everything.</h1>
             <p className="intro__lede">
-              Three AI agents. One awkward conversation.<br />
-              Watch what they say. See what they keep to themselves.
+              AI characters have different feelings and private goals.<br />
+              Explore a short example, then make a simulation of your own.
             </p>
           </div>
-          <button type="button" className="btn intro__start" aria-label="Build a room" onClick={onDone}>
-            Build a room
-          </button>
+          <div className="intro__choices">
+            <button type="button" className="btn" onClick={() => { clock.seek(0); clock.play(); reading.reveal(); }}>Watch the demo</button>
+            <button type="button" className="btn btn--quiet" onClick={() => { clock.pause(); setCreating(true); }}>Create your own</button>
+            <button type="button" className="btn--bare" onClick={onDone}>Browse casts and scenes</button>
+            <p className="u-dim">Demo: no account or key. Your own run: connect a model.</p>
+          </div>
         </div>
 
+        <nav className="intro__guide" aria-label="Explore the demo">
+          {[
+            { index: 0, title: "What they say", text: "Public messages are heard by the room." },
+            { index: 2, title: "What they keep private", text: "You can see a thought that the other characters cannot." },
+            { index: 5, title: "What they really feel", text: "A friendly reply can hide a very different feeling." },
+          ].map(moment => <button key={moment.index} type="button" aria-pressed={clock.index >= moment.index && clock.index < (moment.index === 0 ? 2 : moment.index === 2 ? 5 : 6)}
+            onClick={() => { clock.pause(); clock.seek(moment.index); reading.reveal(); }}>
+            <strong>{moment.title}</strong><span>{moment.text}</span>
+          </button>)}
+        </nav>
         <section className="intro__scene flipbook" aria-label="Authored preview" ref={reading.ref}>
           <Panel
             beat={beat}
@@ -69,7 +87,7 @@ export function Intro({ onDone }: { onDone: () => void }): JSX.Element {
           />
           <div className="intro__caption">
             <Attribution beat={beat} agents={run.agents} channels={run.channels} ids={staged.ids} />
-            <p className="intro__provenance">Authored preview · no model connected</p>
+            <p className="intro__provenance">Scripted demo · no model connected. Your own run is generated live.</p>
           </div>
           <div className="intro__playback">
             <div className="intro__controls" role="group" aria-label="Preview playback">

@@ -3,7 +3,7 @@ import { useRef, useState } from "react";
 import { chipIndexFor, type UploadedFile } from "@perfectman/shared";
 import type { Preset } from "./usePresets.js";
 import { MarkdownEditor } from "./MarkdownEditor.js";
-import { charactersIn, type PreviewCharacter } from "./preview.js";
+import { charactersIn, sceneTitleIn, type PreviewCharacter } from "./preview.js";
 import { Figure } from "../stage/Figure.js";
 
 export type Selection = {
@@ -33,6 +33,8 @@ export function PickStep({
   const picker = useRef<HTMLInputElement>(null);
   const currentCast = casts.find((cast) => cast.id === activeCast?.presetId);
   const selected = presets.find((preset) => preset.id === selection.presetId);
+  const customScene = kind === "scene" && !selection.presetId && selection.files.length > 0;
+  const Library = customScene ? "details" : "div";
 
   async function absorb(list: FileList | null): Promise<void> {
     if (!list || list.length === 0) return;
@@ -51,17 +53,19 @@ export function PickStep({
   return (
     <section className={`step pick-step pick-step--${kind}`}>
       <header className="step__head">
-        <h2>{title}</h2>
-        <p>{lede}</p>
+        <h2>{customScene ? sceneTitleIn(selection.files) ?? "Your scene" : title}</h2>
+        <p>{customScene ? "Review your cast and situation below. When you are ready, connect a model to bring them to life." : lede}</p>
       </header>
 
       {kind === "scene" && activeCast ? (
         <div className="pick-cast-context">
           <CastRow files={activeCast.files} />
-          <p><strong>{currentCast?.title ?? "Your cast"}</strong><span className="u-dim"> · current cast</span></p>
+          <p><strong>{currentCast?.title ?? "Your cast"}</strong><span className="u-dim"> · {customScene ? charactersIn(activeCast.files).map(person => person.name).join(", ") : "current cast"}</span></p>
         </div>
       ) : null}
 
+      <Library className="pick-library">
+      {customScene ? <summary>Or choose a different scene from the library</summary> : null}
       <div className={`cards cards--${kind}`}>
         {presets.map((preset) => {
           const required = casts.find((cast) => cast.id === preset.cast);
@@ -97,11 +101,12 @@ export function PickStep({
           );
         })}
       </div>
+      </Library>
 
       <div className="pick-authoring">
         <div>
-          <h3>Write your own</h3>
-          <p>{selection.files.length > 0 ? "Start with the selected files and make them yours." : emptyHint}</p>
+          <h3>{customScene ? "Make further edits" : "Write your own"}</h3>
+          <p>{customScene ? "Optional: edit or replace your scene below." : selection.files.length > 0 ? "Start with the selected files and make them yours." : emptyHint}</p>
         </div>
         <div className="pick-authoring__actions">
           <button type="button" className="btn--bare" onClick={() => setEditing(true)}>Open editor</button>
