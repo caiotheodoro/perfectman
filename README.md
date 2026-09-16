@@ -119,8 +119,17 @@ pnpm build
 pnpm web
 ```
 
-Open `http://localhost:4317`, drop in a scenario and its personas, and press
-Run — or pick a ready-made cast and scene from [`examples/presets/`](examples/presets/).
+Open `http://localhost:4317`. Choose **Watch the demo** to explore speech,
+private thoughts, and feelings without an account or API key. This six-beat
+example is scripted and uses the same viewer as a live run.
+
+Choose **Create your own** to name two to six characters, give each a personality
+and private goal, and describe their situation. Review the scene, then connect
+an OpenAI-compatible model with your API key to generate a live run. The form
+creates ordinary Markdown inputs; no Markdown knowledge is needed.
+
+You can also browse the English [built-in casts and scenes](examples/presets/),
+edit their Markdown, or upload your own. Use the Perfectman logo to reopen the demo.
 
 The form compiles the markdown on every change and shows the resulting config
 before anything runs — cast, channels, detected language, and which canonical

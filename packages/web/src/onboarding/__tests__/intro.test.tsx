@@ -30,7 +30,7 @@ describe("Intro playback", () => {
     expect(getByLabelText("Beat 3 of 6").textContent?.trim()).toBe("3 / 6");
     fireEvent.click(getByRole("button", { name: "Previous beat" }));
     expect(getByLabelText("Beat 2 of 6").textContent?.trim()).toBe("2 / 6");
-    fireEvent.click(getByRole("button", { name: "Build a room" }));
+    fireEvent.click(getByRole("button", { name: "Browse casts and scenes" }));
     expect(onDone).toHaveBeenCalledOnce();
   });
 

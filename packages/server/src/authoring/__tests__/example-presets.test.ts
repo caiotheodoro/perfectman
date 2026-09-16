@@ -3,6 +3,7 @@
  * A scene names its cast; pairing them here is what the picker does before
  * `POST /api/compile` ever sees the files.
  */
+import { INITIAL_ROOM, roomFiles } from "../../../../web/src/onboarding/room-draft.js";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { compileRunInputs } from "../compile-run-inputs.js";
@@ -61,6 +62,30 @@ describe("example presets compile when a scene is paired with its named cast", (
       expect(errors, `${scene.id}: ${errors.map((e) => e.message).join("; ")}`).toEqual([]);
       expect(result.ok, `${scene.id} did not compile`).toBe(true);
       expect(result.config).not.toBeNull();
+      expect(scenarioFile!.text).toMatch(/^language: en$/m);
+      expect(Object.values(result.summary!.languages).map(value => value.language))
+        .toEqual(cast!.files.map(() => "en"));
     }
   });
+});
+
+
+it("compiles the guided form with two to six characters and preserves their private goals", () => {
+  for (const count of [2, 3, 6]) {
+    const people = Array.from({ length: count }, (_, index) => ({
+      ...INITIAL_ROOM.people[index % 3]!, name: `Person ${index + 1} "P"`,
+      ...(index === 0 ? { goal: "Resource: win the room’s trust." } : {}),
+    }));
+    const files = roomFiles({ ...INITIAL_ROOM, people });
+    const result = compileRunInputs({ kind: "markdown", ...files }, { llm: LLM, simulationId: "guided" });
+    expect(result.diagnostics.filter(d => d.level === "error")).toEqual([]);
+    expect(result.ok).toBe(true);
+    expect(result.summary?.agents.map(agent => agent.displayName)).toEqual(people.map(person => person.name));
+    expect(Object.values(result.summary!.languages).map(value => value.language)).toEqual(people.map(() => "en"));
+    expect(result.config?.agents.map(agent => agent.promptProfile?.hiddenObjective)).toEqual(people.map(person => ({
+      description: `Private goal: ${person.goal}`,
+      scarceResourceId: "the_groups_attention",
+      constraint: "Do not state your private goal outright; win the group over through your choices.",
+    })));
+  }
 });

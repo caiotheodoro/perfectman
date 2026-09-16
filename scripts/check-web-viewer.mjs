@@ -145,7 +145,7 @@ try {
     await geometry(`intro-${width}`);
   }
   await page.setViewport({ width: 1280, height: 960 });
-  await clickText('Build a room');
+  await clickText('Browse casts and scenes');
   await page.click('.card'); await shot('cast-desktop');
   await clickText('Choose a scene'); await page.click('.card'); await shot('scene-desktop');
   await clickText('Ready');

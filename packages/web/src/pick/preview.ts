@@ -39,7 +39,13 @@ function frontmatter(text: string): Record<string, string> {
   for (const line of block.split("\n")) {
     const match = /^([A-Za-z][A-Za-z0-9_]*)\s*:\s*(.+)$/.exec(line);
     if (!match) continue;
-    out[match[1]!.toLowerCase()] = match[2]!.trim().replace(/^["']|["']$/g, "");
+    const raw = match[2]!.trim();
+    let value = raw.replace(/^["']|["']$/g, "");
+    // The guided form writes JSON-quoted YAML scalars (including escaped quotes).
+    if (raw.startsWith('"')) {
+      try { const decoded: unknown = JSON.parse(raw); if (typeof decoded === "string") value = decoded; } catch { /* Keep a best-effort preview. */ }
+    }
+    out[match[1]!.toLowerCase()] = value;
   }
   return out;
 }
