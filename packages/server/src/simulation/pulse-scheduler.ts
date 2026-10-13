@@ -1,3 +1,4 @@
+import { formatStoryClock, type StoryClockConfig } from "./story-clock.js";
 import type {
   Simulation,
   AgentState,
@@ -98,6 +99,8 @@ export type PulseSchedulerConfig = {
   agentRuntime: AgentRuntime;
   llmBudget: LLMBudget;
   pulseIntervalMs: number;
+  /** Scene clock stamped onto each agent's input; absent when the scene sets none. */
+  storyClock?: StoryClockConfig;
   /** Testability seam: defaults to runEngineStep(snapshot). Inject to drive the
    *  commit-ordering pipeline with a known step result without the LLM. */
   stepResolver?: (snapshot: EngineSnapshot) => EngineStepResult;
@@ -345,6 +348,9 @@ export class PulseScheduler {
         agentsCalled += 1;
         const budgetPriority = this.config.llmBudget.getPriority(sim.id, agent.id);
         const runtimeInput = buildAgentRuntimeInput(stepResult, agent.persona, budgetPriority);
+        if (this.config.storyClock) {
+          runtimeInput.storyClock = formatStoryClock(this.config.storyClock, this.pulseIndex);
+        }
         const runtimeOutput = await this.config.agentRuntime.generateIntent(runtimeInput, {
           pulseIndex: this.pulseIndex,
           now,

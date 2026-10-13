@@ -1,3 +1,4 @@
+import type { StoryClockConfig } from "./story-clock.js";
 import type {
   Simulation,
   SimulationSettings,
@@ -101,6 +102,7 @@ export class SimulationRuntime {
     seed: number;
     channels?: ConfiguredInitialChannel[];
     goalLayer?: GoalLayerRuntime;
+    storyClock?: StoryClockConfig;
     attachExisting?: boolean;
   }): Promise<Simulation> {
     const { simulation, defaultChannel } =
@@ -136,6 +138,7 @@ export class SimulationRuntime {
       llmBudget: this.config.llmBudget,
       pulseIntervalMs: params.settings.pulseIntervalMs,
       ...(params.goalLayer ? { goalLayer: params.goalLayer } : {}),
+      ...(params.storyClock ? { storyClock: params.storyClock } : {}),
       onEndOffered: (offer) =>
         this.stop(simulation.id, { endReason: "goal_end_offered", endingOffer: offer }),
     });

@@ -160,6 +160,7 @@ export function personaPackToProfile(pack: PersonaPack, reskin?: PersonaReskin):
     affectionStyle: [],
     publicPrivateDelta: pack.edgeProfile.maskTells,
     voiceGuidelines: pack.voiceGuidelines,
+    ...(pack.presenceProfile?.messageLength ? { messageLength: pack.presenceProfile.messageLength } : {}),
     styleExamples: {
       default: pack.styleExamples,
       animated: [],

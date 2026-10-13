@@ -8,6 +8,7 @@
  * overrides live under `## Agent: <id>` subsections, because that is where an
  * author naturally writes "…but Bruno walked in thinking it was just a chat".
  */
+import { isValidStoryClockStart, type StoryClockConfig } from "../simulation/story-clock.js";
 import { parse as parseYaml } from "yaml";
 import type { CoreMood, SocialEmotions } from "@perfectman/shared";
 import type { AgentObjective, EventSeedSpec, MemorySeed } from "@perfectman/shared";
@@ -77,6 +78,8 @@ export type CompiledScenario = {
   maxPulses: number;
   /** Partial — `assemble-config` fills all seven required settings fields. */
   settings: Record<string, unknown>;
+  /** Presentation-only scene clock; see `simulation/story-clock.ts`. */
+  storyClock?: StoryClockConfig;
   channels: ChannelSpec[];
   familiarity: Record<string, PairFamiliarity>;
   cast: CastMember[];
@@ -137,6 +140,7 @@ export function compileScenarioMarkdown(
   }
 
   const maxPulses = resolveMaxPulses(fm["maxPulses"], bag, doc.frontmatterLine);
+  const storyClock = resolveStoryClock(fm["storyClock"], bag, doc.frontmatterLine);
   const channels = parseChannels(fm["channels"], bag, doc.frontmatterLine);
   const familiarity = parseFamiliarity(fm["familiarity"], bag, doc.frontmatterLine);
   const priorEvents = parsePriorEvents(fm["priorEvents"], bag, doc.frontmatterLine);
@@ -180,6 +184,7 @@ export function compileScenarioMarkdown(
       seed: seed ?? 0,
       maxPulses,
       settings: isRecord(fm["settings"]) ? fm["settings"] : {},
+      ...(storyClock ? { storyClock } : {}),
       channels,
       familiarity,
       cast,
@@ -203,6 +208,25 @@ function warnOnUnknownHeadings(doc: MdDocument, bag: DiagnosticBag): void {
       ...(suggestion ? { hint: `Did you mean "## ${suggestion}"?` } : {}),
     });
   }
+}
+
+function resolveStoryClock(value: unknown, bag: DiagnosticBag, line: number): StoryClockConfig | undefined {
+  if (value === undefined) return undefined;
+  const start = isRecord(value) ? value["start"] : undefined;
+  const minutesPerPulse = isRecord(value) ? value["minutesPerPulse"] : undefined;
+  if (
+    typeof start !== "string" ||
+    !isValidStoryClockStart(start) ||
+    typeof minutesPerPulse !== "number" ||
+    !(minutesPerPulse > 0)
+  ) {
+    bag.warn(
+      "`storyClock` needs `start` as 24-hour \"HH:MM\" and a positive `minutesPerPulse`; ignoring it.",
+      { line, path: "storyClock" },
+    );
+    return undefined;
+  }
+  return { start, minutesPerPulse };
 }
 
 function resolveMaxPulses(value: unknown, bag: DiagnosticBag, line: number): number {

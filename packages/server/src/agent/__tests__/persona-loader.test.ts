@@ -16,6 +16,14 @@ describe("PersonaLoader", () => {
     expect(Object.keys(profile.relationshipBiases).length).toBeGreaterThanOrEqual(1);
   });
 
+  it("carries the persona's messageLength into the prompt profile", () => {
+    const pack = getPersonaPackById("goulart");
+    expect(pack).toBeDefined();
+    const profile = personaPackToProfile(pack!);
+
+    expect(profile.messageLength).toBe(pack!.presenceProfile.messageLength);
+  });
+
   it("capitalises the displayName from the personaId", () => {
     const profile = PersonaLoader.getProfile("BRUNO");
     expect(profile.displayName).toBe("BRUNO");

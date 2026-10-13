@@ -35,6 +35,12 @@ export type PersonaPromptProfile = {
   affectionStyle: string[];
   publicPrivateDelta: string[];
   voiceGuidelines: string[];
+  /**
+   * How long this person's chat messages run, from the persona's
+   * `presenceProfile.messageLength`. Optional: a profile written by hand, or
+   * the generic fallback, states no length and the prompt stays silent on it.
+   */
+  messageLength?: "short" | "medium" | "long" | "rapid_fire";
   styleExamples: PersonaStyleExamples;
   privateMotivePatterns: string[];
   hardAvoids: string[];
