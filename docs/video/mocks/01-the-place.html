@@ -1,0 +1,45 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock 1 — The place</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="world.css">
+<style>
+ .cast{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:18px;margin-top:26px}
+ .cast div{border-top:3px solid var(--c);padding-top:8px}
+ .cast b{font:700 15px var(--sans)}.cast p{font-size:13px;color:var(--ink-70);margin-top:3px}
+</style></head><body><main class="wrap">
+ <h1>The place</h1>
+ <p class="sub">The rooftop of Residencial Aurora, where the building's group chat becomes a room. The same four hand-drawn characters, each carrying their own habit of standing. Move the clock and the plate relights; the story starts at 11:40pm.</p>
+ <div class="plate" id="plate"><div class="clockchip" id="chip"></div></div>
+ <div class="bar"><label for="clk">Story clock</label><input id="clk" type="range" min="1140" max="1770" step="5" value="1420" style="flex:1;max-width:520px"><span id="clkv" class="note"></span>
+  <span class="seg" role="group" aria-label="Cast size"><button data-c="4" aria-pressed="true">4 characters</button><button data-c="8" aria-pressed="false">8 characters</button></span><span class="seg" role="group" aria-label="Moment"><button data-t="1180" aria-pressed="false">Dusk</button><button data-t="1420" aria-pressed="true">11:40pm</button><button data-t="1540" aria-pressed="false">2am</button><button data-t="1740" aria-pressed="false">First grey</button></span></div>
+ <div class="cast" id="cast"></div>
+ <p class="note" style="margin-top:22px">Posture comes from the persona's archetype (<i>gatekeeper, trickster, organizer, elder</i>); breath and stillness come from recorded arousal at the clock's pulse.</p>
+</main>
+<script src="data/cat-run.js"></script><script src="world.js"></script>
+<script>
+const {R,byId,actFrom,makeActor,placeSVG,clockText,minOf,sigOf,COLORS}=W;
+const plate=document.getElementById('plate'),chip=document.getElementById('chip');
+const slots={neide:[22,91,.17],okafor:[78,91,.17],tavo:[40,94,.18],priya:[60,92,.17]};
+const actors={};let cast8=false;
+const GUESTS=[{id:'g1',short:'Guest',name:'Guest',archetype:'organizer',idx:4},{id:'g2',short:'Guest',name:'Guest',archetype:'trickster',idx:5},{id:'g3',short:'Guest',name:'Guest',archetype:'gatekeeper',idx:2},{id:'g4',short:'Guest',name:'Guest',archetype:'elder',idx:0}];
+const S8={neide:[11,86,.11],okafor:[88,86,.11],tavo:[31,92,.12],priya:[69,92,.12],g1:[22,98,.12],g2:[50,86,.11],g3:[78,98,.12],g4:[40,100,.11]};
+function build(){plate.querySelectorAll('.actor').forEach(n=>n.remove());for(const k in actors)delete actors[k];
+ const cast=cast8?R.agents.concat(GUESTS):R.agents;
+ cast.forEach(a=>{const h=document.createElement('div');h.className='actor';const[s,t,w]=(cast8?S8:slots)[a.id]||[50,90,.25];h.style.cssText=`left:${s}%;top:${t}%;--w:${w*100}%`;plate.append(h);actors[a.id]=makeActor(h,a,a.idx)});}
+build();
+let place=null;
+function paint(min){
+  const old=plate.querySelector('svg.place');const tmp=document.createElement('div');tmp.innerHTML=placeSVG('rooftop',min,'u');
+  old?old.replaceWith(tmp.firstChild):plate.prepend(tmp.firstChild);
+  chip.textContent=clockText(min);document.getElementById('clkv').textContent='';
+  const p=clamp(Math.round((min-1420)/4),0,R.pulses.length-1);
+  (cast8?R.agents.concat(GUESTS):R.agents).forEach((a,k)=>{const st=R.pulses[p];const P=a.id[0]==='g'?actFrom({v:0,a:.3+k*.05,e:1},{[['affection','pride','suspicion','humiliation'][k%4]]:.5},{}):actFrom(st.mood[a.id],st.soc[a.id],{});
+    const o=actors[a.id];o.set(Object.assign(P,{gx:a.id==='neide'?.5:a.id==='okafor'?-.5:0}))});
+}
+const clamp=W.clamp;
+const clk=document.getElementById('clk');clk.oninput=()=>{paint(+clk.value);document.querySelectorAll('[aria-label="Moment"] button').forEach(b=>b.setAttribute('aria-pressed',false))};
+document.querySelectorAll('[aria-label="Cast size"] button').forEach(b=>b.onclick=()=>{cast8=b.dataset.c==='8';document.querySelectorAll('[aria-label="Cast size"] button').forEach(x=>x.setAttribute('aria-pressed',x===b));build();paint(+clk.value)});
+document.querySelectorAll('[aria-label="Moment"] button').forEach(b=>b.onclick=()=>{clk.value=b.dataset.t;paint(+b.dataset.t);document.querySelectorAll('[aria-label="Moment"] button').forEach(x=>x.setAttribute('aria-pressed',x===b))});
+paint(1420);
+document.getElementById('cast').innerHTML=R.agents.map(a=>`<div style="--c:${COLORS[a.idx%6]}"><b>${a.name}</b><p>${a.archetype}: ${sigOf(a).tell}.</p></div>`).join('');
+</script></body></html>

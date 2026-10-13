@@ -1,0 +1,57 @@
+/* Shared tokens for the world mocks. Chrome follows the app's paper/ink/forest language; the plates carry the light. */
+:root{
+  --paper:#f7f5ed;--paper-warm:#eeeee2;--ink:#262920;--ink-70:#55594e;--ink-50:#62665a;--rule:#d6d8ca;--forest:#2d432c;
+  --night:#25305A;--sodium:#E8A33D;
+  --serif:"Fraunces","Fraunces Variable",Georgia,serif;--sans:"Instrument Sans",ui-sans-serif,system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0}
+body{background:var(--paper);color:var(--ink);font:15px/1.5 var(--sans);-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--forest);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding:28px 32px 48px}
+h1{font:700 clamp(2rem,4vw,2.75rem)/1.05 var(--sans);letter-spacing:-.045em;margin-bottom:8px}
+h2{font:700 1.3rem/1.15 var(--sans);letter-spacing:-.025em}
+.sub{color:var(--ink-70);max-width:62ch;margin-bottom:20px}
+.note{color:var(--ink-50);font-size:13px;max-width:60ch}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.bar button,.seg button{padding:8px 14px;border-radius:5px;border:1px solid var(--rule);background:#fff;font-weight:600;font-size:14px}
+.bar button[aria-pressed=true],.seg button[aria-pressed=true]{background:var(--forest);color:#fff;border-color:var(--forest)}
+.seg{display:inline-flex}.seg button{border-radius:0;margin-left:-1px}.seg button:first-child{border-radius:5px 0 0 5px}.seg button:last-child{border-radius:0 5px 5px 0}
+.bar input[type=range]{accent-color:var(--forest);min-width:160px}
+.bar label{font-size:13px;color:var(--ink-70)}
+
+/* the plate: place + characters + lettering share one 1200x600 coordinate space */
+.plate{position:relative;width:100%;aspect-ratio:2/1;border-radius:8px;overflow:hidden;background:#111;box-shadow:inset 0 0 0 1px var(--rule)}
+.plate>svg.place{position:absolute;inset:0;width:100%;height:100%}
+.actor{position:absolute;width:var(--w,16%);transform:translate(-50%,-100%);transition:left 1.4s cubic-bezier(.45,0,.2,1),top 1.4s cubic-bezier(.45,0,.2,1);pointer-events:none}
+.actor svg{display:block;width:100%;height:auto;overflow:visible}
+.actor .nm{position:absolute;left:50%;bottom:-18px;transform:translateX(-50%);font:600 12px/1 var(--sans);color:#f7f5ed;text-shadow:0 1px 3px #000a;white-space:nowrap;letter-spacing:0}
+.actor.walking .body{animation:step .38s ease-in-out infinite}
+@keyframes step{50%{transform:translateY(-6px)}}
+
+/* character animation */
+.rig{transform-origin:110px 196px;transition:transform .9s cubic-bezier(.3,.7,.3,1)}
+.breath{transform-origin:110px 196px;animation:breathe var(--bp,3.4s) ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1,1)}50%{transform:scale(var(--bx,1.012),var(--by,1.02))}}
+.shake{animation:tremor .09s linear infinite;animation-play-state:var(--tp,paused)}
+@keyframes tremor{0%{transform:translate(calc(var(--ta,0)*1px),0)}50%{transform:translate(calc(var(--ta,0)*-1px),calc(var(--ta,0)*.4px))}100%{transform:translate(calc(var(--ta,0)*.6px),calc(var(--ta,0)*-.5px))}}
+.arm{fill:none;stroke-linecap:round;stroke-linejoin:round;transition:d .7s cubic-bezier(.3,.7,.3,1)}
+.drop{animation:fall 2.6s ease-in infinite}
+@keyframes fall{0%{transform:translateY(0);opacity:0}15%{opacity:.95}100%{transform:translateY(16px);opacity:0}}
+.blink{transform-box:fill-box;transform-origin:center;animation:blink 5s infinite}
+@keyframes blink{0%,94%,100%{transform:scaleY(1)}97%{transform:scaleY(.1)}}
+
+/* lettering: speech written into the world, no bubble */
+.say{position:absolute;max-width:30%;transform:translate(-50%,-100%);font-family:var(--serif);font-variation-settings:"opsz" 28,"SOFT" 40,"WONK" 1;line-height:1.18;color:#fffdf4;
+  text-shadow:0 0 1px #000,0 1px 0 #0009,0 0 10px #000b;pointer-events:none;animation:ink .5s ease-out both}
+.say .who{display:block;font:600 11px/1 var(--sans);margin-bottom:5px;letter-spacing:0}
+.say.whisper{font-style:italic;opacity:.92}
+@keyframes ink{from{opacity:0;transform:translate(-50%,-92%) rotate(var(--rot,0deg))}to{opacity:1;transform:translate(-50%,-100%) rotate(var(--rot,0deg))}}
+.thought{position:absolute;max-width:26%;transform:translate(-50%,-100%);font:italic 400 13px/1.3 var(--serif);color:#d8e0f2;background:#0b1024b3;border:1.5px dashed #d8e0f299;border-radius:46% 54% 50% 50%/55% 45% 55% 45%;padding:10px 14px;pointer-events:none;animation:ink .6s .15s ease-out both}
+.fiction .thought,.fiction .sketch{display:none}
+.clockchip{position:absolute;left:18px;top:14px;font:700 22px/1 var(--serif);color:#f3c46b;text-shadow:0 1px 6px #000a;font-variation-settings:"opsz" 60,"WONK" 1}
+.transport{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.transport button{padding:8px 14px;border-radius:5px;border:1px solid var(--rule);background:#fff;font-weight:600;font-size:14px}
+.transport button[aria-pressed=true]{background:var(--forest);color:#fff;border-color:var(--forest)}
+.transport input[type=range]{flex:1;min-width:160px;accent-color:var(--forest)}
+@media (prefers-reduced-motion:reduce){.breath,.shake,.drop,.blink,.actor.walking .body,.say,.thought{animation:none!important}.rig,.actor{transition:none}}

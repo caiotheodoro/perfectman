@@ -1,0 +1,76 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock 3 — A real moment</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="world.css">
+<style>.legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px}.legend span{font-size:13px;color:var(--ink-70)}</style>
+</head><body><main class="wrap">
+ <h1>A real moment</h1>
+ <p class="sub">The actual run, played in the world. Public lines are lettered where the speaker stands. When two of them go private they walk to the stairwell door and the others watch them go. Nothing here is a chat window.</p>
+ <div class="plate" id="plate"><div class="clockchip" id="chip"></div></div>
+ <div class="transport"><button id="prev">Back</button><button id="play">Play</button><button id="next">Next</button><input id="scrub" type="range" min="-1" value="-1" aria-label="Scrub">
+  <span class="seg" id="spd" role="group" aria-label="Speed"><button data-s="1" aria-pressed="true">1x</button><button data-s="2" aria-pressed="false">2x</button><button data-s="4" aria-pressed="false">4x</button></span>
+  <span class="seg" role="group" aria-label="Viewer lens"><button id="omni" aria-pressed="true">Omniscient</button><button id="fic" aria-pressed="false">Fiction only</button></span>
+  <button id="snd" aria-pressed="false">Voices</button></div>
+ <p class="note" id="cap" style="margin-top:12px;min-height:22px"></p>
+ <div class="legend"><span>Italic, small: said in a side-chat</span><span>Dashed cloud: private thought, omniscient only</span><span>Voices: a short babble per letter, pitch from the persona</span></div>
+</main>
+<script src="data/cat-run.js"></script><script src="world.js"></script>
+<script>
+const {R,byId,pubId,chanMeta,actFrom,makeActor,placeSVG,clockText,minOf,esc,Babble,COLORS}=W;
+const plate=document.getElementById('plate'),chip=document.getElementById('chip'),cap=document.getElementById('cap');
+const RING={neide:[22,91,.17],okafor:[78,91,.17],tavo:[40,94,.18],priya:[60,92,.17]};
+const HUD=[[9,92],[25,95],[17,87]];
+const A={};R.agents.forEach(a=>{const h=document.createElement('div');h.className='actor';plate.append(h);A[a.id]=makeActor(h,a,a.idx)});
+// beats
+const beats=[];R.pulses.forEach(p=>p.events.filter(e=>e.kind==='say').forEach(e=>beats.push({p:p.i,e})));
+const scrub=document.getElementById('scrub');scrub.max=beats.length-1;
+let curMin=-1,i=-1,playing=false,speed=1,timer=null,talk=null,lastRing=true;
+function relight(min){if(Math.abs(min-curMin)<1)return;curMin=min;const old=plate.querySelector('svg.place'),t=document.createElement('div');t.innerHTML=placeSVG('rooftop',min,'u');old?old.replaceWith(t.firstChild):plate.prepend(t.firstChild);chip.textContent=clockText(min)}
+function clearSay(){plate.querySelectorAll('.say,.thought').forEach(n=>n.remove())}
+function place(id,x,y,w){const h=A[id].el;h.style.left=x+'%';h.style.top=y+'%';h.style.setProperty('--w',(w||.17)*100+'%')}
+function apply(k,animate){
+  if(k<0){relight(minOf(0));R.agents.forEach(a=>{const[x,y,w]=RING[a.id];place(a.id,x,y,w);A[a.id].set(actFrom({v:0,a:.3,e:1},{},{}))});clearSay();cap.textContent='';return}
+  const {p,e}=beats[k],ch=chanMeta[e.ch],members=ch.members,isPub=e.ch===pubId,allIn=members.length>=R.agents.length;
+  relight(minOf(p));
+  const huddle=!isPub&&!allIn?members:[];
+  const mood=R.pulses[p].mood,soc=R.pulses[p].soc;
+  R.agents.forEach(a=>{
+    const inH=huddle.includes(a.id);let x,y,w;
+    if(inH){const hp=HUD[huddle.indexOf(a.id)];x=hp[0];y=hp[1];w=.17}else[x,y,w]=RING[a.id];
+    const el=A[a.id].el;if(animate&&(el.style.left!==x+'%')){el.classList.add('walking');setTimeout(()=>el.classList.remove('walking'),1400)}
+    place(a.id,x,y,w);
+    const speaking=a.id===e.actor;
+    let toward=0;
+    if(speaking){const tgt=e.to&&e.to[0]||members.find(m=>m!==a.id);const tx=tgt?(inH&&huddle.includes(tgt)?HUD[huddle.indexOf(tgt)][0]:RING[tgt][0]):x;toward=Math.sign(tx-x)||0}
+    else{const sx=huddle.includes(e.actor)?HUD[huddle.indexOf(e.actor)][0]:RING[e.actor][0];toward=Math.sign(sx-x)||0}
+    const P=actFrom(mood[a.id],soc[a.id],{speaking,toward});
+    if(inH&&!speaking){P.gx=toward}
+    A[a.id].set(P);A[a.id].P=P;
+  });
+  // lettering
+  clearSay();
+  const spk=byId[e.actor],pos=huddle.length&&huddle.includes(e.actor)?HUD[huddle.indexOf(e.actor)]:RING[e.actor];
+  const d=document.createElement('div');d.className='say'+(huddle.length?' whisper':'');
+  d.style.cssText=`left:${Math.max(16,Math.min(84,pos[0]+(huddle.length?10:0)))}%;top:${pos[1]-37}%;font-size:${huddle.length?16:19}px;--rot:${((k*37)%7-3)*.4}deg`;
+  const txt=e.text.length>170?e.text.slice(0,167)+'…':e.text;
+  d.innerHTML=`<span class="who" style="color:${COLORS[spk.idx%6]}">${spk.short}${e.to.length?' to '+e.to.map(t=>byId[t].short).join(', '):''}</span>${esc(txt)}`;plate.append(d);
+  const th=R.pulses[p].think[e.actor];
+  if(th){const t=document.createElement('div');t.className='thought';t.style.cssText=`left:${Math.max(18,Math.min(82,pos[0]+(pos[0]>50?-16:16)))}%;top:${pos[1]-52}%`;t.textContent=th.motive.length>120?th.motive.slice(0,117)+'…':th.motive;plate.append(t)}
+  cap.textContent=`${clockText(minOf(p))} · ${chanMeta[e.ch].type==='public_channel'?'in front of everyone':huddle.length?huddle.map(m=>byId[m].short).join(' and ')+' step away from the others':'the whole group, in a thread'}`;
+  if(animate){Babble.say(spk.idx,e.text,!!huddle.length);clearInterval(talk);let n=0;talk=setInterval(()=>{n++;const P=A[e.actor].P;if(!P)return;A[e.actor].set(Object.assign({},P,{speaking:n%2===0,speakAmp:n%3}));if(n>10){clearInterval(talk);A[e.actor].set(Object.assign({},P,{speaking:false}))}},190)}
+}
+function go(k,animate){i=Math.max(-1,Math.min(beats.length-1,k));scrub.value=i;apply(i,animate);document.getElementById('play').textContent=playing?'Pause':'Play'}
+function dur(){const b=beats[i];return b?Math.max(2200,900+b.e.text.length*52):1200}
+function tick(){if(!playing)return;if(i>=beats.length-1){playing=false;go(i,false);return}
+ const nb=beats[i+1];const moving=nb&&!(nb.e.ch===pubId||chanMeta[nb.e.ch].members.length>=R.agents.length)!==(i>=0&&!(beats[i].e.ch===pubId||chanMeta[beats[i].e.ch].members.length>=R.agents.length));
+ go(i+1,true);timer=setTimeout(tick,(dur()+(moving?1100:0))/speed)}
+document.getElementById('play').onclick=()=>{playing=!playing;if(playing){if(i>=beats.length-1)go(-1,false);tick()}else{clearTimeout(timer);go(i,false)}document.getElementById('play').textContent=playing?'Pause':'Play'};
+document.getElementById('prev').onclick=()=>{clearTimeout(timer);playing=false;go(i-1,false)};
+document.getElementById('next').onclick=()=>{clearTimeout(timer);playing=false;go(i+1,true)};
+scrub.oninput=()=>{clearTimeout(timer);playing=false;go(+scrub.value,false)};
+document.getElementById('spd').onclick=e=>{const b=e.target.closest('button');if(!b)return;speed=+b.dataset.s;document.querySelectorAll('#spd button').forEach(x=>x.setAttribute('aria-pressed',x===b))};
+const omni=document.getElementById('omni'),fic=document.getElementById('fic');
+const lens=o=>{plate.classList.toggle('fiction',!o);omni.setAttribute('aria-pressed',o);fic.setAttribute('aria-pressed',!o)};omni.onclick=()=>lens(true);fic.onclick=()=>lens(false);
+document.getElementById('snd').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';on?Babble.enable():Babble.disable();e.currentTarget.setAttribute('aria-pressed',on)};
+go(-1,false);
+</script></body></html>

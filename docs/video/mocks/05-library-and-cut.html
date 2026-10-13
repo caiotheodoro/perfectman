@@ -1,0 +1,79 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock 5 — The library and the cut</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="world.css">
+<style>
+ .lib{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px;margin:12px 0 8px}
+ .lib figure .plate{aspect-ratio:2/1}.lib figcaption{font-size:13px;margin-top:6px;color:var(--ink-70)}.lib figcaption b{color:var(--ink);font-weight:700}
+ pre{font:13px/1.5 ui-monospace,Menlo,monospace;background:var(--paper-warm);border-radius:5px;padding:12px 14px;overflow:auto;margin:10px 0 0;max-width:560px}
+ .cut{display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;margin-top:12px}
+ .cut figure{flex:none}.cut figcaption{font-size:13px;color:var(--ink-70);margin-top:8px;max-width:340px}
+ .f169{width:640px}.f916{width:270px}
+ .frame{position:relative;overflow:hidden;border-radius:8px;box-shadow:inset 0 0 0 1px var(--rule);background:#111}
+ .f169 .frame{aspect-ratio:16/9}.f916 .frame{aspect-ratio:9/16}
+ .frame .inner{position:absolute;top:0;bottom:0}
+ .f169 .inner{left:0;right:0}.f916 .inner{width:356%;left:var(--ox,-120%)}
+ .inner .plate{position:absolute;inset:0;border-radius:0;aspect-ratio:auto;box-shadow:none}
+ .f169 .inner .plate{aspect-ratio:auto}
+ .title{position:absolute;left:5%;top:9%;color:#fff7e0;text-shadow:0 2px 14px #000c}
+ .title small{display:block;font:700 22px var(--serif);color:#f3c46b;font-variation-settings:"opsz" 60,"WONK" 1}
+ .title b{display:block;font:800 clamp(28px,5.4vw,58px)/.95 var(--serif);letter-spacing:-.02em;font-variation-settings:"opsz" 144,"SOFT" 30,"WONK" 1;margin:6px 0 8px}
+ .title span{font:400 14px/1.3 var(--sans);display:block;white-space:nowrap}
+ .ledger{position:absolute;left:4%;top:6%;right:30%;color:#fff7e0;text-shadow:0 1px 8px #000;padding:14px 18px;background:linear-gradient(90deg,#0b1124d9,#0b112499);border-radius:8px}
+ .ledger b{font:800 30px/1 var(--serif);display:block;margin-bottom:12px}
+ .ledger p{font:400 17px/1.3 var(--serif);margin-top:8px;max-width:none}
+ .ledger p i{font-style:normal;font-weight:700}
+ .f916 .say{max-width:none;width:236px;font-size:12.5px;text-align:center}.f916 .frame .clockchip{font-size:15px;left:12px;top:10px}
+ .f916 .actor .nm{display:none}.f169 .actor .nm{font-size:10px}
+</style></head><body><main class="wrap">
+ <h1>The library and the cut</h1>
+ <p class="sub">A scene names its place; the director composes the shots from it. Eight drawn settings share one light that follows the story clock, and the same director cuts a wide 16:9 for the player and a tall 9:16 for sharing.</p>
+ <h2>Eight places</h2>
+ <div class="bar"><label for="clk">Light</label><input id="clk" type="range" min="1140" max="1770" step="5" value="1420" style="max-width:460px"><span class="note" id="clkv"></span></div>
+ <div class="lib" id="lib"></div>
+ <pre>---
+name: The cat on the roof
+storyClock: { start: "23:40", minutesPerPulse: 4 }
+setting: rooftop
+props: [cat, bowl, notice-board, water-tank]
+---</pre>
+ <p class="note" style="margin-top:8px">New optional frontmatter. If <code>setting</code> is missing the director picks the closest place from the room text, then falls back to bare ground.</p>
+ <h2 style="margin-top:34px">Three frames from one cut</h2>
+ <div class="cut" id="cut"></div>
+</main>
+<script src="data/cat-run.js"></script><script src="world.js"></script>
+<script>
+const {R,byId,pubId,actFrom,makeActor,placeSVG,clockText,minOf,esc,COLORS}=W;
+const KINDS=[['rooftop','The cat on the roof','roof, water tank, notice board'],['stairwell','A flight of stairs','handrail, bare bulb, a door'],['elevator','Stuck between 3 and 4','steel doors, floor indicator'],['kitchen','A late kitchen','pendant lamp, kettle, two mugs'],['living','A living room','sofa, standing lamp, rug'],['lobby','The lobby','mailboxes, glass door, plant'],['street','The street out front','lamp post, parked car, hydrant'],['office','The office after hours','desk screen, blinds, plant']];
+const lib=document.getElementById('lib');
+function drawLib(min){lib.innerHTML=KINDS.map(([k,t,p])=>`<figure><div class="plate">${placeSVG(k,min,'l'+k)}</div><figcaption><b>setting: ${k}</b> · ${t}. ${p}.</figcaption></figure>`).join('');document.getElementById('clkv').textContent=clockText(min)}
+const clk=document.getElementById('clk');clk.oninput=()=>drawLib(+clk.value);drawLib(1420);
+// cut
+const cut=document.getElementById('cut');
+function frame(cls,ratioClass,cap,build){const f=document.createElement('figure');f.className=cls;f.innerHTML=`<div class="frame"><div class="inner"><div class="plate"></div></div></div><figcaption>${cap}</figcaption>`;cut.append(f);build(f.querySelector('.plate'),f.querySelector('.inner'),f.querySelector('.frame'));return f}
+const place=(pl,min)=>{pl.innerHTML=placeSVG('rooftop',min,'c'+Math.random().toString(36).slice(2,5))};
+const put=(pl,id,x,y,w,P)=>{const h=document.createElement('div');h.className='actor';h.style.cssText=`left:${x}%;top:${y}%;--w:${w}%`;pl.append(h);const a=makeActor(h,byId[id],byId[id].idx);a.set(P);return a};
+// 16:9 cold open
+frame('f169','','Cold open, about two seconds: story clock in sodium, title, and the cast standing in the place they will fight over.',(pl,inner)=>{
+ place(pl,minOf(0));const ring={neide:[24,90,17],okafor:[76,90,17],tavo:[42,95,18],priya:[60,93,17]};
+ R.agents.forEach(a=>put(pl,a.id,...ring[a.id],actFrom(R.pulses[0].mood[a.id],R.pulses[0].soc[a.id],{})));
+ pl.insertAdjacentHTML('beforeend',`<div class="title"><small>11:40pm</small><b>${esc(R.title)}</b><span>Assembly is at 7. Everyone has something to hide.</span></div>`)});
+// 9:16 mid shot
+const q=R.pulses.flatMap(p=>p.events.filter(e=>e.kind==='say'&&p.think[e.actor]&&/byline|motion|stairwell/.test(e.text)).map(e=>({p,e})))[0]||R.pulses[14].events.find(e=>e.kind==='say')&&{p:R.pulses[14],e:R.pulses[14].events.find(e=>e.kind==='say')};
+frame('f916','','Vertical mid shot at a line worth quoting. The frame crops to the two people talking; lettering stays inside the safe area.',(pl,inner,fr)=>{
+ inner.style.setProperty('--ox','-112%');place(pl,minOf(q.p.i));
+ const sp=q.e.actor,lt=(q.e.to[0])||R.agents.find(a=>a.id!==sp).id;
+ const Ps=actFrom(q.p.mood[sp],q.p.soc[sp],{speaking:true,toward:1});Ps.gx=.8;const Pl=actFrom(q.p.mood[lt],q.p.soc[lt],{toward:-1});Pl.gx=-.8;
+ put(pl,sp,39,97,21,Ps);put(pl,lt,54,97,21,Pl);
+ const t=q.e.text.length>110?q.e.text.slice(0,107)+'…':q.e.text;
+ pl.insertAdjacentHTML('beforeend',`<div class="say" style="left:45.7%;top:46%"><span class="who" style="color:${COLORS[byId[sp].idx%6]}">${byId[sp].short}</span>${esc(t)}</div><div class="clockchip">${clockText(minOf(q.p.i))}</div>`)});
+// 16:9 end card
+frame('f169','','End card: the light has moved on and the ledger is computed from the first and last recorded pulse.',(pl)=>{
+ const last=R.pulses[R.pulses.length-1],first=R.pulses[0];place(pl,1720);
+ const ring={neide:[24,90,17],okafor:[76,90,17],tavo:[42,95,18],priya:[60,93,17]};
+ R.agents.forEach(a=>put(pl,a.id,...ring[a.id],actFrom(last.mood[a.id],last.soc[a.id],{})));
+ const rows=[];R.agents.forEach(a=>R.agents.forEach(b=>{if(a!==b)rows.push({a,b,s:last.rel[a.id][b.id].suspicion-first.rel[a.id][b.id].suspicion,t:last.rel[a.id][b.id].trust-first.rel[a.id][b.id].trust})}));
+ const s=[...rows].sort((x,y)=>y.s-x.s)[0],t=[...rows].sort((x,y)=>y.t-x.t)[0];
+ const msgs=R.pulses.flatMap(p=>p.events.filter(e=>e.kind==='say')),priv=msgs.filter(m=>m.ch!==pubId).length;
+ pl.insertAdjacentHTML('beforeend',`<div class="ledger"><b>Where they ended up</b><p><i>${s.a.short}</i> trusts <i>${s.b.short}</i> less: suspicion +${s.s.toFixed(2)}.</p><p><i>${t.a.short}</i> leans on <i>${t.b.short}</i> more: trust +${t.t.toFixed(2)}.</p><p>${msgs.length} messages, ${Math.round(priv/msgs.length*100)}% of them said away from the group.</p></div>`)});
+</script></body></html>
