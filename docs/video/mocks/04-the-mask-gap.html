@@ -1,70 +1,75 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Mock 4 — The mask gap</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;600;700&family=Shantell+Sans:ital,wght,BNCE,INFM@0,300..800,-100..100,0..100&family=Special+Elite&family=Patrick+Hand&family=Kalam:wght@400;700&family=Londrina+Solid:wght@400;900&family=Caveat:wght@400..700&display=swap">
 <link rel="stylesheet" href="world.css">
 <style>
  .picks{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 16px}
  .picks button{padding:8px 12px;border-radius:5px;border:1px solid var(--rule);background:#fff;text-align:left;font-size:13px;line-height:1.25}
- .picks button b{display:block;font-weight:700}
- .picks button[aria-pressed=true]{border-color:var(--forest);box-shadow:inset 0 0 0 1px var(--forest)}
+ .picks button b{display:block;font-weight:700}.picks button[aria-pressed=true]{border-color:var(--forest);box-shadow:inset 0 0 0 1px var(--forest)}
  .meter{height:8px;border-radius:4px;background:#e4e0cf;overflow:hidden;width:240px}.meter i{display:block;height:100%;background:#b4573f;transition:width .8s}
- .two{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}.two h2{margin-bottom:6px}
- .two p{font-size:14px;color:var(--ink-70)}
- .plate .actor{--w:30%}
- .plate .say{max-width:36%;font-size:21px}
- .plate .thought{max-width:30%;font-size:14px}
- .sketch{position:absolute;display:flex;flex-wrap:wrap;gap:5px;max-width:30%;transform:translate(-50%,0)}
- .sketch span{font:italic 12px var(--serif);color:#e8edf8;border-bottom:1.5px solid #e8edf899;padding:0 3px}
+ .two{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:20px}.two h2{margin-bottom:6px}.two p{font-size:14px;color:var(--ink-70)}
+ .b,.seg2 button{padding:8px 14px;border-radius:5px;border:1px solid var(--rule);background:#fff;font-weight:600;font-size:14px}.seg2 button[aria-pressed=true]{background:var(--forest);color:#fff;border-color:var(--forest)}.seg2{display:inline-flex}.seg2 button{border-radius:0;margin-left:-1px}.seg2 button:first-child{border-radius:5px 0 0 5px}.seg2 button:last-child{border-radius:0 5px 5px 0}
+ .bar2{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin-top:12px}
  @media(max-width:760px){.two{grid-template-columns:1fr}}
+ .fic .bl-thought{display:none!important}
 </style></head><body><main class="wrap">
  <h1>The mask gap</h1>
- <p class="sub">The words and the body do not always agree. The line on the plate is what was said; the body is what the engine says they felt while saying it. Slip the mask and watch the same person change.</p>
+ <p class="sub">The words and the body do not always agree. The balloon is what was said; the body is what the engine says they felt while saying it. Slip the mask and watch the same person change, then read the thought that sat behind the line.</p>
  <div class="picks" id="picks"></div>
- <div class="plate" id="plate"><div class="clockchip" id="chip"></div></div>
- <div class="bar"><span class="seg" role="group" aria-label="Show"><button id="mask" aria-pressed="false">The mask</button><button id="truth" aria-pressed="true">What they feel</button></span>
-  <span class="seg" role="group" aria-label="Viewer lens"><button id="omni" aria-pressed="true">Omniscient</button><button id="fic" aria-pressed="false">Fiction only</button></span>
-  <label>Tension held back</label><span class="meter"><i id="mt"></i></span></div>
+ <div class="stagehost" id="host"></div>
+ <div class="bar2"><span class="seg2" role="group" aria-label="Show"><button id="mask" aria-pressed="false">The mask</button><button id="truth" aria-pressed="true">What they feel</button></span>
+  <span class="seg2" role="group" aria-label="Viewer lens"><button id="omni" aria-pressed="true">Omniscient</button><button id="fic" aria-pressed="false">Fiction only</button></span>
+  <label style="font-size:13px;color:var(--ink-70)">Tension held back</label><span class="meter"><i id="mt"></i></span></div>
  <div class="two"><div><h2>On the surface</h2><p id="surf"></p></div><div><h2>Underneath</h2><p id="under"></p></div></div>
- <p class="note" style="margin-top:18px">The engine records the character's true state per pulse, not a separate "shown" state. The mask here is derived from the register of the line (formal sign-off, polite, deadpan) and drawn as a composed pose; the truth is drawn from the recorded emotions. It is a reading, not a recorded fact, and the player should label it so.</p>
+ <p class="note" style="margin-top:18px">The engine records the character's true state per pulse, not a separate "shown" state. The mask is derived from the register of the line (formal sign-off, polite, deadpan) and drawn as a composed pose; the truth is drawn from the recorded emotions. It is a reading, not a recorded fact, and the player labels it so.</p>
 </main>
-<script src="data/cat-run.js"></script><script src="world.js"></script>
+<script src="data/cat-run.js"></script><script src="world.js"></script><script src="balloons.js"></script>
 <script>
-const {R,byId,pubId,actFrom,makeActor,placeSVG,clockText,minOf,esc,sigOf,COLORS}=W;
-const plate=document.getElementById('plate'),chip=document.getElementById('chip');
-const moments=[];
-R.pulses.forEach(p=>p.events.filter(e=>e.kind==='say'&&p.think[e.actor]).forEach(e=>{const P=actFrom(p.mood[e.actor],p.soc[e.actor],{});moments.push({p,e,P})}));
-const seen={},pick=[];moments.sort((a,b)=>b.P.strength-a.P.strength).forEach(m=>{const k=m.e.actor+(seen[m.e.actor]||0);if((seen[m.e.actor]||0)<2&&pick.length<6){seen[m.e.actor]=(seen[m.e.actor]||0)+1;pick.push(m)}});
-pick.sort((a,b)=>a.p.i-b.p.i);
-let cur=pick[0],mode='truth',spk,lis,lisId;
-function polite(t){return /Good evening|Regards|Dona|Noted|Finding|Mr\.|good faith|I will grant/i.test(t)}
+Promise.all(['16px "Shantell Sans"','15px "Special Elite"','20px "Patrick Hand"','18px Kalam','27px "Londrina Solid"','21px Caveat'].map(f=>document.fonts.load(f))).then(()=>document.fonts.ready).then(init);
+function init(){
+const {R,byId,actFrom,toVec,lerpVec,makeActor,placeSVG,clockText,minOf,sigOf,COLORS}=W;
+const host=document.getElementById('host');host.style.cssText='position:relative;width:100%;overflow:hidden;border-radius:8px;background:#0b1124';
+const st=document.createElement('div');st.className='stage nofx';st.style.cssText='position:absolute;left:0;top:0;width:1200px;height:600px;transform-origin:0 0';host.append(st);
+const fit=()=>{const s=host.clientWidth/1200;st.style.transform=`scale(${s})`;host.style.height=(host.clientWidth/2)+'px'};new ResizeObserver(fit).observe(host);fit();
+const moments=[];R.pulses.forEach(p=>p.events.filter(e=>e.kind==='say'&&p.think[e.actor]).forEach(e=>moments.push({p,e,P:actFrom(p.mood[e.actor],p.soc[e.actor],{})})));
+const seen={},pick=[];moments.sort((a,b)=>b.P.strength-a.P.strength).forEach(m=>{const c=seen[m.e.actor]||0;if(c<2&&pick.length<6){seen[m.e.actor]=c+1;pick.push(m)}});pick.sort((a,b)=>a.p.i-b.p.i);
+let cur=pick[0],mode='truth',omni=true,spk,lis,spkV,tween=null,lisId;
+const polite=t=>/Good evening|Regards|Dona|Noted|Finding|Mr\.|good faith|I will grant/i.test(t);
 function build(){
-  plate.querySelectorAll('.actor,.say,.thought,.sketch,svg.place').forEach(n=>n.remove());
-  const{p,e}=cur;const t=document.createElement('div');t.innerHTML=placeSVG('rooftop',minOf(p.i),'m');plate.prepend(t.firstChild);chip.textContent=clockText(minOf(p.i));
-  lisId=(e.to[0])||R.agents.find(a=>a.id!==e.actor).id;
-  const h1=document.createElement('div'),h2=document.createElement('div');h1.className=h2.className='actor';h1.style.cssText='left:34%;top:99%';h2.style.cssText='left:70%;top:99%';plate.append(h1,h2);
-  spk=makeActor(h1,byId[e.actor],byId[e.actor].idx);lis=makeActor(h2,byId[lisId],byId[lisId].idx);
-  const say=document.createElement('div');say.className='say';say.style.cssText='left:34%;top:52%';
-  const txt=e.text.length>150?e.text.slice(0,147)+'…':e.text;say.innerHTML=`<span class="who" style="color:${COLORS[byId[e.actor].idx%6]}">${byId[e.actor].short}</span>${esc(txt)}`;plate.append(say);
-  const th=p.think[e.actor];const t2=document.createElement('div');t2.className='thought';t2.style.cssText='left:66%;top:44%';t2.textContent=th.motive.length>150?th.motive.slice(0,147)+'…':th.motive;plate.append(t2);
-  const sk=document.createElement('div');sk.className='sketch';sk.style.cssText='left:21%;top:66%';sk.innerHTML=th.drivers.map(d=>`<span>${esc(d)}</span>`).join('');plate.append(sk);
-  pose();
+ st.innerHTML=placeSVG('rooftop',minOf(cur.p.i),'m').replace('class="place"','class="place" style="position:absolute;inset:0;width:1200px;height:600px;filter:blur(1.4px) brightness(.8)"');
+ const e=cur.e,p=cur.p;lisId=(e.to[0])||R.agents.find(a=>a.id!==e.actor).id;
+ const mk=(id,x,w)=>{const h=document.createElement('div');h.className='actor';h.style.cssText=`position:absolute;left:${x}px;top:588px;width:${w}px;transform:translate(-50%,-100%)`;st.append(h);const a=makeActor(h,byId[id],byId[id].idx);h.querySelector('.nm').style.display='none';return a};
+ spk=mk(e.actor,330,400);lis=mk(lisId,830,330);
+ // balloons: what was said, and what was thought
+ const bs=document.createElement('div');bs.className='bl-layer';st.append(bs);
+ const agent=byId[e.actor],sh=400,topY=588-.97*sh*.99;
+ const sb={kind:'speech',actor:e.actor,text:e.text,ar:p.mood[e.actor].a};sb.style=B.styleFor(sb,agent);sb.pages=B.fit(e.text,sb.style,'speech');sb.slot={cx:330,cy:Math.max(110,topY-sb.pages[0].H/2-34),tip:{x:330,y:topY+40}};
+ const c1=B.make(sb,0,bs);c1.n.style.display='block';c1.n.style.opacity=1;c1.n.style.transform=`translate(${330-sb.pages[0].W/2}px,${sb.slot.cy-sb.pages[0].H/2}px) scale(1.15)`;c1.n.style.transformOrigin=`${sb.pages[0].W/2}px ${sb.pages[0].H+30}px`;c1.words.forEach(w=>w.style.opacity=1);
+ const th=p.think[e.actor],tb={kind:'thought',actor:e.actor,text:th.motive.split(/(?<=[.;—])\s/)[0].slice(0,120),drivers:th.drivers,ar:.4};tb.style=B.styleFor(tb,agent);tb.pages=B.fit(tb.text,tb.style,'thought');
+ tb.slot={cx:875,cy:Math.max(120,tb.pages[0].H/2+40),tip:{x:470,y:topY+90}};
+ const c2=B.make(tb,0,bs);c2.n.classList.add('bl-thought');c2.n.style.display='block';c2.n.style.opacity=1;c2.n.style.transform=`translate(${875-tb.pages[0].W/2}px,${tb.slot.cy-tb.pages[0].H/2}px)`;c2.words.forEach(w=>w.style.opacity=1);
+ const chip=document.createElement('div');chip.className='clockchip';chip.style.cssText='position:absolute;right:24px;bottom:14px;font:700 28px var(--serif);color:#f3c46b;text-shadow:0 2px 8px #000b';chip.textContent=clockText(minOf(p.i));st.append(chip);
+ pose(true);
 }
-function pose(){
-  const{p,e,P}=cur,sig=sigOf(byId[e.actor]);
-  const truth=Object.assign({},P,{speaking:true,toward:1,gx:.8});
-  const tr=actFrom(p.mood[e.actor],p.soc[e.actor],{speaking:true,toward:1});tr.gx=.9;
-  const mask=Object.assign(actFrom({v:0,a:.3,e:1},{},{speaking:true,toward:1}),{face:polite(e.text)?'smile':'neutral',breath:3.8,gx:.9,armL:'down',armR:'down'});
-  const use=mode==='mask'?mask:tr;
-  spk.set(use);
-  const ls=actFrom(p.mood[lisId],p.soc[lisId],{toward:-1});ls.gx=-.9;lis.set(ls);
-  document.getElementById('mt').style.width=Math.round(Math.min(1,tr.strength*1.5)*100)+'%';
-  document.getElementById('surf').textContent=`${byId[e.actor].short} says it ${polite(e.text)?'politely, composed':'flat, in character'}: ${polite(e.text)?'a smile that does not move':'no tell on the face'}.`;
-  document.getElementById('under').textContent=`${byId[e.actor].short}'s body: ${W.stateRead(tr)}. The recorded drivers: ${cur.p.think[e.actor].drivers.join('; ')}.`;
+function targets(){
+ const{p,e}=cur,tr=actFrom(p.mood[e.actor],p.soc[e.actor],{speaking:true,toward:1});tr.gx=.9;
+ const mask=Object.assign(actFrom({v:0,a:.3,e:1},{},{speaking:true,toward:1}),{face:polite(e.text)?'smile':'neutral',breath:3.8,gx:.9,armL:'down',armR:'down'});
+ const ls=actFrom(p.mood[lisId],p.soc[lisId],{toward:-1});ls.gx=-.9;
+ return{tr,mask,ls};
+}
+function pose(instant){
+ const{tr,mask,ls}=targets(),sig=sigOf(byId[cur.e.actor]),to=toVec(mode==='mask'?mask:tr,sig);
+ const from=spkV||to;spkV=to;const t0=performance.now(),dur=instant?1:850;lis.update(toVec(ls,sigOf(byId[lisId])),0,0,{});
+ cancelAnimationFrame(tween);(function step(now){const k=Math.min(1,(now-t0)/dur),e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;spk.update(lerpVec(from,to,e),.016,now/1000,{speak:.0});if(k<1)tween=requestAnimationFrame(step)})(t0);
+ document.getElementById('mt').style.width=Math.round(Math.min(1,tr.strength*1.5)*100)+'%';
+ const a=byId[cur.e.actor];document.getElementById('surf').textContent=`${a.short} says it ${polite(cur.e.text)?'politely, composed':'flat, in character'}: ${polite(cur.e.text)?'a smile that does not move':'no tell on the face'}.`;
+ document.getElementById('under').textContent=`${a.short}'s body: ${W.stateRead(tr)}. The recorded drivers: ${cur.p.think[cur.e.actor].drivers.join('; ')}.`;
 }
 document.getElementById('picks').innerHTML=pick.map((m,i)=>`<button data-i="${i}" aria-pressed="${i===0}"><b>${byId[m.e.actor].short}, ${clockText(minOf(m.p.i))}</b>${W.stateRead(m.P).split(',')[0]}</button>`).join('');
-document.getElementById('picks').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;cur=pick[+b.dataset.i];document.querySelectorAll('#picks button').forEach(x=>x.setAttribute('aria-pressed',x===b));build()};
+document.getElementById('picks').onclick=ev=>{const b=ev.target.closest('button');if(!b)return;cur=pick[+b.dataset.i];spkV=null;document.querySelectorAll('#picks button').forEach(x=>x.setAttribute('aria-pressed',x===b));build()};
 const bm=document.getElementById('mask'),bt=document.getElementById('truth');
 bm.onclick=()=>{mode='mask';bm.setAttribute('aria-pressed',true);bt.setAttribute('aria-pressed',false);pose()};bt.onclick=()=>{mode='truth';bt.setAttribute('aria-pressed',true);bm.setAttribute('aria-pressed',false);pose()};
-const omni=document.getElementById('omni'),fic=document.getElementById('fic');const lens=o=>{plate.classList.toggle('fiction',!o);omni.setAttribute('aria-pressed',o);fic.setAttribute('aria-pressed',!o)};omni.onclick=()=>lens(true);fic.onclick=()=>lens(false);
-build();
+const om=document.getElementById('omni'),fi=document.getElementById('fic');const lens=o=>{host.classList.toggle('fic',!o);om.setAttribute('aria-pressed',o);fi.setAttribute('aria-pressed',!o)};om.onclick=()=>lens(true);fi.onclick=()=>lens(false);
+build();window.__pick=pick;
+}
 </script></body></html>

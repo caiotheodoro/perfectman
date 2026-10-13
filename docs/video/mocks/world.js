@@ -67,6 +67,23 @@ function actFrom(m,soc,o={}){
  return P;
 }
 
+
+/* ---------- pose vectors: every number is continuous, so a sampled timeline never snaps ---------- */
+const nums=d=>(d.match(/-?\d+\.?\d*/g)||[]).map(Number);
+const FACEV=Object.fromEntries(Object.entries(FACE).map(([k,f])=>[k,{r:f.r,bl:nums(f.bl),br:nums(f.br),bo:f.bo,m:nums(f.m)}]));
+const ARMV=Object.fromEntries(Object.entries(ARMS).map(([k,[l,r]])=>[k,[nums(l),nums(r)]]));
+function toVec(P,sig){
+ sig=sig||{};const f=FACEV[P.face||'neutral'];
+ const ak=k=>k==='down'&&sig.arms&&sig.arms!=='down'&&P.kind==='rest'?sig.arms:k;
+ return{lean:(P.lean||0)+(sig.lean||0),squash:(P.squash||1)*(sig.squash||1),puff:P.puff||1,tremor:P.tremor||0,breath:P.breath||3.4,
+  ry:f.r,sry:P.face==='tired'?7:12.5,bl:f.bl,br:f.br,bo:f.bo,m:f.m,aL:ARMV[ak(P.armL||'down')][0],aR:ARMV[ak(P.armR||'down')][1],
+  gx:P.gx||0,gy:P.gy||0,tear:P.tear||0,blush:P.blush||0,sweat:P.sweat||0,clench:P.clench||0,back:P.back||0,blur:P.blur||0,dim:P.dim||0,hide:P.hide||0,x:0,y:0,w:0};
+}
+const lerp=(a,b,k)=>a+(b-a)*k;
+function lerpVec(a,b,k){
+ const o={};for(const key in a){const x=a[key],y=b[key];o[key]=Array.isArray(x)?x.map((v,i)=>lerp(v,y[i],k)):lerp(x,y,k)}return o;
+}
+
 /* ---------- characters ---------- */
 function makeActor(host,agent,idx){
  const col=COLORS[idx%6],ar=dark(col,.38),sig=sigOf(agent);
@@ -124,6 +141,31 @@ function makeActor(host,agent,idx){
    E.blush.forEach(b=>b.style.opacity=(P.blush||0)*.5);
    E.sweat.style.opacity=P.sweat?1:0;E.tear.style.opacity=P.tear?1:0;
    E.face.style.opacity=P.back?0:1;E.nape.style.opacity=P.back?.8:0;
+  }
+  ,update(V,dt,t,o){
+   o=o||{};const ph=(this._ph=(this._ph||Math.random()*6)+dt*6.283/Math.max(1.2,V.breath));
+   const by=1+.016*Math.sin(ph),bx=1+.008*Math.sin(ph+.6);
+   const tw=(V.tremor||0)*1.1,jx=tw*Math.sin(t*61+idx),jy=tw*.4*Math.sin(t*47+idx*2);
+   const bob=o.walking?Math.abs(Math.sin(t*9+idx))*-7:0;
+   E.breath.style.transform=`scale(${bx.toFixed(4)},${by.toFixed(4)})`;
+   E.shake.style.transform=`translate(${jx.toFixed(2)}px,${(jy+bob).toFixed(2)}px)`;
+   E.rig.style.transition='none';E.rig.style.transform=`rotate(${V.lean.toFixed(2)}deg) scale(${V.puff.toFixed(3)},${V.squash.toFixed(3)})`;
+   const q=(a)=>`M${a[0].toFixed(1)} ${a[1].toFixed(1)}Q${a[2].toFixed(1)} ${a[3].toFixed(1)} ${a[4].toFixed(1)} ${a[5].toFixed(1)}`;
+   E.armL.style.transition='none';E.armR.style.transition='none';E.armL.setAttribute('d',q(V.aL));E.armR.setAttribute('d',q(V.aR));E.armL.style.d='';E.armR.style.d='';
+   const gx=V.gx,gy=V.gy,blinkK=o.blink==null?1:o.blink;
+   E.eL.setAttribute('ry',(V.ry*blinkK).toFixed(2));E.eR.setAttribute('ry',(V.ry*blinkK).toFixed(2));E.sL.setAttribute('ry',V.sry);E.sR.setAttribute('ry',V.sry);
+   E.eL.setAttribute('cx',39+gx*3);E.eR.setAttribute('cx',61+gx*3);E.eL.style.animation=E.eR.style.animation='none';
+   E.eL.setAttribute('cy',49+gy*2);E.eR.setAttribute('cy',49+gy*2);
+   E.look.style.transform=`translate(${gx*3}px,${gy*2.4}px)`;
+   E.brL.setAttribute('d',`M${V.bl[0].toFixed(1)} ${V.bl[1].toFixed(1)}L${V.bl[2].toFixed(1)} ${V.bl[3].toFixed(1)}`);E.brR.setAttribute('d',`M${V.br[0].toFixed(1)} ${V.br[1].toFixed(1)}L${V.br[2].toFixed(1)} ${V.br[3].toFixed(1)}`);
+   E.brL.style.opacity=E.brR.style.opacity=V.bo;
+   const sp=o.speak||0,open=sp>.05;
+   E.mouth.setAttribute('d',q(V.m).replace(/^M/,'M'));E.mouth.style.opacity=open?0:1;
+   E.gasp.style.opacity=open?1:0;E.gasp.setAttribute('ry',(1.8+3.4*Math.abs(Math.sin(t*13+idx))*sp).toFixed(2));E.gasp.setAttribute('rx',(3.6+1.4*Math.abs(Math.sin(t*9+idx))*sp).toFixed(2));
+   E.clench.style.opacity=V.clench&&!open?.7:0;
+   E.blush.forEach(b=>b.style.opacity=V.blush*.5);E.sweat.style.opacity=V.sweat;E.tear.style.opacity=V.tear;
+   E.face.style.opacity=1-V.back;E.nape.style.opacity=V.back*.8;
+   host.style.opacity=(1-V.hide).toFixed(3);host.style.filter=(V.blur>.05||V.dim>.02)?`blur(${V.blur.toFixed(2)}px) brightness(${(1-V.dim).toFixed(2)})`:'';
   }};
 }
 const stateRead=P=>({anger:'tense and puffed, fists on hips, a tremor in the jaw',shame:'shrunk in, arms wrapped, face turned away and flushed',fear:'cringing back, hands wringing, a bead of sweat',warm:'leaning in, arms open, easy smile',proud:'chest up, chin lifted, hands on hips',suspicion:'weight back, arms folded, eyes narrowed',tired:'sagging, eyes half shut',rest:'resting in their own habit'}[P.kind]);
@@ -207,5 +249,5 @@ const Babble={on:false,ctx:null,
    const v=whisper?.03:.06;g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(v,t+.008);g.gain.exponentialRampToValueAtTime(.0008,t+.07);
    o.connect(f).connect(g).connect(c.destination);o.start(t);o.stop(t+.08);t+=.052/Math.max(.7,pitch*.8)})}};
 
-window.W={Babble,COLORS,SHAPES,FACE,ARMS,SIGNATURE,sigOf,actFrom,makeActor,stateRead,light,placeSVG,PLACES,clockText,minOf,startMin,byId,pubId,chanMeta,esc,mix,dark,clamp,hhmm,R};
+window.W={toVec,lerpVec,lerp,nums,FACEV,ARMV,Babble,COLORS,SHAPES,FACE,ARMS,SIGNATURE,sigOf,actFrom,makeActor,stateRead,light,placeSVG,PLACES,clockText,minOf,startMin,byId,pubId,chanMeta,esc,mix,dark,clamp,hhmm,R};
 })();
