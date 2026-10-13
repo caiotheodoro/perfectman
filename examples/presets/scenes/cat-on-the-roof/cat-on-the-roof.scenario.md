@@ -3,6 +3,9 @@ name: The cat on the roof
 seed: 7
 maxPulses: 24
 storyClock: { start: "23:40", minutesPerPulse: 4 }
+setting: rooftop
+props: [cat, bowl, notice-board, water-tank]
+rooms: [stairwell]
 language: en
 settings:
   pulseIntervalMs: 3000

@@ -5,3 +5,4 @@ export * from "./beat.js";
 export * from "./live-to-beats.js";
 export * from "./mood.js";
 export * from "./placement.js";
+export * from "./scene-look.js";

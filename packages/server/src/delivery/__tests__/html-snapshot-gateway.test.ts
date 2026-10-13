@@ -105,6 +105,54 @@ function visibility(eventId: string, pulseIndex: number, type: string, extra: Re
   };
 }
 
+describe("HtmlSnapshotGateway — the replay a viewer draws from", () => {
+  const RICH: GatewayRuntimeMetadata = {
+    ...META,
+    agents: {
+      ana: { name: "Dona Ana", archetype: "gatekeeper", writingStyle: "formal, ALL CAPS for emphasis", language: "en", messageLength: "medium" },
+      bruno: { name: "Bruno", archetype: "trickster" },
+    },
+    storyClock: { start: "23:40", minutesPerPulse: 4 },
+    look: { setting: "rooftop", props: ["cat"], rooms: ["stairwell"] },
+  };
+
+  it("carries who each character is, the scene clock and the look", async () => {
+    const gw = new HtmlSnapshotGateway(RICH, join(tmpdir(), "unused.html"));
+    const replay = gw.toReplay();
+
+    expect(replay.agentProfiles?.["ana"]).toEqual({
+      displayName: "Dona Ana",
+      archetype: "gatekeeper",
+      writingStyle: "formal, ALL CAPS for emphasis",
+      language: "en",
+      messageLength: "medium",
+    });
+    expect(replay.agentProfiles?.["bruno"], "a persona that says nothing more adds nothing more").toEqual({ displayName: "Bruno", archetype: "trickster" });
+    expect(replay.storyClock).toEqual({ start: "23:40", minutesPerPulse: 4 });
+    expect(replay.look).toEqual({ setting: "rooftop", props: ["cat"], rooms: ["stairwell"] });
+  });
+
+  it("leaves the clock and look out when the scene has none", () => {
+    const replay = new HtmlSnapshotGateway(META, join(tmpdir(), "unused.html")).toReplay();
+
+    expect("storyClock" in replay).toBe(false);
+    expect("look" in replay).toBe(false);
+  });
+
+  it("keeps who a reply answered and who it was aimed at through the event_visibility round trip", async () => {
+    const gw = new HtmlSnapshotGateway(META, join(tmpdir(), "unused.html"));
+    const ev = visibility("evt_2", 3, "reply_sent", { actorId: "bruno", content: "fair point" });
+    Object.assign(ev.data!, { replyToEventId: "evt_1", replyToActorId: "ana", addresseeIds: ["ana"], mentionedAgentIds: ["ana"] });
+    await gw.sendOperatorEvent(ev);
+
+    const row = gw.toReplay().pulses[0]!.committedEvents[0]!;
+    expect(row.payload["replyToEventId"]).toBe("evt_1");
+    expect(row.payload["replyToActorId"]).toBe("ana");
+    expect(row.payload["addresseeIds"]).toEqual(["ana"]);
+    expect(row.payload["mentionedAgentIds"]).toEqual(["ana"]);
+  });
+});
+
 function goalProposed(goalId: string, pulseIndex: number, title = "Resolver o impasse"): OperatorEvent {
   return {
     type: "goal_proposed",

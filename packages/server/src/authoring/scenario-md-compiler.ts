@@ -11,7 +11,8 @@
 import { isValidStoryClockStart, type StoryClockConfig } from "../simulation/story-clock.js";
 import { parse as parseYaml } from "yaml";
 import type { CoreMood, SocialEmotions } from "@perfectman/shared";
-import type { AgentObjective, EventSeedSpec, MemorySeed } from "@perfectman/shared";
+import type { AgentObjective, EventSeedSpec, MemorySeed, SceneLook } from "@perfectman/shared";
+import { isSceneProp, isSceneSetting, MAX_SCENE_PROPS, MAX_SCENE_ROOMS, SCENE_SETTINGS } from "@perfectman/shared";
 import { DiagnosticBag, type Diagnostic, fold, nearestHeading } from "./diagnostics.js";
 import {
   MdParseError,
@@ -80,6 +81,8 @@ export type CompiledScenario = {
   settings: Record<string, unknown>;
   /** Presentation-only scene clock; see `simulation/story-clock.ts`. */
   storyClock?: StoryClockConfig;
+  /** Where it happens and what is lying around; presentation only, see `SceneLook`. */
+  look?: SceneLook;
   channels: ChannelSpec[];
   familiarity: Record<string, PairFamiliarity>;
   cast: CastMember[];
@@ -141,6 +144,7 @@ export function compileScenarioMarkdown(
 
   const maxPulses = resolveMaxPulses(fm["maxPulses"], bag, doc.frontmatterLine);
   const storyClock = resolveStoryClock(fm["storyClock"], bag, doc.frontmatterLine);
+  const look = resolveSceneLook(fm, bag, doc.frontmatterLine);
   const channels = parseChannels(fm["channels"], bag, doc.frontmatterLine);
   const familiarity = parseFamiliarity(fm["familiarity"], bag, doc.frontmatterLine);
   const priorEvents = parsePriorEvents(fm["priorEvents"], bag, doc.frontmatterLine);
@@ -185,6 +189,7 @@ export function compileScenarioMarkdown(
       maxPulses,
       settings: isRecord(fm["settings"]) ? fm["settings"] : {},
       ...(storyClock ? { storyClock } : {}),
+      ...(look ? { look } : {}),
       channels,
       familiarity,
       cast,
@@ -227,6 +232,36 @@ function resolveStoryClock(value: unknown, bag: DiagnosticBag, line: number): St
     return undefined;
   }
   return { start, minutesPerPulse };
+}
+
+/** `setting`, `props` and `rooms`: all optional, all forgiving. A bad value is dropped with a warning, never an error. */
+function resolveSceneLook(fm: Record<string, unknown>, bag: DiagnosticBag, line: number): SceneLook | undefined {
+  const look: SceneLook = {};
+  const setting = fm["setting"];
+  if (setting !== undefined) {
+    if (isSceneSetting(setting)) look.setting = setting;
+    else bag.warn(`\`setting\` must be one of ${SCENE_SETTINGS.join(", ")}; ignoring it.`, { line, path: "setting" });
+  }
+  const props = fm["props"];
+  if (props !== undefined) {
+    const list = Array.isArray(props) ? props : [];
+    const good = list.filter(isSceneProp);
+    if (!Array.isArray(props) || good.length !== list.length) {
+      bag.warn("`props` must be a list of lowercase names such as `cat` or `notice-board`; dropping the ones that are not.", { line, path: "props" });
+    }
+    if (good.length > MAX_SCENE_PROPS) bag.warn(`\`props\` keeps the first ${MAX_SCENE_PROPS} names.`, { line, path: "props" });
+    if (good.length > 0) look.props = good.slice(0, MAX_SCENE_PROPS);
+  }
+  const rooms = fm["rooms"];
+  if (rooms !== undefined) {
+    const list = Array.isArray(rooms) ? rooms : [];
+    const good = list.filter(isSceneSetting);
+    if (!Array.isArray(rooms) || good.length !== list.length) {
+      bag.warn(`\`rooms\` must be a list drawn from ${SCENE_SETTINGS.join(", ")}; dropping the ones that are not.`, { line, path: "rooms" });
+    }
+    if (good.length > 0) look.rooms = [...new Set(good)].slice(0, MAX_SCENE_ROOMS);
+  }
+  return Object.keys(look).length > 0 ? look : undefined;
 }
 
 function resolveMaxPulses(value: unknown, bag: DiagnosticBag, line: number): number {

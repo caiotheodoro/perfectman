@@ -141,6 +141,14 @@ export type EventVisibilityData = {
   channelName?: string;
   emoji?: string;
   targetEventId?: string;
+  /** The message a reply answers, and its author (replies only). */
+  replyToEventId?: string;
+  replyToActorId?: string;
+  /** Who a message or reply is aimed at: the person it answers, the people it
+   *  addresses, and anyone named in it. Recorded so a viewer can show who is
+   *  talking to whom without guessing from the text. */
+  addresseeIds?: string[];
+  mentionedAgentIds?: string[];
 };
 
 /** `stagnation_metrics` payload — the full composite + 7 sub-metrics, emitted

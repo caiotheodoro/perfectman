@@ -28,7 +28,7 @@ import type { GatewayRuntimeMetadata } from "../config/simulation-config.js";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
 import { payloadDisplayFields, payloadString, payloadStringArray } from "../simulation/payload-readers.js";
 import type { SerializedAgentState } from "../agent/agent-state-serializer.js";
-import type { AgentThinking, GoalPanel, PulseFrame, SimulationReplay } from "../html/replay-types.js";
+import type { AgentProfile, AgentThinking, GoalPanel, PulseFrame, SimulationReplay } from "../html/replay-types.js";
 import { generateHtml } from "../html/snapshot-html-generator.js";
 
 function serializedState(value: EventPayloadValue | undefined): SerializedAgentState | null {
@@ -213,9 +213,17 @@ export class HtmlSnapshotGateway implements IDeliveryGateway {
   toReplay(): SimulationReplay {
     const agentNames: Record<string, string> = {};
     const agentArchetypes: Record<string, string> = {};
+    const agentProfiles: Record<string, AgentProfile> = {};
     for (const [id, agent] of Object.entries(this.meta.agents)) {
       agentNames[id] = agent.name;
       agentArchetypes[id] = agent.archetype;
+      agentProfiles[id] = {
+        displayName: agent.name,
+        archetype: agent.archetype,
+        ...(agent.writingStyle ? { writingStyle: agent.writingStyle } : {}),
+        ...(agent.language ? { language: agent.language } : {}),
+        ...(agent.messageLength ? { messageLength: agent.messageLength } : {}),
+      };
     }
     return {
       simulationId: this.meta.simulationId,
@@ -223,6 +231,9 @@ export class HtmlSnapshotGateway implements IDeliveryGateway {
       agentIds: Object.keys(this.meta.agents),
       agentNames,
       agentArchetypes,
+      agentProfiles,
+      ...(this.meta.storyClock ? { storyClock: this.meta.storyClock } : {}),
+      ...(this.meta.look ? { look: this.meta.look } : {}),
       channels: [...this.channels.entries()].map(([id, channel]) => ({
         id,
         name: this.meta.channels[id]?.name ?? id,

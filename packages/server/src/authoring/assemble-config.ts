@@ -148,6 +148,7 @@ export function assembleSimulationConfig(input: AssembleInput): AssembleResult {
       settings: resolveSettings(scenario.settings, bag),
     },
     ...(scenario.storyClock ? { storyClock: scenario.storyClock } : {}),
+    ...(scenario.look ? { look: scenario.look } : {}),
     persistence: { type: "memory" },
     // Operator events carry the thinking and per-pulse emotion the viewer is
     // built around; without this the stream is just a transcript.
