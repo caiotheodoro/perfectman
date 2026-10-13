@@ -23,7 +23,7 @@ function init(){
 const modes=[['push','Push-in','The camera moves in on the huddle. The others stay in frame, blurred, glancing over.',1],['door','Through the door','They walk through the door into the stairwell; the roof stays visible in a small inset.',0],['wide','Stay wide','Same place, same framing; only the lettering changes.',0]];
 const tri=document.getElementById('tri'),stages=[];
 modes.forEach(([m,t,d,rec])=>{const col=document.createElement('div');col.innerHTML=`<h2>${t}${rec?'<span class="tag">recommended</span>':''}</h2><div class="h"></div><p>${d}</p>`;tri.append(col);
- const T=D.buildTimeline({huddle:m});B.plan(T);stages.push({T,s:Stage.createStage(col.querySelector('.h'),T,{room2:'stairwell'})})});
+ const T=D.buildTimeline({huddle:m,measure:B.pageCounts});B.plan(T);stages.push({T,s:Stage.createStage(col.querySelector('.h'),T,{room2:'stairwell'})})});
 const dur=stages[0].T.duration;const first=stages[0].T.scenes.find(s=>s.type==='huddle'&&s.members.includes('neide')&&s.members.includes('okafor'));
 let t=0,playing=false,speed=1,last=null;
 function draw(){stages.forEach(x=>x.s.render(t,{omni:true}));document.getElementById('scrub').value=t/dur*1000}

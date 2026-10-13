@@ -26,8 +26,10 @@
  <div class="bar2"><button class="b" id="play">Play</button><button class="b" id="back">−5s</button><button class="b" id="fwd">+5s</button>
   <input class="grow" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Timeline position"><span class="rd" id="rd"></span>
   <span class="seg2" id="spd" role="group" aria-label="Speed"><button data-s="1" aria-pressed="true">1x</button><button data-s="2" aria-pressed="false">2x</button><button data-s="4" aria-pressed="false">4x</button></span>
+  <span class="seg2" id="pace" role="group" aria-label="Reading pace"><button data-p="relaxed" aria-pressed="false">Relaxed</button><button data-p="normal" aria-pressed="true">Normal</button><button data-p="fast" aria-pressed="false">Fast</button></span>
   <span class="seg2" role="group" aria-label="Lens"><button id="omni" aria-pressed="true">Omniscient</button><button id="fic" aria-pressed="false">Fiction only</button></span>
   <button class="b" id="snd" aria-pressed="false">Voices</button></div>
+ <p class="note" id="stats" style="margin-top:10px"></p>
  <div class="strip" id="strip" aria-label="Timeline"></div>
  <div class="lg"><span><i style="background:var(--forest)"></i>playhead</span><span><i style="background:#c9b987"></i>talking</span><span><i style="background:#c9b98744"></i>listening</span><span><i style="background:repeating-linear-gradient(135deg,#b4573f 0 4px,#d8a18f 4px 8px)"></i>private huddle shot</span><span><i style="background:repeating-linear-gradient(90deg,#e6dfc2 0 3px,transparent 3px 7px)"></i>time passes</span></div>
 </main>
@@ -37,32 +39,40 @@
 document.fonts.ready.then(()=>Promise.all(['16px "Shantell Sans"','15px "Special Elite"','20px "Patrick Hand"','18px Kalam','27px "Londrina Solid"','21px Caveat'].map(f=>document.fonts.load(f)))).then(init);
 function init(){
 const {R,byId,COLORS,clockText,minOf}=W;
-const T=D.buildTimeline();B.plan(T);
-const host=document.getElementById('host'),stage=Stage.createStage(host,T);
-let t=0,playing=false,speed=1,omni=true,last=null,lastCue=-1;
-// strip
-const strip=document.getElementById('strip'),dur=T.duration,pc=x=>(x/dur*100)+'%';
-let html='<div class="row"><div class="nm">clock</div><div class="lane">';
-for(let p=0;p<R.pulses.length;p+=4)html+=`<span class="tick" style="left:${pc(T.pulseT[p]||0)}">${clockText(minOf(p))}</span>`;html+='</div></div>';
-html+='<div class="row"><div class="nm">camera</div><div class="lane">'+T.scenes.map(s=>`<span class="seg ${s.type==='huddle'?'hud':'wide'}" style="left:${pc(s.t0)};width:${pc(s.t1-s.t0)}" title="${s.type==='huddle'?s.members.map(m=>byId[m].short).join(' + '):'wide shot'}"></span>`).join('')+T.lapses.map(l=>`<span class="seg lapse" style="left:${pc(l.t0)};width:${pc(l.t1-l.t0)}"></span>`).join('')+'</div></div>';
-R.agents.forEach(a=>{const c=COLORS[a.idx%6];html+=`<div class="row" style="--c:${c}"><div class="nm">${a.short}</div><div class="lane">`+T.msgs.filter(m=>m.actor!==a.id&&m.sc.members.includes(a.id)).map(m=>`<span class="seg hear" style="left:${pc(m.s0)};width:${pc(m.s1-m.s0)}"></span>`).join('')+T.msgs.filter(m=>m.actor===a.id).map(m=>`<span class="seg speak" style="left:${pc(m.s0)};width:${pc(m.s1-m.s0)}" title="${W.esc(m.e.text.slice(0,70))}"></span>`).join('')+'</div></div>'});
-html+='<div class="head" id="head" style="left:84px"></div>';strip.innerHTML=html;
-const head=document.getElementById('head'),scrub=document.getElementById('scrub'),rd=document.getElementById('rd');
+const host=document.getElementById('host'),strip=document.getElementById('strip'),scrub=document.getElementById('scrub'),rd=document.getElementById('rd'),stats=document.getElementById('stats');
+let T,stage,paceName='normal',t=0,playing=false,speed=1,omni=true,last=null,cueI=0,ms=0,dur=1;
 const fmt=s=>`${Math.floor(s/60)}:${String(Math.floor(s%60)).padStart(2,'0')}`;
-function draw(){const S=stage.render(t,{omni});const lw=strip.clientWidth-84;head.style.left=(84+t/dur*lw)+'px';scrub.value=t/dur*1000;rd.textContent=`${fmt(t)} / ${fmt(dur)} · ${clockText(Math.round(S.min))}`;return S}
-function cues(prev,now){if(!W.Babble.on)return;T.msgs.forEach(m=>{if(m.s0>prev&&m.s0<=now)W.Babble.say(byId[m.actor].idx,m.e.text,m.conv.type==='huddle')})}
-function frame(ts){if(last==null)last=ts;const dt=Math.min(.1,(ts-last)/1000);last=ts;
- if(playing){const p=t;t=Math.min(dur,t+dt*speed);cues(p,t);if(t>=dur){playing=false;document.getElementById('play').textContent='Play'}}
+function build(keepFrac){
+ const frac=keepFrac==null?0:keepFrac;
+ host.innerHTML='';host.className='';
+ T=D.buildTimeline({pace:D.PACES[paceName],measure:B.pageCounts});B.plan(T);stage=Stage.createStage(host,T);dur=T.duration;t=frac*dur;cueI=T.cues.findIndex(c=>c.t>=t);if(cueI<0)cueI=T.cues.length;
+ const pc=x=>(x/dur*100)+'%';
+ let html='<div class="row"><div class="nm">clock</div><div class="lane">';
+ for(let p=0;p<R.pulses.length;p+=4)html+=`<span class="tick" style="left:${pc(T.pulseT[p]||0)}">${clockText(minOf(p))}</span>`;html+='</div></div>';
+ html+='<div class="row"><div class="nm">camera</div><div class="lane">'+T.scenes.map(s=>`<span class="seg ${s.type==='huddle'?'hud':'wide'}" style="left:${pc(s.t0)};width:${pc(s.t1-s.t0)}" title="${s.type==='huddle'?s.members.map(m=>byId[m].short).join(' + '):'wide shot'}"></span>`).join('')+T.lapses.map(l=>`<span class="seg lapse" style="left:${pc(l.t0)};width:${pc(l.t1-l.t0)}"></span>`).join('')+'</div></div>';
+ R.agents.forEach(a=>{const c=COLORS[a.idx%6];html+=`<div class="row" style="--c:${c}"><div class="nm">${a.short}</div><div class="lane">`+T.msgs.filter(m=>m.actor!==a.id&&m.sc.members.includes(a.id)).map(m=>`<span class="seg hear" style="left:${pc(m.s0)};width:${pc(m.readEnd-m.s0)}"></span>`).join('')+T.msgs.filter(m=>m.actor===a.id).map(m=>`<span class="seg speak" style="left:${pc(m.s0)};width:${pc(m.readEnd-m.s0)}" title="${m.tm.wc} words, read in ${(m.readEnd-m.s0).toFixed(1)}s"></span>`).join('')+'</div></div>'});
+ html+='<div class="head" id="head" style="left:84px"></div>';strip.innerHTML=html;
+ stats.textContent=`${T.msgs.length} messages, ${T.words.toLocaleString()} words, read at ${D.PACES[paceName].toFixed(1)} words a second: ${fmt(dur)} of video for ${(R.pulses.length*4/60).toFixed(1)} story hours. A balloon stays until its words are read; the next one lands as the last is being finished.`;
+ draw();
+}
+function draw(){const t0=performance.now();const S=stage.render(t,{omni});ms=ms*.9+(performance.now()-t0)*.1;
+ const head=document.getElementById('head'),lw=strip.clientWidth-84;head.style.left=(84+t/dur*lw)+'px';scrub.value=t/dur*1000;rd.textContent=`${fmt(t)} / ${fmt(dur)} · ${clockText(Math.round(S.min))} · ${ms.toFixed(1)} ms/frame`;return S}
+function cues(){ // one soft blip per word, on the beat the word lands
+ if(!W.Babble.on)return;while(cueI<T.cues.length&&T.cues[cueI].t<=t){const c=T.cues[cueI++];if(t-c.t<.25)W.Babble.say(c.idx,c.text,c.whisper)}}
+function frame(ts){if(last==null)last=ts;const dt=Math.min(.05,(ts-last)/1000);last=ts;
+ if(playing){const p=t;t=Math.min(dur,t+dt*speed);cues();if(t>=dur){playing=false;document.getElementById('play').textContent='Play'}}
  draw();requestAnimationFrame(frame)}
-const seek=x=>{t=Math.max(0,Math.min(dur,x));};
-document.getElementById('play').onclick=e=>{if(t>=dur)t=0;playing=!playing;e.target.textContent=playing?'Pause':'Play'};
+const seek=x=>{t=Math.max(0,Math.min(dur,x));cueI=T.cues.findIndex(c=>c.t>=t);if(cueI<0)cueI=T.cues.length};
+document.getElementById('play').onclick=e=>{if(t>=dur)seek(0);playing=!playing;e.target.textContent=playing?'Pause':'Play'};
 document.getElementById('back').onclick=()=>seek(t-5);document.getElementById('fwd').onclick=()=>seek(t+5);
 scrub.oninput=()=>seek(+scrub.value/1000*dur);
 let drag=false;const sk=e=>{const r=strip.getBoundingClientRect();seek((e.clientX-r.left-84)/(r.width-84)*dur)};
 strip.onpointerdown=e=>{drag=true;strip.setPointerCapture(e.pointerId);sk(e)};strip.onpointermove=e=>{if(drag)sk(e)};strip.onpointerup=()=>drag=false;
 document.getElementById('spd').onclick=e=>{const b=e.target.closest('button');if(!b)return;speed=+b.dataset.s;document.querySelectorAll('#spd button').forEach(x=>x.setAttribute('aria-pressed',x===b))};
+document.getElementById('pace').onclick=e=>{const b=e.target.closest('button');if(!b)return;paceName=b.dataset.p;document.querySelectorAll('#pace button').forEach(x=>x.setAttribute('aria-pressed',x===b));build(t/dur)};
 const om=document.getElementById('omni'),fi=document.getElementById('fic');const lens=o=>{omni=o;om.setAttribute('aria-pressed',o);fi.setAttribute('aria-pressed',!o)};om.onclick=()=>lens(true);fi.onclick=()=>lens(false);
 document.getElementById('snd').onclick=e=>{const on=e.currentTarget.getAttribute('aria-pressed')!=='true';on?W.Babble.enable():W.Babble.disable();e.currentTarget.setAttribute('aria-pressed',on)};
-window.__seek=seek;window.__T=T;requestAnimationFrame(frame);
+window.__seek=x=>{seek(x)};window.__T=()=>T;window.__ms=()=>ms;
+build(0);requestAnimationFrame(frame);
 }
 </script></body></html>

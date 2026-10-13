@@ -50,7 +50,7 @@ const lib=document.getElementById('lib');
 function drawLib(min){lib.innerHTML=KINDS.map(([k,t,p])=>`<figure><div class="plate">${placeSVG(k,min,'l'+k)}</div><figcaption><b>setting: ${k}</b> · ${t}. ${p}.</figcaption></figure>`).join('');document.getElementById('clkv').textContent=clockText(min)}
 const clk=document.getElementById('clk');clk.oninput=()=>drawLib(+clk.value);drawLib(1420);
 // the cut: three frames sampled from the same timeline the player uses
-const T=D.buildTimeline({huddle:'push'});B.plan(T);
+const T=D.buildTimeline({huddle:'push',measure:B.pageCounts});B.plan(T);
 const cut=document.getElementById('cut');
 function frameBox(cls,cap){const f=document.createElement('figure');f.className=cls;f.innerHTML=`<div class="frame"><div class="inner"></div></div><figcaption>${cap}</figcaption>`;cut.append(f);return f.querySelector('.inner')}
 // helper: 16:9 frames crop the 2:1 stage at the sides so it fills the frame

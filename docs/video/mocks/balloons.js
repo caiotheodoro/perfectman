@@ -41,11 +41,11 @@ function choose(b,pg,bods,placed,me,cands){
  cands.forEach(c=>{
   const box={x0:c.cx-pg.W/2,x1:c.cx+pg.W/2,y0:c.cy-pg.H/2,y1:c.cy+pg.H/2};let pen=0;
   bods.forEach(o=>pen+=ov(box,o)*(o.id===b.actor?1.6:1));
-  placed.forEach(p=>{if(p.t1>b.t0-.2&&p.t0<b.t1+.2)pen+=ov(box,p.box)*8});
+  placed.forEach(p=>{if(Math.min(p.t1,b.t1)-Math.max(p.t0,b.t0)>.6)pen+=ov(box,p.box)*8});
   const out=(Math.max(0,12-box.x0)+Math.max(0,box.x1-1188))*pg.H+(Math.max(0,12-box.y0)+Math.max(0,box.y1-588))*pg.W;pen+=out*3;
   pen+=Math.hypot(c.tip.x-c.cx,c.tip.y-c.cy)*3.2+Math.abs(c.cx-600)*.02;
   for(let u=.3;u<1;u+=.1){const px=c.cx+(c.tip.x-c.cx)*u,py=c.cy+(c.tip.y-c.cy)*u;
-   placed.forEach(p=>{if(p.t1>b.t0-.2&&p.t0<b.t1+.2&&px>p.box.x0&&px<p.box.x1&&py>p.box.y0&&py<p.box.y1)pen+=900});
+   placed.forEach(p=>{if(Math.min(p.t1,b.t1)-Math.max(p.t0,b.t0)>.6&&px>p.box.x0&&px<p.box.x1&&py>p.box.y0&&py<p.box.y1)pen+=900});
    bods.forEach(o=>{if(o.id!==b.actor&&px>o.x0&&px<o.x1&&py>o.y0&&py<o.y1)pen+=700})}
   if(!bestC||pen<bestC.pen)bestC={c,pen,box}
  });
@@ -54,7 +54,7 @@ function choose(b,pg,bods,placed,me,cands){
 function candidatesFor(me,pg){
  const topY=me.sy-.97*me.h,cands=[];
  const addUp=(dx,up)=>cands.push({cx:me.sx+dx,cy:topY-pg.H/2-up,tip:{x:me.sx+clamp(dx*.4,-me.hw*.45,me.hw*.45),y:topY+me.h*.12}});
- [0,-.5,.5,-.95,.95,-1.4,1.4,-1.9,1.9].forEach(k=>[26,60,100,150].forEach(up=>addUp(k*pg.W*.6,up)));
+ [0,-.5,.5,-.95,.95,-1.4,1.4,-1.9,1.9].forEach(k=>[14,40,80,130].forEach(up=>addUp(k*pg.W*.6,up)));
  [-1,1].forEach(sd=>[.45,.7].forEach(hy=>cands.push({cx:me.sx+sd*(me.hw+pg.W/2+26),cy:me.sy-hy*me.h,tip:{x:me.sx+sd*me.hw*.55,y:me.sy-.62*me.h}})));
  return cands;
 }
@@ -79,9 +79,15 @@ function plan(T){
   const toW=(x,y)=>({x:(x-600)/cam.z+cam.cx,y:(y-300)/cam.z+cam.cy});
   b.world={c:toW(c.cx,c.cy),tip:toW(c.tip.x,c.tip.y),z:cam.z};
   placed.push({t0:b.t0,t1:b.t1,box:bestC.box});
-  // page timing
-  const n=b.pages.length,dur=Math.max(.6,b.s1-b.s0);
-  b.pages.forEach((p,i)=>{p.t0=i===0?b.t0:b.s0+dur*i/n-.05;p.t1=i===n-1?b.t1:b.s0+dur*(i+1)/n+.12;p.s0=b.s0+dur*i/n;p.s1=b.s0+dur*(i+1)/n});
+  // page timing: each page appears when its first word lands and gives way when the next page's first word lands
+  const CJK=/[\u3040-\u30ff\u4e00-\u9fff]/,np=b.pages.length;let kk=0;
+  b.pages.forEach(p=>{p.w0=kk;p.n=p.lines.reduce((s,l)=>s+(CJK.test(l)?[...l].length:l.split(' ').filter(Boolean).length),0);kk+=p.n});
+  b.pages.forEach((p,i)=>{
+   const first=b.words&&b.words[p.w0]?b.words[p.w0].t:b.s0;
+   p.t0=i===0?b.t0:first-.12;
+   const nf=i<np-1&&b.words&&b.words[b.pages[i+1].w0]?b.words[b.pages[i+1].w0].t:null;
+   p.t1=i<np-1?(nf!=null?nf+.18:b.t1):b.t1;
+  });
  });
 }
 /* ---------- shapes ---------- */
@@ -123,7 +129,8 @@ function svgFor(b,pg,tx,ty,agentColor){
 /* ---------- DOM layer ---------- */
 function make(b,i,host){
   const agent=W.byId[b.actor],pg=b.pages[i];
-  const tx=pg.W/2+(b.slot.tip.x-b.slot.cx),ty=pg.H/2+(b.slot.tip.y-b.slot.cy);
+  const dy=b.slot.tip.y>b.slot.cy?(b.pages[0].H-pg.H)/2:0;       // a shorter page stays glued to the head, it does not float away
+  const tx=pg.W/2+(b.slot.tip.x-b.slot.cx),ty=pg.H/2+(b.slot.tip.y-(b.slot.cy+dy));
   const n=document.createElement('div');n.className='bl bl-'+b.kind;n.style.cssText=`width:${pg.W}px;height:${pg.H}px;`;
   const col=W.COLORS[agent.idx%6];
   n.innerHTML=svgFor(b,pg,tx,ty,col);
@@ -150,20 +157,22 @@ function Layer(host){
     b.pages.forEach((pg,i)=>{
      if(S.t<pg.t0||S.t>pg.t1)return;
      const id=b.id+':'+i,c=cache[id]||(cache[id]=build(b,i));seen.add(id);
-     const sx=(b.world.c.x-cam.cx)*cam.z+600,sy=(b.world.c.y-cam.cy)*cam.z+300;
-     const lc=clamp((S.t-pg.t0)/.2,0,1),lo=clamp((pg.t1-S.t)/.35,0,1);
-     const scl=(lc<1?.7+.3*lc+Math.sin(lc*Math.PI)*.1:1)*(lo<1?.92+.08*lo:1)*(b.kind==='whisper'?.96:1);
-     const op=Math.min(lc*1.5,lo,1)*(b.kind==='whisper'?.93:1);
-     c.n.style.display='block';c.n.style.opacity=op.toFixed(3);
-     c.n.style.transform=`translate(${(sx-pg.W/2).toFixed(1)}px,${(sy-pg.H/2).toFixed(1)}px) scale(${scl.toFixed(3)})`;
-     c.n.style.transformOrigin=`${c.tx}px ${c.ty}px`;
-     c.n.style.zIndex=Math.round(1000+b.t0*10);
-     const prog=clamp((S.t-pg.s0)/Math.max(.3,(pg.s1-pg.s0)*.88),0,1),cnt=b.kind==='thought'?c.count:Math.ceil(prog*c.count);
+     const sx=(b.world.c.x-cam.cx)*cam.z+600,sy=(b.world.c.y-cam.cy)*cam.z+300+(b.slot.tip.y>b.slot.cy?(b.pages[0].H-pg.H)/2:0);
+     const lc=clamp((S.t-pg.t0)/.22,0,1),lo=clamp((pg.t1-S.t)/.35,0,1);
+     const pop=lc<1?.7+.3*(1-Math.pow(1-lc,3))+Math.sin(lc*Math.PI)*.08:1;           // ease-out with a small overshoot
+     const scl=pop*(lo<1?.92+.08*lo:1)*(b.kind==='whisper'?.96:1);
+     const op=Math.min(lc*1.6,lo,1)*(b.kind==='whisper'?.93:1);
+     const tf=`translate(${(sx-pg.W/2).toFixed(1)}px,${(sy-pg.H/2).toFixed(1)}px) scale(${scl.toFixed(3)})`;
+     if(c.tf!==tf){c.tf=tf;c.n.style.transform=tf}
+     const os=op.toFixed(3);if(c.op!==os){c.op=os;c.n.style.opacity=os}
+     if(!c.shown){c.shown=1;c.n.style.display='block';c.n.style.transformOrigin=`${c.tx}px ${c.ty}px`;c.n.style.zIndex=Math.round(1000+b.t0*10)}
+     let cnt=c.count;if(b.kind!=='thought'&&b.words&&b.words.length){cnt=0;for(let k=0;k<pg.n;k++)if(b.words[pg.w0+k]&&b.words[pg.w0+k].t<=S.t)cnt++;else break}
      if(cnt!==c.last){c.words.forEach((w,k)=>w.style.opacity=k<cnt?1:0);c.last=cnt}
-     const bnce=clamp((b.ar-.3)*220,-60,90);c.n.querySelector('.bl-txt').style.fontVariationSettings=`"BNCE" ${bnce.toFixed(0)},"INFM" 70`;
+     if(!c.fv){c.fv=1;const bnce=clamp((b.ar-.3)*220,-60,90);c.n.querySelector('.bl-txt').style.fontVariationSettings=`"BNCE" ${bnce.toFixed(0)},"INFM" 70`}
     });
    });
-   for(const id in cache)if(!seen.has(id))cache[id].n.style.display='none';
+   for(const id in cache)if(!seen.has(id)&&cache[id].shown){cache[id].shown=0;cache[id].n.style.display='none'}
+   return;   for(const id in cache)if(!seen.has(id))cache[id].n.style.display='none';
   }};
 }
 /* ---------- marks around the head ---------- */
@@ -181,5 +190,8 @@ function Marks(host){const el=document.createElement('div');el.className='mk-lay
    const pop=k<.12?k/.12*1.25:k<.2?1.25-(k-.12)/.08*.25:1,fl=-k*14,op=k>.75?(1-k)/.25:1,wob=Math.sin(k*30)*(m.kind==='steam'?3:0);
    c.style.cssText=`display:block;transform:translate(${(sx-30+wob).toFixed(1)}px,${(sy-30+fl).toFixed(1)}px) scale(${pop.toFixed(2)});opacity:${op.toFixed(2)}`})
   for(const id in cache)if(!seen.has(id))cache[id].style.display='none'}}}
-window.B={plan,Layer,Marks,fit,styleFor,make,choose,candidatesFor,INK,PAPER};
+/* how many words land on each page of a balloon, so the director can pace paged balloons by the reading */
+function pageCounts(b){const ag=W.byId[b.actor],s=styleFor(b,ag),CJK=/[\u3040-\u30ff\u4e00-\u9fff]/;
+ const pg=fit(b.kind==='shout'?b.text.toUpperCase():b.text,s,b.kind);return pg.map(p=>p.lines.reduce((n,l)=>n+(CJK.test(l)?[...l].length:l.split(' ').filter(Boolean).length),0))}
+window.B={plan,Layer,Marks,fit,styleFor,make,choose,candidatesFor,pageCounts,INK,PAPER};
 })();
