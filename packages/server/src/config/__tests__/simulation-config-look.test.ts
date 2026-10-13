@@ -27,6 +27,19 @@ function baseConfig(): SimulationAppConfig {
 }
 
 describe("scene clock and look in the config", () => {
+  it("takes the look nested, as a compiled scene writes it, and keeps a persona's message length", () => {
+    const config = baseConfig();
+    const parsed = parseSimulationConfig({
+      ...config,
+      look: { setting: "stairwell", props: ["bowl"] },
+      agents: [{ ...config.agents[0], promptProfile: { ...promptProfile, messageLength: "short" } }],
+    });
+
+    expect(parsed.look).toEqual({ setting: "stairwell", props: ["bowl"] });
+    expect(parsed.agents[0]!.promptProfile.messageLength).toBe("short");
+    expect(() => parseSimulationConfig({ ...config, agents: [{ ...config.agents[0], promptProfile: { ...promptProfile, messageLength: "huge" } }] })).toThrow(/messageLength must be/);
+  });
+
   it("carries the scene clock and look into the gateway metadata, and rejects a bad setting", async () => {
     const config = baseConfig();
     const withLook = parseSimulationConfig({
