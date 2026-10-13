@@ -88,6 +88,13 @@ export const CANONICAL_TEMPLATE_VERSION_INPUT: AgentRuntimeInput = {
  * `</tag>` containers, fences) is delegated to PromptSection so the builder
  * never hand-writes markers or tracks closing tags. Decision question LAST.
  */
+const MESSAGE_LENGTH_GUIDANCE: Record<NonNullable<PersonaPromptProfile["messageLength"]>, string> = {
+  rapid_fire: "Send a few words at a time, the way people type fast in a chat. If there is more to say, it is a separate message later, not this one.",
+  short: "Keep each message to one or two short lines, under about 140 characters. Chat lines, not paragraphs; anything longer is a later message.",
+  medium: "Keep each message to one to three sentences, under about 280 characters. Write a longer one only when someone has pushed you into it.",
+  long: "A message may run to a short paragraph, about 500 characters at most, and only when what you have to say earns the length.",
+};
+
 export class ActionIntentPromptBuilder {
   static build(
     input: AgentRuntimeInput,
@@ -326,6 +333,7 @@ export class ActionIntentPromptBuilder {
     this.addList(s, "Affection style", profile.affectionStyle);
     this.addList(s, "Public/private difference", profile.publicPrivateDelta);
     this.addList(s, "Voice guidelines", profile.voiceGuidelines);
+    this.renderMessageLength(s, profile);
     this.renderStyleExamples(s, profile);
     this.addList(s, "Private motive patterns", profile.privateMotivePatterns);
     this.addList(s, "Hard avoids", profile.hardAvoids);
@@ -410,6 +418,12 @@ export class ActionIntentPromptBuilder {
 
   private static renderEvents(s: PromptSection, input: AgentRuntimeInput, perceptionPacket: AgentRuntimeInput["perceptionPacket"]): void {
     s.heading("What you noticed");
+    if (input.storyClock) {
+      s.raw(
+        `It is ${input.storyClock} where you are. Time passes between messages: people go quiet, come back, and notice the hour. ` +
+          "Let the clock show up naturally (how late it is, what is coming at what time) rather than ignoring it.",
+      );
+    }
     const handleByEventId = new Map(
       Object.entries(perceptionPacket.eventHandles).map(([handle, eventId]) => [eventId, handle]),
     );
@@ -596,6 +610,18 @@ export class ActionIntentPromptBuilder {
 
   private static addList(s: PromptSection, title: string, items: string[]): void {
     if (items.length > 0) s.list(title, items);
+  }
+
+  /**
+   * Nothing told the model how long a chat message runs, so every persona
+   * wrote paragraphs (~570 characters on average in a real capture) and the
+   * room read as essays traded in a group chat. The persona's own
+   * `presenceProfile.messageLength` was compiled and then ignored; this is
+   * the one place it reaches the model.
+   */
+  private static renderMessageLength(s: PromptSection, profile: PersonaPromptProfile): void {
+    if (profile.messageLength === undefined) return;
+    s.list("Message length", [MESSAGE_LENGTH_GUIDANCE[profile.messageLength]]);
   }
 
   private static renderStyleExamples(s: PromptSection, profile: PersonaPromptProfile): void {

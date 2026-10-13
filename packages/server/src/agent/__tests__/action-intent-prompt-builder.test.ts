@@ -175,3 +175,27 @@ describe("ActionIntentPromptBuilder — the language is the last thing the model
     expect(pt.system).toContain("Você tem um objetivo");
   });
 });
+
+describe("ActionIntentPromptBuilder — message length", () => {
+  it("tells a short-message persona to keep chat lines short", () => {
+    const built = PromptBuilder.build(input, { ...EXAMPLE_PROMPT_PROFILE, messageLength: "short" }, "action_intent");
+
+    expect(built.system).toContain("Message length");
+    expect(built.system).toContain("under about 140 characters");
+  });
+
+  it("gives each length a distinct instruction", () => {
+    const lengths = ["rapid_fire", "short", "medium", "long"] as const;
+    const rendered = lengths.map((messageLength) =>
+      PromptBuilder.build(input, { ...EXAMPLE_PROMPT_PROFILE, messageLength }, "action_intent").system,
+    );
+
+    expect(new Set(rendered).size).toBe(lengths.length);
+  });
+
+  it("says nothing about length when the profile states none", () => {
+    const built = PromptBuilder.build(input, EXAMPLE_PROMPT_PROFILE, "action_intent");
+
+    expect(built.system).not.toContain("Message length");
+  });
+});
