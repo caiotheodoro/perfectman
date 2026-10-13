@@ -1,0 +1,95 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock 3 — Who is talking to whom</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible+Next:wght@400;600&display=swap">
+<link rel="stylesheet" href="mock.css">
+<style>
+ .stage{min-height:100%;display:grid;grid-template-columns:minmax(240px,300px) minmax(480px,640px) minmax(260px,340px);gap:32px;padding:32px 40px;align-items:start}
+ h1{font:700 30px/1.05 var(--display);margin-bottom:8px}.sub{color:var(--muted);max-width:30ch;margin-bottom:18px}
+ .metric{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px}
+ .metric button{padding:7px 12px;border-radius:9px;border:1px solid var(--line);font:600 13px/1 var(--display);color:var(--muted)}
+ .metric button[aria-pressed=true]{background:var(--paper);color:var(--ink);border-color:var(--paper)}
+ svg{width:100%;height:auto;display:block;background:radial-gradient(circle at 50% 50%,#2a355033,transparent 70%);border-radius:24px}
+ .edge{fill:none;stroke-linecap:round;transition:stroke-width .7s ease,opacity .7s ease}
+ .node text{font:600 13px var(--display);fill:var(--paper);text-anchor:middle}
+ .movers{display:flex;flex-direction:column;gap:8px;font-size:13px}
+ .movers div{display:flex;gap:8px;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:6px}
+ .movers b{font:600 13px var(--display)}.movers .d{margin-left:auto;font:600 13px var(--display)}
+ .tick{display:flex;flex-direction:column;gap:8px;margin-top:10px;max-height:340px;overflow:hidden}
+ .tick p{font-size:12.5px;color:#cdd3e6;border-left:3px solid var(--c);padding-left:9px}
+ .tick small{color:var(--muted)}
+ .legend{color:var(--muted);font-size:12.5px;max-width:34ch;margin-top:12px}
+ .sw{display:inline-block;width:18px;height:0;border-top:3px solid;vertical-align:middle;margin-right:4px}
+ @media (max-width:1150px){.stage{grid-template-columns:1fr;justify-items:center}}
+</style></head><body>
+<main class="stage">
+ <section>
+  <h1>Who is talking to whom</h1><p class="sub">Every message flies along the web. The web itself bends as trust, suspicion and threat move.</p>
+  <div class="metric" role="group" aria-label="Relationship measure"></div>
+  <div class="k" style="margin-bottom:8px">Biggest movers since 11:40pm</div><div class="movers" id="mov"></div>
+  <p class="legend"><span class="sw" style="border-color:#e9e6f0"></span>recorded addressee<br><span class="sw" style="border-top-style:dashed;border-color:#e9e6f0"></span>inferred from mentions and turn order</p>
+ </section>
+ <section><svg id="svg" viewBox="0 0 640 600" role="img" aria-label="Relationship web between the cast"></svg>
+  <div class="transport" id="tr" style="margin-top:14px"></div></section>
+ <section><div class="k">Now speaking</div><div class="tick" id="tick"></div></section>
+</main>
+<script src="data/cat-run.js"></script><script src="common.js"></script>
+<script>
+const {R,A,meta,chLabel,beats,Player,Babble,esc,transport}=M;
+const NS='http://www.w3.org/2000/svg',svg=document.getElementById('svg');
+const N=R.agents.length,CX=320,CY=300,RAD=215;
+R.agents.forEach((a,k)=>{const t=-Math.PI/2+k/N*2*Math.PI;a.x=CX+RAD*Math.cos(t);a.y=CY+RAD*Math.sin(t)});
+const METRICS={suspicion:['Suspicion','oklch(.78 .16 25)'],trust:['Trust','oklch(.8 .13 190)'],resentment:['Resentment','oklch(.75 .17 330)'],threat:['Threat','oklch(.8 .16 75)']};
+let metric='suspicion';
+const maxOf=m=>Math.max(.001,...R.pulses.flatMap(p=>Object.values(p.rel).flatMap(o=>Object.values(o).map(r=>r[m]))));
+const MAX=Object.fromEntries(Object.keys(METRICS).map(m=>[m,maxOf(m)]));
+const mb=document.querySelector('.metric');
+mb.innerHTML=Object.entries(METRICS).map(([k,[l]])=>`<button data-m="${k}" aria-pressed="${k===metric}">${l}</button>`).join('');
+mb.onclick=e=>{const b=e.target.closest('button');if(!b)return;metric=b.dataset.m;mb.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed',x===b));paint(curPulse)};
+const g=(n,at={},p=svg)=>{const e=document.createElementNS(NS,n);for(const k in at)e.setAttribute(k,at[k]);p.append(e);return e};
+const edges={};
+R.agents.forEach(a=>R.agents.forEach(b=>{if(a.id===b.id)return;
+  const dx=b.x-a.x,dy=b.y-a.y,L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L,off=26;
+  const mx=(a.x+b.x)/2+nx*off,my=(a.y+b.y)/2+ny*off;
+  edges[a.id+'>'+b.id]=g('path',{class:'edge',d:`M${a.x} ${a.y} Q${mx} ${my} ${b.x} ${b.y}`})}));
+const fl=g('g');
+R.agents.forEach(a=>{const n=g('g',{class:'node',transform:`translate(${a.x} ${a.y})`});
+  g('circle',{r:34,fill:`color-mix(in oklch,${a.color} 70%,#10141f)`,stroke:'#1E2638','stroke-width':5},n);
+  const t=g('text',{y:6,'font-size':20},n);t.textContent=a.initials;t.style.fill='#10141f';
+  const l=g('text',{y:58},n);l.textContent=a.short});
+let curPulse=0;
+function paint(pi){
+  curPulse=pi;const p=R.pulses[pi];
+  for(const a of R.agents)for(const b of R.agents){if(a===b)continue;const r=p.rel[a.id]?.[b.id];if(!r)continue;
+    const v=r[metric]/MAX[metric],e=edges[a.id+'>'+b.id];
+    e.setAttribute('stroke',METRICS[metric][1]);e.setAttribute('stroke-width',(1+v*9).toFixed(1));e.style.opacity=(.18+v*.8).toFixed(2)}
+  const f=R.pulses[0].rel,rows=[];
+  for(const a of R.agents)for(const b of R.agents){if(a===b)continue;const x=p.rel[a.id]?.[b.id],y=f[a.id]?.[b.id];if(x&&y)rows.push({a,b,d:x[metric]-y[metric]})}
+  rows.sort((u,v)=>Math.abs(v.d)-Math.abs(u.d));
+  document.getElementById('mov').innerHTML=rows.slice(0,5).map(r=>`<div><b style="color:${r.a.color}">${r.a.short}</b><span>about</span><b style="color:${r.b.color}">${r.b.short}</b><span class="d" style="color:${r.d>=0?'oklch(.8 .15 60)':'oklch(.78 .12 220)'}">${r.d>=0?'+':''}${r.d.toFixed(2)}</span></div>`).join('')||'<span class="k">Press play</span>';
+}
+function flight(e,inst){
+  if(inst)return;const from=A[e.actor];
+  const tos=e.to.length?e.to:meta[e.ch].members.filter(m=>m!==e.actor);
+  tos.forEach(id=>{const to=A[id],dx=to.x-from.x,dy=to.y-from.y,L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L;
+    const mx=(from.x+to.x)/2+nx*0,my=(from.y+to.y)/2+ny*0;
+    const line=g('line',{x1:from.x,y1:from.y,x2:from.x,y2:from.y,stroke:from.color,'stroke-width':e.to.length?4:2,'stroke-linecap':'round','stroke-dasharray':e.inferred&&e.to.length?'2 8':(e.to.length?'':'1 9'),opacity:e.to.length?1:.5},fl);
+    const t0=performance.now(),D=700;
+    (function step(t){const k=Math.min(1,(t-t0)/D);line.setAttribute('x2',from.x+dx*k);line.setAttribute('y2',from.y+dy*k);
+      if(k<1)requestAnimationFrame(step);else setTimeout(()=>line.remove(),600)})(t0);
+  });
+}
+const tick=document.getElementById('tick');
+const bs=beats();
+const pl=new Player(bs,{
+ onReset(){tick.innerHTML='';fl.innerHTML='';paint(0)},
+ onBeat(b,o){
+  if(b.t==='clock'){paint(b.p);return}
+  if(b.t!=='say')return;const e=b.e;flight(e,o.instant);
+  const p=document.createElement('p');p.style.setProperty('--c',A[e.actor].color);
+  p.innerHTML=`<small>${A[e.actor].short} → ${e.to.length?e.to.map(i=>A[i].short).join(', '):'the room'} · ${chLabel(e.ch)}</small><br>${esc(e.text.length>130?e.text.slice(0,127)+'…':e.text)}`;
+  tick.prepend(p);while(tick.children.length>5)tick.lastChild.remove();
+  if(!o.instant)Babble.say(e.actor,e.text);
+ }});
+paint(0);
+const upd=transport(document.getElementById('tr'),pl);pl.h.onState=upd;upd(pl);
+</script></body></html>

@@ -1,0 +1,82 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock 4 — The director's timeline</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Atkinson+Hyperlegible+Next:wght@400;600&display=swap">
+<link rel="stylesheet" href="mock.css">
+<style>
+ .wrap{padding:32px 40px;max-width:1280px;margin:auto}
+ h1{font:700 30px/1.05 var(--display);margin-bottom:6px}.sub{color:var(--muted);margin-bottom:22px;max-width:60ch}
+ .grid{position:relative;display:grid;grid-template-columns:130px 1fr;gap:0 12px;align-items:stretch}
+ .ruler{position:relative;height:34px;margin-top:6px;border-bottom:1px solid var(--line);margin-bottom:6px}
+ .tickc{position:absolute;top:0;transform:translateX(-50%);font:600 12px/1 var(--display);color:var(--sodium);white-space:nowrap}
+ .tickc::after{content:"";position:absolute;left:50%;top:18px;height:14px;border-left:1px solid #e8a33d66}
+ .chap{position:absolute;top:-2px;font:600 12px/1.2 var(--display);color:var(--paper);white-space:nowrap}
+ .lane{position:relative;height:62px;border-bottom:1px dashed #3a476844}
+ .lname{display:flex;gap:8px;align-items:center;font:600 13px/1.1 var(--display);height:62px}
+ .cell{position:absolute;top:6px;bottom:6px;border-radius:6px}
+ .hold{background:repeating-linear-gradient(135deg,#ffffff0d 0 4px,transparent 4px 8px);border:1px dashed #ffffff22}
+ .dot{position:absolute;top:50%;border-radius:50%;transform:translate(-50%,-50%);border:2px solid var(--c);background:color-mix(in oklch,var(--c) 75%,#10141f);cursor:pointer;padding:0}
+ .dot.priv{background:transparent}
+ .dot:hover,.dot:focus-visible{transform:translate(-50%,-50%) scale(1.25)}
+ .head{position:absolute;top:0;bottom:0;width:2px;background:var(--sodium);pointer-events:none;transition:left .25s ease}
+ .stats{display:flex;gap:28px;margin:24px 0;flex-wrap:wrap}
+ .stats div b{display:block;font:700 26px/1 var(--display)}.stats div span{color:var(--muted);font-size:13px}
+ .now{min-height:96px;border:1px solid var(--line);border-radius:14px;padding:14px 16px;background:var(--glass);max-width:760px;margin-top:14px}
+ .now p{margin-top:4px}.now .k{display:block}
+ .legend{display:flex;gap:18px;color:var(--muted);font-size:12.5px;margin-top:10px;flex-wrap:wrap;align-items:center}
+ .legend i{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid var(--muted);vertical-align:-2px;margin-right:6px}
+ .legend .h{width:22px;border-radius:4px;border:1px dashed #ffffff44;background:repeating-linear-gradient(135deg,#ffffff1a 0 4px,transparent 4px 8px)}
+</style></head><body>
+<main class="wrap">
+ <h1>The director's timeline</h1>
+ <p class="sub">The cut is decided here: where the story clock jumps, who goes quiet, where a chapter turns. The video follows this track.</p>
+ <div class="grid" id="grid"></div>
+ <div class="legend"><span><i></i>said in the group</span><span><i style="background:transparent"></i>said in a side-chat (hollow)</span><span><span class="h"></span> held silence, 3+ quiet pulses</span><span>dot size is message length</span></div>
+ <div class="stats" id="stats"></div>
+ <div class="transport" id="tr" style="max-width:760px"></div>
+ <div class="now" id="now" aria-live="polite"><span class="k">Press play, or click any dot.</span></div>
+</main>
+<script src="data/cat-run.js"></script><script src="common.js"></script>
+<script>
+const {R,A,meta,chLabel,beats,Player,Babble,esc,transport}=M;
+const NP=R.pulses.length,pub=R.channels.find(c=>c.type==='public_channel').id;
+const grid=document.getElementById('grid');
+const x=p=>((p+.5)/NP*100)+'%';
+// ruler: story clock every 4 pulses; chapters from side-chat openings
+const ruler=document.createElement('div');ruler.className='ruler';
+for(let p=0;p<NP;p+=4){const t=document.createElement('span');t.className='tickc';t.style.left=x(p);t.textContent=R.pulses[p].clock;ruler.append(t)}
+const chapters=[{p:0,t:'The cat is on the agenda'}];
+R.pulses.forEach(pl=>pl.events.filter(e=>e.kind==='open').forEach(e=>{const m=meta[e.ch];chapters.push({p:pl.i,t:`${A[e.actor].short} takes it private`})}));
+const seen=new Set();const ch=chapters.filter(c=>!seen.has(c.t)&&seen.add(c.t));
+const crow=document.createElement('div');crow.style.cssText='position:relative;height:34px';
+ch.forEach((c,i)=>{const s=document.createElement('span');s.className='chap';s.style.left=x(c.p);s.style.transform='translateX(-8px)';s.style.top=(i%2*16)+'px';s.textContent='▸ '+c.t;crow.append(s)});
+grid.append(Object.assign(document.createElement('div'),{className:'k',textContent:'Chapters',style:'align-self:center'}),crow);
+grid.append(document.createElement('div'),ruler);
+const bs=beats(),idxOf=new Map();bs.forEach((b,i)=>{if(b.t==='say')idxOf.set(b.e.id,i)});
+const maxLen=Math.max(...M.msgs.map(m=>m.text.length));
+R.agents.forEach(a=>{
+ grid.append(Object.assign(document.createElement('div'),{className:'lname',innerHTML:M.avatar(a.id,28)+`<span>${a.short}</span>`}));
+ const lane=document.createElement('div');lane.className='lane';lane.style.setProperty('--c',a.color);
+ // silence runs: pulses where the agent did not speak, 3+ in a row
+ const spoke=new Set(M.msgs.filter(m=>m.actor===a.id).map(m=>m.p));let run=[];
+ const flush=()=>{if(run.length>=3){const c=document.createElement('div');c.className='cell hold';c.style.left=`${run[0]/NP*100}%`;c.style.width=`${run.length/NP*100}%`;c.title=`${a.short} says nothing for ${run.length} pulses`;lane.append(c)}run=[]};
+ for(let p=0;p<NP;p++){if(spoke.has(p))flush();else run.push(p)}flush();
+ M.msgs.filter(m=>m.actor===a.id).forEach(m=>{
+  const d=document.createElement('button');d.className='dot'+(m.ch===pub?'':' priv');const sz=10+22*Math.sqrt(m.text.length/maxLen);
+  d.style.cssText=`left:${x(m.p)};width:${sz}px;height:${sz}px;margin-top:${(m.ch===pub?-9:9)}px`;d.setAttribute('aria-label',`${a.short} at ${R.pulses[m.p].clock}: ${m.text.slice(0,60)}`);
+  d.onclick=()=>{pl.seek(idxOf.get(m.id))};lane.append(d)});
+ grid.append(lane)});
+const head=document.createElement('div');head.className='head';head.style.top='56px';
+const setHead=p=>{head.style.left=`calc(142px + (100% - 142px) * ${(p+.5)/NP})`};setHead(0);grid.append(head);
+// stats: video length vs story time
+const secs=bs.reduce((s,b)=>s+b.dur+(b.t==='say'?b.typing/1000:0),0),story=NP*4;
+const fmt=s=>`${Math.floor(s/60)}:${String(Math.round(s%60)).padStart(2,'0')}`;
+document.getElementById('stats').innerHTML=`<div><b>${Math.floor(story/60)}h ${story%60}m</b><span>story time, ${R.pulses[0].clock} to ${R.pulses[NP-1].clock}</span></div>
+<div><b>${fmt(secs)}</b><span>video at 1x</span></div><div><b>${fmt(secs/2)}</b><span>at 2x</span></div><div><b>${(story*60/secs).toFixed(0)}x</b><span>story seconds per video second</span></div><div><b>${M.msgs.length}</b><span>messages, ${M.msgs.filter(m=>m.ch!==pub).length} private</span></div>`;
+const now=document.getElementById('now');
+const pl=new Player(bs,{
+ onReset(){setHead(0)},
+ onBeat(b,o){setHead(b.p);
+  if(b.t==='say'){const e=b.e;now.innerHTML=`<span class="k">${R.pulses[b.p].clock} · ${A[e.actor].short} to ${e.to.length?e.to.map(i=>A[i].short).join(', '):'the room'} · ${chLabel(e.ch)}</span><p>${esc(e.text.length>260?e.text.slice(0,257)+'…':e.text)}</p>`;if(!o.instant)Babble.say(e.actor,e.text)}
+  if(b.t==='clock'&&!o.instant)now.innerHTML=`<span class="k" style="color:var(--sodium)">Cut to ${b.clock}</span>`}});
+const upd=transport(document.getElementById('tr'),pl);pl.h.onState=upd;upd(pl);
+</script></body></html>
