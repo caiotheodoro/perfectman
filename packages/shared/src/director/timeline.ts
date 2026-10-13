@@ -11,6 +11,7 @@ import { addresseesOf } from "./addressees.js";
 import { poseFrom, toPoseVector, type PoseTarget, type PoseVector } from "./emotion-pose.js";
 import { personaSignature } from "./persona-signature.js";
 import { computeTangents } from "./sample.js";
+import { canChangeMood, type Mood } from "../stage/mood.js";
 import { PACES, timing, tokens, type Timing } from "./timing.js";
 import type {
   Balloon, BalloonKind, CameraState, Caption, Cue, DirectorOptions, DirectorReplay, DirectorEvent, HuddleMode,
@@ -42,6 +43,10 @@ export type Timeline = {
   lapses: Array<{ t0: number; t1: number; p: number }>;
   pulseT: Record<number, number>;
   cues: Cue[];
+  /** One entry per footfall while somebody walks, for the sound of the room. */
+  footsteps: Array<{ t: number; actor: string }>;
+  /** Which music bed fits the room, changing no faster than the bed hold allows. */
+  moods: Array<{ t: number; mood: Mood }>;
   wordTotal: number;
   duration: number;
 };
@@ -70,7 +75,7 @@ export function buildTimeline(replay: DirectorReplay, options: DirectorOptions =
   const N = agents.length;
   const T: Timeline = {
     mode, pace, agents, keys: {}, cam: [], light: [], balloons: [], marks: [], captions: [], scenes: [], msgs: [],
-    speak: {}, lapses: [], pulseT: {}, cues: [], wordTotal: 0, duration: 0,
+    speak: {}, lapses: [], pulseT: {}, cues: [], footsteps: [], moods: [], wordTotal: 0, duration: 0,
   };
   for (const id of agents) { T.keys[id] = []; T.speak[id] = []; }
 
@@ -289,5 +294,48 @@ export function buildTimeline(replay: DirectorReplay, options: DirectorOptions =
   T.light.sort((a, b) => a.t - b.t);
   T.marks.sort((a, b) => a.t - b.t);
   T.cues.sort((a, b) => a.t - b.t);
+  T.footsteps = footstepsFrom(T);
+  T.moods = moodsFrom(T, replay);
   return T;
+}
+
+/** Seconds between footfalls and the least distance that counts as walking. */
+const STEP_EVERY = 0.3;
+const WALK_PIXELS = 30;
+
+function footstepsFrom(T: Timeline): Timeline["footsteps"] {
+  const out: Timeline["footsteps"] = [];
+  for (const id of T.agents) {
+    const keys = T.keys[id]!;
+    for (let i = 1; i < keys.length; i++) {
+      const a = keys[i - 1]!, b = keys[i]!;
+      if (Math.hypot(b.v.x - a.v.x, b.v.y - a.v.y) <= WALK_PIXELS) continue;
+      for (let t = a.t + STEP_EVERY; t < b.t - 0.05; t += STEP_EVERY) out.push({ t, actor: id });
+    }
+  }
+  return out.sort((x, y) => x.t - y.t);
+}
+
+/** What the whole room feels like at a pulse, read from everyone's recorded state. */
+function roomMood(replay: DirectorReplay, pulse: number): Mood {
+  const states = Object.values(replay.pulses[pulse]?.agentStates ?? {});
+  if (states.length === 0) return "calm";
+  const mean = (f: (s: Record<string, number>) => number): number => states.reduce((a, s) => a + f(s.socialEmotions), 0) / states.length;
+  const tension = mean((e) => (e["resentment"] ?? 0) * 3 + (e["suspicion"] ?? 0) * 3 + (e["jealousy"] ?? 0) * 1.6 + (e["fearOfExclusion"] ?? 0) * 0.7);
+  const warmth = mean((e) => (e["affection"] ?? 0) * 1.7 + (e["admiration"] ?? 0) * 1.6);
+  if (tension > 0.4 && tension >= warmth) return "tension";
+  if (warmth > 0.45) return "warmth";
+  return "calm";
+}
+
+function moodsFrom(T: Timeline, replay: DirectorReplay): Timeline["moods"] {
+  const out: Timeline["moods"] = [{ t: 0, mood: roomMood(replay, 0) }];
+  let last = 0;
+  for (let p = 1; p < replay.pulses.length; p++) {
+    const t = T.pulseT[p];
+    if (t === undefined) continue;
+    const next = roomMood(replay, p);
+    if (next !== out[out.length - 1]!.mood && canChangeMood(last, t)) { out.push({ t, mood: next }); last = t; }
+  }
+  return out;
 }

@@ -149,3 +149,30 @@ describe("the fiction-only lens", () => {
     expect(JSON.stringify(stripped.balloons)).not.toContain("privateMotive");
   });
 });
+
+describe("the sound of the room", () => {
+  it("steps whenever somebody walks, and only then", () => {
+    expect(T.footsteps.length).toBeGreaterThan(0);
+    for (const s of T.footsteps) {
+      const ks = T.keys[s.actor]!;
+      const moving = ks.some((k, i) => i > 0 && k.t >= s.t && ks[i - 1]!.t <= s.t && Math.hypot(k.v.x - ks[i - 1]!.v.x, k.v.y - ks[i - 1]!.v.y) > 30);
+      expect(moving, `${s.actor} at ${s.t.toFixed(2)}`).toBe(true);
+    }
+    for (let i = 1; i < T.footsteps.length; i++) expect(T.footsteps[i]!.t).toBeGreaterThanOrEqual(T.footsteps[i - 1]!.t);
+  });
+
+  it("picks a music bed from the room's recorded state and holds it for at least eight seconds", () => {
+    expect(T.moods[0]!.t).toBe(0);
+    for (let i = 1; i < T.moods.length; i++) {
+      expect(T.moods[i]!.t - T.moods[i - 1]!.t).toBeGreaterThanOrEqual(8);
+      expect(T.moods[i]!.mood).not.toBe(T.moods[i - 1]!.mood);
+    }
+  });
+
+  it("keeps the same steps and moods for the fiction-only cut", () => {
+    const stripped = stripOmniscient(T);
+
+    expect(stripped.footsteps).toEqual(T.footsteps);
+    expect(stripped.moods).toEqual(T.moods);
+  });
+});

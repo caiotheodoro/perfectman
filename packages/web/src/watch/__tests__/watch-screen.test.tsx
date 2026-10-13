@@ -120,6 +120,8 @@ describe("the controls", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Voices" }));
     expect(screen.getByRole("button", { name: "Voices" }).getAttribute("aria-pressed")).toBe("true");
+    fireEvent.click(screen.getByRole("button", { name: "Sound" }));
+    expect(screen.getByRole("button", { name: "Sound" }).getAttribute("aria-pressed")).toBe("true");
   });
 
   it("makes the film longer for a relaxed reader and shorter for a fast one", async () => {
