@@ -8,6 +8,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { type DirectorReplay, type PaceName } from "@perfectman/shared";
 import { FilmAudio } from "./film-audio.js";
+import { captionAt, type Caption } from "./caption.js";
 import { buildFilm, formatDuration, type Film } from "./film.js";
 import { FilmClock, type FilmSpeed } from "./FilmClock.js";
 import { canvasMeasurer, loadLettering } from "./fonts.js";
@@ -25,6 +26,9 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
   const [sound, setSound] = useState(false);
   const [film, setFilm] = useState<Film | null>(null);
   const [view, setView] = useState({ t: 0, playing: false });
+  const [narrow, setNarrow] = useState(false);
+  const [caption, setCaption] = useState<Caption | null>(null);
+  const lastCaption = useRef('');
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<StageView | null>(null);
   const clock = useRef(new FilmClock(1));
@@ -38,6 +42,15 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
     });
     return () => { alive = false; };
   }, [replay, pace]);
+
+  // A phone cannot read a balloon drawn at a third of its size, so below this width the line is also set as a caption.
+  useEffect(() => {
+    const el = host.current;
+    if (!el || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => setNarrow(el.clientWidth > 0 && el.clientWidth < 640));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   useEffect(() => {
     if (!film || !host.current) return;
@@ -58,13 +71,18 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
       const c = clock.current, before = c.t;
       c.tick(dt);
       const S = stage.current?.render(c.t, { omniscient: lens.current });
-      if (S) audio.frame(film.T, S, before, c.t, Math.min(dt, 0.1), c.playing);
+      if (S) {
+        audio.frame(film.T, S, before, c.t, Math.min(dt, 0.1), c.playing);
+        const cap = captionAt(S, (id) => (replay.agentProfiles?.[id]?.displayName ?? replay.agentNames[id] ?? id).replace(/^(Dona|Mr\.|Ms\.|Mrs\.|Dr\.)\s+/, ""));
+        const key = cap ? `${cap.name}|${cap.text}` : "";
+        if (key !== lastCaption.current) { lastCaption.current = key; setCaption(lens.current || cap?.kind !== "thought" ? cap : null); }
+      }
       if (now - shown > 120) { shown = now; setView({ t: c.t, playing: c.playing }); }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [film, audio]);
+  }, [film, audio, replay]);
 
   useEffect(() => () => audio.destroy(), [audio]);
 
@@ -87,10 +105,15 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
   const stats = film ? `${film.T.msgs.length} messages, ${film.T.wordTotal.toLocaleString()} words, read at ${film.T.pace.toFixed(1)} words a second.` : "";
 
   return (
-    <section className="film" aria-label={`Film of ${title}`} onKeyDown={onKey}>
+    <section className={`film${narrow ? " film--narrow" : ""}`} aria-label={`Film of ${title}`} onKeyDown={onKey}>
       <div className="film__stage" ref={host} role="img" aria-label={`${title}, drawn as a film`}>
         {!film ? <p className="film__loading" role="status">Setting the stage…</p> : null}
       </div>
+      {narrow ? (
+        <p className={`film__caption film__caption--${caption?.kind ?? "none"}`} aria-live="off">
+          {caption ? <><span className="film__who">{caption.name}</span> {caption.text}</> : <span className="u-dim">Press play.</span>}
+        </p>
+      ) : null}
       <div className="film__bar">
         <button type="button" className="btn" disabled={!film} onClick={toggle}>{view.playing ? "Pause" : view.t >= duration && duration > 0 ? "Watch again" : "Play"}</button>
         <button type="button" className="btn btn--quiet" disabled={!film} onClick={() => seek(clock.current.t - 5)} aria-label="Back five seconds">−5 s</button>

@@ -51,6 +51,8 @@
   border-top: 1px solid var(--rule);
 }
 @media (max-width: 640px) {
+  .shell__bar { flex-wrap: wrap; row-gap: 8px; }
+  .shell__watch { margin-left: 0; min-height: 36px; padding: 6px 12px; font-size: 13px; }
   .shell__bar { min-height: 76px; gap: 16px; padding: 14px 20px; }
   .brand { gap: 6px; }
   .brand svg { width: 24px; height: 29px; }
