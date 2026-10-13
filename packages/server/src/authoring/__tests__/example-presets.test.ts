@@ -25,9 +25,16 @@ const LLM: LLMConfig = {
 describe("example presets compile when a scene is paired with its named cast", () => {
   it("loads the headline library and the polite control", async () => {
     const library = await loadPresets(PRESETS_ROOT);
-    expect(library.casts.map((c) => c.id).sort()).toEqual(["studio-partners", "the-group"]);
+    expect(library.casts.map((c) => c.id).sort()).toEqual([
+      "building-aurora",
+      "elevator-four",
+      "studio-partners",
+      "the-group",
+    ]);
     expect(library.scenes.map((s) => s.id).sort()).toEqual([
+      "cat-on-the-roof",
       "cinco-gorilas",
+      "elevator-at-midnight",
       "live-que-nao-cai",
       "o-print",
       "the-slice",

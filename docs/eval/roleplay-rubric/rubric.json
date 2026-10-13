@@ -1,0 +1,18 @@
+{
+ "id": "cheap-model-groupchat-v1",
+ "goal": "Can a cheap, fast model run a multi-persona group-chat scene that a stranger would actually enjoy reading, in a believable amount of time?",
+ "scale": "1-5 integers. 1=fails, 3=competent but forgettable, 5=would screenshot it for friends. Be stingy with 5.",
+ "axes": {
+  "interaction": "Do characters respond to, quote, build on, interrupt or pointedly ignore each other? 1=parallel monologues, 5=a real conversation where each line changes what the next person says.",
+  "creativity": "Non-obvious moves, inventions and reframes (new rules, sly tactics, unexpected props) rather than the scenario restated. 1=restates the prompt, 5=several surprises that still fit.",
+  "reader_interest": "Would a stranger keep reading to the end? Stakes, momentum, curiosity about what happens next. 1=skimmable filler, 5=cannot stop.",
+  "funk": "Funny, weird, charming, memorable specific details and running gags. 1=flat, 5=quotable.",
+  "niceness": "Warmth and affection that survives the conflict: people are petty but human, not cruel or robotic. 1=toxic or cold, 5=sharp but clearly fond of each other.",
+  "voice_distinctness": "Cover the names: could you tell who is talking from style alone, consistently? 1=all sound the same, 5=unmistakable.",
+  "secret_play": "Hidden objectives drive behaviour through subtext: defended, nearly leaked, deflected, without being announced outright. 1=ignored or blurted out, 5=tense dramatic irony.",
+  "arc": "Escalation, turns and a payoff within the window. 1=flat or looping, 5=clear build and a satisfying beat.",
+  "chat_naturalness": "Reads like people in a chat app (length, rhythm, fragments, reactions), not essays or press releases. 1=essays, 5=indistinguishable from real chat.",
+  "temporal_realism": "Using the t+ timestamps and pulse numbers: does cadence feel like a real evening (bursts, lulls, replies landing in plausible order, characters referencing the clock, nobody replying impossibly fast or in lockstep)? 1=mechanical turn-taking, 5=convincing passage of time."
+ },
+ "deterministic_metrics": ["duration_s", "s_per_pulse", "messages", "msgs_per_agent (participation balance)", "noop rate", "mean_msg_chars", "non_public_msgs", "pulse_gap_median_s", "pulse_gap_max_s", "llm_failures"]
+}

@@ -37,3 +37,8 @@ conflict:
 
 **`studio-partners` / `the-slice`** stays as the polite control: three partners,
 a dinner, a sale. Same compiler, lower temperature.
+
+**`building-aurora` / `cat-on-the-roof`** and **`elevator-four` / `elevator-at-midnight`**
+are short-chat scenes: every persona sets `presence.messageLength` and each scene
+sets a `storyClock`, so the cast writes chat-sized messages and refers to the hour.
+Scored with the rubric in `docs/eval/roleplay-rubric/`.
