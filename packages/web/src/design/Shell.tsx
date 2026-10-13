@@ -23,13 +23,15 @@ export function BrandMark(): JSX.Element {
 }
 
 export function Shell({
-  step, furthest, onStep, onHome, children,
+  step, furthest, onStep, onHome, onWatch, children,
 }: {
   step: StepId;
   /** Later steps are not clickable until the user reaches them. */
   furthest: StepId;
   onStep: (step: StepId) => void;
   onHome: () => void;
+  /** Opens the past runs, to watch as films. */
+  onWatch?: () => void;
   children: React.ReactNode;
 }): JSX.Element {
   const reached = STEPS.findIndex((s) => s.id === furthest);
@@ -63,6 +65,7 @@ export function Shell({
             </button>
           ))}
         </nav>
+        {onWatch ? <button type="button" className="btn btn--quiet shell__watch" onClick={onWatch}>Watch a past run</button> : null}
       </header>
       <main className="shell__body">{children}</main>
     </div>

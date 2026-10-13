@@ -13,7 +13,7 @@ import type {
   StartRunRequest,
   StartRunResponse,
   UploadedFile,
-  ViewerReplay,
+  DirectorReplay,
 } from "@perfectman/shared";
 import { apiUrl } from "./origin.js";
 
@@ -88,6 +88,7 @@ export function listRuns(): Promise<{ runs: RunListEntry[] }> {
   return json<{ runs: RunListEntry[] }>("/api/runs");
 }
 
-export function fetchReplay(runId: string): Promise<ViewerReplay> {
-  return json<ViewerReplay>(`/api/runs/${encodeURIComponent(runId)}/replay`);
+/** The stored replay of a finished run: every pulse's states and thinking, not the live viewer fold. */
+export function fetchReplay(runId: string): Promise<DirectorReplay> {
+  return json<DirectorReplay>(`/api/runs/${encodeURIComponent(runId)}/replay`);
 }

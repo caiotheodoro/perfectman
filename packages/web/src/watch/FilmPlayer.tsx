@@ -1,0 +1,128 @@
+/**
+ * The film player: a stage, a clock, and the controls to move through a run.
+ *
+ * The stage is drawn from `sampleTimeline`, so it is a pure function of the
+ * clock: scrubbing, speed and the reading pace all just change the clock or
+ * rebuild the timeline, and nothing "triggers".
+ */
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { type DirectorReplay, type PaceName } from "@perfectman/shared";
+import { Babble } from "./babble.js";
+import { buildFilm, formatDuration, type Film } from "./film.js";
+import { FilmClock, type FilmSpeed } from "./FilmClock.js";
+import { canvasMeasurer, loadLettering } from "./fonts.js";
+import { StageView } from "./StageView.js";
+import { TimelineStrip } from "./TimelineStrip.js";
+
+const PACE_LABELS: Array<[PaceName, string]> = [["relaxed", "Relaxed"], ["normal", "Normal"], ["fast", "Fast"]];
+const SPEEDS: FilmSpeed[] = [1, 2, 4];
+
+export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: string }): JSX.Element {
+  const [pace, setPace] = useState<PaceName>("normal");
+  const [omniscient, setOmniscient] = useState(true);
+  const [speed, setSpeed] = useState<FilmSpeed>(1);
+  const [voices, setVoices] = useState(false);
+  const [film, setFilm] = useState<Film | null>(null);
+  const [view, setView] = useState({ t: 0, playing: false });
+  const host = useRef<HTMLDivElement>(null);
+  const stage = useRef<StageView | null>(null);
+  const clock = useRef(new FilmClock(1));
+  const lens = useRef(true);
+  const babble = useMemo(() => new Babble((id) => replay.agentIds.indexOf(id)), [replay]);
+
+  useEffect(() => {
+    let alive = true;
+    void loadLettering().then(() => {
+      if (alive) setFilm(buildFilm(replay, { pace, measure: canvasMeasurer() }));
+    });
+    return () => { alive = false; };
+  }, [replay, pace]);
+
+  useEffect(() => {
+    if (!film || !host.current) return;
+    const s = new StageView(host.current, film.T, replay, { setting: replay.look?.setting, room2: replay.look?.rooms?.[0] });
+    stage.current = s;
+    clock.current.retime(film.T.duration);
+    s.render(clock.current.t, { omniscient: lens.current });
+    setView({ t: clock.current.t, playing: clock.current.playing });
+    return () => { s.destroy(); stage.current = null; };
+  }, [film, replay]);
+
+  useEffect(() => {
+    if (!film) return;
+    let raf = 0, last: number | null = null, shown = 0;
+    const loop = (now: number): void => {
+      const dt = last === null ? 0 : (now - last) / 1000;
+      last = now;
+      const c = clock.current, before = c.t;
+      c.tick(dt);
+      if (babble.on) babble.play(film.T.cues, before, c.t);
+      stage.current?.render(c.t, { omniscient: lens.current });
+      if (now - shown > 120) { shown = now; setView({ t: c.t, playing: c.playing }); }
+      raf = requestAnimationFrame(loop);
+    };
+    raf = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(raf);
+  }, [film, babble]);
+
+  useEffect(() => () => babble.disable(), [babble]);
+
+  const seek = useCallback((t: number) => {
+    clock.current.seek(t);
+    setView({ t: clock.current.t, playing: clock.current.playing });
+  }, []);
+  const toggle = useCallback(() => {
+    clock.current.toggle();
+    setView({ t: clock.current.t, playing: clock.current.playing });
+  }, []);
+  const onKey = (e: KeyboardEvent<HTMLElement>): void => {
+    if ((e.target as HTMLElement).tagName === "INPUT" && (e.target as HTMLInputElement).type === "range") return;
+    if (e.key === " ") { e.preventDefault(); toggle(); }
+    else if (e.key === "ArrowLeft") { e.preventDefault(); seek(clock.current.t - 5); }
+    else if (e.key === "ArrowRight") { e.preventDefault(); seek(clock.current.t + 5); }
+  };
+
+  const duration = film?.T.duration ?? 0;
+  const stats = film ? `${film.T.msgs.length} messages, ${film.T.wordTotal.toLocaleString()} words, read at ${film.T.pace.toFixed(1)} words a second.` : "";
+
+  return (
+    <section className="film" aria-label={`Film of ${title}`} onKeyDown={onKey}>
+      <div className="film__stage" ref={host} role="img" aria-label={`${title}, drawn as a film`}>
+        {!film ? <p className="film__loading" role="status">Setting the stage…</p> : null}
+      </div>
+      <div className="film__bar">
+        <button type="button" className="btn" disabled={!film} onClick={toggle}>{view.playing ? "Pause" : view.t >= duration && duration > 0 ? "Watch again" : "Play"}</button>
+        <button type="button" className="btn btn--quiet" disabled={!film} onClick={() => seek(clock.current.t - 5)} aria-label="Back five seconds">−5 s</button>
+        <button type="button" className="btn btn--quiet" disabled={!film} onClick={() => seek(clock.current.t + 5)} aria-label="Forward five seconds">+5 s</button>
+        <input
+          className="film__scrub" type="range" min={0} max={1000} step={1} aria-label="Position in the film" disabled={!film}
+          value={duration > 0 ? Math.round((view.t / duration) * 1000) : 0}
+          onChange={(e) => seek((Number(e.target.value) / 1000) * duration)}
+        />
+        <span className="film__time">{formatDuration(view.t)} / {formatDuration(duration)}</span>
+      </div>
+      <div className="film__opts">
+        <div className="film__group" role="group" aria-label="Playback speed">
+          {SPEEDS.map((s) => (
+            <button key={s} type="button" aria-pressed={speed === s} className="film__opt" onClick={() => { clock.current.speed = s; setSpeed(s); }}>{s}x</button>
+          ))}
+        </div>
+        <div className="film__group" role="group" aria-label="Reading pace">
+          {PACE_LABELS.map(([id, label]) => (
+            <button key={id} type="button" aria-pressed={pace === id} className="film__opt" onClick={() => setPace(id)}>{label}</button>
+          ))}
+        </div>
+        <div className="film__group" role="group" aria-label="What you can see">
+          <button type="button" aria-pressed={omniscient} className="film__opt" onClick={() => { lens.current = true; setOmniscient(true); }}>Omniscient</button>
+          <button type="button" aria-pressed={!omniscient} className="film__opt" onClick={() => { lens.current = false; setOmniscient(false); }}>Fiction only</button>
+        </div>
+        <button
+          type="button" aria-pressed={voices} className="film__opt"
+          onClick={() => { if (voices) babble.disable(); else babble.enable(); setVoices(!voices); }}
+        >Voices</button>
+      </div>
+      {film ? <TimelineStrip T={film.T} replay={replay} t={view.t} onSeek={seek} /> : null}
+      <p className="film__stats u-dim">{stats} A balloon stays up until its words are read; the next one lands as the last is being finished.</p>
+    </section>
+  );
+}

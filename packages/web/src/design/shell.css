@@ -67,3 +67,4 @@
   .brand > span { font-size: 21px; }
   .shell__rail { gap: 12px; }
 }
+.shell__watch { margin-left: auto; }
