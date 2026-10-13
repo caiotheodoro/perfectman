@@ -1,0 +1,29 @@
+{
+ "scores": {
+  "interaction": 4,
+  "creativity": 4,
+  "reader_interest": 4,
+  "funk": 4,
+  "niceness": 4,
+  "voice_distinctness": 5,
+  "secret_play": 3,
+  "arc": 4,
+  "chat_naturalness": 4,
+  "temporal_realism": 4
+ },
+ "evidence": {
+  "interaction": "Lines answer each other: Okafor's chip question forces Priya and Tavo to admit feeding.",
+  "creativity": "Private rooms, elevator-button cat, chip as receipt, and lawyer-or-accomplice tactics invent beyond prompt.",
+  "reader_interest": "Stakes build from vote to secret feeders, deleted names, and last-minute drafting before sleep.",
+  "funk": "Raccoon-is-an-incident, face-presses-4, and bring-the-cat skull emoji are quotable.",
+  "niceness": "Tavo and Priya tease but protect; Okafor is formal yet gentle; Neide is passive-aggressive.",
+  "voice_distinctness": "Okafor cites articles, Tavo uses lowercase and skull emoji, Priya drafts proposals, Neide is bureaucratic.",
+  "secret_play": "Priya nearly leaks fame; Tavo deflects; Neide's inspector motive is barely dramatized.",
+  "arc": "Moves from public agenda to private coalition, admissions, and a drafted defense by 1:08.",
+  "chat_naturalness": "Fragments, emojis, timestamps, and private channels feel app-like; a few rulebook speeches are long.",
+  "temporal_realism": "Bursts every few minutes, midnight references, and 9am call make the clock believable."
+ },
+ "best_line": "okafor's 'hypothesis' is 'let's vote it out' in a nicer shirt. if he brings the rulebook i bring the cat \ud83d\udc80",
+ "worst_moment": "Neide's hidden motive is underplayed; she cites rules but never hints at the inspector pressure.",
+ "one_line_verdict": "A charming, voicey group chat with strong comedy and momentum, but Neide's secret needs more subtext."
+}

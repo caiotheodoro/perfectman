@@ -27,7 +27,7 @@ for seed in seeds:
             if p.returncode==0: break
     print(label,"seed",seed,"done",rid,flush=True)
 # aggregate
-axes=json.load(open(S+"/rubric.frozen.json"))["axes"].keys(); agg={}; stats=[]
+axes=json.load(open(S+"/rubric.json"))["axes"].keys(); agg={}; stats=[]
 for j in JUDGES:
     fs=glob.glob(f"{OUT}/seed*.{j}.json"); agg[j]={a:round(statistics.mean(json.load(open(f))["scores"][a] for f in fs),2) for a in axes} if fs else {}
 for f in glob.glob(f"{OUT}/seed*.stats.json"): stats.append(json.load(open(f)))

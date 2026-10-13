@@ -1,7 +1,7 @@
 """agg.py <label...>: backfill missing judge files, then print per-axis table (both judges) + deterministic metrics."""
 import json,glob,os,subprocess,statistics,sys
 S=os.path.dirname(os.path.abspath(__file__)); J=["glm-5.3-flash","qwen3.8-flash"]
-axes=list(json.load(open(S+"/rubric.frozen.json"))["axes"])
+axes=list(json.load(open(S+"/rubric.json"))["axes"])
 for label in sys.argv[1:]:
     O=f"{S}/rounds/{label}"
     for tx in sorted(glob.glob(O+"/seed*.txt")):
