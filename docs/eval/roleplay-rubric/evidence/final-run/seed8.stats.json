@@ -1,0 +1,24 @@
+{
+ "duration_s": 179.3,
+ "pulses": 24,
+ "s_per_pulse": 7.5,
+ "messages": 36,
+ "msgs_per_agent": {
+  "okafor": 5,
+  "neide": 3,
+  "tavo": 14,
+  "priya": 14
+ },
+ "replies": 18,
+ "non_public_msgs": 30,
+ "noops": {
+  "tavo": 8,
+  "priya": 9,
+  "okafor": 19,
+  "neide": 20
+ },
+ "mean_msg_chars": 178,
+ "pulse_gap_median_s": 6.5,
+ "pulse_gap_max_s": 15.6,
+ "llm_failures": 0
+}

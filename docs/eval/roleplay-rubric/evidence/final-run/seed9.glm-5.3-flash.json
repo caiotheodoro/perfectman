@@ -1,0 +1,29 @@
+{
+ "scores": {
+  "interaction": 5,
+  "creativity": 5,
+  "reader_interest": 5,
+  "funk": 5,
+  "niceness": 4,
+  "voice_distinctness": 5,
+  "secret_play": 5,
+  "arc": 4,
+  "chat_naturalness": 4,
+  "temporal_realism": 4
+ },
+ "evidence": {
+  "interaction": "Okafor's 'You invited me here to read me, not Article 12' flips Neide's private channel into an attack; every reply weaponizes the last.",
+  "creativity": "'It is weather with a tail,' the envelope-never-opened gambit, the chip question, the roof camera older than the council \u2014 inventions that all pay off.",
+  "reader_interest": "Three secret-keepers circling one cat, private channels leaking into public \u2014 I wanted the assembly itself.",
+  "funk": "'who sings to the cat at 4am that's a different guy' and 'I do not sleep either' are screenshot lines.",
+  "niceness": "Tavo refusing to let Neide be humiliated with the envelope ('first honest sentence she'll get') keeps sharpness humane.",
+  "voice_distinctness": "'Regards, Neide (Manager)' with \ud83d\ude42, Okafor's 'Regards, Okafor \ud83d\udc4d' formalism, Tavo's lowercase \ud83d\udc80, Priya's numbered lists \u2014 unmistakable.",
+  "secret_play": "Priya's 'I don't feed her, I just... noticed' and Tavo's 'that's a different guy' are perfect near-leaks; nobody blurts.",
+  "arc": "Builds from agenda item to alliance to the camera reveal; ends on a deal, not a resolution \u2014 satisfying beat, slight open loop.",
+  "chat_naturalness": "Mostly real rhythm, but Okafor's paragraphs and Priya's structured '1) 2) 3)' run long for 1am texts.",
+  "temporal_realism": "Clock is used well ('It is 12:32, and I was in bed an hour ago', 'I have a 9am'), though 4-minute lockstep pulses feel slightly metronomic."
+ },
+ "best_line": "A cat on a roof is neither kept nor authorized \u2014 it is weather with a tail.",
+ "worst_moment": "Priya's 12:52 double-message interrogating Tavo's silence ('Still typing then?') reads as the engine forcing a beat rather than a person waiting nine minutes to double-text.",
+ "one_line_verdict": "A tight, quotable late-night chess game where every secret leaks sideways and nobody says the thing \u2014 the best kind of dumpster fire."
+}
