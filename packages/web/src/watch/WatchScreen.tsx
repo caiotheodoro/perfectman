@@ -13,6 +13,13 @@ type Open = { run: RunListEntry; replay: DirectorReplay | null; error: string | 
 export function WatchScreen({ onClose }: { onClose: () => void }): JSX.Element {
   const [open, setOpen] = useState<Open | null>(null);
 
+  // The page behind must not scroll under the layer.
+  useEffect(() => {
+    const before = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = before; };
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent): void => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", onKey);

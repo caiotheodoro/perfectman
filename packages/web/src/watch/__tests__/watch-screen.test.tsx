@@ -57,6 +57,16 @@ describe("the run picker", () => {
     expect((await screen.findByRole("alert")).textContent).toContain("server is down");
   });
 
+  it("keeps the page behind from scrolling while it is open, and gives it back after", () => {
+    vi.spyOn(client, "listRuns").mockResolvedValue({ runs: [] });
+    document.body.style.overflow = "auto";
+    const view = render(<WatchScreen onClose={vi.fn()} />);
+
+    expect(document.body.style.overflow).toBe("hidden");
+    view.unmount();
+    expect(document.body.style.overflow).toBe("auto");
+  });
+
   it("closes on Escape", () => {
     vi.spyOn(client, "listRuns").mockResolvedValue({ runs: [] });
     const onClose = vi.fn();
