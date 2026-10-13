@@ -11,6 +11,9 @@ import "./stage/figure.css";
 import "./stage/stage.css";
 import "./run/run.css";
 import "./components/legacy.css";
+import "./watch/fonts.css";
+import "./watch/watch.css";
+import "./watch/player.css";
 
 const root = document.getElementById("root");
 if (!root) throw new Error("no #root in index.html");

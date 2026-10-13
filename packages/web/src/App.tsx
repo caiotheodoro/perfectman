@@ -4,9 +4,12 @@ import { Shell } from "./design/Shell.js";
 import { Intro } from "./onboarding/Intro.js";
 import { PickStep } from "./pick/PickStep.js";
 import { RunScreen } from "./run/RunScreen.js";
+import { useState } from "react";
 import { useWorkspaceFlow } from "./useWorkspaceFlow.js";
+import { WatchScreen } from "./watch/WatchScreen.js";
 
 export function App(): JSX.Element {
+  const [watching, setWatching] = useState(false);
   const {
     introDone, setIntroDone, step, setStep, furthest, library,
     presetsLoading, presetsError, cast, setCast, scene, compiled,
@@ -29,7 +32,7 @@ export function App(): JSX.Element {
       />
       ) : null}
       <div hidden={!introDone}>
-    <Shell step={step} furthest={furthest} onStep={setStep} onHome={() => setIntroDone(false)}>
+    <Shell step={step} furthest={furthest} onStep={setStep} onHome={() => setIntroDone(false)} onWatch={() => setWatching(true)}>
       {presetsLoading ? <p role="status">Loading casts and scenes…</p> : null}
       {presetsError ? (
         <div className="alert alert--shell" role="alert">
@@ -115,6 +118,7 @@ export function App(): JSX.Element {
       ) : null}
     </Shell>
       </div>
+      {watching ? <WatchScreen onClose={() => setWatching(false)} /> : null}
     </>
   );
 }
