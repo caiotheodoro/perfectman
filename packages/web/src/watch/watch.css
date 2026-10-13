@@ -1,0 +1,38 @@
+/* The stage: a fixed 1200 x 600 logical frame scaled to its host. Everything inside is positioned in logical pixels. */
+.watch-host { position: relative; width: 100%; overflow: hidden; border-radius: var(--r-xl, 8px); background: #0b1124; box-shadow: inset 0 0 0 1px var(--rule, #d6d8ca); }
+.watch-stage { position: absolute; left: 0; top: 0; width: 1200px; height: 600px; transform-origin: 0 0; }
+.watch-cam { position: absolute; left: 0; top: 0; width: 1200px; height: 600px; transform-origin: 0 0; will-change: transform; }
+.watch-plate { position: absolute; inset: 0; transition: opacity 0.7s linear; }
+.watch-plate svg.place { position: absolute; inset: 0; width: 100%; height: 100%; }
+.watch-actor { position: absolute; transform: translate(-50%, -100%); }
+.watch-actor svg { display: block; width: 100%; height: auto; overflow: visible; }
+.watch-pool { position: absolute; width: 600px; height: 520px; border-radius: 50%; background: radial-gradient(closest-side, #ffd48a88, #ffd48a00); mix-blend-mode: screen; pointer-events: none; }
+.watch-vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 55%, #0000 45%, #050814cc 100%); }
+.watch-clock { position: absolute; right: 24px; bottom: 14px; font: 700 28px/1 var(--serif, serif); color: #f3c46b; text-shadow: 0 2px 8px #000b; }
+
+.watch-balloons, .watch-marks, .watch-captions { position: absolute; inset: 0; pointer-events: none; }
+.watch-balloon { position: absolute; left: 0; top: 0; display: none; will-change: transform, opacity; filter: drop-shadow(0 3px 0 #0006); }
+.watch-balloon > svg { position: absolute; left: 0; top: 0; }
+.watch-balloon__text { position: relative; width: 100%; height: 100%; display: grid; place-items: center; text-align: center; font-variation-settings: "BNCE" 0, "INFM" 70; }
+.watch-balloon__line { white-space: nowrap; }
+.watch-balloon__text .w { display: inline; opacity: 0; }
+.watch-balloon__tag { position: absolute; left: 12px; top: -11px; font: 700 11px/1 "Shantell Sans Variable", system-ui, sans-serif; color: #1d1f1a; padding: 3px 8px; border-radius: 999px; border: 2px solid #1d1f1a; white-space: nowrap; }
+.watch-balloon__chips { position: absolute; left: 14px; right: 14px; bottom: -12px; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.watch-balloon__chips span { font: 600 10.5px/1 "Shantell Sans Variable", system-ui, sans-serif; background: #1d1f1a; color: #fffdf6; padding: 3px 7px; border-radius: 999px; transform: rotate(-1.5deg); }
+.watch-balloon__more { position: absolute; right: 14px; bottom: 6px; font: 700 15px/1 "Shantell Sans Variable", system-ui, sans-serif; color: #1d1f1a; animation: watch-nudge 0.9s ease-in-out infinite; }
+@keyframes watch-nudge { 50% { transform: translateX(4px); } }
+.watch-mark { position: absolute; left: 0; top: 0; display: none; filter: drop-shadow(0 2px 0 #0007); }
+
+.watch-caption { position: absolute; display: none; font: 600 17px/1.2 "Shantell Sans Variable", system-ui, sans-serif; color: #1d1f1a; background: #ffe9a8; padding: 8px 14px; border: 3px solid #1d1f1a; box-shadow: 4px 4px 0 #1d1f1a; transform: rotate(-1deg); }
+.watch-caption--bl { left: 24px; bottom: 24px; }
+.watch-caption--top { left: 50%; top: 22px; transform: translateX(-50%) rotate(-0.6deg); }
+
+.watch-inset { position: absolute; left: 22px; top: 20px; width: 260px; height: 150px; border: 4px solid #1d1f1a; border-radius: 6px; overflow: hidden; box-shadow: 5px 5px 0 #1d1f1a; background: #0b1124; pointer-events: none; transform: rotate(-1deg); opacity: 0; }
+.watch-inset__view { position: absolute; inset: 0; transform: scale(0.217); transform-origin: 0 0; width: 1200px; height: 600px; filter: brightness(0.8); }
+.watch-inset__view svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.watch-inset span { position: absolute; left: 0; right: 0; bottom: 0; background: #ffe9a8; color: #1d1f1a; font: 600 11px/1 "Shantell Sans Variable", system-ui, sans-serif; padding: 4px 6px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .watch-plate { transition: none; }
+  .watch-balloon__more { animation: none; }
+}
