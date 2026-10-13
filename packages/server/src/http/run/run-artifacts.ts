@@ -11,6 +11,7 @@ import { dirname, join, resolve } from "node:path";
 import type { SimulationAppConfig } from "../../config/simulation-config.js";
 import type { SimulationReplay } from "../../html/replay-types.js";
 import type { Diagnostic } from "../../authoring/diagnostics.js";
+import { backfillReplay } from "./replay-backfill.js";
 import { scrubConfigForArtifact } from "./secrets.js";
 
 export type RunManifest = {
@@ -64,7 +65,10 @@ export class RunArtifacts {
 }
 
 export async function readReplay(rootDir: string, runId: string): Promise<SimulationReplay | null> {
-  return readJson<SimulationReplay>(join(rootDir, safeName(runId), "replay.json"));
+  const replay = await readJson<SimulationReplay>(join(rootDir, safeName(runId), "replay.json"));
+  if (!replay) return null;
+  // Runs from before the clock and the look were recorded keep them in their config.
+  return backfillReplay(replay, await readJson<unknown>(join(rootDir, safeName(runId), "config.json")));
 }
 
 export async function readManifest(rootDir: string, runId: string): Promise<RunManifest | null> {

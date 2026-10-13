@@ -80,7 +80,9 @@ import {
   StdoutDeliveryGateway,
 } from "../delivery/index.js";
 
-function parseSceneLook(root: Record<string, unknown>): SceneLook | undefined {
+function parseSceneLook(config: Record<string, unknown>): SceneLook | undefined {
+  // A compiled scene carries its look under `look`; a hand-written config may put the three fields at the top.
+  const root = config["look"] !== undefined ? asRecord(config["look"], "look") : config;
   const look: SceneLook = {};
   if (root["setting"] !== undefined) {
     if (!isSceneSetting(root["setting"])) throw new Error(`setting must be one of ${SCENE_SETTINGS.join(", ")}.`);
@@ -1132,6 +1134,11 @@ function rejectSimulationCalibrationFields(
   }
 }
 
+function parseMessageLength(value: unknown, path: string): NonNullable<PersonaPromptProfile["messageLength"]> {
+  if (value === "short" || value === "medium" || value === "long" || value === "rapid_fire") return value;
+  throw new Error(`${path} must be short, medium, long or rapid_fire`);
+}
+
 function parsePromptProfile(
   input: unknown,
   path: string,
@@ -1200,6 +1207,9 @@ function parsePromptProfile(
       profile["sourceRefs"] ?? { assessmentIds: [], lastCompiledAt: "manual-config" },
       `${path}.sourceRefs`,
     ),
+    ...(profile["messageLength"] !== undefined
+      ? { messageLength: parseMessageLength(profile["messageLength"], `${path}.messageLength`) }
+      : {}),
     ...(profile["scenarioContext"] !== undefined
       ? { scenarioContext: parseScenarioContext(profile["scenarioContext"], `${path}.scenarioContext`) }
       : {}),

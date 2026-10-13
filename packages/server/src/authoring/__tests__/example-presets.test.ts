@@ -44,6 +44,20 @@ describe("example presets compile when a scene is paired with its named cast", (
     ]);
   });
 
+  it("carries the cat scene's place and every persona's message length all the way into the config", async () => {
+    const library = await loadPresets(PRESETS_ROOT);
+    const scene = library.scenes.find((s) => s.id === "cat-on-the-roof")!;
+    const cast = library.casts.find((c) => c.id === scene.cast)!;
+    const result = compileRunInputs(
+      { kind: "markdown", personas: cast.files, scenario: scene.files.find((f) => f.filename.endsWith(".scenario.md"))! },
+      { llm: LLM, simulationId: "sim_cat_look" },
+    );
+
+    expect(result.config?.look).toEqual({ setting: "rooftop", props: ["cat", "bowl", "notice-board", "water-tank"], rooms: ["stairwell"] });
+    expect(result.config?.storyClock).toEqual({ start: "23:40", minutesPerPulse: 4 });
+    for (const agent of result.config!.agents) expect(agent.promptProfile.messageLength, agent.id).toMatch(/^(short|medium|long|rapid_fire)$/);
+  });
+
   it("compiles every scene against the cast it names, with no errors", async () => {
     const library = await loadPresets(PRESETS_ROOT);
     expect(library.scenes.length).toBeGreaterThan(0);

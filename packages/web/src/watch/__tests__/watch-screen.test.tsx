@@ -6,6 +6,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/re
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { RunListEntry } from "@perfectman/shared";
 import * as client from "../../api/client.js";
+import { groupRuns, whenLabel } from "../RunPicker.js";
 import { WatchScreen } from "../WatchScreen.js";
 import { tinyReplay } from "./replay-fixture.js";
 
@@ -39,7 +40,8 @@ describe("the run picker", () => {
     vi.spyOn(client, "listRuns").mockResolvedValue({ runs: [run(), run({ runId: "run_0", name: "Empty", pulsesRun: 0 })] });
     render(<WatchScreen onClose={vi.fn()} />);
 
-    expect((await screen.findByRole("button", { name: /The cat on the roof/ })).textContent).toContain("The cat on the roof");
+    expect((await screen.findByRole("button", { name: /The cat on the roof/ })).textContent).toContain("4 pulses");
+    expect(screen.getByRole("heading", { name: /The cat on the roof/ }).textContent).toContain("1 run");
     expect(screen.queryByText("Empty")).toBeNull();
   });
 
@@ -143,5 +145,42 @@ describe("the controls", () => {
 
     fireEvent.click(screen.getByRole("button", { name: "Fast" }));
     await waitFor(() => expect(duration()).toBeLessThan(relaxed));
+  });
+});
+
+describe("grouping runs", () => {
+  const a = run({ runId: "a", name: "Cat", startedAt: 1_000 }), b = run({ runId: "b", name: "Cat", startedAt: 3_000 }), c = run({ runId: "c", name: "Lift", startedAt: 2_000 });
+
+  it("puts runs of one scene together, newest first, scenes by their newest run", () => {
+    const groups = groupRuns([a, c, b]);
+
+    expect(groups.map((g) => g.name)).toEqual(["Cat", "Lift"]);
+    expect(groups[0]!.runs.map((r) => r.runId)).toEqual(["b", "a"]);
+  });
+
+  it("names the day the way a person would", () => {
+    const now = new Date(2026, 9, 13, 15, 0).getTime();
+
+    expect(whenLabel(new Date(2026, 9, 13, 9, 45).getTime(), now)).toMatch(/^Today, /);
+    expect(whenLabel(new Date(2026, 9, 12, 23, 0).getTime(), now)).toMatch(/^Yesterday, /);
+    expect(whenLabel(new Date(2026, 9, 1, 8, 0).getTime(), now)).not.toMatch(/Today|Yesterday/);
+  });
+
+  it("shows the newest few of a long list and offers the rest", async () => {
+    const many = Array.from({ length: 7 }, (_, i) => run({ runId: `r${i}`, startedAt: 1_700_000_000_000 + i * 60_000 }));
+    vi.spyOn(client, "listRuns").mockResolvedValue({ runs: many });
+    render(<WatchScreen onClose={vi.fn()} />);
+    await screen.findAllByRole("button", { name: /The cat on the roof/ });
+
+    expect(screen.getAllByRole("button", { name: /The cat on the roof/ })).toHaveLength(4);
+    fireEvent.click(screen.getByRole("button", { name: "Show 3 older" }));
+    expect(screen.getAllByRole("button", { name: /The cat on the roof/ })).toHaveLength(7);
+  });
+
+  it("says when a run stopped early", async () => {
+    vi.spyOn(client, "listRuns").mockResolvedValue({ runs: [run({ pulsesRun: 8, maxPulses: 24, stopReason: "wall_clock" })] });
+    render(<WatchScreen onClose={vi.fn()} />);
+
+    expect((await screen.findByRole("button", { name: /The cat on the roof/ })).textContent).toContain("8 of 24 pulses, stopped early (wall clock)");
   });
 });
