@@ -100,4 +100,6 @@ export type AgentRuntimeInput = {
   hasActed?: boolean;
   /** ADR-0017: the engine would have held this agent back; the model is asked to voice the hold or break it. */
   holdSuggested?: boolean;
+  /** The scene's wall clock this pulse (e.g. "11:52pm"); absent when the scene sets none. */
+  storyClock?: string;
 };

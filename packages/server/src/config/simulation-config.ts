@@ -1,3 +1,4 @@
+import { isValidStoryClockStart, type StoryClockConfig } from "../simulation/story-clock.js";
 import type { ScenarioContextBlock as ParsedScenarioContextBlock, AgentObjective as ParsedAgentObjective } from "@perfectman/shared";
 import { readFile } from "node:fs/promises";
 import { existsSync, mkdirSync } from "node:fs";
@@ -78,6 +79,20 @@ import {
   StdoutDeliveryGateway,
 } from "../delivery/index.js";
 
+function parseStoryClock(value: unknown): StoryClockConfig | undefined {
+  if (value === undefined) return undefined;
+  const record = asRecord(value, "storyClock");
+  const start = requiredString(record["start"], "storyClock.start");
+  if (!isValidStoryClockStart(start)) {
+    throw new Error('storyClock.start must be 24-hour "HH:MM".');
+  }
+  const minutesPerPulse = record["minutesPerPulse"];
+  if (typeof minutesPerPulse !== "number" || !(minutesPerPulse > 0)) {
+    throw new Error("storyClock.minutesPerPulse must be a positive number.");
+  }
+  return { start, minutesPerPulse };
+}
+
 export type SimulationAppConfig = {
   simulation: {
     id?: string;
@@ -94,6 +109,8 @@ export type SimulationAppConfig = {
   judge?: JudgeAppConfig;
   /** Optional goal-layer section — emergent goal review, verdicts, ending gate. */
   goalLayer?: GoalLayerConfig;
+  /** Optional scene clock shown to the characters; presentation only. */
+  storyClock?: StoryClockConfig;
   /** If set, a synthetic host message is injected into the default channel before pulse 0. */
   hostStartingMessage?: string;
 };
@@ -437,6 +454,7 @@ export function parseSimulationConfig(
             root["goalLayer"],
             "goalLayer",
           ),
+    storyClock: parseStoryClock(root["storyClock"]),
   };
 
   validateCrossReferences(config, options.allowNoGateways === true);
@@ -516,6 +534,7 @@ export async function buildConfiguredSimulation(
     channels: config.channels,
     attachExisting: options.attachExisting,
     ...(goalLayer ? { goalLayer } : {}),
+    ...(config.storyClock ? { storyClock: config.storyClock } : {}),
   });
 
   return {
