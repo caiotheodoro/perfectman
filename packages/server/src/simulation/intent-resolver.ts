@@ -159,6 +159,30 @@ function stampParticipantIds(payload: EventPayload, intent: ActionIntent, ctx: R
   if (intent.personTargets.length > 0) payload["personTargets"] = intent.personTargets;
   const mentionedAgentIds = parseMentionedAgentIds(intent.visibleContent, ctx.agentNames);
   if (mentionedAgentIds.length > 0) payload["mentionedAgentIds"] = mentionedAgentIds;
+  const addresseeIds = deriveAddresseeIds(intent, mentionedAgentIds, ctx.agentNames);
+  if (addresseeIds.length > 0) payload["addresseeIds"] = addresseeIds;
+}
+
+/**
+ * Who a message is aimed at, in order of how deliberate the signal is: the
+ * author of the message it replies to, the people the intent names as its
+ * targets, then anyone mentioned in the text. Never the author, and only
+ * agents the run knows about.
+ */
+function deriveAddresseeIds(
+  intent: ActionIntent,
+  mentionedAgentIds: readonly string[],
+  agentNames: Record<string, string> | undefined,
+): string[] {
+  const known = agentNames ? new Set(Object.keys(agentNames)) : null;
+  const ordered = [intent.replyToActorId, ...intent.personTargets, ...mentionedAgentIds];
+  const out: string[] = [];
+  for (const id of ordered) {
+    if (!id || id === intent.actorId || out.includes(id)) continue;
+    if (known && !known.has(id)) continue;
+    out.push(id);
+  }
+  return out;
 }
 
 function deriveSalience(intent: ActionIntent, actionEmotions: ActionEmotions): EmotionalSalience {

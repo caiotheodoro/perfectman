@@ -179,6 +179,49 @@ describe("relational accretion through the real resolver", () => {
     expect(reactionPayload["personTargets"], "a reaction must carry its personTargets so it registers").toEqual([ALICE]);
   });
 
+  it("records who a message is aimed at, most deliberate signal first, never the author", async () => {
+    const reply = await resolver.resolve(
+      makeIntent({
+        actorId: BRUNO,
+        intentType: "reply_to_message",
+        personTargets: [ALICE],
+        visibleContent: "fair point, Alice, and thanks Bruno",
+        replyToEventId: "evt_prior",
+        replyToActorId: ALICE,
+      }),
+      ctxFor(makeIntent({ actorId: BRUNO, intentType: "reply_to_message" })),
+    );
+    expect(reply.committedEvents[0]!.payload["addresseeIds"], "the reply target and the mention are the same person, listed once").toEqual([ALICE]);
+
+    const pointed = await resolver.resolve(
+      makeIntent({ actorId: ALICE, personTargets: [BRUNO], visibleContent: "what do you think?" }),
+      ctxFor(makeIntent({ actorId: ALICE })),
+    );
+    expect(pointed.committedEvents[0]!.payload["addresseeIds"], "a directed message addresses its target even when the text names nobody").toEqual([BRUNO]);
+
+    const selfNamed = await resolver.resolve(
+      makeIntent({ actorId: ALICE, visibleContent: "Alice here, hello room" }),
+      ctxFor(makeIntent({ actorId: ALICE })),
+    );
+    expect(selfNamed.committedEvents[0]!.payload["addresseeIds"], "naming yourself addresses nobody").toBeUndefined();
+  });
+
+  it("drops an addressee the run does not know", async () => {
+    const result = await resolver.resolve(
+      makeIntent({
+        actorId: ALICE,
+        intentType: "reply_to_message",
+        personTargets: [BRUNO],
+        visibleContent: "psst",
+        replyToEventId: "evt_prior",
+        replyToActorId: "agent_ghost",
+      }),
+      ctxFor(makeIntent({ actorId: ALICE, intentType: "reply_to_message" })),
+    );
+    expect(result.outcome).toBe("committed");
+    expect(result.committedEvents[0]!.payload["addresseeIds"]).toEqual([BRUNO]);
+  });
+
   it("parses mentions by exact display name and case-insensitive @handle, with no match for unknown names", async () => {
     const mentionMessage = await resolver.resolve(
       makeIntent({ visibleContent: "ping @BRUNO and Zed" }),

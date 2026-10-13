@@ -3,6 +3,8 @@ name: The elevator at midnight
 seed: 7
 maxPulses: 24
 storyClock: { start: "00:10", minutesPerPulse: 4 }
+setting: elevator
+rooms: [stairwell, lobby]
 language: en
 settings:
   pulseIntervalMs: 3000

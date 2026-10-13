@@ -32,7 +32,7 @@ function isChannelType(value: EventPayloadValue | undefined): value is ChannelTy
 
 export type PayloadDisplayFields = Pick<
   EventVisibilityData,
-  "content" | "channelName" | "emoji" | "targetEventId"
+  "content" | "channelName" | "emoji" | "targetEventId" | "replyToEventId" | "replyToActorId" | "addresseeIds" | "mentionedAgentIds"
 >;
 
 /**
@@ -47,10 +47,18 @@ export function payloadDisplayFields(payload: EventPayload): PayloadDisplayField
   const channelName = payloadString(payload, "channelName");
   const emoji = payloadString(payload, "emoji");
   const targetEventId = payloadString(payload, "targetEventId");
+  const replyToEventId = payloadString(payload, "replyToEventId");
+  const replyToActorId = payloadString(payload, "replyToActorId");
+  const addresseeIds = payloadStringArray(payload, "addresseeIds");
+  const mentionedAgentIds = payloadStringArray(payload, "mentionedAgentIds");
   return {
     ...(content ? { content } : {}),
     ...(channelName ? { channelName } : {}),
     ...(emoji ? { emoji } : {}),
     ...(targetEventId ? { targetEventId } : {}),
+    ...(replyToEventId ? { replyToEventId } : {}),
+    ...(replyToActorId ? { replyToActorId } : {}),
+    ...(addresseeIds.length > 0 ? { addresseeIds } : {}),
+    ...(mentionedAgentIds.length > 0 ? { mentionedAgentIds } : {}),
   };
 }

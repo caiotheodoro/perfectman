@@ -1,4 +1,5 @@
 import { isValidStoryClockStart, type StoryClockConfig } from "../simulation/story-clock.js";
+import { isSceneProp, isSceneSetting, MAX_SCENE_PROPS, MAX_SCENE_ROOMS, SCENE_SETTINGS, type SceneLook } from "@perfectman/shared";
 import type { ScenarioContextBlock as ParsedScenarioContextBlock, AgentObjective as ParsedAgentObjective } from "@perfectman/shared";
 import { readFile } from "node:fs/promises";
 import { existsSync, mkdirSync } from "node:fs";
@@ -79,6 +80,29 @@ import {
   StdoutDeliveryGateway,
 } from "../delivery/index.js";
 
+function parseSceneLook(root: Record<string, unknown>): SceneLook | undefined {
+  const look: SceneLook = {};
+  if (root["setting"] !== undefined) {
+    if (!isSceneSetting(root["setting"])) throw new Error(`setting must be one of ${SCENE_SETTINGS.join(", ")}.`);
+    look.setting = root["setting"];
+  }
+  if (root["props"] !== undefined) {
+    const props = root["props"];
+    if (!Array.isArray(props) || !props.every(isSceneProp) || props.length > MAX_SCENE_PROPS) {
+      throw new Error(`props must be a list of at most ${MAX_SCENE_PROPS} lowercase names.`);
+    }
+    look.props = props;
+  }
+  if (root["rooms"] !== undefined) {
+    const rooms = root["rooms"];
+    if (!Array.isArray(rooms) || !rooms.every(isSceneSetting) || rooms.length > MAX_SCENE_ROOMS) {
+      throw new Error(`rooms must be a list of at most ${MAX_SCENE_ROOMS} of ${SCENE_SETTINGS.join(", ")}.`);
+    }
+    look.rooms = rooms;
+  }
+  return Object.keys(look).length > 0 ? look : undefined;
+}
+
 function parseStoryClock(value: unknown): StoryClockConfig | undefined {
   if (value === undefined) return undefined;
   const record = asRecord(value, "storyClock");
@@ -111,6 +135,8 @@ export type SimulationAppConfig = {
   goalLayer?: GoalLayerConfig;
   /** Optional scene clock shown to the characters; presentation only. */
   storyClock?: StoryClockConfig;
+  /** Optional place, props and side rooms the viewer draws; presentation only. */
+  look?: SceneLook;
   /** If set, a synthetic host message is injected into the default channel before pulse 0. */
   hostStartingMessage?: string;
 };
@@ -142,8 +168,21 @@ export type DeliveryGatewayConfig =
 export type GatewayRuntimeMetadata = {
   simulationId: string;
   simulationName: string;
-  agents: Record<string, { name: string; archetype: string }>;
+  agents: Record<
+    string,
+    {
+      name: string;
+      archetype: string;
+      /** How the person writes and how much, for lettering and posture; absent when the persona does not say. */
+      writingStyle?: string;
+      language?: string;
+      messageLength?: PersonaPromptProfile["messageLength"];
+    }
+  >;
   channels: Record<string, { name: string }>;
+  /** Scene clock and look, so a replay can light and draw the place without the config. */
+  storyClock?: StoryClockConfig;
+  look?: SceneLook;
 };
 
 export type InitialChannelConfig = {
@@ -455,6 +494,7 @@ export function parseSimulationConfig(
             "goalLayer",
           ),
     storyClock: parseStoryClock(root["storyClock"]),
+    look: parseSceneLook(root),
   };
 
   validateCrossReferences(config, options.allowNoGateways === true);
@@ -722,6 +762,9 @@ function buildGatewayRuntimeMetadata(
     agents[agent.id] = {
       name: agent.persona.name,
       archetype: agent.persona.archetype,
+      ...(agent.persona.writingStyle ? { writingStyle: agent.persona.writingStyle } : {}),
+      ...(agent.promptProfile.language ? { language: agent.promptProfile.language } : {}),
+      ...(agent.promptProfile.messageLength ? { messageLength: agent.promptProfile.messageLength } : {}),
     };
   }
   const channels: GatewayRuntimeMetadata["channels"] = {};
@@ -733,6 +776,8 @@ function buildGatewayRuntimeMetadata(
     simulationName: config.simulation.name,
     agents,
     channels,
+    ...(config.storyClock ? { storyClock: config.storyClock } : {}),
+    ...(config.look ? { look: config.look } : {}),
   };
 }
 

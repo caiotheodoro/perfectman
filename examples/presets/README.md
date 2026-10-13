@@ -41,4 +41,5 @@ a dinner, a sale. Same compiler, lower temperature.
 **`building-aurora` / `cat-on-the-roof`** and **`elevator-four` / `elevator-at-midnight`**
 are short-chat scenes: every persona sets `presence.messageLength` and each scene
 sets a `storyClock`, so the cast writes chat-sized messages and refers to the hour.
+They also name where they happen with `setting:` (rooftop, stairwell, elevator, kitchen, living, lobby, street, office), optional `props:` and side `rooms:`; the viewer draws from these and the simulation never reads them.
 Scored with the rubric in `docs/eval/roleplay-rubric/`.

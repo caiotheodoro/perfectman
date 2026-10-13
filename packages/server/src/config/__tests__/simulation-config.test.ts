@@ -341,7 +341,7 @@ describe("simulation config", () => {
       expect(meta).toEqual({
         simulationId: "sim_config_test",
         simulationName: "Config Test",
-        agents: { ana: { name: "Ana", archetype: "observer" } },
+        agents: { ana: { name: "Ana", archetype: "observer", writingStyle: "brief and careful", language: "pt-BR" } },
         channels: { general: { name: "general" } },
       });
     } finally {
@@ -364,10 +364,10 @@ describe("simulation config", () => {
     try {
       const meta = (handle.gateways["mock"] as MockDeliveryGateway).runtimeMetadata;
       expect(meta?.agents).toEqual({
-        ana: { name: "Ana", archetype: "observer" },
-        bruno: { name: "Bruno", archetype: "observer" },
-        carla: { name: "Carla", archetype: "provocateur" },
-        diego: { name: "Diego", archetype: "strategist" },
+        ana: { name: "Ana", archetype: "observer", writingStyle: "brief and careful", language: "pt-BR" },
+        bruno: { name: "Bruno", archetype: "observer", writingStyle: "brief and careful", language: "pt-BR" },
+        carla: { name: "Carla", archetype: "provocateur", writingStyle: "brief and careful", language: "pt-BR" },
+        diego: { name: "Diego", archetype: "strategist", writingStyle: "brief and careful", language: "pt-BR" },
       });
       expect(meta?.channels).toEqual({ general: { name: "general" } });
       expect(meta?.simulationId).toBe("sim_config_test");
