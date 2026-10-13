@@ -3,7 +3,7 @@ import type { CompileResponse, StartRunRequest, UploadedFile } from "@perfectman
 import { ApiRequestError, compile, startRun, stopRun } from "./api/client.js";
 import { useRunStream } from "./api/useRunStream.js";
 import type { StepId } from "./design/Shell.js";
-import type { Selection } from "./pick/PickStep.js";
+import type { Selection } from "./pick/selection.js";
 import { usePresets } from "./pick/usePresets.js";
 import { sceneTitleIn } from "./pick/preview.js";
 
@@ -13,8 +13,8 @@ const NOTHING: Selection = { presetId: null, files: [] };
 
 export function useWorkspaceFlow() {
   const [introDone, setIntroDone] = useState(() => readFlag(INTRO_SEEN));
-  const [step, setStep] = useState<StepId>("cast");
-  const [furthest, setFurthest] = useState<StepId>("cast");
+  const [step, setStep] = useState<StepId>("setup");
+  const [furthest, setFurthest] = useState<StepId>("setup");
 
   const { library, loading: presetsLoading, error: presetsError } = usePresets();
   const [cast, setCast] = useState<Selection>(NOTHING);
@@ -76,6 +76,14 @@ export function useWorkspaceFlow() {
     [library, cast.presetId],
   );
 
+  /** Pick the opening story the first time the library arrives, so a room is one key away. */
+  const [writing, setWriting] = useState(false);
+  useEffect(() => {
+    const first = library.scenes[0];
+    if (!introDone || writing || !first || scene.files.length > 0) return;
+    pickScene({ presetId: first.id, files: first.files });
+  }, [introDone, writing, library.scenes, scene.files.length, pickScene]);
+
   const advance = useCallback((to: StepId) => {
     setStep(to);
     setFurthest((far) => (order(to) > order(far) ? to : far));
@@ -126,7 +134,7 @@ export function useWorkspaceFlow() {
     compiling, currentCompilation, sceneTitle, activeRun, changedRunInputs, runPlan,
     runId, setRunId, setRunPlan, failure, setFailure, castChange,
     setCastChange, starting, cancelling, stream, pickScene, advance,
-    run, stop, setScene,
+    run, stop, setScene, writing, setWriting,
     finishIntro: () => { writeFlag(INTRO_SEEN); setIntroDone(true); },
   };
 }
@@ -138,7 +146,7 @@ function toInputs(personas: UploadedFile[], scene: UploadedFile[]) {
 }
 
 function order(step: StepId): number {
-  return ["cast", "scene", "run"].indexOf(step);
+  return ["setup", "run"].indexOf(step);
 }
 
 function readFlag(key: string): boolean {

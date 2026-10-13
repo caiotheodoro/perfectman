@@ -9,14 +9,21 @@ export type CharacterDraft = { name: string; role: keyof typeof ROLES; goal: str
 export type RoomDraft = { title: string; situation: string; people: CharacterDraft[] };
 export type RoomFiles = { personas: UploadedFile[]; scenario: UploadedFile };
 export const INITIAL_ROOM: RoomDraft = {
-  title: "The last free evening",
-  situation: "Three friends have one evening together before one of them moves away. They need to agree on a plan, but each wants something different.",
+  title: "The awkward evening",
+  situation: "Three friends are stuck in the same room after something awkward happened. Nobody wants to be the first to bring it up.",
   people: [
-    { name: "Alex", role: "connector", goal: "Keep everyone together for one more evening." },
-    { name: "Sam", role: "skeptic", goal: "Have an honest conversation before it is too late." },
-    { name: "Robin", role: "performer", goal: "Make tonight memorable without admitting how much the move hurts." },
+    { name: "Alex", role: "connector", goal: "Keep the peace without anyone noticing how hard it is." },
+    { name: "Sam", role: "skeptic", goal: "Get a straight answer out of somebody." },
+    { name: "Robin", role: "performer", goal: "Be the center of attention without admitting why they need it." },
   ],
 };
+
+/** A one-line idea from the landing page becomes the situation; everything else keeps its starting point. */
+export function draftFromSentence(sentence: string): RoomDraft {
+  const idea = sentence.replace(/\s+/g, " ").trim().replace(/[.!?]+$/, "");
+  if (!idea) return INITIAL_ROOM;
+  return { ...INITIAL_ROOM, title: idea.length > 60 ? `${idea.slice(0, 59)}…` : idea, situation: `${idea}. Everyone is in the same room, and each of them wants something different out of it.` };
+}
 // Single-line prose keeps form input from accidentally becoming a Markdown section.
 const prose = (text: string) => text.replace(/\s+/g, " ").trim();
 const header = (fields: Record<string, unknown>) => `---\n${Object.entries(fields).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join("\n")}\n---\n`;

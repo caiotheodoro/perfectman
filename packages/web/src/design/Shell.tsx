@@ -1,11 +1,10 @@
-/** The same named steps follow the user from choosing a cast to watching it. */
+/** Two named steps follow the user from setting a room up to watching it. */
 import { useEffect, useRef } from "react";
-export type StepId = "cast" | "scene" | "run";
+export type StepId = "setup" | "run";
 
 const STEPS: Array<{ id: StepId; label: string }> = [
-  { id: "cast", label: "Cast" },
-  { id: "scene", label: "Scene" },
-  { id: "run", label: "Run" },
+  { id: "setup", label: "Set up" },
+  { id: "run", label: "Watch" },
 ];
 
 /** An original, small creature in the shape of a P. */
