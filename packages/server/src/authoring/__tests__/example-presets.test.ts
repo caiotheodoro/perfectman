@@ -55,7 +55,7 @@ describe("example presets compile when a scene is paired with its named cast", (
 
     expect(result.config?.look).toEqual({ setting: "rooftop", props: ["cat", "bowl", "notice-board", "water-tank"], rooms: ["stairwell"] });
     expect(result.config?.storyClock).toEqual({ start: "23:40", minutesPerPulse: 4 });
-    for (const agent of result.config!.agents) expect(agent.promptProfile.messageLength, agent.id).toBeDefined();
+    for (const agent of result.config!.agents) expect(agent.promptProfile.messageLength, agent.id).toMatch(/^(short|medium|long|rapid_fire)$/);
   });
 
   it("compiles every scene against the cast it names, with no errors", async () => {
