@@ -42,4 +42,5 @@ a dinner, a sale. Same compiler, lower temperature.
 are short-chat scenes: every persona sets `presence.messageLength` and each scene
 sets a `storyClock`, so the cast writes chat-sized messages and refers to the hour.
 They also name where they happen with `setting:` (rooftop, stairwell, elevator, kitchen, living, lobby, street, office), optional `props:` and side `rooms:`; the viewer draws from these and the simulation never reads them.
+**`residencial-aurora` / `gato-no-telhado`** is the same cat scene written natively in pt-BR (not a translation of the lines: new voices for the same four people, same secrets and resources).
 Scored with the rubric in `docs/eval/roleplay-rubric/`.
