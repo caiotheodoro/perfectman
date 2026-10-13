@@ -7,7 +7,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { type DirectorReplay, type PaceName } from "@perfectman/shared";
-import { Babble } from "./babble.js";
+import { FilmAudio } from "./film-audio.js";
 import { buildFilm, formatDuration, type Film } from "./film.js";
 import { FilmClock, type FilmSpeed } from "./FilmClock.js";
 import { canvasMeasurer, loadLettering } from "./fonts.js";
@@ -22,13 +22,14 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
   const [omniscient, setOmniscient] = useState(true);
   const [speed, setSpeed] = useState<FilmSpeed>(1);
   const [voices, setVoices] = useState(false);
+  const [sound, setSound] = useState(false);
   const [film, setFilm] = useState<Film | null>(null);
   const [view, setView] = useState({ t: 0, playing: false });
   const host = useRef<HTMLDivElement>(null);
   const stage = useRef<StageView | null>(null);
   const clock = useRef(new FilmClock(1));
   const lens = useRef(true);
-  const babble = useMemo(() => new Babble((id) => replay.agentIds.indexOf(id)), [replay]);
+  const audio = useMemo(() => new FilmAudio((id) => replay.agentIds.indexOf(id)), [replay]);
 
   useEffect(() => {
     let alive = true;
@@ -56,16 +57,16 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
       last = now;
       const c = clock.current, before = c.t;
       c.tick(dt);
-      if (babble.on) babble.play(film.T.cues, before, c.t);
-      stage.current?.render(c.t, { omniscient: lens.current });
+      const S = stage.current?.render(c.t, { omniscient: lens.current });
+      if (S) audio.frame(film.T, S, before, c.t, Math.min(dt, 0.1), c.playing);
       if (now - shown > 120) { shown = now; setView({ t: c.t, playing: c.playing }); }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [film, babble]);
+  }, [film, audio]);
 
-  useEffect(() => () => babble.disable(), [babble]);
+  useEffect(() => () => audio.destroy(), [audio]);
 
   const seek = useCallback((t: number) => {
     clock.current.seek(t);
@@ -117,8 +118,12 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
           <button type="button" aria-pressed={!omniscient} className="film__opt" onClick={() => { lens.current = false; setOmniscient(false); }}>Fiction only</button>
         </div>
         <button
+          type="button" aria-pressed={sound} className="film__opt"
+          onClick={() => { audio.setSound(!sound); setSound(!sound); }}
+        >Sound</button>
+        <button
           type="button" aria-pressed={voices} className="film__opt"
-          onClick={() => { if (voices) babble.disable(); else babble.enable(); setVoices(!voices); }}
+          onClick={() => { audio.setVoices(!voices); setVoices(!voices); }}
         >Voices</button>
       </div>
       {film ? <TimelineStrip T={film.T} replay={replay} t={view.t} onSeek={seek} /> : null}

@@ -8,16 +8,13 @@ import { babblePitch, type Cue } from "@perfectman/shared";
 type Ctx = AudioContext;
 
 export class Babble {
-  private ctx: Ctx | null = null;
   on = false;
 
-  constructor(private readonly indexOf: (actor: string) => number) {}
+  /** `context` is the film's one shared audio context, created on the first user gesture. */
+  constructor(private readonly indexOf: (actor: string) => number, private readonly context: () => Ctx | null) {}
 
   enable(): void {
-    const Ctor = typeof window !== "undefined" ? (window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext) : undefined;
-    if (!Ctor) return;
-    this.ctx ??= new Ctor();
-    void this.ctx.resume();
+    if (!this.context()) return;
     this.on = true;
   }
 
@@ -35,7 +32,7 @@ export class Babble {
   }
 
   private blip(c: Cue): void {
-    const ctx = this.ctx;
+    const ctx = this.context();
     if (!ctx) return;
     const pitch = babblePitch(this.indexOf(c.actor));
     let t = ctx.currentTime + 0.02;
