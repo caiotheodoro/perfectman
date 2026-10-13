@@ -182,3 +182,17 @@ node scripts/check-story-viewer.mjs out/preview.hyperframes
 It checks playback, channel browsing/resume, sound, deterministic seeking, narrow
 layout, and reduced motion, and saves screenshots in the project. It uses local
 Chrome; set `CHROME_PATH` if Chrome is installed outside the default macOS path.
+
+## The landing film
+
+The film on the landing page is a hand-written screenplay, not a run. It lives in
+`packages/shared/src/demo/` (`surprise-party.ts`), and the page plays it live with
+the same director as a real run. To render it as an MP4 for sharing:
+
+```sh
+node scripts/demo-replay.mjs out/demo/replay.json
+pnpm video --film --pace fast --input out/demo/replay.json --out out/demo/party.mp4
+```
+
+No model is called. To make a different film, write another `Script` and pass it to
+`scriptToReplay`.

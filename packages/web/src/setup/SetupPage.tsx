@@ -20,9 +20,12 @@ import { StoryCard } from "./StoryCard.js";
 import { StoryWriter } from "./StoryWriter.js";
 import type { RoomDraft, RoomFiles } from "./room-draft.js";
 
+/** Stories shown before "Show all": enough to choose from without a wall of cards. */
+const FIRST_STORIES = 4;
+
 export function SetupPage({
-  visible, library, cast, scene, compiled, compiling, draft, writing, failure, provider, starting,
-  onPickPreset, onWrite, onStopWriting, onWritten, onFiles, onProvider, onStart,
+  visible, library, cast, scene, compiled, compiling, draft, writing, failure, provider, starting, runActive,
+  onReturnToRun, onPickPreset, onWrite, onStopWriting, onWritten, onFiles, onProvider, onStart,
 }: {
   visible: boolean;
   library: PresetLibrary;
@@ -38,6 +41,9 @@ export function SetupPage({
   failure: { message: string; hint?: string } | null;
   provider: ProviderValue;
   starting: boolean;
+  /** A run is still going; a new one has to wait for it. */
+  runActive: boolean;
+  onReturnToRun: () => void;
   onPickPreset: (preset: Preset) => void;
   onWrite: () => void;
   onStopWriting: () => void;
@@ -46,16 +52,17 @@ export function SetupPage({
   onProvider: (next: ProviderValue) => void;
   onStart: () => void;
 }): JSX.Element {
-  const server = useServerBusy(visible && !starting);
-  const [editing, setEditing] = useState(false);
+  const server = useServerBusy(visible && !starting && !runActive);
+  const [showAll, setShowAll] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const picker = useRef<HTMLInputElement>(null);
   const people = useMemo(() => charactersIn(cast.files), [cast.files]);
   const ids = people.map((p) => p.id);
   const secrets = useMemo(() => new Map(cast.files.map((f) => [charactersIn([f])[0]?.id, secretIn(f)])), [cast.files]);
+  const sceneNames = useMemo(() => new Set(scene.files.map((f) => f.filename)), [scene.files]);
   const story = library.scenes.find((s) => s.id === scene.presetId);
   const ok = Boolean(compiled?.ok);
-  const ready = ok && isProviderReady(provider) && !server.busy && !starting;
+  const ready = ok && isProviderReady(provider) && !server.busy && !starting && !runActive;
 
   async function absorb(list: FileList | null): Promise<void> {
     if (!list || list.length === 0) return;
@@ -83,20 +90,27 @@ export function SetupPage({
 
       <section className="setup__block" aria-labelledby="setup-story">
         <h3 id="setup-story">The story</h3>
-        <div className="stories">
-          {library.scenes.map((preset) => (
-            <StoryCard
-              key={preset.id} preset={preset} cast={library.casts.find((c) => c.id === preset.cast)}
-              chosen={!writing && scene.presetId === preset.id} onPick={() => onPickPreset(preset)}
-            />
-          ))}
-          <button type="button" className={`story story--write${writing ? " story--on" : ""}`} aria-pressed={writing} onClick={writing ? onStopWriting : onWrite}>
-            <span className="story__copy">
-              <span className="story__title">Write your own</span>
-              <span className="story__blurb">A situation, a few people, and what each of them is hiding.</span>
-            </span>
-          </button>
-        </div>
+        {writing ? (
+          <button type="button" className="btn--bare setup__back" onClick={onStopWriting}>← Pick a ready-made story instead</button>
+        ) : (
+          <div className="stories">
+            {library.scenes.filter((s, i) => showAll || i < FIRST_STORIES || s.id === scene.presetId).map((preset) => (
+              <StoryCard
+                key={preset.id} preset={preset} cast={library.casts.find((c) => c.id === preset.cast)}
+                chosen={scene.presetId === preset.id} onPick={() => onPickPreset(preset)}
+              />
+            ))}
+            <button type="button" className="story story--write" onClick={onWrite}>
+              <span className="story__copy">
+                <span className="story__title">Write your own</span>
+                <span className="story__blurb">A situation, a few people, and what each of them is hiding.</span>
+              </span>
+            </button>
+            {!showAll && library.scenes.length > FIRST_STORIES ? (
+              <button type="button" className="btn--bare setup__more" onClick={() => setShowAll(true)}>Show all {library.scenes.length} stories</button>
+            ) : null}
+          </div>
+        )}
         {writing ? <StoryWriter initial={draft} onChange={onWritten} /> : null}
       </section>
 
@@ -117,15 +131,13 @@ export function SetupPage({
           </ul>
         )}
         {story ? <p className="u-dim setup__note">{story.title} comes with this cast.</p> : null}
-        <details className="setup__files" onToggle={(e) => setEditing((e.currentTarget as HTMLDetailsElement).open)}>
+        <details className="setup__files">
           <summary>Edit the files yourself</summary>
-          {editing ? (
-            <MarkdownEditor
-              files={[...cast.files, ...scene.files]}
-              onChange={(all) => onFiles(all.filter((f) => !/\.scenario\.md$/i.test(f.filename)), all.filter((f) => /\.scenario\.md$/i.test(f.filename)))}
-              onClose={() => setEditing(false)}
-            />
-          ) : null}
+          <MarkdownEditor
+            files={[...cast.files, ...scene.files]}
+            onChange={(all) => { const isScene = (f: UploadedFile): boolean => /\.scenario\.md$/i.test(f.filename) || sceneNames.has(f.filename); onFiles(all.filter((f) => !isScene(f)), all.filter(isScene)); }}
+            onClose={() => undefined}
+          />
           <button type="button" className="btn--bare" onClick={() => picker.current?.click()}>Upload files</button>
           <input ref={picker} type="file" accept=".md,text/markdown" multiple hidden onChange={(e) => void absorb(e.target.files)} />
           {uploadError ? <p className="alert-inline" role="alert">{uploadError}</p> : null}
@@ -134,6 +146,9 @@ export function SetupPage({
 
       <section className="setup__block" aria-labelledby="setup-brain">
         <h3 id="setup-brain">The model</h3>
+        {runActive ? (
+          <p className="u-dim">Your current run is still going. <button type="button" className="btn--bare" onClick={onReturnToRun}>Return to the run</button> to finish or stop it first.</p>
+        ) : null}
         {failure ? (
           <div className="alert" role="alert">
             <p>The last run stopped: {failure.message}{failure.hint ? ` ${failure.hint}` : ""} Paste the key again and start over.</p>

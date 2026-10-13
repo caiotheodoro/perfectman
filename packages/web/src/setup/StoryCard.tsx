@@ -17,11 +17,13 @@ export function StoryCard({ preset, cast, chosen, onPick }: {
   const ids = people.map((p) => p.id);
   return (
     <button type="button" className={`story${chosen ? " story--on" : ""}`} aria-pressed={chosen} onClick={onPick}>
-      <span className="story__art" aria-hidden="true" dangerouslySetInnerHTML={{ __html: art }} />
-      <span className="story__cast" aria-hidden="true">
-        {people.slice(0, 5).map((p) => (
-          <Figure key={p.id} index={chipIndexFor(p.id, ids)} name={p.name} face="neutral" energy={0.3} speaking={false} attentive />
-        ))}
+      <span className="story__stage" aria-hidden="true">
+        <span className="story__art" dangerouslySetInnerHTML={{ __html: art }} />
+        <span className="story__cast">
+          {people.slice(0, 5).map((p) => (
+            <Figure key={p.id} index={chipIndexFor(p.id, ids)} name={p.name} face="neutral" energy={0.3} speaking={false} attentive />
+          ))}
+        </span>
       </span>
       <span className="story__copy">
         <span className="story__title">{preset.title}</span>

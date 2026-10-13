@@ -3,7 +3,7 @@
 .landing {
   max-width: var(--shell); margin: 0 auto; padding: 36px 32px 56px;
   display: grid; gap: 28px 56px; align-items: start;
-  grid-template-columns: minmax(300px, 4fr) minmax(0, 8fr);
+  grid-template-columns: minmax(300px, 3fr) minmax(0, 8fr);
   grid-template-areas: "head film" "start film";
 }
 .landing__head { grid-area: head; display: grid; gap: 18px; align-content: end; padding-top: 12px; }
@@ -17,8 +17,7 @@
 .landing__start { grid-area: start; display: grid; gap: 14px; align-content: start; }
 .landing__start form { display: grid; gap: 8px; }
 .landing__start label { font-weight: 650; font-size: 14px; }
-.landing__row { display: flex; gap: 8px; }
-.landing__row input { flex: 1; }
+.landing__row { display: grid; gap: 8px; }
 .landing__row .btn { white-space: nowrap; }
 .landing__starters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 14px; max-width: none; }
 .chip {

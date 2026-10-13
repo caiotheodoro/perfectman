@@ -84,7 +84,7 @@ export function FilmPlayer({ replay, title, variant = "full", autoplay = false, 
   useEffect(() => {
     if (!film) return;
     let raf = 0, last: number | null = null, shown = 0;
-    const loop = (now: number): void => {
+    const frame = (now: number): void => {
       const dt = last === null ? 0 : (now - last) / 1000;
       last = now;
       const c = clock.current, before = c.t;
@@ -99,9 +99,9 @@ export function FilmPlayer({ replay, title, variant = "full", autoplay = false, 
         if (key !== lastCaption.current) { lastCaption.current = key; setCaption(lens.current || cap?.kind !== "thought" ? cap : null); }
       }
       if (now - shown > 120) { shown = now; setView({ t: c.t, playing: c.playing }); }
-      raf = requestAnimationFrame(loop);
+      raf = requestAnimationFrame(frame);
     };
-    raf = requestAnimationFrame(loop);
+    raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
   }, [film, audio, replay, loop]);
 

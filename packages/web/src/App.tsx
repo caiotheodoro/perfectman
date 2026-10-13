@@ -20,7 +20,7 @@ export function App(): JSX.Element {
   const {
     introDone, setIntroDone, step, setStep, furthest, library,
     presetsLoading, presetsError, cast, setCast, scene, compiled,
-    compiling, sceneTitle, runPlan,
+    compiling, sceneTitle, runPlan, activeRun,
     runId, setRunId, setRunPlan, failure, setFailure,
     setCastChange, starting, cancelling, stream, pickScene, advance,
     run, stop, setScene, writing, setWriting, finishIntro,
@@ -91,7 +91,7 @@ export function App(): JSX.Element {
           visible={introDone && step === "setup"}
           library={library} cast={cast} scene={scene}
           compiled={sceneCompiled} compiling={compiling}
-          draft={draft} writing={writing} failure={setupFailure} provider={provider} starting={starting}
+          draft={draft} writing={writing} failure={setupFailure} provider={provider} starting={starting} runActive={activeRun} onReturnToRun={() => setStep("run")}
           onPickPreset={(preset) => { setWriting(false); setWriteError(null); pickScene({ presetId: preset.id, files: preset.files }); }}
           onWrite={() => setWriting(true)}
           onStopWriting={() => { setWriting(false); setWriteError(null); }}

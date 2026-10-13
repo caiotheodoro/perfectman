@@ -46,45 +46,32 @@ try {
     await page.evaluate(() => { localStorage.clear(); });
     await page.reload({ waitUntil: 'networkidle0' });
     await page.evaluate(() => document.fonts.ready);
-    await shot(`demo-${width}`);
-    for (const [index, beat] of [[0, 1], [1, 3], [2, 6]]) {
-      await page.click(`.intro__guide button:nth-child(${index + 1})`);
-      assert.equal(await page.$eval('.intro__position', el => el.textContent.trim()), `${beat} / 6`);
-      if (width <= 640) await page.waitForFunction(() => {
-        const line = document.querySelector('.pages__page:not([aria-hidden]) .stage__dialogue')?.getBoundingClientRect();
-        const controls = document.querySelector('.intro__controls')?.getBoundingClientRect();
-        return line && controls && line.top >= 0 && line.bottom < controls.top;
-      });
-    }
-    await click('Watch the demo');
-    await click('Pause');
-    await click('Create your own');
-    await shot(`characters-${width}`);
-    await fill('.room-builder fieldset:nth-child(2) input', 'Alex');
-    await click('Set the situation');
-    assert.match(await page.$eval('[role="alert"]', el => el.textContent), /different name/);
-    await fill('.room-builder fieldset:nth-child(2) input', 'Sam "S"');
-    await click('Add a character');
-    await page.click('[aria-label="Remove character 4"]');
-    await click('Set the situation');
-    await fill('.room-builder textarea', '');
-    await click('Back to characters');
-    await click('Set the situation');
-    await fill('.room-builder input', 'The "last" evening');
-    await fill('.room-builder textarea', 'Friends have one last evening together. They disagree on what to do.');
-    await shot(`situation-${width}`);
-    await click('Review my simulation');
-    await page.waitForFunction(() => [...document.querySelectorAll('button')].some(b => b.textContent.trim() === 'Ready' && !b.disabled));
-    assert.equal(await page.$eval('.step__head h2', el => el.textContent), 'The "last" evening');
-    assert.equal(await page.$eval('.pick-library', el => el.open), false, 'Custom review should keep alternative presets collapsed');
+    await shot(`landing-${width}`);
+    await click('Start a room');
+    await page.waitForSelector('.story--on');
+    await shot(`setup-${width}`);
+    assert.equal(await page.$eval('.setup__go', el => el.disabled), true, 'No run can start before a key is pasted');
+    await page.click('.story--write');
+    await page.waitForSelector('.writer');
+    await shot(`writer-${width}`);
+    await fill('.writer__people fieldset:nth-child(2) input', 'Alex');
+    await page.waitForFunction(() => /different name/.test(document.querySelector('.setup__status')?.textContent ?? ''));
+    await fill('.writer__people fieldset:nth-child(2) input', 'Sam "S"');
+    await click('Add a person');
+    await page.waitForSelector('[aria-label="Remove person 4"]'); await page.click('[aria-label="Remove person 4"]');
+    await fill('.writer > label:nth-of-type(2) input', 'The "last" evening');
+    await fill('.writer > label:first-child textarea', 'Friends have one last evening together. They disagree on what to do.');
+    await page.waitForFunction(() => /3 people/.test(document.querySelector('.setup__status')?.textContent ?? ''));
+    assert.match(await page.$eval('.setup__status', el => el.textContent), /Your story/);
     assert.deepEqual(compiled.at(-1).diagnostics.filter(d => d.level === 'error'), []);
     assert.deepEqual(compiled.at(-1).summary.agents.map(a => a.displayName), ['Alex', 'Sam "S"', 'Robin']);
     assert.ok(Object.values(compiled.at(-1).summary.languages).every(value => value.language === 'en'));
-    assert.match(JSON.stringify(compiled.at(-1).config), /Have an honest conversation/);
+    assert.match(JSON.stringify(compiled.at(-1).config), /Get a straight answer/);
     await shot(`review-${width}`);
-    await click('Ready');
     await page.waitForSelector('input[type="password"]');
-    assert.equal(await page.$eval('.provider button[type="submit"]', el => el.disabled), true, 'No model request before an explicit key and Start');
+    assert.equal(await page.$eval('.setup__go', el => el.disabled), true, 'No model request before an explicit key and Start');
+    await page.type('input[type="password"]', 'fixture-key');
+    assert.equal(await page.$eval('.setup__go', el => el.disabled), false, 'A compiled story and a key are enough to start');
     await shot(`connect-${width}`);
   }
   const library = await (await fetch(`http://localhost:${port}/api/presets`)).json();
@@ -93,12 +80,13 @@ try {
     const response = await fetch(`http://localhost:${port}/api/compile`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ inputs: { kind: 'markdown', personas, scenario: scene.files[0] } }) });
     const result = await response.json();
     assert.equal(result.ok, true, JSON.stringify(result.diagnostics));
-    assert.ok(Object.values(result.summary.languages).every(value => value.language === 'en'), scene.id);
+    const language = scene.id === 'gato-no-telhado' ? 'pt-BR' : 'en';
+    assert.ok(Object.values(result.summary.languages).every(value => value.language === language), scene.id);
   }
   assert.deepEqual(starts, []);
   assert.deepEqual(errors, []);
-  await writeFile(join(evidence, 'checks.json'), JSON.stringify({ passed: true, widths: [1440, 390, 320], presetScenes: library.scenes.length, checks: ['interactive demo', 'editable cast and duplicate-name validation', 'back preserves draft', 'quoted names and titles', 'real custom-scene compilation', 'custom review', 'model key gate', 'English preset compilation', 'no horizontal overflow', 'no provider requests'], evidence: 'Built React app and real HTTP compiler in Chrome. Scripted demo; no live-model execution.' }, null, 2));
-  console.log(`PASS: onboarding and ${library.scenes.length} English preset scenes. Evidence: ${evidence}`);
+  await writeFile(join(evidence, 'checks.json'), JSON.stringify({ passed: true, widths: [1440, 390, 320], presetScenes: library.scenes.length, checks: ['landing film', 'one-page setup with a story already chosen', 'duplicate-name validation', 'quoted names and titles', 'real custom-scene compilation', 'model key gate', 'preset compilation per scene language', 'no horizontal overflow', 'no provider requests'], evidence: 'Built React app and real HTTP compiler in Chrome. Scripted landing film; no live-model execution.' }, null, 2));
+  console.log(`PASS: onboarding and ${library.scenes.length} preset scenes. Evidence: ${evidence}`);
 } catch (error) {
   await page.screenshot({ path: join(evidence, 'failure.png'), fullPage: true });
   console.error(await page.$eval('body', el => el.textContent));

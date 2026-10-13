@@ -37,8 +37,6 @@ function api(compileReplies: Promise<Response>[] = [], runReply?: Promise<Respon
 async function chooseScene(name = "A") {
   render(<App />);
   await act(async () => undefined);
-  fireEvent.click(screen.getByRole("button", { name: /Cast A/ }));
-  fireEvent.click(screen.getByRole("button", { name: "Choose a scene" }));
   fireEvent.click(screen.getByRole("button", { name: new RegExp(`Scene ${name}`) }));
 }
 
@@ -70,11 +68,10 @@ describe("App lifecycle wiring", () => {
     const requests = api([], pending.promise);
     await chooseScene();
     await checkScene();
-    fireEvent.click(screen.getByRole("button", { name: "Ready" }));
     fireEvent.change(screen.getByLabelText(/^API key/), { target: { value: "test-key" } });
     fireEvent.change(screen.getByLabelText(/^Extra request fields/), { target: { value: '{"thinking":{"type":"disabled"},"fixtureOption":true}' } });
-    fireEvent.click(screen.getByRole("button", { name: "Start the run" }));
-    expect(screen.queryByRole("button", { name: "Start the run" })).toBeNull();
+    fireEvent.click(screen.getByRole("button", { name: "Start the room" }));
+    expect(screen.getByRole("button", { name: "Cancel preparation" })).toBeTruthy();
     fireEvent.click(screen.getByRole("button", { name: "Cancel preparation" }));
     expect(screen.getByText("Cancelling as soon as the server answers…").textContent).toContain("Cancelling");
     expect(screen.getByRole("button", { name: "Stopping…" }).hasAttribute("disabled")).toBe(true);
@@ -93,18 +90,20 @@ describe("App lifecycle wiring", () => {
     const requests = api([Promise.resolve(Response.json(COMPILED)), older.promise, latest.promise]);
     await chooseScene();
     await checkScene();
-    expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(false);
-    fireEvent.click(screen.getByRole("button", { name: "Edit as markdown" }));
+    fireEvent.change(screen.getByLabelText(/^API key/), { target: { value: "k" } });
+    const start = () => screen.getByRole("button", { name: "Start the room" });
+    expect(start().hasAttribute("disabled")).toBe(false);
+    fireEvent.click(screen.getByRole("button", { name: "scene-A.md" }));
     const editor = screen.getByLabelText("Contents of scene-A.md");
     fireEvent.change(editor, { target: { value: "Older input" } });
-    expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(true);
+    expect(start().hasAttribute("disabled")).toBe(true);
     await checkScene();
     fireEvent.change(editor, { target: { value: "Latest input" } });
     await checkScene();
     await act(async () => { older.resolve(Response.json(COMPILED)); });
-    expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(true);
+    expect(start().hasAttribute("disabled")).toBe(true);
     await act(async () => { latest.resolve(Response.json(COMPILED)); });
-    expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(false);
+    expect(start().hasAttribute("disabled")).toBe(false);
     const last = requests.filter(({ url }) => url.endsWith("/api/compile")).at(-1);
     expect(JSON.parse(String(last?.init?.body)).inputs.scenario.text).toBe("Latest input");
   });
@@ -112,7 +111,6 @@ describe("App lifecycle wiring", () => {
   it("explains a scene's cast replacement and compiles the replacement cast", async () => {
     const requests = api();
     await chooseScene("B");
-    expect(screen.getByRole("status").textContent).toBe("This scene uses Cast B. Your cast has changed to match.");
     await checkScene();
     const compiled = requests.find(({ url }) => url.endsWith("/api/compile"));
     expect(JSON.parse(String(compiled?.init?.body)).inputs.personas).toEqual([persona("B")]);
