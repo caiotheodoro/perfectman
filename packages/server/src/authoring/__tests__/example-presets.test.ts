@@ -22,12 +22,15 @@ const LLM: LLMConfig = {
   retryCount: 0,
 };
 
+const PORTUGUESE_SCENES = new Set(["gato-no-telhado"]);
+
 describe("example presets compile when a scene is paired with its named cast", () => {
   it("loads the headline library and the polite control", async () => {
     const library = await loadPresets(PRESETS_ROOT);
     expect(library.casts.map((c) => c.id).sort()).toEqual([
       "building-aurora",
       "elevator-four",
+      "residencial-aurora",
       "studio-partners",
       "the-group",
     ]);
@@ -35,6 +38,7 @@ describe("example presets compile when a scene is paired with its named cast", (
       "cat-on-the-roof",
       "cinco-gorilas",
       "elevator-at-midnight",
+      "gato-no-telhado",
       "live-que-nao-cai",
       "o-print",
       "the-slice",
@@ -83,9 +87,10 @@ describe("example presets compile when a scene is paired with its named cast", (
       expect(errors, `${scene.id}: ${errors.map((e) => e.message).join("; ")}`).toEqual([]);
       expect(result.ok, `${scene.id} did not compile`).toBe(true);
       expect(result.config).not.toBeNull();
-      expect(scenarioFile!.text).toMatch(/^language: en$/m);
+      const language = PORTUGUESE_SCENES.has(scene.id) ? "pt-BR" : "en";
+      expect(scenarioFile!.text).toContain(`\nlanguage: ${language}\n`);
       expect(Object.values(result.summary!.languages).map(value => value.language))
-        .toEqual(cast!.files.map(() => "en"));
+        .toEqual(cast!.files.map(() => language));
     }
   });
 });
