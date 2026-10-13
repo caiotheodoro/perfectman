@@ -26,6 +26,40 @@ The command renders the saved events first, then the exact narrator recap and
 hidden shift. A summary cannot recover missing events. If its transcript is
 absent, the command fails with the path that is needed.
 
+## The film
+
+A stored run can also be drawn as a film: the same characters, standing in a
+place, acting with their bodies, with cartoon balloons that stay up until their
+words are read. This is the same stage the web app plays under **Watch a past
+run**, rendered to MP4.
+
+```sh
+pnpm video --film --input runs/<id>/replay.json --out out/cat.mp4
+pnpm video --film --input runs/<id>/replay.json --out out/cat-fast.mp4 --pace fast --pulses 8
+```
+
+| Flag | Meaning |
+|---|---|
+| `--pace relaxed\|normal\|fast` | How fast the viewer reads: 3.6, 4.6 or 6.0 words a second. A balloon stays up until its words are read. |
+| `--huddle push\|door\|wide` | How a private talk is staged: the camera pushes in (default), the pair walks through the door, or nothing moves. |
+| `--fiction-only` | Leaves the private thoughts out of the video entirely. |
+| `--pulses N` | Only the first N pulses, for a short preview. |
+| `--prepare-only` | Writes the project without rendering. |
+
+The input must be a stored `replay.json` (or a snapshot page that carries one):
+the film needs every pulse's recorded mood and social emotions, which an event
+list or a transcript does not have. The project directory holds `index.html`,
+`film.json` (messages, words, scenes and audio cues with their reasons) and
+the assets, so a render can be inspected or edited before it is encoded.
+
+How it is timed: each line takes `0.6 s + words / pace` to read, words land as
+they are spoken, a long line is split into pages that each last as long as
+their words take to read, and two balloons are never read at once. The music
+follows the room's recorded mood, a soft pop lands with each line, and a door
+sound marks a pair slipping away. Credits for the music hold for six seconds at
+the end. Scenes can name their place with `setting:`, `props:` and `rooms:` in
+the frontmatter; older runs are drawn on a rooftop.
+
 ## Inputs
 
 | File | What the video retains |

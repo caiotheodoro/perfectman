@@ -43,32 +43,35 @@ export class BalloonLayer {
     el.className = `watch-balloon watch-balloon--${b.kind}`;
     el.style.cssText = `width:${pg.W}px;height:${pg.H}px;display:none`;
     el.innerHTML = balloonShape(b.kind, pg.W, pg.H, tx, ty);
-    const pad = b.kind === "shout" ? "34px 46px" : b.kind === "thought" ? "22px 34px 30px" : "12px 20px";
+    const pad = b.kind === "shout" ? "34px 46px" : b.kind === "thought" ? "26px 34px 52px" : "12px 20px";
     const text = document.createElement("div");
     text.className = "watch-balloon__text";
     text.style.cssText = `font:${font.weight} ${font.size}px/${font.lineHeight} "${font.family}",system-ui,sans-serif;padding:${pad};color:${INK};${b.kind === "shout" ? "text-transform:uppercase;letter-spacing:.01em;" : ""}`;
     let k = 0;
     const lines = pg.lines.map((l) => {
       const cjk = CJK.test(l);
-      return `<div class="watch-balloon__line">${(cjk ? [...l] : l.split(" ").filter(Boolean)).map((w) => `<span class="w" data-i="${k++}">${esc(w)}</span>`).join(cjk ? "" : " ")}</div>`;
+      return `<div class="watch-balloon__line">${(cjk ? [...l] : l.split(" ").filter(Boolean)).map((w) => `<span class="w" data-i="${k++}" data-layout-allow-overlap>${esc(w)}</span>`).join(cjk ? "" : " ")}</div>`;
     });
     text.innerHTML = lines.join("");
     el.append(text);
     if (b.kind !== "thought") {
       const tag = document.createElement("span");
       tag.className = "watch-balloon__tag";
+      tag.setAttribute("data-layout-allow-overlap", "");
       tag.textContent = this.ctx.name(b.actor);
       tag.style.background = colorFor(this.ctx.index(b.actor));
       el.append(tag);
     } else {
       const chips = document.createElement("div");
       chips.className = "watch-balloon__chips";
-      chips.innerHTML = (b.drivers ?? []).slice(0, 2).map((d) => `<span>${esc(d)}</span>`).join("");
+      chips.setAttribute("data-layout-allow-overlap", "");
+      chips.innerHTML = (b.drivers ?? []).slice(0, 2).map((d) => `<span data-layout-allow-overlap>${esc(d.length > 28 ? `${d.slice(0, 27)}…` : d)}</span>`).join("");
       el.append(chips);
     }
     if (b.pages!.length > 1 && pageIndex < b.pages!.length - 1) {
       const more = document.createElement("span");
       more.className = "watch-balloon__more";
+      more.setAttribute("data-layout-allow-overlap", "");
       more.textContent = "▸";
       el.append(more);
     }
@@ -103,7 +106,7 @@ export class BalloonLayer {
           count = 0;
           for (let k = 0; k < pg.n; k++) { const w = b.words[pg.w0 + k]; if (w && w.t <= S.t) count++; else break; }
         }
-        if (count !== m.last) { m.words.forEach((w, k) => { w.style.opacity = k < count ? "1" : "0"; }); m.last = count; }
+        if (count !== m.last) { m.words.forEach((w, k) => { w.style.visibility = k < count ? "visible" : "hidden"; }); m.last = count; }
       });
     }
     for (const [id, m] of this.made) if (!live.has(id) && m.shown) { m.shown = false; m.el.style.display = "none"; }

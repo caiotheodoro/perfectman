@@ -8,7 +8,7 @@
  */
 import { figureMarkup, type FigurePart, type PoseVector, type SignatureProp } from "@perfectman/shared";
 
-export type RigFrame = { walking?: boolean; speak?: number; blink?: number };
+export type RigFrame = { walking?: boolean; speak?: number; blink?: number; /** Breath phase in radians; when given, the rig does not keep its own. */ phase?: number };
 
 const fixed = (n: number, d = 1): string => n.toFixed(d);
 const curve = (a: number[]): string => `M${fixed(a[0]!)} ${fixed(a[1]!)}Q${fixed(a[2]!)} ${fixed(a[3]!)} ${fixed(a[4]!)} ${fixed(a[5]!)}`;
@@ -54,7 +54,8 @@ export class CharacterRig {
   }
 
   update(V: PoseVector, dt: number, t: number, o: RigFrame = {}): void {
-    this.phase += (dt * 6.283) / Math.max(1.2, V.breath);
+    if (o.phase !== undefined) this.phase = o.phase;
+    else this.phase += (dt * 6.283) / Math.max(1.2, V.breath);
     const by = 1 + 0.016 * Math.sin(this.phase), bx = 1 + 0.008 * Math.sin(this.phase + 0.6);
     const tw = V.tremor * 1.1;
     const jx = tw * Math.sin(t * 61 + this.index), jy = tw * 0.4 * Math.sin(t * 47 + this.index * 2);

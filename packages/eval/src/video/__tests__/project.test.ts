@@ -15,7 +15,7 @@ const script = JSON.stringify({
 describe("file to video command", () => {
   it("requires explicit paths and rejects unrecognized flags", () => {
     expect(parseVideoArgs(["--input", "a.json", "--out", "out/a.mp4", "--prepare-only"]))
-      .toEqual({ input: "a.json", output: "out/a.mp4", prepareOnly: true });
+      .toEqual({ kind: "story", options: { input: "a.json", output: "out/a.mp4", prepareOnly: true } });
     expect(parseVideoArgs(["--help"])).toBeUndefined();
     expect(() => parseVideoArgs(["--input", "a.json"])).toThrow("--out");
     expect(() => parseVideoArgs(["--invent-emotions"])).toThrow();

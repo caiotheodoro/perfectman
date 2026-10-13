@@ -49,18 +49,22 @@ describe("buildTimeline on the cat run", () => {
     }
   });
 
-  it("moves smoothly: no pose jumps between two frames at 60 fps", () => {
-    let prev = sampleTimeline(T, 0);
-    for (let t = 1 / 60; t < T.duration; t += 1 / 60) {
-      const s = sampleTimeline(T, t);
-      for (const id of T.agents) {
-        const a = prev.chars[id]!.v, b = s.chars[id]!.v;
-        expect(Math.abs(b.lean - a.lean), `${id} lean at ${t.toFixed(2)}`).toBeLessThan(2);
-        expect(Math.abs(b.x - a.x), `${id} x at ${t.toFixed(2)}`).toBeLessThan(30);
-        expect(Math.abs(b.squash - a.squash)).toBeLessThan(0.05);
+  it("moves smoothly: no pose jumps between two frames at 60 fps, across every shot change and the opening", () => {
+    // Shots changing is where motion could jump, so the frames are checked from three seconds before each cut to three after.
+    const windows: Array<[number, number]> = [[0, 6], ...T.scenes.map((s): [number, number] => [Math.max(0, s.t0 - 3), Math.min(T.duration, s.t0 + 4.5)])];
+    for (const [from, to] of windows) {
+      let prev = sampleTimeline(T, from);
+      for (let t = from + 1 / 60; t < to; t += 1 / 60) {
+        const s = sampleTimeline(T, t);
+        for (const id of T.agents) {
+          const a = prev.chars[id]!.v, b = s.chars[id]!.v;
+          expect(Math.abs(b.lean - a.lean), `${id} lean at ${t.toFixed(2)}`).toBeLessThan(2);
+          expect(Math.abs(b.x - a.x), `${id} x at ${t.toFixed(2)}`).toBeLessThan(30);
+          expect(Math.abs(b.squash - a.squash)).toBeLessThan(0.05);
+        }
+        expect(Math.abs(s.cam.z - prev.cam.z)).toBeLessThan(0.05);
+        prev = s;
       }
-      expect(Math.abs(s.cam.z - prev.cam.z)).toBeLessThan(0.05);
-      prev = s;
     }
   });
 

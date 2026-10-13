@@ -12,7 +12,30 @@ import {
 import { BalloonLayer, MarkLayer } from "./BalloonLayer.js";
 import { CharacterRig } from "./CharacterRig.js";
 
+/** Story minutes between two drawn plates; the light blends between them. */
 const LIGHT_STEP_MINUTES = 6;
+
+/**
+ * Two plates blended by the clock. Where the light is between two drawn hours,
+ * the lower plate is fully shown and the upper fades in by how far it is. It
+ * is a pure function of the minute, so seeking backward or rendering frames
+ * out of order gives the same picture as playing forward.
+ */
+class LightPair {
+  private minutes: [number, number] = [Number.NaN, Number.NaN];
+  constructor(private readonly plates: [HTMLDivElement, HTMLDivElement], private readonly draw: (minute: number, uid: string) => string) {}
+
+  /** Draws what is needed and returns the opacity of the lower and the upper plate. */
+  show(minute: number): [number, number] {
+    const m0 = Math.floor(minute / LIGHT_STEP_MINUTES) * LIGHT_STEP_MINUTES;
+    const frac = (minute - m0) / LIGHT_STEP_MINUTES;
+    for (const m of [m0, m0 + LIGHT_STEP_MINUTES]) {
+      const i = ((((m / LIGHT_STEP_MINUTES) % 2) + 2) % 2) as 0 | 1;
+      if (this.minutes[i] !== m) { this.plates[i].innerHTML = this.draw(m, `l${i}`); this.minutes[i] = m; }
+    }
+    return [1, this.minutes[1] === m0 ? 1 - frac : frac];
+  }
+}
 
 export type StageViewOptions = {
   /** Where it happens; falls back to the rooftop. */
@@ -36,10 +59,8 @@ export class StageView {
   private readonly marks: MarkLayer;
   private readonly capEls = new Map<string, HTMLDivElement>();
   private readonly seen = new Map<string, string>();
-  private front: 0 | 1 = 0;
-  private front2: 0 | 1 = 0;
-  private lit = Number.NaN;
-  private lit2 = Number.NaN;
+  private readonly light: LightPair;
+  private readonly light2: LightPair;
   private insetDrawn = false;
   private lastT = 0;
   private observer: ResizeObserver | null = null;
@@ -53,6 +74,8 @@ export class StageView {
     const plate = (): HTMLDivElement => this.div("watch-plate", this.cam);
     this.plates = [plate(), plate()];
     this.plates2 = [plate(), plate()];
+    this.light = new LightPair(this.plates, (m, uid) => placeMarkup(opts.setting, m, uid));
+    this.light2 = new LightPair(this.plates2, (m, uid) => placeMarkup(opts.room2 ?? "stairwell", m, `r${uid}`));
     this.pool = this.div("watch-pool", this.cam);
     replay.agentIds.forEach((id, i) => {
       const archetype = replay.agentProfiles?.[id]?.archetype ?? replay.agentArchetypes[id] ?? "";
@@ -95,37 +118,28 @@ export class StageView {
   }
 
   /** Draw the stage at time `t`. `omniscient` false is the fiction-only lens. */
-  render(t: number, o: { omniscient?: boolean } = {}) {
+  render(t: number, o: { omniscient?: boolean; /** Breath phase per character, for renders that must not depend on the order of frames. */ phase?: (id: string) => number } = {}) {
     const S = sampleTimeline(this.T, t, { omniscient: o.omniscient });
     const c = S.cam;
     this.write(this.cam, "cam", "transform", `translate(${(600 - c.cx * c.z).toFixed(2)}px,${(300 - c.cy * c.z).toFixed(2)}px) scale(${c.z.toFixed(4)})`);
 
-    // Light: render the new hour into the hidden plate and let the opacity transition fade to it.
-    const lit = Math.round(S.minute / LIGHT_STEP_MINUTES) * LIGHT_STEP_MINUTES;
-    const place = this.opts.setting, place2 = this.opts.room2 ?? "stairwell";
-    if (Number.isNaN(this.lit)) {
-      this.plates[0].innerHTML = placeMarkup(place, lit, "pa");
-      this.plates2[0].innerHTML = placeMarkup(place2, lit, "ra");
-      this.lit = this.lit2 = lit;
-    } else if (lit !== this.lit) {
-      const back: 0 | 1 = this.front === 0 ? 1 : 0;
-      this.plates[back].innerHTML = placeMarkup(place, lit, `p${back}${lit}`);
-      this.front = back;
-      this.lit = lit;
-    }
+    // Light: two drawn hours blended by the clock, a pure function of the minute.
     const room = c.room || 0;
-    if (room > 0.01 && lit !== this.lit2) {
-      const back: 0 | 1 = this.front2 === 0 ? 1 : 0;
-      this.plates2[back].innerHTML = placeMarkup(place2, lit, `r${back}${lit}`);
-      this.front2 = back;
-      this.lit2 = lit;
+    const [lower, upper] = this.light.show(S.minute);
+    this.write(this.plates[0], "pl0", "opacity", ((1 - 0.96 * room) * lower).toFixed(3));
+    this.write(this.plates[1], "pl1", "opacity", ((1 - 0.96 * room) * upper).toFixed(3));
+    if (room > 0.01) {
+      const [l2, u2] = this.light2.show(S.minute);
+      this.write(this.plates2[0], "pm0", "opacity", (room * l2).toFixed(3));
+      this.write(this.plates2[1], "pm1", "opacity", (room * u2).toFixed(3));
+    } else {
+      this.write(this.plates2[0], "pm0", "opacity", "0");
+      this.write(this.plates2[1], "pm1", "opacity", "0");
     }
-    this.plates.forEach((p, i) => this.write(p, `pl${i}`, "opacity", ((i === this.front ? 1 : 0) * (1 - 0.96 * room)).toFixed(3)));
-    this.plates2.forEach((p, i) => this.write(p, `pm${i}`, "opacity", ((i === this.front2 ? 1 : 0) * room).toFixed(3)));
     const bg = c.bg > 0.05 ? `blur(${(c.bg * 1.1).toFixed(1)}px) brightness(${(1 - c.pool * 0.12).toFixed(2)})` : "";
     this.plates.forEach((p, i) => this.write(p, `pf${i}`, "filter", bg));
     this.write(this.inset, "inset", "opacity", Math.max(0, room * 2 - 1).toFixed(2));
-    if (room > 0.5 && !this.insetDrawn) { this.inset.querySelector(".watch-inset__view")!.innerHTML = placeMarkup(place, lit, "ri"); this.insetDrawn = true; }
+    if (room > 0.5 && !this.insetDrawn) { this.inset.querySelector(".watch-inset__view")!.innerHTML = placeMarkup(this.opts.setting, Math.round(S.minute), "ri"); this.insetDrawn = true; }
 
     const sc = S.scene;
     let px = 250, py = 470;
@@ -141,7 +155,7 @@ export class StageView {
       const ch = S.chars[id]!, v = ch.v, rig = this.rigs.get(id)!;
       rig.place(v.x, v.y, v.w, Math.round(v.y));
       const ph = (t * 0.9 + i * 1.7) % 4.3;
-      rig.update(v, dt, t, { walking: ch.walking, speak: ch.speak, blink: ph < 0.14 ? Math.max(0.08, Math.abs(ph - 0.07) / 0.07) : 1 });
+      rig.update(v, dt, t, { walking: ch.walking, speak: ch.speak, ...(o.phase ? { phase: o.phase(id) } : {}), blink: ph < 0.14 ? Math.max(0.08, Math.abs(ph - 0.07) / 0.07) : 1 });
     });
     this.balloons.sync(S, c);
     this.marks.sync(S, c);

@@ -2,7 +2,7 @@
 .watch-host { position: relative; width: 100%; overflow: hidden; border-radius: var(--r-xl, 8px); background: #0b1124; box-shadow: inset 0 0 0 1px var(--rule, #d6d8ca); }
 .watch-stage { position: absolute; left: 0; top: 0; width: 1200px; height: 600px; transform-origin: 0 0; }
 .watch-cam { position: absolute; left: 0; top: 0; width: 1200px; height: 600px; transform-origin: 0 0; will-change: transform; }
-.watch-plate { position: absolute; inset: 0; transition: opacity 0.7s linear; }
+.watch-plate { position: absolute; inset: 0; }
 .watch-plate svg.place { position: absolute; inset: 0; width: 100%; height: 100%; }
 .watch-actor { position: absolute; transform: translate(-50%, -100%); }
 .watch-actor svg { display: block; width: 100%; height: auto; overflow: visible; }
@@ -15,11 +15,11 @@
 .watch-balloon > svg { position: absolute; left: 0; top: 0; }
 .watch-balloon__text { position: relative; width: 100%; height: 100%; display: grid; place-items: center; text-align: center; font-variation-settings: "BNCE" 0, "INFM" 70; }
 .watch-balloon__line { white-space: nowrap; }
-.watch-balloon__text .w { display: inline; opacity: 0; }
+.watch-balloon__text .w { display: inline; visibility: hidden; }
 .watch-balloon__tag { position: absolute; left: 12px; top: -11px; font: 700 11px/1 "Shantell Sans Variable", system-ui, sans-serif; color: #1d1f1a; padding: 3px 8px; border-radius: 999px; border: 2px solid #1d1f1a; white-space: nowrap; }
-.watch-balloon__chips { position: absolute; left: 14px; right: 14px; bottom: -12px; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
-.watch-balloon__chips span { font: 600 10.5px/1 "Shantell Sans Variable", system-ui, sans-serif; background: #1d1f1a; color: #fffdf6; padding: 3px 7px; border-radius: 999px; transform: rotate(-1.5deg); }
-.watch-balloon__more { position: absolute; right: 14px; bottom: 6px; font: 700 15px/1 "Shantell Sans Variable", system-ui, sans-serif; color: #1d1f1a; animation: watch-nudge 0.9s ease-in-out infinite; }
+.watch-balloon__chips { position: absolute; left: 22px; right: 22px; bottom: 14px; display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; }
+.watch-balloon__chips span { white-space: nowrap; font: 600 10.5px/1 "Shantell Sans Variable", system-ui, sans-serif; background: #1d1f1a; color: #fffdf6; padding: 3px 7px; border-radius: 999px; transform: rotate(-1.5deg); }
+.watch-balloon__more { position: absolute; right: -16px; bottom: 6px; font: 700 15px/1 "Shantell Sans Variable", system-ui, sans-serif; color: #1d1f1a; animation: watch-nudge 0.9s ease-in-out infinite; }
 @keyframes watch-nudge { 50% { transform: translateX(4px); } }
 .watch-mark { position: absolute; left: 0; top: 0; display: none; filter: drop-shadow(0 2px 0 #0007); }
 
@@ -33,6 +33,8 @@
 .watch-inset span { position: absolute; left: 0; right: 0; bottom: 0; background: #ffe9a8; color: #1d1f1a; font: 600 11px/1 "Shantell Sans Variable", system-ui, sans-serif; padding: 4px 6px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .watch-plate { transition: none; }
   .watch-balloon__more { animation: none; }
 }
+
+/* In a rendered video nothing may run on its own clock: the film is a function of time and only of time. */
+.watch-film .watch-balloon__more { animation: none; }
