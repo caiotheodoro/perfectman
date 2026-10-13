@@ -61,14 +61,16 @@ type Fit = { lines: string[]; W: number; H: number };
 /** A pleasant width near 2.3:1 for up to four lines; longer text becomes pages of four lines. */
 export function fitText(text: string, font: BalloonFont, kind: BalloonKind, measure: TextMeasurer): Fit[] {
   const padX = kind === "shout" ? 48 : kind === "thought" ? 42 : 20;
-  const padY = kind === "shout" ? 36 : kind === "thought" ? 30 : 14;
+  // A thought also carries a row of driver tags inside its cloud, so it is taller.
+  const padY = kind === "shout" ? 36 : kind === "thought" ? 26 : 14;
+  const extraBottom = kind === "thought" ? 26 : 0;
   const lineH = font.size * font.lineHeight;
   const widest = (lines: string[]): number => Math.max(...lines.map((l) => measure(l, font))) * 1.06 + 4;
   let best: (Fit & { score: number }) | null = null;
   for (let w = 150; w <= 330; w += 15) {
     const lines = wrap(text, font, w, measure);
     if (lines.length > 4) continue;
-    const W = widest(lines) + padX * 2, H = lines.length * lineH + padY * 2;
+    const W = widest(lines) + padX * 2, H = lines.length * lineH + padY * 2 + extraBottom;
     const score = Math.abs(W / H - 2.3) + lines.length * 0.03;
     if (!best || score < best.score) best = { lines, W, H, score };
   }
@@ -76,7 +78,7 @@ export function fitText(text: string, font: BalloonFont, kind: BalloonKind, meas
   const lines = wrap(text, font, 300, measure), pages: Fit[] = [];
   for (let i = 0; i < lines.length; i += 4) {
     const L = lines.slice(i, i + 4);
-    pages.push({ lines: L, W: widest(L) + padX * 2, H: L.length * lineH + padY * 2 });
+    pages.push({ lines: L, W: widest(L) + padX * 2, H: L.length * lineH + padY * 2 + extraBottom });
   }
   return pages;
 }

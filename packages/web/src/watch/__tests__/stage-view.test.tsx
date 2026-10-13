@@ -35,9 +35,9 @@ describe("StageView", () => {
     const words = (): HTMLElement[] => [...host.querySelectorAll<HTMLElement>(".watch-balloon--speech .w")];
 
     view.render(b.s0 + (b.s1 - b.s0) * 0.4);
-    const early = words().filter((w) => w.style.opacity === "1").length;
+    const early = words().filter((w) => w.style.visibility === "visible").length;
     view.render(b.s1 + 0.1);
-    const done = words().filter((w) => w.style.opacity === "1").length;
+    const done = words().filter((w) => w.style.visibility === "visible").length;
 
     expect(early).toBeGreaterThan(0);
     expect(early).toBeLessThan(words().length);
@@ -74,16 +74,22 @@ describe("StageView", () => {
     view.destroy();
   });
 
-  it("crossfades the light instead of swapping it", () => {
+  it("blends the light by the clock, so the picture depends only on the moment", () => {
     const { T, view, host } = setup();
-    view.render(0.1);
-    const opacities = (): number[] => [...host.querySelectorAll<HTMLElement>(".watch-plate")].slice(0, 2).map((p) => Number(p.style.opacity));
-    const first = opacities();
-    view.render(T.duration);
-    const later = opacities();
+    const plates = (): HTMLElement[] => [...host.querySelectorAll<HTMLElement>(".watch-plate")].slice(0, 2);
+    const state = (): string => plates().map((p) => `${Number(p.style.opacity).toFixed(3)}|${p.innerHTML.length}`).join(" ");
 
-    expect(first).toEqual([1, 0]);
-    expect(later).toEqual([0, 1]);
+    view.render(T.duration * 0.1);
+    const early = state();
+    const [lower, upper] = plates().map((p) => Number(p.style.opacity));
+    expect(lower).toBe(1);
+    expect(upper).toBeGreaterThan(0);
+    expect(upper).toBeLessThan(1);
+
+    view.render(T.duration);
+    expect(state()).not.toBe(early);
+    view.render(T.duration * 0.1);
+    expect(state(), "going back gives the same picture as getting there the first time").toBe(early);
     view.destroy();
   });
 

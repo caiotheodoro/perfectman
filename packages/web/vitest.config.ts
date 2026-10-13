@@ -8,6 +8,8 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     environment: "node",
+    // The App-level e2e files take about a second alone and several under a full parallel run; five seconds is a coin flip there.
+    testTimeout: 15_000,
     include: ["src/**/*.test.{ts,tsx}"],
     environmentMatchGlobs: [["src/**/*.test.tsx", "jsdom"]],
   },

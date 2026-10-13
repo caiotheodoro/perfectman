@@ -6,3 +6,5 @@ export * from "./addressees.js";
 export * from "./timeline.js";
 export * from "./sample.js";
 export * from "./balloon-layout.js";
+export * from "./balloon-metrics.js";
+export * from "./film.js";

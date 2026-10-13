@@ -64,6 +64,9 @@ importers:
       '@types/node':
         specifier: ^26.2.0
         version: 26.2.0
+      esbuild:
+        specifier: 0.25.12
+        version: 0.25.12
       fast-check:
         specifier: ^4.9.0
         version: 4.9.0
