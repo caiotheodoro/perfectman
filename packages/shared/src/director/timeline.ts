@@ -17,7 +17,11 @@ import type {
   LightKey, ReactionMark, Scene, Spot, TimedWord, TimelineMessage,
 } from "./types.js";
 
+const HUD: Array<[number, number]> = [[9, 92], [25, 95], [17, 87]];
 export const STAGE = { w: 1200, h: 600 } as const;
+
+/** Where a huddle's members stand, nearest the door first (stage pixels, feet position). */
+export const huddleSpot = (k: number): Spot => ({ x: (HUD[k]?.[0] ?? 9) * 12, y: (HUD[k]?.[1] ?? 92) * 6, w: 0.18 * 1200 });
 /** Seconds the camera takes to move and the cast takes to walk when the shot changes. */
 export const CUT_SECONDS = 1.3;
 
@@ -44,7 +48,6 @@ export type Timeline = {
 type SceneType = "wide" | "huddle";
 
 const clamp = (x: number, a: number, b: number): number => Math.max(a, Math.min(b, x));
-const HUD: Array<[number, number]> = [[9, 92], [25, 95], [17, 87]];
 const MARKS: Record<string, ReactionMark["kind"]> = { anger: "steam", fear: "sweat", warm: "heart", suspicion: "?", shame: "sweat", proud: "*" };
 const GESTURE: Record<string, PoseTarget["armR"]> = { anger: "up", fear: "wring", shame: "hug", warm: "open", rest: "open", proud: "akimbo", suspicion: "folded" };
 
@@ -79,7 +82,7 @@ export function buildTimeline(replay: DirectorReplay, options: DirectorOptions =
   const ringPct = (i: number): [number, number] => [N < 2 ? 50 : 22 + i * (56 / (N - 1)), [91, 94, 92, 91, 96, 89, 95, 93][i % 8] ?? 92];
   const width = N <= 5 ? 0.17 : N <= 6 ? 0.14 : 0.12;
   const ringPx = (i: number): Spot => { const [x, y] = ringPct(i); return { x: x * 12, y: y * 6, w: width * 1200 }; };
-  const hudPx = (k: number): Spot => ({ x: (HUD[k]?.[0] ?? 9) * 12, y: (HUD[k]?.[1] ?? 92) * 6, w: 0.18 * 1200 });
+  const hudPx = huddleSpot;
 
   const pos: Record<string, Spot> = {};
   const blur: Record<string, number> = {}, dim: Record<string, number> = {}, hide: Record<string, number> = {};

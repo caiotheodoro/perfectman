@@ -19,13 +19,13 @@ export type TextMeasurer = (text: string, font: BalloonFont) => number;
 /** A renderer may swap the families; the sizes and rhythm are what the layout needs. */
 export const LETTERING: Record<LetteringStyle, BalloonFont> = {
   typewriter: { family: "Special Elite", size: 15, weight: 400, lineHeight: 1.24 },
-  casual: { family: "Shantell Sans", size: 16, weight: 400, lineHeight: 1.2 },
+  casual: { family: "Shantell Sans Variable", size: 16, weight: 400, lineHeight: 1.2 },
   tidy: { family: "Patrick Hand", size: 20, weight: 400, lineHeight: 1.12 },
   formal: { family: "Kalam", size: 18, weight: 400, lineHeight: 1.16 },
-  house: { family: "Shantell Sans", size: 16, weight: 400, lineHeight: 1.2 },
+  house: { family: "Shantell Sans Variable", size: 16, weight: 400, lineHeight: 1.2 },
 };
 export const SHOUT_FONT: BalloonFont = { family: "Londrina Solid", size: 27, weight: 400, lineHeight: 1.0 };
-export const THOUGHT_FONT: BalloonFont = { family: "Caveat", size: 21, weight: 500, lineHeight: 1.02 };
+export const THOUGHT_FONT: BalloonFont = { family: "Caveat", size: 21, weight: 400, lineHeight: 1.02 };
 
 const CJK = /[぀-ヿ一-鿿]/;
 const clamp = (x: number, a: number, b: number): number => Math.max(a, Math.min(b, x));

@@ -113,3 +113,4 @@ export * from "./live/live-frame.types.js";
 export * from "./live/run-api.types.js";
 export * from "./stage/index.js";
 export * from "./director/index.js";
+export * from "./stage-art/index.js";
