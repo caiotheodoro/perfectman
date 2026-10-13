@@ -1,0 +1,91 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock 6 — Balloon lab</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;600;700&family=Shantell+Sans:ital,wght,BNCE,INFM@0,300..800,-100..100,0..100&family=Special+Elite&family=Patrick+Hand&family=Kalam:wght@400;700&family=Londrina+Solid:wght@400;900&family=Caveat:wght@400..700&display=swap">
+<link rel="stylesheet" href="world.css">
+<style>.sect{margin-top:30px}.sect p{max-width:70ch}.stat{font:600 14px var(--sans);color:var(--forest);margin-top:-18px;margin-bottom:24px}.pg{font:600 13px var(--sans);color:#aab4d6;position:absolute;right:14px;top:10px}</style>
+</head><body><main class="wrap">
+ <h1>Balloon lab</h1>
+ <p class="sub">The lettering, shapes and placement the player uses, on their own. Cartoon balloons with a wobble in the ink, a name tag in the speaker's colour, a tail that points at the head and never across the face, and lettering that follows who is talking.</p>
+
+ <section class="sect"><h2>Six kinds</h2><p class="note">Speech, shout, whisper, thought, caption and overheard. Shouts burst; whispers go dashed and small; thoughts are clouds with a trail and the recorded drivers as scribbled tags; captions narrate time.</p>
+ <div class="panel" id="kinds" style="height:420px"></div></section>
+
+ <section class="sect"><h2>Lettering follows the person</h2><p class="note">One sentence, four hands: Dona Neide types like a legal notice, Tavo stays lowercase and flat, Priya writes tidy lists, Mr. Okafor writes formally.</p>
+ <div class="panel" id="hands" style="height:300px"></div></section>
+
+ <section class="sect"><h2>Volume moves the ink</h2><p class="note">The same line at three levels of arousal. Size and the font's own bounce axis follow the recorded arousal; nothing is hand-set.</p>
+ <div class="panel" id="vol" style="height:210px"></div></section>
+
+ <section class="sect"><h2>Long lines page, they do not truncate</h2><p class="note">Anything over four lines is chained into pages that advance with the speaker's reading time; the arrow shows there is more.</p>
+ <div class="bar"><button id="pgNext" class="b2">Next page</button><span class="note" id="pgInfo"></span></div>
+ <div class="panel" id="paging" style="height:330px"></div></section>
+
+ <section class="sect"><h2>A crowded frame</h2><p class="note">Eight characters, five balloons at the same moment. The planner scores slots around each speaker and picks the one that overlaps nothing.</p>
+ <div class="panel" id="crowd" style="height:600px"></div><p class="stat" id="crowdStat"></p></section>
+
+ <section class="sect"><h2>Other languages and emoji</h2><p class="note">Portuguese, Spanish, Japanese and an emoji line. Lettering faces cover Latin; other scripts fall back to the system face, and the shape still fits the measured text.</p>
+ <div class="panel" id="langs" style="height:300px"></div></section>
+</main>
+<style>.b2{padding:8px 14px;border-radius:5px;border:1px solid var(--rule);background:#fff;font-weight:600;font-size:14px}</style>
+<script src="data/cat-run.js"></script><script src="world.js"></script><script src="balloons.js"></script>
+<script>
+Promise.all(['16px "Shantell Sans"','15px "Special Elite"','20px "Patrick Hand"','18px Kalam','27px "Londrina Solid"','21px Caveat'].map(f=>document.fonts.load(f))).then(()=>document.fonts.ready).then(init);
+function init(){
+const {R,byId,actFrom,toVec,makeActor,sigOf}=W,AGS={neide:byId.neide,tavo:byId.tavo,priya:byId.priya,okafor:byId.okafor};
+const scale=(host)=>{const s=host.clientWidth/1200;host.firstElementChild&&0;host.style.setProperty('--s',s)};
+function panel(id,h){const host=document.getElementById(id);host.style.height=h;const inner=document.createElement('div');inner.style.cssText='position:absolute;left:0;top:0;width:1200px;transform-origin:0 0';host.append(inner);
+ const fit=()=>{const s=host.clientWidth/1200;inner.style.transform=`scale(${s})`;host.style.height=(parseFloat(h)*s)+'px';inner.style.height=h};new ResizeObserver(fit).observe(host);fit();return inner}
+function actor(host,id,x,y,w,pose,idx){const h=document.createElement('div');h.className='actor';h.style.cssText=`left:${x}px;top:${y}px;width:${w}px`;host.append(h);const a=makeActor(h,AGS[id]||R.agents[idx||0],(AGS[id]||R.agents[idx||0]).idx);h.querySelector('.nm').style.display='none';a.update(toVec(pose,sigOf(AGS[id]||R.agents[idx||0])),0,0,{});return a}
+function balloon(host,b,cx,cy,tx,ty){const ag=byId[b.actor];b.style=B.styleFor(b,ag);b.pages=B.fit(b.kind==='shout'?b.text.toUpperCase():b.text,b.style,b.kind);b.slot={cx,cy,tip:{x:tx,y:ty}};
+ const c=B.make(b,0,host);c.n.style.transform=`translate(${cx-b.pages[0].W/2}px,${cy-b.pages[0].H/2}px)`;c.n.style.display='block';return{c,b}}
+const P=(k,o)=>actFrom({v:0,a:.4,e:1},k,o||{});
+// 1. kinds
+const K=panel('kinds','420px');
+const feet=380,xs=[150,390,630,870,1100];
+actor(K,'priya',xs[0],feet,160,P({affection:.5}),2);actor(K,'neide',xs[1],feet,160,P({resentment:.4},{speaking:true}),0);actor(K,'tavo',xs[2],feet,160,P({fearOfExclusion:.8}),1);actor(K,'okafor',xs[3],feet,160,P({suspicion:.2}),3);
+const head=(x)=>({x,y:feet-.9*160});
+balloon(K,{kind:'speech',actor:'priya',text:'Noted, Neide. Has anyone checked the shelter records before we vote?',ar:.4},xs[0]+10,95,head(xs[0]).x,head(xs[0]).y);
+balloon(K,{kind:'shout',actor:'neide',text:'The roof is a common AREA, not a pet shelter!',ar:.8},xs[1]+20,100,head(xs[1]).x,head(xs[1]).y);
+balloon(K,{kind:'whisper',actor:'tavo',text:'ok but who else is in this channel',ar:.3},xs[2]-10,115,head(xs[2]).x,head(xs[2]).y);
+balloon(K,{kind:'thought',actor:'okafor',text:'He is doing exactly what he did all those years ago.',drivers:['irritation','resolve'],ar:.4},xs[3]-20,98,head(xs[3]).x,head(xs[3]).y);
+const cap=document.createElement('div');cap.className='cap';cap.style.cssText='position:absolute;left:30px;top:250px;display:block;font:600 17px "Shantell Sans";background:#ffe9a8;padding:8px 14px;border:3px solid #1d1f1a;box-shadow:4px 4px 0 #1d1f1a;transform:rotate(-1deg);color:#1d1f1a';cap.textContent='Time passes…  12:04am';K.append(cap);
+const ov=document.createElement('div');ov.style.cssText='position:absolute;right:220px;top:250px;opacity:.55;transform:scale(.8);transform-origin:right top';K.append(ov);
+balloon(ov,{kind:'whisper',actor:'priya',text:'…did she say ledger?',ar:.2},90,30,130,110);
+K.insertAdjacentHTML('beforeend','<div style="position:absolute;left:30px;bottom:12px;color:#aab4d6;font:600 12px var(--sans)">speech · shout · whisper · thought · caption (left) · overheard (right, small and faded)</div>');
+// 2. hands
+const Hh=panel('hands','300px');
+const line='I will not repeat myself, and I am not asking twice.';
+[['neide',130],['tavo',420],['priya',720],['okafor',1020]].forEach(([id,x])=>{actor(Hh,id,x,285,150,P({},{speaking:true}));balloon(Hh,{kind:'speech',actor:id,text:line,ar:.45},x,92,x,285-.9*150)});
+// 3. volume
+const V=panel('vol','210px');
+[[.2,200],[.5,600],[.85,1000]].forEach(([ar,x])=>{actor(V,'tavo',x,205,130,P({}),1);balloon(V,{kind:'speech',actor:'tavo',text:'that cat has a name actually',ar},x,70,x,205-.9*130)});
+V.insertAdjacentHTML('beforeend','<div class="lbl">arousal 0.2 · 0.5 · 0.85</div>');
+// 4. paging
+const G=panel('paging','330px');
+const long='Dona Neide, the roof is not a courtroom, and you cannot write the finding before anyone has been asked a single question. Twenty-two years in this building and I have never seen a vote taken on an animal without a chip, a permit, a witness or a minute of silence. If the assembly wants a defendant, it will have to find one that can stand in front of it.';
+actor(G,'okafor',600,320,170,P({suspicion:.2},{speaking:true}),3);
+const bg=document.createElement('div');G.append(bg);
+let pi=0;const pb={kind:'speech',actor:'okafor',text:long,ar:.4};pb.style=B.styleFor(pb,byId.okafor);pb.pages=B.fit(long,pb.style,pb.kind);
+function showPage(){bg.innerHTML='';pb.slot={cx:600,cy:110,tip:{x:600,y:320-.9*170}};const c=B.make(pb,pi,bg);c.n.style.display='block';c.n.style.transform=`translate(${600-pb.pages[pi].W/2}px,${110-pb.pages[pi].H/2}px)`;document.getElementById('pgInfo').textContent=`page ${pi+1} of ${pb.pages.length}`}
+document.getElementById('pgNext').onclick=()=>{pi=(pi+1)%pb.pages.length;showPage()};showPage();setInterval(()=>{pi=(pi+1)%pb.pages.length;showPage()},3200);
+// 5. crowd
+const C=panel('crowd','600px');
+const names=['neide','tavo','priya','okafor'];const bods=[],items=[];
+const N=8;for(let i=0;i<N;i++){const a=R.agents[i%4],x=90+i*(1020/(N-1)),y=[560,590,570,585][i%4]+(i>3?-6:0),w=140;
+ actor(C,a.id,x,y,w,P({fearOfExclusion:.2*(i%3),affection:.3*(i%2)},{}),i%4);bods.push({id:'c'+i,agent:a,sx:x,sy:y,hw:w/2,h:w*.99,x0:x-w/2-6,x1:x+w/2+6,y0:y-.97*w*.99-6,y1:y+4})}
+const lines=['Four screens is a fact, and I will grant it.','who else is in here','Finding, not eviction. No names in it, mine included.','The roof is a common AREA!','a motion by 7, not a trial by midnight'];
+const placed=[];let overlaps=0;
+[1,5,2,6,3].forEach((bi,k)=>{const me=bods[bi],b={kind:k===3?'shout':k===1?'whisper':'speech',actor:me.agent.id,text:lines[k],ar:.45,t0:0,t1:5};me.id=b.actor;
+ b.style=B.styleFor(b,me.agent);b.pages=B.fit(b.kind==='shout'?lines[k].toUpperCase():lines[k],b.style,b.kind);
+ const pg=b.pages[0],cands=B.candidatesFor(me,pg),best=B.choose(b,pg,bods.map(o=>Object.assign({},o,{id:o===me?b.actor:o.id})),placed,me,cands);
+ placed.push({t0:0,t1:5,box:best.box,});b.slot={cx:best.c.cx,cy:best.c.cy,tip:best.c.tip};
+ const c=B.make(b,0,C);c.n.style.display='block';c.n.style.transform=`translate(${best.c.cx-pg.W/2}px,${best.c.cy-pg.H/2}px)`;items.push(best.box)});
+const ovl=(a,c)=>Math.max(0,Math.min(a.x1,c.x1)-Math.max(a.x0,c.x0))*Math.max(0,Math.min(a.y1,c.y1)-Math.max(a.y0,c.y0));
+let bodyHits=0,pairHits=0;items.forEach((bx,i)=>{bods.forEach(o=>{if(ovl(bx,o)>40)bodyHits++});items.forEach((b2,j)=>{if(j>i&&ovl(bx,b2)>40)pairHits++})});
+document.getElementById('crowdStat').textContent=`Placement result: ${bodyHits} balloons overlapping a character, ${pairHits} balloons overlapping each other (5 balloons, 8 characters).`;
+// 6. languages
+const L=panel('langs','300px');
+const lg=[['priya','Não é possível, a assembleia já foi marcada pra amanhã às 19h. Você viu a ata?'],['tavo','¿quién sube al tejado a esta hora? nadie me avisó'],['okafor','明日の夜７時に集まります。ご都合はいかがですか？'],['neide','Regards 🙂 — the ledger was updated at 11:58 ✔ 👍']];
+lg.forEach(([id,t],i)=>{const x=150+i*300;actor(L,id,x,290,130,P({}),i);balloon(L,{kind:'speech',actor:id,text:t,ar:.4},x,95,x,290-.9*130)});
+}
+</script></body></html>

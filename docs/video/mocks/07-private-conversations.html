@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock 7 — Private conversations</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;600;700&family=Shantell+Sans:ital,wght,BNCE,INFM@0,300..800,-100..100,0..100&family=Special+Elite&family=Patrick+Hand&family=Kalam:wght@400;700&family=Londrina+Solid:wght@400;900&family=Caveat:wght@400..700&display=swap">
+<link rel="stylesheet" href="world.css">
+<style>
+ .tri{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:8px}
+ .tri h2{font-size:1.05rem;margin-bottom:6px}.tri p{font-size:13px;color:var(--ink-70);margin:6px 0 0}
+ .tag{display:inline-block;font:700 11px var(--sans);background:var(--forest);color:#fff;border-radius:3px;padding:2px 6px;margin-left:6px;vertical-align:2px}
+ @media(max-width:1000px){.tri{grid-template-columns:1fr}}
+ .b,.seg2 button{padding:8px 14px;border-radius:5px;border:1px solid var(--rule);background:#fff;font-weight:600;font-size:14px}.b[aria-pressed=true],.seg2 button[aria-pressed=true]{background:var(--forest);color:#fff;border-color:var(--forest)}.seg2{display:inline-flex}.seg2 button{border-radius:0;margin-left:-1px}.seg2 button:first-child{border-radius:5px 0 0 5px}.seg2 button:last-child{border-radius:0 5px 5px 0}
+ .bar2{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:12px 0}.bar2 .grow{flex:1;min-width:160px;accent-color:var(--forest)}
+</style></head><body><main class="wrap">
+ <h1>Private conversations</h1>
+ <p class="sub">The same moment, three ways. Neide and Okafor slip away from Tavo and Priya at 12:20am. Press play, or jump to the moment, and compare how each reads.</p>
+ <div class="bar2"><button class="b" id="play">Play</button><button class="b" id="jump">Jump to the whisper</button><input class="grow" id="scrub" type="range" min="0" max="1000" value="0" aria-label="Position"><span class="seg2" id="spd" role="group" aria-label="Speed"><button data-s="1" aria-pressed="true">1x</button><button data-s="2" aria-pressed="false">2x</button></span></div>
+ <div class="tri" id="tri"></div>
+ <p class="note" style="margin-top:20px">Recommended: the push-in. It needs no second drawn place, keeps the others in frame as out-of-focus onlookers who still react, and works for any scene. The door variant is for scenes that name a second place (<code>rooms:</code>); it costs another plate but gives a stronger sense of "somewhere else". Staying wide with whisper lettering alone is what the first mocks did, and it was the weakest.</p>
+</main>
+<script src="data/cat-run.js"></script><script src="world.js"></script><script src="director.js"></script><script src="balloons.js"></script><script src="stage.js"></script>
+<script>
+Promise.all(['16px "Shantell Sans"','15px "Special Elite"','20px "Patrick Hand"','18px Kalam','27px "Londrina Solid"','21px Caveat'].map(f=>document.fonts.load(f))).then(()=>document.fonts.ready).then(init);
+function init(){
+const modes=[['push','Push-in','The camera moves in on the huddle. The others stay in frame, blurred, glancing over.',1],['door','Through the door','They walk through the door into the stairwell; the roof stays visible in a small inset.',0],['wide','Stay wide','Same place, same framing; only the lettering changes.',0]];
+const tri=document.getElementById('tri'),stages=[];
+modes.forEach(([m,t,d,rec])=>{const col=document.createElement('div');col.innerHTML=`<h2>${t}${rec?'<span class="tag">recommended</span>':''}</h2><div class="h"></div><p>${d}</p>`;tri.append(col);
+ const T=D.buildTimeline({huddle:m,measure:B.pageCounts});B.plan(T);stages.push({T,s:Stage.createStage(col.querySelector('.h'),T,{room2:'stairwell'})})});
+const dur=stages[0].T.duration;const first=stages[0].T.scenes.find(s=>s.type==='huddle'&&s.members.includes('neide')&&s.members.includes('okafor'));
+let t=0,playing=false,speed=1,last=null;
+function draw(){stages.forEach(x=>x.s.render(t,{omni:true}));document.getElementById('scrub').value=t/dur*1000}
+function frame(ts){if(last==null)last=ts;const dt=Math.min(.1,(ts-last)/1000);last=ts;if(playing){t=Math.min(dur,t+dt*speed);if(t>=dur){playing=false;document.getElementById('play').textContent='Play'}}draw();requestAnimationFrame(frame)}
+document.getElementById('play').onclick=e=>{playing=!playing;e.target.textContent=playing?'Pause':'Play'};
+document.getElementById('jump').onclick=()=>{t=Math.max(0,first.t0-1.5);playing=true;document.getElementById('play').textContent='Pause'};
+document.getElementById('scrub').oninput=e=>{t=+e.target.value/1000*dur};
+document.getElementById('spd').onclick=e=>{const b=e.target.closest('button');if(!b)return;speed=+b.dataset.s;document.querySelectorAll('#spd button').forEach(x=>x.setAttribute('aria-pressed',x===b))};
+window.__seek=x=>{t=x;playing=false};window.__first=first;requestAnimationFrame(frame);
+}
+</script></body></html>

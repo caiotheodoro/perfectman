@@ -1,0 +1,57 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mock 2 — The acting sheet</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,400..700,0..100,0..1&family=Instrument+Sans:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="world.css">
+<style>
+ .lab{display:grid;grid-template-columns:minmax(260px,420px) 1fr;gap:32px;align-items:center;margin:8px 0 34px}
+ .stagebox{position:relative;aspect-ratio:4/3;border-radius:8px;background:radial-gradient(circle at 50% 30%,#fffaf0,#e8e4d2 70%);box-shadow:inset 0 0 0 1px var(--rule);display:grid;place-items:end center;padding-bottom:6%}
+ .stagebox .actor{position:static;transform:none;width:62%}.stagebox .nm{display:none}
+ .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:18px}
+ .card{border-top:3px solid var(--forest);padding-top:10px}
+ .card .stagebox{aspect-ratio:1/1;margin-bottom:10px}
+ .card b{font:700 16px var(--sans);display:block}.card p{font-size:13px;color:var(--ink-70);margin-top:3px}
+ .card code{font:600 12px var(--sans);background:var(--paper-warm);padding:1px 5px;border-radius:3px}
+ .card i{color:var(--ink-50)}
+ @media(max-width:760px){.lab{grid-template-columns:1fr}}
+</style></head><body><main class="wrap">
+ <h1>The acting sheet</h1>
+ <p class="sub">The face has six poses today. Here the whole body acts, driven by what the engine recorded: the strongest social emotion picks the posture, arousal sets the breath and the tremor. Every card below is a real moment from the cat run.</p>
+ <h2>Try it</h2>
+ <div class="lab"><div class="stagebox" id="lab"></div>
+  <div><div class="bar"><span class="seg" id="who" role="group" aria-label="Character"></span></div>
+   <div class="bar"><span class="seg" id="emo" role="group" aria-label="Strongest emotion"></span></div>
+   <div class="bar"><label for="ar">Arousal</label><input id="ar" type="range" min="0.2" max="0.9" step="0.01" value="0.4"><span class="note" id="arv"></span></div>
+   <p class="note" id="read"></p></div></div>
+ <h2 style="margin-bottom:14px">Seen in the run</h2>
+ <div class="grid" id="grid"></div>
+ <p class="note" style="margin-top:22px">Recorded emotions this run reached: resentment .09, jealousy .26, humiliation .28, pride .25, affection .49, suspicion .15, fear of exclusion .79, desire for status .88. Contempt, shame, admiration and social anxiety stayed at zero, so those postures are in the rig but have no card here.</p>
+</main>
+<script src="data/cat-run.js"></script><script src="world.js"></script>
+<script>
+const {R,byId,actFrom,makeActor,stateRead,clockText,minOf,sigOf,COLORS}=W;
+const LABEL={anger:'Anger',shame:'Shame',fear:'Fear of being shut out',warm:'Warmth',proud:'Pride and status',suspicion:'Suspicion',tired:'Worn out',rest:'At rest'};
+const SOCS={anger:{resentment:.3},shame:{humiliation:.3},fear:{fearOfExclusion:.8},warm:{affection:.5},proud:{pride:.3,desireForStatus:.8},suspicion:{suspicion:.2},tired:{},rest:{}};
+function card(host,agent,P){const h=document.createElement('div');h.className='actor';host.append(h);const a=makeActor(h,agent,agent.idx);a.set(P);return a}
+// lab
+const lab=document.getElementById('lab');let cur={who:'neide',emo:'anger'};const labHost=document.createElement('div');labHost.className='actor';lab.append(labHost);let labActor;
+function renderLab(){const ag=byId[cur.who];lab.innerHTML='';const h=document.createElement('div');h.className='actor';lab.append(h);labActor=makeActor(h,ag,ag.idx);
+ const a=+document.getElementById('ar').value;document.getElementById('arv').textContent=a.toFixed(2);
+ const m={v:0,a,e:cur.emo==='tired'?.3:1},P=actFrom(m,SOCS[cur.emo],{toward:0});labActor.set(P);
+ document.getElementById('read').textContent=`${ag.short}: ${stateRead(P)}. Breath every ${P.breath.toFixed(1)}s${P.tremor?`, tremor ${P.tremor.toFixed(1)}`:''}.`;}
+document.getElementById('who').innerHTML=R.agents.map(a=>`<button data-w="${a.id}" aria-pressed="${a.id===cur.who}">${a.short}</button>`).join('');
+document.getElementById('emo').innerHTML=Object.keys(LABEL).map(k=>`<button data-e="${k}" aria-pressed="${k===cur.emo}">${LABEL[k]}</button>`).join('');
+document.getElementById('who').onclick=e=>{const b=e.target.closest('button');if(!b)return;cur.who=b.dataset.w;document.querySelectorAll('#who button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderLab()};
+document.getElementById('emo').onclick=e=>{const b=e.target.closest('button');if(!b)return;cur.emo=b.dataset.e;document.querySelectorAll('#emo button').forEach(x=>x.setAttribute('aria-pressed',x===b));renderLab()};
+document.getElementById('ar').oninput=renderLab;renderLab();
+// real moments: best example of each posture
+const best={};
+R.pulses.forEach(p=>R.agents.forEach(a=>{const m=p.mood[a.id],soc=p.soc[a.id];if(!m)return;const P=actFrom(m,soc,{toward:0});
+  if(!best[P.kind]||P.strength>best[P.kind].P.strength)best[P.kind]={P,a,p,m,soc}}));
+const grid=document.getElementById('grid');
+Object.keys(LABEL).forEach(k=>{const b=best[k];const c=document.createElement('div');c.className='card';const box=document.createElement('div');box.className='stagebox';c.append(box);
+ let ag,P,txt;
+ if(b){ag=b.a;P=b.P;const DR={anger:['resentment','jealousy','contempt','envy'],shame:['humiliation','shame'],fear:['fearOfExclusion','socialAnxiety','neediness'],warm:['affection','admiration'],proud:['pride','desireForStatus'],suspicion:['suspicion'],tired:[],rest:[]}[k];const top=DR.filter(n=>b.soc[n]).map(n=>`<code>${n} ${b.soc[n]}</code>`).join(' ')||'<i>no strong emotion</i>';txt=`${ag.short}, ${clockText(minOf(b.p.i))} · ${top} · arousal ${b.m.a}`}
+ else{ag=R.agents[0];P=actFrom({v:0,a:.4,e:k==='tired'?.3:1},SOCS[k],{});txt=`<i>Not reached in this run. Shown with ${ag.short} from a dialled-in value.</i>`}
+ card(box,ag,P);
+ c.insertAdjacentHTML('beforeend',`<b>${LABEL[k]}</b><p>${stateRead(P)}.</p><p>${txt}</p>`);grid.append(c)});
+</script></body></html>
