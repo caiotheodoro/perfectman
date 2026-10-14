@@ -31,6 +31,21 @@ export function sceneTitleIn(files: readonly UploadedFile[]): string | undefined
   return scenario ? frontmatter(scenario.text)["name"] : undefined;
 }
 
+/** Where a scene happens and when, so a card can draw the place at the right hour. */
+export function sceneLookIn(files: readonly UploadedFile[]): { setting: string | undefined; minute: number } {
+  const scenario = files.find((file) => /\.scenario\.md$/i.test(file.filename)) ?? files[0];
+  const front = scenario ? frontmatter(scenario.text) : {};
+  const start = /start:\s*"?(\d{1,2}):(\d{2})/.exec(front["storyclock"] ?? "");
+  return { setting: front["setting"], minute: start ? Number(start[1]) * 60 + Number(start[2]) : 21 * 60 };
+}
+
+/** The first private motive in a persona file: what that person would rather not say. */
+export function secretIn(file: UploadedFile): string | undefined {
+  const section = /^##\s*Private Motives\s*$([\s\S]*?)(?=^##\s|(?![\s\S]))/im.exec(file.text)?.[1];
+  const line = section?.split("\n").map((l) => l.replace(/^\s*[-*]\s*/, "").trim()).find((l) => l.length > 0);
+  return line;
+}
+
 /** Top-level scalar keys only. Nested blocks are not needed for a preview. */
 function frontmatter(text: string): Record<string, string> {
   const block = text.split(/^---\s*$/m)[1];

@@ -13,7 +13,7 @@
 .watch-balloons, .watch-marks, .watch-captions { position: absolute; inset: 0; pointer-events: none; }
 .watch-balloon { position: absolute; left: 0; top: 0; display: none; will-change: transform, opacity; filter: drop-shadow(0 3px 0 #0006); }
 .watch-balloon > svg { position: absolute; left: 0; top: 0; }
-.watch-balloon__text { position: relative; width: 100%; height: 100%; display: grid; place-items: center; text-align: center; font-variation-settings: "BNCE" 0, "INFM" 70; }
+.watch-balloon__text { box-sizing: border-box; position: relative; width: 100%; height: 100%; display: grid; place-items: center; text-align: center; font-variation-settings: "BNCE" 0, "INFM" 70; }
 .watch-balloon__line { white-space: nowrap; }
 .watch-balloon__text .w { display: inline; visibility: hidden; }
 .watch-balloon__tag { position: absolute; left: 12px; top: -11px; font: 700 11px/1 "Shantell Sans Variable", system-ui, sans-serif; color: #1d1f1a; padding: 3px 8px; border-radius: 999px; border: 2px solid #1d1f1a; white-space: nowrap; }

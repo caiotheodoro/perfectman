@@ -3,7 +3,7 @@
  * A scene names its cast; pairing them here is what the picker does before
  * `POST /api/compile` ever sees the files.
  */
-import { INITIAL_ROOM, roomFiles } from "../../../../web/src/onboarding/room-draft.js";
+import { INITIAL_ROOM, roomFiles } from "../../../../web/src/setup/room-draft.js";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { compileRunInputs } from "../compile-run-inputs.js";

@@ -1,18 +1,17 @@
 /**
  * The run.
  *
- * Before it starts this is a short form — who is answering, and how long to let
- * it go. Once it starts the stage takes the screen, and everything technical
- * moves into `details`, still complete, just no longer the thing you are
- * looking at.
+ * The stage takes the screen as soon as a run starts, and everything technical
+ * sits in `details`, still complete, just no longer the thing you are looking
+ * at. Choosing the story and the model happens on the setup page; a run that
+ * cannot begin sends the viewer back there with the reason.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { chipIndexFor, idlePlacement, placeBeats, type CompileResponse, type StartRunRequest } from "@perfectman/shared";
+import { idlePlacement, placeBeats, type CompileResponse } from "@perfectman/shared";
 import type { RunStream } from "../api/useRunStream.js";
 import type { LiveChannel } from "@perfectman/shared";
 import type { StageAgent } from "../stage/Stage.js";
 import { Panel } from "../stage/Panel.js";
-import { Figure } from "../stage/Figure.js";
 import { Attribution } from "../stage/Attribution.js";
 import { ContactSheet } from "../stage/ContactSheet.js";
 import { frameFor, frameLabel } from "../stage/Frame.js";
@@ -22,8 +21,6 @@ import { useStageBeats } from "./useStageBeats.js";
 import { useSoundtrack } from "./useSoundtrack.js";
 import { Transport } from "./Transport.js";
 import { DetailsDrawer } from "./DetailsDrawer.js";
-import { useServerBusy } from "./useServerBusy.js";
-import { ProviderForm, type ProviderValue, DEFAULT_PROVIDER } from "./ProviderForm.js";
 
 const IDLE_STATES = new Set(["idle", "done", "failed"]);
 // Stable empties, so the memos below do not recompute on every render before
@@ -40,10 +37,11 @@ export function RunScreen({
   starting = false,
   cancelling = false,
   error,
-  onRun,
   onStop,
   onDismissError,
   onReset,
+  onGiveUp,
+  unlockRef,
 }: {
   sceneTitle?: string;
   visible?: boolean;
@@ -53,17 +51,14 @@ export function RunScreen({
   starting?: boolean;
   cancelling?: boolean;
   error: string | null;
-  onRun: (llm: StartRunRequest["llm"], limits?: StartRunRequest["limits"]) => void;
   onStop: () => void;
   onDismissError: () => void;
-  /** Forget the current run id, so the form comes back. */
+  /** Back to the setup page for another run. */
   onReset: () => void;
+  /** The run died before anything was said. The usual fix is the key, so setup asks for it again. */
+  onGiveUp: (why: { message: string; hint?: string }) => void;
+  unlockRef: { current: () => void };
 }): JSX.Element {
-  const [provider, setProvider] = useState<ProviderValue>(DEFAULT_PROVIDER);
-  // What the last run died of, kept across the reset that brings the form
-  // back. The key is cleared with it: when the model, the key or the output
-  // format does not work, the fix is almost always the key.
-  const [failure, setFailure] = useState<{ message: string; hint?: string } | null>(null);
   const beats = useStageBeats(stream.replay);
   const running = stream.status ? !IDLE_STATES.has(stream.status.state) && stream.stoppedReason === null && !stream.error : false;
   const finished = stream.status?.state === "done" || stream.status?.state === "failed" || stream.stoppedReason !== null;
@@ -77,11 +72,9 @@ export function RunScreen({
 
   const started = runId !== null;
   const historyNotice = stream.notices.find((notice) => notice.type === "history_truncated");
-  // Only poll while the provider form can be used. Hidden runs stay mounted.
-  const server = useServerBusy(visible && !started && !starting);
-  useEffect(() => {
-    if (!started) setProvider((p) => p.llm.apiKey ? { ...p, llm: { ...p.llm, apiKey: "" } } : p);
-  }, [started]);
+  // The setup page's Start click is the gesture the browser lets the soundtrack play under, so it reaches this through the ref.
+  const unlock = sound.unlock;
+  useEffect(() => { unlockRef.current = unlock; }, [unlockRef, unlock]);
   const agents = stream.replay?.agents ?? compiled?.summary?.agents ?? EMPTY_AGENTS;
   const preparedChannels = useMemo(() => compiled?.summary?.channels.map((channel) => ({
     id: channel.id, name: channel.name, type: channel.type, memberAgentIds: channel.members,
@@ -100,10 +93,7 @@ export function RunScreen({
   );
   const status = stream.status;
   const failedEarly = started && beats.length === 0 && (status?.state === "failed" || stream.error !== null);
-  const giveUp = useCallback((why: { message: string; hint?: string }): void => {
-    setFailure(why);
-    onReset();
-  }, [onReset]);
+  const giveUp = onGiveUp;
   useEffect(() => {
     if (!failedEarly) return;
     giveUp(status?.error ?? { message: stream.error ?? "The run stopped before anything was said." });
@@ -122,42 +112,9 @@ export function RunScreen({
       ) : null}
 
       {!started && !starting ? (
-        <>
-          <header className="step__head">
-            <h2>Give your cast a model.</h2>
-            <p>
-              Connect an OpenAI-compatible endpoint. Each agent will decide
-              what to say, what to keep private, and when to stay quiet.
-            </p>
-          </header>
-          <div className="run__cast" role="group" aria-label="Your cast">
-            {agents.map((agent) => <Figure key={agent.id} index={chipIndexFor(agent.id, ids)}
-              name={agent.displayName} face="neutral" energy={0.3} speaking={false} attentive />)}
-          </div>
-          {failure ? (
-            <div className="alert" role="alert">
-              <p>
-                The run stopped: {failure.message}
-                {failure.hint ? ` ${failure.hint}` : ""} Paste the key again and start over.
-              </p>
-            </div>
-          ) : null}
-          {server.busy ? <ServerBusyNotice server={server} /> : null}
-          <ProviderForm
-            value={provider}
-            onChange={setProvider}
-            onRun={(next) => {
-              // Inside the click, before anything async: this is the gesture
-              // the browser will let the soundtrack play under later.
-              sound.unlock();
-              setFailure(null);
-              onRun(next.llm, next.maxPulses ? { maxPulses: next.maxPulses } : undefined);
-            }}
-            ready={Boolean(compiled?.ok)}
-            busy={server.busy}
-            focusKey={failure !== null}
-          />
-        </>
+        <p className="warmup" role="status">
+          Nothing is running. <button type="button" className="btn--bare" onClick={onReset}>Back to setup</button>
+        </p>
       ) : (
         <>
           <header className="run__title"><h2>{stream.replay?.simulationName ?? sceneTitle ?? "Your scene"}</h2></header>
@@ -224,7 +181,7 @@ export function RunScreen({
             ) : (
               <>
                 {beats.length > 0 ? <button type="button" className="btn btn--quiet" onClick={() => { seek(0); clock.play(); }}>Watch again</button> : null}
-                <button type="button" className="btn" onClick={onReset}>Start another run</button>
+                <button type="button" className="btn" onClick={onReset}>Set up another room</button>
               </>
             )}
           </div>
@@ -267,32 +224,6 @@ function WarmupNote({
         The scene starts as soon as the first line arrives. Each line stays
         long enough to read while the model prepares the next turn.
       </p>
-    </div>
-  );
-}
-
-/**
- * The server takes one run at a time, and on a shared link the run in progress
- * is usually somebody else's. Say whose, how far in, and offer the only action
- * that helps — rather than letting Start fail with a 409.
- */
-function ServerBusyNotice({ server }: { server: ReturnType<typeof useServerBusy> }): JSX.Element {
-  const status = server.status;
-  const turns =
-    status && status.maxPulses > 0 ? `${status.pulsesRun} of ${status.maxPulses} turns in` : "just started";
-
-  return (
-    <div className="busy" role="status">
-      <div className="busy__words">
-        <b>A run is already going.</b>
-        <span>
-          {turns}. The server takes one at a time, so this one has to finish or
-          be stopped first.
-        </span>
-      </div>
-      <button type="button" className="btn btn--quiet" disabled={server.stopping} onClick={() => void server.release()}>
-        {server.stopping ? "Stopping…" : "Stop it"}
-      </button>
     </div>
   );
 }

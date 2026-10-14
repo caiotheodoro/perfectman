@@ -7,6 +7,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { type DirectorReplay, type PaceName } from "@perfectman/shared";
+import { reducedMotion } from "../stage/motion.js";
 import { FilmAudio } from "./film-audio.js";
 import { captionAt, type Caption } from "./caption.js";
 import { buildFilm, formatDuration, type Film } from "./film.js";
@@ -18,8 +19,24 @@ import { TimelineStrip } from "./TimelineStrip.js";
 const PACE_LABELS: Array<[PaceName, string]> = [["relaxed", "Relaxed"], ["normal", "Normal"], ["fast", "Fast"]];
 const SPEEDS: FilmSpeed[] = [1, 2, 4];
 
-export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: string }): JSX.Element {
-  const [pace, setPace] = useState<PaceName>("normal");
+export type FilmPlayerProps = {
+  replay: DirectorReplay;
+  title: string;
+  /** `hero` is the landing page's cut: no timeline, no pace, one switch for what is shown. */
+  variant?: "full" | "hero";
+  /** Start by itself, silently, unless the viewer asked for less motion. */
+  autoplay?: boolean;
+  /** Start again a moment after the end. */
+  loop?: boolean;
+  pace?: PaceName;
+};
+
+/** How long the last frame holds before a looping film starts over. */
+const LOOP_REST_MS = 2600;
+
+export function FilmPlayer({ replay, title, variant = "full", autoplay = false, loop = false, pace: initialPace = "normal" }: FilmPlayerProps): JSX.Element {
+  const hero = variant === "hero";
+  const [pace, setPace] = useState<PaceName>(initialPace);
   const [omniscient, setOmniscient] = useState(true);
   const [speed, setSpeed] = useState<FilmSpeed>(1);
   const [voices, setVoices] = useState(false);
@@ -33,6 +50,7 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
   const stage = useRef<StageView | null>(null);
   const clock = useRef(new FilmClock(1));
   const lens = useRef(true);
+  const restart = useRef<number | undefined>(undefined);
   const audio = useMemo(() => new FilmAudio((id) => replay.agentIds.indexOf(id)), [replay]);
 
   useEffect(() => {
@@ -58,18 +76,21 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
     stage.current = s;
     clock.current.retime(film.T.duration);
     s.render(clock.current.t, { omniscient: lens.current });
+    if (autoplay && !reducedMotion() && clock.current.t === 0) clock.current.playing = true;
     setView({ t: clock.current.t, playing: clock.current.playing });
     return () => { s.destroy(); stage.current = null; };
-  }, [film, replay]);
+  }, [film, replay, autoplay]);
 
   useEffect(() => {
     if (!film) return;
     let raf = 0, last: number | null = null, shown = 0;
-    const loop = (now: number): void => {
+    const frame = (now: number): void => {
       const dt = last === null ? 0 : (now - last) / 1000;
       last = now;
       const c = clock.current, before = c.t;
-      c.tick(dt);
+      if (c.tick(dt) && loop && restart.current === undefined) {
+        restart.current = window.setTimeout(() => { restart.current = undefined; c.seek(0); c.playing = true; }, LOOP_REST_MS);
+      }
       const S = stage.current?.render(c.t, { omniscient: lens.current });
       if (S) {
         audio.frame(film.T, S, before, c.t, Math.min(dt, 0.1), c.playing);
@@ -78,12 +99,13 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
         if (key !== lastCaption.current) { lastCaption.current = key; setCaption(lens.current || cap?.kind !== "thought" ? cap : null); }
       }
       if (now - shown > 120) { shown = now; setView({ t: c.t, playing: c.playing }); }
-      raf = requestAnimationFrame(loop);
+      raf = requestAnimationFrame(frame);
     };
-    raf = requestAnimationFrame(loop);
+    raf = requestAnimationFrame(frame);
     return () => cancelAnimationFrame(raf);
-  }, [film, audio, replay]);
+  }, [film, audio, replay, loop]);
 
+  useEffect(() => () => { window.clearTimeout(restart.current); restart.current = undefined; }, []);
   useEffect(() => () => audio.destroy(), [audio]);
 
   const seek = useCallback((t: number) => {
@@ -105,7 +127,7 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
   const stats = film ? `${film.T.msgs.length} messages, ${film.T.wordTotal.toLocaleString()} words, read at ${film.T.pace.toFixed(1)} words a second.` : "";
 
   return (
-    <section className={`film${narrow ? " film--narrow" : ""}`} aria-label={`Film of ${title}`} onKeyDown={onKey}>
+    <section className={`film${narrow ? " film--narrow" : ""}${hero ? " film--hero" : ""}`} aria-label={`Film of ${title}`} onKeyDown={onKey}>
       <div className="film__stage" ref={host} role="img" aria-label={`${title}, drawn as a film`}>
         {!film ? <p className="film__loading" role="status">Setting the stage…</p> : null}
       </div>
@@ -114,6 +136,22 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
           {caption ? <><span className="film__who">{caption.name}</span> {caption.text}</> : <span className="u-dim">Press play.</span>}
         </p>
       ) : null}
+      {hero ? (
+        <div className="film__hero-bar">
+          <button type="button" className="btn" disabled={!film} onClick={toggle}>{view.playing ? "Pause" : view.t >= duration && duration > 0 ? "Watch again" : "Play"}</button>
+          <div className="lens" role="group" aria-label="What you can see">
+            <button type="button" aria-pressed={!omniscient} onClick={() => { lens.current = false; setOmniscient(false); }}>What they say</button>
+            <button type="button" aria-pressed={omniscient} onClick={() => { lens.current = true; setOmniscient(true); }}>What they think</button>
+          </div>
+          <button type="button" aria-pressed={sound} className="film__opt film__opt--solo" onClick={() => { audio.setSound(!sound); setSound(!sound); }}>{sound ? "Sound on" : "Sound off"}</button>
+          <input
+            className="film__scrub" type="range" min={0} max={1000} step={1} aria-label="Position in the film" disabled={!film}
+            value={duration > 0 ? Math.round((view.t / duration) * 1000) : 0}
+            onChange={(e) => seek((Number(e.target.value) / 1000) * duration)}
+          />
+        </div>
+      ) : (
+      <>
       <div className="film__bar">
         <button type="button" className="btn" disabled={!film} onClick={toggle}>{view.playing ? "Pause" : view.t >= duration && duration > 0 ? "Watch again" : "Play"}</button>
         <button type="button" className="btn btn--quiet" disabled={!film} onClick={() => seek(clock.current.t - 5)} aria-label="Back five seconds">−5 s</button>
@@ -151,6 +189,8 @@ export function FilmPlayer({ replay, title }: { replay: DirectorReplay; title: s
       </div>
       {film ? <TimelineStrip T={film.T} replay={replay} t={view.t} onSeek={seek} /> : null}
       <p className="film__stats u-dim">{stats} A balloon stays up until its words are read; the next one lands as the last is being finished.</p>
+      </>
+      )}
     </section>
   );
 }

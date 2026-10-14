@@ -10,17 +10,17 @@ describe("Shell", () => {
   afterEach(cleanup);
 
   it("focuses the new step heading when moving through the flow", () => {
-    const props = { furthest: "scene" as const, onStep: () => undefined, onHome: () => undefined };
-    const { getByRole, rerender } = render(<Shell {...props} step="cast"><h2>Cast</h2></Shell>);
+    const props = { furthest: "run" as const, onStep: () => undefined, onHome: () => undefined };
+    const { getByRole, rerender } = render(<Shell {...props} step="setup"><h2>Cast</h2></Shell>);
     expect(document.activeElement).toBe(getByRole("heading", { name: "Cast" }));
-    rerender(<Shell {...props} step="scene"><h2>Scene</h2></Shell>);
+    rerender(<Shell {...props} step="run"><h2>Scene</h2></Shell>);
     expect(document.activeElement).toBe(getByRole("heading", { name: "Scene" }));
   });
 
   it("shows the landing when the mark is clicked", () => {
     const onHome = vi.fn();
     const { getByRole } = render(
-      <Shell step="cast" furthest="cast" onStep={() => undefined} onHome={onHome}>
+      <Shell step="setup" furthest="setup" onStep={() => undefined} onHome={onHome}>
         <p>step</p>
       </Shell>,
     );

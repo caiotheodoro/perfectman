@@ -1,105 +1,108 @@
 import type { CompileResponse } from "@perfectman/shared";
+import { useCallback, useRef, useState } from "react";
 import { API_BASE, IS_SPLIT_DEPLOY } from "./api/origin.js";
 import { Shell } from "./design/Shell.js";
-import { Intro } from "./onboarding/Intro.js";
-import { PickStep } from "./pick/PickStep.js";
+import { Intro, type StartChoice } from "./onboarding/Intro.js";
+import { DEFAULT_PROVIDER, parseExtraBody, type ProviderValue } from "./run/ProviderForm.js";
 import { RunScreen } from "./run/RunScreen.js";
-import { useState } from "react";
+import { SetupPage } from "./setup/SetupPage.js";
+import { draftFromSentence, INITIAL_ROOM, type RoomDraft, type RoomFiles } from "./setup/room-draft.js";
 import { useWorkspaceFlow } from "./useWorkspaceFlow.js";
 import { WatchScreen } from "./watch/WatchScreen.js";
 
 export function App(): JSX.Element {
   const [watching, setWatching] = useState(false);
+  const [provider, setProvider] = useState<ProviderValue>(DEFAULT_PROVIDER);
+  const [draft, setDraft] = useState<RoomDraft>(INITIAL_ROOM);
+  const [writeError, setWriteError] = useState<string | null>(null);
+  const [setupFailure, setSetupFailure] = useState<{ message: string; hint?: string } | null>(null);
+  const unlockSound = useRef<() => void>(() => undefined);
   const {
     introDone, setIntroDone, step, setStep, furthest, library,
     presetsLoading, presetsError, cast, setCast, scene, compiled,
-    compiling, currentCompilation, sceneTitle, activeRun, changedRunInputs, runPlan,
-    runId, setRunId, setRunPlan, failure, setFailure, castChange,
+    compiling, sceneTitle, runPlan, activeRun,
+    runId, setRunId, setRunPlan, failure, setFailure,
     setCastChange, starting, cancelling, stream, pickScene, advance,
-    run, stop, setScene, finishIntro,
+    run, stop, setScene, writing, setWriting, finishIntro,
   } = useWorkspaceFlow();
+
+  const begin = useCallback((choice: StartChoice) => {
+    const preset = library.scenes.find((s) => s.id === choice.presetId);
+    if (preset) {
+      setWriting(false);
+      pickScene({ presetId: preset.id, files: preset.files });
+    } else if (choice.story) {
+      setDraft(draftFromSentence(choice.story));
+      setWriting(true);
+    }
+    setStep("setup");
+    finishIntro();
+  }, [library.scenes, pickScene, setStep, setWriting, finishIntro]);
+
+  const written = useCallback((result: { files: RoomFiles } | { error: string }) => {
+    if ("error" in result) { setWriteError(result.error); return; }
+    setWriteError(null);
+    setCast({ presetId: null, files: result.files.personas });
+    setScene({ presetId: null, files: [result.files.scenario] });
+    setCastChange(null);
+  }, [setCast, setScene, setCastChange]);
+
+  const start = useCallback(() => {
+    // Inside the click, before anything async: this is the gesture the browser will let the soundtrack play under.
+    unlockSound.current();
+    const extra = parseExtraBody(provider.extraBodyText);
+    setSetupFailure(null);
+    setFailure(null);
+    void run({ ...provider.llm, ...(extra.value ? { extraBody: extra.value } : {}) }, provider.maxPulses ? { maxPulses: provider.maxPulses } : undefined);
+    advance("run");
+  }, [provider, run, advance, setFailure]);
+
+  const backToSetup = useCallback((why?: { message: string; hint?: string }) => {
+    // The key goes with the run. A model, key or output format that does not work is nearly always the key.
+    setProvider((p) => (p.llm.apiKey ? { ...p, llm: { ...p.llm, apiKey: "" } } : p));
+    setRunId(null);
+    setRunPlan(null);
+    setFailure(null);
+    if (why) setSetupFailure(why);
+    setStep("setup");
+  }, [setRunId, setRunPlan, setFailure, setStep]);
+
+  const sceneCompiled: CompileResponse | null = writeError ? { ok: false, config: null, diagnostics: [{ level: "error", message: writeError }], summary: null } as unknown as CompileResponse : compiled;
+
   return (
     <>
       {!introDone ? (
-      <Intro
-        onDone={finishIntro}
-        onCreate={({ personas, scenario }) => {
-          setCast({ presetId: null, files: personas });
-          setScene({ presetId: null, files: [scenario] });
-          setCastChange(null);
-          advance("scene");
-        }}
-      />
+        <Intro starters={library.scenes} onStart={begin} onWatch={() => setWatching(true)} />
       ) : null}
       <div hidden={!introDone}>
     <Shell step={step} furthest={furthest} onStep={setStep} onHome={() => setIntroDone(false)} onWatch={() => setWatching(true)}>
-      {presetsLoading ? <p role="status">Loading casts and scenes…</p> : null}
+      {presetsLoading ? <p role="status">Loading stories…</p> : null}
       {presetsError ? (
         <div className="alert alert--shell" role="alert">
           <p>
             Could not reach the run server{IS_SPLIT_DEPLOY ? ` at ${API_BASE}` : ""}: {presetsError}. You can still
-            write your own cast and scene below.
+            write your own story below.
           </p>
         </div>
       ) : null}
-      {step === "scene" && castChange ? <p className="selection-note" role="status">{castChange}</p> : null}
-      {step === "scene" && currentCompilation?.error ? (
-        <p className="alert" role="alert">Could not check this scene: {currentCompilation.error}. Edit it to retry.</p>
-      ) : null}
-      {step === "cast" ? (
-        <PickStep
-          kind="cast"
-          title="Who’s in the room?"
-          lede="A cast of AI agents, each with a different way of seeing things. Choose a group, or write your own."
-          presets={library.casts}
-          selection={cast}
-          onSelect={(next) => { setCast(next); setCastChange(null); }}
-          accept=".md,text/markdown"
-          emptyHint="One markdown file per character: how they see themselves, how they talk, what they remember."
-        >
-          <button type="button" className="btn" disabled={cast.files.length === 0} onClick={() => advance("scene")}>
-            Choose a scene
-          </button>
-          {cast.files.length === 0 ? <span className="u-dim">Pick a cast to continue.</span> : null}
-        </PickStep>
-      ) : null}
 
-      {step === "scene" ? (
-        <PickStep
-          kind="scene"
-          casts={library.casts}
-          activeCast={cast}
-          title="Give them something to talk about."
-          lede="Choose a situation. Each agent decides what to say, and what to keep to themselves."
-          presets={library.scenes}
-          selection={scene}
-          onSelect={pickScene}
-          accept=".md,text/markdown"
-          emptyHint="One markdown file: the room, the channels, and a hidden objective per character."
-        >
-          <button
-            type="button"
-            className="btn"
-            disabled={!compiled?.ok || (activeRun && changedRunInputs)}
-            onClick={() => {
-              if (changedRunInputs && !activeRun) {
-                setRunId(null);
-                setRunPlan(null);
-                setFailure(null);
-              }
-              advance("run");
-            }}
-          >
-            Ready
-          </button>
-          {activeRun && changedRunInputs ? (
-            <span className="u-dim">Your current run is still going. <button type="button" className="btn--bare" onClick={() => advance("run")}>Return to the run</button> to finish or stop it first.</span>
-          ) : <StepStatus compiled={compiled} compiling={compiling} hasScene={scene.files.length > 0} />}
-        </PickStep>
-      ) : null}
+      <div hidden={step !== "setup"}>
+        <SetupPage
+          visible={introDone && step === "setup"}
+          library={library} cast={cast} scene={scene}
+          compiled={sceneCompiled} compiling={compiling}
+          draft={draft} writing={writing} failure={setupFailure} provider={provider} starting={starting} runActive={activeRun} onReturnToRun={() => setStep("run")}
+          onPickPreset={(preset) => { setWriting(false); setWriteError(null); pickScene({ presetId: preset.id, files: preset.files }); }}
+          onWrite={() => setWriting(true)}
+          onStopWriting={() => { setWriting(false); setWriteError(null); }}
+          onWritten={written}
+          onFiles={(castFiles, sceneFiles) => { setWriting(false); setCast({ presetId: null, files: castFiles }); setScene({ presetId: null, files: sceneFiles }); setCastChange(null); }}
+          onProvider={setProvider}
+          onStart={start}
+        />
+      </div>
 
-      {furthest === "run" ? (
-        <div hidden={step !== "run"}>
+      <div hidden={step !== "run"}>
         <RunScreen
           visible={introDone && step === "run"}
           sceneTitle={(runId || starting) && runPlan ? runPlan.title : sceneTitle}
@@ -109,41 +112,16 @@ export function App(): JSX.Element {
           starting={starting}
           cancelling={cancelling}
           error={failure ?? stream.error}
-          onRun={run}
           onStop={stop}
           onDismissError={() => setFailure(null)}
-          onReset={() => { setRunId(null); setFailure(null); }}
+          onReset={() => backToSetup()}
+          onGiveUp={backToSetup}
+          unlockRef={unlockSound}
         />
-        </div>
-      ) : null}
+      </div>
     </Shell>
       </div>
       {watching ? <WatchScreen onClose={() => setWatching(false)} /> : null}
     </>
   );
-}
-
-function StepStatus({
-  compiled,
-  compiling,
-  hasScene,
-}: {
-  compiled: CompileResponse | null;
-  compiling: boolean;
-  hasScene: boolean;
-}): JSX.Element | null {
-  if (!hasScene) return <span className="u-dim">Pick a scene to continue.</span>;
-  if (compiling) return <span className="u-dim">Checking…</span>;
-  if (!compiled) return null;
-  if (compiled.ok) {
-    const agents = compiled.summary?.agents.length ?? 0;
-    const channels = compiled.summary?.channels.length ?? 0;
-    return (
-      <span className="u-dim">
-        {agents} in the room, {channels} channel{channels === 1 ? "" : "s"}.
-      </span>
-    );
-  }
-  const first = compiled.diagnostics.find((d) => d.level === "error");
-  return <span className="alert-inline">{first?.message ?? "These files do not fit together."}</span>;
 }

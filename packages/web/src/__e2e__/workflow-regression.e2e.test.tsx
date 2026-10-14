@@ -36,18 +36,15 @@ it("preserves a run through navigation and opens a changed scene only after that
   vi.stubGlobal("fetch", fetcher);
   render(<App />);
   await act(async () => undefined);
-  fireEvent.click(screen.getByRole("button", { name: /Dinner cast/ }));
-  fireEvent.click(screen.getByRole("button", { name: "Choose a scene" }));
   fireEvent.click(screen.getByRole("button", { name: /Dinner scene/ }));
   await act(async () => { await vi.advanceTimersByTimeAsync(300); });
-  fireEvent.click(screen.getByRole("button", { name: "Ready" }));
   fireEvent.change(screen.getByLabelText(/^API key/), { target: { value: "fixture-key" } });
-  fireEvent.click(screen.getByRole("button", { name: "Start the run" }));
+  fireEvent.click(screen.getByRole("button", { name: "Start the room" }));
   await act(async () => undefined);
-  fireEvent.click(screen.getByRole("button", { name: /^Scene/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Set up" }));
   fireEvent.click(screen.getByRole("button", { name: /Reunion scene/ }));
   await act(async () => { await vi.advanceTimersByTimeAsync(300); });
-  expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: "Start the room" }).hasAttribute("disabled")).toBe(true);
   fireEvent.click(screen.getByRole("button", { name: "Return to the run" }));
   expect(screen.getByRole("heading", { name: "Dinner scene" }).textContent).toBe("Dinner scene");
   send({
@@ -71,8 +68,8 @@ it("preserves a run through navigation and opens a changed scene only after that
   fireEvent.click(screen.getByRole("button", { name: "Next beat" }));
   expect(screen.getByLabelText("Position in the run").textContent).toBe("3 / 4");
   expect(screen.getByRole("button", { name: "Play" }).textContent).toBe("Play");
-  fireEvent.click(screen.getByRole("button", { name: /^Scene/ }));
-  fireEvent.click(screen.getByRole("button", { name: "Run" }));
+  fireEvent.click(screen.getByRole("button", { name: "Set up" }));
+  fireEvent.click(screen.getByRole("button", { name: "Watch" }));
   expect(sources).toHaveLength(1);
   expect({
     position: screen.getByLabelText("Position in the run").textContent,
@@ -81,14 +78,15 @@ it("preserves a run through navigation and opens a changed scene only after that
 
   fireEvent.click(screen.getByTitle("Back to the introduction"));
   act(() => vi.advanceTimersByTime(60_000));
-  fireEvent.click(screen.getByRole("button", { name: "Browse casts and scenes" }));
+  fireEvent.click(screen.getByRole("button", { name: "Start a room" }));
+  fireEvent.click(screen.getByRole("button", { name: "Watch" }));
   expect(screen.getByLabelText("Position in the run").textContent).toBe("3 / 4");
   expect(screen.getByRole("button", { name: "Play" }).textContent).toBe("Play");
 
-  fireEvent.click(screen.getByRole("button", { name: /^Scene/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Set up" }));
   fireEvent.click(screen.getByRole("button", { name: /Reunion scene/ }));
   await act(async () => { await vi.advanceTimersByTimeAsync(300); });
-  expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(true);
+  expect(screen.getByRole("button", { name: "Start the room" }).hasAttribute("disabled")).toBe(true);
   fireEvent.click(screen.getByRole("button", { name: "Return to the run" }));
   expect(screen.getByRole("heading", { name: "Dinner" }).textContent).toBe("Dinner");
   expect(screen.getByLabelText("Position in the run").textContent).toBe("3 / 4");
@@ -100,13 +98,13 @@ it("preserves a run through navigation and opens a changed scene only after that
     counters: { llmFailures: 0, gatewayTimeouts: 0, framesDropped: 0 },
   } });
   send({ type: "stopped", stopReason: "max_pulses", replayUrl: "/api/runs/r1/replay" });
-  fireEvent.click(screen.getByRole("button", { name: /^Scene/ }));
+  fireEvent.click(screen.getByRole("button", { name: "Set up" }));
   fireEvent.click(screen.getByRole("button", { name: /Reunion scene/ }));
-  expect(screen.getByRole("button", { name: "Ready" }).hasAttribute("disabled")).toBe(false);
-  fireEvent.click(screen.getByRole("button", { name: "Ready" }));
-  expect(screen.getByRole("heading", { name: "Give your cast a model." }).textContent).toBe("Give your cast a model.");
-  expect(screen.queryByLabelText("Position in the run")).toBeNull();
   const key = screen.getByLabelText<HTMLInputElement>(/^API key/);
-  expect(key.value).toBe("");
-  expect(screen.getByRole("button", { name: "Start the run" }).hasAttribute("disabled")).toBe(true);
+  expect(key.value).toBe("fixture-key");
+  fireEvent.click(screen.getByRole("button", { name: "Watch" }));
+  fireEvent.click(screen.getByRole("button", { name: "Set up another room" }));
+  expect(screen.queryByLabelText("Position in the run")).toBeNull();
+  expect(screen.getByLabelText<HTMLInputElement>(/^API key/).value).toBe("");
+  expect(screen.getByRole("button", { name: "Start the room" }).hasAttribute("disabled")).toBe(true);
 });

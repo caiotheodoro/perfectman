@@ -6,14 +6,10 @@
 import { render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { RunStatus } from "@perfectman/shared";
-import type { RunStream } from "../../api/useRunStream.js";
-import { RunScreen } from "../RunScreen.js";
+import { SetupPage } from "../../setup/SetupPage.js";
+import { DEFAULT_PROVIDER } from "../ProviderForm.js";
+import { INITIAL_ROOM } from "../../setup/room-draft.js";
 import * as client from "../../api/client.js";
-
-const EMPTY: RunStream = {
-  replay: null, helloRunId: null, status: null, notices: [], raw: [], dropped: 0,
-  connected: false, error: null, stoppedReason: null,
-};
 
 const COMPILED = { ok: true, config: {}, diagnostics: [], summary: null };
 
@@ -24,11 +20,14 @@ function status(over: Partial<RunStatus> = {}): RunStatus {
   };
 }
 
-function screen(props: Partial<Parameters<typeof RunScreen>[0]> = {}) {
+function screen(props: Partial<Parameters<typeof SetupPage>[0]> = {}) {
+  const noop = vi.fn();
   return render(
-    <RunScreen
-      compiled={COMPILED} stream={EMPTY} runId={null} error={null}
-      onRun={vi.fn()} onStop={vi.fn()} onDismissError={vi.fn()} onReset={vi.fn()}
+    <SetupPage
+      visible library={{ casts: [], scenes: [] }} cast={{ presetId: null, files: [] }} scene={{ presetId: null, files: [] }}
+      compiled={COMPILED} compiling={false} draft={INITIAL_ROOM} writing={false} failure={null}
+      provider={{ ...DEFAULT_PROVIDER, llm: { ...DEFAULT_PROVIDER.llm, apiKey: "k" } }} starting={false} runActive={false} onReturnToRun={noop}
+      onPickPreset={noop} onWrite={noop} onStopWriting={noop} onWritten={noop} onFiles={noop} onProvider={noop} onStart={noop}
       {...props}
     />,
   );
@@ -50,7 +49,7 @@ describe("when the server is already busy", () => {
     const { container } = screen();
 
     await waitFor(() => expect(container.querySelector(".busy")).not.toBeNull());
-    const start = [...container.querySelectorAll("button")].find((b) => /start/i.test(b.textContent ?? ""));
+    const start = [...container.querySelectorAll("button")].find((b) => /start the room/i.test(b.textContent ?? ""));
     expect(start?.disabled).toBe(true);
   });
 
@@ -84,7 +83,7 @@ describe("when the server is already busy", () => {
 
   it("stops asking once a run of your own is on screen", async () => {
     vi.spyOn(client, "currentStatus").mockResolvedValue(status());
-    screen({ runId: "r_mine" });
+    screen({ starting: true });
 
     await new Promise((r) => setTimeout(r, 60));
     expect(client.currentStatus).not.toHaveBeenCalled();

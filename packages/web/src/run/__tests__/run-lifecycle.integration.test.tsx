@@ -31,7 +31,7 @@ function streamWith(messages: number, state?: RunStatus["state"]): RunStream {
 const ignore = () => undefined;
 function screen(stream: RunStream, onReset = ignore, onStop = ignore) {
   return <RunScreen compiled={null} stream={stream} runId="r1" error={null}
-    onRun={ignore} onStop={onStop} onDismissError={ignore} onReset={onReset} />;
+    onStop={onStop} onDismissError={ignore} onReset={onReset} onGiveUp={onReset} unlockRef={{ current: ignore }} />;
 }
 
 beforeEach(() => {
@@ -49,7 +49,7 @@ describe("run lifecycle", () => {
         channels: [{ id: "room", name: "Dinner", type: "public_channel", members: ["iris"] }],
         maxPulses: 6, seed: 0, languages: {},
       } }} stream={EMPTY} runId={null} starting error={null}
-      onRun={ignore} onStop={ignore} onDismissError={ignore} onReset={ignore}
+      onStop={ignore} onDismissError={ignore} onReset={ignore} onGiveUp={ignore} unlockRef={{ current: ignore }}
     />);
     expect(container.querySelector(".stage .figure__name")?.textContent).toBe("Iris");
     expect(getByRole("button", { name: "Cancel preparation" }).hasAttribute("disabled")).toBe(false);
@@ -66,7 +66,7 @@ describe("run lifecycle", () => {
   it.each(["done", "failed"] as const)("makes a %s run with dialogue recoverable", (state) => {
     const onReset = vi.fn();
     const { getByRole, getByText } = render(screen(streamWith(1, state), onReset));
-    const action = state === "done" ? "Start another run" : "Try another key";
+    const action = state === "done" ? "Set up another room" : "Try another key";
     if (state === "failed") expect(getByText(/Provider unavailable/).textContent).toContain("The run stopped");
     fireEvent.click(getByRole("button", { name: action }));
     expect(onReset).toHaveBeenCalledOnce();

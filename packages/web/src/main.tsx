@@ -6,6 +6,7 @@ import "./design/fonts.css";
 import "./design/tokens.css";
 import "./design/shell.css";
 import "./onboarding/intro.css";
+import "./setup/setup.css";
 import "./pick/pick.css";
 import "./stage/figure.css";
 import "./stage/stage.css";

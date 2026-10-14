@@ -139,20 +139,18 @@ try {
   await page.goto(url, { waitUntil: 'networkidle0' });
   await page.evaluate(() => document.fonts.ready);
   await geometry('intro-desktop');
-  assert.equal(await page.$eval('.intro__play', el => el.textContent.trim()), 'Play', 'Reduced-motion preference must reach the preview controls');
+  assert.equal(await page.$eval('.film__hero-bar .btn', el => el.textContent.trim()), 'Play', 'Reduced-motion preference must keep the landing film from starting by itself');
   for (const width of [390, 320]) {
     await page.setViewport({ width, height: 960 });
     await geometry(`intro-${width}`);
   }
   await page.setViewport({ width: 1280, height: 960 });
-  await clickText('Browse casts and scenes');
-  await page.click('.card'); await shot('cast-desktop');
-  await clickText('Choose a scene'); await page.click('.card'); await shot('scene-desktop');
-  await clickText('Ready');
+  await clickText('Start a room');
+  await page.waitForSelector('.story--on'); await shot('setup-desktop');
   await page.type('input[type="password"]', 'authored-browser-fixture');
   await page.waitForSelector('.busy');
-  assert.equal(await page.$eval('.provider button[type="submit"]', el => el.disabled), true, 'Busy server must disable Start');
-  assert.match(await page.$eval('.provider .step__foot', el => el.textContent), /Waiting for the current run/, 'Busy must not be reported as invalid cast files');
+  assert.equal(await page.$eval('.setup__go', el => el.disabled), true, 'Busy server must disable Start');
+  assert.match(await page.$eval('.setup__bar', el => el.textContent), /Waiting for the current run/, 'Busy must not be reported as invalid cast files');
   await shot('server-busy-desktop');
   await clickText('Stop it');
   await page.waitForSelector('.busy', { hidden: true });
@@ -161,7 +159,7 @@ try {
   await page.$eval('.advanced textarea', el => { const setter = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, 'value').set; setter.call(el, '{"fixtureOption":true}'); el.dispatchEvent(new Event('input', { bubbles: true })); });
   await shot('provider-desktop');
   holdStart = true;
-  await clickText('Start the run');
+  await clickText('Start the room');
   await wait(() => Boolean(pendingResponse), 'Start request did not arrive');
   await clickText('Cancel preparation');
   pendingResponse(); holdStart = false;
@@ -169,9 +167,9 @@ try {
   assert.equal(startBody.llm.extraBody.fixtureOption, true, 'Latest extra request fields must reach the start request');
   await wait(() => streams.has('fixture-1'), 'Cancelled run stream did not connect');
   hello(); status('done'); emit({ type: 'stopped', stopReason: 'user_stopped' });
-  await clickText('Start another run');
+  await clickText('Set up another room');
   await page.type('input[type="password"]', 'authored-browser-fixture');
-  await clickText('Start the run');
+  await clickText('Start the room');
   await wait(() => streams.has('fixture-2'), 'Second run stream did not connect');
   hello(); status('running');
   await page.waitForSelector('.warmup');
@@ -214,16 +212,16 @@ try {
   status('done'); emit({ type: 'stopped', stopReason: 'max_pulses' });
   await clickText('Watch again'); assert.match(await position(), /^1 \/ /);
   await shot('finished-mobile');
-  await clickText('Start another run');
+  await clickText('Set up another room');
   await page.type('input[type="password"]', 'authored-browser-fixture');
-  await clickText('Start the run'); await wait(() => streams.has('fixture-3'), 'Failure run did not connect');
+  await clickText('Start the room'); await wait(() => streams.has('fixture-3'), 'Failure run did not connect');
   hello(); emit({ type: 'status', status: { runId: 'fixture-3', state: 'failed', error: { message: 'Authored fixture failure', hint: 'Try again.' } } });
   await page.waitForSelector('input[type="password"]');
   assert.equal(await page.$eval('input[type="password"]', el => el.value), '', 'Early failure must clear the key');
-  assert.match(await page.$eval('.run', el => el.textContent), /Authored fixture failure/);
+  assert.match(await page.$eval('.setup', el => el.textContent), /Authored fixture failure/);
   await shot('failure-mobile');
   assert.deepEqual(errors, []);
-  await writeFile(join(evidence, 'checks.json'), JSON.stringify({ passed: true, evidence: 'Authored local HTTP/SSE fixtures through the real React app; no provider execution', checks: ['intro reduced motion', 'cast/scene/provider journey', 'cancel pending start', 'current extraBody request', 'first partial pulse before later turns', 'first beat', 'neutral missing emotion', 'desktop/mobile public/private/thought/silence geometry', 'long names/dialogue', 'incoming beats preserve pause', 'keyboard seek', 'play/pause', 'actual audio and mute', 'completion/retry', 'early failure recovery'] }, null, 2));
+  await writeFile(join(evidence, 'checks.json'), JSON.stringify({ passed: true, evidence: 'Authored local HTTP/SSE fixtures through the real React app; no provider execution', checks: ['intro reduced motion', 'story/model setup journey', 'cancel pending start', 'current extraBody request', 'first partial pulse before later turns', 'first beat', 'neutral missing emotion', 'desktop/mobile public/private/thought/silence geometry', 'long names/dialogue', 'incoming beats preserve pause', 'keyboard seek', 'play/pause', 'actual audio and mute', 'completion/retry', 'early failure recovery'] }, null, 2));
   console.log(`PASS: real React app with authored SSE fixtures. Evidence: ${evidence}`);
 } catch (error) {
   await shot('failure-diagnostic');
