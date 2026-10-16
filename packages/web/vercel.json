@@ -21,7 +21,7 @@
   ],
   "build": {
     "env": {
-      "VITE_API_BASE": "https://perfectman-server-46159542194.us-central1.run.app"
+      "VITE_API_BASE": "https://perfectman-server.fly.dev"
     }
   }
 }
