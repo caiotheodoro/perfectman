@@ -1,12 +1,14 @@
 /**
  * What the film sounds like: a room tone that tightens when two people slip
  * away, footfalls when somebody walks, a music bed that follows the room's
- * recorded mood, and the optional mumbled voices.
+ * recorded mood, and the optional mumbled voices. Every mood has several tracks:
+ * the next one starts when a track is nearly over, and a mood that comes back
+ * later gets a different one, so a long film does not repeat itself.
  *
  * Nothing plays until a person asks (browsers want a gesture anyway), and
  * everything fades out when the film is paused, so a paused film is quiet.
  */
-import { BEDS, bedVolume, type Mood, type Sample, type Timeline } from "@perfectman/shared";
+import { bedVolume, playlist, type Bed, type Mood, type Sample, type Timeline } from "@perfectman/shared";
 import { Babble } from "./babble.js";
 
 const AUDIO_BASE = "/audio";
@@ -29,23 +31,26 @@ export function moodAt(moods: Timeline["moods"], t: number): Mood {
   return mood;
 }
 
-/** Volume each bed should be at, given the wanted mood and whether sound is on and playing. */
-export function bedTargets(want: Mood, audible: boolean): Record<Mood, number> {
-  return { calm: audible && want === "calm" ? bedVolume("calm") : 0, tension: audible && want === "tension" ? bedVolume("tension") : 0, warmth: audible && want === "warmth" ? bedVolume("warmth") : 0 };
-}
+/** Seconds before a track ends at which the next one begins to fade in. */
+const HANDOVER_SECONDS = FADE_SECONDS + 1;
 
-type Beds = Partial<Record<Mood, { el: HTMLAudioElement; vol: number }>>;
+type Track = { el: HTMLAudioElement; vol: number; bed: Bed };
 
 export class FilmAudio {
   readonly babble: Babble;
   private ctx: AudioContext | null = null;
   private tone: { gain: GainNode; filter: BiquadFilterNode } | null = null;
-  private beds: Beds = {};
+  private tracks = new Map<string, Track>();
+  /** How many tracks of each mood have been used up, so a returning mood gets a new one. */
+  private turn: Record<Mood, number> = { calm: 0, tension: 0, warmth: 0 };
+  private lastMood: Mood | null = null;
+  private heard = new Set<Mood>();
   private volumeLocked = false;
   private level = 0;
   sound = false;
 
-  constructor(private readonly indexOf: (actor: string) => number) {
+  /** `seed` picks where in each mood's list a run starts; by default every film starts somewhere new. */
+  constructor(private readonly indexOf: (actor: string) => number, private readonly seed: string = String(Math.random())) {
     this.babble = new Babble(indexOf, () => this.context());
   }
 
@@ -68,19 +73,29 @@ export class FilmAudio {
     if (!on) return;
     const ctx = this.context();
     if (ctx && !this.tone) this.tone = this.makeTone(ctx);
-    if (typeof Audio === "undefined" || Object.keys(this.beds).length > 0) return;
+    if (typeof Audio === "undefined") return;
     const probe = new Audio();
     probe.volume = 0.5;
     // iOS ignores writes to an element's volume; a bed at full level over the dialogue is worse than none.
     this.volumeLocked = probe.volume !== 0.5;
-    if (this.volumeLocked) return;
-    for (const [mood, bed] of Object.entries(BEDS) as Array<[Mood, (typeof BEDS)[Mood]]>) {
+  }
+
+  /** The track this mood should be playing now. */
+  private wanted(mood: Mood): Bed {
+    const list = playlist(mood, this.seed);
+    return list[this.turn[mood] % list.length]!;
+  }
+
+  private track(bed: Bed): Track {
+    let tr = this.tracks.get(bed.file);
+    if (!tr) {
       const el = new Audio(`${AUDIO_BASE}/${bed.file}`);
-      el.loop = true;
       el.volume = 0;
       el.preload = "auto";
-      this.beds[mood] = { el, vol: 0 };
+      tr = { el, vol: 0, bed };
+      this.tracks.set(bed.file, tr);
     }
+    return tr;
   }
 
   private makeTone(ctx: AudioContext): { gain: GainNode; filter: BiquadFilterNode } {
@@ -134,20 +149,38 @@ export class FilmAudio {
       this.tone.gain.gain.value = this.level;
       this.tone.filter.frequency.value = 700 - 320 * huddle;
     }
-    const targets = bedTargets(moodAt(T.moods, to), audible);
-    for (const [mood, bed] of Object.entries(this.beds) as Array<[Mood, { el: HTMLAudioElement; vol: number }]>) {
-      const goal = targets[mood];
-      bed.vol = stepToward(bed.vol, goal, (bedVolume(mood) * dt) / FADE_SECONDS);
-      bed.el.volume = Math.min(1, bed.vol);
-      if (bed.vol > 0 && bed.el.paused) void bed.el.play().catch(() => undefined);
-      else if (bed.vol === 0 && goal === 0 && !bed.el.paused) bed.el.pause();
+    this.music(moodAt(T.moods, to), audible, dt);
+  }
+
+  private music(mood: Mood, audible: boolean, dt: number): void {
+    if (!this.sound || this.volumeLocked || typeof Audio === "undefined") return;
+    if (mood !== this.lastMood) {
+      // A mood heard before gets its next track; the first time, its first.
+      if (this.heard.has(mood)) this.turn[mood] += 1;
+      this.heard.add(mood);
+      this.lastMood = mood;
+    }
+    let bed = this.wanted(mood);
+    const now = this.tracks.get(bed.file);
+    if (now && audible && !now.el.paused && Number.isFinite(now.el.duration) && now.el.duration - now.el.currentTime < HANDOVER_SECONDS) {
+      this.turn[mood] += 1;
+      bed = this.wanted(mood);
+    }
+    const current = this.track(bed);
+    for (const tr of this.tracks.values()) {
+      const goal = tr === current && audible ? bedVolume(tr.bed) : 0;
+      if (tr.vol === 0 && goal > 0 && tr.el.paused) tr.el.currentTime = 0;
+      tr.vol = stepToward(tr.vol, goal, (bedVolume(tr.bed) * dt) / FADE_SECONDS);
+      tr.el.volume = Math.min(1, tr.vol);
+      if (tr.vol > 0 && tr.el.paused) void tr.el.play().catch(() => undefined);
+      else if (tr.vol === 0 && goal === 0 && !tr.el.paused) tr.el.pause();
     }
   }
 
   destroy(): void {
     this.babble.disable();
-    for (const bed of Object.values(this.beds)) { bed?.el.pause(); if (bed) bed.el.src = ""; }
-    this.beds = {};
+    for (const tr of this.tracks.values()) { tr.el.pause(); tr.el.src = ""; }
+    this.tracks.clear();
     void this.ctx?.close().catch(() => undefined);
     this.ctx = null;
     this.tone = null;

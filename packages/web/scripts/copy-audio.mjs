@@ -6,7 +6,7 @@
  * The licence files come along deliberately: the music is CC BY 4.0 and not
  * covered by the repository licence, so it must not be served without them.
  */
-import { cp, mkdir } from "node:fs/promises";
+import { cp, mkdir, rm } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -14,6 +14,8 @@ const here = dirname(fileURLToPath(import.meta.url));
 const from = resolve(here, "../../eval/assets/video/audio");
 const to = resolve(here, "../public/audio");
 
+// Start clean: a track dropped from the library must not keep being served from an old build.
+await rm(to, { recursive: true, force: true });
 await mkdir(to, { recursive: true });
 await cp(from, to, { recursive: true });
 process.stdout.write(`audio -> ${to}\n`);

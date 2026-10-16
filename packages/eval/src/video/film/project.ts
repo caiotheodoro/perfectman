@@ -38,17 +38,17 @@ function run(command: string, args: string[], cwd: string, quiet = false): Promi
 }
 
 /** The lettering faces: the file to copy and the family name the page uses. */
-const FACES: Array<{ pkg: string; file: string; family: string; weight: string }> = [
+const FACES: Array<{ pkg: string; file: string; family: string; weight: string; style?: "italic" }> = [
   { pkg: "@fontsource-variable/shantell-sans", file: "shantell-sans-latin-full-normal.woff2", family: "Shantell Sans Variable", weight: "300 800" },
   { pkg: "@fontsource/special-elite", file: "special-elite-latin-400-normal.woff2", family: "Special Elite", weight: "400" },
   { pkg: "@fontsource/patrick-hand", file: "patrick-hand-latin-400-normal.woff2", family: "Patrick Hand", weight: "400" },
   { pkg: "@fontsource/kalam", file: "kalam-latin-400-normal.woff2", family: "Kalam", weight: "400" },
   { pkg: "@fontsource/londrina-solid", file: "londrina-solid-latin-400-normal.woff2", family: "Londrina Solid", weight: "400" },
-  { pkg: "@fontsource/caveat", file: "caveat-latin-400-normal.woff2", family: "Caveat", weight: "400" },
+  { pkg: "@fontsource-variable/fraunces", file: "fraunces-latin-full-italic.woff2", family: "Fraunces Variable", weight: "100 900", style: "italic" },
 ];
 
 async function filmCss(): Promise<string> {
-  const faces = FACES.map((f) => `@font-face{font-family:"${f.family}";font-style:normal;font-weight:${f.weight};font-display:block;src:url(fonts/${f.file}) format("woff2")}`).join("\n");
+  const faces = FACES.map((f) => `@font-face{font-family:"${f.family}";font-style:${f.style ?? "normal"};font-weight:${f.weight};font-display:block;src:url(fonts/${f.file}) format("woff2")}`).join("\n");
   const watch = await readFile(new URL("../../../../web/src/watch/watch.css", import.meta.url), "utf8");
   return `${faces}
 :root{--serif:"Fraunces",Georgia,serif;--sans:system-ui,sans-serif;--rule:#d6d8ca;--r-xl:8px}
@@ -80,7 +80,7 @@ export async function createFilmVideo(options: FilmOptions): Promise<{ output: s
   const choices = { pace: PACES[paceName], huddle: options.huddle ?? "push", fictionOnly: options.fictionOnly ?? false };
   const T = buildFilmTimeline(source.replay, choices);
   const total = T.duration + 0.5 + OUTRO_SECONDS;
-  const cues = planFilmSoundtrack(T, total);
+  const cues = planFilmSoundtrack(T, total, source.title);
   const html = renderFilmComposition({ title: source.title, replay: source.replay, ...choices, filmSeconds: T.duration, cues, fps: FPS });
   const page = await bundleFilmPage();
   const css = await filmCss();

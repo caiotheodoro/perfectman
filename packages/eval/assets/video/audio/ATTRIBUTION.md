@@ -2,26 +2,14 @@
 
 The music files retain their separate CC BY 4.0 license. They are not covered by the repository code license.
 
-## Wallpaper
+## Music
 
-Wallpaper by Kevin MacLeod (incompetech.com).
-Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100843
-Licensed under Creative Commons Attribution 4.0: https://creativecommons.org/licenses/by/4.0/
-Re-encoded complete track to 128 kbps stereo MP3; no cuts or synthesis.
+Every track is by Kevin MacLeod (incompetech.com), licensed under Creative Commons Attribution 4.0:
+https://creativecommons.org/licenses/by/4.0/ . Each is re-encoded to 64 kbps stereo MP3; `warmth-sincerely.mp3` is also cut to its first 240 s with a 4 s fade-out. Nothing else is changed. Source: https://incompetech.com/music/royalty-free/music.html . Titles, measured loudness and checksums are in manifest.json.
 
-## Long Note Three
-
-Long Note Three by Kevin MacLeod (incompetech.com).
-Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1100424
-Licensed under Creative Commons Attribution 4.0: https://creativecommons.org/licenses/by/4.0/
-Re-encoded complete track to 128 kbps stereo MP3; no cuts or synthesis.
-
-## Dream Culture
-
-Dream Culture by Kevin MacLeod (incompetech.com).
-Source: https://incompetech.com/music/royalty-free/index.html?isrc=USUAN1300046
-Licensed under Creative Commons Attribution 4.0: https://creativecommons.org/licenses/by/4.0/
-Re-encoded complete track to 128 kbps stereo MP3; no cuts or synthesis.
+Calm: Bossa Antigua, Easy Lemon, Deliberate Thought, Windswept.
+Tension: Sneaky Snitch, Marty Gots a Plan, Investigations, Hidden Agenda.
+Warmth: Sincerely, Gymnopedie No 1, Dream Culture, Teddy Bear Waltz.
 
 ## Interface sounds
 

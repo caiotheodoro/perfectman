@@ -46,7 +46,7 @@ export class BalloonLayer {
     const pad = b.kind === "shout" ? "34px 46px" : b.kind === "thought" ? "26px 34px 52px" : "12px 20px";
     const text = document.createElement("div");
     text.className = "watch-balloon__text";
-    text.style.cssText = `font:${font.weight} ${font.size}px/${font.lineHeight} "${font.family}",system-ui,sans-serif;padding:${pad};color:${INK};${b.kind === "shout" ? "text-transform:uppercase;letter-spacing:.01em;" : ""}`;
+    text.style.cssText = `font:${font.style ?? "normal"} ${font.weight} ${font.size}px/${font.lineHeight} "${font.family}",Georgia,serif;padding:${pad};color:${INK};${b.kind === "shout" ? "text-transform:uppercase;letter-spacing:.01em;" : ""}`;
     let k = 0;
     const lines = pg.lines.map((l) => {
       const cjk = CJK.test(l);

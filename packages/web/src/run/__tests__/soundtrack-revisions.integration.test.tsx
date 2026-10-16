@@ -1,3 +1,4 @@
+import { BEDS } from "@perfectman/shared";
 import { act, cleanup, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 import type { StageBeat } from "@perfectman/shared";
@@ -38,7 +39,7 @@ beforeEach(() => {
 it("updates the music for a revised emotion without repeating the message cue", () => {
   const { rerender } = renderHook(({ beat }) => useSoundtrack(beat, true, true), { initialProps: { beat: line } });
   rerender({ beat: { ...line, emotion: { source: "snapshot", values: { anger: 0.95, valence: -0.8, arousal: 0.9 } } } });
-  expect(played).toEqual(["/audio/calm-social.mp3", "/audio/message.ogg", "/audio/tension-conflict.mp3"]);
+  expect(played).toEqual([`/audio/${BEDS.calm.file}`, "/audio/message.ogg", `/audio/${BEDS.tension.file}`]);
 });
 
 it.each(["hidden", "muted"])("stops an in-flight cue when the scene becomes %s", (reason) => {

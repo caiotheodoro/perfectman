@@ -126,8 +126,8 @@ describe("film project", () => {
       expect(result.seconds).toBeCloseTo(info.totalSeconds, 5);
       expect(page).toContain("PerfectmanFilm");
       expect(css).toContain("Shantell Sans Variable");
-      expect((await stat(join(result.project, "assets", "fonts", "caveat-latin-400-normal.woff2"))).size).toBeGreaterThan(1000);
-      expect((await stat(join(result.project, "assets", "audio", "calm-social.mp3"))).size).toBeGreaterThan(1000);
+      expect((await stat(join(result.project, "assets", "fonts", "fraunces-latin-full-italic.woff2"))).size).toBeGreaterThan(1000);
+      expect((await stat(join(result.project, "assets", "audio", "calm-bossa-antigua.mp3"))).size).toBeGreaterThan(1000);
       await expect(createFilmVideo({ input, output, prepareOnly: true })).rejects.toThrow("already exists");
     } finally { await rm(root, { recursive: true, force: true }); }
   }, 30_000);

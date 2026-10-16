@@ -2,7 +2,7 @@ import { readFile } from 'node:fs/promises';
 import { avatar, avatarColor } from './avatar.js';
 import { planScene } from './scene-plan.js';
 import { roomMarkup } from './room.js';
-import { planSoundtrack, renderSoundtrack } from './soundtrack.js';
+import { audioCredits, planSoundtrack, renderSoundtrack } from './soundtrack.js';
 import type { VideoStoryboard } from './types.js';
 
 const escapeHtml = (value: string): string => value.replace(/[&<>"']/g, c => ({
@@ -73,7 +73,7 @@ export async function renderComposition(storyboard: VideoStoryboard): Promise<st
         <img id="brand" src="assets/perfectman-logo.png" alt="Perfectman"><header id="top"><h1 style="font-size:${fontSize(storyboard.title, 1250, 76, 30, 'Title')}px">${title}</h1><p class="kind">${source}</p></header>
         <div id="intro"><h1 style="font-size:${fontSize(storyboard.title, 1350, 160, 60, 'Title')}px">${title}</h1><p>${source} · ${storyboard.steps.length} source steps</p></div>
         <div id="progress"><i></i></div><p id="disclosure">Perfectman · Source order · Illustrated movement · Recorded or authored emotional cues</p>
-        <div id="outro"><h1>Perfectman</h1><p>${source} complete. ${storyboard.steps.length} source steps.</p><div id="credits"><p>“Wallpaper”, “Long Note Three”, “Dream Culture” — Kevin MacLeod (incompetech.com)</p><p>CC BY 4.0 · creativecommons.org/licenses/by/4.0/ · Edited for timing and fades.</p><p>Interface sounds: Kenney (kenney.nl/assets/interface-sounds), CC0.</p></div></div>
+        <div id="outro"><h1>Perfectman</h1><p>${source} complete. ${storyboard.steps.length} source steps.</p><div id="credits"><p>${escapeHtml(audioCredits(audio))}</p></div></div>
       </section>${renderSoundtrack(audio)}
     </main><script>const VIDEO = ${safeJson(runtime)};\nwindow.VIDEO = VIDEO;\n${gestures}\n${motion}</script></body></html>`;
 }
