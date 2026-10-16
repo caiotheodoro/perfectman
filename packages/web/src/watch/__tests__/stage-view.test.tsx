@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildTimeline, makePageWords, planBalloons, type TextMeasurer, type Timeline } from "@perfectman/shared";
+import { buildTimeline, makePageWords, planBalloons, surpriseParty, type TextMeasurer, type Timeline } from "@perfectman/shared";
 import { StageView } from "../StageView.js";
 
 const measure: TextMeasurer = (text, font) => text.length * font.size * 0.5;
@@ -115,5 +115,27 @@ describe("StageView", () => {
 
     expect(host.querySelector(".watch-stage")).toBeNull();
     expect(host.classList.contains("watch-host")).toBe(false);
+  });
+
+  it("marks time-lapse captions as intentional layering, so two cross-fading ones do not read as overlapping text", () => {
+    const r = surpriseParty();
+    const quiet = r.pulses.slice(2, 5).map((p, i) => ({ ...p, pulseIndex: 100 + i, committedEvents: [], agentThinking: {} }));
+    const replay = { ...r, pulses: [...r.pulses.slice(0, 3), ...quiet, ...r.pulses.slice(3).map((p, i) => ({ ...p, pulseIndex: 103 + i }))] };
+    const ctx = { archetype: (id: string) => replay.agentArchetypes[id] ?? "", measure };
+    const T = buildTimeline(replay, { pageWords: makePageWords(ctx) });
+    planBalloons(T, ctx);
+    const host = document.createElement("div");
+    document.body.append(host);
+    const view = new StageView(host, T, replay, { setting: "living" });
+    let seen = 0;
+    for (let at = 0; at < T.duration; at += 0.25) {
+      view.render(at);
+      for (const el of host.querySelectorAll(".watch-caption")) {
+        seen += 1;
+        expect(el.hasAttribute("data-layout-allow-overlap")).toBe(true);
+      }
+    }
+    expect(seen).toBeGreaterThan(0);
+    view.destroy();
   });
 });
