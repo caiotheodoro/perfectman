@@ -180,3 +180,44 @@ describe("the sound of the room", () => {
     expect(stripped.moods).toEqual(T.moods);
   });
 });
+
+describe("who stands where when a few people slip away", () => {
+  const people = ["a", "b", "c", "d", "e"];
+  const state = { coreMood: { valence: 0, arousal: 0.4, energy: 1 }, socialEmotions: {} };
+  const replayFor = (privateMembers: string[]): DirectorReplay => ({
+    agentIds: people,
+    agentNames: Object.fromEntries(people.map((p) => [p, p.toUpperCase()])),
+    agentArchetypes: Object.fromEntries(people.map((p) => [p, "organizer"])),
+    channels: [
+      { id: "pub", name: "room", type: "public_channel", memberAgentIds: people },
+      { id: "priv", name: "aside", type: "private_channel", memberAgentIds: privateMembers },
+    ],
+    pulses: [
+      { pulseIndex: 0, committedEvents: [{ id: "e0", channelId: "pub", actorId: "a", type: "message_sent", payload: { content: "hello all" } }], agentStates: Object.fromEntries(people.map((p) => [p, state])) },
+      { pulseIndex: 1, committedEvents: [{ id: "e1", channelId: "priv", actorId: privateMembers[0]!, type: "message_sent", payload: { content: "a word in private" } }], agentStates: Object.fromEntries(people.map((p) => [p, state])) },
+    ],
+  });
+
+  const placed = (T: Timeline, scene: Timeline["scenes"][number]) => Object.fromEntries(T.agents.map((id) => {
+    const at = T.keys[id]!.filter((k) => k.t <= scene.t0 + 1.3 + 1e-6).at(-1)!;
+    return [id, { x: at.v.x, w: at.v.w }];
+  }));
+
+  for (const members of [["b", "c"], ["b", "c", "d"]]) {
+    for (const huddle of ["push", "wide"] as const) {
+      it(`keeps ${members.length} people in a private talk apart from each other and from everyone else (${huddle} shot)`, () => {
+        const T = buildTimeline(replayFor(members), { huddle });
+        const scene = T.scenes.find((s) => s.type === "huddle")!;
+        const at = placed(T, scene);
+        const ids = T.agents;
+        for (let i = 0; i < ids.length; i++) for (let j = i + 1; j < ids.length; j++) {
+          const A = at[ids[i]!]!, B = at[ids[j]!]!;
+          expect(Math.abs(A.x - B.x), `${ids[i]} and ${ids[j]} stand on each other`).toBeGreaterThanOrEqual(((A.w + B.w) / 2) * 0.9);
+        }
+        const memberXs = members.map((m) => at[m]!.x), otherXs = ids.filter((i) => !members.includes(i)).map((i) => at[i]!.x);
+        expect(Math.min(...otherXs), "a bystander is inside the group's row").toBeGreaterThan(Math.max(...memberXs));
+        for (const id of ids) expect(at[id]!.x + at[id]!.w / 2, `${id} is off the right edge`).toBeLessThanOrEqual(STAGE.w + 1);
+      });
+    }
+  }
+});

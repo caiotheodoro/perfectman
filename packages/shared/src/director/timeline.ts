@@ -18,11 +18,26 @@ import type {
   LightKey, ReactionMark, Scene, Spot, TimedWord, TimelineMessage,
 } from "./types.js";
 
-const HUD: Array<[number, number]> = [[9, 92], [25, 95], [17, 87]];
 export const STAGE = { w: 1200, h: 600 } as const;
 
-/** Where a huddle's members stand, nearest the door first (stage pixels, feet position). */
-export const huddleSpot = (k: number): Spot => ({ x: (HUD[k]?.[0] ?? 9) * 12, y: (HUD[k]?.[1] ?? 92) * 6, w: 0.18 * 1200 });
+/** Room one huddle member takes, and the gap left between neighbours, so nobody stands on anybody. */
+const HUDDLE_W = 0.18 * 1200;
+const HUDDLE_STEP = HUDDLE_W * 1.1;
+const BYSTANDER_W = 0.12 * 1200;
+
+/** Where a huddle's members stand, nearest the door first (stage pixels, feet position): a tidy row in the left nook. */
+export const huddleSpot = (k: number): Spot => ({ x: 150 + k * HUDDLE_STEP, y: k % 2 ? 566 : 552, w: HUDDLE_W });
+
+/**
+ * Where everybody who is not in the huddle waits: in a row to the right of it, clear of the members
+ * and of each other, so a bystander is never mistaken for part of the group.
+ */
+export const bystanderSpot = (j: number, count: number, members: number): Spot => {
+  const first = huddleSpot(Math.max(0, members - 1)).x + HUDDLE_W / 2 + 40 + BYSTANDER_W / 2;
+  const last = STAGE.w - BYSTANDER_W / 2 - 20;
+  const step = count > 1 ? Math.min(BYSTANDER_W * 1.1, (last - first) / (count - 1)) : 0;
+  return { x: Math.min(last, first + j * step), y: 552 + (j % 2) * 10, w: BYSTANDER_W };
+};
 /** Seconds the camera takes to move and the cast takes to walk when the shot changes. */
 export const CUT_SECONDS = 1.3;
 
@@ -145,7 +160,11 @@ export function buildTimeline(replay: DirectorReplay, options: DirectorOptions =
         const k = conv.members.indexOf(id);
         if (mode === "door") { if (k >= 0) np = { x: 380 + k * 430, y: 520, w: 0.2 * 1200 }; else h = 1; }
         else if (k >= 0) np = hudPx(k);
-        else if (mode === "push") { b = 3.2; d = 0.12; }
+        else {
+          const others = agents.filter((a) => !conv.members.includes(a));
+          np = bystanderSpot(others.indexOf(id), others.length, conv.members.length);
+          if (mode === "push") { b = 3.2; d = 0.12; }
+        }
       }
       pos[id] = np; blur[id] = b; dim[id] = d; hide[id] = h;
       const P1: PoseTarget = { ...P0 };
