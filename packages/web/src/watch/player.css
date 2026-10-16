@@ -44,7 +44,7 @@
 
 .film__caption { display: none; margin: 0; padding: 10px 12px; border: 3px solid #1d1f1a; background: #ffe9a8; color: #1d1f1a; box-shadow: 4px 4px 0 #1d1f1a; font: 600 15px/1.35 "Shantell Sans Variable", system-ui, sans-serif; min-height: 3.6em; }
 .film__caption--whisper { font-style: italic; }
-.film__caption--thought { background: #fffdf6; font-family: "Caveat", "Shantell Sans Variable", cursive; font-size: 18px; }
+.film__caption--thought { background: #fffdf6; font-family: "Fraunces Variable", Georgia, serif; font-style: italic; font-size: 16px; line-height: 1.4; }
 .film__who { display: inline-block; margin-right: 6px; padding: 1px 8px; border: 2px solid #1d1f1a; border-radius: 999px; background: #fff; font-size: 12px; }
 .film--narrow .film__caption { display: block; }
 .film--narrow .watch-balloons, .film--narrow .watch-marks { display: none; }

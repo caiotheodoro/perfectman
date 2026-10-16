@@ -7,7 +7,7 @@ import { catReplay } from "./fixtures/cat-replay.js";
 describe("tableMeasurer", () => {
   it("has every lettering face, with a width for every printable ASCII glyph", () => {
     for (const font of [...Object.values(LETTERING), SHOUT_FONT, THOUGHT_FONT]) {
-      const name = font.family.replace(" Variable", "");
+      const name = font.style === "italic" ? `${font.family} Italic` : font.family.replace(" Variable", "");
       expect(BALLOON_METRICS[name], name).toBeDefined();
       expect(BALLOON_METRICS[name]!.glyphs).toHaveLength(95);
     }

@@ -12,7 +12,7 @@ import { sampleTimeline } from "./sample.js";
 import type { Timeline } from "./timeline.js";
 import type { Balloon, BalloonKind, BalloonPage } from "./types.js";
 
-export type BalloonFont = { family: string; size: number; weight: number; lineHeight: number };
+export type BalloonFont = { family: string; size: number; weight: number; lineHeight: number; style?: "italic" };
 /** Width in stage pixels of one line of text set in a font. */
 export type TextMeasurer = (text: string, font: BalloonFont) => number;
 
@@ -25,7 +25,8 @@ export const LETTERING: Record<LetteringStyle, BalloonFont> = {
   house: { family: "Shantell Sans Variable", size: 16, weight: 400, lineHeight: 1.2 },
 };
 export const SHOUT_FONT: BalloonFont = { family: "Londrina Solid", size: 27, weight: 400, lineHeight: 1.0 };
-export const THOUGHT_FONT: BalloonFont = { family: "Caveat", size: 21, weight: 400, lineHeight: 1.02 };
+/** Thoughts are set in a plain italic serif: handwriting was too sketchy to read at balloon size. */
+export const THOUGHT_FONT: BalloonFont = { family: "Fraunces Variable", style: "italic", size: 21, weight: 400, lineHeight: 1.18 };
 
 const CJK = /[぀-ヿ一-鿿]/;
 const clamp = (x: number, a: number, b: number): number => Math.max(a, Math.min(b, x));

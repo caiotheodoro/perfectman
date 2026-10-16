@@ -1,5 +1,5 @@
 import type { DirectorReplay } from "@perfectman/shared";
-import { AUDIO_CREDITS, renderSoundtrack, type AudioCue } from "../soundtrack.js";
+import { audioCredits, renderSoundtrack, type AudioCue } from "../soundtrack.js";
 
 /** Seconds the credits hold after the film. The music license asks for them. */
 export const OUTRO_SECONDS = 6;
@@ -33,7 +33,7 @@ export function renderFilmComposition(input: FilmCompositionInput): string {
   <section id="scene" class="clip" data-start="0" data-duration="${total}" data-track-index="0">
     <header id="film-top"><h1>${title}</h1><p>Perfectman${input.fictionOnly ? " · fiction only" : ""}</p></header>
     <div id="film-host" data-layout-allow-overflow></div>
-    <div id="film-outro"><h1>Perfectman</h1><p>${title}</p><div id="credits"><p>${escapeHtml(AUDIO_CREDITS)}</p></div></div>
+    <div id="film-outro"><h1>Perfectman</h1><p>${title}</p><div id="credits"><p>${escapeHtml(audioCredits(input.cues))}</p></div></div>
   </section>
 ${renderSoundtrack(input.cues)}
 </main>

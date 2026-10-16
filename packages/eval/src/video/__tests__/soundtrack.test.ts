@@ -1,7 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { AUDIO_CREDITS, planSoundtrack, renderSoundtrack } from "../soundtrack.js";
+import { bedVolume, LIBRARY } from "@perfectman/shared";
+import { audioCredits, planSoundtrack, renderSoundtrack } from "../soundtrack.js";
 import type { VideoBeat, VideoStoryboard, RecordedEmotion } from "../types.js";
 
 function board(duration: number, inputs: Array<{ start: number; emotion?: RecordedEmotion } & Partial<VideoBeat>> = []): VideoStoryboard {
@@ -20,7 +21,7 @@ describe("soundtrack", () => {
     for (const emotion of [undefined, authored("quantum"), { source: "snapshot" as const, values: { arousal: .99 } }]) {
       const music = planSoundtrack(board(30, [{ start: 3, emotion }])).filter(cue => cue.kind === "music");
       expect(music.map(cue => cue.mood)).toEqual(["calm"]);
-      expect(music[0]?.volume).toBeCloseTo(.153, 2);
+      expect(music[0]?.volume).toBeCloseTo(bedVolume(Object.values(LIBRARY).flat().find(bed => bed.file === music[0]!.file)!), 6);
     }
   });
 
@@ -44,13 +45,26 @@ describe("soundtrack", () => {
 
   it("restarts long tracks with bounded overlapping fades and ordered cues", () => {
     const cues = planSoundtrack(board(1000));
-    expect(cues).toHaveLength(5);
+    expect(cues.length).toBeGreaterThanOrEqual(5);
     expect(cues.every(cue => cue.start >= 0 && cue.start + cue.duration <= 1000 && cue.mediaStart === 0)).toBe(true);
     for (let i = 1; i < cues.length; i++) {
       expect(cues[i]!.start).toBeGreaterThan(cues[i - 1]!.start);
       expect(cues[i - 1]!.start + cues[i - 1]!.duration - cues[i]!.start).toBeCloseTo(2, 6);
     }
     expect(cues.at(-1)!.start + cues.at(-1)!.duration).toBe(1000);
+  });
+
+  it("moves on to a different track instead of looping one, and a returning mood gets a new one", () => {
+    const long = planSoundtrack(board(1000));
+    for (let i = 1; i < long.length; i++) expect(long[i]!.file).not.toBe(long[i - 1]!.file);
+    expect(new Set(long.map(cue => cue.file)).size).toBeGreaterThan(2);
+
+    const music = planSoundtrack(board(60, [
+      { start: 2 }, { start: 12, emotion: authored("angry") }, { start: 28, emotion: authored("smile") }, { start: 44, emotion: authored("angry") },
+    ])).filter(cue => cue.kind === "music");
+    const tension = music.filter(cue => cue.mood === "tension").map(cue => cue.file);
+    expect(tension).toHaveLength(2);
+    expect(tension[1]).not.toBe(tension[0]);
   });
 
   it("adds message sounds once per step and arrival/departure sounds only for explicit actions", () => {
@@ -81,13 +95,13 @@ describe("soundtrack", () => {
   it("ships attributed assets whose local content matches the recorded hashes", async () => {
     const root = new URL("../../../assets/video/audio/", import.meta.url);
     const manifest = JSON.parse(await readFile(new URL("manifest.json", root), "utf8")) as Array<{ path: string; sha256: string; license: string; source: string }>;
-    expect(manifest).toHaveLength(6);
+    expect(manifest).toHaveLength(15);
     for (const entry of manifest) {
       expect(createHash("sha256").update(await readFile(new URL(entry.path, root))).digest("hex")).toBe(entry.sha256);
       expect(entry.source).toMatch(/^https:\/\/(incompetech.com|kenney.nl)\//);
       expect(["CC BY 4.0", "CC0 1.0"]).toContain(entry.license);
     }
-    expect(AUDIO_CREDITS).toContain("Kevin MacLeod");
-    expect(await readFile(new URL("ATTRIBUTION.md", root), "utf8")).toContain("Re-encoded complete track");
+    expect(audioCredits([{ id: "m", file: "tension-sneaky-snitch.mp3", start: 0, duration: 9, mediaStart: 0, volume: 0.1, fadeIn: 1, fadeOut: 1, kind: "music" }])).toContain("Sneaky Snitch");
+    expect(await readFile(new URL("ATTRIBUTION.md", root), "utf8")).toContain("re-encoded to 64 kbps");
   });
 });

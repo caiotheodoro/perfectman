@@ -36,7 +36,7 @@ describe("fitText", () => {
 
   it("gives a shout, a thought and a persona their own lettering", () => {
     expect(fontFor("shout", "gatekeeper", 0.5).family).not.toBe(fontFor("speech", "gatekeeper", 0.5).family);
-    expect(fontFor("thought", "elder", 0.5).family).toBe("Caveat");
+    expect(fontFor("thought", "elder", 0.5)).toMatchObject({ family: "Fraunces Variable", style: "italic" });
     expect(fontFor("speech", "gatekeeper", 0.5).family).not.toBe(fontFor("speech", "elder", 0.5).family);
   });
 });

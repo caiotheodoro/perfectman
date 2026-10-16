@@ -5,7 +5,7 @@
  */
 import { describe, expect, it } from "vitest";
 import { assignSlots, slotsFor } from "../slots.js";
-import { bedVolume, canChangeMood, moodFor, BEDS, MINIMUM_MOOD_HOLD_SECONDS } from "../mood.js";
+import { bedVolume, canChangeMood, moodFor, BEDS, LIBRARY, MINIMUM_MOOD_HOLD_SECONDS } from "../mood.js";
 import { chipFor, chipIndexFor, headShapeFor, CHARACTER_CHIPS } from "../palette.js";
 
 describe("assignSlots", () => {
@@ -83,8 +83,11 @@ describe("bed levels and holds", () => {
     for (const level of levels) expect(level).toBeCloseTo(levels[0]!, 10);
   });
 
-  it("turns the loudest bed down the furthest", () => {
-    expect(bedVolume("calm")).toBeLessThan(bedVolume("tension"));
+  it("brings every track to the same floor, so the loudest is turned down the furthest", () => {
+    const all = Object.values(LIBRARY).flat();
+    for (const bed of all) expect(bed.lufs + 20 * Math.log10(bedVolume(bed))).toBeCloseTo(-28, 6);
+    const loud = all.reduce((a, b) => (b.lufs > a.lufs ? b : a)), quiet = all.reduce((a, b) => (b.lufs < a.lufs ? b : a));
+    expect(bedVolume(loud)).toBeLessThan(bedVolume(quiet));
   });
 
   it("refuses a mood change inside the hold window", () => {

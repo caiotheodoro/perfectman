@@ -153,9 +153,6 @@ importers:
       '@fontsource-variable/shantell-sans':
         specifier: ^5.3.0
         version: 5.3.0
-      '@fontsource/caveat':
-        specifier: ^5.3.0
-        version: 5.3.0
       '@fontsource/kalam':
         specifier: ^5.3.0
         version: 5.3.0
@@ -922,9 +919,6 @@ packages:
 
   '@fontsource-variable/shantell-sans@5.3.0':
     resolution: {integrity: sha512-FPdHvSi6cngE/DMVCm7Xlls70U0b4/NMJLlcAPvVoq6eot1X8tNOZMRc22Rh9KoAfmmBz7yjsSXvpsYmkhXXVQ==}
-
-  '@fontsource/caveat@5.3.0':
-    resolution: {integrity: sha512-eHTfzQxFSW9ABERRLNruHoNJmKed2J7pqTUc5lp4a4POMgXGKpxmWj3d9Hz10kmAg6iuTTLe6UagbA4bnsmfQw==}
 
   '@fontsource/kalam@5.3.0':
     resolution: {integrity: sha512-FDkVoDfPDCSN/eO81FOYtUI67eMgpVBJmjBtAqSL0PmEhJyeFY2biC+CR+yEttksgXR9+swpFdYmQTyjwBq80Q==}
@@ -3711,8 +3705,6 @@ snapshots:
   '@fontsource-variable/instrument-sans@5.3.0': {}
 
   '@fontsource-variable/shantell-sans@5.3.0': {}
-
-  '@fontsource/caveat@5.3.0': {}
 
   '@fontsource/kalam@5.3.0': {}
 

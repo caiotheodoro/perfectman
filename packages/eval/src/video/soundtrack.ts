@@ -1,4 +1,6 @@
+import { LIBRARY } from "@perfectman/shared";
 import { faceFor, emotionLabel } from "./avatar.js";
+import { planMusic } from "./music.js";
 import type { RecordedEmotion, VideoStoryboard } from "./types.js";
 
 type Mood = "calm" | "tension" | "warmth";
@@ -6,12 +8,6 @@ export type AudioCue = {
   id: string; file: string; start: number; duration: number; mediaStart: number;
   volume: number; fadeIn: number; fadeOut: number; kind: "music" | "sfx";
   mood?: Mood; reason?: string;
-};
-// Measured integrated LUFS, matched to an understated -28 LUFS bed.
-const beds = {
-  calm: { file: "calm-social.mp3", duration: 220.05551, lufs: -11.69 },
-  tension: { file: "tension-conflict.mp3", duration: 192.052245, lufs: -24.75 },
-  warmth: { file: "warmth-relief.mp3", duration: 214.360816, lufs: -17.72 },
 };
 const crossfade = 2;
 const minimumMoodHold = 8;
@@ -46,23 +42,7 @@ export function planSoundtrack(storyboard: VideoStoryboard): AudioCue[] {
       switchedAt = beat.start;
     }
   }
-  const cues: AudioCue[] = [];
-  changes.forEach((change, index) => {
-    const boundary = changes[index + 1]?.start ?? end;
-    if (boundary <= change.start) return;
-    const stop = Math.min(end, boundary + (index + 1 < changes.length ? crossfade : 0));
-    const bed = beds[change.mood];
-    for (let start = change.start; start < stop;) {
-      if (cues.length >= 10000) throw new Error("Soundtrack exceeds 10,000 segments; split this run into episodes");
-      const duration = Math.min(bed.duration, stop - start);
-      const fade = Math.min(crossfade, duration / 2);
-      cues.push({ id: `music-${cues.length}`, file: bed.file, start, duration, mediaStart: 0,
-        volume: 10 ** ((-28 - bed.lufs) / 20), fadeIn: fade, fadeOut: fade,
-        kind: "music", mood: change.mood, reason: change.reason });
-      if (start + duration >= stop) break;
-      start += duration - crossfade;
-    }
-  });
+  const cues: AudioCue[] = planMusic(changes, end, storyboard.title);
   for (const beat of storyboard.beats) {
     if (beat.pageIndex !== 0) continue;
     const sounds: Array<{ file: string; duration: number; reason: string }> = [];
@@ -97,4 +77,10 @@ export function renderSoundtrack(cues: AudioCue[]): string {
   }).join("\n");
 }
 
-export const AUDIO_CREDITS = `Music: "Wallpaper", "Long Note Three", and "Dream Culture" by Kevin MacLeod (incompetech.com), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Complete tracks re-encoded to 128 kbps stereo MP3 and mixed with fades. Interface sounds by Kenney (https://kenney.nl/assets/interface-sounds), CC0. Full credits and source links: assets/audio/ATTRIBUTION.md.`;
+/** The credit line for the music a video actually uses, as the license asks. */
+export function audioCredits(cues: AudioCue[]): string {
+  const titles = new Map(Object.values(LIBRARY).flat().map((bed) => [bed.file, bed.title]));
+  const used = [...new Set(cues.filter((c) => c.kind === "music").map((c) => titles.get(c.file)).filter((t): t is string => Boolean(t)))];
+  const list = used.map((title) => `\u201c${title}\u201d`).join(", ");
+  return `Music${list ? `: ${list}` : ""} by Kevin MacLeod (incompetech.com), CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Re-encoded to 64 kbps stereo MP3 and mixed with fades. Interface sounds by Kenney (https://kenney.nl/assets/interface-sounds), CC0. Full credits and source links: assets/audio/ATTRIBUTION.md.`;
+}
