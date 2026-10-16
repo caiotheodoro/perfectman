@@ -14,7 +14,7 @@ afterEach(() => {
 it("preserves a run through navigation and opens a changed scene only after that run ends", async () => {
   vi.useFakeTimers();
   // Storage and media output are I/O sinks; run state and navigation stay real.
-  vi.stubGlobal("localStorage", { getItem: () => "1" });
+  vi.stubGlobal("localStorage", { getItem: (key: string) => (key === "perfectman.run.view" ? "beats" : "1") });
   vi.spyOn(HTMLMediaElement.prototype, "play").mockResolvedValue();
   vi.spyOn(HTMLMediaElement.prototype, "pause").mockImplementation(() => undefined);
   const { sources, send } = stubEventSource();

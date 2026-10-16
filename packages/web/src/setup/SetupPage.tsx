@@ -25,7 +25,7 @@ const FIRST_STORIES = 4;
 
 export function SetupPage({
   visible, library, cast, scene, compiled, compiling, draft, writing, failure, provider, starting, runActive,
-  onReturnToRun, onPickPreset, onWrite, onStopWriting, onWritten, onFiles, onProvider, onStart,
+  onReturnToRun, onWatchLive, onPickPreset, onWrite, onStopWriting, onWritten, onFiles, onProvider, onStart,
 }: {
   visible: boolean;
   library: PresetLibrary;
@@ -44,6 +44,8 @@ export function SetupPage({
   /** A run is still going; a new one has to wait for it. */
   runActive: boolean;
   onReturnToRun: () => void;
+  /** Attach to the run the server is already doing. */
+  onWatchLive: (runId: string) => void;
   onPickPreset: (preset: Preset) => void;
   onWrite: () => void;
   onStopWriting: () => void;
@@ -154,7 +156,7 @@ export function SetupPage({
             <p>The last run stopped: {failure.message}{failure.hint ? ` ${failure.hint}` : ""} Paste the key again and start over.</p>
           </div>
         ) : null}
-        {server.busy ? <ServerBusyNotice server={server} /> : null}
+        {server.busy ? <ServerBusyNotice server={server} onWatch={onWatchLive} /> : null}
         <ProviderForm value={provider} onChange={onProvider} focusKey={failure !== null} />
       </section>
 

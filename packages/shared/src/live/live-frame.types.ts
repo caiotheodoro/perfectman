@@ -11,6 +11,16 @@
  * lands in `replay.json`.
  */
 
+import type { DirectorProfile } from "../director/types.js";
+import type { SceneLook } from "../stage/scene-look.js";
+
+/** What a scene says about itself beyond its words: the hour it starts, where it happens, who the people are. */
+export type SceneMeta = {
+  storyClock?: { start: string; minutesPerPulse: number };
+  look?: SceneLook;
+  agentProfiles?: Record<string, DirectorProfile>;
+};
+
 export type LiveEmotion = {
   valence: number;
   arousal: number;
@@ -108,7 +118,7 @@ export type LiveEvent =
        * has history.
        */
       priorEvents: LiveMessage[];
-    }
+    } & SceneMeta
   | { type: "status"; status: RunStatus }
   | { type: "pulse"; frame: LivePulseFrame }
   | { type: "channel"; channel: LiveChannel }
@@ -132,7 +142,7 @@ export type ViewerPulse = {
   notices: LiveNotice[];
 };
 
-export type ViewerReplay = {
+export type ViewerReplay = SceneMeta & {
   simulationId: string;
   simulationName: string;
   agents: Array<{ id: string; displayName: string; archetype: string }>;

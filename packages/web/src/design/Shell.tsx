@@ -22,7 +22,7 @@ export function BrandMark(): JSX.Element {
 }
 
 export function Shell({
-  step, furthest, onStep, onHome, onWatch, children,
+  step, furthest, onStep, onHome, onWatch, liveRun, onWatchLive, children,
 }: {
   step: StepId;
   /** Later steps are not clickable until the user reaches them. */
@@ -31,6 +31,9 @@ export function Shell({
   onHome: () => void;
   /** Opens the past runs, to watch as films. */
   onWatch?: () => void;
+  /** A run is going on the server and this tab is not showing it. */
+  liveRun?: { pulsesRun: number; maxPulses: number } | null;
+  onWatchLive?: () => void;
   children: React.ReactNode;
 }): JSX.Element {
   const reached = STEPS.findIndex((s) => s.id === furthest);
@@ -64,6 +67,11 @@ export function Shell({
             </button>
           ))}
         </nav>
+        {liveRun && onWatchLive && step !== "run" ? (
+          <button type="button" className="btn shell__live" onClick={onWatchLive}>
+            <span className="shell__dot" aria-hidden="true" />Watch the run in progress{liveRun.maxPulses > 0 ? ` · ${liveRun.pulsesRun} of ${liveRun.maxPulses}` : ""}
+          </button>
+        ) : null}
         {onWatch ? <button type="button" className="btn btn--quiet shell__watch" onClick={onWatch}>Watch a past run</button> : null}
       </header>
       <main className="shell__body">{children}</main>

@@ -6,7 +6,7 @@
  * overwritten, and nothing is invented: a field the config does not have stays
  * absent.
  */
-import { isSceneProp, isSceneSetting, type SceneLook } from "@perfectman/shared";
+import { isSceneProp, isSceneSetting, type SceneLook, type SceneMeta } from "@perfectman/shared";
 import type { AgentProfile, SimulationReplay } from "../../html/replay-types.js";
 
 const isRecord = (v: unknown): v is Record<string, unknown> => typeof v === "object" && v !== null && !Array.isArray(v);
@@ -55,6 +55,19 @@ export function backfillReplay(replay: SimulationReplay, config: unknown): Simul
   return {
     ...replay,
     ...(Object.keys(merged).length > 0 ? { agentProfiles: merged } : {}),
+    ...(storyClock ? { storyClock } : {}),
+    ...(look ? { look } : {}),
+  };
+}
+
+/** The scene's clock, look and people, read from a compiled config, for a live run's opening message. */
+export function sceneMetaOf(config: unknown): SceneMeta {
+  if (!isRecord(config)) return {};
+  const profiles = profilesOf(config);
+  const storyClock = clockOf(config);
+  const look = lookOf(config);
+  return {
+    ...(Object.keys(profiles).length > 0 ? { agentProfiles: profiles } : {}),
     ...(storyClock ? { storyClock } : {}),
     ...(look ? { look } : {}),
   };

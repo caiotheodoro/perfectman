@@ -15,10 +15,13 @@ export type Starter = { id: string; title: string };
 /** What the visitor already told us, so the next screen starts filled in. */
 export type StartChoice = { story?: string; presetId?: string };
 
-export function Intro({ starters, onStart, onWatch }: {
+export function Intro({ starters, onStart, onWatch, liveRun, onWatchLive }: {
   starters: readonly Starter[];
   onStart: (choice: StartChoice) => void;
   onWatch?: () => void;
+  /** A run is going on the server right now. */
+  liveRun?: { pulsesRun: number; maxPulses: number } | null;
+  onWatchLive?: () => void;
 }): JSX.Element {
   const replay = useMemo(surpriseParty, []);
   const [story, setStory] = useState("");
@@ -32,7 +35,14 @@ export function Intro({ starters, onStart, onWatch }: {
     <div className="intro-shell">
       <header className="shell__bar intro__bar">
         <BrandMark />
-        {onWatch ? <button type="button" className="btn--bare" onClick={onWatch}>Watch a past run</button> : null}
+        <span className="intro__links">
+          {liveRun && onWatchLive ? (
+            <button type="button" className="btn shell__live" onClick={onWatchLive}>
+              <span className="shell__dot" aria-hidden="true" />Watch the run in progress{liveRun.maxPulses > 0 ? ` · ${liveRun.pulsesRun} of ${liveRun.maxPulses}` : ""}
+            </button>
+          ) : null}
+          {onWatch ? <button type="button" className="btn--bare" onClick={onWatch}>Watch a past run</button> : null}
+        </span>
       </header>
       <main className="landing">
         <div className="landing__head">
