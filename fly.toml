@@ -1,0 +1,39 @@
+# The run server on Fly.io. See docs/deploying.md for why it is one machine.
+app = "perfectman-server"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PORT = "8080"
+  PERFECTMAN_RUNS_DIR = "/tmp/runs"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Idle costs nothing: the machine stops with no open connection and starts on
+  # the next request. A run holds its stream open, so it is never stopped mid-run
+  # while somebody is watching.
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 200
+    hard_limit = 250
+
+  [[http_service.checks]]
+    method = "GET"
+    path = "/api/runs/current"
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+
+# Two shared vCPUs: all this org is allowed for now (no "performance" machines, 2 cores per
+# machine). A pulse is CPU-bound parsing, not waiting on the model: on one starved vCPU it
+# took 483s against 61s on four. Measure a real run, and raise this once the limits lift.
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"

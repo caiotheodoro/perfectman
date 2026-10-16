@@ -58,6 +58,28 @@ The failure mode is worth recognising because it does not look like slowness:
 `stop` cannot interrupt a pulse already in flight, so a starved instance sits
 in `stopping` for minutes and reads as a hang.
 
+## The run server, on Fly.io
+
+`fly.toml` at the repo root runs the same `Dockerfile` as one machine in `iad`.
+It stops when nothing is connected and starts on the next request, so idle costs
+nothing; a run holds its stream open, so it is not stopped while somebody watches.
+
+```bash
+fly apps create perfectman-server
+fly deploy --ha=false --remote-only
+```
+
+`--ha=false` matters for the same reason `--max-instances=1` does on Cloud Run: a
+second machine would answer `/stream` for a run it has never heard of. Keep it at one:
+`fly scale count 1`.
+
+The machine is `shared-cpu-2x` with 2gb because that is all a new Fly org may use
+(no `performance` sizes, two cores per machine). Pulses are CPU-bound, so measure a
+real run and move to `performance-2x` (4gb minimum) once the limits lift.
+
+Point the interface at `https://perfectman-server.fly.dev` (see below). Logs:
+`fly logs`. Status: `fly status`.
+
 ## The interface, on Vercel
 
 Built against the server's URL, because a static host has nothing to inject it
@@ -65,7 +87,7 @@ at runtime:
 
 ```bash
 cd packages/web
-VITE_API_BASE=https://<your-cloud-run-url> pnpm build
+VITE_API_BASE=https://<your-server-url> pnpm build
 npx vercel deploy --prebuilt --prod
 ```
 
