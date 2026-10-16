@@ -165,7 +165,7 @@ export class StageView {
       const id = `${cap.t0}${cap.text}`;
       live.add(id);
       let e = this.capEls.get(id);
-      if (!e) { e = this.div(`watch-caption watch-caption--${cap.where}`, this.caps); e.textContent = cap.text; this.capEls.set(id, e); }
+      if (!e) { e = this.div(`watch-caption watch-caption--${cap.where}`, this.caps); e.setAttribute("data-layout-allow-overlap", ""); e.textContent = cap.text; this.capEls.set(id, e); }
       e.style.display = "block";
       e.style.opacity = op.toFixed(2);
     }
