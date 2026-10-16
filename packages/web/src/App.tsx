@@ -7,6 +7,7 @@ import { DEFAULT_PROVIDER, parseExtraBody, type ProviderValue } from "./run/Prov
 import { RunScreen } from "./run/RunScreen.js";
 import { SetupPage } from "./setup/SetupPage.js";
 import { draftFromSentence, INITIAL_ROOM, type RoomDraft, type RoomFiles } from "./setup/room-draft.js";
+import { useServerBusy } from "./run/useServerBusy.js";
 import { useWorkspaceFlow } from "./useWorkspaceFlow.js";
 import { WatchScreen } from "./watch/WatchScreen.js";
 
@@ -25,6 +26,19 @@ export function App(): JSX.Element {
     setCastChange, starting, cancelling, stream, pickScene, advance,
     run, stop, setScene, writing, setWriting, finishIntro,
   } = useWorkspaceFlow();
+
+  // The server may be running something this tab never started (another tab, a reload, somebody else). Say so, and offer to join it.
+  const server = useServerBusy(runId === null && !starting);
+  const liveRun = runId === null && server.busy && server.status?.runId
+    ? { pulsesRun: server.status.pulsesRun, maxPulses: server.status.maxPulses } : null;
+  const watchLive = useCallback((id: string) => {
+    setRunPlan(null);
+    setFailure(null);
+    setSetupFailure(null);
+    setRunId(id);
+    advance("run");
+    finishIntro();
+  }, [setRunPlan, setFailure, setRunId, advance, finishIntro]);
 
   const begin = useCallback((choice: StartChoice) => {
     const preset = library.scenes.find((s) => s.id === choice.presetId);
@@ -72,10 +86,10 @@ export function App(): JSX.Element {
   return (
     <>
       {!introDone ? (
-        <Intro starters={library.scenes} onStart={begin} onWatch={() => setWatching(true)} />
+        <Intro starters={library.scenes} onStart={begin} onWatch={() => setWatching(true)} liveRun={liveRun} onWatchLive={() => server.status?.runId && watchLive(server.status.runId)} />
       ) : null}
       <div hidden={!introDone}>
-    <Shell step={step} furthest={furthest} onStep={setStep} onHome={() => setIntroDone(false)} onWatch={() => setWatching(true)}>
+    <Shell step={step} furthest={furthest} onStep={setStep} onHome={() => setIntroDone(false)} onWatch={() => setWatching(true)} liveRun={liveRun} onWatchLive={() => server.status?.runId && watchLive(server.status.runId)}>
       {presetsLoading ? <p role="status">Loading stories…</p> : null}
       {presetsError ? (
         <div className="alert alert--shell" role="alert">
@@ -91,7 +105,7 @@ export function App(): JSX.Element {
           visible={introDone && step === "setup"}
           library={library} cast={cast} scene={scene}
           compiled={sceneCompiled} compiling={compiling}
-          draft={draft} writing={writing} failure={setupFailure} provider={provider} starting={starting} runActive={activeRun} onReturnToRun={() => setStep("run")}
+          draft={draft} writing={writing} failure={setupFailure} provider={provider} starting={starting} runActive={activeRun} onReturnToRun={() => setStep("run")} onWatchLive={watchLive}
           onPickPreset={(preset) => { setWriting(false); setWriteError(null); pickScene({ presetId: preset.id, files: preset.files }); }}
           onWrite={() => setWriting(true)}
           onStopWriting={() => { setWriting(false); setWriteError(null); }}

@@ -30,6 +30,16 @@ export class FilmClock {
     this.playing = !this.playing;
   }
 
+  /**
+   * A run that is still going grew: the film is longer, and the viewer stays exactly
+   * where they were. If they had caught up with the end, they carry on into the new part.
+   */
+  extend(duration: number): void {
+    const caughtUp = this.t >= this.duration - 0.05;
+    this.duration = duration;
+    if (caughtUp && duration > this.t + 0.05) this.playing = true;
+  }
+
   /** Swap in a new timeline of a different length, keeping the same place in the story. */
   retime(duration: number): void {
     const fraction = this.duration > 0 ? this.t / this.duration : 0;

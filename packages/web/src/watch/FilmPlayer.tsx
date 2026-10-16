@@ -29,12 +29,14 @@ export type FilmPlayerProps = {
   /** Start again a moment after the end. */
   loop?: boolean;
   pace?: PaceName;
+  /** The run is still going: it grows, and the viewer keeps their place in it. */
+  live?: boolean;
 };
 
 /** How long the last frame holds before a looping film starts over. */
 const LOOP_REST_MS = 2600;
 
-export function FilmPlayer({ replay, title, variant = "full", autoplay = false, loop = false, pace: initialPace = "normal" }: FilmPlayerProps): JSX.Element {
+export function FilmPlayer({ replay, title, variant = "full", autoplay = false, loop = false, pace: initialPace = "normal", live = false }: FilmPlayerProps): JSX.Element {
   const hero = variant === "hero";
   const [pace, setPace] = useState<PaceName>(initialPace);
   const [omniscient, setOmniscient] = useState(true);
@@ -51,7 +53,9 @@ export function FilmPlayer({ replay, title, variant = "full", autoplay = false, 
   const clock = useRef(new FilmClock(1));
   const lens = useRef(true);
   const restart = useRef<number | undefined>(undefined);
-  const audio = useMemo(() => new FilmAudio((id) => replay.agentIds.indexOf(id)), [replay]);
+  // Keyed on who is in the room, not on the replay object, so a growing run keeps the same audio.
+  const people = replay.agentIds.join("|");
+  const audio = useMemo(() => new FilmAudio((id) => replay.agentIds.indexOf(id)), [people]); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     let alive = true;
@@ -74,12 +78,13 @@ export function FilmPlayer({ replay, title, variant = "full", autoplay = false, 
     if (!film || !host.current) return;
     const s = new StageView(host.current, film.T, replay, { setting: replay.look?.setting, room2: replay.look?.rooms?.[0] });
     stage.current = s;
-    clock.current.retime(film.T.duration);
+    if (live) clock.current.extend(film.T.duration);
+    else clock.current.retime(film.T.duration);
     s.render(clock.current.t, { omniscient: lens.current });
     if (autoplay && !reducedMotion() && clock.current.t === 0) clock.current.playing = true;
     setView({ t: clock.current.t, playing: clock.current.playing });
     return () => { s.destroy(); stage.current = null; };
-  }, [film, replay, autoplay]);
+  }, [film, replay, autoplay, live]);
 
   useEffect(() => {
     if (!film) return;
@@ -162,6 +167,7 @@ export function FilmPlayer({ replay, title, variant = "full", autoplay = false, 
           onChange={(e) => seek((Number(e.target.value) / 1000) * duration)}
         />
         <span className="film__time">{formatDuration(view.t)} / {formatDuration(duration)}</span>
+        {live ? <button type="button" className="btn btn--quiet film__live" disabled={!film || view.t >= duration - 1} onClick={() => seek(duration)}>Jump to latest</button> : null}
       </div>
       <div className="film__opts">
         <div className="film__group" role="group" aria-label="Playback speed">

@@ -70,3 +70,9 @@
   .shell__rail { gap: 12px; }
 }
 .shell__watch { margin-left: auto; }
+.shell__live { min-height: 40px; padding: 8px 14px; gap: 8px; font-size: 14px; }
+.shell__dot { width: 9px; height: 9px; border-radius: 50%; background: #ff6a4d; box-shadow: 0 0 0 0 #ff6a4d88; animation: livepulse 1.8s infinite; }
+@keyframes livepulse { 70% { box-shadow: 0 0 0 8px #ff6a4d00; } 100% { box-shadow: 0 0 0 0 #ff6a4d00; } }
+.intro__links { display: inline-flex; align-items: center; gap: 16px; }
+.run__title { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.film__live { margin-left: auto; }

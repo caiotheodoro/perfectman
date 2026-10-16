@@ -136,6 +136,9 @@ export function fold(state: RunStream, event: LiveEvent): RunStream {
           simulationName: event.simulationName,
           agents: event.agents,
           channels: event.channels,
+          ...(event.storyClock ? { storyClock: event.storyClock } : {}),
+          ...(event.look ? { look: event.look } : {}),
+          ...(event.agentProfiles ? { agentProfiles: event.agentProfiles } : {}),
           // Seeded history arrives as pulse -1: it was written straight to the
           // repository, so no gateway ever saw it, but the viewer must not
           // start blank where the stored replay has a past.

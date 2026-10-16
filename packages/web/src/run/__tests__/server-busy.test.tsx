@@ -3,7 +3,7 @@
  * is usually not yours. Finding that out by pressing Start and reading a 409 is
  * the wrong order, so the form asks first and says whose turn it is.
  */
-import { render, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { RunStatus } from "@perfectman/shared";
 import { SetupPage } from "../../setup/SetupPage.js";
@@ -26,14 +26,14 @@ function screen(props: Partial<Parameters<typeof SetupPage>[0]> = {}) {
     <SetupPage
       visible library={{ casts: [], scenes: [] }} cast={{ presetId: null, files: [] }} scene={{ presetId: null, files: [] }}
       compiled={COMPILED} compiling={false} draft={INITIAL_ROOM} writing={false} failure={null}
-      provider={{ ...DEFAULT_PROVIDER, llm: { ...DEFAULT_PROVIDER.llm, apiKey: "k" } }} starting={false} runActive={false} onReturnToRun={noop}
+      provider={{ ...DEFAULT_PROVIDER, llm: { ...DEFAULT_PROVIDER.llm, apiKey: "k" } }} starting={false} runActive={false} onReturnToRun={noop} onWatchLive={noop}
       onPickPreset={noop} onWrite={noop} onStopWriting={noop} onWritten={noop} onFiles={noop} onProvider={noop} onStart={noop}
       {...props}
     />,
   );
 }
 
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => { cleanup(); vi.restoreAllMocks(); });
 
 describe("when the server is already busy", () => {
   it("says so, with how far along the other run is", async () => {
@@ -42,6 +42,15 @@ describe("when the server is already busy", () => {
 
     await waitFor(() => expect(container.querySelector(".busy")).not.toBeNull());
     expect(container.querySelector(".busy")?.textContent).toContain("4 of 16 turns in");
+  });
+
+  it("offers to watch the run that is already going, by its id", async () => {
+    vi.spyOn(client, "currentStatus").mockResolvedValue(status({ runId: "r_other" }));
+    const onWatchLive = vi.fn();
+    const { findByRole } = screen({ onWatchLive });
+
+    fireEvent.click(await findByRole("button", { name: "Watch it live" }));
+    expect(onWatchLive).toHaveBeenCalledWith("r_other");
   });
 
   it("disables Start rather than letting it fail with a 409", async () => {

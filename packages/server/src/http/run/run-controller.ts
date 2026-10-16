@@ -28,6 +28,7 @@ import { drainInFlight, runPulseLoop, type InFlight } from "./pulse-loop.js";
 import { applySeeds } from "./seed-applier.js";
 import { RunArtifacts, type RunManifest } from "./run-artifacts.js";
 import { clearRunKey } from "./secrets.js";
+import { sceneMetaOf } from "./replay-backfill.js";
 
 /** Frames kept for a client that connects just after the run starts. */
 const SSE_BACKLOG = 256;
@@ -374,5 +375,6 @@ function helloEvent(
     channels,
     maxPulses: params.maxPulses,
     priorEvents,
+    ...sceneMetaOf(params.config),
   };
 }

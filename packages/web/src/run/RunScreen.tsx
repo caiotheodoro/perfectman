@@ -7,7 +7,7 @@
  * cannot begin sends the viewer back there with the reason.
  */
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { idlePlacement, placeBeats, type CompileResponse } from "@perfectman/shared";
+import { idlePlacement, liveToDirector, placeBeats, type CompileResponse } from "@perfectman/shared";
 import type { RunStream } from "../api/useRunStream.js";
 import type { LiveChannel } from "@perfectman/shared";
 import type { StageAgent } from "../stage/Stage.js";
@@ -20,6 +20,7 @@ import { useDocumentVisible, useReadingPosition } from "../stage/motion.js";
 import { useStageBeats } from "./useStageBeats.js";
 import { useSoundtrack } from "./useSoundtrack.js";
 import { Transport } from "./Transport.js";
+import { FilmPlayer } from "../watch/FilmPlayer.js";
 import { DetailsDrawer } from "./DetailsDrawer.js";
 
 const IDLE_STATES = new Set(["idle", "done", "failed"]);
@@ -64,7 +65,13 @@ export function RunScreen({
   const finished = stream.status?.state === "done" || stream.status?.state === "failed" || stream.stoppedReason !== null;
   const ready = runId !== null && beats.length > 0;
   const documentVisible = useDocumentVisible();
-  const onStage = ready && visible && documentVisible;
+  // The drawn film is how a run is watched; the beat-by-beat stage stays as a lens.
+  const [view, setViewState] = useState<"film" | "beats">(readView);
+  const setView = (next: "film" | "beats"): void => { setViewState(next); writeView(next); };
+  const film = useMemo(() => (stream.replay ? liveToDirector(stream.replay) : null), [stream.replay]);
+  const filmReady = film !== null && film.pulses.some((p) => p.committedEvents.length > 0);
+  const showFilm = filmReady && view === "film";
+  const onStage = ready && visible && documentVisible && !showFilm;
   const clock = useStageClock(beats, { ready: onStage, runId });
   const reading = useReadingPosition(onStage ? clock.beat?.id : undefined);
   const seek = (index: number): void => { clock.seek(index); reading.reveal(); };
@@ -117,11 +124,20 @@ export function RunScreen({
         </p>
       ) : (
         <>
-          <header className="run__title"><h2>{stream.replay?.simulationName ?? sceneTitle ?? "Your scene"}</h2></header>
+          <header className="run__title">
+            <h2>{stream.replay?.simulationName ?? sceneTitle ?? "Your scene"}</h2>
+            {filmReady ? (
+              <div className="film__group" role="group" aria-label="How to watch">
+                <button type="button" className="film__opt" aria-pressed={view === "film"} onClick={() => setView("film")}>Film</button>
+                <button type="button" className="film__opt" aria-pressed={view === "beats"} onClick={() => setView("beats")}>Beat by beat</button>
+              </div>
+            ) : null}
+          </header>
           {/* One page for the whole run. The warm-up room is the same Panel as
               the first line, so the first beat continues the picture rather
               than replacing it. */}
-          <div className="flipbook" ref={reading.ref}>
+          {showFilm ? <FilmPlayer replay={film!} title={stream.replay?.simulationName ?? sceneTitle ?? "Your scene"} live={running} autoplay /> : null}
+          <div className="flipbook" ref={reading.ref} hidden={showFilm}>
             <Panel
               playing={onStage && clock.playing}
               beat={ready ? clock.beat : undefined}
@@ -149,7 +165,7 @@ export function RunScreen({
             cancelling ? <p className="warmup" role="status">Cancelling as soon as the server answers…</p>
               : finished ? <p className="warmup" role="status">This run ended without any dialogue.</p>
                 : <WarmupNote stream={stream} agents={agents} />
-          ) : (
+          ) : showFilm ? null : (
             <>
               <Transport
                 beats={beats}
@@ -266,4 +282,22 @@ function readable(state: string): string {
     stopping: "Finishing the turn",
   };
   return words[state] ?? state;
+}
+
+const VIEW_KEY = "perfectman.run.view";
+
+function readView(): "film" | "beats" {
+  try {
+    return localStorage.getItem(VIEW_KEY) === "beats" ? "beats" : "film";
+  } catch {
+    return "film";
+  }
+}
+
+function writeView(view: "film" | "beats"): void {
+  try {
+    localStorage.setItem(VIEW_KEY, view);
+  } catch {
+    // The choice just does not stick.
+  }
 }

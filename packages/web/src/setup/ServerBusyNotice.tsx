@@ -5,7 +5,7 @@ import type { useServerBusy } from "../run/useServerBusy.js";
  * is usually somebody else's. Say whose, how far in, and offer the only action
  * that helps — rather than letting Start fail with a 409.
  */
-export function ServerBusyNotice({ server }: { server: ReturnType<typeof useServerBusy> }): JSX.Element {
+export function ServerBusyNotice({ server, onWatch }: { server: ReturnType<typeof useServerBusy>; onWatch?: (runId: string) => void }): JSX.Element {
   const status = server.status;
   const turns =
     status && status.maxPulses > 0 ? `${status.pulsesRun} of ${status.maxPulses} turns in` : "just started";
@@ -19,6 +19,7 @@ export function ServerBusyNotice({ server }: { server: ReturnType<typeof useServ
           be stopped first.
         </span>
       </div>
+      {onWatch && status?.runId ? <button type="button" className="btn" onClick={() => onWatch(status.runId!)}>Watch it live</button> : null}
       <button type="button" className="btn btn--quiet" disabled={server.stopping} onClick={() => void server.release()}>
         {server.stopping ? "Stopping…" : "Stop it"}
       </button>
