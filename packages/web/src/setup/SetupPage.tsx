@@ -113,7 +113,7 @@ export function SetupPage({
             ) : null}
           </div>
         )}
-        {writing ? <StoryWriter initial={draft} onChange={onWritten} /> : null}
+        {writing ? <StoryWriter initial={draft} provider={provider} onChange={onWritten} /> : null}
       </section>
 
       <section className="setup__block" aria-labelledby="setup-people">

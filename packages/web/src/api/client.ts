@@ -7,6 +7,8 @@
 import type {
   ApiError,
   CompileResponse,
+  DraftStoryRequest,
+  DraftStoryResponse,
   RunInputs,
   RunListEntry,
   RunStatus,
@@ -63,6 +65,11 @@ export function compile(inputs: RunInputs, llm?: StartRunRequest["llm"]): Promis
     method: "POST",
     body: JSON.stringify({ inputs, llm }),
   });
+}
+
+/** Ask the model behind the pasted key to write a room from an idea. The key is used for this call only. */
+export function draftStory(request: DraftStoryRequest): Promise<DraftStoryResponse> {
+  return json<DraftStoryResponse>("/api/draft", { method: "POST", body: JSON.stringify(request) });
 }
 
 export function startRun(request: StartRunRequest): Promise<StartRunResponse> {
