@@ -97,6 +97,30 @@ export type StartRunRequest = {
   limits?: { maxPulses?: number; wallClockCapMs?: number };
 };
 
+/** The three temperaments the story form offers; a drafted person picks one. */
+export type DraftRole = "connector" | "skeptic" | "performer";
+
+/** A room somebody described in a sentence, written out: the same fields the story form edits. */
+export type StoryDraft = {
+  title: string;
+  situation: string;
+  language: "en" | "pt-BR";
+  people: Array<{
+    name: string;
+    role: DraftRole;
+    /** What they secretly want. */
+    goal: string;
+    /** How they talk, in a line. */
+    voice: string;
+    /** Things they would say, in their own register. */
+    lines: string[];
+  }>;
+};
+
+/** `POST /api/draft`. The key is used for this one call and never kept. */
+export type DraftStoryRequest = { idea: string; people?: number; llm: LlmRequest };
+export type DraftStoryResponse = { draft: StoryDraft };
+
 export type StartRunResponse = { runId: string; status: unknown; streamUrl: string };
 
 /** `GET /api/runs` — one entry per directory under the artifact root. */

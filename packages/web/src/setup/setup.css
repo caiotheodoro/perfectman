@@ -30,6 +30,8 @@
 
 .writer { display: grid; gap: 16px; padding: 20px; border: 1px solid var(--rule); border-radius: var(--r-lg); }
 .writer label { display: grid; gap: 6px; }
+.writer__idea { display: grid; gap: 10px; justify-items: start; padding-bottom: 16px; border-bottom: 1px dashed var(--rule); }
+.writer__idea label { justify-self: stretch; }
 .writer label > span { font-weight: 600; font-size: 14px; }
 .writer em { color: var(--ink-50); font-size: 12.5px; font-style: normal; }
 .writer textarea { resize: vertical; }

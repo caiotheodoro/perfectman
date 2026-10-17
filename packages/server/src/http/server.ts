@@ -10,6 +10,8 @@ import { createReadStream, existsSync, statSync } from "node:fs";
 import { extname, join, normalize, resolve, sep } from "node:path";
 import type { LLMConfig } from "../llm/llm-config.js";
 import { compileRunInputs, type RunInputs } from "../authoring/compile-run-inputs.js";
+import type { DraftStoryRequest } from "@perfectman/shared";
+import { draftStory, StoryDraftError } from "../authoring/story-draft.js";
 import { RunAlreadyActiveError, RunController } from "./run/run-controller.js";
 import { listRuns, readManifest, readReplay, safeName } from "./run/run-artifacts.js";
 import { setRunKey } from "./run/secrets.js";
@@ -118,6 +120,17 @@ async function handle(
       simulationId: "preview",
     });
     sendJson(res, 200, result);
+    return;
+  }
+
+  if (path === "/api/draft" && method === "POST") {
+    const body = await readJsonBody<DraftStoryRequest>(req);
+    try {
+      sendJson(res, 200, { draft: await draftStory(body) });
+    } catch (err) {
+      if (!(err instanceof StoryDraftError)) throw err;
+      sendJson(res, err.status, { error: { message: err.message, ...(err.hint ? { hint: err.hint } : {}) } });
+    }
     return;
   }
 

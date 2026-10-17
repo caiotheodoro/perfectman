@@ -39,7 +39,7 @@ export const KNOWN_ROUTES: KnownRoute[] = [
   {
     id: "orca-deepseek",
     label: "OrcaRouter · DeepSeek v4 Flash",
-    note: "Reasons by default — the extra field switches it off, or nothing parses.",
+    note: "Writes crime, violence and strong language without refusing. Reasons by default, so the extra field switches it off.",
     llm: {
       providerType: "openai-compatible",
       modelName: "deepseek/deepseek-v4-flash",

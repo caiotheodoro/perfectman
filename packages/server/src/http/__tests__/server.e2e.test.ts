@@ -5,6 +5,7 @@
 import { readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { createServer } from "node:http";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import type { LiveEvent } from "@perfectman/shared";
 import { createWebServer } from "../server.js";
@@ -80,6 +81,34 @@ describe("web server", () => {
     const response = await fetch(`${base}/api/runs/not-current/stream`);
     expect(response.status).toBe(404);
     expect(web.controller.currentHub().clientCount).toBe(0);
+  });
+
+  it("drafts a room from an idea through whichever model the key belongs to, and says why when it cannot", async () => {
+    const reply = { title: "Cabin", situation: "Snowed in.", people: [{ name: "Mick", goal: "Hide it." }, { name: "Darla", goal: "Find out." }] };
+    let seenAuth = "";
+    const upstream = createServer((req, res) => {
+      seenAuth = String(req.headers.authorization);
+      res.writeHead(seenAuth.endsWith("good") ? 200 : 401, { "content-type": "application/json" });
+      res.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reply) } }] }));
+    });
+    await new Promise<void>((done) => upstream.listen(0, done));
+    const port = (upstream.address() as { port: number }).port;
+    const draft = (apiKey: string) => fetch(`${base}/api/draft`, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ idea: "two people hide a body in a cabin", llm: { providerType: "openai-compatible", baseUrl: `http://127.0.0.1:${port}/v1`, modelName: "m", apiKey } }),
+    });
+    try {
+      const ok = await draft("good");
+      expect(ok.status).toBe(200);
+      expect((await ok.json()).draft).toMatchObject({ title: "Cabin", people: [{ name: "Mick", role: "connector" }, { name: "Darla", role: "skeptic" }] });
+      expect(seenAuth).toBe("Bearer good");
+      const bad = await draft("bad");
+      expect(bad.status).toBe(502);
+      expect((await bad.json()).error.message).toMatch(/refused the key/);
+    } finally {
+      await new Promise((done) => upstream.close(done));
+    }
   });
 
   it("compiles markdown without starting anything", async () => {
