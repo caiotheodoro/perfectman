@@ -504,7 +504,9 @@ export class RunManager implements RunLink {
     for (let i = 0; i < 60 && this.director.leaseOf(params.run) === undefined; i++) await sleepOn(this.o.clock, 50);
     if (this.director.leaseOf(params.run) === undefined) return refuse("lease_missing", "the hotel never gave this replay a lease");
     this.launched.add(params.run);
-    if (ackIt) this.send({ t: "run_ack", run: params.run, ok: true });
+    // The hotel waits for an ack on every run it starts, including one made for a pm_command replay (it ends it as
+    // start_failed after 20 s), so the replay is acked once its lease is in, however it was started.
+    this.send({ t: "run_ack", run: params.run, ok: true });
     replay.notice("replay_started", "info", `${spec.source} ${spec.mode}`);
     void replay.launch().catch((err) => {
       const message = err instanceof Error ? err.message : String(err);

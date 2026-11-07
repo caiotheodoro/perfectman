@@ -20,6 +20,8 @@ export type FakeDirectorOptions = {
   /** Real ms per hotel tick; the hotel's is 300. */
   tickMs?: number;
   pairOutcome?: PairOutcome;
+  /** The hotel ends a run that is not acked this long after it was started as `start_failed` (20 s). */
+  ackTimeoutMs?: number;
 };
 
 export class FakeDirector {
@@ -37,6 +39,9 @@ export class FakeDirector {
   /** Test switch: subscribe_room is refused silently (a hotel that rate-limits resnapshots). */
   ignoreSubscribe = false;
   authFailures = 0;
+  /** Runs the hotel gave up on because the sidecar never sent `run_ack` (or `run_end`) in time. */
+  readonly startFailed: number[] = [];
+  private ackTimers = new Map<number, NodeJS.Timeout>();
   private server!: Server;
   private wss!: WebSocketServer;
   private sock: WebSocket | undefined;
@@ -82,6 +87,8 @@ export class FakeDirector {
   }
 
   async stop(): Promise<void> {
+    this.ackTimers.forEach(clearTimeout);
+    this.ackTimers.clear();
     this.walkTimers.forEach(clearTimeout);
     this.wss.clients.forEach((c) => c.terminate());
     await new Promise<void>((r) => this.wss.close(() => r()));
@@ -165,13 +172,29 @@ export class FakeDirector {
   startRun(p: { run: number; room: number; scenarioVersion: number; lease?: number; capActors?: number; mode?: "default" | "cinematic" }): void {
     const lease = p.lease ?? 1;
     this.lease.set(p.run, lease);
+    this.awaitAck(p.run);
     this.send({ t: "run_start", run: p.run, lease, mode: p.mode ?? "default", room: p.room, scenario_version: p.scenarioVersion, admin: { id: 9, name: "caio" }, cap_actors: p.capActors ?? 12 });
   }
 
   /** The hotel made a run row for a replay and gave it a lease, without a `run_start` (director-protocol.md 6.1). */
   grantLease(run: number, lease = 1): void {
     this.lease.set(run, lease);
+    this.awaitAck(run);
     this.send({ t: "lease", run, lease });
+  }
+
+  /** The hotel started this run: it must be acked (or ended) within the timeout, else it is `start_failed`. */
+  private awaitAck(run: number): void {
+    clearTimeout(this.ackTimers.get(run));
+    this.ackTimers.set(run, setTimeout(() => {
+      this.ackTimers.delete(run);
+      this.startFailed.push(run);
+    }, this.o.ackTimeoutMs ?? 20_000));
+  }
+
+  private settleAck(run: number): void {
+    clearTimeout(this.ackTimers.get(run));
+    this.ackTimers.delete(run);
   }
 
   pmCommand(run: number, room: number, cmd: Extract<HotelMsg, { t: "pm_command" }>["cmd"], args?: string, source: "chat" | "panel" | "auto" = "panel"): void {
@@ -233,6 +256,7 @@ export class FakeDirector {
   private onFrame(f: SidecarMsg): void {
     // A ui_push may omit its lease (older sidecars); one that is present must be the run's current lease.
     if (f.t === "ui_push" && f.lease != null && this.lease.has(f.run) && this.lease.get(f.run) !== f.lease) this.staleUiPushes++;
+    if (f.t === "run_ack" || f.t === "run_end") this.settleAck(f.run);
     switch (f.t) {
       case "hello_ack":
         if (this.withholdLeases) break;

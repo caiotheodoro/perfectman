@@ -1001,6 +1001,9 @@ export class Run {
   /** The link to the hotel went down or came back; the run holds still, it does not pause. */
   setLinkDown(down: boolean): void {
     this.linkDown = down;
+    // A wipe forwarded while the link was down is lost: the cache is checked against the hotel before it writes again.
+    if (down) this.playerMemory?.markDisconnected();
+    else void this.playerMemory?.resync();
     if (!this.loop) return;
     if (down) this.loop.pause();
     else if (this.state === "running") this.loop.resume();

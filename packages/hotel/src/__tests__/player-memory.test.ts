@@ -71,7 +71,7 @@ describe("PlayerMemory", () => {
       unseed: async (character, user) => void unseeded.push([character, user]),
       flushEveryMs: 1000,
     });
-    return { clock, pm, store, puts, seeded, unseeded };
+    return { clock, pm, store, rows, puts, seeded, unseeded };
   }
 
   it("loads a person once, seeds only characters of this scenario, and does not look them up again", async () => {
@@ -114,14 +114,90 @@ describe("PlayerMemory", () => {
 
   it("a failed write keeps the row for the next pass; a 422 memory_full is dropped", async () => {
     const down = setup({ putFails: true });
+    await down.pm.load([9]);
     down.pm.noteLine({ user: 9, name: "ana", heardBy: ["c1"], addressed: [], text: "uma frase qualquer aqui" });
     expect(await down.pm.flush()).toBe(0);
     expect(down.pm.dirtyCount).toBe(1);
     const full = setup();
+    await full.pm.load([9]);
     (full.store.putMemory as ReturnType<typeof vi.fn>).mockRejectedValue(new Error("422 /internal/v1/memory/5/9/c1: memory_full"));
     full.pm.noteLine({ user: 9, name: "ana", heardBy: ["c1"], addressed: [], text: "uma frase qualquer aqui" });
     await full.pm.flush();
     expect(full.pm.dirtyCount).toBe(0);
+  });
+
+  it("writes only for people whose load succeeded: notes wait for the load, a failed load writes nothing", async () => {
+    const { pm, store, puts } = setup();
+    // not looked up yet: the note is held, nothing is dirty, nothing is written
+    pm.noteLine({ user: 9, name: "ana", heardBy: ["c1"], addressed: ["c1"], text: "uma frase qualquer aqui" });
+    expect(pm.dirtyCount).toBe(0);
+    expect(await pm.flush()).toBe(0);
+    // the load fails: still nothing
+    (store.getMemory as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("503"));
+    await pm.load([9]);
+    expect(await pm.flush()).toBe(0);
+    expect(puts).toEqual([]);
+    // the load succeeds: the held note lands on top of what the hotel had
+    await pm.load([9]);
+    expect(pm.dirtyCount).toBe(1);
+    expect(await pm.flush()).toBe(1);
+    expect(puts[0]?.body.relationship.familiarity).toBe(5);
+    expect(puts[0]?.body.notes).toContain("ana said «uma frase qualquer aqui»");
+    expect(puts[0]?.body.notes).toContain("ana said «adoro esse lugar»");
+  });
+
+  it("a wipe discards held notes and the result of a write that was in flight", async () => {
+    const { pm, store, puts } = setup();
+    pm.noteLine({ user: 9, name: "ana", heardBy: ["c1"], addressed: [], text: "uma frase qualquer aqui" });
+    await pm.wipe(9);
+    await pm.load([9]);
+    expect(pm.dirtyCount).toBe(0);
+    // a flush is in flight when the wipe lands
+    const other = setup();
+    await other.pm.load([9]);
+    other.pm.noteLine({ user: 9, name: "ana", heardBy: ["c1", "c2"], addressed: [], text: "uma frase qualquer aqui" });
+    let release!: () => void;
+    (other.store.putMemory as ReturnType<typeof vi.fn>).mockImplementation(async () => {
+      await new Promise<void>((r) => (release = r));
+      return {};
+    });
+    const flushing = other.pm.flush();
+    await Promise.resolve();
+    await other.pm.wipe(9);
+    release();
+    expect(await flushing).toBe(0);
+    expect(other.pm.dirtyCount).toBe(0);
+    expect(other.pm.stats.saved).toBe(0);
+    expect(store.putMemory).not.toHaveBeenCalled();
+    expect(puts).toEqual([]);
+  });
+
+  it("after a reconnect the cache is checked against the hotel: a person wiped while the link was down is never written again", async () => {
+    const { pm, store, rows, puts, unseeded } = setup();
+    await pm.load([9]);
+    pm.noteLine({ user: 9, name: "ana", heardBy: ["c1"], addressed: ["c1"], text: "uma frase qualquer aqui" });
+    pm.markDisconnected();
+    // the hotel wipes her while the link is down; the forwarded wipe never arrives
+    rows.length = 0;
+    // the hotel cannot be read yet: no writes
+    (store.getMemory as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("503"));
+    expect(await pm.flush()).toBe(0);
+    expect(puts).toEqual([]);
+    // back up: the missing row says she was wiped
+    expect(await pm.resync()).toBe(true);
+    expect(unseeded).toEqual([["c1", 9], ["c2", 9]]);
+    expect(pm.dirtyCount).toBe(0);
+    expect(await pm.flush()).toBe(0);
+    expect(puts).toEqual([]);
+  });
+
+  it("after a reconnect a person who was not wiped is written as before", async () => {
+    const { pm, puts } = setup();
+    await pm.load([9]);
+    pm.noteLine({ user: 9, name: "ana", heardBy: ["c1"], addressed: ["c1"], text: "uma frase qualquer aqui" });
+    pm.markDisconnected();
+    expect(await pm.flush()).toBe(1);
+    expect(puts).toHaveLength(1);
   });
 
   it("a wipe drops the cache, takes the seeded memories out, and writes nothing back for that person", async () => {
@@ -134,6 +210,7 @@ describe("PlayerMemory", () => {
     expect(await pm.flush()).toBe(0);
     expect(puts).toEqual([]);
     // other people are unaffected
+    await pm.load([10]);
     pm.noteLine({ user: 10, name: "bia", heardBy: ["c1"], addressed: [], text: "uma frase qualquer aqui" });
     expect(await pm.flush()).toBe(1);
   });

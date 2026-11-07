@@ -30,8 +30,8 @@ const spoken = (hotel: FakeDirector, run: number): string[] => cmdsOfRun(hotel, 
 const uiOfRun = (hotel: FakeDirector, run: number): PerfectmanUi[] => hotel.received.flatMap((f) => (f.t === "ui_push" && f.run === run ? [f.ui] : []));
 
 /** Records a short run with the mock model, stops it, and returns once its artifacts are on the volume. */
-async function record(opts: { run: number; mode?: "default" | "cinematic"; lines?: number }) {
-  const booted = await bootSidecar({ timing: { cine: FAST_CINE, replayTailMs: 100 } });
+async function record(opts: { run: number; mode?: "default" | "cinematic"; lines?: number; ackTimeoutMs?: number }) {
+  const booted = await bootSidecar({ ...(opts.ackTimeoutMs ? { ackTimeoutMs: opts.ackTimeoutMs } : {}), timing: { cine: FAST_CINE, replayTailMs: 100 } });
   fake = booted.fake;
   sidecar = booted.sidecar;
   fake.addRoom(14);
@@ -147,6 +147,21 @@ describe("replaying a default run into another room, with no model", () => {
     expect(booted.sidecar.manager?.runCount).toBe(0);
     // default mode shows the audience no film
     expect(uiOfRun(booted.fake, 20).filter((u) => u.k !== "notice")).toEqual([]);
+  }, 60_000);
+
+  it("acks a pm_command replay once its lease is in, before the hotel's ack timeout (else it is start_failed)", async () => {
+    // the fake hotel gives up on an unacked run after 1.5 s (it is 20 s for real)
+    const booted = await record({ run: 7, lines: 3, ackTimeoutMs: 1500 });
+    booted.fake.startFailed.length = 0;
+    booted.fake.grantLease(25, 2);
+    booted.fake.pmCommand(25, 14, "replay", "7 default", "chat");
+    const ack = await waitFor(() => booted.fake.received.find((f) => f.t === "run_ack" && f.run === 25), "the replay's run_ack");
+    expect(ack).toMatchObject({ ok: true });
+    await waitFor(() => booted.fake.received.find((f) => f.t === "run_end" && f.run === 25), "the replay's run_end", 20_000);
+    expect(booted.fake.startFailed).toEqual([]);
+    // and the fake does enforce it: a run that is never acked is start_failed
+    booted.fake.grantLease(26, 1);
+    await waitFor(() => booted.fake.startFailed.includes(26), "start_failed for an unacked run", 4000);
   }, 60_000);
 
   it("a replay is started the same way when the hotel also sent run_start (the run is claimed, never built live)", async () => {

@@ -176,7 +176,11 @@ export type PlayerMemoryDeps = {
   flushEveryMs?: number;
 };
 
-type Entry = { body: PlayerMemoryBody; dirty: boolean; lastNoteAt: number };
+/** `persisted`: the hotel has a row for it (read, or written by this run); a persisted entry that the hotel no longer has was wiped. */
+type Entry = { body: PlayerMemoryBody; dirty: boolean; lastNoteAt: number; persisted: boolean };
+
+/** Notes for a person the run has not finished looking up are kept (bounded) until the lookup succeeds. */
+const MAX_PENDING_PER_USER = 50;
 
 /** Loads what the characters know about the people in a run, keeps it up to date, and writes it back. */
 export class PlayerMemory {
@@ -187,6 +191,13 @@ export class PlayerMemory {
   private allWiped = false;
   private lastFlushAt: number;
   private flushing: Promise<number> | undefined;
+  /** Notes waiting for their person's rows to load: nothing is written for a person until their load has succeeded. */
+  private readonly pending = new Map<number, Array<() => void>>();
+  /** Bumped by every wipe: a write pass that started before one discards what it was doing. */
+  private epoch = 0;
+  /** The link to the hotel dropped: a wipe may have been missed, so nothing is written until the cache is checked against the hotel. */
+  private needsResync = false;
+  private resyncing: Promise<boolean> | undefined;
   private readonly log: Logger;
   readonly stats = { loaded: 0, seeded: 0, saved: 0, saveFailures: 0 };
 
@@ -212,11 +223,12 @@ export class PlayerMemory {
         for (const u of batch) this.known.add(u);
         for (const row of rows) {
           if (!batch.includes(row.user) || !this.d.characters.has(row.character) || this.wiped.has(row.user) || this.allWiped) continue;
-          this.entries.set(this.key(row.user, row.character), { body: row.body, dirty: false, lastNoteAt: 0 });
+          this.entries.set(this.key(row.user, row.character), { body: row.body, dirty: false, lastNoteAt: 0, persisted: true });
           this.stats.loaded++;
           await this.d.seed(row.character, row.user, memoriesFromBody(row.body, { character: row.character, simulationId: this.d.simulationId, user: row.user, lang: this.d.lang, createdAt: this.d.pulse() }));
           this.stats.seeded++;
         }
+        for (const u of batch) this.drainPending(u);
       } catch (err) {
         this.log.warn("player memory not loaded", { run: this.d.run, users: batch.length, error: err instanceof Error ? err.message : String(err) });
       } finally {
@@ -225,11 +237,27 @@ export class PlayerMemory {
     }
   }
 
+  /** Runs `apply` now when the person's rows are loaded, else when they are; a failed load leaves it waiting, never writing. */
+  private whenKnown(user: number, apply: () => void): void {
+    if (this.known.has(user)) return apply();
+    const q = this.pending.get(user) ?? [];
+    if (q.length >= MAX_PENDING_PER_USER) q.shift();
+    q.push(apply);
+    this.pending.set(user, q);
+  }
+
+  private drainPending(user: number): void {
+    const q = this.pending.get(user);
+    this.pending.delete(user);
+    if (!q || !this.writable(user)) return;
+    for (const apply of q) apply();
+  }
+
   private entry(user: number, character: string, name: string): Entry {
     const k = this.key(user, character);
     let e = this.entries.get(k);
     if (!e) {
-      e = { body: blankBody(name, this.d.run, this.d.clock.now()), dirty: false, lastNoteAt: 0 };
+      e = { body: blankBody(name, this.d.run, this.d.clock.now()), dirty: false, lastNoteAt: 0, persisted: false };
       this.entries.set(k, e);
     }
     e.body.name = name;
@@ -246,6 +274,10 @@ export class PlayerMemory {
     const now = this.d.clock.now();
     const name = sanitizeName(l.name, l.user);
     const said = sanitizeText(l.text, 110);
+    this.whenKnown(l.user, () => this.applyLine(l, now, name, said));
+  }
+
+  private applyLine(l: { user: number; name: string; heardBy: readonly string[]; addressed: readonly string[] }, now: number, name: string, said: string): void {
     for (const character of l.heardBy) {
       if (!this.d.characters.has(character)) continue;
       const e = this.entry(l.user, character, name);
@@ -266,6 +298,11 @@ export class PlayerMemory {
   /** The outcome of a pair act on a person (D31): what happened becomes a note and moves the warmth. */
   notePair(p: PairNote): void {
     if (!this.writable(p.user) || !this.d.characters.has(p.character)) return;
+    const at = this.d.clock.now();
+    this.whenKnown(p.user, () => this.applyPair(p, at));
+  }
+
+  private applyPair(p: PairNote, at: number): void {
     const e = this.entry(p.user, p.character, sanitizeName(p.name, p.user));
     const b = e.body;
     const refused = p.outcome === "dodge" || p.outcome === "push";
@@ -276,7 +313,7 @@ export class PlayerMemory {
     b.relationship.warmth = clamp(b.relationship.warmth + (PAIR_WARMTH[p.outcome] ?? 0), -1, 1);
     b.relationship.familiarity += 1;
     b.notes = [...b.notes, sanitizeText(note, NOTE_CHARS)].slice(-MAX_NOTES);
-    b.last_interaction = { at: this.d.clock.now(), run: this.d.run, summary: sanitizeText(note, NOTE_CHARS) };
+    b.last_interaction = { at, run: this.d.run, summary: sanitizeText(note, NOTE_CHARS) };
     e.dirty = true;
   }
 
@@ -299,9 +336,12 @@ export class PlayerMemory {
 
   private async writeAll(): Promise<number> {
     this.lastFlushAt = this.d.clock.now();
+    if (this.needsResync && !(await this.resync())) return 0;
+    const epoch = this.epoch;
     let saved = 0;
     for (const [k, e] of [...this.entries]) {
-      if (!e.dirty) continue;
+      if (epoch !== this.epoch) break;
+      if (!e.dirty || this.entries.get(k) !== e) continue;
       const [userText, character] = k.split("|") as [string, string];
       const user = Number(userText);
       if (!this.writable(user)) continue;
@@ -309,11 +349,15 @@ export class PlayerMemory {
       const before = JSON.stringify(e.body);
       try {
         await this.d.store.putMemory(this.d.scenario, user, character, { body });
+        // A wipe landed while this write was in flight: the cache was dropped, so the result is not kept.
+        if (epoch !== this.epoch || this.entries.get(k) !== e) continue;
+        e.persisted = true;
         // Something noted while the write was in flight stays dirty for the next pass.
         if (JSON.stringify(e.body) === before) e.dirty = false;
         saved++;
         this.stats.saved++;
       } catch (err) {
+        if (epoch !== this.epoch || this.entries.get(k) !== e) continue;
         this.stats.saveFailures++;
         // 422 memory_full (more than 12 characters for this person and scenario) will not get better by retrying.
         if (err instanceof Error && /^422\b/.test(err.message)) e.dirty = false;
@@ -323,18 +367,60 @@ export class PlayerMemory {
     return saved;
   }
 
+  /** The link to the hotel dropped. A `wipe_memory` forwarded meanwhile is lost, so writes stop until the cache is checked. */
+  markDisconnected(): void {
+    this.needsResync = true;
+  }
+
+  /**
+   * After a reconnect the cache is treated as a fresh load: the rows are read again, and a person whose row the
+   * hotel no longer has (it was there when this run loaded or saved it) was wiped while the link was down. Their
+   * cache is dropped, their seeded memories taken out, and nothing is written for them. Returns false when the
+   * hotel could not be read; writes stay off and the next pass tries again.
+   */
+  resync(): Promise<boolean> {
+    this.resyncing ??= this.doResync().finally(() => {
+      this.resyncing = undefined;
+    });
+    return this.resyncing;
+  }
+
+  private async doResync(): Promise<boolean> {
+    const users = [...this.known].filter((u) => this.writable(u));
+    const live = new Set<string>();
+    try {
+      for (let i = 0; i < users.length; i += LOAD_BATCH) {
+        for (const r of parseRows(await this.d.store.getMemory(this.d.scenario, users.slice(i, i + LOAD_BATCH)))) live.add(this.key(r.user, r.character));
+      }
+    } catch (err) {
+      this.log.warn("player memory not re-checked after reconnect", { run: this.d.run, error: err instanceof Error ? err.message : String(err) });
+      return false;
+    }
+    const gone = new Set<number>();
+    for (const [k, e] of this.entries) {
+      const user = Number(k.split("|")[0]);
+      if (e.persisted && !live.has(k) && this.writable(user)) gone.add(user);
+    }
+    for (const user of gone) await this.wipe(user);
+    this.needsResync = false;
+    return true;
+  }
+
   /**
    * An admin wipe (D21), forwarded by the hotel after it deleted the rows: forget what was cached, take the
    * seeded memories out of the characters, and write nothing back for these people for the rest of the run.
    */
   async wipe(user: number | "all"): Promise<number> {
     let dropped = 0;
+    this.epoch++;
     if (user === "all") {
+      this.pending.clear();
       this.allWiped = true;
       dropped = this.entries.size;
       this.entries.clear();
     } else {
       this.wiped.add(user);
+      this.pending.delete(user);
       for (const k of [...this.entries.keys()]) {
         if (k.startsWith(`${user}|`)) {
           this.entries.delete(k);
