@@ -16,7 +16,7 @@ import type {
 import type { Avatar, Furni, HotelMsg, RoomSnapshot, SnapDef, SnapSeat } from "../director/index.js";
 import { sanitizeText } from "../util/text.js";
 import { chebyshev } from "./geometry.js";
-import { classifyFurni, deriveZonesLite, type DeriveZones } from "./zones.js";
+import { classifyFurni, deriveRoomZones, type DeriveZones } from "./zones.js";
 
 export const STALE_MS = 5000;
 export const HUMAN_EXPIRY_MS = 8000;
@@ -78,7 +78,7 @@ export class HotelSpaceMirror implements SpaceMirror {
   private readonly listener: MirrorListener;
 
   constructor(opts: MirrorOptions = {}) {
-    this.derive = opts.deriveZones ?? deriveZonesLite;
+    this.derive = opts.deriveZones ?? deriveRoomZones;
     this.listener = opts.listener ?? {};
   }
 

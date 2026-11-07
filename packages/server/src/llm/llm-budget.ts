@@ -167,6 +167,16 @@ export class LLMBudgetTracker implements LlmUsageGetter {
   }
 
   /**
+   * Drops a finished simulation's limits and usage. The tracker is a process
+   * singleton, so a long-lived host (the hotel sidecar) must not keep every
+   * run it ever hosted.
+   */
+  forget(simulationId: string): void {
+    this.limits.delete(simulationId);
+    this.reset(simulationId);
+  }
+
+  /**
    * Cleans up expired records for a simulation based on sliding windows.
    */
   private cleanup(simulationId: string, now: number): void {

@@ -37,6 +37,12 @@ export type TurnTakingMetrics = {
   dogPileRate: number;
   /** Lines answered by more actors than were addressed (ADR-0021 still allows up to 3 lines after the addressee). */
   extraAnswerRate: number;
+  /**
+   * Timing rule 2: human lines after which an actor line beyond the expected answers
+   * (one, or one per addressee) landed inside the 10 s quiet window. Gestures and
+   * expressions are not lines, so they do not count.
+   */
+  interjectionRate: number;
   /** Addressed lines whose addressee answered. */
   addresseeAnsweredRate: number;
   answersPerLine: number;
@@ -92,6 +98,8 @@ const percentile = (sorted: readonly number[], p: number): number =>
 
 const NAMES = ["Duda", "Rafa", "Gabi", "Leo", "Nina", "Caio", "Bia", "Theo", "Lia", "Ravi", "Maya", "Davi"];
 const DELAY: [number, number] = [800, 4000];
+/** The arbiter's quiet window at the default scenario energy (10 s). */
+const QUIET_WINDOW_MS = 10_000;
 
 async function buildRoom(options: TurnTakingOptions): Promise<{ world: GridWorld; actorIds: string[]; human: string; rng: SeededRng }> {
   const count = options.actors ?? 8;
@@ -131,6 +139,7 @@ export async function runTurnTakingProbe(options: TurnTakingOptions): Promise<Tu
     lines,
     dogPileRate: 0,
     extraAnswerRate: 0,
+    interjectionRate: 0,
     addresseeAnsweredRate: 0,
     answersPerLine: 0,
     botLinesWhileTyping: 0,
@@ -142,6 +151,7 @@ export async function runTurnTakingProbe(options: TurnTakingOptions): Promise<Tu
   };
   let dogPiled = 0;
   let extra = 0;
+  let interjected = 0;
   let answeredByAddressee = 0;
   let addressedLines = 0;
   let answers = 0;
@@ -189,6 +199,7 @@ export async function runTurnTakingProbe(options: TurnTakingOptions): Promise<Tu
     const after = world.spoken.slice(from).filter((s) => s.at >= lineAt);
     answers += after.length;
     if (after.length > Math.max(1, said.addressedIds.length)) extra += 1;
+    if (after.filter((s) => s.at < lineAt + QUIET_WINDOW_MS).length > Math.max(1, said.addressedIds.length)) interjected += 1;
     if (said.addressedIds.length === 0) {
       if (after.length >= 2) dogPiled += 1;
     } else {
@@ -226,6 +237,7 @@ export async function runTurnTakingProbe(options: TurnTakingOptions): Promise<Tu
   const labelled = lines > 0 ? lines : 1;
   metrics.dogPileRate = dogPiled / labelled;
   metrics.extraAnswerRate = extra / labelled;
+  metrics.interjectionRate = interjected / labelled;
   metrics.addresseeAnsweredRate = addressedLines === 0 ? 0 : answeredByAddressee / addressedLines;
   metrics.answersPerLine = answers / labelled;
   latencies.sort((a, b) => a - b);

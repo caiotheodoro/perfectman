@@ -114,7 +114,9 @@ describe("connection loss and reconcile (D41)", () => {
     const ack = hotel.received.filter((f) => f.t === "hello_ack").at(-1);
     expect(ack).toMatchObject({ resume: [7] });
     await waitFor(() => hotel.received.filter((f) => f.t === "subscribe_room").length >= 2, "room re-subscribed");
-    await waitFor(() => (lastStatus(hotel)?.llm_calls ?? 0) > before, "pulses continue after the resync", 4000);
+    // The engine ages by wall time (6 s a pulse in production), so a short test needs a person to talk to.
+    hotel.humanSay(12, 9, "oi Duda, voltou a funcionar?");
+    await waitFor(() => (lastStatus(hotel)?.llm_calls ?? 0) > before, "the run answers after the resync", 4000);
     expect(lastStatus(hotel)?.state).toBe("running");
   });
 
@@ -151,9 +153,16 @@ describe("LLM circuit breaker through a run (D49)", () => {
     process.env["PERFECTMAN_LLM_API_KEY"] = "test-key";
     const { fake: hotel } = await running({
       config: { llm: { provider: "openai-compatible", baseUrl: `http://127.0.0.1:${port}/v1`, apiKeyEnv: "PERFECTMAN_LLM_API_KEY", models: ["m"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 } },
-      timing: { breakerInitialBackoffMs: 300 },
+      timing: { breakerInitialBackoffMs: 800 },
     });
-    await waitFor(() => lastStatus(hotel)?.pause_cause === "breaker", "breaker pause", 8000);
+    // Addressed lines are what keeps a room's model busy in a short test: each one consults the three actors.
+    // The probe answers (only generations fail), so the pause lasts one backoff: start watching before the lines.
+    const paused = waitFor(() => lastStatus(hotel)?.pause_cause === "breaker", "breaker pause", 8000);
+    for (let i = 0; i < 3; i++) {
+      hotel.humanSay(12, 9, `Duda, Rafa e Gabi, alguem ai? ${i}`);
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    await paused;
     expect(lastStatus(hotel)).toMatchObject({ state: "paused", breaker: "open" });
     expect(notices(hotel)).toContain("llm_circuit_open");
     failing = false;

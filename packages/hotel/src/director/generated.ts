@@ -697,6 +697,11 @@ export type PerfectmanUi =
       idle_ends_in_s?: number | null;
       k: "run_panel";
       llm_calls: number;
+      /**
+       * LLM call latency from the last `run_status` (D53). Absent until the sidecar reports it.
+       */
+      llm_p50_ms?: number | null;
+      llm_p95_ms?: number | null;
       pause_cause?: PauseCause | null;
       pulse: number;
       run: number;
@@ -917,8 +922,19 @@ export type SidecarMsg =
   | {
       breaker?: Breaker | null;
       cost_usd: number;
+      /**
+       * Event-loop lag of the sidecar, not LLM latency.
+       */
       lag_ms?: number | null;
       llm_calls: number;
+      /**
+       * Median latency of the run's LLM calls over the sidecar's recent window (D53).
+       */
+      llm_p50_ms?: number | null;
+      /**
+       * 95th percentile of the same window (D53).
+       */
+      llm_p95_ms?: number | null;
       pause_cause?: PauseCause | null;
       pulse: number;
       run: number;

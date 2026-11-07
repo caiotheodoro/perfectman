@@ -29,7 +29,7 @@ import { EventLog } from "./event-log.js";
 import { ChannelRegistry } from "./channel-registry.js";
 import { RateLimitGate } from "./rate-limit-gate.js";
 import { IntentResolver, type ResolvedIntent } from "./intent-resolver.js";
-import { RoomSpeechArbiter } from "./room-speech-arbiter.js";
+import { RoomSpeechArbiter, roomIdOfChannel } from "./room-speech-arbiter.js";
 import { computeActorAudibility } from "./actor-audibility.js";
 import type { HotelSimulationOptions } from "./hotel-options.js";
 import type { GuestIngest, GuestLineInput, HotelRuntimeApi, RunPulseOptions } from "./hotel-runtime-api.js";
@@ -426,6 +426,12 @@ export class SimulationRuntime implements GuestIngest, HotelRuntimeApi {
   async addChannelMember(channelId: string, agentId: string): Promise<void> {
     await this.channelRegistry.addMember(channelId, agentId);
     await this.config.delivery.addMember(channelId, agentId);
+    // Entering a room makes its channel the actor's default one (embodiment.md 6.4).
+    if (roomIdOfChannel(channelId) !== undefined) {
+      for (const entry of this.active.values()) {
+        if (entry.scheduler.hasAgent(agentId)) entry.scheduler.followToChannel(agentId, channelId);
+      }
+    }
   }
 
   async removeChannelMember(channelId: string, agentId: string): Promise<void> {

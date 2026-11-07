@@ -12,6 +12,9 @@
 export { SimulationRuntime } from "./simulation/simulation-runtime.js";
 export type { SimulationRuntimeRepositories } from "./simulation/simulation-runtime.js";
 export type { PulseResult, AgentContext } from "./simulation/pulse-scheduler.js";
+export type { HotelSimulationOptions, AgentCommitInfo, OnAgentCommitted } from "./simulation/hotel-options.js";
+export type { ResolvedBody, ResolvedIntent } from "./simulation/intent-resolver.js";
+export { parseMentionedAgentIds } from "./simulation/intent-resolver.js";
 export type {
   IDeliveryGateway,
   DeliveryMessage,
@@ -25,7 +28,12 @@ export { ChannelRegistry } from "./simulation/channel-registry.js";
 export { AgentRuntime } from "./agent/agent-runtime.js";
 export type { AgentRuntimeContext, AgentRuntimeOutput, BuiltPrompt } from "./agent/agent-runtime.types.js";
 
-export { LLMBudgetTracker } from "./llm/llm-budget.js";
+export { LLMBudgetTracker, hotelBudgetRegistration } from "./llm/llm-budget.js";
+export type { BudgetWarningListener, LatencyStats } from "./llm/llm-budget.js";
+export { LlmCircuitBreaker, classifyLlmCall } from "./llm/llm-circuit-breaker.js";
+export type { LlmCircuitBreakerOptions, CallVerdict } from "./llm/llm-circuit-breaker.js";
+export { governProvider, GovernorShared, isRateLimitError, retryAfterMs } from "./llm/llm-governor.js";
+export type { GovernorOptions, GovernorClock } from "./llm/llm-governor.js";
 export type { LLMConfig } from "./llm/llm-config.js";
 export type { LLMProvider, LLMProviderResult } from "./llm/llm-provider.js";
 export { LLMHttpError, LLMError, LLMTimeoutError } from "./llm/llm-errors.js";

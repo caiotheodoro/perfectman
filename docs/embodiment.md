@@ -361,7 +361,7 @@ State machine: `precheck -> approach -> face -> act -> hold -> part`.
 | # | Rule | Enforced by |
 | --- | --- | --- |
 | 1 | Addressed = by name, @, reply, or the only other person in band. Focused pulse; typing at consult; p50 <= 5 s, p95 <= 10 s | ingestion (addressed set), pulse clock (focused pulse), gateway (typing, landing time) |
-| 2 | One answer per human line unless several were addressed; others may gesture or emote | arbiter `not_addressed_open_line` and `one_answer_per_line` (one answer per unaddressed human line; spike dog-pile 46-58% -> 0%, [ADR-0021](adr/0021-room-speech-arbiter.md)) |
+| 2 | One answer per human line unless several were addressed; others may gesture or emote, but not speak, until the room has had 10 s without human speech | arbiter `not_addressed_open_line` and `one_answer_per_line` (one answer per human line, addressed or not; bystanders stay quiet after it until the ambient window; spike dog-pile 46-58% -> 0%, scripted interjection 47% -> 0%, [ADR-0021](adr/0021-room-speech-arbiter.md)) |
 | 3 | <= 1 actor line per 2.5 s per room; <= 3 actor lines per human line before bots yield | gateway room queue (spacing), arbiter `line_budget` |
 | 4 | A typing human suppresses ambient lines for up to 6 s | arbiter `human_typing` |
 | 5 | Silence is first-class; ambient bot-to-bot talk only after 10 s without human speech, scaled by scenario energy | arbiter `ambient_too_soon` |

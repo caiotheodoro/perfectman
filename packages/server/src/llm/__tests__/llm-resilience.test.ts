@@ -109,6 +109,10 @@ describe("LlmCircuitBreaker", () => {
     expect(classifyLlmCall(motive("Fallback applied: No JSON object found"))).toBe("provider_ok");
     expect(classifyLlmCall(motive("LLM budget exceeded: x"))).toBe("ignore");
     expect(classifyLlmCall({ ...fail(), type: "pulse_metrics" })).toBe("ignore");
+    // A call that threw out of generateIntent never reaches the step: only the scheduler's own marker counts.
+    const threw: OperatorEvent = { ...fail(), type: "llm_failure", data: { reason: "boom", stage: "generate" } };
+    expect(classifyLlmCall(threw)).toBe("provider_failure");
+    expect(classifyLlmCall({ ...threw, data: { errorDetail: "bad json" } })).toBe("ignore");
   });
 
   it("opens after 5 consecutive provider failures; parse fallbacks and successes reset the count", async () => {

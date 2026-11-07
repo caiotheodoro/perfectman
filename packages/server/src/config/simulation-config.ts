@@ -36,7 +36,7 @@ import {
 import { AgentRuntime } from "../agent/agent-runtime.js";
 import type { PersonaPromptProfile } from "../agent/persona-prompt-profile.js";
 import type { LLMConfig } from "../llm/llm-config.js";
-import { llmBudget } from "../llm/llm-budget.js";
+import { hotelBudgetRegistration, llmBudget } from "../llm/llm-budget.js";
 import type { LLMBudgetTracker } from "../llm/llm-budget.js";
 import {
   InMemoryAgentStateRepository,
@@ -214,6 +214,8 @@ export type ConfiguredSimulationHandle = {
   simulationId: string;
   gateways: Record<string, IDeliveryGateway>;
   repositories: SimulationRuntimeRepositories;
+  /** The tracker this simulation's calls are metered on (warnings, usage and latency percentiles). */
+  budget: LLMBudgetTracker;
   close(): Promise<void>;
 };
 
@@ -524,7 +526,11 @@ export async function buildConfiguredSimulation(
   const registry = new AgentConfigRegistry(configuredAgents);
   const budget = options.llmBudget ?? llmBudget;
   if (!options.llmBudget) {
-    llmBudget.registerLimits(simulationId, config.simulation.settings);
+    // Per-simulation registration on the shared tracker; a hotel run is warn-only.
+    llmBudget.registerLimits(
+      simulationId,
+      options.hotel ? hotelBudgetRegistration(options.hotel.budget) : config.simulation.settings,
+    );
   }
   // Fresh simulation, fresh rate windows (#147): the shared singleton keeps
   // usage keyed by simulationId across builds in one process (CLI reruns,
@@ -583,7 +589,9 @@ export async function buildConfiguredSimulation(
     simulationId: simulation.id,
     gateways,
     repositories: persistence.repositories,
+    budget: budget as LLMBudgetTracker,
     async close(): Promise<void> {
+      if (!options.llmBudget) llmBudget.forget(simulationId);
       if (persistence.db) {
         const { closeDatabase } = await import("../persistence/sqlite/database.js");
         closeDatabase(persistence.db);

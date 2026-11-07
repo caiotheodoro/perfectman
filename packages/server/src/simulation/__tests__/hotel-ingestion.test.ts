@@ -148,4 +148,19 @@ describe("guest ingestion (ADR-0022)", () => {
     expect(await runtime.getChannelRegistry().isMember("duda", CHANNEL)).toBe(false);
     expect(await runtime.getChannelRegistry().isMember("duda", "room:roof")).toBe(true);
   });
+
+  it("an actor who walks into a room speaks in that room's channel from then on", async () => {
+    const { runtime } = await setup();
+    await runtime.registerRoomChannel(SIM_ID, { id: "room:roof", name: "Roof" });
+    await runtime.removeChannelMember(CHANNEL, "duda");
+    await runtime.addChannelMember("room:roof", "duda");
+    const ingested = await runtime.ingest(line({ roomChannelId: "room:roof", mentionedAgentIds: ["duda"], addresseeIds: ["duda"], hearing: { duda: "clear" }, visibility: audible(["duda"]) }));
+    runtime.getArbiter(SIM_ID)!.noteHumanLine("roof", { eventId: ingested.id, at: Date.now(), addressedIds: ["duda"] });
+
+    await runtime.runPulse(SIM_ID, { reason: "human_chat", focusAgentIds: ["duda"], elapsedMs: 1500 });
+
+    const log = await runtime.getEventLog().getCommittedThrough(SIM_ID, Number.MAX_SAFE_INTEGER);
+    const spoken = log.find((e) => e.type === "message_sent" && e.actorId === "duda");
+    expect(spoken?.channelId).toBe("room:roof");
+  });
 });

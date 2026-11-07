@@ -23,7 +23,6 @@ export type SidecarOptions = {
   socketFactory?: SocketFactory;
   fetchImpl?: FetchLike;
   timing?: RunTiming;
-  plannerHook?: "tick" | "server";
   statusIntervalMs?: number;
 };
 
@@ -73,7 +72,6 @@ export async function startSidecar(config: HotelConfig, o: SidecarOptions = {}):
       http,
       sidecar: { version: "0.0.0", build: process.env["PERFECTMAN_BUILD"] ?? "dev", ...(sha ? { schema_sha256: sha } : {}) },
       ...(o.timing ? { timing: o.timing } : {}),
-      ...(o.plannerHook ? { plannerHook: o.plannerHook } : {}),
       ...(o.statusIntervalMs !== undefined ? { statusIntervalMs: o.statusIntervalMs } : {}),
     });
     manager.start();

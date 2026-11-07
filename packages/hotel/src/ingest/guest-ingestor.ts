@@ -1,4 +1,5 @@
 import type { EventVisibility, Presence, SpeechMode } from "@perfectman/shared";
+import { parseMentionedAgentIds } from "@perfectman/server/hotel";
 import type { GuestIngest, GuestLineInput } from "@perfectman/server/hotel";
 import type { Clock } from "../clock/clock.js";
 import type { HotelFrame } from "../director/index.js";
@@ -8,7 +9,6 @@ import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import { sanitizeName, sanitizeText, MAX_CHAT_CHARS } from "../util/text.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
-import { matchMentions } from "./mentions.js";
 
 type HumanChat = Extract<HotelFrame, { t: "human_chat" }>;
 
@@ -29,8 +29,8 @@ export type IngestorDeps = {
   homeRoom: string;
   channelIdForRoom(room: string): string | undefined;
   guests: GuestIngest;
-  /** Arbiter hook (`noteHumanLine`); absent until L3 ships the arbiter. */
-  noteHumanLine?(roomChannelId: string, line: { eventId: string; at: number; addressedIds: string[] }): void;
+  /** Arbiter hook: the line's id, time and addressees (ADR-0021). */
+  noteHumanLine(roomChannelId: string, line: { eventId: string; at: number; addressedIds: string[] }): void;
   /** Focused pulse request for the addressed actors. */
   requestFocused(agentIds: string[]): void;
   logger?: Logger;
@@ -86,7 +86,7 @@ export class GuestIngestor {
 
     // 3. Addressing.
     const targetRef = mode === "whisper" && frame.to !== null && frame.to !== undefined ? mirror.refOfAvatar(frame.to) : undefined;
-    const mentioned = matchMentions(content, this.namesIn(actors));
+    const mentioned = parseMentionedAgentIds(content, this.namesIn(actors));
     const addressed = this.addressed(mode, targetRef, mentioned, speaker, here);
 
     // 4. Hearing, from the mirror: distance, never from the prompt.
@@ -119,7 +119,7 @@ export class GuestIngestor {
 
     // 6b. Arbiter and focused pulse for the addressed actors who actually heard it.
     const heardAddressed = addressed.filter((id) => hearing[id] === "clear" || hearing[id] === "garbled");
-    this.deps.noteHumanLine?.(channelId, { eventId: committed.id, at: now, addressedIds: addressed });
+    this.deps.noteHumanLine(channelId, { eventId: committed.id, at: now, addressedIds: addressed });
     if (heardAddressed.length > 0) this.deps.requestFocused(heardAddressed);
     return { kind: "ingested", eventId: committed.id, addressed, heardBy: visibleToAgents, operatorOnly };
   }

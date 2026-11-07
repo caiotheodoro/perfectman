@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import type { Sidecar } from "../sidecar.js";
-import type { FakeDirector } from "../testing/fake-director.js";
-import { bootSidecar, waitFor } from "../testing/helpers.js";
+import { FakeDirector } from "../testing/fake-director.js";
+import { bootSidecar, TEST_SECRET, waitFor } from "../testing/helpers.js";
 
 let fake: FakeDirector | undefined;
 let sidecar: Sidecar | undefined;
@@ -19,6 +19,31 @@ async function boot() {
   fake = b.fake;
   sidecar = b.sidecar;
   await waitFor(() => fake?.received.some((f) => f.t === "hello_ack"), "hello_ack");
+  return b;
+}
+
+/** Resolves once the sidecar has sent nothing for a beat (arrival wakes and their replies have settled). */
+async function quiet(hotel: FakeDirector, ms = 400): Promise<void> {
+  const count = (): number => hotel.received.filter((f) => f.t !== "run_status").length;
+  let seen = -1;
+  let since = Date.now();
+  while (Date.now() - since < ms) {
+    if (count() !== seen) {
+      seen = count();
+      since = Date.now();
+    }
+    await new Promise((r) => setTimeout(r, 20));
+  }
+}
+
+async function bootWith(over: Parameters<typeof bootSidecar>[0], setup?: (f: FakeDirector) => void) {
+  const f = await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4 });
+  f.addRoom(12);
+  f.addHuman(12, 9, "ana", 6, 5);
+  setup?.(f);
+  const b = await bootSidecar({ ...over, fake: f });
+  fake = b.fake;
+  sidecar = b.sidecar;
   return b;
 }
 
@@ -49,5 +74,56 @@ describe("one run end to end on the fake Director with the mock provider", () =>
     await waitFor(() => http.registered.length > 0, "artifact registration");
     const manifest = JSON.parse(readFileSync(join(cfg.dataDir, "runs", "7", "replay.json"), "utf8")) as { stopReason: string };
     expect(manifest.stopReason).toBe("stopped");
+  });
+
+  it("with no base pulse in reach, an addressed line is answered through the focus lane, and typing starts at onConsult", async () => {
+    // One base pulse a minute: the only thing that can consult a model within the test is a focused pulse.
+    const { fake: hotel } = await bootWith({ timing: { baseIntervalMs: 60_000 } });
+    hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => hotel.received.filter((f) => f.t === "actor_spawn").length === 3, "3 spawns");
+    await waitFor(() => hotel.received.some((f) => f.t === "actor_cmd" && f.cmd.k === "walk"), "the cast walking in");
+    await quiet(hotel);
+    const status = () => hotel.received.filter((f) => f.t === "run_status").at(-1);
+    const calls = status()?.llm_calls ?? 0;
+    const pulse = status()?.pulse ?? 0;
+    const typedBefore = hotel.typingLog.length;
+    const duda = hotel.avatarByRef("person-1")?.id;
+    expect(duda).toBeDefined();
+
+    hotel.humanSay(12, 9, "oi Duda, tudo bem?");
+    // Typing is switched on the moment the addressee takes its generate slot, long before the model answers.
+    await waitFor(() => hotel.typingLog.slice(typedBefore).some((t) => t.on), "typing at consult", 3000);
+    await quiet(hotel);
+    const typers = new Set(hotel.typingLog.slice(typedBefore).filter((t) => t.on).map((t) => t.actor));
+    expect([...typers]).toEqual([duda]);
+    // The model was called and answered by focused pulses only: the base pulse index did not move.
+    await waitFor(() => (status()?.llm_calls ?? 0) > calls, "the status to count the call");
+    expect(status()?.pulse).toBe(pulse);
+    // D53: the run panel's latency travels as p50/p95; lag_ms is the sidecar's own loop lag.
+    expect(status()).toMatchObject({ llm_p50_ms: expect.any(Number), llm_p95_ms: expect.any(Number), lag_ms: expect.any(Number) });
+  });
+
+  it("a room change moves the actor's channel membership and records moved_room on the destination channel", async () => {
+    const { fake: hotel, sidecar: sc, cfg } = await bootWith({ timing: { baseIntervalMs: 60_000 } }, (f) => f.addRoom(13));
+    hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => hotel.received.filter((f) => f.t === "actor_spawn").length === 3, "3 spawns");
+    const registry = sc.manager?.getRun(7)?.simulation?.runtime.getChannelRegistry();
+    await waitFor(() => registry, "the runtime");
+    expect(await registry?.isMember("person-1", "room:12")).toBe(true);
+
+    hotel.moveActorToRoom("person-1", 13);
+    const moved = async (): Promise<boolean> => (await registry?.isMember("person-1", "room:13")) === true && (await registry?.isMember("person-1", "room:12")) === false;
+    const t0 = Date.now();
+    while (!(await moved())) {
+      if (Date.now() - t0 > 4000) throw new Error("membership did not follow the actor");
+      await new Promise((r) => setTimeout(r, 10));
+    }
+    expect(await registry?.isMember("person-2", "room:12")).toBe(true);
+
+    hotel.pmCommand(7, 12, "stop");
+    await waitFor(() => hotel.received.find((f) => f.t === "run_end"), "run_end", 6000);
+    const events = readFileSync(join(cfg.dataDir, "runs", "7", "events.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l) as { type: string; channelId: string; actorId: string; payload: Record<string, unknown> });
+    const hop = events.find((e) => e.type === "moved_room");
+    expect(hop).toMatchObject({ channelId: "room:13", actorId: "person-1", payload: { from: "12", to: "13" } });
   });
 });

@@ -26,7 +26,6 @@ export type ManagerOptions = {
   socketFactory: SocketFactory;
   http?: HotelHttpClient;
   timing?: RunTiming;
-  plannerHook?: "tick" | "server";
   statusIntervalMs?: number;
   sidecar?: { version: string; build: string; schema_sha256?: string };
   recorder?: FrameRecorder;
@@ -53,6 +52,7 @@ export class RunManager implements RunLink {
   private readonly log: Logger;
   private readonly governor: LlmGovernor;
   private timers: TimerHandle[] = [];
+  private loopLagMs = 0;
   private accepting = true;
   private stopped = false;
 
@@ -105,7 +105,15 @@ export class RunManager implements RunLink {
       };
       this.timers.push(this.o.clock.setTimer(tick, ms));
     };
-    every(this.o.statusIntervalMs ?? STATUS_INTERVAL_MS, () => this.reportStatus());
+    // `lag_ms`: how late the status timer itself fires, i.e. the sidecar's event-loop lag.
+    const statusEvery = this.o.statusIntervalMs ?? STATUS_INTERVAL_MS;
+    let due = this.o.clock.now() + statusEvery;
+    every(statusEvery, () => {
+      const now = this.o.clock.now();
+      this.loopLagMs = Math.max(0, now - due);
+      due = now + statusEvery;
+      this.reportStatus();
+    });
     every(STALE_CHECK_MS, () => this.checkStale());
   }
 
@@ -335,7 +343,6 @@ export class RunManager implements RunLink {
       link: this,
       governor: this.governor,
       ...(this.o.timing ? { timing: this.o.timing } : {}),
-      ...(this.o.plannerHook ? { plannerHook: this.o.plannerHook } : {}),
       onEnded: (r) => {
         this.runs.delete(r.id);
         this.driftNoticed.delete(r.id);
@@ -401,7 +408,7 @@ export class RunManager implements RunLink {
     if (!this.director.connected) return;
     for (const run of this.runs.values()) {
       if (run.state === "ended" || run.state === "failed") continue;
-      this.send(run.status());
+      this.send(run.status(this.loopLagMs));
       if (run.p95Drift && !this.driftNoticed.has(run.id)) {
         this.driftNoticed.add(run.id);
         run.notice("llm_p95_drift", "warn");

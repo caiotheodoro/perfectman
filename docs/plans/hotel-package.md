@@ -56,7 +56,7 @@ packages/hotel/
     embodiment/           plan(), BodyExecutor, pair choreography, constants
     ingest/               guest ingestion, sanitizer, addressing, hearing
     clock/                WallClockPulseLoop, injected Clock
-    llm/                  LlmGovernor, LlmCircuitBreaker, price table
+    llm/                  LlmGovernor (the server's `governProvider` on the hotel clock), BreakerDriver (the server's `LlmCircuitBreaker` plus its probe timer), meter, price table
     authoring/            AuthoringService + AuthoringServer (internal HTTP listener: validate, compile, draft, autolook, presets) over the server pipeline
     testing/              fake grid hotel, scripted humans, frame-log recorder
   vitest.config.ts
@@ -114,7 +114,7 @@ Director deltas {rev, room, msg}                -> SpaceMirror reducer -> SpaceV
 
 `RunManager` owns up to `PERFECTMAN_MAX_RUNS` runs, one per room. It starts, pauses, resumes and stops runs, applies leases, drives the lifecycle timers and reports run stats. It reuses the teardown order of the HTTP controller ([`run-controller.ts:219-293`](../../packages/server/src/http/run/run-controller.ts)): drain the in-flight pulse (bounded), stop the runtime, write artifacts, close handles, publish the final state. It does not reuse `RunController` itself ([ADR-0024](../adr/0024-multi-run-wall-clock-loop-and-bounded-event-reads.md)).
 
-Each `Run` is one `buildConfiguredSimulation` handle ([`simulation-config.ts:506`](../../packages/server/src/config/simulation-config.ts)) with: `persistence: { type: "memory" }` plus the bounded retention window, `HotelGateway` injected via `extraGateways`, a listening `LlmCircuitBreaker` gateway (the `LlmHealthGateway` pattern), an `AgentRuntime` built with the governed `providerFactory`, split pulse mode, and the arbiter.
+Each `Run` is one `buildConfiguredSimulation` handle ([`simulation-config.ts:506`](../../packages/server/src/config/simulation-config.ts)) with: `persistence: { type: "memory" }` plus the bounded retention window, `HotelGateway` injected via `extraGateways`, a listening `LlmCircuitBreaker` gateway (the `LlmHealthGateway` pattern, driven by `BreakerDriver`), an `AgentRuntime` built with the governed `providerFactory`, split pulse mode, the arbiter, and `onAgentCommitted` as the planner seam. All of it goes in as one `hotel: HotelSimulationOptions` bag; the sidecar keeps no adapters of its own over the runtime (`run/runtime-port.ts` only narrows the handle).
 
 Commands accepted from the hotel: a `run_start` frame, and `pm_command` with `cmd` in `stop`, `pause`, `resume`, `inject`, `whisper`, `status`, `replay`, `wipe_memory` (the protocol doc owns the shapes). `start`, `open` and `killall` are hotel-local: the hotel creates the `runs` row and sends `run_start`. The hotel can also send `run_end` (it ended the run itself: idle timeout, kill-all, lease expiry); the sidecar then stops the runtime, writes artifacts and drops the run.
 
@@ -161,7 +161,7 @@ Per run, under `PERFECTMAN_DATA_DIR/runs/<runId>/` (the volume layout is owned b
 | per-room queue | enforces >= 2.5 s between actor lines in a room (timing rule 3): a colliding addressed reply is delayed, never dropped. Queue cap 6 per room; overflow drops the oldest ambient line first, then the oldest interjection, counted as `undelivered_committed` |
 | `createChannel` / `addMember` / `removeMember` | Mirror membership; huddle bookkeeping for private channels (embodiment.md 6.4). No hotel call |
 | `sendSpectatorEvent` | Default mode: ignored. Cinematic: appended to the director input |
-| `sendOperatorEvent` | Feeds the circuit breaker and metrics; forwards thoughts as `chat{mode:"thought"}` commands (always logged to `chat_log`, D42; delivered to nobody in default mode, delivered to Audience in cinematic, D30); raises admin notices (`ui_push` notice) for `llm_circuit_open` and `llm_budget_warning` |
+| `sendOperatorEvent` | Forwards thoughts as `chat{mode:"thought"}` commands (always logged to `chat_log`, D42; delivered to nobody in default mode, delivered to Audience in cinematic, D30) and ends typing on a silent consult. The circuit breaker is its own listening gateway; the run raises the admin notices (`ui_push` notice) for `llm_circuit_open`, `llm_circuit_closed` and `llm_budget_warning` |
 | `onSimulationStopped` | Trigger walk-out and despawn through the run manager |
 | `dispatch(commands)` | Per-actor token bucket (<= 4 per 5 s, embodiment 7.2) as a second check, ahead of the hotel's own backstop of 8 per 5 s that includes `walk`; sends `actor_cmd` frames; records every send in the local frame log; reports `actor_error` frames back to the executor |
 
@@ -171,7 +171,9 @@ Typing: `onConsult` -> `typing{on}`; released with the line, or after at least 0
 
 - `buildConfiguredSimulation(config, { hotel: HotelSimulationOptions, extraGateways, agentRuntimeFactory })` switches a run into hotel mode: split pulse (default concurrency 3, one slot reserved for addressed), `arbiter` config, `spaceMirror`, `windowedReads`, `eventRetention: { maxRetained, onEvict }` (the NDJSON sink is the sidecar's), `onConsult`, `onAgentCommitted`, `clock`.
 - `SimulationRuntime`: `runPulse(simId, { reason, focusAgentIds?, elapsedMs? })`, `getPulseIndex`, `awaitIdle`, `ingest(GuestLineInput)`, `resolveDeferred(agentId, intent)`, `registerRoomChannel` / `addChannelMember` / `removeChannelMember`, `getArbiter(simId)` (`noteHumanLine`, `noteHumanTyping`), `getResponseDelayMs(simId, agentId)`.
-- LLM: register `hotelBudgetRegistration()` on the module singleton `llmBudget` after the build; `LlmCircuitBreaker` goes in `extraGateways` and reports through `onOpen` / `onClose`; wrap providers with `governProvider` in the `providerFactory`; usage and p50 / p95 from `llmBudget.getUsage` / `getLatencyStats`.
+- LLM: `hotel.budget` (soft limits) registers the simulation's own warn-mode limits on the shared `llmBudget` inside the build and `handle.close()` forgets them; `handle.budget.onWarning` carries the warnings; `LlmCircuitBreaker` goes in `extraGateways` and reports through `onOpen` / `onClose` (`BreakerDriver` schedules its probe); providers are wrapped with `governProvider` in the `providerFactory`. A call that throws out of `generateIntent` before the step ran is counted too (the scheduler's `llm_failure` carries `stage: "generate"`).
+- Planner seam: `onAgentCommitted(AgentCommitInfo)` runs the planner for that actor with the validated `body` block, its targets and the view it decided from; a `body.deferral` makes the run hold the intent and call `resolveDeferred` when the walk that was taking the speaker to the addressee arrives (or drop it at `expiresAt` with `body_blocked: not_in_earshot`). Actors the model was not consulted for get the automatic rules from a sweep after each base pulse.
+- Rooms: `addChannelMember` on a `room:<id>` channel also makes it the actor's default channel, so a `moved_room` frame becomes `removeChannelMember` / `addChannelMember` plus a `moved_room` event on the destination channel.
 - `WallClockPulseLoop` in `packages/server` is a ready two-lane loop on an injected clock; the sidecar may use it or its own.
 - Engine-side fake grid hotel and probes also exist in `packages/eval/src/embodiment/` (used by the server and engine probes); the sidecar's own fake in `src/testing/` is still needed for the Director transport.
 
@@ -182,7 +184,7 @@ The rules are specified in [`../embodiment.md`](../embodiment.md) section 8.3. O
 | Rule | Owner in this package |
 | --- | --- |
 | 1 Addressed: focused pulse, typing at consult, line lands at `max(LLM done, persona delay + 55 ms/char, cap 4 s)`, p50 <= 5 s, p95 <= 10 s | ingestion (addressed set) -> `RunManager.requestFocused` -> `WallClockPulseLoop`; `HotelGateway` landing time |
-| 2 One answer per human line unless several were addressed | server arbiter (`not_addressed_open_line`, a `policy_blocked` denial that falls back to `no_op`, never `rateLimited`); the hotel supplies the human-line state (id, addressed set, typing) through `arbiter.noteHumanLine` / `noteHumanTyping` |
+| 2 One answer per human line unless several were addressed; after it, others only react until 10 s without human speech | server arbiter (`not_addressed_open_line`, a `policy_blocked` denial that falls back to `no_op`, never `rateLimited`); the hotel supplies the human-line state (id, addressed set, typing) through `arbiter.noteHumanLine` / `noteHumanTyping` |
 | 3 <= 1 actor line per 2.5 s per room; <= 3 lines per human line | per-room queue (spacing); arbiter (`line_budget`) |
 | 4 Typing human suppresses ambient lines up to 6 s | arbiter (`human_typing`); typing frames from the hotel |
 | 5 Silence first-class; ambient after 10 s without human speech, scaled by scenario energy | arbiter (`ambient_too_soon`) |
@@ -334,7 +336,7 @@ Not planned: per-class unit tests that restate the code, snapshot tests of promp
 | 3 | Cost stop: v1 has warnings only (D11); revisit after real cost data | None |
 | 4 | Does a breaker pause auto-resume on half-open success (ADR-0025, as specced here) or wait for an admin (a stricter reading of lead resolution R2)? | Settled by D49: auto-resume after one successful half-open call; admin notified on pause and resume; never ends on a timer |
 | 5 | Shape of `scenario_versions.source` and `body` | `source` is a bundle: `=== file: name ===` lines separate the scenario and persona files (`authoring/source-bundle.ts`). `body` is `{ v: 1, title, config, seeds, maxPulses, looks?, responseDelays? }` (`run/scenario-body.ts`); agents carry a placeholder model that the host's config replaces at run start |
-| 6 | Where the live LLM p95 travels (D53) | `run_status.lag_ms` carries the p95 of LLM latency. The schema has no p50 field; if the run panel needs one, the hotel adds `llm_p50_ms` and `llm_p95_ms` to `run_status` |
-| 7 | Who plans the body until L3 calls the planner | The run plans after each pulse (`plannerHook: "tick"`) from the events the actors committed. When the server dispatches planned commands itself, set `plannerHook: "server"` |
+| 6 | Where the live LLM p95 travels (D53) | **Resolved**: `run_status` carries optional `llm_p50_ms` and `llm_p95_ms` (schema vendored from Tilehouse `feat/pm-integration`); `lag_ms` is the sidecar's event-loop lag (how late the 5 s status timer fires) |
+| 7 | Who plans the body | **Resolved**: the server's `onAgentCommitted` calls the run right after each actor's intent is resolved (the `plannerHook: "server"` mode); the old per-pulse tick is gone. The idle sweep only covers actors with no commit in a base pulse |
 
 Resolved by the 2026-11-06 lead resolutions: the 30 min end timer is idle-only (R2); authoring goes over an internal HTTP listener on the sidecar, not the Director socket (R3); the directory is `shared/src/space/` (R1).

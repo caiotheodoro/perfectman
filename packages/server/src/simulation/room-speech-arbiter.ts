@@ -8,7 +8,8 @@ import type {
 
 /**
  * Room speech arbiter (ADR-0021). Wall-clock turn-taking for speech in a room
- * channel: one answer per human line, a line budget per human line, human
+ * channel: one answer per human line (bystanders stay quiet once it is answered, until the
+ * room has been quiet for the ambient period), a line budget per human line, human
  * typing suppression and a quiet period before ambient talk. A denial is a
  * `policy_blocked` violation (never `rateLimited`), so the resolver's
  * `fallbackIfBlocked` path commits a `no_op` and the simulation never believes
@@ -131,8 +132,14 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
     const line = room.humanLine;
     if (kind === "interjection" && line) {
       const unanswered = [...line.addressed].filter((id) => !line.answeredBy.has(id));
-      if (unanswered.length > 0 && !line.addressed.has(agentId)) return "not_addressed_open_line";
-      if (line.addressed.size === 0 && line.answeredBy.size >= 1) return "one_answer_per_line";
+      const isAddressee = line.addressed.has(agentId);
+      if (unanswered.length > 0 && !isAddressee) return "not_addressed_open_line";
+      // Timing rule 2: once the line has been answered (by its addressees, or by
+      // one actor when it was addressed to nobody) everyone else may react with
+      // a gesture or an expression but not speak, until the room has gone a
+      // quiet period without human speech (then the ambient rule takes over).
+      const answered = line.addressed.size === 0 ? line.answeredBy.size >= 1 : unanswered.length === 0;
+      if (answered && !isAddressee) return "one_answer_per_line";
       if (room.actorLinesSinceHuman >= Math.max(this.config.minLineBudget, line.addressed.size)) return "line_budget";
     }
     if (kind === "ambient" && room.lastHumanSpeechAt !== null && now - room.lastHumanSpeechAt < this.effectiveQuietMs()) {

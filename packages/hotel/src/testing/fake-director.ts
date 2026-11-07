@@ -139,6 +139,21 @@ export class FakeDirector {
     this.delta(room, { t: "moves", moves: [{ id: userId, x, y, dir: a.dir, state: "stand" }] });
   }
 
+  /** An actor takes a door: it leaves its room and appears at the other room's door (`moved_room`, then the join delta). */
+  moveActorToRoom(ref: string, toRoom: number): void {
+    const to = this.rooms.get(toRoom);
+    const hit = [...this.rooms.values()].flatMap((r) => [...r.avatars.values()].filter((a) => a.ref === ref).map((a) => ({ r, a })))[0];
+    if (!to || !hit) throw new Error(`cannot move ${ref} to room ${toRoom}`);
+    const { r, a } = hit;
+    r.avatars.delete(a.id);
+    this.delta(r.id, { t: "avatar_left", id: a.id });
+    a.x = to.door[0];
+    a.y = to.door[1];
+    to.avatars.set(a.id, a);
+    this.send({ t: "moved_room", actor: a.id, from: r.id, to: toRoom, x: a.x, y: a.y });
+    if (this.subscribed.has(toRoom)) this.delta(toRoom, { t: "avatar_joined", avatar: this.wireAvatar(a) });
+  }
+
   // ---- hotel -> sidecar -------------------------------------------------------
 
   startRun(p: { run: number; room: number; scenarioVersion: number; lease?: number; capActors?: number }): void {

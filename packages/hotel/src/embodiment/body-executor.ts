@@ -25,6 +25,8 @@ export type ExecutorHooks = {
   arrived(agentId: string, plan: BodyPlan, tile: Tile, room: RoomId): void;
   /** A plan was replaced before it arrived (plan thrash probe). */
   abandoned?(agentId: string, plan: BodyPlan): void;
+  /** An actor went through a door: its room channel membership follows (embodiment.md 6.4). */
+  movedRoom?(agentId: string, from: RoomId, to: RoomId): void;
   pairAborted(info: PairInfo & { cause: PairedActAbortedPayload["cause"] }): void;
   pairOutcome(info: PairInfo & { outcome: PairOutcome }): void;
 };
@@ -171,6 +173,7 @@ export class BodyExecutor {
         if (ref) {
           this.deps.record?.("in", String(frame.to), "moved_room", { actor: ref, from: String(frame.from) });
           this.plans.delete(ref);
+          this.deps.hooks.movedRoom?.(ref, String(frame.from), String(frame.to));
         }
         break;
       }

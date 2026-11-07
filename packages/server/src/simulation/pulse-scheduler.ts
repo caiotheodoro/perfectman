@@ -303,6 +303,15 @@ export class PulseScheduler {
   }
 
   /**
+   * Hotel: the agent walked into another room, so its default channel (where an
+   * unqualified line goes) is that room's channel from now on. Host-appended
+   * events do not pass `appendAndProject`, which is where the anchor otherwise follows.
+   */
+  followToChannel(agentId: string, channelId: string): void {
+    this.currentChannelIdByAgent.set(agentId, channelId);
+  }
+
+  /**
    * Per-agent pulse order, a pure function of (seed, pulseIndex[, salt]).
    * Later agents in a pulse see earlier agents' commits (the window refresh in
    * the loop), so a fixed config order gave agent 0 a permanent first-mover
@@ -1272,7 +1281,10 @@ export class PulseScheduler {
       channelId,
       actorId: agentId,
       type: "llm_failure",
-      payload: { reason: this.errorReason(err) },
+      // `stage` lets the circuit breaker count a call that threw out of
+      // `generateIntent` (or missed its deadline) before the step produced an
+      // `action_intent`; those never reach it any other way.
+      payload: { reason: this.errorReason(err), stage: "generate" },
       sourceEventIds: [],
       emotionalSalience: "low",
       pulseIndex,

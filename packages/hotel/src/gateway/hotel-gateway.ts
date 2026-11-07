@@ -46,9 +46,7 @@ export type GatewayDeps = {
   /** The planner's shout choice (arousal and content); default: keep the committed mode. */
   chooseMode?(agentId: string, content: string, committed: SpeechMode): SpeechMode;
   timing?: Partial<GatewayTiming>;
-  /** Admin notices (`ui_push` notice). */
-  notice?(code: string, kind: "info" | "warn" | "error"): void;
-  /** Every operator event, for the breaker, the meter and logs. */
+  /** Every operator event, for logs and tests. */
   onOperatorEvent?(event: OperatorEvent): void;
   onStopped?(simulationId: string, reason?: EndReason, offer?: EndingOffer): void;
   /** A body command was blocked at delivery (`not_in_earshot`). */
@@ -117,6 +115,11 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     if (this.closed) return;
     this.consultAt.set(agentId, at);
     this.setTyping(agentId, true);
+  }
+
+  /** Typing off now: the line was held back (a deferral) or dropped. */
+  stopTyping(agentId: string): void {
+    this.setTyping(agentId, false);
   }
 
   private setTyping(agentId: string, on: boolean): void {
@@ -271,11 +274,7 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
 
   async sendOperatorEvent(event: OperatorEvent): Promise<void> {
     this.deps.onOperatorEvent?.(event);
-    const type: string = event.type;
-    if (type === "llm_circuit_open") this.deps.notice?.("llm_circuit_open", "warn");
-    else if (type === "llm_circuit_closed") this.deps.notice?.("llm_circuit_closed", "info");
-    else if (type === "llm_budget_warning") this.deps.notice?.("llm_budget_warning", "warn");
-    if (type !== "action_intent" || !event.agentId) return;
+    if (event.type !== "action_intent" || !event.agentId) return;
 
     const intentType = event.data?.["intentType"];
     const motive = event.data?.["privateMotiveSummary"];

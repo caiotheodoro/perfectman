@@ -1,9 +1,9 @@
+import { parseMentionedAgentIds } from "@perfectman/server/hotel";
 import type { GuestLineInput } from "@perfectman/server/hotel";
 import { describe, expect, it } from "vitest";
 import { ManualClock } from "../clock/manual-clock.js";
 import type { HotelFrame } from "../director/index.js";
 import { GuestIngestor } from "../ingest/guest-ingestor.js";
-import { matchMentions } from "../ingest/mentions.js";
 import { computeHearing } from "../space/hearing.js";
 import { HotelSpaceMirror } from "../space/space-mirror.js";
 import { avatar, snapshot } from "../testing/fixtures.js";
@@ -51,9 +51,9 @@ describe("text hygiene", () => {
 
   it("matches display names, accents and @ forms, but not substrings", () => {
     const names = { duda: "Duda", ana: "Ana Clara", jo: "Jo" };
-    expect(matchMentions("oi @duda, tudo bem?", names)).toEqual(["duda"]);
-    expect(matchMentions("ANA CLARA, vem aqui", names)).toEqual(["ana"]);
-    expect(matchMentions("dudadasilva e joão", names)).toEqual([]);
+    expect(parseMentionedAgentIds("oi @duda, tudo bem?", names)).toEqual(["duda"]);
+    expect(parseMentionedAgentIds("ANA CLARA, vem aqui", names)).toEqual(["ana"]);
+    expect(parseMentionedAgentIds("dudadasilva e joão", names)).toEqual([]);
   });
 });
 

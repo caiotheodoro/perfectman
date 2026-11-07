@@ -6,7 +6,7 @@ import type {
   SpaceMirror,
   SpaceView,
 } from "@perfectman/shared";
-import type { ArbiterConfig, PulseReason, SplitPulseConfig } from "./hotel-runtime-api.js";
+import type { ArbiterConfig, BudgetSoftLimits, PulseReason, SplitPulseConfig } from "./hotel-runtime-api.js";
 import type { InMemoryEventRepositoryOptions } from "./in-memory-stores.js";
 import type { ResolvedBody } from "./intent-resolver.js";
 
@@ -54,4 +54,11 @@ export type HotelSimulationOptions = SplitPulseConfig & {
   onAgentCommitted?: OnAgentCommitted;
   /** Wall clock for the arbiter and the space reads; injectable for tests. */
   clock?: () => number;
+  /**
+   * Registers this simulation's LLM budget in warn mode (ADR-0025, D11): the hard
+   * limits are effectively unbounded, so a busy room never goes mute, and these
+   * soft limits only drive the `llm_budget_warning` and the priority ladder.
+   * Ignored when the caller injects its own `llmBudget`.
+   */
+  budget?: Partial<BudgetSoftLimits>;
 };

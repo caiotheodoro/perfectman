@@ -15,9 +15,8 @@
  * - `Fallback applied:` (parse / schema)        -> the provider answered: counts as reachable, not a failure
  * - `LLM budget exceeded:`                       -> no call was made: ignored
  * - anything else                                -> a good call
- * A call that threw out of `generateIntent` entirely emits no `action_intent`;
- * the scheduler's own `llm_failure` is a committed event, not an operator
- * event, so it is not seen here.
+ * - operator `llm_failure` with `data.stage === "generate"` -> the call threw out of `generateIntent`
+ *   (or missed its deadline) before the step ran, so no `action_intent` follows; counted as a provider failure
  */
 import type { ChannelType, EndReason, EndingOffer, OperatorEvent, SpectatorEvent } from "@perfectman/shared";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
@@ -37,6 +36,11 @@ export type CallVerdict = "provider_failure" | "provider_ok" | "ignore";
 
 /** Classifies one operator event as a provider-level success, failure, or noise. */
 export function classifyLlmCall(event: OperatorEvent): CallVerdict {
+  // A call that threw out of `generateIntent`, or missed its deadline, never
+  // reaches the step, so no `action_intent` follows: the scheduler's own
+  // `llm_failure` (stage "generate", projected to the operator stream) is the
+  // only trace, and it is a provider-level failure.
+  if (event.type === "llm_failure") return event.data?.["stage"] === "generate" ? "provider_failure" : "ignore";
   if (event.type !== "action_intent") return "ignore";
   const motive = typeof event.data?.["privateMotiveSummary"] === "string" ? (event.data["privateMotiveSummary"] as string) : "";
   if (PROVIDER_FAILURE_PREFIXES.some((prefix) => motive.startsWith(prefix))) return "provider_failure";

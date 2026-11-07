@@ -36,10 +36,17 @@ describe("RoomSpeechArbiter rules (ADR-0021)", () => {
       expected: "room_speech:one_answer_per_line",
     },
     {
+      name: "once the addressee has answered, a bystander may react but not speak (timing rule 2)",
+      line: { addressedIds: ["rafa"] },
+      pre: ["rafa"],
+      speaker: "duda",
+      expected: "room_speech:one_answer_per_line",
+    },
+    {
       name: "bots yield after three lines for one human line",
       line: { addressedIds: ["rafa"] },
-      pre: ["rafa", "duda", "gabi"],
-      speaker: "leo",
+      pre: ["rafa", "rafa", "rafa"],
+      speaker: "rafa",
       expected: "room_speech:line_budget",
     },
   ])("$name", ({ line, pre = [], speaker, expected }) => {
