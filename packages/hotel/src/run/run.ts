@@ -1026,6 +1026,10 @@ export class Run {
     if (this.state !== "running" && this.state !== "paused") return;
     try {
       const outcome = await this.ingestor.handleHumanChat(frame);
+      if (outcome.kind === "ingested") {
+        // One frame per addressed actor, so the facing probe can ask whether each turned to the person who spoke.
+        for (const to of outcome.addressed) this.frames.record("in", String(frame.room), "human_chat", { ref: `h:${frame.from.id}`, mode: frame.mode, toRef: to });
+      }
       if (outcome.kind === "ingested" && frame.from.id > 0) {
         void this.playerMemory?.load([frame.from.id]);
         this.playerMemory?.noteLine({ user: frame.from.id, name: frame.from.name, heardBy: outcome.heardBy, addressed: outcome.addressed, text: frame.text });

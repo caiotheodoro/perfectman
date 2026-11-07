@@ -23,7 +23,9 @@ import type { Server } from "node:http";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { SAY_CLEAR_TILES, chebyshev, facingKind } from "@perfectman/engine";
 import { BodyIntentSchema } from "@perfectman/shared";
+import type { BodyFrameLog, Direction8 } from "@perfectman/shared";
 import { runEmbodimentProbes } from "../../eval/src/probes/embodiment.ts";
 import { PromptBuilder } from "../../server/src/agent/prompt-builder.ts";
 import { AuthoringService } from "../src/authoring/authoring-service.ts";
@@ -187,6 +189,25 @@ function bodyStats(prompts: Array<{ system: string; user: string }>, values: Arr
   return { calls: values.length, withBody, valid, emitPct: pct(withBody, values.length), validCallPct: pct(valid, values.length), plausible, plausibleValid, plausibleValidPct: plausible === 0 ? null : pct(plausibleValid, plausible), copiedFromExample: copied, kinds };
 }
 
+/** The eval lane's facing-rate, split by listener kind (same rule: 3 s later, within the say radius, whispers left out). */
+function facingSplit(log: BodyFrameLog): Results["facing"] {
+  const tally = { actor: { judged: 0, facing: 0 }, human: { judged: 0, facing: 0 } };
+  for (const f of log.frames) {
+    const speaker = f.kind === "chat" ? String(f.data["agentId"] ?? "") : f.kind === "human_chat" ? String(f.data["ref"] ?? "") : "";
+    const listener = String(f.data["toRef"] ?? "");
+    if (!speaker || !listener || f.data["mode"] === "whisper") continue;
+    const snap = log.snapshots.find((x) => x.atMs >= f.atMs + 3000 && x.room === f.room);
+    const a = snap?.occupants.find((o) => o.ref === speaker);
+    const b = snap?.occupants.find((o) => o.ref === listener);
+    if (!a || !b || chebyshev(a.tile, b.tile) > SAY_CLEAR_TILES) continue;
+    const t = listener.startsWith("h:") ? tally.human : tally.actor;
+    t.judged += 1;
+    if (facingKind(b.dir as Direction8, b.tile, a.tile) === "facing") t.facing += 1;
+  }
+  const rate = (t: { judged: number; facing: number }) => ({ ...t, ratePct: t.judged === 0 ? null : Math.round((1000 * t.facing) / t.judged) / 10 });
+  return { actor: rate(tally.actor), human: rate(tally.human) };
+}
+
 type Variant = { name: string; links: LlmLink[] };
 
 async function stubServer(): Promise<{ server: Server; url: string }> {
@@ -227,6 +248,8 @@ type Results = {
   body: { withBody: number; blocked: number; validPct: number | null; stats: BodyStats };
   /** Addressed `say` lines on the wire (chat frames with an addressee), how many stood out of earshot, and what the engine did about far addressees. */
   earshot: { lines: number; violations: number; ratePct: number | null; farLines: number; meanDistance: number | null; deferred: number; blockedNotInEarshot: number };
+  /** Listener facing the speaker 3 s after an addressed line, split by who listened: a cast member can be made to turn, a person cannot. */
+  facing: { actor: { judged: number; facing: number; ratePct: number | null }; human: { judged: number; facing: number; ratePct: number | null } };
   /** Hotel prompt style the links were sent. */
   promptStyle: Record<string, number>;
   addressed: { lines: number; answeredPct: number; replyP50Ms: number | null; replyP95Ms: number | null; n: number };
@@ -434,6 +457,7 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
         deferred: events.filter((e) => e.type === "speech_deferred").length,
         blockedNotInEarshot: events.filter((e) => e.type === "body_blocked" && JSON.stringify(e.payload).includes("not_in_earshot")).length,
       },
+      facing: facingSplit(run.frameLog),
       promptStyle: styleSeen,
       addressed: { lines: addressed.lines, answeredPct: pct(addressed.answered, addressed.lines), replyP50Ms: percentile(lat, 50) ?? null, replyP95Ms: percentile(lat, 95) ?? null, n: lat.length },
       dogPile: { ...dog, ratePct: pct(dog.unaddressedMulti + dog.addressedJumped, dog.lines) },
