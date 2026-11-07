@@ -231,7 +231,7 @@ export class Run {
     this.meter = new LlmMeter(d.hotel.llm.prices);
     const links = linksOf(d.hotel.llm);
     this.chain = links.length > 0
-      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: d.hotel.llm.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style) })
+      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: d.hotel.llm.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style), addressed: (id) => this.waitingOn.has(id) })
       : undefined;
     this.frames = new FrameLogRecorder(d.clock);
   }
@@ -381,7 +381,11 @@ export class Run {
       notice: (code) => this.notice(code, code === "llm_circuit_open" ? "warn" : "info"),
     });
 
-    const onConsult: OnConsult = (info) => this.gateway.noteConsult(info.agentId, clock.now());
+    const onConsult: OnConsult = (info) => {
+      if (info.addressed) this.waitingOn.add(info.agentId);
+      else this.waitingOn.delete(info.agentId);
+      this.gateway.noteConsult(info.agentId, clock.now());
+    };
     // The runtime's own hotel mode (ADR-0020 to 0025): split pulse with a reserved focus slot, the
     // room speech arbiter, bounded reads, the mirror as the source of each actor's `SpaceView`, and
     // the planner seam. The LLM budget registers per simulation in warn mode (`budget`), D11.
@@ -401,8 +405,10 @@ export class Run {
       ...this.retention(),
     };
     const options = {
-      agentRuntimeFactory: (registry: ConstructorParameters<typeof AgentRuntime>[1]) =>
-        new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId)),
+      agentRuntimeFactory: (registry: ConstructorParameters<typeof AgentRuntime>[1]) => {
+        this.registry = registry;
+        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2 });
+      },
       extraGateways: { hotel: () => this.gateway, breaker: () => this.breaker.gateway },
       hotel: hotelOptions,
     };
@@ -742,6 +748,10 @@ export class Run {
 
   /** Event id of an actor line to the room occupant it was aimed at (`addresseeIds`), until the line is delivered. */
   private readonly addressees = new Map<string, string>();
+  /** The built scenario's persona registry: the authored goal text the initiative rules read. */
+  private registry: ConstructorParameters<typeof AgentRuntime>[1] | undefined;
+  /** Actors whose current model call answers a line addressed to them: a person is waiting. */
+  private readonly waitingOn = new Set<string>();
   private readonly earlyLines = new Map<string, { agentId: string; mode: SpeechMode; eventId?: string; room: string }>();
 
   /** Who a committed line is aimed at: the author it replies to, a named target, or someone it names, when they share the room. */
@@ -765,13 +775,13 @@ export class Run {
    * `ref` is in an exchange with `otherRef`: remember it (the planner keeps facing them while it lasts) and turn
    * to them now, within the command budget. No model call is involved, so it lands within a pulse of the line.
    */
-  private faceInterlocutor(ref: string, otherRef: string): void {
+  private faceInterlocutor(ref: string, otherRef: string, maxTiles?: number): void {
     if (!this.agents.has(ref) || this.agents.get(ref)?.gone || this.state !== "running") return;
     const now = this.d.clock.now();
     const space = this.d.mirror.view(ref, now);
     if (!space) return;
     const mem = noteExchange(this.memory.get(ref) ?? {}, otherRef, now);
-    const cmds = planFacing({ space, now }, otherRef);
+    const cmds = planFacing({ space, now }, otherRef, maxTiles);
     this.memory.set(ref, cmds.length > 0 ? updateMemory(mem, cmds, now, space.self?.tile ?? [0, 0]) : mem);
     if (cmds.length > 0) this.out.send(cmds);
   }
@@ -795,7 +805,7 @@ export class Run {
     if (line.mode !== "whisper") {
       // Both turn to each other: the listener (if one of the cast) and the speaker.
       this.faceInterlocutor(to, line.agentId);
-      this.faceInterlocutor(line.agentId, to);
+      this.faceInterlocutor(line.agentId, to, to.startsWith("h:") ? Number.POSITIVE_INFINITY : undefined);
     }
     const room = this.d.mirror.view(line.agentId, this.d.clock.now())?.room;
     const me = room?.occupants.find((o) => o.ref === line.agentId);
@@ -850,7 +860,10 @@ export class Run {
   ): PlannedCommand[] {
     const now = this.d.clock.now();
     this.plannedThisPulse.add(ref);
-    const mem = this.memory.get(ref) ?? {};
+    const mem = { ...(this.memory.get(ref) ?? {}) };
+    mem.firstPlanAt ??= now;
+    this.memory.set(ref, mem);
+    const motive = carried?.intent.privateMotiveSummary;
     const cmds = plan({
       space,
       agentState,
@@ -859,12 +872,20 @@ export class Run {
       rng: this.d.rng,
       memory: mem,
       noOpStreak: this.noOpStreak.get(ref) ?? 0,
+      drives: { goalText: this.goalText(ref), ...(motive ? { motive } : {}), homeRoom: this.home },
       ...(carried ?? {}),
     });
     if (cmds.length === 0) return cmds;
-    this.memory.set(ref, updateMemory(mem, cmds, now, space.self?.tile ?? [0, 0]));
+    this.memory.set(ref, updateMemory(mem, cmds, now, space.self?.tile ?? [0, 0], space.room?.id));
     this.out.send(cmds);
     return cmds;
+  }
+
+  /** What the author wrote this person wants: identity frame and hidden objective. */
+  private goalText(ref: string): string {
+    const profile = this.registry?.getPromptProfile?.(ref);
+    if (!profile) return "";
+    return [profile.identityFrame, profile.hiddenObjective?.description].filter((t): t is string => typeof t === "string" && t.length > 0).join(" ");
   }
 
   /** After a base pulse: the automatic body rules for every actor the planner has not run for. */
@@ -1052,7 +1073,7 @@ export class Run {
         for (const to of outcome.addressed) {
           this.frames.record("in", String(frame.room), "human_chat", { ref: `h:${frame.from.id}`, mode: frame.mode, toRef: to });
           // The addressed actor turns to whoever spoke right away, not after its own model call.
-          if (outcome.heardBy.includes(to) && frame.mode !== "whisper") this.faceInterlocutor(to, `h:${frame.from.id}`);
+          if (outcome.heardBy.includes(to)) this.faceInterlocutor(to, `h:${frame.from.id}`, Number.POSITIVE_INFINITY);
         }
       }
       if (outcome.kind === "ingested" && frame.from.id > 0) {

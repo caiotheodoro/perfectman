@@ -33,6 +33,8 @@ export type PlanInput = {
   handles?: BodyHandleMap;
   memory?: PlannerMemory;
   noOpStreak?: number;
+  /** What this actor wants, for the initiative rules: its authored goal text, this turn's private motive, the room it started in. */
+  drives?: { goalText?: string; motive?: string; homeRoom?: string };
 };
 
 /**
@@ -54,6 +56,17 @@ export type PlannerMemory = {
   interlocutor?: { ref: string; until: number };
   /** Human ref -> when that human last dodged or pushed away this actor's pair act. */
   pairRefusedAt?: Record<string, number>;
+  /** The planner's first run for this actor: the clock the idle rules count from. */
+  firstPlanAt?: number;
+  lastSatAt?: number;
+  lastStoodAt?: number;
+  lastSeatTryAt?: number;
+  /** The last pair act the planner started on its own, and how many it started toward each person. */
+  lastInitiativeAt?: number;
+  pairTries?: Record<string, number>;
+  /** An errand to another room the planner sent this actor on: where from and to, and when. */
+  errand?: { from: string; to: string; at: number; back?: boolean };
+  lastErrandAt?: number;
 };
 
 export type SpeechModeChoice = { mode: SpeechMode; reason?: string };

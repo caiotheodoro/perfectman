@@ -1,4 +1,4 @@
-import type { AgentState, CoreMood, Direction8, FurniModel, Presence, RelationalState, RoomView, SocialEmotions, SpaceView, Tile, Zone } from "@perfectman/shared";
+import type { AgentState, CoreMood, RoomAdjacency, Direction8, FurniModel, Presence, RelationalState, RoomView, SocialEmotions, SpaceView, Tile, Zone } from "@perfectman/shared";
 import { deriveRoomZones } from "../space/zones.js";
 import { defaultBody } from "../space/space-mirror.js";
 
@@ -43,6 +43,8 @@ export type SpaceOpts = {
   w?: number;
   h?: number;
   body?: Partial<SpaceView["body"]>;
+  /** Rooms reachable from this one (their doors and names). */
+  adjacency?: RoomAdjacency[];
 };
 
 /** A 12 x 10 open room with the actor "duda" in it, as one agent sees it. */
@@ -54,10 +56,10 @@ export function space(o: SpaceOpts = {}): SpaceView {
   const base = { id: "12", w, h, heights: new Uint8Array(w * h), door: [0, 5] as Tile, furni: new Map(furni.map((f) => [f.id, f])) };
   const room: RoomView = {
     id: "12", name: "Lounge", template: "studio", w, h, rev: 5, syncedAtWall: NOW, door: [0, 5], doorDir: 2 as Direction8,
-    heights: base.heights, furni, zones: o.zones ?? deriveRoomZones({ ...base, occupants: new Map([self, ...(o.others ?? [])].map((p) => [p.ref, p])) }), occupants: [self, ...(o.others ?? [])], adjacency: [], degraded: false,
+    heights: base.heights, furni, zones: o.zones ?? deriveRoomZones({ ...base, occupants: new Map([self, ...(o.others ?? [])].map((p) => [p.ref, p])) }), occupants: [self, ...(o.others ?? [])], adjacency: o.adjacency ?? [], degraded: false,
     stale: o.stale ?? false,
   };
-  return { agentId: "duda", readAt: NOW, where: "12", room, self, adjacency: [], body: { ...defaultBody(NOW - 120_000), ...o.body } };
+  return { agentId: "duda", readAt: NOW, where: "12", room, self, adjacency: o.adjacency ?? [], body: { ...defaultBody(NOW - 120_000), ...o.body } };
 }
 
 import type { Avatar, HotelFrame, RoomSnapshot } from "../director/index.js";

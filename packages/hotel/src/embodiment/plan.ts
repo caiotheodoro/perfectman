@@ -6,14 +6,27 @@ import {
   CMD_BUDGET,
   DWELL_POSTURE_MS,
   DWELL_ZONE_MS,
+  ERRAND_AFTER_MS,
+  ERRAND_COOLDOWN_MS,
+  ERRAND_STAY_MS,
   FACE_TOLERANCE_DEG,
   FIDGET_COOLDOWN_MS,
   GESTURE_COOLDOWN_MS,
+  INITIATIVE_COOLDOWN_MS,
   INTERLOCUTOR_MS,
   LAUGH_COOLDOWN_MS,
   MAX_APPROACHERS,
+  PAIR_ACQUAINTED_MS,
   PAIR_REFUSAL_COOLDOWN_MS,
+  PAIR_TRIES_PER_PERSON,
+  POSTURE_JITTER_MS,
+  REACH_ATTRACTION,
+  REACH_COMFORT,
+  SEAT_RANGE,
+  SEAT_TRY_COOLDOWN_MS,
   SHOUT_COOLDOWN_MS,
+  SIT_EVERY_MS,
+  SIT_STAY_MS,
   SPEAKER_RECENT_MS,
   WITHDRAW_AT,
 } from "./constants.js";
@@ -57,17 +70,18 @@ export const plan: EmbodimentPlanner = (input) => {
 
 /**
  * Turn toward `targetRef` now (a line was just said between the two), without running the other rules:
- * one `face`, inside the command budget, only when the target is in conversation range, the actor is not
+ * one `face`, inside the command budget, only when the target is in conversation range (`maxTiles`; a person
+ * who calls an actor by name from across the room is answered by a head turn at any distance), the actor is not
  * mid-walk and is not already looking their way. The caller records the exchange in the planner memory.
  */
-export function planFacing(input: Pick<PlanInput, "space" | "now">, targetRef: string): PlannedCommand[] {
+export function planFacing(input: Pick<PlanInput, "space" | "now">, targetRef: string, maxTiles: number = BAND.socialMax): PlannedCommand[] {
   const { space, now } = input;
   const room = space.room;
   const self = space.self;
   if (!room || !self || room.stale || self.state === "walk") return [];
   if (CMD_BUDGET.count - space.body.budget.cmdTimes.filter((t) => now - t < CMD_BUDGET.windowMs).length <= 0) return [];
   const target = room.occupants.find((p) => p.ref === targetRef);
-  if (!target || target.ref === self.ref || chebyshev(target.tile, self.tile) > BAND.socialMax) return [];
+  if (!target || target.ref === self.ref || chebyshev(target.tile, self.tile) > maxTiles) return [];
   if (dirDiffDeg(sectorTo(self.tile, target.tile), self.dir) <= FACE_TOLERANCE_DEG) return [];
   return [{ agentId: self.ref, cmd: "face", targetTile: target.tile }];
 }
@@ -262,7 +276,7 @@ function automaticRules(ctx: Ctx): void {
     .filter((p) => p.ref !== self.ref && p.lastSpokeAt !== undefined && now - (p.lastSpokeAt ?? 0) <= SPEAKER_RECENT_MS && chebyshev(p.tile, self.tile) <= BAND.socialMax)
     .sort((a, b) => (b.lastSpokeAt ?? 0) - (a.lastSpokeAt ?? 0))[0];
   // Keep facing whoever the exchange is with, not only whoever spoke last.
-  const talking = mem.interlocutor && mem.interlocutor.until > now ? room.occupants.find((p) => p.ref === mem.interlocutor?.ref && chebyshev(p.tile, self.tile) <= BAND.socialMax) : undefined;
+  const talking = mem.interlocutor && mem.interlocutor.until > now ? room.occupants.find((p) => p.ref === mem.interlocutor?.ref) : undefined;
   const faceTarget = speaker ?? talking;
   if (faceTarget && self.state !== "walk") {
     const want = sectorTo(self.tile, faceTarget.tile);
@@ -320,6 +334,106 @@ function automaticRules(ctx: Ctx): void {
       if (thing?.tiles[0]) push(ctx, KEEP.fidget, { cmd: "face", targetTile: thing.tiles[0], fidget: true });
     }
   }
+
+  // 11. Seats are for using: sit down after a long stretch on foot, get up after a long sit. Not while someone
+  // is talking with this actor (a seated avatar cannot turn to the person).
+  const exchangeOn = speaker !== undefined || talking !== undefined;
+  const posture = postureClock(ctx);
+  if (!exchangeOn && !ctx.input.bodyIntent?.posture) {
+    if (self.state === "stand" && posture >= SIT_EVERY_MS + jitter(self.ref) && (mem.lastSeatTryAt === undefined || now - mem.lastSeatTryAt >= SEAT_TRY_COOLDOWN_MS)) {
+      const seat = freeSeatNear(ctx, self.tile, SEAT_RANGE);
+      if (seat) push(ctx, KEEP.move, { cmd: "sit", furniId: seat.id });
+    } else if (self.state === "sit" && posture >= SIT_STAY_MS + jitter(self.ref)) {
+      push(ctx, KEEP.move, { cmd: "stand" });
+    }
+  }
+
+  // 12. Initiative from what the actor feels and wants. Always inside the budgets, and a pair act on a human is
+  // still the reaction chip (D31): the human can dodge, accept or push away, and a refusal is remembered.
+  initiative(ctx, exchangeOn);
+}
+
+
+/** Milliseconds since this actor last changed between sitting and standing (or since its first plan). */
+function postureClock(ctx: Ctx): number {
+  const m = ctx.mem;
+  const from = Math.max(m.lastSatAt ?? 0, m.lastStoodAt ?? 0, m.firstPlanAt ?? ctx.input.now);
+  return ctx.input.now - from;
+}
+
+/** A stable 0..POSTURE_JITTER_MS offset per actor, so the cast does not sit and stand in unison. */
+function jitter(ref: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < ref.length; i++) h = Math.imul(h ^ ref.charCodeAt(i), 16777619);
+  return (h >>> 0) % POSTURE_JITTER_MS;
+}
+
+/** A wish to go somewhere, in either language: `ir buscar`, `vou`, `passar pela porta`, `go get`. */
+const MOVE_VERB = /\b(ir|vou|vai|buscar|pegar|passar|passando|sair|voltar|go|going|fetch|get|head|walk)\b/;
+const fold = (text: string): string => text.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
+const hasWord = (text: string, word: string): boolean => word.length >= 3 && new RegExp(`(^|[^a-z0-9])${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9]|$)`).test(text);
+
+/**
+ * Rule 12. What an actor does with no model call behind it, from state it already has:
+ *  - it reaches for someone it is attracted to and comfortable with (approach, then a hug or a kiss);
+ *  - its authored goal names a person and a gesture ("quer dar um beijo na Ana"): it works up to it once it knows them;
+ *  - its goal or its private motive names an adjacent room ("deixou o violão no Quarto"): it goes there, stays a
+ *    while, and comes back.
+ * Budgets: one initiative pair act per INITIATIVE_COOLDOWN_MS, PAIR_TRIES_PER_PERSON per person, nobody who just
+ * refused, nobody the actor has known for less than PAIR_ACQUAINTED_MS, one errand per ERRAND_COOLDOWN_MS.
+ */
+function initiative(ctx: Ctx, exchange: boolean): void {
+  const { input, room, self, mem } = ctx;
+  const { now, space, agentState } = input;
+  if (self.state === "walk" || input.bodyIntent?.move || input.bodyIntent?.gesture) return;
+  const first = mem.firstPlanAt ?? now;
+  const text = fold([input.drives?.goalText, input.drives?.motive].filter(Boolean).join(" . "));
+
+  // -- errand to another room, and the way back
+  const err = mem.errand;
+  if (err && !err.back && room.id === err.to && now - err.at >= ERRAND_STAY_MS && space.adjacency.some((a) => a.roomId === err.from)) {
+    pushLeave(ctx, err.from);
+    return;
+  }
+  if (!exchange && now - first >= ERRAND_AFTER_MS && now - (mem.lastErrandAt ?? 0) >= ERRAND_COOLDOWN_MS && MOVE_VERB.test(text)) {
+    const dest = space.adjacency.find((a) => a.name !== undefined && hasWord(text, fold(a.name)));
+    if (dest) {
+      pushLeave(ctx, dest.roomId);
+      return;
+    }
+  }
+
+  // -- reaching for a person
+  if (mem.lastInitiativeAt !== undefined && now - mem.lastInitiativeAt < INITIATIVE_COOLDOWN_MS) return;
+  const candidates = room.occupants.filter((p) => p.ref !== self.ref);
+  const tries = (p: Presence): number => mem.pairTries?.[p.ref] ?? 0;
+  for (const p of candidates) {
+    if (tries(p) >= PAIR_TRIES_PER_PERSON || recentlyRefused(ctx, p)) continue;
+    const rel = agentState.relationalStates.get(p.ref);
+    const dist = chebyshev(p.tile, self.tile);
+    if (now - first < PAIR_ACQUAINTED_MS || p.state === "walk" || now - p.since < 8000) continue;
+    const named = p.name.length >= 3 && hasWord(text, fold(p.name).split(/\s+/)[0] ?? "");
+    const wantsKiss = named && /\b(beij\w*|kiss\w*)\b/.test(text);
+    const wantsHug = named && /\b(abra[cç]\w*|abrac\w*|hug\w*)\b/.test(text);
+    const drawn = rel !== undefined && rel.attraction >= REACH_ATTRACTION && rel.comfort >= REACH_COMFORT && rel.desireForCloseness > rel.desireForDistance && rel.threat < 0.3;
+    if (!wantsKiss && !wantsHug && !drawn) continue;
+    if (p.kind === "actor" && !pairAllowed(ctx, p)) continue;
+    if (dist > BAND.socialMax + 2) continue;
+    const kind = wantsKiss || (drawn && (rel?.attraction ?? 0) >= 0.7) ? "kiss" : "hug";
+    // The executor walks up, faces, acts, holds and parts; the sidecar asks a human with the chip.
+    push(ctx, KEEP.move, { cmd: "pair", kind, with: p.ref, pair: `pi:${planId(ctx)}` });
+    return;
+  }
+}
+
+function pushLeave(ctx: Ctx, roomId: string): void {
+  const { room, self } = ctx;
+  if (chebyshev(self.tile, room.door) <= 1) push(ctx, KEEP.move, { cmd: "move_room", to: roomId });
+  else {
+    const id = planId(ctx);
+    push(ctx, KEEP.move, { cmd: "walk", to: room.door, plan: id });
+    push(ctx, KEEP.move, { cmd: "move_room", to: roomId, afterArrival: id });
+  }
 }
 
 /** No direction reversal within the dwell window (anti-jitter), except model-chosen moves. */
@@ -334,9 +448,21 @@ function allowedMove(ctx: Ctx, to: Tile): boolean {
 // ---- memory and speech mode ------------------------------------------------------
 
 /** Folds sent commands into the planner memory (the executor calls this on send). */
-export function updateMemory(mem: PlannerMemory, cmds: readonly PlannedCommand[], now: number, from: Tile): PlannerMemory {
+export function updateMemory(mem: PlannerMemory, cmds: readonly PlannedCommand[], now: number, from: Tile, roomId?: string): PlannerMemory {
   const next: PlannerMemory = { ...mem };
   for (const c of cmds) {
+    if (c.cmd === "sit") {
+      next.lastSatAt = now;
+      next.lastSeatTryAt = now;
+    } else if (c.cmd === "stand") next.lastStoodAt = now;
+    else if (c.cmd === "pair" && c.pair.startsWith("pi:")) {
+      next.lastInitiativeAt = now;
+      next.pairTries = { ...next.pairTries, [c.with]: (next.pairTries?.[c.with] ?? 0) + 1 };
+    } else if (c.cmd === "move_room" && roomId !== undefined) {
+      const back = next.errand?.from === c.to && next.errand.to === roomId;
+      next.errand = back ? { ...next.errand!, back: true } : { from: roomId, to: c.to, at: now };
+      next.lastErrandAt = now;
+    }
     if (c.cmd === "walk") next.lastMove = { at: now, dx: c.to[0] - from[0], dy: c.to[1] - from[1] };
     else if (c.cmd === "gesture") {
       next.lastGesture = { a: c.a, at: now };
