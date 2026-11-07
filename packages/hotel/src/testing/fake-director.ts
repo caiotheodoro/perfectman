@@ -13,7 +13,7 @@ import type { ActorCmd, ActorErrorCode, Avatar, AvatarState, HotelMsg, PairOutco
  */
 export type FakeAvatar = { id: number; name: string; x: number; y: number; dir: number; state: AvatarState; ref?: string; run?: number };
 
-type FakeRoom = { id: number; rev: number; avatars: Map<number, FakeAvatar>; w: number; h: number; door: [number, number] };
+type FakeRoom = { id: number; name: string; official: boolean; section: string | null; rev: number; avatars: Map<number, FakeAvatar>; w: number; h: number; door: [number, number] };
 
 export type FakeDirectorOptions = {
   secret: string;
@@ -106,8 +106,9 @@ export class FakeDirector {
 
   // ---- rooms ------------------------------------------------------------------
 
-  addRoom(id: number, w = 10, h = 8): FakeRoom {
-    const room: FakeRoom = { id, rev: 1, avatars: new Map(), w, h, door: [0, Math.floor(h / 2)] };
+  /** A room the hotel lists in `hello.rooms`; `official`/`section` mark a navigator room such as one of the Perfectman wing. */
+  addRoom(id: number, w = 10, h = 8, meta: { name?: string; official?: boolean; section?: string } = {}): FakeRoom {
+    const room: FakeRoom = { id, name: meta.name ?? `Room ${id}`, official: meta.official ?? false, section: meta.section ?? null, rev: 1, avatars: new Map(), w, h, door: [0, Math.floor(h / 2)] };
     this.rooms.set(id, room);
     return room;
   }
@@ -249,8 +250,8 @@ export class FakeDirector {
       runs,
       actors: live,
       // Every room the hotel has (D24: an actor can travel to any of them); the vendored hello has no such list yet.
-      rooms: [...this.rooms.values()].map((r) => ({ id: r.id, name: `Room ${r.id}` })),
-    } as HotelMsg);
+      rooms: [...this.rooms.values()].map((r) => ({ id: r.id, name: r.name, official: r.official, section: r.section })),
+    });
   }
 
   private onFrame(f: SidecarMsg): void {
@@ -378,6 +379,10 @@ export class FakeDirector {
         this.walk(r, a, seat[0] ?? 0, seat[1] ?? 0, null, "sit");
         break;
       }
+      case "move_room":
+        if (!this.rooms.has(cmd.room)) return this.err(f.cid, f.actor, "no_such_room");
+        this.moveActorToRoom(a.ref ?? "", cmd.room);
+        break;
       case "pair":
         setTimeout(() => this.send({ t: "pair_reaction", run: f.run, pair: cmd.pair, actor: f.actor, with: cmd.with, outcome: this.o.pairOutcome ?? "done", at: Date.now() }), this.tickMs);
         break;

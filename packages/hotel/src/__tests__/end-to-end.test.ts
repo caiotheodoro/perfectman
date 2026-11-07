@@ -136,6 +136,29 @@ describe("one run end to end on the fake Director with the mock provider", () =>
     const hop = events.find((e) => e.type === "moved_room");
     expect(hop).toMatchObject({ channelId: "room:13", actorId: "person-1", payload: { from: "12", to: "13" } });
   });
+  it("hello's rooms are all reachable (D24): an actor takes a door into a room of the Perfectman wing that no run is in", async () => {
+    const { fake: hotel, sidecar: sc } = await bootWith({ timing: { baseIntervalMs: 60_000 } }, (f) => {
+      f.addRoom(13);
+      f.addRoom(40, 10, 8, { name: "Perfectman Lobby", official: true, section: "Perfectman" });
+    });
+    hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => hotel.received.filter((f) => f.t === "actor_spawn").length === 3, "3 spawns");
+    const mirror = sc.manager!.mirror;
+    const adj = mirror.view("person-1", Date.now())?.adjacency ?? [];
+    expect(adj.map((a) => a.roomId).sort()).toEqual(["13", "40"]);
+    expect(adj.find((a) => a.roomId === "40")).toMatchObject({ name: "Perfectman Lobby", travelS: expect.any(Number) });
+
+    // the sidecar asks for the hop on the wire, like the body executor does for a `move_room`
+    const manager = sc.manager!;
+    const actor = hotel.avatarByRef("person-1")!;
+    expect(manager.send({ t: "actor_cmd", run: 7, lease: manager.leaseOf(7) ?? 0, cid: manager.nextCid(7), actor: actor.id, cmd: { k: "move_room", room: 40, via: "door" } })).toBe(true);
+    await waitFor(() => hotel.received.some((f) => f.t === "subscribe_room" && f.room === 40), "a subscription to the wing room");
+    await waitFor(() => mirror.roomOfRef("person-1") === "40", "person-1 mirrored in the wing room");
+    expect(hotel.rooms.get(40)?.avatars.has(actor.id)).toBe(true);
+    // and a way back
+    expect(mirror.view("person-1", Date.now())?.adjacency.map((a) => a.roomId).sort()).toEqual(["12", "13"]);
+  });
+
   it("eventRetention keeps a window in memory and streams the evicted events to events.jsonl, so the artifact stays complete", async () => {
     const { fake: hotel, sidecar: sc, cfg } = await bootWith({ config: { eventRetention: 20 }, timing: { baseIntervalMs: 60_000 } });
     hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });

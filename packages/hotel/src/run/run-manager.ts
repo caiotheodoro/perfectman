@@ -224,7 +224,9 @@ export class RunManager implements RunLink {
     this.mirror.noteKnownRooms([
       ...hello.runs.map((r) => ({ id: String(r.room), name: r.room_name })),
       ...hello.actors.map((a) => ({ id: String(a.room) })),
-      ...((hello as { rooms?: Array<{ id: number; name?: string }> }).rooms ?? []).map((r) => ({ id: String(r.id), ...(r.name ? { name: r.name } : {}) })),
+      // D24: every room the hotel lists (official ones, the Perfectman wing included, and the rooms live runs are in) is a door away.
+      // A guest room's name is its owner's text; the mirror sanitizes every name it keeps.
+      ...(hello.rooms ?? []).map((r) => ({ id: String(r.id), ...(r.name ? { name: r.name } : {}) })),
     ]);
     const live = new Set(hello.runs.map((r) => r.run));
     const resume: number[] = [];

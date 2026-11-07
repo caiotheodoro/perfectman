@@ -13,6 +13,10 @@ export type HotelMsg =
       actors: HelloActor[];
       hotel: HotelInfo;
       proto: number;
+      /**
+       * Rooms the sidecar may travel to: every official room (the Perfectman wing included) and each room a live run is in, at most `HELLO_ROOMS_MAX`. Absent from an older hotel.
+       */
+      rooms?: HelloRoom[];
       runs: HelloRun[];
       session: string;
       t: "hello";
@@ -1260,6 +1264,22 @@ export interface HotelInfo {
   max_avatars_per_room: number;
   max_chat: number;
   tick_ms: number;
+}
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "HelloRoom".
+ */
+export interface HelloRoom {
+  id: number;
+  /**
+   * Untrusted when the room is not official: its owner wrote it.
+   */
+  name: string;
+  official: boolean;
+  /**
+   * The navigator section of an official room (`Featured`, `Casinos`, `Games`, `Perfectman`).
+   */
+  section?: string | null;
 }
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema

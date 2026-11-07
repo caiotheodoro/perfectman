@@ -1313,6 +1313,34 @@
         }
       }
     },
+    "HelloRoom": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "official"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "description": "Untrusted when the room is not official: its owner wrote it.",
+          "type": "string"
+        },
+        "official": {
+          "type": "boolean"
+        },
+        "section": {
+          "description": "The navigator section of an official room (`Featured`, `Casinos`, `Games`, `Perfectman`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
     "HelloRun": {
       "type": "object",
       "required": [
@@ -1430,6 +1458,13 @@
               "type": "integer",
               "format": "uint32",
               "minimum": 0.0
+            },
+            "rooms": {
+              "description": "Rooms the sidecar may travel to: every official room (the Perfectman wing included) and each room a live run is in, at most `HELLO_ROOMS_MAX`. Absent from an older hotel.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HelloRoom"
+              }
             },
             "runs": {
               "type": "array",
