@@ -50,6 +50,8 @@ type PairState = PairInfo & {
   timer: TimerHandle | null;
   approachPlan?: string;
   bRef: string;
+  /** Walks (`ref` + plan id) that are still under way when the act is asked for: the act starts when they have ended. */
+  waitPlans?: Set<string>;
 };
 
 const BLOCK_MAP: Partial<Record<ActorErrorCode, BlockedReason["code"]>> = {
@@ -175,6 +177,7 @@ export class BodyExecutor {
         if (ref) {
           this.deps.record?.("in", String(frame.to), "moved_room", { actor: ref, from: String(frame.from) });
           this.plans.delete(ref);
+          this.releasePairWaiters(ref);
           this.deps.hooks.movedRoom?.(ref, String(frame.from), String(frame.to));
         }
         break;
@@ -189,7 +192,10 @@ export class BodyExecutor {
           const code = BLOCK_MAP[frame.code];
           if (code) this.deps.hooks.blocked(ref, [{ code, ...(frame.detail ? { detail: String(frame.detail).slice(0, 80) } : {}) }]);
           // A refused walk is a plan that never started.
-          if (pending?.cmd === "walk") this.plans.delete(ref);
+          if (pending?.cmd === "walk") {
+            this.plans.delete(ref);
+            this.releasePairWaiters(ref);
+          }
         }
         break;
       }
@@ -349,6 +355,18 @@ export class BodyExecutor {
     }
     const st: PairState = { pair: c.pair, kind: c.kind, agentId: c.agentId, withRef: c.with, bRef: c.with, withHuman, phase: "approach", timer: null };
     this.pairs.set(c.pair, st);
+    // A walk still under way (the actor's own, or the partner's: both may have been held for their shot and sent
+    // just before this act) moves somebody out from under the act, which the hotel answers with not_adjacent.
+    // The act waits for the arrival and then looks at where everybody ended up.
+    const walking = [c.agentId, c.with].flatMap((ref) => {
+      const entry = this.plans.get(ref);
+      return entry?.plan.status === "moving" ? [`${ref}|${entry.plan.id}`] : [];
+    });
+    if (walking.length > 0) {
+      st.waitPlans = new Set(walking);
+      this.armPair(st, PAIR_APPROACH_TIMEOUT_MS, "timeout");
+      return;
+    }
     this.advancePair(st);
   }
 
@@ -407,9 +425,25 @@ export class BodyExecutor {
   }
 
   private onPairWalkEnded(ref: string, planId: string): void {
-    for (const st of this.pairs.values()) {
-      if (st.agentId === ref && st.approachPlan === planId && st.phase === "approach") {
+    for (const st of [...this.pairs.values()]) {
+      if (st.phase !== "approach") continue;
+      if (st.waitPlans?.delete(`${ref}|${planId}`) && st.waitPlans.size === 0) {
+        delete st.waitPlans;
+        this.advancePair(st);
+      } else if (st.agentId === ref && st.approachPlan === planId) {
         delete st.approachPlan;
+        this.advancePair(st);
+      }
+    }
+  }
+
+  /** A walk that will never `arrive` (refused, or the actor left the room) must not hold an act forever. */
+  private releasePairWaiters(ref: string): void {
+    for (const st of [...this.pairs.values()]) {
+      if (st.phase !== "approach" || !st.waitPlans) continue;
+      for (const key of [...st.waitPlans]) if (key.startsWith(`${ref}|`)) st.waitPlans.delete(key);
+      if (st.waitPlans.size === 0) {
+        delete st.waitPlans;
         this.advancePair(st);
       }
     }

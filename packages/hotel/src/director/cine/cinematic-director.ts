@@ -68,7 +68,7 @@ export class CinematicDirector {
   private readonly queue: CineItem[] = [];
   private readonly held = new Map<string, () => void>();
   /** Held walks, doors and pair acts (not speech): their actor and order, so an actor's acts are released in the order they were planned. */
-  private readonly heldActs = new Map<string, { ref: string; seq: number }>();
+  private readonly heldActs = new Map<string, { ref: string; seq: number; with?: string }>();
   private readonly timers = new Set<TimerHandle>();
   private inner: GatewayExecutor | undefined;
   private idle: TimerHandle | undefined;
@@ -243,16 +243,20 @@ export class CinematicDirector {
       return false;
     }
     // The queue entry exists before the item can play, and so must the order record.
-    this.heldActs.set(`b${this.seq + 1}`, { ref: c.agentId, seq: this.seq + 1 });
+    this.heldActs.set(`b${this.seq + 1}`, { ref: c.agentId, seq: this.seq + 1, ...(c.cmd === "pair" ? { with: c.with } : {}) });
     this.enqueue(item, () => inner.send([c]));
     return true;
   }
 
-  /** Runs a held command. An actor's earlier held acts go first, so a pair is never sent ahead of the walk that brought the actor there. */
+  /**
+   * Runs a held command. An actor's earlier held acts go first, so a pair is never sent ahead of the walk that
+   * brought the actor there, and so do the partner's: a kiss is not sent while the person being kissed still has a
+   * walk waiting in the buffer (the executor then holds the act until that walk has arrived).
+   */
   private release(id: string): void {
     const act = this.heldActs.get(id);
     if (act) {
-      const before = [...this.heldActs].filter(([other, a]) => a.ref === act.ref && a.seq < act.seq).sort((x, y) => x[1].seq - y[1].seq);
+      const before = [...this.heldActs].filter(([, a]) => (a.ref === act.ref || (act.with !== undefined && a.ref === act.with)) && a.seq < act.seq).sort((x, y) => x[1].seq - y[1].seq);
       for (const [other] of before) this.release(other);
     }
     this.heldActs.delete(id);
