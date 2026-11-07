@@ -28,6 +28,7 @@ services:
       PERFECTMAN_HEALTH_PORT: "9100"      # loopback inside the container; used by the image HEALTHCHECK
       # PERFECTMAN_LLM_BASE_URL, PERFECTMAN_LLM_API_KEY, PERFECTMAN_LLM_MODELS,
       # PERFECTMAN_LLM_PRICES and PERFECTMAN_LLM_CONCURRENCY come from perfectman.env.
+      # Or PERFECTMAN_LLM_CHAIN (a JSON array of links, failover in order) instead of the first three.
       # A model joins PERFECTMAN_LLM_MODELS only after `pnpm --filter @perfectman/hotel bench:latency`
       # shows p95 <= 6 s at our prompt size (D53).
     volumes:

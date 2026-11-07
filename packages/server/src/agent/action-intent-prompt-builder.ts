@@ -4,6 +4,16 @@ import { quoteUntrusted, safeDisplayName, sanitizeUntrustedText, UNTRUSTED_LIMIT
 import { GENERIC_PROMPT_PROFILE, type PersonaPromptProfile, type ScenarioContextBlock } from "./persona-prompt-profile.js";
 import type { BuiltPrompt, PromptTrim } from "./agent-runtime.types.js";
 import { promptVersionHash } from "./prompt-version.js";
+import { bodyContractLines } from "./hotel-body-hint.js";
+import { renderCompactHotelPrompt } from "./hotel-compact-prompt.js";
+
+/**
+ * How the hotel prompt is written. "full" is the whole persona, output contract
+ * and event history; "compact" is the same facts in about a third of the size,
+ * for links with a window of 4K tokens or less. Outside hotel mode the style is
+ * ignored and the prompt is byte-identical to what it has always been.
+ */
+export type PromptStyle = "full" | "compact";
 
 /**
  * Fixed placeholder input used only to compute each prompt builder's
@@ -102,13 +112,15 @@ export class ActionIntentPromptBuilder {
     input: AgentRuntimeInput,
     profile: PersonaPromptProfile,
     maxInputTokens?: number,
+    style?: PromptStyle,
   ): BuiltPrompt {
-    let rendered = this.render(input, profile);
+    const compact = style === "compact" && this.isHotel(input, profile);
+    let rendered = this.render(input, profile, compact);
     const rawEstimate = this.estimateTokens(rendered.systemPrompt, rendered.userPrompt);
 
     let trim: PromptTrim | undefined;
     if (typeof maxInputTokens === "number" && maxInputTokens > 0 && rawEstimate > maxInputTokens) {
-      const trimmed = this.trimToFit(input, profile, maxInputTokens);
+      const trimmed = this.trimToFit(input, profile, maxInputTokens, compact);
       rendered = trimmed.rendered;
       const finalEstimate = this.estimateTokens(rendered.systemPrompt, rendered.userPrompt);
       // A trim record is always attached once the raw render was over-cap,
@@ -136,7 +148,8 @@ export class ActionIntentPromptBuilder {
       inputTokensEstimate: this.estimateTokens(systemPrompt, userPrompt),
       purpose: "action_intent",
       version: promptVersionHash([systemPrompt, userPrompt]),
-      templateVersion: this.templateVersion(this.isHotel(input, profile)),
+      templateVersion: this.templateVersion(this.isHotel(input, profile), compact),
+      ...(compact ? { promptStyle: "compact" as const } : {}),
       ...(trim ? { trim } : {}),
     };
   }
@@ -175,6 +188,7 @@ export class ActionIntentPromptBuilder {
     input: AgentRuntimeInput,
     profile: PersonaPromptProfile,
     maxInputTokens: number,
+    compact = false,
   ): {
     rendered: { systemPrompt: string; userPrompt: string };
     droppedEvents: number;
@@ -207,6 +221,7 @@ export class ActionIntentPromptBuilder {
           },
         },
         profile,
+        compact,
       );
     const fits = (r: { systemPrompt: string; userPrompt: string }): boolean =>
       this.estimateTokens(r.systemPrompt, r.userPrompt) <= maxInputTokens;
@@ -288,15 +303,19 @@ export class ActionIntentPromptBuilder {
     return profile.hotelMode === true || input.perceptionPacket.body !== undefined;
   }
 
-  private static render(input: AgentRuntimeInput, profile: PersonaPromptProfile): { systemPrompt: string; userPrompt: string } {
+  private static render(input: AgentRuntimeInput, profile: PersonaPromptProfile, compact = false): { systemPrompt: string; userPrompt: string } {
     const { perceptionPacket } = input;
     const { translatedEmotionalState } = perceptionPacket;
     const hotel = this.isHotel(input, profile);
+    if (compact && hotel) {
+      const byEventId = (e: CommittedEvent, handle: string | undefined): string => this.formatEvent(e, handle, true, profile.language);
+      return renderCompactHotelPrompt(input, profile, byEventId);
+    }
 
     const system = new PromptSection()
       .container("persona", (s) => this.renderPersona(s, profile, input.hasActed === true, hotel))
       .container("output_contract", (s) =>
-        this.renderOutputContract(s, profile.language, input.agentId, hotel, perceptionPacket.body !== undefined),
+        this.renderOutputContract(s, profile.language, input.agentId, hotel, perceptionPacket.body !== undefined, input, profile.styleExamples.default),
       );
     if (perceptionPacket.ownRecentUtterances.length > 0) {
       system.container("no_repeat", (s) => this.renderNoRepeat(s, perceptionPacket.ownRecentUtterances));
@@ -323,6 +342,7 @@ export class ActionIntentPromptBuilder {
 
   private static cachedTemplateVersion: string | undefined;
   private static cachedHotelTemplateVersion: string | undefined;
+  private static cachedCompactTemplateVersion: string | undefined;
 
   /**
    * Content hash of a render against a fixed canonical input, computed once
@@ -335,7 +355,14 @@ export class ActionIntentPromptBuilder {
    * per-pulse-conditional branches aren't reflected here even when real
    * renders use them — this identifies the template, not full branch coverage.
    */
-  private static templateVersion(hotel = false): string {
+  private static templateVersion(hotel = false, compact = false): string {
+    if (hotel && compact) {
+      if (this.cachedCompactTemplateVersion === undefined) {
+        const { systemPrompt, userPrompt } = this.render(CANONICAL_TEMPLATE_VERSION_INPUT, { ...GENERIC_PROMPT_PROFILE, hotelMode: true }, true);
+        this.cachedCompactTemplateVersion = promptVersionHash([systemPrompt, userPrompt]);
+      }
+      return this.cachedCompactTemplateVersion;
+    }
     if (hotel) {
       // Hotel mode has its own preamble, event rendering and output contract
       // (ADR-0023), so it has its own template identity.
@@ -446,6 +473,8 @@ export class ActionIntentPromptBuilder {
     actorId: string,
     hotel = false,
     withBody = false,
+    input?: AgentRuntimeInput,
+    styleSamples: readonly string[] = [],
   ): void {
     // The exemplars pull the model's language: with English examples inside
     // a Portuguese scene, 21 of 50 motives in the first real read came out in
@@ -477,6 +506,10 @@ export class ActionIntentPromptBuilder {
       `"visibleContent" is the final message only — never include your own drafting process in it (no "let me reformulate", "deep breath", "wait, better phrasing:", stray self-corrections, or a first attempt left in before a second one). If you reconsider your wording, do that silently and output only the version you land on.`,
       `For reply_to_message set "replyToEventId", and for react set "targetEventId", to one of the bracketed event handles from <events> (e.g. "e1") — copy the handle text exactly, do not invent an id or describe the message.`,
       `Use "memoryWrites" whenever what you believe about someone in this room changed — a promise, a slight, a dodge, a revealed preference, a plan — one line each, in first person ("I…"), grounded in what actually happened in <events>. Shape: "memoryWrites": [{"summary": ${pt ? '"o Rafa desviou de novo quando falei em cartório"' : '"Rafa dodged again when I brought up the notary"'}, "about": ["rafa"]}] — "about" lists who it is about, as their ids or names appear in <events>; the system fills the rest. If nothing you believe changed, leave "memoryWrites" empty.`,
+      // Hotel mode only: a shape hint and two short examples, because the field list alone left small readers never writing a body block.
+      ...(hotel && withBody && input
+        ? bodyContractLines(language, input.perceptionPacket.body, input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? input.agentId, styleSamples)
+        : []),
     ]);
   }
 

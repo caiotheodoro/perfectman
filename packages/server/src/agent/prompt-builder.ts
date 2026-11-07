@@ -1,7 +1,7 @@
 import type { AgentRuntimeInput, PromptPurpose } from "@perfectman/shared";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 import type { BuiltPrompt } from "./agent-runtime.types.js";
-import { ActionIntentPromptBuilder } from "./action-intent-prompt-builder.js";
+import { ActionIntentPromptBuilder, type PromptStyle } from "./action-intent-prompt-builder.js";
 import { BackgroundReflectionPromptBuilder } from "./background-reflection-prompt-builder.js";
 
 export class PromptBuilder {
@@ -13,11 +13,12 @@ export class PromptBuilder {
     input: AgentRuntimeInput,
     profile: PersonaPromptProfile,
     purpose: PromptPurpose,
-    maxInputTokens?: number
+    maxInputTokens?: number,
+    style?: PromptStyle,
   ): BuiltPrompt {
     switch (purpose) {
       case "action_intent":
-        return ActionIntentPromptBuilder.build(input, profile, maxInputTokens);
+        return ActionIntentPromptBuilder.build(input, profile, maxInputTokens, style);
       case "background_reflection":
         return BackgroundReflectionPromptBuilder.build(input, profile);
       case "social_interpretation":

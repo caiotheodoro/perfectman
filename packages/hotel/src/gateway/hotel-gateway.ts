@@ -57,6 +57,8 @@ export type GatewayDeps = {
   onStopped?(simulationId: string, reason?: EndReason, offer?: EndingOffer): void;
   /** A body command was blocked at delivery (`not_in_earshot`). */
   onBlocked?(agentId: string, code: "not_in_earshot"): void;
+  /** A line left the room queue for the wire: the frame log notes who it was aimed at and how far away they stood. */
+  onLine?(line: { agentId: string; mode: SpeechMode; eventId?: string; room: RoomId }): void;
 };
 
 type Item = {
@@ -71,6 +73,7 @@ type Item = {
   priority: 0 | 1;
   landAt: number;
   room: RoomId;
+  eventId?: string;
 };
 
 type RoomQueue = { items: Item[]; lastLineAt: number; timer: TimerHandle | null };
@@ -216,7 +219,7 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     const landAt = Math.max(now, base + Math.min(this.timing.capMs, sampled + this.timing.perCharMs * text.length));
     const priority: 0 | 1 = message.kind === "reply" || message.salience === "high" || message.salience === "critical" ? 1 : 0;
     const q = this.queue(roomId);
-    q.items.push({ seq: ++this.seq, huddle, agentId: message.agentId, text, mode, ...(to ? { to } : {}), priority, landAt, room: roomId });
+    q.items.push({ seq: ++this.seq, huddle, agentId: message.agentId, text, mode, ...(to ? { to } : {}), priority, landAt, room: roomId, ...(message.eventId ? { eventId: message.eventId } : {}) });
     // Overflow: the oldest ambient line first, then (as a last resort) the oldest of anything.
     while (q.items.length > this.timing.roomQueueCap) {
       const ambient = q.items.filter((i) => i.priority === 0).sort((a, b) => a.seq - b.seq)[0];
@@ -299,7 +302,10 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     if (this.deps.executor.sendChat) sent = this.deps.executor.sendChat(chat);
     else this.deps.executor.send([chat]);
     // A line the hotel never received is not a delivered line.
-    if (sent) this.stats.delivered++;
+    if (sent) {
+      this.stats.delivered++;
+      this.deps.onLine?.({ agentId: item.agentId, mode: item.mode, room: item.room, ...(item.eventId ? { eventId: item.eventId } : {}) });
+    }
     else this.stats.undeliveredCommitted++;
   }
 

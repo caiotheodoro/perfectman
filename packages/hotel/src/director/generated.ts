@@ -589,7 +589,8 @@ export type PlaceError =
       | "room_full"
       | "no_wall"
     )
-  | "bad_spot";
+  | "bad_spot"
+  | "not_layered";
 /**
  * What came up, for showing to the room.
  *
@@ -1376,6 +1377,10 @@ export interface SnapDef {
 export interface Furni {
   def: string;
   id: number;
+  /**
+   * Which of the flat pieces (rugs and wall pieces) that overlap is drawn over which: higher is nearer the viewer, and pieces with the same layer go by position and then by id.
+   */
+  layer?: number;
   /**
    * The cell along the tile's edge, 1 to `WALL_CELLS`, or 0 for the middle of the edge.
    */

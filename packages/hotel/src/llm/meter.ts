@@ -32,12 +32,14 @@ export class LlmMeter {
 
   constructor(private readonly prices: Readonly<Record<string, ModelPrice>>) {}
 
-  recordSuccess(model: string, inputTokens: number, outputTokens: number, latencyMs: number): void {
+  /** `reportedCostUsd` is what the provider billed for the call (OpenRouter's `usage.cost`); it beats the price table. */
+  recordSuccess(model: string, inputTokens: number, outputTokens: number, latencyMs: number, reportedCostUsd?: number): void {
     this.calls++;
     this.tokensIn += inputTokens;
     this.tokensOut += outputTokens;
     const price = this.prices[model];
-    if (price) this.costUsd += (inputTokens * price.inUsdPerMTok + outputTokens * price.outUsdPerMTok) / 1_000_000;
+    if (reportedCostUsd !== undefined && Number.isFinite(reportedCostUsd) && reportedCostUsd >= 0) this.costUsd += reportedCostUsd;
+    else if (price) this.costUsd += (inputTokens * price.inUsdPerMTok + outputTokens * price.outUsdPerMTok) / 1_000_000;
     this.latencies.push(latencyMs);
     if (this.latencies.length > WINDOW) this.latencies.shift();
   }

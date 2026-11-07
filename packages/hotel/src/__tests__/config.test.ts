@@ -9,6 +9,7 @@ const GOOD = {
   PERFECTMAN_LLM_BASE_URL: "https://llm.example/v1",
   PERFECTMAN_LLM_API_KEY: "k",
   PERFECTMAN_LLM_MODELS: "fast-model, other-model",
+  PERFECTMAN_LLM_PRICES: JSON.stringify({ "fast-model": { inUsdPerMTok: 1, outUsdPerMTok: 2 }, "other-model": { inUsdPerMTok: 1, outUsdPerMTok: 2 } }),
 };
 
 describe("sidecar configuration", () => {
@@ -40,7 +41,7 @@ describe("sidecar configuration", () => {
   });
 
   it("reads the price table and the mock provider needs no URL or key", () => {
-    const c = parseConfig({ ...GOOD, PERFECTMAN_LLM_PRICES: "{\"fast-model\":{\"inUsdPerMTok\":0.2,\"outUsdPerMTok\":0.8}}" });
+    const c = parseConfig({ ...GOOD, PERFECTMAN_LLM_PRICES: "{\"fast-model\":{\"inUsdPerMTok\":0.2,\"outUsdPerMTok\":0.8},\"other-model\":{\"inUsdPerMTok\":0,\"outUsdPerMTok\":0}}" });
     expect(c.llm.prices["fast-model"]).toEqual({ inUsdPerMTok: 0.2, outUsdPerMTok: 0.8 });
     const mock = parseConfig({ PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: GOOD.PERFECTMAN_SECRET, PERFECTMAN_DIRECTOR_URL: GOOD.PERFECTMAN_DIRECTOR_URL, PERFECTMAN_INTERNAL_URL: GOOD.PERFECTMAN_INTERNAL_URL, PERFECTMAN_LLM_PROVIDER: "mock" });
     expect(mock.llm).toMatchObject({ provider: "mock", models: ["mock"] });

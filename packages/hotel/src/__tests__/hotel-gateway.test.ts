@@ -126,6 +126,15 @@ describe("HotelGateway", () => {
     void clock;
   });
 
+  it("tells the run when a line leaves for the wire, with the event it came from", async () => {
+    const lines: Array<{ agentId: string; mode: string; eventId?: string; room: string }> = [];
+    const { clock, gateway } = setup({ onLine: (l) => lines.push(l) });
+    await gateway.sendAgentMessage("room:12", msg("duda", "oi, Rafa", { eventId: "evt-9" }));
+    expect(lines).toEqual([]);
+    await clock.advance(3000);
+    expect(lines).toEqual([{ agentId: "duda", mode: "say", eventId: "evt-9", room: "12" }]);
+  });
+
   it("maps reactions to gestures, not text", async () => {
     const { gateway, sent } = setup();
     await gateway.sendAgentMessage("room:12", { kind: "reaction", agentId: "rafa", emoji: "👍", targetEventId: "e1", salience: "low" });

@@ -13,6 +13,7 @@ import { withMockBody } from "../llm/mock-body.js";
 import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
+import { linksOf } from "../config.js";
 import type { HotelConfig } from "../config.js";
 import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfState } from "../director/cine/index.js";
 import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
@@ -26,6 +27,7 @@ import { HotelGateway } from "../gateway/hotel-gateway.js";
 import type { CastEntry, GatewayExecutor, GatewayTiming } from "../gateway/hotel-gateway.js";
 import { GuestIngestor } from "../ingest/guest-ingestor.js";
 import { BreakerDriver } from "../llm/breaker.js";
+import { COST_HEADER, LlmChain } from "../llm/chain.js";
 import { GENERATE_DEADLINE_MS, hostLlmConfig, pingLlm } from "../llm/env.js";
 import { LlmGovernor } from "../llm/governor.js";
 import { LlmMeter } from "../llm/meter.js";
@@ -179,6 +181,8 @@ export class Run {
   private breaker!: BreakerDriver;
   private unsubscribeBudget: (() => void) | undefined;
   private readonly meter: LlmMeter;
+  /** The provider chain (failover, per-link breakers, per-link usage); absent for the mock provider. */
+  private readonly chain: LlmChain | undefined;
   private readonly frames: FrameLogRecorder;
   /** Cinematic mode only: holds speech for the playback clock and films the run (director/cine). */
   private cine: CinematicDirector | undefined;
@@ -225,6 +229,10 @@ export class Run {
     this.home = String(params.room);
     this.homeChannelId = `room:${params.room}`;
     this.meter = new LlmMeter(d.hotel.llm.prices);
+    const links = linksOf(d.hotel.llm);
+    this.chain = links.length > 0
+      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: d.hotel.llm.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style) })
+      : undefined;
     this.frames = new FrameLogRecorder(d.clock);
   }
 
@@ -299,7 +307,7 @@ export class Run {
     } catch (err) {
       return { ok: false, code: "model_not_allowed", message: (err as Error).message };
     }
-    const healthy = await pingLlm(this.hostLlm, process.env[hotel.llm.apiKeyEnv]);
+    const healthy = await this.pingProvider();
     if (!healthy) return { ok: false, code: "llm_unavailable", message: "the model endpoint did not answer a health check" };
     return { ok: true };
   }
@@ -349,6 +357,7 @@ export class Run {
         const vb = mirror.view(b, clock.now())?.self;
         return !!va && !!vb && mirror.roomOfRef(a) === mirror.roomOfRef(b) && Math.max(Math.abs(va.tile[0] - vb.tile[0]), Math.abs(va.tile[1] - vb.tile[1])) <= 2;
       },
+      onLine: (line) => this.noteLine(line),
       timing: this.d.timing?.gateway ?? {},
       // The scenario's own ending (goal_end_offered) stops the runtime; the run follows it.
       onStopped: (_id, reason) => {
@@ -360,7 +369,7 @@ export class Run {
       clock,
       simulationId: cfg.simulation.id ?? `hotel-run-${this.id}`,
       ...(this.d.timing?.breakerInitialBackoffMs !== undefined ? { initialBackoffMs: this.d.timing.breakerInitialBackoffMs } : {}),
-      probe: () => pingLlm(this.hostLlm, process.env[hotel.llm.apiKeyEnv]),
+      probe: () => this.pingProvider(),
       // An admin pause already holds the run: the breaker then does not own it and will not resume it.
       onOpen: () => {
         this.pause("breaker");
@@ -601,7 +610,33 @@ export class Run {
     };
   }
 
+  /** True when any link of the chain answers (the lone provider when there is no chain). */
+  private pingProvider(): Promise<boolean> {
+    return this.chain ? this.chain.ping() : pingLlm(this.hostLlm, process.env[this.d.hotel.llm.apiKeyEnv]);
+  }
+
+  /** The runtime renders prompts with the config every actor was given (shared by reference), so moving its cap or style moves the trim and the prompt's size. */
+  private setPromptCap(cap: number, promptStyle: "full" | "compact"): void {
+    if (!this.hostLlm) return;
+    this.hostLlm.maxInputTokens = cap;
+    this.hostLlm.promptStyle = promptStyle;
+  }
+
+  /** Per-link usage, cost and latency, and which link served: the chain's view of this run (empty for the mock provider). */
+  llmChain(): LlmChain | undefined {
+    return this.chain;
+  }
+
   private provider(llm: LLMConfig, agentId: string): LLMProvider {
+    if (this.chain && llm.providerType !== "mock") {
+      return this.chain.provider(llm, agentId, {
+        onSuccess: (r) => {
+          const billed = r.responseHeaders?.[COST_HEADER];
+          this.meter.recordSuccess(this.d.hotel.llm.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs, billed !== undefined ? Number(billed) : undefined);
+        },
+        onFailure: () => this.meter.recordFailure(),
+      });
+    }
     const inner: LLMProvider = llm.providerType === "mock" ? withMockBody(new MockLLMProvider(), this.mockConsults) : createLLMProvider(llm, agentId);
     return this.d.governor.wrap(inner, {
       onSuccess: (r) => {
@@ -704,6 +739,56 @@ export class Run {
     if (this.state === "running" && !this.linkDown) this.loop.requestFocused(ids, reason);
   }
 
+  /** Event id of an actor line to the room occupant it was aimed at (`addresseeIds`), until the line is delivered. */
+  private readonly addressees = new Map<string, string>();
+  private readonly earlyLines = new Map<string, { agentId: string; mode: SpeechMode; eventId?: string; room: string }>();
+
+  /** Who a committed line is aimed at: the author it replies to, a named target, or someone it names, when they share the room. */
+  private noteAddressee(ref: string, intent: ActionIntent, mine: CommittedEvent[], space: SpaceView): void {
+    for (const e of mine) {
+      if (e.type !== "message_sent" && e.type !== "reply_sent") continue;
+      const named = (e.payload as Record<string, unknown>)["addresseeIds"];
+      const candidates = [intent.replyToActorId, ...intent.personTargets, ...(Array.isArray(named) ? named : [])];
+      const to = candidates.find((id): id is string => typeof id === "string" && id !== ref && (space.room?.occupants.some((o) => o.ref === id) ?? false));
+      if (to) this.addressees.set(e.id, to);
+      if (this.addressees.size > 256) this.addressees.delete(this.addressees.keys().next().value as string);
+      const early = this.earlyLines.get(e.id);
+      if (early && to) {
+        this.earlyLines.delete(e.id);
+        this.noteLine(early);
+      }
+    }
+  }
+
+  /**
+   * An addressed line reached the wire: log who it was for, whether they share the room and how far
+   * away they stood, so the earshot and facing probes have something to measure (embodiment.md 10).
+   */
+  private noteLine(line: { agentId: string; mode: SpeechMode; eventId?: string; room: string }): void {
+    const eventId = line.eventId;
+    if (!eventId) return;
+    const to = this.addressees.get(eventId);
+    if (!to) {
+      // A line the model answered slower than the persona's typing delay leaves the queue inside the commit,
+      // before the planner seam has seen the intent; the frame is written when that arrives.
+      this.earlyLines.set(eventId, line);
+      if (this.earlyLines.size > 64) this.earlyLines.delete(this.earlyLines.keys().next().value as string);
+      return;
+    }
+    this.addressees.delete(eventId);
+    const room = this.d.mirror.view(line.agentId, this.d.clock.now())?.room;
+    const me = room?.occupants.find((o) => o.ref === line.agentId);
+    const them = room?.occupants.find((o) => o.ref === to);
+    const sameRoom = me !== undefined && them !== undefined;
+    this.frames.record("out", line.room, "chat", {
+      agentId: line.agentId,
+      mode: line.mode,
+      toRef: to,
+      sameRoom,
+      distance: me && them ? Math.max(Math.abs(me.tile[0] - them.tile[0]), Math.abs(me.tile[1] - them.tile[1])) : -1,
+    });
+  }
+
   private chooseMode(agentId: string, content: string, committed: SpeechMode): SpeechMode {
     const mem = this.memory.get(agentId) ?? {};
     const choice = chooseSpeechMode(this.arousal.get(agentId) ?? 0, content, mem, this.d.clock.now(), committed);
@@ -728,6 +813,7 @@ export class Run {
     this.cineWorld?.noteMood(ref, moodOfState(info.agentState));
     const space = info.space ?? this.d.mirror.view(ref, this.d.clock.now());
     if (!space) return;
+    this.noteAddressee(ref, info.intent, mine, space);
     const body = info.body;
     const cmds = this.planFor(ref, info.agentState, mine, space, body ? { intent: info.intent, bodyIntent: body.accepted, handles: body.targets as BodyHandleMap } : undefined);
     if (body?.deferral) this.holdSpeech(ref, info.intent, body.deferral, cmds);
@@ -1126,6 +1212,7 @@ export class Run {
         await Promise.race([this.playerMemory.flush().catch(() => 0), sleepOn(clock, MEMORY_FLUSH_BOUND_MS)]);
       }
       const m = this.meter.snapshot();
+      if (this.chain) this.d.logger.info("run llm usage", { run: this.id, calls: m.calls, costUsd: m.costUsd, p50Ms: m.p50Ms, p95Ms: m.p95Ms, chain: this.chain.snapshot() });
       try {
         const written = await writeRunArtifacts(hotel.dataDir, this.id, events, this.frames.log, {
           run: this.id,
@@ -1143,7 +1230,7 @@ export class Run {
           })),
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
-          counters: { llm_calls: m.calls, llm_failures: m.failures, undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
+          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
         await link.registerArtifacts(this.id, written);
@@ -1231,7 +1318,7 @@ export class Run {
 
   statusText(): string {
     const m = this.meter.snapshot();
-    return `${this.state}${this.pauseCause ? ` (${this.pauseCause})` : ""}, pulse ${this.port?.pulseIndex() ?? 0}, ${m.calls} calls, $${m.costUsd.toFixed(4)}, p95 ${m.p95Ms ?? "n/a"} ms`;
+    return `${this.state}${this.pauseCause ? ` (${this.pauseCause})` : ""}, pulse ${this.port?.pulseIndex() ?? 0}, ${m.calls} calls, $${m.costUsd.toFixed(4)}, p95 ${m.p95Ms ?? "n/a"} ms${this.chain ? `, served ${this.chain.snapshot().links.map((l) => `${l.name} ${l.served}`).join(" / ")}` : ""}`;
   }
 
   get endReason(): SidecarEndReason | undefined {

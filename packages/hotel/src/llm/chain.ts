@@ -1,0 +1,600 @@
+import { LLMError, LLMHttpError, LlmCircuitBreaker, OpenAiCompatibleProvider, retryAfterMs } from "@perfectman/server/hotel";
+import type { BuiltPrompt, LLMConfig, LLMProvider, LLMProviderResult, LlmTransportDeps } from "@perfectman/server/hotel";
+import type { OperatorEvent } from "@perfectman/shared";
+import type { Clock } from "../clock/clock.js";
+import type { ModelPrice } from "../config.js";
+import type { Logger } from "../util/log.js";
+import { silentLogger } from "../util/log.js";
+import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget, linkPromptStyle } from "./chain-config.js";
+import type { LlmLink, PromptStyle } from "./chain-config.js";
+import { GENERATE_DEADLINE_MS } from "./env.js";
+import { guardAnswer, hardenSystem, houseRules, noOpAnswer } from "./guards.js";
+import type { GuardHit, GuardReason } from "./guards.js";
+import type { GovernorHooks, LlmGovernor } from "./governor.js";
+import { LlmMeter } from "./meter.js";
+
+/**
+ * The provider chain (docs/plans/hotel-llm-chain.md): one `LLMProvider` that tries
+ * the links in order and serves each call from the first one that answers.
+ *
+ * - Failover per call on any error: 429, 5xx, timeout, network, empty answer, a bad
+ *   key, a spent quota. A link whose breaker is open, whose quota is spent, that is
+ *   throttled, or whose window the prompt does not fit is skipped without a call.
+ * - Each link has its own `LlmCircuitBreaker` (the server's state machine, fed the
+ *   same operator events the run-level breaker reads) and its own `GovernorShared`
+ *   penalty window. The run-level breaker still sees the chain as one provider: it
+ *   counts a call only when every link failed.
+ * - Calls always start at link 1. Stickiness is the breaker's: while link 1 is open
+ *   the chain sticks with the link that works and does not retry link 1 per call;
+ *   one half-open trial after the backoff, and the first good answer closes it and
+ *   the chain is back on link 1.
+ */
+
+/** Below this much of the generate deadline left, another attempt would only miss it. */
+const MIN_ATTEMPT_MS = 1500;
+/** A link throttled for longer than this is skipped when another link is behind it. */
+const MAX_PENALTY_WAIT_MS = 1500;
+const BREAKER_THRESHOLD = 3;
+const BREAKER_INITIAL_BACKOFF_MS = 15_000;
+const QUOTA_COOLDOWN_MS = 10 * 60_000;
+const MAX_COOLDOWN_MS = 60 * 60_000;
+const MIN_COOLDOWN_MS = 60_000;
+/**
+ * A 429 is a spent quota only when the provider says so with its own error code or type; loose phrases in a message
+ * ("exceeded your ...") also appear in transient rate limits, which take the governor's normal Retry-After backoff.
+ * OpenCode Go: `GoUsageLimitError`. OpenRouter: `insufficient_quota` and its daily free-tier cap `free-models-per-day`.
+ */
+const QUOTA_CODE = /GoUsageLimitError|FreeUsageLimitError|insufficient_quota|billing_hard_limit_reached|credit_limit|free-models-per-day/;
+const CONTEXT_MESSAGE = /context[\s_-]?(length|window)|maximum context|too many tokens|prompt is too long|input.{0,20}too long|reduce the length/i;
+const RECORDS = 1000;
+/** Carries what the provider billed for a call (OpenRouter's `usage.cost`), so the meter can prefer it to the price table. */
+export const COST_HEADER = "x-pm-cost-usd";
+
+export type SkipReason = "cooldown" | "breaker_open" | "context" | "throttled" | "deadline";
+
+/** A link that cannot serve for a while (spent quota, rejected key): not worth a call until `cooldownMs` passes. */
+export class LinkUnavailableError extends LLMError {
+  /** Present and not 429 on purpose: the governor must never retry this as a rate limit. */
+  readonly status = 402;
+  constructor(readonly link: string, readonly kind: "quota" | "auth", readonly cooldownMs: number, detail: string) {
+    super(`link ${link} unavailable (${kind}): ${detail}`);
+    this.name = "LinkUnavailableError";
+  }
+}
+
+export type ChainAttempt = { link: string; outcome: "ok" | "error" | "skipped"; reason?: string; latencyMs?: number };
+
+/** Every link failed or was skipped. The run-level breaker counts this as one provider failure. */
+export class ChainExhaustedError extends LLMError {
+  constructor(readonly attempts: readonly ChainAttempt[]) {
+    super(`every LLM link failed: ${attempts.map((a) => `${a.link}=${a.outcome === "skipped" ? `skipped(${a.reason})` : a.reason ?? a.outcome}`).join(", ")}`);
+    this.name = "ChainExhaustedError";
+  }
+}
+
+/** One served call, for the run log and the probe. */
+export type ServedRecord = {
+  at: number;
+  link: string;
+  model: string;
+  agentId: string;
+  /** Links passed over (failed or skipped) before this one answered. */
+  passedOver: number;
+  latencyMs: number;
+  linkLatencyMs: number;
+  inputTokens: number;
+  outputTokens: number;
+  promptEstimate: number;
+  costUsd: number;
+};
+
+export type LinkSnapshot = {
+  name: string;
+  model: string;
+  /** Calls made to the link (failures included). Skips are not calls. */
+  calls: number;
+  failures: number;
+  served: number;
+  skipped: Partial<Record<SkipReason, number>>;
+  /** Answers the output guards held back (never delivered), by guard. */
+  guarded: Partial<Record<GuardReason, number>>;
+  tokensIn: number;
+  tokensOut: number;
+  costUsd: number;
+  p50Ms: number | undefined;
+  p95Ms: number | undefined;
+  breaker: "closed" | "open" | "half_open";
+  cooldownMsLeft: number;
+  inputBudget: number;
+  /** Mean of real prompt tokens over the builder's estimate: how far chars/4 is off for this model. */
+  estimateRatio: number | undefined;
+};
+
+export type ChainSnapshot = {
+  links: LinkSnapshot[];
+  /** Served calls that were not served by link 1. */
+  failovers: number;
+  exhausted: number;
+};
+
+/** What the probe and the bench watch: one attempt on one link, with the raw answer. Never used in production. */
+export type ChainTap = {
+  link: string;
+  agentId: string;
+  prompt: BuiltPrompt;
+  outcome: "ok" | "error" | "skipped" | "guarded";
+  latencyMs: number;
+  content?: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  error?: string;
+};
+
+export type MakeProvider = (config: LLMConfig, deps: LlmTransportDeps) => LLMProvider;
+
+export type ChainOptions = {
+  links: readonly LlmLink[];
+  clock: Clock;
+  /** Goes out in each link's `sessionHeader`. */
+  runId: string | number;
+  /** Keys the per-link breakers; any stable string. */
+  simulationId: string;
+  governor: LlmGovernor;
+  prices: Readonly<Record<string, ModelPrice>>;
+  env?: NodeJS.ProcessEnv;
+  fetchImpl?: typeof fetch;
+  makeProvider?: MakeProvider;
+  deadlineMs?: number;
+  logger?: Logger;
+  breaker?: { threshold?: number; initialBackoffMs?: number };
+  /**
+   * The prompt cap the runtime should trim to changed. The runtime renders a prompt before any
+   * link is chosen, so it trims for link 1; when link 1 turns out unable to hold even the
+   * untrimmable part of the prompt, the cap moves up to the next link's instead of
+   * stripping every event from prompts that link 2 could take whole.
+   */
+  onCap?: (maxInputTokens: number, promptStyle: PromptStyle) => void;
+  /** Run the output guards on every answer. Default true. */
+  guards?: boolean;
+};
+
+type LinkState = {
+  link: LlmLink;
+  breaker: LlmCircuitBreaker;
+  meter: LlmMeter;
+  inputBudget: number;
+  cooldownUntil: number;
+  /** A half-open trial call is in flight: other calls pass over the link until it reports. */
+  trial: boolean;
+  /** A prompt already stripped to its untrimmable part still did not fit this link's budget. */
+  unfit: boolean;
+  served: number;
+  skipped: Partial<Record<SkipReason, number>>;
+  guarded: Partial<Record<GuardReason, number>>;
+  ratioSum: number;
+  ratioN: number;
+};
+
+const defaultMakeProvider: MakeProvider = (config, deps) => new OpenAiCompatibleProvider(config, deps);
+
+export class LlmChain {
+  private readonly states: LinkState[];
+  private readonly env: NodeJS.ProcessEnv;
+  private readonly logger: Logger;
+  private readonly makeProvider: MakeProvider;
+  private readonly deadlineMs: number;
+  private readonly baseFetch: typeof fetch;
+  private failovers = 0;
+  private exhausted = 0;
+  readonly served: ServedRecord[] = [];
+  /** Observer for probes and benches. */
+  tap: ((e: ChainTap) => void) | undefined;
+
+  constructor(private readonly o: ChainOptions) {
+    this.env = o.env ?? process.env;
+    this.logger = o.logger ?? silentLogger;
+    this.makeProvider = o.makeProvider ?? defaultMakeProvider;
+    this.deadlineMs = o.deadlineMs ?? GENERATE_DEADLINE_MS;
+    this.baseFetch = o.fetchImpl ?? ((input, init) => fetch(input, init));
+    this.states = o.links.map((link) => ({
+      link,
+      breaker: new LlmCircuitBreaker({
+        clock: () => o.clock.now(),
+        threshold: o.breaker?.threshold ?? BREAKER_THRESHOLD,
+        initialBackoffMs: o.breaker?.initialBackoffMs ?? BREAKER_INITIAL_BACKOFF_MS,
+        // A link opening never pauses the run: the chain fails over. Only an exhausted chain reaches the run-level breaker.
+        onOpen: () => false,
+        emit: (e) => {
+          if (e.type === "llm_circuit_open" || e.type === "llm_circuit_closed") {
+            this.logger.warn(`llm link ${link.name}: ${e.type === "llm_circuit_open" ? "breaker open" : "breaker closed"}`, { link: link.name, ...e.data });
+          }
+        },
+      }),
+      meter: new LlmMeter(o.prices),
+      inputBudget: linkInputBudget(link),
+      cooldownUntil: 0,
+      trial: false,
+      unfit: false,
+      served: 0,
+      skipped: {},
+      guarded: {},
+      ratioSum: 0,
+      ratioN: 0,
+    }));
+  }
+
+  get links(): readonly LlmLink[] {
+    return this.o.links;
+  }
+
+  /** The prompt cap the runtime trims to: the budget of the first link that can hold the untrimmable prompt. */
+  get promptCap(): number | undefined {
+    return (this.states.find((s) => !s.unfit) ?? this.states[0])?.inputBudget;
+  }
+
+  /** The hotel prompt style the runtime writes: that of the first link that can hold the untrimmable prompt. */
+  get promptStyle(): PromptStyle | undefined {
+    const s = this.states.find((x) => !x.unfit) ?? this.states[0];
+    return s ? linkPromptStyle(s.link) : undefined;
+  }
+
+  /** `trim.withinCap === false` at this link's own cap means the stripped prompt is still too big for it. */
+  private learnFit(prompt: BuiltPrompt): void {
+    const trim = prompt.trim;
+    if (!trim || trim.withinCap) return;
+    const s = this.states.find((x) => !x.unfit);
+    if (!s || trim.maxInputTokens > s.inputBudget || this.states.indexOf(s) === this.states.length - 1) return;
+    s.unfit = true;
+    const cap = this.promptCap;
+    this.logger.warn(`llm link ${s.link.name} cannot hold the untrimmable prompt (${trim.finalInputTokensEstimate} > ${s.inputBudget}); prompts are now trimmed for the next link`, { link: s.link.name, cap });
+    const style = this.promptStyle;
+    if (cap !== undefined && style !== undefined) this.o.onCap?.(cap, style);
+  }
+
+  snapshot(): ChainSnapshot {
+    const now = this.o.clock.now();
+    return {
+      failovers: this.failovers,
+      exhausted: this.exhausted,
+      links: this.states.map((s) => {
+        const m = s.meter.snapshot();
+        return {
+          name: s.link.name,
+          model: s.link.model,
+          calls: m.calls,
+          failures: m.failures,
+          served: s.served,
+          skipped: { ...s.skipped },
+          guarded: { ...s.guarded },
+          tokensIn: m.tokensIn,
+          tokensOut: m.tokensOut,
+          costUsd: m.costUsd,
+          p50Ms: m.p50Ms,
+          p95Ms: m.p95Ms,
+          breaker: s.breaker.getState(this.o.simulationId).phase,
+          cooldownMsLeft: Math.max(0, s.cooldownUntil - now),
+          inputBudget: s.inputBudget,
+          estimateRatio: s.ratioN > 0 ? s.ratioSum / s.ratioN : undefined,
+        };
+      }),
+    };
+  }
+
+  /** Flat numbers for the run's artifact counters. */
+  counters(): Record<string, number> {
+    const snap = this.snapshot();
+    const out: Record<string, number> = { llm_failovers: snap.failovers, llm_exhausted: snap.exhausted };
+    for (const l of snap.links) {
+      out[`llm_served_${l.name}`] = l.served;
+      out[`llm_failures_${l.name}`] = l.failures;
+      for (const [reason, n] of Object.entries(l.guarded)) out[`llm_guard_${reason}`] = (out[`llm_guard_${reason}`] ?? 0) + (n ?? 0);
+    }
+    return out;
+  }
+
+  /**
+   * Is any link answering? Tries them in order and stops at the first that does.
+   * A link in a spent-quota cooldown is not called. This is the run's health check
+   * and the run-level breaker's half-open probe.
+   */
+  async ping(): Promise<boolean> {
+    for (const s of this.states) {
+      if (this.o.clock.now() < s.cooldownUntil) continue;
+      if (await this.pingLink(s)) return true;
+    }
+    return false;
+  }
+
+  private async pingLink(s: LinkState): Promise<boolean> {
+    const { link } = s;
+    const key = this.env[link.apiKeyEnv];
+    if (!key) return false;
+    try {
+      const res = await this.linkFetch(link)(`${link.baseUrl.replace(/\/+$/, "")}/chat/completions`, {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: `Bearer ${key}` },
+        body: JSON.stringify({ model: link.model, messages: [{ role: "user", content: "ping" }], max_tokens: 1 }),
+        signal: AbortSignal.timeout(10_000),
+      });
+      if (res.ok) return true;
+      const text = await res.text().catch(() => "");
+      const headers: Record<string, string> = {};
+      res.headers.forEach((v, k) => (headers[k.toLowerCase()] = v));
+      const unavailable = this.unavailable(link, new LLMHttpError(res.status, text.slice(0, 300), headers));
+      if (unavailable) this.coolDown(s, unavailable);
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * The provider the runtime asks for per call. `base` is the host config every actor got
+   * (its link-specific fields are replaced per attempt); `hooks` is the run's meter.
+   */
+  provider(base: LLMConfig, agentId: string, hooks?: GovernorHooks): LLMProvider {
+    return {
+      generateIntent: async (input, context, prompt) => {
+        try {
+          const result = await this.call(base, agentId, input, context, prompt);
+          hooks?.onSuccess(result);
+          return result;
+        } catch (err) {
+          hooks?.onFailure(err);
+          throw err;
+        }
+      },
+    };
+  }
+
+  private async call(
+    base: LLMConfig,
+    agentId: string,
+    ...args: Parameters<LLMProvider["generateIntent"]>
+  ): Promise<LLMProviderResult> {
+    const { clock } = this.o;
+    const prompt = args[2];
+    this.learnFit(prompt);
+    const t0 = clock.now();
+    const deadline = t0 + this.deadlineMs;
+    const attempts: ChainAttempt[] = [];
+    let passedOver = 0;
+    let wastedMs = 0;
+    const breakerSkipped: LinkState[] = [];
+    /** Answers a guard held back in this call: at most one is regenerated on the next link. */
+    const held: Array<{ hit: GuardHit; link: LlmLink; inputTokens: number; outputTokens: number; costUsd: number }> = [];
+    const noOp = (): LLMProviderResult => {
+      const last = held.at(-1)!;
+      return {
+        content: noOpAnswer(last.hit),
+        usage: { inputTokens: held.reduce((n, h) => n + h.inputTokens, 0), outputTokens: held.reduce((n, h) => n + h.outputTokens, 0) },
+        latencyMs: wastedMs,
+        model: last.link.model,
+        requestedModel: base.modelName,
+        routedModel: last.link.name,
+        fallbackAttempts: passedOver,
+        responseHeaders: { "x-pm-link": last.link.name, "x-pm-guard": held.map((h) => h.hit.reason).join(","), [COST_HEADER]: String(held.reduce((n, h) => n + h.costUsd, 0)) },
+      };
+    };
+
+    const attempt = async (s: LinkState, forced: boolean): Promise<LLMProviderResult | undefined> => {
+      const remaining = deadline - clock.now();
+      const started = clock.now();
+      const hasNext = this.states.indexOf(s) < this.states.length - 1;
+      try {
+        const result = await this.tryLink(s, base, args, Math.min(s.link.timeoutMs ?? DEFAULT_LINK_TIMEOUT_MS, remaining), hasNext);
+        const linkMs = result.latencyMs;
+        attempts.push({ link: s.link.name, outcome: "ok", latencyMs: linkMs });
+        this.tap?.({ link: s.link.name, agentId, prompt, outcome: "ok", latencyMs: linkMs, content: result.content, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens });
+        s.breaker.observe(this.probeEvent(true));
+        s.trial = false;
+        const billed = Number(result.responseHeaders?.[COST_HEADER]);
+        const reported = result.responseHeaders?.[COST_HEADER] !== undefined && Number.isFinite(billed) ? billed : undefined;
+        s.meter.recordSuccess(s.link.model, result.usage.inputTokens, result.usage.outputTokens, linkMs, reported);
+        if (prompt.inputTokensEstimate > 0 && result.usage.inputTokens > 0) {
+          s.ratioSum += result.usage.inputTokens / prompt.inputTokensEstimate;
+          s.ratioN++;
+        }
+        const price = this.o.prices[s.link.model];
+        const costUsd = reported ?? (price ? (result.usage.inputTokens * price.inUsdPerMTok + result.usage.outputTokens * price.outUsdPerMTok) / 1_000_000 : 0);
+        const hit = this.o.guards === false ? undefined : guardAnswer(result.content, args[0], prompt.user);
+        if (hit) {
+          s.guarded[hit.reason] = (s.guarded[hit.reason] ?? 0) + 1;
+          held.push({ hit, link: s.link, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, costUsd });
+          wastedMs += linkMs;
+          this.tap?.({ link: s.link.name, agentId, prompt, outcome: "guarded", latencyMs: linkMs, content: result.content, error: `${hit.reason}: ${hit.detail}` });
+          this.logger.warn(`llm link ${s.link.name}: line held back by the ${hit.reason} guard`, { link: s.link.name, agentId, reason: hit.reason, detail: hit.detail });
+          attempts.push({ link: s.link.name, outcome: "error", reason: `guard ${hit.reason}`, latencyMs: linkMs });
+          passedOver++;
+          // One regeneration, on the next link; a second held line, or no link left, is a silent no-op.
+          if (held.length > 1 || !hasNext) return noOp();
+          return undefined;
+        }
+        s.served++;
+        if (passedOver > 0) this.failovers++;
+        const total = wastedMs + linkMs;
+        this.served.push({ at: clock.now(), link: s.link.name, model: s.link.model, agentId, passedOver, latencyMs: total, linkLatencyMs: linkMs, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, promptEstimate: prompt.inputTokensEstimate, costUsd });
+        if (this.served.length > RECORDS) this.served.shift();
+        return {
+          ...result,
+          model: s.link.model,
+          requestedModel: base.modelName,
+          routedModel: s.link.name,
+          fallbackAttempts: passedOver,
+          latencyMs: total,
+          responseHeaders: { ...result.responseHeaders, "x-pm-link": s.link.name },
+        };
+      } catch (err) {
+        wastedMs += Math.max(0, clock.now() - started);
+        passedOver++;
+        s.meter.recordFailure();
+        const overflow = !(err instanceof LinkUnavailableError) && isContextOverflow(err);
+        const reason = describeError(err);
+        attempts.push({ link: s.link.name, outcome: "error", reason, latencyMs: clock.now() - started });
+        this.tap?.({ link: s.link.name, agentId, prompt, outcome: "error", latencyMs: clock.now() - started, error: reason });
+        if (err instanceof LinkUnavailableError) this.coolDown(s, err);
+        else if (overflow) {
+          // The link's real window is smaller than the budget assumed: remember it, and do not blame its health.
+          s.inputBudget = Math.max(256, Math.min(s.inputBudget, prompt.inputTokensEstimate - 1));
+          this.logger.warn(`llm link ${s.link.name} rejected the prompt for size; its budget is now ${s.inputBudget}`, { link: s.link.name });
+          if (forced || s.trial) s.breaker.observe(this.probeEvent(true));
+        } else s.breaker.observe(this.probeEvent(false));
+        s.trial = false;
+        this.logger.warn(`llm link ${s.link.name} failed, ${hasNextLink(this.states, s) ? "failing over" : "no link left"}`, { link: s.link.name, reason });
+        return undefined;
+      }
+    };
+
+    for (const s of this.states) {
+      const skip = this.skipReason(s, prompt.inputTokensEstimate + (s.link.harden === false ? 0 : houseRulesTokens(prompt.system)), deadline, this.states.indexOf(s) < this.states.length - 1);
+      if (skip === "breaker_open") {
+        breakerSkipped.push(s);
+        s.skipped.breaker_open = (s.skipped.breaker_open ?? 0) + 1;
+        attempts.push({ link: s.link.name, outcome: "skipped", reason: skip });
+        passedOver++;
+        continue;
+      }
+      if (skip) {
+        s.skipped[skip] = (s.skipped[skip] ?? 0) + 1;
+        this.tap?.({ link: s.link.name, agentId, prompt, outcome: "skipped", latencyMs: 0, error: skip });
+        attempts.push({ link: s.link.name, outcome: "skipped", reason: skip });
+        passedOver++;
+        if (skip === "deadline") break;
+        continue;
+      }
+      const result = await attempt(s, false);
+      if (result) return result;
+    }
+    // Every healthy-looking link was passed over for an open breaker: try the first anyway, rather than fail with no call.
+    if (!attempts.some((a) => a.outcome === "error") && breakerSkipped[0] && deadline - clock.now() >= MIN_ATTEMPT_MS) {
+      const s = breakerSkipped[0];
+      const result = await attempt(s, true);
+      if (result) return result;
+    }
+    if (held.length > 0) return noOp();
+    this.exhausted++;
+    throw new ChainExhaustedError(attempts);
+  }
+
+  private skipReason(s: LinkState, promptTokens: number, deadline: number, hasNext: boolean): SkipReason | undefined {
+    const now = this.o.clock.now();
+    if (deadline - now < MIN_ATTEMPT_MS) return "deadline";
+    if (promptTokens > s.inputBudget) return "context";
+    if (now < s.cooldownUntil) return "cooldown";
+    if (hasNext && this.o.governor.penaltyLeftFor(s.link.name) > MAX_PENALTY_WAIT_MS) return "throttled";
+    const sim = this.o.simulationId;
+    const phase = s.breaker.getState(sim).phase;
+    if (phase === "closed") return undefined;
+    if (phase === "open" && !s.trial && s.breaker.shouldProbe(sim) && s.breaker.beginProbe(sim)) {
+      s.trial = true;
+      return undefined;
+    }
+    return "breaker_open";
+  }
+
+  private async tryLink(s: LinkState, base: LLMConfig, args: Parameters<LLMProvider["generateIntent"]>, timeoutMs: number, hasNext: boolean): Promise<LLMProviderResult> {
+    const { link } = s;
+    const config: LLMConfig = {
+      ...base,
+      baseUrl: link.baseUrl,
+      apiKeyEnv: link.apiKeyEnv,
+      modelName: link.model,
+      maxInputTokens: s.inputBudget,
+      timeoutMs,
+      // The failover is the retry; a single link keeps the transport's own.
+      retryCount: this.states.length > 1 ? 0 : base.retryCount,
+    };
+    const box: { costUsd?: number } = {};
+    const inner = this.makeProvider(config, { fetch: this.linkFetch(link, box), env: this.env });
+    const guarded: LLMProvider = {
+      generateIntent: async (...a) => {
+        try {
+          return await inner.generateIntent(...a);
+        } catch (err) {
+          throw this.unavailable(link, err) ?? err;
+        }
+      },
+    };
+    // With a link behind it a 429 is retried once and briefly; the last link waits like a lone provider does.
+    const governed = this.o.governor.wrap(guarded, { onSuccess: () => undefined, onFailure: () => undefined }, link.name, hasNext ? { maxRetries: 1, maxDelayMs: MAX_PENALTY_WAIT_MS } : {});
+    const hardened: Parameters<LLMProvider["generateIntent"]> = link.harden === false ? args : [args[0], args[1], hardenPrompt(args[2])];
+    const result = await governed.generateIntent(...hardened);
+    return box.costUsd === undefined ? result : { ...result, responseHeaders: { ...result.responseHeaders, [COST_HEADER]: String(box.costUsd) } };
+  }
+
+  /** A spent quota or a refused key, which a retry cannot fix and a breaker would take three calls to learn. */
+  private unavailable(link: LlmLink, err: unknown): LinkUnavailableError | undefined {
+    if (!(err instanceof LLMHttpError)) return undefined;
+    const detail = err.message.replace(/^HTTP \d+:\s*/, "").slice(0, 160);
+    if (err.status === 402) return new LinkUnavailableError(link.name, "quota", QUOTA_COOLDOWN_MS, detail);
+    if (err.status === 401 || err.status === 403) return new LinkUnavailableError(link.name, "auth", QUOTA_COOLDOWN_MS, detail);
+    if (err.status === 429) {
+      const hinted = retryAfterMs(err, this.o.clock.now());
+      if (QUOTA_CODE.test(err.message)) {
+        const cooldown = Math.min(MAX_COOLDOWN_MS, Math.max(MIN_COOLDOWN_MS, hinted ?? QUOTA_COOLDOWN_MS));
+        return new LinkUnavailableError(link.name, "quota", cooldown, detail);
+      }
+    }
+    return undefined;
+  }
+
+  private coolDown(s: LinkState, err: LinkUnavailableError): void {
+    s.cooldownUntil = this.o.clock.now() + err.cooldownMs;
+    this.logger.warn(`llm link ${s.link.name} is out for ${Math.round(err.cooldownMs / 1000)}s`, { link: s.link.name, kind: err.kind, detail: err.message });
+  }
+
+  /** fetch with this link's headers (attribution, session id) added to whatever the transport sends. */
+  private linkFetch(link: LlmLink, box?: { costUsd?: number }): typeof fetch {
+    const extra = linkHeaders(link, this.o.runId);
+    return async (input, init) => {
+      const headers = new Headers(init?.headers);
+      for (const [k, v] of Object.entries(extra)) headers.set(k, v);
+      const res = await this.baseFetch(input, { ...init, headers });
+      if (box && res.ok && /json/i.test(res.headers.get("content-type") ?? "")) {
+        try {
+          const cost = ((await res.clone().json()) as { usage?: { cost?: unknown } }).usage?.cost;
+          if (typeof cost === "number" && Number.isFinite(cost) && cost >= 0) box.costUsd = cost;
+        } catch {
+          /* no usage block: the price table prices the call */
+        }
+      }
+      return res;
+    };
+  }
+
+  /** The operator event the server breaker classifies: a provider answer or a provider failure. */
+  private probeEvent(ok: boolean): OperatorEvent {
+    return {
+      type: "action_intent",
+      simulationId: this.o.simulationId,
+      pulseIndex: 0,
+      detail: "LLM link call",
+      data: { providerFailure: !ok, privateMotiveSummary: ok ? "LLM link answered." : "Provider failed: LLM link call" },
+      createdAt: this.o.clock.now(),
+    };
+  }
+}
+
+/** The house rules go to the end of the system prompt, and count toward the prompt's size. */
+function hardenPrompt(prompt: BuiltPrompt): BuiltPrompt {
+  return { ...prompt, system: hardenSystem(prompt.system), inputTokensEstimate: prompt.inputTokensEstimate + houseRulesTokens(prompt.system) };
+}
+
+function houseRulesTokens(system: string): number {
+  return Math.ceil(houseRules(system).length / 4);
+}
+
+function hasNextLink(states: readonly LinkState[], s: LinkState): boolean {
+  return states.indexOf(s) < states.length - 1;
+}
+
+function isContextOverflow(err: unknown): boolean {
+  return err instanceof LLMHttpError && (err.status === 400 || err.status === 413 || err.status === 422) && CONTEXT_MESSAGE.test(err.message);
+}
+
+function describeError(err: unknown): string {
+  if (err instanceof LinkUnavailableError) return `${err.kind}`;
+  if (err instanceof LLMHttpError) return `http ${err.status}`;
+  if (err instanceof Error) return err.name === "LLMTimeoutError" ? "timeout" : err.message.slice(0, 80);
+  return "error";
+}

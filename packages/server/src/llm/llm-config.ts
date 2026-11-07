@@ -4,6 +4,12 @@ export type LLMConfig = {
   apiKeyEnv?: string;
   modelName: string;
   maxInputTokens: number;
+  /**
+   * Hotel mode only: "compact" renders the small-window prompt (persona card,
+   * top memories, near-only body block, short event window). Unset or "full"
+   * is the prompt as it has always been; outside the hotel the field is ignored.
+   */
+  promptStyle?: "full" | "compact";
   maxOutputTokens: number;
   temperature: number;
   timeoutMs: number;

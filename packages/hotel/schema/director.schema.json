@@ -1151,6 +1151,11 @@
           "type": "integer",
           "format": "int64"
         },
+        "layer": {
+          "description": "Which of the flat pieces (rugs and wall pieces) that overlap is drawn over which: higher is nearer the viewer, and pieces with the same layer go by position and then by id.",
+          "type": "integer",
+          "format": "int16"
+        },
         "off": {
           "description": "The cell along the tile's edge, 1 to `WALL_CELLS`, or 0 for the middle of the edge.",
           "type": "integer",
@@ -3142,6 +3147,13 @@
           "type": "string",
           "enum": [
             "bad_spot"
+          ]
+        },
+        {
+          "description": "Only rugs and the like, and wall pieces, can be brought forward or sent backward.",
+          "type": "string",
+          "enum": [
+            "not_layered"
           ]
         }
       ]

@@ -1,3 +1,6 @@
+import { KNOWN_PRICES, legacyLink, parseChain } from "./llm/chain-config.js";
+import type { LlmLink } from "./llm/chain-config.js";
+
 /**
  * Sidecar configuration from the environment (docs/plans/hotel-package.md 4).
  * Fails fast, naming every problem at once, when the sidecar is enabled and
@@ -9,10 +12,15 @@ export type LlmEnv = {
   /** `mock` is for dev and tests: no URL, no key, no network. */
   provider: "openai-compatible" | "mock";
   baseUrl: string;
-  /** The NAME of the env var that holds the key, as `LLMConfig.apiKeyEnv` requires. */
-  apiKeyEnv: "PERFECTMAN_LLM_API_KEY";
-  /** Allowlist; the first entry is the default (D16, D53). */
+  /** The NAME of the env var that holds the first link's key, as `LLMConfig.apiKeyEnv` requires. */
+  apiKeyEnv: string;
+  /** Allowlist; the first entry is the default (D16, D53). With a chain it is the chain's models, in order. */
   models: string[];
+  /**
+   * The provider chain, in failover order (`PERFECTMAN_LLM_CHAIN`). Absent or empty means the
+   * legacy single link built from `baseUrl`, `apiKeyEnv` and `models[0]`: see `linksOf`.
+   */
+  chain?: LlmLink[];
   prices: Record<string, ModelPrice>;
   /** Generate concurrency across both pulse lanes; one slot is reserved for addressed replies. */
   concurrency: number;
@@ -34,6 +42,14 @@ export type HotelConfig = {
   /** In-memory events kept per run; older ones go to the run's `events.jsonl` as they fall out. 0 keeps everything. */
   eventRetention?: number;
 };
+
+/** The links a run calls, first = default. Mock has none. */
+export function linksOf(llm: LlmEnv): LlmLink[] {
+  if (llm.provider === "mock") return [];
+  if (llm.chain && llm.chain.length > 0) return llm.chain;
+  const model = llm.models[0];
+  return model ? [legacyLink(llm.baseUrl, llm.apiKeyEnv, model)] : [];
+}
 
 export class ConfigError extends Error {
   constructor(readonly problems: string[]) {
@@ -99,19 +115,30 @@ export function parseBind(raw: string | undefined, problems: string[]): { host: 
   return { host, port };
 }
 
+function knownPrices(chain: readonly LlmLink[]): Record<string, ModelPrice> {
+  const out: Record<string, ModelPrice> = {};
+  for (const link of chain) {
+    const price = KNOWN_PRICES[link.model];
+    if (price) out[link.model] = price;
+  }
+  return out;
+}
+
 export function parseConfig(env: Env = process.env): HotelConfig {
   const problems: string[] = [];
   const enabled = flag(env["PERFECTMAN_ENABLED"], false);
   const provider = env["PERFECTMAN_LLM_PROVIDER"] === "mock" ? "mock" : "openai-compatible";
-  const models = (env["PERFECTMAN_LLM_MODELS"] || (provider === "mock" ? "mock" : ""))
-    .split(",")
-    .map((m) => m.trim())
+  const rawChain = provider === "mock" ? "" : (env["PERFECTMAN_LLM_CHAIN"] ?? "").trim();
+  // A disabled sidecar never reads its chain: a half-written PERFECTMAN_LLM_CHAIN must not stop a host that does not run it.
+  const chain = enabled && rawChain ? parseChain(rawChain, problems) : [];
+  // A chain names its own models: they ARE the allowlist, and PERFECTMAN_LLM_MODELS is not consulted.
+  const models = (chain.length > 0 ? chain.map((l) => l.model) : (env["PERFECTMAN_LLM_MODELS"] || (provider === "mock" ? "mock" : "")).split(",").map((m) => m.trim()))
     .filter(Boolean);
   const bind = parseBind(env["PERFECTMAN_AUTHORING_BIND"], problems);
   const secret = env["PERFECTMAN_SECRET"] ?? "";
   const directorUrl = env["PERFECTMAN_DIRECTOR_URL"] ?? "";
   const internalUrl = env["PERFECTMAN_INTERNAL_URL"] ?? "";
-  const baseUrl = env["PERFECTMAN_LLM_BASE_URL"] ?? "";
+  const baseUrl = chain[0]?.baseUrl ?? env["PERFECTMAN_LLM_BASE_URL"] ?? "";
 
   const config: HotelConfig = {
     enabled,
@@ -124,9 +151,10 @@ export function parseConfig(env: Env = process.env): HotelConfig {
     llm: {
       provider,
       baseUrl,
-      apiKeyEnv: "PERFECTMAN_LLM_API_KEY",
+      apiKeyEnv: chain[0]?.apiKeyEnv ?? "PERFECTMAN_LLM_API_KEY",
       models,
-      prices: parsePrices(env["PERFECTMAN_LLM_PRICES"], problems),
+      ...(chain.length > 0 ? { chain } : {}),
+      prices: { ...(chain.length > 0 ? knownPrices(chain) : {}), ...parsePrices(env["PERFECTMAN_LLM_PRICES"], problems) },
       concurrency: int(env, "PERFECTMAN_LLM_CONCURRENCY", 3, problems),
       softCallsPerMin: int(env, "PERFECTMAN_LLM_SOFT_CALLS_PER_MIN", 600, problems),
       softTokensPerHour: int(env, "PERFECTMAN_LLM_SOFT_TOKENS_PER_HOUR", 5_000_000, problems),
@@ -142,6 +170,13 @@ export function parseConfig(env: Env = process.env): HotelConfig {
     if (!/^https?:\/\//.test(internalUrl)) problems.push("PERFECTMAN_INTERNAL_URL must be an http:// or https:// URL");
     if (models.length === 0) problems.push("PERFECTMAN_LLM_MODELS must list at least one model");
     if (provider === "openai-compatible") {
+      // A model with no price would be metered at $0 and the cost cap would never see it. Subscription links declare 0/0.
+      const unpriced = chain.length > 0 ? chain.filter((l) => !config.llm.prices[l.model]).map((l) => `link "${l.name}" (model ${l.model})`) : models.filter((m) => !config.llm.prices[m]).map((m) => `model ${m}`);
+      for (const what of unpriced) problems.push(`${what} has no price: add it to PERFECTMAN_LLM_PRICES as {"<model>":{"inUsdPerMTok":n,"outUsdPerMTok":n}}; a subscription link must declare 0 explicitly`);
+    }
+    if (provider === "openai-compatible" && chain.length > 0) {
+      for (const link of chain) if (!env[link.apiKeyEnv]) problems.push(`${link.apiKeyEnv} is not set (PERFECTMAN_LLM_CHAIN link "${link.name}")`);
+    } else if (provider === "openai-compatible" && !rawChain) {
       if (!/^https?:\/\//.test(baseUrl)) problems.push("PERFECTMAN_LLM_BASE_URL must be an http(s) URL");
       if (!env["PERFECTMAN_LLM_API_KEY"]) problems.push("PERFECTMAN_LLM_API_KEY is not set");
     }
