@@ -3,9 +3,12 @@ import type { UploadedFile } from "./run-api.types.js";
 /** The persona compiler rejects fewer style examples than this. */
 const MIN_EXAMPLES = 3;
 export const ROLES = {
-  connector: { label: "Peacemaker", calibration: "caio", voice: "Warm and quick; looks for common ground.", examples: ["Can we hear everyone out?", "I think we want the same thing.", "Let's take this one step at a time."] },
-  skeptic: { label: "Straight talker", calibration: "mariana", voice: "Brief and direct; asks the question others avoid.", examples: ["What aren't we saying?", "That doesn't answer the question.", "I'd rather sort this out now."] },
-  performer: { label: "Instigator", calibration: "goulart", voice: "Bold and playful; fills silence and challenges the room.", examples: ["Someone had to say it.", "Wait, hear me out.", "You're all being very quiet."] },
+  connector: { label: "Peacemaker", calibration: "caio", voice: "Warm and quick; looks for common ground.", examples: ["Can we hear everyone out?", "I think we want the same thing.", "Let's take this one step at a time."],
+    examplesPt: ["Calma, vamos ouvir todo mundo.", "Acho que a gente quer a mesma coisa.", "Uma coisa de cada vez, tá?", "Bora conversar com calma.", "Ninguém aqui é inimigo de ninguém.", "Me conta o seu lado, sem pressa."] },
+  skeptic: { label: "Straight talker", calibration: "mariana", voice: "Brief and direct; asks the question others avoid.", examples: ["What aren't we saying?", "That doesn't answer the question.", "I'd rather sort this out now."],
+    examplesPt: ["O que a gente não está dizendo?", "Isso não responde a pergunta.", "Prefiro resolver isso agora.", "Fala logo o que você quer dizer.", "Hmm, não me convenceu.", "E se a gente olhar os fatos?"] },
+  performer: { label: "Instigator", calibration: "goulart", voice: "Bold and playful; fills silence and challenges the room.", examples: ["Someone had to say it.", "Wait, hear me out.", "You're all being very quiet."],
+    examplesPt: ["Alguém tinha que falar.", "Espera, me escuta essa.", "Tá todo mundo quieto demais.", "Ah, qual é, anima essa noite!", "Quem topa uma aposta?", "Duvido que vocês aguentem."] },
 } as const;
 /** `voice` and `lines` are what a drafted person says in their own register; without them the temperament speaks for them. */
 export type CharacterDraft = { name: string; role: keyof typeof ROLES; goal: string; voice?: string; lines?: string[] };
@@ -29,7 +32,9 @@ export function roomFiles(draft: RoomDraft): RoomFiles {
     const voice = prose(person.voice ?? "") || role.voice;
     // The compiler wants three style examples; a model that wrote fewer gets the temperament's to fill the gap.
     const written = (person.lines ?? []).map(prose).filter(Boolean);
-    const lines = [...written, ...role.examples].slice(0, Math.max(MIN_EXAMPLES, written.length));
+    // A pt-BR scene gets Portuguese examples (a model copies them), rotated per person so two people of one temperament do not share lines.
+    const pool: readonly string[] = draft.language === "pt-BR" ? [...role.examplesPt.slice(index % role.examplesPt.length), ...role.examplesPt.slice(0, index % role.examplesPt.length)] : role.examples;
+    const lines = [...written, ...pool].slice(0, Math.max(MIN_EXAMPLES, written.length));
     return { filename: `${ids[index]}.persona.md`, text: header({ personaId: ids[index], displayName: name,
       archetype: person.role, language: draft.language ?? "en", calibrationFrom: role.calibration, writingStyle: voice }) +
       `\n## Identity\nYou are ${name}. ${voice}\n\n## Voice\n- ${voice}\n\n## Style Examples\n${lines.map(line => `- ${line}`).join("\n")}\n\n## Private Motives\n- ${prose(person.goal)}\n` };
