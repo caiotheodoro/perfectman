@@ -12,6 +12,27 @@ const reasonOf = (d: ReturnType<RoomSpeechArbiter["gate"]>) =>
   d.outcome === "blocked" ? d.violation.detail : "allowed";
 
 describe("RoomSpeechArbiter rules (ADR-0021)", () => {
+  it("a whisper is answered by its own reply, not by a line the actor already had in flight (D44)", () => {
+    const arbiter = new RoomSpeechArbiter();
+    arbiter.noteHumanLine(ROOM, { eventId: "w1", at: 1_000, addressedIds: ["duda"], whisper: true });
+    // The base pulse that was running when the whisper came in finishes first: it answers nothing.
+    expect(arbiter.classify("duda", ROOM, 2_000, "old-line")).toBe("interjection");
+    expect(reasonOf(arbiter.gate("duda", ROOM, "interjection", 2_000, "old-line"))).toBe("allowed");
+    // The decision triggered by the whisper is still an addressed reply, and it is allowed.
+    expect(arbiter.classify("duda", ROOM, 2_100, "w1")).toBe("addressed");
+    expect(reasonOf(arbiter.gate("duda", ROOM, "addressed", 2_100, "w1"))).toBe("allowed");
+    // Having answered, a second try on the same whisper is a duplicate.
+    expect(arbiter.classify("duda", ROOM, 2_200, "w1")).toBe("interjection");
+    expect(reasonOf(arbiter.gate("duda", ROOM, "interjection", 2_200, "w1"))).toBe("room_speech:one_answer_per_line");
+  });
+
+  it("an unrelated decision never sees a whisper as an open line", () => {
+    const arbiter = new RoomSpeechArbiter();
+    arbiter.noteHumanLine(ROOM, { eventId: "w1", at: 1_000, addressedIds: ["duda"], whisper: true });
+    expect(arbiter.classify("duda", ROOM, 1_500)).toBe("interjection");
+    expect(arbiter.classify("duda", ROOM, 1_500, "w1")).toBe("addressed");
+  });
+
   it("never blocks the addressed reply, and an addressee answers once", () => {
     const arbiter = new RoomSpeechArbiter();
     arbiter.noteHumanLine(ROOM, { eventId: "h1", at: 1_000, addressedIds: ["rafa"] });

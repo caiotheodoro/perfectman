@@ -219,7 +219,9 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     const [lo, hi] = cast?.responseDelayMs ?? [600, 2500];
     const sampled = lo + rng() * Math.max(0, hi - lo);
     const base = this.consultAt.get(message.agentId) ?? this.pulseStartedAt ?? now;
-    const priority: 0 | 1 = message.kind === "reply" || message.salience === "high" || message.salience === "critical" ? 1 : 0;
+    // A whisper back to the person who whispered is an answer: somebody is waiting, so it jumps ambient talk.
+    const answer = mode === "whisper" && message.whisperTo !== undefined && message.whisperTo === to;
+    const priority: 0 | 1 = answer || message.kind === "reply" || message.salience === "high" || message.salience === "critical" ? 1 : 0;
     const landAt = Math.max(now, base + Math.min(priority === 1 ? Math.min(this.timing.addressedCapMs, this.timing.capMs) : this.timing.capMs, sampled + this.timing.perCharMs * text.length));
     const q = this.queue(roomId);
     q.items.push({ seq: ++this.seq, huddle, agentId: message.agentId, text, mode, ...(to ? { to } : {}), priority, landAt, room: roomId, ...(message.eventId ? { eventId: message.eventId } : {}) });

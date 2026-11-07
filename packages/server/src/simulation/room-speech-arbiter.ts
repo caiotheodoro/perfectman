@@ -35,6 +35,8 @@ type HumanLineState = {
   at: number;
   addressed: Set<string>;
   answeredBy: Set<string>;
+  /** Whispered: only the reply to this very line answers it. */
+  whisper: boolean;
 };
 
 /** Human lines kept per room; the oldest drop first. */
@@ -69,7 +71,7 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
     this.config = { ...DEFAULT_ARBITER_CONFIG, ...config };
   }
 
-  noteHumanLine(roomId: string, line: { eventId: string; at: number; addressedIds: string[] }): void {
+  noteHumanLine(roomId: string, line: { eventId: string; at: number; addressedIds: string[]; whisper?: boolean }): void {
     const room = this.room(roomId);
     // The same line noted twice must not reopen it for an addressee that already answered.
     if (room.humanLines.some((l) => l.eventId === line.eventId)) return;
@@ -78,6 +80,7 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
       at: line.at,
       addressed: new Set(line.addressedIds),
       answeredBy: new Set(),
+      whisper: line.whisper === true,
     });
     if (room.humanLines.length > MAX_OPEN_LINES) room.humanLines.splice(0, room.humanLines.length - MAX_OPEN_LINES);
     room.lastHumanSpeechAt = line.at;
@@ -94,9 +97,9 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
    * addressee that has not answered yet is `addressed`; inside the quiet
    * window after a human line it is an `interjection`; otherwise `ambient`.
    */
-  classify(agentId: string, roomId: string, now: number): ArbiterLineKind {
+  classify(agentId: string, roomId: string, now: number, answering?: string): ArbiterLineKind {
     const room = this.rooms.get(roomId);
-    if (room && this.openLinesFor(room, agentId, now).length > 0) return "addressed";
+    if (room && this.openLinesFor(room, agentId, now, answering).length > 0) return "addressed";
     const line = room?.humanLines.at(-1);
     if (line && now - line.at < this.effectiveQuietMs()) return "interjection";
     return "ambient";
@@ -116,17 +119,21 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
   }
 
   /** Resolver phase, authoritative. Records the line when allowed. */
-  gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number): ArbiterDecision {
+  gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number, answering?: string): ArbiterDecision {
     const room = this.room(roomId);
     // A kind decided earlier can be stale (another pulse answered the line since): addressed only while a line is still open for the agent.
     const effective: ArbiterLineKind =
-      kind === "addressed" && room.humanLines.length > 0 && this.openLinesFor(room, agentId, now).length === 0 ? "interjection" : kind;
+      kind === "addressed" && room.humanLines.length > 0 && this.openLinesFor(room, agentId, now, answering).length === 0 ? "interjection" : kind;
     const rule = this.check(room, agentId, effective, now);
     if (rule) return blocked(rule);
     room.lastActorLineAt = now;
     room.actorLinesSinceHuman += 1;
-    // One line answers the oldest line still open for this agent.
-    if (effective !== "ambient") (this.openLinesFor(room, agentId, now)[0] ?? room.humanLines.at(-1))?.answeredBy.add(agentId);
+    // One line answers the oldest line still open for this agent. A whisper is answered by its own reply and by nothing
+    // else: a line the agent had in flight when it came in must not close it.
+    if (effective !== "ambient") {
+      const whispered = answering !== undefined ? room.humanLines.find((l) => l.eventId === answering && l.whisper) : undefined;
+      (whispered ?? this.openLinesFor(room, agentId, now)[0] ?? [...room.humanLines].reverse().find((l) => !l.whisper))?.answeredBy.add(agentId);
+    }
     return ALLOWED;
   }
 
@@ -171,9 +178,11 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
     return null;
   }
 
-  /** Lines addressed to this agent it has not answered, oldest first. */
-  private openLinesFor(room: RoomState, agentId: string, now: number): HumanLineState[] {
-    return room.humanLines.filter((l) => now - l.at < OPEN_LINE_MS && l.addressed.has(agentId) && !l.answeredBy.has(agentId));
+  /** Lines addressed to this agent it has not answered, oldest first. A whisper is open only to the decision that answers it. */
+  private openLinesFor(room: RoomState, agentId: string, now: number, answering?: string): HumanLineState[] {
+    return room.humanLines.filter(
+      (l) => now - l.at < OPEN_LINE_MS && l.addressed.has(agentId) && !l.answeredBy.has(agentId) && (!l.whisper || l.eventId === answering),
+    );
   }
 
   private room(roomId: string): RoomState {

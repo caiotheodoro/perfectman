@@ -3,6 +3,7 @@ import type { AgentRuntimeInput, BodyPerception, CommittedEvent } from "@perfect
 import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@perfectman/engine";
 import { bodyContractLines } from "./hotel-body-hint.js";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
+import { whisperNote, whisperedBy } from "./whisper-note.js";
 
 /**
  * The compact hotel prompt for small-context links (window of 4K tokens or less).
@@ -217,6 +218,8 @@ function renderActions(s: PromptSection, input: AgentRuntimeInput): void {
 
 function renderDecision(s: PromptSection, input: AgentRuntimeInput, lang: Lang): void {
   s.heading("Decide now");
+  const whisperer = whisperedBy(input);
+  if (whisperer) s.raw(whisperNote(whisperer, lang));
   s.raw(
     'Do exactly ONE action from <actions>. Say the specific thing this person would say, or stay silent on purpose with "no_op". ' +
       "Do not agree by default or repeat what you already said: push back, tease, change the subject or move if it fits you.",

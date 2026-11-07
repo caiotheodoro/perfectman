@@ -21,7 +21,8 @@
     "start": "node dist/main.js",
     "bench:latency": "node --experimental-transform-types --no-warnings --import ./scripts/register-ts.mjs scripts/bench-latency.ts",
     "probe:llm": "vitest run --config probe/vitest.config.ts probe/llm-chain.probe.ts",
-    "probe:canary": "vitest run --config probe/vitest.config.ts probe/canary.probe.ts"
+    "probe:canary": "vitest run --config probe/vitest.config.ts probe/canary.probe.ts",
+    "probe:whisper": "vitest run --config probe/vitest.config.ts probe/whisper.probe.ts"
   },
   "dependencies": {
     "@perfectman/engine": "workspace:*",

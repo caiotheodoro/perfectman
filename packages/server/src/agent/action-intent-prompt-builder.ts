@@ -1,5 +1,6 @@
 import { PromptSection, modelIntentPacketFieldContract, type AgentRuntimeInput, type CommittedEvent, type Memory } from "@perfectman/shared";
 import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@perfectman/engine";
+import { whisperMark, whisperNote, whisperedBy } from "./whisper-note.js";
 import { quoteUntrusted, safeDisplayName, sanitizeUntrustedText, UNTRUSTED_LIMITS } from "./untrusted-text.js";
 import { GENERIC_PROMPT_PROFILE, type PersonaPromptProfile, type ScenarioContextBlock } from "./persona-prompt-profile.js";
 import type { BuiltPrompt, PromptTrim } from "./agent-runtime.types.js";
@@ -660,6 +661,8 @@ export class ActionIntentPromptBuilder {
   // The actionable decision question goes LAST (context first, decision last).
   private static renderDecision(s: PromptSection, input: AgentRuntimeInput, language: PersonaPromptProfile["language"]): void {
     s.heading("Decide now");
+    const whisperer = whisperedBy(input);
+    if (whisperer) s.raw(whisperNote(whisperer, language));
     s.raw(
       'You can ONLY perform ONE action. Pick exactly one permitted combination from <actions>, fill every relevant field per <output_contract>, and emit the JSON object. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move elsewhere. Withholding is also a move: staying silent while a question hangs, waiting someone out, or refusing to answer is something the room notices — when that is what this person would do, choose "no_op" and say why in privateMotiveSummary.',
     );
@@ -832,7 +835,9 @@ export class ActionIntentPromptBuilder {
         const content = quoteUntrusted(
           sanitizeUntrustedText(typeof payload.content === "string" ? payload.content : "", UNTRUSTED_LIMITS.chat),
         );
-        const mark = this.isPrivateEvent(event) ? (pt ? " (em particular)" : " (privately)") : "";
+        const whispered = payload.mode === "whisper";
+        const to = typeof payload.whisperToName === "string" ? quoteUntrusted(safeDisplayName(payload.whisperToName, alias)) : undefined;
+        const mark = whispered ? whisperMark(language, to) : this.isPrivateEvent(event) ? (pt ? " (em particular)" : " (privately)") : "";
         const reply = event.type === "reply_sent" ? (pt ? " (respondendo)" : " (replying)") : "";
         return `${prefix}${speaker}${reply}${mark}: ${content}`;
       }

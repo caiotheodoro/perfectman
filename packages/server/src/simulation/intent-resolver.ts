@@ -32,6 +32,7 @@ import type { RateLimitGate } from "./rate-limit-gate.js";
 import type { ChannelRegistry } from "./channel-registry.js";
 import type { ArbiterLineKind, IRoomSpeechArbiter } from "./hotel-runtime-api.js";
 import { roomIdOfChannel } from "./room-speech-arbiter.js";
+import { answerWhisper, whisperer } from "./whisper-reply.js";
 
 export type ResolvedBody = {
   /** The validated block; handles as the model wrote them (docs/embodiment.md 6.2). */
@@ -106,6 +107,8 @@ type ResolveContext = {
   bodyHandles?: BodyHandleMap;
   /** Hotel only: reasons the parser dropped the `body` block (ADR-0019). */
   bodyDropped?: BlockedReason[];
+  /** The event this decision answers. A whisper to the agent makes its spoken reply a whisper back (D44). */
+  trigger?: CommittedEvent;
 };
 
 const MENTION_BOUNDARY = "[^\\p{L}\\p{N}]";
@@ -559,7 +562,7 @@ export type AudibilityResult = {
  * into a human line or ambient talk. Without `classify` every line is ambient.
  */
 export type ResolverArbiter = IRoomSpeechArbiter & {
-  classify?(agentId: string, roomId: string, now: number): ArbiterLineKind;
+  classify?(agentId: string, roomId: string, now: number, answering?: string): ArbiterLineKind;
 };
 
 export class IntentResolver {
@@ -600,9 +603,11 @@ export class IntentResolver {
    *   kept in `committedEvents` for the audit trail.
    */
   async resolve(
-    intent: ActionIntent,
+    given: ActionIntent,
     ctx: ResolveContext,
   ): Promise<ResolvedIntent> {
+    // An answer to a whisper is for the whisperer alone: naming a third person in it would only walk the speaker over to them.
+    const intent = this.hotel ? answerWhisper(given, ctx.trigger) : given;
     const body = this.assessBody(intent, ctx);
     const resolved =
       body?.deferral !== undefined
@@ -958,11 +963,19 @@ export class IntentResolver {
       const name = ctx.agentNames?.[intent.actorId];
       if (name) event.payload["senderName"] = name;
       const content = typeof event.payload["content"] === "string" ? event.payload["content"] : "";
-      const mode: SpeechMode = this.hotel?.chooseMode?.(intent.actorId, content, "say") ?? "say";
-      const heard = this.hotel?.audibility?.(intent.actorId, event.channelId, mode);
+      // Somebody whispered to this actor: the answer goes back to them in a whisper, not to the room (D44).
+      const back = whisperer(ctx.trigger, intent);
+      const mode: SpeechMode = this.hotel?.chooseMode?.(intent.actorId, content, back ? "whisper" : "say") ?? (back ? "whisper" : "say");
+      const heard = this.hotel?.audibility?.(intent.actorId, event.channelId, mode, mode === "whisper" ? back?.ref : undefined);
       if (!heard) continue;
       event.payload["mode"] = mode;
       event.payload["hearing"] = heard.hearing;
+      if (mode === "whisper" && back) {
+        event.payload["whisperTo"] = back.ref;
+        if (back.name) event.payload["whisperToName"] = back.name;
+        // Private: spectators never see it, and the person it is for is the audience even when nobody else is near.
+        event.visibility = { ...event.visibility, visibleToSpectators: false };
+      }
       event.visibility =
         heard.visibleToAgents.length > 0
           ? { ...event.visibility, visibleToAgents: heard.visibleToAgents }
@@ -981,8 +994,9 @@ export class IntentResolver {
     const roomId = roomIdOfChannel(intent.channelTarget ?? ctx.channelId);
     if (roomId === undefined) return undefined;
     const now = this.clock();
-    const kind = this.arbiter.classify?.(intent.actorId, roomId, now) ?? "ambient";
-    const decision = this.arbiter.gate(intent.actorId, roomId, kind, now);
+    const answering = ctx.trigger?.id;
+    const kind = this.arbiter.classify?.(intent.actorId, roomId, now, answering) ?? "ambient";
+    const decision = this.arbiter.gate(intent.actorId, roomId, kind, now, answering);
     return decision.outcome === "blocked" ? decision.violation : undefined;
   }
 

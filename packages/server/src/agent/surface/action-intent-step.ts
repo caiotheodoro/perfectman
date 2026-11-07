@@ -20,6 +20,7 @@ import {
   REPETITION_GUARD_MARKER,
   REPETITION_SIMILARITY_THRESHOLD,
 } from "../repetition-guard.js";
+import { answerWhisper } from "../../simulation/whisper-reply.js";
 import { promptVersionHash } from "../prompt-version.js";
 import { ActionIntentPromptBuilder } from "../action-intent-prompt-builder.js";
 import { PromptBuilder } from "../prompt-builder.js";
@@ -42,12 +43,25 @@ function askedByPerson(input: AgentRuntimeInput, agentId: string): boolean {
 type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
 
 /**
+ * The repetition note when a person is waiting on the answer: the novelty goes into the wording and the answer
+ * stays aimed at them. The generic note sends the model to "another angle" or "someone else", which for a person
+ * who just asked is how a whisper got a line meant for the room.
+ */
+function askedRetryNote(lastAttempt: string, language: "pt-BR" | "en"): string {
+  if (language === "pt-BR") {
+    return `IMPORTANTE: sua última tentativa nesta rodada ("${lastAttempt}") repete algo que você já disse. Alguém acabou de falar com você e espera uma resposta: responda ao que essa pessoa disse, com outras palavras, falando só com ela. Não use "no_op" e não fale com o resto da sala.`;
+  }
+  return `IMPORTANT: your last attempt this turn ("${lastAttempt}") repeats something you already said. Someone just spoke to you and is waiting: answer what that person said, in new words, talking only to them. Do not choose "no_op" and do not talk to the rest of the room.`;
+}
+
+/**
  * Correction appended to the system prompt on each repetition retry. The
  * retry prompt version hash covers this text, so a reworded note yields a
  * new prompt version; the block motive keeps its own "Repetition guard"
  * prefix (repetition-guard.ts) that the offline sweeps match on.
  */
-export function retryCorrectionNote(lastAttempt: string, language: "pt-BR" | "en"): string {
+export function retryCorrectionNote(lastAttempt: string, language: "pt-BR" | "en", askedBy = false): string {
+  if (askedBy) return askedRetryNote(lastAttempt, language);
   // In the profile's language: this is appended to the system prompt as its
   // newest instruction, and in English it pulled pt-BR characters into
   // English on exactly the turns that retried.
@@ -240,7 +254,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         // before it goes anywhere near the wire; the trim event and the budget
         // gate below therefore see the corrected, final estimate.
         const corrections: string[] = [];
-        if (isRepeat(intent)) corrections.push(retryCorrectionNote(intent.visibleContent ?? "", ctx.profile.language));
+        if (isRepeat(intent)) corrections.push(retryCorrectionNote(intent.visibleContent ?? "", ctx.profile.language, askedByPerson(input, agentId)));
         if (parseResult.unresolvedTarget) {
           corrections.push(
             targetRetryCorrectionNote(
@@ -522,7 +536,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     }
 
     const output: AgentRuntimeOutput = {
-      intent,
+      intent: answerWhisper(intent, input.perceptionPacket.triggeringEvent ?? undefined),
       llmUsage: usageRecord,
       latencyMs: Date.now() - startTime,
       fallbackApplied,

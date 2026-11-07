@@ -18,7 +18,7 @@ export type RuntimePort = {
   runPulse(opts: RunPulseOptions): Promise<PulseResult>;
   pulseIndex(): number;
   guests: GuestIngest;
-  noteHumanLine(roomChannelId: string, line: { eventId: string; at: number; addressedIds: string[] }): void;
+  noteHumanLine(roomChannelId: string, line: { eventId: string; at: number; addressedIds: string[]; whisper?: boolean }): void;
   noteHumanTyping(roomChannelId: string, typing: boolean, at: number): void;
   /** Re-submits a held line through the resolver, so the arbiter and the rate gate still apply. */
   resolveDeferred(agentId: string, intent: ActionIntent): Promise<ResolvedIntent>;

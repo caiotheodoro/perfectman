@@ -31,7 +31,7 @@ export type IngestorDeps = {
   channelIdForRoom(room: string): string | undefined;
   guests: GuestIngest;
   /** Arbiter hook: the line's id, time and addressees (ADR-0021). */
-  noteHumanLine(roomChannelId: string, line: { eventId: string; at: number; addressedIds: string[] }): void;
+  noteHumanLine(roomChannelId: string, line: { eventId: string; at: number; addressedIds: string[]; whisper?: boolean }): void;
   /** Focused pulse request for the addressed actors. */
   requestFocused(agentIds: string[]): void;
   logger?: Logger;
@@ -140,7 +140,7 @@ export class GuestIngestor {
 
     // 6b. Arbiter and focused pulse for the addressed actors who actually heard it.
     const heardAddressed = addressed.filter((id) => hearing[id] === "clear" || hearing[id] === "garbled");
-    this.deps.noteHumanLine(channelId, { eventId: committed.id, at: now, addressedIds: heardAddressed });
+    this.deps.noteHumanLine(channelId, { eventId: committed.id, at: now, addressedIds: heardAddressed, ...(mode === "whisper" ? { whisper: true } : {}) });
     if (heardAddressed.length > 0) this.deps.requestFocused(heardAddressed);
     return { kind: "ingested", eventId: committed.id, addressed, heardBy: visibleToAgents, operatorOnly };
   }

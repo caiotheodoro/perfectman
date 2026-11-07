@@ -132,12 +132,17 @@ export type ArbiterDecision =
 
 export interface IRoomSpeechArbiter {
   /** The hotel supplies human-line state; the arbiter never sees a socket. */
-  noteHumanLine(roomId: string, line: { eventId: string; at: number; addressedIds: string[] }): void;
+  /**
+   * `whisper`: the line was whispered to its addressees. It stays open for the answer to that whisper only, so a line an
+   * actor had already in flight cannot be counted as the answer (D44).
+   */
+  noteHumanLine(roomId: string, line: { eventId: string; at: number; addressedIds: string[]; whisper?: boolean }): void;
   noteHumanTyping(roomId: string, typing: boolean, at: number): void;
   /** Decide phase: lets the scheduler skip generation for a blocked, non-addressed agent. */
   preview(agentId: string, roomId: string, now: number): ArbiterDecision;
   /** Resolver phase, authoritative: runs after `allowAction`, before `recordAction`. */
-  gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number): ArbiterDecision;
+  /** `answering`: the event this decision replies to; it is what closes an open whisper. */
+  gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number, answering?: string): ArbiterDecision;
 }
 
 // ---- ADR-0025: budget as a warning, usage getter ----------------------------

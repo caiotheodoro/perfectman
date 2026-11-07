@@ -92,8 +92,13 @@ export function scoreAttention(
       event.type === "reply_sent" &&
       (event.payload["replyToActorId"] as string | undefined) === agent.agentId;
 
+    // A whisper only this agent heard clearly is the most pointed thing said to it: when an older line also named
+    // it, the answer is owed to the whisper (hotel, D44), whose reply goes back privately.
+    const hearing = event.payload["hearing"] as Record<string, unknown> | undefined;
+    const isWhisperToMe = event.payload["mode"] === "whisper" && hearing?.[agent.agentId] === "clear";
+
     if (isMentioned || isDirectReply) {
-      const mention = isMentioned ? 0.30 : 0.25;
+      const mention = isMentioned ? (isWhisperToMe ? 0.35 : 0.30) : 0.25;
       if (mention > mentionUrgency) {
         mentionUrgency = mention;
         triggeringEvent = event;

@@ -11,9 +11,11 @@ import type { IDeliveryGateway, DeliveryMessage } from "../scheduler-contracts.j
 import { payloadChannelType, payloadString, payloadStringArray } from "../payload-readers.js";
 
 /** The mode a hotel stamped on the line, so the gateway delivers exactly what the hearing was computed for. */
-function speechMeta(event: CommittedEvent): { mode?: SpeechMode } {
+function speechMeta(event: CommittedEvent): { mode?: SpeechMode; whisperTo?: string } {
   const mode = event.payload["mode"];
-  return mode === "say" || mode === "shout" || mode === "whisper" ? { mode } : {};
+  if (mode !== "say" && mode !== "shout" && mode !== "whisper") return {};
+  const to = event.payload["whisperTo"];
+  return mode === "whisper" && typeof to === "string" && to.length > 0 ? { mode, whisperTo: to } : { mode };
 }
 
 export class DeliveryProjection {
@@ -90,7 +92,9 @@ export class DeliveryProjection {
     buildMessage: () => DeliveryMessage,
   ): Promise<void> {
     const memberAgentIds = this.getMemberAgentIds(event.channelId, membership);
-    if (!this.visibleToAnyMember(event, memberAgentIds, channels, membership)) return;
+    // A whisper to a person is theirs even when no cast member is near enough to notice it (hotel, D44).
+    const toPerson = event.payload["mode"] === "whisper" && typeof event.payload["whisperTo"] === "string";
+    if (!toPerson && !this.visibleToAnyMember(event, memberAgentIds, channels, membership)) return;
     const msg = buildMessage();
     await this.safeGatewayCall(event, "sendAgentMessage", () => this.gateway.sendAgentMessage(event.channelId, msg));
   }

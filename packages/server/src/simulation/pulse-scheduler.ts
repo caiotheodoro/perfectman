@@ -198,6 +198,8 @@ type DecisionContext = {
   actionEmotions: ActionEmotions;
   pressures: Pressure[];
   channelAnchorId: string;
+  /** The event that woke this agent: a whisper to it is answered as a whisper (hotel, D44). */
+  trigger?: CommittedEvent;
 };
 
 export class PulseScheduler {
@@ -763,6 +765,7 @@ export class PulseScheduler {
       actionEmotions: stepResult.actionEmotions,
       pressures: stepResult.pressures,
       channelAnchorId,
+      ...(stepResult.perceptionPacket.triggeringEvent ? { trigger: stepResult.perceptionPacket.triggeringEvent } : {}),
     });
 
     return { agent, agentState, stepResult, channelAnchorId, addressed, priority, ...(space ? { space } : {}) };
@@ -837,6 +840,7 @@ export class PulseScheduler {
       ...(decision.space ? { space: decision.space } : {}),
       ...(stepResult.perceptionPacket.bodyHandles ? { bodyHandles: stepResult.perceptionPacket.bodyHandles } : {}),
       ...(runtimeOutput.bodyDropped ? { bodyDropped: runtimeOutput.bodyDropped } : {}),
+      ...(stepResult.perceptionPacket.triggeringEvent ? { trigger: stepResult.perceptionPacket.triggeringEvent } : {}),
     }).catch(async (err) => {
       await this.emitOperatorEvent(this.schedulerError("Intent resolver failed", err, agent.id));
       return null;
@@ -966,6 +970,7 @@ export class PulseScheduler {
         settings: sim.settings,
         actionEmotions: context.actionEmotions,
         agentNames: this.agentNamesByAgentId,
+        ...(context.trigger ? { trigger: context.trigger } : {}),
       });
       if (resolved.committedEvents.length > 0) {
         const committed = await this.appendAndProject(resolved.committedEvents, channels, membership);

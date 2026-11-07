@@ -762,7 +762,9 @@ export class Run {
     for (const e of mine) {
       if (e.type !== "message_sent" && e.type !== "reply_sent") continue;
       const named = (e.payload as Record<string, unknown>)["addresseeIds"];
-      const candidates = [intent.replyToActorId, ...intent.personTargets, ...(Array.isArray(named) ? named : [])];
+      // A whisper back is for the person who whispered, who is not one of the cast the engine names.
+      const whisperedTo = (e.payload as Record<string, unknown>)["whisperTo"];
+      const candidates = [whisperedTo, intent.replyToActorId, ...intent.personTargets, ...(Array.isArray(named) ? named : [])];
       const to = candidates.find((id): id is string => typeof id === "string" && id !== ref && (space.room?.occupants.some((o) => o.ref === id) ?? false));
       if (to) this.addressees.set(e.id, to);
       if (this.addressees.size > 256) this.addressees.delete(this.addressees.keys().next().value as string);
