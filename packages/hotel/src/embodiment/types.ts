@@ -50,6 +50,8 @@ export type PlannerMemory = {
   lastLaughAt?: number;
   lastGesture?: { a: string; at: number };
   lastExpression?: string;
+  /** Human ref -> when that human last dodged or pushed away this actor's pair act. */
+  pairRefusedAt?: Record<string, number>;
 };
 
 export type SpeechModeChoice = { mode: SpeechMode; reason?: string };

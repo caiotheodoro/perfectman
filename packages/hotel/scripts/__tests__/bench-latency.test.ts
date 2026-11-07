@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { benchPrompt, decide, runBench } from "../llm/bench-latency.js";
+import { benchPrompt, decide, runBench } from "../bench-latency.ts";
 
 /** A scripted clock: each call to now() advances by the next scripted duration. */
 function scripted(durations: number[]) {

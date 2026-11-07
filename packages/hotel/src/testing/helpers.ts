@@ -78,13 +78,13 @@ export const FAST_TIMING = {
 } as const;
 
 /** The sidecar against a fake Director with one room (12), one human (ana, id 9) and scenario version 31. */
-export async function bootSidecar(over: { config?: Partial<HotelConfig>; timing?: Partial<RunTiming>; fake?: FakeDirector; rng?: () => number } = {}) {
+export async function bootSidecar(over: { config?: Partial<HotelConfig>; timing?: Partial<RunTiming>; fake?: FakeDirector; rng?: () => number; versions?: Record<number, unknown> } = {}) {
   const fake = over.fake ?? (await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4 }));
   if (!over.fake) {
     fake.addRoom(12);
     fake.addHuman(12, 9, "ana", 6, 5);
   }
-  const http = fakeHotelHttp({ 31: compiledScenario().body });
+  const http = fakeHotelHttp({ 31: compiledScenario().body, ...over.versions });
   const cfg = testConfig(fake.url, over.config);
   const acksBefore = fake.received.filter((f) => f.t === "hello_ack").length;
   const sidecar = await startSidecar(cfg, {

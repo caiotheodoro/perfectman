@@ -140,6 +140,7 @@ export class SimulationRuntime implements GuestIngest, HotelRuntimeApi {
       hotel?.clock,
       hotel
         ? {
+            ...(hotel.chooseMode ? { chooseMode: hotel.chooseMode } : {}),
             ...(mirror
               ? {
                   audibility: (speakerId: string, _channelId: string, mode: SpeechMode, whisperTo?: string) =>
@@ -432,6 +433,14 @@ export class SimulationRuntime implements GuestIngest, HotelRuntimeApi {
         if (entry.scheduler.hasAgent(agentId)) entry.scheduler.followToChannel(agentId, channelId);
       }
     }
+  }
+
+  /** Hotel: stops scheduling an actor the hotel removed. Returns the actors still scheduled. */
+  retireAgent(simulationId: string, agentId: string): number {
+    const entry = this.active.get(simulationId);
+    if (!entry) throw new Error(`Simulation not found: ${simulationId}`);
+    entry.scheduler.retireAgent(agentId);
+    return entry.scheduler.agentCount;
   }
 
   async removeChannelMember(channelId: string, agentId: string): Promise<void> {

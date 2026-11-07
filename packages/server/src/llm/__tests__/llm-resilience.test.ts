@@ -110,8 +110,14 @@ describe("LlmCircuitBreaker", () => {
     expect(classifyLlmCall(motive("LLM budget exceeded: x"))).toBe("ignore");
     expect(classifyLlmCall({ ...fail(), type: "pulse_metrics" })).toBe("ignore");
     // A call that threw out of generateIntent never reaches the step: only the scheduler's own marker counts.
-    const threw: OperatorEvent = { ...fail(), type: "llm_failure", data: { reason: "boom", stage: "generate" } };
+    const threw: OperatorEvent = { ...fail(), type: "llm_failure", data: { reason: "boom", stage: "generate", providerFailure: true } };
     expect(classifyLlmCall(threw)).toBe("provider_failure");
+    // our own bug is not the provider's failure
+    expect(classifyLlmCall({ ...threw, data: { reason: "boom", stage: "generate", providerFailure: false } })).toBe("ignore");
+    // model text cannot fake or hide a failure once the structured field is present
+    const echoed = { ...motive("Provider failed: the model wrote this"), data: { privateMotiveSummary: "Provider failed: x", providerFailure: false } };
+    expect(classifyLlmCall(echoed)).toBe("provider_ok");
+    expect(classifyLlmCall({ ...echoed, data: { privateMotiveSummary: "all fine", providerFailure: true } })).toBe("provider_failure");
     expect(classifyLlmCall({ ...threw, data: { errorDetail: "bad json" } })).toBe("ignore");
   });
 

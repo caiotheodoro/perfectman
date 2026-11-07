@@ -63,6 +63,8 @@ const BLOCK_MAP: Partial<Record<ActorErrorCode, BlockedReason["code"]>> = {
   unknown_actor: "unknown_ref",
   action_not_here: "busy_moving",
   not_adjacent: "too_far",
+  // The hotel bumps every lease on a reconnect; a command from before the new one is stale, and the actor should look again.
+  stale_lease: "stale_space",
 };
 
 /**
@@ -225,13 +227,21 @@ export class BodyExecutor {
 
   // ---- outbound ---------------------------------------------------------------
 
-  private sendOne(c: BodyCommand, now: number): void {
+  /**
+   * A spoken line. True only when the frame actually went to the hotel; the chat backstop, the staleness gate,
+   * the command budget and a dead link all return false, so the caller never counts those as delivered.
+   */
+  sendChat(c: Extract<BodyCommand, { cmd: "chat" }>): boolean {
+    return this.sendOne(c, this.deps.clock.now());
+  }
+
+  private sendOne(c: BodyCommand, now: number): boolean {
     const { mirror } = this.deps;
     const id = mirror.avatarId(c.agentId);
     const lease = this.deps.lease();
     if (id === undefined || lease === undefined) {
       this.deps.hooks.blocked(c.agentId, [{ code: "unknown_ref" }]);
-      return;
+      return false;
     }
     const roomId = mirror.roomOfRef(c.agentId);
     const room = roomId ? mirror.model().rooms.get(roomId) : undefined;
@@ -242,7 +252,7 @@ export class BodyExecutor {
       if (!room || room.degraded || now - room.syncedAtWall > 5000) {
         this.stats.droppedStale++;
         this.deps.hooks.blocked(c.agentId, [{ code: "stale_space" }]);
-        return;
+        return false;
       }
       const body = mirror.bodyOf(c.agentId, now);
       body.budget.cmdTimes = body.budget.cmdTimes.filter((t) => now - t < CMD_BUDGET.windowMs);
@@ -251,25 +261,25 @@ export class BodyExecutor {
       if (body.budget.cmdTimes.length >= limit) {
         this.stats.droppedBudget++;
         this.deps.hooks.blocked(c.agentId, [{ code: "slow_down", part: partOf(c) }]);
-        return;
+        return false;
       }
       body.budget.cmdTimes.push(now);
     } else if (c.cmd === "chat") {
       const times = (this.chatTimes.get(c.agentId) ?? []).filter((t) => now - t < CHAT_BACKSTOP.windowMs);
-      if (times.length >= CHAT_BACKSTOP.count) return;
+      if (times.length >= CHAT_BACKSTOP.count) return false;
       times.push(now);
       this.chatTimes.set(c.agentId, times);
     }
 
     const wire = this.toWire(c);
-    if (!wire) return;
+    if (!wire) return false;
     const cid = this.deps.nextCid();
     if (c.cmd === "walk") this.trackPlan(c, now);
     this.pendingCids.set(cid, { agentId: c.agentId, cmd: c.cmd });
     if (this.pendingCids.size > 512) this.pendingCids.delete(this.pendingCids.keys().next().value as number);
     this.stats.sent++;
     this.deps.record?.("out", roomId, "actor_cmd", { actor: c.agentId, cmd: wire as unknown as Record<string, unknown> });
-    this.deps.send({ t: "actor_cmd", cid, run: this.deps.run, lease, actor: id, cmd: wire });
+    return this.deps.send({ t: "actor_cmd", cid, run: this.deps.run, lease, actor: id, cmd: wire });
   }
 
   private toWire(c: BodyCommand): ActorCmd | undefined {
@@ -332,6 +342,11 @@ export class BodyExecutor {
     const { mirror } = this.deps;
     if ([...this.pairs.values()].some((p) => p.agentId === c.agentId || p.bRef === c.agentId)) return;
     const withHuman = !mirror.isOwn(mirror.avatarId(c.with) ?? NaN);
+    // One pair act in flight per human, whoever started it: a person is not mobbed by two admirers at once.
+    if (withHuman && [...this.pairs.values()].some((p) => p.withHuman && p.bRef === c.with)) {
+      this.deps.hooks.blocked(c.agentId, [{ code: "cooldown", part: "gesture" }]);
+      return;
+    }
     const st: PairState = { pair: c.pair, kind: c.kind, agentId: c.agentId, withRef: c.with, bRef: c.with, withHuman, phase: "approach", timer: null };
     this.pairs.set(c.pair, st);
     this.advancePair(st);

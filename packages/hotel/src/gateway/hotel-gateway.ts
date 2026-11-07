@@ -29,6 +29,8 @@ export type CastEntry = { name: string; responseDelayMs: readonly [number, numbe
 
 export type GatewayExecutor = {
   send(commands: PlannedCommand[]): void;
+  /** Sends a spoken line; false when it never reached the hotel (backstop, stale room, dead link). Falls back to `send`, counted as sent. */
+  sendChat?(cmd: Extract<BodyCommand, { cmd: "chat" }>): boolean;
   sendThought(agentId: string, text: string): void;
 };
 
@@ -43,7 +45,11 @@ export type GatewayDeps = {
   roomOfAgent(agentId: string): RoomId | undefined;
   /** Both within 2 tiles in one room (huddle co-presence, embodiment.md 6.4). */
   togetherForHuddle?(a: string, b: string): boolean;
-  /** The planner's shout choice (arousal and content); default: keep the committed mode. */
+  /**
+   * The planner's shout choice (arousal and content); default: keep the committed mode. Only used for a
+   * message that carries no mode of its own: in a hotel run the resolver decides the mode when it stamps
+   * who hears the line, so the delivered mode and the stamped hearing cannot disagree.
+   */
   chooseMode?(agentId: string, content: string, committed: SpeechMode): SpeechMode;
   timing?: Partial<GatewayTiming>;
   /** Every operator event, for logs and tests. */
@@ -55,6 +61,8 @@ export type GatewayDeps = {
 
 type Item = {
   seq: number;
+  /** Whispered inside a huddle: the line only lands while the pair stays together. */
+  huddle: boolean;
   agentId: string;
   text: string;
   mode: SpeechMode;
@@ -93,6 +101,7 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
   private pulseStartedAt: number | undefined;
   private seq = 0;
   private closed = false;
+  private paused = false;
   stats = { delivered: 0, undeliveredCommitted: 0, reactions: 0 };
 
   constructor(private readonly deps: GatewayDeps) {
@@ -104,6 +113,20 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
   }
 
   // ---- consult and typing -----------------------------------------------------
+
+  /** A paused run releases no queued line; the backlog waits, and goes out one per spacing window on resume. */
+  setPaused(paused: boolean): void {
+    if (this.paused === paused) return;
+    this.paused = paused;
+    if (paused) {
+      for (const q of this.queues.values()) {
+        q.timer?.cancel();
+        q.timer = null;
+      }
+      return;
+    }
+    for (const roomId of [...this.queues.keys()]) this.pump(roomId);
+  }
 
   /** Fallback consult time for runtimes that do not call `onConsult` (typing starts with the pulse). */
   notePulseStart(at: number): void {
@@ -177,15 +200,15 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
         return this.endTypingSoon(message.agentId);
       }
       mode = "whisper";
-      for (const r of reachable) this.enqueue(roomId, message, text, mode, r, now, rng);
+      for (const r of reachable) this.enqueue(roomId, message, text, mode, r, now, rng, true);
       return;
     }
-    if (mode === "say") mode = this.deps.chooseMode?.(message.agentId, text, mode) ?? mode;
+    if (mode === "say" && message.mode === undefined) mode = this.deps.chooseMode?.(message.agentId, text, mode) ?? mode;
     if (mode === "whisper" && !to) mode = "say";
     this.enqueue(roomId, message, text, mode, to, now, rng);
   }
 
-  private enqueue(roomId: RoomId, message: DeliveryMessage, text: string, mode: SpeechMode, to: string | undefined, now: number, rng: () => number): void {
+  private enqueue(roomId: RoomId, message: DeliveryMessage, text: string, mode: SpeechMode, to: string | undefined, now: number, rng: () => number, huddle = false): void {
     const cast = this.deps.cast.get(message.agentId);
     const [lo, hi] = cast?.responseDelayMs ?? [600, 2500];
     const sampled = lo + rng() * Math.max(0, hi - lo);
@@ -193,7 +216,7 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     const landAt = Math.max(now, base + Math.min(this.timing.capMs, sampled + this.timing.perCharMs * text.length));
     const priority: 0 | 1 = message.kind === "reply" || message.salience === "high" || message.salience === "critical" ? 1 : 0;
     const q = this.queue(roomId);
-    q.items.push({ seq: ++this.seq, agentId: message.agentId, text, mode, ...(to ? { to } : {}), priority, landAt, room: roomId });
+    q.items.push({ seq: ++this.seq, huddle, agentId: message.agentId, text, mode, ...(to ? { to } : {}), priority, landAt, room: roomId });
     // Overflow: the oldest ambient line first, then (as a last resort) the oldest of anything.
     while (q.items.length > this.timing.roomQueueCap) {
       const ambient = q.items.filter((i) => i.priority === 0).sort((a, b) => a.seq - b.seq)[0];
@@ -221,6 +244,8 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     if (!q || this.closed) return;
     q.timer?.cancel();
     q.timer = null;
+    if (this.paused) return;
+    this.dropMisplaced(q);
     if (q.items.length === 0) return;
     const now = this.deps.clock.now();
 
@@ -236,6 +261,26 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     this.armTimer(roomId, q);
   }
 
+  /**
+   * The actor's room is resolved when the line is released, not when it was queued: an actor that took
+   * a door while the line waited no longer says it to the room it was meant for, and a whisper only
+   * lands while the pair is still together. Such a line is dropped, not delivered into the wrong room.
+   */
+  private dropMisplaced(q: RoomQueue): void {
+    const keep: Item[] = [];
+    for (const item of q.items) {
+      const here = this.deps.roomOfAgent(item.agentId);
+      const together = !item.huddle || !item.to || (this.deps.togetherForHuddle?.(item.agentId, item.to) ?? true);
+      if (here === item.room && together) {
+        keep.push(item);
+        continue;
+      }
+      this.stats.undeliveredCommitted++;
+      this.setTyping(item.agentId, false);
+    }
+    q.items = keep;
+  }
+
   private armTimer(roomId: RoomId, q: RoomQueue): void {
     const now = this.deps.clock.now();
     const heads = q.items.filter((i) => !q.items.some((o) => o.agentId === i.agentId && o.seq < i.seq));
@@ -248,12 +293,14 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     q.items = q.items.filter((i) => i !== item);
     q.lastLineAt = now;
     this.typing.delete(item.agentId);
-    const cmds: BodyCommand[] = [
-      { agentId: item.agentId, cmd: "typing", on: false },
-      { agentId: item.agentId, cmd: "chat", mode: item.mode, text: item.text, ...(item.to ? { to: item.to } : {}) },
-    ];
-    this.deps.executor.send(cmds);
-    this.stats.delivered++;
+    this.deps.executor.send([{ agentId: item.agentId, cmd: "typing", on: false }]);
+    const chat = { agentId: item.agentId, cmd: "chat" as const, mode: item.mode, text: item.text, ...(item.to ? { to: item.to } : {}) };
+    let sent = true;
+    if (this.deps.executor.sendChat) sent = this.deps.executor.sendChat(chat);
+    else this.deps.executor.send([chat]);
+    // A line the hotel never received is not a delivered line.
+    if (sent) this.stats.delivered++;
+    else this.stats.undeliveredCommitted++;
   }
 
   async createChannel(channelId: string, type: ChannelType, memberAgentIds: string[]): Promise<void> {

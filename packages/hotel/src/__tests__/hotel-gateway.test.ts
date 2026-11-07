@@ -1,7 +1,7 @@
 import type { BodyCommand, OperatorEvent } from "@perfectman/shared";
 import type { DeliveryMessage } from "@perfectman/server/hotel";
 import { describe, expect, it } from "vitest";
-import { ManualClock } from "../clock/manual-clock.js";
+import { ManualClock } from "../testing/manual-clock.js";
 import { HotelGateway } from "../gateway/hotel-gateway.js";
 import type { GatewayDeps } from "../gateway/hotel-gateway.js";
 
@@ -141,5 +141,63 @@ describe("HotelGateway", () => {
     expect(thoughts).toEqual(["I would rather listen for now."]);
     await clock.advance(800);
     expect(sent.at(-1)?.cmd).toEqual({ agentId: "rafa", cmd: "typing", on: false });
+  });
+
+  it("delivers the mode the resolver already stamped (shout) without asking the planner again", async () => {
+    let asked = 0;
+    const { clock, gateway, chats } = setup({ chooseMode: () => (asked++, "say") });
+    await gateway.sendAgentMessage("room:12", msg("rafa", "AAAA!", { mode: "shout" }));
+    await clock.advance(10);
+    expect(chats()[0]?.cmd).toMatchObject({ mode: "shout" });
+    expect(asked).toBe(0);
+    // a message with no stamped mode still goes through the planner's choice
+    await gateway.sendAgentMessage("room:12", msg("rafa", "oi"));
+    expect(asked).toBe(1);
+  });
+
+  it("resolves the actor's room when the line is released: a line queued before a door is dropped, not said in the other room", async () => {
+    let where = "12";
+    const { clock, gateway, chats } = setup({ roomOfAgent: () => where });
+    await gateway.sendAgentMessage("room:12", msg("duda", "oi, tudo bem?"));
+    where = "13";
+    await clock.advance(10_000);
+    expect(chats()).toHaveLength(0);
+    expect(gateway.undeliveredCommitted).toBe(1);
+    where = "12";
+    await gateway.sendAgentMessage("room:12", msg("rafa", "e ai"));
+    await clock.advance(10_000);
+    expect(chats()).toHaveLength(1);
+  });
+
+  it("a paused run releases nothing and goes on from the backlog on resume", async () => {
+    const { clock, gateway, chats } = setup();
+    gateway.setPaused(true);
+    await gateway.sendAgentMessage("room:12", msg("rafa", "um"));
+    await clock.advance(30_000);
+    expect(chats()).toHaveLength(0);
+    await gateway.sendAgentMessage("room:12", msg("duda", "dois"));
+    await clock.advance(30_000);
+    expect(chats()).toHaveLength(0);
+    gateway.setPaused(false);
+    await clock.advance(10_000);
+    expect(chats().map((c) => (c.cmd.cmd === "chat" ? c.cmd.text : ""))).toEqual(["um", "dois"]);
+  });
+
+  it("counts a line the executor could not send as undelivered, not delivered", async () => {
+    const clock = new ManualClock();
+    const sent: BodyCommand[] = [];
+    const gateway = new HotelGateway({
+      clock,
+      rng: () => 0,
+      executor: { send: (c) => sent.push(...c), sendThought: () => undefined, sendChat: () => false },
+      cast: new Map([["rafa", { name: "Rafa", responseDelayMs: [0, 0] as const }]]),
+      roomOfChannel: () => "12",
+      roomOfAgent: () => "12",
+      timing: { perCharMs: 0 },
+    });
+    await gateway.sendAgentMessage("room:12", msg("rafa", "oi"));
+    await clock.advance(10);
+    expect(gateway.stats.delivered).toBe(0);
+    expect(gateway.undeliveredCommitted).toBe(1);
   });
 });

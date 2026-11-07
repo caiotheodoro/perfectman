@@ -9,8 +9,8 @@
  */
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
-import { percentile } from "../util/stats.js";
-import { LLM_P95_BUDGET_MS } from "./env.js";
+import { percentile } from "../src/util/stats.ts";
+import { LLM_P95_BUDGET_MS } from "../src/llm/env.ts";
 
 export type BenchCall = () => Promise<void>;
 

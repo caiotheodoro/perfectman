@@ -8,15 +8,17 @@
  * (`onClose`). A run is resumed only when the breaker was the reason it paused
  * (`BreakerState.pausedRun`); the breaker never touches an admin or idle pause.
  *
- * What counts is read from the `action_intent` operator event the scheduler
- * emits for every resolved intent, via the motive of the fallback the step
- * substituted (the same signal `LlmHealthWatch` reads):
- * - `Provider failed:` / `Retry call failed.`  -> provider failure (timeouts, 5xx, 429, network)
- * - `Fallback applied:` (parse / schema)        -> the provider answered: counts as reachable, not a failure
- * - `LLM budget exceeded:`                       -> no call was made: ignored
- * - anything else                                -> a good call
- * - operator `llm_failure` with `data.stage === "generate"` -> the call threw out of `generateIntent`
- *   (or missed its deadline) before the step ran, so no `action_intent` follows; counted as a provider failure
+ * What counts is read from structured fields, never from model-authored text:
+ * - `action_intent` with `data.providerFailure === true` -> provider failure (timeouts, 5xx, 429, network)
+ * - `action_intent` with `data.providerFailure === false` -> the provider answered (a parse fallback is reachable, not a failure)
+ * - operator `llm_failure` with `data.stage === "generate"` and `data.providerFailure === true` -> the call
+ *   threw a provider / transport error (or missed its deadline) before the step ran, so no `action_intent`
+ *   follows; our own bugs (`providerFailure: false`) are ignored
+ * - `LLM budget exceeded:` -> no call was made: ignored
+ *
+ * Synthetic events without the structured field (the hotel's probe) fall back to
+ * the engine-authored motive prefixes; the scheduler always sets the field, so
+ * model text can never reach that path.
  */
 import type { ChannelType, EndReason, EndingOffer, OperatorEvent, SpectatorEvent } from "@perfectman/shared";
 import type { DeliveryMessage, IDeliveryGateway } from "../simulation/scheduler-contracts.js";
@@ -40,8 +42,12 @@ export function classifyLlmCall(event: OperatorEvent): CallVerdict {
   // reaches the step, so no `action_intent` follows: the scheduler's own
   // `llm_failure` (stage "generate", projected to the operator stream) is the
   // only trace, and it is a provider-level failure.
-  if (event.type === "llm_failure") return event.data?.["stage"] === "generate" ? "provider_failure" : "ignore";
+  if (event.type === "llm_failure") {
+    return event.data?.["stage"] === "generate" && event.data["providerFailure"] === true ? "provider_failure" : "ignore";
+  }
   if (event.type !== "action_intent") return "ignore";
+  const structured = event.data?.["providerFailure"];
+  if (typeof structured === "boolean") return structured ? "provider_failure" : "provider_ok";
   const motive = typeof event.data?.["privateMotiveSummary"] === "string" ? (event.data["privateMotiveSummary"] as string) : "";
   if (PROVIDER_FAILURE_PREFIXES.some((prefix) => motive.startsWith(prefix))) return "provider_failure";
   if (motive.startsWith(BUDGET_PREFIX)) return "ignore";

@@ -1,7 +1,7 @@
 import { parseMentionedAgentIds } from "@perfectman/server/hotel";
 import type { GuestLineInput } from "@perfectman/server/hotel";
 import { describe, expect, it } from "vitest";
-import { ManualClock } from "../clock/manual-clock.js";
+import { ManualClock } from "../testing/manual-clock.js";
 import type { HotelFrame } from "../director/index.js";
 import { GuestIngestor } from "../ingest/guest-ingestor.js";
 import { computeHearing } from "../space/hearing.js";
@@ -113,6 +113,31 @@ describe("guest ingestion (ADR-0022)", () => {
     expect(out).toMatchObject({ addressed: ["rafa"], heardBy: ["rafa"] });
     // Duda is 3 tiles from the whisperer: beyond the 2-tile notice radius, so she hears nothing.
     expect(lines[0]?.hearing).toEqual({ rafa: "clear" });
+  });
+
+  it("tells the arbiter about the actors who could hear the line, not everyone it named", async () => {
+    // Rafa is named but 12 tiles away: he never hears it, so he must not hold an open line.
+    const { ing, noted, focused } = ingestor({ width: 30, duda: [2, 4], people: [avatar(-702, "Rafa", 20, 4)] });
+    const out = await ing.handleHumanChat(chat({ text: "Duda e Rafa, oi", from: { id: 9, name: "ana" } }));
+    expect(out).toMatchObject({ kind: "ingested", addressed: ["duda", "rafa"] });
+    expect(noted).toEqual([["duda"]]);
+    expect(focused).toEqual([["duda"]]);
+  });
+
+  it("caps one speaker at 3 lines per 5 s so they cannot use the whole room's budget", async () => {
+    const { ing, lines } = ingestor({ people: [avatar(10, "bia", 4, 3)] });
+    for (let i = 0; i < 3; i++) await ing.handleHumanChat(chat({ text: `linha ${i}` }));
+    expect(await ing.handleHumanChat(chat({ text: "quarta" }))).toEqual({ kind: "dropped", reason: "rate_cap" });
+    expect(await ing.handleHumanChat(chat({ from: { id: 10, name: "bia" }, text: "minha vez" }))).toMatchObject({ kind: "ingested" });
+    expect(lines).toHaveLength(4);
+  });
+
+  it("a whisper is never visible to spectators; a spoken line is", async () => {
+    const { ing, lines } = ingestor();
+    await ing.handleHumanChat(chat({ mode: "whisper", to: -702, text: "segredo" }));
+    await ing.handleHumanChat(chat({ text: "oi Duda" }));
+    expect(lines[0]?.visibility).toMatchObject({ visibleToSpectators: false, visibleToOperators: true });
+    expect(lines[1]?.visibility).toMatchObject({ visibleToSpectators: true });
   });
 
   it("drops frames from rooms with none of the run's actors, unknown speakers and over-cap lines", async () => {

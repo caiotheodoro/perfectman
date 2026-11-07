@@ -58,6 +58,7 @@ import type { ResolvedIntent } from "./intent-resolver.js";
 import type { IRoomSpeechArbiter, OnConsult, PulseMode, PulseReason, RunPulseOptions } from "./hotel-runtime-api.js";
 import type { OnAgentCommitted } from "./hotel-options.js";
 import { roomIdOfChannel } from "./room-speech-arbiter.js";
+import { isProviderTransportError, LLMTimeoutError } from "../llm/llm-errors.js";
 import { AgentLocks, GenerateSemaphore, type GeneratePriority } from "./split-pulse-support.js";
 
 /**
@@ -300,6 +301,21 @@ export class PulseScheduler {
 
   hasAgent(agentId: string): boolean {
     return this.config.agents.some((agent) => agent.id === agentId);
+  }
+
+  /**
+   * Hotel: the hotel removed this actor, so it is no longer scheduled and
+   * never costs another model call. The list is swapped, not spliced: a pulse
+   * already iterating keeps its own snapshot of it.
+   */
+  retireAgent(agentId: string): boolean {
+    if (!this.hasAgent(agentId)) return false;
+    this.config.agents = this.config.agents.filter((agent) => agent.id !== agentId);
+    return true;
+  }
+
+  get agentCount(): number {
+    return this.config.agents.length;
   }
 
   /**
@@ -764,7 +780,7 @@ export class PulseScheduler {
   private withDeadline<T>(promise: Promise<T>, ms: number): Promise<T> {
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<never>((_, reject) => {
-      timer = setTimeout(() => reject(new Error(`generateIntent exceeded its ${ms} ms deadline`)), ms);
+      timer = setTimeout(() => reject(new LLMTimeoutError(`generateIntent exceeded its ${ms} ms deadline`)), ms);
     });
     return Promise.race([promise, timeout]).finally(() => {
       if (timer) clearTimeout(timer);
@@ -811,6 +827,10 @@ export class PulseScheduler {
       privateMotiveSummary: intent.privateMotiveSummary,
       emotionDrivers: intent.emotionDrivers ?? [],
       motivationDrivers: intent.motivationDrivers ?? [],
+      // Only when a call was made: a gate-blocked step (budget) stays unmarked so the breaker ignores it.
+      ...(runtimeOutput.providerFailed === true || runtimeOutput.llmUsage !== null
+        ? { providerFailure: runtimeOutput.providerFailed === true }
+        : {}),
     };
     await this.emitOperatorEvent({
       type: "action_intent",
@@ -1284,7 +1304,9 @@ export class PulseScheduler {
       // `stage` lets the circuit breaker count a call that threw out of
       // `generateIntent` (or missed its deadline) before the step produced an
       // `action_intent`; those never reach it any other way.
-      payload: { reason: this.errorReason(err), stage: "generate" },
+      // `providerFailure` is structured: only a provider/transport/deadline
+      // error counts toward the breaker, a bug in our own code does not.
+      payload: { reason: this.errorReason(err), stage: "generate", providerFailure: isProviderTransportError(err) },
       sourceEventIds: [],
       emotionalSalience: "low",
       pulseIndex,

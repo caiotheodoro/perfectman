@@ -8,6 +8,8 @@ export const PROTO = 1;
 /** 1, 2, 4, 8 s then 8 s: the whole schedule fits inside the hotel's 15 s grace. */
 export const BACKOFF_MS = [1000, 2000, 4000, 8000] as const;
 export const HEARTBEAT_MS = 5000;
+/** How long the command loop waits for the hotel's fresh leases after a reconnect before it goes on regardless. */
+export const LEASE_WAIT_MS = 3000;
 
 export type FrameRecorder = (dir: "in" | "out", frame: SidecarFrame | HotelFrame) => void;
 
@@ -56,6 +58,9 @@ export class DirectorClient {
   private queue: string[] = [];
   private reconnectTimer: TimerHandle | null = null;
   private heartbeatTimer: TimerHandle | null = null;
+  /** Runs the sidecar resumed whose bumped lease has not arrived yet; the link is not announced up until it has. */
+  private awaitingLease: Set<number> | null = null;
+  private leaseTimer: TimerHandle | null = null;
   private readonly leases = new Map<number, number>();
   private readonly tracked = new Set<number>();
   private readonly log: Logger;
@@ -180,7 +185,10 @@ export class DirectorClient {
     this.inSeq = frame.seq;
     this.opts.recorder?.("in", frame);
 
-    if (frame.t === "lease") this.leases.set(frame.run, frame.lease);
+    if (frame.t === "lease") {
+      this.leases.set(frame.run, frame.lease);
+      if (this.awaitingLease?.delete(frame.run) && this.awaitingLease.size === 0) this.announceUp();
+    }
     if (frame.t === "run_start") this.leases.set(frame.run, frame.lease);
 
     if (frame.t === "hello") {
@@ -202,6 +210,22 @@ export class DirectorClient {
     this.attempt = 0;
     for (const text of this.queue.splice(0)) this.conn?.socket.send(text);
     this.scheduleHeartbeat();
+    // The hotel bumps every resumed run's lease right after hello_ack. A command sent with the old lease
+    // only comes back as `stale_lease`, so the command loop is held until each new lease has landed.
+    const waiting = new Set(resume);
+    if (waiting.size === 0) return this.announceUp();
+    this.awaitingLease = waiting;
+    this.leaseTimer = this.opts.clock.setTimer(() => {
+      this.log.warn("lease not renewed in time, going on", { runs: [...(this.awaitingLease ?? [])] });
+      this.announceUp();
+    }, LEASE_WAIT_MS);
+  }
+
+  private announceUp(): void {
+    this.leaseTimer?.cancel();
+    this.leaseTimer = null;
+    if (!this.ready) return;
+    this.awaitingLease = null;
     this.opts.handlers.onConnectionChange(true);
   }
 
@@ -222,11 +246,15 @@ export class DirectorClient {
 
   private markDown(): void {
     const wasUp = this.ready;
+    const announced = this.awaitingLease === null;
     this.ready = false;
+    this.awaitingLease = null;
+    this.leaseTimer?.cancel();
+    this.leaseTimer = null;
     this.queue = [];
     this.heartbeatTimer?.cancel();
     this.heartbeatTimer = null;
-    if (wasUp) this.opts.handlers.onConnectionChange(false);
+    if (wasUp && announced) this.opts.handlers.onConnectionChange(false);
   }
 
   private scheduleHeartbeat(): void {

@@ -37,8 +37,14 @@ type HumanLineState = {
   answeredBy: Set<string>;
 };
 
+/** Human lines kept per room; the oldest drop first. */
+const MAX_OPEN_LINES = 8;
+/** A line nobody answered stops holding the room (and its addressee's reply slot) after this long. */
+export const OPEN_LINE_MS = 15_000;
+
 type RoomState = {
-  humanLine?: HumanLineState;
+  /** Recent human lines, oldest first. Each addressee tracks its own open line(s). */
+  humanLines: HumanLineState[];
   lastHumanSpeechAt: number | null;
   typingUntil: number;
   lastActorLineAt: number | null;
@@ -65,12 +71,15 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
 
   noteHumanLine(roomId: string, line: { eventId: string; at: number; addressedIds: string[] }): void {
     const room = this.room(roomId);
-    room.humanLine = {
+    // The same line noted twice must not reopen it for an addressee that already answered.
+    if (room.humanLines.some((l) => l.eventId === line.eventId)) return;
+    room.humanLines.push({
       eventId: line.eventId,
       at: line.at,
       addressed: new Set(line.addressedIds),
       answeredBy: new Set(),
-    };
+    });
+    if (room.humanLines.length > MAX_OPEN_LINES) room.humanLines.splice(0, room.humanLines.length - MAX_OPEN_LINES);
     room.lastHumanSpeechAt = line.at;
     room.typingUntil = 0;
     room.actorLinesSinceHuman = 0;
@@ -87,8 +96,8 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
    */
   classify(agentId: string, roomId: string, now: number): ArbiterLineKind {
     const room = this.rooms.get(roomId);
-    const line = room?.humanLine;
-    if (line?.addressed.has(agentId) && !line.answeredBy.has(agentId)) return "addressed";
+    if (room && this.openLinesFor(room, agentId, now).length > 0) return "addressed";
+    const line = room?.humanLines.at(-1);
     if (line && now - line.at < this.effectiveQuietMs()) return "interjection";
     return "ambient";
   }
@@ -100,7 +109,8 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
     if (this.classify(agentId, roomId, now) === "addressed") return ALLOWED;
     // A skip must be safe whichever way the line would be classified, so only
     // deny when both readings are denied.
-    const asInterjection = this.check(room, agentId, "interjection", now);
+    // The duplicate-reply rule is the resolver's alone: two pulses already in flight cannot be told apart here, and skipping an addressee on a guess costs it its turn.
+    const asInterjection = this.check(room, agentId, "interjection", now, true);
     const asAmbient = this.check(room, agentId, "ambient", now);
     return asInterjection && asAmbient ? blocked(asInterjection) : ALLOWED;
   }
@@ -108,11 +118,15 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
   /** Resolver phase, authoritative. Records the line when allowed. */
   gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number): ArbiterDecision {
     const room = this.room(roomId);
-    const rule = this.check(room, agentId, kind, now);
+    // A kind decided earlier can be stale (another pulse answered the line since): addressed only while a line is still open for the agent.
+    const effective: ArbiterLineKind =
+      kind === "addressed" && room.humanLines.length > 0 && this.openLinesFor(room, agentId, now).length === 0 ? "interjection" : kind;
+    const rule = this.check(room, agentId, effective, now);
     if (rule) return blocked(rule);
     room.lastActorLineAt = now;
     room.actorLinesSinceHuman += 1;
-    if (kind !== "ambient") room.humanLine?.answeredBy.add(agentId);
+    // One line answers the oldest line still open for this agent.
+    if (effective !== "ambient") (this.openLinesFor(room, agentId, now)[0] ?? room.humanLines.at(-1))?.answeredBy.add(agentId);
     return ALLOWED;
   }
 
@@ -126,21 +140,30 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
     return this.config.ambientQuietMs * scale;
   }
 
-  private check(room: RoomState, agentId: string, kind: ArbiterLineKind, now: number): ArbiterRule | null {
+  private check(room: RoomState, agentId: string, kind: ArbiterLineKind, now: number, preview = false): ArbiterRule | null {
     if (kind === "addressed") return null;
     if (room.typingUntil > now) return "human_typing";
-    const line = room.humanLine;
+    const line = room.humanLines.at(-1);
     if (kind === "interjection" && line) {
-      const unanswered = [...line.addressed].filter((id) => !line.answeredBy.has(id));
-      const isAddressee = line.addressed.has(agentId);
-      if (unanswered.length > 0 && !isAddressee) return "not_addressed_open_line";
+      // Every still-open addressee across the room's recent lines, not just the newest line's.
+      const unanswered = new Set<string>();
+      for (const l of room.humanLines) {
+        if (now - l.at >= OPEN_LINE_MS) continue;
+        for (const id of l.addressed) if (!l.answeredBy.has(id)) unanswered.add(id);
+      }
+      const isAddressee = line.addressed.has(agentId) || unanswered.has(agentId);
+      if (unanswered.size > 0 && !isAddressee) return "not_addressed_open_line";
       // Timing rule 2: once the line has been answered (by its addressees, or by
       // one actor when it was addressed to nobody) everyone else may react with
       // a gesture or an expression but not speak, until the room has gone a
       // quiet period without human speech (then the ambient rule takes over).
-      const answered = line.addressed.size === 0 ? line.answeredBy.size >= 1 : unanswered.length === 0;
-      if (answered && !isAddressee) return "one_answer_per_line";
+      const answered = line.addressed.size === 0 ? line.answeredBy.size >= 1 : unanswered.size === 0;
       if (room.actorLinesSinceHuman >= Math.max(this.config.minLineBudget, line.addressed.size)) return "line_budget";
+      if (answered && !isAddressee) return "one_answer_per_line";
+      // One reply per addressed actor per line, however many pulses (a focus lane racing a base pulse) try:
+      // the actor's latest addressing line is already answered by it, so a second reply is a duplicate.
+      const mine = [...room.humanLines].reverse().find((l) => l.addressed.has(agentId));
+      if (!preview && mine?.answeredBy.has(agentId)) return "one_answer_per_line";
     }
     if (kind === "ambient" && room.lastHumanSpeechAt !== null && now - room.lastHumanSpeechAt < this.effectiveQuietMs()) {
       return "ambient_too_soon";
@@ -148,10 +171,15 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
     return null;
   }
 
+  /** Lines addressed to this agent it has not answered, oldest first. */
+  private openLinesFor(room: RoomState, agentId: string, now: number): HumanLineState[] {
+    return room.humanLines.filter((l) => now - l.at < OPEN_LINE_MS && l.addressed.has(agentId) && !l.answeredBy.has(agentId));
+  }
+
   private room(roomId: string): RoomState {
     let state = this.rooms.get(roomId);
     if (!state) {
-      state = { lastHumanSpeechAt: null, typingUntil: 0, lastActorLineAt: null, actorLinesSinceHuman: 0 };
+      state = { humanLines: [], lastHumanSpeechAt: null, typingUntil: 0, lastActorLineAt: null, actorLinesSinceHuman: 0 };
       this.rooms.set(roomId, state);
     }
     return state;

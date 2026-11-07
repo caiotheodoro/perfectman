@@ -2,6 +2,7 @@
 export * from "./utils/id.js";
 export * from "./utils/math.js";
 export * from "./utils/rng.js";
+export * from "./utils/untrusted-text.js";
 
 // Simulation
 export * from "./simulation/simulation.types.js";

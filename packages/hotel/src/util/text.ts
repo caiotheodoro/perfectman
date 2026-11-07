@@ -1,16 +1,13 @@
+import { sanitizeUntrustedText } from "@perfectman/shared";
+
 /** Text hygiene at the hotel boundary (ADR-0023, D42). */
 
 export const MAX_CHAT_CHARS = 200;
 export const MAX_SENDER_NAME_CHARS = 24;
 
-// C0/C1 controls (keeping nothing: a line is one line), bidi embeddings and
-// isolates, and zero-width characters that hide instructions from a reader.
-const CONTROL_AND_BIDI = /[\u0000-\u001f\u007f-\u009f​-‏‪-‮⁠-⁤⁦-⁩﻿]/gu;
-
-/** NFKC, no control or bidi characters, collapsed whitespace, clipped to `max` characters. */
+/** NFKC, no control or bidi characters, collapsed whitespace, clipped to `max` characters (the one shared sanitizer). */
 export function sanitizeText(input: string, max: number): string {
-  const cleaned = input.normalize("NFKC").replace(CONTROL_AND_BIDI, " ").replace(/\s+/g, " ").trim();
-  return [...cleaned].slice(0, max).join("");
+  return sanitizeUntrustedText(input, max);
 }
 
 /** A name that survives sanitizing, else a stable alias so nothing odd reaches a prompt. */

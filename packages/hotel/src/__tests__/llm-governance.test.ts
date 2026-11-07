@@ -2,7 +2,7 @@ import { LLMHttpError } from "@perfectman/server/hotel";
 import type { LLMProvider, LLMProviderResult } from "@perfectman/server/hotel";
 import type { OperatorEvent } from "@perfectman/shared";
 import { describe, expect, it } from "vitest";
-import { ManualClock } from "../clock/manual-clock.js";
+import { ManualClock } from "../testing/manual-clock.js";
 import { BreakerDriver } from "../llm/breaker.js";
 import { hostLlmConfig, ModelNotAllowedError } from "../llm/env.js";
 import { LlmGovernor } from "../llm/governor.js";
@@ -17,7 +17,7 @@ const intentEvent = (motive: string): OperatorEvent => ({ type: "action_intent",
 const failed = () => intentEvent("Provider failed: HTTP 503");
 const answered = () => intentEvent("quero falar com ele");
 /** A generateIntent that threw before the step ran: the scheduler's own marker. */
-const threw = (): OperatorEvent => ({ type: "llm_failure", simulationId: SIM, pulseIndex: 1, detail: "boom", data: { reason: "boom", stage: "generate" }, createdAt: 0 });
+const threw = (): OperatorEvent => ({ type: "llm_failure", simulationId: SIM, pulseIndex: 1, detail: "boom", data: { reason: "boom", stage: "generate", providerFailure: true }, createdAt: 0 });
 
 describe("LLM circuit breaker driver (ADR-0025, D49)", () => {
   function breaker(probes: boolean[], over: { onOpen?: boolean } = {}) {

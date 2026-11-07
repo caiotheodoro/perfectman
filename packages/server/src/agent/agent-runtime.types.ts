@@ -63,6 +63,12 @@ export type AgentRuntimeOutput = {
   fallbackApplied: boolean;
   operatorEvents: OperatorEvent[];
   /**
+   * The provider call (or its retry) itself failed, as opposed to answering
+   * with something unusable. A structured flag: the circuit breaker reads it
+   * instead of the model-influenced motive text.
+   */
+  providerFailed?: boolean;
+  /**
    * Hotel mode: the model's `body` block named a handle that is not in this
    * render's `bodyHandles`, so the parser dropped it and kept the speech
    * (ADR-0019). The resolver commits these as an operator-only `body_blocked`.

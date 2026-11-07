@@ -40,6 +40,45 @@ describe("space mirror", () => {
     expect(m.applyDelta(delta(12, 7, { t: "avatar_left", id: -701 }), T0 + 60)).toEqual({ ok: true });
   });
 
+  it("applies furni_added, furni_moved and furni_removed in place from the room's cached defs, with no resnapshot", () => {
+    const m = mirror();
+    const furni = () => [...(m.model().rooms.get("12")?.furni.values() ?? [])];
+    expect(m.applyDelta(delta(12, 2, { t: "furni_added", furni: { id: 3, def: "sofa_blue", x: 1, y: 1, rot: 0 } }), T0 + 10)).toEqual({ ok: true });
+    expect(furni().map((f) => f.id)).toEqual([1, 2, 3]);
+    expect(m.applyDelta(delta(12, 3, { t: "furni_moved", furni: { id: 3, def: "sofa_blue", x: 6, y: 6, rot: 1 } }), T0 + 20)).toEqual({ ok: true });
+    expect(furni().find((f) => f.id === 3)?.tiles).toEqual([[6, 6], [6, 7]]);
+    expect(m.applyDelta(delta(12, 4, { t: "furni_removed", id: 3 }), T0 + 30)).toEqual({ ok: true });
+    expect(furni().map((f) => f.id)).toEqual([1, 2]);
+    expect(m.model().rooms.get("12")?.degraded).toBe(false);
+  });
+
+  it("asks for one resnapshot only when a furni delta names a def it has never seen", () => {
+    const m = mirror();
+    const res = m.applyDelta(delta(12, 2, { t: "furni_added", furni: { id: 4, def: "tv_new", x: 1, y: 1, rot: 0 } }), T0 + 10);
+    expect(res).toEqual({ ok: true, resnapshot: true });
+    expect(m.degradedRooms()).toEqual(["12"]);
+    // the snapshot that follows carries the new def and clears it
+    const snap = snapshot(12, 3, [avatar(-701, "Duda", 0, 4)]);
+    snap.defs["tv_new"] = { name: "TV", w: 1, d: 1, h: 100, walkable: false, seat: false, lay: false, wall: false, states: 1 };
+    m.applySnapshot(snap, T0 + 20);
+    expect(m.degradedRooms()).toEqual([]);
+    expect(m.applyDelta(delta(12, 4, { t: "furni_added", furni: { id: 4, def: "tv_new", x: 1, y: 1, rot: 0 } }), T0 + 30)).toEqual({ ok: true });
+  });
+
+  it("D24: every room the hotel named is reachable by the door, with an estimated travel time", () => {
+    const m = mirror();
+    m.noteKnownRooms([{ id: "12" }, { id: "13", name: "Rooftop" }, { id: "14" }]);
+    expect(m.view("duda", T0)?.adjacency).toEqual([
+      expect.objectContaining({ roomId: "13", name: "Rooftop", viaDoor: [0, 4], travelS: expect.any(Number) }),
+      expect.objectContaining({ roomId: "14", viaDoor: [0, 4] }),
+    ]);
+    // a room mirrored later takes the others too, and a closed room drops out
+    m.applySnapshot(snapshot(13, 1), T0);
+    expect(m.model().rooms.get("13")?.adjacency.map((a) => a.roomId)).toEqual(["12", "14"]);
+    m.applyRoomClosed(14);
+    expect(m.view("duda", T0)?.adjacency.map((a) => a.roomId)).toEqual(["13"]);
+  });
+
   it("keeps rev per room: another room's frames do not make a gap", () => {
     const m = mirror();
     m.applySnapshot(snapshot(13, 40), T0);
