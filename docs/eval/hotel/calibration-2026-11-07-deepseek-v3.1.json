@@ -1,0 +1,69 @@
+{
+ "judge": "deepseek/deepseek-chat-v3.1",
+ "snippets": 28,
+ "invalidJson": 0,
+ "retried": 0,
+ "unscored": 37,
+ "nullOnLabeled": 12,
+ "pairs": 63,
+ "kappa": 0.856,
+ "kappaPooled": 0.889,
+ "exact": 0.825,
+ "within1": 0.921,
+ "binary": {
+  "pairs": 56,
+  "kappa": 0.909
+ },
+ "perAxis": {
+  "in_character": {
+   "pairs": 18,
+   "kappa": 0.932,
+   "exact": 0.833,
+   "within1": 0.944,
+   "tier": "gates"
+  },
+  "spatial_coherence": {
+   "pairs": 7,
+   "kappa": 0.875,
+   "exact": 0.714,
+   "within1": 0.857,
+   "tier": "gates"
+  },
+  "pacing_silence": {
+   "pairs": 5,
+   "kappa": 0.574,
+   "exact": 0.4,
+   "within1": 0.8,
+   "tier": "rank_only"
+  },
+  "turn_taking": {
+   "pairs": 10,
+   "kappa": 0.756,
+   "exact": 0.7,
+   "within1": 0.8,
+   "tier": "gates"
+  },
+  "language_adherence": {
+   "pairs": 16,
+   "kappa": 1,
+   "exact": 1,
+   "within1": 1,
+   "tier": "gates"
+  },
+  "human_self_belief": {
+   "pairs": 7,
+   "kappa": 1,
+   "exact": 1,
+   "within1": 1,
+   "tier": "gates"
+  }
+ },
+ "disagreements": [
+  "c10-en-far-answer spatial_coherence: judge 3 vs label 1",
+  "c15-pt-machine-gun pacing_silence: judge 4 vs label 1",
+  "c15-pt-machine-gun turn_taking: judge 5 vs label 2",
+  "c19-pt-late-reply turn_taking: judge 1 vs label 3",
+  "c23-pt-generic-assistant in_character: judge 3 vs label 1"
+ ],
+ "spentUsd": 0.011160512500000002
+}

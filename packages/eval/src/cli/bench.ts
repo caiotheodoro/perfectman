@@ -721,6 +721,17 @@ function argValue(flag: string): string | undefined {
 }
 
 export async function main(): Promise<void> {
+  // `--suite hotel` is the Phase 3 hotel layer (canaries, recorded runs, judge calibration), not a roleplay scenario run.
+  if (argValue("--suite") !== undefined) {
+    const suite = argValue("--suite");
+    if (suite !== "hotel") {
+      console.error(`unknown --suite ${suite} (available: hotel)`);
+      process.exit(2);
+    }
+    const { runHotelCli } = await import("./hotel.js");
+    await runHotelCli(args.filter((a, i) => a !== "--suite" && args[i - 1] !== "--suite"));
+    return;
+  }
   const report = await runBench({
     mode: (argValue("--mode") as "mock" | "local") ?? "mock",
     scenarios: args.includes("--scenarios") ? (argValue("--scenarios") ?? "").split(",").filter(Boolean) : undefined,

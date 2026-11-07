@@ -1,0 +1,15 @@
+{
+  "run": 7,
+  "simulationId": "sim-1",
+  "scenarioVersion": 1,
+  "finalState": "stopped",
+  "stopReason": "admin",
+  "startedAt": 1700000000000,
+  "endedAt": 1700000060000,
+  "pulse": 10,
+  "counters": {},
+  "files": {
+    "events": "events.jsonl",
+    "body_frames": "body-frames.json"
+  }
+}

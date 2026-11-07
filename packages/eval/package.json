@@ -18,6 +18,7 @@
     "grade": "node dist/cli/grade.js",
     "evidence": "node dist/cli/evidence.js",
     "calibrate": "node dist/cli/calibrate.js",
+    "hotel": "node dist/cli/hotel.js",
     "narrate": "node dist/cli/narrate.js",
     "sweep:repetition": "node dist/cli/sweep-repetition.js",
     "sweep:goal-layer": "node dist/cli/sweep-goal-layer.js",
