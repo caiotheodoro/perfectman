@@ -24,7 +24,7 @@ import type {
   HearingLevel,
 } from "@perfectman/shared";
 import { createId, MEMORY_TONE_UNSPECIFIED } from "@perfectman/shared";
-import { validateIntentPure, validateBodyIntent, speechNeedsDeferral } from "@perfectman/engine";
+import { SAY_CLEAR_TILES, validateIntentPure, validateBodyIntent, speechNeedsDeferral } from "@perfectman/engine";
 import { memoryWrittenPayload } from "./memory-written-payload.js";
 import { REPETITION_GUARD_MARKER } from "../agent/repetition-guard.js";
 import { isEngineAuthoredMotive } from "../agent/engine-motive.js";
@@ -576,6 +576,8 @@ export class IntentResolver {
       audibility?: (speakerId: string, channelId: string, mode: SpeechMode, whisperTo?: string) => AudibilityResult | undefined;
       /** The mode the line is delivered in (shout is the planner's choice); stamped with the hearing so the two agree. */
       chooseMode?: (speakerId: string, content: string, committed: SpeechMode) => SpeechMode;
+      /** Pure: would the planner deliver this `say` line as a shout (arousal rule)? A shout carries across the room, so nobody walks first. */
+      wouldShout?: (speakerId: string, content: string) => boolean;
     },
   ) {}
 
@@ -628,9 +630,17 @@ export class IntentResolver {
   private assessBody(intent: ActionIntent, ctx: ResolveContext): ResolvedBody | undefined {
     if (!ctx.space) return undefined;
     const dropped = ctx.bodyDropped ?? [];
-    if (!intent.body && dropped.length === 0) return undefined;
+    const speaks = intent.intentType === "send_message" || intent.intentType === "reply_to_message";
+    // An addressed `say` line to someone beyond the say radius is walked to, never sent across the room (embodiment.md 6.3).
+    const far = speaks ? this.farAddressee(intent, ctx) : undefined;
+    if (!intent.body && dropped.length === 0 && !far) return undefined;
     if (!intent.body || !ctx.bodyHandles) {
-      return { accepted: { order: "move_then_speak" }, targets: {}, blocked: [...dropped] };
+      const resolved: ResolvedBody = { accepted: { order: "move_then_speak" }, targets: {}, blocked: [...dropped] };
+      if (far) {
+        this.walkToAddressee(resolved, far.ref, ctx.bodyHandles ?? {});
+        this.deferToArrival(intent, ctx, resolved, far.ref, this.clock());
+      }
+      return resolved;
     }
     const now = this.clock();
     const validation = validateBodyIntent(ctx.space, intent.actorId, intent.body, now, ctx.bodyHandles);
@@ -639,19 +649,59 @@ export class IntentResolver {
       targets: validation.targets,
       blocked: [...dropped, ...validation.blocked],
     };
-    const speaks = intent.intentType === "send_message" || intent.intentType === "reply_to_message";
     if (speaks) {
       const addressee = intent.personTargets.find((id) => ctx.space?.room?.occupants.some((o) => o.ref === id));
-      const deferral = speechNeedsDeferral(ctx.space, intent.actorId, validation.accepted, ctx.bodyHandles, {
-        now,
-        speechChars: intent.visibleContent?.length ?? 0,
-        ...(addressee ? { addresseeRef: addressee } : {}),
-      });
-      if (deferral) {
-        resolved.deferral = { targetRef: deferral.targetRef, etaMs: deferral.etaMs, expiresAt: deferral.expiresAt };
+      // No walk toward the addressee, or the model asked to talk first: make it a walk-then-talk.
+      if (far && (resolved.accepted.move === undefined || resolved.accepted.order === "speak_then_move")) {
+        this.walkToAddressee(resolved, far.ref, ctx.bodyHandles);
       }
+      this.deferToArrival(intent, ctx, resolved, far?.ref ?? addressee, now);
     }
     return resolved;
+  }
+
+  /** Holds the line until the speaker reaches `addresseeRef`, when the accepted body walks toward them from beyond the say radius. */
+  private deferToArrival(intent: ActionIntent, ctx: ResolveContext, resolved: ResolvedBody, addresseeRef: string | undefined, now: number): void {
+    if (!ctx.space) return;
+    const deferral = speechNeedsDeferral(ctx.space, intent.actorId, resolved.accepted, { ...(ctx.bodyHandles ?? {}), ...resolved.targets }, {
+      now,
+      speechChars: intent.visibleContent?.length ?? 0,
+      ...(addresseeRef ? { addresseeRef } : {}),
+    });
+    if (deferral) resolved.deferral = { targetRef: deferral.targetRef, etaMs: deferral.etaMs, expiresAt: deferral.expiresAt };
+  }
+
+  /** The room occupant this line is for, when they stand beyond the say radius and the line would go out as a plain `say`. */
+  private farAddressee(intent: ActionIntent, ctx: ResolveContext): { ref: string; distance: number } | undefined {
+    const room = ctx.space?.room;
+    const self = ctx.space?.self ?? room?.occupants.find((o) => o.ref === intent.actorId);
+    if (!room || !self) return undefined;
+    const candidates = [intent.replyToActorId, ...intent.personTargets];
+    const to = candidates.find((id): id is string => typeof id === "string" && id !== intent.actorId && room.occupants.some((o) => o.ref === id));
+    const other = to ? room.occupants.find((o) => o.ref === to) : undefined;
+    if (!to || !other) return undefined;
+    const distance = Math.max(Math.abs(self.tile[0] - other.tile[0]), Math.abs(self.tile[1] - other.tile[1]));
+    if (distance <= SAY_CLEAR_TILES) return undefined;
+    // The arousal rule may shout it: that carries, so no walk.
+    if (this.hotel?.wouldShout?.(intent.actorId, intent.visibleContent ?? "")) return undefined;
+    return { ref: to, distance };
+  }
+
+  /** Fills `resolved` with an approach toward `ref` (an existing handle for them, else a minted one) and move_then_speak. */
+  private walkToAddressee(
+    resolved: ResolvedBody,
+    ref: string,
+    handles: Record<string, BodyHandleTarget>,
+  ): void {
+    const all = { ...handles, ...resolved.targets };
+    let handle = Object.entries(all).find(([, t]) => t.kind === "person" && t.ref === ref)?.[0];
+    if (!handle) {
+      let n = 1;
+      while (all[`p${n}`]) n++;
+      handle = `p${n}`;
+    }
+    resolved.targets = { ...resolved.targets, [handle]: { kind: "person", ref } };
+    resolved.accepted = { ...resolved.accepted, move: { kind: "approach", target: handle, band: "personal" }, order: "move_then_speak" };
   }
 
   /** The line is held outside the log until `body_arrived`; the simulation records only that it was deferred. */

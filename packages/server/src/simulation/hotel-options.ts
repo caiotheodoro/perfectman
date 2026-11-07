@@ -56,6 +56,11 @@ export type HotelSimulationOptions = SplitPulseConfig & {
    * the line is stamped with who hears it, so the stamped hearing and the delivered mode are the same.
    */
   chooseMode?: (agentId: string, content: string, committed: SpeechMode) => SpeechMode;
+  /**
+   * Pure peek at the same choice: would this `say` line be delivered as a shout? An addressed line to someone
+   * beyond the say radius is walked to (move_then_speak) unless this says it will carry as a shout.
+   */
+  wouldShout?: (agentId: string, content: string) => boolean;
   /** Fires after each agent's intent is resolved and appended; the planner's seam. */
   onAgentCommitted?: OnAgentCommitted;
   /** Wall clock for the arbiter and the space reads; injectable for tests. */

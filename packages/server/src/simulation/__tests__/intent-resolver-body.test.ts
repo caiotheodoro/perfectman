@@ -40,8 +40,8 @@ const actions: AvailableAction[] = [
   { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
 ];
 
-function resolve(intent: Partial<ActionIntent>, s: ReturnType<typeof scene>, bodyDropped?: never[]) {
-  const resolver = new IntentResolver(new RateLimitGate(SETTINGS), new ChannelRegistry(new InMemoryChannelRepository()), undefined, () => T0 + 200, {});
+function resolve(intent: Partial<ActionIntent>, s: ReturnType<typeof scene>, bodyDropped?: never[], hotel: ConstructorParameters<typeof IntentResolver>[4] = {}) {
+  const resolver = new IntentResolver(new RateLimitGate(SETTINGS), new ChannelRegistry(new InMemoryChannelRepository()), undefined, () => T0 + 200, hotel);
   return resolver.resolve(
     {
       id: "i1", actorId: "rafa", intentType: "send_message", visibleContent: "vem ca", personTargets: [],
@@ -108,5 +108,42 @@ describe("IntentResolver body block (ADR-0019, hotel mode)", () => {
     void s;
     expect(r.body).toBeUndefined();
     expect(r.committedEvents.map((e) => e.type)).not.toContain("body_blocked");
+  });
+
+  describe("an addressed say line to someone beyond the say radius", () => {
+    const addressed = { personTargets: ["duda"] };
+
+    it("walks to them first even when the model gave no body at all", async () => {
+      const s = scene([12, 4]);
+      const r = await resolve(addressed, s);
+      const types = r.committedEvents.map((e) => e.type);
+      expect(r.outcome).toBe("delayed");
+      expect(types).toContain("speech_deferred");
+      expect(types).not.toContain("message_sent");
+      expect(r.body?.accepted.move).toMatchObject({ kind: "approach" });
+      expect(r.body?.accepted.order).toBe("move_then_speak");
+      expect(r.body?.deferral?.targetRef).toBe("duda");
+      const target = (r.body?.accepted.move as { target: string }).target;
+      expect(r.body?.targets[target]).toEqual({ kind: "person", ref: "duda" });
+    });
+
+    it("overrides a body with no move, and a speak_then_move order, into a walk then talk", async () => {
+      const s = scene([12, 4]);
+      const wave = await resolve({ ...addressed, body: { expression: "smile", order: "move_then_speak" } }, s);
+      expect(wave.outcome).toBe("delayed");
+      expect(wave.body?.accepted).toMatchObject({ expression: "smile", move: { kind: "approach" } });
+      const later = await resolve({ ...addressed, body: { move: { kind: "approach", target: s.dudaHandle, band: "personal" }, order: "speak_then_move" } }, s);
+      expect(later.outcome).toBe("delayed");
+      expect(later.body?.accepted.order).toBe("move_then_speak");
+    });
+
+    it("speaks now when the addressee is in range, and a line the planner will shout is not held", async () => {
+      const near = scene([5, 4]);
+      expect((await resolve(addressed, near)).outcome).toBe("committed");
+      const far = scene([12, 4]);
+      const shouted = await resolve(addressed, far, undefined, { wouldShout: () => true });
+      expect(shouted.outcome).toBe("committed");
+      expect(shouted.committedEvents.map((e) => e.type)).toContain("message_sent");
+    });
   });
 });

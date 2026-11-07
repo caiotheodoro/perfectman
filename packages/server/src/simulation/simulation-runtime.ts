@@ -141,6 +141,7 @@ export class SimulationRuntime implements GuestIngest, HotelRuntimeApi {
       hotel
         ? {
             ...(hotel.chooseMode ? { chooseMode: hotel.chooseMode } : {}),
+            ...(hotel.wouldShout ? { wouldShout: hotel.wouldShout } : {}),
             ...(mirror
               ? {
                   audibility: (speakerId: string, _channelId: string, mode: SpeechMode, whisperTo?: string) =>
