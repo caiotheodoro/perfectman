@@ -16,9 +16,9 @@ afterEach(async () => {
   sidecar = fake = undefined;
 });
 
-async function running() {
+async function running(width = 10) {
   const f = await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4 });
-  f.addRoom(12);
+  f.addRoom(12, width);
   f.addHuman(12, 9, "ana", 8, 5);
   const b = await bootSidecar({ fake: f, timing: { baseIntervalMs: 60_000 } });
   fake = b.fake;
@@ -102,5 +102,28 @@ describe("a line held until its speaker arrives (move_then_speak, ADR-0019)", ()
     const events = readFileSync(join(b.cfg.dataDir, "runs", "7", "events.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l) as { type: string; actorId: string; payload: { reasons?: Array<{ code: string }> } });
     const blocked = events.find((e) => e.type === "body_blocked" && e.payload.reasons?.some((r) => r.code === "not_in_earshot"));
     expect(blocked?.actorId).toBe("person-1");
+  });
+
+  it("plans the walk again when the addressee moved off while the speaker walked, and says the line only once within the say radius", async () => {
+    const fx = await running(24);
+    const { f } = fx;
+    const text = "oi Ana, espera por mim";
+    const spoken = (): boolean => f.chats.some((c) => c.mode === "say" && c.text === text);
+    const actor = f.avatarByRef("person-1");
+    const walks = (): number => f.received.filter((x) => x.t === "actor_cmd" && x.cmd.k === "walk" && x.actor === actor?.id).length;
+    const before = walks();
+    commit(fx, text, {
+      accepted: { order: "move_then_speak", move: { kind: "approach", target: "p1", band: "personal" } },
+      targets: { p1: { kind: "person", ref: "h:9" } },
+      blocked: [],
+      deferral: { targetRef: "h:9", etaMs: 800, expiresAt: Date.now() + 15_000 },
+    });
+    // The addressee walks to the far corner of the room right after the walk was planned toward where they stood.
+    f.moveHuman(12, 9, 23, 0);
+    await waitFor(spoken, "the held line, said after the walk is planned again", 12_000);
+    expect(walks()).toBeGreaterThan(before + 1);
+    const me = f.avatarByRef("person-1");
+    const ana = f.rooms.get(12)?.avatars.get(9);
+    expect(me && ana ? Math.max(Math.abs(me.x - ana.x), Math.abs(me.y - ana.y)) : 99).toBeLessThanOrEqual(6);
   });
 });

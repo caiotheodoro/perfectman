@@ -126,4 +126,49 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
     expect(frames[0]?.data).toMatchObject({ mode: "say", toRef: "person-2", sameRoom: true });
     expect(Number(frames[0]?.data["distance"])).toBeGreaterThanOrEqual(0);
   }, 20_000);
+  it("writes a failover link its own compact prompt when link 1 (the full prompt) answers with a body that is not JSON, instead of skipping it for its window", async () => {
+    const hits: Array<{ link: string; system: string }> = [];
+    const intent = JSON.stringify({ intentType: "send_message", visibleContent: "oi, estou aqui!", privateMotiveSummary: "responder", personTargets: [] });
+    llm = createServer((req, res) => {
+      let body = "";
+      req.on("data", (c: Buffer) => (body += c.toString()));
+      req.on("end", () => {
+        const parsed = JSON.parse(body || "{}") as { messages?: Array<{ role: string; content: string }>; max_tokens?: number };
+        const link = req.url?.startsWith("/a/") ? "a" : "b";
+        if (parsed.max_tokens !== 1) hits.push({ link, system: parsed.messages?.find((m) => m.role === "system")?.content ?? "" });
+        if (link === "a" && parsed.max_tokens !== 1) {
+          res.writeHead(200, { "content-type": "application/json" }).end("<html>gateway</html>");
+          return;
+        }
+        res.writeHead(200, { "content-type": "application/json" }).end(parsed.max_tokens === 1 ? "{}" : JSON.stringify({ choices: [{ message: { content: intent } }], usage: { prompt_tokens: 2500, completion_tokens: 50 }, model: "small" }));
+      });
+    });
+    await new Promise<void>((r) => llm?.listen(0, "127.0.0.1", () => r()));
+    const addr = llm.address();
+    const port = typeof addr === "object" && addr ? addr.port : 0;
+    process.env["TEST_LINK_A_KEY"] = "key-a";
+    process.env["TEST_LINK_B_KEY"] = "key-b";
+    // Link 1 has no stated window (the full prompt, 6K budget); link 2 is a 4K model that only the compact prompt fits.
+    const chain = [
+      { name: "a", baseUrl: `http://127.0.0.1:${port}/a/v1`, apiKeyEnv: "TEST_LINK_A_KEY", model: "big" },
+      { name: "b", baseUrl: `http://127.0.0.1:${port}/b/v1`, apiKeyEnv: "TEST_LINK_B_KEY", model: "small", maxContextTokens: 4096 },
+    ];
+    const llmEnv: LlmEnv = { provider: "openai-compatible", baseUrl: chain[0]!.baseUrl, apiKeyEnv: "TEST_LINK_A_KEY", models: ["big", "small"], chain, prices: { big: { inUsdPerMTok: 0, outUsdPerMTok: 0 }, small: { inUsdPerMTok: 0, outUsdPerMTok: 0 } }, concurrency: 3, softCallsPerMin: 600, softTokensPerHour: 5_000_000 };
+    const b = await bootSidecar({ config: { llm: llmEnv }, timing: { baseIntervalMs: 60_000 } });
+    fake = b.fake;
+    sidecar = b.sidecar;
+    b.fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => lastStatus(b.fake)?.state === "running", "running");
+    await waitFor(() => b.fake.received.some((f) => f.t === "actor_cmd" && f.cmd.k === "walk"), "the cast walking in");
+    b.fake.humanSay(12, 9, "Duda, tudo bem?");
+    await waitFor(() => b.fake.chats.find((c) => c.text.includes("estou aqui")), "the reply served by link 2", 10_000);
+    const first = hits.find((h) => h.link === "a");
+    const failover = hits.find((h) => h.link === "b");
+    expect(first?.system).not.toContain("Who you are");
+    expect(failover?.system).toContain("Who you are");
+    const snap = sidecar.manager?.getRun(7)?.llmChain()?.snapshot();
+    expect(snap?.links[1]).toMatchObject({ served: expect.any(Number), skipped: {} });
+    expect(snap?.links[1]?.served).toBeGreaterThan(0);
+    expect(snap?.exhausted).toBe(0);
+  }, 25_000);
 });

@@ -1,13 +1,14 @@
-import type { ActionIntent, AgentState, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
+import type { ActionIntent, AgentRuntimeInput, AgentState, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
 import {
   AgentRuntime,
   MockLLMProvider,
+  PromptBuilder,
   applySeeds,
   buildConfiguredSimulation,
   createLLMProvider,
   scrubConfigForArtifact,
 } from "@perfectman/server/hotel";
-import type { AgentCommitInfo, ConfiguredSimulationHandle, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
+import type { AgentCommitInfo, BuiltPrompt, ConfiguredSimulationHandle, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
 import { join } from "node:path";
 import { withMockBody } from "../llm/mock-body.js";
 import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
@@ -33,7 +34,8 @@ import { LlmGovernor } from "../llm/governor.js";
 import { pricesWithPick, withPickedModel } from "../llm/run-model.js";
 import type { PickedModel } from "../llm/run-model.js";
 import { LlmMeter } from "../llm/meter.js";
-import { tileKey } from "../space/geometry.js";
+import { chebyshev, tileKey } from "../space/geometry.js";
+import { SAY_CLEAR_TILES } from "../space/hearing.js";
 import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
@@ -116,7 +118,7 @@ export type RunDeps = {
 
 export type PrepareResult = { ok: true } | { ok: false; code: string; message: string };
 
-type PendingSpeech = { intent: ActionIntent; walkPlans: Set<string>; timer: TimerHandle };
+type PendingSpeech = { intent: ActionIntent; targetRef: string; walkPlans: Set<string>; timer: TimerHandle; rewalks: number };
 
 /** The hotel's limits on an actor name (hotel-package.md 6): short, and neither a ref separator nor a mention. */
 export const MAX_ACTOR_NAME_CHARS = 16;
@@ -170,6 +172,10 @@ export function arrivalSchedule(
  */
 /** A line released after a walk is typed "this long ago", so it lands at once (the gateway caps typing at 4 s). */
 const DEFERRED_TYPING_HEAD_START_MS = 3500;
+/** The walk for a held line ends where the addressee stood when it was planned; if they have moved off, it is planned again this many times. */
+const MAX_HELD_REWALKS = 2;
+/** How long a held line waits for a re-planned walk. */
+const REWALK_GRACE_MS = 6000;
 
 export class Run {
   state: RunState = "starting";
@@ -241,7 +247,7 @@ export class Run {
     this.meter = new LlmMeter(this.prices);
     const links = withPickedModel(linksOf(d.hotel.llm), params.model);
     this.chain = links.length > 0
-      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: this.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style), addressed: (id) => this.waitingOn.has(id) })
+      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: this.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style), addressed: (id) => this.waitingOn.has(id), rebuild: (req) => this.rebuildPrompt(req) })
       : undefined;
     this.frames = new FrameLogRecorder(d.clock);
   }
@@ -636,6 +642,13 @@ export class Run {
     return this.chain ? this.chain.ping() : pingLlm(this.hostLlm, process.env[this.d.hotel.llm.apiKeyEnv]);
   }
 
+  /** The actor's prompt rendered again in another style or under another cap, for a failover link of a different window. */
+  private rebuildPrompt(req: { agentId: string; input: AgentRuntimeInput; maxInputTokens: number | undefined; style: "full" | "compact" }): BuiltPrompt | undefined {
+    const profile = this.registry?.getPromptProfile?.(req.agentId);
+    if (!profile || !req.input) return undefined;
+    return PromptBuilder.build(req.input, profile, "action_intent", req.maxInputTokens, req.style);
+  }
+
   /** The runtime renders prompts with the config every actor was given (shared by reference), so moving its cap or style moves the trim and the prompt's size. */
   private setPromptCap(cap: number, promptStyle: "full" | "compact"): void {
     if (!this.hostLlm) return;
@@ -935,7 +948,7 @@ export class Run {
     for (const c of cmds) if (c.cmd === "walk" && c.plan) walkPlans.add(c.plan);
     const wait = Math.max(0, deferral.expiresAt - this.d.clock.now());
     const timer = this.d.clock.setTimer(() => void this.expireSpeech(ref, intent.id), wait);
-    this.pending.set(ref, { intent, walkPlans, timer });
+    this.pending.set(ref, { intent, targetRef: deferral.targetRef, walkPlans, timer, rewalks: 0 });
     // The typing bubble would hang over a walk; it comes back at arrival.
     this.gateway.stopTyping(ref);
   }
@@ -953,9 +966,56 @@ export class Run {
     await this.appendBodyEvent("body_blocked", ref, { intentId, reasons: [{ code: "not_in_earshot", part: "speech" }] }, false);
   }
 
+  /** Tiles between the speaker and the person a held line is for; undefined when they are not in the same room. */
+  private gapTo(ref: string, targetRef: string): number | undefined {
+    const room = this.d.mirror.view(ref, this.d.clock.now())?.room;
+    const me = room?.occupants.find((o) => o.ref === ref);
+    const them = room?.occupants.find((o) => o.ref === targetRef);
+    return me && them ? chebyshev(me.tile, them.tile) : undefined;
+  }
+
+  /**
+   * The walk was planned toward where the addressee stood, and they may have moved since. The line goes out only when
+   * the speaker is within the say radius of them now (the same measure as at commit); if not, the walk is planned again
+   * a bounded number of times, and a line whose addressee left the room or keeps moving off is dropped like an expired one.
+   */
+  private async rewalk(ref: string, held: PendingSpeech): Promise<boolean> {
+    const handle = this.handle;
+    if (!handle || held.rewalks >= MAX_HELD_REWALKS) return false;
+    const now = this.d.clock.now();
+    const space = this.d.mirror.view(ref, now);
+    const state = await handle.repositories.agentStateRepo.get(handle.simulationId, ref);
+    if (!space || !state || this.pending.get(ref) !== held) return false;
+    held.rewalks++;
+    const cmds = this.planFor(ref, state, [], space, { intent: held.intent, bodyIntent: { order: "move_then_speak", move: { kind: "approach", target: "p1", band: "personal" } }, handles: { p1: { kind: "person", ref: held.targetRef } } });
+    let walking = false;
+    for (const c of cmds) {
+      if (c.cmd === "walk" && c.plan) {
+        held.walkPlans.add(c.plan);
+        walking = true;
+      }
+    }
+    if (!walking) return false;
+    held.timer.cancel();
+    held.timer = this.d.clock.setTimer(() => void this.expireSpeech(ref, held.intent.id), REWALK_GRACE_MS);
+    return true;
+  }
+
   private async releaseSpeech(ref: string): Promise<void> {
+    const waiting = this.pending.get(ref);
+    if (!waiting || this.state === "stopping" || this.state === "ended") {
+      this.dropPending(ref);
+      return;
+    }
+    const gap = this.gapTo(ref, waiting.targetRef);
+    if (gap === undefined || gap > SAY_CLEAR_TILES) {
+      if (gap !== undefined && (await this.rewalk(ref, waiting))) return;
+      this.dropPending(ref);
+      await this.appendBodyEvent("body_blocked", ref, { intentId: waiting.intent.id, reasons: [{ code: "not_in_earshot", part: "speech" }] }, false);
+      return;
+    }
     const held = this.dropPending(ref);
-    if (!held || this.state === "stopping" || this.state === "ended") return;
+    if (!held) return;
     // Typing again, so the line lands after the persona's delay, as any other reply.
     // The walk already cost the time a typing bubble would: the line lands right away.
     this.gateway.noteConsult(ref, this.d.clock.now() - DEFERRED_TYPING_HEAD_START_MS);

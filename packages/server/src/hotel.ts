@@ -26,6 +26,7 @@ export type { EventLog } from "./simulation/event-log.js";
 export { ChannelRegistry } from "./simulation/channel-registry.js";
 
 export { AgentRuntime } from "./agent/agent-runtime.js";
+export { PromptBuilder } from "./agent/prompt-builder.js";
 export type { AgentRuntimeContext, AgentRuntimeOutput, BuiltPrompt } from "./agent/agent-runtime.types.js";
 
 export { LLMBudgetTracker, hotelBudgetRegistration } from "./llm/llm-budget.js";

@@ -1,6 +1,6 @@
 import { LLMError, LLMHttpError, LlmCircuitBreaker, OpenAiCompatibleProvider, retryAfterMs } from "@perfectman/server/hotel";
 import type { BuiltPrompt, LLMConfig, LLMProvider, LLMProviderResult, LlmTransportDeps } from "@perfectman/server/hotel";
-import type { OperatorEvent } from "@perfectman/shared";
+import type { AgentRuntimeInput, OperatorEvent } from "@perfectman/shared";
 import type { Clock } from "../clock/clock.js";
 import type { ModelPrice } from "../config.js";
 import type { Logger } from "../util/log.js";
@@ -51,6 +51,8 @@ const MIN_COOLDOWN_MS = 60_000;
  */
 const QUOTA_CODE = /GoUsageLimitError|FreeUsageLimitError|insufficient_quota|billing_hard_limit_reached|credit_limit|free-models-per-day/;
 const CONTEXT_MESSAGE = /context[\s_-]?(length|window)|maximum context|too many tokens|prompt is too long|input.{0,20}too long|reduce the length/i;
+/** A 429 whose Retry-After is longer than this is a spent quota, whatever its message says (OpenCode Go says 109,869 s for a weekly cap). */
+const QUOTA_RETRY_AFTER_MS = 5 * 60_000;
 const RECORDS = 1000;
 /** Carries what the provider billed for a call (OpenRouter's `usage.cost`), so the meter can prefer it to the price table. */
 export const COST_HEADER = "x-pm-cost-usd";
@@ -163,6 +165,12 @@ export type ChainOptions = {
   guards?: boolean;
   /** Is a person waiting on this actor's answer (an addressed line)? Silence is then asked about again on the next link. */
   addressed?: (agentId: string) => boolean;
+  /**
+   * Renders the actor's prompt again, in a given style and under a given cap (`undefined` is no cap). The runtime
+   * renders once, for link 1; a failover link of another window gets its own render through this instead of being
+   * skipped for a prompt written for a bigger one. Without it a prompt that does not fit a link skips the link.
+   */
+  rebuild?: (req: { agentId: string; input: AgentRuntimeInput; maxInputTokens: number | undefined; style: PromptStyle }) => BuiltPrompt | undefined;
 };
 
 type LinkState = {
@@ -299,6 +307,7 @@ export class LlmChain {
     for (const l of snap.links) {
       out[`llm_served_${l.name}`] = l.served;
       out[`llm_failures_${l.name}`] = l.failures;
+      for (const [reason, n] of Object.entries(l.skipped)) out[`llm_skipped_${l.name}_${reason}`] = n ?? 0;
       for (const [reason, n] of Object.entries(l.guarded)) out[`llm_guard_${reason}`] = (out[`llm_guard_${reason}`] ?? 0) + (n ?? 0);
     }
     return out;
@@ -374,9 +383,21 @@ export class LlmChain {
     const waiting = this.o.addressed?.(agentId) === true;
     let silent: LLMProviderResult | undefined;
     // A retry of a near-duplicate offers the model "or choose no_op": for a person who is waiting, that is not on offer.
-    if (waiting && prompt.retry === "correction") args[2] = answerPrompt(args[2]);
+    let answerNote = waiting && prompt.retry === "correction";
+    /** The prompt each link is sent: the runtime's own where it fits and is in the link's style, else rendered again for the link. */
+    const variants = new Map<LinkState, BuiltPrompt>();
+    const promptFor = (s: LinkState): BuiltPrompt => {
+      const cached = variants.get(s);
+      if (cached) return cached;
+      let p = this.fitTo(s, agentId, args[0], prompt, answerNote ? ANSWER_TOKENS : 0);
+      if (answerNote) p = answerPrompt(p);
+      variants.set(s, p);
+      return p;
+    };
     /** Links that failed in a way a second try can fix (a body that was not JSON, a dropped connection), first failure first. */
     const transient: LinkState[] = [];
+    /** Links that already had their second try on the spot. */
+    const retried = new Set<LinkState>();
     const attempts: ChainAttempt[] = [];
     let passedOver = 0;
     let wastedMs = 0;
@@ -401,28 +422,29 @@ export class LlmChain {
       const remaining = deadline - clock.now();
       const started = clock.now();
       const hasNext = order.indexOf(s) < order.length - 1;
+      const sent = promptFor(s);
       try {
-        const result = await this.tryLink(s, base, args, Math.min(s.link.timeoutMs ?? DEFAULT_LINK_TIMEOUT_MS, remaining), hasNext);
+        const result = await this.tryLink(s, base, [args[0], args[1], sent], Math.min(s.link.timeoutMs ?? DEFAULT_LINK_TIMEOUT_MS, remaining), hasNext);
         const linkMs = result.latencyMs;
         attempts.push({ link: s.link.name, outcome: "ok", latencyMs: linkMs });
-        this.tap?.({ link: s.link.name, agentId, prompt, outcome: "ok", latencyMs: linkMs, content: result.content, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens });
+        this.tap?.({ link: s.link.name, agentId, prompt: sent, outcome: "ok", latencyMs: linkMs, content: result.content, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens });
         s.breaker.observe(this.probeEvent(true));
         s.trial = false;
         const billed = Number(result.responseHeaders?.[COST_HEADER]);
         const reported = result.responseHeaders?.[COST_HEADER] !== undefined && Number.isFinite(billed) ? billed : undefined;
         s.meter.recordSuccess(s.link.model, result.usage.inputTokens, result.usage.outputTokens, linkMs, reported);
-        if (prompt.inputTokensEstimate > 0 && result.usage.inputTokens > 0) {
-          s.ratioSum += result.usage.inputTokens / prompt.inputTokensEstimate;
+        if (sent.inputTokensEstimate > 0 && result.usage.inputTokens > 0) {
+          s.ratioSum += result.usage.inputTokens / sent.inputTokensEstimate;
           s.ratioN++;
         }
         const price = this.o.prices[s.link.model];
         const costUsd = reported ?? (price ? (result.usage.inputTokens * price.inUsdPerMTok + result.usage.outputTokens * price.outUsdPerMTok) / 1_000_000 : 0);
-        const hit = this.o.guards === false ? undefined : guardAnswer(result.content, args[0], prompt.user);
+        const hit = this.o.guards === false ? undefined : guardAnswer(result.content, args[0], sent.user);
         if (hit) {
           s.guarded[hit.reason] = (s.guarded[hit.reason] ?? 0) + 1;
           held.push({ hit, link: s.link, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, costUsd });
           wastedMs += linkMs;
-          this.tap?.({ link: s.link.name, agentId, prompt, outcome: "guarded", latencyMs: linkMs, content: result.content, error: `${hit.reason}: ${hit.detail}` });
+          this.tap?.({ link: s.link.name, agentId, prompt: sent, outcome: "guarded", latencyMs: linkMs, content: result.content, error: `${hit.reason}: ${hit.detail}` });
           this.logger.warn(`llm link ${s.link.name}: line held back by the ${hit.reason} guard`, { link: s.link.name, agentId, reason: hit.reason, detail: hit.detail });
           attempts.push({ link: s.link.name, outcome: "error", reason: `guard ${hit.reason}`, latencyMs: linkMs });
           passedOver++;
@@ -436,14 +458,15 @@ export class LlmChain {
           wastedMs += linkMs;
           passedOver++;
           attempts.push({ link: s.link.name, outcome: "error", reason: "silent on an addressed line", latencyMs: linkMs });
-          args[2] = answerPrompt(args[2]);
+          answerNote = true;
+          variants.clear();
           return undefined;
         }
         s.served++;
         this.lastServed.set(agentId, { link: this.states.indexOf(s), at: clock.now() });
         if (passedOver > 0) this.failovers++;
         const total = wastedMs + linkMs;
-        this.served.push({ at: clock.now(), link: s.link.name, model: s.link.model, agentId, passedOver, latencyMs: total, linkLatencyMs: linkMs, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, promptEstimate: prompt.inputTokensEstimate, costUsd });
+        this.served.push({ at: clock.now(), link: s.link.name, model: s.link.model, agentId, passedOver, latencyMs: total, linkLatencyMs: linkMs, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, promptEstimate: sent.inputTokensEstimate, costUsd });
         if (this.served.length > RECORDS) this.served.shift();
         return {
           ...result,
@@ -461,11 +484,12 @@ export class LlmChain {
         const overflow = !(err instanceof LinkUnavailableError) && isContextOverflow(err);
         const reason = describeError(err);
         attempts.push({ link: s.link.name, outcome: "error", reason, latencyMs: clock.now() - started });
-        this.tap?.({ link: s.link.name, agentId, prompt, outcome: "error", latencyMs: clock.now() - started, error: reason });
+        this.tap?.({ link: s.link.name, agentId, prompt: sent, outcome: "error", latencyMs: clock.now() - started, error: reason });
         if (err instanceof LinkUnavailableError) this.coolDown(s, err);
         else if (overflow) {
           // The link's real window is smaller than the budget assumed: remember it, and do not blame its health.
-          s.inputBudget = Math.max(256, Math.min(s.inputBudget, prompt.inputTokensEstimate - 1));
+          s.inputBudget = Math.max(256, Math.min(s.inputBudget, sent.inputTokensEstimate - 1));
+          variants.delete(s);
           this.logger.warn(`llm link ${s.link.name} rejected the prompt for size; its budget is now ${s.inputBudget}`, { link: s.link.name });
           if (forced || s.trial) s.breaker.observe(this.probeEvent(true));
         } else {
@@ -473,13 +497,21 @@ export class LlmChain {
           if (isTransient(err) && !transient.includes(s)) transient.push(s);
         }
         s.trial = false;
+        // A body that was not JSON is a blip on the link, not a verdict on it: once more on the same link, while there is time.
+        if (isBlankBody(err) && !retried.has(s) && deadline - clock.now() >= MIN_ATTEMPT_MS) {
+          retried.add(s);
+          passedOver--;
+          this.logger.warn(`llm link ${s.link.name} answered with a body that was not JSON, trying it once more`, { link: s.link.name, reason });
+          return attempt(s, forced);
+        }
         this.logger.warn(`llm link ${s.link.name} failed, ${hasNext ? "failing over" : "no link left"}`, { link: s.link.name, reason });
         return undefined;
       }
     };
 
     for (const s of order) {
-      const skip = this.skipReason(s, prompt.inputTokensEstimate + (s.link.harden === false ? 0 : houseRulesTokens(prompt.system)), deadline, order.indexOf(s) < order.length - 1);
+      const own = promptFor(s);
+      const skip = this.skipReason(s, own.inputTokensEstimate + (s.link.harden === false ? 0 : houseRulesTokens(own.system)), deadline, order.indexOf(s) < order.length - 1);
       if (skip === "breaker_open") {
         breakerSkipped.push(s);
         s.skipped.breaker_open = (s.skipped.breaker_open ?? 0) + 1;
@@ -489,7 +521,7 @@ export class LlmChain {
       }
       if (skip) {
         s.skipped[skip] = (s.skipped[skip] ?? 0) + 1;
-        this.tap?.({ link: s.link.name, agentId, prompt, outcome: "skipped", latencyMs: 0, error: skip });
+        this.tap?.({ link: s.link.name, agentId, prompt: own, outcome: "skipped", latencyMs: 0, error: skip });
         attempts.push({ link: s.link.name, outcome: "skipped", reason: skip });
         passedOver++;
         if (skip === "deadline") break;
@@ -506,14 +538,46 @@ export class LlmChain {
     }
     // Nothing else could answer: the link that failed on a blip gets one more try while there is time. With a small
     // second link behind a big first one (its window cannot hold the prompt) a blip on link 1 used to mean silence.
-    if (!silent && held.length === 0 && transient[0] && deadline - clock.now() >= MIN_ATTEMPT_MS) {
-      const again = await attempt(transient[0], false);
+    const blip = transient.find((t) => !retried.has(t));
+    if (!silent && held.length === 0 && blip && deadline - clock.now() >= MIN_ATTEMPT_MS) {
+      retried.add(blip);
+      const again = await attempt(blip, false);
       if (again) return again;
     }
     if (silent) return silent;
     if (held.length > 0) return noOp();
     this.exhausted++;
     throw new ChainExhaustedError(attempts);
+  }
+
+  /**
+   * The prompt this link is sent. The runtime rendered one prompt, for link 1; it is kept for a link that takes
+   * its style and holds it, and otherwise rendered again in the link's own style (compact for a small window)
+   * under the link's own cap, with the retry correction of the original (if any) put back on the end.
+   * A link the render still does not fit is skipped by the caller.
+   */
+  private fitTo(s: LinkState, agentId: string, input: AgentRuntimeInput, prompt: BuiltPrompt, extraTokens: number): BuiltPrompt {
+    const rebuild = this.o.rebuild;
+    if (!rebuild) return prompt;
+    const style = linkPromptStyle(s.link);
+    const harden = (s.link.harden === false ? 0 : houseRulesTokens(prompt.system)) + extraTokens;
+    const sameStyle = (prompt.promptStyle === "compact" ? "compact" : "full") === style;
+    if (sameStyle && prompt.inputTokensEstimate + harden <= s.inputBudget) return prompt;
+    let suffix = "";
+    if (prompt.retry === "correction") {
+      const plain = rebuild({ agentId, input, maxInputTokens: undefined, style: prompt.promptStyle === "compact" ? "compact" : "full" });
+      if (plain && prompt.system.startsWith(plain.system)) suffix = prompt.system.slice(plain.system.length);
+    }
+    const suffixTokens = Math.ceil(suffix.length / 4);
+    const rebuilt = rebuild({ agentId, input, maxInputTokens: Math.max(1, s.inputBudget - harden - suffixTokens), style });
+    if (!rebuilt) return prompt;
+    const system = rebuilt.system + suffix;
+    return {
+      ...rebuilt,
+      system,
+      inputTokensEstimate: Math.ceil((system.length + rebuilt.user.length) / 4),
+      ...(prompt.retry ? { retry: prompt.retry } : {}),
+    };
   }
 
   /**
@@ -578,8 +642,11 @@ export class LlmChain {
         }
       },
     };
-    // With a link behind it a 429 is retried once and briefly; the last link waits like a lone provider does.
-    const governed = this.o.governor.wrap(guarded, { onSuccess: () => undefined, onFailure: () => undefined }, link.name, hasNext ? { maxRetries: 1, maxDelayMs: MAX_PENALTY_WAIT_MS } : {});
+    // With a link behind it a 429 is retried once and briefly. The last link of a chain waits for as long as the attempt
+    // may run (a wait is not cut short by the attempt's own timeout, and used to take a call past its deadline);
+    // a lone provider waits like one.
+    const tuning = hasNext ? { maxRetries: 1, maxDelayMs: MAX_PENALTY_WAIT_MS } : this.states.length > 1 ? { maxRetries: 1, maxDelayMs: Math.max(MAX_PENALTY_WAIT_MS, timeoutMs) } : {};
+    const governed = this.o.governor.wrap(guarded, { onSuccess: () => undefined, onFailure: () => undefined }, link.name, tuning);
     const hardened: Parameters<LLMProvider["generateIntent"]> = link.harden === false ? args : [args[0], args[1], hardenPrompt(args[2])];
     const result = await governed.generateIntent(...hardened);
     return box.costUsd === undefined ? result : { ...result, responseHeaders: { ...result.responseHeaders, [COST_HEADER]: String(box.costUsd) } };
@@ -593,7 +660,7 @@ export class LlmChain {
     if (err.status === 401 || err.status === 403) return new LinkUnavailableError(link.name, "auth", QUOTA_COOLDOWN_MS, detail);
     if (err.status === 429) {
       const hinted = retryAfterMs(err, this.o.clock.now());
-      if (QUOTA_CODE.test(err.message)) {
+      if (QUOTA_CODE.test(err.message) || (hinted !== undefined && hinted > QUOTA_RETRY_AFTER_MS)) {
         const cooldown = Math.min(MAX_COOLDOWN_MS, Math.max(MIN_COOLDOWN_MS, hinted ?? QUOTA_COOLDOWN_MS));
         return new LinkUnavailableError(link.name, "quota", cooldown, detail);
       }
@@ -660,10 +727,18 @@ function isSilence(content: string): boolean {
 const ANSWER_PT = "\n\nAlguém falou diretamente com você e espera uma resposta. Responda de verdade, em poucas palavras, na sua voz; não escolha no_op.";
 const ANSWER_EN = "\n\nSomeone spoke to you directly and is waiting for your answer. Answer them for real, in a few words, in your own voice; do not choose no_op.";
 
+/** What the reason to speak adds to a prompt, for the room a re-rendered prompt has to leave. */
+const ANSWER_TOKENS = Math.ceil(Math.max(ANSWER_PT.length, ANSWER_EN.length) / 4);
+
 /** The prompt with the reason to speak added to the end of the system part. */
 function answerPrompt(prompt: BuiltPrompt): BuiltPrompt {
   const note = /pt-BR|português|Portuguese/i.test(prompt.system) ? ANSWER_PT : ANSWER_EN;
   return { ...prompt, system: prompt.system + note, inputTokensEstimate: prompt.inputTokensEstimate + Math.ceil(note.length / 4) };
+}
+
+/** The provider answered with a body that was not JSON (a cut-off or empty response): worth one more try on the spot. */
+function isBlankBody(err: unknown): boolean {
+  return !(err instanceof LLMHttpError) && !(err instanceof LinkUnavailableError) && err instanceof Error && /Invalid JSON response/i.test(err.message);
 }
 
 function isContextOverflow(err: unknown): boolean {

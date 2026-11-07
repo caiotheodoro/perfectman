@@ -102,17 +102,29 @@ describe("answers nobody should be left without", () => {
     expect(configs[2]?.timeoutMs).toBe(3000);
   });
 
-  it("gives the one link that could answer a second try when it failed on a blip, and not on a refusal", async () => {
+  it("asks the same link once more when its body was not JSON, before moving on, and not on a refusal", async () => {
     const blip = new Error("Invalid JSON response");
+    // Link 1 blips once: the second ask is on link 1, so the next link is never called.
     const a = waiting({ [LUNARIS.model]: [blip, SAYS], [MYTHO.model]: [SAYS] }, false);
     expect(JSON.parse((await a.call()).content).intentType).toBe("send_message");
-    expect(a.calls).toEqual([LUNARIS.model, MYTHO.model]);
+    expect(a.calls).toEqual([LUNARIS.model, LUNARIS.model]);
+    // Two blips in a row: now the next link.
+    const twice = waiting({ [LUNARIS.model]: [blip, blip, SAYS], [MYTHO.model]: [SAYS] }, false);
+    expect((await twice.call()).routedModel).toBe("mythomax");
+    expect(twice.calls).toEqual([LUNARIS.model, LUNARIS.model, MYTHO.model]);
     const only = chain({ [LUNARIS.model]: [blip, SAYS] }, [LUNARIS], new ManualClock());
     expect(JSON.parse((await only.call()).content).intentType).toBe("send_message");
     expect(only.calls).toEqual([LUNARIS.model, LUNARIS.model]);
     const refused = chain({ [LUNARIS.model]: [new LLMTimeoutError("t")] }, [LUNARIS], new ManualClock());
     await expect(refused.call()).rejects.toThrow();
     expect(refused.calls).toEqual([LUNARIS.model]);
+  });
+
+  it("a blip retried on the spot is not counted as a failover", async () => {
+    const a = waiting({ [LUNARIS.model]: [new Error("Invalid JSON response"), SAYS] }, false);
+    const r = await a.call();
+    expect(r.fallbackAttempts).toBe(0);
+    expect(a.c.snapshot().failovers).toBe(0);
   });
 
   it("adds the reason to speak to the retry of a copy on a line addressed to the actor, and sends the retry to the link that copies less", async () => {
