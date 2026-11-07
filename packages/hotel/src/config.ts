@@ -129,7 +129,8 @@ export function parseConfig(env: Env = process.env): HotelConfig {
   const enabled = flag(env["PERFECTMAN_ENABLED"], false);
   const provider = env["PERFECTMAN_LLM_PROVIDER"] === "mock" ? "mock" : "openai-compatible";
   const rawChain = provider === "mock" ? "" : (env["PERFECTMAN_LLM_CHAIN"] ?? "").trim();
-  const chain = rawChain ? parseChain(rawChain, problems) : [];
+  // A disabled sidecar never reads its chain: a half-written PERFECTMAN_LLM_CHAIN must not stop a host that does not run it.
+  const chain = enabled && rawChain ? parseChain(rawChain, problems) : [];
   // A chain names its own models: they ARE the allowlist, and PERFECTMAN_LLM_MODELS is not consulted.
   const models = (chain.length > 0 ? chain.map((l) => l.model) : (env["PERFECTMAN_LLM_MODELS"] || (provider === "mock" ? "mock" : "")).split(",").map((m) => m.trim()))
     .filter(Boolean);
@@ -168,6 +169,11 @@ export function parseConfig(env: Env = process.env): HotelConfig {
     if (!/^wss?:\/\//.test(directorUrl)) problems.push("PERFECTMAN_DIRECTOR_URL must be a ws:// or wss:// URL");
     if (!/^https?:\/\//.test(internalUrl)) problems.push("PERFECTMAN_INTERNAL_URL must be an http:// or https:// URL");
     if (models.length === 0) problems.push("PERFECTMAN_LLM_MODELS must list at least one model");
+    if (provider === "openai-compatible") {
+      // A model with no price would be metered at $0 and the cost cap would never see it. Subscription links declare 0/0.
+      const unpriced = chain.length > 0 ? chain.filter((l) => !config.llm.prices[l.model]).map((l) => `link "${l.name}" (model ${l.model})`) : models.filter((m) => !config.llm.prices[m]).map((m) => `model ${m}`);
+      for (const what of unpriced) problems.push(`${what} has no price: add it to PERFECTMAN_LLM_PRICES as {"<model>":{"inUsdPerMTok":n,"outUsdPerMTok":n}}; a subscription link must declare 0 explicitly`);
+    }
     if (provider === "openai-compatible" && chain.length > 0) {
       for (const link of chain) if (!env[link.apiKeyEnv]) problems.push(`${link.apiKeyEnv} is not set (PERFECTMAN_LLM_CHAIN link "${link.name}")`);
     } else if (provider === "openai-compatible" && !rawChain) {

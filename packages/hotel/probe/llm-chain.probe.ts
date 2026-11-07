@@ -9,9 +9,11 @@
  * the real chain. Each variant (one link alone, or the whole chain) runs the turn-taking
  * scenario and the embodiment scenario on the pt-BR preset `gato-no-telhado`.
  *
- * Knobs (env): PROBE_LINKS (names, or `chain`), PROBE_SCENARIOS (turns,embodiment),
+ * Knobs (env): PROBE_LINKS (names, or `chain`), PROBE_SCENARIOS (turns,embodiment,earshot),
+ * PROBE_STYLE (force every link's hotel prompt: full or compact), PROBE_NO_BODY_HINT=1 (strip the body
+ * shape hint and examples from the output contract: the "before" column of the body-emission table),
  * PROBE_PULSES (base pulses of the embodiment scenario), PROBE_LINES (human lines of the
- * turn-taking scenario), PROBE_MAX_USD (stop spending past this), PROBE_OUT (results json),
+ * turn-taking and earshot scenarios), PROBE_MAX_USD (stop spending past this), PROBE_OUT (results json),
  * PROBE_PROMPT_OUT (largest rendered prompt, for `bench:latency --prompt-file`), PROBE_DRY=1
  * (a local stub instead of the network: checks the harness, spends nothing).
  */
@@ -21,11 +23,13 @@ import type { Server } from "node:http";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
+import { BodyIntentSchema } from "@perfectman/shared";
 import { runEmbodimentProbes } from "../../eval/src/probes/embodiment.ts";
+import { PromptBuilder } from "../../server/src/agent/prompt-builder.ts";
 import { AuthoringService } from "../src/authoring/authoring-service.ts";
 import type { LlmEnv } from "../src/config.ts";
-import { KNOWN_PRICES, parseChain } from "../src/llm/chain-config.ts";
-import type { LlmLink } from "../src/llm/chain-config.ts";
+import { KNOWN_PRICES, linkPromptStyle, parseChain } from "../src/llm/chain-config.ts";
+import type { LlmLink, PromptStyle } from "../src/llm/chain-config.ts";
 import type { ChainTap } from "../src/llm/chain.ts";
 import { startSidecar } from "../src/sidecar.ts";
 import type { Sidecar } from "../src/sidecar.ts";
@@ -44,7 +48,10 @@ const LINES = Number(env["PROBE_LINES"] ?? 20);
 const MAX_USD = Number(env["PROBE_MAX_USD"] ?? 0.5);
 const OUT = env["PROBE_OUT"] ?? resolve(HERE, "probe-results.json");
 const PROMPT_OUT = env["PROBE_PROMPT_OUT"];
-const SCENARIOS = (env["PROBE_SCENARIOS"] ?? "turns,embodiment").split(",").map((s) => s.trim());
+type Scenario = "turns" | "embodiment" | "earshot";
+const SCENARIOS = (env["PROBE_SCENARIOS"] ?? "turns,embodiment").split(",").map((s) => s.trim()) as Scenario[];
+const STYLE: PromptStyle | undefined = env["PROBE_STYLE"] === "full" ? "full" : env["PROBE_STYLE"] === "compact" ? "compact" : undefined;
+const NO_BODY_HINT = env["PROBE_NO_BODY_HINT"] === "1";
 const WANT = (env["PROBE_LINKS"] ?? "chain").split(",").map((s) => s.trim());
 
 type ChatSeen = { at: number; actor: number; mode: string; text: string; to: number | null };
@@ -106,10 +113,84 @@ function parseLoose(content: string): { ok: boolean; clean: boolean; value?: Rec
 
 // ---- harness -----------------------------------------------------------------------
 
+/** The body shape hint and examples the output contract carries, for the "before" runs (PROBE_NO_BODY_HINT=1). */
+const HINT_BLOCK = /(?:\n- |\n\n)"body" (?:is optional and every key|é opcional e cada chave)[\s\S]*?(?=\n\n<\/output_contract>)/;
+if (NO_BODY_HINT) {
+  const original = PromptBuilder.build.bind(PromptBuilder);
+  PromptBuilder.build = (...args) => {
+    const built = original(...args);
+    const system = built.system.replace(HINT_BLOCK, "").replace('\n- "body": optional, see below', "");
+    return { ...built, system, inputTokensEstimate: Math.ceil((system.length + built.user.length) / 4) };
+  };
+}
+
+const bodyBlockOf = (user: string): string => /<body>([\s\S]*?)<\/body>/.exec(user)?.[1] ?? "";
+
+/** The handles this render offered: the model may only use these. */
+function handlesIn(user: string): Set<string> {
+  return new Set(bodyBlockOf(user).match(/\b[pzfr]\d+\b/g) ?? []);
+}
+
+/**
+ * Movement is plausible when the prompt shows someone 3 or more steps away, or a seat that is free:
+ * a person could step closer or sit. (Everyone adjacent and no free seat leaves nothing to do but stay.)
+ */
+function movementPlausible(user: string): boolean {
+  const block = bodyBlockOf(user);
+  const far = [...block.matchAll(/^- p\d+ .*?\((\d+) (?:passos?|steps?)\)/gm)].some((m) => Number(m[1]) >= 3);
+  const seat = /\b[1-9]\d* (?:de \d+ lugares livres|of \d+ seats free)/.test(block);
+  return far || seat;
+}
+
+type BodyStats = {
+  calls: number;
+  withBody: number;
+  /** Passes the strict body schema and names only handles this render offered. */
+  valid: number;
+  emitPct: number;
+  validCallPct: number;
+  /** Calls where movement was plausible, and how many of them carried a valid body. */
+  plausible: number;
+  plausibleValid: number;
+  plausibleValidPct: number | null;
+  /** Valid bodies that are exactly one of the two examples in that prompt's contract (a copy, not a choice). */
+  copiedFromExample: number;
+  kinds: { move: number; posture: number; gesture: number; expression: number };
+};
+
+function bodyStats(prompts: Array<{ system: string; user: string }>, values: Array<Record<string, unknown> | undefined>): BodyStats {
+  const kinds = { move: 0, posture: 0, gesture: 0, expression: 0 };
+  let withBody = 0;
+  let valid = 0;
+  let plausible = 0;
+  let plausibleValid = 0;
+  let copied = 0;
+  values.forEach((v, i) => {
+    const user = prompts[i]?.user ?? "";
+    const body = v?.["body"];
+    const present = !!body && typeof body === "object" && Object.keys(body as object).length > 0;
+    const can = movementPlausible(user);
+    if (can) plausible++;
+    if (!present) return;
+    withBody++;
+    const refs = (JSON.stringify(body).match(/"([pzfr]\d+)"/g) ?? []).map((m) => m.slice(1, -1));
+    const known = handlesIn(user);
+    const ok = BodyIntentSchema.safeParse(body).success && refs.every((r) => known.has(r));
+    if (!ok) return;
+    valid++;
+    if (can) plausibleValid++;
+    const shown = [...(prompts[i]?.system ?? "").matchAll(/^\{"intentType".*,"body":(\{.*\})\}$/gm)].map((m) => m[1]!);
+    if (shown.includes(JSON.stringify(body))) copied++;
+    for (const k of Object.keys(kinds) as Array<keyof typeof kinds>) if ((body as Record<string, unknown>)[k] !== undefined) kinds[k]++;
+  });
+  const pct = (n: number, d: number): number => (d === 0 ? 0 : Math.round((1000 * n) / d) / 10);
+  return { calls: values.length, withBody, valid, emitPct: pct(withBody, values.length), validCallPct: pct(valid, values.length), plausible, plausibleValid, plausibleValidPct: plausible === 0 ? null : pct(plausibleValid, plausible), copiedFromExample: copied, kinds };
+}
+
 type Variant = { name: string; links: LlmLink[] };
 
 async function stubServer(): Promise<{ server: Server; url: string }> {
-  const intent = JSON.stringify({ intentType: "send_message", visibleContent: "Olha, eu não sei, mas acho que a gente devia conversar sobre isso amanhã.", privateMotiveSummary: "quero ajudar", personTargets: [] });
+  const intent = JSON.stringify({ intentType: "reply_to_message", replyToEventId: "e1", visibleContent: "Olha, eu não sei, mas acho que a gente devia conversar sobre isso amanhã.", privateMotiveSummary: "quero ajudar", personTargets: ["neide"] });
   const server = createServer((req, res) => {
     req.resume();
     req.on("end", () => res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ choices: [{ message: { content: intent } }], usage: { prompt_tokens: 1800, completion_tokens: 60 }, model: "stub" })));
@@ -137,12 +218,17 @@ async function scenarioBody(): Promise<{ body: { config: { agents: Array<{ id: s
 
 type Results = {
   variant: string;
-  scenario: "turns" | "embodiment";
+  scenario: Scenario;
   wallSec: number;
   pulses: number;
   calls: { attempts: number; ok: number; failed: number; servedBy: Record<string, number> };
   json: { n: number; cleanPct: number; recoveredPct: number; invalidPct: number; serverFallbackPct: number; providerFailedPct: number };
-  body: { withBody: number; blocked: number; validPct: number | null };
+  /** `blocked` and `validPct` are the engine's verdict on the block (body_blocked events); `stats` is the schema and handle check on what the model wrote. */
+  body: { withBody: number; blocked: number; validPct: number | null; stats: BodyStats };
+  /** Addressed `say` lines on the wire (chat frames with an addressee), how many stood out of earshot, and what the engine did about far addressees. */
+  earshot: { lines: number; violations: number; ratePct: number | null; farLines: number; meanDistance: number | null; deferred: number; blockedNotInEarshot: number };
+  /** Hotel prompt style the links were sent. */
+  promptStyle: Record<string, number>;
   addressed: { lines: number; answeredPct: number; replyP50Ms: number | null; replyP95Ms: number | null; n: number };
   dogPile: { lines: number; unaddressedMulti: number; addressedJumped: number; ratePct: number };
   lang: { lines: number; ptPct: number | null; enPct: number | null; unknown: number };
@@ -158,7 +244,7 @@ type Results = {
   sampleLines: string[];
 };
 
-async function runVariant(variant: Variant, scenario: "turns" | "embodiment", spentSoFar: () => number): Promise<Results> {
+async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () => number): Promise<Results> {
   const { body } = await scenarioBody();
   const agents = body.config.agents.map((a) => ({ id: a.id, name: a.promptProfile.displayName }));
   const stub = DRY ? await stubServer() : undefined;
@@ -177,11 +263,13 @@ async function runVariant(variant: Variant, scenario: "turns" | "embodiment", sp
   };
 
   const fake = await FakeDirector.start({ secret: TEST_SECRET, tickMs: 300 });
-  fake.addRoom(12, 12, 10);
-  fake.addHuman(12, 9, "ana", 6, 5);
+  // The earshot scenario puts the human well past the 6-tile say radius of the cast.
+  const far = scenario === "earshot";
+  fake.addRoom(12, far ? 30 : 12, 10);
+  fake.addHuman(12, 9, "ana", far ? 28 : 6, 5);
   const http = fakeHotelHttp({ 31: body });
   const cfg = testConfig(fake.url, { llm });
-  const turns = scenario === "turns";
+  const turns = scenario === "turns" || scenario === "earshot";
   let sidecar: Sidecar | undefined;
   const t0 = Date.now();
   try {
@@ -228,7 +316,8 @@ async function runVariant(variant: Variant, scenario: "turns" | "embodiment", sp
         const text = isAddressed ? ADDRESSED[i % ADDRESSED.length]!.replace("{n}", target.name) : UNADDRESSED[i % UNADDRESSED.length]!;
         const from = chats.length;
         const sentAt = Date.now();
-        fake.humanSay(12, 9, text);
+        // From across the room a shout is the only line the cast hears clearly; their answers to it are the addressed `say` lines under test.
+        fake.humanSay(12, 9, text, far ? "shout" : "say");
         // The line is over once the room has been quiet for 7 s, or after 45 s.
         let last = Date.now();
         let seen = chats.length;
@@ -293,6 +382,12 @@ async function runVariant(variant: Variant, scenario: "turns" | "embodiment", sp
     const withBody = parsed.filter((p) => bodyOf(p.value)).length;
     const events = (await run.simulation?.runtime.getEventLog().getCommittedThrough(run.simulation.simulationId, Number.MAX_SAFE_INTEGER)) ?? [];
     const blocked = events.filter((e) => e.type === "body_blocked").length;
+    const stats = bodyStats(okTaps.map((t) => t.prompt), parsed.map((p) => p.value));
+    const chatFrames = run.frameLog.frames.filter((f) => f.kind === "chat" && f.data["mode"] === "say" && f.data["toRef"] !== undefined && f.data["sameRoom"] !== undefined);
+    const dist = chatFrames.map((f) => Number(f.data["distance"])).filter((d) => d >= 0);
+    const violations = chatFrames.filter((f) => f.data["sameRoom"] === false || Number(f.data["distance"]) > 6).length;
+    const styleSeen: Record<string, number> = {};
+    for (const t of okTaps) styleSeen[t.prompt.promptStyle ?? "full"] = (styleSeen[t.prompt.promptStyle ?? "full"] ?? 0) + 1;
     const visible = okTaps.flatMap((_, i) => {
       const v = parsed[i]?.value?.["visibleContent"];
       return typeof v === "string" && v.trim() ? [v] : [];
@@ -329,7 +424,17 @@ async function runVariant(variant: Variant, scenario: "turns" | "embodiment", sp
         serverFallbackPct: pct(fallbacks, intents.length),
         providerFailedPct: pct(providerFailed, intents.length),
       },
-      body: { withBody, blocked, validPct: withBody === 0 ? null : pct(Math.max(0, withBody - blocked), withBody) },
+      body: { withBody, blocked, validPct: withBody === 0 ? null : pct(Math.max(0, withBody - blocked), withBody), stats },
+      earshot: {
+        lines: chatFrames.length,
+        violations,
+        ratePct: chatFrames.length === 0 ? null : pct(violations, chatFrames.length),
+        farLines: chatFrames.filter((f) => Number(f.data["distance"]) > 6).length,
+        meanDistance: dist.length === 0 ? null : Math.round((10 * dist.reduce((a, b) => a + b, 0)) / dist.length) / 10,
+        deferred: events.filter((e) => e.type === "speech_deferred").length,
+        blockedNotInEarshot: events.filter((e) => e.type === "body_blocked" && JSON.stringify(e.payload).includes("not_in_earshot")).length,
+      },
+      promptStyle: styleSeen,
       addressed: { lines: addressed.lines, answeredPct: pct(addressed.answered, addressed.lines), replyP50Ms: percentile(lat, 50) ?? null, replyP95Ms: percentile(lat, 95) ?? null, n: lat.length },
       dogPile: { ...dog, ratePct: pct(dog.unaddressedMulti + dog.addressedJumped, dog.lines) },
       lang: { lines: spoken.length, ptPct: spoken.length === 0 ? null : pct(langs.filter((l) => l === "pt").length, spoken.length), enPct: spoken.length === 0 ? null : pct(langs.filter((l) => l === "en").length, spoken.length), unknown: langs.filter((l) => l === "unknown").length },
@@ -370,18 +475,19 @@ function ctxOverrides(): Map<string, number> {
 function variants(): Variant[] {
   const over = ctxOverrides();
   const plain = env["PROBE_HARDEN"] === "0";
-  const links = (DRY ? [{ name: "stub", baseUrl: "http://stub", apiKeyEnv: "PROBE_STUB_KEY", model: "stub", maxContextTokens: 4096 }, { name: "stub2", baseUrl: "http://stub", apiKeyEnv: "PROBE_STUB_KEY", model: "stub2", maxContextTokens: 8192 }] : allLinks()).map((l) => ({ ...(over.has(l.name) ? { ...l, maxContextTokens: over.get(l.name)! } : l), ...(plain ? { harden: false } : {}) }));
+  const tag = `${STYLE ? `+${STYLE}` : ""}${NO_BODY_HINT ? "-nohint" : ""}`;
+  const links = (DRY ? [{ name: "stub", baseUrl: "http://stub", apiKeyEnv: "PROBE_STUB_KEY", model: "stub", maxContextTokens: 4096 }, { name: "stub2", baseUrl: "http://stub", apiKeyEnv: "PROBE_STUB_KEY", model: "stub2", maxContextTokens: 8192 }] : allLinks()).map((l) => ({ ...(over.has(l.name) ? { ...l, maxContextTokens: over.get(l.name)! } : l), ...(STYLE ? { promptStyle: STYLE } : {}), ...(plain ? { harden: false } : {}) }));
   return WANT.flatMap((w): Variant[] => {
-    if (w === "chain") return [{ name: plain ? "chain-plain" : "chain", links }];
+    if (w === "chain") return [{ name: `${plain ? "chain-plain" : "chain"}${tag}`, links }];
     const one = links.find((l) => l.name === w);
-    return one ? [{ name: `${over.has(w) ? `${w}@${over.get(w)}` : w}${plain ? "-plain" : ""}`, links: [one] }] : [];
+    return one ? [{ name: `${over.has(w) ? `${w}@${over.get(w)}` : w}${tag || (one.promptStyle === undefined ? `+${linkPromptStyle(one)}` : "")}${plain ? "-plain" : ""}`, links: [one] }] : [];
   });
 }
 
 describe("real-model probe: the hotel on the provider chain", () => {
   let spent = 0;
   for (const variant of variants()) {
-    for (const scenario of SCENARIOS as Array<"turns" | "embodiment">) {
+    for (const scenario of SCENARIOS) {
       it(`${variant.name} / ${scenario}`, async () => {
         if (spent > MAX_USD) return;
         const r = await runVariant(variant, scenario, () => spent);

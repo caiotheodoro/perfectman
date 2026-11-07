@@ -5,8 +5,8 @@ import type { Clock } from "../clock/clock.js";
 import type { ModelPrice } from "../config.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
-import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget } from "./chain-config.js";
-import type { LlmLink } from "./chain-config.js";
+import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget, linkPromptStyle } from "./chain-config.js";
+import type { LlmLink, PromptStyle } from "./chain-config.js";
 import { GENERATE_DEADLINE_MS } from "./env.js";
 import { guardAnswer, hardenSystem, houseRules, noOpAnswer } from "./guards.js";
 import type { GuardHit, GuardReason } from "./guards.js";
@@ -39,8 +39,12 @@ const BREAKER_INITIAL_BACKOFF_MS = 15_000;
 const QUOTA_COOLDOWN_MS = 10 * 60_000;
 const MAX_COOLDOWN_MS = 60 * 60_000;
 const MIN_COOLDOWN_MS = 60_000;
-const LONG_RETRY_AFTER_MS = 120_000;
-const QUOTA_MESSAGE = /usage[\s_-]?limit|quota|insufficient|credits?\b|billing|exceeded your|per[\s_-]?day|daily/i;
+/**
+ * A 429 is a spent quota only when the provider says so with its own error code or type; loose phrases in a message
+ * ("exceeded your ...") also appear in transient rate limits, which take the governor's normal Retry-After backoff.
+ * OpenCode Go: `GoUsageLimitError`. OpenRouter: `insufficient_quota` and its daily free-tier cap `free-models-per-day`.
+ */
+const QUOTA_CODE = /GoUsageLimitError|FreeUsageLimitError|insufficient_quota|billing_hard_limit_reached|credit_limit|free-models-per-day/;
 const CONTEXT_MESSAGE = /context[\s_-]?(length|window)|maximum context|too many tokens|prompt is too long|input.{0,20}too long|reduce the length/i;
 const RECORDS = 1000;
 /** Carries what the provider billed for a call (OpenRouter's `usage.cost`), so the meter can prefer it to the price table. */
@@ -149,7 +153,7 @@ export type ChainOptions = {
    * untrimmable part of the prompt, the cap moves up to the next link's instead of
    * stripping every event from prompts that link 2 could take whole.
    */
-  onCap?: (maxInputTokens: number) => void;
+  onCap?: (maxInputTokens: number, promptStyle: PromptStyle) => void;
   /** Run the output guards on every answer. Default true. */
   guards?: boolean;
 };
@@ -228,6 +232,12 @@ export class LlmChain {
     return (this.states.find((s) => !s.unfit) ?? this.states[0])?.inputBudget;
   }
 
+  /** The hotel prompt style the runtime writes: that of the first link that can hold the untrimmable prompt. */
+  get promptStyle(): PromptStyle | undefined {
+    const s = this.states.find((x) => !x.unfit) ?? this.states[0];
+    return s ? linkPromptStyle(s.link) : undefined;
+  }
+
   /** `trim.withinCap === false` at this link's own cap means the stripped prompt is still too big for it. */
   private learnFit(prompt: BuiltPrompt): void {
     const trim = prompt.trim;
@@ -237,7 +247,8 @@ export class LlmChain {
     s.unfit = true;
     const cap = this.promptCap;
     this.logger.warn(`llm link ${s.link.name} cannot hold the untrimmable prompt (${trim.finalInputTokensEstimate} > ${s.inputBudget}); prompts are now trimmed for the next link`, { link: s.link.name, cap });
-    if (cap !== undefined) this.o.onCap?.(cap);
+    const style = this.promptStyle;
+    if (cap !== undefined && style !== undefined) this.o.onCap?.(cap, style);
   }
 
   snapshot(): ChainSnapshot {
@@ -519,7 +530,7 @@ export class LlmChain {
     if (err.status === 401 || err.status === 403) return new LinkUnavailableError(link.name, "auth", QUOTA_COOLDOWN_MS, detail);
     if (err.status === 429) {
       const hinted = retryAfterMs(err, this.o.clock.now());
-      if ((hinted !== undefined && hinted >= LONG_RETRY_AFTER_MS) || QUOTA_MESSAGE.test(err.message)) {
+      if (QUOTA_CODE.test(err.message)) {
         const cooldown = Math.min(MAX_COOLDOWN_MS, Math.max(MIN_COOLDOWN_MS, hinted ?? QUOTA_COOLDOWN_MS));
         return new LinkUnavailableError(link.name, "quota", cooldown, detail);
       }

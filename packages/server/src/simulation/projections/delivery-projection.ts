@@ -22,6 +22,7 @@ export class DeliveryProjection {
       case "message_sent": {
         await this.deliverIfVisible(event, channels, membership, () => ({
           kind: "message",
+          eventId: event.id,
           agentId: event.actorId,
           content: payloadString(event.payload, "content"),
           salience: event.emotionalSalience,
@@ -31,6 +32,7 @@ export class DeliveryProjection {
       case "reply_sent": {
         await this.deliverIfVisible(event, channels, membership, () => ({
           kind: "reply",
+          eventId: event.id,
           agentId: event.actorId,
           content: payloadString(event.payload, "content"),
           replyToEventId: payloadString(event.payload, "replyToEventId"),

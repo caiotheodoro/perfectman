@@ -83,7 +83,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
   render(input: AgentRuntimeInput, ctx: StepRunContext): BuiltPrompt {
     // Route through the dispatcher so unused prompt purposes still fail
     // closed (see prompt-builder.ts) and the render entry stays singular.
-    return PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens);
+    return PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens, ctx.llmConfig.promptStyle);
   }
 
   gate(input: AgentRuntimeInput, ctx: StepRunContext): StepOutcome<AgentRuntimeOutput> | undefined {
@@ -553,7 +553,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     const suffixTokens = Math.ceil(suffix.length / 4);
     const adjustedCap = Math.max(1, cap - suffixTokens);
-    const rebuilt = PromptBuilder.build(input, ctx.profile, "action_intent", adjustedCap);
+    const rebuilt = PromptBuilder.build(input, ctx.profile, "action_intent", adjustedCap, ctx.llmConfig.promptStyle);
     const system = `${rebuilt.system}${suffix}`;
     const user = rebuilt.user;
     const finalEstimate = ActionIntentPromptBuilder.estimateTokens(system, user);

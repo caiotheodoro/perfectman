@@ -86,4 +86,44 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
     expect(manifest.counters).toMatchObject({ llm_served_b: expect.any(Number), llm_failures_a: expect.any(Number) });
     expect(manifest.counters["llm_served_b"]).toBeGreaterThan(0);
   }, 20_000);
+
+  it("writes the compact hotel prompt to a 4K link, and logs an addressed line with its addressee's distance for the earshot probe", async () => {
+    const systems: string[] = [];
+    const intent = JSON.stringify({ intentType: "send_message", visibleContent: "Ei, vem ver isso aqui.", privateMotiveSummary: "quero ele por perto", personTargets: ["person-2"] });
+    llm = createServer((req, res) => {
+      let body = "";
+      req.on("data", (c: Buffer) => (body += c.toString()));
+      req.on("end", () => {
+        const parsed = JSON.parse(body || "{}") as { messages?: Array<{ role: string; content: string }>; max_tokens?: number };
+        if (parsed.max_tokens !== 1) systems.push(parsed.messages?.find((m) => m.role === "system")?.content ?? "");
+        res.writeHead(200, { "content-type": "application/json" }).end(JSON.stringify({ choices: [{ message: { content: intent } }], usage: { prompt_tokens: 900, completion_tokens: 50 }, model: "small" }));
+      });
+    });
+    await new Promise<void>((r) => llm?.listen(0, "127.0.0.1", () => r()));
+    const addr = llm.address();
+    const port = typeof addr === "object" && addr ? addr.port : 0;
+    process.env["TEST_LINK_A_KEY"] = "key-a";
+    const chain = [{ name: "small", baseUrl: `http://127.0.0.1:${port}/v1`, apiKeyEnv: "TEST_LINK_A_KEY", model: "small", maxContextTokens: 4096 }];
+    const llmEnv: LlmEnv = { provider: "openai-compatible", baseUrl: chain[0]!.baseUrl, apiKeyEnv: "TEST_LINK_A_KEY", models: ["small"], chain, prices: {}, concurrency: 3, softCallsPerMin: 600, softTokensPerHour: 5_000_000 };
+    const b = await bootSidecar({ config: { llm: llmEnv }, timing: { baseIntervalMs: 60_000 } });
+    fake = b.fake;
+    sidecar = b.sidecar;
+    b.fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => lastStatus(b.fake)?.state === "running", "running");
+    await waitFor(() => b.fake.received.some((f) => f.t === "actor_cmd" && f.cmd.k === "walk"), "the cast walking in");
+
+    b.fake.humanSay(12, 9, "Priya, tudo bem?");
+    await waitFor(() => b.fake.chats.find((c) => c.text.includes("vem ver isso")), "the addressed line", 8000);
+    expect(systems.length).toBeGreaterThan(0);
+    expect(systems[0]).toContain("Who you are");
+    expect(systems[0]).not.toContain("Public/private difference");
+
+    const run = sidecar.manager?.getRun(7);
+    const frames = await waitFor(() => {
+      const f = run?.frameLog.frames.filter((x) => x.kind === "chat");
+      return f && f.length > 0 ? f : undefined;
+    }, "a chat frame");
+    expect(frames[0]?.data).toMatchObject({ mode: "say", toRef: "person-2", sameRoom: true });
+    expect(Number(frames[0]?.data["distance"])).toBeGreaterThanOrEqual(0);
+  }, 20_000);
 });

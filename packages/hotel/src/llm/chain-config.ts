@@ -1,5 +1,10 @@
 import type { ModelPrice } from "../config.js";
 
+export type PromptStyle = "full" | "compact";
+
+/** A window this small cannot hold the full hotel prompt (about 4.6K real tokens) and gets the compact one. */
+export const COMPACT_WINDOW_TOKENS = 4096;
+
 /**
  * One link of the LLM provider chain (docs/plans/hotel-llm-chain.md). Parsed from
  * `PERFECTMAN_LLM_CHAIN`, a JSON array; the first link is the default model and
@@ -26,6 +31,11 @@ export type LlmLink = {
    * known models, else 1.
    */
   tokenRatio?: number;
+  /**
+   * Which hotel prompt this link is sent: "compact" (terse persona card, top memories, near-only body
+   * block, short event window) or "full". Absent means by window: compact for 4096 tokens or less.
+   */
+  promptStyle?: PromptStyle;
   /** Append the house rules (short in-world rules against echoing, admitting, leaking) to the system prompt. Default true. */
   harden?: boolean;
 };
@@ -41,6 +51,12 @@ export const LINK_INPUT_SAFETY = 0.92;
 /** Prompt cap when the link does not say how big its window is (the legacy default). */
 export const DEFAULT_MAX_INPUT_TOKENS = 6000;
 export const DEFAULT_LINK_TIMEOUT_MS = 8000;
+
+/** The prompt style a link is sent: its own setting, else by window size (compact at 4K or less). */
+export function linkPromptStyle(link: Pick<LlmLink, "maxContextTokens" | "promptStyle">): PromptStyle {
+  if (link.promptStyle !== undefined) return link.promptStyle;
+  return link.maxContextTokens !== undefined && link.maxContextTokens <= COMPACT_WINDOW_TOKENS ? "compact" : "full";
+}
 
 /** What a link may be sent, in the prompt builder's own (chars/4) token unit. */
 export function linkInputBudget(link: Pick<LlmLink, "maxContextTokens" | "tokenRatio">, maxOutputTokens = LINK_MAX_OUTPUT_TOKENS): number {
@@ -60,13 +76,13 @@ export const KNOWN_TOKEN_RATIOS: Readonly<Record<string, number>> = {
 
 /**
  * Known prices in USD per million tokens. A model missing here costs 0 in the
- * meter; `PERFECTMAN_LLM_PRICES` overrides any entry. OpenCode Go is a flat
- * subscription, so its marginal cost is 0.
+ * meter, and an enabled sidecar refuses to start with one; `PERFECTMAN_LLM_PRICES`
+ * overrides any entry. A flat-subscription link (OpenCode Go) must declare 0/0 there
+ * explicitly, so a forgotten price is never mistaken for a free model.
  */
 export const KNOWN_PRICES: Readonly<Record<string, ModelPrice>> = {
   "gryphe/mythomax-l2-13b": { inUsdPerMTok: 0.08, outUsdPerMTok: 0.11 },
   "sao10k/l3-lunaris-8b": { inUsdPerMTok: 0.04, outUsdPerMTok: 0.05 },
-  "glm-5.3-flash": { inUsdPerMTok: 0, outUsdPerMTok: 0 },
 };
 
 const HEADER_NAME = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
@@ -132,6 +148,11 @@ export function parseChain(raw: string, problems: string[]): LlmLink[] {
       else link.tokenRatio = ratio;
     } else if (KNOWN_TOKEN_RATIOS[model] !== undefined) link.tokenRatio = KNOWN_TOKEN_RATIOS[model];
 
+    const style = entry["promptStyle"];
+    if (style !== undefined && style !== null) {
+      if (style !== "full" && style !== "compact") problems.push(`${at}.promptStyle must be "full" or "compact"`);
+      else link.promptStyle = style;
+    }
     if (entry["harden"] !== undefined && entry["harden"] !== null) {
       if (typeof entry["harden"] !== "boolean") problems.push(`${at}.harden must be true or false`);
       else link.harden = entry["harden"];

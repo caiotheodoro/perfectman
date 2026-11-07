@@ -54,6 +54,8 @@ export type BuiltPrompt = {
    * context was dropped to bring it within the cap.
    */
   trim?: PromptTrim;
+  /** Hotel mode: set to "compact" when the small-window profile rendered this prompt. Unset otherwise. */
+  promptStyle?: "compact";
 };
 
 export type AgentRuntimeOutput = {

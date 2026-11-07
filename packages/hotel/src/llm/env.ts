@@ -1,7 +1,7 @@
 import type { LLMConfig } from "@perfectman/server/hotel";
 import { linksOf } from "../config.js";
 import type { LlmEnv } from "../config.js";
-import { DEFAULT_MAX_INPUT_TOKENS, LINK_MAX_OUTPUT_TOKENS, linkInputBudget } from "./chain-config.js";
+import { DEFAULT_MAX_INPUT_TOKENS, LINK_MAX_OUTPUT_TOKENS, linkInputBudget, linkPromptStyle } from "./chain-config.js";
 
 /** Prompt-size and latency envelope of a hotel pulse (D53: p95 <= 6 s at 12 agents, 40 events). */
 export const LLM_P95_BUDGET_MS = 6000;
@@ -24,14 +24,15 @@ export function hostLlmConfig(env: LlmEnv, requestedModel?: string): LLMConfig {
   if (env.provider === "openai-compatible" && !env.models.includes(modelName)) {
     throw new ModelNotAllowedError(modelName, env.models);
   }
-  // The prompt is rendered once per call, before any link is chosen, so it is trimmed for the first
-  // (preferred) link. A later link only ever gets a prompt that already fits it, or is skipped.
+  // The prompt is rendered once per call, before any link is chosen, so it is trimmed, and written in the style
+  // of the first (preferred) link. A later link only ever gets a prompt that already fits it, or is skipped.
   const first = linksOf(env)[0];
   return {
     providerType: env.provider === "mock" ? "mock" : "openai-compatible",
     ...(env.provider === "mock" ? {} : { baseUrl: first?.baseUrl ?? env.baseUrl, apiKeyEnv: first?.apiKeyEnv ?? env.apiKeyEnv }),
     modelName,
     maxInputTokens: first ? linkInputBudget(first) : DEFAULT_MAX_INPUT_TOKENS,
+    ...(first && env.provider !== "mock" ? { promptStyle: linkPromptStyle(first) } : {}),
     maxOutputTokens: LINK_MAX_OUTPUT_TOKENS,
     temperature: 0.8,
     timeoutMs: GENERATE_DEADLINE_MS,

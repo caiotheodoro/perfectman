@@ -9,6 +9,7 @@ import type { MakeProvider } from "../llm/chain.js";
 import { defaultHeadersFor, linkHeaders, linkInputBudget, parseChain } from "../llm/chain-config.js";
 import type { LlmLink } from "../llm/chain-config.js";
 import { hostLlmConfig } from "../llm/env.js";
+import { linkPromptStyle } from "../llm/chain-config.js";
 import { LlmGovernor } from "../llm/governor.js";
 
 const MYTHO: LlmLink = { name: "mythomax", baseUrl: "https://openrouter.ai/api/v1", apiKeyEnv: "OR_KEY", model: "gryphe/mythomax-l2-13b", maxContextTokens: 4096 };
@@ -56,7 +57,7 @@ describe("PERFECTMAN_LLM_CHAIN parsing", () => {
   const good = JSON.stringify([MYTHO, LUNARIS, GO]);
 
   it("parses the links in order, and the chain's models are the allowlist and its prices come from the known table", () => {
-    const env = { PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: "s".repeat(32), PERFECTMAN_DIRECTOR_URL: "ws://d/x", PERFECTMAN_INTERNAL_URL: "http://d", PERFECTMAN_LLM_CHAIN: good, OR_KEY: "k", OC_KEY: "k" };
+    const env = { PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: "s".repeat(32), PERFECTMAN_DIRECTOR_URL: "ws://d/x", PERFECTMAN_INTERNAL_URL: "http://d", PERFECTMAN_LLM_CHAIN: good, PERFECTMAN_LLM_PRICES: JSON.stringify({ [GO.model]: { inUsdPerMTok: 0, outUsdPerMTok: 0 } }), OR_KEY: "k", OC_KEY: "k" };
     const c = parseConfig(env);
     expect(c.llm.chain?.map((l) => l.name)).toEqual(["mythomax", "lunaris", "opencode"]);
     expect(c.llm.models).toEqual([MYTHO.model, LUNARIS.model, GO.model]);
@@ -65,12 +66,12 @@ describe("PERFECTMAN_LLM_CHAIN parsing", () => {
     expect(c.llm.prices[LUNARIS.model]).toEqual({ inUsdPerMTok: 0.04, outUsdPerMTok: 0.05 });
     expect(c.llm.prices[GO.model]).toEqual({ inUsdPerMTok: 0, outUsdPerMTok: 0 });
     // PERFECTMAN_LLM_PRICES still wins.
-    const over = parseConfig({ ...env, PERFECTMAN_LLM_PRICES: JSON.stringify({ [MYTHO.model]: { inUsdPerMTok: 1, outUsdPerMTok: 2 } }) });
+    const over = parseConfig({ ...env, PERFECTMAN_LLM_PRICES: JSON.stringify({ [MYTHO.model]: { inUsdPerMTok: 1, outUsdPerMTok: 2 }, [GO.model]: { inUsdPerMTok: 0, outUsdPerMTok: 0 } }) });
     expect(over.llm.prices[MYTHO.model]).toEqual({ inUsdPerMTok: 1, outUsdPerMTok: 2 });
   });
 
   it("falls back to the legacy single-link vars when no chain is set", () => {
-    const c = parseConfig({ PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: "s".repeat(32), PERFECTMAN_DIRECTOR_URL: "ws://d/x", PERFECTMAN_INTERNAL_URL: "http://d", PERFECTMAN_LLM_BASE_URL: "https://llm.example/v1", PERFECTMAN_LLM_API_KEY: "k", PERFECTMAN_LLM_MODELS: "fast" });
+    const c = parseConfig({ PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: "s".repeat(32), PERFECTMAN_DIRECTOR_URL: "ws://d/x", PERFECTMAN_INTERNAL_URL: "http://d", PERFECTMAN_LLM_BASE_URL: "https://llm.example/v1", PERFECTMAN_LLM_API_KEY: "k", PERFECTMAN_LLM_MODELS: "fast", PERFECTMAN_LLM_PRICES: JSON.stringify({ fast: { inUsdPerMTok: 1, outUsdPerMTok: 2 } }) });
     expect(c.llm.chain).toBeUndefined();
     expect(linksOf(c.llm)).toEqual([{ name: "default", baseUrl: "https://llm.example/v1", apiKeyEnv: "PERFECTMAN_LLM_API_KEY", model: "fast" }]);
     expect(hostLlmConfig(c.llm).maxInputTokens).toBe(6000);
@@ -80,7 +81,7 @@ describe("PERFECTMAN_LLM_CHAIN parsing", () => {
     const problems: string[] = [];
     expect(parseChain(JSON.stringify([{ name: "a", baseUrl: "ftp://x", apiKeyEnv: "sk-live-123 456", model: "" }, { name: "a", baseUrl: "https://x", apiKeyEnv: "K", model: "m", headers: { Authorization: "Bearer x" }, maxContextTokens: 10 }]), problems)).toEqual([]);
     expect(problems.join("\n")).toMatch(/model must be[\s\S]*baseUrl must be an http\(s\) URL[\s\S]*apiKeyEnv must be an env var NAME[\s\S]*used twice[\s\S]*maxContextTokens[\s\S]*not allowed/);
-    expect(() => parseConfig({ PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: "s".repeat(32), PERFECTMAN_DIRECTOR_URL: "ws://d/x", PERFECTMAN_INTERNAL_URL: "http://d", PERFECTMAN_LLM_CHAIN: good, OR_KEY: "k" })).toThrow(/OC_KEY is not set/);
+    expect(() => parseConfig({ PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: "s".repeat(32), PERFECTMAN_DIRECTOR_URL: "ws://d/x", PERFECTMAN_INTERNAL_URL: "http://d", PERFECTMAN_LLM_CHAIN: good, PERFECTMAN_LLM_PRICES: JSON.stringify({ [GO.model]: { inUsdPerMTok: 0, outUsdPerMTok: 0 } }), OR_KEY: "k" })).toThrow(/OC_KEY is not set/);
     expect(() => parseConfig({ PERFECTMAN_ENABLED: "1", PERFECTMAN_LLM_CHAIN: "not json" })).toThrow(ConfigError);
   });
 
@@ -158,8 +159,8 @@ describe("provider chain failover", () => {
     expect(calls.at(-1)).toBe(LUNARIS.model);
   });
 
-  it("treats a spent quota (429 with a long Retry-After) as out for a while: no retries, no further calls, then one trial", async () => {
-    const quota = new LLMHttpError(429, "Go usage limit exceeded", { "retry-after": "155092" });
+  it("treats a spent quota (429 carrying the provider's quota code) as out for a while: no retries, no further calls, then one trial", async () => {
+    const quota = new LLMHttpError(429, '{"type":"error","error":{"type":"GoUsageLimitError","message":"Go usage limit exceeded"}}', { "retry-after": "155092" });
     const { c, call, calls, clock } = chain({ [MYTHO.model]: [quota] });
     const r1 = await call();
     expect(calls).toEqual([MYTHO.model, LUNARIS.model]);
@@ -175,8 +176,19 @@ describe("provider chain failover", () => {
     expect(calls[0]).toBe(MYTHO.model);
   });
 
+  it("does not park a link for a generic 429, even one that says \"exceeded your\" or asks for a long wait", async () => {
+    const loose = new LLMHttpError(429, "You have exceeded your current rate, try again", { "retry-after": "300" });
+    const { c, call, clock } = chain({ [MYTHO.model]: [loose] });
+    const pending = call();
+    await clock.advance(2000);
+    const r1 = await pending;
+    expect(r1.routedModel).toBe("lunaris");
+    // The governor's own Retry-After window throttles link 1; the hour-long quota cooldown is not applied.
+    expect(c.snapshot().links[0]).toMatchObject({ cooldownMsLeft: 0, breaker: "closed" });
+  });
+
   it("refuses to serve and throws one error naming every link when all of them fail", async () => {
-    const { call, c } = chain({ [MYTHO.model]: [new LLMHttpError(500, "a")], [LUNARIS.model]: [new LLMHttpError(502, "b")], [GO.model]: [new LLMHttpError(429, "Go usage limit exceeded", { "retry-after": "155092" })] });
+    const { call, c } = chain({ [MYTHO.model]: [new LLMHttpError(500, "a")], [LUNARIS.model]: [new LLMHttpError(502, "b")], [GO.model]: [new LLMHttpError(429, '{"type":"error","error":{"type":"GoUsageLimitError","message":"Go usage limit exceeded"}}', { "retry-after": "155092" })] });
     const err = await call().catch((e: unknown) => e);
     expect(err).toBeInstanceOf(ChainExhaustedError);
     expect((err as Error).message).toMatch(/mythomax=http 500, lunaris=http 502, opencode=quota/);
@@ -258,12 +270,17 @@ describe("provider chain failover", () => {
     const clock = new ManualClock();
     const s = scripted({});
     const caps: number[] = [];
-    const c = new LlmChain({ links: [MYTHO, LUNARIS, GO], clock, runId: 1, simulationId: "s", governor: new LlmGovernor(clock), prices: PRICES, env: ENV, makeProvider: s.make, onCap: (n) => caps.push(n) });
+    const styles: string[] = [];
+    const c = new LlmChain({ links: [MYTHO, LUNARIS, GO], clock, runId: 1, simulationId: "s", governor: new LlmGovernor(clock), prices: PRICES, env: ENV, makeProvider: s.make, onCap: (n, style) => (caps.push(n), styles.push(style)) });
     expect(c.promptCap).toBe(3400);
+    expect(c.promptStyle).toBe("compact");
     const stripped: BuiltPrompt = { ...prompt(3700), trim: { maxInputTokens: 3400, rawInputTokensEstimate: 5000, finalInputTokensEstimate: 3700, droppedEvents: 9, droppedMemories: 2, droppedUtterances: 3, droppedInputTokensEstimate: 1300, withinCap: false, phase: "assembly" } };
     const r = await c.provider(BASE, "duda").generateIntent(undefined as never, undefined as never, stripped);
     expect(r.routedModel).toBe("lunaris");
     expect(caps).toEqual([7168]);
+    // Lunaris has the room for the full prompt, so the runtime goes back to writing it.
+    expect(styles).toEqual(["full"]);
+    expect(c.promptStyle).toBe("full");
     expect(c.promptCap).toBe(7168);
     // A prompt that was trimmed cleanly changes nothing.
     await c.provider(BASE, "duda").generateIntent(undefined as never, undefined as never, { ...stripped, trim: { ...stripped.trim!, withinCap: true } });

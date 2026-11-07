@@ -9,13 +9,15 @@
  * which is written with the allowed links alone.
  *
  * The prompt is a real rendered one: `fixtures/hotel-prompt.json`, captured from a run of
- * the pt-BR preset `gato-no-telhado` by `pnpm probe:llm` (set `PROBE_PROMPT_OUT`). With
- * no fixture it falls back to a synthetic prompt of the same size.
+ * the pt-BR preset `gato-no-telhado` by `pnpm probe:llm` (set `PROBE_PROMPT_OUT`). A link with a
+ * compact prompt style (window of 4K or less) is benched with `fixtures/hotel-prompt-compact.json`,
+ * captured the same way with `PROBE_STYLE=compact`. With no fixture it falls back to a synthetic
+ * prompt of the same size; `--prompt-file` forces one prompt for every link.
  */
 import { appendFileSync, existsSync, readFileSync } from "node:fs";
 import { pathToFileURL } from "node:url";
 import { percentile } from "../util/stats.js";
-import { linkHeaders, linkInputBudget, parseChain, legacyLink } from "./chain-config.js";
+import { linkHeaders, linkInputBudget, linkPromptStyle, parseChain, legacyLink } from "./chain-config.js";
 import type { LlmLink } from "./chain-config.js";
 import { KNOWN_PRICES } from "./chain-config.js";
 import { LLM_P95_BUDGET_MS } from "./env.js";
@@ -194,11 +196,15 @@ export function parseArgs(argv: string[], env: NodeJS.ProcessEnv): Args {
 export async function runCli(argv: string[], env: NodeJS.ProcessEnv, log: (line: string) => void, fetchImpl?: typeof fetch): Promise<number> {
   const args = parseArgs(argv, env);
   if (args.links.length === 0) throw new Error("no link matches --link");
-  const prompt = loadPrompt(args.promptFile ?? new URL("../../fixtures/hotel-prompt.json", import.meta.url).pathname);
-  log(`prompt: ${prompt.source}, ${prompt.inputTokensEstimate} est. tokens; ${args.n} calls per link, concurrency ${args.concurrency}`);
+  const fixture = (name: string): string => new URL(`../../fixtures/${name}`, import.meta.url).pathname;
+  const full = loadPrompt(args.promptFile ?? fixture("hotel-prompt.json"));
+  const compact = args.promptFile ? full : loadPrompt(existsSync(fixture("hotel-prompt-compact.json")) ? fixture("hotel-prompt-compact.json") : fixture("hotel-prompt.json"));
+  const promptFor = (link: LlmLink): BenchPrompt => (linkPromptStyle(link) === "compact" ? compact : full);
+  log(`prompt: ${full.source}, ${full.inputTokensEstimate} est. tokens${compact === full ? "" : `; compact links: ${compact.source}, ${compact.inputTokensEstimate} est. tokens`}; ${args.n} calls per link, concurrency ${args.concurrency}`);
   const rows: LinkBench[] = [];
   for (const link of args.links) {
     const key = env[link.apiKeyEnv];
+    const prompt = promptFor(link);
     if (!key) {
       rows.push({ link: link.name, model: link.model, n: 0, errors: 0, p50Ms: undefined, p95Ms: undefined, maxMs: undefined, promptTokens: prompt.inputTokensEstimate, budget: linkInputBudget(link), fits: false, jsonOkPct: undefined, costUsd: 0, verdict: { allow: false, reason: `${link.apiKeyEnv} is not set` } });
       continue;

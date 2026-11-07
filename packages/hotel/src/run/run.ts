@@ -156,7 +156,7 @@ export class Run {
     this.meter = new LlmMeter(d.hotel.llm.prices);
     const links = linksOf(d.hotel.llm);
     this.chain = links.length > 0
-      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: d.hotel.llm.prices, logger: d.logger, onCap: (cap) => this.setPromptCap(cap) })
+      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: d.hotel.llm.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style) })
       : undefined;
     this.frames = new FrameLogRecorder(d.clock);
   }
@@ -269,6 +269,7 @@ export class Run {
         return !!va && !!vb && mirror.roomOfRef(a) === mirror.roomOfRef(b) && Math.max(Math.abs(va.tile[0] - vb.tile[0]), Math.abs(va.tile[1] - vb.tile[1])) <= 2;
       },
       chooseMode: (agentId, content, committed) => this.chooseMode(agentId, content, committed),
+      onLine: (line) => this.noteLine(line),
       timing: this.d.timing?.gateway ?? {},
       // The scenario's own ending (goal_end_offered) stops the runtime; the run follows it.
       onStopped: (_id, reason) => {
@@ -382,9 +383,11 @@ export class Run {
     return this.chain ? this.chain.ping() : pingLlm(this.hostLlm, process.env[this.d.hotel.llm.apiKeyEnv]);
   }
 
-  /** The runtime renders prompts with the config every actor was given (shared by reference), so moving its cap moves the trim. */
-  private setPromptCap(cap: number): void {
-    if (this.hostLlm) this.hostLlm.maxInputTokens = cap;
+  /** The runtime renders prompts with the config every actor was given (shared by reference), so moving its cap or style moves the trim and the prompt's size. */
+  private setPromptCap(cap: number, promptStyle: "full" | "compact"): void {
+    if (!this.hostLlm) return;
+    this.hostLlm.maxInputTokens = cap;
+    this.hostLlm.promptStyle = promptStyle;
   }
 
   /** Per-link usage, cost and latency, and which link served: the chain's view of this run (empty for the mock provider). */
@@ -465,6 +468,56 @@ export class Run {
     if (this.state === "running" && !this.linkDown) this.loop.requestFocused(ids, reason);
   }
 
+  /** Event id of an actor line to the room occupant it was aimed at (`addresseeIds`), until the line is delivered. */
+  private readonly addressees = new Map<string, string>();
+  private readonly earlyLines = new Map<string, { agentId: string; mode: SpeechMode; eventId?: string; room: string }>();
+
+  /** Who a committed line is aimed at: the author it replies to, a named target, or someone it names, when they share the room. */
+  private noteAddressee(ref: string, intent: ActionIntent, mine: CommittedEvent[], space: SpaceView): void {
+    for (const e of mine) {
+      if (e.type !== "message_sent" && e.type !== "reply_sent") continue;
+      const named = (e.payload as Record<string, unknown>)["addresseeIds"];
+      const candidates = [intent.replyToActorId, ...intent.personTargets, ...(Array.isArray(named) ? named : [])];
+      const to = candidates.find((id): id is string => typeof id === "string" && id !== ref && (space.room?.occupants.some((o) => o.ref === id) ?? false));
+      if (to) this.addressees.set(e.id, to);
+      if (this.addressees.size > 256) this.addressees.delete(this.addressees.keys().next().value as string);
+      const early = this.earlyLines.get(e.id);
+      if (early && to) {
+        this.earlyLines.delete(e.id);
+        this.noteLine(early);
+      }
+    }
+  }
+
+  /**
+   * An addressed line reached the wire: log who it was for, whether they share the room and how far
+   * away they stood, so the earshot and facing probes have something to measure (embodiment.md 10).
+   */
+  private noteLine(line: { agentId: string; mode: SpeechMode; eventId?: string; room: string }): void {
+    const eventId = line.eventId;
+    if (!eventId) return;
+    const to = this.addressees.get(eventId);
+    if (!to) {
+      // A line the model answered slower than the persona's typing delay leaves the queue inside the commit,
+      // before the planner seam has seen the intent; the frame is written when that arrives.
+      this.earlyLines.set(eventId, line);
+      if (this.earlyLines.size > 64) this.earlyLines.delete(this.earlyLines.keys().next().value as string);
+      return;
+    }
+    this.addressees.delete(eventId);
+    const room = this.d.mirror.view(line.agentId, this.d.clock.now())?.room;
+    const me = room?.occupants.find((o) => o.ref === line.agentId);
+    const them = room?.occupants.find((o) => o.ref === to);
+    const sameRoom = me !== undefined && them !== undefined;
+    this.frames.record("out", line.room, "chat", {
+      agentId: line.agentId,
+      mode: line.mode,
+      toRef: to,
+      sameRoom,
+      distance: me && them ? Math.max(Math.abs(me.tile[0] - them.tile[0]), Math.abs(me.tile[1] - them.tile[1])) : -1,
+    });
+  }
+
   private chooseMode(agentId: string, content: string, committed: SpeechMode): SpeechMode {
     const mem = this.memory.get(agentId) ?? {};
     const choice = chooseSpeechMode(this.arousal.get(agentId) ?? 0, content, mem, this.d.clock.now(), committed);
@@ -486,6 +539,7 @@ export class Run {
     this.arousal.set(ref, info.agentState.coreMood.arousal);
     const space = info.space ?? this.d.mirror.view(ref, this.d.clock.now());
     if (!space) return;
+    this.noteAddressee(ref, info.intent, mine, space);
     const body = info.body;
     const cmds = this.planFor(ref, info.agentState, mine, space, body ? { intent: info.intent, bodyIntent: body.accepted, handles: body.targets as BodyHandleMap } : undefined);
     if (body?.deferral) this.holdSpeech(ref, info.intent, body.deferral, cmds);

@@ -117,4 +117,14 @@ describe("D53 gate per chain link", () => {
     expect(readFileSync(allow, "utf8")).toBe("sao10k/l3-lunaris-8b\n");
     expect(formatTable([])).toContain("verdict");
   });
+
+  it("benches a compact-style link with the compact prompt, so the 4K link is judged on what it is really sent", async () => {
+    const out: string[] = [];
+    const code = await runCli(["--n", "10"], { PERFECTMAN_LLM_CHAIN: JSON.stringify([MYTHO, LUNARIS]), OR_KEY: "k" }, (l) => out.push(l), async () => reply("{}"));
+    const text = out.join("\n");
+    expect(code).toBe(0);
+    expect(text).toMatch(/compact links: .*hotel-prompt-compact\.json/);
+    expect(text).not.toMatch(/REFUSED mythomax/);
+    expect(text).toMatch(/ALLOWED: gryphe\/mythomax-l2-13b, sao10k\/l3-lunaris-8b/);
+  });
 });
