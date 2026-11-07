@@ -19,6 +19,7 @@ import type { GatewayExecutor } from "../../gateway/hotel-gateway.js";
 import type { PlannedCommand } from "../../embodiment/types.js";
 import type { Logger } from "../../util/log.js";
 import type { PerfectmanUi, SidecarMsg } from "../index.js";
+import { canonicalize } from "./cue-vocab.js";
 import { computeMetrics } from "./metrics.js";
 import type { DirectorMetrics } from "./metrics.js";
 import { Narrator } from "./narrator.js";
@@ -417,7 +418,14 @@ export class CinematicDirector {
     const { run, send } = this.o;
     switch (step.k) {
       case "ui": {
-        const ui = inMs > 0 ? ({ ...step.ui, in_ms: inMs } as PerfectmanUi) : step.ui;
+        const timed = inMs > 0 ? ({ ...step.ui, in_ms: inMs } as PerfectmanUi) : step.ui;
+        // The vocabulary net (camera-and-audio.md 8): the planner emits canonical names, so this only fires for a bug.
+        const ui = canonicalize(timed);
+        if (!ui) {
+          this.o.logger.warn("cue outside the vocabulary dropped", { run, k: timed.k });
+          this.track.add({ t: this.t(), k: "drop", beat: program.beat, why: "cue_not_in_vocabulary" });
+          return;
+        }
         send({ t: "ui_push", run, to: { run }, ui });
         this.track.add({ t: planned, k: "cue", room: program.room, beat: program.beat, ui });
         return;

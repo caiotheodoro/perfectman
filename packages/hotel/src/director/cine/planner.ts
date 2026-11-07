@@ -17,6 +17,7 @@
  */
 import { readingSeconds } from "@perfectman/shared";
 import type { CutFxKind, PerfectmanUi, Shot, ShotTarget, ShotZoom } from "../generated.js";
+import { canonicalSfx } from "./cue-vocab.js";
 import { DEFAULT_CINE } from "./types.js";
 import type { CineConfig, CineItem, CineMood, CineWorld, GestureItem, HopItem, LineItem, NarrationSource, ObjectItem, PairItem, Program, Step, ThoughtItem, WalkItem } from "./types.js";
 
@@ -64,11 +65,12 @@ export function moodIntensity(m: CineMood | undefined): number {
   return Math.min(1, Math.max(Math.abs(m.valence), m.arousal, m.affection ?? 0));
 }
 
+/** A canonical `cue.emotion` (camera-and-audio.md 8.2): anger is `angry`, tension is `afraid`. */
 export function emotionLabel(m: CineMood): string {
   if ((m.affection ?? 0) >= 0.6) return "love";
-  if (m.valence <= -0.5) return m.arousal >= 0.6 ? "anger" : "sad";
+  if (m.valence <= -0.5) return m.arousal >= 0.6 ? "angry" : "sad";
   if (m.valence >= 0.5) return "joy";
-  return "tense";
+  return "afraid";
 }
 
 const COPY: Record<"pt-BR" | "en", { meanwhile: string }> = {
@@ -172,7 +174,7 @@ export class ShotPlanner {
     const b = new Builder();
     b.ui(0, { k: "hud", fade: { to: 1, ms: 700 } });
     b.ui(700, { k: "hud", letterbox: false, fade: { to: 0, ms: 400 } });
-    if (this.murmurRoom !== undefined) b.ui(0, { k: "sfx", cue: "murmur", stop: `murmur-${this.murmurRoom}` });
+    if (this.murmurRoom !== undefined) b.ui(0, { k: "sfx", cue: "crowd_murmur", stop: `murmur-${this.murmurRoom}` });
     this.murmurRoom = undefined;
     this.lastCameraAt = now;
     return { beat: "outro", room: this.room ?? 0, durationMs: 1100, steps: b.steps };
@@ -219,7 +221,7 @@ export class ShotPlanner {
     const first = !this.visited.has(to);
     const label = kind === "meanwhile" ? COPY[this.cfg.language].meanwhile : undefined;
     b.ui(0, { k: "cut_fx", kind, ms: fxMs, ...(label ? { label } : {}) });
-    b.ui(0, { k: "sfx", cue: kind === "door" ? "door" : "whoosh", gain: 0.8 });
+    b.ui(0, { k: "sfx", cue: kind === "door" ? "door_open" : "transition_whoosh", gain: 0.8 });
     const cutAt = Math.round(fxMs / 2);
     b.add({ at: cutAt, k: "cut", room: to, from });
     this.ambience(b, cutAt, to, world);
@@ -413,7 +415,8 @@ export class ShotPlanner {
     if (avatar === undefined) return undefined;
     const at = t0 + this.minShotWait(now + t0);
     b.ui(at, this.cameraCue("tracking", { avatar }, 1, this.cfg.easeMs.tracking, 1600, true));
-    b.ui(at + 1100, { k: "sfx", cue: "door", gain: 0.8 });
+    b.ui(at + 1100, { k: "sfx", cue: "door_open", gain: 0.8 });
+    b.ui(at + 1450, { k: "sfx", cue: "door_close", gain: 0.6 });
     b.add({ at: at + 900, k: "release", item });
     this.camera = { shot: "tracking", target: { avatar }, ref: item.ref, room: item.room };
     this.lastCameraAt = now + at;
@@ -447,7 +450,9 @@ export class ShotPlanner {
     b.ui(at, this.cameraCue("insert", target, 2, this.cfg.easeMs.close_up, 1800));
     this.camera = { shot: "insert", target, room: item.room };
     this.lastCameraAt = now + at;
-    if (item.sfx) b.ui(at + 200, { k: "sfx", cue: item.sfx, gain: 0.7 });
+    // An object's own sfx must be drawn from the vocabulary too (camera-and-audio.md 8.1); anything else is dropped.
+    const sfx = item.sfx ? canonicalSfx(item.sfx) : undefined;
+    if (sfx) b.ui(at + 200, { k: "sfx", cue: sfx, gain: 0.7 });
     if (item.label) b.ui(at + 300, { k: "caption", text: clip(item.label), ms: 2400 });
     return at - t0 + 2000;
   }
@@ -458,11 +463,11 @@ export class ShotPlanner {
   private ambience(b: Builder, at: number, room: number, world: CineWorld): void {
     const busy = world.occupants(room).length >= 3;
     if (this.murmurRoom !== undefined && (this.murmurRoom !== room || !busy)) {
-      b.ui(at, { k: "sfx", cue: "murmur", stop: `murmur-${this.murmurRoom}` });
+      b.ui(at, { k: "sfx", cue: "crowd_murmur", stop: `murmur-${this.murmurRoom}` });
       this.murmurRoom = undefined;
     }
     if (busy && this.murmurRoom !== room) {
-      b.ui(at, { k: "sfx", cue: "murmur", loop: true, id: `murmur-${room}`, gain: 0.3 });
+      b.ui(at, { k: "sfx", cue: "crowd_murmur", loop: true, id: `murmur-${room}`, gain: 0.3 });
       this.murmurRoom = room;
     }
   }

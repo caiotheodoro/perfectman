@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { cueViolations } from "../director/cine/cue-vocab.js";
 import { computeMetrics } from "../director/cine/metrics.js";
 import { parseTrack } from "../director/cine/track.js";
 import type { CineConfig } from "../director/cine/types.js";
@@ -50,6 +51,8 @@ describe("a cinematic run on the fake hotel with the mock provider", () => {
     expect(pushes.length).toBeGreaterThan(3);
     expect(pushes.every((f) => f.lease === 1)).toBe(true);
     expect(hotel.staleUiPushes).toBe(0);
+    // only canonical cue names reach the browser (camera-and-audio.md 8)
+    expect(pushes.flatMap((f) => (f.t === "ui_push" ? cueViolations(f.ui) : []))).toEqual([]);
 
     const track = parseTrack(readFileSync(join(cfg.dataDir, "runs", "7", "director-track.jsonl"), "utf8"));
     const manifest = JSON.parse(readFileSync(join(cfg.dataDir, "runs", "7", "replay.json"), "utf8")) as { files: Record<string, string> };

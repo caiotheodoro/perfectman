@@ -159,17 +159,17 @@ describe("room changes", () => {
     play(item("hop", { ref: "duda", room: 12, to: 13 }));
     const arrive = play(line("duda", "Que cheiro bom.", { room: 13 }));
     expect(uis(arrive).find((u) => u.k === "cut_fx")).toMatchObject({ kind: "door" });
-    expect(uis(arrive).some((u) => u.k === "sfx" && u.cue === "door")).toBe(true);
+    expect(uis(arrive).some((u) => u.k === "sfx" && u.cue === "door_open")).toBe(true);
   });
 
   it("runs the crowd murmur in one room at a time and stops it when the scene leaves", () => {
     const { play, world, intro } = setup();
-    expect(uis(intro).some((u) => u.k === "sfx" && u.cue === "murmur")).toBe(false);
+    expect(uis(intro).some((u) => u.k === "sfx" && u.cue === "crowd_murmur")).toBe(false);
     world.move("leo", 12);
     const fresh = setup();
     fresh.world.move("leo", 12);
     const p = new ShotPlanner(DEFAULT_CINE).intro(0, 12, fresh.world, NARRATION);
-    expect(uis(p).find((u) => u.k === "sfx")).toMatchObject({ cue: "murmur", loop: true, id: "murmur-12" });
+    expect(uis(p).find((u) => u.k === "sfx")).toMatchObject({ cue: "crowd_murmur", loop: true, id: "murmur-12" });
     void play;
   });
 });
