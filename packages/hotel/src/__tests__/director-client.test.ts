@@ -158,4 +158,18 @@ describe("Director client", () => {
     expect(c.send({ t: "run_heartbeat", run: 7 })).toBe(false);
     expect(c.droppedWhileDown).toBe(1);
   });
+
+  it("stamps the run's current lease on every ui_push, and leaves it off while a bumped lease is pending", async () => {
+    const { fake: hotel, client: c } = await connect({ resume: [7] });
+    await waitFor(() => hotel.received.find((f) => f.t === "hello_ack"), "hello_ack");
+    await waitFor(() => c.leaseOf(7) === 1, "bumped lease");
+    c.send({ t: "ui_push", run: 7, to: { run: 7 }, ui: { k: "notice", code: "x", kind: "info" } });
+    await waitFor(() => hotel.received.some((f) => f.t === "ui_push"), "ui_push");
+    expect(hotel.received.find((f) => f.t === "ui_push")).toMatchObject({ lease: 1 });
+    expect(hotel.staleUiPushes).toBe(0);
+    // an explicit lease is left alone
+    c.send({ t: "ui_push", run: 7, to: { run: 7 }, lease: 5, ui: { k: "notice", code: "y", kind: "info" } });
+    await waitFor(() => hotel.received.filter((f) => f.t === "ui_push").length === 2, "second ui_push");
+    expect(hotel.received.filter((f) => f.t === "ui_push")[1]).toMatchObject({ lease: 5 });
+  });
 });

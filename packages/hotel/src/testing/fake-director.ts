@@ -26,6 +26,8 @@ export class FakeDirector {
   readonly rooms = new Map<number, FakeRoom>();
   /** Every frame the sidecar sent, in order, across connections. */
   readonly received: SidecarFrame[] = [];
+  /** ui_push frames that carried a lease other than the run's current one. */
+  staleUiPushes = 0;
   readonly chats: { actor: number; mode: string; text: string; to?: number | null }[] = [];
   readonly typingLog: { actor: number; on: boolean }[] = [];
   readonly gone: { actor: number; reason: string }[] = [];
@@ -223,6 +225,8 @@ export class FakeDirector {
   }
 
   private onFrame(f: SidecarMsg): void {
+    // A ui_push may omit its lease (older sidecars); one that is present must be the run's current lease.
+    if (f.t === "ui_push" && f.lease != null && this.lease.has(f.run) && this.lease.get(f.run) !== f.lease) this.staleUiPushes++;
     switch (f.t) {
       case "hello_ack":
         if (this.withholdLeases) break;

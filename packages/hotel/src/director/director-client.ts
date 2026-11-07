@@ -120,7 +120,7 @@ export class DirectorClient {
       this.droppedWhileDown++;
       return false;
     }
-    const text = this.encode(msg);
+    const text = this.encode(this.withLease(msg));
     if (!this.ready && msg.t !== "hello_ack") {
       if (this.queue.length >= (this.opts.maxQueue ?? 512)) {
         this.droppedWhileDown++;
@@ -131,6 +131,17 @@ export class DirectorClient {
     }
     conn.socket.send(text);
     return true;
+  }
+
+  /**
+   * Every `ui_push` carries the run's current lease. The hotel rejects a present-but-stale one, so it is left off
+   * (it is optional on the wire) while the link is not ready or the run's bumped lease has not landed yet.
+   */
+  private withLease(msg: SidecarMsg): SidecarMsg {
+    if (msg.t !== "ui_push" || msg.lease !== undefined) return msg;
+    const lease = this.leases.get(msg.run);
+    if (!this.ready || lease === undefined || this.awaitingLease?.has(msg.run)) return msg;
+    return { ...msg, lease };
   }
 
   /** Closes the socket as a protocol failure; the reconnect loop does the rest. */

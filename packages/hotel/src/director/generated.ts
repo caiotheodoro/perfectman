@@ -995,6 +995,10 @@ export type SidecarMsg =
       t: "actor_cmd";
     }
   | {
+      /**
+       * The run's lease. Optional so older sidecars still connect; when present it must be current.
+       */
+      lease?: number | null;
       run: number;
       t: "ui_push";
       to: UiTarget;

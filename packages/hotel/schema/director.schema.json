@@ -5204,6 +5204,15 @@
             "ui"
           ],
           "properties": {
+            "lease": {
+              "description": "The run's lease. Optional so older sidecars still connect; when present it must be current.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
             "run": {
               "type": "integer",
               "format": "int64"
