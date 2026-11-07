@@ -1,6 +1,6 @@
 import type { BlockedReason } from "@perfectman/shared";
 import { describe, expect, it } from "vitest";
-import { ManualClock } from "../clock/manual-clock.js";
+import { ManualClock } from "../testing/manual-clock.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
 import type { PairInfo } from "../embodiment/body-executor.js";
 import type { HotelMsg, SidecarMsg } from "../director/index.js";
@@ -90,7 +90,36 @@ describe("BodyExecutor", () => {
   });
 });
 
+describe("BodyExecutor delivery truth", () => {
+  it("maps a stale_lease refusal (a command from before the renewed lease) to a stale_space block", () => {
+    const { exec, blocked, frame } = setup();
+    exec.send([{ agentId: "duda", cmd: "walk", to: [4, 4] }]);
+    frame({ t: "actor_error", cid: 1, actor: -701, code: "stale_lease" });
+    expect(blocked).toEqual([{ agentId: "duda", reasons: [{ code: "stale_space" }] }]);
+  });
+
+  it("sendChat says whether the line reached the hotel: the backstop and a dead link are not deliveries", () => {
+    const { exec, sent } = setup();
+    const chat = { agentId: "duda", cmd: "chat" as const, mode: "say" as const, text: "oi" };
+    expect([1, 2, 3, 4].map(() => exec.sendChat(chat))).toEqual([true, true, true, true]);
+    expect(exec.sendChat(chat)).toBe(false);
+    expect(sent.filter((m) => m.t === "actor_cmd")).toHaveLength(4);
+  });
+});
+
 describe("pair choreography (D31)", () => {
+  it("allows one in-flight pair per human, whoever starts it, and frees the human when it ends", () => {
+    const { exec, cmds, blocked, frame } = setup();
+    exec.send([{ agentId: "duda", cmd: "pair", kind: "kiss", with: "h:9", pair: "a1" }]);
+    exec.send([{ agentId: "rafa", cmd: "pair", kind: "hug", with: "h:9", pair: "a2" }]);
+    // only duda's approach walk went out; rafa was told to wait
+    expect(cmds().filter((c) => c.k === "walk")).toHaveLength(1);
+    expect(blocked).toEqual([{ agentId: "rafa", reasons: [{ code: "cooldown", part: "gesture" }] }]);
+    frame({ t: "pair_reaction", run: 7, pair: "a1", actor: -701, with: 9, outcome: "dodge", at: 0 });
+    exec.send([{ agentId: "rafa", cmd: "pair", kind: "hug", with: "h:9", pair: "a3" }]);
+    expect(cmds().filter((c) => c.k === "walk")).toHaveLength(2);
+  });
+
   it("approaches, faces, acts, holds and parts; the human's chip outcome reaches the hooks", async () => {
     const { clock, exec, mirror, cmds, frame, outcomes, aborted } = setup();
     exec.send([{ agentId: "duda", cmd: "pair", kind: "kiss", with: "h:9", pair: "k1" }]);

@@ -14,7 +14,8 @@ type HumanChat = Extract<HotelFrame, { t: "human_chat" }>;
 
 /** Social band of the distance bands (embodiment.md 2): up to 6 tiles. */
 export const SOCIAL_BAND_TILES = 6;
-export const INGEST_CAP = { lines: 8, windowMs: 5000 };
+/** `lines` is the whole room's cap; `perSpeakerLines` keeps one chatty guest from using it all. */
+export const INGEST_CAP = { lines: 8, perSpeakerLines: 3, windowMs: 5000 };
 
 export type IngestOutcome =
   | { kind: "dropped"; reason: "no_actor_here" | "unknown_speaker" | "rate_cap" | "no_channel" | "empty" | "bad_mode" }
@@ -43,6 +44,7 @@ export type IngestorDeps = {
  */
 export class GuestIngestor {
   private readonly recent: number[] = [];
+  private readonly recentBySpeaker = new Map<string, number[]>();
   private readonly log: Logger;
   dropped = { rate_cap: 0, other: 0 };
 
@@ -78,11 +80,17 @@ export class GuestIngestor {
 
     // 6a. Ingestion cap (8 lines per 5 s per run).
     while (this.recent.length > 0 && now - (this.recent[0] ?? 0) > INGEST_CAP.windowMs) this.recent.shift();
-    if (this.recent.length >= INGEST_CAP.lines) {
+    for (const [ref, times] of this.recentBySpeaker) {
+      while (times.length > 0 && now - (times[0] ?? 0) > INGEST_CAP.windowMs) times.shift();
+      if (times.length === 0) this.recentBySpeaker.delete(ref);
+    }
+    const mine = this.recentBySpeaker.get(speakerRef) ?? [];
+    if (this.recent.length >= INGEST_CAP.lines || mine.length >= INGEST_CAP.perSpeakerLines) {
       this.dropped.rate_cap++;
       return { kind: "dropped", reason: "rate_cap" };
     }
     this.recent.push(now);
+    this.recentBySpeaker.set(speakerRef, [...mine, now]);
 
     // 3. Addressing.
     const targetRef = mode === "whisper" && frame.to !== null && frame.to !== undefined ? mirror.refOfAvatar(frame.to) : undefined;
@@ -97,7 +105,13 @@ export class GuestIngestor {
     const operatorOnly = visibleToAgents.length === 0;
     const visibility: EventVisibility = operatorOnly
       ? { visibleToAgents: [], visibleToSpectators: false, visibleToOperators: true, visibilityReason: "unheard" }
-      : { visibleToAgents, visibleToSpectators: true, visibleToOperators: true, visibilityReason: "distance" };
+      : {
+          visibleToAgents,
+          // A whisper is private to whoever hears it; spectators never see it.
+          visibleToSpectators: mode !== "whisper",
+          visibleToOperators: true,
+          visibilityReason: "distance",
+        };
 
     // 5. Append message_sent with untrusted: true.
     const line: GuestLineInput = {
@@ -119,7 +133,7 @@ export class GuestIngestor {
 
     // 6b. Arbiter and focused pulse for the addressed actors who actually heard it.
     const heardAddressed = addressed.filter((id) => hearing[id] === "clear" || hearing[id] === "garbled");
-    this.deps.noteHumanLine(channelId, { eventId: committed.id, at: now, addressedIds: addressed });
+    this.deps.noteHumanLine(channelId, { eventId: committed.id, at: now, addressedIds: heardAddressed });
     if (heardAddressed.length > 0) this.deps.requestFocused(heardAddressed);
     return { kind: "ingested", eventId: committed.id, addressed, heardBy: visibleToAgents, operatorOnly };
   }

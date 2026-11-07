@@ -4,10 +4,17 @@ import type {
   ChannelMembership,
   SimulationSettings,
   OperatorEvent,
+  SpeechMode,
 } from "@perfectman/shared";
 import { filterVisibleEventsForAgent } from "@perfectman/engine";
 import type { IDeliveryGateway, DeliveryMessage } from "../scheduler-contracts.js";
 import { payloadChannelType, payloadString, payloadStringArray } from "../payload-readers.js";
+
+/** The mode a hotel stamped on the line, so the gateway delivers exactly what the hearing was computed for. */
+function speechMeta(event: CommittedEvent): { mode?: SpeechMode } {
+  const mode = event.payload["mode"];
+  return mode === "say" || mode === "shout" || mode === "whisper" ? { mode } : {};
+}
 
 export class DeliveryProjection {
   constructor(private readonly gateway: IDeliveryGateway) {}
@@ -25,6 +32,7 @@ export class DeliveryProjection {
           agentId: event.actorId,
           content: payloadString(event.payload, "content"),
           salience: event.emotionalSalience,
+          ...speechMeta(event),
         }));
         break;
       }
@@ -35,6 +43,7 @@ export class DeliveryProjection {
           content: payloadString(event.payload, "content"),
           replyToEventId: payloadString(event.payload, "replyToEventId"),
           salience: event.emotionalSalience,
+          ...speechMeta(event),
         }));
         break;
       }

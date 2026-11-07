@@ -1,11 +1,12 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { ManualClock } from "../clock/manual-clock.js";
+import { ManualClock } from "../testing/manual-clock.js";
 import { DirectorClient } from "../director/director-client.js";
 import type { DirectorHandlers } from "../director/director-client.js";
 import type { HotelFrame } from "../director/index.js";
 import { nodeSocketFactory } from "../director/transport.js";
 import { FakeDirector } from "../testing/fake-director.js";
 import { TEST_SECRET, waitFor } from "../testing/helpers.js";
+import { LEASE_WAIT_MS } from "../director/director-client.js";
 
 let fake: FakeDirector | undefined;
 let client: DirectorClient | undefined;
@@ -98,6 +99,45 @@ describe("Director client", () => {
     // The second connection's frames restart at seq 1.
     const second = hotel.received.slice(hotel.received.findIndex((f, i) => f.t === "hello_ack" && i > 0));
     expect(second[0]?.seq).toBe(1);
+  });
+
+  it("holds the command loop on a reconnect until the renewed lease has arrived, and goes on after a bounded wait if it never does", async () => {
+    fake = await FakeDirector.start({ secret: TEST_SECRET });
+    fake.addRoom(12);
+    const clock = new ManualClock();
+    const leaseAtUp: Array<number | undefined> = [];
+    let downs = 0;
+    const handlers: DirectorHandlers = {
+      onHello: () => [7],
+      onFrame: () => undefined,
+      onConnectionChange: (up) => {
+        if (up) leaseAtUp.push(client?.leaseOf(7));
+        else downs++;
+      },
+    };
+    client = new DirectorClient({ url: fake.url, secret: TEST_SECRET, clock, socketFactory: nodeSocketFactory, handlers, rng: () => 0.5, sidecar: { version: "1", build: "t" } });
+    client.start();
+    await waitFor(() => leaseAtUp.length === 1, "first up");
+    fake.startRun({ run: 7, room: 12, scenarioVersion: 1, lease: 1 });
+    await waitFor(() => client?.leaseOf(7) === 1, "lease 1");
+    fake.dropConnection();
+    await waitFor(() => downs === 1, "down");
+    await clock.advance(1000);
+    await waitFor(() => leaseAtUp.length === 2, "second up");
+    // Up is announced only once the bumped lease is in hand: commands never go out with the old one.
+    expect(leaseAtUp).toEqual([1, 2]);
+
+    fake.withholdLeases = true;
+    fake.dropConnection();
+    await waitFor(() => downs === 2, "down again");
+    await clock.advance(2000);
+    await waitFor(() => fake?.connections === 3, "third connection");
+    await waitFor(() => fake?.received.filter((f) => f.t === "hello_ack").length === 3, "third hello_ack");
+    expect(leaseAtUp).toHaveLength(2);
+    await clock.advance(LEASE_WAIT_MS - 1);
+    expect(leaseAtUp).toHaveLength(2);
+    await clock.advance(1);
+    expect(leaseAtUp).toHaveLength(3);
   });
 
   it("closes and reconnects when the hotel breaks the sequence", async () => {

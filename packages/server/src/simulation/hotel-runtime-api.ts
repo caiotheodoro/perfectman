@@ -65,6 +65,8 @@ export interface HotelRuntimeApi {
    * resolver, so the arbiter and the rate gate still apply (ADR-0019, 0021).
    */
   resolveDeferred(agentId: string, intent: ActionIntent): Promise<ResolvedIntent>;
+  /** The hotel removed an actor: stop scheduling it. Returns how many actors are still scheduled. */
+  retireAgent(simulationId: string, agentId: string): number;
 }
 
 // ---- ADR-0022: guest ingestion ---------------------------------------------

@@ -17,6 +17,8 @@ import type { RunLink, RunStartParams, RunTiming } from "./run.js";
 export const STATUS_INTERVAL_MS = 5000;
 const STALE_CHECK_MS = 1000;
 const SHUTDOWN_BOUND_MS = 10_000;
+/** A refused or unanswered resnapshot is retried after 1, 2, 4 ... up to 30 s. */
+export const RESNAPSHOT_BACKOFF_MS = { base: 1000, max: 30_000 } as const;
 
 export type ManagerOptions = {
   config: HotelConfig;
@@ -49,6 +51,8 @@ export class RunManager implements RunLink {
   private readonly cidWaiters = new Map<number, Pending>();
   private readonly cidOwner = new Map<number, number>();
   private readonly driftNoticed = new Set<number>();
+  /** Per room: resnapshot attempts since the last good snapshot and when the next one may go out. */
+  private readonly resnap = new Map<RoomId, { attempts: number; nextAt: number }>();
   private readonly log: Logger;
   private readonly governor: LlmGovernor;
   private timers: TimerHandle[] = [];
@@ -194,6 +198,11 @@ export class RunManager implements RunLink {
   // ---- connection -------------------------------------------------------------
 
   private onHello(hello: Extract<HotelFrame, { t: "hello" }>): number[] {
+    this.mirror.noteKnownRooms([
+      ...hello.runs.map((r) => ({ id: String(r.room), name: r.room_name })),
+      ...hello.actors.map((a) => ({ id: String(a.room) })),
+      ...((hello as { rooms?: Array<{ id: number; name?: string }> }).rooms ?? []).map((r) => ({ id: String(r.id), ...(r.name ? { name: r.name } : {}) })),
+    ]);
     const live = new Set(hello.runs.map((r) => r.run));
     const resume: number[] = [];
     for (const [id, run] of this.runs) {
@@ -218,7 +227,11 @@ export class RunManager implements RunLink {
     }
     for (const run of this.runs.values()) {
       if (run.state !== "running" && run.state !== "paused") continue;
-      for (const room of run.roomsInUse()) this.subscribe(room, false);
+      for (const room of run.roomsInUse()) {
+        this.subscribe(room, false);
+        // The subscribe above is the first attempt; the retry loop only steps in if it goes unanswered.
+        this.resnap.set(room, { attempts: 1, nextAt: this.o.clock.now() + RESNAPSHOT_BACKOFF_MS.base });
+      }
       run.setLinkDown(false);
     }
   }
@@ -243,6 +256,7 @@ export class RunManager implements RunLink {
       case "room_snapshot": {
         this.mirror.applySnapshot(frame, now);
         const id = String(frame.room);
+        this.resnap.delete(id);
         for (const wake of this.roomWaiters.get(id) ?? []) wake();
         this.roomWaiters.delete(id);
         return;
@@ -252,17 +266,18 @@ export class RunManager implements RunLink {
         if (!res.ok) {
           if (res.reason === "gap") this.log.warn("rev gap", { room: res.room });
           if (res.reason === "unknown_room") this.log.warn("delta for an unsubscribed room dropped", { room: res.room });
-          if (res.reason === "gap") this.subscribe(res.room, true);
-        } else if (res.resnapshot) this.subscribe(String(frame.room), true);
+          if (res.reason === "gap") this.resnapshot(res.room);
+        } else if (res.resnapshot) this.resnapshot(String(frame.room));
         return;
       }
       case "room_ping": {
         const res = this.mirror.applyPing(frame, now);
-        if (!res.ok && res.reason === "gap") this.subscribe(res.room, true);
+        if (!res.ok && res.reason === "gap") this.resnapshot(res.room);
         return;
       }
       case "room_closed":
         this.mirror.applyRoomClosed(frame.room);
+        this.resnap.delete(String(frame.room));
         return;
       case "human_chat": {
         const room = String(frame.room);
@@ -296,6 +311,8 @@ export class RunManager implements RunLink {
         const run = this.runOfActor(frame.actor);
         if (run) run.handleFrame(frame);
         else this.log.warn("frame for an actor no run owns, dropped", { t: frame.t });
+        // An actor that went through a door needs its new room mirrored, or it is in transit for good.
+        if (frame.t === "moved_room" && run && !this.mirror.model().rooms.has(String(frame.to))) this.subscribe(String(frame.to));
         return;
       }
       default:
@@ -351,6 +368,15 @@ export class RunManager implements RunLink {
     this.runs.set(f.run, run);
     this.trackRun(f.run);
     const prep = await run.prepare();
+    // The hotel may have ended the run while it was validating (run_end): nothing was built, so there is nothing to launch.
+    if (this.runs.get(f.run) !== run || run.state !== "starting") {
+      this.log.info("run ended during prepare, not launched", { run: f.run });
+      if (this.runs.get(f.run) === run) {
+        this.runs.delete(f.run);
+        this.untrackRun(f.run);
+      }
+      return;
+    }
     if (!prep.ok) {
       this.runs.delete(f.run);
       this.untrackRun(f.run);
@@ -418,6 +444,22 @@ export class RunManager implements RunLink {
 
   private checkStale(): void {
     if (!this.director.connected) return;
-    for (const room of this.mirror.staleRooms(this.o.clock.now())) this.subscribe(room, true);
+    const now = this.o.clock.now();
+    for (const room of this.mirror.staleRooms(now)) this.resnapshot(room);
+    // A resnapshot the hotel refused or never answered leaves the room degraded: ask again, with backoff.
+    const wanted = new Set<RoomId>();
+    for (const run of this.runs.values()) for (const room of run.roomsInUse()) wanted.add(room);
+    for (const room of this.mirror.degradedRooms()) if (wanted.has(room)) this.resnapshot(room);
+  }
+
+  /** Asks the hotel for a fresh snapshot of `room`, at most once per backoff window. */
+  private resnapshot(room: RoomId): void {
+    const now = this.o.clock.now();
+    const prior = this.resnap.get(room);
+    if (prior && now < prior.nextAt) return;
+    const attempts = prior?.attempts ?? 0;
+    const delay = Math.min(RESNAPSHOT_BACKOFF_MS.base * 2 ** attempts, RESNAPSHOT_BACKOFF_MS.max);
+    this.resnap.set(room, { attempts: attempts + 1, nextAt: now + delay });
+    this.subscribe(room, true);
   }
 }

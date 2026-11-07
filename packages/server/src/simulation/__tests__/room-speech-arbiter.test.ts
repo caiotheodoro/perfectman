@@ -21,6 +21,48 @@ describe("RoomSpeechArbiter rules (ADR-0021)", () => {
     expect(arbiter.classify("rafa", ROOM, 3_000)).toBe("interjection");
   });
 
+  it("a second human line does not erase the first addressee's open line", () => {
+    const arbiter = new RoomSpeechArbiter();
+    arbiter.noteHumanLine(ROOM, { eventId: "h1", at: 1_000, addressedIds: ["rafa"] });
+    arbiter.noteHumanLine(ROOM, { eventId: "h2", at: 1_500, addressedIds: ["duda"] });
+    expect(arbiter.classify("rafa", ROOM, 2_000)).toBe("addressed");
+    expect(arbiter.classify("duda", ROOM, 2_000)).toBe("addressed");
+    expect(reasonOf(arbiter.gate("duda", ROOM, "addressed", 2_000))).toBe("allowed");
+    // duda answered h2; rafa still owes h1 and nobody else may talk over it
+    expect(arbiter.classify("rafa", ROOM, 2_100)).toBe("addressed");
+    expect(reasonOf(arbiter.gate("gabi", ROOM, "interjection", 2_100))).toBe("room_speech:not_addressed_open_line");
+    expect(reasonOf(arbiter.gate("rafa", ROOM, "addressed", 2_200))).toBe("allowed");
+    expect(arbiter.classify("rafa", ROOM, 2_300)).toBe("interjection");
+  });
+
+  it("an addressee never answers the same human line twice, even when two pulses race for it", () => {
+    const arbiter = new RoomSpeechArbiter();
+    arbiter.noteHumanLine(ROOM, { eventId: "h1", at: 1_000, addressedIds: ["duda"] });
+    // the focus lane and a base pulse both decided while the line was open: both classify it as addressed
+    expect(arbiter.classify("duda", ROOM, 2_000)).toBe("addressed");
+    expect(reasonOf(arbiter.gate("duda", ROOM, "addressed", 2_000))).toBe("allowed");
+    const second = arbiter.classify("duda", ROOM, 2_050);
+    expect(reasonOf(arbiter.gate("duda", ROOM, second, 2_050))).toBe("room_speech:one_answer_per_line");
+    // noting the same line again does not reopen it
+    arbiter.noteHumanLine(ROOM, { eventId: "h1", at: 1_000, addressedIds: ["duda"] });
+    expect(arbiter.classify("duda", ROOM, 2_100)).toBe("interjection");
+    expect(reasonOf(arbiter.gate("duda", ROOM, "interjection", 2_100))).toBe("room_speech:one_answer_per_line");
+    // a new line addressed to her gets its own reply
+    arbiter.noteHumanLine(ROOM, { eventId: "h2", at: 3_000, addressedIds: ["duda"] });
+    expect(arbiter.classify("duda", ROOM, 3_100)).toBe("addressed");
+    expect(reasonOf(arbiter.gate("duda", ROOM, "addressed", 3_100))).toBe("allowed");
+  });
+
+  it("the same addressee with two open lines answers them one at a time", () => {
+    const arbiter = new RoomSpeechArbiter();
+    arbiter.noteHumanLine(ROOM, { eventId: "h1", at: 1_000, addressedIds: ["rafa"] });
+    arbiter.noteHumanLine(ROOM, { eventId: "h2", at: 1_500, addressedIds: ["rafa"] });
+    arbiter.gate("rafa", ROOM, "addressed", 2_000);
+    expect(arbiter.classify("rafa", ROOM, 2_100)).toBe("addressed");
+    arbiter.gate("rafa", ROOM, "addressed", 2_200);
+    expect(arbiter.classify("rafa", ROOM, 2_300)).toBe("interjection");
+  });
+
   it.each([
     {
       name: "a bystander may not talk over an unanswered addressee",
@@ -43,10 +85,10 @@ describe("RoomSpeechArbiter rules (ADR-0021)", () => {
       expected: "room_speech:one_answer_per_line",
     },
     {
-      name: "bots yield after three lines for one human line",
-      line: { addressedIds: ["rafa"] },
-      pre: ["rafa", "rafa", "rafa"],
-      speaker: "rafa",
+      name: "bots yield once the line budget is spent",
+      line: { addressedIds: ["rafa", "duda", "gabi", "bia"] },
+      pre: ["rafa", "duda", "gabi", "bia"],
+      speaker: "zeca",
       expected: "room_speech:line_budget",
     },
   ])("$name", ({ line, pre = [], speaker, expected }) => {

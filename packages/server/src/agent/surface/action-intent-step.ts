@@ -166,6 +166,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           llmUsage: null,
           latencyMs: Date.now() - startTime,
           fallbackApplied: true,
+          providerFailed: true,
           operatorEvents: trimEvent ? [trimEvent, opEvent] : [opEvent],
         },
         errorDetail: `Provider failed: ${error.message || String(error)}`,
@@ -516,6 +517,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       latencyMs: Date.now() - startTime,
       fallbackApplied,
       operatorEvents,
+      ...(retryKind === "provider_failed" ? { providerFailed: true } : {}),
       ...(parseResult.bodyDropped && !fallbackApplied ? { bodyDropped: parseResult.bodyDropped } : {}),
     };
 

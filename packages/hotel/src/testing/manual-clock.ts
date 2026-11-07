@@ -1,4 +1,4 @@
-import type { Clock, TimerHandle } from "./clock.js";
+import type { Clock, TimerHandle } from "../clock/clock.js";
 
 type Scheduled = { at: number; seq: number; fn: () => void };
 

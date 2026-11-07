@@ -74,6 +74,10 @@ export class HotelSpaceMirror implements SpaceMirror {
   private readonly own = new Map<number, OwnActor>();
   private readonly idByRef = new Map<string, number>();
   private readonly typingAt = new Map<string, number>();
+  /** Furni definitions per room from its last snapshot, so a furni delta applies in place. */
+  /** Every room the hotel has told us about (hello runs, actors, snapshots): all reachable by door (D24). */
+  private readonly knownRooms = new Map<RoomId, string | undefined>();
+  private readonly defsByRoom = new Map<RoomId, Record<string, SnapDef | undefined>>();
   private readonly derive: DeriveZones;
   private readonly listener: MirrorListener;
 
@@ -165,6 +169,8 @@ export class HotelSpaceMirror implements SpaceMirror {
       const def = snap.defs[f.def];
       if (def) furni.set(f.id, this.furniModel(f, def, seatsByFurni.get(f.id)));
     }
+    this.defsByRoom.set(id, snap.defs);
+    this.knownRooms.set(id, sanitizeText(snap.name, 24));
     const prior = this.space.rooms.get(id);
     const occupants = new Map<string, Presence>();
     const room: RoomModel = {
@@ -181,7 +187,7 @@ export class HotelSpaceMirror implements SpaceMirror {
       furni,
       zones: [],
       occupants,
-      adjacency: prior?.adjacency ?? [],
+      adjacency: [],
       degraded: false,
     };
     for (const a of snap.avatars) {
@@ -191,12 +197,45 @@ export class HotelSpaceMirror implements SpaceMirror {
     room.zones = this.derive(room);
     this.space.rooms.set(id, room);
     for (const [ref, p] of occupants) if (this.idByRef.has(ref)) this.space.agentRoom.set(ref, id);
+    this.refreshAdjacency();
+  }
+
+  /**
+   * D24: an actor can travel anywhere, so every room the hotel has named is
+   * reachable from every mirrored room by its door, with an estimated travel
+   * time. Rooms come from `hello` (runs, actors) and from snapshots; a name
+   * already learned from a snapshot is kept over a bare id.
+   */
+  noteKnownRooms(rooms: ReadonlyArray<{ id: RoomId; name?: string }>): void {
+    for (const r of rooms) {
+      const name = r.name !== undefined ? sanitizeText(r.name, 24) : undefined;
+      if (name || !this.knownRooms.has(r.id)) this.knownRooms.set(r.id, name || this.knownRooms.get(r.id));
+    }
+    this.refreshAdjacency();
+  }
+
+  private refreshAdjacency(): void {
+    for (const room of this.space.rooms.values()) {
+      const travelS = Math.round(2 + (Math.max(room.w, room.h) / 2) * (WALK_TICK_MS / 1000));
+      room.adjacency = [...this.knownRooms]
+        .filter(([id]) => id !== room.id)
+        .map(([roomId, name]) => ({
+          roomId,
+          viaDoor: [room.door[0], room.door[1]] as Tile,
+          travelS,
+          ...(name ? { name } : {}),
+        }));
+    }
   }
 
   /** Marks a room degraded (a gap or silence) until its resnapshot lands. */
   markDegraded(room: RoomId): void {
     const r = this.space.rooms.get(room);
     if (r) r.degraded = true;
+  }
+
+  degradedRooms(): RoomId[] {
+    return [...this.space.rooms.values()].filter((r) => r.degraded).map((r) => r.id);
   }
 
   markAllDegraded(): void {
@@ -227,7 +266,7 @@ export class HotelSpaceMirror implements SpaceMirror {
     room.rev = frame.rev;
     room.syncedAtWall = now;
     this.applyMsg(room, frame.msg, now);
-    // furni_added / furni_moved degrade the room (the def table only comes in a snapshot).
+    // furni_added / furni_moved apply in place from the cached defs; only an unknown def degrades the room.
     return room.degraded ? { ok: true, resnapshot: true } : { ok: true };
   }
 
@@ -273,9 +312,13 @@ export class HotelSpaceMirror implements SpaceMirror {
   applyRoomClosed(room: number): void {
     const id = roomIdOf(room);
     const r = this.space.rooms.get(id);
-    if (!r) return;
-    for (const ref of r.occupants.keys()) if (this.idByRef.has(ref)) this.space.agentRoom.set(ref, "in_transit");
-    this.space.rooms.delete(id);
+    this.knownRooms.delete(id);
+    if (r) {
+      for (const ref of r.occupants.keys()) if (this.idByRef.has(ref)) this.space.agentRoom.set(ref, "in_transit");
+      this.space.rooms.delete(id);
+      this.defsByRoom.delete(id);
+    }
+    this.refreshAdjacency();
   }
 
   /** Rooms with nothing heard for more than STALE_MS: the caller resnapshots them. */
@@ -470,15 +513,25 @@ export class HotelSpaceMirror implements SpaceMirror {
         room.furni.delete(msg.id);
         room.zones = this.derive(room);
         break;
+      case "furni_added":
+      case "furni_moved": {
+        // Applied in place from the room's cached defs; only a def we have never
+        // seen (a catalogue piece added since the snapshot) needs a resnapshot.
+        const def = this.defsByRoom.get(room.id)?.[msg.furni.def];
+        if (!def) {
+          room.degraded = true;
+          break;
+        }
+        room.furni.set(msg.furni.id, this.furniModel(msg.furni, def, undefined));
+        room.zones = this.derive(room);
+        break;
+      }
       case "furni_state_changed": {
         const f = room.furni.get(msg.id);
         if (f) f.state = msg.state;
         break;
       }
       default:
-        // furni_added / furni_moved need the def table, which only a snapshot carries:
-        // ask for one by degrading the room (cheap, and furni changes are rare).
-        if (msg.t === "furni_added" || msg.t === "furni_moved") room.degraded = true;
         break;
     }
   }

@@ -17,3 +17,8 @@ export const BAND = { intimate: 1, personal: 2, socialMax: 6, publicMax: 12 } as
 /** Approach when this far or farther, step back when this close: a dead band either side of the targets. */
 export const APPROACH_AT = 4;
 export const WITHDRAW_AT = 1;
+
+/** A human who dodged or pushed away a pair act is left alone this long (D31). */
+export const PAIR_REFUSAL_COOLDOWN_MS = 60_000;
+/** At most this many actors head for the same human at once. */
+export const MAX_APPROACHERS = 2;

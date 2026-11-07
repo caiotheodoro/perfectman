@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ManualClock } from "../clock/manual-clock.js";
+import { ManualClock } from "../testing/manual-clock.js";
 import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 
 type Call = { reason: string; at: number; focus?: string[]; elapsedMs?: number };

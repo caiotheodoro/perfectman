@@ -119,6 +119,12 @@ export type ActionIntentOperatorData = {
   privateMotiveSummary: string;
   emotionDrivers: string[];
   motivationDrivers: string[];
+  /**
+   * Structured: the provider call (or its retry) failed at the transport/provider
+   * level. Set by the scheduler from the runtime output, never inferred from
+   * the model-authored motive text.
+   */
+  providerFailure?: boolean;
 };
 
 /** `target_resolution_floored` payload — emitted when a reply/react intent's

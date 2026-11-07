@@ -574,6 +574,8 @@ export class IntentResolver {
     private readonly hotel?: {
       /** Per-listener audibility of an actor line (ADR-0022 decision 2). Speech is also stamped with `senderName`, so the prompt names speakers without ever showing an id. */
       audibility?: (speakerId: string, channelId: string, mode: SpeechMode, whisperTo?: string) => AudibilityResult | undefined;
+      /** The mode the line is delivered in (shout is the planner's choice); stamped with the hearing so the two agree. */
+      chooseMode?: (speakerId: string, content: string, committed: SpeechMode) => SpeechMode;
     },
   ) {}
 
@@ -904,9 +906,11 @@ export class IntentResolver {
       if (event.type !== "message_sent" && event.type !== "reply_sent") continue;
       const name = ctx.agentNames?.[intent.actorId];
       if (name) event.payload["senderName"] = name;
-      const heard = this.hotel?.audibility?.(intent.actorId, event.channelId, "say");
+      const content = typeof event.payload["content"] === "string" ? event.payload["content"] : "";
+      const mode: SpeechMode = this.hotel?.chooseMode?.(intent.actorId, content, "say") ?? "say";
+      const heard = this.hotel?.audibility?.(intent.actorId, event.channelId, mode);
       if (!heard) continue;
-      event.payload["mode"] = "say";
+      event.payload["mode"] = mode;
       event.payload["hearing"] = heard.hearing;
       event.visibility =
         heard.visibleToAgents.length > 0

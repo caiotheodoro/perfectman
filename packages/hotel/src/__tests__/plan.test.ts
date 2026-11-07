@@ -130,3 +130,42 @@ describe("planner memory and speech mode", () => {
     expect(chooseSpeechMode(0.9, "psiu", {}, NOW, "whisper").mode).toBe("whisper");
   });
 });
+
+describe("pair and approach etiquette around a human", () => {
+  const kiss = intent({ gesture: { kind: "kiss", toward: "p1" } });
+  const approach = intent({ move: { kind: "approach", target: "p1", band: "personal" } });
+
+  it("leaves a human alone for 60 s after they dodged or pushed away a pair act", () => {
+    const others = [person("h:9", [5, 4])];
+    const fresh = { pairRefusedAt: { "h:9": NOW - 20_000 } };
+    expect(run({ others }, { bodyIntent: kiss, handles, memory: fresh }).some((c) => c.cmd === "pair")).toBe(false);
+    const old = { pairRefusedAt: { "h:9": NOW - 61_000 } };
+    expect(run({ others }, { bodyIntent: kiss, handles, memory: old })[0]).toMatchObject({ cmd: "pair", with: "h:9" });
+  });
+
+  it("never walks up to a human who refused recently on its own (automatic approach)", () => {
+    const others = [person("h:9", [9, 4], { lastSpokeAt: NOW - 500 })];
+    const rel = agentState({ rel: { "h:9": { desireForCloseness: 0.8 } } });
+    expect(run({ others }, { agentState: rel }).some((c) => c.cmd === "walk")).toBe(true);
+    expect(run({ others }, { agentState: rel, memory: { pairRefusedAt: { "h:9": NOW - 5_000 } } }).some((c) => c.cmd === "walk")).toBe(false);
+  });
+
+  it("does not add a third actor to the two already heading for the same human", () => {
+    const human = person("h:9", [8, 4]);
+    const heading = (ref: string, goal: [number, number]) => person(ref, [2, 8], { state: "walk", walkGoal: goal });
+    const two = [human, heading("rafa", [7, 4]), heading("gabi", [7, 5])];
+    expect(run({ others: two }, { bodyIntent: approach, handles }).some((c) => c.cmd === "walk")).toBe(false);
+    const one = [human, heading("rafa", [7, 4])];
+    expect(run({ others: one }, { bodyIntent: approach, handles }).some((c) => c.cmd === "walk")).toBe(true);
+  });
+
+  it("picks a tile no other actor is walking to", () => {
+    const human = person("h:9", [8, 4]);
+    const goal: [number, number] = [6, 4];
+    const others = [human, person("rafa", [2, 8], { state: "walk", walkGoal: goal })];
+    for (let seed = 1; seed <= 20; seed++) {
+      const walk = run({ others }, { bodyIntent: approach, handles, rng: seededRng(seed) }).find((c) => c.cmd === "walk");
+      expect(walk && walk.cmd === "walk" ? walk.to : undefined).not.toEqual(goal);
+    }
+  });
+});

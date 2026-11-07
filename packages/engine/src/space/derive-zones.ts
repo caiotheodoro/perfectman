@@ -1,3 +1,4 @@
+import { sanitizeUntrustedText } from "@perfectman/shared";
 import type { Affordance, FurniModel, RoomModel, Tile, Zone, ZoneKind } from "@perfectman/shared";
 import { chebyshev } from "./geometry.js";
 import { blockMap, furniList, isFloor, tilesAround, tileKey, type PathRoom } from "./pathing.js";
@@ -17,12 +18,7 @@ const MAX_LABEL = 32;
 
 /** Strip control and bidi characters and cap the length; the renderer quotes the result. */
 export function sanitizeLabel(raw: string, max = MAX_LABEL): string {
-  return raw
-    .normalize("NFKC")
-    .replace(/[\p{Cc}\p{Cf}]/gu, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, max);
+  return sanitizeUntrustedText(raw, max);
 }
 
 /**

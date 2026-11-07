@@ -1,16 +1,8 @@
 /**
  * Externally authored strings (names, room names, furniture labels) reach the
- * prompt only through this quoting (ADR-0023): a JSON string with `<` and `>`
- * escaped, so quotes, newlines and tags cannot break the line or close a
- * container.
+ * prompt only through this quoting (ADR-0023). The implementation is the
+ * shared one; `quoteText` is this module's historical name for it.
  */
-export function quoteText(raw: string): string {
-  return JSON.stringify(raw).replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
-}
-
-/** Engine-authored text that may still carry a stray angle bracket. */
-export function escapeAngles(raw: string): string {
-  return raw.replace(/</g, "\\u003c").replace(/>/g, "\\u003e");
-}
+export { escapeAngles, quoteUntrusted as quoteText } from "@perfectman/shared";
 
 export type BodyLanguage = "pt-BR" | "en";

@@ -26,6 +26,8 @@ export type RuntimePort = {
   registerRoomChannel(room: { id: string; name: string; memberAgentIds?: string[] }): Promise<void>;
   addChannelMember(channelId: string, agentId: string): Promise<void>;
   removeChannelMember(channelId: string, agentId: string): Promise<void>;
+  /** Stops scheduling an actor the hotel removed; returns how many are still scheduled. */
+  retireActor(agentId: string): number;
   appendEvents(events: SimulationEvent[]): Promise<CommittedEvent[]>;
   getEvents(): Promise<CommittedEvent[]>;
   getEventsAfter(eventId?: string): Promise<CommittedEvent[]>;
@@ -61,6 +63,7 @@ export function createRuntimePort(handle: ConfiguredSimulationHandle): RuntimePo
     registerRoomChannel: (room) => runtime.registerRoomChannel(simulationId, room),
     addChannelMember: (channelId, agentId) => runtime.addChannelMember(channelId, agentId),
     removeChannelMember: (channelId, agentId) => runtime.removeChannelMember(channelId, agentId),
+    retireActor: (agentId) => runtime.retireAgent(simulationId, agentId),
     appendEvents: (events) => runtime.getEventLog().append(simulationId, events),
     getEventsAfter: (eventId) => runtime.getEventLog().getAfter(simulationId, eventId),
     getEvents: () => handle.repositories.eventRepo.getCommittedThrough(simulationId, Number.MAX_SAFE_INTEGER),

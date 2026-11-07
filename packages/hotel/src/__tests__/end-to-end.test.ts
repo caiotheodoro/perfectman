@@ -111,7 +111,17 @@ describe("one run end to end on the fake Director with the mock provider", () =>
     await waitFor(() => registry, "the runtime");
     expect(await registry?.isMember("person-1", "room:12")).toBe(true);
 
+    // D24: every room the hotel listed is reachable by the door, so move_room has a target.
+    const mirror = sc.manager!.mirror;
+    const adj = mirror.view("person-1", Date.now())?.adjacency ?? [];
+    expect(adj).toEqual([expect.objectContaining({ roomId: "13", name: "Room 13", travelS: expect.any(Number), viaDoor: expect.any(Array) })]);
+    expect(adj[0]?.travelS).toBeGreaterThan(0);
+
     hotel.moveActorToRoom("person-1", 13);
+    // The sidecar mirrors the room it just entered, or the actor would be in transit for good.
+    await waitFor(() => hotel.received.some((f) => f.t === "subscribe_room" && f.room === 13), "a subscription to room 13");
+    await waitFor(() => mirror.roomOfRef("person-1") === "13", "person-1 mirrored in room 13");
+    expect(mirror.view("person-1", Date.now())?.adjacency.map((a) => a.roomId)).toEqual(["12"]);
     const moved = async (): Promise<boolean> => (await registry?.isMember("person-1", "room:13")) === true && (await registry?.isMember("person-1", "room:12")) === false;
     const t0 = Date.now();
     while (!(await moved())) {

@@ -30,6 +30,10 @@ export class FakeDirector {
   readonly typingLog: { actor: number; on: boolean }[] = [];
   readonly gone: { actor: number; reason: string }[] = [];
   connections = 0;
+  /** Test switch: on hello_ack, do not renew leases (a hotel that is slow to bump them). */
+  withholdLeases = false;
+  /** Test switch: subscribe_room is refused silently (a hotel that rate-limits resnapshots). */
+  ignoreSubscribe = false;
   authFailures = 0;
   private server!: Server;
   private wss!: WebSocketServer;
@@ -213,12 +217,15 @@ export class FakeDirector {
       hotel: { build: "fake", tick_ms: 300, max_chat: 200, max_actions_per_5s: 8, join_interval_ms: 200, human_reserve: 10, max_avatars_per_room: 50 },
       runs,
       actors: live,
-    });
+      // Every room the hotel has (D24: an actor can travel to any of them); the vendored hello has no such list yet.
+      rooms: [...this.rooms.values()].map((r) => ({ id: r.id, name: `Room ${r.id}` })),
+    } as HotelMsg);
   }
 
   private onFrame(f: SidecarMsg): void {
     switch (f.t) {
       case "hello_ack":
+        if (this.withholdLeases) break;
         for (const run of f.resume ?? []) {
           const lease = (this.lease.get(run) ?? 0) + 1;
           this.lease.set(run, lease);
@@ -227,7 +234,7 @@ export class FakeDirector {
         break;
       case "subscribe_room": {
         const r = this.rooms.get(f.room);
-        if (!r) return;
+        if (!r || this.ignoreSubscribe) return;
         this.subscribed.add(f.room);
         this.send(this.snapshot(r));
         break;

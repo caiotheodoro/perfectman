@@ -95,6 +95,18 @@ export type PrepareResult = { ok: true } | { ok: false; code: string; message: s
 
 type PendingSpeech = { intent: ActionIntent; walkPlans: Set<string>; timer: TimerHandle };
 
+/** The hotel's limits on an actor name (hotel-package.md 6): short, and neither a ref separator nor a mention. */
+export const MAX_ACTOR_NAME_CHARS = 16;
+/** `hr-100-61.hd-180-1`: dot-separated parts of a two-letter slot and numeric ids. */
+const FIGURE_RE = /^[a-z]{1,3}-\d+(?:-\d+)*(?:\.[a-z]{1,3}-\d+(?:-\d+)*)*$/;
+
+export function actorNameError(name: string): string | undefined {
+  if (name.trim().length === 0) return "the name is empty";
+  if ([...name].length > MAX_ACTOR_NAME_CHARS) return `the name is longer than ${MAX_ACTOR_NAME_CHARS} characters`;
+  if (/[:@]/.test(name)) return "the name may not contain ':' or '@'";
+  return undefined;
+}
+
 const SPAWN_DEFAULTS = { spawnIntervalMs: 200, spawnTimeoutMs: 5000, walkOutTimeoutMs: 10_000 } as const;
 
 /**
@@ -173,7 +185,8 @@ export class Run {
   /** The run's rooms: home plus every room holding one of its actors. */
   roomsInUse(): RoomId[] {
     const rooms = new Set<RoomId>([this.home]);
-    for (const ref of this.agents.keys()) {
+    for (const [ref, a] of this.agents) {
+      if (a.gone) continue;
       const r = this.d.mirror.roomOfRef(ref);
       if (r) rooms.add(r);
     }
@@ -181,7 +194,7 @@ export class Run {
   }
 
   holdsActorIn(room: RoomId): boolean {
-    return [...this.agents.keys()].some((ref) => this.d.mirror.roomOfRef(ref) === room);
+    return [...this.agents].some(([ref, a]) => !a.gone && this.d.mirror.roomOfRef(ref) === room);
   }
 
   // ---- stage A: validate ------------------------------------------------------
@@ -200,6 +213,16 @@ export class Run {
     this.body = parsed.body;
     if (this.body.config.agents.length > this.params.capActors) {
       return { ok: false, code: "actor_limit", message: `scenario has ${this.body.config.agents.length} characters, the cap is ${this.params.capActors}` };
+    }
+    // Names and looks go to the hotel as they are: refuse what it would refuse, before any model call or spawn.
+    for (const a of this.body.config.agents) {
+      const name = a.promptProfile.displayName;
+      const nameError = actorNameError(name);
+      if (nameError) return { ok: false, code: "bad_scenario", message: `character "${name}": ${nameError}` };
+      const figure = this.body.looks?.[a.id]?.figure;
+      if (figure !== undefined && figure !== "" && !FIGURE_RE.test(figure)) {
+        return { ok: false, code: "bad_scenario", message: `character "${name}": the figure is not a valid figure string` };
+      }
     }
     // A scenario that names a model outside the allowlist is rejected (D16, D53).
     for (const a of this.body.config.agents) {
@@ -260,7 +283,6 @@ export class Run {
         const vb = mirror.view(b, clock.now())?.self;
         return !!va && !!vb && mirror.roomOfRef(a) === mirror.roomOfRef(b) && Math.max(Math.abs(va.tile[0] - vb.tile[0]), Math.abs(va.tile[1] - vb.tile[1])) <= 2;
       },
-      chooseMode: (agentId, content, committed) => this.chooseMode(agentId, content, committed),
       timing: this.d.timing?.gateway ?? {},
       // The scenario's own ending (goal_end_offered) stops the runtime; the run follows it.
       onStopped: (_id, reason) => {
@@ -293,6 +315,8 @@ export class Run {
       generateConcurrency: hotel.llm.concurrency,
       generateDeadlineMs: GENERATE_DEADLINE_MS,
       onConsult,
+      // Decided once, where the hearing is stamped, so what the room hears matches what is delivered.
+      chooseMode: (agentId, content, committed) => this.chooseMode(agentId, content, committed),
       arbiter: {},
       spaceMirror: mirror,
       onAgentCommitted: (info) => this.onCommitted(info),
@@ -306,7 +330,13 @@ export class Run {
       extraGateways: { hotel: () => this.gateway, breaker: () => this.breaker.gateway },
       hotel: hotelOptions,
     };
-    this.handle = await buildConfiguredSimulation(cfg, options);
+    const built = await buildConfiguredSimulation(cfg, options);
+    // The run was stopped while the simulation was being built (the hotel's run_end): nothing else may start.
+    if (this.stopping) {
+      await built.close().catch(() => undefined);
+      return;
+    }
+    this.handle = built;
     this.port = createRuntimePort(this.handle);
     this.rooms.add(this.home);
     const simulationId = this.handle.simulationId;
@@ -343,7 +373,13 @@ export class Run {
 
     link.subscribe(this.home);
     if (!(await link.waitForRoom(this.home, 10_000))) throw new Error("the home room did not sync");
+    if (this.stopping) return;
     await this.spawnCast();
+    if (this.stopping) {
+      await this.walkOut();
+      for (const ref of this.agents.keys()) this.d.mirror.unregisterActor(ref);
+      return;
+    }
     this.enterRoom();
     this.state = "running";
     this.loop.start();
@@ -384,6 +420,7 @@ export class Run {
     const { link, mirror, clock } = this.d;
     const t = { ...SPAWN_DEFAULTS, ...this.d.timing };
     for (const [ref, a] of this.agents) {
+      if (this.stopping) return;
       const lease = link.leaseOf(this.id);
       if (lease === undefined) throw new Error("lease lost before spawn");
       const cid = link.nextCid(this.id);
@@ -447,11 +484,13 @@ export class Run {
    */
   onCommitted(info: AgentCommitInfo): void {
     const ref = info.agentId;
-    if (!this.agents.has(ref) || this.state === "stopping" || this.state === "ended") return;
+    if (!this.agents.has(ref) || this.agents.get(ref)?.gone || this.state === "stopping" || this.state === "ended") return;
     const mine = info.committedEvents.filter((e) => e.actorId === ref);
     if (mine.some((e) => e.type === "message_sent" || e.type === "reply_sent")) this.noOpStreak.set(ref, 0);
     else if (mine.some((e) => e.type === "no_op_recorded")) this.noOpStreak.set(ref, (this.noOpStreak.get(ref) ?? 0) + 1);
     this.arousal.set(ref, info.agentState.coreMood.arousal);
+    // A paused run commits nothing new to the body: no planning until it resumes.
+    if (this.state === "paused") return;
     const space = info.space ?? this.d.mirror.view(ref, this.d.clock.now());
     if (!space) return;
     const body = info.body;
@@ -494,7 +533,7 @@ export class Run {
     if (!handle) return;
     const now = this.d.clock.now();
     for (const ref of this.agents.keys()) {
-      if (planned.has(ref) || this.state !== "running") continue;
+      if (planned.has(ref) || this.state !== "running" || this.agents.get(ref)?.gone) continue;
       const state: AgentState | null = await handle.repositories.agentStateRepo.get(handle.simulationId, ref);
       const space = this.d.mirror.view(ref, now);
       if (!state || !space) continue;
@@ -619,6 +658,11 @@ export class Run {
    */
   private async onPairOutcome(info: PairInfo & { outcome: string }): Promise<void> {
     const refused = info.outcome === "dodge" || info.outcome === "push";
+    if (refused && info.withHuman) {
+      // A human who turned the act down is left alone for a minute (planner memory).
+      const mem = this.memory.get(info.agentId) ?? {};
+      this.memory.set(info.agentId, { ...mem, pairRefusedAt: { ...mem.pairRefusedAt, [info.withRef]: this.d.clock.now() } });
+    }
     if (refused) {
       await this.onPairAborted({ ...info, cause: info.outcome as "dodge" | "push" });
     } else {
@@ -671,9 +715,28 @@ export class Run {
       // The executor clears its plans by ref, so it must see the frame before the ref is unregistered.
       this.executor?.handleFrame(frame);
       this.d.mirror.unregisterActor(ref);
+      if (a) this.onActorRemoved(ref);
       return;
     }
     this.executor?.handleFrame(frame);
+  }
+
+  /**
+   * The hotel removed an actor (an admin kick, a despawn): it is dropped from
+   * scheduling so it never costs another model call, and the run ends, walking
+   * out whoever is left, once nobody remains.
+   */
+  private onActorRemoved(ref: string): void {
+    if (this.state === "stopping" || this.state === "ended" || this.state === "failed") return;
+    this.dropPending(ref);
+    this.gateway?.stopTyping(ref);
+    let remaining = [...this.agents.values()].filter((x) => !x.gone).length;
+    try {
+      remaining = Math.min(remaining, this.port?.retireActor(ref) ?? remaining);
+    } catch (err) {
+      this.d.logger.warn("actor not retired", { run: this.id, agent: ref, error: err instanceof Error ? err.message : String(err) });
+    }
+    if (remaining === 0) void this.stop("stopped", "no actors remain");
   }
 
   mirrorMoved(ref: string): void {
@@ -705,6 +768,7 @@ export class Run {
     this.state = "paused";
     this.pauseCause = cause;
     this.loop?.pause();
+    this.gateway?.setPaused(true);
   }
 
   /** Resume rules (D46, D49): admin resumes anything but an open breaker; `auto` only idle; the breaker only itself. */
@@ -719,6 +783,7 @@ export class Run {
     }
     this.state = "running";
     this.pauseCause = undefined;
+    this.gateway?.setPaused(false);
     if (!this.linkDown) this.loop.resume();
     return true;
   }

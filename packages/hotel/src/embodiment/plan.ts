@@ -10,10 +10,13 @@ import {
   FIDGET_COOLDOWN_MS,
   GESTURE_COOLDOWN_MS,
   LAUGH_COOLDOWN_MS,
+  MAX_APPROACHERS,
+  PAIR_REFUSAL_COOLDOWN_MS,
   SHOUT_COOLDOWN_MS,
   SPEAKER_RECENT_MS,
   WITHDRAW_AT,
 } from "./constants.js";
+import { tileKey } from "../space/geometry.js";
 import { blockedTiles, isFree, occupiedTiles, pickTile } from "./tiles.js";
 import type { EmbodimentPlanner, PlanInput, PlannedCommand, PlannerMemory, SpeechModeChoice } from "./types.js";
 
@@ -105,7 +108,8 @@ function fromBodyIntent(ctx: Ctx): void {
         if (!target) break;
         const ideal = m.kind === "approach" ? (m.band === "intimate" ? BAND.intimate : m.band === "social" ? 4 : BAND.personal) : BAND.personal;
         if (chebyshev(self.tile, target.tile) <= Math.max(ideal, 1)) break;
-        const to = pickTile({ room, self: self.ref, near: target.tile, radius: ideal + 1, awayFrom: { tile: target.tile, ideal }, rng: input.rng });
+        if (crowdedApproach(ctx, target)) break;
+        const to = pickTile({ room, self: self.ref, near: target.tile, radius: ideal + 1, awayFrom: { tile: target.tile, ideal }, rng: input.rng, avoid: walkingGoals(ctx) });
         if (to) walkTo(ctx, to);
         break;
       }
@@ -179,9 +183,34 @@ function fromBodyIntent(ctx: Ctx): void {
  * chip is the consent); an actor target needs attraction and comfort.
  */
 function pairAllowed(ctx: Ctx, target: Presence): boolean {
-  if (target.kind === "human") return true;
+  if (target.kind === "human") return !recentlyRefused(ctx, target);
   const rel = ctx.input.agentState.relationalStates.get(target.ref);
   return rel !== undefined && rel.attraction >= 0.4 && rel.comfort >= 0.4;
+}
+
+/** A human who dodged or pushed away one of this actor's pair acts in the last minute is not approached or paired again. */
+function recentlyRefused(ctx: Ctx, target: Presence): boolean {
+  if (target.kind !== "human") return false;
+  const at = ctx.mem.pairRefusedAt?.[target.ref];
+  return at !== undefined && ctx.input.now - at < PAIR_REFUSAL_COOLDOWN_MS;
+}
+
+/** Tiles other actors are walking to right now: nobody is sent to the same spot. */
+function walkingGoals(ctx: Ctx): Set<string> {
+  const goals = new Set<string>();
+  for (const p of ctx.room.occupants) if (p.ref !== ctx.self.ref && p.kind === "actor" && p.walkGoal) goals.add(tileKey(p.walkGoal));
+  return goals;
+}
+
+/** A human already has MAX_APPROACHERS actors heading their way: another one would crowd them. */
+function crowdedApproach(ctx: Ctx, target: Presence): boolean {
+  if (target.kind !== "human") return false;
+  let n = 0;
+  for (const p of ctx.room.occupants) {
+    if (p.ref === ctx.self.ref || p.kind !== "actor" || !p.walkGoal) continue;
+    if (chebyshev(p.walkGoal, target.tile) <= BAND.socialMax / 2) n++;
+  }
+  return n >= MAX_APPROACHERS;
 }
 
 /** Gesture with the 15 s cooldown per kind and never the same twice in a row. */
@@ -227,8 +256,10 @@ function automaticRules(ctx: Ctx): void {
     if (to && allowedMove(ctx, to)) walkTo(ctx, to);
   } else if (other && speaker && dist >= APPROACH_AT && closeness > distance) {
     // 3. Interlocutor distance: approach to the personal band (dead band 2..3, hysteresis).
-    const to = pickTile({ room, self: self.ref, near: other.tile, radius: 3, awayFrom: { tile: other.tile, ideal: BAND.personal }, rng: input.rng });
-    if (to && allowedMove(ctx, to)) walkTo(ctx, to);
+    if (!crowdedApproach(ctx, other) && !recentlyRefused(ctx, other)) {
+      const to = pickTile({ room, self: self.ref, near: other.tile, radius: 3, awayFrom: { tile: other.tile, ideal: BAND.personal }, rng: input.rng, avoid: walkingGoals(ctx) });
+      if (to && allowedMove(ctx, to)) walkTo(ctx, to);
+    }
   }
 
   // 6. Warmth: smile, occasional laugh.

@@ -5,6 +5,7 @@ import type {
   ResolvedIntentOutcome,
   SpaceMirror,
   SpaceView,
+  SpeechMode,
 } from "@perfectman/shared";
 import type { ArbiterConfig, BudgetSoftLimits, PulseReason, SplitPulseConfig } from "./hotel-runtime-api.js";
 import type { InMemoryEventRepositoryOptions } from "./in-memory-stores.js";
@@ -50,6 +51,11 @@ export type HotelSimulationOptions = SplitPulseConfig & {
   arbiter?: Partial<ArbiterConfig>;
   /** Source of per-agent `SpaceView`s (ADR-0018); also used to stamp who hears each actor line. */
   spaceMirror?: SpaceMirror;
+  /**
+   * The mode an actor's `say` line is actually delivered in (the planner's shout choice). Asked once, when
+   * the line is stamped with who hears it, so the stamped hearing and the delivered mode are the same.
+   */
+  chooseMode?: (agentId: string, content: string, committed: SpeechMode) => SpeechMode;
   /** Fires after each agent's intent is resolved and appended; the planner's seam. */
   onAgentCommitted?: OnAgentCommitted;
   /** Wall clock for the arbiter and the space reads; injectable for tests. */

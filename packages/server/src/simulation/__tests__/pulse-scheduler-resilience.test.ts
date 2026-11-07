@@ -11,6 +11,7 @@ import { OperatorProjection } from "../projections/operator-projection.js";
 import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import { LlmCircuitBreaker } from "../../llm/llm-circuit-breaker.js";
+import { LLMHttpError } from "../../llm/llm-errors.js";
 import type { AgentContext, AgentRuntime, LLMBudget } from "../pulse-scheduler.js";
 import type { AgentState, CommittedEvent, PersonaConfig, Simulation, SimulationSettings } from "@perfectman/shared";
 
@@ -188,7 +189,7 @@ describe("PulseScheduler resilience", () => {
 
   it("a generateIntent that throws before the step runs still counts toward the circuit breaker", async () => {
     agentRuntime = {
-      generateIntent: vi.fn().mockRejectedValue(new Error("provider factory exploded")),
+      generateIntent: vi.fn().mockRejectedValue(new LLMHttpError(503, "provider factory exploded")),
     };
     const breaker = new LlmCircuitBreaker();
     const scheduler = await makeScheduler();
@@ -198,6 +199,20 @@ describe("PulseScheduler resilience", () => {
       gateway.operatorEvents.length = 0;
     }
     expect(breaker.getState("sim_test")).toMatchObject({ phase: "open", consecutiveFailures: 5 });
+  });
+
+  it("a generateIntent that throws a bug of our own (not a provider error) never counts toward the breaker", async () => {
+    agentRuntime = {
+      generateIntent: vi.fn().mockRejectedValue(new TypeError("cannot read properties of undefined")),
+    };
+    const breaker = new LlmCircuitBreaker();
+    const scheduler = await makeScheduler();
+    for (let i = 0; i < 6; i++) {
+      await scheduler.runPulse();
+      for (const event of gateway.operatorEvents) breaker.observe(event);
+      gateway.operatorEvents.length = 0;
+    }
+    expect(breaker.getState("sim_test")).toMatchObject({ phase: "closed", consecutiveFailures: 0 });
   });
 
   it("does not run overlapping pulses while a pulse is in flight", async () => {
