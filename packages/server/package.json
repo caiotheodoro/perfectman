@@ -7,6 +7,10 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./hotel": {
+      "import": "./dist/hotel.js",
+      "types": "./dist/hotel.d.ts"
     }
   },
   "main": "./dist/index.js",

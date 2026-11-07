@@ -1,5 +1,5 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-import { Ollama, type ChatRequest } from "ollama";
+import type { ChatRequest } from "ollama";
 import { APICallError, type JSONSchema7 } from "ai";
 import { ModelIntentPacketJsonSchema, ModelIntentPacketWithBodyJsonSchema } from "@perfectman/shared";
 import type { BuiltPrompt } from "../agent/agent-runtime.types.js";
@@ -410,6 +410,8 @@ export async function generateOllamaIntent(
   // The Ollama SDK appends /api/chat to its host; strip an optional /v1 suffix
   // so OpenAI-compatible-shaped baseUrls still resolve to the native endpoint.
   const host = config.baseUrl.replace(/\/v1\/?$/, "").replace(/\/$/, "");
+  // Loaded on first use so a process that never talks to Ollama never loads the SDK.
+  const { Ollama } = await import("ollama");
   const client = new Ollama({ host, fetch: fetchWithTimeout });
 
   const messages = [
