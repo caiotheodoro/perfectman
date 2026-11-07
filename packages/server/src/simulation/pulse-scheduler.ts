@@ -184,6 +184,8 @@ type AgentDecision = {
   addressed: boolean;
   priority: GeneratePriority;
   space?: SpaceView;
+  /** Wall clock when the agent's view was taken: a human line that arrived later is not one this decision answers. */
+  decidedAt: number;
 };
 
 type GenerateTask = {
@@ -200,6 +202,7 @@ type DecisionContext = {
   actionEmotions: ActionEmotions;
   pressures: Pressure[];
   channelAnchorId: string;
+  decidedAt: number;
   /** The event that woke this agent: a whisper to it is answered as a whisper (hotel, D44). */
   trigger?: CommittedEvent;
 };
@@ -703,7 +706,8 @@ export class PulseScheduler {
       membership,
     );
 
-    const space = this.config.spaceMirror?.view(agent.id, this.clock());
+    const decidedAt = this.clock();
+    const space = this.config.spaceMirror?.view(agent.id, decidedAt);
     const snapshot = this.config.engineSnapshotProjection.build({
       pulseIndex,
       simulation: sim,
@@ -793,10 +797,11 @@ export class PulseScheduler {
       actionEmotions: stepResult.actionEmotions,
       pressures: stepResult.pressures,
       channelAnchorId,
+      decidedAt,
       ...(stepResult.perceptionPacket.triggeringEvent ? { trigger: stepResult.perceptionPacket.triggeringEvent } : {}),
     });
 
-    return { agent, agentState, stepResult, channelAnchorId, addressed, priority, ...(space ? { space } : {}) };
+    return { agent, agentState, stepResult, channelAnchorId, addressed, priority, decidedAt, ...(space ? { space } : {}) };
   }
 
   /**
@@ -864,6 +869,7 @@ export class PulseScheduler {
       settings: sim.settings,
       actionEmotions: stepResult.actionEmotions,
       agentNames: this.agentNamesByAgentId,
+      decidedAt: decision.decidedAt,
       ...(stepResult.decision.holdSuggested === true ? { holdSuggested: true } : {}),
       ...(decision.space ? { space: decision.space } : {}),
       ...(stepResult.perceptionPacket.bodyHandles ? { bodyHandles: stepResult.perceptionPacket.bodyHandles } : {}),
@@ -998,6 +1004,7 @@ export class PulseScheduler {
         settings: sim.settings,
         actionEmotions: context.actionEmotions,
         agentNames: this.agentNamesByAgentId,
+        decidedAt: context.decidedAt,
         ...(context.trigger ? { trigger: context.trigger } : {}),
       });
       if (resolved.committedEvents.length > 0) {

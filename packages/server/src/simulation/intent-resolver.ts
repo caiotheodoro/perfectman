@@ -109,6 +109,8 @@ type ResolveContext = {
   bodyDropped?: BlockedReason[];
   /** The event this decision answers. A whisper to the agent makes its spoken reply a whisper back (D44). */
   trigger?: CommittedEvent;
+  /** Hotel: wall clock when the agent's view was taken. A human line that came in after it is not answered by this decision. */
+  decidedAt?: number;
 };
 
 const MENTION_BOUNDARY = "[^\\p{L}\\p{N}]";
@@ -562,7 +564,7 @@ export type AudibilityResult = {
  * into a human line or ambient talk. Without `classify` every line is ambient.
  */
 export type ResolverArbiter = IRoomSpeechArbiter & {
-  classify?(agentId: string, roomId: string, now: number, answering?: string): ArbiterLineKind;
+  classify?(agentId: string, roomId: string, now: number, answering?: string, decidedAt?: number): ArbiterLineKind;
 };
 
 export class IntentResolver {
@@ -995,8 +997,8 @@ export class IntentResolver {
     if (roomId === undefined) return undefined;
     const now = this.clock();
     const answering = ctx.trigger?.id;
-    const kind = this.arbiter.classify?.(intent.actorId, roomId, now, answering) ?? "ambient";
-    const decision = this.arbiter.gate(intent.actorId, roomId, kind, now, answering);
+    const kind = this.arbiter.classify?.(intent.actorId, roomId, now, answering, ctx.decidedAt) ?? "ambient";
+    const decision = this.arbiter.gate(intent.actorId, roomId, kind, now, answering, ctx.decidedAt);
     return decision.outcome === "blocked" ? decision.violation : undefined;
   }
 

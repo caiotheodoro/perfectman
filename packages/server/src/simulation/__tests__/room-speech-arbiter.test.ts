@@ -26,6 +26,19 @@ describe("RoomSpeechArbiter rules (ADR-0021)", () => {
     expect(reasonOf(arbiter.gate("duda", ROOM, "interjection", 2_200, "w1"))).toBe("room_speech:one_answer_per_line");
   });
 
+  it("a line the actor had in flight when a human line came in does not answer it (run 30: Leo's ambient line blocked his real answer)", () => {
+    const arbiter = new RoomSpeechArbiter();
+    // Leo's view was taken at 900; the guest speaks to him at 1000; his old pulse commits at 1300.
+    arbiter.noteHumanLine(ROOM, { eventId: "h1", at: 1_000, addressedIds: ["leo"] });
+    expect(arbiter.classify("leo", ROOM, 1_300, undefined, 900)).toBe("interjection");
+    expect(reasonOf(arbiter.gate("leo", ROOM, "interjection", 1_300, undefined, 900))).toBe("allowed");
+    // The focused pulse the line woke took its view at 1050: it is the addressed reply, and it goes out.
+    expect(arbiter.classify("leo", ROOM, 5_000, "h1", 1_050)).toBe("addressed");
+    expect(reasonOf(arbiter.gate("leo", ROOM, "addressed", 5_000, "h1", 1_050))).toBe("allowed");
+    // Having answered, a second try is a duplicate.
+    expect(reasonOf(arbiter.gate("leo", ROOM, "interjection", 5_100, "h1", 1_060))).toBe("room_speech:one_answer_per_line");
+  });
+
   it("an unrelated decision never sees a whisper as an open line", () => {
     const arbiter = new RoomSpeechArbiter();
     arbiter.noteHumanLine(ROOM, { eventId: "w1", at: 1_000, addressedIds: ["duda"], whisper: true });

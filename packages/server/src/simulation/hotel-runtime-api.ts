@@ -148,8 +148,13 @@ export interface IRoomSpeechArbiter {
   /** Decide phase: lets the scheduler skip generation for a blocked, non-addressed agent. */
   preview(agentId: string, roomId: string, now: number): ArbiterDecision;
   /** Resolver phase, authoritative: runs after `allowAction`, before `recordAction`. */
-  /** `answering`: the event this decision replies to; it is what closes an open whisper. */
-  gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number, answering?: string): ArbiterDecision;
+  /**
+   * `answering`: the event this decision replies to; it is what closes an open whisper.
+   * `decidedAt`: when the decision's view was taken; a human line noted after it stays open for the focused pulse it
+   * woke, so a line the actor had in flight cannot be counted as the answer to it (run 30: Leo's ambient line, 0.3 s
+   * after the guest's, closed the guest's line and the real answer was blocked as `one_answer_per_line`).
+   */
+  gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number, answering?: string, decidedAt?: number): ArbiterDecision;
 }
 
 // ---- ADR-0025: budget as a warning, usage getter ----------------------------

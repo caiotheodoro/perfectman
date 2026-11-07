@@ -97,9 +97,9 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
    * addressee that has not answered yet is `addressed`; inside the quiet
    * window after a human line it is an `interjection`; otherwise `ambient`.
    */
-  classify(agentId: string, roomId: string, now: number, answering?: string): ArbiterLineKind {
+  classify(agentId: string, roomId: string, now: number, answering?: string, decidedAt?: number): ArbiterLineKind {
     const room = this.rooms.get(roomId);
-    if (room && this.openLinesFor(room, agentId, now, answering).length > 0) return "addressed";
+    if (room && this.openLinesFor(room, agentId, now, answering, decidedAt).length > 0) return "addressed";
     const line = room?.humanLines.at(-1);
     if (line && now - line.at < this.effectiveQuietMs()) return "interjection";
     return "ambient";
@@ -119,11 +119,11 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
   }
 
   /** Resolver phase, authoritative. Records the line when allowed. */
-  gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number, answering?: string): ArbiterDecision {
+  gate(agentId: string, roomId: string, kind: ArbiterLineKind, now: number, answering?: string, decidedAt?: number): ArbiterDecision {
     const room = this.room(roomId);
     // A kind decided earlier can be stale (another pulse answered the line since): addressed only while a line is still open for the agent.
     const effective: ArbiterLineKind =
-      kind === "addressed" && room.humanLines.length > 0 && this.openLinesFor(room, agentId, now, answering).length === 0 ? "interjection" : kind;
+      kind === "addressed" && room.humanLines.length > 0 && this.openLinesFor(room, agentId, now, answering, decidedAt).length === 0 ? "interjection" : kind;
     const rule = this.check(room, agentId, effective, now);
     if (rule) return blocked(rule);
     room.lastActorLineAt = now;
@@ -132,7 +132,9 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
     // else: a line the agent had in flight when it came in must not close it.
     if (effective !== "ambient") {
       const whispered = answering !== undefined ? room.humanLines.find((l) => l.eventId === answering && l.whisper) : undefined;
-      (whispered ?? this.openLinesFor(room, agentId, now)[0] ?? [...room.humanLines].reverse().find((l) => !l.whisper))?.answeredBy.add(agentId);
+      // Only a line the decision could have seen: one noted after `decidedAt` is the focused pulse's to answer.
+      const seen = (l: HumanLineState): boolean => decidedAt === undefined || l.at <= decidedAt;
+      (whispered ?? this.openLinesFor(room, agentId, now, undefined, decidedAt)[0] ?? [...room.humanLines].reverse().find((l) => !l.whisper && seen(l)))?.answeredBy.add(agentId);
     }
     return ALLOWED;
   }
@@ -179,9 +181,14 @@ export class RoomSpeechArbiter implements IRoomSpeechArbiter {
   }
 
   /** Lines addressed to this agent it has not answered, oldest first. A whisper is open only to the decision that answers it. */
-  private openLinesFor(room: RoomState, agentId: string, now: number, answering?: string): HumanLineState[] {
+  private openLinesFor(room: RoomState, agentId: string, now: number, answering?: string, decidedAt?: number): HumanLineState[] {
     return room.humanLines.filter(
-      (l) => now - l.at < OPEN_LINE_MS && l.addressed.has(agentId) && !l.answeredBy.has(agentId) && (!l.whisper || l.eventId === answering),
+      (l) =>
+        now - l.at < OPEN_LINE_MS &&
+        l.addressed.has(agentId) &&
+        !l.answeredBy.has(agentId) &&
+        (!l.whisper || l.eventId === answering) &&
+        (decidedAt === undefined || l.at <= decidedAt || l.eventId === answering),
     );
   }
 
