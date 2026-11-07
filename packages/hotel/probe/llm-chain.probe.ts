@@ -157,6 +157,10 @@ type BodyStats = {
   plausibleValidPct: number | null;
   /** Valid bodies that are exactly one of the two examples in that prompt's contract (a copy, not a choice). */
   copiedFromExample: number;
+  /** Valid bodies whose private motive is also word for word the example's: the whole answer was copied, not just a shape that fits the moment. */
+  copiedWhole: number;
+  /** The distinct bodies that matched an example, with counts, to tell a copy from a sensible choice. */
+  copiedShapes: Record<string, number>;
   kinds: { move: number; posture: number; gesture: number; expression: number };
 };
 
@@ -167,6 +171,8 @@ function bodyStats(prompts: Array<{ system: string; user: string }>, values: Arr
   let plausible = 0;
   let plausibleValid = 0;
   let copied = 0;
+  let copiedWhole = 0;
+  const copiedShapes: Record<string, number> = {};
   values.forEach((v, i) => {
     const user = prompts[i]?.user ?? "";
     const body = v?.["body"];
@@ -182,11 +188,17 @@ function bodyStats(prompts: Array<{ system: string; user: string }>, values: Arr
     valid++;
     if (can) plausibleValid++;
     const shown = [...(prompts[i]?.system ?? "").matchAll(/^\{"intentType".*,"body":(\{.*\})\}$/gm)].map((m) => m[1]!);
-    if (shown.includes(JSON.stringify(body))) copied++;
+    if (shown.includes(JSON.stringify(body))) {
+      copied++;
+      const key = JSON.stringify(body).replace(/"[pzfr]\d+"/g, '"h"');
+      copiedShapes[key] = (copiedShapes[key] ?? 0) + 1;
+      const motives = [...(prompts[i]?.system ?? "").matchAll(/^\{"intentType".*?"privateMotiveSummary":"([^"]*)".*,"body":\{.*\}\}$/gm)].map((m) => m[1]!);
+      if (motives.includes(String(v?.["privateMotiveSummary"] ?? ""))) copiedWhole++;
+    }
     for (const k of Object.keys(kinds) as Array<keyof typeof kinds>) if ((body as Record<string, unknown>)[k] !== undefined) kinds[k]++;
   });
   const pct = (n: number, d: number): number => (d === 0 ? 0 : Math.round((1000 * n) / d) / 10);
-  return { calls: values.length, withBody, valid, emitPct: pct(withBody, values.length), validCallPct: pct(valid, values.length), plausible, plausibleValid, plausibleValidPct: plausible === 0 ? null : pct(plausibleValid, plausible), copiedFromExample: copied, kinds };
+  return { calls: values.length, withBody, valid, emitPct: pct(withBody, values.length), validCallPct: pct(valid, values.length), plausible, plausibleValid, plausibleValidPct: plausible === 0 ? null : pct(plausibleValid, plausible), copiedFromExample: copied, copiedWhole, copiedShapes, kinds };
 }
 
 /** The eval lane's facing-rate, split by listener kind (same rule: 3 s later, within the say radius, whispers left out). */
