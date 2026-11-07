@@ -36,6 +36,14 @@ export type LlmLink = {
    * block, short event window) or "full". Absent means by window: compact for 4096 tokens or less.
    */
   promptStyle?: PromptStyle;
+  /**
+   * OpenAI-style decoding penalties sent with every call to this link, in -2..2 (0 sends none). They make a token the
+   * model already used less likely (frequency, by how often; presence, at all), which is what keeps a small model from
+   * giving the same sentence turn after turn. Absent means the model's entry in {@link KNOWN_SAMPLING}, else none.
+   * A retry of a near-duplicate adds {@link RETRY_PENALTY_BOOST} on top.
+   */
+  frequencyPenalty?: number;
+  presencePenalty?: number;
   /** Append the house rules (short in-world rules against echoing, admitting, leaking) to the system prompt. Default true. */
   harden?: boolean;
 };
@@ -84,6 +92,34 @@ export const KNOWN_PRICES: Readonly<Record<string, ModelPrice>> = {
   "gryphe/mythomax-l2-13b": { inUsdPerMTok: 0.08, outUsdPerMTok: 0.11 },
   "sao10k/l3-lunaris-8b": { inUsdPerMTok: 0.04, outUsdPerMTok: 0.05 },
 };
+
+/** Decoding penalties that measured as cutting repetition without hurting the JSON (docs/plans/hotel-llm-chain.md, fourth pass). */
+export const KNOWN_SAMPLING: Readonly<Record<string, { frequencyPenalty: number; presencePenalty: number }>> = {
+  "gryphe/mythomax-l2-13b": { frequencyPenalty: 0.5, presencePenalty: 0.5 },
+  "sao10k/l3-lunaris-8b": { frequencyPenalty: 0.5, presencePenalty: 0.5 },
+};
+/** Added to both penalties on the retry of a near-duplicate, on top of the link's own, capped at 2. */
+export const RETRY_PENALTY_BOOST = 0.4;
+
+/** Added to the temperature on the retry of a near-duplicate, up to {@link RETRY_TEMPERATURE_MAX}: the same sampling gave the same sentence. */
+export const RETRY_TEMPERATURE_BOOST = 0.25;
+export const RETRY_TEMPERATURE_MAX = 1.1;
+
+/**
+ * The penalties a call to this link carries; `retry` is the regeneration of a near-duplicate. A penalty the link sets to 0
+ * is off, retry included; one it does not set takes the model's {@link KNOWN_SAMPLING} entry, else none.
+ */
+export function linkSampling(link: Pick<LlmLink, "model" | "frequencyPenalty" | "presencePenalty">, retry: boolean): Record<string, number> {
+  const known = KNOWN_SAMPLING[link.model];
+  const one = (own: number | undefined, fallback: number | undefined): number | undefined => {
+    const base = own ?? fallback;
+    if (base === undefined || base === 0) return undefined;
+    return Math.round(Math.max(-2, Math.min(2, base + (retry ? RETRY_PENALTY_BOOST : 0))) * 100) / 100;
+  };
+  const frequency = one(link.frequencyPenalty, known?.frequencyPenalty);
+  const presence = one(link.presencePenalty, known?.presencePenalty);
+  return { ...(frequency !== undefined ? { frequency_penalty: frequency } : {}), ...(presence !== undefined ? { presence_penalty: presence } : {}) };
+}
 
 const HEADER_NAME = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
 const FORBIDDEN_HEADERS = new Set(["authorization", "proxy-authorization", "cookie", "content-type", "content-length", "host"]);
@@ -148,6 +184,12 @@ export function parseChain(raw: string, problems: string[]): LlmLink[] {
       else link.tokenRatio = ratio;
     } else if (KNOWN_TOKEN_RATIOS[model] !== undefined) link.tokenRatio = KNOWN_TOKEN_RATIOS[model];
 
+    for (const key of ["frequencyPenalty", "presencePenalty"] as const) {
+      const v = entry[key];
+      if (v === undefined || v === null) continue;
+      if (typeof v !== "number" || !(v >= -2 && v <= 2)) problems.push(`${at}.${key} must be a number between -2 and 2`);
+      else link[key] = v;
+    }
     const style = entry["promptStyle"];
     if (style !== undefined && style !== null) {
       if (style !== "full" && style !== "compact") problems.push(`${at}.promptStyle must be "full" or "compact"`);

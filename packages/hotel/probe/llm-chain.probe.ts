@@ -34,6 +34,7 @@ import type { BodyFrameLog, Direction8 } from "@perfectman/shared";
 import { runEmbodimentProbes } from "../../eval/src/probes/embodiment.ts";
 import { PromptBuilder } from "../../server/src/agent/prompt-builder.ts";
 import { normalizeWords, similarity, REPETITION_SIMILARITY_THRESHOLD } from "../../server/src/agent/repetition-guard.ts";
+import { EXAMPLE_MOTIVES } from "../../server/src/agent/hotel-body-hint.ts";
 import { AuthoringService } from "../src/authoring/authoring-service.ts";
 import type { LlmEnv } from "../src/config.ts";
 import { KNOWN_PRICES, linkPromptStyle, parseChain } from "../src/llm/chain-config.ts";
@@ -104,7 +105,7 @@ export function languageOf(text: string): "pt" | "en" | "unknown" {
 }
 
 /** D43: a character never says what it is. "ia" alone is a Portuguese verb form, so only the unambiguous forms count. */
-const SELF_REFERENCE = /\b(ai|a\.i\.|bots?|chatbots?|assistente(\s+virtual)?|assistant|rob[oô]s?|llm|chatgpt|gpt|openai|modelo\s+de\s+linguagem|language\s+model|intelig[eê]ncia\s+artificial|artificial\s+intelligence)\b/i;
+const SELF_REFERENCE = /(?<![\p{L}\p{N}])(ai|a\.i\.|bots?|chatbots?|assistente(\s+virtual)?|assistant|rob[oô]s?|llm|chatgpt|gpt|openai|modelo\s+de\s+linguagem|language\s+model|intelig[eê]ncia\s+artificial|artificial\s+intelligence)(?![\p{L}\p{N}])/iu;
 
 function parseLoose(content: string): { ok: boolean; clean: boolean; value?: Record<string, unknown> } {
   const t = content.trim();
@@ -260,6 +261,8 @@ type RepetitionReport = {
   /** Delivered lines that are a near-duplicate of the same actor's earlier line, or of another actor's in the last 8 lines. */
   deliveredSelfNear: number;
   deliveredCrossNear: number;
+  /** Delivered lines that are one of the body examples' private thoughts said out loud. */
+  thoughtLines: number;
   addressed: { lines: number; answered: number; unanswered15s: number; p50s: number | null; p95s: number | null };
   perActor: Record<string, { said: number; blocked: number }>;
 };
@@ -285,9 +288,39 @@ function allLinks(): LlmLink[] {
   return links;
 }
 
+/** The stage's default-mode cast ("Sexta no bar": a bartender, a regular, a newcomer, a musician), built through the same form path the builder uses. */
+const BAR_FORM = (guest: string) => ({
+  title: "Sexta no bar",
+  situation: "Uma sexta a noite no Bar e Lounge. Os frequentadores vao chegando, e uma pessoa nova esta prestes a entrar pela porta.",
+  language: "pt-BR",
+  cast: [
+    { name: "Duda", role: "bartender", goal: "Dona do bar, seca e atenta, sempre puxa conversa com quem chega. Quer que todos se sintam em casa e fecha a noite sem pressa.", voice: "curta, seca e simpatica", lines: ["Hoje o bar está calmo, aproveita.", "O que vai ser, querido?", "Aqui ninguém passa sede, pode crer.", "Não tenho pressa de fechar, fica à vontade."], start: "start" },
+    { name: "Rafa", role: "freguês antigo", goal: "Frequenta o bar ha anos e sabe da vida de todo mundo. Gosta de fofoca leve e de sentar no sofa para ver o movimento.", voice: "calorosa, fala bastante", lines: ["Eu conheço esse povo desde que o bar abriu.", "Sabe a última? Melhor não contar.", "Vem sentar aqui, a vista é boa.", "Hmm, isso eu já ouvi por aí."], start: "after 8s" },
+    { name: "Gabi", role: "recém-chegada", goal: `Primeira noite na cidade, curiosa e um pouco tímida. Ficou encantada por ${guest}, a pessoa nova no bar, e quer dar um beijo nela assim que tiver coragem.`, voice: "educada e curiosa", lines: ["Nossa, nunca vim num lugar assim.", "Desculpa, posso perguntar uma coisa?", "Você mora aqui por perto?", "Acho que estou meio nervosa hoje."], start: "after 16s" },
+    { name: "Leo", role: "músico", goal: "Toca aqui às sextas, brincalhão. Deixou o violão no Quarto e quer ir buscar, passando pela porta para o Quarto, e depois voltar.", voice: "brincalhão", lines: ["Se eu soubesse, tinha trazido o violão!", "Toco aqui toda sexta, se quiser ouvir.", "Haha, essa foi boa.", "Calma, a noite ainda é uma criança."], start: "after 24s" },
+  ],
+});
+/** What the guest says to the stage's cast, in turn (the stage-1 script). */
+const BAR_LINES: Array<[string, string]> = [
+  ["Rafa", "Rafa, tudo bem? Que lugar é esse?"],
+  ["Duda", "Duda, o que você recomenda pra beber hoje?"],
+  ["Gabi", "Gabi, você é nova por aqui também?"],
+  ["Leo", "Leo, você toca que instrumento?"],
+  ["Rafa", "Rafa, quem é o mais fofoqueiro daqui?"],
+  ["Duda", "Duda, o bar fecha a que horas?"],
+  ["Leo", "Leo, toca uma música pra gente depois?"],
+  ["Gabi", "Gabi, o que você achou do lugar?"],
+  ["Rafa", "Rafa, você vem sempre aqui?"],
+  ["Duda", "Duda, tem algum petisco bom?"],
+  ["Leo", "Leo, de onde você é?"],
+  ["Gabi", "Gabi, quer sentar comigo?"],
+];
+const BAR = env["PROBE_CAST"] !== "preset" && (env["PROBE_SCENARIOS"] ?? "").split(",").map((x) => x.trim()).includes("default");
+
 async function scenarioBody(): Promise<{ body: { config: { agents: Array<{ id: string; promptProfile: { displayName: string } }> } } & Record<string, unknown> }> {
   const mock: LlmEnv = { provider: "mock", baseUrl: "", apiKeyEnv: "PERFECTMAN_LLM_API_KEY", models: ["mock"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
   const svc = new AuthoringService({ llm: mock, apiKey: undefined, presetsRoot: PRESETS });
+  if (BAR) return svc.compile({ source: JSON.stringify(BAR_FORM("ana")) }) as never;
   const { source } = await svc.preset(SCENE);
   return svc.compile({ source }) as never;
 }
@@ -382,6 +415,8 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
     const poll = setInterval(() => {
       while (seenChats < fake.chats.length) {
         const c = fake.chats[seenChats++]!;
+        // A thought bubble is the motive shown over the actor's head, not something said in the room.
+        if (c.mode === "thought" || c.mode === "caption") continue;
         chats.push({ at: Date.now(), actor: c.actor, mode: c.mode, text: c.text, to: c.to ?? null });
       }
     }, 40);
@@ -432,14 +467,14 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
       // The stage's default mode: base pulses at 6 s carry the room, a guest speaks to the cast in turn.
       const seconds = Number(env["PROBE_SECONDS"] ?? 300);
       const everyMs = Number(env["PROBE_EVERY_SEC"] ?? 25) * 1000;
-      const pool = [...ADDRESSED, ...ADDRESSED_MORE];
+      const pool = BAR ? BAR_LINES.map(([, t]) => t.replace(/^[^,]+, /, "{n}, ")) : [...ADDRESSED, ...ADDRESSED_MORE];
       const startedAt = Date.now();
       defaultStartedAt = startedAt;
       let nextAt = startedAt + 4000;
       let i = 0;
       while (Date.now() - startedAt < seconds * 1000 && !over()) {
         if (Date.now() >= nextAt) {
-          const target = agents[i % agents.length]!;
+          const target = BAR ? (agents.find((a) => a.name === BAR_LINES[i % BAR_LINES.length]![0]) ?? agents[i % agents.length]!) : agents[i % agents.length]!;
           const text = pool[i % pool.length]!.replace("{n}", target.name);
           sentLines.push({ at: Date.now(), target: target.id, text });
           fake.humanSay(12, 9, text);
@@ -467,6 +502,8 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
     clearInterval(poll);
     while (seenChats < fake.chats.length) {
       const c = fake.chats[seenChats++]!;
+        // A thought bubble is the motive shown over the actor's head, not something said in the room.
+        if (c.mode === "thought" || c.mode === "caption") continue;
       chats.push({ at: Date.now(), actor: c.actor, mode: c.mode, text: c.text, to: c.to ?? null });
     }
 
@@ -535,6 +572,7 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
       const profiles = new Map(
         (body.config.agents as unknown as Array<{ id: string; promptProfile: { styleExamples?: { default?: string[] } } }>).map((a) => [a.id, a.promptProfile.styleExamples?.default ?? []] as const),
       );
+      const dumpRepeats: Array<{ who: string | undefined; source: Source; ambient: boolean; text: string }> = [];
       for (const t of okTaps) {
         const isRetry = t.prompt.retry === "correction";
         const ambient = ambientOf(t);
@@ -555,9 +593,14 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
         else if (samples.some((o) => isNear(line, o))) source = "sample";
         if (!source) continue;
         repeatedFirst++;
+        dumpRepeats.push({ who: agents.find((a) => a.id === t.agentId)?.name, source, ambient, text: line });
         bySource[source]++;
         if (ambient) repeatedAmbient++;
         else repeatedTriggered++;
+      }
+      if (env["PROBE_DUMP"]) {
+        const names = new Map(agents.map((a) => [a.id, a.name]));
+        writeFileSync(env["PROBE_DUMP"], JSON.stringify({ lines: said.map((c) => ({ who: names.get(actorOf.get(c.actor)!), text: c.text })), repeats: dumpRepeats }, null, 1));
       }
       let deliveredSelfNear = 0;
       let deliveredCrossNear = 0;
@@ -594,6 +637,7 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
         repeatedTriggered,
         deliveredSelfNear,
         deliveredCrossNear,
+        thoughtLines: said.filter((c) => EXAMPLE_MOTIVES.some((m) => similarity(c.text, m) >= 0.7)).length,
         addressed: { lines: sentLines.length, answered: lats.length, unanswered15s: unanswered, p50s: lats.length ? Math.round(percentile(lats, 50)! / 100) / 10 : null, p95s: lats.length ? Math.round(percentile(lats, 95)! / 100) / 10 : null },
         perActor,
       };

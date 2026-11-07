@@ -28,7 +28,7 @@ import type { CastEntry, GatewayExecutor, GatewayTiming } from "../gateway/hotel
 import { GuestIngestor } from "../ingest/guest-ingestor.js";
 import { BreakerDriver } from "../llm/breaker.js";
 import { COST_HEADER, LlmChain } from "../llm/chain.js";
-import { GENERATE_DEADLINE_MS, hostLlmConfig, pingLlm } from "../llm/env.js";
+import { AMBIENT_QUIET_MS, GENERATE_DEADLINE_MS, hostLlmConfig, pingLlm } from "../llm/env.js";
 import { LlmGovernor } from "../llm/governor.js";
 import { LlmMeter } from "../llm/meter.js";
 import { tileKey } from "../space/geometry.js";
@@ -397,6 +397,8 @@ export class Run {
       generateConcurrency: hotel.llm.concurrency,
       generateDeadlineMs: GENERATE_DEADLINE_MS,
       onConsult,
+      // A second "say something" for an actor in a room where nothing new happened only gives the first one again.
+      ambientGate: { quietMs: AMBIENT_QUIET_MS },
       // Decided once, where the hearing is stamped, so what the room hears matches what is delivered.
       chooseMode: (agentId, content, committed) => this.chooseMode(agentId, content, committed),
       wouldShout: (agentId, content) => chooseSpeechMode(this.arousal.get(agentId) ?? 0, content, this.memory.get(agentId) ?? {}, this.d.clock.now(), "say").mode === "shout",
@@ -410,7 +412,7 @@ export class Run {
     const options = {
       agentRuntimeFactory: (registry: ConstructorParameters<typeof AgentRuntime>[1]) => {
         this.registry = registry;
-        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2 });
+        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7, ambientMaxRetries: 1 });
       },
       extraGateways: { hotel: () => this.gateway, breaker: () => this.breaker.gateway },
       hotel: hotelOptions,

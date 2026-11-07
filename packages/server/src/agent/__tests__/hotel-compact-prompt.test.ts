@@ -4,8 +4,8 @@ import type { CommittedEvent } from "@perfectman/shared";
 import { PromptBuilder } from "../prompt-builder.js";
 import { ActionIntentPromptBuilder } from "../action-intent-prompt-builder.js";
 import { EXAMPLE_PROMPT_PROFILE } from "../persona-prompt-profile.js";
-import { COMPACT_EVENT_WINDOW, COMPACT_MEMORIES, clip } from "../hotel-compact-prompt.js";
-import { bodyExamples } from "../hotel-body-hint.js";
+import { COMPACT_EVENT_WINDOW, COMPACT_MEMORIES, angleFor, clip } from "../hotel-compact-prompt.js";
+import { bodyExamples, rotateSamples } from "../hotel-body-hint.js";
 import { makeAgentRuntimeInput, makeContextMemory } from "./agent-input-test-helpers.js";
 import { hotelInput, hotelPerception, humanLine } from "./hotel-test-helpers.js";
 
@@ -43,7 +43,7 @@ describe("compact hotel prompt", () => {
     expect(compact.templateVersion).not.toBe(full.templateVersion);
   });
 
-  it("keeps a short event window, the top memories and the last three own lines", () => {
+  it("keeps a short event window, the top memories and the last four own lines", () => {
     const { input } = busyInput();
     const built = PromptBuilder.build(input, profile, "action_intent", undefined, "compact");
     // The trigger plus the window; the oldest lines are not there.
@@ -54,8 +54,8 @@ describe("compact hotel prompt", () => {
     // Memories: highest confidence first, at most k.
     expect(built.user.match(/memory-\d-marker/g)).toEqual(["memory-4-marker", "memory-3-marker", "memory-2-marker"].slice(0, COMPACT_MEMORIES));
     expect(built.system).toContain("fala cinco minha");
-    expect(built.system).toContain("fala três minha");
-    expect(built.system).not.toContain("fala dois minha");
+    expect(built.system).toContain("fala dois minha");
+    expect(built.system).not.toContain("fala um minha");
   });
 
   it("keeps the body block to people who are near and the addressee, and a few places", () => {
@@ -177,6 +177,48 @@ describe("the body hint in the hotel output contract", () => {
       }
     }
     expect(seen.size).toBeGreaterThanOrEqual(8);
+  });
+});
+
+describe("already said", () => {
+  const withRoom = (ownLines: string[], roomLines: string[]) => {
+    const events = roomLines.map((c, i) => ({ ...humanLine(c, "Duda"), id: `r${i}`, actorId: `cast-${i}`, payload: { content: c, senderName: "Duda" } }) as CommittedEvent);
+    const input = hotelInput(events);
+    input.perceptionPacket.ownRecentUtterances = ownLines;
+    return PromptBuilder.build(input, profile, "action_intent", undefined, "compact");
+  };
+
+  it("lists what the others just said, apart from the actor's own lines, as lines not to repeat", () => {
+    const built = withRoom(["minha fala antiga"], ["a fala do Tavo sobre o gato", "a fala da Priya sobre o prédio"]);
+    expect(built.system).toContain("Already said by the others");
+    expect(built.system).toContain('"a fala do Tavo sobre o gato"');
+    expect(built.system).toContain('"minha fala antiga"');
+  });
+
+  it("has the room block with no own lines yet, and none when nobody else spoke", () => {
+    expect(withRoom([], ["a fala do Tavo sobre o gato"]).system).toContain("Already said by the others");
+    expect(withRoom([], []).system).not.toContain("<no_repeat>");
+  });
+
+  it("rotates the tonal samples from turn to turn, and skips one the room just said", () => {
+    const samples = ["um", "dois", "três", "quatro", "cinco", "seis"].map((n) => `fala de exemplo ${n}`);
+    const picks = new Set(Array.from({ length: 12 }, (_, i) => rotateSamples(samples, `k${i}`, 2).join("|")));
+    expect(picks.size).toBeGreaterThan(2);
+    for (let i = 0; i < 12; i++) expect(rotateSamples(samples, `k${i}`, 2, ["fala de exemplo dois"])).not.toContain("fala de exemplo dois");
+    expect(rotateSamples(["só uma"], "k", 2)).toEqual(["só uma"]);
+  });
+});
+
+describe("angle of the turn", () => {
+  it("leans the turn a different way each time, the same way for the same turn, and not on a line aimed at the actor", () => {
+    const { input } = busyInput();
+    const first = PromptBuilder.build(input, profile, "action_intent", undefined, "compact");
+    expect(first.user).toMatch(/Se for falar: .+ Use palavras novas\./);
+    expect(PromptBuilder.build(input, profile, "action_intent", undefined, "compact").user).toBe(first.user);
+    const seen = new Set(Array.from({ length: 12 }, (_, i) => angleFor({ ...input, perceptionPacket: { ...input.perceptionPacket, ownRecentUtterances: Array(i).fill("x") } }, "pt-BR", "Duda")));
+    expect(seen.size).toBeGreaterThan(2);
+    const asked = hotelInput([{ ...humanLine("Duda, tudo bem?", "Visitante"), payload: { content: "Duda, tudo bem?", untrusted: true, senderName: "Visitante", addresseeIds: ["example-friend"] } } as CommittedEvent]);
+    expect(PromptBuilder.build(asked, profile, "action_intent", undefined, "compact").user).not.toContain("Se for falar");
   });
 });
 

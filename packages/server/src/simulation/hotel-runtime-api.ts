@@ -52,6 +52,13 @@ export type SplitPulseConfig = {
   /** Seed 20 000. Expiry follows the existing `llm_failure` / `no_op` path. */
   generateDeadlineMs?: number;
   onConsult?: OnConsult;
+  /**
+   * Split base pulses only. An actor that was consulted with nobody having said or done anything to it is not consulted
+   * that way again until something new has happened in its view (anything by someone else) or `quietMs` has passed:
+   * in a quiet room a second "say something" turn only produces the first one again. A turn for a person's line, a
+   * mention, a reply or a trigger of any kind is never held. Absent: every actor is consulted every pulse, as before.
+   */
+  ambientGate?: { quietMs: number };
 };
 
 /** The slice of `SimulationRuntime` the hotel calls. */

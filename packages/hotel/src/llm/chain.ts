@@ -5,7 +5,7 @@ import type { Clock } from "../clock/clock.js";
 import type { ModelPrice } from "../config.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
-import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget, linkPromptStyle } from "./chain-config.js";
+import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget, linkPromptStyle, linkSampling, RETRY_TEMPERATURE_BOOST, RETRY_TEMPERATURE_MAX } from "./chain-config.js";
 import type { LlmLink, PromptStyle } from "./chain-config.js";
 import { CHAIN_DEADLINE_MS } from "./env.js";
 import { guardAnswer, hardenSystem, houseRules, noOpAnswer } from "./guards.js";
@@ -562,6 +562,9 @@ export class LlmChain {
       timeoutMs,
       // The failover is the retry; a single link keeps the transport's own.
       retryCount: this.states.length > 1 ? 0 : base.retryCount,
+      // Penalties against saying what was just said; the retry of a near-duplicate leans on them harder.
+      extraBody: { ...base.extraBody, ...linkSampling(link, args[2].retry === "correction") },
+      ...(args[2].retry === "correction" ? { temperature: Math.max(base.temperature, Math.min(RETRY_TEMPERATURE_MAX, base.temperature + RETRY_TEMPERATURE_BOOST)) } : {}),
     };
     const box: { costUsd?: number } = {};
     const inner = this.makeProvider(config, { fetch: this.linkFetch(link, box), env: this.env });
