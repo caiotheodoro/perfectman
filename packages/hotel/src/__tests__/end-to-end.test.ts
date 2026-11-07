@@ -126,4 +126,22 @@ describe("one run end to end on the fake Director with the mock provider", () =>
     const hop = events.find((e) => e.type === "moved_room");
     expect(hop).toMatchObject({ channelId: "room:13", actorId: "person-1", payload: { from: "12", to: "13" } });
   });
+  it("eventRetention keeps a window in memory and streams the evicted events to events.jsonl, so the artifact stays complete", async () => {
+    const { fake: hotel, sidecar: sc, cfg } = await bootWith({ config: { eventRetention: 20 }, timing: { baseIntervalMs: 60_000 } });
+    hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => hotel.received.filter((f) => f.t === "actor_spawn").length === 3, "3 spawns");
+    const run = await waitFor(() => sc.manager?.getRun(7), "the run");
+    const runtime = await waitFor(() => run.simulation?.runtime, "the runtime");
+    const sim = run.simulation!.simulationId;
+    const marker = (i: number) => ({ type: "message_sent" as const, simulationId: sim, channelId: "room:12", actorId: "person-1", payload: { text: `filler ${i}` }, visibility: { visibleToAgents: [], visibilityReason: "channel_member" as const }, pulseIndex: 0 });
+    for (let i = 0; i < 300; i++) await runtime.getEventLog().append(sim, [marker(i) as never]);
+    const inMemory = (await run.simulation!.repositories.eventRepo.getCommittedThrough(sim, Number.MAX_SAFE_INTEGER)).length;
+    expect(inMemory).toBeLessThan(150);
+
+    hotel.pmCommand(7, 12, "stop");
+    await waitFor(() => hotel.received.find((f) => f.t === "run_end"), "run_end", 6000);
+    const lines = readFileSync(join(cfg.dataDir, "runs", "7", "events.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l) as { payload: { text?: string } });
+    const filler = lines.filter((e) => e.payload.text?.startsWith("filler ")).map((e) => e.payload.text);
+    expect(filler).toEqual(Array.from({ length: 300 }, (_, i) => `filler ${i}`));
+  });
 });

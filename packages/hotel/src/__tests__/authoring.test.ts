@@ -56,6 +56,29 @@ describe("authoring listener", () => {
     expect(await (await call("/authoring/v1/validate", { body: { body: ok.body } })).json()).toMatchObject({ ok: true });
   });
 
+  it("compiles the builder's form JSON through roomFiles, with looks, and 422s a bad form", async () => {
+    const call = await listen();
+    const form = {
+      title: "Noite no bar", situation: "Quatro amigos no bar depois do trabalho.", language: "pt-BR", mode: "default",
+      cast: [
+        { name: "Duda", role: "bartender", goal: "Fechar cedo.", voice: "Seca.", look: { figure: "hd-600-1.hr-515-33", effect: "" }, start: "start" },
+        { name: "Rafa", role: "skeptic", goal: "Descobrir o segredo.", look: "auto", start: "start" },
+        { name: "Gabi", role: "performer", goal: "Chamar atencao.", start: "after 10s" },
+        { name: "Leo", role: "", goal: "", start: "start" },
+      ],
+      stage: { room: 7 },
+    };
+    expect(await (await call("/authoring/v1/validate", { body: { source: JSON.stringify(form) } })).json()).toMatchObject({ ok: true, errors: [] });
+    const ok = (await (await call("/authoring/v1/compile", { body: { source: JSON.stringify(form) } })).json()) as { body: { config: { agents: { displayName?: string; id: string }[] }; looks?: Record<string, { figure: string }> } };
+    expect(ok.body.config.agents).toHaveLength(4);
+    expect(ok.body.looks).toEqual({ "person-1": { figure: "hd-600-1.hr-515-33" } });
+    const dup = { ...form, cast: [form.cast[0], { ...form.cast[1], name: "duda" }] };
+    const bad = await call("/authoring/v1/compile", { body: { source: JSON.stringify(dup) } });
+    expect(bad.status).toBe(422);
+    expect(await bad.json()).toMatchObject({ error: "bad_scenario", errors: [{ message: expect.stringContaining("different name") }] });
+    expect(await (await call("/authoring/v1/validate", { body: { source: JSON.stringify(dup) } })).json()).toMatchObject({ ok: false });
+  });
+
   it("drafts a scenario with the mock provider, and the draft compiles", async () => {
     const call = await listen();
     const { source } = (await (await call("/authoring/v1/draft", { body: { brief: "tres amigos num lounge", language: "pt-BR" } })).json()) as { source: string };

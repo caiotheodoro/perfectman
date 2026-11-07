@@ -31,6 +31,8 @@ export type HotelConfig = {
   llm: LlmEnv;
   dataDir: string;
   healthPort: number;
+  /** In-memory events kept per run; older ones go to the run's `events.jsonl` as they fall out. 0 keeps everything. */
+  eventRetention?: number;
 };
 
 export class ConfigError extends Error {
@@ -43,6 +45,7 @@ export class ConfigError extends Error {
 export const MIN_SECRET_LENGTH = 32;
 export const DEFAULT_AUTHORING_PORT = 9101;
 export const DEFAULT_HEALTH_PORT = 9100;
+export const DEFAULT_EVENT_RETENTION = 5000;
 
 type Env = Readonly<Record<string, string | undefined>>;
 
@@ -130,6 +133,7 @@ export function parseConfig(env: Env = process.env): HotelConfig {
     },
     dataDir: env["PERFECTMAN_DATA_DIR"] ?? "/data/perfectman",
     healthPort: int(env, "PERFECTMAN_HEALTH_PORT", DEFAULT_HEALTH_PORT, problems, 0),
+    eventRetention: int(env, "PERFECTMAN_EVENT_RETENTION", DEFAULT_EVENT_RETENTION, problems, 0),
   };
 
   if (enabled) {

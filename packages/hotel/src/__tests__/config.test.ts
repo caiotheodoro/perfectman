@@ -14,7 +14,7 @@ const GOOD = {
 describe("sidecar configuration", () => {
   it("parses a full environment with the plan's defaults", () => {
     const c = parseConfig(GOOD);
-    expect(c).toMatchObject({ enabled: true, maxRuns: 3, authoringPort: 9101, healthPort: 9100, dataDir: "/data/perfectman" });
+    expect(c).toMatchObject({ enabled: true, maxRuns: 3, authoringPort: 9101, healthPort: 9100, dataDir: "/data/perfectman", eventRetention: 5000 });
     expect(c.llm).toMatchObject({ models: ["fast-model", "other-model"], concurrency: 3, apiKeyEnv: "PERFECTMAN_LLM_API_KEY" });
   });
 

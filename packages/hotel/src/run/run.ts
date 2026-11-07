@@ -8,6 +8,7 @@ import {
   scrubConfigForArtifact,
 } from "@perfectman/server/hotel";
 import type { AgentCommitInfo, ConfiguredSimulationHandle, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
+import { join } from "node:path";
 import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
@@ -29,7 +30,7 @@ import { tileKey } from "../space/geometry.js";
 import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
-import { writeRunArtifacts } from "./artifacts.js";
+import { NdjsonEventSink, writeRunArtifacts } from "./artifacts.js";
 import type { WrittenArtifacts } from "./artifacts.js";
 import { FrameLogRecorder } from "./frame-log.js";
 import { createRuntimePort } from "./runtime-port.js";
@@ -118,6 +119,8 @@ export class Run {
   private unsubscribeBudget: (() => void) | undefined;
   private readonly meter: LlmMeter;
   private readonly frames: FrameLogRecorder;
+  /** Events the in-memory log evicted, streamed to `events.jsonl` so a long run stays complete without growing. */
+  private eventSink: NdjsonEventSink | undefined;
   private readonly agents = new Map<string, { name: string; spawned: boolean; gone: boolean }>();
   private readonly memory = new Map<string, PlannerMemory>();
   private readonly arousal = new Map<string, number>();
@@ -293,6 +296,7 @@ export class Run {
       onAgentCommitted: (info) => this.onCommitted(info),
       clock: () => clock.now(),
       budget: { callsPerMinute: hotel.llm.softCallsPerMin, tokensPerHour: hotel.llm.softTokensPerHour },
+      ...this.retention(),
     };
     const options = {
       agentRuntimeFactory: (registry: ConstructorParameters<typeof AgentRuntime>[1]) =>
@@ -744,6 +748,17 @@ export class Run {
     return this.meter.snapshot().p95Drift;
   }
 
+  /** `eventRetention` plus the NDJSON sink its evictions go to (0 keeps every event in memory, as before). */
+  private retention(): Pick<HotelSimulationOptions, "eventRetention"> {
+    const { hotel, logger } = this.d;
+    const max = hotel.eventRetention ?? 0;
+    if (max <= 0) return {};
+    const sink = new NdjsonEventSink(join(hotel.dataDir, "runs", String(this.id), "events.jsonl"), (err) =>
+      logger.warn("event sink write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
+    this.eventSink = sink;
+    return { eventRetention: { maxRetained: max, onEvict: (_sim, evicted) => sink.push(evicted) } };
+  }
+
   notice(code: string, kind: "info" | "warn" | "error", text?: string): void {
     this.d.link.send({ t: "ui_push", run: this.id, to: { admin: this.params.admin.id }, ui: { k: "notice", code, kind, ...(text ? { text } : {}) } });
   }
@@ -794,7 +809,7 @@ export class Run {
           pulse: this.port?.pulseIndex() ?? 0,
           counters: { llm_calls: m.calls, llm_failures: m.failures, undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
           ...(this.drained ? {} : { dirty: true as const }),
-        });
+        }, this.eventSink);
         await link.registerArtifacts(this.id, written);
       } catch (err) {
         this.d.logger.warn("artifacts not written", { run: this.id, error: err instanceof Error ? err.message : String(err) });
