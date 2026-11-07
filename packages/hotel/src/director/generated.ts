@@ -359,6 +359,7 @@ export type ServerMsg =
        * Spoken by an AI Actor. Players see the badge; never in Director payloads (D43).
        */
       ai?: boolean;
+      bold?: boolean;
       bot?: boolean;
       from: number;
       image?: ChatImage | null;

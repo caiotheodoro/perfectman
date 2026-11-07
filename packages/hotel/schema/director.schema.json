@@ -3951,6 +3951,9 @@
               "description": "Spoken by an AI Actor. Players see the badge; never in Director payloads (D43).",
               "type": "boolean"
             },
+            "bold": {
+              "type": "boolean"
+            },
             "bot": {
               "type": "boolean"
             },
