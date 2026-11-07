@@ -1,0 +1,417 @@
+/**
+ * The cinematic run mode (D18, D19, D38): buffered lookahead plus a playback
+ * clock.
+ *
+ * The engine runs ahead of what the audience sees. Its speech and thoughts do
+ * not reach the hotel when the gateway decides: they are caught at the
+ * executor seam, queued, and released one at a time by the playback clock, each
+ * after the camera is on its speaker and held for its reading time. LLM
+ * latency is spent inside the lookahead buffer, so the viewer never sees it;
+ * and when the buffer runs dry anyway, a filler (establishing shot, narrator
+ * aside, murmur) keeps dead air short.
+ *
+ * Movement, faces and pair acts stay live: they are the room, not the film.
+ * They are observed, and become tracking shots, inserts and SFX only while
+ * they are fresh.
+ */
+import type { Clock, TimerHandle } from "../../clock/clock.js";
+import type { GatewayExecutor } from "../../gateway/hotel-gateway.js";
+import type { PlannedCommand } from "../../embodiment/types.js";
+import type { Logger } from "../../util/log.js";
+import type { PerfectmanUi, SidecarMsg } from "../index.js";
+import { computeMetrics } from "./metrics.js";
+import type { DirectorMetrics } from "./metrics.js";
+import { Narrator } from "./narrator.js";
+import { ShotPlanner, canStage, estimateMs } from "./planner.js";
+import { expire, selectNext } from "./select.js";
+import { TrackRecorder } from "./track.js";
+import { DEFAULT_CINE } from "./types.js";
+import type { CineConfig, CineItem, CineMood, CineWorld, LineItem, ObjectItem, Program, Step, Tile } from "./types.js";
+
+/** Gestures that are part of the film; the rest (fidgets, stand, idle) stay live. */
+const GATED_GESTURES: ReadonlySet<string> = new Set(["laugh", "wave", "thumbs", "sign", "dance"]);
+/** `ui` kinds that take `in_ms`; `next_room` and `cut` do not. */
+const TIMED_KINDS: ReadonlySet<PerfectmanUi["k"]> = new Set(["hud", "card", "lower_third", "caption", "thought", "cue", "camera", "sfx", "cut_fx"]);
+
+export type CinematicOptions = {
+  run: number;
+  home: number;
+  clock: Clock;
+  world: CineWorld;
+  narrator: Narrator;
+  send(msg: SidecarMsg): boolean;
+  logger: Logger;
+  config?: Partial<CineConfig>;
+  /** The scenario's own title or situation, for the opening card. */
+  premise?: string;
+  /** One line per track entry, e.g. a file sink. */
+  trackSink?: (line: string) => void;
+};
+
+/** 0..1: how much a line deserves a close-up. Deterministic from the text and the speaker's mood. */
+export function lineSalience(text: string, mode: LineItem["mode"], mood: CineMood | undefined): number {
+  let s = 0.25;
+  if (mode === "shout") s += 0.3;
+  if (mode === "whisper") s += 0.2;
+  if (text.includes("!")) s += 0.15;
+  if (text.includes("?")) s += 0.1;
+  if (text.length > 120) s += 0.1;
+  if (mood) s += Math.abs(mood.valence) * 0.2 + mood.arousal * 0.15;
+  return Math.min(1, s);
+}
+
+export class CinematicDirector {
+  readonly track: TrackRecorder;
+  readonly planner: ShotPlanner;
+  readonly cfg: CineConfig;
+  private readonly queue: CineItem[] = [];
+  private readonly held = new Map<string, () => void>();
+  private readonly timers = new Set<TimerHandle>();
+  private inner: GatewayExecutor | undefined;
+  private idle: TimerHandle | undefined;
+  private startedAt = 0;
+  private seq = 0;
+  private busy = false;
+  private paused = false;
+  private started = false;
+  private phase: "live" | "draining" | "ended" = "live";
+  private drainDone: (() => void) | undefined;
+  private current: TimerHandle | undefined;
+
+  constructor(private readonly o: CinematicOptions) {
+    this.cfg = { ...DEFAULT_CINE, ...o.config };
+    this.planner = new ShotPlanner(this.cfg);
+    this.track = new TrackRecorder(o.trackSink);
+  }
+
+  // ---- lifecycle --------------------------------------------------------------
+
+  /** Opens the film: letterbox, the title card, the establishing shot. Call once, before the first pulse. */
+  start(): void {
+    if (this.started) return;
+    this.started = true;
+    const { clock, world, narrator, home } = this.o;
+    this.startedAt = clock.now();
+    this.track.add({ t: 0, k: "start", run: this.o.run, room: home, lang: this.cfg.language });
+    narrator.begin(home, { kind: "title", roomName: world.roomName(home), ...(this.o.premise ? { premise: this.o.premise } : {}), cast: this.cast(home), lines: [] });
+    this.busy = true;
+    void (async () => {
+      await narrator.ready(home, "title", this.cfg.narratorWaitMs);
+      if (this.hasEnded()) return;
+      this.play(this.planner.intro(this.t(), home, world, narrator));
+    })();
+  }
+
+  /** Playback pauses at the end of the current program; steps already scheduled still play. */
+  pause(): void {
+    if (this.paused || this.phase === "ended") return;
+    this.paused = true;
+    this.cancelIdle();
+    this.track.add({ t: this.t(), k: "pause" });
+  }
+
+  resume(): void {
+    if (!this.paused) return;
+    this.paused = false;
+    this.track.add({ t: this.t(), k: "resume" });
+    this.kick();
+  }
+
+  /**
+   * Ends the film. With `drain`, buffered lines keep playing (up to `drainMs`);
+   * either way the HUD is closed with a fade and the track gets its `end`.
+   */
+  async stop(reason: string, drain: boolean): Promise<void> {
+    if (this.phase === "ended") return;
+    if (drain && this.started && !this.paused) {
+      this.phase = "draining";
+      this.cancelIdle();
+      await new Promise<void>((resolve) => {
+        this.drainDone = resolve;
+        const deadline = this.o.clock.setTimer(resolve, this.cfg.drainMs);
+        this.timers.add(deadline);
+        this.kick();
+      });
+    }
+    this.phase = "ended";
+    this.drainDone = undefined;
+    this.cancelIdle();
+    for (const item of this.queue.splice(0)) this.drop(item, "stopped");
+    this.held.clear();
+    if (!this.started) return void this.track.add({ t: this.t(), k: "end", reason });
+    for (const timer of this.timers) timer.cancel();
+    this.timers.clear();
+    this.current?.cancel();
+    const outro = this.planner.outro(this.t());
+    this.schedule(outro);
+    await new Promise<void>((resolve) => this.timers.add(this.o.clock.setTimer(resolve, outro.durationMs)));
+    this.track.add({ t: this.t(), k: "end", reason });
+  }
+
+  // ---- the lookahead budget (D18) ---------------------------------------------
+
+  /** Milliseconds of film waiting in the buffer. */
+  bufferedMs(): number {
+    return this.queue.reduce((sum, item) => sum + estimateMs(item, this.cfg), 0);
+  }
+
+  /** False once the buffer holds `lookaheadPulses` pulses of film: the run should skip its next pulse. */
+  wantsMore(): boolean {
+    return this.phase !== "live" || this.bufferedMs() < this.cfg.lookaheadPulses * this.cfg.pulseMs;
+  }
+
+  get queued(): number {
+    return this.queue.length;
+  }
+
+  metrics(): DirectorMetrics {
+    return computeMetrics(this.track.entries, { deadAirMs: this.cfg.deadAirMs, minShotMs: this.cfg.minShotMs, ...(this.started && this.phase !== "ended" ? { now: this.t() } : {}) });
+  }
+
+  // ---- the executor seam ------------------------------------------------------
+
+  /**
+   * The executor the run hands to the gateway and the planner. Speech, thoughts
+   * and show-gestures are held for playback; everything else passes straight
+   * through, observed.
+   */
+  wrapExecutor(inner: GatewayExecutor): GatewayExecutor {
+    this.inner = inner;
+    return {
+      send: (cmds) => this.intercept(cmds),
+      sendThought: (agentId, text) => {
+        if (this.phase === "ended") return inner.sendThought(agentId, text);
+        this.enqueue({ kind: "thought", ref: agentId, text, room: this.roomOf(agentId), salience: 0.5 });
+      },
+    };
+  }
+
+  private intercept(cmds: PlannedCommand[]): void {
+    const inner = this.inner;
+    if (!inner) return;
+    if (this.phase === "ended") return inner.send(cmds);
+    const pass: PlannedCommand[] = [];
+    for (const c of cmds) {
+      switch (c.cmd) {
+        case "chat": {
+          const mode = c.mode;
+          const mood = this.o.world.moodOf(c.agentId);
+          const id = this.enqueue({ kind: "line", ref: c.agentId, text: c.text, mode, ...(c.to ? { to: c.to } : {}), room: this.roomOf(c.agentId), salience: lineSalience(c.text, mode, mood) });
+          if (id) this.held.set(id, () => inner.send([c]));
+          break;
+        }
+        case "typing":
+          // The typing bubble is shown just before the line plays, not while it waits in the buffer.
+          if (!c.on) pass.push(c);
+          break;
+        case "gesture":
+          if (GATED_GESTURES.has(c.a) && !c.fidget) {
+            const id = this.enqueue({ kind: "gesture", ref: c.agentId, gesture: c.a, room: this.roomOf(c.agentId), salience: 0.3 });
+            if (id) this.held.set(id, () => inner.send([c]));
+          } else pass.push(c);
+          break;
+        case "walk": {
+          pass.push(c);
+          const from = this.o.world.tileOf(c.agentId);
+          const steps = from ? Math.max(Math.abs(from[0] - c.to[0]), Math.abs(from[1] - c.to[1])) : 0;
+          this.enqueue({ kind: "walk", ref: c.agentId, steps, room: this.roomOf(c.agentId), salience: 0.2 });
+          break;
+        }
+        case "move_room":
+          pass.push(c);
+          this.enqueue({ kind: "hop", ref: c.agentId, to: Number(c.to), room: this.roomOf(c.agentId), salience: 0.45 });
+          break;
+        case "pair":
+          pass.push(c);
+          this.enqueue({ kind: "pair", ref: c.agentId, pair: c.kind, with: c.with, room: this.roomOf(c.agentId), salience: 0.7 });
+          break;
+        default:
+          pass.push(c);
+      }
+    }
+    if (pass.length > 0) inner.send(pass);
+  }
+
+  private roomOf(ref: string): number {
+    return this.o.world.roomOf(ref) ?? this.o.home;
+  }
+
+  /** A world event worth an insert shot ("a fire alarm goes off"). */
+  noteObject(o: { room: number; ref?: string; furni?: number; tile?: Tile; label?: string; sfx?: string }): void {
+    const item: Omit<ObjectItem, "id" | "seq" | "at"> = { kind: "object", ref: o.ref ?? "", room: o.room, salience: 0.8, ...(o.furni !== undefined ? { furni: o.furni } : {}), ...(o.tile ? { tile: o.tile } : {}), ...(o.label ? { label: o.label } : {}), ...(o.sfx ? { sfx: o.sfx } : {}) };
+    this.enqueue(item);
+  }
+
+  /** Adds an item to the buffer; returns its id, or undefined when the film is over and nothing is queued. */
+  enqueue(item: DistributiveOmit<CineItem, "id" | "seq" | "at">): string | undefined {
+    if (this.phase === "ended") return undefined;
+    const seq = ++this.seq;
+    const full = { ...item, id: `b${seq}`, seq, at: this.o.clock.now() } as CineItem;
+    this.queue.push(full);
+    this.beginScene(full);
+    if (this.started && !this.busy && !this.paused) {
+      this.cancelIdle();
+      void this.advance();
+    }
+    return full.id;
+  }
+
+  // ---- narrator ---------------------------------------------------------------
+
+  private cast(room: number): Array<{ name: string; role?: string }> {
+    const { world } = this.o;
+    return world.occupants(room).map((ref) => {
+      const role = world.roleOf(ref);
+      return { name: world.nameOf(ref), ...(role ? { role } : {}) };
+    });
+  }
+
+  /** The first sighting of a room starts its narrator pass now, while the item waits in the buffer. */
+  private beginScene(item: CineItem): void {
+    const { narrator, world, home } = this.o;
+    if (item.room === home || narrator.has(item.room, "scene")) return;
+    const lines = this.queue.filter((q): q is LineItem => q.kind === "line" && q.room === item.room).slice(0, 6).map((q) => ({ name: world.nameOf(q.ref), text: q.text }));
+    narrator.begin(item.room, { kind: "scene", roomName: world.roomName(item.room), cast: this.cast(item.room), lines });
+  }
+
+  // ---- playback ---------------------------------------------------------------
+
+  private t(): number {
+    return this.o.clock.now() - this.startedAt;
+  }
+
+  private cancelIdle(): void {
+    this.idle?.cancel();
+    this.idle = undefined;
+  }
+
+  /** A method, so the compiler does not carry a stale narrowing of `phase` across an await. */
+  private hasEnded(): boolean {
+    return this.phase === "ended";
+  }
+
+  private kick(): void {
+    if (!this.busy && !this.paused && this.phase !== "ended") void this.advance();
+  }
+
+  private async advance(): Promise<void> {
+    if (this.busy || this.paused || this.phase === "ended") return;
+    this.busy = true;
+    this.cancelIdle();
+    const { clock, world, narrator } = this.o;
+    for (;;) {
+      for (const d of expire(this.queue, clock.now(), this.cfg)) this.drop(d, "stale");
+      const now = this.t();
+      const item = selectNext(this.queue, clock.now(), { now, room: this.planner.currentRoom, roomSince: this.planner.roomSince, followRef: this.planner.followRef(now), cfg: this.cfg });
+      if (!item) {
+        this.busy = false;
+        if (this.phase === "draining") this.drainDone?.();
+        else this.armIdle();
+        return;
+      }
+      this.queue.splice(this.queue.indexOf(item), 1);
+      if (!canStage(item, world)) {
+        this.drop(item, "unstageable");
+        continue;
+      }
+      if (item.room !== this.planner.currentRoom && narrator.has(item.room, "scene")) await narrator.ready(item.room, "scene", this.cfg.narratorWaitMs);
+      if (this.hasEnded()) return;
+      if (this.paused) {
+        this.queue.unshift(item);
+        this.busy = false;
+        return;
+      }
+      const program = this.planner.plan(item, this.t(), world, narrator);
+      if (!program) {
+        this.drop(item, "unstageable");
+        continue;
+      }
+      this.play(program, item);
+      return;
+    }
+  }
+
+  private drop(item: CineItem, why: string): void {
+    this.held.delete(item.id);
+    this.track.add({ t: this.t(), k: "drop", beat: item.id, why });
+  }
+
+  private armIdle(): void {
+    if (this.paused || this.phase !== "live" || this.planner.consecutiveFillers >= this.cfg.maxConsecutiveFillers) return;
+    this.idle = this.o.clock.setTimer(() => {
+      this.idle = undefined;
+      if (this.busy || this.paused || this.queue.length > 0 || this.phase !== "live") return;
+      const program = this.planner.filler(this.t(), this.o.world, this.o.narrator);
+      if (!program) return;
+      this.busy = true;
+      this.play(program);
+    }, this.cfg.fillerAfterMs);
+  }
+
+  /** Schedules a program's steps and, at its end, hands the stage to the next one. */
+  private play(program: Program, item?: CineItem): void {
+    this.schedule(program, item);
+    // One shot ahead (spectate-and-audience.md 4): tell the client which room comes next, so it can preload art.
+    const upcoming = selectNext(this.queue, this.o.clock.now(), { now: this.t(), room: program.room, roomSince: this.planner.roomSince, followRef: undefined, cfg: this.cfg });
+    if (upcoming && upcoming.room !== program.room && this.planner.lastActivityIn(upcoming.room) === undefined) {
+      this.emit({ at: 0, k: "next_room", room: upcoming.room }, program, 0);
+    }
+    this.current = this.o.clock.setTimer(() => {
+      this.busy = false;
+      this.kick();
+    }, program.durationMs);
+  }
+
+  private schedule(program: Program, item?: CineItem): void {
+    const base = this.t();
+    const steps = [...program.steps].sort((a, b) => a.at - b.at);
+    for (const step of steps) {
+      const early = step.k === "ui" && TIMED_KINDS.has(step.ui.k) ? Math.min(this.cfg.cueLeadMs, step.at) : 0;
+      const when = step.at - early;
+      const fire = (): void => this.emit(step, program, base + step.at, early, item);
+      if (when <= 0) fire();
+      else {
+        const timer = this.o.clock.setTimer(() => {
+          this.timers.delete(timer);
+          fire();
+        }, when);
+        this.timers.add(timer);
+      }
+    }
+  }
+
+  /** One step reaches the hotel (or the executor) and the track. `planned` is when the audience sees it. */
+  private emit(step: Step, program: Program, planned: number, inMs = 0, item?: CineItem): void {
+    const { run, send } = this.o;
+    switch (step.k) {
+      case "ui": {
+        const ui = inMs > 0 ? ({ ...step.ui, in_ms: inMs } as PerfectmanUi) : step.ui;
+        send({ t: "ui_push", run, to: { run }, ui });
+        this.track.add({ t: planned, k: "cue", room: program.room, beat: program.beat, ui });
+        return;
+      }
+      case "next_room":
+        send({ t: "ui_push", run, to: { run }, ui: { k: "next_room", room: step.room } });
+        this.track.add({ t: this.t(), k: "cue", room: program.room, beat: program.beat, ui: { k: "next_room", room: step.room } });
+        return;
+      case "cut":
+        send({ t: "ui_push", run, to: { run }, ui: { k: "cut", room: step.room } });
+        this.track.add({ t: planned, k: "cut", room: step.room, from: step.from });
+        return;
+      case "typing":
+        this.inner?.send([{ agentId: step.ref, cmd: "typing", on: true }]);
+        return;
+      case "release": {
+        this.held.get(step.item.id)?.();
+        this.held.delete(step.item.id);
+        const it = item ?? step.item;
+        if (it.kind === "line") {
+          this.track.add({ t: planned, k: "line", room: it.room, beat: it.id, ref: it.ref, avatar: this.o.world.avatarId(it.ref) ?? null, mode: it.mode, text: it.text, ms: Math.max(0, program.durationMs - step.at - this.cfg.beatGapMs) });
+        }
+        return;
+      }
+    }
+  }
+}
+
+type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
