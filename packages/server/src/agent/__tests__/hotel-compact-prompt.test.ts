@@ -113,7 +113,7 @@ describe("the body hint in the hotel output contract", () => {
     for (const style of [undefined, "compact"] as const) {
       const built = PromptBuilder.build(input, profile, "action_intent", undefined, style);
       expect(built.system).toContain("Exemplos de resposta com body");
-      expect(built.system).toContain('"order":"move_then_speak"');
+      expect(built.system).toMatch(/^\{"intentType":"send_message".*,"body":\{/m);
     }
     const noBody = { ...input, perceptionPacket: { ...input.perceptionPacket, body: undefined } };
     const bare = PromptBuilder.build(noBody, { ...profile, hotelMode: true }, "action_intent");
@@ -151,6 +151,19 @@ describe("the body hint in the hotel output contract", () => {
     const { body } = hotelPerception();
     const pairs = new Set(["t1", "t2", "t3", "t4", "t5", "t6", "t7"].map((k) => bodyExamples("en", body, k).join("|")));
     expect(pairs.size).toBeGreaterThan(1);
+  });
+
+  it("draws from a wide pool of the room's own handles: many distinct examples over many turns, all valid", () => {
+    const { body } = hotelPerception();
+    const seen = new Set<string>();
+    for (let i = 0; i < 60; i++) {
+      for (const ex of bodyExamples("pt-BR", body, `turn-${i}`, ["ei, tudo bem?"])) {
+        seen.add(JSON.stringify((JSON.parse(ex) as { body: unknown }).body));
+        expect(BodyIntentSchema.safeParse((JSON.parse(ex) as { body: unknown }).body).success).toBe(true);
+        expect(ex).not.toMatch(/"leave"|"kiss"|"dance"/);
+      }
+    }
+    expect(seen.size).toBeGreaterThanOrEqual(8);
   });
 });
 
