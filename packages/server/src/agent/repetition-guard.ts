@@ -10,6 +10,8 @@
  * sufficient. This is the enforcement backstop.
  */
 
+import type { PerceptionPacket } from "@perfectman/shared";
+
 const STOPWORDS = new Set(["a", "o", "e", "de", "que", "do", "da", "em", "um", "uma", "and", "of", "to", "the"]);
 
 const COMBINING_DIACRITICS = new RegExp("[\\u0300-\\u036f]", "g");
@@ -68,7 +70,50 @@ export type RepetitionPolicy = {
   threshold?: number;
   /** Retries allowed after a detected repeat before blocking. Clamped to a non-negative integer. */
   maxRetries?: number;
+  /**
+   * Hotel mode: similarity at or above which a line counts as a copy of something ANOTHER cast member just said
+   * (three people saying the same sentence). Absent means no cross-actor check, the shipped behavior. Only lines of
+   * three or more content words are compared, so a shared "Verdade." or "Oi!" is never a copy.
+   */
+  roomThreshold?: number;
+  /**
+   * Hotel mode: retries allowed when nobody spoke to the actor (an ambient turn). A repeat on a turn nobody waits on
+   * is not worth the same spend as one a person asked for. Absent means `maxRetries`.
+   */
+  ambientMaxRetries?: number;
 };
+
+/** Content words a line needs before it can be a copy of another person's (see `RepetitionPolicy.roomThreshold`). */
+export const ROOM_REPEAT_MIN_WORDS = 3;
+/** How many of the room's newest cast lines a new line is compared with. */
+export const ROOM_LINES_LIMIT = 8;
+
+/**
+ * What the OTHER cast members just said where this agent can hear it: their say/reply lines in the event window and
+ * the line that woke it. A person's line (untrusted) is not in this list: answering a guest in the guest's words is the
+ * house rules' business, not a repetition.
+ */
+export function roomLinesHeard(packet: Pick<PerceptionPacket, "agentId" | "triggeringEvent" | "visibleContextEvents">): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const e of [...packet.visibleContextEvents, ...(packet.triggeringEvent ? [packet.triggeringEvent] : [])]) {
+    if (e.type !== "message_sent" && e.type !== "reply_sent") continue;
+    if (e.actorId === packet.agentId || seen.has(e.id)) continue;
+    const payload = e.payload as Record<string, unknown> | undefined;
+    if (payload?.["untrusted"] === true) continue;
+    const content = payload?.["content"];
+    if (typeof content !== "string" || content.trim().length === 0) continue;
+    seen.add(e.id);
+    out.push(content);
+  }
+  return out.slice(-ROOM_LINES_LIMIT);
+}
+
+/** True when `candidate` is a near-duplicate of a line somebody else in the room just said. */
+export function isRoomCopy(candidate: string, roomLines: readonly string[], threshold: number): boolean {
+  if (normalizeWords(candidate).length < ROOM_REPEAT_MIN_WORDS) return false;
+  return roomLines.some((line) => normalizeWords(line).length >= ROOM_REPEAT_MIN_WORDS && similarity(candidate, line) >= threshold);
+}
 
 export const DEFAULT_REPETITION_MAX_RETRIES = 1;
 

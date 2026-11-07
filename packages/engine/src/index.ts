@@ -5,6 +5,7 @@ export {
   filterVisibleEventsForAgent,
   filterVisibleEventsForSpectator,
   filterVisibleEventsForOperator,
+  redactForListener,
 } from "./visibility/filter-visible-events.js";
 
 // Anti-drift cursor
@@ -18,6 +19,19 @@ export { scoreAttention } from "./attention/score-attention.js";
 
 // Perception
 export { buildPerceptionPacket } from "./perception/build-perception-packet.js";
+
+// Space model, body perception and body-intent validation (hotel; ADR-0018/0019)
+export * from "./space/index.js";
+export * from "./body/index.js";
+export { buildBodyPerception } from "./perception/build-body-perception.js";
+export type { BuildBodyPerceptionInput, BuiltBodyPerception } from "./perception/build-body-perception.js";
+export {
+  BODY_BLOCK_HEADING,
+  compressBodyPerception,
+  estimateBodyTokens,
+  renderBodyBlock,
+} from "./perception/render-body-perception.js";
+export type { CompressionLevel } from "./perception/render-body-perception.js";
 
 // Memory decay / eviction (used by dev2's memory projection for eviction)
 export {

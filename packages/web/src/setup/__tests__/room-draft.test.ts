@@ -55,13 +55,13 @@ describe("a room the model drafted", () => {
   it("falls back to the temperament's voice and lines where the model wrote none", () => {
     const { personas } = roomFiles(draftFromStory(story, "uma cabana"));
     expect(personas[1]?.text).toContain("Brief and direct");
-    expect(personas[1]?.text).toContain("What aren't we saying?");
+    expect(personas[1]?.text).toContain("Fala logo o que você quer dizer.");
   });
 
   it("tops a person up to the three style examples the compiler needs, the model's own lines first", () => {
     const examples = (text: string) => (text.split("## Style Examples\n")[1] ?? "").split("\n\n")[0]?.split("\n") ?? [];
     const { personas } = roomFiles(draftFromStory(story, "uma cabana"));
-    expect(examples(personas[0]?.text ?? "")).toEqual(["- Cala a porra da boca, Rico.", "- Someone had to say it.", "- Wait, hear me out."]);
+    expect(examples(personas[0]?.text ?? "")).toEqual(["- Cala a porra da boca, Rico.", "- Alguém tinha que falar.", "- Espera, me escuta essa."]);
     const five = { ...story, people: story.people.map((p) => ({ ...p, lines: ["a", "b", "c", "d", "e"] })) };
     expect(examples(roomFiles(draftFromStory(five, "x")).personas[0]?.text ?? "")).toHaveLength(5);
   });

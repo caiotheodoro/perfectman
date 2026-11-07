@@ -20,6 +20,8 @@ export class OllamaProvider implements LLMProvider {
     context: AgentRuntimeContext,
     prompt: BuiltPrompt
   ): Promise<LLMProviderResult> {
-    return generateOllamaIntent(this.config, prompt, Date.now(), this.deps);
+    return input.perceptionPacket?.body !== undefined
+      ? generateOllamaIntent(this.config, prompt, Date.now(), this.deps, { withBody: true })
+      : generateOllamaIntent(this.config, prompt, Date.now(), this.deps);
   }
 }

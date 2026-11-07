@@ -8,7 +8,7 @@ import type {
 } from "@perfectman/shared";
 
 // Visibility
-import { filterVisibleEventsForAgent } from "../visibility/filter-visible-events.js";
+import { filterVisibleEventsForAgent, redactForListener } from "../visibility/filter-visible-events.js";
 
 // Anti-drift
 import { getNewEventsSince, getLastEventId } from "../memory/get-new-events-since.js";
@@ -18,6 +18,7 @@ import { scoreAttention } from "../attention/score-attention.js";
 
 // Perception
 import { buildPerceptionPacket } from "../perception/build-perception-packet.js";
+import { buildBodyPerception } from "../perception/build-body-perception.js";
 
 // Interpretation
 import { interpretProgrammaticSignals } from "../interpretation/interpret-programmatic-signals.js";
@@ -88,12 +89,17 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
   } = snapshot;
 
   // ── 1. Visibility filter ──────────────────────────────────────────────────
-  const visibleEvents = filterVisibleEventsForAgent(
+  const filteredEvents = filterVisibleEventsForAgent(
     recentEventsWindow,
     agentState.agentId,
     channels,
     channelMembership,
   );
+  // Hotel only: what the listener could not hear is removed here, so
+  // interpretation, memory and the prompt all see the same redacted event.
+  const visibleEvents = snapshot.space
+    ? filteredEvents.map((event) => redactForListener(event, agentState.agentId))
+    : filteredEvents;
 
   // ── 2. Anti-drift cursor ──────────────────────────────────────────────────
   const newEvents = getNewEventsSince(visibleEvents, agentState.lastProcessedEventId);
@@ -219,7 +225,11 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
   const directlyAddressed = attentionResults.reasons.some(
     r => r === "direct_mention" || r === "reply_to_self",
   );
-  const salientForeignEvent = newEvents.some(
+  // Hotel: the agent's own arrival (`body_arrived`) is a salient wake.
+  const arrivedNow = newEvents.some(
+    e => e.type === "body_arrived" && e.actorId === agentState.agentId,
+  );
+  const salientForeignEvent = arrivedNow || newEvents.some(
     e =>
       e.actorId !== agentState.agentId &&
       (e.emotionalSalience === "high" || e.emotionalSalience === "critical"),
@@ -282,6 +292,17 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
     simulation.settings.pulseIntervalMs,
     snapshot.ownHistoryWindow ?? [],
   );
+
+  // Hotel only: the body block and its handles. Absent (no keys) otherwise.
+  if (snapshot.space) {
+    const built = buildBodyPerception({
+      view: snapshot.space,
+      events: visibleEvents,
+      relational: finalRelational,
+    });
+    perceptionPacket.body = built.body;
+    perceptionPacket.bodyHandles = built.handles;
+  }
 
   // ── 14. Updated agent state ───────────────────────────────────────────────
   const newLastProcessedEventId =

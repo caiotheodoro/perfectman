@@ -1,6 +1,6 @@
 # Architecture Decision Records
 
-Index, convention, and template for the ADRs in this directory. New ADRs consume the next free number (0011+).
+Index, convention, and template for the ADRs in this directory. New ADRs consume the next free number (0027+). Numbers 0011 and 0012 (two files) are in the tree but not in the index below.
 
 ## Convention
 
@@ -27,6 +27,15 @@ ADR-0001..0007 pre-date this convention and are historical records: their Status
 | [ADR-0015](0015-decision-owns-needs-llm.md) | The Decision Owns `needsLLM` |
 | [ADR-0016](0016-pressure-discharge.md) | Pressure Discharge |
 | [ADR-0017](0017-voiced-hold-and-private-drive.md) | Voiced Hold and the Private-Channel Drive |
+| [ADR-0018](0018-physical-space-model-and-embodiment.md) | Physical Space Model and Embodiment |
+| [ADR-0019](0019-body-intent-schema.md) | The `body` Block in the Intent Packet |
+| [ADR-0020](0020-decide-generate-commit-and-focused-pulse.md) | Decide / Generate / Commit Split and the Focused Pulse |
+| [ADR-0021](0021-room-speech-arbiter.md) | Room Speech Arbiter |
+| [ADR-0022](0022-guests-and-human-ingestion.md) | Guests and Human Ingestion Through the Event Log |
+| [ADR-0023](0023-untrusted-human-text-in-prompts.md) | Untrusted Human Text in Prompts |
+| [ADR-0024](0024-multi-run-wall-clock-loop-and-bounded-event-reads.md) | Multi-Run, Wall-Clock Pulse Loop and Bounded Event Reads |
+| [ADR-0025](0025-llm-budget-and-circuit-breaker.md) | LLM Budget as a Warning, and a Circuit Breaker |
+| [ADR-0026](0026-hotel-adapter-package.md) | `packages/hotel` as the Hotel Adapter Package |
 
 ## Template
 

@@ -73,6 +73,15 @@ export function scoreAttention(
   let mentionUrgency = 0;
   let objectiveUrgency = 0;
 
+  // Hotel: arriving where you were walking to is a salient wake (a focused
+  // pulse, reason body_arrived). Own speech never is, but this is the body.
+  const arrival = newEvents.find((e) => e.type === "body_arrived" && e.actorId === agent.agentId);
+  if (arrival) {
+    dueScore += 0.35;
+    reasons.push("objective_urgency");
+    triggeringEvent = arrival;
+  }
+
   for (const event of newEvents) {
     // Your own messages don't demand your own attention.
     if (event.actorId === agent.agentId) continue;
@@ -83,8 +92,13 @@ export function scoreAttention(
       event.type === "reply_sent" &&
       (event.payload["replyToActorId"] as string | undefined) === agent.agentId;
 
+    // A whisper only this agent heard clearly is the most pointed thing said to it: when an older line also named
+    // it, the answer is owed to the whisper (hotel, D44), whose reply goes back privately.
+    const hearing = event.payload["hearing"] as Record<string, unknown> | undefined;
+    const isWhisperToMe = event.payload["mode"] === "whisper" && hearing?.[agent.agentId] === "clear";
+
     if (isMentioned || isDirectReply) {
-      const mention = isMentioned ? 0.30 : 0.25;
+      const mention = isMentioned ? (isWhisperToMe ? 0.35 : 0.30) : 0.25;
       if (mention > mentionUrgency) {
         mentionUrgency = mention;
         triggeringEvent = event;
@@ -169,6 +183,7 @@ export function scoreAttention(
   // every pulse after speaking. (The decision owns the final needsLLM —
   // ADR-0015 — this value is attention's own read, reported for operators.)
   const needsLLM =
+    arrival !== undefined ||
     dueScore >= ATTENTION_LLM_THRESHOLD ||
     mentionUrgency > 0 ||
     (newEvents.some(

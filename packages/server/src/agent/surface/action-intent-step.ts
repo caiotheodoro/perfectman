@@ -17,12 +17,18 @@ import { IntentParser, type TargetResolutionContext } from "../intent-parser.js"
 import {
   DEFAULT_REPETITION_MAX_RETRIES,
   isNearRepeat,
+  isRoomCopy,
+  normalizeWords,
+  similarity,
   REPETITION_GUARD_MARKER,
   REPETITION_SIMILARITY_THRESHOLD,
+  roomLinesHeard,
 } from "../repetition-guard.js";
+import { answerWhisper } from "../../simulation/whisper-reply.js";
 import { promptVersionHash } from "../prompt-version.js";
 import { ActionIntentPromptBuilder } from "../action-intent-prompt-builder.js";
 import { PromptBuilder } from "../prompt-builder.js";
+import { EXAMPLE_MOTIVES } from "../hotel-body-hint.js";
 import {
   LLMStep,
   purposeToCallType,
@@ -30,7 +36,28 @@ import {
   StepRunContext,
 } from "./llm-step.js";
 
+/** The trigger is a guest's line, aimed at this agent: somebody is waiting for its answer (hotel mode). */
+function askedByPerson(input: AgentRuntimeInput, agentId: string): boolean {
+  const trigger = input.perceptionPacket.triggeringEvent;
+  const p = trigger?.payload as Record<string, unknown> | undefined;
+  if (!p || p["untrusted"] !== true) return false;
+  const aimed = [p["addresseeIds"], p["mentionedAgentIds"]].some((ids) => Array.isArray(ids) && ids.includes(agentId));
+  return aimed;
+}
+
 type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
+
+/**
+ * The repetition note when a person is waiting on the answer: the novelty goes into the wording and the answer
+ * stays aimed at them. The generic note sends the model to "another angle" or "someone else", which for a person
+ * who just asked is how a whisper got a line meant for the room.
+ */
+function askedRetryNote(lastAttempt: string, language: "pt-BR" | "en"): string {
+  if (language === "pt-BR") {
+    return `IMPORTANTE: sua última tentativa nesta rodada ("${lastAttempt}") repete algo que você já disse. Alguém acabou de falar com você e espera uma resposta: responda ao que essa pessoa disse, com outras palavras, falando só com ela. Não use "no_op" e não fale com o resto da sala.`;
+  }
+  return `IMPORTANT: your last attempt this turn ("${lastAttempt}") repeats something you already said. Someone just spoke to you and is waiting: answer what that person said, in new words, talking only to them. Do not choose "no_op" and do not talk to the rest of the room.`;
+}
 
 /**
  * Correction appended to the system prompt on each repetition retry. The
@@ -38,7 +65,20 @@ type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
  * new prompt version; the block motive keeps its own "Repetition guard"
  * prefix (repetition-guard.ts) that the offline sweeps match on.
  */
-export function retryCorrectionNote(lastAttempt: string, language: "pt-BR" | "en"): string {
+export function retryCorrectionNote(lastAttempt: string, language: "pt-BR" | "en", askedBy = false, copiedFrom: "own" | "room" | "thought" = "own"): string {
+  if (askedBy) return askedRetryNote(lastAttempt, language);
+  if (copiedFrom === "thought") {
+    if (language === "pt-BR") {
+      return `IMPORTANTE: sua última tentativa nesta rodada ("${lastAttempt}") é o seu pensamento privado dito em voz alta. "visibleContent" é só o que você fala para as pessoas; o pensamento fica em "privateMotiveSummary". Diga uma frase de verdade, ou escolha "no_op".`;
+    }
+    return `IMPORTANT: your last attempt this turn ("${lastAttempt}") is your private thought said out loud. "visibleContent" is only what you say to people; the thought goes in "privateMotiveSummary". Say a real sentence, or choose "no_op".`;
+  }
+  if (copiedFrom === "room") {
+    if (language === "pt-BR") {
+      return `IMPORTANTE: sua última tentativa nesta rodada ("${lastAttempt}") repete o que outra pessoa da sala acabou de dizer. Fale com as suas palavras, do seu jeito, sobre o que só você diria agora; ou escolha "no_op" de propósito.`;
+    }
+    return `IMPORTANT: your last attempt this turn ("${lastAttempt}") repeats what someone else in the room just said. Say it in your own words, about what only you would say right now; or choose "no_op" on purpose.`;
+  }
   // In the profile's language: this is appended to the system prompt as its
   // newest instruction, and in English it pulled pt-BR characters into
   // English on exactly the turns that retried.
@@ -83,7 +123,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
   render(input: AgentRuntimeInput, ctx: StepRunContext): BuiltPrompt {
     // Route through the dispatcher so unused prompt purposes still fail
     // closed (see prompt-builder.ts) and the render entry stays singular.
-    return PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens);
+    return PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens, ctx.llmConfig.promptStyle);
   }
 
   gate(input: AgentRuntimeInput, ctx: StepRunContext): StepOutcome<AgentRuntimeOutput> | undefined {
@@ -166,6 +206,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           llmUsage: null,
           latencyMs: Date.now() - startTime,
           fallbackApplied: true,
+          providerFailed: true,
           operatorEvents: trimEvent ? [trimEvent, opEvent] : [opEvent],
         },
         errorDetail: `Provider failed: ${error.message || String(error)}`,
@@ -179,6 +220,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         ...input.perceptionPacket.visibleContextEvents,
       ],
       triggeringEventId: input.perceptionPacket.triggeringEvent?.id,
+      ...(input.perceptionPacket.bodyHandles ? { bodyHandles: input.perceptionPacket.bodyHandles } : {}),
     };
 
     let parseResult = IntentParser.parse(providerResult.content, agentId, input.availableActions, "no_op", targetContext);
@@ -193,11 +235,18 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     // not as a repetition block.
     const policy = ctx.repetitionPolicy ?? {};
     const threshold = Math.min(1, Math.max(0, policy.threshold ?? REPETITION_SIMILARITY_THRESHOLD));
-    const maxRetries = Math.max(0, Math.floor(policy.maxRetries ?? DEFAULT_REPETITION_MAX_RETRIES));
+    const ambient = !input.perceptionPacket.triggeringEvent;
+    const maxRetries = Math.max(
+      0,
+      Math.floor(ambient && policy.ambientMaxRetries !== undefined ? Math.min(policy.ambientMaxRetries, policy.maxRetries ?? DEFAULT_REPETITION_MAX_RETRIES) : (policy.maxRetries ?? DEFAULT_REPETITION_MAX_RETRIES)),
+    );
+    const roomThreshold = policy.roomThreshold === undefined ? undefined : Math.min(1, Math.max(0, policy.roomThreshold));
+    const roomLines = roomThreshold === undefined ? [] : roomLinesHeard(input.perceptionPacket);
 
     let intent = parseResult.intent;
     let fallbackApplied = parseResult.fallbackApplied;
     let repetitionBlocked = false;
+    let lastRepeatWasOwn = true;
     let retryKind: RetryKind = "none";
     let retriesAttempted = 0;
     let totalInputTokens = providerResult.usage.inputTokens;
@@ -208,10 +257,21 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const retryTrimEvents: OperatorEvent[] = [];
     const retryRecoveryEvents: OperatorEvent[] = [];
 
-    const isRepeat = (candidateIntent: typeof intent): boolean =>
+    const speaks = (candidateIntent: typeof intent): boolean =>
       (candidateIntent.intentType === "send_message" || candidateIntent.intentType === "reply_to_message") &&
-      !!candidateIntent.visibleContent &&
-      isNearRepeat(candidateIntent.visibleContent, input.perceptionPacket.ownRecentUtterances, threshold);
+      !!candidateIntent.visibleContent;
+    const isOwnRepeat = (candidateIntent: typeof intent): boolean =>
+      speaks(candidateIntent) && isNearRepeat(candidateIntent.visibleContent!, input.perceptionPacket.ownRecentUtterances, threshold);
+    const isRoomRepeat = (candidateIntent: typeof intent): boolean =>
+      roomThreshold !== undefined && speaks(candidateIntent) && isRoomCopy(candidateIntent.visibleContent!, roomLines, roomThreshold);
+    // Hotel only (it rides on the room threshold): a line that is the actor's own private thought spoken out loud.
+    const isThoughtSpoken = (candidateIntent: typeof intent): boolean =>
+      roomThreshold !== undefined &&
+      speaks(candidateIntent) &&
+      ((normalizeWords(candidateIntent.privateMotiveSummary ?? "").length >= 3 &&
+        similarity(candidateIntent.visibleContent!, candidateIntent.privateMotiveSummary ?? "") >= 0.6) ||
+        EXAMPLE_MOTIVES.some((m) => similarity(candidateIntent.visibleContent!, m) >= 0.7));
+    const isRepeat = (candidateIntent: typeof intent): boolean => isOwnRepeat(candidateIntent) || isRoomRepeat(candidateIntent) || isThoughtSpoken(candidateIntent);
 
     if (!fallbackApplied && (isRepeat(intent) || parseResult.unresolvedTarget)) {
       // What the *first* attempt got wrong. A retry that fixes it clears every
@@ -229,7 +289,9 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         // before it goes anywhere near the wire; the trim event and the budget
         // gate below therefore see the corrected, final estimate.
         const corrections: string[] = [];
-        if (isRepeat(intent)) corrections.push(retryCorrectionNote(intent.visibleContent ?? "", ctx.profile.language));
+        if (isRepeat(intent)) {
+          corrections.push(retryCorrectionNote(intent.visibleContent ?? "", ctx.profile.language, askedByPerson(input, agentId), isOwnRepeat(intent) ? "own" : isRoomRepeat(intent) ? "room" : "thought"));
+        }
         if (parseResult.unresolvedTarget) {
           corrections.push(
             targetRetryCorrectionNote(
@@ -240,7 +302,12 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
             ),
           );
         }
-        const retryPrompt = this.buildRetryPrompt(input, ctx, prompt, corrections.join("\n\n"));
+        // The failed attempt joins "your last lines": the retry is shown it as said, and its angle rotates (compact hotel prompt only).
+        const retryInput: AgentRuntimeInput =
+          ctx.llmConfig.promptStyle === "compact" && intent.visibleContent
+            ? { ...input, perceptionPacket: { ...input.perceptionPacket, ownRecentUtterances: [...input.perceptionPacket.ownRecentUtterances, intent.visibleContent] } }
+            : input;
+        const retryPrompt = this.buildRetryPrompt(retryInput, ctx, prompt, corrections.join("\n\n"));
         const retryTrimEvent = this.promptTrimEvent(
           retryPrompt,
           simulationId,
@@ -263,6 +330,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         if (!budgetDecision.allowed) {
           if (isRepeat(intent)) {
             repetitionBlocked = true;
+            lastRepeatWasOwn = isOwnRepeat(intent);
             retryKind = "repeat_failed";
           }
           break;
@@ -315,15 +383,18 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           break;
         }
       }
-      // Exhausted the retry budget with the model still repeating.
-      if (!fallbackApplied && isRepeat(intent)) {
+      // Exhausted the retry budget with the model still repeating. A person who asked this actor something and is
+      // waiting is answered anyway: a repeated answer is what people give when asked twice, and silence is not.
+      if (!fallbackApplied && isRepeat(intent) && !askedByPerson(input, agentId)) {
         repetitionBlocked = true;
+        lastRepeatWasOwn = isOwnRepeat(intent);
         retryKind = "repeat_failed";
       }
     }
 
     if (repetitionBlocked) {
       fallbackApplied = true;
+      const blockedOwn = lastRepeatWasOwn;
       const retryPhrase =
         retriesAttempted === 0
           ? "with no retry allowed"
@@ -333,7 +404,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       intent = IntentParser.createFallback(
         agentId,
         "no_op",
-        `${REPETITION_GUARD_MARKER}: near-duplicate of a message you already sent, ${retryPhrase} — blocked structurally.`,
+        `${REPETITION_GUARD_MARKER}: near-duplicate of ${blockedOwn ? "a message you already sent" : "a line someone else in the room just said, or of your own thought"}, ${retryPhrase} — blocked structurally.`,
       );
     }
 
@@ -510,11 +581,13 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     }
 
     const output: AgentRuntimeOutput = {
-      intent,
+      intent: answerWhisper(intent, input.perceptionPacket.triggeringEvent ?? undefined),
       llmUsage: usageRecord,
       latencyMs: Date.now() - startTime,
       fallbackApplied,
       operatorEvents,
+      ...(retryKind === "provider_failed" ? { providerFailed: true } : {}),
+      ...(parseResult.bodyDropped && !fallbackApplied ? { bodyDropped: parseResult.bodyDropped } : {}),
     };
 
     return { ok: true, value: output };
@@ -542,6 +615,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       const system = `${basePrompt.system}${suffix}`;
       return {
         ...basePrompt,
+        retry: "correction",
         system,
         user: basePrompt.user,
         inputTokensEstimate: ActionIntentPromptBuilder.estimateTokens(system, basePrompt.user),
@@ -551,7 +625,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     const suffixTokens = Math.ceil(suffix.length / 4);
     const adjustedCap = Math.max(1, cap - suffixTokens);
-    const rebuilt = PromptBuilder.build(input, ctx.profile, "action_intent", adjustedCap);
+    const rebuilt = PromptBuilder.build(input, ctx.profile, "action_intent", adjustedCap, ctx.llmConfig.promptStyle);
     const system = `${rebuilt.system}${suffix}`;
     const user = rebuilt.user;
     const finalEstimate = ActionIntentPromptBuilder.estimateTokens(system, user);
@@ -574,6 +648,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     return {
       ...basePrompt,
+      retry: "correction",
       system,
       user,
       inputTokensEstimate: finalEstimate,

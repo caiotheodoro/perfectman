@@ -54,6 +54,11 @@ jobs:
       - name: Assert bench gate
         run: node scripts/ci/check-bench-gate.mjs out/bench-pr-gate.json "$GOLDEN_SCENARIOS"
 
+      # Hotel suite, offline: mock-actor canaries (jailbreak, D43 leaks, untrusted
+      # names, whisper privacy) plus the broken-stub self-test. No model, no key.
+      - name: Hotel canaries (mock)
+        run: pnpm --filter @perfectman/eval bench --suite hotel
+
       - name: Upload bench report
         if: always() && hashFiles('out/bench-pr-gate.json') != ''
         uses: actions/upload-artifact@v4

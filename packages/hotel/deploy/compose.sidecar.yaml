@@ -1,0 +1,50 @@
+# Snippet for the Tilehouse compose file (deploy/compose.server.yaml in the
+# hotel repo). The real wiring, setup-server.sh and the secret generation happen
+# in the integration PR; this is the shape the sidecar expects
+# (docs/plans/hotel-package.md 4 and 16).
+#
+# Merge the service below into the hotel's compose project. Two things change in
+# the hotel service, shown at the bottom.
+#
+# No port is published and the image EXPOSEs none: the Director listener, the
+# internal HTTP surface and the authoring listener are reachable on the compose
+# network only.
+
+services:
+  perfectman-hotel:
+    image: perfectman-hotel:latest        # docker build -f packages/hotel/Dockerfile -t perfectman-hotel .
+    restart: unless-stopped
+    stop_grace_period: 20s                # SIGTERM walks every actor out (bounded to 10 s), then exits 0
+    depends_on:
+      - tilehouse                         # the hotel service name in the hotel's compose file
+    env_file:
+      - perfectman.env                    # PERFECTMAN_ENABLED, PERFECTMAN_SECRET, PERFECTMAN_LLM_* (shared with the hotel)
+    environment:
+      PERFECTMAN_DIRECTOR_URL: ws://tilehouse:8081/director
+      PERFECTMAN_INTERNAL_URL: http://tilehouse:8081
+      PERFECTMAN_AUTHORING_BIND: 0.0.0.0:9101   # compose network only; the hotel reaches it as PERFECTMAN_SIDECAR_URL
+      PERFECTMAN_MAX_RUNS: "3"
+      PERFECTMAN_DATA_DIR: /data/perfectman
+      PERFECTMAN_HEALTH_PORT: "9100"      # loopback inside the container; used by the image HEALTHCHECK
+      # PERFECTMAN_LLM_BASE_URL, PERFECTMAN_LLM_API_KEY, PERFECTMAN_LLM_MODELS,
+      # PERFECTMAN_LLM_PRICES and PERFECTMAN_LLM_CONCURRENCY come from perfectman.env.
+      # Or PERFECTMAN_LLM_CHAIN (a JSON array of links, failover in order) instead of the first three.
+      # A model joins PERFECTMAN_LLM_MODELS only after `pnpm --filter @perfectman/hotel bench:latency`
+      # shows p95 <= 6 s at our prompt size (D53).
+    volumes:
+      - perfectman-data:/data/perfectman  # shared with the hotel container; same uid (node, 1000) or a group-writable directory
+    # no `ports:`, no `expose:`
+
+  tilehouse:
+    # Existing service. Add:
+    environment:
+      PERFECTMAN_ENABLED: "1"             # D35: dark launch flag; "0" leaves the sidecar up for its healthcheck only
+      PERFECTMAN_BIND: 0.0.0.0:8081       # second listener (Director WS + /internal/v1); do NOT publish it
+      PERFECTMAN_SIDECAR_URL: http://perfectman-hotel:9101
+    env_file:
+      - perfectman.env                    # the same PERFECTMAN_SECRET (>= 32 chars)
+    volumes:
+      - perfectman-data:/data/perfectman  # the hotel writes frames.jsonl here and joins it at replay (D39)
+
+volumes:
+  perfectman-data:

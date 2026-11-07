@@ -15,6 +15,7 @@ import type { InitiativeCandidate } from "../initiative/initiative.types.js";
 import type { MemoryWriteProposal } from "../memory/memory.types.js";
 import type { OperatorMetrics } from "../operator/operator.types.js";
 import type { SeededRng } from "../utils/rng.js";
+import type { SpaceView } from "../space/space-view.types.js";
 
 /** Stateful rate-limiting info — computed by dev2, passed to engine via snapshot */
 export type RateLimitStatus = {
@@ -61,6 +62,12 @@ export type EngineSnapshot = {
   rateLimitStatus: RateLimitStatus; // for computeAvailableActions
   dt: number; // seconds since last pulse
   rng: SeededRng;
+  /**
+   * Per-agent projection of the physical space, read once at the pulse
+   * boundary (ADR-0018). Absent outside the hotel: every path then behaves as
+   * it did before the space model existed.
+   */
+  space?: SpaceView;
 };
 
 /** Output of RunEngineStep — pure, no side effects */

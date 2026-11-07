@@ -2,6 +2,7 @@ import type { CommittedEvent } from "../event/event.types.js";
 import type { Memory } from "../memory/memory.types.js";
 import type { TranslatedEmotionalState } from "../prompt/prompt.types.js";
 import type { AvailableAction } from "../action/action.types.js";
+import type { BodyHandleMap, BodyPerception } from "../space/body.types.js";
 
 export type PerceptionPacket = {
   agentId: string;
@@ -26,4 +27,12 @@ export type PerceptionPacket = {
   // resolves it back to the real id against this map. Empty when nothing is
   // in view, never absent.
   eventHandles: Record<string, string>;
+  /** Hotel mode only: where the body is, who is near, what it could do (docs/embodiment.md section 5). */
+  body?: BodyPerception;
+  /**
+   * Per-render map from body handles ("p1", "z2", "f3", "r1") to what they
+   * stand for, beside `eventHandles`. `IntentParser` resolves the model's
+   * `body` refs against it. Present exactly when `body` is.
+   */
+  bodyHandles?: BodyHandleMap;
 };

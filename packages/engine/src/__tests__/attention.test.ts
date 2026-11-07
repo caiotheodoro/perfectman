@@ -199,3 +199,30 @@ describe("own events and needsLLM", () => {
     expect(scoreAttention(agent, CAIO, [foreign], DEFAULT_WORLD, new Map(), null, 3000).needsLLM).toBe(true);
   });
 });
+
+describe("a whisper outranks an older line that named the agent too (hotel, D44)", () => {
+  const spoken = makeEvent("old", { actorId: "h:9", payload: { mentionedAgentIds: ["a1"], mode: "say" }, emotionalSalience: "high" });
+  const whisper = makeEvent("new", {
+    actorId: "h:9",
+    payload: { mentionedAgentIds: ["a1"], mode: "whisper", hearing: { a1: "clear" } },
+    emotionalSalience: "high",
+  });
+
+  it("the whisper is the triggering event, whichever came first", () => {
+    const agent = makeAgent();
+    expect(scoreAttention(agent, CAIO, [spoken, whisper], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("new");
+    expect(scoreAttention(agent, CAIO, [whisper, spoken], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("new");
+  });
+
+  it("two spoken lines still keep the first as the trigger", () => {
+    const agent = makeAgent();
+    const later = makeEvent("later", { actorId: "h:9", payload: { mentionedAgentIds: ["a1"], mode: "say" }, emotionalSalience: "high" });
+    expect(scoreAttention(agent, CAIO, [spoken, later], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("old");
+  });
+
+  it("a whisper somebody else heard clearly is no more than a mention", () => {
+    const agent = makeAgent();
+    const other = makeEvent("other", { actorId: "h:9", payload: { mentionedAgentIds: ["a1"], mode: "whisper", hearing: { a2: "clear", a1: "notice" } }, emotionalSalience: "high" });
+    expect(scoreAttention(agent, CAIO, [spoken, other], DEFAULT_WORLD, new Map(), null, 3000).triggeringEventId).toBe("old");
+  });
+});

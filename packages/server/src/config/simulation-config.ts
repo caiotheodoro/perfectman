@@ -36,7 +36,7 @@ import {
 import { AgentRuntime } from "../agent/agent-runtime.js";
 import type { PersonaPromptProfile } from "../agent/persona-prompt-profile.js";
 import type { LLMConfig } from "../llm/llm-config.js";
-import { llmBudget } from "../llm/llm-budget.js";
+import { hotelBudgetRegistration, llmBudget } from "../llm/llm-budget.js";
 import type { LLMBudgetTracker } from "../llm/llm-budget.js";
 import {
   InMemoryAgentStateRepository,
@@ -44,18 +44,9 @@ import {
   InMemoryEventRepository,
   InMemorySimulationRepository,
 } from "../simulation/in-memory-stores.js";
-import {
-  closeDatabase,
-  openDatabase,
-  type DB,
-} from "../persistence/sqlite/database.js";
-import {
-  SqliteAgentStateRepository,
-  SqliteChannelRepository,
-  SqliteEventRepository,
-  SqliteGoalRegistryRepository,
-  SqliteSimulationRepository,
-} from "../persistence/sqlite/index.js";
+// SQLite is loaded on demand (`persistence.type === "sqlite"`), so an in-memory
+// run, such as a hotel run, never loads better-sqlite3.
+import type { DB } from "../persistence/sqlite/database.js";
 import {
   SimulationRuntime,
   type SimulationRuntimeRepositories,
@@ -69,16 +60,17 @@ import {
   type GoalRegistryPersister,
 } from "../simulation/world/world-evaluator.js";
 import type { IDeliveryGateway } from "../simulation/scheduler-contracts.js";
+import type { HotelSimulationOptions } from "../simulation/hotel-options.js";
 import type {
   AgentRuntime as SchedulerAgentRuntime,
   LLMBudget,
 } from "../simulation/pulse-scheduler.js";
-import {
-  CompositeDeliveryGateway,
-  HtmlSnapshotGateway,
-  MockDeliveryGateway,
-  StdoutDeliveryGateway,
-} from "../delivery/index.js";
+// Direct module imports, not the `delivery/` barrel: the barrel also exports the
+// Discord gateway, which would load discord.js at init (hotel-package.md 19.1).
+import { CompositeDeliveryGateway } from "../delivery/composite-delivery-gateway.js";
+import { HtmlSnapshotGateway } from "../delivery/html-snapshot-gateway.js";
+import { MockDeliveryGateway } from "../delivery/mock-delivery-gateway.js";
+import { StdoutDeliveryGateway } from "../delivery/stdout-delivery-gateway.js";
 
 function parseSceneLook(config: Record<string, unknown>): SceneLook | undefined {
   // A compiled scene carries its look under `look`; a hand-written config may put the three fields at the top.
@@ -222,6 +214,8 @@ export type ConfiguredSimulationHandle = {
   simulationId: string;
   gateways: Record<string, IDeliveryGateway>;
   repositories: SimulationRuntimeRepositories;
+  /** The tracker this simulation's calls are metered on (warnings, usage and latency percentiles). */
+  budget: LLMBudgetTracker;
   close(): Promise<void>;
 };
 
@@ -244,6 +238,11 @@ export type BuildConfiguredSimulationOptions = {
    * `DeliveryGatewayConfig` union that file-based configs are parsed against.
    */
   extraGateways?: Record<string, (meta: GatewayRuntimeMetadata) => IDeliveryGateway>;
+  /**
+   * Hotel mode (ADR-0020 to 0024): split pulses, room speech arbiter, bounded
+   * event reads and a body source. Absent, nothing about the build changes.
+   */
+  hotel?: HotelSimulationOptions;
 };
 
 export type ConfigPersona = Pick<
@@ -508,7 +507,7 @@ export async function buildConfiguredSimulation(
   options: BuildConfiguredSimulationOptions = {},
 ): Promise<ConfiguredSimulationHandle> {
   const simulationId = config.simulation.id ?? createId();
-  const persistence = createRepositories(config.persistence);
+  const persistence = await createRepositories(config.persistence, options.hotel);
   const meta = buildGatewayRuntimeMetadata(config, simulationId);
   const gateways = await createGateways(config, meta);
   for (const [id, factory] of Object.entries(options.extraGateways ?? {})) {
@@ -527,7 +526,11 @@ export async function buildConfiguredSimulation(
   const registry = new AgentConfigRegistry(configuredAgents);
   const budget = options.llmBudget ?? llmBudget;
   if (!options.llmBudget) {
-    llmBudget.registerLimits(simulationId, config.simulation.settings);
+    // Per-simulation registration on the shared tracker; a hotel run is warn-only.
+    llmBudget.registerLimits(
+      simulationId,
+      options.hotel ? hotelBudgetRegistration(options.hotel.budget) : config.simulation.settings,
+    );
   }
   // Fresh simulation, fresh rate windows (#147): the shared singleton keeps
   // usage keyed by simulationId across builds in one process (CLI reruns,
@@ -565,6 +568,7 @@ export async function buildConfiguredSimulation(
     // The name the room addresses this agent by: the prompt profile's (a
     // scene re-skin lands there), which mention parsing must match.
     displayName: agent.promptProfile.displayName,
+    ...(agent.promptProfile.responseDelayMs ? { responseDelayMs: agent.promptProfile.responseDelayMs } : {}),
   }));
 
   const simulation = await runtime.createSimulation({
@@ -577,6 +581,7 @@ export async function buildConfiguredSimulation(
     attachExisting: options.attachExisting,
     ...(goalLayer ? { goalLayer } : {}),
     ...(config.storyClock ? { storyClock: config.storyClock } : {}),
+    ...(options.hotel ? { hotel: options.hotel } : {}),
   });
 
   return {
@@ -584,8 +589,13 @@ export async function buildConfiguredSimulation(
     simulationId: simulation.id,
     gateways,
     repositories: persistence.repositories,
+    budget: budget as LLMBudgetTracker,
     async close(): Promise<void> {
-      if (persistence.db) closeDatabase(persistence.db);
+      if (!options.llmBudget) llmBudget.forget(simulationId);
+      if (persistence.db) {
+        const { closeDatabase } = await import("../persistence/sqlite/database.js");
+        closeDatabase(persistence.db);
+      }
     },
   };
 }
@@ -638,14 +648,25 @@ async function buildGoalLayerRuntime(
   return { config, evaluator };
 }
 
-function createRepositories(config: PersistenceConfig): {
+async function createRepositories(
+  config: PersistenceConfig,
+  hotel?: HotelSimulationOptions,
+): Promise<{
   repositories: SimulationRepositoriesWithGoalRegistry;
   db?: DB;
-} {
+}> {
   if (config.type === "sqlite") {
     if (config.path !== ":memory:") {
       mkdirSync(dirname(config.path), { recursive: true });
     }
+    const { openDatabase } = await import("../persistence/sqlite/database.js");
+    const {
+      SqliteAgentStateRepository,
+      SqliteChannelRepository,
+      SqliteEventRepository,
+      SqliteGoalRegistryRepository,
+      SqliteSimulationRepository,
+    } = await import("../persistence/sqlite/index.js");
     const db = openDatabase(config.path);
     return {
       db,
@@ -661,7 +682,7 @@ function createRepositories(config: PersistenceConfig): {
 
   return {
     repositories: {
-      eventRepo: new InMemoryEventRepository(),
+      eventRepo: new InMemoryEventRepository(hotel?.eventRetention),
       agentStateRepo: new InMemoryAgentStateRepository(),
       simRepo: new InMemorySimulationRepository(),
       channelRepo: new InMemoryChannelRepository(),
@@ -1134,6 +1155,20 @@ function rejectSimulationCalibrationFields(
   }
 }
 
+function parseResponseDelay(value: unknown, path: string): [number, number] {
+  if (
+    !Array.isArray(value) ||
+    value.length !== 2 ||
+    typeof value[0] !== "number" ||
+    typeof value[1] !== "number" ||
+    value[0] < 0 ||
+    value[1] < value[0]
+  ) {
+    throw new Error(`${path} must be a [min, max] pair of milliseconds with 0 <= min <= max`);
+  }
+  return [value[0], value[1]];
+}
+
 function parseMessageLength(value: unknown, path: string): NonNullable<PersonaPromptProfile["messageLength"]> {
   if (value === "short" || value === "medium" || value === "long" || value === "rapid_fire") return value;
   throw new Error(`${path} must be short, medium, long or rapid_fire`);
@@ -1209,6 +1244,9 @@ function parsePromptProfile(
     ),
     ...(profile["messageLength"] !== undefined
       ? { messageLength: parseMessageLength(profile["messageLength"], `${path}.messageLength`) }
+      : {}),
+    ...(profile["responseDelayMs"] !== undefined
+      ? { responseDelayMs: parseResponseDelay(profile["responseDelayMs"], `${path}.responseDelayMs`) }
       : {}),
     ...(profile["scenarioContext"] !== undefined
       ? { scenarioContext: parseScenarioContext(profile["scenarioContext"], `${path}.scenarioContext`) }

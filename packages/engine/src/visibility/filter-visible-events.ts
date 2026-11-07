@@ -61,6 +61,29 @@ export function filterVisibleEventsForAgent(
 }
 
 /**
+ * Hotel hearing (embodiment.md 5.2): `payload.hearing[agentId]` is the level
+ * this listener hears a spoken line at. `garbled` and `notice` lose their
+ * `content` and gain `payload.heardAs` for the renderer; a garbled line still
+ * reads in full for a listener it names. Anything else (no `hearing`, `clear`)
+ * is returned as the same object, so non-hotel events pass through untouched.
+ */
+export function redactForListener(event: CommittedEvent, agentId: string): CommittedEvent {
+  const hearing = event.payload["hearing"];
+  if (typeof hearing !== "object" || hearing === null || Array.isArray(hearing)) return event;
+  const level = (hearing as Record<string, unknown>)[agentId];
+  if (level !== "garbled" && level !== "notice") return event;
+  if (level === "garbled") {
+    const named = (key: string): boolean => {
+      const v = event.payload[key];
+      return Array.isArray(v) && v.includes(agentId);
+    };
+    if (named("mentionedAgentIds") || named("addresseeIds")) return event;
+  }
+  const { content: _content, ...rest } = event.payload;
+  return { ...event, payload: { ...rest, heardAs: level } };
+}
+
+/**
  * Filter committed events visible to spectators.
  *
  * Rules:

@@ -2,6 +2,7 @@
 export * from "./utils/id.js";
 export * from "./utils/math.js";
 export * from "./utils/rng.js";
+export * from "./utils/untrusted-text.js";
 
 // Simulation
 export * from "./simulation/simulation.types.js";
@@ -67,6 +68,8 @@ export type { TranslatedEmotionalState, RelationalFlavor, PromptPurpose } from "
 // Perception
 export * from "./perception/perception.types.js";
 
+export * from "./space/index.js";
+
 // Interpretation
 export * from "./interpretation/interpretation.types.js";
 
@@ -111,6 +114,7 @@ export * from "./scenarios/helpers.js";
 // Live protocol (shared with the web app; server types must not reach the browser)
 export * from "./live/live-frame.types.js";
 export * from "./live/run-api.types.js";
+export * from "./live/room-files.js";
 export * from "./stage/index.js";
 export * from "./director/index.js";
 export * from "./stage-art/index.js";

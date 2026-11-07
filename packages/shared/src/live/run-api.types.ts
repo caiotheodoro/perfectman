@@ -118,7 +118,8 @@ export type StoryDraft = {
 };
 
 /** `POST /api/draft`. The key is used for this one call and never kept. */
-export type DraftStoryRequest = { idea: string; people?: number; llm: LlmRequest };
+/** `language` pins the language of the whole draft; absent, the draft follows the idea's. */
+export type DraftStoryRequest = { idea: string; people?: number; language?: "en" | "pt-BR"; llm: LlmRequest };
 export type DraftStoryResponse = { draft: StoryDraft };
 
 export type StartRunResponse = { runId: string; status: unknown; streamUrl: string };

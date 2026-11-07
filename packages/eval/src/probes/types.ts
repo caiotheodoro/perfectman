@@ -13,6 +13,10 @@ export type BehavioralEventKind =
   | "join"          // agent_invited
   | "leave"         // agent_left
   | "typing"        // typing_started / cancelled
+  | "move"          // body: walk started (embodiment probes, docs/embodiment.md 10)
+  | "gesture"       // body: gesture or expression
+  | "arrive"        // body_arrived
+  | "face"          // body: turned toward someone
   | "other";
 
 export type BehavioralEvent = {
@@ -94,6 +98,20 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   // is the monopoly pattern observed live (32/32 pulses); seed band, tuned
   // with the rest.
   "act-share-max": [0, 0.5],
+  // Embodiment probes over a BodyFrameLog (docs/embodiment.md section 10).
+  // Seeds like every band above: calibrate after the first real runs.
+  "teleport-rate": [0, 0],
+  "earshot-violation": [0, 0.02],
+  "impossible-action-rate": [0, 0.03],
+  "jitter-index": [0, 2],
+  "facing-rate": [0.85, 1],
+  "furniture-use": [1, 1e9],
+  "spread-index": [0, 0.6],
+  "gesture-diversity": [0, 0.4],
+  "stale-command-rate": [0, 0],
+  "plan-abandon-rate": [0, 0.25],
+  "slowdown-count": [0, 0],
+  "prompt-identity-lint": [0, 0],
 };
 
 export type ProbeInput = {

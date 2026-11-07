@@ -41,8 +41,21 @@ export type {
 export type {
   IDeliveryGateway,
   DeliveryMessage,
+  DeliveryMessageMeta,
+  IBodyGateway,
 } from "./simulation/scheduler-contracts.js";
+// Hotel runtime API (types and frozen constants only; ADR-0020 to 0025).
+export * from "./simulation/hotel-runtime-api.js";
 export type { AgentContext } from "./simulation/pulse-scheduler.js";
+export type { HotelSimulationOptions, AgentCommitInfo, OnAgentCommitted } from "./simulation/hotel-options.js";
+export { RoomSpeechArbiter, DEFAULT_ARBITER_CONFIG, ROOM_CHANNEL_PREFIX, roomIdOfChannel } from "./simulation/room-speech-arbiter.js";
+export { computeActorAudibility, WHISPER_NOTICE_TILES } from "./simulation/actor-audibility.js";
+export { parseMentionedAgentIds, bodyCommandNames } from "./simulation/intent-resolver.js";
+export type { ResolvedIntent, ResolvedBody, AudibilityResult } from "./simulation/intent-resolver.js";
+export { WallClockPulseLoop, systemLoopClock } from "./simulation/wall-clock-pulse-loop.js";
+export type { LoopClock, LoopState, WallClockPulseLoopOptions } from "./simulation/wall-clock-pulse-loop.js";
+export { AgentLocks, GenerateSemaphore, sampleLandingDelayMs, LANDING_DELAY_CAP_MS, TYPING_MS_PER_CHAR } from "./simulation/split-pulse-support.js";
+export { sanitizeUntrustedText, quoteUntrusted, safeDisplayName, UNTRUSTED_LIMITS } from "./agent/untrusted-text.js";
 
 // Dev2 - Goal-layer eval surface (additive exports only; the eval harness
 // wires GoalLayerRuntime directly per the goal-end-to-end test recipe)
@@ -74,6 +87,7 @@ export {
   InMemoryChannelRepository,
   InMemoryMemoryRepository,
 } from "./simulation/in-memory-stores.js";
+export type { InMemoryEventRepositoryOptions } from "./simulation/in-memory-stores.js";
 
 // Dev3 - Config composition root (used by eval harness and CLI)
 export {

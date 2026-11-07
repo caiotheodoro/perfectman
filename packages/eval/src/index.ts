@@ -2,6 +2,8 @@
 export * from "./probes/types.js";
 export * from "./probes/adapter.js";
 export * from "./probes/index.js";
+export * from "./probes/embodiment.js";
+export * from "./embodiment/index.js";
 
 // Runner
 export * from "./run/scenario-runner.js";
@@ -14,6 +16,10 @@ export * from "./transcript/render-transcript.js";
 export * from "./judge/judge.js";
 export * from "./judge/calibration.js";
 export * from "./judge/golden-labels.js";
+
+// Hotel evaluation layer (Phase 3)
+export * from "./hotel/index.js";
+export { runHotelCli } from "./cli/hotel.js";
 
 // Bench
 export * from "./bench/persona-aware-mock.js";

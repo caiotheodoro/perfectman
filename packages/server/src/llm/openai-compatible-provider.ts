@@ -20,6 +20,8 @@ export class OpenAiCompatibleProvider implements LLMProvider {
     context: AgentRuntimeContext,
     prompt: BuiltPrompt
   ): Promise<LLMProviderResult> {
-    return generateOpenAiCompatibleIntent(this.config, prompt, Date.now(), this.deps);
+    return input.perceptionPacket?.body !== undefined
+      ? generateOpenAiCompatibleIntent(this.config, prompt, Date.now(), this.deps, { withBody: true })
+      : generateOpenAiCompatibleIntent(this.config, prompt, Date.now(), this.deps);
   }
 }

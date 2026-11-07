@@ -1,0 +1,41 @@
+{
+  "name": "@perfectman/hotel",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check:director": "node scripts/gen-director.mjs --check",
+    "dev": "tsc -p tsconfig.json --watch",
+    "gen:director": "node scripts/gen-director.mjs",
+    "test": "node scripts/gen-director.mjs --check && vitest run --passWithNoTests",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit && tsc -p tsconfig.probe.json --noEmit && tsc -p tsconfig.scripts.json --noEmit",
+    "start": "node dist/main.js",
+    "bench:latency": "node --experimental-transform-types --no-warnings --import ./scripts/register-ts.mjs scripts/bench-latency.ts",
+    "probe:llm": "vitest run --config probe/vitest.config.ts probe/llm-chain.probe.ts",
+    "probe:canary": "vitest run --config probe/vitest.config.ts probe/canary.probe.ts",
+    "probe:whisper": "vitest run --config probe/vitest.config.ts probe/whisper.probe.ts"
+  },
+  "dependencies": {
+    "@perfectman/engine": "workspace:*",
+    "@perfectman/server": "workspace:*",
+    "@perfectman/shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^26.2.0",
+    "@types/ws": "^8.18.2",
+    "fast-check": "4.9.0",
+    "json-schema-to-typescript": "15.0.4",
+    "typescript": "^5.5.0",
+    "vitest": "^2.0.0",
+    "ws": "8.21.3"
+  }
+}

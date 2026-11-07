@@ -4,6 +4,7 @@ import { createId } from "../utils/id.js";
 import type { ActionIntent, IntentType } from "./intent.types.js";
 import { IntentTypeSchema, IntentChannelTypeSchema, MemoryWriteProposalSchema, MemoryWriteShortSchema, MEMORY_TONE_UNSPECIFIED } from "./intent.schema.js";
 import type { MemoryWriteProposal } from "../memory/memory.types.js";
+import { BodyIntentSchema } from "../space/body-intent.schema.js";
 
 /**
  * The model-decision packet: only the fields the model legitimately decides.
@@ -34,6 +35,12 @@ export const ModelIntentPacketSchema = z.object({
   channelType: IntentChannelTypeSchema.optional(),
   invitedAgentIds: z.array(z.string()).optional(),
   spectatorSummary: z.string().optional(),
+  // Hotel mode only (ADR-0019). Parsed whenever present; whether the model is
+  // ASKED for it is decided by the wire-facing views below, so a run without a
+  // space model sees byte-identical prompts and decode grammar.
+  // Tolerant (ADR-0019): a malformed body is dropped, the speech half is kept.
+  // `.catch` leaves the exported JSON Schema identical to `.optional()`.
+  body: BodyIntentSchema.optional().catch(undefined),
 });
 
 export type ModelIntentPacket = z.infer<typeof ModelIntentPacketSchema>;
@@ -62,6 +69,8 @@ type JsonSchemaProp = {
   type?: string;
   description?: string;
   enum?: readonly string[];
+  const?: string | number | boolean;
+  pattern?: string;
   items?: { type?: string; properties?: Record<string, JsonSchemaProp>; anyOf?: JsonSchemaProp[] };
   properties?: Record<string, JsonSchemaProp>;
   anyOf?: JsonSchemaProp[];
@@ -94,13 +103,37 @@ export const MemoryWriteProposalJsonSchema = zodToJsonSchema(MemoryWriteProposal
  * straight from `ModelIntentPacketSchema` via zod-to-json-schema, so the zod
  * schema stays the single source of truth for both the prompt contract and
  * the decode-time grammar.
+ *
+ * This is the schema every non-hotel run sends, so it deliberately leaves out
+ * the hotel-only `body` field (ADR-0018: behaviour without a space model stays
+ * byte-identical). Hotel runs use `ModelIntentPacketWithBodyJsonSchema`.
  */
-export const ModelIntentPacketJsonSchema = zodToJsonSchema(ModelIntentPacketSchema, {
+export const ModelIntentPacketJsonSchema = zodToJsonSchema(ModelIntentPacketSchema.omit({ body: true }), {
+  $refStrategy: "none",
+}) as JsonSchemaObject;
+
+/** The packet schema including the optional `body` block, for hotel-mode constrained decoding. */
+export const ModelIntentPacketWithBodyJsonSchema = zodToJsonSchema(ModelIntentPacketSchema, {
   $refStrategy: "none",
 }) as JsonSchemaObject;
 
 function describePacketFieldType(def: JsonSchemaProp): string {
   if (def.enum) return `one of: ${def.enum.join(", ")}`;
+  if (def.const !== undefined) return JSON.stringify(def.const);
+  // A discriminated union (zod) is `anyOf` in JSON Schema. Render every branch,
+  // unlike the array case below, which shows only the first element shape.
+  if (def.anyOf && def.anyOf.length > 0 && def.type === undefined) {
+    return def.anyOf.map((branch) => describePacketFieldType(branch)).join(" | ");
+  }
+  // A nested object lists its keys with their own types, one level of
+  // description per level of nesting, so an enum or a range inside `body` is
+  // told to the model instead of collapsing to "string".
+  if (def.type === "object" && def.properties) {
+    const nested = Object.entries(def.properties)
+      .map(([key, prop]) => `${key}: ${describePacketFieldType(prop)}`)
+      .join("; ");
+    return `object (${nested})`;
+  }
   if (def.type === "array") {
     // A union of element shapes renders as its first branch: the short form
     // is the one the model is asked for; the full form is accepted quietly.
@@ -119,12 +152,13 @@ function describePacketFieldType(def: JsonSchemaProp): string {
     }
     return "array of strings";
   }
-  if (def.type === "number") {
+  if (def.type === "number" || def.type === "integer") {
     return def.minimum !== undefined && def.maximum !== undefined
-      ? `number (${def.minimum}-${def.maximum})`
-      : "number";
+      ? `${def.type} (${def.minimum}-${def.maximum})`
+      : def.type;
   }
   if (def.type === "boolean") return "boolean";
+  if (def.type === "string" && def.pattern) return `string matching ${def.pattern}`;
   return "string";
 }
 
@@ -138,8 +172,8 @@ function describePacketFieldType(def: JsonSchemaProp): string {
  * `json_schema` backends) — the tolerant parser can't repair a field the
  * model was never shown.
  */
-export function modelIntentPacketFieldContract(): string[] {
-  const { properties, required } = ModelIntentPacketJsonSchema;
+export function modelIntentPacketFieldContract(opts?: { body?: boolean }): string[] {
+  const { properties, required } = opts?.body ? ModelIntentPacketWithBodyJsonSchema : ModelIntentPacketJsonSchema;
   return Object.entries(properties).map(([name, def]) => {
     const isRequired = (required as readonly string[]).includes(name);
     const prop = def as JsonSchemaProp;
@@ -230,5 +264,6 @@ export function composeIntentPacket(spec: IntentComposeInput): ActionIntent {
     channelType: packet.channelType,
     invitedAgentIds: packet.invitedAgentIds,
     spectatorSummary: packet.spectatorSummary,
+    body: packet.body,
   };
 }

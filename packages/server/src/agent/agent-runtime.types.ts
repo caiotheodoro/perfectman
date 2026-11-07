@@ -22,6 +22,8 @@ export type PromptTrim = {
    * chronological order), after memories and events were not enough.
    */
   droppedUtterances: number;
+  /** Hotel mode: how far the body block was compressed (0 none .. 3 most) before any event was dropped. */
+  bodyCompressionLevel?: number;
   droppedInputTokensEstimate: number;
   /**
    * False when the drop loop exhausted every trimmable item and the render
@@ -52,6 +54,13 @@ export type BuiltPrompt = {
    * context was dropped to bring it within the cap.
    */
   trim?: PromptTrim;
+  /** Hotel mode: set to "compact" when the small-window profile rendered this prompt. Unset otherwise. */
+  promptStyle?: "compact";
+  /**
+   * Set on a retry prompt (a near-duplicate or an unresolvable target): the model already answered once this turn
+   * and the answer was not usable. A provider chain reads it to ask a different model the second time.
+   */
+  retry?: "correction";
 };
 
 export type AgentRuntimeOutput = {
@@ -60,4 +69,16 @@ export type AgentRuntimeOutput = {
   latencyMs: number;
   fallbackApplied: boolean;
   operatorEvents: OperatorEvent[];
+  /**
+   * The provider call (or its retry) itself failed, as opposed to answering
+   * with something unusable. A structured flag: the circuit breaker reads it
+   * instead of the model-influenced motive text.
+   */
+  providerFailed?: boolean;
+  /**
+   * Hotel mode: the model's `body` block named a handle that is not in this
+   * render's `bodyHandles`, so the parser dropped it and kept the speech
+   * (ADR-0019). The resolver commits these as an operator-only `body_blocked`.
+   */
+  bodyDropped?: import("@perfectman/shared").BlockedReason[];
 };

@@ -1,0 +1,5601 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Perfectman Director contract",
+  "description": "Generated from crates/sim/src/director.rs (proto 1). Do not edit by hand: run `cargo test -p tilehouse-sim director_schema`.",
+  "type": "object",
+  "required": [
+    "api_error",
+    "autolook_request",
+    "autolook_response",
+    "compile_request",
+    "compile_response",
+    "draft_request",
+    "draft_response",
+    "hotel_to_sidecar",
+    "job",
+    "preset_list",
+    "preset_source",
+    "proto",
+    "room_snapshot",
+    "sidecar_to_hotel",
+    "ui",
+    "validate_request",
+    "validate_response"
+  ],
+  "properties": {
+    "api_error": {
+      "$ref": "#/definitions/ApiError"
+    },
+    "autolook_request": {
+      "$ref": "#/definitions/AutolookRequest"
+    },
+    "autolook_response": {
+      "$ref": "#/definitions/AutolookResponse"
+    },
+    "compile_request": {
+      "$ref": "#/definitions/CompileRequest"
+    },
+    "compile_response": {
+      "$ref": "#/definitions/CompileResponse"
+    },
+    "draft_request": {
+      "$ref": "#/definitions/DraftRequest"
+    },
+    "draft_response": {
+      "$ref": "#/definitions/DraftResponse"
+    },
+    "hotel_to_sidecar": {
+      "$ref": "#/definitions/HotelMsg"
+    },
+    "job": {
+      "$ref": "#/definitions/Job"
+    },
+    "preset_list": {
+      "$ref": "#/definitions/PresetList"
+    },
+    "preset_source": {
+      "$ref": "#/definitions/PresetSource"
+    },
+    "proto": {
+      "type": "integer",
+      "format": "uint32",
+      "minimum": 0.0
+    },
+    "room_snapshot": {
+      "$ref": "#/definitions/RoomSnapshot"
+    },
+    "sidecar_to_hotel": {
+      "description": "Every frame also carries `seq` (a `u64` from 1 per connection and direction) beside `t`; see [`SidecarFrame`] and [`HotelFrame`]. It is left out here so the unions stay named types.",
+      "allOf": [
+        {
+          "$ref": "#/definitions/SidecarMsg"
+        }
+      ]
+    },
+    "ui": {
+      "$ref": "#/definitions/PerfectmanUi"
+    },
+    "validate_request": {
+      "$ref": "#/definitions/ValidateRequest"
+    },
+    "validate_response": {
+      "$ref": "#/definitions/ValidateResponse"
+    }
+  },
+  "definitions": {
+    "Action": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "wave",
+            "blow",
+            "laugh",
+            "thumbs",
+            "sit",
+            "stand",
+            "lay"
+          ]
+        },
+        {
+          "description": "Dancing on the spot until stopped. Styles 1 to 4: Hab-Hop, Pogo-Mogo, Duck-Funk, The Rollie.",
+          "type": "string",
+          "enum": [
+            "dance"
+          ]
+        },
+        {
+          "description": "Dozing off, eyes shut, until the player does anything.",
+          "type": "string",
+          "enum": [
+            "idle"
+          ]
+        },
+        {
+          "description": "Holds up a sign, styles 0 to 17.",
+          "type": "string",
+          "enum": [
+            "sign"
+          ]
+        },
+        {
+          "description": "Ends a dance or an idle.",
+          "type": "string",
+          "enum": [
+            "stop"
+          ]
+        },
+        {
+          "description": "Shows a face, `style` 0..=5 (`perfectman::Face`). Allowed while walking; clears itself.",
+          "type": "string",
+          "enum": [
+            "expression"
+          ]
+        },
+        {
+          "description": "Turns in place to a direction, `style` 0..=7.",
+          "type": "string",
+          "enum": [
+            "turn"
+          ]
+        }
+      ]
+    },
+    "ActorCmd": {
+      "description": "What an Actor does. `k` discriminates.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "x",
+            "y"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "walk"
+              ]
+            },
+            "plan": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "x": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            },
+            "y": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "`furni`: the hotel resolves the seat tile and walks there. `floor`: sit on open floor.",
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "floor": {
+              "default": false,
+              "type": "boolean"
+            },
+            "furni": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "sit"
+              ]
+            }
+          }
+        },
+        {
+          "description": "`to` is an avatar id for a whisper. Text is at most 200 chars; links and markdown are stripped.",
+          "type": "object",
+          "required": [
+            "k",
+            "mode",
+            "text"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "chat"
+              ]
+            },
+            "mode": {
+              "$ref": "#/definitions/ChatMode"
+            },
+            "text": {
+              "type": "string"
+            },
+            "to": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "Same validity as `Room::act`. Not for expressions or turns: use `Expression` and `Face`.",
+          "type": "object",
+          "required": [
+            "action",
+            "k"
+          ],
+          "properties": {
+            "action": {
+              "$ref": "#/definitions/Action"
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "action"
+              ]
+            },
+            "style": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "face",
+            "k"
+          ],
+          "properties": {
+            "face": {
+              "$ref": "#/definitions/Face"
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "expression"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Turns in place. Exactly one of `dir` (0..=7), `target` or `tile` is set.",
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "dir": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "face"
+              ]
+            },
+            "target": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/FaceTarget"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "tile": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "integer",
+                "format": "uint16",
+                "minimum": 0.0
+              },
+              "maxItems": 2,
+              "minItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "room"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "move_room"
+              ]
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "via": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Via"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "on"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "typing"
+              ]
+            },
+            "on": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "kind",
+            "pair",
+            "with"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "pair"
+              ]
+            },
+            "kind": {
+              "$ref": "#/definitions/PairKind"
+            },
+            "pair": {
+              "description": "The sidecar's id for this act, echoed in `pair_reaction`.",
+              "type": "string"
+            },
+            "with": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "Emotion cues such as the `Love` and `Raincloud` effects. The sidecar restores the Actor's own effect afterwards by sending `appearance` again; the hotel keeps the last value (checklist 8).",
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "effect": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "figure": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "appearance"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Reserved: not frozen until hand-item sprites exist (D33). The hotel answers `bad_message`.",
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "drink": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "item": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "carry"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "ActorErrorCode": {
+      "description": "`actor_error.code`, plus the section 9 table of the doc.",
+      "type": "string",
+      "enum": [
+        "bad_message",
+        "disabled",
+        "stale_lease",
+        "no_such_run",
+        "run_ended",
+        "run_limit",
+        "actor_limit",
+        "unknown_actor",
+        "no_such_room",
+        "not_subscribed",
+        "too_many_subscriptions",
+        "room_full",
+        "human_slots",
+        "name_taken",
+        "bad_name",
+        "bad_figure",
+        "no_route",
+        "action_not_here",
+        "slow_down",
+        "rate_limited",
+        "muted",
+        "not_a_seat",
+        "not_adjacent",
+        "target_gone",
+        "internal"
+      ]
+    },
+    "ActorGoneReason": {
+      "type": "string",
+      "enum": [
+        "despawned",
+        "kicked",
+        "muted_out",
+        "room_closed",
+        "lease_expired",
+        "sidecar_lost",
+        "killall",
+        "hotel_shutdown"
+      ]
+    },
+    "AdminRef": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "ApiError": {
+      "description": "Error body of every authoring and admin route: `400 bad_request`, `401`, `422 bad_scenario`, `503 llm_unavailable`, `504 timeout`.",
+      "type": "object",
+      "required": [
+        "error"
+      ],
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "errors": {
+          "description": "Present on `bad_scenario`.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PathMessage"
+          }
+        },
+        "message": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "AutolookCharacter": {
+      "type": "object",
+      "required": [
+        "name",
+        "traits"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "traits": {
+          "type": "string"
+        }
+      }
+    },
+    "AutolookEntry": {
+      "type": "object",
+      "required": [
+        "figure",
+        "name"
+      ],
+      "properties": {
+        "effect": {
+          "default": "",
+          "type": "string"
+        },
+        "figure": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "AutolookRequest": {
+      "description": "`catalog` is the constrained figure list the hotel supplies, one figure string per entry.",
+      "type": "object",
+      "required": [
+        "catalog",
+        "characters"
+      ],
+      "properties": {
+        "catalog": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "characters": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AutolookCharacter"
+          }
+        }
+      }
+    },
+    "AutolookResponse": {
+      "type": "object",
+      "required": [
+        "looks"
+      ],
+      "properties": {
+        "looks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/AutolookEntry"
+          }
+        }
+      }
+    },
+    "Avatar": {
+      "type": "object",
+      "required": [
+        "dir",
+        "id",
+        "look",
+        "name",
+        "state",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "action": {
+          "description": "A dance or a doze under way, which people coming into the room are shown. Walking ends it.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Action"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "action_style": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "ai": {
+          "description": "An AI Actor: the client draws a badge. Never sent to the Director (D43).",
+          "type": "boolean"
+        },
+        "bot": {
+          "type": "boolean"
+        },
+        "dir": {
+          "description": "0 is north-west on screen (towards -y), increasing clockwise in tile space.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "effect": {
+          "description": "Worn effect library name, empty for none.",
+          "default": "",
+          "type": "string"
+        },
+        "face": {
+          "description": "The current expression (`perfectman::Face` style, 0 is neutral), so late joiners match.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "figure": {
+          "description": "A `type:lib` figure string, empty for the procedural palette look.",
+          "default": "",
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "look": {
+          "$ref": "#/definitions/Look"
+        },
+        "name": {
+          "type": "string"
+        },
+        "state": {
+          "$ref": "#/definitions/AvatarState"
+        },
+        "x": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "y": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "AvatarMove": {
+      "type": "object",
+      "required": [
+        "dir",
+        "id",
+        "state",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "dir": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "state": {
+          "$ref": "#/definitions/AvatarState"
+        },
+        "x": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "y": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "AvatarState": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "stand",
+            "walk",
+            "sit",
+            "lay"
+          ]
+        },
+        {
+          "description": "Dancing on the spot, set by games such as the chair dance.",
+          "type": "string",
+          "enum": [
+            "dance"
+          ]
+        }
+      ]
+    },
+    "BatchFailure": {
+      "description": "Why one step of a `Batch` was refused.",
+      "type": "object",
+      "required": [
+        "code",
+        "op"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/definitions/ErrorCode"
+        },
+        "op": {
+          "type": "integer",
+          "format": "uint",
+          "minimum": 0.0
+        }
+      }
+    },
+    "Breaker": {
+      "type": "string",
+      "enum": [
+        "open",
+        "closed"
+      ]
+    },
+    "Card": {
+      "type": "object",
+      "required": [
+        "rank",
+        "suit"
+      ],
+      "properties": {
+        "rank": {
+          "description": "2 to 10, then 11 jack, 12 queen, 13 king, 14 ace.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "suit": {
+          "description": "0 spades, 1 hearts, 2 diamonds, 3 clubs.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        }
+      }
+    },
+    "CardKind": {
+      "type": "string",
+      "enum": [
+        "title",
+        "scene"
+      ]
+    },
+    "ChatImage": {
+      "description": "A picture, animated GIF or clip attached to a message. The file is served from `assets/chat/<id>/`.",
+      "type": "object",
+      "required": [
+        "h",
+        "id",
+        "w"
+      ],
+      "properties": {
+        "h": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "id": {
+          "type": "string"
+        },
+        "kind": {
+          "default": "image",
+          "allOf": [
+            {
+              "$ref": "#/definitions/MediaKind"
+            }
+          ]
+        },
+        "w": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "ChatMode": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "say",
+            "shout",
+            "whisper"
+          ]
+        },
+        {
+          "description": "What a character thinks. Delivered only to Audience in a cinematic run (D30), always logged.",
+          "type": "string",
+          "enum": [
+            "thought"
+          ]
+        },
+        {
+          "description": "Narrator line. Shown as a lower-third to Audience, never as a bubble.",
+          "type": "string",
+          "enum": [
+            "caption"
+          ]
+        }
+      ]
+    },
+    "CommandSource": {
+      "type": "string",
+      "enum": [
+        "chat",
+        "panel",
+        "auto"
+      ]
+    },
+    "CompileRequest": {
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "CompileResponse": {
+      "description": "Invalid source is `422 {\"error\":\"bad_scenario\",\"errors\":[...]}` (see [`ApiError`]).",
+      "type": "object",
+      "required": [
+        "body",
+        "schema_version"
+      ],
+      "properties": {
+        "body": true,
+        "schema_version": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "CutFxKind": {
+      "type": "string",
+      "enum": [
+        "fade",
+        "door",
+        "meanwhile"
+      ]
+    },
+    "DespawnMode": {
+      "type": "string",
+      "enum": [
+        "walk_out",
+        "now"
+      ]
+    },
+    "DraftRequest": {
+      "type": "object",
+      "required": [
+        "brief",
+        "language"
+      ],
+      "properties": {
+        "brief": {
+          "type": "string"
+        },
+        "cast_size": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "language": {
+          "type": "string"
+        }
+      }
+    },
+    "DraftResponse": {
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "ErrorCode": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "bad_message",
+            "not_authenticated",
+            "no_such_room",
+            "room_full",
+            "not_in_room",
+            "not_allowed",
+            "no_route",
+            "muted",
+            "rate_limited",
+            "no_such_user",
+            "not_friends",
+            "too_many_friends",
+            "too_many_blocks",
+            "not_enough_coins",
+            "internal"
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "place"
+          ],
+          "properties": {
+            "place": {
+              "$ref": "#/definitions/PlaceError"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "description": "They declined your request recently.",
+          "type": "string",
+          "enum": [
+            "too_soon"
+          ]
+        },
+        {
+          "description": "You've blocked this person, so you can't send them a request.",
+          "type": "string",
+          "enum": [
+            "blocked_by_you"
+          ]
+        },
+        {
+          "description": "The room is in the middle of a game, so it can't be rearranged.",
+          "type": "string",
+          "enum": [
+            "game_running"
+          ]
+        },
+        {
+          "description": "Not in this position or place, such as dancing while sitting.",
+          "type": "string",
+          "enum": [
+            "action_not_here"
+          ]
+        },
+        {
+          "description": "Too many actions too quickly.",
+          "type": "string",
+          "enum": [
+            "slow_down"
+          ]
+        },
+        {
+          "description": "You have to stand next to a game piece to use it.",
+          "type": "string",
+          "enum": [
+            "too_far"
+          ]
+        },
+        {
+          "description": "Someone is already using that piece, or you played a moment ago.",
+          "type": "string",
+          "enum": [
+            "busy"
+          ]
+        },
+        {
+          "description": "That piece isn't a game, or not that game.",
+          "type": "string",
+          "enum": [
+            "not_a_game"
+          ]
+        },
+        {
+          "description": "That picture doesn't exist, isn't yours, or pictures are switched off.",
+          "type": "string",
+          "enum": [
+            "no_such_image"
+          ]
+        },
+        {
+          "description": "The message is part of the Perfectman contract and the server does not handle it yet.",
+          "type": "string",
+          "enum": [
+            "not_implemented"
+          ]
+        }
+      ]
+    },
+    "ErrorInfo": {
+      "type": "object",
+      "required": [
+        "code",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string"
+        },
+        "message": {
+          "type": "string"
+        }
+      }
+    },
+    "Face": {
+      "description": "What an expression shows, as `Action::Expression` styles 0..=5.",
+      "type": "string",
+      "enum": [
+        "neutral",
+        "smile",
+        "angry",
+        "sad",
+        "surprised",
+        "sleepy"
+      ]
+    },
+    "FaceTarget": {
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "Fade": {
+      "type": "object",
+      "required": [
+        "ms",
+        "to"
+      ],
+      "properties": {
+        "ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "to": {
+          "description": "Target opacity, 0 to 1.",
+          "type": "number",
+          "format": "float"
+        }
+      }
+    },
+    "Features": {
+      "description": "Optional parts of the game this server has switched on.",
+      "type": "object",
+      "properties": {
+        "coins": {
+          "default": false,
+          "type": "boolean"
+        },
+        "images": {
+          "default": false,
+          "type": "boolean"
+        },
+        "video": {
+          "description": "Players may also send MP4 clips. Off when the server has no ffmpeg or `CHAT_VIDEO=off`.",
+          "default": false,
+          "type": "boolean"
+        }
+      }
+    },
+    "FitZoom": {
+      "description": "The literal `\"fit\"`: the room's own opening zoom.",
+      "type": "string",
+      "enum": [
+        "fit"
+      ]
+    },
+    "Furni": {
+      "description": "Where on its wall a piece hangs, in screen pixels at the default zoom. A piece placed before walls had a pixel grid has both at 0, which means the middle of the tile's edge at the height its art was drawn for (`WALL_MOUNT_LEVELS` unless the piece has its own).",
+      "type": "object",
+      "required": [
+        "def",
+        "id",
+        "rot",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "def": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "layer": {
+          "description": "Which of the flat pieces (rugs and wall pieces) that overlap is drawn over which: higher is nearer the viewer, and pieces with the same layer go by position and then by id.",
+          "type": "integer",
+          "format": "int16"
+        },
+        "off": {
+          "description": "The cell along the tile's edge, 1 to `WALL_CELLS`, or 0 for the middle of the edge.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "rot": {
+          "description": "Quarter turns, 0..=3. Odd turns swap width and depth.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "state": {
+          "description": "Which of the piece's states it's in. 0 is the resting one.",
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "up": {
+          "description": "How high above the tile's floor the piece's origin is, in pixels, or 0 for its usual height.",
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "x": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "y": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "z": {
+          "description": "How far up a stack it starts, in hundredths of a level above the floor. The server works this out when placing or moving it, and rooms from before stacking are all 0.",
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "GameKind": {
+      "type": "string",
+      "enum": [
+        "chair_dance",
+        "banzai",
+        "ice_tag",
+        "football",
+        "falling_floor"
+      ]
+    },
+    "GameView": {
+      "description": "What the Games window shows about the game a room is hosting.",
+      "type": "object",
+      "required": [
+        "host",
+        "kind",
+        "min_players",
+        "phase",
+        "players",
+        "status"
+      ],
+      "properties": {
+        "host": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "kind": {
+          "$ref": "#/definitions/GameKind"
+        },
+        "min_players": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "phase": {
+          "$ref": "#/definitions/Phase"
+        },
+        "players": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PlayerView"
+          }
+        },
+        "result": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "scores": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ScoreView"
+          }
+        },
+        "status": {
+          "type": "string"
+        },
+        "timer_ms": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "HelloActor": {
+      "type": "object",
+      "required": [
+        "actor",
+        "dir",
+        "name",
+        "ref",
+        "room",
+        "run",
+        "state",
+        "x",
+        "y"
+      ],
+      "properties": {
+        "actor": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "dir": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "name": {
+          "type": "string"
+        },
+        "ref": {
+          "type": "string"
+        },
+        "room": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "run": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "state": {
+          "$ref": "#/definitions/AvatarState"
+        },
+        "x": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "y": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        }
+      }
+    },
+    "HelloRoom": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "official"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "description": "Untrusted when the room is not official: its owner wrote it.",
+          "type": "string"
+        },
+        "official": {
+          "type": "boolean"
+        },
+        "section": {
+          "description": "The navigator section of an official room (`Featured`, `Casinos`, `Games`, `Perfectman`).",
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "HelloRun": {
+      "type": "object",
+      "required": [
+        "mode",
+        "room",
+        "room_name",
+        "run",
+        "scenario_version",
+        "state"
+      ],
+      "properties": {
+        "mode": {
+          "$ref": "#/definitions/RunMode"
+        },
+        "room": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "room_name": {
+          "description": "Untrusted: the room owner wrote it.",
+          "type": "string"
+        },
+        "run": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "scenario_version": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "state": {
+          "$ref": "#/definitions/RunState"
+        }
+      }
+    },
+    "HotelEndReason": {
+      "type": "string",
+      "enum": [
+        "idle_timeout",
+        "killall",
+        "lease_expired",
+        "hotel_shutdown"
+      ]
+    },
+    "HotelInfo": {
+      "type": "object",
+      "required": [
+        "build",
+        "human_reserve",
+        "join_interval_ms",
+        "max_actions_per_5s",
+        "max_avatars_per_room",
+        "max_chat",
+        "tick_ms"
+      ],
+      "properties": {
+        "build": {
+          "type": "string"
+        },
+        "human_reserve": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "join_interval_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_actions_per_5s": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_avatars_per_room": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "max_chat": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "tick_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        }
+      }
+    },
+    "HotelMsg": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "actors",
+            "hotel",
+            "proto",
+            "runs",
+            "session",
+            "t"
+          ],
+          "properties": {
+            "actors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HelloActor"
+              }
+            },
+            "hotel": {
+              "$ref": "#/definitions/HotelInfo"
+            },
+            "proto": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "rooms": {
+              "description": "Rooms the sidecar may travel to: every official room (the Perfectman wing included) and each room a live run is in, at most `HELLO_ROOMS_MAX`. Absent from an older hotel.",
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HelloRoom"
+              }
+            },
+            "runs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/HelloRun"
+              }
+            },
+            "session": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "hello"
+              ]
+            },
+            "untrusted_text": {
+              "description": "JSON paths of strings a stranger wrote (section 7.1).",
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "description": "A reconnect that resumes a run bumps its epoch.",
+          "type": "object",
+          "required": [
+            "lease",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "lease": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "lease"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "admin",
+            "cap_actors",
+            "lease",
+            "mode",
+            "room",
+            "run",
+            "scenario_version",
+            "t"
+          ],
+          "properties": {
+            "admin": {
+              "$ref": "#/definitions/AdminRef"
+            },
+            "cap_actors": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "lease": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "mode": {
+              "$ref": "#/definitions/RunMode"
+            },
+            "model": {
+              "description": "The model the admin picked for this run (D54). Link 1 of the chain for this run; the configured chain stays behind it as failover. Absent: the chain as configured.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/RunModel"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "scenario_version": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "run_start"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The hotel ended the run itself; no reply.",
+          "type": "object",
+          "required": [
+            "reason",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "reason": {
+              "$ref": "#/definitions/HotelEndReason"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "run_end"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "cmd",
+            "room",
+            "run",
+            "source",
+            "t"
+          ],
+          "properties": {
+            "admin": {
+              "description": "Absent for `source:\"auto\"`.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/AdminRef"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "args": {
+              "description": "Command arguments, unparsed. `whisper` takes `<name> <text>` with a name that contains spaces quoted (D51): `\"Ana Clara\" hello`. `auto` pauses carry `idle`.",
+              "default": "",
+              "type": "string"
+            },
+            "cmd": {
+              "$ref": "#/definitions/PmCmd"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "source": {
+              "$ref": "#/definitions/CommandSource"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "pm_command"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "actor",
+            "cid",
+            "dir",
+            "ref",
+            "room",
+            "t",
+            "x",
+            "y"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "cid": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "dir": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "ref": {
+              "type": "string"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "actor_spawned"
+              ]
+            },
+            "x": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            },
+            "y": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "actor",
+            "reason",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "reason": {
+              "$ref": "#/definitions/ActorGoneReason"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "actor_gone"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "code",
+            "t"
+          ],
+          "properties": {
+            "actor": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            },
+            "cid": {
+              "description": "Absent when the failing frame had none (for example an unknown `t`).",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "code": {
+              "$ref": "#/definitions/ActorErrorCode"
+            },
+            "detail": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "actor_error"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The room mirror's first message. `layout.rows`, `walk` and `seats` are server-derived so the sidecar re-implements no rules. The public `Avatar.ai` is never set here (D43).",
+          "type": "object",
+          "required": [
+            "avatars",
+            "defs",
+            "furni",
+            "layout",
+            "name",
+            "owner",
+            "rev",
+            "room",
+            "seats",
+            "t",
+            "template",
+            "walk"
+          ],
+          "properties": {
+            "avatars": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Avatar"
+              }
+            },
+            "background": {
+              "default": "",
+              "type": "string"
+            },
+            "defs": {
+              "type": "object",
+              "additionalProperties": {
+                "$ref": "#/definitions/SnapDef"
+              }
+            },
+            "furni": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Furni"
+              }
+            },
+            "layout": {
+              "$ref": "#/definitions/SnapLayout"
+            },
+            "name": {
+              "description": "Untrusted: the room owner wrote it.",
+              "type": "string"
+            },
+            "owner": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "pet": {
+              "default": "",
+              "type": "string"
+            },
+            "rev": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "seats": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/SnapSeat"
+              }
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_snapshot"
+              ]
+            },
+            "template": {
+              "type": "string"
+            },
+            "untrusted_text": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "walk": {
+              "description": "`.` blocked or void, `0` open, `s` seat, `g` gate or portal; one string per row.",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "description": "One mirrored public message; `rev` goes up by exactly 1 per mirrored message in the room. Strings in `msg` that a stranger wrote (avatar names) are untrusted by the same rule as snapshots, without a per-frame list.",
+          "type": "object",
+          "required": [
+            "msg",
+            "rev",
+            "room",
+            "t"
+          ],
+          "properties": {
+            "msg": {
+              "$ref": "#/definitions/ServerMsg"
+            },
+            "rev": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "delta"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Every 2 s per subscribed room. Does not change `rev`.",
+          "type": "object",
+          "required": [
+            "rev",
+            "room",
+            "t"
+          ],
+          "properties": {
+            "rev": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_ping"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "at",
+            "from",
+            "mode",
+            "rev",
+            "room",
+            "t",
+            "text",
+            "untrusted"
+          ],
+          "properties": {
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "from": {
+              "$ref": "#/definitions/PersonRef"
+            },
+            "had_image": {
+              "default": false,
+              "type": "boolean"
+            },
+            "mode": {
+              "description": "`say`, `shout` or `whisper`; a whisper is forwarded only when `to` is an Actor (D44).",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ChatMode"
+                }
+              ]
+            },
+            "rev": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "human_chat"
+              ]
+            },
+            "text": {
+              "type": "string"
+            },
+            "to": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            },
+            "untrusted": {
+              "description": "Always true: human chat is untrusted in-world speech (D22).",
+              "type": "boolean"
+            },
+            "untrusted_text": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "description": "The walk ended: finished, route stale or blocked. `x`,`y` is where the Actor stopped.",
+          "type": "object",
+          "required": [
+            "actor",
+            "room",
+            "t",
+            "x",
+            "y"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "plan": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "arrived"
+              ]
+            },
+            "x": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            },
+            "y": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "actor",
+            "eta_ms",
+            "steps",
+            "t"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "eta_ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "plan": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "steps": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "walk_started"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Replaces the `avatar_left`/`avatar_joined` pair for the sidecar's own Actor.",
+          "type": "object",
+          "required": [
+            "actor",
+            "from",
+            "t",
+            "to",
+            "x",
+            "y"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "from": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "moved_room"
+              ]
+            },
+            "to": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "x": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            },
+            "y": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "room",
+            "t"
+          ],
+          "properties": {
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_closed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "actor",
+            "at",
+            "outcome",
+            "pair",
+            "run",
+            "t",
+            "with"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "outcome": {
+              "$ref": "#/definitions/PairOutcome"
+            },
+            "pair": {
+              "type": "string"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "pair_reaction"
+              ]
+            },
+            "with": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      ]
+    },
+    "Job": {
+      "description": "`GET /api/admin/perfectman/jobs/{id}`. In memory on the hotel: lost on restart, kept 10 min.",
+      "type": "object",
+      "required": [
+        "admin",
+        "id",
+        "op",
+        "state"
+      ],
+      "properties": {
+        "admin": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "error": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ApiError"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "op": {
+          "$ref": "#/definitions/JobOp"
+        },
+        "result": true,
+        "state": {
+          "$ref": "#/definitions/JobState"
+        }
+      }
+    },
+    "JobOp": {
+      "type": "string",
+      "enum": [
+        "validate",
+        "compile",
+        "draft",
+        "autolook"
+      ]
+    },
+    "JobState": {
+      "type": "string",
+      "enum": [
+        "queued",
+        "running",
+        "done",
+        "failed"
+      ]
+    },
+    "Look": {
+      "type": "object",
+      "required": [
+        "hair",
+        "pants",
+        "shirt",
+        "skin"
+      ],
+      "properties": {
+        "hair": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "pants": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "shirt": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "skin": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        }
+      }
+    },
+    "MediaKind": {
+      "description": "What an attachment is. Both `thumb` and `full` exist for every kind; the thumb is always a still.",
+      "oneOf": [
+        {
+          "description": "A still picture.",
+          "type": "string",
+          "enum": [
+            "image"
+          ]
+        },
+        {
+          "description": "An animated GIF. Its full file is the animation.",
+          "type": "string",
+          "enum": [
+            "gif"
+          ]
+        },
+        {
+          "description": "An MP4 clip.",
+          "type": "string",
+          "enum": [
+            "video"
+          ]
+        }
+      ]
+    },
+    "ModelReasoning": {
+      "type": "string",
+      "enum": [
+        "none",
+        "optional",
+        "mandatory"
+      ]
+    },
+    "NoticeKind": {
+      "type": "string",
+      "enum": [
+        "info",
+        "warn",
+        "error"
+      ]
+    },
+    "Outcome": {
+      "description": "What came up, for showing to the room.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "faces",
+            "g",
+            "value"
+          ],
+          "properties": {
+            "faces": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "g": {
+              "type": "string",
+              "enum": [
+                "die"
+              ]
+            },
+            "value": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "dir",
+            "g"
+          ],
+          "properties": {
+            "dir": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "g": {
+              "type": "string",
+              "enum": [
+                "bottle"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "faces",
+            "g",
+            "value"
+          ],
+          "properties": {
+            "faces": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "g": {
+              "type": "string",
+              "enum": [
+                "wheel"
+              ]
+            },
+            "value": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "g",
+            "reels"
+          ],
+          "properties": {
+            "g": {
+              "type": "string",
+              "enum": [
+                "slot"
+              ]
+            },
+            "reels": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Symbol"
+              },
+              "maxItems": 3,
+              "minItems": 3
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "g",
+            "number",
+            "on"
+          ],
+          "properties": {
+            "g": {
+              "type": "string",
+              "enum": [
+                "roulette"
+              ]
+            },
+            "number": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "on": {
+              "$ref": "#/definitions/RouletteBet"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "dealer",
+            "g",
+            "you"
+          ],
+          "properties": {
+            "dealer": {
+              "$ref": "#/definitions/Card"
+            },
+            "g": {
+              "type": "string",
+              "enum": [
+                "high_card"
+              ]
+            },
+            "you": {
+              "$ref": "#/definitions/Card"
+            }
+          }
+        }
+      ]
+    },
+    "PairKind": {
+      "description": "A pair act between two avatars.",
+      "type": "string",
+      "enum": [
+        "kiss",
+        "hug"
+      ]
+    },
+    "PairOutcome": {
+      "type": "string",
+      "enum": [
+        "accept",
+        "timeout",
+        "dodge",
+        "push",
+        "aborted",
+        "done"
+      ]
+    },
+    "PanelActor": {
+      "description": "One Actor row in the run panel.",
+      "type": "object",
+      "required": [
+        "doing",
+        "id",
+        "name",
+        "room"
+      ],
+      "properties": {
+        "doing": {
+          "type": "string"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "last_line": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "room": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "PathMessage": {
+      "description": "`{path, message}` rows of a validation.",
+      "type": "object",
+      "required": [
+        "message",
+        "path"
+      ],
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        }
+      }
+    },
+    "PauseCause": {
+      "type": "string",
+      "enum": [
+        "admin",
+        "idle",
+        "breaker"
+      ]
+    },
+    "PerfectmanUi": {
+      "description": "The `ui_push.ui` union, discriminated by `k`. Also the payload of `ServerMsg::PerfectmanUi`. `Cut` is sidecar to hotel only: the hotel performs it and never forwards it. Every cinematic kind takes an optional `in_ms` delay so the Director's lookahead (D18) can send cues early.",
+      "oneOf": [
+        {
+          "description": "Built by the hotel from `run_status` and its actor table; the sidecar never pushes it.",
+          "type": "object",
+          "required": [
+            "actors",
+            "breaker",
+            "cost_usd",
+            "elapsed_s",
+            "k",
+            "llm_calls",
+            "pulse",
+            "run",
+            "state",
+            "title",
+            "tokens_in",
+            "tokens_out"
+          ],
+          "properties": {
+            "actors": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/PanelActor"
+              }
+            },
+            "breaker": {
+              "$ref": "#/definitions/Breaker"
+            },
+            "budget_warn_usd": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "cost_usd": {
+              "type": "number",
+              "format": "double"
+            },
+            "elapsed_s": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "idle_ends_in_s": {
+              "description": "Only while `pause_cause` is `idle`.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "run_panel"
+              ]
+            },
+            "llm_calls": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "llm_p50_ms": {
+              "description": "LLM call latency from the last `run_status` (D53). Absent until the sidecar reports it.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "llm_p95_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "pause_cause": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/PauseCause"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pulse": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "state": {
+              "$ref": "#/definitions/RunState"
+            },
+            "title": {
+              "type": "string"
+            },
+            "tokens_in": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "tokens_out": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "`code` maps to a localised string; `text` is a literal line (<= 200 chars). One of them is set.",
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "code": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "notice"
+              ]
+            },
+            "kind": {
+              "default": "info",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/NoticeKind"
+                }
+              ]
+            },
+            "text": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "run"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "replay_ready"
+              ]
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "url": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "fade": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Fade"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "hud"
+              ]
+            },
+            "letterbox": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "kind",
+            "ms",
+            "title"
+          ],
+          "properties": {
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "card"
+              ]
+            },
+            "kind": {
+              "$ref": "#/definitions/CardKind"
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "subtitle": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "title": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "ms",
+            "name"
+          ],
+          "properties": {
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "lower_third"
+              ]
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "name": {
+              "type": "string"
+            },
+            "role": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "ms",
+            "text"
+          ],
+          "properties": {
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "caption"
+              ]
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "k",
+            "ms",
+            "text"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "thought"
+              ]
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "emotion",
+            "id",
+            "k",
+            "ms"
+          ],
+          "properties": {
+            "emotion": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "cue"
+              ]
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "ease_ms",
+            "hold_ms",
+            "k",
+            "shot",
+            "target",
+            "zoom"
+          ],
+          "properties": {
+            "ease_ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "follow": {
+              "default": false,
+              "type": "boolean"
+            },
+            "hold_ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "camera"
+              ]
+            },
+            "shot": {
+              "$ref": "#/definitions/Shot"
+            },
+            "target": {
+              "$ref": "#/definitions/ShotTarget"
+            },
+            "zoom": {
+              "$ref": "#/definitions/ShotZoom"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "cue",
+            "k"
+          ],
+          "properties": {
+            "at": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "integer",
+                "format": "uint16",
+                "minimum": 0.0
+              },
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "cue": {
+              "type": "string"
+            },
+            "gain": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "float"
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "sfx"
+              ]
+            },
+            "loop": {
+              "type": "boolean"
+            },
+            "stop": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "kind",
+            "ms"
+          ],
+          "properties": {
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "cut_fx"
+              ]
+            },
+            "kind": {
+              "$ref": "#/definitions/CutFxKind"
+            },
+            "label": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "room"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "next_room"
+              ]
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "Sidecar to hotel only: move every Audience watcher of the run to `room`.",
+          "type": "object",
+          "required": [
+            "k",
+            "room"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "cut"
+              ]
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      ]
+    },
+    "PersonRef": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "Phase": {
+      "type": "string",
+      "enum": [
+        "lobby",
+        "running",
+        "finished"
+      ]
+    },
+    "PlaceError": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "unknown_furni",
+            "bad_rotation",
+            "out_of_bounds",
+            "not_flat",
+            "occupied",
+            "door_blocked",
+            "room_full",
+            "no_wall"
+          ]
+        },
+        {
+          "description": "A wall piece's spot is off its wall, or a floor piece was given one.",
+          "type": "string",
+          "enum": [
+            "bad_spot"
+          ]
+        },
+        {
+          "description": "Only rugs and the like, and wall pieces, can be brought forward or sent backward.",
+          "type": "string",
+          "enum": [
+            "not_layered"
+          ]
+        }
+      ]
+    },
+    "PlayerView": {
+      "type": "object",
+      "required": [
+        "alive",
+        "id",
+        "name"
+      ],
+      "properties": {
+        "alive": {
+          "description": "Still in it. Players out of a game stay listed.",
+          "type": "boolean"
+        },
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "team": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Team"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "PmCmd": {
+      "description": "`start`, `killall` and `open` are hotel-local and never forwarded.",
+      "type": "string",
+      "enum": [
+        "stop",
+        "pause",
+        "resume",
+        "inject",
+        "whisper",
+        "replay",
+        "status",
+        "wipe_memory"
+      ]
+    },
+    "PresetInfo": {
+      "type": "object",
+      "required": [
+        "key",
+        "language",
+        "mode",
+        "title"
+      ],
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "mode": {
+          "$ref": "#/definitions/RunMode"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "PresetList": {
+      "type": "object",
+      "required": [
+        "presets"
+      ],
+      "properties": {
+        "presets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PresetInfo"
+          }
+        }
+      }
+    },
+    "PresetSource": {
+      "type": "object",
+      "required": [
+        "source"
+      ],
+      "properties": {
+        "source": {
+          "type": "string"
+        }
+      }
+    },
+    "RightsHolder": {
+      "description": "Someone who may edit a room's furniture because its owner said so.",
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "RoomSnapshot": {
+      "description": "The room mirror's first message. `layout.rows`, `walk` and `seats` are server-derived so the sidecar re-implements no rules. The public `Avatar.ai` is never set here (D43).",
+      "type": "object",
+      "required": [
+        "avatars",
+        "defs",
+        "furni",
+        "layout",
+        "name",
+        "owner",
+        "rev",
+        "room",
+        "seats",
+        "template",
+        "walk"
+      ],
+      "properties": {
+        "avatars": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Avatar"
+          }
+        },
+        "background": {
+          "default": "",
+          "type": "string"
+        },
+        "defs": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/SnapDef"
+          }
+        },
+        "furni": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Furni"
+          }
+        },
+        "layout": {
+          "$ref": "#/definitions/SnapLayout"
+        },
+        "name": {
+          "description": "Untrusted: the room owner wrote it.",
+          "type": "string"
+        },
+        "owner": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "pet": {
+          "default": "",
+          "type": "string"
+        },
+        "rev": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "room": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "seats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SnapSeat"
+          }
+        },
+        "template": {
+          "type": "string"
+        },
+        "untrusted_text": {
+          "default": [],
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "walk": {
+          "description": "`.` blocked or void, `0` open, `s` seat, `g` gate or portal; one string per row.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "RouletteBet": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "n"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "number"
+              ]
+            },
+            "n": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "red"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "black"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "odd"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "even"
+              ]
+            }
+          }
+        },
+        {
+          "description": "1 to 18.",
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "low"
+              ]
+            }
+          }
+        },
+        {
+          "description": "19 to 36.",
+          "type": "object",
+          "required": [
+            "k"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "high"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The first, second or third twelve, as 1, 2 or 3.",
+          "type": "object",
+          "required": [
+            "k",
+            "n"
+          ],
+          "properties": {
+            "k": {
+              "type": "string",
+              "enum": [
+                "dozen"
+              ]
+            },
+            "n": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            }
+          }
+        }
+      ]
+    },
+    "RunBrief": {
+      "description": "One run in the drawer's list (`PerfectmanOpen`).",
+      "type": "object",
+      "required": [
+        "id",
+        "mode",
+        "room",
+        "state",
+        "title"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "mode": {
+          "$ref": "#/definitions/RunMode"
+        },
+        "room": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "state": {
+          "$ref": "#/definitions/RunState"
+        },
+        "title": {
+          "type": "string"
+        }
+      }
+    },
+    "RunMode": {
+      "type": "string",
+      "enum": [
+        "default",
+        "cinematic"
+      ]
+    },
+    "RunModel": {
+      "description": "An OpenRouter model chosen for one run, with what the hotel knew of it when it was picked.",
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "context": {
+          "description": "Context window in tokens; the sidecar picks the compact prompt for 8192 or less.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "id": {
+          "description": "The OpenRouter id, e.g. `minimax/minimax-m3.1-flash`.",
+          "type": "string"
+        },
+        "price_in": {
+          "description": "OpenRouter's listed price in USD per million tokens, for a model the sidecar has no price for.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "price_out": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "reasoning": {
+          "description": "Whether the model thinks before it answers: `mandatory` models get a low effort, `optional` ones are told not to think.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ModelReasoning"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
+    "RunState": {
+      "type": "string",
+      "enum": [
+        "starting",
+        "running",
+        "paused",
+        "stopping",
+        "ended",
+        "interrupted",
+        "failed"
+      ]
+    },
+    "ScoreView": {
+      "description": "One row of a game's scoreboard.",
+      "type": "object",
+      "required": [
+        "label",
+        "value"
+      ],
+      "properties": {
+        "label": {
+          "type": "string"
+        },
+        "value": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ServerMsg": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "look",
+            "name",
+            "t"
+          ],
+          "properties": {
+            "bot": {
+              "type": "boolean"
+            },
+            "coins": {
+              "default": 0,
+              "type": "integer",
+              "format": "int64"
+            },
+            "effect": {
+              "default": "",
+              "type": "string"
+            },
+            "features": {
+              "default": {
+                "coins": false,
+                "images": false,
+                "video": false
+              },
+              "allOf": [
+                {
+                  "$ref": "#/definitions/Features"
+                }
+              ]
+            },
+            "figure": {
+              "default": "",
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "look": {
+              "$ref": "#/definitions/Look"
+            },
+            "name": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "welcome"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "avatars",
+            "can_edit",
+            "furni",
+            "id",
+            "name",
+            "owner",
+            "t",
+            "template"
+          ],
+          "properties": {
+            "avatars": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Avatar"
+              }
+            },
+            "background": {
+              "default": "",
+              "type": "string"
+            },
+            "can_edit": {
+              "type": "boolean"
+            },
+            "cut": {
+              "description": "A cinematic cut: keep the camera, the HUD and the drawers.",
+              "type": "boolean"
+            },
+            "furni": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Furni"
+              }
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": {
+              "type": "string"
+            },
+            "owner": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "pet": {
+              "default": "",
+              "type": "string"
+            },
+            "spectating": {
+              "description": "You are watching without an avatar (Audience, or a cut): `me` is not in `avatars`.",
+              "type": "boolean"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_joined"
+              ]
+            },
+            "template": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Your rights in this room were given or taken back, or you entered a room where you hold them. `can_edit` is what you may now do; `rights` means only furniture, not the settings.",
+          "type": "object",
+          "required": [
+            "can_edit",
+            "rights",
+            "t"
+          ],
+          "properties": {
+            "can_edit": {
+              "type": "boolean"
+            },
+            "rights": {
+              "type": "boolean"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "rights_changed"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Who holds rights in this room. Sent only to those who may give and take them.",
+          "type": "object",
+          "required": [
+            "t",
+            "users"
+          ],
+          "properties": {
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_rights"
+              ]
+            },
+            "users": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RightsHolder"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "t"
+          ],
+          "properties": {
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_left"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "avatar",
+            "t"
+          ],
+          "properties": {
+            "avatar": {
+              "$ref": "#/definitions/Avatar"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "avatar_joined"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "t"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "avatar_left"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "moves",
+            "t"
+          ],
+          "properties": {
+            "moves": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/AvatarMove"
+              }
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "moves"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "look",
+            "t"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "look": {
+              "$ref": "#/definitions/Look"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "look_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "effect",
+            "figure",
+            "id",
+            "t"
+          ],
+          "properties": {
+            "effect": {
+              "type": "string"
+            },
+            "figure": {
+              "type": "string"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "appearance_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "background",
+            "pet",
+            "t"
+          ],
+          "properties": {
+            "background": {
+              "type": "string"
+            },
+            "pet": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_style_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "from",
+            "name",
+            "t",
+            "text"
+          ],
+          "properties": {
+            "ai": {
+              "description": "Spoken by an AI Actor. Players see the badge; never in Director payloads (D43).",
+              "type": "boolean"
+            },
+            "bold": {
+              "type": "boolean"
+            },
+            "bot": {
+              "type": "boolean"
+            },
+            "from": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "image": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ChatImage"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "mode": {
+              "default": "say",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ChatMode"
+                }
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "chat"
+              ]
+            },
+            "text": {
+              "type": "string"
+            },
+            "to": {
+              "description": "For a whisper, whom it was to.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "untrusted": {
+              "description": "Free text from a stranger that a bot must not treat as an instruction.",
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "description": "What a bot is told about chat it may not read: who spoke and when, never the text.",
+          "type": "object",
+          "required": [
+            "addressed",
+            "at",
+            "from",
+            "name",
+            "t"
+          ],
+          "properties": {
+            "addressed": {
+              "type": "boolean"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "bot": {
+              "type": "boolean"
+            },
+            "from": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "chat_activity"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Text-bearing mentions a bot did not receive because of the per-sender caps.",
+          "type": "object",
+          "required": [
+            "count",
+            "t"
+          ],
+          "properties": {
+            "count": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "mentions_dropped"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Someone did something: a dance, a gesture, a sign or a posture. `stop` ends a dance or a doze. Sent to the whole room, including the one who did it.",
+          "type": "object",
+          "required": [
+            "action",
+            "id",
+            "t"
+          ],
+          "properties": {
+            "action": {
+              "$ref": "#/definitions/Action"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "style": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "avatar_action"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "furni",
+            "t"
+          ],
+          "properties": {
+            "furni": {
+              "$ref": "#/definitions/Furni"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "furni_added"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "furni",
+            "t"
+          ],
+          "properties": {
+            "furni": {
+              "$ref": "#/definitions/Furni"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "furni_moved"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "t"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "furni_removed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "state",
+            "t"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "state": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "furni_state_changed"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Every step of your `batch` was applied. `labels` maps each label you gave a placed piece to its id.",
+          "type": "object",
+          "required": [
+            "labels",
+            "t"
+          ],
+          "properties": {
+            "labels": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "batch_applied"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Your `batch` changed nothing: these steps (counted from 0) were refused.",
+          "type": "object",
+          "required": [
+            "failed",
+            "t"
+          ],
+          "properties": {
+            "failed": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/BatchFailure"
+              }
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "batch_refused"
+              ]
+            }
+          }
+        },
+        {
+          "description": "A game piece started its show. The client cycles it through its states until the result arrives as a `furni_state_changed`.",
+          "type": "object",
+          "required": [
+            "id",
+            "ms",
+            "t"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "furni_rolling"
+              ]
+            }
+          }
+        },
+        {
+          "description": "What came up at a game piece, for the whole room. `text` is the line to show, and `payout` is what the player got back, always 0 while coins are off.",
+          "type": "object",
+          "required": [
+            "from",
+            "id",
+            "name",
+            "outcome",
+            "t",
+            "text"
+          ],
+          "properties": {
+            "from": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": {
+              "type": "string"
+            },
+            "outcome": {
+              "$ref": "#/definitions/Outcome"
+            },
+            "payout": {
+              "default": 0,
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "stake": {
+              "default": 0,
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "casino_result"
+              ]
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "A moderator removed a picture, so drop it wherever it's showing.",
+          "type": "object",
+          "required": [
+            "id",
+            "t"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "image_removed"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Your coin balance changed. `reason` is `daily`, `active`, `spent`, `refund` or `casino`.",
+          "type": "object",
+          "required": [
+            "balance",
+            "delta",
+            "reason",
+            "t"
+          ],
+          "properties": {
+            "balance": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "delta": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "reason": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "coins_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "t",
+            "text"
+          ],
+          "properties": {
+            "t": {
+              "type": "string",
+              "enum": [
+                "announce"
+              ]
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Which games this room allows and the one under way, sent on joining and on every change.",
+          "type": "object",
+          "required": [
+            "configurable",
+            "enabled",
+            "t"
+          ],
+          "properties": {
+            "configurable": {
+              "description": "Whether you may switch games on and off here.",
+              "type": "boolean"
+            },
+            "enabled": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GameKind"
+              }
+            },
+            "game": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/GameView"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "game_state"
+              ]
+            }
+          }
+        },
+        {
+          "description": "A result or rule announcement from a game, shown like a line of chat.",
+          "type": "object",
+          "required": [
+            "t",
+            "text"
+          ],
+          "properties": {
+            "t": {
+              "type": "string",
+              "enum": [
+                "game_line"
+              ]
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "t"
+          ],
+          "properties": {
+            "t": {
+              "type": "string",
+              "enum": [
+                "reported"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Sent whether or not the target has blocked you, so a block can't be detected.",
+          "type": "object",
+          "required": [
+            "t"
+          ],
+          "properties": {
+            "t": {
+              "type": "string",
+              "enum": [
+                "friend_request_sent"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Your friends, requests or blocks changed; fetch `/api/friends` again.",
+          "type": "object",
+          "required": [
+            "t"
+          ],
+          "properties": {
+            "t": {
+              "type": "string",
+              "enum": [
+                "friends_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "at",
+            "from",
+            "id",
+            "name",
+            "t",
+            "text",
+            "to"
+          ],
+          "properties": {
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "bot": {
+              "type": "boolean"
+            },
+            "from": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "image": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ChatImage"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "dm"
+              ]
+            },
+            "text": {
+              "type": "string"
+            },
+            "to": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "code",
+            "t"
+          ],
+          "properties": {
+            "code": {
+              "$ref": "#/definitions/ErrorCode"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "error"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The server is ending this connection; the client must not auto-reconnect.",
+          "type": "object",
+          "required": [
+            "reason",
+            "t"
+          ],
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "disconnect"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Someone is typing. Sent to the room except the typist.",
+          "type": "object",
+          "required": [
+            "id",
+            "on",
+            "t"
+          ],
+          "properties": {
+            "id": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "on": {
+              "type": "boolean"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "typing"
+              ]
+            }
+          }
+        },
+        {
+          "description": "An admin typed `:pm` with no arguments: open the Perfectman drawer. `start` (from `:pm start` with no scenario) opens it as the start modal, at the scenario picker.",
+          "type": "object",
+          "required": [
+            "enabled",
+            "room",
+            "runs",
+            "sidecar",
+            "t"
+          ],
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "runs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/RunBrief"
+              }
+            },
+            "sidecar": {
+              "type": "boolean"
+            },
+            "start": {
+              "type": "boolean"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "perfectman_open"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Run panel updates, notices and the cinematic HUD.",
+          "type": "object",
+          "required": [
+            "t",
+            "ui"
+          ],
+          "properties": {
+            "t": {
+              "type": "string",
+              "enum": [
+                "perfectman_ui"
+              ]
+            },
+            "ui": {
+              "$ref": "#/definitions/PerfectmanUi"
+            }
+          }
+        },
+        {
+          "description": "The reaction chip: `from` (an Actor id) wants to `kind` you.",
+          "type": "object",
+          "required": [
+            "from",
+            "kind",
+            "name",
+            "pair",
+            "t",
+            "ttl_ms"
+          ],
+          "properties": {
+            "from": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "kind": {
+              "$ref": "#/definitions/PairKind"
+            },
+            "name": {
+              "type": "string"
+            },
+            "pair": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "pair_prompt"
+              ]
+            },
+            "ttl_ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "\"`from` whispers to `to`\", for people near a whisper that involves an Actor. Names, not ids: the target may be out of view.",
+          "type": "object",
+          "required": [
+            "from",
+            "t",
+            "to"
+          ],
+          "properties": {
+            "from": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "whisper_notice"
+              ]
+            },
+            "to": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "A localisable private notice. `code` maps to a string table; `args` fill its placeholders.",
+          "type": "object",
+          "required": [
+            "code",
+            "t"
+          ],
+          "properties": {
+            "args": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "string"
+              }
+            },
+            "code": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "notice"
+              ]
+            }
+          }
+        },
+        {
+          "description": "A cinematic run is staged in your room (or you joined one): you are Audience.",
+          "type": "object",
+          "required": [
+            "mode",
+            "run",
+            "t",
+            "title"
+          ],
+          "properties": {
+            "mode": {
+              "$ref": "#/definitions/RunMode"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "audience_started"
+              ]
+            },
+            "title": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "reason",
+            "t"
+          ],
+          "properties": {
+            "reason": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "audience_ended"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "Shot": {
+      "type": "string",
+      "enum": [
+        "establishing",
+        "two_shot",
+        "close_up",
+        "tracking",
+        "reaction",
+        "insert",
+        "transition"
+      ]
+    },
+    "ShotTarget": {
+      "description": "What a shot points at. Externally tagged: `{\"avatar\":-701}`, `{\"pair\":[1,2]}`, `{\"tile\":[3,4]}`, `{\"furni\":5}`, `{\"room\":true}`.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "avatar"
+          ],
+          "properties": {
+            "avatar": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "pair"
+          ],
+          "properties": {
+            "pair": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              },
+              "maxItems": 2,
+              "minItems": 2
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "tile"
+          ],
+          "properties": {
+            "tile": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "uint16",
+                "minimum": 0.0
+              },
+              "maxItems": 2,
+              "minItems": 2
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "furni"
+          ],
+          "properties": {
+            "furni": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "room"
+          ],
+          "properties": {
+            "room": {
+              "type": "boolean"
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ShotZoom": {
+      "description": "A shot's resting zoom: 0.5, 1 or 2, or `\"fit\"`.",
+      "anyOf": [
+        {
+          "type": "number",
+          "format": "double"
+        },
+        {
+          "$ref": "#/definitions/FitZoom"
+        }
+      ]
+    },
+    "SidecarEndReason": {
+      "type": "string",
+      "enum": [
+        "completed",
+        "stopped",
+        "failed",
+        "breaker"
+      ]
+    },
+    "SidecarInfo": {
+      "type": "object",
+      "required": [
+        "build",
+        "version"
+      ],
+      "properties": {
+        "build": {
+          "type": "string"
+        },
+        "schema_sha256": {
+          "description": "SHA-256 of the vendored `director.schema.json`. A mismatch is logged as a warning; only a `proto` mismatch refuses (checklist 2).",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "version": {
+          "type": "string"
+        }
+      }
+    },
+    "SidecarMsg": {
+      "oneOf": [
+        {
+          "description": "Reply to `hello`. `resume` lists the runs the sidecar still holds in memory.",
+          "type": "object",
+          "required": [
+            "proto",
+            "sidecar",
+            "t"
+          ],
+          "properties": {
+            "proto": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "resume": {
+              "default": [],
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "sidecar": {
+              "$ref": "#/definitions/SidecarInfo"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "hello_ack"
+              ]
+            }
+          }
+        },
+        {
+          "description": "At least every 5 s per live run, including while paused.",
+          "type": "object",
+          "required": [
+            "run",
+            "t"
+          ],
+          "properties": {
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "run_heartbeat"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Reply to `run_start`. `ok:false` makes the run `failed`.",
+          "type": "object",
+          "required": [
+            "ok",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "error": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ErrorInfo"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "ok": {
+              "type": "boolean"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "run_ack"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Every 5 s per live run. The hotel builds the run panel from it.",
+          "type": "object",
+          "required": [
+            "cost_usd",
+            "llm_calls",
+            "pulse",
+            "run",
+            "state",
+            "t",
+            "tokens_in",
+            "tokens_out",
+            "undelivered_committed"
+          ],
+          "properties": {
+            "breaker": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Breaker"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "cost_usd": {
+              "type": "number",
+              "format": "double"
+            },
+            "lag_ms": {
+              "description": "Event-loop lag of the sidecar, not LLM latency.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "llm_calls": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "llm_p50_ms": {
+              "description": "Median latency of the run's LLM calls over the sidecar's recent window (D53).",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "llm_p95_ms": {
+              "description": "95th percentile of the same window (D53).",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "pause_cause": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/PauseCause"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "pulse": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "state": {
+              "$ref": "#/definitions/RunState"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "run_status"
+              ]
+            },
+            "tokens_in": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "tokens_out": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "undelivered_committed": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "description": "The sidecar finished the run.",
+          "type": "object",
+          "required": [
+            "reason",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "reason": {
+              "$ref": "#/definitions/SidecarEndReason"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "summary": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "run_end"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "room",
+            "t"
+          ],
+          "properties": {
+            "resnapshot": {
+              "default": false,
+              "type": "boolean"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "subscribe_room"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "room",
+            "t"
+          ],
+          "properties": {
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "unsubscribe_room"
+              ]
+            }
+          }
+        },
+        {
+          "description": "`tile: null` spawns on the door tile.",
+          "type": "object",
+          "required": [
+            "cid",
+            "figure",
+            "lease",
+            "name",
+            "ref",
+            "room",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "cid": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "effect": {
+              "default": "",
+              "type": "string"
+            },
+            "figure": {
+              "type": "string"
+            },
+            "lease": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "name": {
+              "type": "string"
+            },
+            "ref": {
+              "description": "The sidecar's agent id; the hotel stores and echoes it, never interprets it.",
+              "type": "string"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "actor_spawn"
+              ]
+            },
+            "tile": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "integer",
+                "format": "uint16",
+                "minimum": 0.0
+              },
+              "maxItems": 2,
+              "minItems": 2
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "actor",
+            "cid",
+            "lease",
+            "mode",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "cid": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "lease": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "mode": {
+              "$ref": "#/definitions/DespawnMode"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "actor_despawn"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "actor",
+            "cid",
+            "cmd",
+            "lease",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "cid": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "cmd": {
+              "$ref": "#/definitions/ActorCmd"
+            },
+            "lease": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "actor_cmd"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "run",
+            "t",
+            "to",
+            "ui"
+          ],
+          "properties": {
+            "lease": {
+              "description": "The run's lease. Optional so older sidecars still connect; when present it must be current.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "ui_push"
+              ]
+            },
+            "to": {
+              "$ref": "#/definitions/UiTarget"
+            },
+            "ui": {
+              "$ref": "#/definitions/PerfectmanUi"
+            }
+          }
+        }
+      ]
+    },
+    "SnapDef": {
+      "type": "object",
+      "required": [
+        "d",
+        "h",
+        "lay",
+        "name",
+        "seat",
+        "states",
+        "w",
+        "walkable",
+        "wall"
+      ],
+      "properties": {
+        "d": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "h": {
+          "type": "integer",
+          "format": "uint16",
+          "minimum": 0.0
+        },
+        "lay": {
+          "type": "boolean"
+        },
+        "name": {
+          "type": "string"
+        },
+        "seat": {
+          "type": "boolean"
+        },
+        "states": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "w": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "walkable": {
+          "type": "boolean"
+        },
+        "wall": {
+          "type": "boolean"
+        }
+      }
+    },
+    "SnapLayout": {
+      "type": "object",
+      "required": [
+        "door",
+        "door_dir",
+        "rows"
+      ],
+      "properties": {
+        "door": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "uint16",
+            "minimum": 0.0
+          },
+          "maxItems": 2,
+          "minItems": 2
+        },
+        "door_dir": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "rows": {
+          "description": "One char per tile: `x` void, `0-9a-w` floor level.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "SnapSeat": {
+      "type": "object",
+      "required": [
+        "dir",
+        "furni",
+        "lay",
+        "tiles"
+      ],
+      "properties": {
+        "dir": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "furni": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "lay": {
+          "type": "boolean"
+        },
+        "tiles": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            },
+            "maxItems": 2,
+            "minItems": 2
+          }
+        }
+      }
+    },
+    "Symbol": {
+      "type": "string",
+      "enum": [
+        "lemon",
+        "plum",
+        "cherry",
+        "bell",
+        "bar",
+        "seven"
+      ]
+    },
+    "Team": {
+      "description": "Team colours shared by the team games, matching the `_r`, `_g`, `_b` and `_y` pieces.",
+      "type": "string",
+      "enum": [
+        "red",
+        "green",
+        "blue",
+        "yellow"
+      ]
+    },
+    "UiTarget": {
+      "description": "Where a `ui_push` goes. Externally tagged: `{\"admin\":9}`, `{\"run\":7}`, `{\"room\":12}`, `{\"users\":[1,2]}`.",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "admin"
+          ],
+          "properties": {
+            "admin": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "run"
+          ],
+          "properties": {
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "room"
+          ],
+          "properties": {
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": [
+            "users"
+          ],
+          "properties": {
+            "users": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    },
+    "ValidateRequest": {
+      "description": "`POST /authoring/v1/validate`: `source` or `body`. A failing scenario is still `200`.",
+      "type": "object",
+      "properties": {
+        "body": true,
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "ValidateResponse": {
+      "type": "object",
+      "required": [
+        "errors",
+        "ok",
+        "warnings"
+      ],
+      "properties": {
+        "errors": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PathMessage"
+          }
+        },
+        "ok": {
+          "type": "boolean"
+        },
+        "warnings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/PathMessage"
+          }
+        }
+      }
+    },
+    "Via": {
+      "type": "string",
+      "enum": [
+        "door"
+      ]
+    }
+  }
+}

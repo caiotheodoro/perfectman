@@ -161,6 +161,7 @@ export function personaPackToProfile(pack: PersonaPack, reskin?: PersonaReskin):
     publicPrivateDelta: pack.edgeProfile.maskTells,
     voiceGuidelines: pack.voiceGuidelines,
     ...(pack.presenceProfile?.messageLength ? { messageLength: pack.presenceProfile.messageLength } : {}),
+    ...(pack.presenceProfile?.responseDelayMs ? { responseDelayMs: pack.presenceProfile.responseDelayMs } : {}),
     styleExamples: {
       default: pack.styleExamples,
       animated: [],

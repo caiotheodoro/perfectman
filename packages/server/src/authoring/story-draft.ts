@@ -37,7 +37,7 @@ const Reply = z.object({
   })),
 });
 
-export function draftPrompt(idea: string, people: number | undefined): { system: string; user: string } {
+export function draftPrompt(idea: string, people: number | undefined, language?: "en" | "pt-BR"): { system: string; user: string } {
   const count = people === undefined ? "three to five" : String(Math.min(MAX_PEOPLE, Math.max(MIN_PEOPLE, Math.round(people))));
   return {
     system: [
@@ -48,7 +48,7 @@ export function draftPrompt(idea: string, people: number | undefined): { system:
     user: [
       `Idea: ${idea}`,
       "",
-      `Write the room with ${count} people. Write in the language of the idea (English or Brazilian Portuguese).`,
+      `Write the room with ${count} people. ${language === "pt-BR" ? 'Write every field, names of places included, in Brazilian Portuguese (pt-BR), whatever language the idea is in; "language" must be "pt-BR".' : "Write in the language of the idea (English or Brazilian Portuguese)."}`,
       "JSON shape:",
       '{"title": string, "situation": string (2-4 sentences: where they are, what just happened, what is at stake),',
       ' "language": "en" | "pt-BR",',
@@ -81,7 +81,7 @@ export function extractJson(reply: string): unknown {
 }
 
 /** Checks a model's reply and shapes it into a draft the story form can hold. */
-export function toStoryDraft(reply: string): StoryDraft {
+export function toStoryDraft(reply: string, language?: "en" | "pt-BR"): StoryDraft {
   const parsed = Reply.parse(extractJson(reply));
   const seen = new Set<string>();
   const people = parsed.people
@@ -96,7 +96,7 @@ export function toStoryDraft(reply: string): StoryDraft {
     }));
   if (people.length < MIN_PEOPLE) throw new Error("fewer than two usable people");
   if (!parsed.title || !parsed.situation) throw new Error("missing title or situation");
-  return { title: parsed.title, situation: parsed.situation, language: parsed.language === "pt-BR" ? "pt-BR" : "en", people };
+  return { title: parsed.title, situation: parsed.situation, language: language ?? (parsed.language === "pt-BR" ? "pt-BR" : "en"), people };
 }
 
 type Fetch = typeof fetch;
@@ -108,7 +108,7 @@ export async function draftStory(request: DraftStoryRequest, fetchImpl: Fetch = 
   if (!llm.baseUrl || !llm.modelName || !llm.apiKey) {
     throw new StoryDraftError("Drafting needs a model and a key.", 422, "Paste a key for a model first.");
   }
-  const prompt = draftPrompt(idea, request.people);
+  const prompt = draftPrompt(idea, request.people, request.language);
   const body = {
     model: llm.modelName,
     messages: [{ role: "system", content: prompt.system }, { role: "user", content: prompt.user }],
@@ -139,7 +139,7 @@ export async function draftStory(request: DraftStoryRequest, fetchImpl: Fetch = 
       throw new StoryDraftError("Could not reach the model.", 502, "Check the connection and try again.");
     }
     try {
-      return toStoryDraft(reply);
+      return toStoryDraft(reply, request.language);
     } catch (error) {
       lastProblem = error instanceof Error ? error.message : "unreadable reply";
     }
