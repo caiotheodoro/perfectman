@@ -53,20 +53,59 @@ export function compiledScenario(language: "en" | "pt-BR" = "pt-BR"): { source: 
   return { source, body: svc.compile({ source }).body };
 }
 
-/** fetch that serves the hotel's internal HTTP surface from memory. */
-export function fakeHotelHttp(versions: Record<number, unknown>): { fetchImpl: FetchLike; registered: unknown[] } {
+export type FakeMemoryRow = { scenario: number; user_id: number; character: string; body: unknown; updated_at: number };
+
+/** The hotel's `scenario_player_memory` table and its internal endpoints (director-protocol.md 11.1), in memory. */
+export class FakeMemoryTable {
+  readonly rows = new Map<string, FakeMemoryRow>();
+  readonly puts: Array<{ scenario: number; user: number; character: string; body: unknown }> = [];
+  /** More than this many characters for one person and scenario is 422 memory_full, as the hotel answers. */
+  maxCharacters = 12;
+  set(scenario: number, user: number, character: string, body: unknown): void {
+    this.rows.set(`${scenario}|${user}|${character}`, { scenario, user_id: user, character, body, updated_at: Date.now() });
+  }
+  get(scenario: number, user: number, character: string): FakeMemoryRow | undefined {
+    return this.rows.get(`${scenario}|${user}|${character}`);
+  }
+}
+
+/** fetch that serves the hotel's internal HTTP surface from memory. The version answer names its scenario (`scenario`). */
+export function fakeHotelHttp(versions: Record<number, unknown>, opts: { scenario?: number; memory?: FakeMemoryTable } = {}): { fetchImpl: FetchLike; registered: unknown[]; memory: FakeMemoryTable; memoryCalls: string[] } {
   const registered: unknown[] = [];
+  const memory = opts.memory ?? new FakeMemoryTable();
+  const memoryCalls: string[] = [];
+  const scenario = opts.scenario ?? 5;
   const fetchImpl: FetchLike = async (url, init) => {
-    const path = new URL(url).pathname;
+    const u = new URL(url);
+    const path = u.pathname;
     const m = /\/scenario-versions\/(\d+)$/.exec(path);
-    if (m?.[1] && versions[Number(m[1])] !== undefined) return new Response(JSON.stringify({ id: Number(m[1]), body: versions[Number(m[1])] }), { status: 200 });
+    if (m?.[1] && versions[Number(m[1])] !== undefined) return new Response(JSON.stringify({ id: Number(m[1]), scenario, body: versions[Number(m[1])] }), { status: 200 });
+    if (path === "/internal/v1/memory" && (init?.method ?? "GET") === "GET") {
+      memoryCalls.push(`GET ${u.search}`);
+      const sc = Number(u.searchParams.get("scenario"));
+      const users = new Set((u.searchParams.get("users") ?? "").split(",").map(Number));
+      const rows = [...memory.rows.values()].filter((r) => r.scenario === sc && users.has(r.user_id)).map((r) => ({ user_id: r.user_id, character: r.character, body: JSON.stringify(r.body), updated_at: r.updated_at }));
+      return new Response(JSON.stringify({ rows }), { status: 200 });
+    }
+    const put = /\/internal\/v1\/memory\/(\d+)\/(\d+)\/([^/]+)$/.exec(path);
+    if (put && init?.method === "PUT") {
+      const [, sc, user, character] = put as unknown as [string, string, string, string];
+      const body = (JSON.parse(String(init.body ?? "{}")) as { body?: unknown }).body;
+      memoryCalls.push(`PUT ${path}`);
+      const mine = [...memory.rows.values()].filter((r) => r.scenario === Number(sc) && r.user_id === Number(user));
+      if (!memory.get(Number(sc), Number(user), decodeURIComponent(character)) && mine.length >= memory.maxCharacters) return new Response(JSON.stringify({ error: "memory_full" }), { status: 422 });
+      if (Buffer.byteLength(JSON.stringify(body)) > 4096) return new Response(JSON.stringify({ error: "too_large" }), { status: 413 });
+      memory.puts.push({ scenario: Number(sc), user: Number(user), character: decodeURIComponent(character), body });
+      memory.set(Number(sc), Number(user), decodeURIComponent(character), body);
+      return new Response("{}", { status: 200 });
+    }
     if (/\/runs\/\d+\/artifacts$/.test(path)) {
       registered.push(JSON.parse(String(init?.body ?? "{}")));
       return new Response("{}", { status: 200 });
     }
     return new Response("not found", { status: 404 });
   };
-  return { fetchImpl, registered };
+  return { fetchImpl, registered, memory, memoryCalls };
 }
 
 export const FAST_TIMING = {
@@ -79,13 +118,13 @@ export const FAST_TIMING = {
 } as const;
 
 /** The sidecar against a fake Director with one room (12), one human (ana, id 9) and scenario version 31. */
-export async function bootSidecar(over: { config?: Partial<HotelConfig>; timing?: Partial<RunTiming>; fake?: FakeDirector; rng?: () => number; versions?: Record<number, unknown> } = {}) {
+export async function bootSidecar(over: { config?: Partial<HotelConfig>; timing?: Partial<RunTiming>; fake?: FakeDirector; rng?: () => number; versions?: Record<number, unknown>; memory?: FakeMemoryTable; scenario?: number } = {}) {
   const fake = over.fake ?? (await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4 }));
   if (!over.fake) {
     fake.addRoom(12);
     fake.addHuman(12, 9, "ana", 6, 5);
   }
-  const http = fakeHotelHttp({ 31: compiledScenario().body, ...over.versions });
+  const http = fakeHotelHttp({ 31: compiledScenario().body, ...over.versions }, { ...(over.memory ? { memory: over.memory } : {}), ...(over.scenario !== undefined ? { scenario: over.scenario } : {}) });
   const cfg = testConfig(fake.url, over.config);
   const acksBefore = fake.received.filter((f) => f.t === "hello_ack").length;
   const sidecar = await startSidecar(cfg, {

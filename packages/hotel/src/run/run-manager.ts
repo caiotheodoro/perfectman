@@ -12,6 +12,7 @@ import { LlmGovernor } from "../llm/governor.js";
 import { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import type { WrittenArtifacts } from "./artifacts.js";
+import type { MemoryStore } from "./player-memory.js";
 import { Run } from "./run.js";
 import type { RunLink, RunStartParams, RunTiming } from "./run.js";
 
@@ -192,6 +193,10 @@ export class RunManager implements RunLink {
   async fetchScenarioVersion(id: number): Promise<unknown> {
     if (!this.o.http) throw new Error("no internal HTTP client configured");
     return this.o.http.getScenarioVersion(id);
+  }
+
+  get memoryStore(): MemoryStore | undefined {
+    return this.o.http;
   }
 
   async registerArtifacts(run: number, written: WrittenArtifacts): Promise<void> {
@@ -429,7 +434,8 @@ export class RunManager implements RunLink {
         run.notice("replay_unavailable", "info");
         return;
       case "wipe_memory":
-        run.notice("wipe_memory_ok", "info"); // nothing cached in Phase 2; player memory is Phase 3
+        // The hotel already deleted the rows; this drops the run's cache and stops it writing them back (D21).
+        run.notice((await run.wipeMemory(args)) ? "wipe_memory_ok" : "wipe_memory_none", "info");
         return;
     }
   }

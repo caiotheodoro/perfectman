@@ -1,4 +1,4 @@
-import type { ActionIntent, AgentState, BodyHandleMap, BodyIntent, CommittedEvent, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
+import type { ActionIntent, AgentState, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
 import {
   AgentRuntime,
   MockLLMProvider,
@@ -34,6 +34,8 @@ import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
 import { NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
+import { MEMORY_ID_PREFIX, PlayerMemory } from "./player-memory.js";
+import type { MemoryStore } from "./player-memory.js";
 import type { WrittenArtifacts } from "./artifacts.js";
 import { FrameLogRecorder } from "./frame-log.js";
 import { createRuntimePort } from "./runtime-port.js";
@@ -66,6 +68,8 @@ export interface RunLink {
   expectCid(cid: number, timeoutMs: number): Promise<HotelFrame>;
   fetchScenarioVersion(id: number): Promise<unknown>;
   registerArtifacts(run: number, artifacts: WrittenArtifacts): Promise<void>;
+  /** The hotel's player-memory rows (D21); absent without an internal HTTP client. */
+  readonly memoryStore?: MemoryStore | undefined;
 }
 
 export type RunTiming = {
@@ -83,6 +87,8 @@ export type RunTiming = {
   cine?: Partial<CineConfig>;
   /** The natural gap between two cast members who walk in one after another, `[min, max]` ms; 1 to 3 s in production. */
   arrivalStaggerMs?: readonly [number, number];
+  /** How often changed player-memory rows are written back while a run goes; 2 min in production. */
+  memoryFlushEveryMs?: number;
 };
 
 export type RunDeps = {
@@ -115,6 +121,8 @@ export function actorNameError(name: string): string | undefined {
   return undefined;
 }
 
+/** The most a stop waits for the last player-memory writes. */
+const MEMORY_FLUSH_BOUND_MS = 8000;
 const SPAWN_DEFAULTS = { spawnIntervalMs: 200, spawnTimeoutMs: 5000, walkOutTimeoutMs: 10_000 } as const;
 /** Cast members with no entrance time of their own walk in this far apart (a natural trickle, not a crowd at the door). */
 export const DEFAULT_ARRIVAL_STAGGER_MS: readonly [number, number] = [1000, 3000];
@@ -155,6 +163,9 @@ export class Run {
   /** Events the in-memory log evicted, streamed to `events.jsonl` so a long run stays complete without growing. */
   private eventSink: NdjsonEventSink | undefined;
   private readonly mockConsults = new Map<string, number>();
+  /** What the characters remember about the people they meet (D21, D47); absent when the hotel did not name the scenario. */
+  private playerMemory: PlayerMemory | undefined;
+  private scenarioId: number | undefined;
   private readonly agents = new Map<string, { name: string; spawned: boolean; gone: boolean }>();
   private readonly memory = new Map<string, PlannerMemory>();
   private readonly arousal = new Map<string, number>();
@@ -236,6 +247,7 @@ export class Run {
     const parsed = parseScenarioBody(extractBody(raw));
     if (!parsed.ok) return { ok: false, code: "bad_scenario", message: parsed.errors.map((e) => `${e.path}: ${e.message}`).join("; ") };
     this.body = parsed.body;
+    this.scenarioId = scenarioIdOf(raw);
     if (this.body.config.agents.length > this.params.capActors) {
       return { ok: false, code: "actor_limit", message: `scenario has ${this.body.config.agents.length} characters, the cap is ${this.params.capActors}` };
     }
@@ -402,6 +414,10 @@ export class Run {
     link.subscribe(this.home);
     if (!(await link.waitForRoom(this.home, 10_000))) throw new Error("the home room did not sync");
     if (this.stopping) return;
+    this.startPlayerMemory();
+    // Who is here already is known before anyone speaks: their rows seed the characters now.
+    await this.playerMemory?.load(this.humansHere());
+    if (this.stopping) return;
     // The title card covers the cast arriving and the first pulse's model latency.
     this.cine?.start();
     // Staggered arrival: whoever is due now spawns and walks in before the first pulse; the rest are out of the
@@ -481,6 +497,77 @@ export class Run {
     this.pendingArrivals.delete(ref);
     this.port.admitActor(ref);
     this.d.logger.info("actor arrived", { run: this.id, agent: ref });
+  }
+
+  // ---- player memory (D21, D47) -------------------------------------------------
+
+  private startPlayerMemory(): void {
+    const store = this.d.link.memoryStore;
+    const handle = this.handle;
+    if (!store || !handle) return;
+    if (this.scenarioId === undefined) {
+      // The version answer must say which scenario it belongs to (director-protocol.md 11.1); until it does, nothing is remembered.
+      this.d.logger.warn("player memory is off: the scenario version did not name its scenario", { run: this.id });
+      return;
+    }
+    const language = this.body.config.agents[0]?.promptProfile.language === "en" ? "en" : "pt-BR";
+    this.playerMemory = new PlayerMemory({
+      store,
+      scenario: this.scenarioId,
+      run: this.id,
+      lang: language,
+      simulationId: handle.simulationId,
+      pulse: () => this.port.pulseIndex(),
+      characters: new Set(this.agents.keys()),
+      clock: this.d.clock,
+      logger: this.d.logger,
+      ...(this.d.timing?.memoryFlushEveryMs !== undefined ? { flushEveryMs: this.d.timing.memoryFlushEveryMs } : {}),
+      seed: (character, user, memories) => this.seedMemories(character, user, memories),
+      unseed: (character, user) => this.unseedMemories(character, user),
+    });
+  }
+
+  /** Account ids of the people in the run's rooms right now (`h:<id>`, humans only). */
+  private humansHere(): number[] {
+    const ids = new Set<number>();
+    for (const room of this.roomsInUse()) {
+      for (const p of this.d.mirror.peopleIn(room, this.d.clock.now())) {
+        if (p.kind !== "human") continue;
+        const id = Number(p.ref.slice(2));
+        if (p.ref.startsWith("h:") && Number.isInteger(id) && id > 0) ids.add(id);
+      }
+    }
+    return [...ids];
+  }
+
+  /** Adds a character's memories about one person (replacing the ones it seeded for that person before). */
+  private async seedMemories(character: string, user: number, memories: Memory[]): Promise<void> {
+    const handle = this.handle;
+    if (!handle) return;
+    const state = await handle.repositories.agentStateRepo.get(handle.simulationId, character);
+    if (!state) return;
+    const prefix = `${MEMORY_ID_PREFIX}${user}_`;
+    await handle.repositories.agentStateRepo.upsert({ ...state, memories: [...state.memories.filter((m) => !m.id.startsWith(prefix)), ...memories] });
+  }
+
+  private async unseedMemories(character: string, user: number | "all"): Promise<void> {
+    const handle = this.handle;
+    if (!handle) return;
+    const state = await handle.repositories.agentStateRepo.get(handle.simulationId, character);
+    if (!state) return;
+    const prefix = user === "all" ? MEMORY_ID_PREFIX : `${MEMORY_ID_PREFIX}${user}_`;
+    const kept = state.memories.filter((m) => !m.id.startsWith(prefix));
+    if (kept.length !== state.memories.length) await handle.repositories.agentStateRepo.upsert({ ...state, memories: kept });
+  }
+
+  /** `wipe_memory`: the hotel deleted the rows and forwarded `<scenario> <user|all>`; drop the cache and write nothing back. */
+  async wipeMemory(args: string): Promise<boolean> {
+    const [scenario, who] = args.trim().split(/\s+/);
+    if (!this.playerMemory || scenario === undefined || (scenario !== String(this.scenarioId) && scenario !== "all")) return false;
+    const user = who === "all" || who === undefined ? "all" : Number(who);
+    if (user !== "all" && !(Number.isInteger(user) && user > 0)) return false;
+    await this.playerMemory.wipe(user);
+    return true;
   }
 
   /** The config handed to the server: host LLM, in-memory, one room channel, the 6 s pulse. */
@@ -588,6 +675,11 @@ export class Run {
     if (this.state !== "running") return;
     // D18: the engine runs one to two pulses ahead of playback, no further.
     if (this.cine && !this.cine.wantsMore()) return;
+    // Anyone who walked into the run's rooms since the last pulse is looked up (in the background); changed rows are written back now and then.
+    if (this.playerMemory) {
+      void this.playerMemory.load(this.humansHere());
+      void this.playerMemory.maybeFlush()?.catch(() => undefined);
+    }
     this.gateway.notePulseStart(this.d.clock.now());
     await this.port.runPulse(opts);
     this.pulseErrors = 0;
@@ -789,6 +881,11 @@ export class Run {
    */
   private async onPairOutcome(info: PairInfo & { outcome: string }): Promise<void> {
     const refused = info.outcome === "dodge" || info.outcome === "push";
+    const humanId = info.withHuman && info.withRef.startsWith("h:") ? Number(info.withRef.slice(2)) : NaN;
+    if (Number.isInteger(humanId)) {
+      const name = this.d.mirror.peopleIn(this.d.mirror.roomOfRef(info.agentId) ?? this.home, this.d.clock.now()).find((p) => p.ref === info.withRef)?.name ?? "";
+      this.playerMemory?.notePair({ user: humanId, name, character: info.agentId, kind: info.kind, outcome: info.outcome });
+    }
     if (refused && info.withHuman) {
       // A human who turned the act down is left alone for a minute (planner memory).
       const mem = this.memory.get(info.agentId) ?? {};
@@ -830,7 +927,11 @@ export class Run {
     if (!this.ingestor) return;
     if (this.state !== "running" && this.state !== "paused") return;
     try {
-      await this.ingestor.handleHumanChat(frame);
+      const outcome = await this.ingestor.handleHumanChat(frame);
+      if (outcome.kind === "ingested" && frame.from.id > 0) {
+        void this.playerMemory?.load([frame.from.id]);
+        this.playerMemory?.noteLine({ user: frame.from.id, name: frame.from.name, heardBy: outcome.heardBy, addressed: outcome.addressed, text: frame.text });
+      }
     } catch (err) {
       this.d.logger.error("ingest failed", { run: this.id, error: err instanceof Error ? err.message : String(err) });
     }
@@ -1005,6 +1106,10 @@ export class Run {
       } catch (err) {
         this.d.logger.warn("runtime stop failed", { run: this.id, error: err instanceof Error ? err.message : String(err) });
       }
+      // The people's rows are saved before the run is closed (bounded: a slow hotel does not hold the stop).
+      if (this.playerMemory) {
+        await Promise.race([this.playerMemory.flush().catch(() => 0), sleepOn(clock, MEMORY_FLUSH_BOUND_MS)]);
+      }
       const m = this.meter.snapshot();
       try {
         const written = await writeRunArtifacts(hotel.dataDir, this.id, events, this.frames.log, {
@@ -1109,6 +1214,14 @@ export class Run {
   get endReason(): SidecarEndReason | undefined {
     return this.pendingEnd;
   }
+}
+
+/** The scenario a version belongs to, when the version answer names it (`scenario` or `scenario_id`). */
+export function scenarioIdOf(raw: unknown): number | undefined {
+  if (raw === null || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const id = Number(o["scenario"] ?? o["scenario_id"]);
+  return Number.isInteger(id) && id > 0 ? id : undefined;
 }
 
 /** The hotel stores `body TEXT`; the version endpoint may wrap it. */
