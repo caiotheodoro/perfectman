@@ -44,18 +44,9 @@ import {
   InMemoryEventRepository,
   InMemorySimulationRepository,
 } from "../simulation/in-memory-stores.js";
-import {
-  closeDatabase,
-  openDatabase,
-  type DB,
-} from "../persistence/sqlite/database.js";
-import {
-  SqliteAgentStateRepository,
-  SqliteChannelRepository,
-  SqliteEventRepository,
-  SqliteGoalRegistryRepository,
-  SqliteSimulationRepository,
-} from "../persistence/sqlite/index.js";
+// SQLite is loaded on demand (`persistence.type === "sqlite"`), so an in-memory
+// run, such as a hotel run, never loads better-sqlite3.
+import type { DB } from "../persistence/sqlite/database.js";
 import {
   SimulationRuntime,
   type SimulationRuntimeRepositories,
@@ -73,12 +64,12 @@ import type {
   AgentRuntime as SchedulerAgentRuntime,
   LLMBudget,
 } from "../simulation/pulse-scheduler.js";
-import {
-  CompositeDeliveryGateway,
-  HtmlSnapshotGateway,
-  MockDeliveryGateway,
-  StdoutDeliveryGateway,
-} from "../delivery/index.js";
+// Direct module imports, not the `delivery/` barrel: the barrel also exports the
+// Discord gateway, which would load discord.js at init (hotel-package.md 19.1).
+import { CompositeDeliveryGateway } from "../delivery/composite-delivery-gateway.js";
+import { HtmlSnapshotGateway } from "../delivery/html-snapshot-gateway.js";
+import { MockDeliveryGateway } from "../delivery/mock-delivery-gateway.js";
+import { StdoutDeliveryGateway } from "../delivery/stdout-delivery-gateway.js";
 
 function parseSceneLook(config: Record<string, unknown>): SceneLook | undefined {
   // A compiled scene carries its look under `look`; a hand-written config may put the three fields at the top.
@@ -508,7 +499,7 @@ export async function buildConfiguredSimulation(
   options: BuildConfiguredSimulationOptions = {},
 ): Promise<ConfiguredSimulationHandle> {
   const simulationId = config.simulation.id ?? createId();
-  const persistence = createRepositories(config.persistence);
+  const persistence = await createRepositories(config.persistence);
   const meta = buildGatewayRuntimeMetadata(config, simulationId);
   const gateways = await createGateways(config, meta);
   for (const [id, factory] of Object.entries(options.extraGateways ?? {})) {
@@ -585,7 +576,10 @@ export async function buildConfiguredSimulation(
     gateways,
     repositories: persistence.repositories,
     async close(): Promise<void> {
-      if (persistence.db) closeDatabase(persistence.db);
+      if (persistence.db) {
+        const { closeDatabase } = await import("../persistence/sqlite/database.js");
+        closeDatabase(persistence.db);
+      }
     },
   };
 }
@@ -638,14 +632,22 @@ async function buildGoalLayerRuntime(
   return { config, evaluator };
 }
 
-function createRepositories(config: PersistenceConfig): {
+async function createRepositories(config: PersistenceConfig): Promise<{
   repositories: SimulationRepositoriesWithGoalRegistry;
   db?: DB;
-} {
+}> {
   if (config.type === "sqlite") {
     if (config.path !== ":memory:") {
       mkdirSync(dirname(config.path), { recursive: true });
     }
+    const { openDatabase } = await import("../persistence/sqlite/database.js");
+    const {
+      SqliteAgentStateRepository,
+      SqliteChannelRepository,
+      SqliteEventRepository,
+      SqliteGoalRegistryRepository,
+      SqliteSimulationRepository,
+    } = await import("../persistence/sqlite/index.js");
     const db = openDatabase(config.path);
     return {
       db,
