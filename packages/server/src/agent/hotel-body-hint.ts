@@ -27,10 +27,23 @@ const SHAPE: Record<Lang, string> = {
 };
 
 /** Small stable hash, so the examples vary by turn without any randomness (a replayed run renders the same prompt). */
-function seed(text: string): number {
+export function seed(text: string): number {
   let h = 2166136261;
   for (let i = 0; i < text.length; i++) h = Math.imul(h ^ text.charCodeAt(i), 16777619);
   return h >>> 0;
+}
+
+/**
+ * `n` of the person's tonal sample lines for this turn (`key`), starting at a different place each turn, skipping a
+ * line the room just heard. Always showing the first two samples is how the same two sentences end up in every
+ * answer the person gives.
+ */
+export function rotateSamples(samples: readonly string[], key: string, n: number, avoid: readonly string[] = []): string[] {
+  const fresh = samples.filter((t) => t.trim().length > 0 && !isNearRepeat(t, avoid));
+  const pool = fresh.length >= n ? fresh : samples.filter((t) => t.trim().length > 0);
+  if (pool.length <= n) return [...pool];
+  const start = seed(key) % pool.length;
+  return Array.from({ length: n }, (_, i) => pool[(start + i) % pool.length]!);
 }
 
 type Kind = "walkTalk" | "wave" | "smile" | "laugh" | "thumbs" | "face" | "sit";
@@ -56,6 +69,9 @@ const MOTIVE: Record<Lang, Record<Kind, string>> = {
     sit: "quero me acomodar e conversar sentado(a)",
   },
 };
+
+/** Every private thought the examples carry: a line that says one of these out loud was copied from an example's wrong field. */
+export const EXAMPLE_MOTIVES: readonly string[] = Object.values(MOTIVE).flatMap((m) => Object.values(m));
 
 type Candidate = { kind: Kind; body: Record<string, unknown> };
 

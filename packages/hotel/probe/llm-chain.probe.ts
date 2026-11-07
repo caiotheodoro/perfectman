@@ -9,6 +9,11 @@
  * the real chain. Each variant (one link alone, or the whole chain) runs the turn-taking
  * scenario and the embodiment scenario on the pt-BR preset `gato-no-telhado`.
  *
+ * The `default` scenario is the stage's default mode in miniature: the 4 characters, one guest who speaks to
+ * one of them every PROBE_EVERY_SEC (25) seconds, base pulses at the hotel's 6 s, for PROBE_SECONDS (300). It reports the
+ * repetition block rate (the Tilehouse definition: blocked / (said + blocked)), talk volume, addressed reply latency and the
+ * unanswered count, and where each repeated first attempt came from (own lines, another actor's, a sample line, ambient).
+ *
  * Knobs (env): PROBE_LINKS (names, or `chain`), PROBE_SCENARIOS (turns,embodiment,earshot),
  * PROBE_STYLE (force every link's hotel prompt: full or compact), PROBE_NO_BODY_HINT=1 (strip the body
  * shape hint and examples from the output contract: the "before" column of the body-emission table),
@@ -30,6 +35,8 @@ import { BodyIntentSchema } from "@perfectman/shared";
 import type { BodyFrameLog, Direction8 } from "@perfectman/shared";
 import { runEmbodimentProbes } from "../../eval/src/probes/embodiment.ts";
 import { PromptBuilder } from "../../server/src/agent/prompt-builder.ts";
+import { normalizeWords, similarity, REPETITION_SIMILARITY_THRESHOLD } from "../../server/src/agent/repetition-guard.ts";
+import { EXAMPLE_MOTIVES } from "../../server/src/agent/hotel-body-hint.ts";
 import { AuthoringService } from "../src/authoring/authoring-service.ts";
 import type { LlmEnv } from "../src/config.ts";
 import type { RunModel } from "../src/director/index.ts";
@@ -53,7 +60,7 @@ const LINES = Number(env["PROBE_LINES"] ?? 20);
 const MAX_USD = Number(env["PROBE_MAX_USD"] ?? 0.5);
 const OUT = env["PROBE_OUT"] ?? resolve(HERE, "probe-results.json");
 const PROMPT_OUT = env["PROBE_PROMPT_OUT"];
-type Scenario = "turns" | "embodiment" | "earshot";
+type Scenario = "turns" | "embodiment" | "earshot" | "default";
 const SCENARIOS = (env["PROBE_SCENARIOS"] ?? "turns,embodiment").split(",").map((s) => s.trim()) as Scenario[];
 const STYLE: PromptStyle | undefined = env["PROBE_STYLE"] === "full" ? "full" : env["PROBE_STYLE"] === "compact" ? "compact" : undefined;
 const NO_BODY_HINT = env["PROBE_NO_BODY_HINT"] === "1";
@@ -70,6 +77,15 @@ const ADDRESSED = [
   "{n}, me explica o que está acontecendo, fiquei perdida.",
   "{n}, você vai descer pra conversar?",
   "{n}, pode me dizer a verdade: foi você que deixou a janela aberta?",
+];
+/** More addressed lines, for the 5-minute default scenario (11 to 12 of them): none repeats a line above. */
+const ADDRESSED_MORE = [
+  "{n}, quem está mais preocupado com o gato aqui?",
+  "{n}, me conta uma coisa que ninguém sabe sobre o prédio.",
+  "{n}, você confia nos outros daqui?",
+  "{n}, alguém já tentou subir no telhado?",
+  "{n}, o que você faria no meu lugar?",
+  "{n}, tem alguma coisa te incomodando hoje?",
 ];
 const UNADDRESSED = [
   "alguém sabe de quem é esse gato, afinal?",
@@ -92,7 +108,7 @@ export function languageOf(text: string): "pt" | "en" | "unknown" {
 }
 
 /** D43: a character never says what it is. "ia" alone is a Portuguese verb form, so only the unambiguous forms count. */
-const SELF_REFERENCE = /\b(ai|a\.i\.|bots?|chatbots?|assistente(\s+virtual)?|assistant|rob[oô]s?|llm|chatgpt|gpt|openai|modelo\s+de\s+linguagem|language\s+model|intelig[eê]ncia\s+artificial|artificial\s+intelligence)\b/i;
+const SELF_REFERENCE = /(?<![\p{L}\p{N}])(ai|a\.i\.|bots?|chatbots?|assistente(\s+virtual)?|assistant|rob[oô]s?|llm|chatgpt|gpt|openai|modelo\s+de\s+linguagem|language\s+model|intelig[eê]ncia\s+artificial|artificial\s+intelligence)(?![\p{L}\p{N}])/iu;
 
 function parseLoose(content: string): { ok: boolean; clean: boolean; value?: Record<string, unknown> } {
   const t = content.trim();
@@ -225,6 +241,36 @@ function facingSplit(log: BodyFrameLog): Results["facing"] {
 
 type Variant = { name: string; links: LlmLink[]; pick?: RunModel };
 
+type Source = "self" | "cross" | "sample";
+type RepetitionReport = {
+  seconds: number;
+  /** Delivered actor lines and the guard's blocks, as the Tilehouse scorecard counts them. */
+  said: number;
+  blocked: number;
+  blockedRatePct: number;
+  /** Turns the model was consulted for (action_intent events) and calls made, retries included. */
+  turns: number;
+  ambientTurns: number;
+  calls: number;
+  retryCalls: number;
+  linesPerMin: number;
+  /** First attempts (not retries) whose line is a near-duplicate (Jaccard 0.7) of something, by where it came from. */
+  firstAttempts: number;
+  repeatedFirst: number;
+  bySource: Record<Source, number>;
+  /** The same count split by whether the turn had a trigger (somebody spoke) or was ambient. */
+  repeatedAmbient: number;
+  repeatedTriggered: number;
+  /** Delivered lines that are a near-duplicate of the same actor's earlier line, or of another actor's in the last 8 lines. */
+  deliveredSelfNear: number;
+  deliveredCrossNear: number;
+  /** Delivered lines that are one of the body examples' private thoughts said out loud. */
+  thoughtLines: number;
+  addressed: { lines: number; answered: number; unanswered15s: number; p50s: number | null; p95s: number | null };
+  perActor: Record<string, { said: number; blocked: number }>;
+};
+
+
 async function stubServer(): Promise<{ server: Server; url: string }> {
   const intent = JSON.stringify({ intentType: "reply_to_message", replyToEventId: "e1", visibleContent: "Olha, eu não sei, mas acho que a gente devia conversar sobre isso amanhã.", privateMotiveSummary: "quero ajudar", personTargets: ["neide"] });
   const server = createServer((req, res) => {
@@ -245,9 +291,39 @@ function allLinks(): LlmLink[] {
   return links;
 }
 
+/** The stage's default-mode cast ("Sexta no bar": a bartender, a regular, a newcomer, a musician), built through the same form path the builder uses. */
+const BAR_FORM = (guest: string) => ({
+  title: "Sexta no bar",
+  situation: "Uma sexta a noite no Bar e Lounge. Os frequentadores vao chegando, e uma pessoa nova esta prestes a entrar pela porta.",
+  language: "pt-BR",
+  cast: [
+    { name: "Duda", role: "bartender", goal: "Dona do bar, seca e atenta, sempre puxa conversa com quem chega. Quer que todos se sintam em casa e fecha a noite sem pressa.", voice: "curta, seca e simpatica", lines: ["Hoje o bar está calmo, aproveita.", "O que vai ser, querido?", "Aqui ninguém passa sede, pode crer.", "Não tenho pressa de fechar, fica à vontade."], start: "start" },
+    { name: "Rafa", role: "freguês antigo", goal: "Frequenta o bar ha anos e sabe da vida de todo mundo. Gosta de fofoca leve e de sentar no sofa para ver o movimento.", voice: "calorosa, fala bastante", lines: ["Eu conheço esse povo desde que o bar abriu.", "Sabe a última? Melhor não contar.", "Vem sentar aqui, a vista é boa.", "Hmm, isso eu já ouvi por aí."], start: "after 8s" },
+    { name: "Gabi", role: "recém-chegada", goal: `Primeira noite na cidade, curiosa e um pouco tímida. Ficou encantada por ${guest}, a pessoa nova no bar, e quer dar um beijo nela assim que tiver coragem.`, voice: "educada e curiosa", lines: ["Nossa, nunca vim num lugar assim.", "Desculpa, posso perguntar uma coisa?", "Você mora aqui por perto?", "Acho que estou meio nervosa hoje."], start: "after 16s" },
+    { name: "Leo", role: "músico", goal: "Toca aqui às sextas, brincalhão. Deixou o violão no Quarto e quer ir buscar, passando pela porta para o Quarto, e depois voltar.", voice: "brincalhão", lines: ["Se eu soubesse, tinha trazido o violão!", "Toco aqui toda sexta, se quiser ouvir.", "Haha, essa foi boa.", "Calma, a noite ainda é uma criança."], start: "after 24s" },
+  ],
+});
+/** What the guest says to the stage's cast, in turn (the stage-1 script). */
+const BAR_LINES: Array<[string, string]> = [
+  ["Rafa", "Rafa, tudo bem? Que lugar é esse?"],
+  ["Duda", "Duda, o que você recomenda pra beber hoje?"],
+  ["Gabi", "Gabi, você é nova por aqui também?"],
+  ["Leo", "Leo, você toca que instrumento?"],
+  ["Rafa", "Rafa, quem é o mais fofoqueiro daqui?"],
+  ["Duda", "Duda, o bar fecha a que horas?"],
+  ["Leo", "Leo, toca uma música pra gente depois?"],
+  ["Gabi", "Gabi, o que você achou do lugar?"],
+  ["Rafa", "Rafa, você vem sempre aqui?"],
+  ["Duda", "Duda, tem algum petisco bom?"],
+  ["Leo", "Leo, de onde você é?"],
+  ["Gabi", "Gabi, quer sentar comigo?"],
+];
+const BAR = env["PROBE_CAST"] !== "preset" && (env["PROBE_SCENARIOS"] ?? "").split(",").map((x) => x.trim()).includes("default");
+
 async function scenarioBody(): Promise<{ body: { config: { agents: Array<{ id: string; promptProfile: { displayName: string } }> } } & Record<string, unknown> }> {
   const mock: LlmEnv = { provider: "mock", baseUrl: "", apiKeyEnv: "PERFECTMAN_LLM_API_KEY", models: ["mock"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
   const svc = new AuthoringService({ llm: mock, apiKey: undefined, presetsRoot: PRESETS });
+  if (BAR) return svc.compile({ source: JSON.stringify(BAR_FORM("ana")) }) as never;
   const { source } = await svc.preset(SCENE);
   return svc.compile({ source }) as never;
 }
@@ -277,6 +353,8 @@ type Results = {
   /** Prompt size seen by the chain, chars/4 as the builder counts it; skipped = calls the chain passed over a link for size. */
   prompts: { n: number; p50: number | null; p95: number | null; max: number | null; skippedForSize: number };
   chatLines: number;
+  /** The default scenario's repetition story (absent in the others). */
+  repetition?: RepetitionReport;
   costUsd: number;
   rawFailures: string[];
   sampleLines: string[];
@@ -321,7 +399,11 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
 
     // ---- taps: every attempt on every link, every operator event, every chat line ----
     const taps: ChainTap[] = [];
-    chain.tap = (e) => taps.push(e);
+    const tapAt = new WeakMap<ChainTap, number>();
+    chain.tap = (e) => {
+      tapAt.set(e, Date.now());
+      taps.push(e);
+    };
     const opEvents: Array<{ type: string; data?: Record<string, unknown> | undefined; detail?: string }> = [];
     const gw = run.simulation?.gateways["breaker"];
     if (gw) {
@@ -336,6 +418,8 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
     const poll = setInterval(() => {
       while (seenChats < fake.chats.length) {
         const c = fake.chats[seenChats++]!;
+        // A thought bubble is the motive shown over the actor's head, not something said in the room.
+        if (c.mode === "thought" || c.mode === "caption") continue;
         chats.push({ at: Date.now(), actor: c.actor, mode: c.mode, text: c.text, to: c.to ?? null });
       }
     }, 40);
@@ -344,6 +428,8 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
     await new Promise((r) => setTimeout(r, 8000)); // let the cast walk in
 
     const addressed = { lines: 0, answered: 0, latencies: [] as number[] };
+    const sentLines: Array<{ at: number; target: string; text: string }> = [];
+    let defaultStartedAt = 0;
     const dog = { lines: 0, unaddressedMulti: 0, addressedJumped: 0 };
     const over = (): boolean => spentSoFar() + chain.snapshot().links.reduce((n, l) => n + l.costUsd, 0) > MAX_USD;
 
@@ -380,6 +466,26 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
         } else if (new Set(after.map((c) => c.actor)).size >= 2) dog.unaddressedMulti++;
         await new Promise((r) => setTimeout(r, 1500));
       }
+    } else if (scenario === "default") {
+      // The stage's default mode: base pulses at 6 s carry the room, a guest speaks to the cast in turn.
+      const seconds = Number(env["PROBE_SECONDS"] ?? 300);
+      const everyMs = Number(env["PROBE_EVERY_SEC"] ?? 25) * 1000;
+      const pool = BAR ? BAR_LINES.map(([, t]) => t.replace(/^[^,]+, /, "{n}, ")) : [...ADDRESSED, ...ADDRESSED_MORE];
+      const startedAt = Date.now();
+      defaultStartedAt = startedAt;
+      let nextAt = startedAt + 4000;
+      let i = 0;
+      while (Date.now() - startedAt < seconds * 1000 && !over()) {
+        if (Date.now() >= nextAt) {
+          const target = BAR ? (agents.find((a) => a.name === BAR_LINES[i % BAR_LINES.length]![0]) ?? agents[i % agents.length]!) : agents[i % agents.length]!;
+          const text = pool[i % pool.length]!.replace("{n}", target.name);
+          sentLines.push({ at: Date.now(), target: target.id, text });
+          fake.humanSay(12, 9, text);
+          i++;
+          nextAt += everyMs;
+        }
+        await new Promise((r) => setTimeout(r, 250));
+      }
     } else {
       // Embodiment: the base pulses carry the scene. Two lines from the human keep a conversation going.
       let nextLine = 0;
@@ -399,6 +505,8 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
     clearInterval(poll);
     while (seenChats < fake.chats.length) {
       const c = fake.chats[seenChats++]!;
+        // A thought bubble is the motive shown over the actor's head, not something said in the room.
+        if (c.mode === "thought" || c.mode === "caption") continue;
       chats.push({ at: Date.now(), actor: c.actor, mode: c.mode, text: c.text, to: c.to ?? null });
     }
 
@@ -448,6 +556,96 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
       writeFileSync(PROMPT_OUT, JSON.stringify({ system: biggest.prompt.system, user: biggest.prompt.user, inputTokensEstimate: biggest.prompt.inputTokensEstimate, scene: SCENE }, null, 1));
     }
 
+    let repetition: RepetitionReport | undefined;
+    if (scenario === "default") {
+      const actorOf = new Map(agents.map((a) => [actorId(a.id), a.id] as const));
+      const said = chats.filter((c) => actorOf.has(c.actor));
+      const blockedEvents = events.filter((e) => e.type === "repetition_blocked");
+      const perActor: RepetitionReport["perActor"] = Object.fromEntries(agents.map((a) => [a.id, { said: 0, blocked: 0 }]));
+      for (const c of said) perActor[actorOf.get(c.actor)!]!.said++;
+      for (const e of blockedEvents) if (perActor[e.actorId]) perActor[e.actorId]!.blocked++;
+      const isNear = (a: string, b: string): boolean => similarity(a, b) >= REPETITION_SIMILARITY_THRESHOLD;
+      const bySource: Record<Source, number> = { self: 0, cross: 0, sample: 0 };
+      let firstAttempts = 0;
+      let repeatedFirst = 0;
+      let repeatedAmbient = 0;
+      let repeatedTriggered = 0;
+      let ambientTurns = 0;
+      const ambientOf = (t: ChainTap): boolean => t.prompt.user.includes("nothing in particular happened");
+      const profiles = new Map(
+        (body.config.agents as unknown as Array<{ id: string; promptProfile: { styleExamples?: { default?: string[] } } }>).map((a) => [a.id, a.promptProfile.styleExamples?.default ?? []] as const),
+      );
+      const dumpRepeats: Array<{ who: string | undefined; source: Source; ambient: boolean; text: string }> = [];
+      for (const t of okTaps) {
+        const isRetry = t.prompt.retry === "correction";
+        const ambient = ambientOf(t);
+        if (!isRetry && ambient) ambientTurns++;
+        if (isRetry) continue;
+        const v = parseLoose(t.content ?? "").value;
+        const line = typeof v?.["visibleContent"] === "string" ? (v["visibleContent"] as string) : "";
+        if (!line.trim() || normalizeWords(line).length === 0) continue;
+        firstAttempts++;
+        const at = tapAt.get(t) ?? 0;
+        const before = said.filter((c) => c.at <= at);
+        const own = before.filter((c) => actorOf.get(c.actor) === t.agentId).map((c) => c.text);
+        const room = before.filter((c) => actorOf.get(c.actor) !== t.agentId).slice(-8).map((c) => c.text);
+        const samples = [...(profiles.get(t.agentId) ?? []), ...[...t.prompt.system.matchAll(/"visibleContent":"([^"]*)"/g)].map((m) => m[1]!), ...[...t.prompt.system.matchAll(/Sounds like[^\n]*/g)].flatMap((m) => [...m[0].matchAll(/"([^"]{8,})"/g)].map((q) => q[1]!))];
+        let source: Source | undefined;
+        if (own.some((o) => isNear(line, o))) source = "self";
+        else if (normalizeWords(line).length >= 3 && room.some((o) => isNear(line, o))) source = "cross";
+        else if (samples.some((o) => isNear(line, o))) source = "sample";
+        if (!source) continue;
+        repeatedFirst++;
+        dumpRepeats.push({ who: agents.find((a) => a.id === t.agentId)?.name, source, ambient, text: line });
+        bySource[source]++;
+        if (ambient) repeatedAmbient++;
+        else repeatedTriggered++;
+      }
+      if (env["PROBE_DUMP"]) {
+        const names = new Map(agents.map((a) => [a.id, a.name]));
+        writeFileSync(env["PROBE_DUMP"], JSON.stringify({ lines: said.map((c) => ({ who: names.get(actorOf.get(c.actor)!), text: c.text })), repeats: dumpRepeats }, null, 1));
+      }
+      let deliveredSelfNear = 0;
+      let deliveredCrossNear = 0;
+      said.forEach((c, i) => {
+        const prior = said.slice(0, i);
+        if (prior.some((p) => p.actor === c.actor && isNear(c.text, p.text))) deliveredSelfNear++;
+        else if (normalizeWords(c.text).length >= 3 && prior.filter((p) => p.actor !== c.actor).slice(-8).some((p) => isNear(c.text, p.text))) deliveredCrossNear++;
+      });
+      const lats: number[] = [];
+      let unanswered = 0;
+      sentLines.forEach((l, i) => {
+        const tid = actorId(l.target);
+        const until = sentLines[i + 1]?.at ?? Number.MAX_SAFE_INTEGER;
+        const hit = chats.find((c) => c.actor === tid && c.at >= l.at && c.at < until);
+        if (hit && hit.at - l.at <= 15_000) lats.push(hit.at - l.at);
+        else unanswered++;
+      });
+      const secs = Math.max(1, (Date.now() - defaultStartedAt) / 1000);
+      const blockedN = blockedEvents.length;
+      repetition = {
+        seconds: Math.round(secs),
+        said: said.length,
+        blocked: blockedN,
+        blockedRatePct: pct(blockedN, said.length + blockedN),
+        turns: intents.length,
+        ambientTurns,
+        calls: taps.length,
+        retryCalls: taps.filter((t) => t.prompt.retry === "correction").length,
+        linesPerMin: Math.round((10 * said.length) / (secs / 60)) / 10,
+        firstAttempts,
+        repeatedFirst,
+        bySource,
+        repeatedAmbient,
+        repeatedTriggered,
+        deliveredSelfNear,
+        deliveredCrossNear,
+        thoughtLines: said.filter((c) => EXAMPLE_MOTIVES.some((m) => similarity(c.text, m) >= 0.7)).length,
+        addressed: { lines: sentLines.length, answered: lats.length, unanswered15s: unanswered, p50s: lats.length ? Math.round(percentile(lats, 50)! / 100) / 10 : null, p95s: lats.length ? Math.round(percentile(lats, 95)! / 100) / 10 : null },
+        perActor,
+      };
+    }
+
     const result: Results = {
       variant: variant.name,
       scenario,
@@ -486,6 +684,7 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
         return { n: sizes.length, p50: percentile(sizes, 50) ?? null, p95: percentile(sizes, 95) ?? null, max: sizes.length ? Math.max(...sizes) : null, skippedForSize: skipTaps.filter((t) => t.error === "context" && t.link === links[0]!.name).length };
       })(),
       chatLines: chats.length,
+      ...(repetition ? { repetition } : {}),
       costUsd: Math.round(snap.links.reduce((n, l) => n + l.costUsd, 0) * 1e6) / 1e6,
       rawFailures: okTaps.flatMap((t, i) => (parsed[i]?.ok ? [] : [(t.content ?? "").slice(0, 240)])).slice(0, 4),
       sampleLines: spoken.slice(0, 6),

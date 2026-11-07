@@ -251,4 +251,42 @@ describe("PulseScheduler split pulse (ADR-0020)", () => {
       vi.useRealTimers();
     }
   });
+  describe("ambient gate", () => {
+    /** Runs a base pulse and settles every call it opens. */
+    async function basePulse(h: Awaited<ReturnType<typeof harness>>): Promise<void> {
+      const run = h.scheduler.runPulse({ reason: "base" });
+      for (let i = 0; i < 5; i++) {
+        await tick();
+        for (const call of h.calls.splice(0)) call.resolve();
+      }
+      await run;
+    }
+
+    it("does not consult an actor again while nothing new happened in its view, and consults it once quietMs has passed", async () => {
+      let now = 1_000_000;
+      const h = await harness({ generateConcurrency: 5, clock: () => now, ambientGate: { quietMs: 30_000 } });
+      await basePulse(h);
+      expect(h.consults).toHaveLength(4);
+      now += 6000;
+      await basePulse(h);
+      expect(h.consults).toHaveLength(4); // held: the room is as it was
+      now += 25_000;
+      await basePulse(h);
+      expect(h.consults).toHaveLength(8); // 31 s after the first
+    });
+
+    it("never holds an addressed actor, and holds nothing when the gate is off", async () => {
+      let now = 1_000_000;
+      const gated = await harness({ generateConcurrency: 5, clock: () => now, addressed: ["a2"], ambientGate: { quietMs: 30_000 } });
+      await basePulse(gated);
+      now += 6000;
+      await basePulse(gated);
+      expect(gated.consults.filter((c) => c.agentId === "a2")).toHaveLength(2);
+      expect(gated.consults.filter((c) => c.agentId !== "a2")).toHaveLength(3);
+      const open = await harness({ generateConcurrency: 5, clock: () => now });
+      await basePulse(open);
+      await basePulse(open);
+      expect(open.consults).toHaveLength(8);
+    });
+  });
 });

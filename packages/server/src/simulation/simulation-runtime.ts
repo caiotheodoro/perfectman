@@ -180,6 +180,7 @@ export class SimulationRuntime implements GuestIngest, HotelRuntimeApi {
             ...(hotel.generateConcurrency !== undefined ? { generateConcurrency: hotel.generateConcurrency } : {}),
             ...(hotel.generateDeadlineMs !== undefined ? { generateDeadlineMs: hotel.generateDeadlineMs } : {}),
             ...(hotel.onConsult ? { onConsult: hotel.onConsult } : {}),
+            ...(hotel.ambientGate ? { ambientGate: hotel.ambientGate } : {}),
             ...(hotel.commitOrder ? { commitOrder: hotel.commitOrder } : {}),
             windowedReads: hotel.windowedReads ?? true,
             ...(arbiter ? { arbiter } : {}),

@@ -331,3 +331,65 @@ Numbers are in `docs/perfectman/evidence-final.md` (Tilehouse repo), "After the 
 ## A model picked for one run (2026-11-07, `feat/pm-start-modal`)
 
 The Tilehouse start modal lets an admin pick any OpenRouter model for a run (Tilehouse decision D54). The hotel sends it in `run_start.model` (`{id, context?, price_in?, price_out?, reasoning?}`); `withPickedModel` in `packages/hotel/src/llm/run-model.ts` makes it link 1 of that run's chain, named `pick`, on OpenRouter with the key the configured OpenRouter link uses, and leaves the configured chain behind it as failover (a configured link with the same model is dropped). The prompt is sized for the pick: compact at a window of 8192 tokens or less, full above. A model that must think gets `reasoning.effort: low`, one that may think `reasoning.enabled: false` (`LlmLink.extraBody`, applied per link, never inherited by the next link). An unpriced model is metered at the price the hotel read from OpenRouter, else from the `usage.cost` the provider bills. The allowlist (`PERFECTMAN_LLM_MODELS`) and the D53 gate still describe the configured chain only. `PROBE_PICK=<id>` in the real-model probe runs this path; the numbers are in Tilehouse `docs/perfectman/evidence-start-modal.md`.
+
+## Fifth pass: repetition-blocked turns (2026-11-07, `feat/pm-repetition`)
+
+Goal: repetition-blocked turns from 19% (Tilehouse stage 1, run 23) to 5% or less, without losing answers. Chain for every measurement: Lunaris (`"promptStyle": "compact"`), MythoMax, OpenCode (429, quota still spent).
+
+### Where the repeats come from
+
+Recorded Tilehouse runs (`final-fix/runs/23`, `final/runs/7`; the events keep the blocked turn but not its text, so this reads the delivered lines):
+
+- **A finite pool of lines, spoken again.** Each default-mode person has 4 sample lines. In run 23, 15 of 34 delivered lines contain or nearly equal one of them (17 of 102 in run 7). The prompt showed the first two samples every turn ("Sounds like"), and the body examples borrowed the same lines.
+- **Self-repeat.** 7 of 34 delivered lines are a near-duplicate (Jaccard 0.5) of the same actor's earlier line, and one actor (Gabi, 4 samples, timid) takes 7 of the 11 blocks.
+- **Copying other actors** is small: 0 of 34. Real in principle, not the cause of the 19%.
+- **Ambient talk.** 116 no-op turns for 40 spoken lines; the guard blocks were mostly turns with nobody waiting.
+
+The new `default` scenario of `probe:llm` (4 people from the stage's "Sexta no bar" form, one guest who speaks to each in turn every 25 s, base pulses at 6 s, 5 minutes, `FakeDirector`) reproduces it. It splits each first attempt (before any retry) by what it repeats: about 70% of the model's first answers were a near-duplicate (Jaccard 0.7), over 90% of those of the actor's own lines, 2 to 9% of a sample line, 0 to 1 per run of another actor's. Retries rescued most, so blocks stayed at 22 to 29% of turns and half of all model calls were retries. Two things in the harness were wrong and are fixed: the probe counted thought bubbles (`mode: thought`, the motive over the head) as lines said, which made the cast look 3 times as talkative as the stage; and its D43 pattern matched inside accented words ("botão"), now fixed; it still flags the interjections "ai" in "E ai" and "ai, ai!" (false positives, left alone).
+
+### What changed
+
+| Change | Where |
+| --- | --- |
+| The compact prompt lists what the others just said ("Already said by the others", 3 lines) beside the actor's own last 4 lines (was 3) | `hotel-compact-prompt.ts` |
+| "Sounds like" rotates the tone samples by turn and skips any the room or the actor just said (the body examples already did) | `rotateSamples` in `hotel-body-hint.ts` |
+| An angle of the turn ("react to the last thing said", "ask somebody a concrete question", "tease lightly", ...) drawn by a hash of the turn; not on a line aimed at the actor | `angleFor` |
+| `visibleContent` is described as speech only, never what the person wants or thinks | contract text |
+| Per-link decoding penalties on OpenRouter: frequency and presence 0.5 for both known models, `+0.4` and temperature `+0.25` (cap 1.1) on the retry of a near-duplicate; `frequencyPenalty` / `presencePenalty` per link in `PERFECTMAN_LLM_CHAIN`, 0 turns one off | `chain-config.ts`, `chain.ts` |
+| Cross-actor copies are caught: a line of 3 or more content words that is a near-duplicate (0.7) of one of the last 8 cast lines heard is retried and, if it survives, blocked; a guest's own line is never compared; asked lines are still delivered | `roomThreshold` in `RepetitionPolicy`, `roomLinesHeard` |
+| A cheaper retry: an ambient turn gets 1 retry (a turn somebody triggered still gets 2); the failed attempt joins "your last lines" in the retry prompt, so the angle rotates and the model sees it as said | `ambientMaxRetries`, `buildRetryPrompt` |
+| A spoken thought is a repeat: a line that is the actor's own `privateMotiveSummary`, or one of the body examples' thoughts, is retried | `isThoughtSpoken` |
+| Ambient gate: an actor consulted with no trigger is not consulted that way again for 30 s unless something someone else did has appeared in its view; addressed and triggered turns are never held | `ambientGate` (`SplitPulseConfig`), `AMBIENT_QUIET_MS` |
+
+All of it is hotel-only: non-hotel prompts, the generic repetition guard (no `roomThreshold`) and the sequential scheduler are untouched, and the parity tests pass as before.
+
+### Before and after
+
+Same scenario, real chain, 5 minutes, 4 people and one guest, two runs each (baseline is the code of `56a56e7` with the same probe; runs alternated). Repetition rate is the Tilehouse definition, blocked / (said + blocked).
+
+| | before (2 runs) | after (2 runs, final code) |
+| --- | --- | --- |
+| Repetition-blocked turns | 28.6%, 21.8% | **6.9%, 3.4%** |
+| Lines said per minute (talk volume) | 8.9, 8.5 | 10.7, 11.2 |
+| Model calls, of which retries | 189 / 99, 177 / 96 | 136 / 47, 153 / 65 |
+| Addressed lines answered | 10 of 12, 12 of 12 | 12 of 12, 12 of 12 |
+| Unanswered after 15 s | 2, 0 | 0, 0 |
+| Addressed reply p50 / p95 | 3.2 / 10.1 s, 3.8 / 8.7 s | 3.7 / 5.6 s, 3.9 / 5.9 s |
+| First answers that were a near-duplicate | 57 of 83, 54 of 77 | 42 of 81, 46 of 83 |
+| D43 self-reference | 0 | 0 (the two probe hits are "ai, ai!" and "E ai") |
+| Link p95 (Lunaris, MythoMax) | 1.8 / 1.9 s, 2.3 / 1.7 s | 4.0 / 3.6 s, 2.2 / 1.7 s |
+
+Two more after-runs on the previous code (no retry temperature boost) gave 7.5% and 8.6% at 12.2 and 10.5 lines per minute, so the mean over the four after-runs is 6.6% and over the final two 5.2%: at the 5% target on two samples that vary between 3% and 9%, not a calibrated rate. The talk volume went up, not down: fewer turns end in a block and fewer lines are lost.
+
+Canaries through the real hotel prompt (compact, house rules, the link's penalties, 2 samples): guarded 47 of 47 on both links; raw 46 (Lunaris, was 37.5) and 44 (MythoMax, was 45).
+
+The compact prompt grew by about 170 tokens (p95 1572 to 1707 and 1739 estimated tokens against MythoMax's budget of 2720; no call was skipped for size).
+
+Spend: about $0.41 of real OpenRouter calls (a 5-minute run costs $0.02).
+
+### Still open
+
+- First answers are still near-duplicates in half the turns; the retry is what keeps blocks low. Cutting that further needs more than 4 sample lines per person or a persona that gives the model something to say (the stage's cast is thin on purpose).
+- The probe's `mode: thought` filter also changes the older tables above that counted chat lines (language share, dog-pile): they included thought bubbles. Not re-run.
+- The Tilehouse 19% is one 5-minute run; the harness has no typing indicator, so the guest never makes `room_speech:human_typing` hold the cast, and walk-in timing differs. Re-run stage 1 on the stage before calling the target met.
+

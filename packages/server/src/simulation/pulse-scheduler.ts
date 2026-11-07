@@ -136,6 +136,8 @@ export type PulseSchedulerConfig = {
   generateDeadlineMs?: number;
   /** Fires when a generate task takes its slot, just before the model call. */
   onConsult?: OnConsult;
+  /** Split base pulses: hold a second ambient consult of an actor while nothing new happened in its view (see `SplitPulseConfig`). */
+  ambientGate?: { quietMs: number };
   /** Split mode only: "settle" (default) commits each task as its call settles, "turn" commits in seeded turn order for eval and replay. */
   commitOrder?: "settle" | "turn";
   /** Bounded event reads through `IEventRepository.getWindow` (ADR-0024). */
@@ -223,6 +225,8 @@ export class PulseScheduler {
   // ---- split mode state (ADR-0020); unused in sequential mode ----
   /** Focused pulses in flight, beside the single base pulse in `inFlight`. */
   private readonly focusInFlight = new Set<Promise<PulseResult>>();
+  /** When each actor was last consulted for no reason but its own turn, and what was the newest news then (ambient gate). */
+  private readonly lastAmbient = new Map<string, { at: number; news: string }>();
   private readonly locks = new AgentLocks();
   private readonly semaphore: GenerateSemaphore;
   /** Single writer per agent: the latest committed state, read under the agent's lock. */
@@ -548,7 +552,7 @@ export class PulseScheduler {
       try {
         frame.agentStates.set(agent.id, await this.currentState(agent));
         decision = await this.decideAgent(frame, agent);
-        if (!decision.stepResult.decision.needsLLM || this.previewBlocked(frame, decision)) {
+        if (!decision.stepResult.decision.needsLLM || this.previewBlocked(frame, decision) || (!focus && this.ambientHeld(decision))) {
           await this.persistAndSnapshot(decision.stepResult.updatedAgentState, frame.now);
           continue;
         }
@@ -587,6 +591,24 @@ export class PulseScheduler {
     };
   }
 
+  /**
+   * The newest thing in the agent's view that somebody else did, or undefined for an ambient turn's "nothing". An actor's own lines
+   * do not count: speaking is not news to the speaker.
+   */
+  private othersNews(decision: AgentDecision): string {
+    const events = decision.stepResult.perceptionPacket.visibleContextEvents;
+    for (let i = events.length - 1; i >= 0; i--) if (events[i]!.actorId !== decision.agent.id) return events[i]!.id;
+    return "";
+  }
+
+  /** Ambient gate (see `SplitPulseConfig.ambientGate`): an unaddressed, untriggered consult repeated into an unchanged room. */
+  private ambientHeld(decision: AgentDecision): boolean {
+    const gate = this.config.ambientGate;
+    if (!gate || decision.addressed || decision.stepResult.perceptionPacket.triggeringEvent) return false;
+    const last = this.lastAmbient.get(decision.agent.id);
+    return !!last && last.news === this.othersNews(decision) && this.clock() - last.at < gate.quietMs;
+  }
+
   /** ADR-0021 decision phase: skip the model call for a non-addressed agent the arbiter would block anyway. */
   private previewBlocked(frame: PulseFrame, decision: AgentDecision): boolean {
     const arbiter = this.config.arbiter;
@@ -610,6 +632,9 @@ export class PulseScheduler {
           decision = fresh;
         }
         frame.counters.agentsCalled += 1;
+        if (this.config.ambientGate && !decision.addressed && !decision.stepResult.perceptionPacket.triggeringEvent) {
+          this.lastAmbient.set(task.agent.id, { at: this.clock(), news: this.othersNews(decision) });
+        }
         this.config.onConsult?.({
           agentId: task.agent.id,
           reason: frame.reason,

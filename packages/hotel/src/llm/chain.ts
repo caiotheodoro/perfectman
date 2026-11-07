@@ -5,7 +5,7 @@ import type { Clock } from "../clock/clock.js";
 import type { ModelPrice } from "../config.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
-import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget, linkPromptStyle } from "./chain-config.js";
+import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget, linkPromptStyle, linkSampling, RETRY_TEMPERATURE_BOOST, RETRY_TEMPERATURE_MAX } from "./chain-config.js";
 import type { LlmLink, PromptStyle } from "./chain-config.js";
 import { CHAIN_DEADLINE_MS } from "./env.js";
 import { guardAnswer, hardenSystem, houseRules, noOpAnswer } from "./guards.js";
@@ -558,12 +558,14 @@ export class LlmChain {
       baseUrl: link.baseUrl,
       apiKeyEnv: link.apiKeyEnv,
       modelName: link.model,
-      // A link without its own switch must not inherit the previous link's (the base config is shared).
-      ...(link.extraBody ? { extraBody: link.extraBody } : { extraBody: undefined }),
       maxInputTokens: s.inputBudget,
       timeoutMs,
       // The failover is the retry; a single link keeps the transport's own.
       retryCount: this.states.length > 1 ? 0 : base.retryCount,
+      // Penalties against saying what was just said; the retry of a near-duplicate leans on them harder.
+      // A link with its own switch (the picked model's reasoning) uses it instead of the base's, so the next link never inherits it.
+      extraBody: mergeExtraBody(link.extraBody ?? base.extraBody, linkSampling(link, args[2].retry === "correction")),
+      ...(args[2].retry === "correction" ? { temperature: Math.max(base.temperature, Math.min(RETRY_TEMPERATURE_MAX, base.temperature + RETRY_TEMPERATURE_BOOST)) } : {}),
     };
     const box: { costUsd?: number } = {};
     const inner = this.makeProvider(config, { fetch: this.linkFetch(link, box), env: this.env });
@@ -680,4 +682,9 @@ function describeError(err: unknown): string {
   if (err instanceof LLMHttpError) return `http ${err.status}`;
   if (err instanceof Error) return err.name === "LLMTimeoutError" ? "timeout" : err.message.slice(0, 80);
   return "error";
+}
+
+function mergeExtraBody(own: Record<string, unknown> | undefined, sampling: Record<string, number>): Record<string, unknown> | undefined {
+  const merged = { ...own, ...sampling };
+  return Object.keys(merged).length ? merged : undefined;
 }

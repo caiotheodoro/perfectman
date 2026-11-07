@@ -18,7 +18,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { linkHeaders, linkInputBudget, linkPromptStyle } from "../src/llm/chain-config.ts";
+import { linkHeaders, linkInputBudget, linkPromptStyle, linkSampling } from "../src/llm/chain-config.ts";
 import type { LlmLink, PromptStyle } from "../src/llm/chain-config.ts";
 import { parseChain } from "../src/llm/chain-config.ts";
 import { checkLine, houseRules } from "../src/llm/guards.ts";
@@ -106,7 +106,7 @@ async function ask(link: LlmLink, req: ActorRequest, variant: Variant, sessionId
     fetch(`${link.baseUrl.replace(/\/+$/, "")}/chat/completions`, {
       method: "POST",
       headers: { "content-type": "application/json", authorization: `Bearer ${key}`, ...linkHeaders(link, sessionId) },
-      body: JSON.stringify({ model: link.model, messages: [{ role: "system", content: system }, { role: "user", content: req.user }], temperature: 0.7, max_tokens: HOTEL ? 400 : 220, ...(HOTEL ? { response_format: { type: "json_object" } } : {}) }),
+      body: JSON.stringify({ model: link.model, messages: [{ role: "system", content: system }, { role: "user", content: req.user }], temperature: 0.7, max_tokens: HOTEL ? 400 : 220, ...(HOTEL ? { response_format: { type: "json_object" }, ...linkSampling(link, false) } : {}) }),
       signal: AbortSignal.timeout(60_000),
     });
   let res = await send();

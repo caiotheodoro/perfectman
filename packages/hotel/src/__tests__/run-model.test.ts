@@ -76,7 +76,7 @@ describe("a model picked for one run (D54)", () => {
     const served = await generate();
     expect(calls.map((c) => c.model)).toEqual([BIG.id, LUNARIS.model]);
     // The failover link does not inherit the pick's thinking switch.
-    expect(calls[1]?.extra).toBeUndefined();
+    expect(calls[1]?.extra ?? {}).not.toHaveProperty("reasoning");
     expect(served.content).toBe("{}");
     expect(chain.snapshot().failovers).toBe(1);
   });

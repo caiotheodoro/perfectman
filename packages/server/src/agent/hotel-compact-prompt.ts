@@ -1,7 +1,8 @@
 import { PromptSection } from "@perfectman/shared";
 import type { AgentRuntimeInput, BodyPerception, CommittedEvent } from "@perfectman/shared";
 import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@perfectman/engine";
-import { bodyContractLines } from "./hotel-body-hint.js";
+import { bodyContractLines, rotateSamples, seed } from "./hotel-body-hint.js";
+import { roomLinesHeard } from "./repetition-guard.js";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 import { whisperNote, whisperedBy } from "./whisper-note.js";
 
@@ -21,7 +22,8 @@ export const COMPACT_EVENT_WINDOW = 6;
 export const COMPACT_MEMORIES = 3;
 const MAX_NEAR_PEOPLE = 4;
 const MAX_PLACES = 3;
-const VERBATIM_OWN_LINES = 3;
+const VERBATIM_OWN_LINES = 4;
+const VERBATIM_ROOM_LINES = 3;
 
 /** Intents that do nothing for a person standing in a room; not offered to a small reader. */
 const HIDDEN_INTENTS = new Set(["typing_start", "typing_cancel", "delay_response", "leave_channel", "write_memory"]);
@@ -90,7 +92,8 @@ function renderPersona(s: PromptSection, input: AgentRuntimeInput, profile: Pers
   if (profile.coreTraits.length > 0) lines.push(`Traits: ${clip(profile.coreTraits.slice(0, 3).map(stop).join("; "), 150)}`);
   if (profile.voiceGuidelines.length > 0) lines.push(`Voice: ${profile.voiceGuidelines.slice(0, 3).map((v) => clip(stop(v), 110)).join(" | ")}`);
   if (profile.messageLength !== undefined) lines.push(`Length: ${LENGTH[profile.messageLength]}.`);
-  const sample = profile.styleExamples.default.slice(0, 2).map((e) => `"${clip(e, 90)}"`);
+  const turnKey = `${profile.displayName}|${input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? ""}|${input.perceptionPacket.ownRecentUtterances.length}`;
+  const sample = rotateSamples(profile.styleExamples.default, turnKey, 2, heardLines(input)).map((e) => `"${clip(e, 90)}"`);
   if (sample.length > 0) lines.push(`Sounds like (tone, not lines to repeat): ${sample.join(", ")}`);
   if (profile.hardAvoids.length > 0) lines.push(`Never: ${profile.hardAvoids.slice(0, 2).map((a) => clip(a, 100)).join(" ")}`);
   const objective = profile.hiddenObjective;
@@ -124,7 +127,7 @@ function renderContract(s: PromptSection, input: AgentRuntimeInput, profile: Per
   s.raw('Reply with ONE JSON object and nothing else: no markdown, no commentary. Never set id, actorId, preferredDelay or fallbackIfBlocked.');
   s.list("Keys", [
     '"intentType" (required): one of the intents in <actions>',
-    `"visibleContent": what you say out loud${pt ? ", in Portuguese (pt-BR)" : ""}; only the final message, no drafting, no numbers or metrics`,
+    `"visibleContent": the words you say out loud to the people here${pt ? ", in Portuguese (pt-BR)" : ""}, as speech; only the final message, no drafting, no numbers or metrics, and never what you want or think (that goes in "privateMotiveSummary")`,
     `"privateMotiveSummary" (required): the real, slightly uncomfortable thought behind what you do${pt ? ", in Portuguese (pt-BR)" : ""}`,
     '"replyToEventId" / "targetEventId": an event handle from <events> such as "e1", copied exactly',
     '"personTargets": names from <actions>',
@@ -134,8 +137,10 @@ function renderContract(s: PromptSection, input: AgentRuntimeInput, profile: Per
   if (body) for (const block of bodyContractLines(profile.language, body, input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? input.agentId, profile.styleExamples.default, heardLines(input))) s.raw(block);
 }
 
-function renderNoRepeat(s: PromptSection, own: string[]): void {
-  s.list("Your last lines (do not repeat or paraphrase them)", own.slice(-VERBATIM_OWN_LINES).map((u) => `"${clip(u, 140)}"`));
+/** What is already said: the actor's own newest lines, and what the others just said, so neither is said again. */
+function renderNoRepeat(s: PromptSection, own: string[], room: string[]): void {
+  if (own.length > 0) s.list("Your last lines (do not repeat or paraphrase them)", own.slice(-VERBATIM_OWN_LINES).map((u) => `"${clip(u, 140)}"`));
+  if (room.length > 0) s.list("Already said by the others (do not repeat or copy it: say something of your own)", room.slice(-VERBATIM_ROOM_LINES).map((u) => `"${clip(u, 110)}"`));
 }
 
 function renderEvents(
@@ -216,7 +221,42 @@ function renderActions(s: PromptSection, input: AgentRuntimeInput): void {
   );
 }
 
-function renderDecision(s: PromptSection, input: AgentRuntimeInput, lang: Lang): void {
+/**
+ * A different way into the turn each time: the same persona, room and trigger give the same sentence turn after turn on a small
+ * model, and "do not repeat" alone does not move it. The angle is a lean, not an order, and is drawn by a hash of the turn
+ * (the trigger, the actor, how many lines it has said), so a replayed run renders the same prompt.
+ */
+const ANGLES: Record<Lang, string[]> = {
+  "pt-BR": [
+    "reaja ao que a última pessoa acabou de dizer, com uma opinião sua",
+    "faça uma pergunta concreta e nova a alguém pelo nome",
+    "comente algo do lugar ou da noite que ninguém comentou ainda",
+    "provoque alguém de leve, do seu jeito",
+    "conte um detalhe curto da sua vida que combine com a conversa",
+    "discorde de algo que foi dito, com educação",
+    "mude de assunto para algo que você quer de verdade agora",
+    "responda em poucas palavras, sem repetir cumprimentos",
+  ],
+  en: [
+    "react to what the last person just said, with an opinion of your own",
+    "ask somebody by name a concrete question nobody asked yet",
+    "remark on something about the place or the night nobody mentioned",
+    "tease somebody lightly, your way",
+    "share one short detail from your life that fits the talk",
+    "disagree politely with something that was said",
+    "change the subject to something you actually want right now",
+    "answer in a few words, with no greeting",
+  ],
+};
+
+export function angleFor(input: AgentRuntimeInput, lang: Lang, name: string): string {
+  const p = input.perceptionPacket;
+  const key = `${name}|${p.triggeringEvent?.id ?? p.visibleContextEvents.at(-1)?.id ?? ""}|${p.ownRecentUtterances.length}|angle`;
+  const list = ANGLES[lang];
+  return list[seed(key) % list.length]!;
+}
+
+function renderDecision(s: PromptSection, input: AgentRuntimeInput, lang: Lang, angle: string): void {
   s.heading("Decide now");
   const whisperer = whisperedBy(input);
   if (whisperer) s.raw(whisperNote(whisperer, lang));
@@ -224,6 +264,9 @@ function renderDecision(s: PromptSection, input: AgentRuntimeInput, lang: Lang):
     'Do exactly ONE action from <actions>. Say the specific thing this person would say, or stay silent on purpose with "no_op". ' +
       "Do not agree by default or repeat what you already said: push back, tease, change the subject or move if it fits you.",
   );
+  if (!whisperer && !askedNow(input)) {
+    s.raw(lang === "pt-BR" ? `Se for falar: ${angle}. Use palavras novas.` : `If you speak: ${angle}. Use new words.`);
+  }
   if (input.holdSuggested) {
     s.raw('Right now you are inclined to hold back; if this person would, choose "no_op" and put the real reason in privateMotiveSummary.');
   }
@@ -232,6 +275,13 @@ function renderDecision(s: PromptSection, input: AgentRuntimeInput, lang: Lang):
       ? 'Escreva "visibleContent" e "privateMotiveSummary" em português (pt-BR), na língua dessa pessoa, nunca em inglês.'
       : 'Write "visibleContent" and "privateMotiveSummary" in English, in this person\'s own language.',
   );
+}
+
+/** The trigger is a person's line aimed at this actor: the answer is theirs to get, not a lean toward a topic. */
+function askedNow(input: AgentRuntimeInput): boolean {
+  const p = input.perceptionPacket.triggeringEvent?.payload as Record<string, unknown> | undefined;
+  if (!p || p["untrusted"] !== true) return false;
+  return [p["addresseeIds"], p["mentionedAgentIds"]].some((ids) => Array.isArray(ids) && ids.includes(input.agentId));
 }
 
 /** Renders the compact hotel prompt. `formatEvent` is the builder's own quoted-line renderer, so strangers' text is escaped the same way. */
@@ -244,13 +294,14 @@ export function renderCompactHotelPrompt(
   const system = new PromptSection()
     .container("persona", (s) => renderPersona(s, input, profile))
     .container("output_contract", (s) => renderContract(s, input, profile));
-  if (perceptionPacket.ownRecentUtterances.length > 0) system.container("no_repeat", (s) => renderNoRepeat(s, perceptionPacket.ownRecentUtterances));
+  const roomSaid = roomLinesHeard(perceptionPacket);
+  if (perceptionPacket.ownRecentUtterances.length > 0 || roomSaid.length > 0) system.container("no_repeat", (s) => renderNoRepeat(s, perceptionPacket.ownRecentUtterances, roomSaid));
 
   const user = new PromptSection().container("events", (s) => renderEvents(s, input, formatEvent));
   if (perceptionPacket.body) user.container("body", (s) => renderBody(s, perceptionPacket.body!, profile.language));
   const feelings = feelingLines(input);
   if (feelings.length > 0) user.container("state", (s) => s.heading("How you feel").list(undefined, feelings));
   if (perceptionPacket.relevantMemories.length > 0) user.container("memories", (s) => renderMemories(s, input));
-  user.container("actions", (s) => renderActions(s, input)).container("decision", (s) => renderDecision(s, input, profile.language));
+  user.container("actions", (s) => renderActions(s, input)).container("decision", (s) => renderDecision(s, input, profile.language, angleFor(input, profile.language, profile.displayName)));
   return { systemPrompt: system.toString(), userPrompt: user.toString() };
 }
