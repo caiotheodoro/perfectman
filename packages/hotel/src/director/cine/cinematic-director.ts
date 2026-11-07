@@ -66,6 +66,8 @@ export class CinematicDirector {
   readonly cfg: CineConfig;
   private readonly queue: CineItem[] = [];
   private readonly held = new Map<string, () => void>();
+  /** Held walks, doors and pair acts (not speech): their actor and order, so an actor's acts are released in the order they were planned. */
+  private readonly heldActs = new Map<string, { ref: string; seq: number }>();
   private readonly timers = new Set<TimerHandle>();
   private inner: GatewayExecutor | undefined;
   private idle: TimerHandle | undefined;
@@ -138,6 +140,7 @@ export class CinematicDirector {
     this.cancelIdle();
     for (const item of this.queue.splice(0)) this.drop(item, "stopped");
     this.held.clear();
+    this.heldActs.clear();
     if (!this.started) return void this.track.add({ t: this.t(), k: "end", reason });
     for (const timer of this.timers) timer.cancel();
     this.timers.clear();
@@ -172,8 +175,10 @@ export class CinematicDirector {
 
   /**
    * The executor the run hands to the gateway and the planner. Speech, thoughts
-   * and show-gestures are held for playback; everything else passes straight
-   * through, observed.
+   * and show-gestures are held for playback, and so are walks, doors and pair
+   * acts once the film is rolling, so each happens when the camera is on it
+   * (or, if it waited out its age limit, unfilmed); everything else passes
+   * straight through, observed.
    */
   wrapExecutor(inner: GatewayExecutor): GatewayExecutor {
     this.inner = inner;
@@ -196,8 +201,7 @@ export class CinematicDirector {
         case "chat": {
           const mode = c.mode;
           const mood = this.o.world.moodOf(c.agentId);
-          const id = this.enqueue({ kind: "line", ref: c.agentId, text: c.text, mode, ...(c.to ? { to: c.to } : {}), room: this.roomOf(c.agentId), salience: lineSalience(c.text, mode, mood) });
-          if (id) this.held.set(id, () => inner.send([c]));
+          this.enqueue({ kind: "line", ref: c.agentId, text: c.text, mode, ...(c.to ? { to: c.to } : {}), room: this.roomOf(c.agentId), salience: lineSalience(c.text, mode, mood) }, () => inner.send([c]));
           break;
         }
         case "typing":
@@ -206,30 +210,54 @@ export class CinematicDirector {
           break;
         case "gesture":
           if (GATED_GESTURES.has(c.a) && !c.fidget) {
-            const id = this.enqueue({ kind: "gesture", ref: c.agentId, gesture: c.a, room: this.roomOf(c.agentId), salience: 0.3 });
-            if (id) this.held.set(id, () => inner.send([c]));
+            this.enqueue({ kind: "gesture", ref: c.agentId, gesture: c.a, room: this.roomOf(c.agentId), salience: 0.3 }, () => inner.send([c]));
           } else pass.push(c);
           break;
         case "walk": {
-          pass.push(c);
           const from = this.o.world.tileOf(c.agentId);
           const steps = from ? Math.max(Math.abs(from[0] - c.to[0]), Math.abs(from[1] - c.to[1])) : 0;
-          this.enqueue({ kind: "walk", ref: c.agentId, steps, room: this.roomOf(c.agentId), salience: 0.2 });
+          // A short walk is never filmed, and the cast walking in is part of the opening: both go straight out.
+          if (!this.enqueueAct({ kind: "walk", ref: c.agentId, steps, room: this.roomOf(c.agentId), salience: 0.2 }, c, steps >= 3 && !c.plan?.endsWith(":enter"), inner)) pass.push(c);
           break;
         }
-        case "move_room":
-          pass.push(c);
-          this.enqueue({ kind: "hop", ref: c.agentId, to: Number(c.to), room: this.roomOf(c.agentId), salience: 0.45 });
+        case "move_room": {
+          if (!this.enqueueAct({ kind: "hop", ref: c.agentId, to: Number(c.to), room: this.roomOf(c.agentId), salience: 0.45 }, c, true, inner)) pass.push(c);
           break;
-        case "pair":
-          pass.push(c);
-          this.enqueue({ kind: "pair", ref: c.agentId, pair: c.kind, with: c.with, room: this.roomOf(c.agentId), salience: 0.7 });
+        }
+        case "pair": {
+          if (!this.enqueueAct({ kind: "pair", ref: c.agentId, pair: c.kind, with: c.with, room: this.roomOf(c.agentId), salience: 0.7 }, c, true, inner)) pass.push(c);
           break;
+        }
         default:
           pass.push(c);
       }
     }
     if (pass.length > 0) inner.send(pass);
+  }
+
+  /** Queues an act and holds its command until the beat plays; false when the command must go straight out (nothing is filming yet, or it is not worth a shot). */
+  private enqueueAct(item: DistributiveOmit<CineItem, "id" | "seq" | "at">, c: PlannedCommand, worthIt: boolean, inner: GatewayExecutor): boolean {
+    if (!worthIt || !this.started || this.phase === "ended") {
+      this.enqueue(item);
+      return false;
+    }
+    // The queue entry exists before the item can play, and so must the order record.
+    this.heldActs.set(`b${this.seq + 1}`, { ref: c.agentId, seq: this.seq + 1 });
+    this.enqueue(item, () => inner.send([c]));
+    return true;
+  }
+
+  /** Runs a held command. An actor's earlier held acts go first, so a pair is never sent ahead of the walk that brought the actor there. */
+  private release(id: string): void {
+    const act = this.heldActs.get(id);
+    if (act) {
+      const before = [...this.heldActs].filter(([other, a]) => a.ref === act.ref && a.seq < act.seq).sort((x, y) => x[1].seq - y[1].seq);
+      for (const [other] of before) this.release(other);
+    }
+    this.heldActs.delete(id);
+    const run = this.held.get(id);
+    this.held.delete(id);
+    run?.();
   }
 
   private roomOf(ref: string): number {
@@ -243,10 +271,12 @@ export class CinematicDirector {
   }
 
   /** Adds an item to the buffer; returns its id, or undefined when the film is over and nothing is queued. */
-  enqueue(item: DistributiveOmit<CineItem, "id" | "seq" | "at">): string | undefined {
+  enqueue(item: DistributiveOmit<CineItem, "id" | "seq" | "at">, hold?: () => void): string | undefined {
     if (this.phase === "ended") return undefined;
     const seq = ++this.seq;
     const full = { ...item, id: `b${seq}`, seq, at: this.o.clock.now() } as CineItem;
+    // Registered before the item can play: a covered shot releases at program time 0, inside the advance below.
+    if (hold) this.held.set(full.id, hold);
     this.queue.push(full);
     this.beginScene(full);
     if (this.started && !this.busy && !this.paused) {
@@ -332,6 +362,8 @@ export class CinematicDirector {
   }
 
   private drop(item: CineItem, why: string): void {
+    // A held act that is not filmed still happens (late, off camera); only a stop discards it.
+    if (why !== "stopped" && this.heldActs.has(item.id)) this.release(item.id);
     this.held.delete(item.id);
     this.track.add({ t: this.t(), k: "drop", beat: item.id, why });
   }
@@ -402,8 +434,7 @@ export class CinematicDirector {
         this.inner?.send([{ agentId: step.ref, cmd: "typing", on: true }]);
         return;
       case "release": {
-        this.held.get(step.item.id)?.();
-        this.held.delete(step.item.id);
+        this.release(step.item.id);
         const it = item ?? step.item;
         if (it.kind === "line") {
           this.track.add({ t: planned, k: "line", room: it.room, beat: it.id, ref: it.ref, avatar: this.o.world.avatarId(it.ref) ?? null, mode: it.mode, text: it.text, ms: Math.max(0, program.durationMs - step.at - this.cfg.beatGapMs) });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ManualClock } from "../../../clock/manual-clock.js";
+import { ManualClock } from "../../../testing/manual-clock.js";
 import { Narrator, fallbackNarration, parseNarration } from "../narrator.js";
 import type { NarratorLlm, NarratorRequest, SceneBrief } from "../narrator.js";
 

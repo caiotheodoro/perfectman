@@ -9,13 +9,13 @@ The engine runs ahead; the audience sees a film. In cinematic mode the sidecar d
 ```
 BodyExecutor <- wrapExecutor <- HotelGateway / planner      (run.ts: `this.out`)
                     | chat, thought, laugh/wave/...  -> held items (CineItem)
-                    | walk, move_room, pair          -> pass through live + observed
+                    | walk (>= 3 steps), move_room, pair -> held items too: sent when their shot plays (or, past their age limit, unfilmed)
                     v
         queue (lookahead <= 2 pulses)  --selectNext-->  ShotPlanner.plan  -->  Program (timed Steps)
                                                                                    |
         playback clock (Clock.setTimer)  <-----------------------------------------+
             |-- ui_push {run} : hud / card / lower_third / caption / thought / cue / camera / sfx / cut_fx / next_room / cut
-            |-- release: the held chat or gesture goes to the BodyExecutor
+            |-- release: the held chat, gesture, walk, door or pair goes to the BodyExecutor
             `-- TrackRecorder -> runs/<id>/director-track.jsonl  -> computeMetrics
 ```
 
@@ -92,8 +92,8 @@ Scripted scene (`__tests__/cinematic-e2e.test.ts`: 2 rooms, 4 actors, 13 lines, 
 3. `cut` has no `in_ms` and no acknowledgement. The establishing camera follows 80 ms later; a camera cue for the new room sent before the hotel has swapped it is ignored.
 4. `lower_third` carries a name and role but no avatar id, so it cannot be anchored to a head.
 5. The sidecar cannot see Audience: it films whether or not anyone watches (`run_panel` has no watcher count).
-6. Walks, doors and pair acts are not held back: only speech, thoughts and show gestures are. With a deep buffer a kiss is usually older than its limit when its turn comes and is dropped. Gating `pair` and `walk` needs the hotel to tolerate a delayed `not_adjacent` precondition.
-7. `director-track.jsonl` sits beside `events.jsonl` but is not in the `replay.json` manifest or in `POST /internal/v1/runs/{run}/artifacts`.
+6. Walks (3 steps or more, the cast walking in excepted), doors and pair acts are held in the playback buffer too and sent when their shot plays, so a deep buffer no longer leaves them unfilmed. One that waits out its age limit (walk 5 s, door 8 s, pair 4 s) is still sent, late and off camera, and an actor's held acts go out in the order they were planned. Open: a delayed walk can still make a pair on that actor's partner arrive `not_adjacent`; the hotel is expected to answer that with an ordinary command error.
+7. `director-track.jsonl` is in the `replay.json` manifest and in the `POST /internal/v1/runs/{run}/artifacts` body as `director_track` (cinematic runs only). `director.json` still holds an empty track.
 8. Mood (valence, arousal, affection) reaches the director only from `onAgentCommitted`; humans have none, and nothing here reads an Audience member.
 
 ## 10. Tests

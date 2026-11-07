@@ -1,4 +1,4 @@
-import { appendFile, mkdir, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { BodyFrameLog } from "@perfectman/shared";
 import type { CommittedEvent } from "@perfectman/shared";
@@ -64,11 +64,14 @@ export class NdjsonEventSink {
   }
 }
 
+/** The cinematic director's streamed track, beside events.jsonl. */
+export const TRACK_FILE = "director-track.jsonl";
+
 export type WrittenArtifacts = { dir: string; files: Record<string, string> };
 
 /**
  * `PERFECTMAN_DATA_DIR/runs/<runId>/` (hotel-package.md 6.4): the evicted and
- * final event log (with a `sink`, the evicted part is already on disk and the final window is appended), the (cinematic, empty for now) director track, and the
+ * final event log (with a `sink`, the evicted part is already on disk and the final window is appended), the director track (`director-track.jsonl`, cinematic runs only, registered as `director_track`), and the
  * manifest that ties them together. The hotel writes `frames.jsonl` itself.
  * A missing or read-only volume is logged by the caller, never fatal to a stop.
  */
@@ -82,11 +85,14 @@ export async function writeRunArtifacts(
 ): Promise<WrittenArtifacts> {
   const dir = join(dataDir, "runs", String(run));
   await mkdir(dir, { recursive: true });
-  const files = { events: "events.jsonl", director: "director.json", replay: "replay.json", body_frames: "body-frames.json" };
+  const base = { events: "events.jsonl", director: "director.json", replay: "replay.json", body_frames: "body-frames.json" };
+  // A cinematic run streams its track here as it plays (cine/track.ts); a default run leaves no file.
+  const hasTrack = await stat(join(dir, TRACK_FILE)).then((s) => s.isFile(), () => false);
+  const files: Record<string, string> = hasTrack ? { ...base, director_track: TRACK_FILE } : base;
   if (sink) await sink.finish(events);
-  else await writeFile(join(dir, files.events), events.map((e) => JSON.stringify(e)).join("\n") + (events.length ? "\n" : ""));
-  await writeFile(join(dir, files.director), JSON.stringify({ track: [] }));
-  await writeFile(join(dir, files.body_frames), JSON.stringify(frameLog));
-  await writeFile(join(dir, files.replay), JSON.stringify({ ...manifest, files }, null, 2));
+  else await writeFile(join(dir, base.events), events.map((e) => JSON.stringify(e)).join("\n") + (events.length ? "\n" : ""));
+  await writeFile(join(dir, base.director), JSON.stringify({ track: [] }));
+  await writeFile(join(dir, base.body_frames), JSON.stringify(frameLog));
+  await writeFile(join(dir, base.replay), JSON.stringify({ ...manifest, files }, null, 2));
   return { dir, files: Object.fromEntries(Object.entries(files).map(([k, v]) => [k, join(dir, v)])) };
 }

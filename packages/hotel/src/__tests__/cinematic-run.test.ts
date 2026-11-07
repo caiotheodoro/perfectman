@@ -45,8 +45,15 @@ describe("a cinematic run on the fake hotel with the mock provider", () => {
     await waitFor(() => hotel.received.find((f) => f.t === "run_end"), "run_end", 6000);
     const closed = hotel.received.some((f) => f.t === "ui_push" && f.ui.k === "hud" && f.ui.letterbox === false);
     expect(closed).toBe(true);
+    // every cue, notices included, carries the run's current lease
+    const pushes = hotel.received.filter((f) => f.t === "ui_push");
+    expect(pushes.length).toBeGreaterThan(3);
+    expect(pushes.every((f) => f.lease === 1)).toBe(true);
+    expect(hotel.staleUiPushes).toBe(0);
 
     const track = parseTrack(readFileSync(join(cfg.dataDir, "runs", "7", "director-track.jsonl"), "utf8"));
+    const manifest = JSON.parse(readFileSync(join(cfg.dataDir, "runs", "7", "replay.json"), "utf8")) as { files: Record<string, string> };
+    expect(manifest.files.director_track).toBe("director-track.jsonl");
     expect(track[0]).toMatchObject({ k: "start", room: 12 });
     expect(track.at(-1)).toMatchObject({ k: "end", reason: "stopped" });
     const m = computeMetrics(track);

@@ -33,13 +33,40 @@ describe("playback: speech is held for the clock, behind the camera", () => {
     for (let i = 1; i < times.length; i++) expect((times[i] ?? 0) - (times[i - 1] ?? 0)).toBeGreaterThanOrEqual(2500);
   });
 
-  it("lets movement through at once and holds back only the show: typing on, speech, thoughts, laughs", async () => {
+  it("lets quick movement and expressions through at once and holds back the show: typing on, speech, thoughts, laughs", async () => {
     const r = rig();
     r.director.start();
-    r.exec.send([{ agentId: "duda", cmd: "walk", to: [8, 4], plan: "p1" }, { agentId: "duda", cmd: "typing", on: true }, { agentId: "rafa", cmd: "expression", face: "smile" }, { agentId: "rafa", cmd: "gesture", a: "laugh" }, { agentId: "rafa", cmd: "gesture", a: "stand", fidget: true }]);
+    r.exec.send([{ agentId: "duda", cmd: "walk", to: [5, 4], plan: "p1" }, { agentId: "duda", cmd: "typing", on: true }, { agentId: "rafa", cmd: "expression", face: "smile" }, { agentId: "rafa", cmd: "gesture", a: "laugh" }, { agentId: "rafa", cmd: "gesture", a: "stand", fidget: true }]);
     r.exec.sendThought("duda", "será que ele percebeu?");
     expect(r.delivered.map((d) => d.cmd.cmd)).toEqual(["walk", "expression", "gesture"]);
     expect(r.thoughts).toEqual([]);
+  });
+
+  it("holds a long walk, a door and a kiss until the camera is on them, so a deep buffer does not drop the shot", async () => {
+    const r = rig();
+    r.director.start();
+    await r.clock.advance(7000); // past the opening cards
+    r.exec.send([{ agentId: "duda", cmd: "walk", to: [9, 4], plan: "p1" }, { agentId: "rafa", cmd: "pair", kind: "kiss", with: "duda" } as never]);
+    await r.clock.advance(30_000);
+    const sent = r.delivered.map((d) => d.cmd.cmd);
+    expect(sent).toContain("walk");
+    expect(sent).toContain("pair");
+    // the acts were filmed, not dropped, and each went out with its shot
+    const cams = r.director.track.sorted().filter((e) => e.k === "cue" && e.ui.k === "camera");
+    expect(cams.some((e) => e.k === "cue" && e.ui.k === "camera" && e.ui.shot === "tracking")).toBe(true);
+    expect(cams.some((e) => e.k === "cue" && e.ui.k === "camera" && e.ui.shot === "insert")).toBe(true);
+    expect(r.director.track.entries.some((e) => e.k === "drop" && e.why === "stale")).toBe(false);
+  });
+
+  it("an act that waited out its age limit still happens, off camera, and a stop discards the rest", async () => {
+    const r = rig();
+    r.director.start();
+    r.say("rafa", "Uma fala longa o bastante para ocupar a tela por um bom tempo, enquanto a caminhada fica velha demais.");
+    r.say("rafa", "Outra fala longa o bastante para ocupar a tela por mais um bom tempo, sem pressa nenhuma de acabar.");
+    r.exec.send([{ agentId: "duda", cmd: "walk", to: [9, 4], plan: "p1" }]);
+    await r.clock.advance(60_000);
+    expect(r.director.track.entries.some((e) => e.k === "drop" && e.why === "stale")).toBe(true);
+    expect(r.delivered.map((d) => d.cmd.cmd)).toContain("walk");
   });
 
   it("films a thought as a bubble on the thinker instead of forwarding it", async () => {

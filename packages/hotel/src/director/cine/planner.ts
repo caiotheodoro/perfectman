@@ -401,6 +401,8 @@ export class ShotPlanner {
     const hold = Math.min(4000, Math.max(1500, item.steps * 300));
     const at = t0 + this.minShotWait(now + t0);
     b.ui(at, this.cameraCue("tracking", { avatar }, item.steps > 6 ? 1 : 2, this.cfg.easeMs.tracking, hold, true));
+    // The walk itself is held back until the camera is on the walker (cinematic-director.ts); a no-op when it went straight through.
+    b.add({ at, k: "release", item });
     this.camera = { shot: "tracking", target: { avatar }, ref: item.ref, room: item.room };
     this.lastCameraAt = now + at;
     return at - t0 + hold;
@@ -412,6 +414,7 @@ export class ShotPlanner {
     const at = t0 + this.minShotWait(now + t0);
     b.ui(at, this.cameraCue("tracking", { avatar }, 1, this.cfg.easeMs.tracking, 1600, true));
     b.ui(at + 1100, { k: "sfx", cue: "door", gain: 0.8 });
+    b.add({ at: at + 900, k: "release", item });
     this.camera = { shot: "tracking", target: { avatar }, ref: item.ref, room: item.room };
     this.lastCameraAt = now + at;
     this.lastHop = { ref: item.ref, to: item.to, at: now + at + 1600 };
@@ -427,6 +430,7 @@ export class ShotPlanner {
     this.camera = { shot: "insert", target: { pair: [a, p] }, room: item.room };
     this.lastCameraAt = now + at;
     b.ui(at + 300, { k: "sfx", cue: item.pair, gain: 0.8 });
+    b.add({ at: at + 300, k: "release", item });
     if (item.pair === "kiss" && now + at - this.lastSting >= this.cfg.stingGapMs) {
       this.lastSting = now + at;
       b.ui(at + 200, { k: "sfx", cue: "sting_romance", gain: 0.6 });

@@ -66,7 +66,7 @@ export const uis = (p: Program): PerfectmanUi[] => p.steps.filter((s): s is Extr
 export const cameras = (p: Program) => p.steps.flatMap((s) => (s.k === "ui" && s.ui.k === "camera" ? [{ at: s.at, ui: s.ui }] : []));
 export const releaseAt = (p: Program): number | undefined => p.steps.find((s) => s.k === "release")?.at;
 
-import { ManualClock } from "../../../clock/manual-clock.js";
+import { ManualClock } from "../../../testing/manual-clock.js";
 import { silentLogger } from "../../../util/log.js";
 import type { PlannedCommand } from "../../../embodiment/types.js";
 import type { SidecarMsg } from "../../index.js";

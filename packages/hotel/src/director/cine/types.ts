@@ -76,7 +76,7 @@ export interface NarrationSource {
 
 export type Step =
   | { at: number; k: "ui"; ui: PerfectmanUi }
-  | { at: number; k: "release"; item: LineItem | GestureItem }
+  | { at: number; k: "release"; item: LineItem | GestureItem | WalkItem | HopItem | PairItem }
   | { at: number; k: "typing"; ref: string }
   | { at: number; k: "next_room"; room: number }
   | { at: number; k: "cut"; room: number; from: number };

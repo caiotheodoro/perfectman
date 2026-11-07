@@ -33,7 +33,7 @@ import { tileKey } from "../space/geometry.js";
 import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
-import { NdjsonEventSink, writeRunArtifacts } from "./artifacts.js";
+import { NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
 import type { WrittenArtifacts } from "./artifacts.js";
 import { FrameLogRecorder } from "./frame-log.js";
 import { createRuntimePort } from "./runtime-port.js";
@@ -477,7 +477,7 @@ export class Run {
     const language = first?.language === "en" ? "en" : "pt-BR";
     const cast = new Map([...this.agents].map(([ref, a]) => [ref, { name: a.name, ...(this.archetype(ref) ? { role: this.archetype(ref) as string } : {}) }]));
     this.cineWorld = new MirrorCineWorld(mirror, () => clock.now(), cast);
-    this.trackSink = new TrackFileSink(join(hotel.dataDir, "runs", String(this.id), "director-track.jsonl"), (err) =>
+    this.trackSink = new TrackFileSink(join(hotel.dataDir, "runs", String(this.id), TRACK_FILE), (err) =>
       this.d.logger.warn("director track write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
     const narrator = new Narrator({ clock, language, ...(this.d.narratorLlm ? { llm: this.d.narratorLlm } : {}), logger: this.d.logger });
     this.cine = new CinematicDirector({
