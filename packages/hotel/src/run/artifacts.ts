@@ -13,6 +13,11 @@ export type ReplayManifest = {
   startedAt: number;
   endedAt: number;
   pulse: number;
+  /** What a replay needs to put the run back on a stage (D39): how it was shown, where it was home, and who was who. */
+  mode?: "default" | "cinematic";
+  home?: number;
+  /** Cast ref (the scenario's agent id) to the avatar id the hotel gave it, which is what the director track and the frame log mention. */
+  actors?: Record<string, number>;
   counters: Record<string, number>;
   /** A pulse did not drain before teardown, as in the HTTP controller's manifest. */
   dirty?: true;

@@ -13,6 +13,10 @@ import { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import type { WrittenArtifacts } from "./artifacts.js";
 import type { MemoryStore } from "./player-memory.js";
+import { ReplayRun, parseReplayArgs } from "./replay-run.js";
+import type { ReplaySpec } from "./replay-run.js";
+import { ReplayError } from "./replay-plan.js";
+import type { RunLike } from "./run-like.js";
 import { Run } from "./run.js";
 import type { RunLink, RunStartParams, RunTiming } from "./run.js";
 
@@ -50,7 +54,11 @@ type Pending = { resolve(f: HotelFrame): void; reject(e: Error): void; timer: Ti
 export class RunManager implements RunLink {
   readonly mirror: HotelSpaceMirror;
   readonly director: DirectorClient;
-  private readonly runs = new Map<number, Run>();
+  private readonly runs = new Map<number, RunLike>();
+  /** `pm_command replay` that came for a run the hotel had just started: it is a replay, not a live run (director-protocol.md 6.1). */
+  private readonly replayClaims = new Map<number, ReplaySpec>();
+  /** Runs past the point where a late `replay` command can still turn them into a replay. */
+  private readonly launched = new Set<number>();
   private readonly roomWaiters = new Map<RoomId, Array<() => void>>();
   private readonly cidWaiters = new Map<number, Pending>();
   private readonly cidOwner = new Map<number, number>();
@@ -99,8 +107,15 @@ export class RunManager implements RunLink {
     return this.director.connected;
   }
 
+  /** A live run; a replay is `getReplay`. */
   getRun(id: number): Run | undefined {
-    return this.runs.get(id);
+    const r = this.runs.get(id);
+    return r instanceof Run ? r : undefined;
+  }
+
+  getReplay(id: number): ReplayRun | undefined {
+    const r = this.runs.get(id);
+    return r instanceof ReplayRun ? r : undefined;
   }
 
   start(): void {
@@ -334,7 +349,7 @@ export class RunManager implements RunLink {
     w.resolve(frame);
   }
 
-  private runOfActor(actor: number | undefined): Run | undefined {
+  private runOfActor(actor: number | undefined): RunLike | undefined {
     const id = actor === undefined ? undefined : this.mirror.runOfAvatar(actor);
     return id === undefined ? undefined : this.runs.get(id);
   }
@@ -372,11 +387,17 @@ export class RunManager implements RunLink {
       onEnded: (r) => {
         this.runs.delete(r.id);
         this.driftNoticed.delete(r.id);
+        this.launched.delete(r.id);
       },
     });
     this.runs.set(f.run, run);
     this.trackRun(f.run);
+    // A replay is asked for as a `pm_command` right behind the run's start: give a command that is already on
+    // the wire the chance to claim the run before anything is validated or built for a live one.
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    if (this.claimReplay(f.run, run, params, true)) return;
     const prep = await run.prepare();
+    if (this.claimReplay(f.run, run, params, true)) return;
     // The hotel may have ended the run while it was validating (run_end): nothing was built, so there is nothing to launch.
     if (this.runs.get(f.run) !== run || run.state !== "starting") {
       this.log.info("run ended during prepare, not launched", { run: f.run });
@@ -393,6 +414,7 @@ export class RunManager implements RunLink {
       return ack(false, prep.code, prep.message);
     }
     ack(true);
+    this.launched.add(f.run);
     try {
       await run.launch();
     } catch (err) {
@@ -403,7 +425,97 @@ export class RunManager implements RunLink {
     }
   }
 
+  // ---- replays (D39) ----------------------------------------------------------
+
+  /** A pending replay claim turns the just-started live run into a replay of the recorded one. */
+  private claimReplay(run: number, live: RunLike, params: RunStartParams, ackIt: boolean): boolean {
+    const spec = this.replayClaims.get(run);
+    if (!spec) return false;
+    this.replayClaims.delete(run);
+    if (this.runs.get(run) === live) this.runs.delete(run);
+    void this.startReplay({ ...params, mode: spec.mode }, spec, ackIt);
+    return true;
+  }
+
+  /**
+   * `pm_command{run: R', cmd: "replay", args: "<recorded> <default|cinematic>"}`. The hotel has made R' for the
+   * replay with a normal lease; if it also sent `run_start` for it, that start is claimed here instead of being
+   * built as a live run. The recorded run's artifacts are read from the data volume.
+   */
+  private async onReplayCommand(f: Extract<HotelFrame, { t: "pm_command" }>): Promise<void> {
+    const existing = this.runs.get(f.run);
+    const tell = (code: string, kind: "info" | "warn" | "error", text?: string): void => {
+      if (existing) existing.notice(code, kind, text);
+      else if (f.admin) this.send({ t: "ui_push", run: f.run, to: { admin: f.admin.id }, ui: { k: "notice", code, kind, ...(text ? { text: text.slice(0, 190) } : {}) } });
+    };
+    let spec: ReplaySpec;
+    try {
+      spec = parseReplayArgs(f.args ?? "", "default");
+    } catch (err) {
+      return tell(err instanceof ReplayError ? err.code : "replay_bad_args", "warn", (err as Error).message);
+    }
+    if (existing) {
+      // R' was started by the hotel a moment ago and nothing has been built for it yet: it is the replay.
+      if (!this.launched.has(f.run) && existing.state === "starting" && existing instanceof Run) {
+        this.replayClaims.set(f.run, spec);
+        return;
+      }
+      return tell("replay_busy", "warn", "this run is already going; replay needs a run of its own");
+    }
+    const params: RunStartParams = { run: f.run, lease: this.director.leaseOf(f.run) ?? 0, mode: spec.mode, room: f.room, scenarioVersion: 0, admin: f.admin ?? { id: 0, name: "auto" }, capActors: 12 };
+    await this.startReplay(params, spec, false);
+  }
+
+  private async startReplay(params: RunStartParams, spec: ReplaySpec, ackIt: boolean): Promise<void> {
+    const refuse = (code: string, message: string): void => {
+      this.runs.delete(params.run);
+      this.untrackRun(params.run);
+      this.log.warn("replay refused", { run: params.run, code, message });
+      if (ackIt) this.send({ t: "run_ack", run: params.run, ok: false, error: { code, message } });
+      else {
+        this.send({ t: "ui_push", run: params.run, to: { admin: params.admin.id }, ui: { k: "notice", code, kind: "warn", text: message.slice(0, 190) } });
+        this.send({ t: "run_end", run: params.run, reason: "failed", summary: message.slice(0, 180) });
+      }
+    };
+    if (!this.accepting) return refuse("shutting_down", "the sidecar is stopping");
+    if (this.runs.size >= this.o.config.maxRuns) return refuse("run_limit", `at most ${this.o.config.maxRuns} runs`);
+    if ([...this.runs.values()].some((r) => r.params.room === params.room)) return refuse("run_limit", "one run per room");
+    const replay = new ReplayRun(params, {
+      hotel: this.o.config,
+      clock: this.o.clock,
+      rng: this.o.rng,
+      logger: this.log,
+      mirror: this.mirror,
+      link: this,
+      ...(this.o.timing ? { timing: this.o.timing } : {}),
+      onEnded: (r) => {
+        this.runs.delete(r.id);
+        this.launched.delete(r.id);
+      },
+    });
+    this.runs.set(params.run, replay);
+    this.trackRun(params.run);
+    try {
+      await replay.prepare(spec);
+    } catch (err) {
+      return refuse(err instanceof ReplayError ? err.code : "replay_failed", (err as Error).message);
+    }
+    // A replay run has no lease until the hotel's `lease` (or `run_start`) arrives: a few seconds are allowed.
+    for (let i = 0; i < 60 && this.director.leaseOf(params.run) === undefined; i++) await sleepOn(this.o.clock, 50);
+    if (this.director.leaseOf(params.run) === undefined) return refuse("lease_missing", "the hotel never gave this replay a lease");
+    this.launched.add(params.run);
+    if (ackIt) this.send({ t: "run_ack", run: params.run, ok: true });
+    replay.notice("replay_started", "info", `${spec.source} ${spec.mode}`);
+    void replay.launch().catch((err) => {
+      const message = err instanceof Error ? err.message : String(err);
+      this.log.error("replay failed", { run: params.run, error: message });
+      replay.notice("run_failed", "error", message.slice(0, 180));
+      void replay.stop("failed", message.slice(0, 180));
+    });
+  }
+
   private async command(f: Extract<HotelFrame, { t: "pm_command" }>): Promise<void> {
+    if (f.cmd === "replay") return this.onReplayCommand(f);
     const run = this.runs.get(f.run);
     if (!run) return;
     const args = f.args ?? "";
@@ -429,9 +541,6 @@ export class RunManager implements RunLink {
       }
       case "status":
         run.notice("status", "info", run.statusText().slice(0, 190));
-        return;
-      case "replay":
-        run.notice("replay_unavailable", "info");
         return;
       case "wipe_memory":
         // The hotel already deleted the rows; this drops the run's cache and stops it writing them back (D21).

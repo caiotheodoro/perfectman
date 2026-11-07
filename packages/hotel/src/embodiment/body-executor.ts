@@ -122,7 +122,10 @@ export class BodyExecutor {
     const now = this.deps.clock.now();
     const times = (this.chatTimes.get(agentId) ?? []).filter((t) => now - t < CHAT_BACKSTOP.windowMs);
     if (times.length >= CHAT_BACKSTOP.count - 1) return; // keep the last slot for a spoken line
-    this.deps.send({ t: "actor_cmd", cid: this.deps.nextCid(), run: this.deps.run, lease, actor: id, cmd: { k: "chat", mode: "thought", text: clean } });
+    // Thoughts are part of the recording too: a default-mode replay shows them in the log, as the run did.
+    const wire: ActorCmd = { k: "chat", mode: "thought", text: clean };
+    this.deps.record?.("out", mirror.roomOfRef(agentId), "actor_cmd", { actor: agentId, cmd: wire as unknown as Record<string, unknown> });
+    this.deps.send({ t: "actor_cmd", cid: this.deps.nextCid(), run: this.deps.run, lease, actor: id, cmd: wire });
   }
 
   clearActor(agentId: string): void {

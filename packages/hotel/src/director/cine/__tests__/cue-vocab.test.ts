@@ -3,7 +3,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import type { PerfectmanUi } from "../../generated.js";
-import { EMOTION_CANONICAL, SFX_CANONICAL, canonicalEmotion, canonicalSfx, canonicalize, clampFade, cueViolations, isCanonicalSfx, normaliseCueName } from "../cue-vocab.js";
+import { EMOTION_CANONICAL, SFX_CANONICAL, canonicalEmotion, canonicalSfx, canonicalize, clampFade, cueViolations, isCanonicalEmotion, isCanonicalSfx, normaliseCueName } from "../cue-vocab.js";
 import { emotionLabel } from "../planner.js";
 import { rig } from "./cine-helpers.js";
 
@@ -118,7 +118,7 @@ describe("what the Director can emit", () => {
   });
 
   it("the Director's own lists in the vendored JSON all resolve (guards a vocabulary bump)", () => {
-    for (const name of VOCAB.sfx.director_emits_today) expect(canonicalSfx(name)).toBeDefined();
-    for (const name of VOCAB.emotion.director_emits_today) expect(canonicalEmotion(name)).toBeDefined();
+    for (const name of VOCAB.sfx.director_emits_today) expect(isCanonicalSfx(canonicalSfx(name) ?? ""), name).toBe(true);
+    for (const name of VOCAB.emotion.director_emits_today) expect(isCanonicalEmotion(canonicalEmotion(name) ?? ""), name).toBe(true);
   });
 });

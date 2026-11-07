@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { parseStart } from "../authoring/scenario-form.js";
-import { Run } from "../run/run.js";
-import type { RunDeps } from "../run/run.js";
+import { arrivalSchedule } from "../run/run.js";
 import { parseScenarioBody } from "../run/scenario-body.js";
 import type { Sidecar } from "../sidecar.js";
 import type { FakeDirector } from "../testing/fake-director.js";
@@ -33,15 +32,8 @@ async function watchSpawns(hotel: FakeDirector, count: number): Promise<Array<{ 
   return [...seen].map(([name, at]) => ({ name, at }));
 }
 
-/** A run that has read its body but not started: enough to ask it for the entrance schedule. */
-function scheduleOf(agents: Array<{ id: string; arrivalPulse?: number | null }>, arrivals: Record<string, number> | undefined, rng: () => number) {
-  const deps = { hotel: { llm: { prices: {} } }, clock: { now: () => 0, setTimer: () => ({ cancel: () => undefined }) }, rng, timing: { arrivalStaggerMs: [1000, 3000] as const } } as unknown as RunDeps;
-  const run = new Run({ run: 1, lease: 1, mode: "default", room: 12, scenarioVersion: 1, admin: { id: 9, name: "caio" }, capActors: 12 }, deps);
-  const internals = run as unknown as { body: unknown; agents: Map<string, unknown> };
-  internals.body = { config: { agents }, ...(arrivals ? { arrivals } : {}) };
-  internals.agents = new Map(agents.map((a) => [a.id, { name: a.id, spawned: false, gone: false }]));
-  return run.arrivalSchedule();
-}
+const scheduleOf = (agents: Array<{ id: string; arrivalPulse?: number | null }>, arrivals: Record<string, number> | undefined, rng: () => number) =>
+  arrivalSchedule(agents, arrivals, [1000, 3000], rng);
 
 describe("the entrance schedule", () => {
   it("walks the cast in one after another, 1 to 3 s apart by default, the first at once", () => {
@@ -118,7 +110,7 @@ describe("staggered arrival", () => {
     const deadline = Date.now() + 8000;
     while (!(await actorsWhoActed()).has("person-3") && Date.now() < deadline) await new Promise((r) => setTimeout(r, 20));
     expect((await actorsWhoActed()).has("person-3")).toBe(true);
-    expect(fake.avatarByRef("person-3")).toBeDefined();
+    expect(fake.avatarByRef("person-3")?.name).toBe("Gabi");
   }, 30_000);
 
   it("honours a fixed entrance time: 'after 1s' spawns about a second after the first", async () => {

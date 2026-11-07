@@ -28,7 +28,7 @@ export class FakeDirector {
   readonly received: SidecarFrame[] = [];
   /** ui_push frames that carried a lease other than the run's current one. */
   staleUiPushes = 0;
-  readonly chats: { actor: number; mode: string; text: string; to?: number | null }[] = [];
+  readonly chats: { actor: number; mode: string; text: string; to?: number | null; at: number }[] = [];
   readonly typingLog: { actor: number; on: boolean }[] = [];
   readonly gone: { actor: number; reason: string }[] = [];
   connections = 0;
@@ -166,6 +166,12 @@ export class FakeDirector {
     const lease = p.lease ?? 1;
     this.lease.set(p.run, lease);
     this.send({ t: "run_start", run: p.run, lease, mode: p.mode ?? "default", room: p.room, scenario_version: p.scenarioVersion, admin: { id: 9, name: "caio" }, cap_actors: p.capActors ?? 12 });
+  }
+
+  /** The hotel made a run row for a replay and gave it a lease, without a `run_start` (director-protocol.md 6.1). */
+  grantLease(run: number, lease = 1): void {
+    this.lease.set(run, lease);
+    this.send({ t: "lease", run, lease });
   }
 
   pmCommand(run: number, room: number, cmd: Extract<HotelMsg, { t: "pm_command" }>["cmd"], args?: string, source: "chat" | "panel" | "auto" = "panel"): void {
@@ -330,7 +336,7 @@ export class FakeDirector {
         this.walk(r, a, cmd.x, cmd.y, cmd.plan ?? null);
         break;
       case "chat":
-        this.chats.push({ actor: f.actor, mode: cmd.mode, text: cmd.text, to: cmd.to ?? null });
+        this.chats.push({ actor: f.actor, mode: cmd.mode, text: cmd.text, to: cmd.to ?? null, at: Date.now() });
         if (cmd.mode === "say" || cmd.mode === "shout" || cmd.mode === "whisper") {
           this.delta(r.id, { t: "chat", from: f.actor, name: a.name, text: cmd.text, mode: cmd.mode });
         }

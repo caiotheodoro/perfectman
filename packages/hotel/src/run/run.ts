@@ -87,6 +87,9 @@ export type RunTiming = {
   cine?: Partial<CineConfig>;
   /** The natural gap between two cast members who walk in one after another, `[min, max]` ms; 1 to 3 s in production. */
   arrivalStaggerMs?: readonly [number, number];
+  /** Replays (replay-run.ts): how long the picture stays after the last recorded thing (1.5 s), and a speed that overrides the command's. */
+  replayTailMs?: number;
+  replaySpeed?: number;
   /** How often changed player-memory rows are written back while a run goes; 2 min in production. */
   memoryFlushEveryMs?: number;
 };
@@ -130,6 +133,29 @@ export const DEFAULT_ARRIVAL_STAGGER_MS: readonly [number, number] = [1000, 3000
 const PULSE_MS = 6000;
 
 export type Arrival = { ref: string; atMs: number };
+
+/**
+ * When each cast member walks in, ms after the run starts, earliest first (the earliest is always 0). A time the
+ * scenario gives wins (the builder's "after N s", else the persona's `arrivalPulse`); everyone else walks in
+ * one after another with a natural gap, so twelve people do not appear in the doorway at once.
+ */
+export function arrivalSchedule(
+  agents: ReadonlyArray<{ id: string; arrivalPulse?: number | null }>,
+  arrivals: Readonly<Record<string, number>> | undefined,
+  stagger: readonly [number, number],
+  rng: () => number,
+): Arrival[] {
+  const [lo, hi] = stagger;
+  let auto: number | undefined;
+  const out: Arrival[] = agents.map((a) => {
+    const fixed = arrivals?.[a.id] ?? (typeof a.arrivalPulse === "number" && a.arrivalPulse > 0 ? a.arrivalPulse * PULSE_MS : undefined);
+    if (fixed !== undefined) return { ref: a.id, atMs: fixed };
+    auto = auto === undefined ? 0 : auto + lo + rng() * Math.max(0, hi - lo);
+    return { ref: a.id, atMs: Math.round(auto) };
+  });
+  const first = Math.min(...out.map((a) => a.atMs));
+  return out.map((a) => ({ ref: a.ref, atMs: a.atMs - first })).sort((x, y) => x.atMs - y.atMs);
+}
 
 /**
  * One hotel run: a built simulation, its gateway and body, and the lifecycle of
@@ -442,24 +468,10 @@ export class Run {
     this.d.logger.info("run running", { run: this.id, actors: this.agents.size, arriving_later: later.length });
   }
 
-  /**
-   * When each cast member walks in, ms after the run starts, earliest first (the earliest is always 0). A time the
-   * scenario gives wins (the builder's "after N s", else the persona's `arrivalPulse`); everyone else walks in
-   * one after another with a natural gap, so twelve people do not appear in the doorway at once.
-   */
+  /** The entrance schedule of this run's cast (see `arrivalSchedule`). */
   arrivalSchedule(): Arrival[] {
-    const [lo, hi] = this.d.timing?.arrivalStaggerMs ?? DEFAULT_ARRIVAL_STAGGER_MS;
-    const agents = new Map(this.body.config.agents.map((a) => [a.id, a]));
-    let auto: number | undefined;
-    const out: Arrival[] = [...this.agents.keys()].map((ref) => {
-      const pulse = agents.get(ref)?.arrivalPulse;
-      const fixed = this.body.arrivals?.[ref] ?? (typeof pulse === "number" && pulse > 0 ? pulse * PULSE_MS : undefined);
-      if (fixed !== undefined) return { ref, atMs: fixed };
-      auto = auto === undefined ? 0 : auto + lo + this.d.rng() * Math.max(0, hi - lo);
-      return { ref, atMs: Math.round(auto) };
-    });
-    const first = Math.min(...out.map((a) => a.atMs));
-    return out.map((a) => ({ ref: a.ref, atMs: a.atMs - first })).sort((x, y) => x.atMs - y.atMs);
+    const agents = this.body.config.agents.filter((a) => this.agents.has(a.id));
+    return arrivalSchedule(agents, this.body.arrivals, this.d.timing?.arrivalStaggerMs ?? DEFAULT_ARRIVAL_STAGGER_MS, this.d.rng);
   }
 
   private scheduleArrivals(later: readonly Arrival[]): void {
@@ -1120,12 +1132,20 @@ export class Run {
           finalState: reason === "failed" ? "failed" : "ended",
           stopReason: reason,
           startedAt: this.startedAt,
+          mode: this.params.mode,
+          home: this.params.room,
+          actors: Object.fromEntries([...this.agents.keys()].flatMap((ref) => {
+            const id = mirror.avatarId(ref);
+            return id === undefined ? [] : [[ref, id] as const];
+          })),
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
           counters: { llm_calls: m.calls, llm_failures: m.failures, undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
         await link.registerArtifacts(this.id, written);
+        // The run can be shown again (D39): the admin's panel gets its Replay button.
+        link.send({ t: "ui_push", run: this.id, to: { admin: this.params.admin.id }, ui: { k: "replay_ready", run: this.id } });
       } catch (err) {
         this.d.logger.warn("artifacts not written", { run: this.id, error: err instanceof Error ? err.message : String(err) });
       }
