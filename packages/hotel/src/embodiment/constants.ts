@@ -10,6 +10,8 @@ export const CMD_BUDGET = { count: 4, windowMs: 5000 } as const;
 /** The hotel's own backstop per actor, `walk` included (lead resolution R10). */
 export const HOTEL_BACKSTOP = { count: 8, windowMs: 5000 } as const;
 export const SPEAKER_RECENT_MS = 8000;
+/** Whoever an actor is talking with stays its interlocutor this long after the last line either way: it keeps facing them. */
+export const INTERLOCUTOR_MS = 20_000;
 export const WALK_TICK_MS = 300;
 
 /** Distance bands in Chebyshev tiles (embodiment.md 2). */

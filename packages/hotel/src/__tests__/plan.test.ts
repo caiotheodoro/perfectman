@@ -2,7 +2,7 @@ import type { BodyHandleMap, BodyIntent } from "@perfectman/shared";
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
 import { CMD_BUDGET } from "../embodiment/constants.js";
-import { chooseSpeechMode, plan, updateMemory } from "../embodiment/plan.js";
+import { chooseSpeechMode, noteExchange, plan, planFacing, updateMemory } from "../embodiment/plan.js";
 import type { PlanInput, PlannedCommand } from "../embodiment/types.js";
 import { NOW, agentState, person, sofa, space } from "../testing/fixtures.js";
 import type { SpaceOpts } from "../testing/fixtures.js";
@@ -167,5 +167,30 @@ describe("pair and approach etiquette around a human", () => {
       const walk = run({ others }, { bodyIntent: approach, handles, rng: seededRng(seed) }).find((c) => c.cmd === "walk");
       expect(walk && walk.cmd === "walk" ? walk.to : undefined).not.toEqual(goal);
     }
+  });
+
+  describe("facing the interlocutor", () => {
+    const other = person("h:9", [6, 4]);
+
+    it("planFacing turns to the person right away, once, and not when already facing them or mid-walk", () => {
+      expect(planFacing({ space: space({ self: { dir: 6 }, others: [other] }), now: NOW }, "h:9")).toEqual([{ agentId: "duda", cmd: "face", targetTile: [6, 4] }]);
+      expect(planFacing({ space: space({ self: { dir: 2 }, others: [other] }), now: NOW }, "h:9")).toEqual([]);
+      expect(planFacing({ space: space({ self: { dir: 6, state: "walk" }, others: [other] }), now: NOW }, "h:9")).toEqual([]);
+    });
+
+    it("planFacing stays inside conversation range, the command budget and a live room", () => {
+      expect(planFacing({ space: space({ self: { dir: 6 }, others: [person("h:9", [12, 4])] }), now: NOW }, "h:9")).toEqual([]);
+      const full = { dwell: { postureSince: 0, placeSince: 0, lastGestureAt: {} }, budget: { cmdTimes: [NOW - 1, NOW - 2, NOW - 3, NOW - 4] } };
+      expect(planFacing({ space: space({ self: { dir: 6 }, others: [other], body: full }), now: NOW }, "h:9")).toEqual([]);
+      expect(planFacing({ space: space({ self: { dir: 6 }, others: [other], stale: true }), now: NOW }, "h:9")).toEqual([]);
+      expect(planFacing({ space: space({ self: { dir: 6 }, others: [other] }), now: NOW }, "nobody")).toEqual([]);
+    });
+
+    it("keeps facing the interlocutor on later pulses while the exchange lasts, even after they stop talking", () => {
+      const quiet = person("h:9", [6, 4]);
+      const memory = noteExchange({}, "h:9", NOW - 10_000);
+      expect(run({ self: { dir: 6 }, others: [quiet] }, { memory })).toEqual([{ agentId: "duda", cmd: "face", targetTile: [6, 4] }]);
+      expect(run({ self: { dir: 6 }, others: [quiet] }, { memory: noteExchange({}, "h:9", NOW - 40_000) })).toEqual([]);
+    });
   });
 });

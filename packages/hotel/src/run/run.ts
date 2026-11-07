@@ -20,7 +20,7 @@ import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
 import type { PairInfo } from "../embodiment/body-executor.js";
-import { chooseSpeechMode, plan, updateMemory } from "../embodiment/plan.js";
+import { chooseSpeechMode, noteExchange, plan, planFacing, updateMemory } from "../embodiment/plan.js";
 import { pickTile } from "../embodiment/tiles.js";
 import type { PlannedCommand, PlannerMemory } from "../embodiment/types.js";
 import { HotelGateway } from "../gateway/hotel-gateway.js";
@@ -392,6 +392,7 @@ export class Run {
       onConsult,
       // Decided once, where the hearing is stamped, so what the room hears matches what is delivered.
       chooseMode: (agentId, content, committed) => this.chooseMode(agentId, content, committed),
+      wouldShout: (agentId, content) => chooseSpeechMode(this.arousal.get(agentId) ?? 0, content, this.memory.get(agentId) ?? {}, this.d.clock.now(), "say").mode === "shout",
       arbiter: {},
       spaceMirror: mirror,
       onAgentCommitted: (info) => this.onCommitted(info),
@@ -761,6 +762,21 @@ export class Run {
   }
 
   /**
+   * `ref` is in an exchange with `otherRef`: remember it (the planner keeps facing them while it lasts) and turn
+   * to them now, within the command budget. No model call is involved, so it lands within a pulse of the line.
+   */
+  private faceInterlocutor(ref: string, otherRef: string): void {
+    if (!this.agents.has(ref) || this.agents.get(ref)?.gone || this.state !== "running") return;
+    const now = this.d.clock.now();
+    const space = this.d.mirror.view(ref, now);
+    if (!space) return;
+    const mem = noteExchange(this.memory.get(ref) ?? {}, otherRef, now);
+    const cmds = planFacing({ space, now }, otherRef);
+    this.memory.set(ref, cmds.length > 0 ? updateMemory(mem, cmds, now, space.self?.tile ?? [0, 0]) : mem);
+    if (cmds.length > 0) this.out.send(cmds);
+  }
+
+  /**
    * An addressed line reached the wire: log who it was for, whether they share the room and how far
    * away they stood, so the earshot and facing probes have something to measure (embodiment.md 10).
    */
@@ -776,6 +792,11 @@ export class Run {
       return;
     }
     this.addressees.delete(eventId);
+    if (line.mode !== "whisper") {
+      // Both turn to each other: the listener (if one of the cast) and the speaker.
+      this.faceInterlocutor(to, line.agentId);
+      this.faceInterlocutor(line.agentId, to);
+    }
     const room = this.d.mirror.view(line.agentId, this.d.clock.now())?.room;
     const me = room?.occupants.find((o) => o.ref === line.agentId);
     const them = room?.occupants.find((o) => o.ref === to);
@@ -1028,7 +1049,11 @@ export class Run {
       const outcome = await this.ingestor.handleHumanChat(frame);
       if (outcome.kind === "ingested") {
         // One frame per addressed actor, so the facing probe can ask whether each turned to the person who spoke.
-        for (const to of outcome.addressed) this.frames.record("in", String(frame.room), "human_chat", { ref: `h:${frame.from.id}`, mode: frame.mode, toRef: to });
+        for (const to of outcome.addressed) {
+          this.frames.record("in", String(frame.room), "human_chat", { ref: `h:${frame.from.id}`, mode: frame.mode, toRef: to });
+          // The addressed actor turns to whoever spoke right away, not after its own model call.
+          if (outcome.heardBy.includes(to) && frame.mode !== "whisper") this.faceInterlocutor(to, `h:${frame.from.id}`);
+        }
       }
       if (outcome.kind === "ingested" && frame.from.id > 0) {
         void this.playerMemory?.load([frame.from.id]);

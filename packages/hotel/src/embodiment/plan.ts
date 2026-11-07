@@ -9,6 +9,7 @@ import {
   FACE_TOLERANCE_DEG,
   FIDGET_COOLDOWN_MS,
   GESTURE_COOLDOWN_MS,
+  INTERLOCUTOR_MS,
   LAUGH_COOLDOWN_MS,
   MAX_APPROACHERS,
   PAIR_REFUSAL_COOLDOWN_MS,
@@ -53,6 +54,28 @@ export const plan: EmbodimentPlanner = (input) => {
     .sort((a, b) => a.i - b.i);
   return ranked.map((c) => c.cmd);
 };
+
+/**
+ * Turn toward `targetRef` now (a line was just said between the two), without running the other rules:
+ * one `face`, inside the command budget, only when the target is in conversation range, the actor is not
+ * mid-walk and is not already looking their way. The caller records the exchange in the planner memory.
+ */
+export function planFacing(input: Pick<PlanInput, "space" | "now">, targetRef: string): PlannedCommand[] {
+  const { space, now } = input;
+  const room = space.room;
+  const self = space.self;
+  if (!room || !self || room.stale || self.state === "walk") return [];
+  if (CMD_BUDGET.count - space.body.budget.cmdTimes.filter((t) => now - t < CMD_BUDGET.windowMs).length <= 0) return [];
+  const target = room.occupants.find((p) => p.ref === targetRef);
+  if (!target || target.ref === self.ref || chebyshev(target.tile, self.tile) > BAND.socialMax) return [];
+  if (dirDiffDeg(sectorTo(self.tile, target.tile), self.dir) <= FACE_TOLERANCE_DEG) return [];
+  return [{ agentId: self.ref, cmd: "face", targetTile: target.tile }];
+}
+
+/** The planner memory after a line between this actor and `otherRef`: they are in an exchange for a while. */
+export function noteExchange(mem: PlannerMemory, otherRef: string, now: number): PlannerMemory {
+  return { ...mem, interlocutor: { ref: otherRef, until: now + INTERLOCUTOR_MS } };
+}
 
 type Ctx = { input: PlanInput; room: RoomView; self: Presence; cands: Cand[]; mem: PlannerMemory };
 
@@ -238,9 +261,12 @@ function automaticRules(ctx: Ctx): void {
   const speaker = room.occupants
     .filter((p) => p.ref !== self.ref && p.lastSpokeAt !== undefined && now - (p.lastSpokeAt ?? 0) <= SPEAKER_RECENT_MS && chebyshev(p.tile, self.tile) <= BAND.socialMax)
     .sort((a, b) => (b.lastSpokeAt ?? 0) - (a.lastSpokeAt ?? 0))[0];
-  if (speaker && self.state !== "walk") {
-    const want = sectorTo(self.tile, speaker.tile);
-    if (dirDiffDeg(want, self.dir) > FACE_TOLERANCE_DEG) push(ctx, KEEP.face, { cmd: "face", targetTile: speaker.tile });
+  // Keep facing whoever the exchange is with, not only whoever spoke last.
+  const talking = mem.interlocutor && mem.interlocutor.until > now ? room.occupants.find((p) => p.ref === mem.interlocutor?.ref && chebyshev(p.tile, self.tile) <= BAND.socialMax) : undefined;
+  const faceTarget = speaker ?? talking;
+  if (faceTarget && self.state !== "walk") {
+    const want = sectorTo(self.tile, faceTarget.tile);
+    if (dirDiffDeg(want, self.dir) > FACE_TOLERANCE_DEG) push(ctx, KEEP.face, { cmd: "face", targetTile: faceTarget.tile });
   }
 
   // Interlocutor: the speaker, else the nearest person in conversation range.
@@ -286,7 +312,7 @@ function automaticRules(ctx: Ctx): void {
   }
 
   // 8. Fidget after a no_op streak: face something near, or sit if a seat is within 3 tiles.
-  if ((input.noOpStreak ?? 0) >= 3 && (mem.lastFidgetAt === undefined || now - mem.lastFidgetAt >= FIDGET_COOLDOWN_MS)) {
+  if ((input.noOpStreak ?? 0) >= 3 && !talking && (mem.lastFidgetAt === undefined || now - mem.lastFidgetAt >= FIDGET_COOLDOWN_MS)) {
     const seat = self.state === "stand" && postureOk ? freeSeatNear(ctx, self.tile, 3) : undefined;
     if (seat) push(ctx, KEEP.fidget, { cmd: "sit", furniId: seat.id, fidget: true });
     else {

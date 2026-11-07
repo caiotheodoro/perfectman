@@ -50,6 +50,8 @@ export type PlannerMemory = {
   lastLaughAt?: number;
   lastGesture?: { a: string; at: number };
   lastExpression?: string;
+  /** Who this actor is in an exchange with, until when: the planner keeps facing them while the exchange lasts. */
+  interlocutor?: { ref: string; until: number };
   /** Human ref -> when that human last dodged or pushed away this actor's pair act. */
   pairRefusedAt?: Record<string, number>;
 };
