@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import type { Server } from "node:http";
 import { WebSocketServer } from "ws";
 import type { WebSocket } from "ws";
+import { sectorTo } from "../space/geometry.js";
 import type { ActorCmd, ActorErrorCode, Avatar, AvatarState, HotelMsg, PairOutcome, RoomSnapshot, ServerMsg, SidecarFrame, SidecarMsg } from "../director/index.js";
 
 /**
@@ -366,6 +367,15 @@ export class FakeDirector {
           this.delta(r.id, { t: "chat", from: f.actor, name: a.name, text: cmd.text, mode: cmd.mode });
         }
         break;
+      case "face": {
+        // Turning is instant and visible, as in the hotel: a `moves` delta with the new direction.
+        const to = cmd.tile ? sectorTo([a.x, a.y], [cmd.tile[0], cmd.tile[1]]) : typeof cmd.dir === "number" ? cmd.dir : undefined;
+        if (to !== undefined && a.state !== "walk") {
+          a.dir = to;
+          this.delta(r.id, { t: "moves", moves: [{ id: a.id, x: a.x, y: a.y, dir: a.dir, state: a.state }] });
+        }
+        break;
+      }
       case "typing":
         this.typingLog.push({ actor: f.actor, on: cmd.on });
         this.delta(r.id, { t: "typing", id: f.actor, on: cmd.on });
@@ -417,6 +427,7 @@ export class FakeDirector {
         after?.();
         return;
       }
+      a.dir = sectorTo([a.x, a.y], [next[0], next[1]]);
       a.x = next[0];
       a.y = next[1];
       a.state = "walk";
