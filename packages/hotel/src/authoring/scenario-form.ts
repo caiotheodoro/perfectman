@@ -18,6 +18,8 @@ export type ScenarioForm = {
     role?: string;
     goal?: string;
     voice?: string;
+    /** Sample lines in this person's own voice (array, or one per line); a model copies them, so they set the register. At most 6. */
+    lines?: string[] | string;
     /** `{figure, effect?}` from the look editor; absent or `auto` means the hotel's own pick. */
     look?: { figure?: string; effect?: string } | "auto" | null;
     /** `start`, `after <n>s` or `on cue`; `after <n>s` becomes the scenario body's `arrivals`, the others take the run's default stagger. */
@@ -86,7 +88,9 @@ export function formToDraft(form: ScenarioForm): { draft: RoomDraft; looks: Form
     if (look && typeof look === "object" && text(look.figure)) {
       looks[`person-${i + 1}`] = { figure: text(look.figure), ...(text(look.effect) ? { effect: text(look.effect) } : {}) };
     }
-    return { name, role: temperament, goal, voice: text(c?.voice) };
+    const raw = Array.isArray(c?.lines) ? c.lines : typeof c?.lines === "string" ? c.lines.split(/\r?\n/) : [];
+    const lines = raw.map((l) => text(l).slice(0, 140)).filter(Boolean).slice(0, 6);
+    return { name, role: temperament, goal, voice: text(c?.voice), ...(lines.length ? { lines } : {}) };
   });
   return {
     draft: { title: text(form.title), situation: text(form.situation), people, language: form.language === "en" ? "en" : "pt-BR" },

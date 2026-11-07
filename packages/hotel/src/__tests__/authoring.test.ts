@@ -1,7 +1,9 @@
 import { fileURLToPath } from "node:url";
+import { roomFiles } from "@perfectman/shared";
 import { afterEach, describe, expect, it } from "vitest";
 import { AuthoringServer } from "../authoring/authoring-server.js";
 import { AuthoringService } from "../authoring/authoring-service.js";
+import { formToDraft } from "../authoring/scenario-form.js";
 import { parseBundle } from "../authoring/source-bundle.js";
 import { TEST_SECRET, compiledScenario } from "../testing/helpers.js";
 
@@ -54,6 +56,20 @@ describe("authoring listener", () => {
     expect(await res.json()).toMatchObject({ error: "bad_scenario" });
     // What compile produced validates as a body too.
     expect(await (await call("/authoring/v1/validate", { body: { body: ok.body } })).json()).toMatchObject({ ok: true });
+  });
+
+  it("carries a person's own sample lines from the form into the persona's style examples", () => {
+    const { draft } = formToDraft({ title: "Noite", situation: "Um bar.", language: "pt-BR", cast: [
+      { name: "Duda", role: "bartender", goal: "Fechar cedo.", lines: ["Hoje não tem fiado, viu?", "  Senta aí, eu já te sirvo.  ", "", "Bar fecha quando eu cansar."] },
+      { name: "Rafa", role: "regular", goal: "Fofocar.", lines: "Você não sabe da última?\nAi, ai, ai." },
+      { name: "Gabi", role: "newcomer", goal: "Conhecer gente." },
+    ] });
+    expect(draft.people[0]!.lines).toEqual(["Hoje não tem fiado, viu?", "Senta aí, eu já te sirvo.", "Bar fecha quando eu cansar."]);
+    expect(draft.people[1]!.lines).toEqual(["Você não sabe da última?", "Ai, ai, ai."]);
+    expect(draft.people[2]!.lines).toBeUndefined();
+    const { personas } = roomFiles(draft);
+    expect(personas[0]!.text).toContain("- Hoje não tem fiado, viu?");
+    expect(personas[0]!.text).not.toContain("Can we hear everyone out");
   });
 
   it("compiles the builder's form JSON through roomFiles, with looks, and 422s a bad form", async () => {
