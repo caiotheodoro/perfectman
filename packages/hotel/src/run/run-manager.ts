@@ -23,6 +23,7 @@ import type { RunLink, RunStartParams, RunTiming } from "./run.js";
 export const STATUS_INTERVAL_MS = 5000;
 const STALE_CHECK_MS = 1000;
 const SHUTDOWN_BOUND_MS = 10_000;
+const SUBSCRIBE_AGAIN_MS = 5000;
 /** A refused or unanswered resnapshot is retried after 1, 2, 4 ... up to 30 s. */
 export const RESNAPSHOT_BACKOFF_MS = { base: 1000, max: 30_000 } as const;
 
@@ -153,6 +154,17 @@ export class RunManager implements RunLink {
   // ---- RunLink ----------------------------------------------------------------
 
   send(msg: SidecarMsg): boolean {
+    // The hotel refuses a `move_room` into a room this connection has not subscribed (`not_subscribed`), and a room only gets
+    // subscribed after an actor arrives in it: so the first door to a new room would always fail. Subscribe on the same
+    // ordered socket, just ahead of the move.
+    if (msg.t === "actor_cmd" && msg.cmd.k === "move_room") {
+      const room = String(msg.cmd.room);
+      const asked = this.subAsked.get(room);
+      if (!this.mirror.model().rooms.has(room) && (asked === undefined || this.o.clock.now() - asked > SUBSCRIBE_AGAIN_MS)) {
+        this.subAsked.set(room, this.o.clock.now());
+        this.subscribe(room);
+      }
+    }
     return this.director.send(msg);
   }
 
@@ -174,6 +186,9 @@ export class RunManager implements RunLink {
   untrackRun(run: number): void {
     this.director.untrackRun(run);
   }
+
+  /** When a room was last subscribed for a door (`send`), so a burst of hops does not subscribe it again and again. */
+  private readonly subAsked = new Map<string, number>();
 
   subscribe(room: RoomId, resnapshot = false): void {
     this.director.send({ t: "subscribe_room", room: Number(room), resnapshot });

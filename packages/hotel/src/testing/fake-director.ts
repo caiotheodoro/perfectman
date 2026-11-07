@@ -391,6 +391,8 @@ export class FakeDirector {
       }
       case "move_room":
         if (!this.rooms.has(cmd.room)) return this.err(f.cid, f.actor, "no_such_room");
+        // The real hotel refuses a door into a room the connection has not subscribed (`not_subscribed`).
+        if (!this.subscribed.has(cmd.room)) return this.err(f.cid, f.actor, "not_subscribed");
         this.moveActorToRoom(a.ref ?? "", cmd.room);
         break;
       case "pair":
