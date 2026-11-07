@@ -67,6 +67,9 @@ export interface HotelRuntimeApi {
   resolveDeferred(agentId: string, intent: ActionIntent): Promise<ResolvedIntent>;
   /** The hotel removed an actor: stop scheduling it. Returns how many actors are still scheduled. */
   retireAgent(simulationId: string, agentId: string): number;
+  /** An actor that arrives later (staggered cast): not scheduled, so never consulted, until `admitAgent`. Returns how many are scheduled. */
+  deferAgent(simulationId: string, agentId: string): number;
+  admitAgent(simulationId: string, agentId: string): boolean;
 }
 
 // ---- ADR-0022: guest ingestion ---------------------------------------------

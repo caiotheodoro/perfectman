@@ -43,7 +43,7 @@ function rig(opts: { cinematic: boolean }) {
   /** Time passes; the hotel keeps the room fresh. */
   const wait = async (ms: number): Promise<void> => {
     for (let t = 0; t < ms; t += 250) {
-      mirror.applyPing({ t: "room_ping", seq: 0, room: 12, rev }, clock.now());
+      mirror.applyPing({ t: "room_ping", room: 12, rev }, clock.now());
       await clock.advance(250);
     }
   };

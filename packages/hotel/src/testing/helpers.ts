@@ -73,6 +73,7 @@ export const FAST_TIMING = {
   baseIntervalMs: 150,
   coalesceMs: 20,
   spawnIntervalMs: 5,
+  arrivalStaggerMs: [5, 15] as const,
   walkOutTimeoutMs: 2000,
   gateway: { perCharMs: 0, capMs: 0, minTypingMs: 10, roomSpacingMs: 20 },
 } as const;

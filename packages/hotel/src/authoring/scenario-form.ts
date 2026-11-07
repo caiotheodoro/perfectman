@@ -20,13 +20,38 @@ export type ScenarioForm = {
     voice?: string;
     /** `{figure, effect?}` from the look editor; absent or `auto` means the hotel's own pick. */
     look?: { figure?: string; effect?: string } | "auto" | null;
-    /** `start` or `after <n>s`; carried for the run, the compiler ignores it. */
+    /** `start`, `after <n>s` or `on cue`; `after <n>s` becomes the scenario body's `arrivals`, the others take the run's default stagger. */
     start?: string;
   }>;
   stage?: { room?: number | null; places?: unknown[]; travel?: boolean; hotelRooms?: string };
 };
 
 export type FormLooks = Record<string, { figure: string; effect?: string }>;
+
+/** The longest an entrance may be put off: ten minutes. */
+export const MAX_ARRIVAL_MS = 600_000;
+
+/**
+ * "after 12s" / "after 1.5 s" / "depois de 8 s" is a fixed entrance time in ms. "start", "at start", "on cue"
+ * and nothing at all return undefined: the run walks those people in one after another with a small natural gap.
+ */
+export function parseStart(value: unknown): number | undefined {
+  if (typeof value !== "string") return undefined;
+  const m = /^\s*(?:after|depois\s+de)\s*(\d+(?:[.,]\d+)?)\s*s(?:ec(?:onds?)?|egundos?)?\s*$/i.exec(value);
+  if (!m?.[1]) return undefined;
+  const ms = Math.round(Number(m[1].replace(",", ".")) * 1000);
+  return Number.isFinite(ms) ? Math.min(MAX_ARRIVAL_MS, Math.max(0, ms)) : undefined;
+}
+
+/** Fixed entrance times by the agent ids `roomFiles` gives (`person-N`); people without one are not listed. */
+export function formArrivals(form: ScenarioForm): Record<string, number> {
+  const out: Record<string, number> = {};
+  (Array.isArray(form.cast) ? form.cast : []).forEach((c, i) => {
+    const ms = parseStart(c?.start);
+    if (ms !== undefined) out[`person-${i + 1}`] = ms;
+  });
+  return out;
+}
 
 const TEMPERAMENTS = Object.keys(ROLES) as Array<keyof typeof ROLES>;
 

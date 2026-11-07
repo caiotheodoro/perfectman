@@ -443,6 +443,21 @@ export class SimulationRuntime implements GuestIngest, HotelRuntimeApi {
     return entry.scheduler.agentCount;
   }
 
+  /** Hotel: an actor that walks in later is not scheduled until `admitAgent`. Returns the actors still scheduled. */
+  deferAgent(simulationId: string, agentId: string): number {
+    const entry = this.active.get(simulationId);
+    if (!entry) throw new Error(`Simulation not found: ${simulationId}`);
+    entry.scheduler.deferAgent(agentId);
+    return entry.scheduler.agentCount;
+  }
+
+  /** Hotel: the deferred actor has arrived. Returns whether it was waiting. */
+  admitAgent(simulationId: string, agentId: string): boolean {
+    const entry = this.active.get(simulationId);
+    if (!entry) throw new Error(`Simulation not found: ${simulationId}`);
+    return entry.scheduler.admitAgent(agentId);
+  }
+
   async removeChannelMember(channelId: string, agentId: string): Promise<void> {
     await this.channelRegistry.removeMember(channelId, agentId);
     await this.config.delivery.removeMember(channelId, agentId);

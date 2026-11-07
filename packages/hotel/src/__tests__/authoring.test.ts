@@ -69,9 +69,11 @@ describe("authoring listener", () => {
       stage: { room: 7 },
     };
     expect(await (await call("/authoring/v1/validate", { body: { source: JSON.stringify(form) } })).json()).toMatchObject({ ok: true, errors: [] });
-    const ok = (await (await call("/authoring/v1/compile", { body: { source: JSON.stringify(form) } })).json()) as { body: { config: { agents: { displayName?: string; id: string }[] }; looks?: Record<string, { figure: string }> } };
+    const ok = (await (await call("/authoring/v1/compile", { body: { source: JSON.stringify(form) } })).json()) as { body: { config: { agents: { displayName?: string; id: string }[] }; looks?: Record<string, { figure: string }>; arrivals?: Record<string, number> } };
     expect(ok.body.config.agents).toHaveLength(4);
     expect(ok.body.looks).toEqual({ "person-1": { figure: "hd-600-1.hr-515-33" } });
+    // "after 10s" is carried to the run; "start" leaves the natural stagger
+    expect(ok.body.arrivals).toEqual({ "person-3": 10_000 });
     const dup = { ...form, cast: [form.cast[0], { ...form.cast[1], name: "duda" }] };
     const bad = await call("/authoring/v1/compile", { body: { source: JSON.stringify(dup) } });
     expect(bad.status).toBe(422);

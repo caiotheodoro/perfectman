@@ -16,7 +16,7 @@ import { parseBundle, makeBundle } from "./source-bundle.js";
 import { MAX_BODY_BYTES, SCENARIO_BODY_VERSION, parseScenarioBody, placeholderLlm } from "../run/scenario-body.js";
 import type { ScenarioBody } from "../run/scenario-body.js";
 import { draftToFiles } from "./draft-to-files.js";
-import { formToDraft, parseForm } from "./scenario-form.js";
+import { formArrivals, formToDraft, parseForm } from "./scenario-form.js";
 import type { FormLooks } from "./scenario-form.js";
 
 export class AuthoringError extends Error {
@@ -53,19 +53,19 @@ export class AuthoringService {
   constructor(private readonly deps: AuthoringDeps) {}
 
   /** A builder form (JSON) becomes the file bundle with `roomFiles`; a markdown bundle is read as is. */
-  private resolveSource(source: string): { bundle: ReturnType<typeof parseBundle>; looks: FormLooks } {
+  private resolveSource(source: string): { bundle: ReturnType<typeof parseBundle>; looks: FormLooks; arrivals: Record<string, number> } {
     const form = parseForm(source);
-    if (!form) return { bundle: parseBundle(source), looks: {} };
+    if (!form) return { bundle: parseBundle(source), looks: {}, arrivals: {} };
     const { draft, looks } = formToDraft(form);
     try {
-      return { bundle: parseBundle(makeBundle(draftToFiles(draft))), looks };
+      return { bundle: parseBundle(makeBundle(draftToFiles(draft))), looks, arrivals: formArrivals(form) };
     } catch (err) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", [{ path: "form", message: err instanceof Error ? err.message : String(err) }]);
     }
   }
 
-  private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks } {
-    const { bundle, looks } = this.resolveSource(source);
+  private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number> } {
+    const { bundle, looks, arrivals } = this.resolveSource(source);
     if (!bundle.scenario) throw new AuthoringError(400, "bad_request", "source has no scenario file");
     const result = compileRunInputs(
       { kind: "markdown", scenario: bundle.scenario, personas: bundle.personas },
@@ -81,7 +81,7 @@ export class AuthoringService {
         if (range) delays[a.id] = [range[0], range[1]];
       }
     }
-    return { result, delays, looks };
+    return { result, delays, looks, arrivals };
   }
 
   validate(req: ValidateRequest): ValidateResponse {
@@ -102,7 +102,7 @@ export class AuthoringService {
 
   compile(req: { source?: unknown }): CompileResponse {
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "compile needs source");
-    const { result, delays, looks } = this.compileSource(req.source);
+    const { result, delays, looks, arrivals } = this.compileSource(req.source);
     if (!result.ok || !result.config || !result.summary) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", toRows(result.diagnostics, "error"));
     }
@@ -114,6 +114,7 @@ export class AuthoringService {
       maxPulses: result.summary.maxPulses,
       ...(Object.keys(delays).length > 0 ? { responseDelays: delays } : {}),
       ...(Object.keys(looks).length > 0 ? { looks } : {}),
+      ...(Object.keys(arrivals).length > 0 ? { arrivals } : {}),
     };
     if (Buffer.byteLength(JSON.stringify(body)) > MAX_BODY_BYTES) {
       throw new AuthoringError(422, "bad_scenario", "compiled scenario is larger than 256 KiB", [{ path: "body", message: "too large" }]);

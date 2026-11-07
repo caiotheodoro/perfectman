@@ -81,6 +81,8 @@ export type RunTiming = {
   breakerInitialBackoffMs?: number;
   /** Cinematic mode pacing and thresholds (director/cine/types.ts); tests scale them down. */
   cine?: Partial<CineConfig>;
+  /** The natural gap between two cast members who walk in one after another, `[min, max]` ms; 1 to 3 s in production. */
+  arrivalStaggerMs?: readonly [number, number];
 };
 
 export type RunDeps = {
@@ -114,6 +116,12 @@ export function actorNameError(name: string): string | undefined {
 }
 
 const SPAWN_DEFAULTS = { spawnIntervalMs: 200, spawnTimeoutMs: 5000, walkOutTimeoutMs: 10_000 } as const;
+/** Cast members with no entrance time of their own walk in this far apart (a natural trickle, not a crowd at the door). */
+export const DEFAULT_ARRIVAL_STAGGER_MS: readonly [number, number] = [1000, 3000];
+/** One pulse is 6 s, so a scenario's `arrivalPulse: 4` is a 24 s entrance. */
+const PULSE_MS = 6000;
+
+export type Arrival = { ref: string; atMs: number };
 
 /**
  * One hotel run: a built simulation, its gateway and body, and the lifecycle of
@@ -160,6 +168,12 @@ export class Run {
   /** Room channel changes apply in the order the doors were taken. */
   private roomOps: Promise<void> = Promise.resolve();
   private linkDown = false;
+  /** Cast members who have not walked in yet, with the timers that will bring them (staggered arrival). */
+  private readonly pendingArrivals = new Set<string>();
+  private readonly arrivalTimers = new Set<TimerHandle>();
+  private arrivalChain: Promise<void> = Promise.resolve();
+  /** Tiles already promised to an entering actor, so each one gets its own spot even when they arrive apart. */
+  private readonly enterTaken = new Set<string>();
   private goneWaiters = new Set<string>();
   private goneResolve: (() => void) | undefined;
   private stopping: Promise<void> | undefined;
@@ -390,16 +404,83 @@ export class Run {
     if (this.stopping) return;
     // The title card covers the cast arriving and the first pulse's model latency.
     this.cine?.start();
-    await this.spawnCast();
+    // Staggered arrival: whoever is due now spawns and walks in before the first pulse; the rest are out of the
+    // schedule (never consulted) until their turn, when they spawn at the door and walk in like anyone else.
+    const schedule = this.arrivalSchedule();
+    const now = schedule.filter((a) => a.atMs <= 0).map((a) => a.ref);
+    const later = schedule.filter((a) => a.atMs > 0);
+    for (const a of later) {
+      this.port.deferActor(a.ref);
+      this.pendingArrivals.add(a.ref);
+    }
+    await this.spawnCast(now);
     if (this.stopping) {
       await this.walkOut();
       for (const ref of this.agents.keys()) this.d.mirror.unregisterActor(ref);
       return;
     }
-    this.enterRoom();
+    this.enterRoom(now);
     this.state = "running";
     this.loop.start();
-    this.d.logger.info("run running", { run: this.id, actors: this.agents.size });
+    this.scheduleArrivals(later);
+    this.d.logger.info("run running", { run: this.id, actors: this.agents.size, arriving_later: later.length });
+  }
+
+  /**
+   * When each cast member walks in, ms after the run starts, earliest first (the earliest is always 0). A time the
+   * scenario gives wins (the builder's "after N s", else the persona's `arrivalPulse`); everyone else walks in
+   * one after another with a natural gap, so twelve people do not appear in the doorway at once.
+   */
+  arrivalSchedule(): Arrival[] {
+    const [lo, hi] = this.d.timing?.arrivalStaggerMs ?? DEFAULT_ARRIVAL_STAGGER_MS;
+    const agents = new Map(this.body.config.agents.map((a) => [a.id, a]));
+    let auto: number | undefined;
+    const out: Arrival[] = [...this.agents.keys()].map((ref) => {
+      const pulse = agents.get(ref)?.arrivalPulse;
+      const fixed = this.body.arrivals?.[ref] ?? (typeof pulse === "number" && pulse > 0 ? pulse * PULSE_MS : undefined);
+      if (fixed !== undefined) return { ref, atMs: fixed };
+      auto = auto === undefined ? 0 : auto + lo + this.d.rng() * Math.max(0, hi - lo);
+      return { ref, atMs: Math.round(auto) };
+    });
+    const first = Math.min(...out.map((a) => a.atMs));
+    return out.map((a) => ({ ref: a.ref, atMs: a.atMs - first })).sort((x, y) => x.atMs - y.atMs);
+  }
+
+  private scheduleArrivals(later: readonly Arrival[]): void {
+    for (const a of later) {
+      const timer = this.d.clock.setTimer(() => {
+        this.arrivalTimers.delete(timer);
+        this.arrivalChain = this.arrivalChain.then(() => this.arrive(a.ref));
+      }, a.atMs);
+      this.arrivalTimers.add(timer);
+    }
+  }
+
+  /** One late cast member spawns at the door, walks in, and from then on takes part in the pulses. */
+  private async arrive(ref: string): Promise<void> {
+    if (this.stopping || this.state === "stopping" || this.state === "ended" || this.state === "failed") return;
+    try {
+      await this.spawnCast([ref]);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.d.logger.warn("late arrival failed to spawn", { run: this.id, agent: ref, error: message });
+      this.notice("arrival_failed", "warn", message.slice(0, 180));
+      this.pendingArrivals.delete(ref);
+      const a = this.agents.get(ref);
+      if (a) a.gone = true;
+      try {
+        this.port.retireActor(ref);
+      } catch {
+        // already stopped
+      }
+      if (![...this.agents.values()].some((x) => !x.gone)) void this.stop("failed", "no actor could be spawned");
+      return;
+    }
+    if (this.stopping) return;
+    this.enterRoom([ref]);
+    this.pendingArrivals.delete(ref);
+    this.port.admitActor(ref);
+    this.d.logger.info("actor arrived", { run: this.id, agent: ref });
   }
 
   /** The config handed to the server: host LLM, in-memory, one room channel, the 6 s pulse. */
@@ -432,10 +513,12 @@ export class Run {
     });
   }
 
-  private async spawnCast(): Promise<void> {
+  private async spawnCast(refs: readonly string[]): Promise<void> {
     const { link, mirror, clock } = this.d;
     const t = { ...SPAWN_DEFAULTS, ...this.d.timing };
-    for (const [ref, a] of this.agents) {
+    for (const ref of refs) {
+      const a = this.agents.get(ref);
+      if (!a || a.spawned) continue;
       if (this.stopping) return;
       const lease = link.leaseOf(this.id);
       if (lease === undefined) throw new Error("lease lost before spawn");
@@ -452,12 +535,12 @@ export class Run {
     }
   }
 
-  /** Four actors walk in: each to a distinct, uncrowded tile near the middle of the room. */
-  private enterRoom(): void {
+  /** Actors walk in: each to a distinct, uncrowded tile near the middle of the room. */
+  private enterRoom(refs: readonly string[]): void {
     const { mirror, clock } = this.d;
-    const taken = new Set<string>();
+    const taken = this.enterTaken;
     const cmds = [];
-    for (const ref of this.agents.keys()) {
+    for (const ref of refs) {
       const view = mirror.view(ref, clock.now());
       const room = view?.room;
       if (!room) continue;
@@ -780,7 +863,8 @@ export class Run {
     this.gateway?.stopTyping(ref);
     let remaining = [...this.agents.values()].filter((x) => !x.gone).length;
     try {
-      remaining = Math.min(remaining, this.port?.retireActor(ref) ?? remaining);
+      // Cast members who have not walked in yet are not scheduled, but they are still coming.
+      remaining = Math.min(remaining, (this.port?.retireActor(ref) ?? remaining) + this.pendingArrivals.size);
     } catch (err) {
       this.d.logger.warn("actor not retired", { run: this.id, agent: ref, error: err instanceof Error ? err.message : String(err) });
     }
@@ -897,6 +981,11 @@ export class Run {
     try {
       this.breaker?.dispose();
       this.unsubscribeBudget?.();
+      // Nobody walks in after a stop; one already spawning is waited for (bounded), so the walk-out below sees it.
+      for (const timer of this.arrivalTimers) timer.cancel();
+      this.arrivalTimers.clear();
+      this.pendingArrivals.clear();
+      await Promise.race([this.arrivalChain, sleepOn(clock, (this.d.timing?.spawnTimeoutMs ?? SPAWN_DEFAULTS.spawnTimeoutMs) + 500)]);
       for (const ref of [...this.pending.keys()]) this.dropPending(ref);
       this.drained = (await this.loop?.stop()) ?? true;
       // The film plays out its buffer only when the scenario ended itself; an admin stop closes it now.

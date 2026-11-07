@@ -18,6 +18,8 @@ export type ScenarioBody = {
   looks?: Record<string, { figure: string; effect?: string }>;
   /** Per agent: the persona's `presenceProfile.responseDelayMs`, for typing and landing time. */
   responseDelays?: Record<string, [number, number]>;
+  /** Per agent: ms after the run starts that the builder's "after N s" entrance asks for. Absent means the run's natural stagger. */
+  arrivals?: Record<string, number>;
 };
 
 export type ParsedBody = { ok: true; body: ScenarioBody } | { ok: false; errors: { path: string; message: string }[] };
@@ -65,8 +67,16 @@ export function parseScenarioBody(raw: unknown): ParsedBody {
       maxPulses: typeof o["maxPulses"] === "number" ? o["maxPulses"] : 24,
       ...(o["looks"] ? { looks: o["looks"] as ScenarioBody["looks"] & object } : {}),
       ...(o["responseDelays"] ? { responseDelays: o["responseDelays"] as ScenarioBody["responseDelays"] & object } : {}),
+      ...(o["arrivals"] && typeof o["arrivals"] === "object" ? { arrivals: cleanArrivals(o["arrivals"] as Record<string, unknown>) } : {}),
     },
   };
+}
+
+/** Finite, non-negative ms only; a bad entry is dropped, never a reason to refuse the scenario. */
+function cleanArrivals(raw: Record<string, unknown>): Record<string, number> {
+  const out: Record<string, number> = {};
+  for (const [id, ms] of Object.entries(raw)) if (typeof ms === "number" && Number.isFinite(ms) && ms >= 0) out[id] = Math.min(ms, 600_000);
+  return out;
 }
 
 function fail(path: string, message: string): ParsedBody {

@@ -229,6 +229,8 @@ export class PulseScheduler {
   private readonly agentVersion = new Map<string, number>();
   private readonly lastDecisionContext = new Map<string, DecisionContext>();
   private focusSeq = 0;
+  /** Agents the hotel has not admitted yet (staggered arrival): configured, but not scheduled. */
+  private readonly deferred = new Map<string, PulseSchedulerConfig["agents"][number]>();
   private readonly clock: () => number;
 
   constructor(private readonly config: PulseSchedulerConfig) {
@@ -300,7 +302,7 @@ export class PulseScheduler {
   }
 
   hasAgent(agentId: string): boolean {
-    return this.config.agents.some((agent) => agent.id === agentId);
+    return this.config.agents.some((agent) => agent.id === agentId) || this.deferred.has(agentId);
   }
 
   /**
@@ -310,7 +312,30 @@ export class PulseScheduler {
    */
   retireAgent(agentId: string): boolean {
     if (!this.hasAgent(agentId)) return false;
+    this.deferred.delete(agentId);
     this.config.agents = this.config.agents.filter((agent) => agent.id !== agentId);
+    return true;
+  }
+
+  /**
+   * Hotel: the actor has not walked in yet (a staggered arrival). It is taken out of the schedule, so it is
+   * neither consulted nor counted, until `admitAgent`. Swapped like `retireAgent`, so a pulse already iterating
+   * keeps its own snapshot. False when the agent is unknown or already deferred.
+   */
+  deferAgent(agentId: string): boolean {
+    const agent = this.config.agents.find((a) => a.id === agentId);
+    if (!agent) return false;
+    this.deferred.set(agentId, agent);
+    this.config.agents = this.config.agents.filter((a) => a.id !== agentId);
+    return true;
+  }
+
+  /** Hotel: the deferred actor has arrived; it joins the schedule from the next pulse. False when it was not deferred. */
+  admitAgent(agentId: string): boolean {
+    const agent = this.deferred.get(agentId);
+    if (!agent) return false;
+    this.deferred.delete(agentId);
+    this.config.agents = [...this.config.agents, agent];
     return true;
   }
 
