@@ -37,6 +37,11 @@ const RETRY_WINDOW_MS = 30_000;
 /** Retries needed before one link's copy rate is compared with another's, and by how much it must be worse. */
 const REPEAT_SAMPLE = 6;
 const REPEAT_MARGIN = 0.25;
+/**
+ * A body that was not JSON is asked again on the same link only when it came back this fast (a dropped body, a blip).
+ * One that took the attempt's whole timeout was a slow link, and asking it again is another timeout on a person who waits.
+ */
+const BLIP_RETRY_MAX_MS = 2500;
 /** A link throttled for longer than this is skipped when another link is behind it. */
 const MAX_PENALTY_WAIT_MS = 1500;
 const BREAKER_THRESHOLD = 3;
@@ -497,8 +502,8 @@ export class LlmChain {
           if (isTransient(err) && !transient.includes(s)) transient.push(s);
         }
         s.trial = false;
-        // A body that was not JSON is a blip on the link, not a verdict on it: once more on the same link, while there is time.
-        if (isBlankBody(err) && !retried.has(s) && deadline - clock.now() >= MIN_ATTEMPT_MS) {
+        // A body that was not JSON, and came back fast, is a blip on the link and not a verdict on it: once more on the same link.
+        if (isBlankBody(err) && !retried.has(s) && clock.now() - started <= BLIP_RETRY_MAX_MS && deadline - clock.now() >= MIN_ATTEMPT_MS) {
           retried.add(s);
           passedOver--;
           this.logger.warn(`llm link ${s.link.name} answered with a body that was not JSON, trying it once more`, { link: s.link.name, reason });

@@ -149,6 +149,19 @@ describe("a failover link gets a prompt written for it", () => {
     expect(c.snapshot().exhausted).toBe(0);
   });
 
+  it("does not ask a link again for a body that was not JSON when it took the attempt's whole timeout to arrive", async () => {
+    const clock = new ManualClock();
+    const slowBlip = async (): Promise<LLMProviderResult> => {
+      await clock.advance(5000);
+      throw BLIP;
+    };
+    const s = scripted({ [PICK.model]: [slowBlip] });
+    const c = new LlmChain({ links: [PICK, M4K], clock, runId: 7, simulationId: "sim", governor: new LlmGovernor(clock, () => 0.5), prices: PRICES, env: ENV, makeProvider: s.make });
+    const r = await c.provider(BASE, "duda").generateIntent(undefined as never, undefined as never, { system: "s", user: "u", inputTokensEstimate: 1500, purpose: "action_intent", version: "v", templateVersion: "t" });
+    expect(r.routedModel).toBe("mythomax");
+    expect(s.calls).toEqual([PICK.model, M4K.model]);
+  });
+
   it("asks the pick once more on a body that was not JSON, and serves from it without a failover", async () => {
     const { c, sent, call } = setup({ [PICK.model]: [BLIP, ok()] }, [PICK, M4K]);
     const r = await call();
