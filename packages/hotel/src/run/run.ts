@@ -14,6 +14,8 @@ import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
 import type { HotelConfig } from "../config.js";
+import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfState } from "../director/cine/index.js";
+import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
 import type { PairInfo } from "../embodiment/body-executor.js";
@@ -21,7 +23,7 @@ import { chooseSpeechMode, plan, updateMemory } from "../embodiment/plan.js";
 import { pickTile } from "../embodiment/tiles.js";
 import type { PlannedCommand, PlannerMemory } from "../embodiment/types.js";
 import { HotelGateway } from "../gateway/hotel-gateway.js";
-import type { CastEntry, GatewayTiming } from "../gateway/hotel-gateway.js";
+import type { CastEntry, GatewayExecutor, GatewayTiming } from "../gateway/hotel-gateway.js";
 import { GuestIngestor } from "../ingest/guest-ingestor.js";
 import { BreakerDriver } from "../llm/breaker.js";
 import { GENERATE_DEADLINE_MS, hostLlmConfig, pingLlm } from "../llm/env.js";
@@ -77,6 +79,8 @@ export type RunTiming = {
   drainTimeoutMs?: number;
   /** First half-open delay of the LLM breaker; 15 s in production. */
   breakerInitialBackoffMs?: number;
+  /** Cinematic mode pacing and thresholds (director/cine/types.ts); tests scale them down. */
+  cine?: Partial<CineConfig>;
 };
 
 export type RunDeps = {
@@ -88,6 +92,8 @@ export type RunDeps = {
   link: RunLink;
   governor: LlmGovernor;
   timing?: RunTiming;
+  /** The narrator's model call (D19). Absent: cards and captions are the deterministic fallback text. */
+  narratorLlm?: NarratorLlm;
   onEnded(run: Run, reason: SidecarEndReason): void;
 };
 
@@ -132,6 +138,12 @@ export class Run {
   private unsubscribeBudget: (() => void) | undefined;
   private readonly meter: LlmMeter;
   private readonly frames: FrameLogRecorder;
+  /** Cinematic mode only: holds speech for the playback clock and films the run (director/cine). */
+  private cine: CinematicDirector | undefined;
+  private cineWorld: MirrorCineWorld | undefined;
+  private trackSink: TrackFileSink | undefined;
+  /** Where body commands go: the executor, or the Director's wrapper of it in cinematic mode. */
+  private out!: GatewayExecutor;
   /** Events the in-memory log evicted, streamed to `events.jsonl` so a long run stays complete without growing. */
   private eventSink: NdjsonEventSink | undefined;
   private readonly mockConsults = new Map<string, number>();
@@ -201,7 +213,6 @@ export class Run {
 
   async prepare(): Promise<PrepareResult> {
     const { hotel, link } = this.d;
-    if (this.params.mode !== "default") return { ok: false, code: "unsupported_mode", message: "cinematic runs are not supported yet" };
     let raw: unknown;
     try {
       raw = await link.fetchScenarioVersion(this.params.scenarioVersion);
@@ -269,12 +280,15 @@ export class Run {
       },
     });
 
+    this.out = this.executor;
+    if (this.params.mode === "cinematic") this.out = this.startCinematic(this.out);
+
     const cast = new Map<string, CastEntry>();
     for (const [id, a] of this.agents) cast.set(id, { name: a.name, responseDelayMs: this.body.responseDelays?.[id] ?? [600, 2500] });
     this.gateway = new HotelGateway({
       clock,
       rng: this.d.rng,
-      executor: this.executor,
+      executor: this.out,
       cast,
       roomOfChannel: (c) => /^room:(\d+)$/.exec(c)?.[1],
       roomOfAgent: (a) => mirror.roomOfRef(a),
@@ -374,6 +388,8 @@ export class Run {
     link.subscribe(this.home);
     if (!(await link.waitForRoom(this.home, 10_000))) throw new Error("the home room did not sync");
     if (this.stopping) return;
+    // The title card covers the cast arriving and the first pulse's model latency.
+    this.cine?.start();
     await this.spawnCast();
     if (this.stopping) {
       await this.walkOut();
@@ -451,13 +467,44 @@ export class Run {
       taken.add(tileKey(to));
       cmds.push({ agentId: ref, cmd: "walk" as const, to, plan: `${ref}:enter` });
     }
-    this.executor.send(cmds);
+    this.out.send(cmds);
+  }
+
+  /** Cinematic mode (D18, D19): the Director films the run and releases speech on the playback clock. */
+  private startCinematic(executor: GatewayExecutor): GatewayExecutor {
+    const { clock, mirror, link, hotel } = this.d;
+    const first = this.body.config.agents[0]?.promptProfile;
+    const language = first?.language === "en" ? "en" : "pt-BR";
+    const cast = new Map([...this.agents].map(([ref, a]) => [ref, { name: a.name, ...(this.archetype(ref) ? { role: this.archetype(ref) as string } : {}) }]));
+    this.cineWorld = new MirrorCineWorld(mirror, () => clock.now(), cast);
+    this.trackSink = new TrackFileSink(join(hotel.dataDir, "runs", String(this.id), "director-track.jsonl"), (err) =>
+      this.d.logger.warn("director track write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
+    const narrator = new Narrator({ clock, language, ...(this.d.narratorLlm ? { llm: this.d.narratorLlm } : {}), logger: this.d.logger });
+    this.cine = new CinematicDirector({
+      run: this.id,
+      home: this.params.room,
+      clock,
+      world: this.cineWorld,
+      narrator,
+      send: (m) => link.send(m),
+      logger: this.d.logger,
+      config: { ...this.d.timing?.cine, language },
+      premise: this.body.title,
+      trackSink: this.trackSink.write,
+    });
+    return this.cine.wrapExecutor(executor);
+  }
+
+  private archetype(ref: string): string | undefined {
+    return this.body.config.agents.find((a) => a.id === ref)?.persona.archetype;
   }
 
   // ---- pulses and the body ----------------------------------------------------
 
   private async pulse(opts: Parameters<RuntimePort["runPulse"]>[0]): Promise<void> {
     if (this.state !== "running") return;
+    // D18: the engine runs one to two pulses ahead of playback, no further.
+    if (this.cine && !this.cine.wantsMore()) return;
     this.gateway.notePulseStart(this.d.clock.now());
     await this.port.runPulse(opts);
     this.pulseErrors = 0;
@@ -491,6 +538,7 @@ export class Run {
     this.arousal.set(ref, info.agentState.coreMood.arousal);
     // A paused run commits nothing new to the body: no planning until it resumes.
     if (this.state === "paused") return;
+    this.cineWorld?.noteMood(ref, moodOfState(info.agentState));
     const space = info.space ?? this.d.mirror.view(ref, this.d.clock.now());
     if (!space) return;
     const body = info.body;
@@ -521,7 +569,7 @@ export class Run {
     });
     if (cmds.length === 0) return cmds;
     this.memory.set(ref, updateMemory(mem, cmds, now, space.self?.tile ?? [0, 0]));
-    this.executor.send(cmds);
+    this.out.send(cmds);
     return cmds;
   }
 
@@ -769,6 +817,7 @@ export class Run {
     this.pauseCause = cause;
     this.loop?.pause();
     this.gateway?.setPaused(true);
+    this.cine?.pause();
   }
 
   /** Resume rules (D46, D49): admin resumes anything but an open breaker; `auto` only idle; the breaker only itself. */
@@ -784,6 +833,7 @@ export class Run {
     this.state = "running";
     this.pauseCause = undefined;
     this.gateway?.setPaused(false);
+    this.cine?.resume();
     if (!this.linkDown) this.loop.resume();
     return true;
   }
@@ -849,6 +899,10 @@ export class Run {
       this.unsubscribeBudget?.();
       for (const ref of [...this.pending.keys()]) this.dropPending(ref);
       this.drained = (await this.loop?.stop()) ?? true;
+      // The film plays out its buffer only when the scenario ended itself; an admin stop closes it now.
+      if (this.cine && link.connected) await this.cine.stop(reason, reason === "completed");
+      else await this.cine?.stop(reason, false);
+      await this.trackSink?.flush();
 
       // Walk-out (bounded). When the hotel ended the run it walks them out itself; a dead link cannot.
       if (!opts.byHotel && link.connected) await this.walkOut();

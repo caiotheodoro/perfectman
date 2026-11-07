@@ -6,6 +6,7 @@ import { AuthoringService } from "./authoring/authoring-service.js";
 import { systemClock } from "./clock/clock.js";
 import type { Clock } from "./clock/clock.js";
 import type { HotelConfig } from "./config.js";
+import type { NarratorLlm } from "./director/cine/index.js";
 import { HotelHttpClient } from "./director/http-client.js";
 import type { FetchLike } from "./director/http-client.js";
 import { nodeSocketFactory } from "./director/transport.js";
@@ -24,6 +25,8 @@ export type SidecarOptions = {
   fetchImpl?: FetchLike;
   timing?: RunTiming;
   statusIntervalMs?: number;
+  /** The narrator's model call for cinematic runs (D19); the provider lane supplies it. */
+  narratorLlm?: NarratorLlm;
 };
 
 export type Sidecar = {
@@ -72,6 +75,7 @@ export async function startSidecar(config: HotelConfig, o: SidecarOptions = {}):
       http,
       sidecar: { version: "0.0.0", build: process.env["PERFECTMAN_BUILD"] ?? "dev", ...(sha ? { schema_sha256: sha } : {}) },
       ...(o.timing ? { timing: o.timing } : {}),
+      ...(o.narratorLlm ? { narratorLlm: o.narratorLlm } : {}),
       ...(o.statusIntervalMs !== undefined ? { statusIntervalMs: o.statusIntervalMs } : {}),
     });
     manager.start();

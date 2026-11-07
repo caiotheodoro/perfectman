@@ -160,10 +160,10 @@ export class FakeDirector {
 
   // ---- hotel -> sidecar -------------------------------------------------------
 
-  startRun(p: { run: number; room: number; scenarioVersion: number; lease?: number; capActors?: number }): void {
+  startRun(p: { run: number; room: number; scenarioVersion: number; lease?: number; capActors?: number; mode?: "default" | "cinematic" }): void {
     const lease = p.lease ?? 1;
     this.lease.set(p.run, lease);
-    this.send({ t: "run_start", run: p.run, lease, mode: "default", room: p.room, scenario_version: p.scenarioVersion, admin: { id: 9, name: "caio" }, cap_actors: p.capActors ?? 12 });
+    this.send({ t: "run_start", run: p.run, lease, mode: p.mode ?? "default", room: p.room, scenario_version: p.scenarioVersion, admin: { id: 9, name: "caio" }, cap_actors: p.capActors ?? 12 });
   }
 
   pmCommand(run: number, room: number, cmd: Extract<HotelMsg, { t: "pm_command" }>["cmd"], args?: string, source: "chat" | "panel" | "auto" = "panel"): void {

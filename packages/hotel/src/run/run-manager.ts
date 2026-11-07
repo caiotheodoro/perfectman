@@ -2,6 +2,7 @@ import type { RoomId } from "@perfectman/shared";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
 import type { HotelConfig } from "../config.js";
+import type { NarratorLlm } from "../director/cine/index.js";
 import { DirectorClient } from "../director/director-client.js";
 import type { FrameRecorder } from "../director/director-client.js";
 import type { HotelHttpClient } from "../director/http-client.js";
@@ -32,6 +33,8 @@ export type ManagerOptions = {
   sidecar?: { version: string; build: string; schema_sha256?: string };
   recorder?: FrameRecorder;
   governor?: LlmGovernor;
+  /** The narrator's model call for cinematic runs (D19); without it cards use fallback text. */
+  narratorLlm?: NarratorLlm;
 };
 
 type Pending = { resolve(f: HotelFrame): void; reject(e: Error): void; timer: TimerHandle };
@@ -359,6 +362,7 @@ export class RunManager implements RunLink {
       mirror: this.mirror,
       link: this,
       governor: this.governor,
+      ...(this.o.narratorLlm ? { narratorLlm: this.o.narratorLlm } : {}),
       ...(this.o.timing ? { timing: this.o.timing } : {}),
       onEnded: (r) => {
         this.runs.delete(r.id);
