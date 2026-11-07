@@ -127,14 +127,17 @@ export class AuthoringService {
       throw new AuthoringError(400, "bad_request", "brief needs a sentence or two");
     }
     const cast = typeof req.cast_size === "number" ? req.cast_size : undefined;
+    const draftLanguage: "en" | "pt-BR" = req.language === "en" ? "en" : "pt-BR";
     if (this.deps.llm.provider === "mock") {
-      return { source: makeBundle(draftToFiles(mockStory(req.brief, req.language === "pt-BR" ? "pt-BR" : "en"))) };
+      return { source: makeBundle(draftToFiles(mockStory(req.brief, draftLanguage))) };
     }
     try {
       const story = await draftStory(
         {
           idea: req.brief,
           ...(cast !== undefined ? { people: cast } : {}),
+          // The builder is pt-BR first (owner, 2026-11-07): a draft is Portuguese unless the caller asks for English.
+          language: draftLanguage,
           llm: {
             providerType: "openai-compatible",
             baseUrl: this.deps.llm.baseUrl,
@@ -164,9 +167,14 @@ export class AuthoringService {
     };
   }
 
+  /**
+   * The ready-made scenes the builder offers. Only the ones written in Portuguese are listed: the builder is
+   * pt-BR (owner, 2026-11-07), so an English scene is not surfaced. The language is the scene file's own `language:`.
+   */
   async presets(): Promise<PresetList> {
     const lib = await loadPresets(this.deps.presetsRoot ?? defaultPresetsRoot());
-    return { presets: lib.scenes.map((s) => ({ key: s.id, title: s.title, language: /pt|gato|velorio|print|proteina|gorilas|thread|live/i.test(s.id) ? "pt-BR" : "en", mode: "default" as const })) };
+    const portuguese = lib.scenes.filter((s) => s.files.some((f) => f.filename.endsWith(".scenario.md") && /^language:\s*["']?pt-BR/m.test(f.text)));
+    return { presets: portuguese.map((s) => ({ key: s.id, title: s.title, language: "pt-BR" as const, mode: "default" as const })) };
   }
 
   async preset(key: string): Promise<{ source: string }> {

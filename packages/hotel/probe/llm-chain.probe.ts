@@ -15,7 +15,9 @@
  * PROBE_PULSES (base pulses of the embodiment scenario), PROBE_LINES (human lines of the
  * turn-taking and earshot scenarios), PROBE_MAX_USD (stop spending past this), PROBE_OUT (results json),
  * PROBE_PROMPT_OUT (largest rendered prompt, for `bench:latency --prompt-file`), PROBE_DRY=1
- * (a local stub instead of the network: checks the harness, spends nothing).
+ * (a local stub instead of the network: checks the harness, spends nothing). PROBE_PICK=<openrouter id> runs the
+ * chain as a run whose admin picked that model (link 1, the configured chain behind it; D54), with
+ * PROBE_PICK_CONTEXT (window) and PROBE_PICK_PRICE ("in,out" USD per Mtok).
  */
 import { mkdirSync, writeFileSync, existsSync, readFileSync } from "node:fs";
 import { createServer } from "node:http";
@@ -30,6 +32,7 @@ import { runEmbodimentProbes } from "../../eval/src/probes/embodiment.ts";
 import { PromptBuilder } from "../../server/src/agent/prompt-builder.ts";
 import { AuthoringService } from "../src/authoring/authoring-service.ts";
 import type { LlmEnv } from "../src/config.ts";
+import type { RunModel } from "../src/director/index.ts";
 import { KNOWN_PRICES, linkPromptStyle, parseChain } from "../src/llm/chain-config.ts";
 import type { LlmLink, PromptStyle } from "../src/llm/chain-config.ts";
 import type { ChainTap } from "../src/llm/chain.ts";
@@ -220,7 +223,7 @@ function facingSplit(log: BodyFrameLog): Results["facing"] {
   return { actor: rate(tally.actor), human: rate(tally.human) };
 }
 
-type Variant = { name: string; links: LlmLink[] };
+type Variant = { name: string; links: LlmLink[]; pick?: RunModel };
 
 async function stubServer(): Promise<{ server: Server; url: string }> {
   const intent = JSON.stringify({ intentType: "reply_to_message", replyToEventId: "e1", visibleContent: "Olha, eu não sei, mas acho que a gente devia conversar sobre isso amanhã.", privateMotiveSummary: "quero ajudar", personTargets: ["neide"] });
@@ -310,7 +313,7 @@ async function runVariant(variant: Variant, scenario: Scenario, spentSoFar: () =
   try {
     sidecar = await startSidecar(cfg, { fetchImpl: http.fetchImpl, timing: { baseIntervalMs: turns ? 600_000 : 6000 }, statusIntervalMs: 1000, logger: silentLogger });
     await waitFor(() => fake.received.some((f) => f.t === "hello_ack"), "hello_ack", 10_000);
-    fake.startRun({ run: 7, room: 12, scenarioVersion: 31, capActors: 12 });
+    fake.startRun({ run: 7, room: 12, scenarioVersion: 31, capActors: 12, ...(variant.pick ? { model: variant.pick } : {}) });
     const run = await waitFor(() => sidecar?.manager?.getRun(7), "the run", 30_000);
     await waitFor(() => run.state === "running", "running", 60_000);
     const chain = run.llmChain();
@@ -513,6 +516,12 @@ function variants(): Variant[] {
   const plain = env["PROBE_HARDEN"] === "0";
   const tag = `${STYLE ? `+${STYLE}` : ""}${NO_BODY_HINT ? "-nohint" : ""}`;
   const links = (DRY ? [{ name: "stub", baseUrl: "http://stub", apiKeyEnv: "PROBE_STUB_KEY", model: "stub", maxContextTokens: 4096 }, { name: "stub2", baseUrl: "http://stub", apiKeyEnv: "PROBE_STUB_KEY", model: "stub2", maxContextTokens: 8192 }] : allLinks()).map((l) => ({ ...(over.has(l.name) ? { ...l, maxContextTokens: over.get(l.name)! } : l), ...(STYLE ? { promptStyle: STYLE } : {}), ...(plain ? { harden: false } : {}) }));
+  const pickId = env["PROBE_PICK"];
+  if (pickId) {
+    const [priceIn, priceOut] = (env["PROBE_PICK_PRICE"] ?? "").split(",").map(Number);
+    const pick: RunModel = { id: pickId, ...(env["PROBE_PICK_CONTEXT"] ? { context: Number(env["PROBE_PICK_CONTEXT"]) } : {}), ...(priceIn !== undefined && priceOut !== undefined && Number.isFinite(priceIn) && Number.isFinite(priceOut) ? { price_in: priceIn, price_out: priceOut } : {}), ...(env["PROBE_PICK_REASONING"] ? { reasoning: env["PROBE_PICK_REASONING"] as RunModel["reasoning"] } : {}) };
+    return [{ name: `pick-${pickId.replace(/[^a-z0-9]+/gi, "-")}`, links, pick }];
+  }
   return WANT.flatMap((w): Variant[] => {
     if (w === "chain") return [{ name: `${plain ? "chain-plain" : "chain"}${tag}`, links }];
     const one = links.find((l) => l.name === w);

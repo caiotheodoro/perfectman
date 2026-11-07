@@ -558,6 +558,8 @@ export class LlmChain {
       baseUrl: link.baseUrl,
       apiKeyEnv: link.apiKeyEnv,
       modelName: link.model,
+      // A link without its own switch must not inherit the previous link's (the base config is shared).
+      ...(link.extraBody ? { extraBody: link.extraBody } : { extraBody: undefined }),
       maxInputTokens: s.inputBudget,
       timeoutMs,
       // The failover is the retry; a single link keeps the transport's own.

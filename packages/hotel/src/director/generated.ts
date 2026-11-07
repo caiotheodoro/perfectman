@@ -35,6 +35,10 @@ export type HotelMsg =
       cap_actors: number;
       lease: number;
       mode: RunMode;
+      /**
+       * The model the admin picked for this run (D54). Link 1 of the chain for this run; the configured chain stays behind it as failover. Absent: the chain as configured.
+       */
+      model?: RunModel | null;
       room: number;
       run: number;
       scenario_version: number;
@@ -193,6 +197,11 @@ export type RunMode = "default" | "cinematic";
  */
 export type RunState =
   "starting" | "running" | "paused" | "stopping" | "ended" | "interrupted" | "failed";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ModelReasoning".
+ */
+export type ModelReasoning = "none" | "optional" | "mandatory";
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "HotelEndReason".
@@ -491,6 +500,7 @@ export type ServerMsg =
       room: number;
       runs: RunBrief[];
       sidecar: boolean;
+      start?: boolean;
       t: "perfectman_open";
     }
   | {
@@ -1304,6 +1314,31 @@ export interface HelloRun {
 export interface AdminRef {
   id: number;
   name: string;
+}
+/**
+ * An OpenRouter model chosen for one run, with what the hotel knew of it when it was picked.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "RunModel".
+ */
+export interface RunModel {
+  /**
+   * Context window in tokens; the sidecar picks the compact prompt for 8192 or less.
+   */
+  context?: number | null;
+  /**
+   * The OpenRouter id, e.g. `minimax/minimax-m3.1-flash`.
+   */
+  id: string;
+  /**
+   * OpenRouter's listed price in USD per million tokens, for a model the sidecar has no price for.
+   */
+  price_in?: number | null;
+  price_out?: number | null;
+  /**
+   * Whether the model thinks before it answers: `mandatory` models get a low effort, `optional` ones are told not to think.
+   */
+  reasoning?: ModelReasoning | null;
 }
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema

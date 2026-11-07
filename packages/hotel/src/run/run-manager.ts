@@ -382,6 +382,7 @@ export class RunManager implements RunLink {
       scenarioVersion: f.scenario_version,
       admin: f.admin,
       capActors: f.cap_actors,
+      ...(f.model ? { model: f.model } : {}),
     };
     const ack = (ok: boolean, code?: string, message?: string): void => {
       this.send({ t: "run_ack", run: f.run, ok, ...(ok ? {} : { error: { code: code ?? "failed", message: message ?? "" } }) });

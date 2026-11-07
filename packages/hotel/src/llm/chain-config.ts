@@ -36,6 +36,11 @@ export type LlmLink = {
    * block, short event window) or "full". Absent means by window: compact for 4096 tokens or less.
    */
   promptStyle?: PromptStyle;
+  /**
+   * Extra fields merged into this link's request body (a reasoning switch, for a model that thinks
+   * before it answers). Set by the code that builds the link, never read from `PERFECTMAN_LLM_CHAIN`.
+   */
+  extraBody?: Record<string, unknown>;
   /** Append the house rules (short in-world rules against echoing, admitting, leaking) to the system prompt. Default true. */
   harden?: boolean;
 };

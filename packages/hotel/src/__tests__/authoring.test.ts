@@ -105,6 +105,13 @@ describe("authoring listener", () => {
     expect((await call("/authoring/v1/draft", { body: { brief: "x" } })).status).toBe(400);
   });
 
+  it("drafts in Portuguese unless English is asked for (the builder is pt-BR first)", async () => {
+    const call = await listen();
+    const draft = async (language?: string) => ((await (await call("/authoring/v1/draft", { body: { brief: "uma noite no lounge do hotel", ...(language ? { language } : {}) } })).json()) as { source: string }).source;
+    expect(await draft()).toMatch(/language: "pt-BR"/);
+    expect(await draft("en")).toMatch(/language: "en"/);
+  });
+
   it("assigns looks from the hotel's catalog deterministically", async () => {
     const call = await listen();
     const req = { characters: [{ name: "Duda", traits: "warm" }, { name: "Rafa", traits: "blunt" }], catalog: ["hd-1", "hd-2", "hd-3"] };
@@ -116,8 +123,11 @@ describe("authoring listener", () => {
 
   it("lists presets and serves one as a bundle that compiles", async () => {
     const call = await listen();
-    const list = (await (await call("/authoring/v1/presets")).json()) as { presets: { key: string }[] };
+    const list = (await (await call("/authoring/v1/presets")).json()) as { presets: { key: string; language: string }[] };
     expect(list.presets.length).toBeGreaterThan(0);
+    // Only scenes written in Portuguese are offered; the English ones are not surfaced.
+    expect(list.presets.every((p) => p.language === "pt-BR")).toBe(true);
+    expect(list.presets.map((p) => p.key)).not.toContain("the-slice");
     const key = list.presets[0]?.key ?? "";
     const { source } = (await (await call(`/authoring/v1/presets/${key}`)).json()) as { source: string };
     expect(await (await call("/authoring/v1/validate", { body: { source } })).json()).toMatchObject({ ok: true });

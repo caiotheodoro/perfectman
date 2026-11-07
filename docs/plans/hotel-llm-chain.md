@@ -327,3 +327,7 @@ The final demo showed 5 of 11 addressed lines unanswered after 15 s and a p95 of
 - **Typing delay.** An addressed reply lands within 1.5 s of the consult (4 s for ambient talk).
 
 Numbers are in `docs/perfectman/evidence-final.md` (Tilehouse repo), "After the fixes".
+
+## A model picked for one run (2026-11-07, `feat/pm-start-modal`)
+
+The Tilehouse start modal lets an admin pick any OpenRouter model for a run (Tilehouse decision D54). The hotel sends it in `run_start.model` (`{id, context?, price_in?, price_out?, reasoning?}`); `withPickedModel` in `packages/hotel/src/llm/run-model.ts` makes it link 1 of that run's chain, named `pick`, on OpenRouter with the key the configured OpenRouter link uses, and leaves the configured chain behind it as failover (a configured link with the same model is dropped). The prompt is sized for the pick: compact at a window of 8192 tokens or less, full above. A model that must think gets `reasoning.effort: low`, one that may think `reasoning.enabled: false` (`LlmLink.extraBody`, applied per link, never inherited by the next link). An unpriced model is metered at the price the hotel read from OpenRouter, else from the `usage.cost` the provider bills. The allowlist (`PERFECTMAN_LLM_MODELS`) and the D53 gate still describe the configured chain only. `PROBE_PICK=<id>` in the real-model probe runs this path; the numbers are in Tilehouse `docs/perfectman/evidence-start-modal.md`.

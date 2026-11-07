@@ -3,7 +3,7 @@ import type { Server } from "node:http";
 import { WebSocketServer } from "ws";
 import type { WebSocket } from "ws";
 import { sectorTo } from "../space/geometry.js";
-import type { ActorCmd, ActorErrorCode, Avatar, AvatarState, HotelMsg, PairOutcome, RoomSnapshot, ServerMsg, SidecarFrame, SidecarMsg } from "../director/index.js";
+import type { ActorCmd, ActorErrorCode, Avatar, AvatarState, HotelMsg, PairOutcome, RoomSnapshot, RunModel, ServerMsg, SidecarFrame, SidecarMsg } from "../director/index.js";
 
 /**
  * In-process stand-in for the hotel's Director listener (docs/plans/hotel-package.md
@@ -171,11 +171,11 @@ export class FakeDirector {
 
   // ---- hotel -> sidecar -------------------------------------------------------
 
-  startRun(p: { run: number; room: number; scenarioVersion: number; lease?: number; capActors?: number; mode?: "default" | "cinematic" }): void {
+  startRun(p: { run: number; room: number; scenarioVersion: number; lease?: number; capActors?: number; mode?: "default" | "cinematic"; model?: RunModel }): void {
     const lease = p.lease ?? 1;
     this.lease.set(p.run, lease);
     this.awaitAck(p.run);
-    this.send({ t: "run_start", run: p.run, lease, mode: p.mode ?? "default", room: p.room, scenario_version: p.scenarioVersion, admin: { id: 9, name: "caio" }, cap_actors: p.capActors ?? 12 });
+    this.send({ t: "run_start", run: p.run, lease, mode: p.mode ?? "default", room: p.room, scenario_version: p.scenarioVersion, admin: { id: 9, name: "caio" }, cap_actors: p.capActors ?? 12, ...(p.model ? { model: p.model } : {}) });
   }
 
   /** The hotel made a run row for a replay and gave it a lease, without a `run_start` (director-protocol.md 6.1). */

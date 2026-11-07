@@ -18,6 +18,16 @@ export type ScenarioForm = {
     role?: string;
     goal?: string;
     voice?: string;
+    /** One of the three temperaments (`connector`, `skeptic`, `performer`); wins over a `role` that is free text. */
+    temperament?: string;
+    /** Who they are: looks, history, manner. Goes into the persona's `## Identity`. */
+    identity?: string;
+    /** What sets them off and what they do about it (`## Triggers`); at most 6. */
+    triggers?: Array<{ trigger?: string; behavior?: string }>;
+    /** How fast they answer; maps to the persona's `presence.responseDelayMs`. */
+    delay?: "quick" | "normal" | "slow";
+    /** The pool persona this person was copied from (informational: the edits live in the fields above). */
+    persona?: string;
     /** Sample lines in this person's own voice (array, or one per line); a model copies them, so they set the register. At most 6. */
     lines?: string[] | string;
     /** `{figure, effect?}` from the look editor; absent or `auto` means the hotel's own pick. */
@@ -25,6 +35,8 @@ export type ScenarioForm = {
     /** `start`, `after <n>s` or `on cue`; `after <n>s` becomes the scenario body's `arrivals`, the others take the run's default stagger. */
     start?: string;
   }>;
+  /** The OpenRouter model picked in the builder (informational here: the run carries it, D54). */
+  model?: string;
   stage?: { room?: number | null; places?: unknown[]; travel?: boolean; hotelRooms?: string };
 };
 
@@ -82,15 +94,28 @@ export function formToDraft(form: ScenarioForm): { draft: RoomDraft; looks: Form
     const name = text(c?.name);
     const role = text(c?.role);
     const key = role.toLowerCase();
-    const temperament = (TEMPERAMENTS as string[]).includes(key) ? (key as keyof typeof ROLES) : TEMPERAMENTS[i % TEMPERAMENTS.length]!;
-    const goal = text(c?.goal) || (role ? `Play the part of ${role}.` : "Get what they came here for.");
+    const chosen = text(c?.temperament).toLowerCase();
+    const named = (TEMPERAMENTS as string[]).includes(key);
+    const temperament = (TEMPERAMENTS as string[]).includes(chosen) ? (chosen as keyof typeof ROLES) : named ? (key as keyof typeof ROLES) : TEMPERAMENTS[i % TEMPERAMENTS.length]!;
+    const pt = form.language !== "en";
+    const goal = text(c?.goal) || (role ? (pt ? `Fazer o papel de ${role}.` : `Play the part of ${role}.`) : pt ? "Conseguir o que veio buscar aqui." : "Get what they came here for.");
     const look = c?.look;
     if (look && typeof look === "object" && text(look.figure)) {
       looks[`person-${i + 1}`] = { figure: text(look.figure), ...(text(look.effect) ? { effect: text(look.effect) } : {}) };
     }
     const raw = Array.isArray(c?.lines) ? c.lines : typeof c?.lines === "string" ? c.lines.split(/\r?\n/) : [];
     const lines = raw.map((l) => text(l).slice(0, 140)).filter(Boolean).slice(0, 6);
-    return { name, role: temperament, goal, voice: text(c?.voice), ...(lines.length ? { lines } : {}) };
+    // A role in the admin's own words ("o boca grande da turma") is part of who the person is.
+    const identity = [named ? "" : role.replace(/[.!?]+$/, ""), text(c?.identity)].filter(Boolean).join(". ").slice(0, 700);
+    const triggers = (Array.isArray(c?.triggers) ? c.triggers : [])
+      .map((t) => ({ trigger: text(t?.trigger).slice(0, 160), behavior: text(t?.behavior).slice(0, 240) }))
+      .filter((t) => t.trigger && t.behavior)
+      .slice(0, 6);
+    const speed = c?.delay === "quick" || c?.delay === "slow" || c?.delay === "normal" ? c.delay : undefined;
+    return {
+      name, role: temperament, goal, voice: text(c?.voice),
+      ...(lines.length ? { lines } : {}), ...(identity ? { identity } : {}), ...(triggers.length ? { triggers } : {}), ...(speed ? { speed } : {}),
+    };
   });
   return {
     draft: { title: text(form.title), situation: text(form.situation), people, language: form.language === "en" ? "en" : "pt-BR" },

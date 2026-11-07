@@ -14,7 +14,7 @@ import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
 import { linksOf } from "../config.js";
-import type { HotelConfig } from "../config.js";
+import type { HotelConfig, ModelPrice } from "../config.js";
 import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfState } from "../director/cine/index.js";
 import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
@@ -30,6 +30,8 @@ import { BreakerDriver } from "../llm/breaker.js";
 import { COST_HEADER, LlmChain } from "../llm/chain.js";
 import { GENERATE_DEADLINE_MS, hostLlmConfig, pingLlm } from "../llm/env.js";
 import { LlmGovernor } from "../llm/governor.js";
+import { pricesWithPick, withPickedModel } from "../llm/run-model.js";
+import type { PickedModel } from "../llm/run-model.js";
 import { LlmMeter } from "../llm/meter.js";
 import { tileKey } from "../space/geometry.js";
 import type { HotelSpaceMirror } from "../space/space-mirror.js";
@@ -53,6 +55,8 @@ export type RunStartParams = {
   scenarioVersion: number;
   admin: { id: number; name: string };
   capActors: number;
+  /** The model the admin picked for this run (D54): link 1 of its chain, the configured chain behind it. */
+  model?: PickedModel | null;
 };
 
 /** What a run needs from the connection (implemented by the manager). */
@@ -184,6 +188,8 @@ export class Run {
   private breaker!: BreakerDriver;
   private unsubscribeBudget: (() => void) | undefined;
   private readonly meter: LlmMeter;
+  /** The configured prices plus the picked model's listed one. */
+  private readonly prices: Record<string, ModelPrice>;
   /** The provider chain (failover, per-link breakers, per-link usage); absent for the mock provider. */
   private readonly chain: LlmChain | undefined;
   private readonly frames: FrameLogRecorder;
@@ -231,10 +237,11 @@ export class Run {
     this.id = params.run;
     this.home = String(params.room);
     this.homeChannelId = `room:${params.room}`;
-    this.meter = new LlmMeter(d.hotel.llm.prices);
-    const links = linksOf(d.hotel.llm);
+    this.prices = pricesWithPick(d.hotel.llm.prices, params.model);
+    this.meter = new LlmMeter(this.prices);
+    const links = withPickedModel(linksOf(d.hotel.llm), params.model);
     this.chain = links.length > 0
-      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: d.hotel.llm.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style), addressed: (id) => this.waitingOn.has(id) })
+      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: this.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style), addressed: (id) => this.waitingOn.has(id) })
       : undefined;
     this.frames = new FrameLogRecorder(d.clock);
   }
@@ -310,6 +317,8 @@ export class Run {
     } catch (err) {
       return { ok: false, code: "model_not_allowed", message: (err as Error).message };
     }
+    // The prompt is sized for link 1, which is the picked model when the admin picked one (D54).
+    if (this.params.model && this.chain?.promptCap !== undefined && this.chain.promptStyle !== undefined) this.setPromptCap(this.chain.promptCap, this.chain.promptStyle);
     const healthy = await this.pingProvider();
     if (!healthy) return { ok: false, code: "llm_unavailable", message: "the model endpoint did not answer a health check" };
     return { ok: true };
@@ -642,7 +651,7 @@ export class Run {
       return this.chain.provider(llm, agentId, {
         onSuccess: (r) => {
           const billed = r.responseHeaders?.[COST_HEADER];
-          this.meter.recordSuccess(this.d.hotel.llm.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs, billed !== undefined ? Number(billed) : undefined);
+          this.meter.recordSuccess(this.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs, billed !== undefined ? Number(billed) : undefined);
         },
         onFailure: () => this.meter.recordFailure(),
       });
@@ -650,7 +659,7 @@ export class Run {
     const inner: LLMProvider = llm.providerType === "mock" ? withMockBody(new MockLLMProvider(), this.mockConsults) : createLLMProvider(llm, agentId);
     return this.d.governor.wrap(inner, {
       onSuccess: (r) => {
-        this.meter.recordSuccess(this.d.hotel.llm.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs);
+        this.meter.recordSuccess(this.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs);
       },
       // The breaker counts failures from the operator stream, not from here (it also sees a call that threw before the provider).
       onFailure: () => this.meter.recordFailure(),

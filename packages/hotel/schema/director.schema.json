@@ -1551,6 +1551,17 @@
             "mode": {
               "$ref": "#/definitions/RunMode"
             },
+            "model": {
+              "description": "The model the admin picked for this run (D54). Link 1 of the chain for this run; the configured chain stays behind it as failover. Absent: the chain as configured.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/RunModel"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "room": {
               "type": "integer",
               "format": "int64"
@@ -2278,6 +2289,14 @@
             "video"
           ]
         }
+      ]
+    },
+    "ModelReasoning": {
+      "type": "string",
+      "enum": [
+        "none",
+        "optional",
+        "mandatory"
       ]
     },
     "NoticeKind": {
@@ -3524,6 +3543,54 @@
         "cinematic"
       ]
     },
+    "RunModel": {
+      "description": "An OpenRouter model chosen for one run, with what the hotel knew of it when it was picked.",
+      "type": "object",
+      "required": [
+        "id"
+      ],
+      "properties": {
+        "context": {
+          "description": "Context window in tokens; the sidecar picks the compact prompt for 8192 or less.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "id": {
+          "description": "The OpenRouter id, e.g. `minimax/minimax-m3.1-flash`.",
+          "type": "string"
+        },
+        "price_in": {
+          "description": "OpenRouter's listed price in USD per million tokens, for a model the sidecar has no price for.",
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "price_out": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double"
+        },
+        "reasoning": {
+          "description": "Whether the model thinks before it answers: `mandatory` models get a low effort, `optional` ones are told not to think.",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ModelReasoning"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      }
+    },
     "RunState": {
       "type": "string",
       "enum": [
@@ -4506,7 +4573,7 @@
           }
         },
         {
-          "description": "An admin typed `:pm` with no arguments: open the Perfectman drawer.",
+          "description": "An admin typed `:pm` with no arguments: open the Perfectman drawer. `start` (from `:pm start` with no scenario) opens it as the start modal, at the scenario picker.",
           "type": "object",
           "required": [
             "enabled",
@@ -4530,6 +4597,9 @@
               }
             },
             "sidecar": {
+              "type": "boolean"
+            },
+            "start": {
               "type": "boolean"
             },
             "t": {
