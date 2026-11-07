@@ -6,6 +6,12 @@ Owner decision (2026-11-07): the sidecar calls a chain of models, not one. Link 
 
 Second pass (2026-11-07, `feat/pm-llm-chain`): a compact hotel prompt for small windows, a body-block hint in the output contract, and an earshot probe that measures. The first pass's findings are kept below as "before".
 
+Third pass (2026-11-07, merged into `feat/pm-integration`): the three follow-ups from the second pass, measured on the real chain links. Details in "Third pass: copies, earshot, facing" below.
+
+- **Copied examples** fell to 15% of MythoMax's valid bodies (from 39% in the same-day run) and 8% of Lunaris-compact's, with valid bodies unchanged at 29% and 62% of calls.
+- **Out of earshot** fell from 17 of 91 addressed `say` lines to 0 of 38 in the final-code runs.
+- **Facing** rose from 60% to 87% of addressed listeners from the cast turning to the speaker; a person who is spoken to cannot be turned, and is counted apart.
+
 - **MythoMax now serves, and stays first.** With the compact profile its prompt is 1.7K to 1.9K estimated tokens against a budget of 2720, so the chain no longer skips it. D53 bench: p95 3.6 s (limit 6 s), 0 errors, 100% JSON. Live under the cast: link p50 1.2 s, p95 1.4 to 2.4 s. The owner's rule (keep MythoMax first if it passes D53 and guarded canaries reach 45 of 47) holds: raw hotel-prompt canaries 45/47, guarded 47/47. In a 101-call chain run MythoMax served every call; Lunaris and OpenCode got none.
 - **Lunaris is better on body elicitation, MythoMax is better on canaries.** Valid body in 74% of Lunaris-compact calls against 32% for MythoMax-compact; raw canary echoes the other way (Lunaris 37.5/47 compact and 35/47 full, MythoMax 45/47). Both reach 47/47 behind the guards, Lunaris with 26 (compact) and 27 (full) of 94 probe runs silenced against 9 for MythoMax. Neither is clearly better overall, so the owner's order stands. Lunaris compact versus full: same schema fallback (0% vs 1%), same pt-BR (96%), 2.4 times fewer prompt tokens, and three times the valid body rate (74% vs 25%).
 - **The model now chooses physical actions.** Valid `body` block in 32% of MythoMax-compact calls and 25% to 74% on Lunaris, from 0 in 202 calls without the hint (0 of 119 and 0 of 83 in the same-day control runs), with no meaningful change in the schema fallback rate (MythoMax 1.7% before, 1.6% after).
@@ -66,10 +72,13 @@ The probe has a third scenario, `earshot`: the human stands at the far end of a 
 | `PERFECTMAN_LLM_CHAIN` parser, legacy `PERFECTMAN_LLM_*` fallback, known prices and tokenizer ratios | `packages/hotel/src/llm/chain-config.ts`, `src/config.ts` |
 | Failover, per-link breaker and governor, sticky return, context fitting, per-link usage | `packages/hotel/src/llm/chain.ts`, wired in `src/run/run.ts` |
 | Output guards and house rules | `packages/hotel/src/llm/guards.ts` |
-| Per-link D53 gate, with the compact fixture for compact links | `packages/hotel/src/llm/bench-latency.ts` (`pnpm --filter @perfectman/hotel bench:latency`) |
+| Per-link D53 gate, with the compact fixture for compact links | `packages/hotel/scripts/bench-latency.ts`, run through `scripts/register-ts.mjs` (`pnpm --filter @perfectman/hotel bench:latency`) |
 | Compact hotel prompt, body hint and examples | `packages/server/src/agent/hotel-compact-prompt.ts`, `hotel-body-hint.ts`, wired in `action-intent-prompt-builder.ts` (`PromptStyle`); `LLMConfig.promptStyle` |
 | Per-link prompt style, moves with the cap | `packages/hotel/src/llm/chain-config.ts` (`linkPromptStyle`), `chain.ts` (`promptStyle`, `onCap`), `env.ts` |
 | Addressed-line frames for the earshot and facing probes | `packages/hotel/src/run/run.ts` (`noteAddressee`, `noteLine`), `gateway/hotel-gateway.ts` (`onLine`) |
+| Body examples drawn per turn from the room's own handles | `packages/server/src/agent/hotel-body-hint.ts` (`candidates`, `bodyExamples`) |
+| Walk-then-talk enforced for an addressed `say` line past the say radius | `packages/server/src/simulation/intent-resolver.ts` (`farAddressee`, `walkToAddressee`, `deferToArrival`), `wouldShout` from `run.ts` |
+| Addressee and speaker turn to each other at once, keep facing through the exchange | `packages/hotel/src/embodiment/plan.ts` (`planFacing`, `noteExchange`, interlocutor memory), `run.ts` (`faceInterlocutor`) |
 | Real-model probes (not part of `pnpm test`) | `packages/hotel/probe/` (`probe:llm`, `probe:canary`) |
 
 Changes outside `packages/hotel`: one export line in `packages/server/src/hotel.ts` (`OpenAiCompatibleProvider`), so a link can pass its own `fetch` (extra headers) and `env` to the server's transport; and, in the second pass, the prompt builder (`packages/server/src/agent/`, hotel mode only), `LLMConfig.promptStyle`, and `eventId` on message and reply deliveries in `DeliveryProjection`.
@@ -189,7 +198,28 @@ Addressed `say` lines on the wire, how many were delivered to an addressee more 
 | Lunaris full, no hint | 16 | 0 | 1.1 to 1.3 | 0.25, 0.33 |
 | chain | 6 | 0 | 1.5 to 3.5 | 1.0, 0.25 |
 
-4 of 99 lines (4%) were delivered out of earshot against a 2% band, and the cases are the ones the engine cannot stop: a model that answers a far shout with a plain line and no move (the engine defers a line only when the model also asks to walk; Lunaris-compact deferred 3 lines until the speaker arrived). Facing sits under the 85% band in most runs, on small counts. Neither number has a baseline from the first pass (it measured 0 of 0 and a vacuous 100%), and with counts this small they are a finding to follow up, not a verdict. The `earshot` scenario itself produced only 1 to 5 addressed lines per run; the embodiment scenario supplies most of them.
+4 of 99 lines (4%) were delivered out of earshot against a 2% band (second pass; the third pass below changes this), and the cases are the ones the engine cannot stop: a model that answers a far shout with a plain line and no move (the engine defers a line only when the model also asks to walk; Lunaris-compact deferred 3 lines until the speaker arrived). Facing sits under the 85% band in most runs, on small counts. Neither number has a baseline from the first pass (it measured 0 of 0 and a vacuous 100%), and with counts this small they are a finding to follow up, not a verdict. The `earshot` scenario itself produced only 1 to 5 addressed lines per run; the embodiment scenario supplies most of them.
+
+### Third pass: copies, earshot, facing
+
+Same sidecar, runtime, planner and pt-BR preset as above, with one change to the harness: `FakeDirector` now applies `face` commands and turns a walker to the way it walks. Before, it ignored `face`, so every actor kept its spawn direction and the facing probe measured the fake, not the planner. "Before" is the merged code before these changes (commit `96ea881`, the same fake), "after" is the final code. Three scenarios per run (`earshot`, `turns`, `embodiment`, 12 lines, 30 pulses), two runs of the "after" variant, real MythoMax and Lunaris-compact. The pooled counts are still small; read them as a few points either way.
+
+| | MythoMax before | MythoMax after | Lunaris compact before | Lunaris compact after |
+| --- | --- | --- | --- | --- |
+| calls | 129 | 257 (2 runs) | 169 | 283 (2 runs) |
+| valid `body`, % of calls | 27.9% | 29.2% | 58.6% | 62.5% |
+| valid bodies equal to a shown example | 14 of 36 (38.9%) | 11 of 75 (14.7%) | 7 of 99 (7.1%) | 14 of 177 (7.9%) |
+| of those, privately-worded the same too (whole answer copied) | not counted | 2 | not counted | 1 |
+| addressed `say` lines out of earshot | 0 of 7 | 0 of 18 | 3 of 32 | 0 of 66 |
+| cast listeners facing the speaker 3 s later | 6 of 15 (40%) | 34 of 35 (97%) | 29 of 43 (67%) | 70 of 84 (83%) |
+
+The out-of-earshot rate on the older fake, which is the one the second pass used, was 12 of 47 for Lunaris-compact and 2 of 5 for MythoMax in the first before-runs, and 1 of 33 and 4 of 28 in the first after-runs (the MythoMax lines were most likely replies that named the addressee in their words, which the first version of the check did not read; it does now, with a test).
+
+**Copies.** The examples are no longer a fixed trio of shapes over the nearest, farthest and first-seat handles. `bodyExamples` builds a pool from the people, free seats and handles of this very render (approach a far person and talk, wave and smile, laugh, thumbs up, face them, sit on a free seat), then draws two of different kinds by a hash of the turn, so the pair changes every turn, a copy is still a valid and plausible act in this room, and nothing that leaves the room, kisses or dances is offered. Walk-to-a-spot and follow were dropped from the pool after the first re-measure: a model that picks them is indistinguishable from one that copied them. The probe counts a valid body as a copy when it equals a shown example; some of those are what a model would choose on its own (a laugh toward the person who just joked), so `copiedWhole` (the private motive also word for word the example's) is the stricter number: 3 answers in 252 valid bodies. Target of under 15% met on both; valid body of 20% or more kept (29% and 62%).
+
+**Earshot.** `IntentResolver.assessBody` now treats an addressed `say` line to someone more than 6 tiles away (the replied-to author, a named target or a cast member named in the words, in that order) as a walk-then-talk whether or not the model wrote a body, a move, or `speak_then_move`: it adds an `approach` to the addressee with `move_then_speak`, which the existing deferral machinery holds until `body_arrived` (or drops after 2 times the ETA plus 5 s with `not_in_earshot`). Two things stay as they were: a line the planner will shout (arousal above 0.8 on shout-worthy text, once a minute; the new `wouldShout` peek is pure and does not start the cooldown) is not held, because a shout carries; and a released line is resolved without a space view, so it is never held twice. Two lines were held and released in the final runs, and none went out of earshot.
+
+**Facing.** Rule 2 of the planner only ran after the actor's own model call, and only for `lastSpokeAt` within 8 s. Now `faceInterlocutor` runs at the moment a line is heard, with no model in the way: the addressed cast member turns to the human who spoke (`handleHumanChat`), and both ends of an actor line turn to each other when it leaves the queue (`noteLine`). It uses `planFacing`, which respects the 4-commands-per-5-s budget, a live room and a walking actor, and records the exchange in the planner memory for 20 s: later pulses keep facing that person even after they stop talking (rule 2 now reads the interlocutor too), and the no-op fidget does not turn the actor away mid-exchange. The frame log also records `human_chat {ref, toRef}` per addressed actor, so the probe judges cast members turning to a human, which it could not before. A person at the keyboard is not ours to turn: lines the cast addresses to a human are judged but left out of the 87% (5 lines, 1 facing in the final runs).
 
 ### First pass: full prompt only
 
@@ -250,8 +280,8 @@ Silence is a cheap way to pass, so read the last column: MythoMax with the house
 ## Open items
 
 - **A fall-through from MythoMax to Lunaris sends Lunaris the compact prompt**, because the runtime renders once before choosing a link. Measured harmless; a second render per link would only matter if Lunaris's compact answers turned out worse on a larger sample.
-- **Body examples are copied** (33% of MythoMax's valid bodies, 62% of Lunaris-full's). If the cast starts to move in lockstep, vary the examples per persona or add a third shape; do not put speech in them that is not the person's own.
-- **Earshot (4%) and facing (under band) need a follow-up.** An addressed `say` to someone beyond 6 tiles with no move is delivered as is. Options: have the planner walk the speaker first when the model gave no move, or block the line. Counts here are 6 to 45 lines per variant; re-measure with `PROBE_LINES=24` before deciding.
+- **Body examples are still copied sometimes** (14.7% of MythoMax's valid bodies, 7.9% of Lunaris-compact's, 3 whole answers). The pool is wide and drawn per turn; if the cast still starts to move in lockstep, vary the shape per persona.
+- **Earshot and facing counts are small** (66 and 84 lines for Lunaris-compact, 18 and 35 for MythoMax). Remaining ways for a far line to land: the addressee walks away while the line waits in the room queue, and a speaker who moves on a `speak_then_move` to somewhere else; neither showed up in the final runs. Re-measure with `PROBE_LINES=24` before treating the band as met for good.
 - **No LLM judge** was run in the second pass.
 - **Per-link numbers on the panel** need new fields in the `run_status` schema.
 - **Re-run the OpenCode column** when its quota returns: `CANARY_LINKS=opencode pnpm --filter @perfectman/hotel probe:canary`, `bench:latency`, and `PROBE_LINKS=opencode ... probe:llm` with the chain reordered.
