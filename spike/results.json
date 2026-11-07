@@ -1,0 +1,482 @@
+{
+ "addr|A (med 2.5s / p95 6s)|(a) today: sequential PulseScheduler": {
+  "p50": 13264.505604929756,
+  "p95": 32264.33490510471,
+  "p99": 42076.80776371015,
+  "busyPct": 72.1,
+  "waitP50": 9385.892133455485,
+  "waitP95": 28234.421755241918,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b) split c=1, focused, debounce 1500 (ADR as written)": {
+  "p50": 9673.099651417928,
+  "p95": 24488.974264436867,
+  "p99": 30627.79383952846,
+  "busyPct": 81,
+  "waitP50": 3653.1512740067205,
+  "waitP95": 15850.499249357857,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b) split c=3, focused, debounce 1500 (ADR as written)": {
+  "p50": 7077.098359629628,
+  "p95": 13272.539512454532,
+  "p99": 16966.740197087638,
+  "busyPct": 72.2,
+  "waitP50": 1894.597450619121,
+  "waitP95": 7398.388461842982,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b) split c=6, focused, debounce 1500 (ADR as written)": {
+  "p50": 6378.482550627552,
+  "p95": 11566.357422175817,
+  "p99": 15220.902332146885,
+  "busyPct": 68.5,
+  "waitP50": 1532.6499663352529,
+  "waitP95": 5798.2371324491805,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b') split c=1, debounce 0": {
+  "p50": 8356.539907856379,
+  "p95": 23844.520637786947,
+  "p99": 34873.133605483454,
+  "busyPct": 81,
+  "waitP50": 3287.027257761138,
+  "waitP95": 15135.441976042779,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b') split c=3, debounce 0": {
+  "p50": 6053.715239192825,
+  "p95": 13646.781474363524,
+  "p99": 19199.048647042597,
+  "busyPct": 73,
+  "waitP50": 1458.5288480306742,
+  "waitP95": 7589.062082071439,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b') split c=6, debounce 0": {
+  "p50": 5798.859917729045,
+  "p95": 11518.11109875096,
+  "p99": 14252.36515180301,
+  "busyPct": 70.1,
+  "waitP50": 1056.3717108437093,
+  "waitP95": 5307.085124641855,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b') split c=3, debounce 500": {
+  "p50": 6378.40366897569,
+  "p95": 13666.237552475184,
+  "p99": 19463.576586118666,
+  "busyPct": 71.4,
+  "waitP50": 1526.729844356561,
+  "waitP95": 6909.803851554612,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b'') split c=3, debounce 0, early-commit addressed": {
+  "p50": 5964.308459383436,
+  "p95": 12407.659007104696,
+  "p99": 18661.25414340454,
+  "busyPct": 73,
+  "waitP50": 1458.5288480306742,
+  "waitP95": 7589.062082071439,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(c) split c=3, debounce 0, parallel focus lane + per-agent locks": {
+  "p50": 4346.139552618377,
+  "p95": 11551.83742114529,
+  "p99": 16527.184690022375,
+  "busyPct": 75.3,
+  "waitP50": 0,
+  "waitP95": 6200.350651220559,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(c) split c=3, debounce 1500, parallel focus lane + per-agent locks": {
+  "p50": 5500,
+  "p95": 11575.937349601067,
+  "p99": 16127.852403627476,
+  "busyPct": 74.8,
+  "waitP50": 1500,
+  "waitP95": 6151.570843117649,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(d) split c=1, debounce 0, parallel lane + locks + commit-as-complete": {
+  "p50": 6608.6566772216465,
+  "p95": 17054.323882756406,
+  "p99": 27454.884220790584,
+  "busyPct": 85.6,
+  "waitP50": 2437.6858607527333,
+  "waitP95": 13488.124955754018,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(d) split c=3, debounce 0, parallel lane + locks + commit-as-complete": {
+  "p50": 4034.52600338147,
+  "p95": 9563.006552216597,
+  "p99": 12941.882852870505,
+  "busyPct": 73.8,
+  "waitP50": 0,
+  "waitP95": 4352.0843494263245,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(d) split c=6, debounce 0, parallel lane + locks + commit-as-complete": {
+  "p50": 4048.1747400234453,
+  "p95": 9056.707306433469,
+  "p99": 11911.32322014356,
+  "busyPct": 72.6,
+  "waitP50": 0,
+  "waitP95": 3270.261604725302,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(d) split c=3, debounce 300, parallel lane + locks + commit-as-complete": {
+  "p50": 4300,
+  "p95": 9850.075454765465,
+  "p99": 13024.950210726121,
+  "busyPct": 74.3,
+  "waitP50": 300,
+  "waitP95": 4405.444045313076,
+  "unanswered": 0
+ },
+ "addr|A (med 2.5s / p95 6s)|(b') split c=3, debounce 0, generateDeadline 8 s (ADR fallback 1)": {
+  "p50": 6212.875645140186,
+  "p95": 14455.743883236777,
+  "p99": 24483.929510174086,
+  "busyPct": 72.4,
+  "waitP50": 1429.4496694320346,
+  "waitP95": 8249.063873974374,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(a) today: sequential PulseScheduler": {
+  "p50": 21044.988545035012,
+  "p95": 55790.117435490014,
+  "p99": 89665.8768776888,
+  "busyPct": 79.9,
+  "waitP50": 15539.488138980616,
+  "waitP95": 51566.816367776424,
+  "unanswered": 1
+ },
+ "addr|B (med 4s / p95 10s)|(b) split c=1, focused, debounce 1500 (ADR as written)": {
+  "p50": 16954.340762031265,
+  "p95": 44696.787465676665,
+  "p99": 55932.238459841115,
+  "busyPct": 87.5,
+  "waitP50": 7050.178765941038,
+  "waitP95": 29871.25777563775,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(b) split c=3, focused, debounce 1500 (ADR as written)": {
+  "p50": 10233.521642452222,
+  "p95": 21350.648846446536,
+  "p99": 32750.25913533906,
+  "busyPct": 84.7,
+  "waitP50": 3536.30560606331,
+  "waitP95": 12146.366885170899,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(b) split c=6, focused, debounce 1500 (ADR as written)": {
+  "p50": 9066.088262849022,
+  "p95": 18648.163680794183,
+  "p99": 24612.823881226534,
+  "busyPct": 79.9,
+  "waitP50": 2718.2233228927826,
+  "waitP95": 9408.058916276135,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(b') split c=1, debounce 0": {
+  "p50": 15886.479382041842,
+  "p95": 48364.32912025531,
+  "p99": 68236.44107707916,
+  "busyPct": 90.1,
+  "waitP50": 7589.021039768175,
+  "waitP95": 31595.59522851773,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(b') split c=3, debounce 0": {
+  "p50": 9178.108141298406,
+  "p95": 22337.66062797699,
+  "p99": 28062.2831522543,
+  "busyPct": 82.2,
+  "waitP50": 2952.552969778271,
+  "waitP95": 12775.520898756058,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(b') split c=6, debounce 0": {
+  "p50": 8918.946590636202,
+  "p95": 18930.91031383397,
+  "p99": 25559.940086761228,
+  "busyPct": 79.9,
+  "waitP50": 2569.659287345351,
+  "waitP95": 9889.414029404405,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(b') split c=3, debounce 500": {
+  "p50": 9877.46047213301,
+  "p95": 21869.003161655273,
+  "p99": 33722.683750060154,
+  "busyPct": 82.8,
+  "waitP50": 3385.642754070478,
+  "waitP95": 13341.654959485983,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(b'') split c=3, debounce 0, early-commit addressed": {
+  "p50": 8471.37767600594,
+  "p95": 19747.854433555563,
+  "p99": 24018.38006961695,
+  "busyPct": 81.9,
+  "waitP50": 2945.75419795434,
+  "waitP95": 11804.36786341907,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(c) split c=3, debounce 0, parallel focus lane + per-agent locks": {
+  "p50": 6639.545374074951,
+  "p95": 18408.183806905523,
+  "p99": 25352.466236624867,
+  "busyPct": 85.5,
+  "waitP50": 518.1213788806693,
+  "waitP95": 10978.109118480585,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(c) split c=3, debounce 1500, parallel focus lane + per-agent locks": {
+  "p50": 7865.168411881663,
+  "p95": 18981.511262457352,
+  "p99": 29718.40298770438,
+  "busyPct": 86.2,
+  "waitP50": 1695.3331792646088,
+  "waitP95": 12094.500122598163,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(d) split c=1, debounce 0, parallel lane + locks + commit-as-complete": {
+  "p50": 13012.184665715089,
+  "p95": 38260.67194175604,
+  "p99": 50711.84688383341,
+  "busyPct": 93.2,
+  "waitP50": 7452.218081302754,
+  "waitP95": 32602.293815754983,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(d) split c=3, debounce 0, parallel lane + locks + commit-as-complete": {
+  "p50": 5898.492277000332,
+  "p95": 14496.834731237032,
+  "p99": 18835.752896807157,
+  "busyPct": 84.5,
+  "waitP50": 0,
+  "waitP95": 7782.918755494809,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(d) split c=6, debounce 0, parallel lane + locks + commit-as-complete": {
+  "p50": 5628.7193505135365,
+  "p95": 14116.770587924868,
+  "p99": 19616.147119186586,
+  "busyPct": 80.3,
+  "waitP50": 0,
+  "waitP95": 6525.037397244712,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(d) split c=3, debounce 300, parallel lane + locks + commit-as-complete": {
+  "p50": 6109.8209500965895,
+  "p95": 14947.470485471655,
+  "p99": 21054.566799993394,
+  "busyPct": 84,
+  "waitP50": 329.390972574614,
+  "waitP95": 8291.20288657035,
+  "unanswered": 0
+ },
+ "addr|B (med 4s / p95 10s)|(b') split c=3, debounce 0, generateDeadline 8 s (ADR fallback 1)": {
+  "p50": 8437.074236753164,
+  "p95": 30970.88142365741,
+  "p99": 55194.68913131277,
+  "busyPct": 79.8,
+  "waitP50": 2655.102637704878,
+  "waitP95": 20138.127004657756,
+  "unanswered": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|seq (today)|none": {
+  "dog": 0.122,
+  "mean": 0.869,
+  "zero": 0.264,
+  "blocked": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|seq (today)|adr": {
+  "dog": 0.096,
+  "mean": 0.859,
+  "zero": 0.24,
+  "blocked": 0.036
+ },
+ "dog|A (med 2.5s / p95 6s)|seq (today)|one": {
+  "dog": 0,
+  "mean": 0.841,
+  "zero": 0.159,
+  "blocked": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|seq (today)|claim": {
+  "dog": 0,
+  "mean": 0.841,
+  "zero": 0.159,
+  "blocked": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=1|none": {
+  "dog": 0.461,
+  "mean": 1.545,
+  "zero": 0.238,
+  "blocked": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=1|adr": {
+  "dog": 0.273,
+  "mean": 0.959,
+  "zero": 0.387,
+  "blocked": 0.566
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=1|one": {
+  "dog": 0,
+  "mean": 0.774,
+  "zero": 0.226,
+  "blocked": 0.824
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=1|claim": {
+  "dog": 0,
+  "mean": 0.694,
+  "zero": 0.306,
+  "blocked": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=3|none": {
+  "dog": 0.575,
+  "mean": 1.882,
+  "zero": 0.099,
+  "blocked": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=3|adr": {
+  "dog": 0.348,
+  "mean": 1.173,
+  "zero": 0.285,
+  "blocked": 0.694
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=3|one": {
+  "dog": 0,
+  "mean": 0.896,
+  "zero": 0.104,
+  "blocked": 0.966
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=3|claim": {
+  "dog": 0,
+  "mean": 0.836,
+  "zero": 0.164,
+  "blocked": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=6|none": {
+  "dog": 0.566,
+  "mean": 1.915,
+  "zero": 0.098,
+  "blocked": 0
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=6|adr": {
+  "dog": 0.45,
+  "mean": 1.404,
+  "zero": 0.223,
+  "blocked": 0.584
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=6|one": {
+  "dog": 0,
+  "mean": 0.895,
+  "zero": 0.105,
+  "blocked": 1.024
+ },
+ "dog|A (med 2.5s / p95 6s)|split c=6|claim": {
+  "dog": 0,
+  "mean": 0.874,
+  "zero": 0.126,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|seq (today)|none": {
+  "dog": 0.054,
+  "mean": 0.674,
+  "zero": 0.385,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|seq (today)|adr": {
+  "dog": 0.046,
+  "mean": 0.671,
+  "zero": 0.376,
+  "blocked": 0.016
+ },
+ "dog|B (med 4s / p95 10s)|seq (today)|one": {
+  "dog": 0,
+  "mean": 0.713,
+  "zero": 0.287,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|seq (today)|claim": {
+  "dog": 0,
+  "mean": 0.713,
+  "zero": 0.287,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|split c=1|none": {
+  "dog": 0.341,
+  "mean": 1.121,
+  "zero": 0.448,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|split c=1|adr": {
+  "dog": 0.211,
+  "mean": 0.719,
+  "zero": 0.552,
+  "blocked": 0.404
+ },
+ "dog|B (med 4s / p95 10s)|split c=1|one": {
+  "dog": 0,
+  "mean": 0.556,
+  "zero": 0.444,
+  "blocked": 0.582
+ },
+ "dog|B (med 4s / p95 10s)|split c=1|claim": {
+  "dog": 0,
+  "mean": 0.55,
+  "zero": 0.45,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|split c=3|none": {
+  "dog": 0.486,
+  "mean": 1.63,
+  "zero": 0.204,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|split c=3|adr": {
+  "dog": 0.292,
+  "mean": 1.039,
+  "zero": 0.339,
+  "blocked": 0.604
+ },
+ "dog|B (med 4s / p95 10s)|split c=3|one": {
+  "dog": 0,
+  "mean": 0.82,
+  "zero": 0.18,
+  "blocked": 0.848
+ },
+ "dog|B (med 4s / p95 10s)|split c=3|claim": {
+  "dog": 0,
+  "mean": 0.716,
+  "zero": 0.284,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|split c=6|none": {
+  "dog": 0.574,
+  "mean": 1.886,
+  "zero": 0.107,
+  "blocked": 0
+ },
+ "dog|B (med 4s / p95 10s)|split c=6|adr": {
+  "dog": 0.351,
+  "mean": 1.18,
+  "zero": 0.28,
+  "blocked": 0.707
+ },
+ "dog|B (med 4s / p95 10s)|split c=6|one": {
+  "dog": 0,
+  "mean": 0.915,
+  "zero": 0.085,
+  "blocked": 1.01
+ },
+ "dog|B (med 4s / p95 10s)|split c=6|claim": {
+  "dog": 0,
+  "mean": 0.799,
+  "zero": 0.201,
+  "blocked": 0
+ }
+}
