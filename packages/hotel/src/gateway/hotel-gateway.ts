@@ -22,7 +22,7 @@ export type GatewayTiming = {
 export const DEFAULT_TIMING: GatewayTiming = {
   perCharMs: 55,
   capMs: 4000,
-  addressedCapMs: 2200,
+  addressedCapMs: 1500,
   minTypingMs: 800,
   roomSpacingMs: 2500,
   roomQueueCap: 6,

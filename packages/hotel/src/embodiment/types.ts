@@ -54,6 +54,8 @@ export type PlannerMemory = {
   lastExpression?: string;
   /** Who this actor is in an exchange with, until when: the planner keeps facing them while the exchange lasts. */
   interlocutor?: { ref: string; until: number };
+  /** A person who is in an exchange with this actor: faced ahead of any other speaker until then. */
+  holdFace?: { ref: string; until: number };
   /** Human ref -> when that human last dodged or pushed away this actor's pair act. */
   pairRefusedAt?: Record<string, number>;
   /** The planner's first run for this actor: the clock the idle rules count from. */

@@ -30,6 +30,15 @@ import {
   StepRunContext,
 } from "./llm-step.js";
 
+/** The trigger is a guest's line, aimed at this agent: somebody is waiting for its answer (hotel mode). */
+function askedByPerson(input: AgentRuntimeInput, agentId: string): boolean {
+  const trigger = input.perceptionPacket.triggeringEvent;
+  const p = trigger?.payload as Record<string, unknown> | undefined;
+  if (!p || p["untrusted"] !== true) return false;
+  const aimed = [p["addresseeIds"], p["mentionedAgentIds"]].some((ids) => Array.isArray(ids) && ids.includes(agentId));
+  return aimed;
+}
+
 type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
 
 /**
@@ -317,8 +326,9 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           break;
         }
       }
-      // Exhausted the retry budget with the model still repeating.
-      if (!fallbackApplied && isRepeat(intent)) {
+      // Exhausted the retry budget with the model still repeating. A person who asked this actor something and is
+      // waiting is answered anyway: a repeated answer is what people give when asked twice, and silence is not.
+      if (!fallbackApplied && isRepeat(intent) && !askedByPerson(input, agentId)) {
         repetitionBlocked = true;
         retryKind = "repeat_failed";
       }

@@ -286,6 +286,28 @@ describe("AgentRuntime Orchestration", () => {
       expect(output.operatorEvents.some(e => e.type === "intent_blocked")).toBe(true);
     });
 
+    it("delivers a repeated answer to a guest who asked this agent, instead of going silent", async () => {
+      const runtime = new AgentRuntime({
+        "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },
+      });
+      const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse("kkkkk não acredito nesse take", 50, 10)));
+      vi.stubGlobal("fetch", fetchMock);
+      const asked: AgentRuntimeInput = {
+        ...repeatingInput,
+        perceptionPacket: {
+          ...repeatingInput.perceptionPacket,
+          triggeringEvent: { simulationId: "s", channelId: "general", createdAt: 1, pulseIndex: 1, sourceEventIds: [], emotionalSalience: "high", visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "channel_member" }, id: "e-guest", actorId: "h:9", type: "message_sent", payload: { content: "e aí?", untrusted: true, addresseeIds: ["example-friend"], mentionedAgentIds: ["example-friend"] } } as never,
+        },
+      };
+      const output = await runtime.generateIntent(asked, context);
+      expect(output.fallbackApplied).toBe(false);
+      expect(output.intent.intentType).toBe("send_message");
+      expect(output.intent.visibleContent).toBe("kkkkk não acredito nesse take");
+      // Not aimed at this agent: still blocked.
+      const other = { ...asked, perceptionPacket: { ...asked.perceptionPacket, triggeringEvent: { ...asked.perceptionPacket.triggeringEvent!, payload: { content: "e aí?", untrusted: true, addresseeIds: ["someone-else"] } } } } as AgentRuntimeInput;
+      expect((await runtime.generateIntent(other, context)).intent.intentType).toBe("no_op");
+    });
+
     it("retry correction carries the repeat warning, a motive anchor, and the no-op escape hatch", async () => {
       const runtime = new AgentRuntime({
         "example-friend": { providerType: "openai-compatible", baseUrl: "http://localhost:11434/v1", modelName: "test-model" },

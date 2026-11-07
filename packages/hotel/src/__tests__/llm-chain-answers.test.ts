@@ -50,7 +50,7 @@ describe("answers nobody should be left without", () => {
   const SILENT = ok({ content: JSON.stringify({ intentType: "no_op", privateMotiveSummary: "prefiro esperar" }) });
   const SAYS = ok({ content: JSON.stringify({ intentType: "send_message", visibleContent: "Oi!", privateMotiveSummary: "x" }) });
 
-  function waiting(script: Script, addressed: boolean) {
+  function waiting(script: Script, addressed: boolean, links: LlmLink[] = [LUNARIS, MYTHO, GO]) {
     const s = scripted(script);
     const clock = new ManualClock();
     const seen: string[] = [];
@@ -58,7 +58,7 @@ describe("answers nobody should be left without", () => {
       const inner = s.make(config, deps);
       return { generateIntent: async (a, b, p) => (seen.push(p.system), inner.generateIntent(a, b, p)) };
     };
-    const c = new LlmChain({ links: [LUNARIS, MYTHO, GO], clock, runId: 1, simulationId: "sim", governor: new LlmGovernor(clock, () => 0.5), prices: PRICES, env: ENV, makeProvider: make, addressed: () => addressed });
+    const c = new LlmChain({ links, clock, runId: 1, simulationId: "sim", governor: new LlmGovernor(clock, () => 0.5), prices: PRICES, env: ENV, makeProvider: make, addressed: () => addressed });
     const p = c.provider(BASE, "duda");
     return { c, calls: s.calls, seen, call: (retry?: "correction") => p.generateIntent(undefined as never, undefined as never, { ...prompt(), system: "Você fala pt-BR", ...(retry ? { retry } : {}) }) };
   }
@@ -100,5 +100,37 @@ describe("answers nobody should be left without", () => {
     expect(calls).toEqual([MYTHO.model, LUNARIS.model, GO.model]);
     expect(configs.slice(0, 2).map((cfg) => cfg.timeoutMs)).toEqual([5000, 5000]);
     expect(configs[2]?.timeoutMs).toBe(3000);
+  });
+
+  it("gives the one link that could answer a second try when it failed on a blip, and not on a refusal", async () => {
+    const blip = new Error("Invalid JSON response");
+    const a = waiting({ [LUNARIS.model]: [blip, SAYS], [MYTHO.model]: [SAYS] }, false);
+    expect(JSON.parse((await a.call()).content).intentType).toBe("send_message");
+    expect(a.calls).toEqual([LUNARIS.model, MYTHO.model]);
+    const only = chain({ [LUNARIS.model]: [blip, SAYS] }, [LUNARIS], new ManualClock());
+    expect(JSON.parse((await only.call()).content).intentType).toBe("send_message");
+    expect(only.calls).toEqual([LUNARIS.model, LUNARIS.model]);
+    const refused = chain({ [LUNARIS.model]: [new LLMTimeoutError("t")] }, [LUNARIS], new ManualClock());
+    await expect(refused.call()).rejects.toThrow();
+    expect(refused.calls).toEqual([LUNARIS.model]);
+  });
+
+  it("adds the reason to speak to the retry of a copy on a line addressed to the actor, and sends the retry to the link that copies less", async () => {
+    const a = waiting({ [LUNARIS.model]: [SAYS], [MYTHO.model]: [SAYS] }, true);
+    await a.call();
+    await a.call("correction");
+    expect(a.seen.at(-1)).toContain("espera uma resposta");
+    expect(a.calls.at(-1)).toBe(MYTHO.model);
+    // After enough retries that showed mythomax copying far more than lunaris, a retry stays on lunaris.
+    const b = waiting({ [LUNARIS.model]: [SAYS], [MYTHO.model]: [SAYS] }, false, [LUNARIS, MYTHO]);
+    for (let i = 0; i < 7; i++) {
+      await b.call();
+      await b.call("correction");
+      await b.call("correction");
+    }
+    const before = b.calls.length;
+    await b.call();
+    await b.call("correction");
+    expect(b.calls.slice(before)).toEqual([LUNARIS.model, LUNARIS.model]);
   });
 });

@@ -106,4 +106,12 @@ describe("seats, initiative and facing from a distance", () => {
     const cmds = run({ self: { dir: 6 }, others: [person("h:9", [11, 8])] }, { memory: noteExchange({ firstPlanAt: NOW }, "h:9", NOW - 1000) });
     expect(cmds).toEqual([{ agentId: "duda", cmd: "face", targetTile: [11, 8] }]);
   });
+
+  it("keeps its eyes on a person who is talking with it for a few seconds, even when another actor speaks", () => {
+    const o = { self: { dir: 6 as const }, others: [person("h:9", [9, 4]), person("rafa", [4, 8], { lastSpokeAt: NOW - 500 })] };
+    const held = run(o, { memory: noteExchange({ firstPlanAt: NOW }, "h:9", NOW - 1000) });
+    expect(held[0]).toEqual({ agentId: "duda", cmd: "face", targetTile: [9, 4] });
+    const late = run(o, { memory: noteExchange({ firstPlanAt: NOW }, "h:9", NOW - 9000) });
+    expect(late[0]).toEqual({ agentId: "duda", cmd: "face", targetTile: [4, 8] });
+  });
 });

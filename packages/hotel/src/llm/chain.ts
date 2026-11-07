@@ -34,6 +34,9 @@ import { LlmMeter } from "./meter.js";
 const MIN_ATTEMPT_MS = 1500;
 /** A retry within this long of the actor's last answer is a retry of that answer. */
 const RETRY_WINDOW_MS = 30_000;
+/** Retries needed before one link's copy rate is compared with another's, and by how much it must be worse. */
+const REPEAT_SAMPLE = 6;
+const REPEAT_MARGIN = 0.25;
 /** A link throttled for longer than this is skipped when another link is behind it. */
 const MAX_PENALTY_WAIT_MS = 1500;
 const BREAKER_THRESHOLD = 3;
@@ -172,6 +175,8 @@ type LinkState = {
   trial: boolean;
   /** A prompt already stripped to its untrimmable part still did not fit this link's budget. */
   unfit: boolean;
+  /** Answers of this link that came back as a near-duplicate (the retry that followed them says so). */
+  repeats: number;
   served: number;
   skipped: Partial<Record<SkipReason, number>>;
   guarded: Partial<Record<GuardReason, number>>;
@@ -222,6 +227,7 @@ export class LlmChain {
       trial: false,
       unfit: false,
       served: 0,
+      repeats: 0,
       skipped: {},
       guarded: {},
       ratioSum: 0,
@@ -367,6 +373,10 @@ export class LlmChain {
     /** A person is waiting on this answer: an actor that stays silent is asked once more, on the next link. */
     const waiting = this.o.addressed?.(agentId) === true;
     let silent: LLMProviderResult | undefined;
+    // A retry of a near-duplicate offers the model "or choose no_op": for a person who is waiting, that is not on offer.
+    if (waiting && prompt.retry === "correction") args[2] = answerPrompt(args[2]);
+    /** Links that failed in a way a second try can fix (a body that was not JSON, a dropped connection), first failure first. */
+    const transient: LinkState[] = [];
     const attempts: ChainAttempt[] = [];
     let passedOver = 0;
     let wastedMs = 0;
@@ -458,7 +468,10 @@ export class LlmChain {
           s.inputBudget = Math.max(256, Math.min(s.inputBudget, prompt.inputTokensEstimate - 1));
           this.logger.warn(`llm link ${s.link.name} rejected the prompt for size; its budget is now ${s.inputBudget}`, { link: s.link.name });
           if (forced || s.trial) s.breaker.observe(this.probeEvent(true));
-        } else s.breaker.observe(this.probeEvent(false));
+        } else {
+          s.breaker.observe(this.probeEvent(false));
+          if (isTransient(err) && !transient.includes(s)) transient.push(s);
+        }
         s.trial = false;
         this.logger.warn(`llm link ${s.link.name} failed, ${hasNext ? "failing over" : "no link left"}`, { link: s.link.name, reason });
         return undefined;
@@ -491,6 +504,12 @@ export class LlmChain {
       const result = await attempt(s, true);
       if (result) return result;
     }
+    // Nothing else could answer: the link that failed on a blip gets one more try while there is time. With a small
+    // second link behind a big first one (its window cannot hold the prompt) a blip on link 1 used to mean silence.
+    if (!silent && held.length === 0 && transient[0] && deadline - clock.now() >= MIN_ATTEMPT_MS) {
+      const again = await attempt(transient[0], false);
+      if (again) return again;
+    }
     if (silent) return silent;
     if (held.length > 0) return noOp();
     this.exhausted++;
@@ -504,8 +523,16 @@ export class LlmChain {
    */
   private order(agentId: string, prompt: BuiltPrompt): LinkState[] {
     const last = this.lastServed.get(agentId);
-    if (prompt.retry !== "correction" || !last || this.o.clock.now() - last.at > RETRY_WINDOW_MS || this.states.length < 2) return [...this.states];
-    return [...this.states.slice(last.link + 1), ...this.states.slice(0, last.link + 1)];
+    if (prompt.retry !== "correction" || !last || this.o.clock.now() - last.at > RETRY_WINDOW_MS) return [...this.states];
+    const mine = this.states[last.link]!;
+    mine.repeats++;
+    if (this.states.length < 2) return [...this.states];
+    const rotated = [...this.states.slice(last.link + 1), ...this.states.slice(0, last.link + 1)];
+    // A link that copies more than this one is no cure for a copy: asking it again is the better bet.
+    const rate = (x: LinkState): number => x.repeats / Math.max(1, x.served);
+    const other = rotated[0]!;
+    if (other !== mine && other.served >= REPEAT_SAMPLE && mine.served >= REPEAT_SAMPLE && rate(other) > rate(mine) + REPEAT_MARGIN) return [mine, ...rotated.filter((x) => x !== mine)];
+    return rotated;
   }
 
   private skipReason(s: LinkState, promptTokens: number, deadline: number, hasNext: boolean): SkipReason | undefined {
@@ -637,6 +664,13 @@ function answerPrompt(prompt: BuiltPrompt): BuiltPrompt {
 
 function isContextOverflow(err: unknown): boolean {
   return err instanceof LLMHttpError && (err.status === 400 || err.status === 413 || err.status === 422) && CONTEXT_MESSAGE.test(err.message);
+}
+
+/** A failure that says nothing about the link's health or the prompt: worth one more try. */
+function isTransient(err: unknown): boolean {
+  if (err instanceof LinkUnavailableError || isContextOverflow(err)) return false;
+  if (err instanceof LLMHttpError) return err.status >= 500;
+  return err instanceof Error && /Invalid JSON response|network|fetch failed|ECONNRESET|socket|Empty/i.test(err.message);
 }
 
 function describeError(err: unknown): string {

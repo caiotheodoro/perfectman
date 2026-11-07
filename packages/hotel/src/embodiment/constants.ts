@@ -50,3 +50,6 @@ export const ERRAND_AFTER_MS = 60_000;
 export const ERRAND_COOLDOWN_MS = 600_000;
 /** An errand's visit lasts about this long before the actor heads home. */
 export const ERRAND_STAY_MS = 70_000;
+
+/** After a person speaks to an actor (or the actor answers them) it keeps its eyes on them this long, whoever else talks. */
+export const HUMAN_FACE_HOLD_MS = 7000;

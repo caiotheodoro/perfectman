@@ -128,7 +128,9 @@ export class GuestIngestor {
       content,
       senderKind: room === this.deps.homeRoom ? "guest" : "passerby",
       senderName,
-      mentionedAgentIds: mentioned,
+      // The engine reads `mentionedAgentIds` as "this line is for you". A whisper to Rafa that names Gabi is for Rafa alone:
+      // with only the names in the text, Rafa was never asked and the whisper went unanswered (the flaky whisper check).
+      mentionedAgentIds: mode === "whisper" ? addressed : [...new Set([...mentioned, ...addressed])],
       addresseeIds: addressed,
       hearing,
       speakerTile: [speaker.tile[0], speaker.tile[1]],

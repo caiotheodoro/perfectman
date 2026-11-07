@@ -164,6 +164,9 @@ export function arrivalSchedule(
  * hotel-package.md 6. The hotel is the authority on state; this is the
  * sidecar's view, reported in `run_status`.
  */
+/** A line released after a walk is typed "this long ago", so it lands at once (the gateway caps typing at 4 s). */
+const DEFERRED_TYPING_HEAD_START_MS = 3500;
+
 export class Run {
   state: RunState = "starting";
   pauseCause: PauseCause | undefined;
@@ -941,7 +944,8 @@ export class Run {
     const held = this.dropPending(ref);
     if (!held || this.state === "stopping" || this.state === "ended") return;
     // Typing again, so the line lands after the persona's delay, as any other reply.
-    this.gateway.noteConsult(ref, this.d.clock.now());
+    // The walk already cost the time a typing bubble would: the line lands right away.
+    this.gateway.noteConsult(ref, this.d.clock.now() - DEFERRED_TYPING_HEAD_START_MS);
     try {
       const resolved = await this.port.resolveDeferred(ref, held.intent);
       if (!resolved.committedEvents.some((e) => e.type === "message_sent" || e.type === "reply_sent")) this.gateway.stopTyping(ref);
@@ -977,6 +981,9 @@ export class Run {
 
   private async onArrived(agentId: string, planId: string, tile: readonly [number, number], room: RoomId): Promise<void> {
     await this.appendBodyEvent("body_arrived", agentId, { planId, room, tile: [tile[0], tile[1]] }, true);
+    // Walking up to someone ends facing wherever the last step pointed: turn to the person it was talking with.
+    const talking = this.memory.get(agentId)?.interlocutor;
+    if (talking && talking.until > this.d.clock.now()) this.faceInterlocutor(agentId, talking.ref, talking.ref.startsWith("h:") ? Number.POSITIVE_INFINITY : undefined);
     // A held line is released when the walk that was taking its speaker to the addressee ends.
     if (this.pending.get(agentId)?.walkPlans.has(planId)) {
       await this.releaseSpeech(agentId);

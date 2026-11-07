@@ -126,6 +126,12 @@ describe("guest ingestion (ADR-0022)", () => {
     expect(focused).toEqual([["duda", "rafa"]]);
   });
 
+  it("a whisper that names someone else is still for the actor it was whispered to", async () => {
+    const { ing, lines } = ingestor();
+    await ing.handleHumanChat(chat({ mode: "whisper", to: -702, text: "o que voce acha da Duda?" }));
+    expect(lines[0]?.mentionedAgentIds).toEqual(["rafa"]);
+  });
+
   it("an actor who is not named still hears only by distance", async () => {
     const { ing, lines } = ingestor({ width: 30, duda: [2, 4], people: [avatar(-702, "Rafa", 20, 4)] });
     await ing.handleHumanChat(chat({ text: "Duda, oi", from: { id: 9, name: "ana" } }));

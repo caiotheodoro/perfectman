@@ -12,6 +12,7 @@ import {
   FACE_TOLERANCE_DEG,
   FIDGET_COOLDOWN_MS,
   GESTURE_COOLDOWN_MS,
+  HUMAN_FACE_HOLD_MS,
   INITIATIVE_COOLDOWN_MS,
   INTERLOCUTOR_MS,
   LAUGH_COOLDOWN_MS,
@@ -88,7 +89,7 @@ export function planFacing(input: Pick<PlanInput, "space" | "now">, targetRef: s
 
 /** The planner memory after a line between this actor and `otherRef`: they are in an exchange for a while. */
 export function noteExchange(mem: PlannerMemory, otherRef: string, now: number): PlannerMemory {
-  return { ...mem, interlocutor: { ref: otherRef, until: now + INTERLOCUTOR_MS } };
+  return { ...mem, interlocutor: { ref: otherRef, until: now + INTERLOCUTOR_MS }, ...(otherRef.startsWith("h:") ? { holdFace: { ref: otherRef, until: now + HUMAN_FACE_HOLD_MS } } : {}) };
 }
 
 type Ctx = { input: PlanInput; room: RoomView; self: Presence; cands: Cand[]; mem: PlannerMemory };
@@ -277,7 +278,8 @@ function automaticRules(ctx: Ctx): void {
     .sort((a, b) => (b.lastSpokeAt ?? 0) - (a.lastSpokeAt ?? 0))[0];
   // Keep facing whoever the exchange is with, not only whoever spoke last.
   const talking = mem.interlocutor && mem.interlocutor.until > now ? room.occupants.find((p) => p.ref === mem.interlocutor?.ref) : undefined;
-  const faceTarget = speaker ?? talking;
+  const held = mem.holdFace && mem.holdFace.until > now ? room.occupants.find((p) => p.ref === mem.holdFace?.ref) : undefined;
+  const faceTarget = held ?? speaker ?? talking;
   if (faceTarget && self.state !== "walk") {
     const want = sectorTo(self.tile, faceTarget.tile);
     if (dirDiffDeg(want, self.dir) > FACE_TOLERANCE_DEG) push(ctx, KEEP.face, { cmd: "face", targetTile: faceTarget.tile });
