@@ -28,6 +28,7 @@ Read these in order:
 - [`implementation/live-streaming.md`](implementation/live-streaming.md) - live delivery, playback timing, reconnect boundaries and streaming regressions.
 - [`adr/README.md`](adr/README.md) - architecture decision records (LOCKED pipeline decisions with lasting architectural consequence).
 - [`plans/`](plans/) - cross-boundary contracts and per-dev implementation plans.
+- [`embodiment.md`](embodiment.md) - physical bodies, space, hearing and body intents for grid-hotel actors (hotel integration, with [`plans/hotel-package.md`](plans/hotel-package.md) and ADR-0018..0026).
 - [`personas/`](personas/) - generic persona setup docs and templates only. Real/person-specific subfolders are local-only and gitignored.
 - [`video/README.md`](video/README.md) - convert saved runs, narratives, and scripts into video.
 
@@ -157,6 +158,12 @@ The novela layer, implemented as a projection over committed events:
 
 - Delivery gateway stream (event volume, receiver memory bounds, provider-agnostic shape): [`observability-stream.md`](observability-stream.md)
 - Architecture decision records: [`adr/`](adr/)
+
+### Hotel Integration (physical world)
+
+- Body, space and hearing spec: [`embodiment.md`](embodiment.md)
+- Sidecar package spec: [`plans/hotel-package.md`](plans/hotel-package.md)
+- Decisions: [`adr/0018`](adr/0018-physical-space-model-and-embodiment.md) to [`adr/0026`](adr/0026-hotel-adapter-package.md)
 
 ### Channel World
 
