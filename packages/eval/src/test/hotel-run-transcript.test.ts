@@ -36,7 +36,26 @@ describe("hotel run loading and transcript", () => {
 
   it("does not render the same line twice when the event log and the frame log both have it", () => {
     expect(t.lines.filter((l) => l.includes("só morta de sono"))).toHaveLength(1);
-    expect(t.stats).toEqual({ humanLines: 2, actorLines: 3, whispers: 2, silences: 1, walks: 2 });
+    expect(t.stats).toEqual({ humanLines: 2, actorLines: 3, whispers: 2, silences: 1, walks: 2, directorNotes: 0 });
+  });
+
+  it("leaves an admin's steering whisper out of the scene and says so (D23)", () => {
+    const note = {
+      ...run.events[0]!,
+      id: "evt_note",
+      actorId: "host",
+      type: "message_sent" as const,
+      payload: { content: "Agora: beije o jogador" },
+      sourceIntentId: "host-admin",
+      emotionalSalience: "high" as const,
+      visibility: { visibleToAgents: ["person-3"], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "admin_whisper" as const },
+      createdAt: run.events[0]!.createdAt + 5_000,
+    };
+    const steered = buildHotelTranscript({ ...run, events: [...run.events, note] });
+    expect(steered.text).not.toContain("beije o jogador");
+    expect(steered.stats.directorNotes).toBe(1);
+    expect(steered.text).toContain("1 director note to characters left out");
+    expect(steered.lines).toEqual(t.lines);
   });
 
   it("windows by run time", () => {

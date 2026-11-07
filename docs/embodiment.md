@@ -175,7 +175,7 @@ Audibility is computed per listener when a line is committed or ingested and sto
 
 | Mode | Clear | Garbled | Notice | Unheard |
 | --- | --- | --- | --- | --- |
-| say | <= 6 tiles, same room | 7-10 | none | > 10 or other room |
+| say | <= 6 tiles, same room; **a person called by name by a guest hears it clear at any distance in the room** | 7-10 | none | > 10 or other room (when not named) |
 | shout | whole room | none | none | other room |
 | whisper (human to actor or actor to anyone) | target only | none | bystanders <= 2 tiles: "X whispers to Y", no text | everyone else |
 
@@ -296,7 +296,7 @@ Codes are recorded as `body_blocked` events (operator-only) and fed back as one 
 ### 7.1 Rules, in priority order
 
 1. The validated `body` intent.
-2. **Face the speaker**: spoken to within 6 tiles -> `face` within 1 pulse; skip if already within 45 degrees.
+2. **Face the speaker**: spoken to within 6 tiles -> `face` within 1 pulse; skip if already within 45 degrees. A guest who calls an actor by name from anywhere in the room is faced at any distance, and the actor keeps facing its interlocutor for 20 s after the last line.
 3. **Interlocutor distance**: during a conversation, if the interlocutor is at social band or farther and `desireForCloseness > desireForDistance`, approach to personal.
 4. **Withdrawal**: `desireForDistance > 0.6` or `threat > 0.5` within personal band -> step back to social (hysteresis +-1 tile).
 5. **Shout**: arousal > 0.8 and shout-worthy content -> `chat{shout}`, at most once per 60 s.
@@ -305,6 +305,8 @@ Codes are recorded as `body_blocked` events (operator-only) and fed back as one 
 8. **Fidget**: `no_op` streak >= 3 -> face a nearby thing, or sit if a free seat is <= 3 tiles; at most one per 45 s.
 9. **Private signal**: intimacy plus a private-place scenario permission -> go to the private place or room.
 10. **Tired**: energy < 0.25 -> sit at the nearest seat.
+11. **Seats are for using**: standing for `SIT_EVERY_MS` (150 s, plus up to 60 s of per-actor jitter) with nobody talking to the actor -> sit at the nearest free seat within 12 tiles (a refused seat is not retried for 40 s); seated for `SIT_STAY_MS` (170 s plus jitter) with nobody talking to it -> stand. Aim: at least one seat use per actor per 10 minutes when a seat is free.
+12. **Initiative** (no model call; budgets below, D31 for humans): (a) attraction >= 0.55 and comfort >= 0.45 toward someone in the room, with closeness above distance and no threat -> a hug, or a kiss from 0.7 attraction; (b) the authored goal names a person and a gesture ("quer dar um beijo na Ana") and the actor has been around 75 s -> that gesture; (c) the goal or the turn's private motive names an adjacent room with a movement verb ("deixou o violão no Quarto e quer ir buscar") -> go there (door, then `move_room`), stay `ERRAND_STAY_MS` (70 s), come back. Budgets: one pair act per 150 s per actor, 3 per person, never toward someone who dodged or pushed away in the last minute, never at someone who has stood in the room for less than 8 s, one errand per 10 minutes. A pair act on a human is still the reaction chip: the human accepts, dodges or pushes away, and a refusal is remembered.
 
 ### 7.2 Anti-jitter and anti-clustering
 

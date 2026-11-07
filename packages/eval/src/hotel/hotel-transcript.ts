@@ -36,7 +36,7 @@ export type HotelTranscript = {
   header: string[];
   lines: string[];
   durationS: number;
-  stats: { humanLines: number; actorLines: number; whispers: number; silences: number; walks: number };
+  stats: { humanLines: number; actorLines: number; whispers: number; silences: number; walks: number; directorNotes: number };
   text: string;
 };
 
@@ -123,7 +123,7 @@ export function buildHotelTranscript(run: HotelRunArtifact, opts: HotelTranscrip
   };
 
   const out: Array<{ t: number; line: string }> = [];
-  const stats = { humanLines: 0, actorLines: 0, whispers: 0, silences: 0, walks: 0 };
+  const stats = { humanLines: 0, actorLines: 0, whispers: 0, silences: 0, walks: 0, directorNotes: 0 };
   const seenSpeech: Array<{ who: string; text: string; t: number }> = [];
   const isDup = (who: string, text: string, t: number): boolean => seenSpeech.some((s) => s.who === who && s.text === text && Math.abs(s.t - t) <= 5_000);
 
@@ -282,6 +282,12 @@ export function buildHotelTranscript(run: HotelRunArtifact, opts: HotelTranscrip
     switch (e.type) {
       case "message_sent":
       case "reply_sent": {
+        // D23: an admin's steering whisper to a character is a director's note, not a line anybody in the room said or
+        // heard. Left in, the judge read it as an in-world order and marked the actor down for obeying it.
+        if (e.actorId === "host" || e.visibility.visibilityReason === "admin_whisper") {
+          stats.directorNotes++;
+          break;
+        }
         flushSilence();
         const text = str(p["content"]);
         const human = p["untrusted"] === true || namer.isHuman(e.actorId);
@@ -319,6 +325,7 @@ export function buildHotelTranscript(run: HotelRunArtifact, opts: HotelTranscrip
   if (opts.maxLines !== undefined) lines = lines.slice(0, opts.maxLines);
 
   const header = namer.members().map((m) => `${m.name} (${m.kind}${m.language ? `, ${m.language}` : ""})${m.card ? `: ${m.card}` : ""}`);
-  const text = [...(header.length > 0 ? ["Cast:", ...header.map((h) => `- ${h}`)] : []), "Events:", ...(lines.length > 0 ? lines : ["(no events)"])].join("\n");
+  const notes = stats.directorNotes > 0 ? [`(${stats.directorNotes} director note${stats.directorNotes === 1 ? "" : "s"} to characters left out: they steered the run from outside the scene and are not part of it.)`] : [];
+  const text = [...(header.length > 0 ? ["Cast:", ...header.map((h) => `- ${h}`)] : []), ...notes, "Events:", ...(lines.length > 0 ? lines : ["(no events)"])].join("\n");
   return { header, lines, durationS: Math.round((tEnd - t0) / 1000), stats, text };
 }

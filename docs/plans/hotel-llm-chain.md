@@ -313,3 +313,14 @@ CANARY_PROMPT=hotel CANARY_LINKS=mythomax CANARY_STYLE=compact CANARY_VARIANTS=h
 ```
 
 `PROBE_HARDEN=0` runs without the house rules; `PROBE_DRY=1` runs the harness against a local stub and spends nothing. `PROBE_MAX_USD` stops a probe that has spent that much.
+
+## Fourth pass: who gets an answer (2026-11-07, `feat/pm-integration`)
+
+The final demo showed 5 of 11 addressed lines unanswered after 15 s and a p95 of 22.5 s. From the recorded run the causes were these, in order of weight:
+
+- **The line never reached the actor.** The guest stood at the door and called "Rafa, ..." across the bar. `say` is heard only to 10 tiles, so the line was stored operator-only: no focused pulse, no open line for the arbiter, no turn toward the guest. Later the same actor's ambient turn was blocked by `room_speech:one_answer_per_line`. Fix: a person called by name hears it clear at any distance in the room (the ingestor), so the focused pulse, the open line and the head turn all happen.
+- **A hung link ate the turn.** `generateIntent exceeded its 20000 ms deadline` on 5 of 207 calls: two OpenRouter links timing out at 8 s each, behind a single 20 s deadline. Link timeout 5 s, one chain call 13 s, so three links fit.
+- **Silence and copies on an addressed line.** The model chose `no_op` for a whisper twice in a row (the flaky whisper check); a repeat was retried on the same link that had just copied. Now an actor that stays silent on a line addressed to it is asked once more on the next link with the reason to speak; a retry of a near-duplicate starts on a different link (the one that just answered goes last) and the repetition guard allows two retries in a hotel run; the body examples never use a line the actor or the room has just said.
+- **Typing delay.** An addressed reply lands within 2.2 s of the consult (4 s for ambient talk).
+
+Numbers are in `docs/perfectman/evidence-final.md` (Tilehouse repo), "After the fixes".
