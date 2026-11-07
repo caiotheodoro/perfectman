@@ -10,6 +10,8 @@ export type GatewayTiming = {
   perCharMs: number;
   /** Cap on persona delay plus typing time: keeps slow personas inside the 10 s p95. */
   capMs: number;
+  /** The same cap for an addressed reply: somebody is waiting, and the typing bubble already showed the model working. */
+  addressedCapMs: number;
   /** Typing stays on at least this long when a consult ends in a no_op or fallback. */
   minTypingMs: number;
   /** >= 2.5 s between actor lines in a room (timing rule 3). */
@@ -20,6 +22,7 @@ export type GatewayTiming = {
 export const DEFAULT_TIMING: GatewayTiming = {
   perCharMs: 55,
   capMs: 4000,
+  addressedCapMs: 2200,
   minTypingMs: 800,
   roomSpacingMs: 2500,
   roomQueueCap: 6,
@@ -216,8 +219,8 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     const [lo, hi] = cast?.responseDelayMs ?? [600, 2500];
     const sampled = lo + rng() * Math.max(0, hi - lo);
     const base = this.consultAt.get(message.agentId) ?? this.pulseStartedAt ?? now;
-    const landAt = Math.max(now, base + Math.min(this.timing.capMs, sampled + this.timing.perCharMs * text.length));
     const priority: 0 | 1 = message.kind === "reply" || message.salience === "high" || message.salience === "critical" ? 1 : 0;
+    const landAt = Math.max(now, base + Math.min(priority === 1 ? Math.min(this.timing.addressedCapMs, this.timing.capMs) : this.timing.capMs, sampled + this.timing.perCharMs * text.length));
     const q = this.queue(roomId);
     q.items.push({ seq: ++this.seq, huddle, agentId: message.agentId, text, mode, ...(to ? { to } : {}), priority, landAt, room: roomId, ...(message.eventId ? { eventId: message.eventId } : {}) });
     // Overflow: the oldest ambient line first, then (as a last resort) the oldest of anything.

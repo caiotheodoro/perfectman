@@ -39,6 +39,25 @@ describe("HotelGateway", () => {
     expect(chats()).toHaveLength(0);
   });
 
+  it("lands an addressed reply within 2.2 s of the consult however long the persona delay and the line, an ambient one within 4 s", async () => {
+    const { clock, gateway, chats } = setup({ timing: { perCharMs: 55 }, cast: new Map([["duda", { name: "Duda", responseDelayMs: [3000, 3000] as const }]]) });
+    const t0 = clock.now();
+    gateway.noteConsult("duda", t0);
+    await gateway.sendAgentMessage("room:12", msg("duda", "a".repeat(60), { kind: "reply" } as Partial<DeliveryMessage>));
+    await clock.advance(2199);
+    expect(chats()).toHaveLength(0);
+    await clock.advance(1);
+    expect(chats()).toHaveLength(1);
+    gateway.noteConsult("duda", clock.now());
+    const t1 = clock.now();
+    await gateway.sendAgentMessage("room:12", msg("duda", "b".repeat(60)));
+    await clock.advance(3999);
+    expect(chats()).toHaveLength(1);
+    await clock.advance(1);
+    expect(chats()).toHaveLength(2);
+    expect(chats()[1]?.at).toBe(t1 + 4000);
+  });
+
   it("lands a line at consult + min(4 s, persona delay + 55 ms per char), typing off right before", async () => {
     const { clock, gateway, sent, chats } = setup({ timing: { perCharMs: 55 } });
     const t0 = clock.now();

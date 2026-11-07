@@ -147,6 +147,19 @@ describe("the body hint in the hotel output contract", () => {
     }
   });
 
+  it("never offers as an example a line the actor or the room just said, so a copy is not a repeat to block", () => {
+    const { body } = hotelPerception();
+    const samples = ["Hoje o bar está calmo.", "Aqui ninguém passa sede.", "Vem sentar aqui, a vista é boa."];
+    const heard = ["hoje o bar esta calmo", "Aqui ninguém passa sede!"];
+    for (let i = 0; i < 20; i++) {
+      for (const ex of bodyExamples("pt-BR", body, `t${i}`, samples, heard)) {
+        expect((JSON.parse(ex) as { visibleContent: string }).visibleContent).toBe("Vem sentar aqui, a vista é boa.");
+      }
+    }
+    // Everything already said: the neutral fallback, not a sample.
+    expect((JSON.parse(bodyExamples("pt-BR", body, "x", samples, samples)[0]!) as { visibleContent: string }).visibleContent).toBe("Ei, tem um minuto?");
+  });
+
   it("varies the pair of examples from turn to turn", () => {
     const { body } = hotelPerception();
     const pairs = new Set(["t1", "t2", "t3", "t4", "t5", "t6", "t7"].map((k) => bodyExamples("en", body, k).join("|")));

@@ -5,7 +5,7 @@ import { GENERIC_PROMPT_PROFILE, type PersonaPromptProfile, type ScenarioContext
 import type { BuiltPrompt, PromptTrim } from "./agent-runtime.types.js";
 import { promptVersionHash } from "./prompt-version.js";
 import { bodyContractLines } from "./hotel-body-hint.js";
-import { renderCompactHotelPrompt } from "./hotel-compact-prompt.js";
+import { heardLines, renderCompactHotelPrompt } from "./hotel-compact-prompt.js";
 
 /**
  * How the hotel prompt is written. "full" is the whole persona, output contract
@@ -508,7 +508,7 @@ export class ActionIntentPromptBuilder {
       `Use "memoryWrites" whenever what you believe about someone in this room changed — a promise, a slight, a dodge, a revealed preference, a plan — one line each, in first person ("I…"), grounded in what actually happened in <events>. Shape: "memoryWrites": [{"summary": ${pt ? '"o Rafa desviou de novo quando falei em cartório"' : '"Rafa dodged again when I brought up the notary"'}, "about": ["rafa"]}] — "about" lists who it is about, as their ids or names appear in <events>; the system fills the rest. If nothing you believe changed, leave "memoryWrites" empty.`,
       // Hotel mode only: a shape hint and two short examples, because the field list alone left small readers never writing a body block.
       ...(hotel && withBody && input
-        ? bodyContractLines(language, input.perceptionPacket.body, input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? input.agentId, styleSamples)
+        ? bodyContractLines(language, input.perceptionPacket.body, input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? input.agentId, styleSamples, heardLines(input))
         : []),
     ]);
   }

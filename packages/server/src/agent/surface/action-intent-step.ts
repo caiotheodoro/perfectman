@@ -546,6 +546,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       const system = `${basePrompt.system}${suffix}`;
       return {
         ...basePrompt,
+        retry: "correction",
         system,
         user: basePrompt.user,
         inputTokensEstimate: ActionIntentPromptBuilder.estimateTokens(system, basePrompt.user),
@@ -578,6 +579,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     return {
       ...basePrompt,
+      retry: "correction",
       system,
       user,
       inputTokensEstimate: finalEstimate,

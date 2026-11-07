@@ -107,6 +107,15 @@ function renderPersona(s: PromptSection, input: AgentRuntimeInput, profile: Pers
   }
 }
 
+/** Lines already said where this actor can hear them: its own and the room's newest. */
+export function heardLines(input: AgentRuntimeInput): string[] {
+  const room = input.perceptionPacket.visibleContextEvents
+    .slice(-COMPACT_EVENT_WINDOW)
+    .map((e) => (e.payload as Record<string, unknown> | undefined)?.["content"])
+    .filter((c): c is string => typeof c === "string" && c.length > 0);
+  return [...input.perceptionPacket.ownRecentUtterances, ...room];
+}
+
 function renderContract(s: PromptSection, input: AgentRuntimeInput, profile: PersonaPromptProfile): void {
   const pt = profile.language === "pt-BR";
   const body = input.perceptionPacket.body;
@@ -121,7 +130,7 @@ function renderContract(s: PromptSection, input: AgentRuntimeInput, profile: Per
     '"memoryWrites": [{"summary": "I… (first person)", "about": ["id"]}] only when what you believe about someone changed',
     ...(body ? ['"body": optional, see below'] : []),
   ]);
-  if (body) for (const block of bodyContractLines(profile.language, body, input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? input.agentId, profile.styleExamples.default)) s.raw(block);
+  if (body) for (const block of bodyContractLines(profile.language, body, input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? input.agentId, profile.styleExamples.default, heardLines(input))) s.raw(block);
 }
 
 function renderNoRepeat(s: PromptSection, own: string[]): void {

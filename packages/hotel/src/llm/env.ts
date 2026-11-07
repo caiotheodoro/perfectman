@@ -5,7 +5,10 @@ import { DEFAULT_MAX_INPUT_TOKENS, LINK_MAX_OUTPUT_TOKENS, linkInputBudget, link
 
 /** Prompt-size and latency envelope of a hotel pulse (D53: p95 <= 6 s at 12 agents, 40 events). */
 export const LLM_P95_BUDGET_MS = 6000;
+/** The whole model turn, retries of a near-duplicate included. */
 export const GENERATE_DEADLINE_MS = 20_000;
+/** One chain call: every link it tries must answer inside this, so a slow first link cannot eat the turn. */
+export const CHAIN_DEADLINE_MS = 13_000;
 
 export class ModelNotAllowedError extends Error {
   constructor(readonly model: string, readonly allowed: readonly string[]) {

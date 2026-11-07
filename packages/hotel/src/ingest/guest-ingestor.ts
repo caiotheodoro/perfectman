@@ -98,10 +98,15 @@ export class GuestIngestor {
     const addressed = this.addressed(mode, targetRef, mentioned, speaker, here);
 
     // 4. Hearing, from the mirror: distance, never from the prompt.
-    const { hearing, visibleToAgents } = computeHearing(
+    const heard = computeHearing(
       { tile: speaker.tile, mode, ...(targetRef ? { target: targetRef } : {}) },
       actors,
     );
+    // Called by name: the person who is named hears it whatever the distance, as in a real room. Without this a
+    // guest at the door who addresses an actor across the room was never answered (the line reached nobody).
+    const hearing = { ...heard.hearing };
+    if (mode === "say") for (const id of addressed) if (hearing[id] !== "clear" && actors.some((a) => a.ref === id)) hearing[id] = "clear";
+    const visibleToAgents = Object.keys(hearing);
     const operatorOnly = visibleToAgents.length === 0;
     const visibility: EventVisibility = operatorOnly
       ? { visibleToAgents: [], visibleToSpectators: false, visibleToOperators: true, visibilityReason: "unheard" }

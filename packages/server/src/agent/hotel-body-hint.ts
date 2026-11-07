@@ -1,4 +1,5 @@
 import type { BodyPerception } from "@perfectman/shared";
+import { isNearRepeat } from "./repetition-guard.js";
 
 /**
  * Hotel mode only: how the output contract teaches the optional `body` block.
@@ -96,9 +97,13 @@ const FALLBACK_SPEECH: Record<Lang, string> = { en: "Hey, got a second?", "pt-BR
  * more than one, and the person's own tonal sample for the words. A model that copies one still does something
  * valid in this room, and the draw changes every turn, so the cast does not move in lockstep.
  */
-export function bodyExamples(lang: Lang, body: BodyPerception | undefined, key: string, samples: readonly string[] = []): string[] {
+export function bodyExamples(lang: Lang, body: BodyPerception | undefined, key: string, samples: readonly string[] = [], avoid: readonly string[] = []): string[] {
   const pool = candidates(body);
-  const short = samples.map((t) => t.replace(/\s+/gu, " ").trim()).filter((t) => t.length >= 3 && t.length <= 70 && !/[{}<>"]/.test(t));
+  // A line the room just heard (the actor's own or anyone's) is not offered as an example: a small model copies it, and the
+  // copy is a repeat the repetition guard has to block.
+  const short = samples
+    .map((t) => t.replace(/\s+/gu, " ").trim())
+    .filter((t) => t.length >= 3 && t.length <= 70 && !/[{}<>"]/.test(t) && !isNearRepeat(t, avoid));
   const speech = (n: number): string => short[(seed(key) + n) % Math.max(1, short.length)] ?? FALLBACK_SPEECH[lang];
   const picks: Candidate[] = [];
   let h = seed(key);
@@ -115,7 +120,7 @@ export function bodyExamples(lang: Lang, body: BodyPerception | undefined, key: 
 }
 
 /** The shape hint, then one block holding the examples (hotel mode with a body block only). `samples` are the person's own tonal lines. */
-export function bodyContractLines(lang: Lang, body: BodyPerception | undefined, key: string, samples: readonly string[] = []): string[] {
+export function bodyContractLines(lang: Lang, body: BodyPerception | undefined, key: string, samples: readonly string[] = [], avoid: readonly string[] = []): string[] {
   const header = lang === "pt-BR" ? "Exemplos de resposta com body (só o formato: use as suas próprias palavras):" : "Examples of an answer with body (the format only: use your own words):";
-  return [SHAPE[lang], [header, ...bodyExamples(lang, body, key, samples)].join("\n")];
+  return [SHAPE[lang], [header, ...bodyExamples(lang, body, key, samples, avoid)].join("\n")];
 }

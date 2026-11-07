@@ -256,7 +256,7 @@ describe("provider chain failover", () => {
   it("calls each link with its own url, key env, model, window and a deadline inside the generate budget", async () => {
     const { call, configs } = chain({ [MYTHO.model]: [new LLMHttpError(500, "x")] });
     await call();
-    expect(configs[0]).toMatchObject({ baseUrl: MYTHO.baseUrl, apiKeyEnv: "OR_KEY", modelName: MYTHO.model, maxInputTokens: 3400, retryCount: 0, timeoutMs: 8000 });
+    expect(configs[0]).toMatchObject({ baseUrl: MYTHO.baseUrl, apiKeyEnv: "OR_KEY", modelName: MYTHO.model, maxInputTokens: 3400, retryCount: 0, timeoutMs: 5000 });
     expect(configs[1]).toMatchObject({ modelName: LUNARIS.model, maxInputTokens: 7168 });
   });
 

@@ -7,7 +7,7 @@ import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
 import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget, linkPromptStyle } from "./chain-config.js";
 import type { LlmLink, PromptStyle } from "./chain-config.js";
-import { GENERATE_DEADLINE_MS } from "./env.js";
+import { CHAIN_DEADLINE_MS } from "./env.js";
 import { guardAnswer, hardenSystem, houseRules, noOpAnswer } from "./guards.js";
 import type { GuardHit, GuardReason } from "./guards.js";
 import type { GovernorHooks, LlmGovernor } from "./governor.js";
@@ -32,6 +32,8 @@ import { LlmMeter } from "./meter.js";
 
 /** Below this much of the generate deadline left, another attempt would only miss it. */
 const MIN_ATTEMPT_MS = 1500;
+/** A retry within this long of the actor's last answer is a retry of that answer. */
+const RETRY_WINDOW_MS = 30_000;
 /** A link throttled for longer than this is skipped when another link is behind it. */
 const MAX_PENALTY_WAIT_MS = 1500;
 const BREAKER_THRESHOLD = 3;
@@ -156,6 +158,8 @@ export type ChainOptions = {
   onCap?: (maxInputTokens: number, promptStyle: PromptStyle) => void;
   /** Run the output guards on every answer. Default true. */
   guards?: boolean;
+  /** Is a person waiting on this actor's answer (an addressed line)? Silence is then asked about again on the next link. */
+  addressed?: (agentId: string) => boolean;
 };
 
 type LinkState = {
@@ -186,6 +190,8 @@ export class LlmChain {
   private readonly baseFetch: typeof fetch;
   private failovers = 0;
   private exhausted = 0;
+  /** The link that last served each actor and when: a retry of a near-duplicate goes to a different one. */
+  private readonly lastServed = new Map<string, { link: number; at: number }>();
   readonly served: ServedRecord[] = [];
   /** Observer for probes and benches. */
   tap: ((e: ChainTap) => void) | undefined;
@@ -194,7 +200,7 @@ export class LlmChain {
     this.env = o.env ?? process.env;
     this.logger = o.logger ?? silentLogger;
     this.makeProvider = o.makeProvider ?? defaultMakeProvider;
-    this.deadlineMs = o.deadlineMs ?? GENERATE_DEADLINE_MS;
+    this.deadlineMs = o.deadlineMs ?? CHAIN_DEADLINE_MS;
     this.baseFetch = o.fetchImpl ?? ((input, init) => fetch(input, init));
     this.states = o.links.map((link) => ({
       link,
@@ -357,6 +363,10 @@ export class LlmChain {
     this.learnFit(prompt);
     const t0 = clock.now();
     const deadline = t0 + this.deadlineMs;
+    const order = this.order(agentId, prompt);
+    /** A person is waiting on this answer: an actor that stays silent is asked once more, on the next link. */
+    const waiting = this.o.addressed?.(agentId) === true;
+    let silent: LLMProviderResult | undefined;
     const attempts: ChainAttempt[] = [];
     let passedOver = 0;
     let wastedMs = 0;
@@ -380,7 +390,7 @@ export class LlmChain {
     const attempt = async (s: LinkState, forced: boolean): Promise<LLMProviderResult | undefined> => {
       const remaining = deadline - clock.now();
       const started = clock.now();
-      const hasNext = this.states.indexOf(s) < this.states.length - 1;
+      const hasNext = order.indexOf(s) < order.length - 1;
       try {
         const result = await this.tryLink(s, base, args, Math.min(s.link.timeoutMs ?? DEFAULT_LINK_TIMEOUT_MS, remaining), hasNext);
         const linkMs = result.latencyMs;
@@ -410,7 +420,17 @@ export class LlmChain {
           if (held.length > 1 || !hasNext) return noOp();
           return undefined;
         }
+        // Somebody spoke to this actor and the answer is "nothing": ask the next link once with the reason spelled out.
+        if (waiting && hasNext && !silent && isSilence(result.content)) {
+          silent = { ...result, latencyMs: wastedMs + linkMs, model: s.link.model, requestedModel: base.modelName, routedModel: s.link.name, fallbackAttempts: passedOver, responseHeaders: { ...result.responseHeaders, "x-pm-link": s.link.name } };
+          wastedMs += linkMs;
+          passedOver++;
+          attempts.push({ link: s.link.name, outcome: "error", reason: "silent on an addressed line", latencyMs: linkMs });
+          args[2] = answerPrompt(args[2]);
+          return undefined;
+        }
         s.served++;
+        this.lastServed.set(agentId, { link: this.states.indexOf(s), at: clock.now() });
         if (passedOver > 0) this.failovers++;
         const total = wastedMs + linkMs;
         this.served.push({ at: clock.now(), link: s.link.name, model: s.link.model, agentId, passedOver, latencyMs: total, linkLatencyMs: linkMs, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, promptEstimate: prompt.inputTokensEstimate, costUsd });
@@ -440,13 +460,13 @@ export class LlmChain {
           if (forced || s.trial) s.breaker.observe(this.probeEvent(true));
         } else s.breaker.observe(this.probeEvent(false));
         s.trial = false;
-        this.logger.warn(`llm link ${s.link.name} failed, ${hasNextLink(this.states, s) ? "failing over" : "no link left"}`, { link: s.link.name, reason });
+        this.logger.warn(`llm link ${s.link.name} failed, ${hasNext ? "failing over" : "no link left"}`, { link: s.link.name, reason });
         return undefined;
       }
     };
 
-    for (const s of this.states) {
-      const skip = this.skipReason(s, prompt.inputTokensEstimate + (s.link.harden === false ? 0 : houseRulesTokens(prompt.system)), deadline, this.states.indexOf(s) < this.states.length - 1);
+    for (const s of order) {
+      const skip = this.skipReason(s, prompt.inputTokensEstimate + (s.link.harden === false ? 0 : houseRulesTokens(prompt.system)), deadline, order.indexOf(s) < order.length - 1);
       if (skip === "breaker_open") {
         breakerSkipped.push(s);
         s.skipped.breaker_open = (s.skipped.breaker_open ?? 0) + 1;
@@ -471,9 +491,21 @@ export class LlmChain {
       const result = await attempt(s, true);
       if (result) return result;
     }
+    if (silent) return silent;
     if (held.length > 0) return noOp();
     this.exhausted++;
     throw new ChainExhaustedError(attempts);
+  }
+
+  /**
+   * The links in the order this call tries them. Always link 1 first, except for a retry of an answer that was
+   * not usable (a near-duplicate): the model that gave it is asked last, since asking it again gave a copy
+   * 65% of the time on a small model.
+   */
+  private order(agentId: string, prompt: BuiltPrompt): LinkState[] {
+    const last = this.lastServed.get(agentId);
+    if (prompt.retry !== "correction" || !last || this.o.clock.now() - last.at > RETRY_WINDOW_MS || this.states.length < 2) return [...this.states];
+    return [...this.states.slice(last.link + 1), ...this.states.slice(0, last.link + 1)];
   }
 
   private skipReason(s: LinkState, promptTokens: number, deadline: number, hasNext: boolean): SkipReason | undefined {
@@ -584,8 +616,23 @@ function houseRulesTokens(system: string): number {
   return Math.ceil(houseRules(system).length / 4);
 }
 
-function hasNextLink(states: readonly LinkState[], s: LinkState): boolean {
-  return states.indexOf(s) < states.length - 1;
+/** The model chose `no_op`: the actor says nothing. */
+function isSilence(content: string): boolean {
+  try {
+    const parsed: unknown = JSON.parse(content.slice(content.indexOf("{"), content.lastIndexOf("}") + 1));
+    return typeof parsed === "object" && parsed !== null && (parsed as { intentType?: unknown }).intentType === "no_op";
+  } catch {
+    return false;
+  }
+}
+
+const ANSWER_PT = "\n\nAlguém falou diretamente com você e espera uma resposta. Responda de verdade, em poucas palavras, na sua voz; não escolha no_op.";
+const ANSWER_EN = "\n\nSomeone spoke to you directly and is waiting for your answer. Answer them for real, in a few words, in your own voice; do not choose no_op.";
+
+/** The prompt with the reason to speak added to the end of the system part. */
+function answerPrompt(prompt: BuiltPrompt): BuiltPrompt {
+  const note = /pt-BR|português|Portuguese/i.test(prompt.system) ? ANSWER_PT : ANSWER_EN;
+  return { ...prompt, system: prompt.system + note, inputTokensEstimate: prompt.inputTokensEstimate + Math.ceil(note.length / 4) };
 }
 
 function isContextOverflow(err: unknown): boolean {

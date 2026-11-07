@@ -115,13 +115,21 @@ describe("guest ingestion (ADR-0022)", () => {
     expect(lines[0]?.hearing).toEqual({ rafa: "clear" });
   });
 
-  it("tells the arbiter about the actors who could hear the line, not everyone it named", async () => {
-    // Rafa is named but 12 tiles away: he never hears it, so he must not hold an open line.
-    const { ing, noted, focused } = ingestor({ width: 30, duda: [2, 4], people: [avatar(-702, "Rafa", 20, 4)] });
+  it("an actor called by name hears it across the room and holds an open line", async () => {
+    // Rafa is 18 tiles away and named: a person called by name hears it, so he is answered (the guest at the door
+    // who called an actor across the room used to get no reply, because the line reached nobody).
+    const { ing, lines, noted, focused } = ingestor({ width: 30, duda: [2, 4], people: [avatar(-702, "Rafa", 20, 4)] });
     const out = await ing.handleHumanChat(chat({ text: "Duda e Rafa, oi", from: { id: 9, name: "ana" } }));
-    expect(out).toMatchObject({ kind: "ingested", addressed: ["duda", "rafa"] });
-    expect(noted).toEqual([["duda"]]);
-    expect(focused).toEqual([["duda"]]);
+    expect(out).toMatchObject({ kind: "ingested", addressed: ["duda", "rafa"], heardBy: ["duda", "rafa"] });
+    expect(lines[0]?.hearing).toMatchObject({ rafa: "clear" });
+    expect(noted).toEqual([["duda", "rafa"]]);
+    expect(focused).toEqual([["duda", "rafa"]]);
+  });
+
+  it("an actor who is not named still hears only by distance", async () => {
+    const { ing, lines } = ingestor({ width: 30, duda: [2, 4], people: [avatar(-702, "Rafa", 20, 4)] });
+    await ing.handleHumanChat(chat({ text: "Duda, oi", from: { id: 9, name: "ana" } }));
+    expect(lines[0]?.hearing).not.toHaveProperty("rafa");
   });
 
   it("caps one speaker at 3 lines per 5 s so they cannot use the whole room's budget", async () => {

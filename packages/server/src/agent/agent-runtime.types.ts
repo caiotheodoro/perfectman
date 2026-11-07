@@ -56,6 +56,11 @@ export type BuiltPrompt = {
   trim?: PromptTrim;
   /** Hotel mode: set to "compact" when the small-window profile rendered this prompt. Unset otherwise. */
   promptStyle?: "compact";
+  /**
+   * Set on a retry prompt (a near-duplicate or an unresolvable target): the model already answered once this turn
+   * and the answer was not usable. A provider chain reads it to ask a different model the second time.
+   */
+  retry?: "correction";
 };
 
 export type AgentRuntimeOutput = {

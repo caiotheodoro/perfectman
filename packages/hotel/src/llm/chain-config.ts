@@ -50,7 +50,7 @@ export const LINK_MAX_OUTPUT_TOKENS = 400;
 export const LINK_INPUT_SAFETY = 0.92;
 /** Prompt cap when the link does not say how big its window is (the legacy default). */
 export const DEFAULT_MAX_INPUT_TOKENS = 6000;
-export const DEFAULT_LINK_TIMEOUT_MS = 8000;
+export const DEFAULT_LINK_TIMEOUT_MS = 5000;
 
 /** The prompt style a link is sent: its own setting, else by window size (compact at 4K or less). */
 export function linkPromptStyle(link: Pick<LlmLink, "maxContextTokens" | "promptStyle">): PromptStyle {
