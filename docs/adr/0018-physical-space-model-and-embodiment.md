@@ -1,6 +1,6 @@
 # ADR-0018: Physical Space Model and Embodiment
 
-**Status**: Proposed (2026-11-06) — implements hotel-integration decision D14 (hybrid bodies) and D26 (generic physical-world code goes upstream), both approved by the owner on 2026-11-06. The mechanics below lock at the Phase 0 exit review. Decisions **D-63..D-66**. Full spec: [`../embodiment.md`](../embodiment.md).
+**Status**: Accepted and implemented for the engine side (Phase 2 lane L3, 2026-11-06); the planner and the sidecar driver are `packages/hotel`. Implements D14 and D26. Decisions **D-63..D-66**.
 
 ## Context
 
@@ -39,6 +39,14 @@ Constraints carried in:
 - `PulseScheduler.updateCurrentChannelAnchors` ([`pulse-scheduler.ts:793`](../../packages/server/src/simulation/pulse-scheduler.ts)) needs a `moved_room` case, otherwise an actor keeps resolving its default channel to the room it left.
 - The types live in `packages/shared/src/space/`, not `world/`, so they do not collide with the unrelated goal-layer "world" (`packages/server/src/simulation/world/`, [ADR-0008](./0008-world-goal-layer.md)). The types are `SpaceModel` and `SpaceView`; the sidecar driver is `SpaceMirror` (lead resolution R1). "World" in this repo keeps its goal-layer meaning.
 - A deterministic fake grid hotel behind `IBodyGateway` is required so mock runs and CI probes need no Tilehouse ([ADR-0026](./0026-hotel-adapter-package.md)).
+
+## Implementation notes (Phase 2 L3)
+
+- Reducer, `deriveZones`, pathing, `projectSpaceView` and the constants live in `packages/engine/src/space/`; the builder, renderer and compressor in `packages/engine/src/perception/`. The reducer is `applySpaceAction(model, action)` over `room_snapshot`, `room_delta`, `room_ping`, `agent_room`, `agent_body` and `authored_places`; it mutates the model in place and reports a gap with `resnapshot`.
+- `runEngineStep` builds `perceptionPacket.body` and `bodyHandles` only when `snapshot.space` is present; without it the packet has no `body` key. `PulseScheduler` reads the view from a `SpaceMirror` (`PulseSchedulerConfig.spaceMirror`) once per decision, at wall-clock time.
+- `RoomAdjacency` gained an optional `name` (the engine cannot name another room from the current room's view alone).
+- `moved_room` is handled in `PulseScheduler.updateCurrentChannelAnchors`: the actor's default channel becomes the channel the event is committed on (the destination room). The host appends `moved_room` on the destination room's channel.
+- The planner stays out of the server. The host receives each resolved intent through `onAgentCommitted(AgentCommitInfo)` (validated body, targets, deferral, the agent's `SpaceView`, committed events), which carries exactly the planner's inputs.
 
 ## Cross-links
 

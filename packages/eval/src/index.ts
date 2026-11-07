@@ -2,6 +2,8 @@
 export * from "./probes/types.js";
 export * from "./probes/adapter.js";
 export * from "./probes/index.js";
+export * from "./probes/embodiment.js";
+export * from "./embodiment/index.js";
 
 // Runner
 export * from "./run/scenario-runner.js";

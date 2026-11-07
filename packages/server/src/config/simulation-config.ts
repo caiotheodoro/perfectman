@@ -69,6 +69,7 @@ import {
   type GoalRegistryPersister,
 } from "../simulation/world/world-evaluator.js";
 import type { IDeliveryGateway } from "../simulation/scheduler-contracts.js";
+import type { HotelSimulationOptions } from "../simulation/hotel-options.js";
 import type {
   AgentRuntime as SchedulerAgentRuntime,
   LLMBudget,
@@ -244,6 +245,11 @@ export type BuildConfiguredSimulationOptions = {
    * `DeliveryGatewayConfig` union that file-based configs are parsed against.
    */
   extraGateways?: Record<string, (meta: GatewayRuntimeMetadata) => IDeliveryGateway>;
+  /**
+   * Hotel mode (ADR-0020 to 0024): split pulses, room speech arbiter, bounded
+   * event reads and a body source. Absent, nothing about the build changes.
+   */
+  hotel?: HotelSimulationOptions;
 };
 
 export type ConfigPersona = Pick<
@@ -508,7 +514,7 @@ export async function buildConfiguredSimulation(
   options: BuildConfiguredSimulationOptions = {},
 ): Promise<ConfiguredSimulationHandle> {
   const simulationId = config.simulation.id ?? createId();
-  const persistence = createRepositories(config.persistence);
+  const persistence = createRepositories(config.persistence, options.hotel);
   const meta = buildGatewayRuntimeMetadata(config, simulationId);
   const gateways = await createGateways(config, meta);
   for (const [id, factory] of Object.entries(options.extraGateways ?? {})) {
@@ -565,6 +571,7 @@ export async function buildConfiguredSimulation(
     // The name the room addresses this agent by: the prompt profile's (a
     // scene re-skin lands there), which mention parsing must match.
     displayName: agent.promptProfile.displayName,
+    ...(agent.promptProfile.responseDelayMs ? { responseDelayMs: agent.promptProfile.responseDelayMs } : {}),
   }));
 
   const simulation = await runtime.createSimulation({
@@ -577,6 +584,7 @@ export async function buildConfiguredSimulation(
     attachExisting: options.attachExisting,
     ...(goalLayer ? { goalLayer } : {}),
     ...(config.storyClock ? { storyClock: config.storyClock } : {}),
+    ...(options.hotel ? { hotel: options.hotel } : {}),
   });
 
   return {
@@ -638,7 +646,7 @@ async function buildGoalLayerRuntime(
   return { config, evaluator };
 }
 
-function createRepositories(config: PersistenceConfig): {
+function createRepositories(config: PersistenceConfig, hotel?: HotelSimulationOptions): {
   repositories: SimulationRepositoriesWithGoalRegistry;
   db?: DB;
 } {
@@ -661,7 +669,7 @@ function createRepositories(config: PersistenceConfig): {
 
   return {
     repositories: {
-      eventRepo: new InMemoryEventRepository(),
+      eventRepo: new InMemoryEventRepository(hotel?.eventRetention),
       agentStateRepo: new InMemoryAgentStateRepository(),
       simRepo: new InMemorySimulationRepository(),
       channelRepo: new InMemoryChannelRepository(),
@@ -1134,6 +1142,20 @@ function rejectSimulationCalibrationFields(
   }
 }
 
+function parseResponseDelay(value: unknown, path: string): [number, number] {
+  if (
+    !Array.isArray(value) ||
+    value.length !== 2 ||
+    typeof value[0] !== "number" ||
+    typeof value[1] !== "number" ||
+    value[0] < 0 ||
+    value[1] < value[0]
+  ) {
+    throw new Error(`${path} must be a [min, max] pair of milliseconds with 0 <= min <= max`);
+  }
+  return [value[0], value[1]];
+}
+
 function parseMessageLength(value: unknown, path: string): NonNullable<PersonaPromptProfile["messageLength"]> {
   if (value === "short" || value === "medium" || value === "long" || value === "rapid_fire") return value;
   throw new Error(`${path} must be short, medium, long or rapid_fire`);
@@ -1209,6 +1231,9 @@ function parsePromptProfile(
     ),
     ...(profile["messageLength"] !== undefined
       ? { messageLength: parseMessageLength(profile["messageLength"], `${path}.messageLength`) }
+      : {}),
+    ...(profile["responseDelayMs"] !== undefined
+      ? { responseDelayMs: parseResponseDelay(profile["responseDelayMs"], `${path}.responseDelayMs`) }
       : {}),
     ...(profile["scenarioContext"] !== undefined
       ? { scenarioContext: parseScenarioContext(profile["scenarioContext"], `${path}.scenarioContext`) }

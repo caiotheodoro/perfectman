@@ -6,6 +6,8 @@ export class ChannelRegistry {
   constructor(private readonly repo: IChannelRepository) {}
 
   async createChannel(params: {
+    /** Fixed id for a channel the host names itself (a hotel room, `room:<id>`); generated when absent. */
+    id?: string;
     simulationId: string;
     type: ChannelType;
     name: string;
@@ -16,7 +18,7 @@ export class ChannelRegistry {
   }): Promise<Channel> {
     const now = Date.now();
     const channel: Channel = {
-      id: createId(),
+      id: params.id ?? createId(),
       simulationId: params.simulationId,
       type: params.type,
       name: params.name,

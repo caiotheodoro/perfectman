@@ -73,6 +73,15 @@ export function scoreAttention(
   let mentionUrgency = 0;
   let objectiveUrgency = 0;
 
+  // Hotel: arriving where you were walking to is a salient wake (a focused
+  // pulse, reason body_arrived). Own speech never is, but this is the body.
+  const arrival = newEvents.find((e) => e.type === "body_arrived" && e.actorId === agent.agentId);
+  if (arrival) {
+    dueScore += 0.35;
+    reasons.push("objective_urgency");
+    triggeringEvent = arrival;
+  }
+
   for (const event of newEvents) {
     // Your own messages don't demand your own attention.
     if (event.actorId === agent.agentId) continue;
@@ -169,6 +178,7 @@ export function scoreAttention(
   // every pulse after speaking. (The decision owns the final needsLLM —
   // ADR-0015 — this value is attention's own read, reported for operators.)
   const needsLLM =
+    arrival !== undefined ||
     dueScore >= ATTENTION_LLM_THRESHOLD ||
     mentionUrgency > 0 ||
     (newEvents.some(

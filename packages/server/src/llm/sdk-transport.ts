@@ -1,7 +1,7 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { Ollama, type ChatRequest } from "ollama";
 import { APICallError, type JSONSchema7 } from "ai";
-import { ModelIntentPacketJsonSchema } from "@perfectman/shared";
+import { ModelIntentPacketJsonSchema, ModelIntentPacketWithBodyJsonSchema } from "@perfectman/shared";
 import type { BuiltPrompt } from "../agent/agent-runtime.types.js";
 import type { LLMConfig } from "./llm-config.js";
 import type { LLMProviderResult } from "./llm-provider.js";
@@ -210,12 +210,17 @@ export function buildOpenAiCompatibleRequestBody(
   };
 }
 
+/** Hotel mode asks the model for the optional `body` block, so decoding is constrained by the schema that has it. */
+export type IntentSchemaOptions = { withBody?: boolean };
+
 export async function generateOpenAiCompatibleIntent(
   config: LLMConfig,
   prompt: BuiltPrompt,
   startTime: number,
   deps?: LlmTransportDeps,
+  schemaOptions?: IntentSchemaOptions,
 ): Promise<LLMProviderResult> {
+  const intentSchema = schemaOptions?.withBody ? ModelIntentPacketWithBodyJsonSchema : ModelIntentPacketJsonSchema;
   if (!config.baseUrl) {
     throw new LLMConfigurationError("Missing baseUrl for OpenAI-compatible provider.");
   }
@@ -280,7 +285,7 @@ export async function generateOpenAiCompatibleIntent(
         responseFormat: schemaAttempt
           ? {
               type: "json",
-              schema: ModelIntentPacketJsonSchema as unknown as JSONSchema7,
+              schema: intentSchema as unknown as JSONSchema7,
               name: "intent_packet",
             }
           : config.responseFormatJson
@@ -345,7 +350,7 @@ export async function generateOpenAiCompatibleIntent(
         }
         resolvedError =
           error.statusCode !== undefined && error.statusCode >= 400
-            ? new LLMHttpError(error.statusCode, error.message)
+            ? new LLMHttpError(error.statusCode, error.message, captureResponseHeaders(error.responseHeaders))
             : new LLMError(error.message || "Unknown error occurred during fetch.", error);
       } else if (error instanceof TypeError) {
         // The SDK's own choices[0] content extraction throws a TypeError on an
@@ -392,7 +397,9 @@ export async function generateOllamaIntent(
   prompt: BuiltPrompt,
   startTime: number,
   deps?: LlmTransportDeps,
+  schemaOptions?: IntentSchemaOptions,
 ): Promise<LLMProviderResult> {
+  const intentSchema = schemaOptions?.withBody ? ModelIntentPacketWithBodyJsonSchema : ModelIntentPacketJsonSchema;
   if (!config.baseUrl) {
     throw new LLMConfigurationError("Missing baseUrl for Ollama provider.");
   }
@@ -465,7 +472,7 @@ export async function generateOllamaIntent(
         ...baseRequest,
         ...(think !== undefined ? { think } : {}),
         ...(schemaAttempt
-          ? { format: ModelIntentPacketJsonSchema }
+          ? { format: intentSchema }
           : config.responseFormatJson === true
             ? { format: "json" as const }
             : {}),

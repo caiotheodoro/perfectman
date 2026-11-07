@@ -7,3 +7,5 @@ export * from "./ollama-provider.js";
 export * from "./llm-errors.js";
 export * from "./sdk-transport.js";
 export * from "./provider-factory.js";
+export * from "./llm-circuit-breaker.js";
+export * from "./llm-governor.js";

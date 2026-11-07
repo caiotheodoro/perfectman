@@ -1,6 +1,6 @@
 # ADR-0019: The `body` Block in the Intent Packet
 
-**Status**: Proposed (2026-11-06) — implements hotel-integration decision D14. Decisions **D-67..D-70**. Schema text: [`../embodiment.md`](../embodiment.md) section 6.
+**Status**: Accepted and implemented (Phase 2 lane L3, 2026-11-06). Implements D14. Decisions **D-67..D-70**.
 
 ## Context
 
@@ -36,6 +36,14 @@
 - Prompt size: the schema block must stay small. If the Phase 1 spike shows small models degrading, `move` is flattened to a single object (`kind`, `target?`, `band?`, `min?`) before any other cut. Spike result goes in `embodiment.md` section 11.
 - The OpenAI-compatible provider runs json_schema non-strict today; `body` relies on that (optional properties are not allowed in strict mode). Verify per model in the Phase 1 spike.
 - Speech deferral (`move_then_speak`) holds the already-generated intent outside the engine and re-submits it through `IntentResolver.resolve` on arrival, so the arbiter and rate gate still apply ([ADR-0021](./0021-room-speech-arbiter.md)).
+
+## Implementation notes (Phase 2 L3)
+
+- `validateBodyIntent(view, agentId, body, now, handles)` takes the render's `BodyHandleMap` as its fifth argument (the table in `embodiment.md` section 6.2 omitted it) and returns `{ accepted, blocked, targets }`, `targets` being handle to target for every handle left in `accepted`. `not_in_earshot` is never produced by the validator; the resolver emits it for a deferral that expires. `slow_down`, `too_far` and `cooldown` are recorded but have no "Bloqueado:" line.
+- `IntentParser` checks every handle against `bodyHandles`. An unknown handle drops the whole block, keeps the line and reports `bodyDropped: [{ code: "unknown_ref", ref }]`; with no `bodyHandles` in the parse context (a run that was not asked for a body) the block is dropped silently. `AgentRuntimeOutput.bodyDropped` carries the reasons to the resolver, which commits them in `body_blocked`.
+- `IntentResolver` (given a `space` view in its context) validates the block and commits operator-only `body_blocked`, `body_action_committed` (`commands` from `bodyCommandNames`) and, for `move_then_speak` toward an addressee beyond the say radius, `speech_deferred` with the speech withheld (outcome `delayed`). The held intent travels to the host in `AgentCommitInfo.body.deferral` plus the intent itself; the host re-submits it with `SimulationRuntime.resolveDeferred(agentId, intent)`.
+- Hotel mode asks for `body` through `modelIntentPacketFieldContract({ body: true })` when the perception carries a body, and the OpenAI-compatible and Ollama transports switch to `ModelIntentPacketWithBodyJsonSchema` on the same condition.
+- Someone beyond 6 tiles who has not spoken recently has no `p#` handle (they appear in a group line), so a model can only walk toward a far person who just called out.
 
 ## Cross-links
 

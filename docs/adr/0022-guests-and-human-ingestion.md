@@ -1,6 +1,6 @@
 # ADR-0022: Guests and Human Ingestion Through the Event Log
 
-**Status**: Proposed (2026-11-06) — implements hotel-integration decisions D22 (human chat is untrusted in-world speech) and D29 (bots hear by distance). Decisions **D-80..D-84**.
+**Status**: Accepted and implemented on the runtime side (Phase 2 lane L3, 2026-11-06); sanitizing, addressing and hearing for humans are `packages/hotel`. Implements D22 and D29. Decisions **D-80..D-84**.
 
 ## Context
 
@@ -41,6 +41,15 @@ Facts about today's code that constrain the path:
 - Human lines appear in the replay log and in `chat_log` (hotel side) but not in the operator feed (no `emitEventVisibility`).
 - The engine step gains a redaction map after `filterVisibleEventsForAgent` ([`run-engine-step.ts:91`](../../packages/engine/src/step/run-engine-step.ts)); an event with `hearing[agentId]` other than `clear` is passed with `content` removed.
 - Humans may whisper to actors (owner decision D44). A whisper arrives as `human_chat` with `mode=whisper`, is ingested with the target as the only `clear` hearer and bystanders within 2 tiles at level `notice` ("X whispers to Y", no text), and the actor may whisper back through the same hearing rules. Both directions go to `chat_log` on the hotel side (D42).
+
+## Implementation notes (Phase 2 L3)
+
+- `SimulationRuntime.ingest(line: GuestLineInput)` (the frozen `GuestIngest`) appends an untrusted `message_sent` through `EventLog.append` with `pulseIndex` from `getPulseIndex`, clips content to 200 characters and never projects it to a gateway. The hotel feeds the arbiter itself (`getArbiter(simId).noteHumanLine / noteHumanTyping`).
+- Membership: `registerRoomChannel(simId, { id: "room:<id>", name })` (the registry now accepts a fixed channel id), `addChannelMember` and `removeChannelMember` (mirrored to the delivery gateways); they apply at the next pulse.
+- Actor lines are stamped at commit through a resolver hook: `payload.senderName`, `payload.mode`, `payload.hearing` and `visibleToAgents` from `computeActorAudibility(model, speaker, mode, whisperTo)` over the `SpaceMirror` (say clear to 6 tiles, garbled to 10; shout the room; whisper the target, bystanders within 2 tiles notice). A line nobody hears takes the `operator_only` shape.
+- Redaction is `redactForListener` in `packages/engine/src/visibility/filter-visible-events.ts`, applied in `runEngineStep` right after the visibility filter only when `snapshot.space` is present: a `garbled` or `notice` listener loses `content` and the payload gains `heardAs`. A garbled line still reads in full for a listener it names.
+- A whisper notice names the whisper target from `payload.whisperToName` when the host stamps it (sanitized like any name); the prompt otherwise says "someone".
+- `parseMentionedAgentIds` is exported for the adapter's addressing.
 
 ## Cross-links
 

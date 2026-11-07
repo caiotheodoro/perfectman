@@ -1,6 +1,6 @@
 # ADR-0024: Multi-Run, Wall-Clock Pulse Loop and Bounded Event Reads
 
-**Status**: Proposed (2026-11-06) — implements hotel-integration decisions D11/D36 (at most 3 concurrent runs hotel-wide, 1 per room), D15 (run state in memory only) and D17 (pulse clock). Decisions **D-89..D-92**.
+**Status**: Accepted and implemented on the server side (Phase 2 lane L3, 2026-11-06); `RunManager` and the hotel's own loop wiring are `packages/hotel`. Implements D11/D36, D15 and D17. Decisions **D-89..D-92**.
 
 ## Context
 
@@ -37,6 +37,13 @@ The hotel runs up to three rooms of up to twelve actors for as long as humans ar
 - Eval and CLI runs are unaffected: they keep sequential mode, unbounded memory or SQLite, and `runPulseLoop`.
 - Process memory per run is bounded by the retention window, agent states and the space mirror; the target (12 actors, 3 runs) is verified in the Phase 2 soak test.
 - Replay fidelity depends on the NDJSON sink: a write failure marks the run's artifacts `dirty`, as the controller already does for an undrained pulse ([`run-controller.ts:308`](../../packages/server/src/http/run/run-controller.ts)).
+
+## Implementation notes (Phase 2 L3)
+
+- `IEventRepository.getWindow?(simId, { contextLimit, ownHistoryLimit, agentIds, sincePulseIndex })` is optional; `PulseScheduler` uses it for both full-log reads (the context window each pulse and the 10-pulse stagnation read) when `windowedReads` is on and falls back to `getCommittedThrough` otherwise. SQLite repositories do not implement it.
+- `InMemoryEventRepository({ maxRetained, onEvict })`: append is a push with an id-to-position index, eviction is chunked (one splice per max(64, window/4) appends), an evicted or unknown cursor returns the window start when retention is on, and `onEvict` receives what was dropped (the hotel writes it to the NDJSON sink; no sink is written here). Without options the repository keeps everything and still rejects an unknown cursor, as before. The hotel option defaults are `windowedReads: true`; the 2000 retention is passed by the caller.
+- `WallClockPulseLoop` (`packages/server/src/simulation/wall-clock-pulse-loop.ts`): injected clock, drift-free base lane at 6 s (optional seeded jitter 5 to 8 s) that skips a beat instead of bursting, focus lane that fires the first line at once and merges requests within 300 ms, `pause` / `resume` / `stop` (bounded drain). The hotel's 5 min and 30 min lifecycle clocks stay in the hotel.
+- `RunController` and the web builder are untouched.
 
 ## Cross-links
 

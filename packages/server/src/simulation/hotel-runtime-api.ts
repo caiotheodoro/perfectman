@@ -91,7 +91,13 @@ export interface GuestIngest {
 
 // ---- ADR-0021: room speech arbiter -----------------------------------------
 
-export type ArbiterRule = "human_typing" | "not_addressed_open_line" | "line_budget" | "ambient_too_soon";
+export type ArbiterRule =
+  | "human_typing"
+  | "not_addressed_open_line"
+  /** Added after the Phase 1 spike (ADR-0021): one actor answer per unaddressed human line. */
+  | "one_answer_per_line"
+  | "line_budget"
+  | "ambient_too_soon";
 
 export type ArbiterConfig = {
   /** Seed 6000: ambient lines are held this long while a human types. */

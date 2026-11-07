@@ -167,6 +167,14 @@ Per run, under `PERFECTMAN_DATA_DIR/runs/<runId>/` (the volume layout is owned b
 
 Typing: `onConsult` -> `typing{on}`; released with the line, or after at least 0.8 s when the consult ends in a fallback or `no_op`.
 
+### Runtime surface the sidecar codes against (as built, Phase 2 L3)
+
+- `buildConfiguredSimulation(config, { hotel: HotelSimulationOptions, extraGateways, agentRuntimeFactory })` switches a run into hotel mode: split pulse (default concurrency 3, one slot reserved for addressed), `arbiter` config, `spaceMirror`, `windowedReads`, `eventRetention: { maxRetained, onEvict }` (the NDJSON sink is the sidecar's), `onConsult`, `onAgentCommitted`, `clock`.
+- `SimulationRuntime`: `runPulse(simId, { reason, focusAgentIds?, elapsedMs? })`, `getPulseIndex`, `awaitIdle`, `ingest(GuestLineInput)`, `resolveDeferred(agentId, intent)`, `registerRoomChannel` / `addChannelMember` / `removeChannelMember`, `getArbiter(simId)` (`noteHumanLine`, `noteHumanTyping`), `getResponseDelayMs(simId, agentId)`.
+- LLM: register `hotelBudgetRegistration()` on the module singleton `llmBudget` after the build; `LlmCircuitBreaker` goes in `extraGateways` and reports through `onOpen` / `onClose`; wrap providers with `governProvider` in the `providerFactory`; usage and p50 / p95 from `llmBudget.getUsage` / `getLatencyStats`.
+- `WallClockPulseLoop` in `packages/server` is a ready two-lane loop on an injected clock; the sidecar may use it or its own.
+- Engine-side fake grid hotel and probes also exist in `packages/eval/src/embodiment/` (used by the server and engine probes); the sidecar's own fake in `src/testing/` is still needed for the Director transport.
+
 ## 8. Timing rules 1-7 and their owners
 
 The rules are specified in [`../embodiment.md`](../embodiment.md) section 8.3. Owners:

@@ -10,6 +10,7 @@ import type {
   SeededRng,
   PersonaConfig,
   RelationalState,
+  SpaceView,
 } from "@perfectman/shared";
 
 export type EngineSnapshotInput = {
@@ -30,6 +31,8 @@ export type EngineSnapshotInput = {
   rateLimitStatus: RateLimitStatus;
   dt: number;
   rng: SeededRng;
+  /** Hotel only (ADR-0018): omitted everywhere else, so the snapshot is unchanged. */
+  space?: SpaceView;
 };
 
 export class EngineSnapshotProjection {
@@ -50,6 +53,7 @@ export class EngineSnapshotProjection {
       rateLimitStatus: input.rateLimitStatus,
       dt: input.dt,
       rng: input.rng,
+      ...(input.space ? { space: input.space } : {}),
     };
   }
 }

@@ -15,20 +15,41 @@ import type {
   MemoryWriteProposal,
   IntentViolation,
   PrivateMotiveSummaryPayload,
+  SpaceView,
+  BodyHandleMap,
+  BodyHandleTarget,
+  BodyIntent,
+  BlockedReason,
+  SpeechMode,
+  HearingLevel,
 } from "@perfectman/shared";
 import { createId, MEMORY_TONE_UNSPECIFIED } from "@perfectman/shared";
-import { validateIntentPure } from "@perfectman/engine";
+import { validateIntentPure, validateBodyIntent, speechNeedsDeferral } from "@perfectman/engine";
 import { memoryWrittenPayload } from "./memory-written-payload.js";
 import { REPETITION_GUARD_MARKER } from "../agent/repetition-guard.js";
 import { isEngineAuthoredMotive } from "../agent/engine-motive.js";
 import type { RateLimitGate } from "./rate-limit-gate.js";
 import type { ChannelRegistry } from "./channel-registry.js";
+import type { ArbiterLineKind, IRoomSpeechArbiter } from "./hotel-runtime-api.js";
+import { roomIdOfChannel } from "./room-speech-arbiter.js";
+
+export type ResolvedBody = {
+  /** The validated block; handles as the model wrote them (docs/embodiment.md 6.2). */
+  accepted: BodyIntent;
+  /** Handle -> target for every handle in `accepted`, so the host can act without re-reading the render. */
+  targets: Record<string, BodyHandleTarget>;
+  blocked: BlockedReason[];
+  /** Set when the speech half was held back until the speaker reaches its addressee (move_then_speak). */
+  deferral?: { targetRef: string; etaMs: number; expiresAt: number };
+};
 
 export type ResolvedIntent = {
   outcome: ResolvedIntentOutcome;
   committedEvents: SimulationEvent[];
   operatorEvents: OperatorEvent[];
   delayUntilPulse?: number;
+  /** Hotel mode only: what became of the intent's `body` block. */
+  body?: ResolvedBody;
 };
 
 /**
@@ -79,6 +100,12 @@ type ResolveContext = {
   agentNames?: Record<string, string>;
   /** ADR-0017: the engine consulted the model on a hold this pulse; stamped on the motive event so evidence can count consults. */
   holdSuggested?: boolean;
+  /** Hotel only (ADR-0018): this agent's view of the space when it decided, for validating the intent's `body`. */
+  space?: SpaceView;
+  /** Hotel only: the handles minted for that render, to resolve the model's `body` references. */
+  bodyHandles?: BodyHandleMap;
+  /** Hotel only: reasons the parser dropped the `body` block (ADR-0019). */
+  bodyDropped?: BlockedReason[];
 };
 
 const MENTION_BOUNDARY = "[^\\p{L}\\p{N}]";
@@ -94,7 +121,7 @@ const MIN_MENTION_NAME_LENGTH = 2;
  * mention cannot be attributed to one agent, and a wrong attribution feeds
  * relational deltas to the wrong pair.
  */
-function parseMentionedAgentIds(
+export function parseMentionedAgentIds(
   visibleContent: string | undefined,
   agentNames: Record<string, string> | undefined,
 ): string[] {
@@ -504,10 +531,50 @@ function deriveFallbackIntent(
   return derived;
 }
 
+/** The `BodyCommand` names an accepted block turns into, in dispatch order. */
+export function bodyCommandNames(body: Pick<ResolvedBody, "accepted" | "targets">): string[] {
+  const { accepted, targets } = body;
+  const names: string[] = [];
+  const move = accepted.move;
+  if (move && move.kind !== "stay") {
+    const roomTarget = move.kind === "leave" && move.to ? targets[move.to]?.kind === "room" : false;
+    names.push(roomTarget ? "move_room" : "walk");
+  }
+  if (accepted.posture) names.push(accepted.posture.pose === "sit" ? "sit" : accepted.posture.pose === "lay" ? "lay" : "stand");
+  if (accepted.face) names.push("face");
+  if (accepted.gesture) names.push("gesture");
+  if (accepted.expression) names.push("expression");
+  return names;
+}
+
+/** Who hears an actor line, and how well (docs/embodiment.md 5.2). Empty `visibleToAgents` is stored as `operator_only`. */
+export type AudibilityResult = {
+  visibleToAgents: string[];
+  hearing: Record<string, HearingLevel>;
+};
+
+/**
+ * The arbiter as the resolver uses it: the frozen gate plus the optional
+ * `classify` that says whether a line is an addressed reply, an interjection
+ * into a human line or ambient talk. Without `classify` every line is ambient.
+ */
+export type ResolverArbiter = IRoomSpeechArbiter & {
+  classify?(agentId: string, roomId: string, now: number): ArbiterLineKind;
+};
+
 export class IntentResolver {
   constructor(
     private readonly rateLimitGate: RateLimitGate,
     private readonly channelRegistry: ChannelRegistry,
+    /** Hotel only (ADR-0021). Absent: no arbitration, byte-identical to before. */
+    private readonly arbiter?: ResolverArbiter,
+    /** Wall clock for the arbiter; injectable for tests. */
+    private readonly clock: () => number = Date.now,
+    /** Hotel mode switches (ADR-0022, 0023). Absent: events are stamped exactly as before. */
+    private readonly hotel?: {
+      /** Per-listener audibility of an actor line (ADR-0022 decision 2). Speech is also stamped with `senderName`, so the prompt names speakers without ever showing an id. */
+      audibility?: (speakerId: string, channelId: string, mode: SpeechMode, whisperTo?: string) => AudibilityResult | undefined;
+    },
   ) {}
 
   /**
@@ -532,7 +599,13 @@ export class IntentResolver {
     intent: ActionIntent,
     ctx: ResolveContext,
   ): Promise<ResolvedIntent> {
-    const resolved = await this.resolveWithFallback(intent, ctx);
+    const body = this.assessBody(intent, ctx);
+    const resolved =
+      body?.deferral !== undefined
+        ? this.deferSpeech(intent, ctx, body.deferral)
+        : await this.resolveWithFallback(intent, ctx);
+    // A body block rides on a real act; an invalid intent moves nobody.
+    const bodyEvents = body && resolved.outcome !== "blocked" ? this.bodyEvents(intent, ctx, body) : [];
     // Every resolved intent — committed, fallback-committed, blocked or
     // delayed — leaves its private motive in the log as its own operator-only
     // event, ordered after the events it explains. The thought was real
@@ -540,7 +613,100 @@ export class IntentResolver {
     // the kind of private/public mismatch the spectator layer is for.
     return {
       ...resolved,
-      committedEvents: [...resolved.committedEvents, this.privateMotiveEvent(intent, ctx)],
+      committedEvents: [...resolved.committedEvents, ...bodyEvents, this.privateMotiveEvent(intent, ctx)],
+      ...(body ? { body } : {}),
+    };
+  }
+
+  /**
+   * Hotel only: validate the `body` block against this agent's space view and
+   * decide whether the line must wait for the speaker to arrive. Pure; the
+   * events are built in `bodyEvents` once the speech half has resolved.
+   */
+  private assessBody(intent: ActionIntent, ctx: ResolveContext): ResolvedBody | undefined {
+    if (!ctx.space) return undefined;
+    const dropped = ctx.bodyDropped ?? [];
+    if (!intent.body && dropped.length === 0) return undefined;
+    if (!intent.body || !ctx.bodyHandles) {
+      return { accepted: { order: "move_then_speak" }, targets: {}, blocked: [...dropped] };
+    }
+    const now = this.clock();
+    const validation = validateBodyIntent(ctx.space, intent.actorId, intent.body, now, ctx.bodyHandles);
+    const resolved: ResolvedBody = {
+      accepted: validation.accepted,
+      targets: validation.targets,
+      blocked: [...dropped, ...validation.blocked],
+    };
+    const speaks = intent.intentType === "send_message" || intent.intentType === "reply_to_message";
+    if (speaks) {
+      const addressee = intent.personTargets.find((id) => ctx.space?.room?.occupants.some((o) => o.ref === id));
+      const deferral = speechNeedsDeferral(ctx.space, intent.actorId, validation.accepted, ctx.bodyHandles, {
+        now,
+        speechChars: intent.visibleContent?.length ?? 0,
+        ...(addressee ? { addresseeRef: addressee } : {}),
+      });
+      if (deferral) {
+        resolved.deferral = { targetRef: deferral.targetRef, etaMs: deferral.etaMs, expiresAt: deferral.expiresAt };
+      }
+    }
+    return resolved;
+  }
+
+  /** The line is held outside the log until `body_arrived`; the simulation records only that it was deferred. */
+  private deferSpeech(
+    intent: ActionIntent,
+    ctx: ResolveContext,
+    deferral: NonNullable<ResolvedBody["deferral"]>,
+  ): ResolvedIntent {
+    return {
+      outcome: "delayed",
+      committedEvents: [
+        this.bodyEvent(intent, ctx, "speech_deferred", {
+          intentId: intent.id,
+          targetRef: deferral.targetRef,
+          expiresAt: deferral.expiresAt,
+          etaMs: deferral.etaMs,
+        }),
+      ],
+      operatorEvents: [],
+    };
+  }
+
+  private bodyEvents(intent: ActionIntent, ctx: ResolveContext, body: ResolvedBody): SimulationEvent[] {
+    const events: SimulationEvent[] = [];
+    if (body.blocked.length > 0) {
+      events.push(this.bodyEvent(intent, ctx, "body_blocked", { intentId: intent.id, reasons: body.blocked }));
+    }
+    const commands = bodyCommandNames(body);
+    if (commands.length > 0) {
+      events.push(this.bodyEvent(intent, ctx, "body_action_committed", { intentId: intent.id, commands }));
+    }
+    return events;
+  }
+
+  /** Body events are for the operator and the host; the room sees the body move, not an event about it. */
+  private bodyEvent(
+    intent: ActionIntent,
+    ctx: ResolveContext,
+    type: "body_action_committed" | "body_blocked" | "speech_deferred",
+    payload: Record<string, unknown>,
+  ): SimulationEvent {
+    return {
+      simulationId: ctx.simulationId,
+      channelId: ctx.channelId,
+      actorId: intent.actorId,
+      type,
+      payload: payload as EventPayload,
+      sourceIntentId: intent.id,
+      sourceEventIds: [],
+      emotionalSalience: "low",
+      pulseIndex: ctx.pulseIndex,
+      visibility: {
+        visibleToAgents: [],
+        visibleToSpectators: false,
+        visibleToOperators: true,
+        visibilityReason: "operator_only",
+      },
     };
   }
 
@@ -662,7 +828,21 @@ export class IntentResolver {
       };
     }
 
+    // Room speech arbiter (ADR-0021): after the rate gate and the delay branch,
+    // before anything is recorded, so a denied line spends no rate counter.
+    // `policy_blocked` (never rate_limited) lets `resolveWithFallback` commit
+    // the engine-stamped `no_op` fallback: the simulation records a silence.
+    const arbitration = this.arbitrate(intent, ctx);
+    if (arbitration) {
+      const blockEvent = buildBlockEvent(intent, [arbitration], ctx);
+      return {
+        result: { outcome: "blocked", committedEvents: [blockEvent], operatorEvents: [] },
+        rateLimited: false,
+      };
+    }
+
     const primaryEvents = this.intentToEvents(intent, ctx);
+    if (this.hotel) this.stampSpeech(primaryEvents, intent, ctx);
 
     // create_channel intents must REGISTER the channel + memberships —
     // otherwise the creator (and invitees) can't message inside it, and
@@ -712,6 +892,43 @@ export class IntentResolver {
       },
       rateLimited: false,
     };
+  }
+
+  /**
+   * Hotel only: name the speaker and say who hears the line. A line nobody
+   * hears gets the `operator_only` shape, because an empty `visibleToAgents`
+   * would otherwise mean everyone (ADR-0022).
+   */
+  private stampSpeech(events: SimulationEvent[], intent: ActionIntent, ctx: ResolveContext): void {
+    for (const event of events) {
+      if (event.type !== "message_sent" && event.type !== "reply_sent") continue;
+      const name = ctx.agentNames?.[intent.actorId];
+      if (name) event.payload["senderName"] = name;
+      const heard = this.hotel?.audibility?.(intent.actorId, event.channelId, "say");
+      if (!heard) continue;
+      event.payload["mode"] = "say";
+      event.payload["hearing"] = heard.hearing;
+      event.visibility =
+        heard.visibleToAgents.length > 0
+          ? { ...event.visibility, visibleToAgents: heard.visibleToAgents }
+          : {
+              visibleToAgents: [],
+              visibleToSpectators: false,
+              visibleToOperators: true,
+              visibilityReason: "operator_only",
+            };
+    }
+  }
+
+  private arbitrate(intent: ActionIntent, ctx: ResolveContext): IntentViolation | undefined {
+    if (!this.arbiter) return undefined;
+    if (intent.intentType !== "send_message" && intent.intentType !== "reply_to_message") return undefined;
+    const roomId = roomIdOfChannel(intent.channelTarget ?? ctx.channelId);
+    if (roomId === undefined) return undefined;
+    const now = this.clock();
+    const kind = this.arbiter.classify?.(intent.actorId, roomId, now) ?? "ambient";
+    const decision = this.arbiter.gate(intent.actorId, roomId, kind, now);
+    return decision.outcome === "blocked" ? decision.violation : undefined;
   }
 
   /**

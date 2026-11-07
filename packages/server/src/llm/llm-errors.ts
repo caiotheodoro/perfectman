@@ -23,7 +23,12 @@ export class LLMTimeoutError extends LLMError {
 }
 
 export class LLMHttpError extends LLMError {
-  constructor(public readonly status: number, message: string) {
+  constructor(
+    public readonly status: number,
+    message: string,
+    /** Response headers when the transport had them (lower-cased keys); the governor reads `retry-after`. */
+    public readonly headers?: Record<string, string>,
+  ) {
     super(`HTTP ${status}: ${message}`);
     this.name = "LLMHttpError";
   }

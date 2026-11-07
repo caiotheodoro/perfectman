@@ -26,6 +26,10 @@ export const OPERATOR_EVENT_TYPES = [
   "llm_failure",
   "llm_retry_recovered",
   "llm_budget_exceeded",
+  // Hotel resilience (ADR-0025): soft-limit warning, circuit breaker open/close.
+  "llm_budget_warning",
+  "llm_circuit_open",
+  "llm_circuit_closed",
   "intent_blocked",
   "intent_delayed",
   "prompt_trimmed",

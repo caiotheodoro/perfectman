@@ -22,6 +22,8 @@ export type PromptTrim = {
    * chronological order), after memories and events were not enough.
    */
   droppedUtterances: number;
+  /** Hotel mode: how far the body block was compressed (0 none .. 3 most) before any event was dropped. */
+  bodyCompressionLevel?: number;
   droppedInputTokensEstimate: number;
   /**
    * False when the drop loop exhausted every trimmable item and the render
@@ -60,4 +62,10 @@ export type AgentRuntimeOutput = {
   latencyMs: number;
   fallbackApplied: boolean;
   operatorEvents: OperatorEvent[];
+  /**
+   * Hotel mode: the model's `body` block named a handle that is not in this
+   * render's `bodyHandles`, so the parser dropped it and kept the speech
+   * (ADR-0019). The resolver commits these as an operator-only `body_blocked`.
+   */
+  bodyDropped?: import("@perfectman/shared").BlockedReason[];
 };

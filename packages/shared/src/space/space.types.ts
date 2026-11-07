@@ -91,7 +91,13 @@ export type Presence = {
   lastMovedAt: number;
 };
 
-export type RoomAdjacency = { roomId: RoomId; viaDoor: Tile; travelS: number };
+export type RoomAdjacency = {
+  roomId: RoomId;
+  viaDoor: Tile;
+  travelS: number;
+  /** Sanitized room name for the `r#` line; falls back to the id when absent (additive, engine-space fork). */
+  name?: string;
+};
 
 export type RoomModel = {
   id: RoomId;

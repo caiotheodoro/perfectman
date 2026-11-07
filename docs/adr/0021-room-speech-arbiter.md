@@ -1,6 +1,6 @@
 # ADR-0021: Room Speech Arbiter
 
-**Status**: Proposed (2026-11-06), amended after the Phase 1 latency spike — implements hotel-integration timing rules 2-5 (one answer per human line, room speech budget, human priority, silence first-class) and the turn-taking scorecard. Decisions **D-76..D-79**.
+**Status**: Accepted and implemented (Phase 2 lane L3, 2026-11-06), as amended after the Phase 1 latency spike. Implements timing rules 2-5. Decisions **D-76..D-79**.
 
 ## Context
 
@@ -41,6 +41,15 @@ How the resolver treats a denied line decides what the simulation believes happe
 - With ADR-0020's commit-as-settled the gate is the only dog-pile control, so it must be atomic per human line (one writer for "who has answered").
 - Cost of a gate-only arbiter: about 1 model call per unaddressed line at c >= 3 is generated and then denied (0.85-1.0 gate-blocked calls per line in the spike). An optional claim token taken at `preview` removes that waste (0 blocked calls) at the price of more silent lines (13-31% against 9-23%); check the scorecard before choosing it.
 - The 0% is measured against injected behaviour priors (probability of consulting and speaking on an open line); the ordering held in every sensitivity cell, but the real-model dog-pile probe is the number that counts (Tilehouse `eval-plan.md` section 10).
+
+## Implementation notes (Phase 2 L3)
+
+- `RoomSpeechArbiter` (`packages/server/src/simulation/room-speech-arbiter.ts`) is constructed per simulation when `HotelSimulationOptions.arbiter` is set and handed to `IntentResolver` and to the scheduler (decide-phase `preview`). It implements the frozen `IRoomSpeechArbiter` plus `classify(agentId, roomId, now)` and `setScenarioEnergy`.
+- `ArbiterRule` gains `one_answer_per_line` (the frozen file lagged the spike amendment). Rules run in the order of decision 2; `addressed` is never blocked.
+- Classification: an addressee that has not answered yet is `addressed`; any other agent inside the quiet window (10 s, scaled by `1.5 - scenarioEnergy`, clamped to 0.5 to 1.5) after a human line is an `interjection`; otherwise `ambient`. `preview` denies only when both the interjection and the ambient reading are denied, so a skip is always safe. The quiet window also bounds `ambient_too_soon`, so that rule fires for explicit `ambient` gates inside the window.
+- The resolver gates after the delay branch and before anything is recorded; a denial returns `rateLimited: false` and the engine-stamped `no_op` fallback commits (`fallback_committed`, `intent_blocked` with `room_speech:<rule>`). Only channels named `room:<id>` are arbitrated.
+- The optional claim token at preview is not implemented; the scorecard decides (see the spike's trade-off).
+- Spacing (2.5 s per room) and addressed-jumps-the-queue remain the gateway's job in `packages/hotel`.
 
 ## Cross-links
 

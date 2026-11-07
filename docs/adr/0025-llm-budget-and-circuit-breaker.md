@@ -1,6 +1,6 @@
 # ADR-0025: LLM Budget as a Warning, and a Circuit Breaker
 
-**Status**: Proposed (2026-11-06) — implements hotel-integration decisions D11 (loose caps: the budget is a warning only), D16 (OpenAI-compatible endpoint configured on the hotel's host, a $/Mtok price table in env) and the timing rule "LLM priority: addressed > ambient > fidget". Decisions **D-93..D-96**.
+**Status**: Accepted and implemented (Phase 2 lane L3, 2026-11-06). Implements D11, D16 and D49. Decisions **D-93..D-96**.
 
 ## Context
 
@@ -48,6 +48,14 @@ Separately, nothing today reacts to a provider that is down. `LlmHealthWatch` fa
 - Goal-layer calls (`goal-layer-llm.ts`) obey the same mode; hotel runs do not enable the goal layer in v1, so the point is moot until they do.
 - New operator event types `llm_budget_warning`, `llm_circuit_open` and `llm_circuit_closed` (D49: the admin is told on resume as well as on pause) flow to the admin notice path. They join `OPERATOR_EVENT_TYPES` together with their producers, because its guard test rejects a type with no emission site; the Phase 1 freeze (`hotel-runtime-api.ts`) holds only the breaker state and the resume rule.
 - The 429 error shape from the OpenAI-compatible transport is not verified here; the governor's classifier is written against the status code and message and pinned by a test in Phase 2.
+
+## Implementation notes (Phase 2 L3)
+
+- `LLMBudgetTracker`: `registerLimits(sim, { ..., mode?: "enforce" | "warn", softLimits? })`. Warn mode always allows, never returns `blocked` (the 50% / 80% ladder runs against the soft limits, capped at `low`) and emits one `llm_budget_warning` per kind per window past 80% of a soft limit; `onWarning(fn)` and `budgetWarningEvent(...)` bridge it to the operator path. `getPriority(sim, agent, { addressed })` returns `high` for an addressed agent; `getUsage(sim)` is the frozen `RunUsage`; `getLatencyStats(sim)` gives count, p50, p95 and max over the last 500 calls (D53). `hotelBudgetRegistration(soft?)` is the hotel's registration (huge hard limits, warn mode).
+- Where to register: the module singleton `llmBudget`. `action-intent-step.ts` calls it directly, and `BuildConfiguredSimulationOptions.llmBudget` only reaches the scheduler's `getPriority`. `buildConfiguredSimulation` registers the settings-derived limits first; the hotel overrides them after the build.
+- `LlmCircuitBreaker` (`packages/server/src/llm/llm-circuit-breaker.ts`) is an `IDeliveryGateway` for `extraGateways`: it counts `Provider failed:` / `Retry call failed.` motives on `action_intent` operator events as failures (parse fallbacks count as the provider answering; `LLM budget exceeded:` is ignored), opens after 5, calls `onOpen` (the hotel pauses; returning `false` means an admin already holds the pause, so `pausedRun` is false), probes after 15 s doubling to 5 min through `shouldProbe` / `beginProbe`, and closes on the first good half-open call, calling `onClose(sim, { pausedRun })`. It emits `llm_circuit_open` and `llm_circuit_closed`. A `generateIntent` call that throws before the step produces no `action_intent`, so the breaker does not see it (the scheduler records that case as a committed `llm_failure`).
+- `LlmGovernor` (`governProvider(provider, shared, opts)`) wraps a provider for `AgentRuntime`'s `providerFactory`: it retries 429 only, honouring `Retry-After` (seconds or HTTP date) and otherwise jittered exponential backoff, with one `GovernorShared` penalty window across runs. `LLMHttpError` now carries response `headers` so `Retry-After` survives the transport.
+- Operator event types `llm_budget_warning`, `llm_circuit_open` and `llm_circuit_closed` joined `OPERATOR_EVENT_TYPES` with their producers.
 
 ## Cross-links
 

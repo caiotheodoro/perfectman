@@ -41,6 +41,19 @@ export type PersonaPromptProfile = {
    * the generic fallback, states no length and the prompt stays silent on it.
    */
   messageLength?: "short" | "medium" | "long" | "rapid_fire";
+  /**
+   * How long this person takes to answer, `[min, max]` ms, from the persona's
+   * `presenceProfile.responseDelayMs`. The prompt never mentions it; a hotel
+   * gateway reads it to time the typing bubble and the line (ADR-0020).
+   */
+  responseDelayMs?: [number, number];
+  /**
+   * Hotel mode (ADR-0023): the prompt frames the person as a person standing in
+   * a place, never mentions what the system is, renders every spoken line as a
+   * quoted string and asks for the optional `body` block. A prompt whose
+   * perception already carries a body block is hotel mode as well.
+   */
+  hotelMode?: boolean;
   styleExamples: PersonaStyleExamples;
   privateMotivePatterns: string[];
   hardAvoids: string[];

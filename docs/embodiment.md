@@ -179,7 +179,7 @@ Audibility is computed per listener when a line is committed or ingested and sto
 | shout | whole room | none | none | other room |
 | whisper (human to actor or actor to anyone) | target only | none | bystanders <= 2 tiles: "X whispers to Y", no text | everyone else |
 
-The engine's visibility step ([`run-engine-step.ts:91`](../packages/engine/src/step/run-engine-step.ts) **[V]**) maps each visible event through a redaction: `garbled` removes `content` and renders "you hear them but not what" (unless the listener is named); `notice` removes `content` and renders the whisper line. Redacting there means interpretation, memory formation and the prompt all see the same redacted event. Exact bands are seeds (section 10).
+The engine's visibility step ([`run-engine-step.ts:91`](../packages/engine/src/step/run-engine-step.ts) **[V]**) maps each visible event through `redactForListener` (only when the snapshot carries a space; the redacted event gets `payload.heardAs`): `garbled` removes `content` and renders "you hear them but not what" (unless the listener is named); `notice` removes `content` and renders the whisper line. Redacting there means interpretation, memory formation and the prompt all see the same redacted event. Exact bands are seeds (section 10).
 
 An event heard by nobody is stored with the `operator_only` shape (empty `visibleToAgents`, `visibleToSpectators: false`), because an empty list otherwise means everyone ([`filter-visible-events.ts:46-55`](../packages/engine/src/visibility/filter-visible-events.ts) **[V]**).
 
@@ -246,7 +246,7 @@ export const BodyIntentSchema = z.object({
 
 ### 6.2 Validator
 
-`validateBodyIntent(space, agent, body, now) -> { accepted: BodyIntent; blocked: BlockedReason[] }`, pure, in `packages/engine/src/body/validate-body-intent.ts` (new).
+`validateBodyIntent(view, agentId, body, now, handles) -> { accepted: BodyIntent; blocked: BlockedReason[]; targets }`, pure, in `packages/engine/src/body/validate-body-intent.ts` (`handles` is the render's `BodyHandleMap`; `targets` maps every handle left in `accepted` to its target).
 
 | Code | Trigger | Auto-resolution | Next-pulse line (pt-BR) |
 | --- | --- | --- | --- |
@@ -263,7 +263,7 @@ export const BodyIntentSchema = z.object({
 | `not_in_earshot` | huddle member apart, or speech target beyond say radius | defer (6.5) or drop | "Você chegou, mas Fulano já tinha saído." |
 | `cooldown` | gesture cooldown (15 s per kind) | drop | (not shown) |
 
-Codes are recorded as `body_blocked` events (operator-only) and fed back as one "Bloqueado:" line. The English renders mirror the pt-BR strings; language follows the scenario (D12).
+Codes are recorded as `body_blocked` events (operator-only) and fed back as one "Bloqueado:" line. `not_in_earshot` is emitted by the resolver (an expired deferral), not by the validator; `slow_down`, `too_far` and `cooldown` are recorded without a line. The English renders mirror the pt-BR strings; language follows the scenario (D12).
 
 ### 6.3 Speech composition
 
@@ -400,6 +400,23 @@ Perfectman files, all paths **[V]** as existing unless marked new.
 | `packages/server/src/simulation/pulse-scheduler.ts` | ADR-0020 (split, focused pulse, `onConsult`), windowed reads, `moved_room` anchor |
 | `packages/server/src/authoring/scenario-md-compiler.ts` | `places:` and `hotelRooms:` |
 | `packages/eval/src/probes/*` | body probes (section 10) over a `BodyFrameLog` |
+
+### 9.1 As built (Phase 2 lane L3)
+
+| Area | Where |
+| --- | --- |
+| Space reducer, `deriveZones`, pathing, `projectSpaceView` | `packages/engine/src/space/` (`applySpaceAction`, `findPath`, `STALE_MS`, `SAY_CLEAR_TILES`, ...) |
+| Body perception, compression, rendering | `packages/engine/src/perception/` (`buildBodyPerception`, `compressBodyPerception`, `renderBodyBlock`, `estimateBodyTokens`) |
+| Validator and deferral test | `packages/engine/src/body/` (`validateBodyIntent`, `speechNeedsDeferral`, `blockedReasonLine`) |
+| Redaction, wake on `body_arrived` | `filter-visible-events.ts` (`redactForListener`); `score-attention.ts` (reason `objective_urgency`) |
+| Prompt: `renderBody`, trim phase, hotel preamble, quoted events | `packages/server/src/agent/action-intent-prompt-builder.ts`, `untrusted-text.ts` |
+| Parser handle check | `packages/server/src/agent/intent-parser.ts` (`bodyDropped`), `surface/action-intent-step.ts` |
+| Resolver: arbiter, body events, deferral, speaker and hearing stamps | `packages/server/src/simulation/intent-resolver.ts`, `room-speech-arbiter.ts`, `actor-audibility.ts` |
+| Split pulse, locks, `onConsult`, `onAgentCommitted`, windowed reads | `pulse-scheduler.ts`, `split-pulse-support.ts`, `in-memory-stores.ts` |
+| Runtime surface (`runPulse`, `getPulseIndex`, `ingest`, `resolveDeferred`, `registerRoomChannel`, `getArbiter`) | `simulation-runtime.ts`; options bag `hotel-options.ts` |
+| Fake grid hotel, body probes, turn-taking probes | `packages/eval/src/embodiment/`, `packages/eval/src/probes/` |
+
+Contract notes for the sidecar: the planner's inputs arrive through `HotelSimulationOptions.onAgentCommitted(AgentCommitInfo)` (validated body with targets and any deferral, the agent's `SpaceView`, committed events); the host must not await in it. A deferred line is re-submitted with `SimulationRuntime.resolveDeferred(agentId, intent)`. Someone farther than 6 tiles with no recent line has no `p#` handle, so the model can only approach a far person who just spoke. `RoomAdjacency.name` carries the display name of a neighbouring room.
 
 ## 10. Quality bar
 

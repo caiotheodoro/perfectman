@@ -46,6 +46,23 @@ export type IEventRepository = {
    * Get the N most recent events for a simulation (for context window).
    */
   getRecent(simulationId: string, limit: number): Promise<CommittedEvent[]>;
+
+  /**
+   * Optional bounded read for long-lived hotel runs (ADR-0024). Returns, in
+   * log order and without duplicates, the union of the last `contextLimit`
+   * agent-visible (non operator-only) events, the last `ownHistoryLimit`
+   * message events of each listed agent, and every event with
+   * `pulseIndex >= sincePulseIndex`. Implementations without it are read
+   * through `getCommittedThrough` as before.
+   */
+  getWindow?(simulationId: string, spec: EventWindowSpec): Promise<CommittedEvent[]>;
+};
+
+export type EventWindowSpec = {
+  contextLimit: number;
+  ownHistoryLimit: number;
+  agentIds: readonly string[];
+  sincePulseIndex: number;
 };
 
 // ── Agent State Repository ────────────────────────────────────────────────────

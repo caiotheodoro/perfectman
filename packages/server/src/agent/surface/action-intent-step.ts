@@ -179,6 +179,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         ...input.perceptionPacket.visibleContextEvents,
       ],
       triggeringEventId: input.perceptionPacket.triggeringEvent?.id,
+      ...(input.perceptionPacket.bodyHandles ? { bodyHandles: input.perceptionPacket.bodyHandles } : {}),
     };
 
     let parseResult = IntentParser.parse(providerResult.content, agentId, input.availableActions, "no_op", targetContext);
@@ -515,6 +516,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       latencyMs: Date.now() - startTime,
       fallbackApplied,
       operatorEvents,
+      ...(parseResult.bodyDropped && !fallbackApplied ? { bodyDropped: parseResult.bodyDropped } : {}),
     };
 
     return { ok: true, value: output };

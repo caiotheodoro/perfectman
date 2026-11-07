@@ -10,6 +10,7 @@ import type {
   ChannelMembership,
 } from "@perfectman/shared";
 import type {
+  EventWindowSpec,
   IEventRepository,
   IAgentStateRepository,
   IMemoryRepository,
@@ -23,12 +24,43 @@ function generateEventId(): string {
   return `evt_${Date.now()}_${(++_counter).toString(36)}`;
 }
 
+export type InMemoryEventRepositoryOptions = {
+  /**
+   * Retention window (ADR-0024). Unset keeps every event, as before. When set,
+   * the oldest events are evicted in chunks once the log outgrows the window,
+   * `getAfter` with an evicted cursor returns the window start instead of
+   * rejecting, and `onEvict` receives what was dropped (the hotel streams it to
+   * an NDJSON sink so replays stay complete).
+   */
+  maxRetained?: number;
+  onEvict?: (simulationId: string, evicted: CommittedEvent[]) => void;
+};
+
+type SimulationLog = {
+  events: CommittedEvent[];
+  /** Absolute position of `events[0]` in the full history. */
+  base: number;
+  /** Event id -> absolute position, for the retained events only. */
+  index: Map<string, number>;
+};
+
 export class InMemoryEventRepository implements IEventRepository {
-  private readonly events = new Map<string, CommittedEvent[]>();
+  private readonly logs = new Map<string, SimulationLog>();
+
+  constructor(private readonly options: InMemoryEventRepositoryOptions = {}) {}
+
+  private log(simulationId: string): SimulationLog {
+    let log = this.logs.get(simulationId);
+    if (!log) {
+      log = { events: [], base: 0, index: new Map() };
+      this.logs.set(simulationId, log);
+    }
+    return log;
+  }
 
   append(simulationId: string, events: SimulationEvent[]): Promise<CommittedEvent[]> {
     if (events.length === 0) return Promise.resolve([]);
-    const log = this.events.get(simulationId) ?? [];
+    const log = this.log(simulationId);
     const now = Date.now();
     const committed: CommittedEvent[] = events.map((evt) => {
       const committedEvent: CommittedEvent = {
@@ -40,33 +72,77 @@ export class InMemoryEventRepository implements IEventRepository {
       };
       return committedEvent;
     });
-    this.events.set(simulationId, [...log, ...committed]);
+    for (const event of committed) {
+      log.index.set(event.id, log.base + log.events.length);
+      log.events.push(event);
+    }
+    this.evictIfNeeded(simulationId, log);
     return Promise.resolve(committed);
   }
 
+  /** Chunked eviction: one O(window) splice per quarter-window of appends, so append stays amortized O(k). */
+  private evictIfNeeded(simulationId: string, log: SimulationLog): void {
+    const max = this.options.maxRetained;
+    if (max === undefined || max <= 0) return;
+    const slack = Math.max(64, Math.floor(max / 4));
+    if (log.events.length <= max + slack) return;
+    const evicted = log.events.splice(0, log.events.length - max);
+    for (const event of evicted) log.index.delete(event.id);
+    log.base += evicted.length;
+    this.options.onEvict?.(simulationId, evicted);
+  }
+
   getById(simulationId: string, eventId: string): Promise<CommittedEvent | null> {
-    const log = this.events.get(simulationId) ?? [];
-    return Promise.resolve(log.find(e => e.id === eventId) ?? null);
+    const log = this.log(simulationId);
+    const abs = log.index.get(eventId);
+    return Promise.resolve(abs === undefined ? null : (log.events[abs - log.base] ?? null));
   }
 
   getAfter(simulationId: string, afterEventId?: string): Promise<CommittedEvent[]> {
-    const log = this.events.get(simulationId) ?? [];
-    if (!afterEventId) return Promise.resolve([...log]);
-    const idx = log.findIndex(e => e.id === afterEventId);
-    if (idx === -1) {
+    const log = this.log(simulationId);
+    if (!afterEventId) return Promise.resolve(log.events.slice());
+    const abs = log.index.get(afterEventId);
+    if (abs === undefined) {
+      // With retention on, an unknown cursor is almost always an evicted one:
+      // hand back the window start (a gap) rather than stalling the pulse.
+      if (this.options.maxRetained !== undefined) return Promise.resolve(log.events.slice());
       return Promise.reject(new Error(`Event not found in simulation ${simulationId}: ${afterEventId}`));
     }
-    return Promise.resolve(log.slice(idx + 1));
+    return Promise.resolve(log.events.slice(abs - log.base + 1));
   }
 
   getCommittedThrough(simulationId: string, pulseIndex: number): Promise<CommittedEvent[]> {
-    const log = this.events.get(simulationId) ?? [];
-    return Promise.resolve(log.filter(e => e.pulseIndex <= pulseIndex));
+    return Promise.resolve(this.log(simulationId).events.filter((e) => e.pulseIndex <= pulseIndex));
   }
 
   getRecent(simulationId: string, limit: number): Promise<CommittedEvent[]> {
-    const log = this.events.get(simulationId) ?? [];
-    return Promise.resolve(log.slice(-limit));
+    return Promise.resolve(this.log(simulationId).events.slice(-limit));
+  }
+
+  getWindow(simulationId: string, spec: EventWindowSpec): Promise<CommittedEvent[]> {
+    const { events } = this.log(simulationId);
+    const keep = new Set<number>();
+    let contextSeen = 0;
+    const wanted = new Set(spec.agentIds);
+    const ownSeen = new Map<string, number>();
+    for (let i = events.length - 1; i >= 0; i--) {
+      const event = events[i]!;
+      if (event.pulseIndex >= spec.sincePulseIndex) keep.add(i);
+      if (contextSeen < spec.contextLimit && event.visibility.visibilityReason !== "operator_only") {
+        keep.add(i);
+        contextSeen++;
+      }
+      if ((event.type === "message_sent" || event.type === "reply_sent") && wanted.has(event.actorId)) {
+        const seen = ownSeen.get(event.actorId) ?? 0;
+        if (seen < spec.ownHistoryLimit) {
+          keep.add(i);
+          ownSeen.set(event.actorId, seen + 1);
+        }
+      }
+    }
+    const out: CommittedEvent[] = [];
+    for (let i = 0; i < events.length; i++) if (keep.has(i)) out.push(events[i]!);
+    return Promise.resolve(out);
   }
 }
 

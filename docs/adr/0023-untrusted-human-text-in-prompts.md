@@ -1,6 +1,6 @@
 # ADR-0023: Untrusted Human Text in Prompts
 
-**Status**: Proposed (2026-11-06) — implements hotel-integration decisions D22 (human chat is untrusted in-world speech; only admin commands steer), D40 (no consent notice when actors enter player-owned rooms) and D43 (actors believe they are human). Decisions **D-85..D-88**.
+**Status**: Accepted and implemented (Phase 2 lane L3, 2026-11-06). Implements D22, D40 and D43. Decisions **D-85..D-88**.
 
 ## Context
 
@@ -46,6 +46,14 @@ D40 also means third-party players' text leaves the hotel for an external OpenAI
 - Admin steering stays on a separate channel (`pm_command` frames, `inject world event`); no code path parses guest text for commands.
 - Replay HTML and SSE surfaces render human text; they must escape it (to be verified against `html-snapshot-gateway.ts` in Phase 2; not verified here).
 - Memory entries derived from guest lines are not flagged in v1; a `provenance` field on `Memory` is a Phase 3 candidate if canary runs show persistence.
+
+## Implementation notes (Phase 2 L3)
+
+- Hotel mode is `PersonaPromptProfile.hotelMode` or a perception that carries a `body`. In hotel mode `ActionIntentPromptBuilder` replaces the "roleplaying ... online chat room" sentence with a first-person framing plus the fixed speech frame, drops the actor id from the output contract, calls the reader "a person" rather than "a real person", asks for `body`, renders every event through `formatHotelEvent` and has its own `templateVersion`. Non-hotel prompts are byte-identical (existing prompt tests pin them).
+- `formatHotelEvent` shows the speaker's `payload.senderName` (aliased "Alguem" / "Someone" when it fails the name pattern) and the content, both as JSON strings with `<` and `>` escaped; newlines collapse during sanitizing. Internal ids never appear. `untrusted-text.ts` holds `sanitizeUntrustedText`, `quoteUntrusted` and `safeDisplayName`; the adapter sanitizes at ingestion and the renderer does it again.
+- The body block comes from the engine's `renderBodyBlock` (names, rooms and labels quoted there). `trimToFit` compresses it (levels 1 to 3) before it drops any event; `PromptTrim.bodyCompressionLevel` records it.
+- A rendered-prompt test greps the hotel fixture for the forbidden words (AI, IA, bot, robo, model, agent, simulation, pulse, badge, "real person"); scenario-authored text such as relationship notes is outside the lint.
+- Not done here: replay HTML escaping (still to verify against `html-snapshot-gateway.ts`), and the real-model canary runs.
 
 ## Cross-links
 

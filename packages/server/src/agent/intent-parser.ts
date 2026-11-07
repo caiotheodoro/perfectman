@@ -1,5 +1,5 @@
 import { ModelIntentPacketSchema, composeIntentPacket, MemoryWriteProposalSchema, MemoryWriteShortSchema, normalizeMemoryWriteProposal } from "@perfectman/shared";
-import type { ActionIntent, AvailableAction, CommittedEvent, IntentType } from "@perfectman/shared";
+import type { ActionIntent, AvailableAction, BlockedReason, BodyHandleMap, BodyIntent, CommittedEvent, IntentType } from "@perfectman/shared";
 
 type TargetField = "replyToEventId" | "targetEventId";
 
@@ -13,7 +13,28 @@ export type TargetResolutionContext = {
   eventHandles: Record<string, string>; // "e1" -> real event id, as shown to the model this render
   events: CommittedEvent[]; // triggering event followed by visible-context events (for actor + floor lookup)
   triggeringEventId?: string; // retry-exhausted floor: infer this as the target
+  /**
+   * Hotel mode (ADR-0019): the body handles minted for this render. Without it
+   * a `body` block is dropped (a run that was not asked for one must not
+   * carry one); with it, a block naming any unknown handle is dropped too.
+   */
+  bodyHandles?: BodyHandleMap;
 };
+
+/** Every handle a `body` block refers to, in field order. */
+export function bodyRefs(body: BodyIntent): string[] {
+  const refs: string[] = [];
+  const move = body.move;
+  if (move) {
+    if ("target" in move) refs.push(move.target);
+    if ("place" in move) refs.push(move.place);
+    if (move.kind === "leave" && move.to) refs.push(move.to);
+  }
+  if (body.posture?.at) refs.push(body.posture.at);
+  if (body.gesture?.toward) refs.push(body.gesture.toward);
+  if (body.face) refs.push(body.face);
+  return refs;
+}
 
 export type IntentParserResult = {
   intent: ActionIntent;
@@ -38,6 +59,8 @@ export type IntentParserResult = {
   // resolved against `TargetResolutionContext.eventHandles`. The caller
   // re-prompts once with a targeted note, then applies `floorTargets`.
   unresolvedTarget?: { field: TargetField; badHandle: string; validHandles: string[] };
+  /** Hotel mode: the `body` block named a handle that is not in this render, so it was dropped and the speech kept. */
+  bodyDropped?: BlockedReason[];
 };
 
 type TargetResolution =
@@ -262,6 +285,22 @@ export class IntentParser {
       // Runs only when the step supplies the render's handle map. An
       // unresolvable handle is a retriable failure, not a fallback: the
       // original intent is returned so the caller can re-prompt then floor.
+      // The body block rides on the speech half; a bad block never costs the
+      // line (ADR-0019). Handles are checked here, ids are mapped by the
+      // resolver's validator from the same per-render map.
+      let bodyDropped: BlockedReason[] | undefined;
+      if (intent.body) {
+        const known = targetContext?.bodyHandles;
+        const unknown = known ? bodyRefs(intent.body).filter((ref) => known[ref] === undefined) : undefined;
+        if (!known || (unknown && unknown.length > 0)) {
+          if (unknown && unknown.length > 0) {
+            bodyDropped = unknown.map((ref) => ({ code: "unknown_ref" as const, ref }));
+          }
+          const { body: _dropped, ...withoutBody } = intent;
+          intent = withoutBody;
+        }
+      }
+
       if (targetContext) {
         const resolution = this.resolveTargets(intent, targetContext, { floor: false });
         if (resolution.kind === "unresolved") {
@@ -274,6 +313,7 @@ export class IntentParser {
               badHandle: resolution.badHandle,
               validHandles: resolution.validHandles,
             },
+            ...(bodyDropped ? { bodyDropped } : {}),
           };
         }
       }
@@ -283,6 +323,7 @@ export class IntentParser {
         fallbackApplied: false,
         ...(truncationRepaired ? { truncationRepaired: true, rawLength: rawText.length } : {}),
         ...(droppedMemoryWrites > 0 ? { droppedMemoryWrites } : {}),
+        ...(bodyDropped ? { bodyDropped } : {}),
       };
     } catch (error: any) {
       const errorMsg = error instanceof Error ? error.message : String(error);

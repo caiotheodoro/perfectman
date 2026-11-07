@@ -1,6 +1,6 @@
 # ADR-0020: Decide / Generate / Commit Split and the Focused Pulse
 
-**Status**: Proposed (2026-11-06), amended after the Phase 1 latency spike (`spike/RESULTS.md` on branch `spike/pulse-latency`) — implements hotel-integration decision D17 as changed by D52 (6 s base pulse plus a focused pulse on human chat that fires at once, 300 ms coalescing, no trailing debounce) and the timing target "addressed reply p50 <= 5 s, p95 <= 10 s". Decisions **D-71..D-75**. The spike showed the first draft (one pulse in flight, focused pulse queued behind it, 1.5 s debounce, turn-ordered commit) misses both targets; the lane, locks and commit rules below are the result.
+**Status**: Accepted and implemented (Phase 2 lane L3, 2026-11-06), as amended after the Phase 1 latency spike (`spike/RESULTS.md` on branch `spike/pulse-latency`). Implements D17 as changed by D52 and the addressed-reply targets. Decisions **D-71..D-75**.
 
 ## Context
 
@@ -46,6 +46,18 @@
 - Events committed by focused pulses carry the next base pulse's `pulseIndex`; analyses that group by pulse see them in that pulse.
 - If the spike's targets regress on the real model, the remaining levers are a faster model for addressed replies, a hedged second request, or a relaxed target, not a scheduler change.
 - `SimulationRuntime.runPulse(simulationId)` ([`simulation-runtime.ts:279`](../../packages/server/src/simulation/simulation-runtime.ts)) gains the options parameter and a `getPulseIndex(simulationId)` accessor used by human ingestion ([ADR-0022](./0022-guests-and-human-ingestion.md)).
+
+## Implementation notes (Phase 2 L3)
+
+- `PulseSchedulerConfig` gains `pulseMode` (default `"sequential"`, the old loop, now factored into `decideAgent` / `generateFor` / `commitIntent` with identical order and output), `generateConcurrency` (3), `generateDeadlineMs` (20 000), `onConsult`, `commitOrder` (`"settle"` default, `"turn"` for eval and replay), `windowedReads`, `arbiter`, `spaceMirror`, `onAgentCommitted` and `clock`. `buildConfiguredSimulation(config, { hotel })` takes them as one `HotelSimulationOptions` bag; without it nothing changes.
+- Lanes: one base pulse in flight (`inFlight`), any number of focused pulses beside it. `SimulationRuntime.runPulse(simulationId, opts?)`, `getPulseIndex`, `awaitIdle` and `resolveDeferred` are the runtime surface.
+- Locks and staleness: the per-agent lock (`AgentLocks`, FIFO hand-over) is held during decide and again from the moment a generate task takes its slot until its commit ends. A base pulse skips a locked agent; a focused pulse waits for it. State is single-writer: `PulseScheduler.stateCache` is read under the lock and written by `persistAndSnapshot`, which bumps a per-agent version. A task whose agent was committed by another lane while it waited for a slot is **re-decided on fresh state** before its model call (the spike only gated on a lock). Pending tasks that no longer need a call are dropped without a call.
+- `GenerateSemaphore`: with more than one slot, one is reserved; only an addressed call may take the last free slot, and waiting tasks run addressed, then ambient, then fidget (FIFO within a class). In `commitOrder: "turn"` every task is ambient so slot order equals turn order and the commit gate cannot deadlock.
+- Addressed means: a `human_chat` focused pulse for that agent, or the engine's `direct_mention` / `reply_to_self` reasons. `getPriority(sim, agent, { addressed: true })` is passed only in split mode.
+- `pulseIndex`: a base pulse captures its index, then increments `pulseIndex` when its decide phase ends (not when it finishes), so lines ingested and focused pulses started while it generates are stamped with the next index. A focused pulse never advances it, skips stagnation and goal review, and ages the simulation by `elapsedMs`.
+- `onConsult` fires after the slot and the lock are taken, immediately before `generateIntent`. A deadline expiry is the existing `llm_failure` path.
+- `PresenceProfile.responseDelayMs` is carried through `PersonaPromptProfile.responseDelayMs` and `AgentContext.responseDelayMs`; `SimulationRuntime.getResponseDelayMs` and `sampleLandingDelayMs(range, chars, rng)` give the gateway its landing delay (`min(4000, draw + 55 ms x chars)`).
+- A generic `WallClockPulseLoop` (server) implements the two lanes of ADR-0024 on an injected clock; the hotel package can wrap it or keep its own.
 
 ## Cross-links
 
