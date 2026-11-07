@@ -16,6 +16,7 @@ import { pickTile } from "../embodiment/tiles.js";
 import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
+import { ChatPacer } from "./replay-pacing.js";
 import { parseScenarioBody } from "./scenario-body.js";
 import { ReplayError, buildReplayPlan, loadReplayArtifacts } from "./replay-plan.js";
 import type { ReplayPlan, ReplayStep } from "./replay-plan.js";
@@ -83,6 +84,8 @@ export class ReplayRun {
   private readonly avatars = new Map<string, number>();
   private readonly gone = new Set<string>();
   private readonly chains = new Map<string, Promise<void>>();
+  /** Per actor: when its chat went out, so a fast replay stays inside the hotel's chat budget. */
+  private readonly pacers = new Map<string, ChatPacer>();
   private readonly timers = new Set<TimerHandle>();
   private abort = new AbortController();
   private paused = false;
@@ -258,13 +261,23 @@ export class ReplayRun {
     return ref === undefined ? undefined : this.avatars.get(ref);
   }
 
-  private command(step: Extract<ReplayStep, { k: "cmd" }>): void {
-    const { link } = this.d;
+  private async command(step: Extract<ReplayStep, { k: "cmd" }>): Promise<void> {
+    const { link, clock } = this.d;
     const actor = this.avatars.get(step.ref);
-    const lease = link.leaseOf(this.id);
-    if (this.stopping || actor === undefined || lease === undefined || this.gone.has(step.ref)) return;
+    if (this.stopping || actor === undefined || link.leaseOf(this.id) === undefined || this.gone.has(step.ref)) return;
     const wire = this.remapCmd(step);
     if (!wire) return;
+    if (wire.k === "chat") {
+      // The hotel drops chat over 4 lines per 6 s per actor (`rate_limited`), which a fast replay would hit.
+      const pacer = this.pacers.get(step.ref) ?? new ChatPacer();
+      this.pacers.set(step.ref, pacer);
+      for (let wait = pacer.waitMs(clock.now()); wait > 0; wait = pacer.waitMs(clock.now())) {
+        if (!(await sleepOn(clock, wait, this.abort.signal))) return;
+      }
+      pacer.record(clock.now());
+    }
+    const lease = link.leaseOf(this.id);
+    if (this.stopping || lease === undefined || this.gone.has(step.ref)) return;
     link.send({ t: "actor_cmd", cid: link.nextCid(this.id), run: this.id, lease, actor, cmd: wire });
     if (wire.k === "chat" && wire.mode !== "thought") this.speaking.lines++;
     else if (wire.k === "walk" || wire.k === "move_room") this.speaking.moves++;
