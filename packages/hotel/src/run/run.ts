@@ -9,6 +9,7 @@ import {
 } from "@perfectman/server/hotel";
 import type { AgentCommitInfo, ConfiguredSimulationHandle, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
 import { join } from "node:path";
+import { withMockBody } from "../llm/mock-body.js";
 import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
@@ -121,6 +122,7 @@ export class Run {
   private readonly frames: FrameLogRecorder;
   /** Events the in-memory log evicted, streamed to `events.jsonl` so a long run stays complete without growing. */
   private eventSink: NdjsonEventSink | undefined;
+  private readonly mockConsults = new Map<string, number>();
   private readonly agents = new Map<string, { name: string; spawned: boolean; gone: boolean }>();
   private readonly memory = new Map<string, PlannerMemory>();
   private readonly arousal = new Map<string, number>();
@@ -368,7 +370,7 @@ export class Run {
   }
 
   private provider(llm: LLMConfig, agentId: string): LLMProvider {
-    const inner: LLMProvider = llm.providerType === "mock" ? new MockLLMProvider() : createLLMProvider(llm, agentId);
+    const inner: LLMProvider = llm.providerType === "mock" ? withMockBody(new MockLLMProvider(), this.mockConsults) : createLLMProvider(llm, agentId);
     return this.d.governor.wrap(inner, {
       onSuccess: (r) => {
         this.meter.recordSuccess(this.d.hotel.llm.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs);

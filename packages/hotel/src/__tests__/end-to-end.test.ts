@@ -144,4 +144,10 @@ describe("one run end to end on the fake Director with the mock provider", () =>
     const filler = lines.filter((e) => e.payload.text?.startsWith("filler ")).map((e) => e.payload.text);
     expect(filler).toEqual(Array.from({ length: 300 }, (_, i) => `filler ${i}`));
   });
+  it("the mock provider gives some actors a body: an actor sits on the seat and the sit command reaches the hotel", async () => {
+    const { fake: hotel } = await bootWith({ timing: { baseIntervalMs: 40, coalesceMs: 10 } });
+    hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    const sit = await waitFor(() => hotel.received.find((f) => f.t === "actor_cmd" && f.cmd.k === "sit"), "a sit command", 20_000);
+    expect(sit).toMatchObject({ t: "actor_cmd", cmd: { k: "sit", furni: 1 } });
+  }, 30_000);
 });
