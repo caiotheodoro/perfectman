@@ -17,9 +17,11 @@
     "dev": "tsc -p tsconfig.json --watch",
     "gen:director": "node scripts/gen-director.mjs",
     "test": "node scripts/gen-director.mjs --check && vitest run --passWithNoTests",
-    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit",
+    "typecheck": "tsc -p tsconfig.json --noEmit && tsc -p tsconfig.test.json --noEmit && tsc -p tsconfig.probe.json --noEmit",
     "start": "node dist/main.js",
-    "bench:latency": "node dist/llm/bench-latency.js"
+    "bench:latency": "node dist/llm/bench-latency.js",
+    "probe:llm": "vitest run --config probe/vitest.config.ts probe/llm-chain.probe.ts",
+    "probe:canary": "vitest run --config probe/vitest.config.ts probe/canary.probe.ts"
   },
   "dependencies": {
     "@perfectman/engine": "workspace:*",

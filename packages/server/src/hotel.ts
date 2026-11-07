@@ -38,6 +38,9 @@ export type { LLMConfig } from "./llm/llm-config.js";
 export type { LLMProvider, LLMProviderResult } from "./llm/llm-provider.js";
 export { LLMHttpError, LLMError, LLMTimeoutError } from "./llm/llm-errors.js";
 export { createLLMProvider } from "./llm/provider-factory.js";
+// The chain builds one provider per link with its own fetch (extra headers) and env.
+export { OpenAiCompatibleProvider } from "./llm/openai-compatible-provider.js";
+export type { LlmTransportDeps } from "./llm/sdk-transport.js";
 export { MockLLMProvider } from "./llm/mock-llm-provider.js";
 
 export {

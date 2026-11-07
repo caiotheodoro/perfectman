@@ -1,0 +1,186 @@
+import type { ModelPrice } from "../config.js";
+
+/**
+ * One link of the LLM provider chain (docs/plans/hotel-llm-chain.md). Parsed from
+ * `PERFECTMAN_LLM_CHAIN`, a JSON array; the first link is the default model and
+ * the rest are failovers, in order.
+ */
+export type LlmLink = {
+  /** Unique label: logs, per-link usage, breaker and governor state. */
+  name: string;
+  baseUrl: string;
+  /** The NAME of the env var holding this link's key (never the key). */
+  apiKeyEnv: string;
+  model: string;
+  /** The model's context window. Absent means "large enough": the link never rejects a prompt for size. */
+  maxContextTokens?: number;
+  /** Header that carries the run id (OpenCode Go requires `x-opencode-session`). */
+  sessionHeader?: string;
+  /** Extra static headers. Never credentials: the key comes from `apiKeyEnv`. */
+  headers?: Record<string, string>;
+  /** Per-attempt deadline; defaults to {@link DEFAULT_LINK_TIMEOUT_MS}. */
+  timeoutMs?: number;
+  /**
+   * Real tokens per token the prompt builder counts (it counts chars/4). Above 1 for tokenizers
+   * that split pt-BR finer; the input budget shrinks by it. Defaults to the measured value for
+   * known models, else 1.
+   */
+  tokenRatio?: number;
+  /** Append the house rules (short in-world rules against echoing, admitting, leaking) to the system prompt. Default true. */
+  harden?: boolean;
+};
+
+/** The model's answer is capped here; the rest of the window is the prompt's. */
+export const LINK_MAX_OUTPUT_TOKENS = 400;
+/**
+ * The prompt builder counts chars/4. A real tokenizer disagrees (more so on pt-BR),
+ * so a link only gets this share of the window left over after the answer.
+ * 4096 -> (4096 - 400) * 0.92 = 3400.
+ */
+export const LINK_INPUT_SAFETY = 0.92;
+/** Prompt cap when the link does not say how big its window is (the legacy default). */
+export const DEFAULT_MAX_INPUT_TOKENS = 6000;
+export const DEFAULT_LINK_TIMEOUT_MS = 8000;
+
+/** What a link may be sent, in the prompt builder's own (chars/4) token unit. */
+export function linkInputBudget(link: Pick<LlmLink, "maxContextTokens" | "tokenRatio">, maxOutputTokens = LINK_MAX_OUTPUT_TOKENS): number {
+  if (link.maxContextTokens === undefined) return DEFAULT_MAX_INPUT_TOKENS;
+  return Math.max(256, Math.floor(((link.maxContextTokens - maxOutputTokens) * LINK_INPUT_SAFETY) / (link.tokenRatio ?? 1)));
+}
+
+/**
+ * Real prompt tokens over the builder's chars/4 estimate, measured on the pt-BR hotel prompt
+ * (docs/plans/hotel-llm-chain.md): MythoMax's Llama-2 tokenizer 1.25, Lunaris's Llama-3 one 1.07
+ * (rounded up). A model missing here counts 1.
+ */
+export const KNOWN_TOKEN_RATIOS: Readonly<Record<string, number>> = {
+  "gryphe/mythomax-l2-13b": 1.25,
+  "sao10k/l3-lunaris-8b": 1.1,
+};
+
+/**
+ * Known prices in USD per million tokens. A model missing here costs 0 in the
+ * meter; `PERFECTMAN_LLM_PRICES` overrides any entry. OpenCode Go is a flat
+ * subscription, so its marginal cost is 0.
+ */
+export const KNOWN_PRICES: Readonly<Record<string, ModelPrice>> = {
+  "gryphe/mythomax-l2-13b": { inUsdPerMTok: 0.08, outUsdPerMTok: 0.11 },
+  "sao10k/l3-lunaris-8b": { inUsdPerMTok: 0.04, outUsdPerMTok: 0.05 },
+  "glm-5.3-flash": { inUsdPerMTok: 0, outUsdPerMTok: 0 },
+};
+
+const HEADER_NAME = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
+const FORBIDDEN_HEADERS = new Set(["authorization", "proxy-authorization", "cookie", "content-type", "content-length", "host"]);
+
+const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
+
+/**
+ * Parses and validates `PERFECTMAN_LLM_CHAIN`. Every problem is pushed (not
+ * thrown) so the config loader can name them all at once. Returns `[]` on any
+ * problem: a half-parsed chain would run a different model than the operator wrote.
+ */
+export function parseChain(raw: string, problems: string[]): LlmLink[] {
+  const before = problems.length;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    problems.push(`PERFECTMAN_LLM_CHAIN is not valid JSON: ${(err as Error).message}`);
+    return [];
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    problems.push("PERFECTMAN_LLM_CHAIN must be a non-empty JSON array");
+    return [];
+  }
+  const links: LlmLink[] = [];
+  const names = new Set<string>();
+  parsed.forEach((entry, i) => {
+    const at = `PERFECTMAN_LLM_CHAIN[${i}]`;
+    if (!isRecord(entry)) {
+      problems.push(`${at} must be an object`);
+      return;
+    }
+    const str = (key: string): string => {
+      const v = entry[key];
+      if (typeof v !== "string" || v.trim() === "") {
+        problems.push(`${at}.${key} must be a non-empty string`);
+        return "";
+      }
+      return v.trim();
+    };
+    const name = str("name");
+    const baseUrl = str("baseUrl");
+    const apiKeyEnv = str("apiKeyEnv");
+    const model = str("model");
+    if (name && names.has(name)) problems.push(`${at}.name "${name}" is used twice`);
+    names.add(name);
+    if (baseUrl && !/^https?:\/\//.test(baseUrl)) problems.push(`${at}.baseUrl must be an http(s) URL`);
+    if (apiKeyEnv && !/^[A-Za-z_][A-Za-z0-9_]*$/.test(apiKeyEnv)) problems.push(`${at}.apiKeyEnv must be an env var NAME (got a value?)`);
+
+    const link: LlmLink = { name, baseUrl, apiKeyEnv, model };
+    const numeric = (key: "maxContextTokens" | "timeoutMs", min: number): void => {
+      const v = entry[key];
+      if (v === undefined || v === null) return;
+      if (typeof v !== "number" || !Number.isInteger(v) || v < min) problems.push(`${at}.${key} must be an integer >= ${min}`);
+      else link[key] = v;
+    };
+    numeric("maxContextTokens", 1024);
+    numeric("timeoutMs", 1000);
+    const ratio = entry["tokenRatio"];
+    if (ratio !== undefined && ratio !== null) {
+      if (typeof ratio !== "number" || !(ratio >= 0.5 && ratio <= 3)) problems.push(`${at}.tokenRatio must be a number between 0.5 and 3`);
+      else link.tokenRatio = ratio;
+    } else if (KNOWN_TOKEN_RATIOS[model] !== undefined) link.tokenRatio = KNOWN_TOKEN_RATIOS[model];
+
+    if (entry["harden"] !== undefined && entry["harden"] !== null) {
+      if (typeof entry["harden"] !== "boolean") problems.push(`${at}.harden must be true or false`);
+      else link.harden = entry["harden"];
+    }
+    const session = entry["sessionHeader"];
+    if (session !== undefined && session !== null) {
+      if (typeof session !== "string" || !HEADER_NAME.test(session) || FORBIDDEN_HEADERS.has(session.toLowerCase())) problems.push(`${at}.sessionHeader must be a header name`);
+      else link.sessionHeader = session;
+    }
+    const headers = entry["headers"];
+    if (headers !== undefined && headers !== null) {
+      if (!isRecord(headers)) problems.push(`${at}.headers must be an object of strings`);
+      else {
+        const out: Record<string, string> = {};
+        for (const [k, v] of Object.entries(headers)) {
+          if (typeof v !== "string" || !HEADER_NAME.test(k)) problems.push(`${at}.headers.${k} must be a string value under a valid header name`);
+          else if (FORBIDDEN_HEADERS.has(k.toLowerCase())) problems.push(`${at}.headers.${k} is not allowed (keys come from apiKeyEnv)`);
+          else out[k] = v;
+        }
+        link.headers = out;
+      }
+    }
+    links.push(link);
+  });
+  return problems.length > before ? [] : links;
+}
+
+/** The single link the legacy `PERFECTMAN_LLM_*` variables describe. */
+export function legacyLink(baseUrl: string, apiKeyEnv: string, model: string): LlmLink {
+  return { name: "default", baseUrl, apiKeyEnv, model };
+}
+
+/** OpenRouter asks for attribution headers; they never override what a link set itself. */
+export function defaultHeadersFor(baseUrl: string): Record<string, string> {
+  let host = "";
+  try {
+    host = new URL(baseUrl).hostname;
+  } catch {
+    return {};
+  }
+  if (host === "openrouter.ai" || host.endsWith(".openrouter.ai")) return { "HTTP-Referer": "https://habbo.avenza.cloud", "X-Title": "CMB" };
+  return {};
+}
+
+/** The headers a call to this link carries besides authorization: defaults, the link's own, and the run id. */
+export function linkHeaders(link: LlmLink, sessionId: string | number): Record<string, string> {
+  return {
+    ...defaultHeadersFor(link.baseUrl),
+    ...link.headers,
+    ...(link.sessionHeader ? { [link.sessionHeader]: String(sessionId) } : {}),
+  };
+}

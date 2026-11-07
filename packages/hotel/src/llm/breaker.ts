@@ -83,14 +83,18 @@ export class BreakerDriver {
     this.gateway.observe(this.probeEvent(ok));
   }
 
-  /** A probe is one more observed call: the same motive prefixes the scheduler's events carry. */
+  /**
+   * A probe is one more observed call. The breaker reads the structured `providerFailure` flag
+   * (what the scheduler sets on every real call), so model text can never trip it; the motive
+   * keeps the engine's prefixes for a server that predates the flag.
+   */
   private probeEvent(ok: boolean): OperatorEvent {
     return {
       type: "action_intent",
       simulationId: this.o.simulationId,
       pulseIndex: 0,
       detail: "Circuit breaker probe",
-      data: { privateMotiveSummary: ok ? "Circuit breaker probe answered." : "Provider failed: circuit breaker probe" },
+      data: { providerFailure: !ok, privateMotiveSummary: ok ? "Circuit breaker probe answered." : "Provider failed: circuit breaker probe" },
       createdAt: this.o.clock.now(),
     };
   }

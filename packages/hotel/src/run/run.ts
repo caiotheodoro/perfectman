@@ -13,6 +13,7 @@ import { withMockBody } from "../llm/mock-body.js";
 import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
+import { linksOf } from "../config.js";
 import type { HotelConfig } from "../config.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
@@ -24,6 +25,7 @@ import { HotelGateway } from "../gateway/hotel-gateway.js";
 import type { CastEntry, GatewayTiming } from "../gateway/hotel-gateway.js";
 import { GuestIngestor } from "../ingest/guest-ingestor.js";
 import { BreakerDriver } from "../llm/breaker.js";
+import { COST_HEADER, LlmChain } from "../llm/chain.js";
 import { GENERATE_DEADLINE_MS, hostLlmConfig, pingLlm } from "../llm/env.js";
 import { LlmGovernor } from "../llm/governor.js";
 import { LlmMeter } from "../llm/meter.js";
@@ -119,6 +121,8 @@ export class Run {
   private breaker!: BreakerDriver;
   private unsubscribeBudget: (() => void) | undefined;
   private readonly meter: LlmMeter;
+  /** The provider chain (failover, per-link breakers, per-link usage); absent for the mock provider. */
+  private readonly chain: LlmChain | undefined;
   private readonly frames: FrameLogRecorder;
   /** Events the in-memory log evicted, streamed to `events.jsonl` so a long run stays complete without growing. */
   private eventSink: NdjsonEventSink | undefined;
@@ -150,6 +154,10 @@ export class Run {
     this.home = String(params.room);
     this.homeChannelId = `room:${params.room}`;
     this.meter = new LlmMeter(d.hotel.llm.prices);
+    const links = linksOf(d.hotel.llm);
+    this.chain = links.length > 0
+      ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: d.hotel.llm.prices, logger: d.logger, onCap: (cap) => this.setPromptCap(cap) })
+      : undefined;
     this.frames = new FrameLogRecorder(d.clock);
   }
 
@@ -213,7 +221,7 @@ export class Run {
     } catch (err) {
       return { ok: false, code: "model_not_allowed", message: (err as Error).message };
     }
-    const healthy = await pingLlm(this.hostLlm, process.env[hotel.llm.apiKeyEnv]);
+    const healthy = await this.pingProvider();
     if (!healthy) return { ok: false, code: "llm_unavailable", message: "the model endpoint did not answer a health check" };
     return { ok: true };
   }
@@ -272,7 +280,7 @@ export class Run {
       clock,
       simulationId: cfg.simulation.id ?? `hotel-run-${this.id}`,
       ...(this.d.timing?.breakerInitialBackoffMs !== undefined ? { initialBackoffMs: this.d.timing.breakerInitialBackoffMs } : {}),
-      probe: () => pingLlm(this.hostLlm, process.env[hotel.llm.apiKeyEnv]),
+      probe: () => this.pingProvider(),
       // An admin pause already holds the run: the breaker then does not own it and will not resume it.
       onOpen: () => {
         this.pause("breaker");
@@ -369,7 +377,31 @@ export class Run {
     };
   }
 
+  /** True when any link of the chain answers (the lone provider when there is no chain). */
+  private pingProvider(): Promise<boolean> {
+    return this.chain ? this.chain.ping() : pingLlm(this.hostLlm, process.env[this.d.hotel.llm.apiKeyEnv]);
+  }
+
+  /** The runtime renders prompts with the config every actor was given (shared by reference), so moving its cap moves the trim. */
+  private setPromptCap(cap: number): void {
+    if (this.hostLlm) this.hostLlm.maxInputTokens = cap;
+  }
+
+  /** Per-link usage, cost and latency, and which link served: the chain's view of this run (empty for the mock provider). */
+  llmChain(): LlmChain | undefined {
+    return this.chain;
+  }
+
   private provider(llm: LLMConfig, agentId: string): LLMProvider {
+    if (this.chain && llm.providerType !== "mock") {
+      return this.chain.provider(llm, agentId, {
+        onSuccess: (r) => {
+          const billed = r.responseHeaders?.[COST_HEADER];
+          this.meter.recordSuccess(this.d.hotel.llm.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs, billed !== undefined ? Number(billed) : undefined);
+        },
+        onFailure: () => this.meter.recordFailure(),
+      });
+    }
     const inner: LLMProvider = llm.providerType === "mock" ? withMockBody(new MockLLMProvider(), this.mockConsults) : createLLMProvider(llm, agentId);
     return this.d.governor.wrap(inner, {
       onSuccess: (r) => {
@@ -798,6 +830,7 @@ export class Run {
         this.d.logger.warn("runtime stop failed", { run: this.id, error: err instanceof Error ? err.message : String(err) });
       }
       const m = this.meter.snapshot();
+      if (this.chain) this.d.logger.info("run llm usage", { run: this.id, calls: m.calls, costUsd: m.costUsd, p50Ms: m.p50Ms, p95Ms: m.p95Ms, chain: this.chain.snapshot() });
       try {
         const written = await writeRunArtifacts(hotel.dataDir, this.id, events, this.frames.log, {
           run: this.id,
@@ -809,7 +842,7 @@ export class Run {
           startedAt: this.startedAt,
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
-          counters: { llm_calls: m.calls, llm_failures: m.failures, undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
+          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
         await link.registerArtifacts(this.id, written);
@@ -895,7 +928,7 @@ export class Run {
 
   statusText(): string {
     const m = this.meter.snapshot();
-    return `${this.state}${this.pauseCause ? ` (${this.pauseCause})` : ""}, pulse ${this.port?.pulseIndex() ?? 0}, ${m.calls} calls, $${m.costUsd.toFixed(4)}, p95 ${m.p95Ms ?? "n/a"} ms`;
+    return `${this.state}${this.pauseCause ? ` (${this.pauseCause})` : ""}, pulse ${this.port?.pulseIndex() ?? 0}, ${m.calls} calls, $${m.costUsd.toFixed(4)}, p95 ${m.p95Ms ?? "n/a"} ms${this.chain ? `, served ${this.chain.snapshot().links.map((l) => `${l.name} ${l.served}`).join(" / ")}` : ""}`;
   }
 
   get endReason(): SidecarEndReason | undefined {

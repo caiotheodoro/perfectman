@@ -27,6 +27,8 @@ export function governorClock(clock: Clock): GovernorClock {
  */
 export class LlmGovernor {
   readonly shared = new GovernorShared();
+  /** One penalty window per chain link: a 429 from one provider must not delay another. */
+  private readonly byLink = new Map<string, GovernorShared>();
   private readonly gov: GovernorClock;
 
   constructor(
@@ -42,8 +44,27 @@ export class LlmGovernor {
     return Math.max(0, this.shared.penaltyUntil - this.clock.now());
   }
 
-  wrap(inner: LLMProvider, hooks: GovernorHooks): LLMProvider {
-    const governed = governProvider(inner, this.shared, { maxDelayMs: 10_000, ...this.tuning, rng: this.rng, clock: this.gov });
+  /** The penalty window of one link (created on first use). */
+  sharedFor(link: string): GovernorShared {
+    let shared = this.byLink.get(link);
+    if (!shared) {
+      shared = new GovernorShared();
+      this.byLink.set(link, shared);
+    }
+    return shared;
+  }
+
+  penaltyLeftFor(link: string): number {
+    return Math.max(0, this.sharedFor(link).penaltyUntil - this.clock.now());
+  }
+
+  /**
+   * `link` picks that link's own penalty window; `tuning` overrides the retry policy for this
+   * wrapper (a chain link with a failover behind it retries less and waits less).
+   */
+  wrap(inner: LLMProvider, hooks: GovernorHooks, link?: string, tuning: GovernorTuning = {}): LLMProvider {
+    const shared = link === undefined ? this.shared : this.sharedFor(link);
+    const governed = governProvider(inner, shared, { maxDelayMs: 10_000, ...this.tuning, ...tuning, rng: this.rng, clock: this.gov });
     return {
       generateIntent: async (input, context, prompt) => {
         try {
