@@ -112,6 +112,13 @@ describe("a line held until its speaker arrives (move_then_speak, ADR-0019)", ()
     const actor = f.avatarByRef("person-1");
     const walks = (): number => f.received.filter((x) => x.t === "actor_cmd" && x.cmd.k === "walk" && x.actor === actor?.id).length;
     const before = walks();
+    // A line is delivered to the hotel only when some cast member hears it (ADR-0022: "a line nobody hears" is operator-only), and `say` carries 10 tiles.
+    // The cast stands near the door and the addressee is about to go to the far corner, so one listener is put there first rather than left to wander by chance.
+    const manager = fx.b.sidecar.manager;
+    const listener = f.avatarByRef("person-2");
+    if (!manager || !listener) throw new Error("no listener to place");
+    expect(manager.send({ t: "actor_cmd", run: 7, lease: manager.leaseOf(7) ?? 0, cid: manager.nextCid(7), actor: listener.id, cmd: { k: "walk", x: 20, y: 2 } })).toBe(true);
+    await waitFor(() => f.avatarByRef("person-2")?.x === 20 && f.avatarByRef("person-2")?.state === "stand", "the listener at the far end", 6000);
     commit(fx, text, {
       accepted: { order: "move_then_speak", move: { kind: "approach", target: "p1", band: "personal" } },
       targets: { p1: { kind: "person", ref: "h:9" } },
@@ -125,5 +132,5 @@ describe("a line held until its speaker arrives (move_then_speak, ADR-0019)", ()
     const me = f.avatarByRef("person-1");
     const ana = f.rooms.get(12)?.avatars.get(9);
     expect(me && ana ? Math.max(Math.abs(me.x - ana.x), Math.abs(me.y - ana.y)) : 99).toBeLessThanOrEqual(6);
-  });
+  }, 25_000);
 });
