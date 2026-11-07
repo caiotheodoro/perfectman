@@ -44,6 +44,9 @@ describe("sidecar configuration", () => {
     expect(c.llm.prices["fast-model"]).toEqual({ inUsdPerMTok: 0.2, outUsdPerMTok: 0.8 });
     const mock = parseConfig({ PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: GOOD.PERFECTMAN_SECRET, PERFECTMAN_DIRECTOR_URL: GOOD.PERFECTMAN_DIRECTOR_URL, PERFECTMAN_INTERNAL_URL: GOOD.PERFECTMAN_INTERNAL_URL, PERFECTMAN_LLM_PROVIDER: "mock" });
     expect(mock.llm).toMatchObject({ provider: "mock", models: ["mock"] });
+    // Compose passes unset settings through as empty strings; that must still mean "the default".
+    const blank = parseConfig({ PERFECTMAN_ENABLED: "1", PERFECTMAN_SECRET: GOOD.PERFECTMAN_SECRET, PERFECTMAN_DIRECTOR_URL: GOOD.PERFECTMAN_DIRECTOR_URL, PERFECTMAN_INTERNAL_URL: GOOD.PERFECTMAN_INTERNAL_URL, PERFECTMAN_LLM_PROVIDER: "mock", PERFECTMAN_LLM_MODELS: "", PERFECTMAN_LLM_BASE_URL: "" });
+    expect(blank.llm.models).toEqual(["mock"]);
   });
 
   it.each([

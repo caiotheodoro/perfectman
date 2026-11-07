@@ -103,7 +103,7 @@ export function parseConfig(env: Env = process.env): HotelConfig {
   const problems: string[] = [];
   const enabled = flag(env["PERFECTMAN_ENABLED"], false);
   const provider = env["PERFECTMAN_LLM_PROVIDER"] === "mock" ? "mock" : "openai-compatible";
-  const models = (env["PERFECTMAN_LLM_MODELS"] ?? (provider === "mock" ? "mock" : ""))
+  const models = (env["PERFECTMAN_LLM_MODELS"] || (provider === "mock" ? "mock" : ""))
     .split(",")
     .map((m) => m.trim())
     .filter(Boolean);
