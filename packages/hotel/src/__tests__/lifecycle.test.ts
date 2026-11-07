@@ -87,6 +87,25 @@ describe("run lifecycle and pause causes (D46, D49)", () => {
     expect(sidecar?.manager?.runCount).toBe(1);
   });
 
+  it("refuses a second live run that reuses the first one's character ids (the shared mirror would take its actors over), and takes it once the first has ended", async () => {
+    const { fake: hotel } = await running();
+    hotel.addRoom(13);
+    const acks = () => hotel.received.flatMap((f) => (f.t === "run_ack" ? [[f.run, f.ok, f.error?.code]] : []));
+    hotel.startRun({ run: 8, room: 13, scenarioVersion: 31 });
+    await waitFor(() => acks().length === 2, "the second ack");
+    expect(acks()).toEqual([[7, true, undefined], [8, false, "agent_ids_in_use"]]);
+    expect(hotel.received.find((f) => f.t === "run_ack" && f.run === 8)).toMatchObject({ error: { message: expect.stringContaining("run 7") } });
+    // run 7 is untouched: still running, nobody of run 8 was spawned
+    expect(sidecar?.manager?.runCount).toBe(1);
+    expect(lastStatus(hotel)?.state).toBe("running");
+    expect(hotel.received.some((f) => f.t === "actor_spawn" && f.run === 8)).toBe(false);
+    hotel.pmCommand(7, 12, "stop");
+    await waitFor(() => hotel.received.find((f) => f.t === "run_end" && f.run === 7), "run 7 ended", 6000);
+    hotel.startRun({ run: 9, room: 13, scenarioVersion: 31 });
+    await waitFor(() => acks().length === 3, "the third ack");
+    expect(acks()[2]).toEqual([9, true, undefined]);
+  });
+
   it("stop writes the run's artifacts and leaves nothing of it in the manager", async () => {
     const { fake: hotel } = await running();
     hotel.pmCommand(7, 12, "stop");

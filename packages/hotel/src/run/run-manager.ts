@@ -431,6 +431,16 @@ export class RunManager implements RunLink {
       this.log.warn("run refused", { run: f.run, code: prep.code, message: prep.message });
       return ack(false, prep.code, prep.message);
     }
+    // The mirror keys an actor by its character id, and scenarios number theirs person-1, person-2, ...: a second
+    // live run with the same ids would take the first one's actors over (every command of the first run then
+    // answers unknown_actor and its characters stand still). Refuse it until refs are scoped per run.
+    const clash = this.idClash(run);
+    if (clash) {
+      this.runs.delete(f.run);
+      this.untrackRun(f.run);
+      this.log.warn("run refused", { run: f.run, code: "agent_ids_in_use", message: clash });
+      return ack(false, "agent_ids_in_use", clash);
+    }
     ack(true);
     this.launched.add(f.run);
     try {
@@ -441,6 +451,17 @@ export class RunManager implements RunLink {
       run.notice("run_failed", "error", message.slice(0, 180));
       await run.stop("failed", message.slice(0, 180));
     }
+  }
+
+  /** Which other live run already uses one of this run's character ids; undefined when none does. */
+  private idClash(run: Run): string | undefined {
+    const mine = new Set(run.claimedAgentIds);
+    for (const other of this.runs.values()) {
+      if (other === (run as unknown) || !(other instanceof Run)) continue;
+      const shared = other.claimedAgentIds.filter((id) => mine.has(id));
+      if (shared.length > 0) return `run ${other.id} already uses the character ids ${shared.slice(0, 3).join(", ")}${shared.length > 3 ? ", ..." : ""}; end it first, two live runs cannot share them yet`;
+    }
+    return undefined;
   }
 
   // ---- replays (D39) ----------------------------------------------------------

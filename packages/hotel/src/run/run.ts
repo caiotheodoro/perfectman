@@ -261,6 +261,14 @@ export class Run {
     return [...this.agents.keys()];
   }
 
+  /**
+   * The character ids this run's scenario uses (`person-N`), known once `prepare` has parsed it. The space
+   * mirror is shared by every run and keys an actor by this id, so two live runs cannot share one.
+   */
+  get claimedAgentIds(): string[] {
+    return this.body?.config.agents.map((a) => a.id) ?? [];
+  }
+
   get actorCount(): number {
     return this.agents.size;
   }
