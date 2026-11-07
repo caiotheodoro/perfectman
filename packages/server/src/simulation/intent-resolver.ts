@@ -676,8 +676,9 @@ export class IntentResolver {
     const room = ctx.space?.room;
     const self = ctx.space?.self ?? room?.occupants.find((o) => o.ref === intent.actorId);
     if (!room || !self) return undefined;
-    const candidates = [intent.replyToActorId, ...intent.personTargets];
-    const to = candidates.find((id): id is string => typeof id === "string" && id !== intent.actorId && room.occupants.some((o) => o.ref === id));
+    // The same order the event's `addresseeIds` use: who it replies to, who it names, then whoever the words call by name.
+    const candidates = deriveAddresseeIds(intent, parseMentionedAgentIds(intent.visibleContent, ctx.agentNames), ctx.agentNames);
+    const to = candidates.find((id) => room.occupants.some((o) => o.ref === id));
     const other = to ? room.occupants.find((o) => o.ref === to) : undefined;
     if (!to || !other) return undefined;
     const distance = Math.max(Math.abs(self.tile[0] - other.tile[0]), Math.abs(self.tile[1] - other.tile[1]));

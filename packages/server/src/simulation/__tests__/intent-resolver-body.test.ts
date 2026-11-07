@@ -137,6 +137,13 @@ describe("IntentResolver body block (ADR-0019, hotel mode)", () => {
       expect(later.body?.accepted.order).toBe("move_then_speak");
     });
 
+    it("also walks to someone the words call by name, as the event's addressees do", async () => {
+      const s = scene([12, 4]);
+      const r = await resolve({ personTargets: [], visibleContent: "Duda, vem aqui um segundo" }, s);
+      expect(r.outcome).toBe("delayed");
+      expect(r.body?.deferral?.targetRef).toBe("duda");
+    });
+
     it("speaks now when the addressee is in range, and a line the planner will shout is not held", async () => {
       const near = scene([5, 4]);
       expect((await resolve(addressed, near)).outcome).toBe("committed");
