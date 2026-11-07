@@ -46,12 +46,16 @@ describe("Director client", () => {
     const { fake: hotel, clock, changes } = await connect({ secret: "wrong" });
     // The runtime may probe an upgrade more than once, so the count is compared, not pinned.
     await waitFor(() => hotel.authFailures >= 1, "first refusal");
+    // The refusal is seen by the hotel before the client has closed the socket and set its retry timer; advancing the manual clock before that
+    // makes the timer start from the advanced time and never come due.
+    await waitFor(() => clock.pending() > 0, "the 1 s retry timer");
     const first = hotel.authFailures;
     await clock.advance(999);
     expect(hotel.authFailures).toBe(first);
     await clock.advance(1);
     await waitFor(() => hotel.authFailures > first, "retry after 1 s");
     const second = hotel.authFailures;
+    await waitFor(() => clock.pending() > 0, "the 2 s retry timer");
     await clock.advance(1999);
     expect(hotel.authFailures).toBe(second);
     await clock.advance(1);

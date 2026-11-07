@@ -21,14 +21,30 @@ export type SocketFactory = (url: string, headers: Record<string, string>, handl
 
 export const nodeSocketFactory: SocketFactory = (url, headers, handlers) => {
   const ws = new WebSocket(url, { headers });
-  ws.addEventListener("open", () => handlers.open());
+  let opened = false;
+  let closed = false;
+  const closeOnce = (code: number): void => {
+    if (closed) return;
+    closed = true;
+    handlers.close(code);
+  };
+  ws.addEventListener("open", () => {
+    opened = true;
+    handlers.open();
+  });
   ws.addEventListener("message", (event) => {
     const data: unknown = event.data;
     // Binary frames are a protocol violation the hotel closes on; text only here.
     if (typeof data === "string") handlers.message(data);
   });
-  ws.addEventListener("close", (event) => handlers.close(event.code));
-  ws.addEventListener("error", () => handlers.error("socket error"));
+  ws.addEventListener("close", (event) => closeOnce(event.code));
+  ws.addEventListener("error", () => {
+    handlers.error("socket error");
+    // Node 22's WebSocket fires only `error`, never `close`, when the upgrade is refused (a 401 on a wrong
+    // secret, a dead host): the socket stays CONNECTING for good and the client would never retry. Node 24
+    // fires both, so the close is reported once, whichever comes first.
+    if (!opened) closeOnce(1006);
+  });
   return {
     send: (data) => ws.send(data),
     close: (code, reason) => {
