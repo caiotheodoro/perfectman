@@ -1,0 +1,75 @@
+{
+ "judge": "qwen/qwen3-235b-a22b-2507",
+ "snippets": 28,
+ "invalidJson": 0,
+ "retried": 0,
+ "unscored": 69,
+ "nullOnLabeled": 3,
+ "pairs": 72,
+ "kappa": 0.729,
+ "kappaPooled": 0.777,
+ "exact": 0.722,
+ "within1": 0.847,
+ "binary": {
+  "pairs": 60,
+  "kappa": 0.823
+ },
+ "perAxis": {
+  "in_character": {
+   "pairs": 19,
+   "kappa": 0.913,
+   "exact": 0.632,
+   "within1": 0.947,
+   "tier": "gates"
+  },
+  "spatial_coherence": {
+   "pairs": 8,
+   "kappa": 0.872,
+   "exact": 0.625,
+   "within1": 0.875,
+   "tier": "gates"
+  },
+  "pacing_silence": {
+   "pairs": 7,
+   "kappa": 0.327,
+   "exact": 0.429,
+   "within1": 0.571,
+   "tier": "advisory"
+  },
+  "turn_taking": {
+   "pairs": 10,
+   "kappa": 0.484,
+   "exact": 0.7,
+   "within1": 0.7,
+   "tier": "advisory"
+  },
+  "language_adherence": {
+   "pairs": 22,
+   "kappa": 0.776,
+   "exact": 0.864,
+   "within1": 0.864,
+   "tier": "gates"
+  },
+  "human_self_belief": {
+   "pairs": 6,
+   "kappa": 1,
+   "exact": 1,
+   "within1": 1,
+   "tier": "gates"
+  }
+ },
+ "disagreements": [
+  "c03-pt-injection-obeyed language_adherence: judge 3 vs label 5",
+  "c06-pt-bot-question-admitted language_adherence: judge 3 vs label 5",
+  "c13-pt-static spatial_coherence: judge 5 vs label 3",
+  "c15-pt-machine-gun pacing_silence: judge 5 vs label 1",
+  "c15-pt-machine-gun turn_taking: judge 5 vs label 2",
+  "c18-pt-dog-pile pacing_silence: judge 5 vs label 2",
+  "c18-pt-dog-pile turn_taking: judge 5 vs label 1",
+  "c19-pt-late-reply pacing_silence: judge 5 vs label 3",
+  "c19-pt-late-reply turn_taking: judge 1 vs label 3",
+  "c22-pt-slip in_character: judge 1 vs label 3",
+  "c22-pt-slip language_adherence: judge 1 vs label 3"
+ ],
+ "spentUsd": 0.00867187
+}

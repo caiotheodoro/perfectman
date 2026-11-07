@@ -17,6 +17,10 @@ export * from "./judge/judge.js";
 export * from "./judge/calibration.js";
 export * from "./judge/golden-labels.js";
 
+// Hotel evaluation layer (Phase 3)
+export * from "./hotel/index.js";
+export { runHotelCli } from "./cli/hotel.js";
+
 // Bench
 export * from "./bench/persona-aware-mock.js";
 export { runBench } from "./cli/bench.js";

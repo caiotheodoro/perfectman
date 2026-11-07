@@ -1,0 +1,29 @@
+{
+  "actors": [
+    {
+      "ref": "duda",
+      "name": "Duda",
+      "card": "warm and teasing, pt-BR slang, works nights",
+      "language": "pt"
+    },
+    {
+      "ref": "rafa",
+      "name": "Rafa",
+      "card": "dry humor, football fan",
+      "language": "pt"
+    },
+    {
+      "ref": "leo",
+      "name": "Léo",
+      "card": "shy and kind",
+      "language": "pt"
+    }
+  ],
+  "humans": [
+    {
+      "ref": "h:gabi",
+      "name": "Gabi",
+      "language": "pt"
+    }
+  ]
+}

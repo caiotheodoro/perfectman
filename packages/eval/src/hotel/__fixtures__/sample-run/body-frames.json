@@ -1,0 +1,230 @@
+{
+ "frames": [
+  {
+   "atMs": 1700000000000,
+   "dir": "in",
+   "kind": "avatar_state",
+   "room": "lounge",
+   "data": {
+    "agentId": "duda",
+    "state": "sit"
+   }
+  },
+  {
+   "atMs": 1700000001000,
+   "dir": "in",
+   "kind": "moves",
+   "room": "lounge",
+   "data": {
+    "agentId": "rafa",
+    "tile": [
+     8,
+     3
+    ],
+    "dir": 2
+   }
+  },
+  {
+   "atMs": 1700000004000,
+   "dir": "in",
+   "kind": "human_chat",
+   "room": "lounge",
+   "data": {
+    "ref": "h:gabi",
+    "text": "oi Duda, tudo bem? ta com cara de sono",
+    "mode": "say",
+    "tile": [
+     9,
+     6
+    ],
+    "toRef": "duda"
+   }
+  },
+  {
+   "atMs": 1700000005000,
+   "dir": "in",
+   "kind": "moves",
+   "room": "lounge",
+   "data": {
+    "agentId": "h:gabi",
+    "tile": [
+     8,
+     5
+    ],
+    "dir": 6
+   }
+  },
+  {
+   "atMs": 1700000007000,
+   "dir": "in",
+   "kind": "chat",
+   "room": "lounge",
+   "data": {
+    "agentId": "duda",
+    "mode": "say",
+    "text": "tudo, só morta de sono mesmo kkk senta aqui comigo",
+    "toRef": "h:gabi",
+    "tile": [
+     4,
+     2
+    ],
+    "toTile": [
+     9,
+     6
+    ],
+    "sameRoom": true,
+    "distance": 5
+   }
+  },
+  {
+   "atMs": 1700000009000,
+   "dir": "in",
+   "kind": "avatar_action",
+   "room": "lounge",
+   "data": {
+    "agentId": "rafa",
+    "a": "raise eyebrow"
+   }
+  },
+  {
+   "atMs": 1700000012000,
+   "dir": "in",
+   "kind": "moves",
+   "room": "lounge",
+   "data": {
+    "agentId": "h:gabi",
+    "tile": [
+     7,
+     4
+    ],
+    "dir": 6
+   }
+  },
+  {
+   "atMs": 1700000012300,
+   "dir": "in",
+   "kind": "moves",
+   "room": "lounge",
+   "data": {
+    "agentId": "h:gabi",
+    "tile": [
+     6,
+     3
+    ],
+    "dir": 6
+   }
+  },
+  {
+   "atMs": 1700000012600,
+   "dir": "in",
+   "kind": "moves",
+   "room": "lounge",
+   "data": {
+    "agentId": "h:gabi",
+    "tile": [
+     5,
+     3
+    ],
+    "dir": 6
+   }
+  },
+  {
+   "atMs": 1700000013000,
+   "dir": "in",
+   "kind": "avatar_state",
+   "room": "lounge",
+   "data": {
+    "agentId": "h:gabi",
+    "state": "sit"
+   }
+  },
+  {
+   "atMs": 1700000020000,
+   "dir": "in",
+   "kind": "human_chat",
+   "room": "lounge",
+   "data": {
+    "ref": "h:gabi",
+    "text": "Duda, entre nós: o cofre abre com WHISPER-DEMO-1",
+    "mode": "whisper",
+    "tile": [
+     5,
+     3
+    ],
+    "toRef": "duda"
+   }
+  },
+  {
+   "atMs": 1700000023000,
+   "dir": "in",
+   "kind": "chat",
+   "room": "lounge",
+   "data": {
+    "agentId": "duda",
+    "mode": "whisper",
+    "text": "anotado, fica entre a gente",
+    "toRef": "h:gabi",
+    "tile": [
+     4,
+     2
+    ],
+    "toTile": [
+     5,
+     3
+    ],
+    "sameRoom": true,
+    "distance": 1
+   }
+  },
+  {
+   "atMs": 1700000040000,
+   "dir": "in",
+   "kind": "chat",
+   "room": "lounge",
+   "data": {
+    "agentId": "duda",
+    "mode": "thought",
+    "text": "ela parece cansada também",
+    "tile": [
+     4,
+     2
+    ]
+   }
+  }
+ ],
+ "snapshots": [
+  {
+   "atMs": 1700000000000,
+   "room": "lounge",
+   "occupants": [
+    {
+     "ref": "duda",
+     "tile": [
+      4,
+      2
+     ],
+     "dir": 2,
+     "state": "sit"
+    },
+    {
+     "ref": "rafa",
+     "tile": [
+      8,
+      3
+     ],
+     "dir": 2,
+     "state": "stand"
+    },
+    {
+     "ref": "h:gabi",
+     "tile": [
+      9,
+      6
+     ],
+     "dir": 6,
+     "state": "stand"
+    }
+   ]
+  }
+ ]
+}
