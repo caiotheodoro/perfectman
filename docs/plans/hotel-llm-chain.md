@@ -359,7 +359,7 @@ The new `default` scenario of `probe:llm` (4 people from the stage's "Sexta no b
 | `visibleContent` is described as speech only, never what the person wants or thinks | contract text |
 | Per-link decoding penalties on OpenRouter: frequency and presence 0.5 for both known models, `+0.4` and temperature `+0.25` (cap 1.1) on the retry of a near-duplicate; `frequencyPenalty` / `presencePenalty` per link in `PERFECTMAN_LLM_CHAIN`, 0 turns one off | `chain-config.ts`, `chain.ts` |
 | Cross-actor copies are caught: a line of 3 or more content words that is a near-duplicate (0.7) of one of the last 8 cast lines heard is retried and, if it survives, blocked; a guest's own line is never compared; asked lines are still delivered | `roomThreshold` in `RepetitionPolicy`, `roomLinesHeard` |
-| A cheaper retry: an ambient turn gets 1 retry (a turn somebody triggered still gets 2); the failed attempt joins "your last lines" in the retry prompt, so the angle rotates and the model sees it as said | `ambientMaxRetries`, `buildRetryPrompt` |
+| A cheaper retry: the failed attempt joins "your last lines" in the retry prompt, so the angle rotates and the model sees it as said | `ambientMaxRetries`, `buildRetryPrompt` |
 | A spoken thought is a repeat: a line that is the actor's own `privateMotiveSummary`, or one of the body examples' thoughts, is retried | `isThoughtSpoken` |
 | Ambient gate: an actor consulted with no trigger is not consulted that way again for 30 s unless something someone else did has appeared in its view; addressed and triggered turns are never held | `ambientGate` (`SplitPulseConfig`), `AMBIENT_QUIET_MS` |
 

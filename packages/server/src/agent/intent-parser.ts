@@ -229,6 +229,13 @@ export class IntentParser {
       if (intent.channelTarget?.startsWith("#")) {
         intent = { ...intent, channelTarget: intent.channelTarget.slice(1) };
       }
+      // A blank target ("channelTarget": "") means no target. Left in, it passed the allow-list below
+      // (falsy) and then won over the actor's own channel as `""`: a line to no channel at all, and the
+      // actor's default channel became `""` too, so everything it said after was lost (hotel run 29).
+      if (intent.channelTarget !== undefined && intent.channelTarget.trim() === "") {
+        const { channelTarget: _blank, ...rest } = intent;
+        intent = rest;
+      }
 
       // 5c. Content-bearing actions must actually carry content. A model
       // that declares send_message/reply_to_message but omits visibleContent

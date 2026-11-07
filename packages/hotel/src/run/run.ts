@@ -427,7 +427,7 @@ export class Run {
     const options = {
       agentRuntimeFactory: (registry: ConstructorParameters<typeof AgentRuntime>[1]) => {
         this.registry = registry;
-        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7, ambientMaxRetries: 1 });
+        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7 });
       },
       extraGateways: { hotel: () => this.gateway, breaker: () => this.breaker.gateway },
       hotel: hotelOptions,

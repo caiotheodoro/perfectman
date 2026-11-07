@@ -137,7 +137,7 @@ async function harness(
   });
   const messageActors = async () =>
     (await eventRepo.getAfter(SIM.id)).filter((e) => e.type === "message_sent").map((e) => e.actorId);
-  return { scheduler, calls, consults, eventRepo, llmBudget, messageActors };
+  return { scheduler, calls, consults, eventRepo, llmBudget, messageActors, channelRepo };
 }
 
 const tick = async () => {
@@ -185,5 +185,54 @@ describe("PulseScheduler deferred agents (staggered arrival)", () => {
     expect(h.scheduler.hasAgent("a2")).toBe(false);
     expect(h.scheduler.admitAgent("a2")).toBe(false);
     expect(h.scheduler.agentCount).toBe(3);
+  });
+});
+
+describe("PulseScheduler channel anchor (hotel doors)", () => {
+  /** Two room channels the actor is a member of, as the hotel run registers them. */
+  const rooms = async (h: Awaited<ReturnType<typeof harness>>) => {
+    for (const id of ["room:16", "room:17"]) {
+      await h.channelRepo.create({ id, simulationId: SIM.id, type: "public_channel", name: id, createdBy: "system", memberAgentIds: ["a1"], spectatorVisible: true, operatorVisible: true, createdForMotives: [], status: "active", createdAt: 0, updatedAt: 0 });
+      await h.channelRepo.addMembership({ channelId: id, agentId: "a1", joinedAt: 0 });
+    }
+  };
+  const sentBy = async (h: Awaited<ReturnType<typeof harness>>) => (await h.eventRepo.getAfter(SIM.id)).filter((e) => e.type === "message_sent" && e.actorId === "a1");
+  /** Where a1's next line goes: one more pulse, answered with no channel of its own. */
+  const nextLineChannel = async (h: Awaited<ReturnType<typeof harness>>): Promise<string | undefined> => {
+    const before = (await sentBy(h)).length;
+    const pulse = h.scheduler.runPulse({ reason: "base" });
+    await tick();
+    await settleAll(h, pulse);
+    return (await sentBy(h)).slice(before).at(0)?.channelId;
+  };
+
+  it("a line committed on a room the actor already left does not pull its default channel back", async () => {
+    const h = await harness({ generateConcurrency: 5 });
+    await rooms(h);
+    h.scheduler.followToChannel("a1", "room:16");
+    // the decision starts in room 16 ...
+    const pulse = h.scheduler.runPulse({ reason: "base" });
+    await tick();
+    // ... the actor takes the door while the model is thinking ...
+    h.scheduler.followToChannel("a1", "room:17");
+    // ... and the answer commits on the old room
+    for (const c of h.calls.splice(0, h.calls.length)) c.resolve(c.agentId === "a1" ? { channelTarget: "room:16" } : {});
+    await tick();
+    await settleAll(h, pulse);
+    expect((await sentBy(h)).map((e) => e.channelId)).toEqual(["room:16"]);
+    expect(await nextLineChannel(h)).toBe("room:17");
+  });
+
+  it("a line with a blank channel does not become the actor's default channel", async () => {
+    const h = await harness({ generateConcurrency: 5 });
+    await rooms(h);
+    h.scheduler.followToChannel("a1", "room:17");
+    const pulse = h.scheduler.runPulse({ reason: "base" });
+    await tick();
+    for (const c of h.calls.splice(0, h.calls.length)) c.resolve(c.agentId === "a1" ? { channelTarget: "" } : {});
+    await tick();
+    await settleAll(h, pulse);
+    expect((await sentBy(h)).map((e) => e.channelId)).toEqual(["room:17"]);
+    expect(await nextLineChannel(h)).toBe("room:17");
   });
 });

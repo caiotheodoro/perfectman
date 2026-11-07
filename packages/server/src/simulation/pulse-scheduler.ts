@@ -220,6 +220,8 @@ export class PulseScheduler {
   private timer: ReturnType<typeof setTimeout> | null = null;
   private inFlight: Promise<PulseResult> | null = null;
   private readonly currentChannelIdByAgent = new Map<string, string>();
+  /** Hotel: the room channel the host last moved each agent into. A body is in one room, whatever a slow decision says. */
+  private readonly hostRoomByAgent = new Map<string, string>();
   private readonly agentNamesByAgentId: Record<string, string>;
 
   // ---- split mode state (ADR-0020); unused in sequential mode ----
@@ -356,6 +358,7 @@ export class PulseScheduler {
    */
   followToChannel(agentId: string, channelId: string): void {
     this.currentChannelIdByAgent.set(agentId, channelId);
+    this.hostRoomByAgent.set(agentId, channelId);
   }
 
   /**
@@ -1385,9 +1388,16 @@ export class PulseScheduler {
       case "reaction_sent":
       case "typing_started":
       case "typing_cancelled":
-      case "channel_created":
+      case "channel_created": {
+        // A channel-less event anchors nothing, and a decision that began before a door and committed after
+        // it carries the old room: letting it through would pin the actor to a room it left, and every line
+        // it said from then on would go there (hotel run 29: Leo mute for 80 s after coming back).
+        if (!event.channelId) break;
+        const pinned = this.hostRoomByAgent.get(event.actorId);
+        if (pinned !== undefined && event.channelId !== pinned && roomIdOfChannel(event.channelId) !== undefined) break;
         this.currentChannelIdByAgent.set(event.actorId, event.channelId);
         break;
+      }
       case "agent_invited": {
         const invitedAgentId = event.payload["invitedAgentId"];
         if (typeof invitedAgentId === "string" && invitedAgentId.length > 0) {
@@ -1400,6 +1410,7 @@ export class PulseScheduler {
         // Hotel (ADR-0018): the event is committed on the destination room's
         // channel, so the actor's default channel follows it through the door.
         this.currentChannelIdByAgent.set(event.actorId, event.channelId);
+        if (roomIdOfChannel(event.channelId) !== undefined) this.hostRoomByAgent.set(event.actorId, event.channelId);
         break;
       case "agent_left":
         if (this.currentChannelIdByAgent.get(event.actorId) === event.channelId) {

@@ -326,7 +326,7 @@ function buildMessageEvent(
   salience: EmotionalSalience,
   ctx: ResolveContext,
 ): SimulationEvent {
-  const channelId = intent.channelTarget ?? ctx.channelId;
+  const channelId = intent.channelTarget || ctx.channelId;
   const vis = channelVisibility(channelId, ctx);
   const payload: EventPayload = { content: intent.visibleContent ?? "", ...vis.payload };
   stampParticipantIds(payload, intent, ctx);
@@ -349,7 +349,7 @@ function buildReplyEvent(
   salience: EmotionalSalience,
   ctx: ResolveContext,
 ): SimulationEvent {
-  const channelId = intent.channelTarget ?? ctx.channelId;
+  const channelId = intent.channelTarget || ctx.channelId;
   const replyToEventId = intent.replyToEventId;
   const vis = channelVisibility(channelId, ctx);
   const payload: EventPayload = {
@@ -378,7 +378,7 @@ function buildReactionEvent(
   salience: EmotionalSalience,
   ctx: ResolveContext,
 ): SimulationEvent {
-  const channelId = intent.channelTarget ?? ctx.channelId;
+  const channelId = intent.channelTarget || ctx.channelId;
   const vis = channelVisibility(channelId, ctx);
   const payload: EventPayload = {
     emoji: intent.emoji ?? "👍",
@@ -991,7 +991,7 @@ export class IntentResolver {
   private arbitrate(intent: ActionIntent, ctx: ResolveContext): IntentViolation | undefined {
     if (!this.arbiter) return undefined;
     if (intent.intentType !== "send_message" && intent.intentType !== "reply_to_message") return undefined;
-    const roomId = roomIdOfChannel(intent.channelTarget ?? ctx.channelId);
+    const roomId = roomIdOfChannel(intent.channelTarget || ctx.channelId);
     if (roomId === undefined) return undefined;
     const now = this.clock();
     const answering = ctx.trigger?.id;
@@ -1018,7 +1018,7 @@ export class IntentResolver {
     };
     return {
       simulationId: ctx.simulationId,
-      channelId: intent.channelTarget ?? ctx.channelId,
+      channelId: intent.channelTarget || ctx.channelId,
       actorId: intent.actorId,
       type: "private_motive_summary",
       payload,
@@ -1091,7 +1091,7 @@ export class IntentResolver {
       case "invite_agent":
         return [{
           simulationId: ctx.simulationId,
-          channelId: intent.channelTarget ?? ctx.channelId,
+          channelId: intent.channelTarget || ctx.channelId,
           actorId: intent.actorId,
           type: "agent_invited",
           payload: { invitedAgentId: intent.personTargets[0] ?? "" },
@@ -1109,7 +1109,7 @@ export class IntentResolver {
       case "leave_channel":
         return [{
           simulationId: ctx.simulationId,
-          channelId: intent.channelTarget ?? ctx.channelId,
+          channelId: intent.channelTarget || ctx.channelId,
           actorId: intent.actorId,
           type: "agent_left",
           payload: {},
@@ -1127,7 +1127,7 @@ export class IntentResolver {
       case "typing_start":
         return [{
           simulationId: ctx.simulationId,
-          channelId: intent.channelTarget ?? ctx.channelId,
+          channelId: intent.channelTarget || ctx.channelId,
           actorId: intent.actorId,
           type: "typing_started",
           payload: {},
@@ -1145,7 +1145,7 @@ export class IntentResolver {
       case "typing_cancel":
         return [{
           simulationId: ctx.simulationId,
-          channelId: intent.channelTarget ?? ctx.channelId,
+          channelId: intent.channelTarget || ctx.channelId,
           actorId: intent.actorId,
           type: "typing_cancelled",
           payload: {},

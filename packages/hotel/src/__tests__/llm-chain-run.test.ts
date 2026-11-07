@@ -126,6 +126,40 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
     expect(frames[0]?.data).toMatchObject({ mode: "say", toRef: "person-2", sameRoom: true });
     expect(Number(frames[0]?.data["distance"])).toBeGreaterThanOrEqual(0);
   }, 20_000);
+  it("a model that fills channelTarget with an empty string still answers in the room, again and again (run 29: Leo mute for 40 s)", async () => {
+    let n = 0;
+    llm = createServer((req, res) => {
+      let body = "";
+      req.on("data", (c: Buffer) => (body += c.toString()));
+      req.on("end", () => {
+        const parsed = JSON.parse(body || "{}") as { max_tokens?: number };
+        const intent = JSON.stringify({ intentType: "send_message", visibleContent: `resposta numero ${++n}, bem diferente da outra`, channelTarget: "", personTargets: [], privateMotiveSummary: "responder" });
+        res.writeHead(200, { "content-type": "application/json" }).end(parsed.max_tokens === 1 ? "{}" : JSON.stringify({ choices: [{ message: { content: intent } }], usage: { prompt_tokens: 900, completion_tokens: 50 }, model: "small" }));
+      });
+    });
+    await new Promise<void>((r) => llm?.listen(0, "127.0.0.1", () => r()));
+    const addr = llm.address();
+    const port = typeof addr === "object" && addr ? addr.port : 0;
+    process.env["TEST_LINK_A_KEY"] = "key-a";
+    const chain = [{ name: "small", baseUrl: `http://127.0.0.1:${port}/v1`, apiKeyEnv: "TEST_LINK_A_KEY", model: "small", maxContextTokens: 4096 }];
+    const llmEnv: LlmEnv = { provider: "openai-compatible", baseUrl: chain[0]!.baseUrl, apiKeyEnv: "TEST_LINK_A_KEY", models: ["small"], chain, prices: {}, concurrency: 3, softCallsPerMin: 600, softTokensPerHour: 5_000_000 };
+    const b = await bootSidecar({ config: { llm: llmEnv }, timing: { baseIntervalMs: 60_000 } });
+    fake = b.fake;
+    sidecar = b.sidecar;
+    b.fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => lastStatus(b.fake)?.state === "running", "running");
+    await waitFor(() => b.fake.received.some((f) => f.t === "actor_cmd" && f.cmd.k === "walk"), "the cast walking in");
+    await new Promise((r) => setTimeout(r, 600));
+
+    const duda = (): number | undefined => b.fake.avatarByRef("person-1")?.id;
+    const spoke = (): number => b.fake.chats.filter((c) => c.actor === duda() && c.mode === "say" && c.text.startsWith("resposta numero")).length;
+    const before = spoke();
+    b.fake.humanSay(12, 9, "Duda, tudo bem?");
+    await waitFor(() => spoke() > before, "Duda's answer to the first line", 8000);
+    const mid = spoke();
+    b.fake.humanSay(12, 9, "Duda, e o bar, abre quando?");
+    await waitFor(() => spoke() > mid, "Duda's answer to the second line", 8000);
+  }, 25_000);
   it("writes a failover link its own compact prompt when link 1 (the full prompt) answers with a body that is not JSON, instead of skipping it for its window", async () => {
     const hits: Array<{ link: string; system: string }> = [];
     const intent = JSON.stringify({ intentType: "send_message", visibleContent: "oi, estou aqui!", privateMotiveSummary: "responder", personTargets: [] });

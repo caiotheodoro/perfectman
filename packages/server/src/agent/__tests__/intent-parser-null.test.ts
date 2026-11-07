@@ -64,4 +64,20 @@ describe("IntentParser structural repair", () => {
     const result = IntentParser.parse("isso não é json", "bruno", []);
     expect(result.fallbackApplied).toBe(true);
   });
+
+  it("treats a blank channelTarget as no target, so the line stays on the actor's own channel", () => {
+    for (const blank of ["", "   "]) {
+      const raw = JSON.stringify({
+        actorId: "goulart",
+        intentType: "send_message",
+        visibleContent: "oi, tudo bem?",
+        channelTarget: blank,
+        personTargets: [],
+        privateMotiveSummary: "quero puxar assunto",
+      });
+      const result = IntentParser.parse(raw, "goulart", ACTIONS);
+      expect(result.fallbackApplied).toBe(false);
+      expect(result.intent.channelTarget).toBeUndefined();
+    }
+  });
 });
