@@ -48,15 +48,15 @@ Owner decisions that bind this document: actors believe they are human (D43), hu
 | --- | --- |
 | `simTime += pulseIntervalMs` per pulse; `dt = pulseIntervalMs / 1000` | [`pulse-scheduler.ts:204-206`](../packages/server/src/simulation/pulse-scheduler.ts) **[V]** |
 | Per-agent input seam | `engineSnapshotProjection.build`, [`pulse-scheduler.ts:277`](../packages/server/src/simulation/pulse-scheduler.ts); [`engine-snapshot-projection.ts`](../packages/server/src/simulation/projections/engine-snapshot-projection.ts) **[V]** |
-| `EngineSnapshot` | [`engine.types.ts:40`](../packages/shared/src/engine/engine.types.ts) **[V]** |
+| `EngineSnapshot` | [`engine.types.ts:41`](../packages/shared/src/engine/engine.types.ts) **[V]** |
 | `runEngineStep` order (inline numbering): visibility filter `:91`, available actions `:185`, decision `:231`, perception packet `:273`. `needsLLM` is owned by `resolveDecision` (ADR-0015) | [`run-engine-step.ts`](../packages/engine/src/step/run-engine-step.ts) **[V]** (the header comment's numbering differs from the inline one; cite by line) |
-| `ModelIntentPacketSchema` | [`intent-packet.schema.ts:16`](../packages/shared/src/intent/intent-packet.schema.ts) **[V]** (draft said `:10`) |
-| `composeIntentPacket` copies fields one by one | [`intent-packet.schema.ts:198-249`](../packages/shared/src/intent/intent-packet.schema.ts) **[V]** |
-| `describePacketFieldType` handles enum, array (one object level), number, boolean; everything else renders as `"string"` | [`intent-packet.schema.ts:102-129`](../packages/shared/src/intent/intent-packet.schema.ts) **[V]** |
-| Event handles `e1`, `e2` map to event ids | `PerceptionPacket.eventHandles`, [`perception.types.ts:28`](../packages/shared/src/perception/perception.types.ts) **[V]** |
+| `ModelIntentPacketSchema` | [`intent-packet.schema.ts:17`](../packages/shared/src/intent/intent-packet.schema.ts) **[V]** (draft said `:10`) |
+| `composeIntentPacket` copies fields one by one | [`intent-packet.schema.ts:230-267`](../packages/shared/src/intent/intent-packet.schema.ts) **[V]** |
+| `describePacketFieldType` handles enum, array (one object level), number, boolean, and (after the Phase 1 contract freeze) `const`, `integer`, nested `object`, `anyOf` and pattern strings; anything else renders as `"string"` | [`intent-packet.schema.ts:118-161`](../packages/shared/src/intent/intent-packet.schema.ts) **[V]** |
+| Event handles `e1`, `e2` map to event ids | `PerceptionPacket.eventHandles`, [`perception.types.ts:29`](../packages/shared/src/perception/perception.types.ts) **[V]** |
 | Prompt trim order: oldest context events, then own utterances, then lowest-salience memories | `trimToFit`, [`action-intent-prompt-builder.ts:171-229`](../packages/server/src/agent/action-intent-prompt-builder.ts) **[V]** |
 | Visibility: channel membership, then `visibleToAgents` when non-empty; operator-only events hidden | [`filter-visible-events.ts:21-61`](../packages/engine/src/visibility/filter-visible-events.ts) **[V]** (resolves "verify the projection honours `visibleToAgents`": it does) |
-| `IDeliveryGateway`; `DeliveryProjection.project` switches on `event.type` | [`scheduler-contracts.ts:13`](../packages/server/src/simulation/scheduler-contracts.ts), [`delivery-projection.ts:21`](../packages/server/src/simulation/projections/delivery-projection.ts) **[V]** |
+| `IDeliveryGateway`; `DeliveryProjection.project` switches on `event.type` | [`scheduler-contracts.ts:31`](../packages/server/src/simulation/scheduler-contracts.ts), [`delivery-projection.ts:21`](../packages/server/src/simulation/projections/delivery-projection.ts) **[V]** |
 | Scene look limits: 8 settings, `MAX_SCENE_PROPS = 12`, `MAX_SCENE_ROOMS = 3` | [`scene-look.ts:7-27`](../packages/shared/src/stage/scene-look.ts) **[V]** |
 | `RelationalState` (`desireForCloseness`, `desireForDistance`, `comfort`, `threat`, `attraction`), `ActionEmotions` (`curiousApproach`, `comfortSeeking`, `shameWithdrawal`, `warmth`), `CoreMood` | [`emotion.types.ts:2,33-51,54-67`](../packages/shared/src/emotion/emotion.types.ts) **[V]** |
 | `FaceState` is `neutral / angry / worried / tired / smile / shock`; `PoseKind` is `rest / anger / shame / fear / warm / proud / suspicion / tired / peek` | [`emotion-face.ts:14`](../packages/shared/src/stage/emotion-face.ts), [`emotion-pose.ts:13`](../packages/shared/src/director/emotion-pose.ts) **[V]** |
@@ -64,7 +64,7 @@ Owner decisions that bind this document: actors believe they are human (D43), hu
 | `readingSeconds` | [`stage/beat.ts:98`](../packages/shared/src/stage/beat.ts) **[V]** (the plan said `timing.ts`; `director/timing.ts` holds `PACES` and `SPEAK_FACTOR`) |
 | Probes: `BehavioralEventKind`, `PROBE_BANDS`, `runAllProbes` | [`probes/types.ts:5,71`](../packages/eval/src/probes/types.ts), [`probes/index.ts:349`](../packages/eval/src/probes/index.ts) **[V]** |
 | `ExpectedSignal` lives in `shared`, not `eval` | [`scenario.types.ts:151`](../packages/shared/src/scenarios/scenario.types.ts); checked by `eval/src/run/signal-checker.ts` **[V]** |
-| `typing_started` / `typing_cancelled` event types and `typing_start` / `typing_cancel` intents already exist | [`event.types.ts:6-7`](../packages/shared/src/event/event.types.ts), [`intent.types.ts:11-12`](../packages/shared/src/intent/intent.types.ts) **[V]** |
+| `typing_started` / `typing_cancelled` event types and `typing_start` / `typing_cancel` intents already exist | [`event.types.ts:8-9`](../packages/shared/src/event/event.types.ts), [`intent.types.ts:12-13`](../packages/shared/src/intent/intent.types.ts) **[V]** |
 
 ## 2. Vocabulary
 
@@ -155,7 +155,7 @@ type AgentBody = {
 
 ## 5. Perception: the `body` block
 
-`PerceptionPacket.body?: BodyPerception` and `bodyHandles` (**new**, beside `eventHandles`, [`perception.types.ts:28`](../packages/shared/src/perception/perception.types.ts) **[V]**). Built by `packages/engine/src/perception/build-body-perception.ts` (new), rendered by `ActionIntentPromptBuilder.renderBody` (new, called from `render` at [`action-intent-prompt-builder.ts:271`](../packages/server/src/agent/action-intent-prompt-builder.ts) **[V]**).
+`PerceptionPacket.body?: BodyPerception` and `bodyHandles` (**new**, beside `eventHandles`, [`perception.types.ts:29`](../packages/shared/src/perception/perception.types.ts) **[V]**). Built by `packages/engine/src/perception/build-body-perception.ts` (new), rendered by `ActionIntentPromptBuilder.renderBody` (new, called from `render` at [`action-intent-prompt-builder.ts:271`](../packages/server/src/agent/action-intent-prompt-builder.ts) **[V]**).
 
 Handles: `p#` people, `z#` places, `f#` furniture, `r#` rooms; minted per render in stable order.
 
@@ -241,7 +241,8 @@ export const BodyIntentSchema = z.object({
 - `kiss` is the gesture name for the pair act's first half (wire action `blow`); the planner decides whether it is a single-avatar Blow or the pair choreography (section 7.4). `sign` with no style defaults to 11 (heart) only inside a pair act.
 - `Expression` mapping from the engine's `FaceState`: `neutral -> neutral`, `smile -> smile`, `angry -> angry`, `worried -> sad`, `tired -> sleepy`, `shock -> surprised`.
 - Keep it small: if the Phase 1 spike shows degradation, flatten `move` first (section 11).
-- Zod schema above is the spec text; the JSON Schema for constrained decoding is derived from it by `zod-to-json-schema` ([`intent-packet.schema.ts:98`](../packages/shared/src/intent/intent-packet.schema.ts) **[V]**).
+- `body` is parsed whenever present, but the default prompt field contract and decode schema (`modelIntentPacketFieldContract()`, `ModelIntentPacketJsonSchema`) omit it so non-hotel runs stay byte-identical; hotel mode asks for it with `modelIntentPacketFieldContract({ body: true })` and `ModelIntentPacketWithBodyJsonSchema`. `sdk-transport.ts` still sends the former and must switch in hotel mode.
+- Zod schema above is the spec text; the JSON Schema for constrained decoding is derived from it by `zod-to-json-schema` ([`intent-packet.schema.ts:109`](../packages/shared/src/intent/intent-packet.schema.ts) **[V]**).
 
 ### 6.2 Validator
 
@@ -344,7 +345,7 @@ State machine: `precheck -> approach -> face -> act -> hold -> part`.
 
 ### 8.1 Latency budget
 
-`lineLandsAt = max(llmDoneAt, min(4000, sampledDelay + 55 ms x chars))`, where `sampledDelay` is drawn from the persona's `presenceProfile.responseDelayMs` ([`persona-pack.types.ts:56`](../packages/shared/src/persona/persona-pack.types.ts) **[V]**) and the 4 s cap keeps slow personas (for example `[3000, 18000]` in `persona-packs/mariana.ts` **[V]**) inside the 10 s p95 target. The typing bubble starts at `onConsult` ([ADR-0020](adr/0020-decide-generate-commit-and-focused-pulse.md)) and ends when the line is delivered or the call fails. Target: addressed reply p50 <= 5 s, p95 <= 10 s after the human line.
+`lineLandsAt = max(llmDoneAt, min(4000, sampledDelay + 55 ms x chars))`, where `sampledDelay` is drawn from the persona's `presenceProfile.responseDelayMs` ([`persona-pack.types.ts:56`](../packages/shared/src/persona/persona-pack.types.ts) **[V]**) and the 4 s cap keeps slow personas (for example `[3000, 18000]` in `persona-packs/mariana.ts` **[V]**) inside the 10 s p95 target. The typing bubble starts at `onConsult` ([ADR-0020](adr/0020-decide-generate-commit-and-focused-pulse.md)) and ends when the line is delivered or the call fails. Target: addressed reply p50 <= 5 s, p95 <= 10 s after the human line. Phase 1 spike (12 agents, modelled LLM median 2.5 s / p95 6 s): sequential loop 13.3 / 32.3 s, ADR-0020 as first drafted 7.1 / 13.3 s, focus lane with per-agent locks and commit-as-settled 4.0 / 9.6 s. The pulse clock is a 6 s base pulse plus a focused pulse that fires on the first human line with 300 ms coalescing (D52), because typing starts at `onConsult` and a 1.5 s debounce would spend the whole p50 slack. The target is only reachable with a model whose own p95 is <= 6 s (D53). Addressed replies jump ambient lines in the gateway's 2.5 s room queue.
 
 ### 8.2 Plans
 
@@ -360,7 +361,7 @@ State machine: `precheck -> approach -> face -> act -> hold -> part`.
 | # | Rule | Enforced by |
 | --- | --- | --- |
 | 1 | Addressed = by name, @, reply, or the only other person in band. Focused pulse; typing at consult; p50 <= 5 s, p95 <= 10 s | ingestion (addressed set), pulse clock (focused pulse), gateway (typing, landing time) |
-| 2 | One answer per human line unless several were addressed; others may gesture or emote | arbiter `not_addressed_open_line` |
+| 2 | One answer per human line unless several were addressed; others may gesture or emote | arbiter `not_addressed_open_line` and `one_answer_per_line` (one answer per unaddressed human line; spike dog-pile 46-58% -> 0%, [ADR-0021](adr/0021-room-speech-arbiter.md)) |
 | 3 | <= 1 actor line per 2.5 s per room; <= 3 actor lines per human line before bots yield | gateway room queue (spacing), arbiter `line_budget` |
 | 4 | A typing human suppresses ambient lines for up to 6 s | arbiter `human_typing` |
 | 5 | Silence is first-class; ambient bot-to-bot talk only after 10 s without human speech, scaled by scenario energy | arbiter `ambient_too_soon` |
@@ -373,7 +374,7 @@ Cinematic replaces rules 1-4 with director pacing: `readingSeconds` ([`beat.ts:9
 
 ### 8.4 Run lifecycle clocks (D46)
 
-A run continues while any human is in any of its rooms (its home room plus every room that holds one of its Actors; members and watchers; admins count). It pauses after 5 minutes with no humans in any of them (pause cause `idle`). **The 30-minute end timer applies only to idle pauses** (lead resolution R2): an admin pause or a circuit-breaker pause waits for an admin and never ends on a timer. A human entering one of the run's rooms while the run is idle-paused resumes it automatically. The hotel owns both clocks and sends `pm_command` pause/resume with `source:"auto"`; the sidecar only reacts. This replaces "auto-pause when no admin is present". Specified in `plans/hotel-package.md` section 6 and `director-protocol.md` section 4 (hotel docs).
+A run continues while any human is in any of its rooms (its home room plus every room that holds one of its Actors; members and watchers; admins count). It pauses after 5 minutes with no humans in any of them (pause cause `idle`). **The 30-minute end timer applies only to idle pauses** (lead resolution R2): an admin pause waits for an admin and never ends on a timer; a circuit-breaker pause resumes itself after one successful half-open call (D49, which amends R2) and never ends on a timer either. A human entering one of the run's rooms while the run is idle-paused resumes it automatically. The hotel owns both clocks and sends `pm_command` pause/resume with `source:"auto"`; the sidecar only reacts. This replaces "auto-pause when no admin is present". Specified in `plans/hotel-package.md` section 6 and `director-protocol.md` section 4 (hotel docs).
 
 ## 9. Required changes by file
 
@@ -381,7 +382,8 @@ Perfectman files, all paths **[V]** as existing unless marked new.
 
 | File | Change |
 | --- | --- |
-| `packages/shared/src/space/*` (new) | space, body, command and frame-log types |
+| `packages/shared/src/space/*` (new, frozen in Phase 1) | space, body, command and frame-log types, `BodyIntentSchema`, event payload types |
+| `packages/server/src/simulation/hotel-runtime-api.ts` (new, types only) | `runPulse` options, `onConsult`, guest ingest, arbiter, usage getter and breaker state (ADR-0020 to 0025) |
 | `packages/shared/src/event/event.types.ts`, `event.schema.ts` | `body_action_committed`, `body_arrived`, `moved_room`, `body_blocked`, `speech_deferred`, `paired_act_aborted` |
 | `packages/shared/src/intent/intent-packet.schema.ts`, `intent.types.ts` | `body` field, object and `anyOf` branches, copy in `composeIntentPacket` |
 | `packages/shared/src/engine/engine.types.ts` | `EngineSnapshot.space?` |
@@ -394,14 +396,14 @@ Perfectman files, all paths **[V]** as existing unless marked new.
 | `packages/server/src/agent/action-intent-prompt-builder.ts` | `renderBody`, trim phase, output contract, hotel-mode preamble and untrusted rendering |
 | `packages/server/src/agent/intent-parser.ts` | resolve body handles; drop an invalid body tolerantly |
 | `packages/server/src/simulation/intent-resolver.ts` | validate body, defer speech, emit body events, arbiter hook, audibility stamping, export the mention matcher |
-| `packages/server/src/simulation/scheduler-contracts.ts`, `projections/delivery-projection.ts` | `IBodyGateway.dispatch(BodyCommand[])`; project the new events; `DeliveryMessage` carries event id, mode and hearing |
+| `packages/server/src/simulation/scheduler-contracts.ts`, `projections/delivery-projection.ts` | `IBodyGateway.dispatch(BodyCommand[])`; project the new events; `DeliveryMessage` carries event id, mode, whisper target and hearing |
 | `packages/server/src/simulation/pulse-scheduler.ts` | ADR-0020 (split, focused pulse, `onConsult`), windowed reads, `moved_room` anchor |
 | `packages/server/src/authoring/scenario-md-compiler.ts` | `places:` and `hotelRooms:` |
 | `packages/eval/src/probes/*` | body probes (section 10) over a `BodyFrameLog` |
 
 ## 10. Quality bar
 
-Probes sit beside [`probes/index.ts`](../packages/eval/src/probes/index.ts) **[V]**. The existing probes read a pulse-indexed `BehavioralEvent` stream ([`probes/types.ts:5-30`](../packages/eval/src/probes/types.ts) **[V]**); body probes need wall-clock milliseconds, so they take a separate `BodyFrameLog` (timestamped frames in both directions plus world snapshots), produced by the hotel's frame log or the fake grid hotel.
+Probes sit beside [`probes/index.ts`](../packages/eval/src/probes/index.ts) **[V]**. The existing probes read a pulse-indexed `BehavioralEvent` stream ([`probes/types.ts:5-30`](../packages/eval/src/probes/types.ts) **[V]**); body probes need wall-clock milliseconds, so they take a separate `BodyFrameLog` (timestamped frames in both directions plus space snapshots), produced by the hotel's frame log or the fake grid hotel.
 
 | Failure | Sev | Signal | Probe | Target |
 | --- | --- | --- | --- | --- |

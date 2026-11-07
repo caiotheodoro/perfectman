@@ -41,7 +41,11 @@ export type {
 export type {
   IDeliveryGateway,
   DeliveryMessage,
+  DeliveryMessageMeta,
+  IBodyGateway,
 } from "./simulation/scheduler-contracts.js";
+// Hotel runtime API (types and frozen constants only; ADR-0020 to 0025).
+export * from "./simulation/hotel-runtime-api.js";
 export type { AgentContext } from "./simulation/pulse-scheduler.js";
 
 // Dev2 - Goal-layer eval surface (additive exports only; the eval harness

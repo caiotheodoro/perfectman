@@ -1,5 +1,6 @@
 import type { MemoryWriteProposal } from "../memory/memory.types.js";
 import type { ChannelType } from "../channel/channel.types.js";
+import type { BodyIntent } from "../space/body-intent.schema.js";
 
 export type IntentType =
   | "send_message"
@@ -39,6 +40,8 @@ export type ActionIntent = {
   channelName?: string;
   channelType?: ChannelType;
   invitedAgentIds?: string[];
+  /** Hotel mode only (ADR-0019). Handles (`p1`, `z2`, ...) as the model wrote them, until the parser resolves them. */
+  body?: BodyIntent;
 };
 
 export type IntentViolation = {

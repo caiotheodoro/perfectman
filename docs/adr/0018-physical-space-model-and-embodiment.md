@@ -8,7 +8,7 @@ Perfectman has no space. Agents decide whether to speak; where they are, who is 
 
 Constraints carried in:
 
-- The engine is pure and I/O-free. `runEngineStep(snapshot)` ([`run-engine-step.ts:74`](../../packages/engine/src/step/run-engine-step.ts)) takes an `EngineSnapshot` ([`engine.types.ts:40`](../../packages/shared/src/engine/engine.types.ts)) and returns a result; sockets, clocks and the grid belong to a host.
+- The engine is pure and I/O-free. `runEngineStep(snapshot)` ([`run-engine-step.ts:74`](../../packages/engine/src/step/run-engine-step.ts)) takes an `EngineSnapshot` ([`engine.types.ts:41`](../../packages/shared/src/engine/engine.types.ts)) and returns a result; sockets, clocks and the grid belong to a host.
 - Behavior without a space model must stay byte-identical. Eval, the web builder and the CLI never have a body.
 - Small models degrade with large optional schemas, and Tilehouse allows 8 actions per 5 s per avatar. The model cannot be asked to drive the body at command level.
 - Humans in the room judge "alive" by teleports, jitter, staring at walls and speech from out of earshot, all of which are cheap for a deterministic layer to prevent and expensive for a model to remember.
@@ -35,7 +35,7 @@ Constraints carried in:
 
 ## Consequences
 
-- New: `PerceptionPacket.body?` ([`perception.types.ts:6`](../../packages/shared/src/perception/perception.types.ts)), `EngineSnapshot.space?`, `ActionIntent.body?`, event types `body_action_committed`, `body_arrived`, `moved_room`, `body_blocked`, `speech_deferred`, `paired_act_aborted` (the closed `EventType` union at [`event.types.ts:3`](../../packages/shared/src/event/event.types.ts) grows).
+- New: `PerceptionPacket.body?` ([`perception.types.ts:7`](../../packages/shared/src/perception/perception.types.ts)), `EngineSnapshot.space?`, `ActionIntent.body?`, event types `body_action_committed`, `body_arrived`, `moved_room`, `body_blocked`, `speech_deferred`, `paired_act_aborted` (the closed `EventType` union at [`event.types.ts:4`](../../packages/shared/src/event/event.types.ts) grows).
 - `PulseScheduler.updateCurrentChannelAnchors` ([`pulse-scheduler.ts:793`](../../packages/server/src/simulation/pulse-scheduler.ts)) needs a `moved_room` case, otherwise an actor keeps resolving its default channel to the room it left.
 - The types live in `packages/shared/src/space/`, not `world/`, so they do not collide with the unrelated goal-layer "world" (`packages/server/src/simulation/world/`, [ADR-0008](./0008-world-goal-layer.md)). The types are `SpaceModel` and `SpaceView`; the sidecar driver is `SpaceMirror` (lead resolution R1). "World" in this repo keeps its goal-layer meaning.
 - A deterministic fake grid hotel behind `IBodyGateway` is required so mock runs and CI probes need no Tilehouse ([ADR-0026](./0026-hotel-adapter-package.md)).

@@ -24,7 +24,8 @@ Integration decisions are written `D17` (approved by the owner on 2026-11-06; ca
 | D14 | Hybrid bodies | 11 |
 | D15 | Run state in memory only; replays on a volume | 6, 16 |
 | D16 | OpenAI-compatible LLM; key, base URL and model allowlist from the host's env; never user-entered | 13 |
-| D17 | Pulse clock: base 4-6 s plus a focused pulse on human chat, 1.5 s debounce | 9 |
+| D17, D52 | Pulse clock: base pulse every 6 s plus a focused pulse on human chat that fires at once (other lines within 300 ms coalesce); replaces the 1.5 s debounce | 9 |
+| D53 | Model allowlist admits a model only after a benchmark shows p95 <= 6 s at our prompt size; run panel shows live LLM p95 and warns on drift | 9, 13 |
 | D18 | Cinematic lookahead of 1-2 pulses | 18 |
 | D22 | Human chat is untrusted speech; only admin commands steer | 12 |
 | D29, D44 | Actors hear by distance; humans may whisper to actors, bystanders within 2 tiles notice | 12 |
@@ -61,9 +62,9 @@ packages/hotel/
   vitest.config.ts
 ```
 
-Dependencies: `@perfectman/shared`, `@perfectman/engine`, `@perfectman/server` (workspace). Dev: `@perfectman/eval` (probes, tests only). No dependency on `discord.js` is intended; if the server package cannot be imported without pulling it in at runtime, a subpath export is added in Phase 1 (**unverified**: [`server/package.json`](../../packages/server/package.json) exports only `.`).
+Dependencies: `@perfectman/shared`, `@perfectman/engine`, `@perfectman/server` (workspace). Dev: `@perfectman/eval` (probes, tests only). No dependency on `discord.js` is intended; if the server package cannot be imported without pulling it in at runtime, a subpath export is added in Phase 1 ([`server/package.json`](../../packages/server/package.json) exports only `.`; verified, and it does pull them in: see section 19, question 1).
 
-Generated types: Rust `schemars` -> JSON Schema -> `json-schema-to-typescript` into `director/frames.generated.ts` (Phase 1 contract freeze).
+Generated types: Rust `schemars` -> JSON Schema (vendored at `schema/director.schema.json`, provenance in `schema/SOURCE.md`) -> `json-schema-to-typescript` into `director/generated.ts` with `pnpm --filter @perfectman/hotel gen:director` (Phase 1 contract freeze). `check:director`, part of `pnpm test:gate`, fails when the generated file is stale.
 
 Workspace edits: add `packages/hotel/vitest.config.ts` to [`vitest.workspace.ts`](../../vitest.workspace.ts); root `build` already runs `pnpm -r build`.
 
@@ -83,9 +84,9 @@ Environment (names marked * are proposed here; `PERFECTMAN_ENABLED`, `PERFECTMAN
 | `PERFECTMAN_MAX_RUNS` | Concurrent runs, default 3 |
 | `PERFECTMAN_LLM_BASE_URL`* | OpenAI-compatible base URL |
 | `PERFECTMAN_LLM_API_KEY`* | API key; referenced by name through `LLMConfig.apiKeyEnv` |
-| `PERFECTMAN_LLM_MODELS`* | Comma-separated model allowlist; the first is the default |
+| `PERFECTMAN_LLM_MODELS`* | Comma-separated model allowlist; the first is the default. A model is added only after a benchmark shows p95 <= 6 s at our prompt size (12 agents, 40-event window; D53) |
 | `PERFECTMAN_LLM_PRICES`* | JSON `{ "<model>": { "inUsdPerMTok": n, "outUsdPerMTok": n } }` |
-| `PERFECTMAN_LLM_CONCURRENCY`* | Generate-phase concurrency, default 4 |
+| `PERFECTMAN_LLM_CONCURRENCY`* | Generate concurrency across both pulse lanes, default 3; one slot is reserved for addressed replies |
 | `PERFECTMAN_LLM_SOFT_CALLS_PER_MIN`*, `PERFECTMAN_LLM_SOFT_TOKENS_PER_HOUR`* | Warn-mode thresholds |
 | `PERFECTMAN_DATA_DIR`* | Volume root shared with the hotel, default `/data/perfectman` (layout in section 6.4) |
 | `PERFECTMAN_HEALTH_PORT`* | Loopback health port, default 9100 |
@@ -97,7 +98,7 @@ Startup: parse env (fail fast on a missing secret, URL or model list) -> start h
 ```text
 human line (Director frame human_chat)
   -> ingest/: sanitize, address, hearing        -> EventLog.append(message_sent, untrusted)
-  -> RunManager: focused pulse request (1.5 s debounce) for the addressed actors
+  -> RunManager: focused pulse request for the addressed actors (fires at once, 300 ms coalescing)
 pulse (decide -> generate -> commit, ADR-0020)
   -> onConsult                                  -> typing{on} (via HotelGateway)
   -> IntentResolver (arbiter, rate gate)        -> committed events
@@ -149,7 +150,7 @@ Per run, under `PERFECTMAN_DATA_DIR/runs/<runId>/` (the volume layout is owned b
 
 ## 7. HotelGateway
 
-`HotelGateway implements IDeliveryGateway, IBodyGateway`. `IDeliveryGateway` is [`scheduler-contracts.ts:13`](../../packages/server/src/simulation/scheduler-contracts.ts); `IBodyGateway.dispatch(BodyCommand[])` is new (embodiment.md section 9).
+`HotelGateway implements IDeliveryGateway, IBodyGateway`. `IDeliveryGateway` is [`scheduler-contracts.ts:31`](../../packages/server/src/simulation/scheduler-contracts.ts); `IBodyGateway.dispatch(BodyCommand[])` is new (embodiment.md section 9).
 
 **Rule: nothing in a gateway method awaits the hotel.** `DeliveryProjection` awaits every gateway call inline inside the pulse ([`delivery-projection.ts:104-110`](../../packages/server/src/simulation/projections/delivery-projection.ts)), and the HTTP controller's `timeboxGateway` abandons any call that takes 2 s ([`run-controller.ts:36`](../../packages/server/src/http/run/run-controller.ts), [`timeboxed-gateway.ts:19`](../../packages/server/src/delivery/timeboxed-gateway.ts)). Hotel runs do not go through that controller, so they would not be timeboxed at all; a slow send would stall the pulse. Methods therefore enqueue and return, the way the Discord gateway hands to its rate limiter ([`discord-gateway.ts:80`](../../packages/server/src/discord/discord-gateway.ts)).
 
@@ -182,25 +183,31 @@ The rules are specified in [`../embodiment.md`](../embodiment.md) section 8.3. O
 
 Cinematic replaces 1-4 with director pacing (`readingSeconds`, shot holds, 1-2 pulses of lookahead, D18).
 
-## 9. Wall-clock pulse clock (D17)
+## 9. Wall-clock pulse clock (D17, D52)
 
 `WallClockPulseLoop` replaces both `runPulseLoop` (runs as fast as the model allows, [`pulse-loop.ts:10-12`](../../packages/server/src/http/run/pulse-loop.ts)) and `SimulationRuntime.start()` (period = interval + duration, [`pulse-scheduler.ts:157-162`](../../packages/server/src/simulation/pulse-scheduler.ts)). All time comes from an injected `Clock`.
 
 ```text
-nextBaseAt = clock.now() + jitter()                 # uniform 4000..6000 ms, seeded per run
+# base lane
+nextBaseAt = clock.now() + interval                  # 6000 ms (D52); optional seeded jitter inside 5000..8000 ms
 loop while state == running:
-    wait until min(nextBaseAt, focusedDueAt)         # abortable
-    if focusedDueAt reached:
-        runtime.runPulse(sim, { reason: "human_chat", focusAgentIds: pending, elapsedMs: since(lastPulseAt) })
-        pending.clear()
-    else:
-        runtime.runPulse(sim, { reason: "base", elapsedMs: since(lastPulseAt) })
-        nextBaseAt = max(clock.now(), startedAt + interval)   # drift-free: no catch-up bursts
+    wait until nextBaseAt                            # abortable
+    runtime.runPulse(sim, { reason: "base", elapsedMs: since(lastPulseAt) })   # not awaited by the focus lane
+    nextBaseAt = max(clock.now(), startedAt + interval)   # drift-free: no catch-up bursts
     lastPulseAt = clock.now()
-requestFocused(ids):  pending |= ids; focusedDueAt = clock.now() + 1500   # trailing debounce, resets on each line
+
+# focus lane (independent of the base lane)
+requestFocused(ids):
+    pending |= ids
+    if clock.now() >= windowEnd:                     # first line: fire at once
+        windowEnd = clock.now() + 300
+        fire()
+    elif no follow-up armed:                         # lines inside the 300 ms window coalesce
+        arm(windowEnd, fire)
+fire():  runtime.runPulse(sim, { reason: "human_chat", focusAgentIds: pending.take(), elapsedMs: since(lastPulseAt) })
 ```
 
-Rules: at most one pulse in flight (the scheduler queues, [ADR-0020](../adr/0020-decide-generate-commit-and-focused-pulse.md)); a base pulse that overruns skips the missed beats rather than bursting; `pause` stops the timers and resolves the in-flight pulse; `stop` aborts and drains with the bounded wait the controller uses (30 s, [`run-controller.ts:38`](../../packages/server/src/http/run/run-controller.ts)). The simulation's `pulseIntervalMs` setting stays inside the schema range (500-10000, [`simulation.schema.ts:16`](../../packages/shared/src/simulation/simulation.schema.ts)) and is set to the mean (5000) so decay math keeps its meaning.
+Rules: one base pulse in flight at a time and one focused pulse per window, on separate lanes gated by per-agent locks, with `PERFECTMAN_LLM_CONCURRENCY` (3) shared and one slot reserved for addressed replies ([ADR-0020](../adr/0020-decide-generate-commit-and-focused-pulse.md)); addressed replies jump ambient lines in the gateway's 2.5 s room queue; a base pulse that overruns skips the missed beats rather than bursting; `pause` stops the timers and resolves the in-flight pulse; `stop` aborts and drains with the bounded wait the controller uses (30 s, [`run-controller.ts:38`](../../packages/server/src/http/run/run-controller.ts)). The simulation's `pulseIntervalMs` setting stays inside the schema range (500-10000, [`simulation.schema.ts:16`](../../packages/shared/src/simulation/simulation.schema.ts)) and is set to the base interval (6000) so decay math keeps its meaning.
 
 ## 10. `onConsult` and the typing bubble
 
@@ -242,7 +249,7 @@ const llm: LLMConfig = {
 };
 ```
 
-Field names are those of [`llm-config.ts`](../../packages/server/src/llm/llm-config.ts). A scenario that names a model outside the allowlist is rejected at `start`. Run artifacts pass through `scrubConfigForArtifact` ([`secrets.ts:40`](../../packages/server/src/http/run/secrets.ts)); the per-run key mechanism in that file is not used, since the key is a host env var.
+Field names are those of [`llm-config.ts`](../../packages/server/src/llm/llm-config.ts). A scenario that names a model outside the allowlist is rejected at `start`. The run panel shows the live LLM p95 (from `recordUsage` timings) and warns when it drifts above 6 s (D53). Run artifacts pass through `scrubConfigForArtifact` ([`secrets.ts:40`](../../packages/server/src/http/run/secrets.ts)); the per-run key mechanism in that file is not used, since the key is a host env var.
 
 Budget ([ADR-0025](../adr/0025-llm-budget-and-circuit-breaker.md)): the run registers limits with `mode: "warn"`. `canCall` is invoked from `agent/surface/action-intent-step.ts` (lines 92 and 257) and `world/goal-layer-llm.ts:76`; `getPriority` from `pulse-scheduler.ts:349`; addressed maps to `high`. Cost per run = tokens from `recordUsage` x `PERFECTMAN_LLM_PRICES`, reported to the hotel in `run_status` every 5 s with calls, tokens, cost, breaker state, `pause_cause` and `undelivered_committed`.
 
@@ -304,7 +311,7 @@ Not planned: per-class unit tests that restate the code, snapshot tests of promp
 
 ## 18. Phases
 
-- **Phase 1** (contracts freeze, spike): `director/frames.generated.ts`, `IBodyGateway`, `BodyIntentSchema`, runtime API (`runPulse` options, `onConsult`, `getPulseIndex`, `resolveDeferred`), latency spike with 12 mock agents and a real model through the split.
+- **Phase 1** (contracts freeze, spike): `director/generated.ts`, `IBodyGateway`, `BodyIntentSchema`, runtime API (`runPulse` options, `onConsult`, `getPulseIndex`, `resolveDeferred`), latency spike with 12 mock agents and a real model through the split.
 - **Phase 2** (default-mode foundation): everything in sections 3-17 for default mode, including the authoring listener (validate, compile, draft); exit demo: an admin builds a scenario, four actors walk in, talk, sit, react to a human, then stop and walk out; killing the sidecar mid-run leaves 0 actors; probes green on mock.
 - **Phase 3** (default mode complete): pair acts and consequences, player memory, live controls, the 8-room wing (added to the fake grid fixtures), preset import and auto-look (`presets`, `autolook`), canary red-team set, dark-launch deploy.
 - **Phase 4** (cinematic): `Director` (beats from `shared/src/stage/live-to-beats.ts`, lookahead, shot planner, cuts, SFX cues, narrator pass), the director track, any room allowed (D45).
@@ -314,9 +321,9 @@ Not planned: per-class unit tests that restate the code, snapshot tests of promp
 
 | # | Question | Default |
 | --- | --- | --- |
-| 1 | Can `@perfectman/server` be imported without loading Discord, Ollama and SQLite modules at runtime? | Add a subpath export if not |
+| 1 | Can `@perfectman/server` be imported without loading Discord, Ollama and SQLite modules at runtime? | **No** (checked 2026-11-06): the `.` barrel loads `better-sqlite3`, `ollama` and `discord.js` at module init (about 270 ms, 131 MB RSS against 49 ms and 64 MB for `shared`). Each comes from one static import chain (`index.ts` line 1, `llm/index.ts`, `delivery/index.ts`; `buildConfiguredSimulation` reaches all three as well), so a narrow `./hotel` subpath export plus three small import changes fixes it: lazy `import()` of the sqlite repositories and of `ollama` in `provider-factory`, and a direct import in `simulation-config.ts` instead of the delivery barrel. See checklist item 26. Not blocking: the sidecar works with the barrel |
 | 2 | Retention window (2000 events) and ingestion cap (8 per 5 s) are seeds | Calibrate in the Phase 2 soak test |
 | 3 | Cost stop: v1 has warnings only (D11); revisit after real cost data | None |
-| 4 | Does a breaker pause auto-resume on half-open success (ADR-0025, as specced here) or wait for an admin (a stricter reading of lead resolution R2)? | Auto-resume; never ends on a timer |
+| 4 | Does a breaker pause auto-resume on half-open success (ADR-0025, as specced here) or wait for an admin (a stricter reading of lead resolution R2)? | Settled by D49: auto-resume after one successful half-open call; admin notified on pause and resume; never ends on a timer |
 
 Resolved by the 2026-11-06 lead resolutions: the 30 min end timer is idle-only (R2); authoring goes over an internal HTTP listener on the sidecar, not the Director socket (R3); the directory is `shared/src/space/` (R1).

@@ -18,7 +18,9 @@ describe("ModelIntentPacket", () => {
   });
 
   it("zod keys and JSON-Schema properties are identical (no drift)", () => {
-    const zodKeys = Object.keys(ModelIntentPacketSchema.shape).sort();
+    // `body` is hotel-only: the default decode schema leaves it out (see
+    // space/__tests__/body-intent.schema.test.ts for the with-body parity).
+    const zodKeys = Object.keys(ModelIntentPacketSchema.shape).filter((k) => k !== "body").sort();
     const jsonKeys = Object.keys(ModelIntentPacketJsonSchema.properties).sort();
     expect(jsonKeys).toEqual(zodKeys);
   });

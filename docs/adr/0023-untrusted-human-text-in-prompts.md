@@ -15,7 +15,7 @@ In the hotel, strings written by strangers reach the prompt through more than ch
 | Room names | current room, `r#` lines, "other rooms" | room owners (player-owned rooms) |
 | Furniture names and labels | `f#` / `z#` lines, zone labels | the catalog, plus any text a player can attach |
 
-A second path matters as much: a model that summarizes a hostile line into a `memoryWrites` entry ([`intent-packet.schema.ts:16`](../../packages/shared/src/intent/intent-packet.schema.ts)) re-injects it later as the agent's own memory, outside any "untrusted" frame.
+A second path matters as much: a model that summarizes a hostile line into a `memoryWrites` entry ([`intent-packet.schema.ts:17`](../../packages/shared/src/intent/intent-packet.schema.ts)) re-injects it later as the agent's own memory, outside any "untrusted" frame.
 
 D40 also means third-party players' text leaves the hotel for an external OpenAI-compatible endpoint with no notice and no opt-out. The owner accepted this on 2026-11-06; this ADR is its record.
 

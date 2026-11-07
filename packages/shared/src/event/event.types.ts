@@ -1,4 +1,5 @@
 import type { IntentType } from "../intent/intent.types.js";
+import type { HearingLevel, SpeechMode } from "../space/body.types.js";
 
 export type EventType =
   | "message_sent"
@@ -37,7 +38,14 @@ export type EventType =
   | "goal_declined"
   | "world_verdict"
   | "delusion_gap_sampled"
-  | "ending_offered";
+  | "ending_offered"
+  // Hotel embodiment (ADR-0018). `body_blocked` is operator-only.
+  | "body_action_committed"
+  | "body_arrived"
+  | "moved_room"
+  | "body_blocked"
+  | "speech_deferred"
+  | "paired_act_aborted";
 
 export type EmotionalSalience = "low" | "medium" | "high" | "critical";
 
@@ -63,6 +71,28 @@ export type PrivateMotiveSummaryPayload = {
   engineAuthored: boolean;
   /** ADR-0017: this intent answered a hold consult — a `no_op` here is a voiced hold, anything else broke it. */
   holdSuggested?: boolean;
+};
+
+/**
+ * Payload fields of a `message_sent` that came from a human in the hotel
+ * (ADR-0022, ADR-0023). `untrusted: true` marks externally authored text: it
+ * controls sanitization and probes only, the prompt quotes every spoken line
+ * the same way. `hearing` is stamped per listener at ingestion or commit;
+ * `visibleToAgents` lists everyone who gets the event at all. Internal ids
+ * (`h:<userId>`) never reach a prompt.
+ */
+export type UntrustedMessagePayload = {
+  /** Clipped to 200 chars, the Tilehouse limit. */
+  content: string;
+  untrusted: true;
+  senderKind: "guest" | "passerby";
+  /** Sanitized: NFKC, no control or bidi characters, at most 24 chars, alias on failure. */
+  senderName: string;
+  mentionedAgentIds: string[];
+  addresseeIds: string[];
+  hearing: { [agentId: string]: HearingLevel };
+  speakerTile: [number, number];
+  mode: SpeechMode;
 };
 
 export type EventVisibility = {

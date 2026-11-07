@@ -67,6 +67,8 @@ export type { TranslatedEmotionalState, RelationalFlavor, PromptPurpose } from "
 // Perception
 export * from "./perception/perception.types.js";
 
+export * from "./space/index.js";
+
 // Interpretation
 export * from "./interpretation/interpretation.types.js";
 
