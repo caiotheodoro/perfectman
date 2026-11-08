@@ -143,7 +143,7 @@ Paused runs hold their actors in place; they do not walk out until `stopping`. "
 - Sidecar reconnects within the window with the same process: it answers `hello` with `hello_ack{resume}` and the hotel renews the lease (`lease{run, lease}`).
 - Sidecar restarts: `hello` from the hotel lists live actors and runs; the sidecar owns none of them, so every unknown actor is despawned and every unknown run is marked `interrupted`.
 - Hotel restarts: orphan runs are marked `interrupted` at startup; actors are gone; the sidecar sees a fresh `hello`.
-- SIGTERM: stop accepting `start`, move every run to `stopping` with walk-out (bounded to 10 s), flush artifacts, close the socket, exit 0. Compose grants a 20 s stop grace period.
+- SIGTERM: stop accepting `start`, move every run to `stopping` with walk-out (bounded to 10 s), flush artifacts, close the socket, exit 0. Compose grants a 20 s stop grace period. A restart is not a deliberate stop, so no `run_end` is sent: the artifacts say `finalState: "interrupted"`, `stopReason: "sidecar_shutdown"`, an admin notice `shutting_down` goes out, and the hotel marks the run `interrupted` (`sidecar_lost`, D41) when the socket closes or the next `hello_ack` does not resume it. `run_end` stays for a stop the admin asked for, the scenario's own end and a failure.
 
 ### 6.4 Artifacts
 

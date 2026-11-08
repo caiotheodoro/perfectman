@@ -1,6 +1,6 @@
 import type { RoomId } from "@perfectman/shared";
 import type { HotelFrame, PauseCause, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
-import type { RunStartParams } from "./run.js";
+import type { RunStartParams, StopOptions } from "./run.js";
 
 /** What the manager needs of a run, so a live run and a replay of a recorded one are handled alike. */
 export interface RunLike {
@@ -20,7 +20,7 @@ export interface RunLike {
   setLinkDown(down: boolean): void;
   pause(cause: PauseCause): void;
   resume(source: "admin" | "auto" | "breaker"): boolean;
-  stop(reason: SidecarEndReason, summary?: string, opts?: { byHotel?: boolean }): Promise<void>;
+  stop(reason: SidecarEndReason, summary?: string, opts?: StopOptions): Promise<void>;
   abandon(): Promise<void>;
   status(loopLagMs?: number): Extract<SidecarMsg, { t: "run_status" }>;
   statusText(): string;
