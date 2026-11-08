@@ -14,6 +14,7 @@ import type { HotelConfig } from "../config.js";
 import type { ActorCmd, HotelFrame, PauseCause, PerfectmanUi, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
 import { pickTile } from "../embodiment/tiles.js";
 import type { HotelSpaceMirror } from "../space/space-mirror.js";
+import { scopeRef } from "../space/scoped-ref.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
 import { ActorPacer } from "./replay-pacing.js";
@@ -115,7 +116,7 @@ export class ReplayRun {
   }
 
   private refOf(ref: string): string {
-    return `r${this.id}.${ref}`;
+    return scopeRef(this.id, ref);
   }
 
   roomsInUse(): RoomId[] {

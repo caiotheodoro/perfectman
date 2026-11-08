@@ -112,7 +112,7 @@ describe("one run end to end on the fake Director with the mock provider", () =>
     expect(await registry?.isMember("person-1", "room:12")).toBe(true);
 
     // D24: every room the hotel listed is reachable by the door, so move_room has a target.
-    const mirror = sc.manager!.mirror;
+    const mirror = sc.manager!.mirror.scoped(7);
     const adj = mirror.view("person-1", Date.now())?.adjacency ?? [];
     expect(adj).toEqual([expect.objectContaining({ roomId: "13", name: "Room 13", travelS: expect.any(Number), viaDoor: expect.any(Array) })]);
     expect(adj[0]?.travelS).toBeGreaterThan(0);
@@ -143,7 +143,7 @@ describe("one run end to end on the fake Director with the mock provider", () =>
     });
     hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });
     await waitFor(() => hotel.received.filter((f) => f.t === "actor_spawn").length === 3, "3 spawns");
-    const mirror = sc.manager!.mirror;
+    const mirror = sc.manager!.mirror.scoped(7);
     const adj = mirror.view("person-1", Date.now())?.adjacency ?? [];
     expect(adj.map((a) => a.roomId).sort()).toEqual(["13", "40"]);
     expect(adj.find((a) => a.roomId === "40")).toMatchObject({ name: "Perfectman Lobby", travelS: expect.any(Number) });

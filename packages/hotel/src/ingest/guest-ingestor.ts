@@ -5,7 +5,7 @@ import type { Clock } from "../clock/clock.js";
 import type { HotelFrame } from "../director/index.js";
 import { chebyshev } from "../space/geometry.js";
 import { computeHearing } from "../space/hearing.js";
-import type { HotelSpaceMirror } from "../space/space-mirror.js";
+import type { ActorSpace } from "../space/space-mirror.js";
 import { sanitizeName, sanitizeText, MAX_CHAT_CHARS } from "../util/text.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
@@ -22,7 +22,7 @@ export type IngestOutcome =
   | { kind: "ingested"; eventId: string; addressed: string[]; heardBy: string[]; operatorOnly: boolean };
 
 export type IngestorDeps = {
-  mirror: HotelSpaceMirror;
+  mirror: ActorSpace;
   clock: Clock;
   simulationId: string;
   /** agentId -> scene display name, for the run's actors. */

@@ -31,7 +31,7 @@ async function running(width = 10) {
   const handle = run?.simulation;
   if (!run || !handle) throw new Error("the run did not start");
   const state = await handle.repositories.agentStateRepo.get(handle.simulationId, "person-1");
-  const space = b.sidecar.manager?.mirror.view("person-1", Date.now());
+  const space = b.sidecar.manager?.mirror.scoped(7).view("person-1", Date.now());
   if (!state || !space) throw new Error("person-1 is not in the room");
   return { f, b, run, state, space };
 }

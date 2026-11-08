@@ -1,7 +1,7 @@
 import type { BlockedReason, BodyCommand, BodyPlan, PairKind, PairedActAbortedPayload, RoomId, Tile } from "@perfectman/shared";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import type { ActorCmd, ActorErrorCode, HotelFrame, PairOutcome, SidecarMsg } from "../director/index.js";
-import type { HotelSpaceMirror } from "../space/space-mirror.js";
+import type { ActorSpace } from "../space/space-mirror.js";
 import { chebyshev } from "../space/geometry.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
@@ -35,7 +35,7 @@ export type ExecutorDeps = {
   run: number;
   clock: Clock;
   rng: () => number;
-  mirror: HotelSpaceMirror;
+  mirror: ActorSpace;
   lease(): number | undefined;
   nextCid(): number;
   send(msg: SidecarMsg): boolean;
@@ -253,7 +253,7 @@ export class BodyExecutor {
       return false;
     }
     const roomId = mirror.roomOfRef(c.agentId);
-    const room = roomId ? mirror.model().rooms.get(roomId) : undefined;
+    const room = roomId ? mirror.roomHealth(roomId) : undefined;
     const counted = c.cmd !== "typing" && c.cmd !== "chat";
 
     if (counted) {
@@ -330,8 +330,7 @@ export class BodyExecutor {
   }
 
   private trackPlan(c: Extract<BodyCommand, { cmd: "walk" }>, now: number): void {
-    const room = this.deps.mirror.roomOfRef(c.agentId);
-    const self = room ? this.deps.mirror.model().rooms.get(room)?.occupants.get(c.agentId) : undefined;
+    const self = this.deps.mirror.presenceOf(c.agentId);
     const prior = this.plans.get(c.agentId);
     if (prior && prior.plan.status === "moving") {
       prior.plan.status = "interrupted";
@@ -373,15 +372,11 @@ export class BodyExecutor {
     this.advancePair(st);
   }
 
-  private pairRoom(st: PairState) {
-    const room = this.deps.mirror.roomOfRef(st.agentId);
-    return room ? this.deps.mirror.model().rooms.get(room) : undefined;
-  }
-
   private advancePair(st: PairState): void {
-    const room = this.pairRoom(st);
-    const a = room?.occupants.get(st.agentId);
-    const b = room?.occupants.get(st.bRef);
+    const { mirror } = this.deps;
+    const room = mirror.roomOfRef(st.agentId);
+    const a = room !== undefined ? mirror.presenceIn(room, st.agentId) : undefined;
+    const b = room !== undefined ? mirror.presenceIn(room, st.bRef) : undefined;
     if (!room || !a || !b) {
       this.deps.hooks.pairAborted({ ...st, cause: "target_lost" });
       return this.endPair(st.pair);

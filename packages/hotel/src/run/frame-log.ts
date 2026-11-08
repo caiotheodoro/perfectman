@@ -1,6 +1,5 @@
-import type { BodyFrame, BodyFrameLog, RoomId } from "@perfectman/shared";
+import type { BodyFrame, BodyFrameLog, RoomId, SpaceMirror } from "@perfectman/shared";
 import type { Clock } from "../clock/clock.js";
-import type { HotelSpaceMirror } from "../space/space-mirror.js";
 
 const MAX_FRAMES = 20_000;
 const MAX_SNAPSHOTS = 2_000;
@@ -17,7 +16,7 @@ export class FrameLogRecorder {
     if (this.log.frames.length > MAX_FRAMES) this.log.frames.shift();
   };
 
-  snapshot(mirror: HotelSpaceMirror): void {
+  snapshot(mirror: SpaceMirror): void {
     const at = this.clock.now();
     for (const room of mirror.model().rooms.values()) {
       this.log.snapshots.push({

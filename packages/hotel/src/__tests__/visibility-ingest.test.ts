@@ -76,7 +76,7 @@ function ingestor(over: { people?: ReturnType<typeof avatar>[]; names?: Record<s
     noteHumanLine: (_c, l) => noted.push(l.addressedIds),
     requestFocused: (ids) => focused.push(ids),
   });
-  return { ing, lines, focused, noted, clock };
+  return { ing, lines, focused, noted, clock, mirror };
 }
 
 describe("guest ingestion (ADR-0022)", () => {
@@ -95,7 +95,7 @@ describe("guest ingestion (ADR-0022)", () => {
     // Duda (3 tiles) and Rafa (4 tiles) are both in band: nobody is "the only one".
     expect(out).toMatchObject({ kind: "ingested", addressed: [] });
     const alone = ingestor();
-    alone.ing["deps"].mirror.applyDelta({ t: "delta", room: 12, rev: 2, msg: { t: "avatar_left", id: -702 } }, alone.clock.now());
+    alone.mirror.applyDelta({ t: "delta", room: 12, rev: 2, msg: { t: "avatar_left", id: -702 } }, alone.clock.now());
     expect(await alone.ing.handleHumanChat(chat({ text: "tudo bem?" }))).toMatchObject({ addressed: ["duda"] });
   });
 

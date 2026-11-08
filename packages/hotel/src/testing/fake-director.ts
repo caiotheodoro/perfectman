@@ -43,6 +43,8 @@ export class FakeDirector {
   staleUiPushes = 0;
   readonly chats: { actor: number; mode: string; text: string; to?: number | null; at: number }[] = [];
   readonly typingLog: { actor: number; on: boolean }[] = [];
+  /** Every `actor_error` the hotel answered with, in order. */
+  readonly errorsSent: { actor: number | undefined; code: string }[] = [];
   /** Commands the modelled limits refused (`enforceBudgets`). */
   readonly refused: { actor: number; k: string; code: string }[] = [];
   private readonly budgetTimes = new Map<string, number[]>();
@@ -136,8 +138,9 @@ export class FakeDirector {
     if (this.subscribed.has(room)) this.delta(room, { t: "avatar_joined", avatar: this.wireAvatar(a) });
   }
 
-  avatarByRef(ref: string): FakeAvatar | undefined {
-    for (const r of this.rooms.values()) for (const a of r.avatars.values()) if (a.ref === ref) return a;
+  /** An actor by its character ref; `run` tells two runs that share refs apart. */
+  avatarByRef(ref: string, run?: number): FakeAvatar | undefined {
+    for (const r of this.rooms.values()) for (const a of r.avatars.values()) if (a.ref === ref && (run === undefined || a.run === run)) return a;
     return undefined;
   }
 
@@ -305,6 +308,7 @@ export class FakeDirector {
   }
 
   private err(cid: number | undefined, actor: number | undefined, code: ActorErrorCode, detail?: string): void {
+    this.errorsSent.push({ actor, code });
     this.send({ t: "actor_error", ...(cid !== undefined ? { cid } : {}), ...(actor !== undefined ? { actor } : {}), code, ...(detail ? { detail } : {}) });
   }
 
