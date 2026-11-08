@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import type { BodyFrame, BodyFrameLog, Tile } from "@perfectman/shared";
-import { runEmbodimentProbes } from "../probes/embodiment.js";
+import { positionLookup, runEmbodimentProbes } from "../probes/embodiment.js";
 
 const T0 = 1_000_000;
 const f = (at: number, dir: "in" | "out", kind: string, data: Record<string, unknown>, room = "lounge"): BodyFrame => ({
@@ -114,5 +114,38 @@ describe("embodiment probes (docs/embodiment.md section 10)", () => {
       f(600, "in", "moves", { agentId: "a", tile: [1, 1], dir: 2 }),
     ]);
     expect(verdict("teleport-rate", crossing)).toBe(true);
+  });
+});
+
+describe("positionLookup (where an actor stood, in run-relative time)", () => {
+  // run_start at T0 + 500, so run-relative 0 is wall T0 + 500
+  const frames = [f(500, "out", "run_start", {}), f(0, "in", "room_ping", { rev: 1 })];
+  const snaps = [
+    snap(1_500, [["a", [1, 1], 0]]),
+    snap(11_500, [["a", [5, 5], 0], ["b", [2, 2], 0]]),
+    { ...snap(11_500, [["c", [9, 9], 0]]), room: "hallway" },
+  ];
+  const lookup = positionLookup(log(frames, snaps));
+
+  it("reads the latest snapshot at or before the instant, counting from the run start", () => {
+    expect(lookup("a", 1_000)).toEqual({ room: "lounge", tile: [1, 1] });
+    expect(lookup("a", 10_999)).toEqual({ room: "lounge", tile: [1, 1] });
+    expect(lookup("a", 11_000)).toEqual({ room: "lounge", tile: [5, 5] });
+  });
+
+  it("falls back to the first later snapshot when the actor was not seen yet, and to nothing when never seen", () => {
+    expect(lookup("b", 0)).toEqual({ room: "lounge", tile: [2, 2] });
+    expect(lookup("ghost", 5_000)).toBeUndefined();
+  });
+
+  it("can be asked about one room only", () => {
+    expect(lookup("c", 11_000, "hallway")).toEqual({ room: "hallway", tile: [9, 9] });
+    expect(lookup("c", 11_000, "lounge")).toBeUndefined();
+  });
+
+  it("starts the clock at the first frame when the log has no run_start", () => {
+    const l = positionLookup(log([f(0, "in", "room_ping", { rev: 1 })], [snap(2_000, [["a", [3, 3], 0]])]));
+    expect(l("a", 2_000)).toEqual({ room: "lounge", tile: [3, 3] });
+    expect(l("a", 0)).toEqual({ room: "lounge", tile: [3, 3] });
   });
 });
