@@ -8,3 +8,4 @@ export * from "./judge-prompt.js";
 export * from "./drama-judge.js";
 export * from "./judge-provider.js";
 export * from "./calibration.js";
+export * from "./judge-clip.js";
