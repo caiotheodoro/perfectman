@@ -9,14 +9,17 @@
  * Time is run-relative milliseconds, as `DramaEvent.atMs` is. A scene is a room.
  */
 import { SAY_CLEAR_TILES, chebyshev } from "@perfectman/engine";
-import { rungIndex, type ActStartedEvent, type DramaEvent } from "../drama/index.js";
+import { rungIndex, type ActStartedEvent, type DramaEvent, type DramaFailureId } from "../drama/index.js";
 import type { PositionLookup } from "./embodiment.js";
+import { checkProbe, PROBE_BANDS, type ProbeResult } from "./types.js";
 
 export type DramaProbeInput = {
   /** In time order (as `extractDramaEvents` returns them). */
   events: readonly DramaEvent[];
   /** Actor refs; humans are not judged. */
   actorIds: readonly string[];
+  /** Refs of humans, beyond the `h:<id>` names the extractor gives them. */
+  humanIds?: readonly string[];
   /** Length of the run in ms. Default: the span of the events. */
   durationMs?: number;
   /** Where actors stood, for the probes that need earshot (see `positionLookup`). */
@@ -30,6 +33,12 @@ const MIN_ACTS_FOR_DIVERSITY = 5;
 /** What a target that never reacted counts as in the latency percentile: finite, so it survives JSON, and far past any band. */
 export const UNREACTED_MS = 1e9;
 const KILL_RUNG = rungIndex("kill");
+const SHOVE_RUNG = rungIndex("shove");
+/** The ladder a scene starts from: calm, one step under the first rung that is a glare. */
+const SCENE_START_RUNG = 0;
+/** At most one physical beat (shove and above) per scene per this long. */
+const BEAT_SPACING_MS = 20_000;
+const MAX_KILLS_PER_SCENE = 1;
 /** Gestures that are the body at rest, not a body act (the baseline leaves them out too). */
 const REST_GESTURES = new Set(["stand", "idle", "stop"]);
 
@@ -119,23 +128,34 @@ export function verbDiversity(input: DramaProbeInput): VerbDiversityReading {
 
 // ── shared reads ─────────────────────────────────────────────────────────────
 
-/** A human is named `h:<id>` by the extractor. */
-const isHuman = (ref: string): boolean => ref.startsWith("h:");
+/** A human is named `h:<id>` by the extractor, or listed in `humanIds`. */
+function humansOf(input: DramaProbeInput): (ref: string) => boolean {
+  const named = new Set(input.humanIds);
+  return (ref) => ref.startsWith("h:") || named.has(ref);
+}
+
+type Death = { atMs: number; via: "death" | "kill" };
 
 /** When each actor died: by an `actor_death`, or by a kill act that landed on them (at its `act_done`). The earliest wins. */
-function deathTimes(events: readonly DramaEvent[], acts: readonly ActStartedEvent[]): Map<string, number> {
-  const died = new Map<string, number>();
-  const mark = (actor: string, atMs: number): void => {
+function deathsOf(events: readonly DramaEvent[], acts: readonly ActStartedEvent[]): Map<string, Death> {
+  const died = new Map<string, Death>();
+  const mark = (actor: string, death: Death): void => {
     const known = died.get(actor);
-    if (known === undefined || atMs < known) died.set(actor, atMs);
+    if (known === undefined || death.atMs < known.atMs) died.set(actor, death);
   };
-  const kills = new Map(acts.filter((a) => rungIndex(a.verb) === KILL_RUNG && a.with !== undefined).map((a) => [a.actId, a.with!]));
+  const victims = new Map<string, string>();
+  for (const a of acts) if (rungIndex(a.verb) === KILL_RUNG && a.with !== undefined) victims.set(a.actId, a.with);
   for (const e of events) {
-    if (e.kind === "actor_death") mark(e.actor, e.atMs);
-    else if (e.kind === "act_done" && e.outcome === "landed" && kills.has(e.actId)) mark(kills.get(e.actId)!, e.atMs);
+    if (e.kind === "actor_death") mark(e.actor, { atMs: e.atMs, via: "death" });
+    else if (e.kind === "act_done" && e.outcome === "landed") {
+      const victim = victims.get(e.actId);
+      if (victim !== undefined) mark(victim, { atMs: e.atMs, via: "kill" });
+    }
   }
   return died;
 }
+
+const deadBy = (died: ReadonlyMap<string, Death>, ref: string, atMs: number): boolean => (died.get(ref)?.atMs ?? Infinity) <= atMs;
 
 /** For each act, the first moment each reactor reacted at or after the act began. */
 function reactionsByAct(events: readonly DramaEvent[], acts: readonly ActStartedEvent[]): Map<string, Map<string, number>> {
@@ -165,6 +185,8 @@ function p90(values: readonly number[]): number {
 export type TargetLatency = { p90: number; samples: number; unreactedActIds: string[] };
 export type WitnessLatency = { p90: number; samples: number };
 export type ReactionLatencyReading = {
+  /** `D1` when a target never reacted. */
+  codes: DramaFailureId[];
   /** From `act_started` to the target's first reaction. A target that never reacted counts as `UNREACTED_MS`. */
   target: TargetLatency;
   /** From `act_started` to each reacting witness's first reaction (who never reacted is `witness-coverage`'s to name). */
@@ -181,7 +203,8 @@ export type ReactionLatencyReading = {
 export function reactionLatencyP90(input: DramaProbeInput): ReactionLatencyReading {
   const acts = actsOf(input.events);
   const reactions = reactionsByAct(input.events, acts);
-  const died = deathTimes(input.events, acts);
+  const died = deathsOf(input.events, acts);
+  const isHuman = humansOf(input);
   const targetMs: number[] = [];
   const unreactedActIds: string[] = [];
   const witnessMs: number[] = [];
@@ -190,7 +213,7 @@ export function reactionLatencyP90(input: DramaProbeInput): ReactionLatencyReadi
     const reacted = reactions.get(act.actId) ?? new Map<string, number>();
     const target = act.with;
     if (target !== undefined && reacted.size === 0) d1ActIds.push(act.actId);
-    if (target !== undefined && !isHuman(target) && !((died.get(target) ?? Infinity) <= act.atMs)) {
+    if (target !== undefined && !isHuman(target) && !deadBy(died, target, act.atMs)) {
       const at = reacted.get(target);
       if (at === undefined) {
         unreactedActIds.push(act.actId);
@@ -200,6 +223,7 @@ export function reactionLatencyP90(input: DramaProbeInput): ReactionLatencyReadi
     for (const [who, at] of reacted) if (who !== act.actor && who !== target) witnessMs.push(at - act.atMs);
   }
   return {
+    codes: unreactedActIds.length > 0 ? ["D1"] : [],
     target: { p90: p90(targetMs), samples: targetMs.length, unreactedActIds },
     witness: { p90: p90(witnessMs), samples: witnessMs.length },
     d1ActIds,
@@ -230,7 +254,8 @@ export function witnessCoverage(input: DramaProbeInput): WitnessCoverageReading 
   const acts = actsOf(input.events);
   if (positionOf === undefined) return { measured: 1, judged: 0, covered: 0, uncovered: [], unjudgedActIds: [], skipped: "no positions" };
   const reactions = reactionsByAct(input.events, acts);
-  const died = deathTimes(input.events, acts);
+  const died = deathsOf(input.events, acts);
+  const isHuman = humansOf(input);
   const uncovered: WitnessCoverageReading["uncovered"] = [];
   const unjudgedActIds: string[] = [];
   let judged = 0;
@@ -240,7 +265,7 @@ export function witnessCoverage(input: DramaProbeInput): WitnessCoverageReading 
     const owed: string[] = [];
     if (from !== undefined) {
       for (const ref of input.actorIds) {
-        if (ref === act.actor || ref === act.with || isHuman(ref) || (died.get(ref) ?? Infinity) <= act.atMs) continue;
+        if (ref === act.actor || ref === act.with || isHuman(ref) || deadBy(died, ref, act.atMs)) continue;
         const at = positionOf(ref, act.atMs, act.room);
         if (at !== undefined && at.room === from.room && chebyshev(from.tile, at.tile) <= SAY_CLEAR_TILES) owed.push(ref);
       }
@@ -256,4 +281,192 @@ export function witnessCoverage(input: DramaProbeInput): WitnessCoverageReading 
     else uncovered.push({ actId: act.actId, missing });
   }
   return { measured: judged === 0 ? 1 : covered / judged, judged, covered, uncovered, unjudgedActIds };
+}
+
+// ── ladder-compliance ────────────────────────────────────────────────────────
+
+export type LadderReason = "rung_skip" | "beat_budget" | "kill_budget";
+export type LadderReading = {
+  /** Compliant acts over judged acts (acts whose verb is on the ladder); 1 when nothing was judged. */
+  measured: number;
+  judged: number;
+  compliant: number;
+  offendingActIds: string[];
+  offenders: Array<{ actId: string; reasons: LadderReason[] }>;
+  /** `D3` for a skipped rung, `D6` for a breached budget. */
+  codes: DramaFailureId[];
+};
+
+function codeOfReason(reason: LadderReason): DramaFailureId {
+  switch (reason) {
+    case "rung_skip":
+      return "D3";
+    case "beat_budget":
+    case "kill_budget":
+      return "D6";
+    default: {
+      const unreachable: never = reason;
+      return unreachable;
+    }
+  }
+}
+
+/**
+ * Whether the conflict climbs the escalation ladder in order and inside its budget. Per scene, an act
+ * may rise at most one rung over the highest rung seen so far in that scene (a scene starts calm: glare
+ * or insult may open it), unless it carries `authoredSkip`. The budget holds regardless of authoring: at
+ * most one physical beat (shove and above) per 20 s, and at most one kill, per scene. An act counts when
+ * it starts, whatever came of it. An offending act still raises the scene's height, so a single jump is
+ * charged once.
+ */
+export function ladderCompliance(input: DramaProbeInput): LadderReading {
+  const acts = actsOf(input.events)
+    .map((act, order) => ({ act, order }))
+    .sort((x, y) => x.act.atMs - y.act.atMs || x.order - y.order)
+    .map((x) => x.act);
+  const highest = new Map<string, number>();
+  const lastBeat = new Map<string, number>();
+  const kills = new Map<string, number>();
+  const offenders: LadderReading["offenders"] = [];
+  let judged = 0;
+  for (const act of acts) {
+    const rung = rungIndex(act.verb);
+    if (rung < 0) continue;
+    judged += 1;
+    const scene = sceneOf(act);
+    const reasons: LadderReason[] = [];
+    if (rung > (highest.get(scene) ?? SCENE_START_RUNG) + 1 && act.authoredSkip !== true) reasons.push("rung_skip");
+    highest.set(scene, Math.max(highest.get(scene) ?? SCENE_START_RUNG, rung));
+    if (rung >= SHOVE_RUNG) {
+      const previous = lastBeat.get(scene);
+      if (previous !== undefined && act.atMs - previous < BEAT_SPACING_MS) reasons.push("beat_budget");
+      lastBeat.set(scene, act.atMs);
+    }
+    if (rung === KILL_RUNG) {
+      const killsSoFar = (kills.get(scene) ?? 0) + 1;
+      kills.set(scene, killsSoFar);
+      if (killsSoFar > MAX_KILLS_PER_SCENE) reasons.push("kill_budget");
+    }
+    if (reasons.length > 0) offenders.push({ actId: act.actId, reasons });
+  }
+  const codes = [...new Set(offenders.flatMap((o) => o.reasons.map(codeOfReason)))].sort();
+  return {
+    measured: judged === 0 ? 1 : (judged - offenders.length) / judged,
+    judged,
+    compliant: judged - offenders.length,
+    offendingActIds: offenders.map((o) => o.actId),
+    offenders,
+    codes,
+  };
+}
+
+// ── dead-speech ──────────────────────────────────────────────────────────────
+
+export type DeadSpeech = { actor: string; atMs: number; diedAtMs: number; via: "death" | "kill" };
+export type DeadSpeechReading = {
+  /** Speech events (any mode) by an actor strictly after it died. */
+  measured: number;
+  offenders: DeadSpeech[];
+  /** `D4` when anyone spoke after dying. */
+  codes: DramaFailureId[];
+};
+
+/** Speech by an actor after its `actor_death`, or after a kill act landed on it (D4). Speaking at the instant of death is allowed. */
+export function deadSpeech(input: DramaProbeInput): DeadSpeechReading {
+  const died = deathsOf(input.events, actsOf(input.events));
+  const offenders: DeadSpeech[] = [];
+  for (const e of input.events) {
+    if (e.kind !== "speech") continue;
+    const death = died.get(e.actor);
+    if (death !== undefined && e.atMs > death.atMs) offenders.push({ actor: e.actor, atMs: e.atMs, diedAtMs: death.atMs, via: death.via });
+  }
+  return { measured: offenders.length, offenders, codes: offenders.length > 0 ? ["D4"] : [] };
+}
+
+// ── consent-violation ────────────────────────────────────────────────────────
+
+export type ConsentReading = {
+  /** Violent acts that landed on a human without their consent. */
+  measured: number;
+  offendingActIds: string[];
+  /** Violent acts on a human that never finished, so whether they landed is unknown. */
+  unresolvedActIds: string[];
+  /** `D7` when any act offended. */
+  codes: DramaFailureId[];
+};
+
+/**
+ * A violent act (shove and above) on a human target is a violation when it landed without a consent chip
+ * answered `take` for that act (answered by the time the act was done). An act that carries
+ * `targetOptIn: false` is a violation even with a chip. Acts that did not land (dodged, blocked, declined,
+ * timed out) put nothing on the human and are not flagged.
+ */
+export function consentViolation(input: DramaProbeInput): ConsentReading {
+  const acts = actsOf(input.events);
+  const isHuman = humansOf(input);
+  const outcomes = new Map<string, { outcome: string; atMs: number }>();
+  const takes = new Map<string, number[]>();
+  for (const e of input.events) {
+    if (e.kind === "act_done") outcomes.set(e.actId, { outcome: e.outcome, atMs: e.atMs });
+    else if (e.kind === "consent_chip" && e.phase === "answered" && e.answer === "take" && e.actId !== undefined) takes.set(e.actId, [...(takes.get(e.actId) ?? []), e.atMs]);
+  }
+  const offendingActIds: string[] = [];
+  const unresolvedActIds: string[] = [];
+  for (const act of acts) {
+    if (rungIndex(act.verb) < SHOVE_RUNG || act.with === undefined || !isHuman(act.with)) continue;
+    const done = outcomes.get(act.actId);
+    if (done === undefined) {
+      unresolvedActIds.push(act.actId);
+      continue;
+    }
+    if (done.outcome !== "landed") continue;
+    const consented = (takes.get(act.actId) ?? []).some((at) => at <= done.atMs) && act.targetOptIn !== false;
+    if (!consented) offendingActIds.push(act.actId);
+  }
+  return { measured: offendingActIds.length, offendingActIds, unresolvedActIds, codes: offendingActIds.length > 0 ? ["D7"] : [] };
+}
+
+// ── aggregate ────────────────────────────────────────────────────────────────
+
+export type DramaProbeResult = ProbeResult & {
+  /** The failure codes the evidence points at; empty when nothing went wrong. */
+  codes: DramaFailureId[];
+  /** The reading behind the verdict: offending act ids, counts. */
+  evidence: Record<string, unknown>;
+};
+
+/** Every drama probe as a `ProbeResult` with its evidence. `witness-coverage` needs `positionOf` and is left out without it. */
+export function runDramaProbes(input: DramaProbeInput): DramaProbeResult[] {
+  const result = (probe: string, label: string, measured: number, evidence: Record<string, unknown>, codes: (passed: boolean) => DramaFailureId[], note?: string): DramaProbeResult => {
+    const checked = checkProbe(probe, label, measured, PROBE_BANDS[probe]!, note);
+    return { ...checked, codes: codes(checked.passed), evidence };
+  };
+  const noCodes = (): DramaFailureId[] => [];
+  const bodyActs = bodyActRate(input);
+  const latency = reactionLatencyP90(input);
+  const rate = actRate(input);
+  const diversity = verbDiversity(input);
+  const ladder = ladderCompliance(input);
+  const dead = deadSpeech(input);
+  const consent = consentViolation(input);
+
+  const results: DramaProbeResult[] = [
+    result("body-act-rate", "Body acts per actor-minute", bodyActs.measured, { ...bodyActs }, noCodes),
+    result("act-rate", "Acts started per scene-minute (busiest scene)", rate.measured, { ...rate }, (passed) => (passed ? [] : ["D6"])),
+    result("reaction-latency-p90-target", "p90 ms from act to the target's reaction", latency.target.p90, { ...latency }, () => latency.codes),
+    result("reaction-latency-p90-witness", "p90 ms from act to witnesses' reactions", latency.witness.p90, { ...latency.witness, d1ActIds: latency.d1ActIds }, noCodes),
+  ];
+  if (input.positionOf !== undefined) {
+    const coverage = witnessCoverage(input);
+    results.push(
+      result("witness-coverage", "Acts every actor in earshot reacted to", coverage.measured, { ...coverage }, (passed) => (passed ? [] : ["D1"]), coverage.judged === 0 ? "no act had a witness in earshot" : undefined),
+    );
+  }
+  results.push(
+    result("verb-diversity", "Distinct verbs over acts", diversity.measured, { ...diversity }, noCodes, diversity.judged ? undefined : `not judged: fewer than ${MIN_ACTS_FOR_DIVERSITY} acts`),
+    result("ladder-compliance", "Acts inside the escalation ladder and budget", ladder.measured, { ...ladder }, () => ladder.codes),
+    result("dead-speech", "Speech by actors after they died", dead.measured, { ...dead }, () => dead.codes),
+    result("consent-violation", "Landed violence on humans without consent", consent.measured, { ...consent }, () => consent.codes),
+  );
+  return results;
 }

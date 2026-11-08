@@ -1,4 +1,11 @@
 import { describe, it, expect } from "vitest";
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
+import fc from "fast-check";
+import type { BodyFrame } from "@perfectman/shared";
+import { LADDER_RUNGS, extractDramaEvents } from "../drama/index.js";
+import { normalizeFrame } from "../hotel/index.js";
 import type {
   ActDoneEvent,
   ActorDeathEvent,
@@ -10,7 +17,7 @@ import type {
   DramaEvent,
   SpeechEvent,
 } from "../drama/index.js";
-import { UNREACTED_MS, actRate, bodyActRate, reactionLatencyP90, verbDiversity, witnessCoverage } from "../probes/drama.js";
+import { UNREACTED_MS, actRate, bodyActRate, consentViolation, deadSpeech, ladderCompliance, reactionLatencyP90, runDramaProbes, verbDiversity, witnessCoverage } from "../probes/drama.js";
 import type { PositionLookup } from "../probes/embodiment.js";
 import { PROBE_BANDS } from "../probes/types.js";
 
@@ -333,5 +340,333 @@ describe("witness-coverage (D1)", () => {
 
   it("says so when it was given no positions, instead of reading a clean 1", () => {
     expect(cov([slap], null)).toMatchObject({ measured: 1, judged: 0, skipped: "no positions" });
+  });
+});
+
+describe("ladder-compliance (D3, D6)", () => {
+  const seq = (...acts: Array<[string, number, string, Partial<ActStartedEvent>?]>): DramaEvent[] =>
+    acts.map(([id, at, verb, extra]) => started(id, at, "a", verb, { with: "b", ...extra }));
+  const S = 1000;
+
+  it("is 1 for a conflict that climbs one rung at a time, with the budget spaced out", () => {
+    const events = seq(["g", 0, "glare"], ["i", 5 * S, "insult"], ["sh", 10 * S, "shove"], ["sl", 30 * S, "slap"], ["p", 50 * S, "punch"], ["k", 70 * S, "kill"]);
+    expect(ladderCompliance(input(events))).toMatchObject({ measured: 1, judged: 6, compliant: 6, offendingActIds: [] });
+  });
+
+  it("flags an act that jumps two or more rungs over the scene's highest (D3)", () => {
+    const events = seq(["g", 0, "glare"], ["sl", 5 * S, "slap"], ["i", 10 * S, "insult"]);
+    const r = ladderCompliance(input(events));
+    expect(r.offendingActIds).toEqual(["sl"]);
+    expect(r.offenders).toEqual([{ actId: "sl", reasons: ["rung_skip"] }]);
+    expect(r.measured).toBeCloseTo(2 / 3, 10);
+  });
+
+  it("lets a scene open on glare or insult but not on a physical act", () => {
+    expect(ladderCompliance(input(seq(["i", 0, "insult"]))).measured).toBe(1);
+    expect(ladderCompliance(input(seq(["sh", 0, "shove"]))).offendingActIds).toEqual(["sh"]);
+  });
+
+  it("lets an authored skip jump, and measures the next act from the new height", () => {
+    const events = seq(["g", 0, "glare"], ["p", 5 * S, "punch", { authoredSkip: true }], ["k", 30 * S, "kill"], ["sl", 60 * S, "slap"]);
+    expect(ladderCompliance(input(events))).toMatchObject({ measured: 1, offendingActIds: [] });
+    // an unauthored jump counts as seen too, so one jump is not charged again on the next rung up
+    const unauthored = seq(["g", 0, "glare"], ["p", 5 * S, "punch"], ["k", 30 * S, "kill"]);
+    expect(ladderCompliance(input(unauthored)).offendingActIds).toEqual(["p"]);
+  });
+
+  it("charges the scene's highest rung to everyone in it, not to a pair", () => {
+    const events = [
+      started("x1", 0, "a", "glare", { with: "b" }),
+      started("x2", 5 * S, "a", "insult", { with: "b" }),
+      started("x3", 10 * S, "a", "shove", { with: "b" }),
+      started("y1", 30 * S, "c", "slap", { with: "d" }), // a different pair, +1 on the scene's highest
+      started("y2", 60 * S, "c", "kill", { with: "d" }), // +2 on the scene's highest
+    ];
+    expect(ladderCompliance(input(events)).offendingActIds).toEqual(["y2"]);
+  });
+
+  it("keeps a separate ladder per scene", () => {
+    const events = [
+      started("r1", 0, "a", "glare", { room: "17" }),
+      started("r2", 5 * S, "a", "insult", { room: "17" }),
+      started("q1", 10 * S, "c", "slap", { room: "18" }), // room 18 is still calm
+    ];
+    expect(ladderCompliance(input(events)).offendingActIds).toEqual(["q1"]);
+  });
+
+  it("allows one physical beat per 20 s per scene: 20 s apart passes, 19.999 s fails (D6)", () => {
+    const ok = seq(["g", 0, "glare"], ["i", 1 * S, "insult"], ["sh", 2 * S, "shove"], ["sl", 22 * S, "slap"]);
+    expect(ladderCompliance(input(ok)).measured).toBe(1);
+    const tight = seq(["g", 0, "glare"], ["i", 1 * S, "insult"], ["sh", 2 * S, "shove"], ["sl", 21_999, "slap"]);
+    expect(ladderCompliance(input(tight)).offenders).toEqual([{ actId: "sl", reasons: ["beat_budget"] }]);
+  });
+
+  it("allows at most one kill per scene, however far apart (D6)", () => {
+    const events = seq(["g", 0, "glare"], ["i", S, "insult"], ["sh", 2 * S, "shove"], ["sl", 30 * S, "slap"], ["p", 60 * S, "punch"], ["k1", 90 * S, "kill"], ["k2", 150 * S, "kill"]);
+    expect(ladderCompliance(input(events)).offenders).toEqual([{ actId: "k2", reasons: ["kill_budget"] }]);
+  });
+
+  it("does not excuse a budget breach with an authored skip", () => {
+    const events = seq(["g", 0, "glare"], ["sh", 2 * S, "shove", { authoredSkip: true }], ["p", 5 * S, "punch", { authoredSkip: true }]);
+    expect(ladderCompliance(input(events)).offenders).toEqual([{ actId: "p", reasons: ["beat_budget"] }]);
+  });
+
+  it("names every reason an act breaks, in rung, beat, kill order", () => {
+    const both = seq(["g", 0, "glare"], ["i", S, "insult"], ["sh", 2 * S, "shove"], ["k", 5 * S, "kill"]);
+    expect(ladderCompliance(input(both)).offenders).toEqual([{ actId: "k", reasons: ["rung_skip", "beat_budget"] }]);
+  });
+
+  it("does not judge verbs that are not on the ladder, and reads 1 with nothing to judge", () => {
+    expect(ladderCompliance(input(seq(["h", 0, "hug"], ["w", S, "wave"])))).toMatchObject({ measured: 1, judged: 0 });
+    expect(ladderCompliance(input([]))).toMatchObject({ measured: 1, judged: 0, offendingActIds: [] });
+  });
+
+  it("reads acts in time order whatever order they were logged in", () => {
+    const events = seq(["i", 5 * S, "insult"], ["g", 0, "glare"]);
+    expect(ladderCompliance(input(events)).measured).toBe(1);
+  });
+
+  it("maps what it found to D3 (a skipped rung) and D6 (the budget)", () => {
+    const skip = ladderCompliance(input(seq(["sl", 0, "slap"])));
+    expect(skip.codes).toEqual(["D3"]);
+    const budget = ladderCompliance(input(seq(["g", 0, "glare"], ["i", S, "insult"], ["sh", 2 * S, "shove"], ["sl", 3 * S, "slap"])));
+    expect(budget.codes).toEqual(["D6"]);
+    expect(ladderCompliance(input([])).codes).toEqual([]);
+  });
+
+  describe("properties", () => {
+    // climbs by 0 or 1 from glare or insult and stops at the first kill; the acts sit 20 s apart or more
+    const climb = fc
+      .record({ start: fc.constantFrom(0, 1), steps: fc.array(fc.constantFrom(0, 1), { maxLength: 12 }) })
+      .map(({ start, steps }) => {
+        const rungs: number[] = [start];
+        for (const step of steps) rungs.push(Math.min(rungs[rungs.length - 1]! + step, 5));
+        const firstKill = rungs.indexOf(5);
+        return firstKill === -1 ? rungs : rungs.slice(0, firstKill + 1);
+      })
+      .chain((rungs) => fc.array(fc.integer({ min: 20_000, max: 90_000 }), { minLength: rungs.length, maxLength: rungs.length }).map((gaps) => ({ rungs, gaps })));
+
+    const build = (rungs: number[], gaps: number[], skipAt?: number): DramaEvent[] => {
+      let at = 0;
+      return rungs.map((r, i) => {
+        at += gaps[i]!;
+        return started(`p${i}`, at, "a", LADDER_RUNGS[r]!, { with: "b", ...(skipAt === i ? { authoredSkip: true } : {}) });
+      });
+    };
+
+    it("is 1.0 for any sequence that climbs one rung at a time within the budget", () => {
+      fc.assert(
+        fc.property(climb, ({ rungs, gaps }) => {
+          const r = ladderCompliance(input(build(rungs, gaps)));
+          expect(r.measured).toBe(1);
+          expect(r.offendingActIds).toEqual([]);
+        }),
+        { numRuns: 300 },
+      );
+    });
+
+    it("names the act that jumps two rungs, and forgives it with an authored skip", () => {
+      const jump = fc.tuple(fc.integer({ min: 0, max: 3 }), fc.integer({ min: 20_000, max: 90_000 })).map(([top, gap]) => ({ top, gap }));
+      fc.assert(
+        fc.property(jump, ({ top, gap }) => {
+          const rungs = [...Array.from({ length: top + 1 }, (_, i) => i), top + 2];
+          const gaps = [...rungs.map(() => 30_000)];
+          gaps[gaps.length - 1] = gap;
+          const last = rungs.length - 1;
+          expect(ladderCompliance(input(build(rungs, gaps))).offendingActIds).toEqual([`p${last}`]);
+          expect(ladderCompliance(input(build(rungs, gaps, last))).offendingActIds).toEqual([]);
+        }),
+        { numRuns: 100 },
+      );
+    });
+  });
+});
+
+describe("dead-speech (D4)", () => {
+  it("counts speech by an actor after its death, naming who and when", () => {
+    const events = [speech("b", 500), death("b", 1_000), speech("b", 2_000, "I am fine"), speech("c", 2_500), speech("b", 3_000, "hello?", "thought")];
+    const r = deadSpeech(input(events));
+    expect(r.measured).toBe(2);
+    expect(r.offenders).toEqual([
+      { actor: "b", atMs: 2_000, diedAtMs: 1_000, via: "death" },
+      { actor: "b", atMs: 3_000, diedAtMs: 1_000, via: "death" },
+    ]);
+    expect(r.codes).toEqual(["D4"]);
+  });
+
+  it("is 0 for speech before the death and at the very instant of it", () => {
+    expect(deadSpeech(input([speech("b", 999), death("b", 1_000), speech("b", 1_000)])).measured).toBe(0);
+  });
+
+  it("treats a landed kill as a death at its act_done, and a kill that did not land as nothing", () => {
+    const kill = (outcome: ActOutcome): DramaEvent[] => [started("k", 0, "a", "kill", { with: "b" }), done("k", 1_000, outcome), speech("b", 1_500)];
+    expect(deadSpeech(input(kill("landed")))).toMatchObject({ measured: 1, offenders: [{ actor: "b", atMs: 1_500, diedAtMs: 1_000, via: "kill" }] });
+    for (const outcome of ["dodged", "blocked", "declined", "timeout"] as const) expect(deadSpeech(input(kill(outcome))).measured).toBe(0);
+  });
+
+  it("does not kill the target of a landed slap", () => {
+    expect(deadSpeech(input([started("s", 0, "a", "slap", { with: "b" }), done("s", 1_000), speech("b", 1_500)])).measured).toBe(0);
+  });
+
+  it("goes by the earliest death when an actor dies twice", () => {
+    const events = [death("b", 5_000), death("b", 1_000), speech("b", 2_000)];
+    expect(deadSpeech(input(events)).offenders[0]!.diedAtMs).toBe(1_000);
+  });
+
+  it("is 0 for no speech, no deaths, or nothing", () => {
+    expect(deadSpeech(input([death("b", 0)])).measured).toBe(0);
+    expect(deadSpeech(input([speech("b", 0)])).measured).toBe(0);
+    expect(deadSpeech(input([]))).toMatchObject({ measured: 0, offenders: [], codes: [] });
+  });
+});
+
+describe("consent-violation (D7)", () => {
+  const onHuman = (verb: string, extra: Partial<ActStartedEvent> = {}): ActStartedEvent => started("v", 1_000, "a", verb, { with: "h:9", ...extra });
+
+  it("flags a landed violent act on a human with no take chip", () => {
+    const r = consentViolation(input([onHuman("shove"), done("v", 2_000)]));
+    expect(r).toMatchObject({ measured: 1, offendingActIds: ["v"], codes: ["D7"] });
+  });
+
+  it("passes when the human took it", () => {
+    expect(consentViolation(input([onHuman("punch"), take("v", 1_500, "h:9"), done("v", 2_000)])).measured).toBe(0);
+  });
+
+  it("is not satisfied by a chip that was declined, timed out, was for another act, or came after the act landed", () => {
+    const answer = (answer: "decline" | "timeout"): ConsentChipAnsweredEvent => ({ ...take("v", 1_500), answer });
+    expect(consentViolation(input([onHuman("slap"), answer("decline"), done("v", 2_000)])).measured).toBe(1);
+    expect(consentViolation(input([onHuman("slap"), answer("timeout"), done("v", 2_000)])).measured).toBe(1);
+    expect(consentViolation(input([onHuman("slap"), take("other", 1_500), done("v", 2_000)])).measured).toBe(1);
+    expect(consentViolation(input([onHuman("slap"), take("v", 2_001), done("v", 2_000)])).measured).toBe(1);
+    expect(consentViolation(input([onHuman("slap"), take("v", 2_000), done("v", 2_000)])).measured).toBe(0); // at the instant is in time
+  });
+
+  it("does not flag an act that did not land: dodged, blocked, declined, timed out", () => {
+    for (const outcome of ["dodged", "blocked", "declined", "timeout"] as const) expect(consentViolation(input([onHuman("kill"), done("v", 2_000, outcome)])).measured).toBe(0);
+  });
+
+  it("lists an act that never finished as unresolved rather than a violation", () => {
+    expect(consentViolation(input([onHuman("punch")]))).toMatchObject({ measured: 0, unresolvedActIds: ["v"] });
+  });
+
+  it("only judges violent acts: glare and insult need no consent, shove and above do", () => {
+    for (const verb of ["glare", "insult"]) expect(consentViolation(input([onHuman(verb), done("v", 2_000)])).measured).toBe(0);
+    for (const verb of ["shove", "slap", "punch", "kill"]) expect(consentViolation(input([onHuman(verb), done("v", 2_000)])).measured).toBe(1);
+  });
+
+  it("only judges acts on humans: an actor target or no target is not a D7 case", () => {
+    expect(consentViolation(input([started("v", 0, "a", "slap", { with: "b" }), done("v", 1_000)])).measured).toBe(0);
+    expect(consentViolation(input([started("v", 0, "a", "slap"), done("v", 1_000)])).measured).toBe(0);
+  });
+
+  it("knows humans by name too, not only by the h: prefix", () => {
+    const events = [started("v", 0, "a", "slap", { with: "guest" }), done("v", 1_000)];
+    expect(consentViolation(input(events)).measured).toBe(0);
+    expect(consentViolation({ ...input(events), humanIds: ["guest"] }).measured).toBe(1);
+  });
+
+  it("requires the opt-in flag when the act carries it: a take chip is not enough for someone who has not opted in", () => {
+    const run = (targetOptIn: boolean | undefined) =>
+      consentViolation(input([onHuman("slap", targetOptIn === undefined ? {} : { targetOptIn }), take("v", 1_500, "h:9"), done("v", 2_000)])).measured;
+    expect(run(true)).toBe(0);
+    expect(run(undefined)).toBe(0);
+    expect(run(false)).toBe(1);
+  });
+
+  it("counts each offending act once and lists them all", () => {
+    const events = [
+      started("v1", 1_000, "a", "shove", { with: "h:9" }),
+      done("v1", 2_000),
+      started("v2", 30_000, "a", "slap", { with: "h:9" }),
+      done("v2", 31_000),
+      started("v3", 60_000, "a", "punch", { with: "h:9" }),
+      take("v3", 60_500),
+      done("v3", 61_000),
+    ];
+    expect(consentViolation(input(events))).toMatchObject({ measured: 2, offendingActIds: ["v1", "v2"] });
+  });
+
+  it("is 0 with nothing to judge", () => {
+    expect(consentViolation(input([]))).toMatchObject({ measured: 0, offendingActIds: [], unresolvedActIds: [], codes: [] });
+  });
+});
+
+describe("runDramaProbes", () => {
+  const tiles: Record<string, [number, number]> = { a: [0, 0], b: [1, 0], c: [3, 3], d: [20, 20] };
+  const clean: DramaEvent[] = [
+    started("g", 0, "a", "glare", { with: "b" }),
+    reaction("g", 400, "b", "target"),
+    reaction("g", 900, "c"),
+    started("i", 10_000, "a", "insult", { with: "b" }),
+    reaction("i", 10_500, "b", "target"),
+    reaction("i", 11_000, "c"),
+    bodyAct("c", 12_000),
+    done("i", 12_500),
+  ];
+  const names = ["body-act-rate", "act-rate", "reaction-latency-p90-target", "reaction-latency-p90-witness", "witness-coverage", "verb-diversity", "ladder-compliance", "dead-speech", "consent-violation"];
+
+  it("returns one ProbeResult per probe, banded from PROBE_BANDS, passing a clean scene", () => {
+    const results = runDramaProbes({ ...input(clean, { durationMs: 60_000 }), positionOf: plan(tiles) });
+    expect(results.map((r) => r.probe)).toEqual(names);
+    for (const r of results) {
+      expect(r.bound).toEqual(PROBE_BANDS[r.probe]);
+      expect(r.passed).toBe(true);
+      expect(r.codes).toEqual([]);
+    }
+  });
+
+  it("leaves witness-coverage out when it was given no positions", () => {
+    expect(runDramaProbes(input(clean)).map((r) => r.probe)).toEqual(names.filter((n) => n !== "witness-coverage"));
+  });
+
+  it("fails the probes a bad scene breaks and attaches evidence and D-codes", () => {
+    const bad: DramaEvent[] = [
+      started("s", 0, "a", "slap", { with: "h:9" }),
+      done("s", 1_000),
+      death("b", 2_000),
+      speech("b", 3_000),
+    ];
+    const results = new Map(runDramaProbes({ ...input(bad), positionOf: plan(tiles) }).map((r) => [r.probe, r]));
+    expect(results.get("ladder-compliance")).toMatchObject({ passed: false, codes: ["D3"], evidence: { offendingActIds: ["s"] } });
+    expect(results.get("consent-violation")).toMatchObject({ passed: false, measured: 1, codes: ["D7"], evidence: { offendingActIds: ["s"] } });
+    expect(results.get("dead-speech")).toMatchObject({ passed: false, measured: 1, codes: ["D4"] });
+    expect(results.get("reaction-latency-p90-target")).toMatchObject({ passed: true }); // a human target is not judged for latency
+    expect(results.get("witness-coverage")).toMatchObject({ passed: false, codes: ["D1"] });
+    expect(results.get("act-rate")).toMatchObject({ passed: true });
+  });
+
+  it("names D1 when a target never reacted, and D6 when acts are spammed", () => {
+    const spam = Array.from({ length: 5 }, (_, i) => started(`s${i}`, i * 1_000, "a", "glare", { with: "b" }));
+    const results = new Map(runDramaProbes(input(spam)).map((r) => [r.probe, r]));
+    expect(results.get("reaction-latency-p90-target")).toMatchObject({ passed: false, codes: ["D1"], evidence: { target: { unreactedActIds: spam.map((a) => a.actId) } } });
+    expect(results.get("act-rate")).toMatchObject({ passed: false, codes: ["D6"] });
+    expect(results.get("verb-diversity")).toMatchObject({ passed: true, measured: 0.2 });
+  });
+});
+
+describe("real run 7 frames", () => {
+  const FIXTURE = join(dirname(fileURLToPath(import.meta.url)), "../drama/__fixtures__/run7-wrapper-excerpt.jsonl");
+  const frames: BodyFrame[] = readFileSync(FIXTURE, "utf8")
+    .trim()
+    .split("\n")
+    .map((l) => normalizeFrame(JSON.parse(l) as Record<string, unknown>)!);
+  const events = extractDramaEvents(frames);
+
+  it("reads a sane, non-zero body-act-rate per actor-minute", () => {
+    const actorIds = [...new Set(events.filter((e): e is BodyActEvent => e.kind === "body_act" && !e.actor.startsWith("h:")).map((e) => e.actor))];
+    const durationMs = Math.max(...frames.map((f) => f.atMs)) - Math.min(...frames.map((f) => f.atMs));
+    const r = bodyActRate({ events, actorIds, durationMs });
+    expect(r.bodyActs).toBeGreaterThan(0);
+    expect(r.measured).toBeGreaterThan(0);
+    expect(r.measured).toBeLessThan(10); // the 17 baseline runs average 0.86; anything near the hotel's rate limit would be a bug
+  });
+
+  it("finds no acts, violence or dead speech in a run from before acts existed", () => {
+    const actorIds = ["person-1", "person-2", "person-3", "person-4"];
+    const r = new Map(runDramaProbes({ events, actorIds }).map((x) => [x.probe, x]));
+    expect(r.get("act-rate")!.measured).toBe(0);
+    expect(r.get("ladder-compliance")!.measured).toBe(1);
+    expect(r.get("dead-speech")!.measured).toBe(0);
+    expect(r.get("consent-violation")!.measured).toBe(0);
   });
 });
