@@ -354,6 +354,42 @@ describe("sdk-transport OpenAI-compatible path", () => {
   });
 });
 
+describe("sdk-transport image input (userImages)", () => {
+  const okFetch = () => vi.fn().mockResolvedValue(openAiOkResponse({ choices: [{ message: { content: "{}" } }], model: "m" }));
+
+  it("sends the user text first, then one image_url data URL per image, in order", async () => {
+    const fetchSpy = okFetch();
+    const withImages: BuiltPrompt = {
+      ...prompt,
+      userImages: [
+        { mediaType: "image/png", base64: "AAAA" },
+        { mediaType: "image/jpeg", base64: "BBBB" },
+      ],
+    };
+
+    await generateOpenAiCompatibleIntent(openAiConfig(), withImages, startTime(), { fetch: fetchSpy });
+
+    const body = JSON.parse(fetchSpy.mock.calls[0]![1].body as string);
+    expect(body.messages[1]).toEqual({
+      role: "user",
+      content: [
+        { type: "text", text: "user" },
+        { type: "image_url", image_url: { url: "data:image/png;base64,AAAA" } },
+        { type: "image_url", image_url: { url: "data:image/jpeg;base64,BBBB" } },
+      ],
+    });
+  });
+
+  it("keeps the text-only wire shape when userImages is absent or empty", async () => {
+    const fetchSpy = okFetch();
+
+    await generateOpenAiCompatibleIntent(openAiConfig(), { ...prompt, userImages: [] }, startTime(), { fetch: fetchSpy });
+
+    const body = JSON.parse(fetchSpy.mock.calls[0]![1].body as string);
+    expect(body.messages[1]).toEqual({ role: "user", content: "user" });
+  });
+});
+
 describe("buildOpenAiCompatibleRequestBody", () => {
   const probeMessages = [
     { role: "system", content: "sys" },
