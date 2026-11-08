@@ -116,7 +116,7 @@ describe("loadHotelRun resolves the hotel's numeric avatar ids", () => {
     expect(run.frames.filter((f) => f.kind === "delta")).toHaveLength(1);
   });
 
-  it("does not carry a line twice when body-frames.json already has it (without text, as in recorded runs)", () => {
+  it("carries a line once when body-frames.json already has it, and gives it the text the sidecar log leaves out", () => {
     const body = {
       frames: [
         { atMs: 2100, dir: "out", kind: "chat", data: { agentId: "person-1", mode: "say", toRef: "person-2", sameRoom: true, distance: 2 }, room: "17" },
@@ -132,9 +132,10 @@ describe("loadHotelRun resolves the hotel's numeric avatar ids", () => {
       ],
       body,
     );
-    expect(run.frames.filter((f) => f.kind === "chat").map((f) => f.data["text"])).toEqual([undefined, "hmm"]);
+    expect(run.frames.filter((f) => f.kind === "chat").map((f) => f.data["text"])).toEqual(["oi", "hmm"]);
     expect(run.frames.filter((f) => f.kind === "chat")[0]!.data["distance"]).toBe(2);
     expect(run.frames.filter((f) => f.kind === "human_chat")).toHaveLength(1);
+    expect(run.frames.find((f) => f.kind === "human_chat")!.data["text"]).toBe("e aí");
   });
 });
 

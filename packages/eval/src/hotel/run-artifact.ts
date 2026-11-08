@@ -162,9 +162,11 @@ const mirrors = (a: BodyFrame, b: BodyFrame): boolean =>
  *    from the run's own `actor_spawned` and `human_chat` frames; unknown ids stay as they are;
  *  - `delta` `moves` and `avatar_action` become the per-actor `moves` / `avatar_action`
  *    frames the body probes and the transcript read (other deltas stay `delta`);
- *  - speech that `mirrored` (frames already loaded from `body-frames.json`) already has is dropped.
+ *  - speech that `mirrored` (frames already loaded from `body-frames.json`) already has is dropped
+ *    from the result. The sidecar's log keeps no `text` in recorded runs, so the copy in `mirrored`
+ *    takes the wire copy's text (that array is updated in place) and keeps its own tile/distance data.
  */
-export function alignWireFrames(frames: readonly BodyFrame[], mirrored: readonly BodyFrame[] = []): BodyFrame[] {
+export function alignWireFrames(frames: readonly BodyFrame[], mirrored: BodyFrame[] = []): BodyFrame[] {
   const names = new Map<string, string>();
   for (const f of frames) {
     if (f.kind === "actor_spawned" && f.data["actor"] !== undefined && typeof f.data["ref"] === "string") names.set(String(f.data["actor"]), f.data["ref"]);
@@ -203,7 +205,14 @@ export function alignWireFrames(frames: readonly BodyFrame[], mirrored: readonly
     }
     out.push(f);
   }
-  return out.filter((f) => !isSpeech(f) || !mirrored.some((m) => mirrors(f, m)));
+  return out.filter((f) => {
+    if (!isSpeech(f)) return true;
+    const i = mirrored.findIndex((m) => mirrors(f, m));
+    if (i < 0) return true;
+    const twin = mirrored[i]!;
+    if (twin.data["text"] === undefined && f.data["text"] !== undefined) mirrored[i] = { ...twin, data: { ...twin.data, text: f.data["text"] } };
+    return false;
+  });
 }
 
 function loadCast(dir: string, warnings: string[]): HotelCastMember[] {
