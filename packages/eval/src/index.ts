@@ -21,6 +21,9 @@ export * from "./judge/golden-labels.js";
 export * from "./hotel/index.js";
 export { runHotelCli } from "./cli/hotel.js";
 
+// Drama grading core (axes, labels, agreement, events)
+export * from "./drama/index.js";
+
 // Bench
 export * from "./bench/persona-aware-mock.js";
 export { runBench } from "./cli/bench.js";
