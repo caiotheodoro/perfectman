@@ -16,6 +16,7 @@ import { pickTile } from "../embodiment/tiles.js";
 import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
+import { ActorPacer } from "./replay-pacing.js";
 import { parseScenarioBody } from "./scenario-body.js";
 import { ReplayError, buildReplayPlan, loadReplayArtifacts } from "./replay-plan.js";
 import type { ReplayPlan, ReplayStep } from "./replay-plan.js";
@@ -83,6 +84,8 @@ export class ReplayRun {
   private readonly avatars = new Map<string, number>();
   private readonly gone = new Set<string>();
   private readonly chains = new Map<string, Promise<void>>();
+  /** Per actor: when its commands went out, so a fast replay stays inside the hotel's per-actor budgets. */
+  private readonly pacers = new Map<string, ActorPacer>();
   private readonly timers = new Set<TimerHandle>();
   private abort = new AbortController();
   private paused = false;
@@ -240,6 +243,7 @@ export class ReplayRun {
     }
     mirror.registerActor({ ref: this.refOf(ref), id: frame.actor, run: this.id, name: info.name }, String(frame.room), clock.now());
     this.avatars.set(ref, frame.actor);
+    this.pacerOf(ref).noteJoin(clock.now());
     await sleepOn(clock, this.d.timing?.spawnIntervalMs ?? 200);
   }
 
@@ -258,13 +262,29 @@ export class ReplayRun {
     return ref === undefined ? undefined : this.avatars.get(ref);
   }
 
-  private command(step: Extract<ReplayStep, { k: "cmd" }>): void {
-    const { link } = this.d;
+  private pacerOf(ref: string): ActorPacer {
+    let pacer = this.pacers.get(ref);
+    if (!pacer) {
+      pacer = new ActorPacer();
+      this.pacers.set(ref, pacer);
+    }
+    return pacer;
+  }
+
+  private async command(step: Extract<ReplayStep, { k: "cmd" }>): Promise<void> {
+    const { link, clock } = this.d;
     const actor = this.avatars.get(step.ref);
-    const lease = link.leaseOf(this.id);
-    if (this.stopping || actor === undefined || lease === undefined || this.gone.has(step.ref)) return;
+    if (this.stopping || actor === undefined || link.leaseOf(this.id) === undefined || this.gone.has(step.ref)) return;
     const wire = this.remapCmd(step);
     if (!wire) return;
+    // The hotel drops what goes over an actor's budgets (`rate_limited`, `slow_down`), which a fast replay would hit.
+    const pacer = this.pacerOf(step.ref);
+    for (let wait = pacer.waitMs(clock.now(), wire); wait > 0; wait = pacer.waitMs(clock.now(), wire)) {
+      if (!(await sleepOn(clock, wait, this.abort.signal))) return;
+    }
+    const lease = link.leaseOf(this.id);
+    if (this.stopping || lease === undefined || this.gone.has(step.ref)) return;
+    pacer.record(clock.now(), wire);
     link.send({ t: "actor_cmd", cid: link.nextCid(this.id), run: this.id, lease, actor, cmd: wire });
     if (wire.k === "chat" && wire.mode !== "thought") this.speaking.lines++;
     else if (wire.k === "walk" || wire.k === "move_room") this.speaking.moves++;
