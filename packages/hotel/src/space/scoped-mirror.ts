@@ -16,10 +16,18 @@ export class ScopedMirror implements ActorSpace {
   /** This run's refs as it registered them: a plain ref in here is always this run's, whatever it looks like. */
   private readonly mine = new Set<string>();
 
+  /** The rooms this run's actors may walk into; null means every room the hotel names. */
+  private allowedRooms: ReadonlySet<RoomId> | null = null;
+
   constructor(
     private readonly shared: HotelSpaceMirror,
     readonly run: number,
   ) {}
+
+  /** Limits the doors a view offers to these rooms (the scenario's stage step). Pass null to lift the limit. */
+  restrictTravel(rooms: Iterable<RoomId> | null): void {
+    this.allowedRooms = rooms === null ? null : new Set(rooms);
+  }
 
   /** The shared mirror's key for a ref as this run writes it. */
   key(ref: string): string {
@@ -70,6 +78,8 @@ export class ScopedMirror implements ActorSpace {
     const v = this.shared.view(this.key(agentId), now);
     if (!v) return undefined;
     const out: SpaceView = { ...v, agentId: this.local(v.agentId) };
+    const allowed = this.allowedRooms;
+    if (allowed) out.adjacency = v.adjacency.filter((a) => allowed.has(a.roomId));
     if (v.room) out.room = { ...v.room, occupants: v.room.occupants.map((p) => this.localPresence(p)) };
     if (v.self) out.self = this.localPresence(v.self);
     return out;

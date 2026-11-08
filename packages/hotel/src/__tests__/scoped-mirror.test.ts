@@ -65,4 +65,18 @@ describe("a run's window on the shared mirror", () => {
     m.applyDelta({ t: "delta", room: 12, rev: 2, msg: { t: "moves", moves: [{ id: -801, x: 4, y: 4, dir: 2, state: "walk" }] } }, T0 + 10);
     expect(seen).toEqual(["r8.duda"]);
   });
+
+  it("offers only the rooms a run is limited to, and every room again when the limit is lifted", () => {
+    const { m, a, b } = shared();
+    m.noteKnownRooms([{ id: "3", name: "Quarto" }, { id: "16", name: "Cozinha" }, { id: "44", name: "Sala do Ze" }]);
+    const doors = (s: typeof a) => s.view("duda", T0)?.adjacency.map((x) => x.roomId).sort();
+    expect(doors(a)).toEqual(["16", "3", "44"]);
+    a.restrictTravel(["12", "3", "44"]);
+    expect(doors(a)).toEqual(["3", "44"]);
+    expect(doors(b)).toEqual(["16", "3", "44"]);
+    a.restrictTravel([]);
+    expect(doors(a)).toEqual([]);
+    a.restrictTravel(null);
+    expect(doors(a)).toEqual(["16", "3", "44"]);
+  });
 });

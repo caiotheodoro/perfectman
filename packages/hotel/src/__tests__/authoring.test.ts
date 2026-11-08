@@ -5,6 +5,7 @@ import { AuthoringServer } from "../authoring/authoring-server.js";
 import { AuthoringService } from "../authoring/authoring-service.js";
 import { formToDraft } from "../authoring/scenario-form.js";
 import { parseBundle } from "../authoring/source-bundle.js";
+import { parseScenarioBody } from "../run/scenario-body.js";
 import { TEST_SECRET, compiledScenario } from "../testing/helpers.js";
 
 const llm = { provider: "mock" as const, baseUrl: "", apiKeyEnv: "PERFECTMAN_LLM_API_KEY" as const, models: ["mock"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
@@ -95,6 +96,37 @@ describe("authoring listener", () => {
     expect(bad.status).toBe(422);
     expect(await bad.json()).toMatchObject({ error: "bad_scenario", errors: [{ message: expect.stringContaining("different name") }] });
     expect(await (await call("/authoring/v1/validate", { body: { source: JSON.stringify(dup) } })).json()).toMatchObject({ ok: false });
+  });
+
+  it("carries the stage step's rooms into the compiled body, and leaves older forms alone", async () => {
+    const call = await listen();
+    const base = {
+      title: "Noite no bar", situation: "Quatro amigos no bar depois do trabalho.", language: "pt-BR", mode: "default",
+      cast: [{ name: "Duda", role: "bartender", goal: "Fechar cedo." }, { name: "Rafa", role: "skeptic", goal: "Descobrir o segredo." }],
+    };
+    const compile = async (stage: unknown) => {
+      const res = (await (await call("/authoring/v1/compile", { body: { source: JSON.stringify({ ...base, stage }) } })).json()) as { body: { stage?: unknown } };
+      return res.body.stage;
+    };
+    const visit = [{ id: 3, name: "Quarto" }, 12, { id: 3 }, { id: -1 }, { id: 1.5 }, { id: 44, name: "  Sala   de   estar " }, "x"];
+    expect(await compile({ room: 7, travel: true, visit })).toEqual({ travel: true, rooms: [{ id: 3, name: "Quarto" }, { id: 12 }, { id: 44, name: "Sala de estar" }] });
+    expect(await compile({ room: 7, travel: true, visit: [] })).toEqual({ travel: true, rooms: [] });
+    expect(await compile({ room: 7, travel: false, visit })).toEqual({ travel: false, rooms: [] });
+    // a form from before the list existed: travel on keeps every room the hotel names (no stage in the body)
+    expect(await compile({ room: 7, travel: true, hotelRooms: "kitchen: 12" })).toBeUndefined();
+    expect(await compile(undefined)).toBeUndefined();
+  });
+
+  it("reads a body's stage back, dropping junk, and a body without one has none", () => {
+    const { body } = compiledScenario();
+    const parse = (stage: unknown) => {
+      const p = parseScenarioBody({ ...(body as object), ...(stage === undefined ? {} : { stage }) });
+      return p.ok ? p.body.stage : "bad";
+    };
+    expect(parse({ travel: true, rooms: [{ id: 5, name: "Cozinha" }, { id: "x" }, { id: 5 }] })).toEqual({ travel: true, rooms: [{ id: 5, name: "Cozinha" }] });
+    expect(parse({ travel: false, rooms: [{ id: 5 }] })).toEqual({ travel: false, rooms: [] });
+    expect(parse({ rooms: [{ id: 5 }] })).toBeUndefined();
+    expect(parse(undefined)).toBeUndefined();
   });
 
   it("drafts a scenario with the mock provider, and the draft compiles", async () => {

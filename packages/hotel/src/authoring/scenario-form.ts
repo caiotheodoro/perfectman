@@ -37,8 +37,51 @@ export type ScenarioForm = {
   }>;
   /** The OpenRouter model picked in the builder (informational here: the run carries it, D54). */
   model?: string;
-  stage?: { room?: number | null; places?: unknown[]; travel?: boolean; hotelRooms?: string };
+  stage?: {
+    room?: number | null;
+    places?: unknown[];
+    /** The "may visit other rooms" switch. */
+    travel?: boolean;
+    /** Legacy free text (`kitchen: 12`); the builder no longer writes it and the run ignores it. */
+    hotelRooms?: string;
+    /** The rooms actors may walk into besides the stage room (the builder's room chips). Absent means no limit. */
+    visit?: Array<{ id?: number; name?: string } | number>;
+  };
 };
+
+/** Where a run's actors may go: `rooms` is the whole list (the stage room is always allowed too). */
+export type ScenarioStage = { travel: boolean; rooms: Array<{ id: number; name?: string }> };
+
+/** Most rooms a scenario may list; the hotel's room menu is capped at 500 and a cast has no use for more. */
+export const MAX_VISIT_ROOMS = 200;
+
+/**
+ * The form's travel rule as the compiled body carries it. `travel` off means the actors stay put. `travel` on with
+ * a `visit` list means exactly those rooms. A form that predates the list (no `visit`) keeps the old behaviour of
+ * every room the hotel names, so nothing already saved changes; that case, and a form with no `stage`, return undefined.
+ */
+export function formStage(form: ScenarioForm): ScenarioStage | undefined {
+  const s = form.stage;
+  if (!s || typeof s !== "object") return undefined;
+  if (s.travel !== true) return { travel: false, rooms: [] };
+  if (!Array.isArray(s.visit)) return undefined;
+  return { travel: true, rooms: cleanVisit(s.visit) };
+}
+
+/** Positive whole room numbers, once each, with a name when one rides along (it is text from the hotel's list: kept short, never markup). */
+export function cleanVisit(raw: unknown[]): Array<{ id: number; name?: string }> {
+  const seen = new Set<number>();
+  const out: Array<{ id: number; name?: string }> = [];
+  for (const v of raw) {
+    const id = typeof v === "number" ? v : v && typeof v === "object" ? (v as { id?: unknown }).id : undefined;
+    if (typeof id !== "number" || !Number.isInteger(id) || id < 1 || seen.has(id)) continue;
+    seen.add(id);
+    const name = v && typeof v === "object" ? text((v as { name?: unknown }).name).slice(0, 40) : "";
+    out.push(name ? { id, name } : { id });
+    if (out.length >= MAX_VISIT_ROOMS) break;
+  }
+  return out;
+}
 
 export type FormLooks = Record<string, { figure: string; effect?: string }>;
 
