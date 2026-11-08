@@ -9,7 +9,7 @@
  * tile witness radius, the 20 s spacing of physical beats (LAD-3) and the one
  * rung per beat ladder rule (LAD-1). Scores of 2 and 4 sit between anchors.
  */
-import { DRAMA_AXES, DRAMA_FAILURE_CODES, type DramaAxis, type DramaFailureId } from "./axes.js";
+import { DRAMA_FAILURE_CODES, type DramaAxis, type DramaFailureId } from "./axes.js";
 
 export type DramaAxisSpec = {
   id: DramaAxis;
@@ -98,13 +98,13 @@ export const DRAMA_RUBRIC: readonly DramaAxisSpec[] = [
 ];
 
 /** Axes whose rubric lists this failure code; empty for an unknown code. */
-export function axesForFailureCode(id: string): DramaAxis[] {
-  return DRAMA_RUBRIC.filter((spec) => (spec.failureCodes as readonly string[]).includes(id)).map((spec) => spec.id);
+export function axesForFailureCode(id: string, rubric: readonly DramaAxisSpec[] = DRAMA_RUBRIC): DramaAxis[] {
+  return rubric.filter((spec) => (spec.failureCodes as readonly string[]).includes(id)).map((spec) => spec.id);
 }
 
 /** The rubric as prompt text: axes with anchors and N/A rules, then the failure codes. Same output every call. */
-export function renderRubricPrompt(): string {
-  const axes = DRAMA_RUBRIC.map((spec) =>
+export function renderRubricPrompt(rubric: readonly DramaAxisSpec[] = DRAMA_RUBRIC): string {
+  const axes = rubric.map((spec) =>
     [
       `${spec.id}: ${spec.label}`,
       `  Question: ${spec.question}`,
@@ -115,9 +115,9 @@ export function renderRubricPrompt(): string {
       `  Failure codes read by this axis: ${spec.failureCodes.join(", ")}`,
     ].join("\n"),
   );
-  const codes = DRAMA_FAILURE_CODES.map((code) => `${code.id} ${code.slug}: ${code.definition} (read by ${axesForFailureCode(code.id).join(", ")})`);
+  const codes = DRAMA_FAILURE_CODES.map((code) => `${code.id} ${code.slug}: ${code.definition} (read by ${axesForFailureCode(code.id, rubric).join(", ")})`);
   return [
-    `Axes (${DRAMA_AXES.length}). Score each 1-5 with the anchors; 2 and 4 sit between anchors. Be stingy with 5.`,
+    `Axes (${rubric.length}). Score each 1-5 with the anchors; 2 and 4 sit between anchors. Be stingy with 5.`,
     "",
     ...axes.flatMap((a) => [a, ""]),
     "Failure codes. Attach a code only when you can cite the timestamp or act_id where it happens:",
