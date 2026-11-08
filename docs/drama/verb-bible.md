@@ -686,6 +686,20 @@ Each has my recommendation. None blocks the rest of the document; each says what
 
 ## 8. Recommended v1 cut (16 verbs)
 
+### Owner cut decisions (final, 2026-11-08)
+
+The owner has settled the cut. These supersede the recommendation below, which is kept for its reasoning. The exact wire, table and test spec is [act-contract.md](act-contract.md) (machine-readable table: `verb-vocab.draft.json`); where the two documents differ, the contract wins.
+
+- **v1 verbs (18):** `glare`, `insult`, `shove`, `slap`, `punch`, `kill`, `die`, `recoil`, `freeze_gasp`, `hug`, `kiss`, `turn_back`, `cry`, `storm_off`, `tableau`, `restrain`, `faint`, `tend_fallen`. **Cut:** `give_item`, `grab`, `fake_faint`, `slap_kiss`, `pie`.
+- **Who picks: hybrid.** The model may propose any verb through a new strict optional `act` key in the body block (verb, target ref, intensity 0..1). The drama director approves or vetoes against the ladder, budget and scenario gates, and may start a beat itself when the model is passive. Ladder: glare, insult, shove, slap, punch, kill; one rung per beat; at most one physical beat (shove, slap, punch, kill) per 20 s per scene; one kill per scene; a scenario may author skips (`authored_skip`).
+- **Free play (no scenario):** glare, insult and shove between actors are allowed. Slap, punch and kill need a scenario `drama` block: `{max_rung, may_target: [[actorRef, actorRef]...], may_die: [actorRef...], permadeath?}`.
+- **Humans:** a per-session drama opt-in (default off) gates every violent verb aimed at them (shove and above, plus insult at a human), then a 4 s chip Take it / Dodge / Push back; timeout is Dodge for violent verbs and for kiss, and hug completes on timeout as today. Glare and turn_back are not gated. Humans who have not opted in may still watch actor-on-actor violence. A per-room admin calm switch blocks every contact verb and kill. A global env switch `PERFECTMAN_DRAMA` (default off in the hotel binary) is the ceiling, and violent acts landing on humans above N per window auto-pause the room.
+- **Death:** the victim falls (lying plus a death effect), stays a body until the scene cuts and leaves the speaker pool. A killed human is down 5 s and may still chat. Actor victims are restored after the scene cut with the death kept in memory unless `permadeath` is set. `may_die` gates kill; free play has no kills. Kiss is a cheek or air kiss with a heart.
+- **Adopted defaults:** the zero-witness cap applies to autonomous beats only; the same verb on the same target not twice within 60 s; no verb depends on angry, sad or surprised face art; default-mode legibility comes from overlays, captions and a cue icon; `actionEmotions` is plumbed into the planner input; the tendency readings in section 4.3 are seeds, tunable data.
+- **Choreography** runs on the hotel server from a data table. Clients receive a compiled timeline for cosmetic sub-300 ms beats (hit-stop, shake) while the server executes the state-changing beats from the same table at the same offsets (Q12).
+- **Section 7 questions:** the decisions above close Q1 to Q5 and Q7 to Q17. Q6 (which effect marks the dead) is not decided by the owner: the contract uses `TrippyHalo` for a body and `Twinkle` for a faint, pending someone watching the animations.
+
+
 **Rationale in one line:** the smallest set that has a full ladder, all three tiers, the reaction contract, a death with a closing tableau, and enough solo language to show something other than a smile, with every verb buildable from existing primitives plus (b) procedural motion.
 
 | # | Verb | Tier | Priority | Why it is in |
