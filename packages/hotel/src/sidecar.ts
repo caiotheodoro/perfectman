@@ -25,7 +25,7 @@ export type SidecarOptions = {
   fetchImpl?: FetchLike;
   timing?: RunTiming;
   statusIntervalMs?: number;
-  /** The narrator's model call for cinematic runs (D19); the provider lane supplies it. */
+  /** Overrides the narrator's model call (D19); without it each cinematic run builds its own from the provider chain. */
   narratorLlm?: NarratorLlm;
 };
 
