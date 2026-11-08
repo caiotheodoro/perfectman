@@ -740,9 +740,9 @@ export class Run {
   }
 
   /**
-   * Walk the cast in apart from each other. In the four wing rooms the spots are the
-   * tiles beside the furniture the scene named. Everywhere else, the farthest
-   * non-door zone from anyone already placed.
+   * Walk the cast in. In the four wing rooms (43, 44, 45, 49) the first spots are fixed tiles beside
+   * the furniture the scene named and the rest go to the farthest non-door zone from anyone placed.
+   * Every other room is unchanged: a distinct, uncrowded tile near the middle of the room.
    */
   private enterRoom(refs: readonly string[]): void {
     const wing: Record<number, Array<[number, number]>> = {
@@ -767,7 +767,11 @@ export class Run {
       if (!room) continue;
       let near: readonly [number, number];
       let radius: number;
-      if (spots && spotAt < spots.length) {
+      if (!spots) {
+        const centre = room.zones.find((z) => z.kind === "middle")?.center ?? [Math.floor(room.w / 2), Math.floor(room.h / 2)];
+        near = [centre[0], centre[1]];
+        radius = 4;
+      } else if (spotAt < spots.length) {
         near = spots[spotAt]!;
         spotAt += 1;
         radius = 1;
