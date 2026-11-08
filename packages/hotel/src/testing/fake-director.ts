@@ -23,7 +23,17 @@ export type FakeDirectorOptions = {
   pairOutcome?: PairOutcome;
   /** The hotel ends a run that is not acked this long after it was started as `start_failed` (20 s). */
   ackTimeoutMs?: number;
+  /** Apply the hotel's per-actor limits (chat 4 per 6 s, other commands 8 per 5 s, typing 6 per 10 s, a door 200 ms after a join) and refuse what goes over, as the hotel does. */
+  enforceBudgets?: boolean;
 };
+
+/** What the hotel does to an actor's command, in `crates/server/src/world/actors.rs`: the same numbers as `replay-pacing.ts` and the sidecar's own budget. */
+const HOTEL_BUDGETS = {
+  chat: { count: 4, windowMs: 6000, code: "rate_limited" },
+  cmds: { count: 8, windowMs: 5000, code: "slow_down" },
+  typing: { count: 6, windowMs: 10_000, code: "rate_limited" },
+} as const;
+const HOTEL_JOIN_INTERVAL_MS = 200;
 
 export class FakeDirector {
   readonly rooms = new Map<number, FakeRoom>();
@@ -33,6 +43,10 @@ export class FakeDirector {
   staleUiPushes = 0;
   readonly chats: { actor: number; mode: string; text: string; to?: number | null; at: number }[] = [];
   readonly typingLog: { actor: number; on: boolean }[] = [];
+  /** Commands the modelled limits refused (`enforceBudgets`). */
+  readonly refused: { actor: number; k: string; code: string }[] = [];
+  private readonly budgetTimes = new Map<string, number[]>();
+  private readonly joinedAt = new Map<number, number>();
   readonly gone: { actor: number; reason: string }[] = [];
   connections = 0;
   /** Test switch: on hello_ack, do not renew leases (a hotel that is slow to bump them). */
@@ -155,9 +169,10 @@ export class FakeDirector {
   }
 
   /** An actor takes a door: it leaves its room and appears at the other room's door (`moved_room`, then the join delta). */
-  moveActorToRoom(ref: string, toRoom: number): void {
+  moveActorToRoom(ref: string, toRoom: number, id?: number): void {
     const to = this.rooms.get(toRoom);
-    const hit = [...this.rooms.values()].flatMap((r) => [...r.avatars.values()].filter((a) => a.ref === ref).map((a) => ({ r, a })))[0];
+    // By hotel id when given: two runs can use the same ref.
+    const hit = [...this.rooms.values()].flatMap((r) => [...r.avatars.values()].filter((a) => (id !== undefined ? a.id === id : a.ref === ref)).map((a) => ({ r, a })))[0];
     if (!to || !hit) throw new Error(`cannot move ${ref} to room ${toRoom}`);
     const { r, a } = hit;
     r.avatars.delete(a.id);
@@ -339,6 +354,7 @@ export class FakeDirector {
     const id = -(f.run * 100 + slot);
     const a: FakeAvatar = { id, name: f.name, x: r.door[0], y: r.door[1], dir: 2, state: "stand", ref: f.ref, run: f.run };
     r.avatars.set(id, a);
+    this.joinedAt.set(id, Date.now());
     this.send({ t: "actor_spawned", cid: f.cid, ref: f.ref, actor: id, room: f.room, x: a.x, y: a.y, dir: a.dir });
     this.delta(f.room, { t: "avatar_joined", avatar: this.wireAvatar(a) });
   }
@@ -357,6 +373,7 @@ export class FakeDirector {
     if (!hit) return this.err(f.cid, f.actor, "unknown_actor");
     const { r, a } = hit;
     const cmd: ActorCmd = f.cmd;
+    if (this.o.enforceBudgets && !this.withinBudget(f.actor, cmd)) return this.err(f.cid, f.actor, this.refused[this.refused.length - 1]?.code as ActorErrorCode);
     switch (cmd.k) {
       case "walk":
         this.walk(r, a, cmd.x, cmd.y, cmd.plan ?? null);
@@ -393,7 +410,7 @@ export class FakeDirector {
         if (!this.rooms.has(cmd.room)) return this.err(f.cid, f.actor, "no_such_room");
         // The real hotel refuses a door into a room the connection has not subscribed (`not_subscribed`).
         if (!this.subscribed.has(cmd.room)) return this.err(f.cid, f.actor, "not_subscribed");
-        this.moveActorToRoom(a.ref ?? "", cmd.room);
+        this.moveActorToRoom(a.ref ?? "", cmd.room, a.id);
         break;
       case "pair":
         setTimeout(() => this.send({ t: "pair_reaction", run: f.run, pair: cmd.pair, actor: f.actor, with: cmd.with, outcome: this.o.pairOutcome ?? "done", at: Date.now() }), this.tickMs);
@@ -401,6 +418,35 @@ export class FakeDirector {
       default:
         break;
     }
+  }
+
+  /** Spends the budgets `cmd` falls under; false (and a `refused` row) when one is used up. */
+  private withinBudget(actor: number, cmd: ActorCmd): boolean {
+    const now = Date.now();
+    const spend = (key: keyof typeof HOTEL_BUDGETS): boolean => {
+      const b = HOTEL_BUDGETS[key];
+      const id = `${actor}|${key}`;
+      const times = (this.budgetTimes.get(id) ?? []).filter((t) => now - t <= b.windowMs);
+      this.budgetTimes.set(id, times);
+      if (times.length >= b.count) {
+        this.refused.push({ actor, k: cmd.k, code: b.code });
+        return false;
+      }
+      times.push(now);
+      return true;
+    };
+    if (cmd.k === "chat") return spend("chat");
+    if (cmd.k === "typing") return !cmd.on || spend("typing");
+    if (!spend("cmds")) return false;
+    if (cmd.k === "move_room") {
+      const joined = this.joinedAt.get(actor);
+      if (joined !== undefined && now - joined < HOTEL_JOIN_INTERVAL_MS) {
+        this.refused.push({ actor, k: cmd.k, code: "rate_limited" });
+        return false;
+      }
+      this.joinedAt.set(actor, now);
+    }
+    return true;
   }
 
   private route(a: FakeAvatar, x: number, y: number): [number, number][] {
