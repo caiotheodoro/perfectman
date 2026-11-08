@@ -28,6 +28,9 @@ async function twoRuns() {
   fake.startRun({ run: 8, room: 13, scenarioVersion: 31 });
   await waitFor(() => fake?.received.filter((f) => f.t === "run_ack" && f.ok).length === 2, "both runs acked");
   await waitFor(() => fake?.received.filter((f) => f.t === "actor_spawn").length === 6, "six spawns");
+  // The fake saw the spawns; the sidecar registers each one when its answer lands.
+  const manager = booted.sidecar.manager;
+  await waitFor(() => [7, 8].every((run) => ["person-1", "person-2", "person-3"].every((ref) => manager?.mirror.scoped(run).avatarId(ref) !== undefined)), "all six actors registered");
   return { fake, sidecar: booted.sidecar };
 }
 
