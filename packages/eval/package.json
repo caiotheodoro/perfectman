@@ -25,7 +25,8 @@
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "sweep:temperature": "node dist/cli/sweep-temperature.js",
-    "video": "node dist/cli/video.js"
+    "video": "node dist/cli/video.js",
+    "label": "tsc -p tsconfig.json && node dist/drama/label-ui/cli.js"
   },
   "dependencies": {
     "@perfectman/engine": "workspace:*",
