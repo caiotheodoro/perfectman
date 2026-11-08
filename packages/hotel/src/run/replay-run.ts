@@ -21,7 +21,7 @@ import { ActorPacer } from "./replay-pacing.js";
 import { parseScenarioBody } from "./scenario-body.js";
 import { ReplayError, buildReplayPlan, loadReplayArtifacts } from "./replay-plan.js";
 import type { ReplayPlan, ReplayStep } from "./replay-plan.js";
-import type { RunLink, RunStartParams } from "./run.js";
+import type { RunLink, RunStartParams, StopOptions } from "./run.js";
 
 export type ReplaySpec = {
   /** The recorded run to show. */
@@ -453,12 +453,12 @@ export class ReplayRun {
     this.d.link.send({ t: "ui_push", run: this.id, to: { admin: this.params.admin.id }, ui: { k: "notice", code, kind, ...(text ? { text } : {}) } });
   }
 
-  stop(reason: SidecarEndReason, summary?: string, opts: { byHotel?: boolean } = {}): Promise<void> {
+  stop(reason: SidecarEndReason, summary?: string, opts: StopOptions = {}): Promise<void> {
     this.stopping ??= this.teardown(reason, summary, opts);
     return this.stopping;
   }
 
-  private async teardown(reason: SidecarEndReason, summary: string | undefined, opts: { byHotel?: boolean }): Promise<void> {
+  private async teardown(reason: SidecarEndReason, summary: string | undefined, opts: StopOptions): Promise<void> {
     const { link, mirror } = this.d;
     this.state = "stopping";
     this.abort.abort();
@@ -475,7 +475,7 @@ export class ReplayRun {
       for (const ref of this.avatars.keys()) mirror.unregisterActor(this.refOf(ref));
       link.untrackRun(this.id);
       this.state = reason === "failed" ? "failed" : "ended";
-      if (!opts.byHotel) link.send({ t: "run_end", run: this.id, reason, ...(summary ? { summary } : {}) });
+      if (!opts.byHotel && !opts.interrupted) link.send({ t: "run_end", run: this.id, reason, ...(summary ? { summary } : {}) });
       this.d.onEnded(this, reason);
     }
   }

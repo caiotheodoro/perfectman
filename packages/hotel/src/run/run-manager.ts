@@ -148,10 +148,17 @@ export class RunManager implements RunLink {
     every(STALE_CHECK_MS, () => this.checkStale());
   }
 
-  /** SIGTERM: stop taking runs, walk every actor out (bounded), close the socket. */
+  /**
+   * SIGTERM: stop taking runs, walk every actor out (bounded), close the socket. The runs are not reported ended: a
+   * restart is not a deliberate stop, so the hotel marks them `interrupted` (D41) when the socket closes or the next
+   * sidecar's `hello_ack` does not resume them, and an admin can tell the two apart.
+   */
   async shutdown(): Promise<void> {
     this.accepting = false;
-    const all = Promise.all([...this.runs.values()].map((r) => r.stop("stopped", "sidecar shutting down").catch(() => undefined)));
+    const all = Promise.all([...this.runs.values()].map((r) => {
+      r.notice("shutting_down", "warn", "the sidecar is restarting");
+      return r.stop("stopped", "sidecar shutting down", { interrupted: true }).catch(() => undefined);
+    }));
     await Promise.race([all, sleepOn(this.o.clock, SHUTDOWN_BOUND_MS)]);
     this.stopped = true;
     this.timers.forEach((t) => t.cancel());

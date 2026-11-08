@@ -117,6 +117,13 @@ export type RunDeps = {
   onEnded(run: Run, reason: SidecarEndReason): void;
 };
 
+/**
+ * `byHotel`: the hotel ended the run (or already interrupted it), so it walks the actors out and is told nothing.
+ * `interrupted`: the sidecar is going away (SIGTERM). The actors are walked out and the artifacts written as for a stop,
+ * but no `run_end` is sent, so the hotel records the run as `interrupted` and not as a deliberate stop (D41).
+ */
+export type StopOptions = { byHotel?: boolean; interrupted?: boolean };
+
 export type PrepareResult = { ok: true } | { ok: false; code: string; message: string };
 
 type PendingSpeech = { intent: ActionIntent; targetRef: string; walkPlans: Set<string>; timer: TimerHandle; rewalks: number };
@@ -1309,12 +1316,12 @@ export class Run {
    * (bounded), walk the actors out, stop the runtime, write artifacts, close
    * handles, publish the final state. Idempotent.
    */
-  stop(reason: SidecarEndReason, summary?: string, opts: { byHotel?: boolean } = {}): Promise<void> {
+  stop(reason: SidecarEndReason, summary?: string, opts: StopOptions = {}): Promise<void> {
     this.stopping ??= this.teardown(reason, summary, opts);
     return this.stopping;
   }
 
-  private async teardown(reason: SidecarEndReason, summary: string | undefined, opts: { byHotel?: boolean }): Promise<void> {
+  private async teardown(reason: SidecarEndReason, summary: string | undefined, opts: StopOptions): Promise<void> {
     const { link, clock, hotel } = this.d;
     const mirror = this.space;
     this.state = "stopping";
@@ -1358,8 +1365,8 @@ export class Run {
           simulationId: this.handle?.simulationId ?? `hotel-run-${this.id}`,
           scenarioVersion: this.params.scenarioVersion,
           scenarioSha256: bodyDigest(this.body ? scrubConfigForArtifact(this.body.config) : null),
-          finalState: reason === "failed" ? "failed" : "ended",
-          stopReason: reason,
+          finalState: opts.interrupted ? "interrupted" : reason === "failed" ? "failed" : "ended",
+          stopReason: opts.interrupted ? "sidecar_shutdown" : reason,
           startedAt: this.startedAt,
           mode: this.params.mode,
           home: this.params.room,
@@ -1383,7 +1390,9 @@ export class Run {
       for (const ref of this.agents.keys()) mirror.unregisterActor(ref);
       link.untrackRun(this.id);
       this.state = reason === "failed" ? "failed" : "ended";
-      if (!opts.byHotel) link.send({ t: "run_end", run: this.id, reason, ...(summary ? { summary } : {}) });
+      // An interrupted run says nothing: a run_end would read as a deliberate stop. The hotel marks it `interrupted` itself
+      // (grace expiry, or the next hello_ack that does not resume it; D41).
+      if (!opts.byHotel && !opts.interrupted) link.send({ t: "run_end", run: this.id, reason, ...(summary ? { summary } : {}) });
       this.d.onEnded(this, reason);
     }
   }

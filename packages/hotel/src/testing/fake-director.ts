@@ -43,6 +43,12 @@ export class FakeDirector {
   staleUiPushes = 0;
   readonly chats: { actor: number; mode: string; text: string; to?: number | null; at: number }[] = [];
   readonly typingLog: { actor: number; on: boolean }[] = [];
+  /** Runs the hotel would call live: acked and not ended. */
+  private readonly liveRuns = new Set<number>();
+  /** Runs the sidecar ended itself, with the reason it gave (`run_end`): the hotel records these as `ended` or `failed`. */
+  readonly endedRuns: { run: number; reason: string }[] = [];
+  /** Runs the hotel marked `interrupted` (`sidecar_lost`): a `hello_ack` that did not resume a run it still held live (director-protocol.md 4). */
+  readonly interruptedRuns: number[] = [];
   /** Every `actor_error` the hotel answered with, in order. */
   readonly errorsSent: { actor: number | undefined; code: string }[] = [];
   /** Commands the modelled limits refused (`enforceBudgets`). */
@@ -277,8 +283,18 @@ export class FakeDirector {
     // A ui_push may omit its lease (older sidecars); one that is present must be the run's current lease.
     if (f.t === "ui_push" && f.lease != null && this.lease.has(f.run) && this.lease.get(f.run) !== f.lease) this.staleUiPushes++;
     if (f.t === "run_ack" || f.t === "run_end") this.settleAck(f.run);
+    if (f.t === "run_ack" && f.ok) this.liveRuns.add(f.run);
+    if (f.t === "run_end") {
+      this.liveRuns.delete(f.run);
+      this.endedRuns.push({ run: f.run, reason: f.reason });
+    }
     switch (f.t) {
       case "hello_ack":
+        for (const run of [...this.liveRuns]) {
+          if (f.resume?.includes(run)) continue;
+          this.liveRuns.delete(run);
+          this.interruptedRuns.push(run);
+        }
         if (this.withholdLeases) break;
         for (const run of f.resume ?? []) {
           const lease = (this.lease.get(run) ?? 0) + 1;
