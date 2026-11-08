@@ -5,7 +5,7 @@
  * `sanitizeText`, and the narrator prompt frames them as data.
  */
 import type { AgentState } from "@perfectman/shared";
-import type { HotelSpaceMirror } from "../../space/space-mirror.js";
+import type { ActorSpace } from "../../space/space-mirror.js";
 import type { CineMood, CineWorld, Tile } from "./types.js";
 
 export type CastInfo = { name: string; role?: string };
@@ -20,7 +20,7 @@ export class MirrorCineWorld implements CineWorld {
   private readonly moods = new Map<string, CineMood>();
 
   constructor(
-    private readonly mirror: HotelSpaceMirror,
+    private readonly mirror: ActorSpace,
     private readonly now: () => number,
     /** The run's own cast, by ref. Only they are filmed. */
     private readonly cast: ReadonlyMap<string, CastInfo>,
@@ -50,7 +50,7 @@ export class MirrorCineWorld implements CineWorld {
     return this.mirror.peopleIn(String(room), this.now()).filter((p) => this.cast.has(p.ref)).map((p) => p.ref);
   }
   roomName(room: number): string {
-    return this.mirror.model().rooms.get(String(room))?.name ?? `#${room}`;
+    return this.mirror.roomName(String(room)) ?? `#${room}`;
   }
   moodOf(ref: string): CineMood | undefined {
     return this.moods.get(ref);

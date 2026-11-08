@@ -9,6 +9,7 @@ import type { HotelHttpClient } from "../director/http-client.js";
 import type { HotelFrame, SidecarMsg } from "../director/index.js";
 import type { SocketFactory } from "../director/transport.js";
 import { LlmGovernor } from "../llm/governor.js";
+import { parseScopedRef } from "../space/scoped-ref.js";
 import { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { Logger } from "../util/log.js";
 import type { WrittenArtifacts } from "./artifacts.js";
@@ -42,6 +43,12 @@ export type ManagerOptions = {
   /** The narrator's model call for cinematic runs (D19); without it cards use fallback text. */
   narratorLlm?: NarratorLlm;
 };
+
+/** The mirror's key for an actor as a run reads it: the run's own actors by their plain ref, everyone else's as they are. */
+function asSeenBy(run: number, key: string): string {
+  const scoped = parseScopedRef(key);
+  return scoped && scoped.run === run ? scoped.ref : key;
+}
 
 type Pending = { resolve(f: HotelFrame): void; reject(e: Error): void; timer: TimerHandle };
 
@@ -78,8 +85,8 @@ export class RunManager implements RunLink {
     this.governor = o.governor ?? new LlmGovernor(o.clock, o.rng);
     this.mirror = new HotelSpaceMirror({
       listener: {
-        onMoved: (ref) => this.runs.forEach((r) => r.mirrorMoved(ref)),
-        onLeft: (ref) => this.runs.forEach((r) => r.mirrorLeft(ref)),
+        onMoved: (ref) => this.runs.forEach((r) => r.mirrorMoved(asSeenBy(r.id, ref))),
+        onLeft: (ref) => this.runs.forEach((r) => r.mirrorLeft(asSeenBy(r.id, ref))),
         onHumanTyping: (room, _ref, on, at) => this.runs.forEach((r) => r.humanTyping(room, on, at)),
       },
     });

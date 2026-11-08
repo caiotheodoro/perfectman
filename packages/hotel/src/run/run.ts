@@ -37,6 +37,7 @@ import { LlmMeter } from "../llm/meter.js";
 import { chebyshev, tileKey } from "../space/geometry.js";
 import { SAY_CLEAR_TILES } from "../space/hearing.js";
 import type { HotelSpaceMirror } from "../space/space-mirror.js";
+import type { ScopedMirror } from "../space/scoped-mirror.js";
 import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
 import { NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
@@ -238,9 +239,12 @@ export class Run {
   private drained = true;
   private pendingEnd: SidecarEndReason | undefined;
   readonly homeChannelId: string;
+  /** The shared mirror as this run sees it: its own plain refs in, run-scoped keys inside (space/scoped-mirror.ts). */
+  private readonly space: ScopedMirror;
 
   constructor(readonly params: RunStartParams, private readonly d: RunDeps) {
     this.id = params.run;
+    this.space = d.mirror.scoped(params.run);
     this.home = String(params.room);
     this.homeChannelId = `room:${params.room}`;
     this.prices = pricesWithPick(d.hotel.llm.prices, params.model);
@@ -274,14 +278,14 @@ export class Run {
     const rooms = new Set<RoomId>([this.home]);
     for (const [ref, a] of this.agents) {
       if (a.gone) continue;
-      const r = this.d.mirror.roomOfRef(ref);
+      const r = this.space.roomOfRef(ref);
       if (r) rooms.add(r);
     }
     return [...rooms];
   }
 
   holdsActorIn(room: RoomId): boolean {
-    return [...this.agents].some(([ref, a]) => !a.gone && this.d.mirror.roomOfRef(ref) === room);
+    return [...this.agents].some(([ref, a]) => !a.gone && this.space.roomOfRef(ref) === room);
   }
 
   // ---- stage A: validate ------------------------------------------------------
@@ -333,7 +337,8 @@ export class Run {
   // ---- stage B: build, spawn, start -------------------------------------------
 
   async launch(): Promise<void> {
-    const { clock, link, mirror, hotel } = this.d;
+    const { clock, link, hotel } = this.d;
+    const mirror = this.space;
     const cfg = this.hotelConfig();
     for (const a of cfg.agents) this.agents.set(a.id, { name: a.promptProfile.displayName, spawned: false, gone: false });
     this.startedAt = clock.now();
@@ -494,7 +499,7 @@ export class Run {
     await this.spawnCast(now);
     if (this.stopping) {
       await this.walkOut();
-      for (const ref of this.agents.keys()) this.d.mirror.unregisterActor(ref);
+      for (const ref of this.agents.keys()) this.space.unregisterActor(ref);
       return;
     }
     this.enterRoom(now);
@@ -579,7 +584,7 @@ export class Run {
   private humansHere(): number[] {
     const ids = new Set<number>();
     for (const room of this.roomsInUse()) {
-      for (const p of this.d.mirror.peopleIn(room, this.d.clock.now())) {
+      for (const p of this.space.peopleIn(room, this.d.clock.now())) {
         if (p.kind !== "human") continue;
         const id = Number(p.ref.slice(2));
         if (p.ref.startsWith("h:") && Number.isInteger(id) && id > 0) ids.add(id);
@@ -682,7 +687,8 @@ export class Run {
   }
 
   private async spawnCast(refs: readonly string[]): Promise<void> {
-    const { link, mirror, clock } = this.d;
+    const { link, clock } = this.d;
+    const mirror = this.space;
     const t = { ...SPAWN_DEFAULTS, ...this.d.timing };
     for (const ref of refs) {
       const a = this.agents.get(ref);
@@ -705,7 +711,8 @@ export class Run {
 
   /** Actors walk in: each to a distinct, uncrowded tile near the middle of the room. */
   private enterRoom(refs: readonly string[]): void {
-    const { mirror, clock } = this.d;
+    const { clock } = this.d;
+    const mirror = this.space;
     const taken = this.enterTaken;
     const cmds = [];
     for (const ref of refs) {
@@ -723,7 +730,8 @@ export class Run {
 
   /** Cinematic mode (D18, D19): the Director films the run and releases speech on the playback clock. */
   private startCinematic(executor: GatewayExecutor): GatewayExecutor {
-    const { clock, mirror, link, hotel } = this.d;
+    const { clock, link, hotel } = this.d;
+    const mirror = this.space;
     const first = this.body.config.agents[0]?.promptProfile;
     const language = first?.language === "en" ? "en" : "pt-BR";
     const cast = new Map([...this.agents].map(([ref, a]) => [ref, { name: a.name, ...(this.archetype(ref) ? { role: this.archetype(ref) as string } : {}) }]));
@@ -764,7 +772,7 @@ export class Run {
     this.gateway.notePulseStart(this.d.clock.now());
     await this.port.runPulse(opts);
     this.pulseErrors = 0;
-    this.frames.snapshot(this.d.mirror);
+    this.frames.snapshot(this.space);
     // Actors the model was not consulted for still fidget, face the speaker and drift (embodiment.md 7.1).
     if (opts.reason === "base") await this.sweepIdle();
   }
@@ -807,7 +815,7 @@ export class Run {
   private faceInterlocutor(ref: string, otherRef: string, maxTiles?: number): void {
     if (!this.agents.has(ref) || this.agents.get(ref)?.gone || this.state !== "running") return;
     const now = this.d.clock.now();
-    const space = this.d.mirror.view(ref, now);
+    const space = this.space.view(ref, now);
     if (!space) return;
     const mem = noteExchange(this.memory.get(ref) ?? {}, otherRef, now);
     const cmds = planFacing({ space, now }, otherRef, maxTiles);
@@ -836,7 +844,7 @@ export class Run {
       this.faceInterlocutor(to, line.agentId);
       this.faceInterlocutor(line.agentId, to, to.startsWith("h:") ? Number.POSITIVE_INFINITY : undefined);
     }
-    const room = this.d.mirror.view(line.agentId, this.d.clock.now())?.room;
+    const room = this.space.view(line.agentId, this.d.clock.now())?.room;
     const me = room?.occupants.find((o) => o.ref === line.agentId);
     const them = room?.occupants.find((o) => o.ref === to);
     const sameRoom = me !== undefined && them !== undefined;
@@ -871,7 +879,7 @@ export class Run {
     // A paused run commits nothing new to the body: no planning until it resumes.
     if (this.state === "paused") return;
     this.cineWorld?.noteMood(ref, moodOfState(info.agentState));
-    const space = info.space ?? this.d.mirror.view(ref, this.d.clock.now());
+    const space = info.space ?? this.space.view(ref, this.d.clock.now());
     if (!space) return;
     this.noteAddressee(ref, info.intent, mine, space);
     const body = info.body;
@@ -927,7 +935,7 @@ export class Run {
     for (const ref of this.agents.keys()) {
       if (planned.has(ref) || this.state !== "running" || this.agents.get(ref)?.gone) continue;
       const state: AgentState | null = await handle.repositories.agentStateRepo.get(handle.simulationId, ref);
-      const space = this.d.mirror.view(ref, now);
+      const space = this.space.view(ref, now);
       if (!state || !space) continue;
       this.arousal.set(ref, state.coreMood.arousal);
       this.planFor(ref, state, [], space);
@@ -968,7 +976,7 @@ export class Run {
 
   /** Tiles between the speaker and the person a held line is for; undefined when they are not in the same room. */
   private gapTo(ref: string, targetRef: string): number | undefined {
-    const room = this.d.mirror.view(ref, this.d.clock.now())?.room;
+    const room = this.space.view(ref, this.d.clock.now())?.room;
     const me = room?.occupants.find((o) => o.ref === ref);
     const them = room?.occupants.find((o) => o.ref === targetRef);
     return me && them ? chebyshev(me.tile, them.tile) : undefined;
@@ -983,7 +991,7 @@ export class Run {
     const handle = this.handle;
     if (!handle || held.rewalks >= MAX_HELD_REWALKS) return false;
     const now = this.d.clock.now();
-    const space = this.d.mirror.view(ref, now);
+    const space = this.space.view(ref, now);
     const state = await handle.repositories.agentStateRepo.get(handle.simulationId, ref);
     if (!space || !state || this.pending.get(ref) !== held) return false;
     held.rewalks++;
@@ -1103,7 +1111,7 @@ export class Run {
     const refused = info.outcome === "dodge" || info.outcome === "push";
     const humanId = info.withHuman && info.withRef.startsWith("h:") ? Number(info.withRef.slice(2)) : NaN;
     if (Number.isInteger(humanId)) {
-      const name = this.d.mirror.peopleIn(this.d.mirror.roomOfRef(info.agentId) ?? this.home, this.d.clock.now()).find((p) => p.ref === info.withRef)?.name ?? "";
+      const name = this.space.peopleIn(this.space.roomOfRef(info.agentId) ?? this.home, this.d.clock.now()).find((p) => p.ref === info.withRef)?.name ?? "";
       this.playerMemory?.notePair({ user: humanId, name, character: info.agentId, kind: info.kind, outcome: info.outcome });
     }
     if (refused && info.withHuman) {
@@ -1167,14 +1175,14 @@ export class Run {
 
   handleFrame(frame: HotelFrame): void {
     if (frame.t === "actor_gone") {
-      const ref = this.d.mirror.refOfAvatar(frame.actor);
+      const ref = this.space.refOfAvatar(frame.actor);
       const a = this.agents.get(ref);
       if (a) a.gone = true;
       this.goneWaiters.delete(ref);
       if (this.goneWaiters.size === 0) this.goneResolve?.();
       // The executor clears its plans by ref, so it must see the frame before the ref is unregistered.
       this.executor?.handleFrame(frame);
-      this.d.mirror.unregisterActor(ref);
+      this.space.unregisterActor(ref);
       if (a) this.onActorRemoved(ref);
       return;
     }
@@ -1307,7 +1315,8 @@ export class Run {
   }
 
   private async teardown(reason: SidecarEndReason, summary: string | undefined, opts: { byHotel?: boolean }): Promise<void> {
-    const { link, mirror, clock, hotel } = this.d;
+    const { link, clock, hotel } = this.d;
+    const mirror = this.space;
     this.state = "stopping";
     this.pendingEnd = reason;
     try {
@@ -1390,7 +1399,7 @@ export class Run {
       this.goneResolve = resolve;
     });
     for (const [ref] of live) {
-      const id = this.d.mirror.avatarId(ref);
+      const id = this.space.avatarId(ref);
       if (id === undefined) continue;
       this.goneWaiters.add(ref);
       link.send({ t: "actor_despawn", cid: link.nextCid(this.id), run: this.id, lease, actor: id, mode: "walk_out" });
@@ -1399,7 +1408,7 @@ export class Run {
     await Promise.race([done, sleepOn(clock, timeout)]);
     // Whoever has not left by the deadline is removed at once.
     for (const ref of [...this.goneWaiters]) {
-      const id = this.d.mirror.avatarId(ref);
+      const id = this.space.avatarId(ref);
       if (id !== undefined) link.send({ t: "actor_despawn", cid: link.nextCid(this.id), run: this.id, lease, actor: id, mode: "now" });
     }
   }

@@ -16,6 +16,9 @@ import type {
 import type { Avatar, Furni, HotelMsg, RoomSnapshot, SnapDef, SnapSeat } from "../director/index.js";
 import { sanitizeText } from "../util/text.js";
 import { chebyshev } from "./geometry.js";
+import { ScopedMirror } from "./scoped-mirror.js";
+
+export { parseScopedRef, scopeRef } from "./scoped-ref.js";
 import { classifyFurni, deriveRoomZones, type DeriveZones } from "./zones.js";
 
 export const STALE_MS = 5000;
@@ -32,6 +35,29 @@ export type ApplyResult = { ok: true; resnapshot?: boolean } | { ok: false; reas
 
 export type OwnActor = { ref: string; id: number; run: number; name: string };
 
+/**
+ * What a run (its executor, ingestor, cinematic world, frame log and the engine's `SpaceMirror`) needs of the
+ * space. `HotelSpaceMirror` is one with refs taken as they come; `ScopedMirror` is one per run.
+ */
+export interface ActorSpace extends SpaceMirror {
+  registerActor(actor: OwnActor, room: RoomId, now: number): void;
+  unregisterActor(ref: string): void;
+  avatarId(ref: string): number | undefined;
+  refOfAvatar(id: number): string;
+  isOwn(id: number): boolean;
+  roomOfRef(ref: string): RoomId | undefined;
+  bodyOf(ref: string, now: number): AgentBody;
+  peopleIn(room: RoomId, now: number): Presence[];
+  /** Where one of the run's actors stands right now, as the mirror holds it (no dead reckoning). */
+  presenceOf(ref: string): Presence | undefined;
+  /** One person in one room (an actor or a human), as the mirror holds it. */
+  presenceIn(room: RoomId, ref: string): Presence | undefined;
+  /** Whether a room is current: `degraded` after a gap, and when the hotel last confirmed it. */
+  roomHealth(room: RoomId): { degraded: boolean; syncedAtWall: number } | undefined;
+  roomName(room: RoomId): string | undefined;
+  applyArrived(actorId: number, room: number, x: number, y: number, now: number): string | undefined;
+  applyMovedRoom(actorId: number, from: number, to: number, x: number, y: number, now: number): string | undefined;
+}
 export type MirrorListener = {
   /** A presence changed tile (walk step, forced step, arrival). */
   onMoved?(ref: string, room: RoomId, from: Tile, to: Tile, at: number): void;
@@ -69,7 +95,7 @@ function heightOf(ch: string): number {
  * exactly `rev + 1` or the room is `degraded` until the caller's resnapshot
  * lands. Reads are pure projections (`view`), dead-reckoned and expiry-aware.
  */
-export class HotelSpaceMirror implements SpaceMirror {
+export class HotelSpaceMirror implements ActorSpace {
   private readonly space: SpaceModel = { rooms: new Map(), agentRoom: new Map(), body: new Map() };
   private readonly own = new Map<number, OwnActor>();
   private readonly idByRef = new Map<string, number>();
@@ -361,9 +387,27 @@ export class HotelSpaceMirror implements SpaceMirror {
 
   // ---- internals ----------------------------------------------------------
 
-  private presenceOf(ref: string): Presence | undefined {
+  presenceOf(ref: string): Presence | undefined {
     const room = this.roomOfRef(ref);
     return room ? this.space.rooms.get(room)?.occupants.get(ref) : undefined;
+  }
+
+  presenceIn(room: RoomId, ref: string): Presence | undefined {
+    return this.space.rooms.get(room)?.occupants.get(ref);
+  }
+
+  roomHealth(room: RoomId): { degraded: boolean; syncedAtWall: number } | undefined {
+    const r = this.space.rooms.get(room);
+    return r ? { degraded: r.degraded, syncedAtWall: r.syncedAtWall } : undefined;
+  }
+
+  roomName(room: RoomId): string | undefined {
+    return this.space.rooms.get(room)?.name;
+  }
+
+  /** This mirror seen by one run: the run's plain refs in, the run-scoped keys inside. */
+  scoped(run: number): ScopedMirror {
+    return new ScopedMirror(this, run);
   }
 
   private seatAt(room: RoomModel | undefined, tile: Tile): number | undefined {
