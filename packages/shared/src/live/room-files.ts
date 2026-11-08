@@ -15,7 +15,7 @@ export type ReplySpeed = "quick" | "normal" | "slow";
 const REPLY_DELAY_MS: Record<ReplySpeed, [number, number]> = { quick: [400, 2000], normal: [800, 4000], slow: [2500, 8000] };
 /** `voice` and `lines` are what a drafted person says in their own register; without them the temperament speaks for them. `identity` is who they are (looks, history), `triggers` what sets them off, `speed` how fast they answer. */
 export type CharacterDraft = { name: string; role: keyof typeof ROLES; goal: string; voice?: string; lines?: string[]; identity?: string; triggers?: Array<{ trigger: string; behavior: string }>; speed?: ReplySpeed };
-export type RoomDraft = { title: string; situation: string; people: CharacterDraft[]; language?: "en" | "pt-BR"; /** What the person typed, kept so it can be drafted again. */ idea?: string };
+export type RoomDraft = { title: string; situation: string; people: CharacterDraft[]; language?: "en" | "pt-BR"; /** `spite`: a pt-BR scene of contained hatred over one object, with no temperament calibration. */ tone?: "spite"; /** What the person typed, kept so it can be drafted again. */ idea?: string };
 export type RoomFiles = { personas: UploadedFile[]; scenario: UploadedFile };
 
 /** The most people one scene holds (the hotel's cast limit is 12). */
@@ -28,9 +28,10 @@ const SCAFFOLD = {
     intro: "Comece no meio da situação. Não se apresente.",
     first: "Responda à situação com a sua própria voz.",
     goal: "Objetivo secreto",
-    constraint: "Nunca diga o objetivo em voz alta; conquiste o grupo pelas suas escolhas.",
+    constraint: "Diga o que você quer, uma vez, em voz alta. Não explique o plano.",
     identity: "Você é",
     commonRoom: "Sala comum",
+    resource: "the_groups_attention",
   },
   en: {
     mood: "Expectant; each person is focused on their own goal.",
@@ -40,7 +41,20 @@ const SCAFFOLD = {
     constraint: "Do not state your private goal outright; win the group over through your choices.",
     identity: "You are",
     commonRoom: "Common room",
+    resource: "the_groups_attention",
   },
+} as const;
+
+/** A spite scene's fixed text: the objective is the object, and the standing order forbids a second plot. */
+const SPITE = {
+  mood: "Ódio contido. Ninguém faz as pazes e ninguém inventa outro assunto.",
+  intro: "Comece no meio. A primeira frase é uma das tuas falas.",
+  first: "Se a outra pessoa mudar de assunto, repete a tua fala. Não pede desculpa. Não chega perto.",
+  goal: "O que você diz",
+  constraint: "Só fala do objeto e da pessoa na tua frente. Não inventa objeto, parente, aposta, piada nem outro cômodo. Não pede desculpa. Não anda.",
+  identity: "Você é",
+  commonRoom: "Sala comum",
+  resource: "the_object",
 } as const;
 
 const prose = (text: string) => text.replace(/\s+/g, " ").trim();
@@ -49,7 +63,8 @@ const header = (fields: Record<string, unknown>) => `---\n${Object.entries(field
 /** Use the existing Markdown compiler; the beginner form adds no new run format. */
 export function roomFiles(draft: RoomDraft): RoomFiles {
   if (draft.people.length < 2 || draft.people.length > MAX_PEOPLE) throw new Error(`Choose between two and ${MAX_PEOPLE} characters.`);
-  const words = SCAFFOLD[draft.language === "pt-BR" ? "pt-BR" : "en"];
+  const spite = draft.tone === "spite" && draft.language !== "en";
+  const words = spite ? SPITE : SCAFFOLD[draft.language === "pt-BR" ? "pt-BR" : "en"];
   if (!prose(draft.title) || !prose(draft.situation)) throw new Error("Give your scene a name and a situation.");
   const names = draft.people.map(person => prose(person.name).toLowerCase());
   if (names.some(name => !name) || new Set(names).size !== names.length) throw new Error("Give each character a different name.");
@@ -69,7 +84,7 @@ export function roomFiles(draft: RoomDraft): RoomFiles {
     const triggers = (person.triggers ?? []).map(t => ({ trigger: prose(t.trigger), behavior: prose(t.behavior) })).filter(t => t.trigger && t.behavior).slice(0, 6);
     const speed = person.speed && REPLY_DELAY_MS[person.speed];
     return { filename: `${ids[index]}.persona.md`, text: header({ personaId: ids[index], displayName: name,
-      archetype: person.role, language: draft.language ?? "en", calibrationFrom: role.calibration, writingStyle: voice,
+      archetype: person.role, language: draft.language ?? "en", ...(spite ? {} : { calibrationFrom: role.calibration }), writingStyle: voice,
       ...(speed ? { presence: { responseDelayMs: speed } } : {}) }) +
       `\n## Identity\n${words.identity} ${name}. ${identity ? `${identity} ` : ""}${voice}\n\n## Voice\n- ${voice}\n\n## Style Examples\n${lines.map(line => `- ${line}`).join("\n")}\n\n## Private Motives\n- ${prose(person.goal)}\n` +
       (triggers.length ? `\n## Triggers\n\n\`\`\`yaml\n${triggers.map(t => `- trigger: ${JSON.stringify(t.trigger)}\n  behavior: ${JSON.stringify(t.behavior)}`).join("\n")}\n\`\`\`\n` : "") };
@@ -78,6 +93,6 @@ export function roomFiles(draft: RoomDraft): RoomFiles {
     channels: [{ id: "room", name: words.commonRoom, type: "public_channel", default: true, members: ids }],
     cast: draft.people.map((person, index) => ({ agentId: ids[index], persona: personas[index]!.filename, displayName: prose(person.name) })) }) +
     `\n## Room Context\n${prose(draft.situation)}\n\n## Starting Mood\n${words.mood}\n\n## Intro Behavior\n${words.intro}\n\n## First Move\n${words.first}\n` +
-    draft.people.map((person, index) => `\n## Agent: ${ids[index]}\n\n### Hidden Objective\n${words.goal}: ${prose(person.goal)} (resource: the_groups_attention)\nConstraint: ${words.constraint}\n`).join("") };
+    draft.people.map((person, index) => `\n## Agent: ${ids[index]}\n\n### Hidden Objective\n${words.goal}: ${prose(person.goal)} (resource: ${words.resource})\nConstraint: ${words.constraint}\n`).join("") };
   return { personas, scenario };
 }

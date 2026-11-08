@@ -12,6 +12,8 @@ export type ScenarioForm = {
   situation: string;
   language?: "en" | "pt-BR";
   mode?: "default" | "cinematic";
+  /** `spite` compiles a scene of contained hatred over one object (pt-BR only); anything else is the default tone. */
+  tone?: string;
   cast: Array<{
     name: string;
     /** Free text ("bartender") or one of the temperaments; anything else is assigned in turn. */
@@ -160,8 +162,15 @@ export function formToDraft(form: ScenarioForm): { draft: RoomDraft; looks: Form
       ...(lines.length ? { lines } : {}), ...(identity ? { identity } : {}), ...(triggers.length ? { triggers } : {}), ...(speed ? { speed } : {}),
     };
   });
+  const tone = form.tone === "spite" ? "spite" : undefined;
   return {
-    draft: { title: text(form.title), situation: text(form.situation), people, language: form.language === "en" ? "en" : "pt-BR" },
+    draft: {
+      title: text(form.title),
+      situation: text(form.situation),
+      people,
+      language: form.language === "en" ? "en" : "pt-BR",
+      ...(tone ? { tone } : {}),
+    },
     looks,
   };
 }

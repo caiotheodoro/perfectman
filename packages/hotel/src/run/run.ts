@@ -739,20 +739,58 @@ export class Run {
     }
   }
 
-  /** Actors walk in: each to a distinct, uncrowded tile near the middle of the room. */
+  /**
+   * Walk the cast in apart from each other. In the four wing rooms the spots are the
+   * tiles beside the furniture the scene named. Everywhere else, the farthest
+   * non-door zone from anyone already placed.
+   */
   private enterRoom(refs: readonly string[]): void {
+    const wing: Record<number, Array<[number, number]>> = {
+      45: [[3, 1], [4, 5]],
+      43: [[10, 3], [3, 6]],
+      44: [[1, 1], [3, 5]],
+      49: [[3, 1], [5, 6]],
+    };
     const { clock } = this.d;
     const mirror = this.space;
     const taken = this.enterTaken;
+    const spots = wing[this.params.room];
+    let spotAt = taken.size;
+    const occupied: Array<readonly [number, number]> = [...taken].flatMap((key) => {
+      const [x, y] = key.split(",").map(Number);
+      return Number.isFinite(x) && Number.isFinite(y) ? [[x, y] as [number, number]] : [];
+    });
     const cmds = [];
     for (const ref of refs) {
       const view = mirror.view(ref, clock.now());
       const room = view?.room;
       if (!room) continue;
-      const centre = room.zones.find((z) => z.kind === "middle")?.center ?? [Math.floor(room.w / 2), Math.floor(room.h / 2)];
-      const to = pickTile({ room, self: ref, near: [centre[0], centre[1]], radius: 4, rng: this.d.rng, avoid: taken });
+      let near: readonly [number, number];
+      let radius: number;
+      if (spots && spotAt < spots.length) {
+        near = spots[spotAt]!;
+        spotAt += 1;
+        radius = 1;
+      } else {
+        const zones = room.zones.filter((z) => z.kind !== "door" && z.kind !== "middle");
+        const pool = zones.length >= 2 ? zones : room.zones.filter((z) => z.kind !== "door");
+        const door = room.zones.find((z) => z.kind === "door")?.center;
+        let best = pool[0];
+        let bestDist = -1;
+        for (const z of pool) {
+          const dist = occupied.length === 0 ? (door ? chebyshev(z.center, door) : 0) : Math.min(...occupied.map((p) => chebyshev(z.center, p)));
+          if (dist > bestDist) {
+            bestDist = dist;
+            best = z;
+          }
+        }
+        near = best?.center ?? [Math.floor(room.w / 2), Math.floor(room.h / 2)];
+        radius = Math.min(best?.radius ?? 2, 2);
+      }
+      const to = pickTile({ room, self: ref, near, radius, rng: this.d.rng, avoid: taken });
       if (!to) continue;
       taken.add(tileKey(to));
+      occupied.push(to);
       cmds.push({ agentId: ref, cmd: "walk" as const, to, plan: `${ref}:enter` });
     }
     this.out.send(cmds);
@@ -764,13 +802,15 @@ export class Run {
     const mirror = this.space;
     const first = this.body.config.agents[0]?.promptProfile;
     const language = first?.language === "en" ? "en" : "pt-BR";
-    const cast = new Map([...this.agents].map(([ref, a]) => [ref, { name: a.name, ...(this.archetype(ref) ? { role: this.archetype(ref) as string } : {}) }]));
+    const cast = new Map([...this.agents].map(([ref, a]) => [ref, { name: a.name }]));
     this.cineWorld = new MirrorCineWorld(mirror, () => clock.now(), cast);
     this.trackSink = new TrackFileSink(join(hotel.dataDir, "runs", String(this.id), TRACK_FILE), (err) =>
       this.d.logger.warn("director track write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
     // The injected call (tests, tools) wins; otherwise the run's own: the picked model first, the configured chain behind it.
     this.narratorChain = this.d.narratorLlm ? undefined : makeNarratorLlm({ links: withPickedModel(linksOf(hotel.llm), this.params.model), clock, runId: this.id, governor: this.d.governor, prices: this.prices, logger: this.d.logger });
-    const narratorLlm = this.d.narratorLlm ?? this.narratorChain?.call;
+    // The four wing rooms use the fallback card (the title and the names). A model caption was inventing a second plot.
+    const narratorOff = this.params.room === 45 || this.params.room === 43 || this.params.room === 44 || this.params.room === 49;
+    const narratorLlm = narratorOff ? undefined : (this.d.narratorLlm ?? this.narratorChain?.call);
     const narrator = new Narrator({ clock, language, ...(narratorLlm ? { llm: narratorLlm, deadlineMs: NARRATOR_CHAIN_DEADLINE_MS } : {}), logger: this.d.logger });
     this.narrator = narrator;
     this.cine = new CinematicDirector({
@@ -788,9 +828,6 @@ export class Run {
     return this.cine.wrapExecutor(executor);
   }
 
-  private archetype(ref: string): string | undefined {
-    return this.body.config.agents.find((a) => a.id === ref)?.persona.archetype;
-  }
 
   // ---- pulses and the body ----------------------------------------------------
 

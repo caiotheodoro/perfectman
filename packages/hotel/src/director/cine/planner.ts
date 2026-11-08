@@ -351,7 +351,8 @@ export class ShotPlanner {
     if (!this.introduced.has(item.ref)) {
       this.introduced.add(item.ref);
       const role = world.roleOf(item.ref);
-      b.ui(at, { k: "lower_third", name: clip(world.nameOf(item.ref), 40), ...(role ? { role: clip(role, 40) } : {}), ms: 2600 });
+      const shown = role && role !== "connector" && role !== "skeptic" && role !== "performer" ? role : undefined;
+      b.ui(at, { k: "lower_third", name: clip(world.nameOf(item.ref), 40), ...(shown ? { role: clip(shown, 40) } : {}), ms: 2600 });
     }
     const mood = world.moodOf(item.ref);
     if (mood && avatar !== undefined && moodIntensity(mood) >= this.cfg.emotionCueIntensity && abs - (this.emotionAt.get(item.ref) ?? Number.NEGATIVE_INFINITY) >= this.cfg.emotionCueGapMs) {
