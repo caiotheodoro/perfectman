@@ -31,6 +31,8 @@ import { BreakerDriver } from "../llm/breaker.js";
 import { COST_HEADER, LlmChain } from "../llm/chain.js";
 import { AMBIENT_QUIET_MS, GENERATE_DEADLINE_MS, hostLlmConfig, pingLlm } from "../llm/env.js";
 import { LlmGovernor } from "../llm/governor.js";
+import { NARRATOR_CHAIN_DEADLINE_MS, makeNarratorLlm } from "../llm/narrator-llm.js";
+import type { RunNarratorLlm } from "../llm/narrator-llm.js";
 import { pricesWithPick, withPickedModel } from "../llm/run-model.js";
 import type { PickedModel } from "../llm/run-model.js";
 import { LlmMeter } from "../llm/meter.js";
@@ -112,7 +114,7 @@ export type RunDeps = {
   link: RunLink;
   governor: LlmGovernor;
   timing?: RunTiming;
-  /** The narrator's model call (D19). Absent: cards and captions are the deterministic fallback text. */
+  /** Overrides the narrator's model call (D19). Absent: a cinematic run builds its own from the provider chain; with the mock provider cards and captions are the deterministic fallback text. */
   narratorLlm?: NarratorLlm;
   onEnded(run: Run, reason: SidecarEndReason): void;
 };
@@ -206,6 +208,9 @@ export class Run {
   private readonly prices: Record<string, ModelPrice>;
   /** The provider chain (failover, per-link breakers, per-link usage); absent for the mock provider. */
   private readonly chain: LlmChain | undefined;
+  /** Cinematic mode: the narrator's own chain over the same links (picked model first); absent for the mock provider. */
+  private narratorChain: RunNarratorLlm | undefined;
+  private narrator: Narrator | undefined;
   private readonly frames: FrameLogRecorder;
   /** Cinematic mode only: holds speech for the playback clock and films the run (director/cine). */
   private cine: CinematicDirector | undefined;
@@ -668,6 +673,11 @@ export class Run {
     this.hostLlm.promptStyle = promptStyle;
   }
 
+  /** The cinematic narrator's own chain (its links, spend and failovers); undefined outside cinematic mode and for the mock provider. */
+  narratorLlmChain(): LlmChain | undefined {
+    return this.narratorChain?.chain;
+  }
+
   /** Per-link usage, cost and latency, and which link served: the chain's view of this run (empty for the mock provider). */
   llmChain(): LlmChain | undefined {
     return this.chain;
@@ -745,7 +755,11 @@ export class Run {
     this.cineWorld = new MirrorCineWorld(mirror, () => clock.now(), cast);
     this.trackSink = new TrackFileSink(join(hotel.dataDir, "runs", String(this.id), TRACK_FILE), (err) =>
       this.d.logger.warn("director track write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
-    const narrator = new Narrator({ clock, language, ...(this.d.narratorLlm ? { llm: this.d.narratorLlm } : {}), logger: this.d.logger });
+    // The injected call (tests, tools) wins; otherwise the run's own: the picked model first, the configured chain behind it.
+    this.narratorChain = this.d.narratorLlm ? undefined : makeNarratorLlm({ links: withPickedModel(linksOf(hotel.llm), this.params.model), clock, runId: this.id, governor: this.d.governor, prices: this.prices, logger: this.d.logger });
+    const narratorLlm = this.d.narratorLlm ?? this.narratorChain?.call;
+    const narrator = new Narrator({ clock, language, ...(narratorLlm ? { llm: narratorLlm, deadlineMs: NARRATOR_CHAIN_DEADLINE_MS } : {}), logger: this.d.logger });
+    this.narrator = narrator;
     this.cine = new CinematicDirector({
       run: this.id,
       home: this.params.room,
@@ -1376,7 +1390,7 @@ export class Run {
           })),
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
-          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
+          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
         await link.registerArtifacts(this.id, written);

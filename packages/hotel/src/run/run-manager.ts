@@ -40,7 +40,7 @@ export type ManagerOptions = {
   sidecar?: { version: string; build: string; schema_sha256?: string };
   recorder?: FrameRecorder;
   governor?: LlmGovernor;
-  /** The narrator's model call for cinematic runs (D19); without it cards use fallback text. */
+  /** Overrides the narrator's model call (D19); without it each cinematic run builds its own from the provider chain. */
   narratorLlm?: NarratorLlm;
 };
 

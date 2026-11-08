@@ -202,7 +202,7 @@ export class Narrator implements NarrationSource {
       if (parsed) rec.value = parsed;
       else {
         this.fallbacks++;
-        logger?.warn("narrator reply unusable, using fallback text", { room: rec.brief.roomName });
+        logger?.warn("narrator reply unusable, using fallback text", { room: rec.brief.roomName, reply: raw.slice(0, 300) });
       }
     } catch (err) {
       this.fallbacks++;
