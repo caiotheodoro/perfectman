@@ -48,6 +48,27 @@ function askedByPerson(input: AgentRuntimeInput, agentId: string): boolean {
 type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
 
 /**
+ * The retry note when a person asked this actor something and its answer could not be used (the output was invalid
+ * and the engine would otherwise fall back to a no-op, so the person hears nothing). Names what was wrong, in the
+ * profile's language, and asks for the answer in words.
+ */
+export function answerOwedNote(problem: string, language: "pt-BR" | "en"): string {
+  const what = problem.replace(/\s+/g, " ").trim().slice(0, 140);
+  if (language === "pt-BR") {
+    return `IMPORTANTE: sua última tentativa nesta rodada não pôde ser usada (${what}). Alguém acabou de falar com você e espera uma resposta: responda a essa pessoa em palavras, com "intentType" "reply_to_message" ou "send_message" e "visibleContent" preenchido, sem escolher outra pessoa como alvo.`;
+  }
+  return `IMPORTANT: your last attempt this turn could not be used (${what}). Someone just spoke to you and is waiting: answer that person in words, with "intentType" "reply_to_message" or "send_message" and "visibleContent" filled in, without choosing anyone else as the target.`;
+}
+
+/** The retry note when the answer to a person who asked was aimed at somebody else. */
+export function aimedElsewhereNote(lastAttempt: string, language: "pt-BR" | "en"): string {
+  if (language === "pt-BR") {
+    return `IMPORTANTE: sua última tentativa nesta rodada ("${lastAttempt}") foi dirigida a outra pessoa. Quem acabou de falar com você espera a resposta: responda a ela, falando só com ela, sem se dirigir a mais ninguém.`;
+  }
+  return `IMPORTANT: your last attempt this turn ("${lastAttempt}") was aimed at somebody else. The person who just spoke to you is waiting: answer them, talking only to them, without turning to anyone else.`;
+}
+
+/**
  * The repetition note when a person is waiting on the answer: the novelty goes into the wording and the answer
  * stays aimed at them. The generic note sends the model to "another angle" or "someone else", which for a person
  * who just asked is how a whisper got a line meant for the room.
@@ -273,7 +294,18 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         EXAMPLE_MOTIVES.some((m) => similarity(candidateIntent.visibleContent!, m) >= 0.7));
     const isRepeat = (candidateIntent: typeof intent): boolean => isOwnRepeat(candidateIntent) || isRoomRepeat(candidateIntent) || isThoughtSpoken(candidateIntent);
 
-    if (!fallbackApplied && (isRepeat(intent) || parseResult.unresolvedTarget)) {
+    // A person asked this actor something. An invalid output (which would fall back to a no-op) or an answer aimed at
+    // somebody else leaves them without one, so both get the retry arm too.
+    const asked = askedByPerson(input, agentId);
+    const aimedElsewhere = (candidateIntent: typeof intent): boolean =>
+      asked &&
+      speaks(candidateIntent) &&
+      (candidateIntent.intentType === "reply_to_message"
+        ? candidateIntent.replyToEventId !== undefined && candidateIntent.replyToEventId !== input.perceptionPacket.triggeringEvent?.id
+        : candidateIntent.personTargets.length > 0);
+    const unusable = fallbackApplied && asked;
+
+    if (unusable || (!fallbackApplied && (isRepeat(intent) || parseResult.unresolvedTarget || aimedElsewhere(intent)))) {
       // What the *first* attempt got wrong. A retry that fixes it clears every
       // in-band signal (`fallbackApplied` goes back to false, no llm_failure is
       // pushed), so without capturing it here the failed attempt vanishes and
@@ -281,7 +313,10 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       const firstAttemptViolations = [
         isRepeat(intent) ? "near_duplicate" : null,
         parseResult.unresolvedTarget ? "unresolved_target" : null,
+        unusable ? "unusable_answer" : null,
+        !unusable && aimedElsewhere(intent) ? "aimed_elsewhere" : null,
       ].filter((v): v is string => v !== null);
+      const unusableWhy = parseResult.errorDetail ?? "invalid answer";
 
       for (let attempt = 0; attempt < maxRetries; attempt++) {
         // The correction notes re-inflate the (already-capped) base prompt, so
@@ -292,6 +327,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         if (isRepeat(intent)) {
           corrections.push(retryCorrectionNote(intent.visibleContent ?? "", ctx.profile.language, askedByPerson(input, agentId), isOwnRepeat(intent) ? "own" : isRoomRepeat(intent) ? "room" : "thought"));
         }
+        if (unusable && fallbackApplied) corrections.push(answerOwedNote(unusableWhy, ctx.profile.language));
+        else if (!fallbackApplied && aimedElsewhere(intent) && !isRepeat(intent)) corrections.push(aimedElsewhereNote(intent.visibleContent ?? "", ctx.profile.language));
         if (parseResult.unresolvedTarget) {
           corrections.push(
             targetRetryCorrectionNote(
@@ -347,7 +384,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
             promptVersion: retryPrompt.version,
           });
           const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext);
-          if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent) && !retryParse.unresolvedTarget) {
+          if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent) && !retryParse.unresolvedTarget && !aimedElsewhere(retryParse.intent)) {
             parseResult = retryParse;
             intent = retryParse.intent;
             fallbackApplied = false;
