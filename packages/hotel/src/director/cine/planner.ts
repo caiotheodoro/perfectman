@@ -146,6 +146,9 @@ export class ShotPlanner {
     b.ui(0, this.cameraCue("establishing", { room: true }, "fit", 0, this.cfg.introMs));
     b.ui(150, { k: "hud", fade: { to: 0, ms: 900 } });
     b.ui(250, { k: "card", kind: "title", title: clip(title), ...(subtitle ? { subtitle: clip(subtitle) } : {}), ms: this.cfg.introMs - 500 });
+    // The room the film opens in gets its narrator aside like any room the camera cuts to, so a film that never leaves it still has one.
+    const aside = nar.caption(home, "scene");
+    if (aside) b.ui(Math.max(400, Math.round(this.cfg.introMs * 0.4)), { k: "caption", text: clip(aside), ms: Math.min(5000, readingMs(clip(aside), this.cfg)) });
     this.ambience(b, 0, home, world);
     this.activity.set(home, now);
     return { beat: "intro", room: home, durationMs: this.cfg.introMs, steps: b.steps };

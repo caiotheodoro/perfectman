@@ -36,6 +36,17 @@ describe("fallback text", () => {
   });
 });
 
+describe("the room the film opens in", () => {
+  it("serves its scene aside from the opening card's pass, naming the whole cast though nobody has walked in", () => {
+    const { narrator } = setup();
+    narrator.begin(12, { kind: "title", roomName: "Quarto", premise: "Sexta no lounge", cast: brief.cast, lines: [] });
+    expect(narrator.caption(12, "scene")).toBe("Gabi e Leo se encontram em Quarto.");
+    expect(narrator.caption(12, "scene")).toBeUndefined();
+    // only that room: another room with no card of its own has no aside
+    expect(narrator.caption(13, "scene")).toBeUndefined();
+  });
+});
+
 describe("the model pass", () => {
   it("uses what the model wrote, one call per card, and cycles its idle asides after the fallback ones", async () => {
     const calls: NarratorRequest[] = [];

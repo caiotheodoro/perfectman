@@ -49,6 +49,9 @@ export class MirrorCineWorld implements CineWorld {
   occupants(room: number): string[] {
     return this.mirror.peopleIn(String(room), this.now()).filter((p) => this.cast.has(p.ref)).map((p) => p.ref);
   }
+  members(): string[] {
+    return [...this.cast.keys()];
+  }
   roomName(room: number): string {
     return this.mirror.roomName(String(room)) ?? `#${room}`;
   }

@@ -375,6 +375,32 @@ const MOVE_VERB = /\b(ir|vou|vai|buscar|pegar|passar|passando|sair|voltar|go|goi
 const fold = (text: string): string => text.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "");
 const hasWord = (text: string, word: string): boolean => word.length >= 3 && new RegExp(`(^|[^a-z0-9])${word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}([^a-z0-9]|$)`).test(text);
 
+/** Leaving, in either language, folded: `sai`, `saia`, `vai`, `va`, `ir`, `leave`, `go`, `walk out`. */
+const LEAVE_VERB = /\b(sai|saia|saiam|sair|saindo|vai|va|vao|ir|anda|ande|leave|leaves|exit|go|goes|walk out|head out)\b/;
+/** "Somewhere that is not here", with no room named. */
+const ELSEWHERE = /\b(outra sala|outro quarto|outro comodo|outro lugar|outro ambiente|fora daqui|fora da sala|fora do quarto|another room|other room|somewhere else|out of the room|out of here)\b/;
+
+/** The cast members a line of direction names, by their display name (first word or the whole name). */
+export function namedIn(text: string, cast: ReadonlyMap<string, string>): string[] {
+  const t = fold(text);
+  return [...cast].filter(([, name]) => hasWord(t, fold(name)) || hasWord(t, fold(name).split(/\s+/)[0] ?? "")).map(([ref]) => ref);
+}
+
+/**
+ * A line of direction (an admin's `whisper` or `inject`) that sends someone out of the room: a leaving verb with an
+ * adjacent room named (`vai para o Jardim`), or with "another room" and no name (the nearest one). Undefined when the
+ * line is not about leaving. The model is asked to write the `body.move` that does this, and a small one does not; the
+ * exit is too plain a thing for a director's instruction to depend on that.
+ */
+export function leaveDirective(text: string, adjacency: ReadonlyArray<{ roomId: string; name?: string; travelS: number }>): string | undefined {
+  const t = fold(text);
+  if (!LEAVE_VERB.test(t) || adjacency.length === 0) return undefined;
+  const named = adjacency.find((a) => a.name !== undefined && hasWord(t, fold(a.name)));
+  if (named) return named.roomId;
+  if (!ELSEWHERE.test(t)) return undefined;
+  return [...adjacency].sort((a, b) => a.travelS - b.travelS || a.roomId.localeCompare(b.roomId))[0]?.roomId;
+}
+
 /**
  * Rule 12. What an actor does with no model call behind it, from state it already has:
  *  - it reaches for someone it is attracted to and comfortable with (approach, then a hug or a kiss);

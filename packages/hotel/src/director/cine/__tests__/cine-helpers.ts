@@ -36,6 +36,9 @@ export class FakeWorld implements CineWorld {
   occupants(room: number): string[] {
     return [...this.actors.values()].filter((a) => a.room === room).map((a) => a.ref);
   }
+  members(): string[] {
+    return [...this.actors.keys()];
+  }
   roomName(room: number): string {
     return this.rooms.get(room) ?? `#${room}`;
   }
