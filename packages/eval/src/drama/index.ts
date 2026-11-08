@@ -6,3 +6,4 @@ export * from "./rubric.js";
 export * from "./contact-sheet.js";
 export * from "./judge-prompt.js";
 export * from "./drama-judge.js";
+export * from "./judge-provider.js";
