@@ -302,6 +302,18 @@ export class Run {
 
   // ---- stage A: validate ------------------------------------------------------
 
+  /**
+   * The stage step's rooms: the cast may walk into those and back home, nowhere else. A room that is not in the
+   * hotel's `hello` menu (another player's) is taught to the mirror here so it has a door, and a name for "go to the Quarto".
+   * A scenario with no stage keeps every room the hotel names.
+   */
+  private limitTravel(body: ScenarioBody): void {
+    const stage = body.stage;
+    if (!stage) return;
+    this.d.mirror.noteKnownRooms(stage.rooms.map((r) => ({ id: String(r.id), ...(r.name ? { name: r.name } : {}) })));
+    this.space.restrictTravel([this.home, ...stage.rooms.map((r) => String(r.id))]);
+  }
+
   async prepare(): Promise<PrepareResult> {
     const { hotel, link } = this.d;
     let raw: unknown;
@@ -313,6 +325,7 @@ export class Run {
     const parsed = parseScenarioBody(extractBody(raw));
     if (!parsed.ok) return { ok: false, code: "bad_scenario", message: parsed.errors.map((e) => `${e.path}: ${e.message}`).join("; ") };
     this.body = parsed.body;
+    this.limitTravel(parsed.body);
     this.scenarioId = scenarioIdOf(raw);
     if (this.body.config.agents.length > this.params.capActors) {
       return { ok: false, code: "actor_limit", message: `scenario has ${this.body.config.agents.length} characters, the cap is ${this.params.capActors}` };

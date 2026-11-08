@@ -1,3 +1,5 @@
+import { cleanVisit } from "../authoring/scenario-form.js";
+import type { ScenarioStage } from "../authoring/scenario-form.js";
 import { parseSimulationConfig } from "@perfectman/server/hotel";
 import type { RunSeeds, SimulationAppConfig } from "@perfectman/server/hotel";
 import type { LLMConfig } from "@perfectman/server/hotel";
@@ -20,6 +22,8 @@ export type ScenarioBody = {
   responseDelays?: Record<string, [number, number]>;
   /** Per agent: ms after the run starts that the builder's "after N s" entrance asks for. Absent means the run's natural stagger. */
   arrivals?: Record<string, number>;
+  /** Where the builder's stage step lets the cast go. Absent means every room the hotel names (older scenarios, presets). */
+  stage?: ScenarioStage;
 };
 
 export type ParsedBody = { ok: true; body: ScenarioBody } | { ok: false; errors: { path: string; message: string }[] };
@@ -68,6 +72,7 @@ export function parseScenarioBody(raw: unknown): ParsedBody {
       ...(o["looks"] ? { looks: o["looks"] as ScenarioBody["looks"] & object } : {}),
       ...(o["responseDelays"] ? { responseDelays: o["responseDelays"] as ScenarioBody["responseDelays"] & object } : {}),
       ...(o["arrivals"] && typeof o["arrivals"] === "object" ? { arrivals: cleanArrivals(o["arrivals"] as Record<string, unknown>) } : {}),
+      ...cleanStage(o["stage"]),
     },
   };
 }
@@ -77,6 +82,13 @@ function cleanArrivals(raw: Record<string, unknown>): Record<string, number> {
   const out: Record<string, number> = {};
   for (const [id, ms] of Object.entries(raw)) if (typeof ms === "number" && Number.isFinite(ms) && ms >= 0) out[id] = Math.min(ms, 600_000);
   return out;
+}
+
+function cleanStage(raw: unknown): { stage?: ScenarioStage } {
+  if (!raw || typeof raw !== "object") return {};
+  const o = raw as Record<string, unknown>;
+  if (typeof o["travel"] !== "boolean") return {};
+  return { stage: { travel: o["travel"], rooms: o["travel"] && Array.isArray(o["rooms"]) ? cleanVisit(o["rooms"]) : [] } };
 }
 
 function fail(path: string, message: string): ParsedBody {
