@@ -114,6 +114,18 @@ describe("extractDramaEvents on the provisional act frames", () => {
     expect(e).toEqual({ kind: "act_started", atMs: 4000, room: "17", actId: "a2", verb: "glare", actor: "person-1", intensity: 0.2 });
   });
 
+  it("reads authored_skip and target_opt_in off an act_started frame, only when they are booleans", () => {
+    const frames = [
+      ...base,
+      wire({ t: "act_started", act_id: "s1", verb: "kill", actor: "person-1", with: "person-2", intensity: 1, authored_skip: true, target_opt_in: false }, 5000),
+      wire({ t: "act_started", act_id: "s2", verb: "kill", actor: "person-1", with: "person-2", intensity: 1, authored_skip: "yes", target_opt_in: 1 }, 5001),
+    ];
+    const [skip, junk] = of(extractDramaEvents(frames), "act_started");
+    expect(skip).toMatchObject({ actId: "s1", authoredSkip: true, targetOptIn: false });
+    expect(junk).not.toHaveProperty("authoredSkip");
+    expect(junk).not.toHaveProperty("targetOptIn");
+  });
+
   it("resolves a numeric actor id in an act frame to its ref", () => {
     const [e] = of(extractDramaEvents([...base, wire({ t: "act_started", act_id: "a3", verb: "shove", actor: -702, with: -703, intensity: 1 }, 5000)]), "act_started");
     expect(e).toMatchObject({ actor: "person-2", with: "person-3" });
