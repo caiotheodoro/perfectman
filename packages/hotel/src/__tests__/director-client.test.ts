@@ -33,6 +33,20 @@ async function connect(over: { secret?: string; resume?: number[] } = {}) {
   return { fake, clock, frames, changes, client };
 }
 
+/** Resolves once `read()` has held still for 100 ms: the hotel counts a refusal when it sees it, which can be a moment before the client reacts to it, and under load a late one lands after the count was taken. */
+async function quiet(read: () => number): Promise<void> {
+  let last = read();
+  let since = Date.now();
+  while (Date.now() - since < 100) {
+    await new Promise((r) => setTimeout(r, 10));
+    const now = read();
+    if (now !== last) {
+      last = now;
+      since = Date.now();
+    }
+  }
+}
+
 describe("Director client", () => {
   it("authenticates with the Bearer secret, answers hello with hello_ack and goes up", async () => {
     const { fake: hotel, changes } = await connect();
@@ -49,13 +63,15 @@ describe("Director client", () => {
     // The refusal is seen by the hotel before the client has closed the socket and set its retry timer; advancing the manual clock before that
     // makes the timer start from the advanced time and never come due.
     await waitFor(() => clock.pending() > 0, "the 1 s retry timer");
+    await quiet(() => hotel.authFailures);
     const first = hotel.authFailures;
     await clock.advance(999);
     expect(hotel.authFailures).toBe(first);
     await clock.advance(1);
     await waitFor(() => hotel.authFailures > first, "retry after 1 s");
-    const second = hotel.authFailures;
     await waitFor(() => clock.pending() > 0, "the 2 s retry timer");
+    await quiet(() => hotel.authFailures);
+    const second = hotel.authFailures;
     await clock.advance(1999);
     expect(hotel.authFailures).toBe(second);
     await clock.advance(1);
