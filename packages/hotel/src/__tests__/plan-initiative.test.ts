@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { noteExchange, plan, planFacing, updateMemory } from "../embodiment/plan.js";
+import { leaveDirective, namedIn, noteExchange, plan, planFacing, updateMemory } from "../embodiment/plan.js";
 import type { PlanInput, PlannedCommand } from "../embodiment/types.js";
 import { NOW, agentState, person, sofa, space } from "../testing/fixtures.js";
 import type { SpaceOpts } from "../testing/fixtures.js";
@@ -113,5 +113,41 @@ describe("seats, initiative and facing from a distance", () => {
     expect(held[0]).toEqual({ agentId: "duda", cmd: "face", targetTile: [9, 4] });
     const late = run(o, { memory: noteExchange({ firstPlanAt: NOW }, "h:9", NOW - 9000) });
     expect(late[0]).toEqual({ agentId: "duda", cmd: "face", targetTile: [4, 8] });
+  });
+});
+
+describe("a director's line that sends someone out of the room", () => {
+  const rooms = [
+    { roomId: "13", name: "Jardim", travelS: 6 },
+    { roomId: "14", name: "Cozinha", travelS: 3 },
+  ];
+
+  it("names the room when the line names one, in either language and with or without accents", () => {
+    expect(leaveDirective("Teo, vai para o Jardim buscar água", rooms)).toBe("13");
+    expect(leaveDirective("Agora: saia do Quarto e vá à cozinha", rooms)).toBe("14");
+    expect(leaveDirective("go get some water in the Cozinha", rooms)).toBe("14");
+  });
+
+  it("takes the nearest room for \"another room\" and nothing for a line that is not about leaving", () => {
+    expect(leaveDirective("Agora: saia do Quarto e va para outra sala buscar agua.", rooms)).toBe("14");
+    expect(leaveDirective("leave the room, now", rooms)).toBeUndefined();
+    expect(leaveDirective("leave for another room", rooms)).toBe("14");
+    expect(leaveDirective("fala mais baixo, a Nina esta cansada", rooms)).toBeUndefined();
+    expect(leaveDirective("o Jardim estava lindo ontem", rooms)).toBeUndefined();
+    expect(leaveDirective("sai daqui", [])).toBeUndefined();
+  });
+
+  it("finds the cast members a line names", () => {
+    const cast = new Map([["person-1", "Nina"], ["person-2", "Teo Silva"], ["person-3", "Bia"]]);
+    expect(namedIn("Teo sai do Quarto batendo a porta e vai para outra sala.", cast)).toEqual(["person-2"]);
+    expect(namedIn("Nina e Bia, ouçam", cast)).toEqual(["person-1", "person-3"]);
+    expect(namedIn("todo mundo para a rua", cast)).toEqual([]);
+  });
+
+  it("the planner walks to the door and takes it, once the exit is a leave intent", () => {
+    const view = space({ self: { tile: [5, 5] } });
+    const cmds = plan({ space: { ...view, adjacency: [{ roomId: "13", viaDoor: [0, 4], travelS: 5, name: "Jardim" }] }, agentState: agentState(), committedEvents: [], now: NOW, rng: seededRng(1), bodyIntent: { order: "together", move: { kind: "leave", to: "r1" } }, handles: { r1: { kind: "room", roomId: "13" } } });
+    expect(cmds.map((c) => c.cmd)).toEqual(["walk", "move_room"]);
+    expect(cmds[1]).toMatchObject({ cmd: "move_room", to: "13", afterArrival: (cmds[0] as { plan?: string }).plan });
   });
 });

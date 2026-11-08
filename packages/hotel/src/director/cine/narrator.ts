@@ -139,6 +139,8 @@ export type NarratorOptions = {
 export class Narrator implements NarrationSource {
   private readonly records = new Map<string, Record_>();
   private readonly lang: Lang;
+  /** The room the opening card was written for: its asides come from that card's pass, since it has no scene card of its own. */
+  private titleRoom: number | undefined;
   calls = 0;
   fallbacks = 0;
 
@@ -154,6 +156,7 @@ export class Narrator implements NarrationSource {
   begin(room: number, brief: SceneBrief): void {
     const key = Narrator.key(room, brief.kind);
     if (this.records.has(key)) return;
+    if (brief.kind === "title") this.titleRoom = room;
     const rec: Record_ = { brief, value: fallbackNarration(brief, this.lang), settled: false, waiters: [], scene: 0, idle: 0 };
     this.records.set(key, rec);
     void this.run(rec);
@@ -225,7 +228,10 @@ export class Narrator implements NarrationSource {
 
   caption(room: number, kind: "scene" | "idle"): string | undefined {
     const own = this.records.get(Narrator.key(room, "scene"));
-    if (kind === "scene") return own ? own.value.captions[own.scene++] : undefined;
+    if (kind === "scene") {
+      const rec = own ?? (room === this.titleRoom ? this.records.get("title") : undefined);
+      return rec ? rec.value.captions[rec.scene++] : undefined;
+    }
     const rec = own ?? this.records.get("title");
     if (!rec) return IDLE_POOL[this.lang][0];
     const pool = rec.value.idle;

@@ -64,6 +64,8 @@ export interface CineWorld {
   roomOf(ref: string): number | undefined;
   /** Refs of the actors in a room. */
   occupants(room: number): string[];
+  /** Refs of the whole cast, wherever they are (the opening card names them before anyone has walked in). */
+  members(): string[];
   roomName(room: number): string;
   moodOf(ref: string): CineMood | undefined;
 }

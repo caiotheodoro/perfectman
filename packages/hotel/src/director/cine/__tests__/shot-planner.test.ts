@@ -30,6 +30,13 @@ describe("the opening", () => {
     expect(ks.find((u) => u.k === "card")).toMatchObject({ kind: "title", title: "Sexta no lounge", subtitle: "com amigos" });
     expect(cameras(intro)).toHaveLength(1);
   });
+
+  it("gives the room the film opens in its narrator aside, so a film that never cuts away still has a caption", () => {
+    const { intro } = setup();
+    const caption = uis(intro).find((u) => u.k === "caption");
+    expect(caption).toMatchObject({ k: "caption", text: "Eles se encontram." });
+    expect(intro.steps.find((s) => s.k === "ui" && s.ui.k === "caption")?.at).toBeGreaterThan(intro.steps.find((s) => s.k === "ui" && s.ui.k === "card")?.at ?? 0);
+  });
 });
 
 describe("shot on the speaker before the line", () => {

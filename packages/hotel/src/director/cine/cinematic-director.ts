@@ -96,7 +96,7 @@ export class CinematicDirector {
     const { clock, world, narrator, home } = this.o;
     this.startedAt = clock.now();
     this.track.add({ t: 0, k: "start", run: this.o.run, room: home, lang: this.cfg.language });
-    narrator.begin(home, { kind: "title", roomName: world.roomName(home), ...(this.o.premise ? { premise: this.o.premise } : {}), cast: this.cast(home), lines: [] });
+    narrator.begin(home, { kind: "title", roomName: world.roomName(home), ...(this.o.premise ? { premise: this.o.premise } : {}), cast: this.members(), lines: [] });
     this.busy = true;
     void (async () => {
       await narrator.ready(home, "title", this.cfg.narratorWaitMs);
@@ -294,8 +294,17 @@ export class CinematicDirector {
   // ---- narrator ---------------------------------------------------------------
 
   private cast(room: number): Array<{ name: string; role?: string }> {
+    return this.named(this.o.world.occupants(room));
+  }
+
+  /** The whole cast: at the opening nobody has walked in yet, so the room has no occupants to name. */
+  private members(): Array<{ name: string; role?: string }> {
+    return this.named(this.o.world.members());
+  }
+
+  private named(refs: string[]): Array<{ name: string; role?: string }> {
     const { world } = this.o;
-    return world.occupants(room).map((ref) => {
+    return refs.map((ref) => {
       const role = world.roleOf(ref);
       return { name: world.nameOf(ref), ...(role ? { role } : {}) };
     });

@@ -45,7 +45,7 @@ Taxonomy and cue shapes are the hotel's; the rules that pick them:
 | reaction | the tail of a line >= 3.5 s when the listener's mood is intense (>= 0.6) |
 | tracking (`follow`) | a live walk of >= 3 steps, and a door taken (with a door SFX) |
 | insert | a kiss or hug (kiss/hug SFX, romance sting, `love` cues), or an object / injected world event |
-| transition | `cut_fx` + `cut` + an establishing shot of the new room. `door` right after someone walked through it, `meanwhile` (label "Enquanto isso...", "Meanwhile...") when the room being left was active in the last 20 s, `fade` otherwise. First visit of a room: a scene card and a narrator aside; `next_room` is sent one shot ahead |
+| transition | `cut_fx` + `cut` + an establishing shot of the new room. `door` right after someone walked through it, `meanwhile` (label "Enquanto isso...", "Meanwhile...") when the room being left was active in the last 20 s, `fade` otherwise. First visit of a room: a scene card and a narrator aside; `next_room` is sent one shot ahead. The room the film opens in gets its aside too, right after the title card (the opening card names the whole cast, since nobody has walked in yet), so a film that never leaves it still has a caption |
 
 Shot on the speaker before the line: if the current framing already covers the speaker nothing moves; otherwise the camera cue goes out first and the line is released after the shot has eased in. Anti-jitter: a new camera cue waits until the last one has been up `minShotMs` (1.8 s); the line waits with it. Cues that take `in_ms` are sent `cueLeadMs` (300 ms) early with `in_ms` set, to absorb socket latency; `cut` and `next_room` have no `in_ms` and go out on a timer.
 

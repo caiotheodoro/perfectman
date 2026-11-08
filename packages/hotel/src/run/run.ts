@@ -21,7 +21,7 @@ import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
 import type { PairInfo } from "../embodiment/body-executor.js";
-import { chooseSpeechMode, noteExchange, plan, planFacing, updateMemory } from "../embodiment/plan.js";
+import { chooseSpeechMode, leaveDirective, namedIn, noteExchange, plan, planFacing, updateMemory } from "../embodiment/plan.js";
 import { pickTile } from "../embodiment/tiles.js";
 import type { PlannedCommand, PlannerMemory } from "../embodiment/types.js";
 import { HotelGateway } from "../gateway/hotel-gateway.js";
@@ -893,14 +893,14 @@ export class Run {
     agentState: AgentState,
     committedEvents: CommittedEvent[],
     space: SpaceView,
-    carried?: { intent: ActionIntent; bodyIntent: BodyIntent; handles: BodyHandleMap },
+    carried?: { intent?: ActionIntent; bodyIntent: BodyIntent; handles: BodyHandleMap },
   ): PlannedCommand[] {
     const now = this.d.clock.now();
     this.plannedThisPulse.add(ref);
     const mem = { ...(this.memory.get(ref) ?? {}) };
     mem.firstPlanAt ??= now;
     this.memory.set(ref, mem);
-    const motive = carried?.intent.privateMotiveSummary;
+    const motive = carried?.intent?.privateMotiveSummary;
     const cmds = plan({
       space,
       agentState,
@@ -1438,7 +1438,24 @@ export class Run {
       },
     ]);
     if (to) this.requestFocused([to]);
+    // A direction to leave is carried out by the body, not left to the model to write a `body.move` for it.
+    const cast = new Map([...this.agents].filter(([, a]) => !a.gone).map(([ref, a]) => [ref, a.name]));
+    for (const ref of to ? [to] : namedIn(text, cast)) await this.directExit(ref, text);
     return true;
+  }
+
+  /** Sends `ref` out of its room when `text` tells it to (see `leaveDirective`). True when the exit was planned. */
+  private async directExit(ref: string, text: string): Promise<boolean> {
+    const handle = this.handle;
+    if (!handle || this.state !== "running" || this.agents.get(ref)?.gone) return false;
+    const space = this.space.view(ref, this.d.clock.now());
+    if (!space?.room || space.room.stale) return false;
+    const roomId = leaveDirective(text, space.adjacency);
+    if (roomId === undefined) return false;
+    const state = await handle.repositories.agentStateRepo.get(handle.simulationId, ref);
+    if (!state) return false;
+    const cmds = this.planFor(ref, state, [], space, { bodyIntent: { order: "together", move: { kind: "leave", to: "r1" } }, handles: { r1: { kind: "room", roomId } } });
+    return cmds.some((c) => c.cmd === "move_room");
   }
 
   /** `"Ana Clara" hello` or the first unambiguous cast-name prefix (D51). */
