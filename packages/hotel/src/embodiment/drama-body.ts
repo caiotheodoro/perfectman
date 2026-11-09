@@ -51,7 +51,7 @@ export type DramaBodyDeps = {
   /** Test seam: where the planner's own act ids start. */
   idPrefix?: string;
   /** How long and how often a climb's actor follows a target that keeps moving (`DramaTuning.origination.climb`); absent: the sidecar's default. */
-  follow?: { windowMs: number; everyMs: number };
+  follow?: { windowMs: number; everyMs: number; gapMs?: number; maxRung?: number };
 };
 
 /** How long a witness remembers a blow in front of it as something to put right (a rescuer's window), and how long a landed embrace is a held picture. */
@@ -59,10 +59,14 @@ const RESCUE_MS = 8000;
 const STAGED_MS = 4000;
 /** A proposal that was `too_far` waits this long for its walk before it is dropped. */
 const RETRY_MS = 20_000;
+/** The plan id prefix of the walks the body makes itself (`approach`), which a follow window never drops. */
+const FOLLOW_PLAN_PREFIX = "drama:";
+/** The `detail` of the `busy_moving` told to the `blocked` hook for each own walk a follow window did not send. */
+const FOLLOW_SUPPRESSED = "follow_suppressed_walk";
 const VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["insult", "shove", "slap", "punch", "kill"]);
 const PHYSICAL_VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch"]);
 
-type Latest = { agentState: AgentState; actionEmotions?: PlanInput["actionEmotions"] };
+type Latest = { agentState: AgentState; actionEmotions?: PlanInput["actionEmotions"]; rng: () => number };
 
 /**
  * Packet P3's integration object, one per run: the `DramaFrameSink` of the planner side (it keeps the `ActLedger` and acts on
@@ -84,12 +88,16 @@ export class DramaBody implements DramaFrameSink {
   private readonly writes = new Map<string, Promise<void>>();
   /** An actor following the person its next blow is for (issue #262): who, until when, and the timer of its next look. */
   private readonly following = new Map<string, { target: string; until: number; rng: () => number; timer: TimerHandle }>();
-  private readonly followCfg: { windowMs: number; everyMs: number };
+  private readonly followCfg: { windowMs: number; everyMs: number; gapMs: number; maxRung: number };
+  /** The look a climb's actor takes at its director once the climb's gap is over, one per actor, armed by the actor's own director beat (issue #262). */
+  private readonly climbWatch = new Map<string, TimerHandle>();
   private ids = 0;
+  /** The planner's own walks a follow window did not send, since the body was made (issue #262). */
+  suppressedWalks = 0;
 
   constructor(private readonly d: DramaBodyDeps) {
     const climb = DEFAULT_DRAMA_TUNING.origination.climb;
-    this.followCfg = d.follow ?? { windowMs: climb.followWindowMs, everyMs: climb.followEveryMs };
+    this.followCfg = { windowMs: climb.followWindowMs, everyMs: climb.followEveryMs, gapMs: climb.gapMs, maxRung: climb.maxRung, ...d.follow };
     this.ledger = new ActLedger({
       refOf: (id) => d.mirror.refOfAvatar(id),
       near: (ref, radius) => this.near(ref, radius),
@@ -137,7 +145,9 @@ export class DramaBody implements DramaFrameSink {
     if (!this.active) return plan(base);
     // ACT-11, DEATH-2: the dead plan nothing; the hotel would answer actor_dead to all of it.
     if (this.ledger.isDead(ref)) return [];
-    this.latest.set(ref, { agentState: base.agentState, ...(base.actionEmotions ? { actionEmotions: base.actionEmotions } : {}) });
+    // A turn that carries no feelings keeps the last ones the actor had: the follow and the climb watch ask the director with them.
+    const feelings = base.actionEmotions ?? this.latest.get(ref)?.actionEmotions;
+    this.latest.set(ref, { agentState: base.agentState, ...(feelings ? { actionEmotions: feelings } : {}), rng: base.rng });
     const wire = this.d.mirror.avatarId(ref);
     const port = this.d.port?.();
     const now = this.d.clock.now();
@@ -188,7 +198,30 @@ export class DramaBody implements DramaFrameSink {
       const res = this.decide(ref, wire, { verb: c.kind, with: this.d.mirror.avatarId(c.with) as number, origin: "model" }, base);
       out.push(...res.approach);
     }
-    return out;
+    return this.withoutOwnWalks(ref, out);
+  }
+
+  /**
+   * While a follow window is open for `ref` (issue #262) the walks the planner makes for its own model's turn are not sent: they sent the actor off again
+   * between two of the follow's own walks, and a climb never got beside its target. Only a `walk` whose plan id is not the body's own (`drama:`) is dropped,
+   * with the commands that wait for its arrival; speech, gestures, faces, postures and every other command stay. Each walk dropped is told to the `blocked` hook
+   * as `busy_moving` of the move part with the detail `follow_suppressed_walk` (the executor's own use of that code for a lock, the model reads it as a refused
+   * move at its next turn) and counted in `suppressedWalks`. The window's end releases them: a blow, a scene cut, the actor's death or leaving, the timeout.
+   */
+  private withoutOwnWalks(ref: string, cmds: PlannedCommand[]): PlannedCommand[] {
+    const f = this.following.get(ref);
+    if (!f || f.until <= this.d.clock.now()) return cmds;
+    const dropped = new Set<string>();
+    const kept = cmds.filter((c) => {
+      if (c.cmd !== "walk" || c.plan?.startsWith(FOLLOW_PLAN_PREFIX)) return true;
+      if (c.plan !== undefined) dropped.add(c.plan);
+      return false;
+    });
+    const count = cmds.filter((c) => c.cmd === "walk" && !c.plan?.startsWith(FOLLOW_PLAN_PREFIX)).length;
+    if (count === 0) return cmds;
+    this.suppressedWalks += count;
+    this.d.hooks.blocked(ref, Array.from({ length: count }, () => ({ code: "busy_moving", part: "move", detail: FOLLOW_SUPPRESSED })));
+    return kept.filter((c) => c.afterArrival === undefined || !dropped.has(c.afterArrival));
   }
 
   // ---- DramaFrameSink ----------------------------------------------------------------------------------------------
@@ -200,8 +233,10 @@ export class DramaBody implements DramaFrameSink {
   }
   onActStarted(f: Frame<"act_started">): void {
     // The blow (or any act of its own): the follow has done its job.
-    this.stopFollow(this.d.mirror.refOfAvatar(f.actor));
+    const ref = this.d.mirror.refOfAvatar(f.actor);
+    this.stopFollow(ref);
     this.ledger.onActStarted(f);
+    this.armClimbWatch(ref, f);
   }
   onActBeat(f: Frame<"act_beat">): void {
     this.ledger.onActBeat(f);
@@ -229,6 +264,7 @@ export class DramaBody implements DramaFrameSink {
   onSceneCut(f: Frame<"scene_cut">): void {
     this.ledger.onSceneCut(f);
     this.stopFollows();
+    this.stopClimbWatches();
     this.retry.clear();
     this.rescue.clear();
   }
@@ -241,6 +277,7 @@ export class DramaBody implements DramaFrameSink {
     const wasDead = this.ledger.isDead(ref);
     this.ledger.onGone(ref);
     this.stopFollow(ref);
+    this.stopClimbWatch(ref);
     if (wasDead) this.d.pool.retire(ref);
   }
 
@@ -248,6 +285,7 @@ export class DramaBody implements DramaFrameSink {
   left(ref: string): void {
     this.ledger.onGone(ref, false);
     this.stopFollow(ref);
+    this.stopClimbWatch(ref);
   }
 
   /** Resolves when every memory write started so far has finished. */
@@ -257,6 +295,7 @@ export class DramaBody implements DramaFrameSink {
 
   dispose(): void {
     this.stopFollows();
+    this.stopClimbWatches();
     this.reactions.dispose();
   }
 
@@ -456,6 +495,47 @@ export class DramaBody implements DramaFrameSink {
     f.timer = this.d.clock.setTimer(() => this.followTick(ref, everyMs), everyMs);
   }
 
+  /**
+   * The director's own beat of a climb (a rung of the ladder below the climb's ceiling) started for an own actor: once the climb's `gapMs` is over the actor takes
+   * one look at its director, the plain `decide` of a passive turn with the feelings it last planned with, instead of waiting for its own model's next committed turn
+   * (a turn every ~20 s live, and a follow that only began at the turn after). Everything is the director's: the pace, the ladder, the gates and the budget decide
+   * whether that look starts the next beat, says `approach` (the follow opens and the actor walks up) or does nothing; the body adds no way past any of them and no port.
+   * One look per beat; a window already open, a lock, a busy act, a dead actor or a cut scene cancel it.
+   */
+  private armClimbWatch(ref: string, f: Frame<"act_started">): void {
+    this.stopClimbWatch(ref);
+    const { windowMs, gapMs, maxRung } = this.followCfg;
+    const rung = f.rung ?? 0;
+    if (windowMs <= 0 || f.origin !== "director" || rung < 1 || rung >= maxRung || !this.d.isOwn(ref)) return;
+    this.climbWatch.set(ref, this.d.clock.setTimer(() => this.climbWatchTick(ref), gapMs));
+  }
+
+  private climbWatchTick(ref: string): void {
+    this.climbWatch.delete(ref);
+    const now = this.d.clock.now();
+    const wire = this.d.mirror.avatarId(ref);
+    const port = this.d.port?.();
+    const seen = this.latest.get(ref);
+    const emotion = seen ? this.emotionOf(seen) : undefined;
+    if (!seen || !emotion || wire === undefined || !port?.active || !this.active || this.ledger.isDead(ref) || this.ledger.lockOf(ref) || port.busyActId(wire) !== undefined) return;
+    if ((this.following.get(ref)?.until ?? 0) > now) return;
+    const res = port.decide({ actor: wire, emotion });
+    if (res.kind !== "pass" || res.approach === undefined) return;
+    this.startFollow(ref, res.approach, seen.rng);
+    const target = this.d.mirror.refOfAvatar(res.approach);
+    const cmds = target ? this.approach(ref, target, this.d.mirror.view(ref, now)?.room, seen.rng) : [];
+    if (cmds.length > 0) this.d.executor.send(cmds);
+  }
+
+  private stopClimbWatch(ref: string): void {
+    this.climbWatch.get(ref)?.cancel();
+    this.climbWatch.delete(ref);
+  }
+
+  private stopClimbWatches(): void {
+    for (const ref of [...this.climbWatch.keys()]) this.stopClimbWatch(ref);
+  }
+
   private stopFollow(ref: string): void {
     this.following.get(ref)?.timer.cancel();
     this.following.delete(ref);
@@ -468,6 +548,8 @@ export class DramaBody implements DramaFrameSink {
   // ---- what an act leaves behind -------------------------------------------------------------------------------------
 
   private onDead(ref: string, f: Frame<"actor_death"> | undefined): void {
+    this.stopFollow(ref);
+    this.stopClimbWatch(ref);
     if (this.d.isOwn(ref) && !this.d.ghostVoice) this.d.pool.defer(ref);
     if (!f) return;
     const witnesses = (this.beats.get(f.act_id)?.witnesses ?? []).filter((w) => w !== ref);

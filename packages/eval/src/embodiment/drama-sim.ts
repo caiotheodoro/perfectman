@@ -16,7 +16,7 @@ import {
 } from "@perfectman/hotel/drama";
 import type { ActSend, Clock, DramaDecision, DramaFrame, DramaFrameSink, DramaLink, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
 import { BodyIntentSchema } from "@perfectman/shared";
-import type { ActVerb, AgentState, BlockedReason, BodyCommand, BodyIntent, Tile } from "@perfectman/shared";
+import type { ActVerb, AgentState, BlockedReason, BodyCommand, BodyHandleMap, BodyIntent, Tile } from "@perfectman/shared";
 import { extractDramaEvents } from "../drama/index.js";
 import type { DramaEvent } from "../drama/index.js";
 import { runDramaProbes } from "../probes/drama.js";
@@ -86,6 +86,12 @@ export type SimConfig = {
    * is doing. It is how a target that keeps walking away from the actor that is after it is staged (issue #262, a live model's own walks). Absent: nobody wanders.
    */
   wander?: { actor: string; everyMs: number; tiles: readonly Tile[] };
+  /**
+   * The model-driven actor's own walks (a test seam, issue #262): every `everyMs[0]` to `everyMs[1]` ms (seeded, so the same on every run) `actor` is planned a turn whose
+   * only content is a `go_to` a random piece of furniture or zone in view, through the same `DramaBody.planFor` as a consult (but with no feelings, so the director is not asked on it), so the walk is the planner's own (its plan id
+   * is not `drama:`) and meets whatever the body does about it. It is how a live model that keeps sending its actor somewhere else is staged. Absent: no own walks.
+   */
+  ownWalk?: { actor: string; everyMs: readonly [number, number] };
   /** The harm limit of the room (SAFE-4). */
   harmMax?: number;
   /** The director's tuning; absent is the sidecar's default. */
@@ -117,6 +123,8 @@ export type SimResult = {
   droppedActs: number;
   /** What became of each authored scene cut (`BeatPlayer`): sent, or dropped and why. */
   cuts: Array<{ atMs: number; outcome: "played" | "dropped"; why: string }>;
+  /** Every `blocked` hook of the body, in order: what it refused to send the model's actor and why (the model reads them as `body.blocked` at its next turn). */
+  bodyBlocked: Array<{ atMs: number; actor: string; code: string; detail?: string }>;
   /** Acts that held: started, and how each ended. */
   stats: { started: number; blocked: number; aborted: number; done: number };
 };
@@ -176,6 +184,7 @@ export function runDramaSim(config: SimConfig): SimResult {
   const proposals: Proposal[] = [];
   const speech: SimResult["speech"] = [];
   const blocked = new Map<string, BlockedReason[]>();
+  const bodyBlocked: SimResult["bodyBlocked"] = [];
   const states = new Map<string, AgentState>([...config.states].map(([ref, s]) => [ref, { ...s }]));
   const plannerMemory = new Map<string, NonNullable<PlanInput["memory"]>>();
   const rng = rngOf(config.seed);
@@ -320,8 +329,13 @@ export function runDramaSim(config: SimConfig): SimResult {
         return Promise.resolve();
       },
     },
-    hooks: { blocked: (agentId, reasons) => void blocked.set(agentId, [...reasons]) },
-    ...(config.tuning ? { follow: { windowMs: config.tuning.origination.climb.followWindowMs, everyMs: config.tuning.origination.climb.followEveryMs } } : {}),
+    hooks: {
+      blocked: (agentId, reasons) => {
+        blocked.set(agentId, [...reasons]);
+        for (const r of reasons) bodyBlocked.push({ atMs: grid.now() - startMs, actor: agentId, code: r.code, ...(r.detail !== undefined ? { detail: r.detail } : {}) });
+      },
+    },
+    ...(config.tuning ? { follow: { windowMs: config.tuning.origination.climb.followWindowMs, everyMs: config.tuning.origination.climb.followEveryMs, gapMs: config.tuning.origination.climb.gapMs, maxRung: config.tuning.origination.climb.maxRung } } : {}),
   });
   sinkRef.current = composeDramaSinks(director, body);
   if (dramaOn) {
@@ -342,17 +356,26 @@ export function runDramaSim(config: SimConfig): SimResult {
   const consults = new Map<string, number>();
   const cuts: SimResult["cuts"] = [];
 
-  function consult(ref: string): void {
+  const ownRng = rngOf(config.seed ^ 0x9e3779b1);
+
+  /** An own-walk turn (`SimConfig.ownWalk`): the model's whole block is a `go_to` somewhere in view. Not a consult: it is not counted and speaks nothing. */
+  function ownWalkIntent(handles: BodyHandleMap): BodyIntent | undefined {
+    const places = Object.entries(handles).filter(([, t]) => t.kind === "furni" || t.kind === "zone").map(([h]) => h);
+    const place = places[Math.floor(ownRng() * places.length)];
+    return place === undefined ? undefined : { move: { kind: "go_to", place }, order: "move_then_speak" };
+  }
+
+  function consult(ref: string, own = false): void {
     const now = grid.now();
     const state = states.get(ref);
     const view = space.view(ref, now);
     if (!state || !view?.room || body.isDead(ref)) return;
-    const n = (consults.get(ref) ?? 0) + 1;
-    consults.set(ref, n);
+    const n = own ? (consults.get(ref) ?? 0) : (consults.get(ref) ?? 0) + 1;
+    if (!own) consults.set(ref, n);
     const built = buildBodyPerception({ view, relational: state.relationalStates, language: "pt-BR" });
     const perceived = { ...built.body, blocked: blocked.get(ref) ?? [], ...(dramaOn ? { drama: true as const } : {}) };
     blocked.delete(ref);
-    const proposed = config.speechOnly === true ? undefined : mockAct({ agentId: ref, perceptionPacket: { body: perceived, bodyHandles: built.handles }, emotionalState: { socialEmotions: state.socialEmotions, relationalStates: state.relationalStates } }, n, drama, mock);
+    const proposed = own ? ownWalkIntent(built.handles) : config.speechOnly === true ? undefined : mockAct({ agentId: ref, perceptionPacket: { body: perceived, bodyHandles: built.handles }, emotionalState: { socialEmotions: state.socialEmotions, relationalStates: state.relationalStates } }, n, drama, mock);
     // The model's block, the way a run takes it: the schema first (a malformed block is dropped, the speech stays), then the engine's validator,
     // which drops an `act` that needs a target it does not have and names what it refused (`body.blocked` at the next consult).
     let bodyIntent: BodyIntent | undefined;
@@ -381,7 +404,8 @@ export function runDramaSim(config: SimConfig): SimResult {
       rng,
       handles,
       memory: plannerMemory.get(ref) ?? plannerMemory.set(ref, {}).get(ref)!,
-      actionEmotions: computeActionEmotions(state.coreMood, state.socialEmotions, state.relationalStates),
+      // An own-walk turn carries no feelings, so the body does not ask the director on it (the director's passive consult is the model's committed turn, not every walk).
+      ...(own ? {} : { actionEmotions: computeActionEmotions(state.coreMood, state.socialEmotions, state.relationalStates) }),
     };
     if (!dramaOn) {
       // Drama off is the planner as it always was: the plain planner on a copy of the same input, and whether the two ever differ.
@@ -422,6 +446,11 @@ export function runDramaSim(config: SimConfig): SimResult {
   const end = startMs + config.durationMs;
   let wanderAt = config.wander ? startMs + config.wander.everyMs : Infinity;
   let wanderStep = 0;
+  const ownGap = (): number => {
+    const [lo, hi] = config.ownWalk?.everyMs ?? [0, 0];
+    return lo + Math.floor(ownRng() * (hi - lo + 1));
+  };
+  let ownAt = config.ownWalk ? startMs + ownGap() : Infinity;
   if (dramaOn) acts.announce();
 
   // The production player, on the sim's clock: it counts the script's seconds from here, as a run's does once its cast is in.
@@ -471,6 +500,10 @@ export function runDramaSim(config: SimConfig): SimResult {
       const to = w.tiles[wanderStep++ % w.tiles.length]!;
       if (!body.isDead(w.actor)) void grid.dispatch([{ agentId: w.actor, cmd: "walk", to, plan: `wander:${wanderStep}` }]);
     }
+    if (config.ownWalk && now >= ownAt && now < end) {
+      ownAt = now + ownGap();
+      consult(config.ownWalk.actor, true);
+    }
     if (now < end) for (const ref of actorRefs) if ((next.get(ref) ?? Infinity) <= now) {
       next.set(ref, now + consultMs);
       consult(ref);
@@ -481,5 +514,5 @@ export function runDramaSim(config: SimConfig): SimResult {
   const frames = lines.map((l) => normalizeFrame(l)).flatMap((f) => (f ? [f] : []));
   const events = extractDramaEvents(frames);
   const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs });
-  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, stats: { ...acts.stats } };
+  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats } };
 }
