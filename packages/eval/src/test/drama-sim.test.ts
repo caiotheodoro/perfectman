@@ -118,6 +118,21 @@ describe("what each preset plays", () => {
   });
 });
 
+describe("[ACT-4] a malformed `act` is dropped and the speech stays", () => {
+  it("every 3rd consult proposes one: the schema drops the block or the engine's validator drops the act, nothing malformed ever starts, and the line is still said", async () => {
+    const config = await presetSimConfig("tapa-na-cara", { durationMs: 120_000 });
+    const r = runDramaSim({ ...config, mock: { malformedEvery: 3 } });
+    expect(r.droppedBodies + r.droppedActs).toBeGreaterThan(3);
+    expect(r.droppedBodies).toBeGreaterThan(0);
+    expect(r.droppedActs).toBeGreaterThan(0);
+    expect(r.probes.filter((p) => !p.passed).map((p) => p.probe)).toEqual([]);
+    // Whatever started is a verb of the contract with a target the verb allows: a `shout` or a `slap` with none is not among them.
+    expect(started(r).every((a) => ["glare", "insult", "shove", "slap", "punch", "kill", "die", "recoil", "freeze_gasp", "hug", "kiss", "turn_back", "cry", "storm_off", "tableau", "restrain", "faint", "tend_fallen"].includes(a.verb))).toBe(true);
+    expect(started(r).filter((a) => ["slap", "hug", "glare"].includes(a.verb)).every((a) => a.with !== undefined)).toBe(true);
+    expect(r.speech.length).toBeGreaterThan(0);
+  });
+});
+
 describe("[NEG-2] drama off", () => {
   it("starts no act, sends no act command, and the planner plans exactly what the plain planner plans", async () => {
     const off = await run("tapa-na-cara", { dramaOn: false });

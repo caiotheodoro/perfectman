@@ -1,4 +1,4 @@
-import { buildBodyPerception, computeActionEmotions } from "@perfectman/engine";
+import { buildBodyPerception, computeActionEmotions, validateBodyIntent } from "@perfectman/engine";
 import {
   DramaBody,
   DramaDirector,
@@ -105,6 +105,8 @@ export type SimResult = {
   offDeviations: number;
   /** Proposals whose body block the schema dropped (the speech stayed). */
   droppedBodies: number;
+  /** Proposals whose `act` the engine's validator dropped (the rest of the block and the speech stayed). */
+  droppedActs: number;
   /** Acts that held: started, and how each ended. */
   stats: { started: number; blocked: number; aborted: number; done: number };
 };
@@ -171,6 +173,7 @@ export function runDramaSim(config: SimConfig): SimResult {
   let seq = 0;
   let offDeviations = 0;
   let droppedBodies = 0;
+  let droppedActs = 0;
 
   const log = (dir: "in" | "out", frame: Record<string, unknown>, at?: number): void => {
     lines.push({ conn: CONN, dir, frame: { ...frame, seq: ++seq }, run: RUN, ts_ms: at ?? grid.now() });
@@ -338,14 +341,23 @@ export function runDramaSim(config: SimConfig): SimResult {
     const perceived = { ...built.body, blocked: blocked.get(ref) ?? [], ...(dramaOn ? { drama: true as const } : {}) };
     blocked.delete(ref);
     const proposed = mockAct({ agentId: ref, perceptionPacket: { body: perceived, bodyHandles: built.handles }, emotionalState: { socialEmotions: state.socialEmotions, relationalStates: state.relationalStates } }, n, drama, mock);
+    // The model's block, the way a run takes it: the schema first (a malformed block is dropped, the speech stays), then the engine's validator,
+    // which drops an `act` that needs a target it does not have and names what it refused (`body.blocked` at the next consult).
     let bodyIntent: BodyIntent | undefined;
+    let handles = built.handles;
     if (proposed) {
       const parsed = BodyIntentSchema.safeParse(proposed);
-      if (parsed.success) bodyIntent = parsed.data;
-      else droppedBodies += 1;
+      if (!parsed.success) droppedBodies += 1;
+      else {
+        const checked = validateBodyIntent(view, ref, parsed.data, now, built.handles);
+        bodyIntent = checked.accepted;
+        handles = { ...built.handles, ...checked.targets };
+        if (parsed.data.act !== undefined && checked.accepted.act === undefined) droppedActs += 1;
+        if (checked.blocked.length > 0) blocked.set(ref, [...(blocked.get(ref) ?? []), ...checked.blocked]);
+      }
     }
     const act = bodyIntent?.act;
-    const targetRef = act?.target !== undefined ? (built.handles[act.target]?.kind === "person" ? (built.handles[act.target] as { ref: string }).ref : undefined) : undefined;
+    const targetRef = act?.target !== undefined ? (handles[act.target]?.kind === "person" ? (handles[act.target] as { ref: string }).ref : undefined) : undefined;
     const before = proposals.length;
     if (act) proposals.push({ atMs: now - startMs, actor: ref, verb: act.verb, ...(targetRef ? { with: targetRef } : {}), decision: "proposed" });
     const input: PlanInput = {
@@ -355,7 +367,7 @@ export function runDramaSim(config: SimConfig): SimResult {
       ...(bodyIntent ? { bodyIntent } : {}),
       now,
       rng,
-      handles: built.handles,
+      handles,
       memory: plannerMemory.get(ref) ?? plannerMemory.set(ref, {}).get(ref)!,
       actionEmotions: computeActionEmotions(state.coreMood, state.socialEmotions, state.relationalStates),
     };
@@ -436,5 +448,5 @@ export function runDramaSim(config: SimConfig): SimResult {
   const frames = lines.map((l) => normalizeFrame(l)).flatMap((f) => (f ? [f] : []));
   const events = extractDramaEvents(frames);
   const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs });
-  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, stats: { ...acts.stats } };
+  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, stats: { ...acts.stats } };
 }
