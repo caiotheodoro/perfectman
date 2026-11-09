@@ -1,3 +1,5 @@
+import fc from "fast-check";
+import { ACT_ORIGINS, ACT_TARGET_MODE, ACT_VERBS } from "@perfectman/shared";
 import { describe, expect, it } from "vitest";
 import { validateActCmd } from "../director/act-cmd.js";
 import { VOCAB_ENUMS } from "../director/verb-vocab.generated.js";
@@ -51,6 +53,39 @@ describe("fixtures/drama/act-validation.jsonl (contract-derived)", () => {
     expect(validateActCmd({ k: "act", verb: "slap", with: 9 }, ctx, new Set())).toEqual({ code: "bad_message", detail: "act.act_id" });
     expect(validateActCmd({ k: "act", act_id: "a", with: 9 }, ctx, new Set())).toEqual({ code: "bad_message", detail: "act.verb" });
     expect(validateActCmd({ k: "walk" }, ctx, new Set())).toEqual({ code: "bad_message" });
+  });
+});
+
+describe("the sidecar's pre-send check, over random acts", () => {
+  const ctx = { run: 7, actor: -701 };
+  const actArb = fc.record({
+    verb: fc.constantFrom(...ACT_VERBS),
+    id: fc.stringMatching(/^[A-Za-z0-9_.:-]{1,32}$/),
+    target: fc.integer({ min: 1, max: 5000 }),
+    intensity: fc.option(fc.double({ min: 0, max: 1, noNaN: true }), { nil: undefined }),
+    origin: fc.option(fc.constantFrom(...ACT_ORIGINS), { nil: undefined }),
+    skip: fc.option(fc.boolean(), { nil: undefined }),
+  });
+  const build = (a: { verb: (typeof ACT_VERBS)[number]; id: string; target: number; intensity: number | undefined; origin: string | undefined; skip: boolean | undefined }) => ({
+    k: "act",
+    act_id: a.id,
+    verb: a.verb,
+    ...(ACT_TARGET_MODE[a.verb] === "required" ? { with: a.target } : {}),
+    ...(a.intensity !== undefined ? { intensity: a.intensity } : {}),
+    ...(a.origin !== undefined ? { origin: a.origin } : {}),
+    ...(a.skip !== undefined ? { authored_skip: a.skip } : {}),
+  });
+
+  it("[ACT-4] [ACT-7] [ACT-8] an act built from the closed enums, in-range numbers and the right target mode always passes", () => {
+    fc.assert(fc.property(actArb, (a) => validateActCmd(build(a), ctx, new Set()) === undefined));
+  });
+
+  it("[ACT-4] an intensity outside [0, 1] or a non-finite one is refused as act.intensity, whatever else the act is", () => {
+    const bad = fc.oneof(fc.double({ min: 1.0001, max: 1e6, noNaN: true }), fc.double({ min: -1e6, max: -0.0001, noNaN: true }), fc.constant(Infinity), fc.constant(-Infinity));
+    fc.assert(fc.property(actArb, bad, (a, intensity) => {
+      const got = validateActCmd({ ...build(a), intensity }, ctx, new Set());
+      return got?.code === "bad_message" && got.detail === "act.intensity";
+    }));
   });
 });
 

@@ -170,6 +170,17 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
     expect(hotel.rejectedActs).toEqual([]);
   });
 
+  it("[ACT-2] an act waits for the resumed run's bumped lease: nothing goes out while the new lease has not landed", async () => {
+    const { fake: hotel, client: c } = await connect({ offer: OFFER, drama: true, resume: [7], configure: (f) => (f.withholdLeases = true) });
+    c.trackRun(7);
+    c.setLease(7, 2);
+    expect(c.sendAct({ run: 7, actor: -701, cmd: { k: "act", act_id: "a1", verb: "cry" } })).toEqual({ sent: false, reason: "no_lease" });
+    expect(c.sendSceneAdvance(7)).toEqual({ sent: false, reason: "no_lease" });
+    hotel.send({ t: "lease", run: 7, lease: 3 });
+    await waitFor(() => c.leaseOf(7) === 3, "the new lease");
+    expect(c.sendAct({ run: 7, actor: -701, cmd: { k: "act", act_id: "a1", verb: "cry" } })).toMatchObject({ sent: true });
+  });
+
   it("[NEG-5] no drama frame is processed on a dialect 1 link, even one a misbehaving hotel sends; on dialect 2 they all arrive", async () => {
     const v1 = await connect({ drama: true });
     v1.fake.scriptAct({ actId: "x1", verb: "slap", with: -702, outcome: "landed" }, { force: true });

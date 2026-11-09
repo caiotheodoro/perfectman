@@ -120,6 +120,21 @@ async function boot(o: { offer?: boolean; drama?: boolean }) {
   return { calls, ...booted };
 }
 
+describe("a drama-capable sidecar against a hotel that offers nothing", () => {
+  it("[VV-6] connects as PROTO 1, starts a run and spawns its cast exactly as before", async () => {
+    const booted = await bootSidecar({ config: { drama: true } });
+    sidecars.push(booted.sidecar);
+    fake = booted.fake;
+    const hotel = booted.fake;
+    expect(hotel.ack).toMatchObject({ proto: 1 });
+    expect(hotel.ack?.caps).toBeUndefined();
+    hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => hotel.received.find((f) => f.t === "run_ack" && f.ok), "run_ack");
+    await waitFor(() => hotel.received.filter((f) => f.t === "actor_spawn").length === 3, "three spawns");
+    expect(hotel.received.some((f) => f.t === "actor_cmd" && f.cmd.k === "act")).toBe(false);
+  });
+});
+
 describe("the manager routes the frames of a dialect 2 link", () => {
   it("[FRM-4] [NEG-5] sends every drama frame of a negotiated link to the sink, in order, and the session first", async () => {
     const { fake: hotel, calls } = await boot({ offer: true });
