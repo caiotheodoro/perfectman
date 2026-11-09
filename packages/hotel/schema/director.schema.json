@@ -83,6 +83,119 @@
     }
   },
   "definitions": {
+    "ActBeatKind": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "contact"
+      ]
+    },
+    "ActDowngrade": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "Section 3.6 lists the first five; REA-9 also names `chat` (spec defect, both accepted).",
+      "type": "string",
+      "enum": [
+        "forced_step",
+        "face",
+        "walk_to",
+        "gesture",
+        "posture",
+        "chat"
+      ]
+    },
+    "ActMissed": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "object",
+      "required": [
+        "role",
+        "who"
+      ],
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/ActRole"
+        },
+        "who": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ActOrigin": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "model",
+        "director",
+        "scenario"
+      ]
+    },
+    "ActOutcome": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "landed",
+        "dodged",
+        "blocked",
+        "declined",
+        "timeout",
+        "aborted"
+      ]
+    },
+    "ActOwed": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "object",
+      "required": [
+        "due_at",
+        "role",
+        "who"
+      ],
+      "properties": {
+        "due_at": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "role": {
+          "$ref": "#/definitions/ActRole"
+        },
+        "who": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "ActRole": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "target",
+        "witness"
+      ]
+    },
+    "ActVerb": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "The 18 verbs of the act contract (section 0.2).",
+      "type": "string",
+      "enum": [
+        "glare",
+        "insult",
+        "shove",
+        "slap",
+        "punch",
+        "kill",
+        "die",
+        "recoil",
+        "freeze_gasp",
+        "hug",
+        "kiss",
+        "turn_back",
+        "cry",
+        "storm_off",
+        "tableau",
+        "restrain",
+        "faint",
+        "tend_fallen"
+      ]
+    },
     "Action": {
       "oneOf": [
         {
@@ -451,7 +564,78 @@
               ]
             }
           }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 2.1. Dialect 2 only (NEG-5).",
+          "type": "object",
+          "required": [
+            "act_id",
+            "k",
+            "verb"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_.:-]{1,32}$"
+            },
+            "authored_skip": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "intensity": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "act"
+              ]
+            },
+            "origin": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ActOrigin"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "verb": {
+              "$ref": "#/definitions/ActVerb"
+            },
+            "with": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            }
+          }
         }
+      ]
+    },
+    "ActorDeathCause": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "kill",
+        "die"
       ]
     },
     "ActorErrorCode": {
@@ -482,8 +666,15 @@
         "not_a_seat",
         "not_adjacent",
         "target_gone",
-        "internal"
-      ]
+        "internal",
+        "unknown_verb",
+        "target_required",
+        "target_forbidden",
+        "bad_target",
+        "act_busy",
+        "actor_dead"
+      ],
+      "$comment": "STAND-IN until vendored from habbo H1 output: unknown_verb, target_required, target_forbidden, bad_target, act_busy and actor_dead are new (section 2.3)"
     },
     "ActorGoneReason": {
       "type": "string",
@@ -495,8 +686,10 @@
         "lease_expired",
         "sidecar_lost",
         "killall",
-        "hotel_shutdown"
-      ]
+        "hotel_shutdown",
+        "died"
+      ],
+      "$comment": "STAND-IN until vendored from habbo H1 output: died is new (DEATH-7)"
     },
     "AdminRef": {
       "type": "object",
@@ -859,6 +1052,16 @@
         }
       ]
     },
+    "ChipAnswer": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "take",
+        "dodge",
+        "push_back",
+        "timeout"
+      ]
+    },
     "CommandSource": {
       "type": "string",
       "enum": [
@@ -893,6 +1096,22 @@
           "minimum": 0.0
         }
       }
+    },
+    "ConsentFamily": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "violent",
+        "affection"
+      ]
+    },
+    "ConsentPhase": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "shown",
+        "answered"
+      ]
     },
     "CutFxKind": {
       "type": "string",
@@ -942,6 +1161,40 @@
           "type": "string"
         }
       }
+    },
+    "DramaAbortReason": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "`act_done.reason` when `outcome` is `aborted`.",
+      "type": "string",
+      "enum": [
+        "target_moved",
+        "target_gone",
+        "actor_gone",
+        "actor_dead",
+        "scene_cut",
+        "run_end",
+        "kill_switch",
+        "calm_room",
+        "paused",
+        "opt_out"
+      ]
+    },
+    "DramaBlockedReason": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "`act_done.reason` when `outcome` is `blocked`.",
+      "type": "string",
+      "enum": [
+        "kill_switch",
+        "calm_room",
+        "consent_off",
+        "ladder",
+        "budget",
+        "cooldown",
+        "too_far",
+        "dead_target",
+        "no_scenario_gate",
+        "rate_limit"
+      ]
     },
     "ErrorCode": {
       "oneOf": [
@@ -1318,6 +1571,50 @@
         }
       }
     },
+    "HelloDrama": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "`hello.drama`, sent only when the hotel's PERFECTMAN_DRAMA is on (NEG-2).",
+      "type": "object",
+      "required": [
+        "chip_ttl_ms",
+        "dead",
+        "enabled",
+        "harm_max",
+        "harm_window_s",
+        "verb_vocab"
+      ],
+      "properties": {
+        "chip_ttl_ms": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "dead": {
+          "description": "Every actor that is fainted, dying or a body: a full replacement set, not a delta (NEG-8).",
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "format": "int64"
+          }
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "harm_max": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "harm_window_s": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "verb_vocab": {
+          "$ref": "#/definitions/VerbVocabRef"
+        }
+      }
+    },
     "HelloRoom": {
       "type": "object",
       "required": [
@@ -1456,11 +1753,39 @@
                 "$ref": "#/definitions/HelloActor"
               }
             },
+            "caps": {
+              "$comment": "STAND-IN until vendored from habbo H1 output",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "drama": {
+              "$comment": "STAND-IN until vendored from habbo H1 output",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/HelloDrama"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "hotel": {
               "$ref": "#/definitions/HotelInfo"
             },
             "proto": {
               "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "proto_max": {
+              "$comment": "STAND-IN until vendored from habbo H1 output",
+              "description": "Highest proto the hotel speaks; sent only with the drama offer (NEG-2).",
+              "type": [
+                "integer",
+                "null"
+              ],
               "format": "uint32",
               "minimum": 0.0
             },
@@ -2162,6 +2487,18 @@
             "pair": {
               "type": "string"
             },
+            "reason": {
+              "$comment": "STAND-IN until vendored from habbo H1 output",
+              "description": "PAIR-1, dialect 2 only: a blocked reason.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/DramaBlockedReason"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "run": {
               "type": "integer",
               "format": "int64"
@@ -2177,7 +2514,743 @@
               "format": "int64"
             }
           }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.3.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "actor",
+            "at",
+            "authored_skip",
+            "chip",
+            "contact_in_ms",
+            "intensity",
+            "origin",
+            "room",
+            "run",
+            "scene",
+            "skipped_rungs",
+            "t",
+            "verb"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "authored_skip": {
+              "type": "boolean"
+            },
+            "chip": {
+              "type": "boolean"
+            },
+            "contact_in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "impact": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ImpactClass"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "intensity": {
+              "type": "number",
+              "format": "double"
+            },
+            "origin": {
+              "$ref": "#/definitions/ActOrigin"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "rung": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint8",
+              "minimum": 1.0,
+              "maximum": 6.0
+            },
+            "scene": {
+              "type": "string"
+            },
+            "skipped_rungs": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActVerb"
+              }
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "act_started"
+              ]
+            },
+            "target_opt_in": {
+              "type": [
+                "boolean",
+                "null"
+              ]
+            },
+            "verb": {
+              "$ref": "#/definitions/ActVerb"
+            },
+            "with": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.4. `owed` is the only ground truth of what is owed.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "at",
+            "beat",
+            "owed",
+            "room",
+            "run",
+            "t",
+            "witnesses"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "beat": {
+              "$ref": "#/definitions/ActBeatKind"
+            },
+            "owed": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActOwed"
+              }
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "act_beat"
+              ]
+            },
+            "witnesses": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.5.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "at",
+            "reaction",
+            "role",
+            "room",
+            "run",
+            "source",
+            "t",
+            "who"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "reaction": {
+              "type": "string"
+            },
+            "role": {
+              "$ref": "#/definitions/ActRole"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "source": {
+              "$ref": "#/definitions/ReactionSource"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "act_reaction"
+              ]
+            },
+            "who": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.6.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "actor",
+            "at",
+            "downgraded",
+            "outcome",
+            "owed_missed",
+            "room",
+            "run",
+            "t",
+            "verb"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "answer": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ChipAnswer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "detail": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "downgraded": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActDowngrade"
+              }
+            },
+            "outcome": {
+              "$ref": "#/definitions/ActOutcome"
+            },
+            "owed_missed": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ActMissed"
+              }
+            },
+            "reason": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/DramaBlockedReason"
+                },
+                {
+                  "$ref": "#/definitions/DramaAbortReason"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "act_done"
+              ]
+            },
+            "verb": {
+              "$ref": "#/definitions/ActVerb"
+            },
+            "with": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.7.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "actor",
+            "at",
+            "family",
+            "phase",
+            "room",
+            "run",
+            "t",
+            "verb",
+            "with"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "answer": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ChipAnswer"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "family": {
+              "$ref": "#/definitions/ConsentFamily"
+            },
+            "phase": {
+              "$ref": "#/definitions/ConsentPhase"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "drama_consent"
+              ]
+            },
+            "ttl_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "verb": {
+              "$ref": "#/definitions/ActVerb"
+            },
+            "with": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.8.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "actor",
+            "at",
+            "cause",
+            "room",
+            "run",
+            "scene",
+            "t"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "cause": {
+              "$ref": "#/definitions/ActorDeathCause"
+            },
+            "killer": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "scene": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "actor_death"
+              ]
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.8.",
+          "type": "object",
+          "required": [
+            "actor",
+            "at",
+            "effect",
+            "prev",
+            "room",
+            "run",
+            "scene",
+            "t",
+            "x",
+            "y"
+          ],
+          "properties": {
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "effect": {
+              "type": "string"
+            },
+            "prev": {
+              "type": "string"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "scene": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "actor_revive"
+              ]
+            },
+            "x": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            },
+            "y": {
+              "type": "integer",
+              "format": "uint16",
+              "minimum": 0.0
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.8.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "at",
+            "human",
+            "ms",
+            "room",
+            "run",
+            "scene",
+            "t"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "human": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "scene": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "human_down"
+              ]
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.8.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "at",
+            "human",
+            "reason",
+            "room",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "human": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "reason": {
+              "$ref": "#/definitions/HumanUpReason"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "human_up"
+              ]
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.9.",
+          "type": "object",
+          "required": [
+            "at",
+            "prev",
+            "reason",
+            "removed",
+            "revived",
+            "run",
+            "scene",
+            "t"
+          ],
+          "properties": {
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "prev": {
+              "type": "string"
+            },
+            "reason": {
+              "$ref": "#/definitions/SceneCutReason"
+            },
+            "removed": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "revived": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "scene": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "scene_cut"
+              ]
+            }
+          }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.10.",
+          "type": "object",
+          "required": [
+            "at",
+            "calm",
+            "enabled",
+            "opt_in",
+            "paused",
+            "room",
+            "run",
+            "scene",
+            "t"
+          ],
+          "properties": {
+            "at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "calm": {
+              "type": "boolean"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "opt_in": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int64"
+              }
+            },
+            "paused": {
+              "type": "boolean"
+            },
+            "paused_until": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            },
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "scene": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "drama_state"
+              ]
+            }
+          }
         }
+      ]
+    },
+    "HumanUpReason": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "timer",
+        "left",
+        "closed"
+      ]
+    },
+    "ImpactClass": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "L",
+        "M",
+        "H",
+        "F"
       ]
     },
     "Job": {
@@ -3270,6 +4343,14 @@
         }
       }
     },
+    "ReactionSource": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "table",
+        "planner"
+      ]
+    },
     "RightsHolder": {
       "description": "Someone who may edit a room's furniture because its owner said so.",
       "type": "object",
@@ -3601,6 +4682,13 @@
         "ended",
         "interrupted",
         "failed"
+      ]
+    },
+    "SceneCutReason": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "type": "string",
+      "enum": [
+        "sidecar"
       ]
     },
     "ScoreView": {
@@ -4896,6 +5984,17 @@
             "null"
           ]
         },
+        "verb_vocab": {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "anyOf": [
+            {
+              "$ref": "#/definitions/VerbVocabRef"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "version": {
           "type": "string"
         }
@@ -4912,6 +6011,14 @@
             "t"
           ],
           "properties": {
+            "caps": {
+              "$comment": "STAND-IN until vendored from habbo H1 output",
+              "description": "`[\"drama.v1\"]` when the sidecar accepts the offer (NEG-3).",
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
             "proto": {
               "type": "integer",
               "format": "uint32",
@@ -5350,6 +6457,48 @@
               "$ref": "#/definitions/PerfectmanUi"
             }
           }
+        },
+        {
+          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "Section 3.9: the only way a scene is cut (SCENE-2).",
+          "type": "object",
+          "required": [
+            "lease",
+            "run",
+            "t"
+          ],
+          "properties": {
+            "cid": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "lease": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "reason": {
+              "description": "Free text, at most 40 characters, logged only.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "run": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "scene_advance"
+              ]
+            }
+          }
         }
       ]
     },
@@ -5588,6 +6737,31 @@
           "items": {
             "$ref": "#/definitions/PathMessage"
           }
+        }
+      }
+    },
+    "VerbVocabRef": {
+      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "`{version, rev, sha256}` of the published verb-vocab.json bytes (NEG-7).",
+      "type": "object",
+      "required": [
+        "rev",
+        "sha256",
+        "version"
+      ],
+      "properties": {
+        "rev": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "version": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
         }
       }
     },

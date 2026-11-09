@@ -1,6 +1,6 @@
 {
-  "$comment": "Canonical cue vocabularies for PerfectmanUi sfx.cue, cue.emotion and hud.fade.to. Prose and rationale: docs/perfectman/camera-and-audio.md section 8. The client (web/sfx.js, crates/client/src/render.rs) accepts exactly these names plus the aliases, after lower-casing, trimming and turning spaces and hyphens into underscores; tests/browser/cue_vocab.mjs and a Rust test keep them in step. The sidecar should emit canonical names only.",
-  "version": 1,
+  "$comment": "Canonical cue vocabularies for PerfectmanUi sfx.cue, cue.emotion and hud.fade.to. Prose and rationale: docs/perfectman/camera-and-audio.md section 8. The client (web/sfx.js, crates/client/src/render.rs) accepts exactly these names plus the aliases, after lower-casing, trimming and turning spaces and hyphens into underscores; tests/browser/cue_vocab.mjs and a Rust test keep them in step. The sidecar should emit canonical names only. STAND-IN until vendored from habbo H1 output: version 2 hand-edited per act-contract.md VV-5 (adds slap, thud, gasp, sob, whoosh_short).",
+  "version": 2,
   "sfx": {
     "canonical": [
       "footsteps",
@@ -15,7 +15,12 @@
       "sting_comedy",
       "sting_sad",
       "transition_whoosh",
-      "ui_tick"
+      "ui_tick",
+      "slap",
+      "thud",
+      "gasp",
+      "sob",
+      "whoosh_short"
     ],
     "aliases": {
       "footstep": "footsteps",
@@ -51,7 +56,10 @@
       "meanwhile": "transition_whoosh",
       "swish": "transition_whoosh",
       "tick": "ui_tick",
-      "click": "ui_tick"
+      "click": "ui_tick",
+      "smack": "slap",
+      "thump": "thud",
+      "swish_short": "whoosh_short"
     },
     "loopable": ["crowd_murmur", "footsteps"],
     "director_emits_today": ["murmur", "door", "whoosh", "laugh", "kiss", "hug", "sting_tension", "sting_romance", "sting_comedy", "sting_sad"]

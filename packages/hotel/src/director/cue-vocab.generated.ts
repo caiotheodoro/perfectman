@@ -4,7 +4,7 @@
  * Source: packages/hotel/schema/cue-vocab.json (vendored from Tilehouse,
  * see schema/SOURCE.md). Regenerate: pnpm --filter @perfectman/hotel gen:director
  */
-export const CUE_VOCAB_VERSION = 1 as const;
+export const CUE_VOCAB_VERSION = 2 as const;
 
 export const SFX_CANONICAL = [
   "footsteps",
@@ -19,7 +19,12 @@ export const SFX_CANONICAL = [
   "sting_comedy",
   "sting_sad",
   "transition_whoosh",
-  "ui_tick"
+  "ui_tick",
+  "slap",
+  "thud",
+  "gasp",
+  "sob",
+  "whoosh_short"
 ] as const;
 
 export const SFX_ALIASES: Readonly<Record<string, string>> = {
@@ -56,7 +61,10 @@ export const SFX_ALIASES: Readonly<Record<string, string>> = {
   "meanwhile": "transition_whoosh",
   "swish": "transition_whoosh",
   "tick": "ui_tick",
-  "click": "ui_tick"
+  "click": "ui_tick",
+  "smack": "slap",
+  "thump": "thud",
+  "swish_short": "whoosh_short"
 };
 
 export const SFX_LOOPABLE: readonly string[] = [

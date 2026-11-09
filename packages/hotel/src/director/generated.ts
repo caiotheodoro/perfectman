@@ -11,8 +11,14 @@
 export type HotelMsg =
   | {
       actors: HelloActor[];
+      caps?: string[];
+      drama?: HelloDrama | null;
       hotel: HotelInfo;
       proto: number;
+      /**
+       * Highest proto the hotel speaks; sent only with the drama offer (NEG-2).
+       */
+      proto_max?: number | null;
       /**
        * Rooms the sidecar may travel to: every official room (the Perfectman wing included) and each room a live run is in, at most `HELLO_ROOMS_MAX`. Absent from an older hotel.
        */
@@ -177,9 +183,148 @@ export type HotelMsg =
       at: number;
       outcome: PairOutcome;
       pair: string;
+      /**
+       * PAIR-1, dialect 2 only: a blocked reason.
+       */
+      reason?: DramaBlockedReason | null;
       run: number;
       t: "pair_reaction";
       with: number;
+    }
+  | {
+      act_id: string;
+      actor: number;
+      at: number;
+      authored_skip: boolean;
+      chip: boolean;
+      contact_in_ms: number | null;
+      impact?: ImpactClass | null;
+      intensity: number;
+      origin: ActOrigin;
+      room: number;
+      run: number;
+      rung?: number | null;
+      scene: string;
+      skipped_rungs: ActVerb[];
+      t: "act_started";
+      target_opt_in?: boolean | null;
+      verb: ActVerb;
+      with?: number | null;
+    }
+  | {
+      act_id: string;
+      at: number;
+      beat: ActBeatKind;
+      owed: ActOwed[];
+      room: number;
+      run: number;
+      t: "act_beat";
+      witnesses: number[];
+    }
+  | {
+      act_id: string;
+      at: number;
+      reaction: string;
+      role: ActRole;
+      room: number;
+      run: number;
+      source: ReactionSource;
+      t: "act_reaction";
+      who: number;
+    }
+  | {
+      act_id: string;
+      actor: number;
+      answer?: ChipAnswer | null;
+      at: number;
+      detail?: string | null;
+      downgraded: ActDowngrade[];
+      outcome: ActOutcome;
+      owed_missed: ActMissed[];
+      reason?: DramaBlockedReason | DramaAbortReason | null;
+      room: number;
+      run: number;
+      t: "act_done";
+      verb: ActVerb;
+      with?: number | null;
+    }
+  | {
+      act_id: string;
+      actor: number;
+      answer?: ChipAnswer | null;
+      at: number;
+      family: ConsentFamily;
+      phase: ConsentPhase;
+      room: number;
+      run: number;
+      t: "drama_consent";
+      ttl_ms?: number | null;
+      verb: ActVerb;
+      with: number;
+    }
+  | {
+      act_id: string;
+      actor: number;
+      at: number;
+      cause: ActorDeathCause;
+      killer?: number | null;
+      room: number;
+      run: number;
+      scene: string;
+      t: "actor_death";
+    }
+  | {
+      actor: number;
+      at: number;
+      effect: string;
+      prev: string;
+      room: number;
+      run: number;
+      scene: string;
+      t: "actor_revive";
+      x: number;
+      y: number;
+    }
+  | {
+      act_id: string;
+      at: number;
+      human: number;
+      ms: number;
+      room: number;
+      run: number;
+      scene: string;
+      t: "human_down";
+    }
+  | {
+      act_id: string;
+      at: number;
+      human: number;
+      reason: HumanUpReason;
+      room: number;
+      run: number;
+      t: "human_up";
+    }
+  | {
+      at: number;
+      prev: string;
+      reason: SceneCutReason;
+      removed: number[];
+      revived: number[];
+      run: number;
+      scene: string;
+      t: "scene_cut";
+    }
+  | {
+      at: number;
+      calm: boolean;
+      enabled: boolean;
+      opt_in: number[];
+      paused: boolean;
+      paused_until?: number | null;
+      room: number;
+      run: number;
+      scene: string;
+      t: "drama_state";
     };
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
@@ -232,7 +377,8 @@ export type ActorGoneReason =
   | "lease_expired"
   | "sidecar_lost"
   | "killall"
-  | "hotel_shutdown";
+  | "hotel_shutdown"
+  | "died";
 /**
  * `actor_error.code`, plus the section 9 table of the doc.
  *
@@ -264,7 +410,13 @@ export type ActorErrorCode =
   | "not_a_seat"
   | "not_adjacent"
   | "target_gone"
-  | "internal";
+  | "internal"
+  | "unknown_verb"
+  | "target_required"
+  | "target_forbidden"
+  | "bad_target"
+  | "act_busy"
+  | "actor_dead";
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "Action".
@@ -905,6 +1057,132 @@ export type PairKind = "kiss" | "hug";
  */
 export type PairOutcome = "accept" | "timeout" | "dodge" | "push" | "aborted" | "done";
 /**
+ * `act_done.reason` when `outcome` is `blocked`.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "DramaBlockedReason".
+ */
+export type DramaBlockedReason =
+  | "kill_switch"
+  | "calm_room"
+  | "consent_off"
+  | "ladder"
+  | "budget"
+  | "cooldown"
+  | "too_far"
+  | "dead_target"
+  | "no_scenario_gate"
+  | "rate_limit";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ImpactClass".
+ */
+export type ImpactClass = "L" | "M" | "H" | "F";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActOrigin".
+ */
+export type ActOrigin = "model" | "director" | "scenario";
+/**
+ * The 18 verbs of the act contract (section 0.2).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActVerb".
+ */
+export type ActVerb =
+  | "glare"
+  | "insult"
+  | "shove"
+  | "slap"
+  | "punch"
+  | "kill"
+  | "die"
+  | "recoil"
+  | "freeze_gasp"
+  | "hug"
+  | "kiss"
+  | "turn_back"
+  | "cry"
+  | "storm_off"
+  | "tableau"
+  | "restrain"
+  | "faint"
+  | "tend_fallen";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActBeatKind".
+ */
+export type ActBeatKind = "contact";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActRole".
+ */
+export type ActRole = "target" | "witness";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ReactionSource".
+ */
+export type ReactionSource = "table" | "planner";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ChipAnswer".
+ */
+export type ChipAnswer = "take" | "dodge" | "push_back" | "timeout";
+/**
+ * Section 3.6 lists the first five; REA-9 also names `chat` (spec defect, both accepted).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActDowngrade".
+ */
+export type ActDowngrade = "forced_step" | "face" | "walk_to" | "gesture" | "posture" | "chat";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActOutcome".
+ */
+export type ActOutcome = "landed" | "dodged" | "blocked" | "declined" | "timeout" | "aborted";
+/**
+ * `act_done.reason` when `outcome` is `aborted`.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "DramaAbortReason".
+ */
+export type DramaAbortReason =
+  | "target_moved"
+  | "target_gone"
+  | "actor_gone"
+  | "actor_dead"
+  | "scene_cut"
+  | "run_end"
+  | "kill_switch"
+  | "calm_room"
+  | "paused"
+  | "opt_out";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ConsentFamily".
+ */
+export type ConsentFamily = "violent" | "affection";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ConsentPhase".
+ */
+export type ConsentPhase = "shown" | "answered";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActorDeathCause".
+ */
+export type ActorDeathCause = "kill" | "die";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "HumanUpReason".
+ */
+export type HumanUpReason = "timer" | "left" | "closed";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "SceneCutReason".
+ */
+export type SceneCutReason = "sidecar";
+/**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "JobOp".
  */
@@ -920,6 +1198,10 @@ export type JobState = "queued" | "running" | "done" | "failed";
  */
 export type SidecarMsg =
   | {
+      /**
+       * `["drama.v1"]` when the sidecar accepts the offer (NEG-3).
+       */
+      caps?: string[];
       proto: number;
       resume?: number[];
       sidecar: SidecarInfo;
@@ -1019,6 +1301,16 @@ export type SidecarMsg =
       t: "ui_push";
       to: UiTarget;
       ui: PerfectmanUi;
+    }
+  | {
+      cid?: number | null;
+      lease: number;
+      /**
+       * Free text, at most 40 characters, logged only.
+       */
+      reason?: string | null;
+      run: number;
+      t: "scene_advance";
     };
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
@@ -1100,6 +1392,16 @@ export type ActorCmd =
       drink?: boolean | null;
       item?: string | null;
       k: "carry";
+    }
+  | {
+      act_id: string;
+      authored_skip?: boolean | null;
+      intensity?: number | null;
+      k: "act";
+      origin?: ActOrigin | null;
+      text?: string | null;
+      verb: ActVerb;
+      with?: number | null;
     };
 /**
  * What an expression shows, as `Action::Expression` styles 0..=5.
@@ -1263,6 +1565,34 @@ export interface HelloActor {
   state: AvatarState;
   x: number;
   y: number;
+}
+/**
+ * `hello.drama`, sent only when the hotel's PERFECTMAN_DRAMA is on (NEG-2).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "HelloDrama".
+ */
+export interface HelloDrama {
+  chip_ttl_ms: number;
+  /**
+   * Every actor that is fainted, dying or a body: a full replacement set, not a delta (NEG-8).
+   */
+  dead: number[];
+  enabled: boolean;
+  harm_max: number;
+  harm_window_s: number;
+  verb_vocab: VerbVocabRef;
+}
+/**
+ * `{version, rev, sha256}` of the published verb-vocab.json bytes (NEG-7).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "VerbVocabRef".
+ */
+export interface VerbVocabRef {
+  rev: number;
+  sha256: string;
+  version: number;
 }
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
@@ -1623,6 +1953,23 @@ export interface PersonRef {
   name: string;
 }
 /**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActOwed".
+ */
+export interface ActOwed {
+  due_at: number;
+  role: ActRole;
+  who: number;
+}
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActMissed".
+ */
+export interface ActMissed {
+  role: ActRole;
+  who: number;
+}
+/**
  * `GET /api/admin/perfectman/jobs/{id}`. In memory on the hotel: lost on restart, kept 10 min.
  *
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
@@ -1700,6 +2047,7 @@ export interface SidecarInfo {
    * SHA-256 of the vendored `director.schema.json`. A mismatch is logged as a warning; only a `proto` mismatch refuses (checklist 2).
    */
   schema_sha256?: string | null;
+  verb_vocab?: VerbVocabRef | null;
   version: string;
 }
 /**
