@@ -1,9 +1,8 @@
 /**
- * VENDORED COPY of `packages/hotel/src/director/drama/ports.ts` on `feat/drama-p2` (packet P2), taken from P2's worktree
- * (the committed `research/p2-port-interface.md` plus its later `DramaPassWhy` refinement: `not_placed`, `target_gone`),
- * with only the two import paths changed. TypeScript is structural, so P2's `DramaDirector` satisfies this interface as it
- * stands. When P2 lands, the integration step deletes this file and re-points the imports of `drama-body.ts` and `plan.ts`
- * at `../director/drama/ports.js`; nothing else changes.
+ * VENDORED COPY of `packages/hotel/src/director/drama/ports.ts` on `feat/drama-p2` (packet P2), taken from
+ * `research/p2-port-interface.md` as of P2's final commit, with only the two import paths changed. TypeScript is structural,
+ * so P2's `DramaDirector` satisfies this interface as it stands. When P2 lands, the integration step deletes this file and
+ * re-points the imports of `drama-body.ts` and `run.ts` at `../director/drama/ports.js`; nothing else changes.
  */
 import type { ActionEmotions, ActOrigin, ActVerb, CoreMood, RelationalState, SocialEmotions } from "@perfectman/shared";
 import type { ActCmdError } from "../director/act-cmd.js";
@@ -68,6 +67,7 @@ export type EmotionReading = {
   actionEmotions: ActionEmotions;
   social?: Partial<SocialEmotions>;
   core?: Partial<Pick<CoreMood, "arousal" | "momentumArousal">>;
+  /** Who the actor has a relationship with. The director aims a beat of its own only at someone listed here. */
   relations?: ReadonlyMap<number, RelationReading>;
   /** `Date.now()`-style time of the reading, for `lastNegativeAt`; absent means the director's clock. */
   at?: number;
@@ -113,11 +113,11 @@ export type DramaVeto = {
 
 /**
  * `inert`: drama is not negotiated for this run (or the hotel's switch is off and no proposal was made). `actor_dead`, `actor_busy`
- * (ACT-11, ACT-12), `not_placed` (the mirror has no room for the actor yet), `target_gone` (ACT-10: the target is not in the actor's
- * room): nothing to send. `no_drive`: no beat is driven by the emotion state, or there is no emotion state. `pace`: this actor was
+ * (ACT-11, ACT-12), `posture` (ACT-13: a lying actor cannot make a gesture), `not_placed` (the mirror has no room for the actor yet), `target_gone` (ACT-10: the target is not in the actor's
+ * room): nothing to send. `no_drive`: no beat is driven by the emotion state, there is no emotion state, or a `restrain` has no aggressor to restrain (RES-1). `pace`: this actor was
  * offered a beat too recently.
  */
-export type DramaPassWhy = "inert" | "actor_dead" | "actor_busy" | "not_placed" | "target_gone" | "no_drive" | "pace";
+export type DramaPassWhy = "inert" | "actor_dead" | "actor_busy" | "not_placed" | "target_gone" | "posture" | "no_drive" | "pace";
 
 export type DramaPass = { kind: "pass"; why: DramaPassWhy };
 
