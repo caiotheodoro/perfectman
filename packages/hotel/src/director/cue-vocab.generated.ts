@@ -60,11 +60,11 @@ export const SFX_ALIASES: Readonly<Record<string, string>> = {
   "fade": "transition_whoosh",
   "meanwhile": "transition_whoosh",
   "swish": "transition_whoosh",
-  "tick": "ui_tick",
-  "click": "ui_tick",
   "smack": "slap",
   "thump": "thud",
-  "swish_short": "whoosh_short"
+  "swish_short": "whoosh_short",
+  "tick": "ui_tick",
+  "click": "ui_tick"
 };
 
 export const SFX_LOOPABLE: readonly string[] = [

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { DirectorClient } from "../director/director-client.js";
+import { DEFAULT_ADVANCE_REASON, DirectorClient } from "../director/director-client.js";
 import type { DirectorHandlers } from "../director/director-client.js";
 import { parseDramaEnv } from "../director/dialect.js";
 import type { DramaSession } from "../director/dialect.js";
@@ -152,7 +152,7 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
     expect(c.sendAct({ run: 7, actor: -701, cmd: { k: "act", act_id: "a1", verb: "cry" } })).toEqual({ sent: false, reason: "dialect" });
     expect(c.sendSceneAdvance(7, "beat")).toEqual({ sent: false, reason: "dialect" });
     expect(c.send({ t: "actor_cmd", cid: c.nextCid(), run: 7, lease: 3, actor: -701, cmd: { k: "act", act_id: "a2", verb: "cry" } })).toBe(false);
-    expect(c.send({ t: "scene_advance", run: 7, lease: 3 })).toBe(false);
+    expect(c.send({ t: "scene_advance", run: 7, lease: 3, reason: "x" })).toBe(false);
     expect(c.refusedDrama).toBe(4);
     await new Promise((r) => setTimeout(r, 30));
     expect(hotel.received.filter((f) => f.t === "scene_advance" || (f.t === "actor_cmd" && f.cmd.k === "act"))).toEqual([]);
@@ -174,6 +174,17 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
     expect(hotel.acts[0]).toMatchObject({ t: "actor_cmd", run: 7, lease: 3, actor: -701, cmd: { k: "act", act_id: "a1", verb: "slap", with: 9 } });
     expect(hotel.sceneAdvances[0]).toMatchObject({ run: 7, lease: 3, reason: "scenario_beat_4" });
     expect(hotel.rejectedActs).toEqual([]);
+  });
+
+  it("[NEG-5] a scene_advance with no reason still carries one, because the hotel's schema requires it", async () => {
+    const { fake: hotel, client: c } = await connect({ offer: OFFER, drama: true });
+    c.trackRun(7);
+    hotel.grantLease(7, 3);
+    await waitFor(() => c.leaseOf(7) === 3, "the lease");
+    expect(c.sendSceneAdvance(7)).toMatchObject({ sent: true });
+    expect(c.sendSceneAdvance(7, "x".repeat(60))).toMatchObject({ sent: true });
+    await waitFor(() => hotel.sceneAdvances.length === 2, "both scene_advance frames");
+    expect(hotel.sceneAdvances.map((f) => f.reason)).toEqual([DEFAULT_ADVANCE_REASON, "x".repeat(40)]);
   });
 
   it("[ACT-2] an act waits for the resumed run's bumped lease: nothing goes out while the new lease has not landed", async () => {

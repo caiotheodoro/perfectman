@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Perfectman Director contract",
-  "description": "Generated from crates/sim/src/director.rs (proto 1). Do not edit by hand: run `cargo test -p tilehouse-sim director_schema`.",
+  "description": "Generated from crates/sim/src/director.rs (proto 2). Do not edit by hand: run `cargo test -p tilehouse-sim director_schema`.",
   "type": "object",
   "required": [
     "api_error",
@@ -83,117 +83,28 @@
     }
   },
   "definitions": {
-    "ActBeatKind": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
+    "ActReason": {
+      "description": "`act_done.reason`: a blocked reason or an abort reason. `kill_switch` and `calm_room` are both.",
       "type": "string",
       "enum": [
-        "contact"
-      ]
-    },
-    "ActDowngrade": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "description": "Section 3.6 lists the first five; REA-9 also names `chat` (spec defect, both accepted).",
-      "type": "string",
-      "enum": [
-        "forced_step",
-        "face",
-        "walk_to",
-        "gesture",
-        "posture",
-        "chat"
-      ]
-    },
-    "ActMissed": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "type": "object",
-      "required": [
-        "role",
-        "who"
-      ],
-      "properties": {
-        "role": {
-          "$ref": "#/definitions/ActRole"
-        },
-        "who": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "ActOrigin": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "type": "string",
-      "enum": [
-        "model",
-        "director",
-        "scenario"
-      ]
-    },
-    "ActOutcome": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "type": "string",
-      "enum": [
-        "landed",
-        "dodged",
-        "blocked",
-        "declined",
-        "timeout",
-        "aborted"
-      ]
-    },
-    "ActOwed": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "type": "object",
-      "required": [
-        "due_at",
-        "role",
-        "who"
-      ],
-      "properties": {
-        "due_at": {
-          "type": "integer",
-          "format": "int64"
-        },
-        "role": {
-          "$ref": "#/definitions/ActRole"
-        },
-        "who": {
-          "type": "integer",
-          "format": "int64"
-        }
-      }
-    },
-    "ActRole": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "type": "string",
-      "enum": [
-        "target",
-        "witness"
-      ]
-    },
-    "ActVerb": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "description": "The 18 verbs of the act contract (section 0.2).",
-      "type": "string",
-      "enum": [
-        "glare",
-        "insult",
-        "shove",
-        "slap",
-        "punch",
-        "kill",
-        "die",
-        "recoil",
-        "freeze_gasp",
-        "hug",
-        "kiss",
-        "turn_back",
-        "cry",
-        "storm_off",
-        "tableau",
-        "restrain",
-        "faint",
-        "tend_fallen"
+        "kill_switch",
+        "calm_room",
+        "consent_off",
+        "ladder",
+        "budget",
+        "cooldown",
+        "too_far",
+        "dead_target",
+        "no_scenario_gate",
+        "rate_limit",
+        "target_moved",
+        "target_gone",
+        "actor_gone",
+        "actor_dead",
+        "scene_cut",
+        "run_end",
+        "paused",
+        "opt_out"
       ]
     },
     "Action": {
@@ -539,6 +450,68 @@
           }
         },
         {
+          "description": "A drama act (dialect 2 only; `act-contract.md` section 2). In a dialect 1 session this frame is unparseable and takes the `director_reject` path (NEG-5, ACT-1).",
+          "type": "object",
+          "required": [
+            "act_id",
+            "k",
+            "verb"
+          ],
+          "properties": {
+            "act_id": {
+              "description": "`^[A-Za-z0-9_.:-]{1,32}$`, unique within the run for its whole life.",
+              "type": "string"
+            },
+            "authored_skip": {
+              "description": "Honoured only with `origin:\"scenario\"` (GATE-5).",
+              "type": "boolean"
+            },
+            "intensity": {
+              "description": "`0..=1`; absent means the verb's default. Selects the impact class.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "act"
+              ]
+            },
+            "origin": {
+              "description": "Absent means `director`.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Origin"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "text": {
+              "description": "`insult` only; at most 200 characters.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "verb": {
+              "$ref": "#/definitions/Verb"
+            },
+            "with": {
+              "description": "An avatar in the actor's room: required for the targeted verbs, forbidden for the solo ones.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            }
+          }
+        },
+        {
           "description": "Reserved: not frozen until hand-item sprites exist (D33). The hotel answers `bad_message`.",
           "type": "object",
           "required": [
@@ -564,78 +537,7 @@
               ]
             }
           }
-        },
-        {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 2.1. Dialect 2 only (NEG-5).",
-          "type": "object",
-          "required": [
-            "act_id",
-            "k",
-            "verb"
-          ],
-          "properties": {
-            "act_id": {
-              "type": "string",
-              "pattern": "^[A-Za-z0-9_.:-]{1,32}$"
-            },
-            "authored_skip": {
-              "type": [
-                "boolean",
-                "null"
-              ]
-            },
-            "intensity": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "format": "double",
-              "minimum": 0.0,
-              "maximum": 1.0
-            },
-            "k": {
-              "type": "string",
-              "enum": [
-                "act"
-              ]
-            },
-            "origin": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/ActOrigin"
-                },
-                {
-                  "type": "null"
-                }
-              ]
-            },
-            "text": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "verb": {
-              "$ref": "#/definitions/ActVerb"
-            },
-            "with": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "format": "int64"
-            }
-          }
         }
-      ]
-    },
-    "ActorDeathCause": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "type": "string",
-      "enum": [
-        "kill",
-        "die"
       ]
     },
     "ActorErrorCode": {
@@ -673,23 +575,31 @@
         "bad_target",
         "act_busy",
         "actor_dead"
-      ],
-      "$comment": "STAND-IN until vendored from habbo H1 output: unknown_verb, target_required, target_forbidden, bad_target, act_busy and actor_dead are new (section 2.3)"
+      ]
     },
     "ActorGoneReason": {
-      "type": "string",
-      "enum": [
-        "despawned",
-        "kicked",
-        "muted_out",
-        "room_closed",
-        "lease_expired",
-        "sidecar_lost",
-        "killall",
-        "hotel_shutdown",
-        "died"
-      ],
-      "$comment": "STAND-IN until vendored from habbo H1 output: died is new (DEATH-7)"
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "despawned",
+            "kicked",
+            "muted_out",
+            "room_closed",
+            "lease_expired",
+            "sidecar_lost",
+            "killall",
+            "hotel_shutdown"
+          ]
+        },
+        {
+          "description": "A permadeath actor retired at a scene cut (DEATH-7). Dialect 2 only.",
+          "type": "string",
+          "enum": [
+            "died"
+          ]
+        }
+      ]
     },
     "AdminRef": {
       "type": "object",
@@ -959,6 +869,36 @@
         }
       }
     },
+    "BeatKind": {
+      "description": "`act_beat.beat`: only `contact` in this revision.",
+      "type": "string",
+      "enum": [
+        "contact"
+      ]
+    },
+    "BlockedReason": {
+      "description": "Why a gate refused an accepted command (`outcome:\"blocked\"`), in no order.",
+      "type": "string",
+      "enum": [
+        "kill_switch",
+        "calm_room",
+        "consent_off",
+        "ladder",
+        "budget",
+        "cooldown",
+        "too_far",
+        "dead_target",
+        "no_scenario_gate",
+        "rate_limit"
+      ]
+    },
+    "Both": {
+      "description": "The only value of `motion.who` besides an avatar id.",
+      "type": "string",
+      "enum": [
+        "both"
+      ]
+    },
     "Breaker": {
       "type": "string",
       "enum": [
@@ -1053,13 +993,22 @@
       ]
     },
     "ChipAnswer": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "How a human answered a consent chip, including silence.",
       "type": "string",
       "enum": [
         "take",
         "dodge",
         "push_back",
         "timeout"
+      ]
+    },
+    "ChipChoice": {
+      "description": "What a human can press on the chip (`act_reply.choice`, `act_prompt.choices`).",
+      "type": "string",
+      "enum": [
+        "take",
+        "dodge",
+        "push_back"
       ]
     },
     "CommandSource": {
@@ -1098,7 +1047,7 @@
       }
     },
     "ConsentFamily": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "The label set of a chip.",
       "type": "string",
       "enum": [
         "violent",
@@ -1106,7 +1055,6 @@
       ]
     },
     "ConsentPhase": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
       "type": "string",
       "enum": [
         "shown",
@@ -1121,11 +1069,30 @@
         "meanwhile"
       ]
     },
+    "DeathCause": {
+      "type": "string",
+      "enum": [
+        "kill",
+        "die"
+      ]
+    },
     "DespawnMode": {
       "type": "string",
       "enum": [
         "walk_out",
         "now"
+      ]
+    },
+    "Downgrade": {
+      "description": "Table steps that were skipped or replaced (`act_done.downgraded`). `chat` is REA-9's muted line, which the table of section 3.6 does not list (spec defect, see `docs/perfectman/decisions.md`).",
+      "type": "string",
+      "enum": [
+        "forced_step",
+        "face",
+        "walk_to",
+        "gesture",
+        "posture",
+        "chat"
       ]
     },
     "DraftRequest": {
@@ -1161,40 +1128,6 @@
           "type": "string"
         }
       }
-    },
-    "DramaAbortReason": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "description": "`act_done.reason` when `outcome` is `aborted`.",
-      "type": "string",
-      "enum": [
-        "target_moved",
-        "target_gone",
-        "actor_gone",
-        "actor_dead",
-        "scene_cut",
-        "run_end",
-        "kill_switch",
-        "calm_room",
-        "paused",
-        "opt_out"
-      ]
-    },
-    "DramaBlockedReason": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "description": "`act_done.reason` when `outcome` is `blocked`.",
-      "type": "string",
-      "enum": [
-        "kill_switch",
-        "calm_room",
-        "consent_off",
-        "ladder",
-        "budget",
-        "cooldown",
-        "too_far",
-        "dead_target",
-        "no_scenario_gate",
-        "rate_limit"
-      ]
     },
     "ErrorCode": {
       "oneOf": [
@@ -1473,6 +1406,15 @@
         "status"
       ],
       "properties": {
+        "duration_secs": {
+          "description": "How long it runs, in seconds, for a game with a clock: the host's choice, or the default.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
         "host": {
           "type": "integer",
           "format": "int64"
@@ -1572,12 +1514,10 @@
       }
     },
     "HelloDrama": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "description": "`hello.drama`, sent only when the hotel's PERFECTMAN_DRAMA is on (NEG-2).",
+      "description": "What `hello.drama` tells a dialect 2 sidecar (NEG-2). Sent only with `PERFECTMAN_DRAMA` on.",
       "type": "object",
       "required": [
         "chip_ttl_ms",
-        "dead",
         "enabled",
         "harm_max",
         "harm_window_s",
@@ -1590,7 +1530,8 @@
           "minimum": 0.0
         },
         "dead": {
-          "description": "Every actor that is fainted, dying or a body: a full replacement set, not a delta (NEG-8).",
+          "description": "Every actor that is `fainted`, `dying` or `body`: a full replacement set, not a delta (NEG-8).",
+          "default": [],
           "type": "array",
           "items": {
             "type": "integer",
@@ -1754,14 +1695,13 @@
               }
             },
             "caps": {
-              "$comment": "STAND-IN until vendored from habbo H1 output",
               "type": "array",
               "items": {
                 "type": "string"
               }
             },
             "drama": {
-              "$comment": "STAND-IN until vendored from habbo H1 output",
+              "description": "The drama offer: vocabulary, chip and harm numbers, and the dead set (NEG-2, NEG-8).",
               "anyOf": [
                 {
                   "$ref": "#/definitions/HelloDrama"
@@ -1775,13 +1715,13 @@
               "$ref": "#/definitions/HotelInfo"
             },
             "proto": {
+              "description": "Always `PROTO_BASE` (NEG-1).",
               "type": "integer",
               "format": "uint32",
               "minimum": 0.0
             },
             "proto_max": {
-              "$comment": "STAND-IN until vendored from habbo H1 output",
-              "description": "Highest proto the hotel speaks; sent only with the drama offer (NEG-2).",
+              "description": "The highest dialect the hotel offers. Present only with `PERFECTMAN_DRAMA` on (NEG-2).",
               "type": [
                 "integer",
                 "null"
@@ -2488,11 +2428,10 @@
               "type": "string"
             },
             "reason": {
-              "$comment": "STAND-IN until vendored from habbo H1 output",
-              "description": "PAIR-1, dialect 2 only: a blocked reason.",
+              "description": "Why a drama session's `pair` was refused (PAIR-1): `kill_switch`, `calm_room` or `cooldown`. Never set towards a dialect 1 session.",
               "anyOf": [
                 {
-                  "$ref": "#/definitions/DramaBlockedReason"
+                  "$ref": "#/definitions/BlockedReason"
                 },
                 {
                   "type": "null"
@@ -2516,8 +2455,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.3.",
+          "description": "An act was accepted and began (FRM-1). Dialect 2 only.",
           "type": "object",
           "required": [
             "act_id",
@@ -2525,7 +2463,6 @@
             "at",
             "authored_skip",
             "chip",
-            "contact_in_ms",
             "intensity",
             "origin",
             "room",
@@ -2554,12 +2491,12 @@
               "type": "boolean"
             },
             "contact_in_ms": {
+              "description": "Planned `Tc - T0`; `null` when a chip decides.",
               "type": [
                 "integer",
                 "null"
               ],
-              "format": "uint32",
-              "minimum": 0.0
+              "format": "int64"
             },
             "impact": {
               "anyOf": [
@@ -2576,7 +2513,7 @@
               "format": "double"
             },
             "origin": {
-              "$ref": "#/definitions/ActOrigin"
+              "$ref": "#/definitions/Origin"
             },
             "room": {
               "type": "integer",
@@ -2592,16 +2529,16 @@
                 "null"
               ],
               "format": "uint8",
-              "minimum": 1.0,
-              "maximum": 6.0
+              "minimum": 0.0
             },
             "scene": {
+              "description": "`\"<run>.<n>\"` (SCENE-1).",
               "type": "string"
             },
             "skipped_rungs": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/ActVerb"
+                "$ref": "#/definitions/Verb"
               }
             },
             "t": {
@@ -2611,13 +2548,14 @@
               ]
             },
             "target_opt_in": {
+              "description": "Present only when `with` is a human.",
               "type": [
                 "boolean",
                 "null"
               ]
             },
             "verb": {
-              "$ref": "#/definitions/ActVerb"
+              "$ref": "#/definitions/Verb"
             },
             "with": {
               "type": [
@@ -2629,8 +2567,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.4. `owed` is the only ground truth of what is owed.",
+          "description": "Contact happened: the clock of REA-1 and REA-2.",
           "type": "object",
           "required": [
             "act_id",
@@ -2651,12 +2588,13 @@
               "format": "int64"
             },
             "beat": {
-              "$ref": "#/definitions/ActBeatKind"
+              "$ref": "#/definitions/BeatKind"
             },
             "owed": {
+              "description": "The only ground truth of what is owed (REA-2).",
               "type": "array",
               "items": {
-                "$ref": "#/definitions/ActOwed"
+                "$ref": "#/definitions/Owed"
               }
             },
             "room": {
@@ -2674,6 +2612,7 @@
               ]
             },
             "witnesses": {
+              "description": "Ascending numeric id: actors (negative) first.",
               "type": "array",
               "items": {
                 "type": "integer",
@@ -2683,8 +2622,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.5.",
+          "description": "The target or a witness visibly reacted.",
           "type": "object",
           "required": [
             "act_id",
@@ -2706,10 +2644,11 @@
               "format": "int64"
             },
             "reaction": {
+              "description": "A label of `enums.reaction_labels` (source `table`) or `cmd:<k>` (source `planner`).",
               "type": "string"
             },
             "role": {
-              "$ref": "#/definitions/ActRole"
+              "$ref": "#/definitions/ReactionRole"
             },
             "room": {
               "type": "integer",
@@ -2735,8 +2674,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.6.",
+          "description": "The act ended, or was blocked or aborted. Always the last frame of an act (FRM-1).",
           "type": "object",
           "required": [
             "act_id",
@@ -2759,6 +2697,7 @@
               "format": "int64"
             },
             "answer": {
+              "description": "The chip answer; present iff a chip was shown.",
               "anyOf": [
                 {
                   "$ref": "#/definitions/ChipAnswer"
@@ -2781,25 +2720,23 @@
             "downgraded": {
               "type": "array",
               "items": {
-                "$ref": "#/definitions/ActDowngrade"
+                "$ref": "#/definitions/Downgrade"
               }
             },
             "outcome": {
-              "$ref": "#/definitions/ActOutcome"
+              "$ref": "#/definitions/Outcome2"
             },
             "owed_missed": {
+              "description": "Empty for every table-driven act (REA-10).",
               "type": "array",
               "items": {
-                "$ref": "#/definitions/ActMissed"
+                "$ref": "#/definitions/OwedMissed"
               }
             },
             "reason": {
               "anyOf": [
                 {
-                  "$ref": "#/definitions/DramaBlockedReason"
-                },
-                {
-                  "$ref": "#/definitions/DramaAbortReason"
+                  "$ref": "#/definitions/ActReason"
                 },
                 {
                   "type": "null"
@@ -2821,7 +2758,7 @@
               ]
             },
             "verb": {
-              "$ref": "#/definitions/ActVerb"
+              "$ref": "#/definitions/Verb"
             },
             "with": {
               "type": [
@@ -2833,8 +2770,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.7.",
+          "description": "A consent chip was shown or answered (human target only).",
           "type": "object",
           "required": [
             "act_id",
@@ -2857,6 +2793,7 @@
               "format": "int64"
             },
             "answer": {
+              "description": "On `answered`; a timeout is `answer:\"timeout\"` at `shown.at + ttl_ms`.",
               "anyOf": [
                 {
                   "$ref": "#/definitions/ChipAnswer"
@@ -2891,6 +2828,7 @@
               ]
             },
             "ttl_ms": {
+              "description": "On `shown`.",
               "type": [
                 "integer",
                 "null"
@@ -2899,7 +2837,7 @@
               "minimum": 0.0
             },
             "verb": {
-              "$ref": "#/definitions/ActVerb"
+              "$ref": "#/definitions/Verb"
             },
             "with": {
               "type": "integer",
@@ -2908,8 +2846,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.8.",
+          "description": "An actor started dying (DEATH-1). Humans never produce it.",
           "type": "object",
           "required": [
             "act_id",
@@ -2934,7 +2871,7 @@
               "format": "int64"
             },
             "cause": {
-              "$ref": "#/definitions/ActorDeathCause"
+              "$ref": "#/definitions/DeathCause"
             },
             "killer": {
               "type": [
@@ -2963,8 +2900,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.8.",
+          "description": "A dead actor was restored by a scene cut (DEATH-7).",
           "type": "object",
           "required": [
             "actor",
@@ -2988,6 +2924,7 @@
               "format": "int64"
             },
             "effect": {
+              "description": "The effect it had before it died; empty for none.",
               "type": "string"
             },
             "prev": {
@@ -3023,8 +2960,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.8.",
+          "description": "A killed human is down for `ms` (DOWN-1).",
           "type": "object",
           "required": [
             "act_id",
@@ -3073,8 +3009,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.8.",
+          "description": "The down state ended (DOWN-3). May follow `act_done`.",
           "type": "object",
           "required": [
             "act_id",
@@ -3117,8 +3052,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.9.",
+          "description": "The scene changed; always the answer to a `scene_advance` (SCENE-2).",
           "type": "object",
           "required": [
             "at",
@@ -3171,8 +3105,7 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.10.",
+          "description": "Opt-in, calm, pause and switch state of a room.",
           "type": "object",
           "required": [
             "at",
@@ -3197,6 +3130,7 @@
               "type": "boolean"
             },
             "opt_in": {
+              "description": "Human ids in the room whose session opt-in is on.",
               "type": "array",
               "items": {
                 "type": "integer",
@@ -3235,7 +3169,6 @@
       ]
     },
     "HumanUpReason": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
       "type": "string",
       "enum": [
         "timer",
@@ -3244,7 +3177,7 @@
       ]
     },
     "ImpactClass": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "The impact class of an act (TBL-4). The wire spelling is one capital letter.",
       "type": "string",
       "enum": [
         "L",
@@ -3284,6 +3217,13 @@
           "$ref": "#/definitions/JobOp"
         },
         "result": true,
+        "stage": {
+          "description": "What a running job is doing now, for the AI jobs (\"research\", \"build\"). Absent for the rest.",
+          "type": [
+            "string",
+            "null"
+          ]
+        },
         "state": {
           "$ref": "#/definitions/JobState"
         }
@@ -3295,7 +3235,9 @@
         "validate",
         "compile",
         "draft",
-        "autolook"
+        "autolook",
+        "ai_draft",
+        "ai_crew"
       ]
     },
     "JobState": {
@@ -3372,12 +3314,46 @@
         "mandatory"
       ]
     },
+    "Motion": {
+      "description": "The seven client procedural motions (section 5.8).",
+      "type": "string",
+      "enum": [
+        "lunge",
+        "hit_stop",
+        "tint_flash",
+        "knockback",
+        "shake",
+        "recoil",
+        "fall"
+      ]
+    },
+    "MotionWho": {
+      "description": "`motion.who`: an avatar id, or `\"both\"` (the actor and the target).",
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "int64"
+        },
+        {
+          "$ref": "#/definitions/Both"
+        }
+      ]
+    },
     "NoticeKind": {
       "type": "string",
       "enum": [
         "info",
         "warn",
         "error"
+      ]
+    },
+    "Origin": {
+      "description": "Who asked for an act: the model, the director or the scenario's author.",
+      "type": "string",
+      "enum": [
+        "model",
+        "director",
+        "scenario"
       ]
     },
     "Outcome": {
@@ -3525,6 +3501,86 @@
           }
         }
       ]
+    },
+    "Outcome2": {
+      "description": "`act_done.outcome`.",
+      "type": "string",
+      "enum": [
+        "landed",
+        "dodged",
+        "blocked",
+        "declined",
+        "timeout",
+        "aborted"
+      ]
+    },
+    "OverlayClear": {
+      "description": "Why `act_overlay_clear` ended an overlay (OVL-2, OVL-3).",
+      "type": "string",
+      "enum": [
+        "cleared",
+        "scene_cut"
+      ]
+    },
+    "OverlayEnd": {
+      "description": "How an overlay ends besides a number of milliseconds.",
+      "type": "string",
+      "enum": [
+        "scene_cut",
+        "cleared"
+      ]
+    },
+    "OverlayUntil": {
+      "description": "`overlay.until`: after that many ms, at the next scene cut, or when `act_overlay_clear` says so.",
+      "anyOf": [
+        {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        {
+          "$ref": "#/definitions/OverlayEnd"
+        }
+      ]
+    },
+    "Owed": {
+      "description": "One reaction an actor owes (`act_beat.owed`), with its absolute deadline in epoch ms.",
+      "type": "object",
+      "required": [
+        "due_at",
+        "role",
+        "who"
+      ],
+      "properties": {
+        "due_at": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "role": {
+          "$ref": "#/definitions/ReactionRole"
+        },
+        "who": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "OwedMissed": {
+      "description": "A reaction still owed at the end of the window (`act_done.owed_missed`).",
+      "type": "object",
+      "required": [
+        "role",
+        "who"
+      ],
+      "properties": {
+        "role": {
+          "$ref": "#/definitions/ReactionRole"
+        },
+        "who": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
     },
     "PairKind": {
       "description": "A pair act between two avatars.",
@@ -4343,8 +4399,24 @@
         }
       }
     },
+    "PromptClose": {
+      "description": "Why `act_prompt_close` closed the chip.",
+      "type": "string",
+      "enum": [
+        "answered",
+        "timeout",
+        "aborted"
+      ]
+    },
+    "ReactionRole": {
+      "description": "Who owes a reaction.",
+      "type": "string",
+      "enum": [
+        "target",
+        "witness"
+      ]
+    },
     "ReactionSource": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
       "type": "string",
       "enum": [
         "table",
@@ -4685,7 +4757,7 @@
       ]
     },
     "SceneCutReason": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
+      "description": "`scene_cut.reason`: always `sidecar`; the field stays so a later revision can add causes.",
       "type": "string",
       "enum": [
         "sidecar"
@@ -5164,6 +5236,15 @@
             "id": {
               "type": "integer",
               "format": "int64"
+            },
+            "ms": {
+              "description": "How long a table gesture plays before the idle pose returns, with no `stop` (TBL-15). Set only by the drama sequencer.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
             },
             "style": {
               "type": [
@@ -5851,6 +5932,218 @@
               ]
             }
           }
+        },
+        {
+          "description": "The consent chip of an act: `from` (an Actor id) is about to do `verb` to you. Answer with `act_reply` within `ttl_ms`. One chip registry serves this and `pair_prompt`.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "choices",
+            "default",
+            "family",
+            "from",
+            "name",
+            "t",
+            "timeout_as",
+            "ttl_ms",
+            "verb"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "choices": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/ChipChoice"
+              }
+            },
+            "default": {
+              "description": "The focused button and the Escape answer: always `dodge`.",
+              "allOf": [
+                {
+                  "$ref": "#/definitions/ChipChoice"
+                }
+              ]
+            },
+            "family": {
+              "$ref": "#/definitions/ConsentFamily"
+            },
+            "from": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "name": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "act_prompt"
+              ]
+            },
+            "timeout_as": {
+              "$ref": "#/definitions/TimeoutAs"
+            },
+            "ttl_ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "verb": {
+              "$ref": "#/definitions/Verb"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "act_id",
+            "reason",
+            "t"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "reason": {
+              "$ref": "#/definitions/PromptClose"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "act_prompt_close"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The client steps of an act, compiled by the hotel. Every `at` is in ms from `base_at`.",
+          "type": "object",
+          "required": [
+            "act_id",
+            "actor",
+            "base_at",
+            "phase",
+            "steps",
+            "t",
+            "verb"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "actor": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "base_at": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "class": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/ImpactClass"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "phase": {
+              "$ref": "#/definitions/TimelinePhase"
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/TimelineStep"
+              }
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "act_timeline"
+              ]
+            },
+            "verb": {
+              "$ref": "#/definitions/Verb"
+            },
+            "with": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "Ends an overlay early or on its event (the down stand-up, a scene cut).",
+          "type": "object",
+          "required": [
+            "act_id",
+            "id",
+            "name",
+            "reason",
+            "t",
+            "who"
+          ],
+          "properties": {
+            "act_id": {
+              "type": "string"
+            },
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "reason": {
+              "$ref": "#/definitions/OverlayClear"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "act_overlay_clear"
+              ]
+            },
+            "who": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        },
+        {
+          "description": "Drama state for this session: sent on join, on change, and when calm or the pause changes. `enabled: false` hides the opt-in control.",
+          "type": "object",
+          "required": [
+            "calm",
+            "enabled",
+            "opt_in",
+            "paused",
+            "t"
+          ],
+          "properties": {
+            "calm": {
+              "type": "boolean"
+            },
+            "enabled": {
+              "type": "boolean"
+            },
+            "opt_in": {
+              "type": "boolean"
+            },
+            "paused": {
+              "type": "boolean"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "drama_status"
+              ]
+            }
+          }
         }
       ]
     },
@@ -5985,7 +6278,7 @@
           ]
         },
         "verb_vocab": {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
+          "description": "The vendored `verb-vocab.json` of a dialect 2 sidecar (NEG-3, NEG-7).",
           "anyOf": [
             {
               "$ref": "#/definitions/VerbVocabRef"
@@ -6012,8 +6305,7 @@
           ],
           "properties": {
             "caps": {
-              "$comment": "STAND-IN until vendored from habbo H1 output",
-              "description": "`[\"drama.v1\"]` when the sidecar accepts the offer (NEG-3).",
+              "description": "`[\"drama.v1\"]` from a dialect 2 sidecar; absent otherwise (NEG-3).",
               "type": "array",
               "items": {
                 "type": "string"
@@ -6459,11 +6751,11 @@
           }
         },
         {
-          "$comment": "STAND-IN until vendored from habbo H1 output",
-          "description": "Section 3.9: the only way a scene is cut (SCENE-2).",
+          "description": "The sidecar's script advanced: cut the scene. The only way a scene is cut (SCENE-2). With a `cid` a failure answers `actor_error{cid}`; without one it is dropped and logged. Dialect 2 only.",
           "type": "object",
           "required": [
             "lease",
+            "reason",
             "run",
             "t"
           ],
@@ -6483,10 +6775,7 @@
             },
             "reason": {
               "description": "Free text, at most 40 characters, logged only.",
-              "type": [
-                "string",
-                "null"
-              ]
+              "type": "string"
             },
             "run": {
               "type": "integer",
@@ -6642,6 +6931,260 @@
         "yellow"
       ]
     },
+    "TimelinePhase": {
+      "description": "Which phase of an act a `act_timeline` frame carries (section 3.11).",
+      "type": "string",
+      "enum": [
+        "pre",
+        "post",
+        "all"
+      ]
+    },
+    "TimelineStep": {
+      "description": "A step of an `act_timeline`: `at` is in ms from the frame's `base_at` and may be negative.",
+      "type": "object",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "emotion",
+            "ms",
+            "on",
+            "p"
+          ],
+          "properties": {
+            "emotion": {
+              "type": "string"
+            },
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "on": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "p": {
+              "type": "string",
+              "enum": [
+                "cue"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "cue",
+            "p"
+          ],
+          "properties": {
+            "cue": {
+              "type": "string"
+            },
+            "p": {
+              "type": "string",
+              "enum": [
+                "sfx"
+              ]
+            }
+          }
+        },
+        {
+          "description": "Overlay text in the run's language with `{actor}` and `{target}` already replaced (TBL-13).",
+          "type": "object",
+          "required": [
+            "ms",
+            "p",
+            "text"
+          ],
+          "properties": {
+            "ms": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "p": {
+              "type": "string",
+              "enum": [
+                "caption"
+              ]
+            },
+            "text": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "description": "The parameters of a `motion` step; which ones are set depends on the motion (section 5.8).",
+          "type": "object",
+          "required": [
+            "name",
+            "p",
+            "who"
+          ],
+          "properties": {
+            "away_from": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            },
+            "back_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "bounce_px": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "color": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "curve": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "drop_px": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "frame_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "frames": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "name": {
+              "$ref": "#/definitions/Motion"
+            },
+            "overshoot_px": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "p": {
+              "type": "string",
+              "enum": [
+                "motion"
+              ]
+            },
+            "px": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "rot_deg": {
+              "type": [
+                "number",
+                "null"
+              ]
+            },
+            "toward": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "int64"
+            },
+            "who": {
+              "$ref": "#/definitions/MotionWho"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "name",
+            "p",
+            "until",
+            "who"
+          ],
+          "properties": {
+            "id": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            },
+            "p": {
+              "type": "string",
+              "enum": [
+                "overlay"
+              ]
+            },
+            "until": {
+              "$ref": "#/definitions/OverlayUntil"
+            },
+            "who": {
+              "type": "integer",
+              "format": "int64"
+            }
+          }
+        }
+      ],
+      "required": [
+        "at"
+      ],
+      "properties": {
+        "at": {
+          "type": "integer",
+          "format": "int64"
+        }
+      }
+    },
+    "TimeoutAs": {
+      "description": "What silence means on a chip: `dodge`, or the act completing with the initiator's steps only (a hug).",
+      "type": "string",
+      "enum": [
+        "dodge",
+        "initiator_only"
+      ]
+    },
     "UiTarget": {
       "description": "Where a `ui_push` goes. Externally tagged: `{\"admin\":9}`, `{\"run\":7}`, `{\"room\":12}`, `{\"users\":[1,2]}`.",
       "oneOf": [
@@ -6740,9 +7283,32 @@
         }
       }
     },
+    "Verb": {
+      "description": "The 18 verbs (section 0.2). The wire spelling is the table's id.",
+      "type": "string",
+      "enum": [
+        "glare",
+        "insult",
+        "shove",
+        "slap",
+        "punch",
+        "kill",
+        "die",
+        "recoil",
+        "freeze_gasp",
+        "hug",
+        "kiss",
+        "turn_back",
+        "cry",
+        "storm_off",
+        "tableau",
+        "restrain",
+        "faint",
+        "tend_fallen"
+      ]
+    },
     "VerbVocabRef": {
-      "$comment": "STAND-IN until vendored from habbo H1 output",
-      "description": "`{version, rev, sha256}` of the published verb-vocab.json bytes (NEG-7).",
+      "description": "`{version, rev, sha256}` of the published `verb-vocab.json` bytes (NEG-7, VV-3). A `version` mismatch makes the sidecar answer dialect 1; `rev` or `sha256` only warn.",
       "type": "object",
       "required": [
         "rev",

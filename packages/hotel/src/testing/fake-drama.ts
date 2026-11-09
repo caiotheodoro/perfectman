@@ -1,6 +1,6 @@
 import type { ActOrigin, ActVerb } from "@perfectman/shared";
 import { ACT_TARGET_MODE, impactClassOf, ladderRung } from "@perfectman/shared";
-import type { ActOwed, ActRole, ChipAnswer, DramaAbortReason, DramaBlockedReason, HelloDrama, HotelMsg, VerbVocabRef } from "../director/index.js";
+import type { ActReason, ChipAnswer, HelloDrama, HotelMsg, Owed, ReactionRole, VerbVocabRef } from "../director/index.js";
 import { VERB_VOCAB_REV, VERB_VOCAB_SHA256, VERB_VOCAB_VERSION, VOCAB_CONSTANTS } from "../director/verb-vocab.generated.js";
 
 /**
@@ -32,14 +32,14 @@ export type ActScript = {
   chip?: boolean;
   answer?: ChipAnswer;
   /** `blocked` or `aborted`. */
-  reason?: DramaBlockedReason | DramaAbortReason;
+  reason?: ActReason;
   detail?: string;
   /** Avatars in the witness set at contact (actors first, ascending). */
   witnesses?: number[];
   /** Actors that owe a reaction (the only ground truth, REA-1). */
-  owed?: Array<{ who: number; role: ActRole }>;
+  owed?: Array<{ who: number; role: ReactionRole }>;
   /** Reactions emitted, in order. */
-  reactions?: Array<{ who: number; role: ActRole; reaction: string; source?: "table" | "planner" }>;
+  reactions?: Array<{ who: number; role: ReactionRole; reaction: string; source?: "table" | "planner" }>;
   /** `target_opt_in` of a human target, default true (every started violent act has it, GATE-6). */
   targetOptIn?: boolean;
   /** `landed` kill on an actor: the victim starts dying at contact. On a human: `human_down`. */
@@ -85,7 +85,7 @@ export function actFrames(s: ActScript): Out[] {
   const contact = s.outcome === "landed" || s.outcome === "timeout";
   if (contact) {
     at += chip ? VOCAB_CONSTANTS.chip_windup_ms : 300;
-    const owed: ActOwed[] = (s.owed ?? []).map((o) => ({ who: o.who, role: o.role, due_at: at + (o.role === "target" ? VOCAB_CONSTANTS.target_deadline_ms : VOCAB_CONSTANTS.witness_deadline_ms) }));
+    const owed: Owed[] = (s.owed ?? []).map((o) => ({ who: o.who, role: o.role, due_at: at + (o.role === "target" ? VOCAB_CONSTANTS.target_deadline_ms : VOCAB_CONSTANTS.witness_deadline_ms) }));
     out.push({ t: "act_beat", ...base, beat: "contact", at, witnesses: [...(s.witnesses ?? [])], owed });
     (s.reactions ?? []).forEach((r, i) => out.push({ t: "act_reaction", ...base, who: r.who, role: r.role, reaction: r.reaction, source: r.source ?? "table", at: at + 400 + i * 300 }));
     if (s.death && !s.death.human) out.push({ t: "actor_death", run, room, actor: s.death.victim, cause: "kill", act_id: s.actId, killer: s.death.killer, scene, at: at + 175 });

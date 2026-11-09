@@ -48,7 +48,7 @@ export function checkFrame(direction: FrameDirection, frame: unknown): FrameChec
   return { ok, errors: ok ? [] : (validate.errors ?? []).map((e) => `${e.instancePath || "/"} ${e.message ?? "invalid"}`) };
 }
 
-/** The members of a closed enum definition of the schema (`ActVerb`, `DramaBlockedReason`, `ActorErrorCode`, ...). */
+/** The members of a closed enum definition of the schema (`Verb`, `BlockedReason`, `ActorErrorCode`, ...). */
 export function schemaEnum(name: string): string[] {
   const raw = JSON.parse(readFileSync(DIRECTOR_SCHEMA_PATH, "utf8")) as { definitions: Record<string, { enum?: string[] }> };
   const members = raw.definitions[name]?.enum;

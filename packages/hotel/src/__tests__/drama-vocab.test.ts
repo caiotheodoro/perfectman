@@ -77,20 +77,13 @@ describe("verb-vocab: the vendored table", () => {
     expect(pinned).toBe(sha);
     expect(VERB_VOCAB_SHA256).toBe(sha);
   });
-
-  it("[VV-1] the stand-in verb table is the draft in docs/drama, minus the dropped keys", () => {
-    const draft = JSON.parse(readFileSync(join(HERE, "../../../../docs/drama/verb-vocab.draft.json"), "utf8")) as Record<string, unknown>;
-    const { $comment: _c, draft: _d, contract: _k, ...published } = draft;
-    const { $comment: _own, ...standIn } = vocab;
-    expect(standIn).toEqual(published);
-  });
 });
 
 describe("verb-vocab: matches the generated ids", () => {
   it("[VV-4] [ACT-6] the verb ids are the same list in the table, the generated ids, the TypeScript union, the wire enum and BodyIntentSchema", () => {
     expect(diffIds(vocab.enums["verbs"] ?? [], VERB_IDS)).toEqual([]);
     expect(diffIds(vocab.enums["verbs"] ?? [], ACT_VERBS)).toEqual([]);
-    expect(diffIds(vocab.enums["verbs"] ?? [], schemaEnum("ActVerb"))).toEqual([]);
+    expect(diffIds(vocab.enums["verbs"] ?? [], schemaEnum("Verb"))).toEqual([]);
     expect(diffIds(vocab.enums["verbs"] ?? [], BodyActSchema.shape.verb.options)).toEqual([]);
     expect(diffIds(vocab.enums["verbs"] ?? [], Object.keys(vocab.verbs))).toEqual([]);
   });
@@ -102,11 +95,13 @@ describe("verb-vocab: matches the generated ids", () => {
   });
 
   it("[VV-4] the enums of the contract are the same in the table, the wire schema and the TypeScript constants", () => {
-    expect(diffIds(VOCAB_ENUMS.blocked_reasons, schemaEnum("DramaBlockedReason"))).toEqual([]);
-    expect(diffIds(VOCAB_ENUMS.abort_reasons, schemaEnum("DramaAbortReason"))).toEqual([]);
-    expect(diffIds(VOCAB_ENUMS.outcomes, schemaEnum("ActOutcome"))).toEqual([]);
+    expect(diffIds(VOCAB_ENUMS.blocked_reasons, schemaEnum("BlockedReason"))).toEqual([]);
+    // The hotel's `act_done.reason` is one enum, `ActReason`: the blocked reasons, then the abort reasons the blocked ones do not already name.
+    const abortOnly = VOCAB_ENUMS.abort_reasons.filter((r) => !(VOCAB_ENUMS.blocked_reasons as readonly string[]).includes(r));
+    expect(diffIds([...VOCAB_ENUMS.blocked_reasons, ...abortOnly], schemaEnum("ActReason"))).toEqual([]);
+    expect(diffIds(VOCAB_ENUMS.outcomes, schemaEnum("Outcome2"))).toEqual([]);
     expect(diffIds(VOCAB_ENUMS.chip_answers, schemaEnum("ChipAnswer"))).toEqual([]);
-    expect(diffIds(VOCAB_ENUMS.origins, schemaEnum("ActOrigin"))).toEqual([]);
+    expect(diffIds(VOCAB_ENUMS.origins, schemaEnum("Origin"))).toEqual([]);
     expect(diffIds(VOCAB_ENUMS.origins, ACT_ORIGINS)).toEqual([]);
     expect(diffIds(VOCAB_ENUMS.impact_classes, schemaEnum("ImpactClass"))).toEqual([]);
     expect(diffIds(VOCAB_ENUMS.ladder, LADDER_VERBS)).toEqual([]);

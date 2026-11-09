@@ -1,6 +1,6 @@
 import type { ActionEmotions, ActOrigin, ActVerb, CoreMood, RelationalState, SocialEmotions } from "@perfectman/shared";
 import type { ActCmdError } from "../act-cmd.js";
-import type { DramaBlockedReason, HotelFrame } from "../index.js";
+import type { BlockedReason, HotelFrame } from "../index.js";
 
 /**
  * The port between the drama director (packet P2) and the planner and engine (packet P3).
@@ -99,7 +99,7 @@ export type DramaApproval = {
 /** Nothing was sent. `reason` is the contract's enum; `rule` is the id of the rule that said no. */
 export type DramaVeto = {
   kind: "veto";
-  reason: DramaBlockedReason;
+  reason: BlockedReason;
   /** The contract's `detail` where the rule has one (`max_rung`, `zero_witness`, `physical`, `chip_busy`, ...), or the director's own (`motive`, `contagion`). */
   detail?: string;
   rule: string;

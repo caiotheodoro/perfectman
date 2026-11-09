@@ -3,7 +3,7 @@ import { LADDER_VERBS, PHYSICAL_VERBS, ladderRung } from "@perfectman/shared";
 import { HUMAN_REF } from "../../authoring/scenario-drama.js";
 import type { RunDrama } from "../../authoring/scenario-drama.js";
 import { chebyshev } from "../../space/geometry.js";
-import type { DramaBlockedReason } from "../index.js";
+import type { BlockedReason } from "../index.js";
 import { HARM_VERBS, LIMITS, VERB_GATES } from "./tuning.js";
 
 /**
@@ -53,9 +53,9 @@ export type GateInput = {
 
 export type GateVerdict =
   | { ok: true; rung: number | undefined; skippedRungs: ActVerb[] }
-  | { ok: false; reason: DramaBlockedReason; detail?: string; rule: string };
+  | { ok: false; reason: BlockedReason; detail?: string; rule: string };
 
-const block = (reason: DramaBlockedReason, rule: string, detail?: string): GateVerdict => ({ ok: false, reason, rule, ...(detail !== undefined ? { detail } : {}) });
+const block = (reason: BlockedReason, rule: string, detail?: string): GateVerdict => ({ ok: false, reason, rule, ...(detail !== undefined ? { detail } : {}) });
 
 export function reviewGates(i: GateInput): GateVerdict {
   const gate = VERB_GATES[i.verb];

@@ -55,7 +55,7 @@ export function negotiate(hello: Hello, own: { enabled: boolean }): Negotiation 
     ackProto: 2,
     caps: [DRAMA_CAP],
     verbVocab: OWN_VOCAB,
-    session: { enabled: drama.enabled, chipTtlMs: drama.chip_ttl_ms, harmMax: drama.harm_max, harmWindowS: drama.harm_window_s, dead: [...drama.dead] },
+    session: { enabled: drama.enabled, chipTtlMs: drama.chip_ttl_ms, harmMax: drama.harm_max, harmWindowS: drama.harm_window_s, dead: [...(drama.dead ?? [])] },
     warnings,
   };
 }

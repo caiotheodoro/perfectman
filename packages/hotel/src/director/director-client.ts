@@ -15,6 +15,8 @@ export const BACKOFF_MS = [1000, 2000, 4000, 8000] as const;
 export const HEARTBEAT_MS = 5000;
 /** How long the command loop waits for the hotel's fresh leases after a reconnect before it goes on regardless. */
 export const LEASE_WAIT_MS = 3000;
+/** What a `scene_advance` says when its caller gave no reason: the hotel's schema requires the field (errata E-01). */
+export const DEFAULT_ADVANCE_REASON = "script";
 
 export type FrameRecorder = (dir: "in" | "out", frame: SidecarFrame | HotelFrame) => void;
 
@@ -158,12 +160,15 @@ export class DirectorClient {
     return this.send({ t: "actor_cmd", cid, run: p.run, lease, actor: p.actor, cmd: p.cmd }) ? { sent: true, cid } : { sent: false, reason: "no_lease" };
   }
 
-  /** The sidecar's script advanced: cut the scene (SCENE-2). Dialect 2 only; honoured by the hotel at most once per `scene_min_age_ms` (SCENE-5). */
+  /**
+   * The sidecar's script advanced: cut the scene (SCENE-2). Dialect 2 only; honoured by the hotel at most once per `scene_min_age_ms` (SCENE-5).
+   * The hotel's schema requires `reason` (a Rust `String`, no default) where section 3.9 leaves it implicit, so one is always sent.
+   */
   sendSceneAdvance(run: number, reason?: string): ActSend {
     if (this.dialect !== 2) return this.refuse();
     const lease = this.leases.get(run);
     if (lease === undefined || this.awaitingLease?.has(run)) return { sent: false, reason: "no_lease" };
-    const ok = this.send({ t: "scene_advance", run, lease, ...(reason ? { reason: reason.slice(0, 40) } : {}) });
+    const ok = this.send({ t: "scene_advance", run, lease, reason: (reason || DEFAULT_ADVANCE_REASON).slice(0, 40) });
     return ok ? { sent: true } : { sent: false, reason: "no_lease" };
   }
 

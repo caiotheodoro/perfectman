@@ -1,5 +1,4 @@
 {
-  "$comment": "STAND-IN until vendored from habbo H1 output. Hand-copied from docs/drama/verb-vocab.draft.json (draft, contract and the draft $comment dropped, as act-contract.md VV-1 says the published file does). Replace with docs/perfectman/schema/verb-vocab.json from the hotel repo, then update schema/SOURCE.md and the pinned sha.",
   "version": 1,
   "rev": 2,
   "bible": "docs/drama/verb-bible.md",
