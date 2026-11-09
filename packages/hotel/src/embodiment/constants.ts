@@ -53,3 +53,10 @@ export const ERRAND_STAY_MS = 70_000;
 
 /** After a person speaks to an actor (or the actor answers them) it keeps its eyes on them this long, whoever else talks. */
 export const HUMAN_FACE_HOLD_MS = 7000;
+
+// ---- drama (act-contract.md, verb-vocab.json `constants`) -----------------------------------------------------------
+
+/** LAD-8: the killer is locked from the celebration gestures this long from contact. */
+export const NO_REWARD_MS = 5000;
+/** TBL-11: a tableau holds every actor within this many tiles of its actor. */
+export const TABLEAU_RADIUS_TILES = 6;
