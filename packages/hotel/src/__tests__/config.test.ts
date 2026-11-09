@@ -28,6 +28,13 @@ describe("sidecar configuration", () => {
     expect(typo.dramaWarning).toContain("treu");
   });
 
+  it("[DEATH-5] the ghost voice is a flag that is off unless asked, parsed like the drama switch, and means nothing without drama", () => {
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "on" })).not.toHaveProperty("dramaGhostVoice");
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "on", PERFECTMAN_DRAMA_GHOST_VOICE: "yes" })).toMatchObject({ dramaGhostVoice: true });
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "on", PERFECTMAN_DRAMA_GHOST_VOICE: "treu" })).not.toHaveProperty("dramaGhostVoice");
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA_GHOST_VOICE: "on" })).not.toHaveProperty("dramaGhostVoice");
+  });
+
   it("is quiet when disabled: nothing is required", () => {
     expect(parseConfig({ PERFECTMAN_ENABLED: "0" }).enabled).toBe(false);
   });

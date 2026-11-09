@@ -46,6 +46,8 @@ export type HotelConfig = {
   drama?: boolean;
   /** Why `PERFECTMAN_DRAMA` was read as off though it was set (a typo); logged at start. */
   dramaWarning?: string;
+  /** `PERFECTMAN_DRAMA_GHOST_VOICE` (DEATH-5): a dead actor may think aloud in a cinematic run, as a thought and never on the wire. Needs drama on. */
+  dramaGhostVoice?: boolean;
 };
 
 /** The links a run calls, first = default. Mock has none. */
@@ -145,6 +147,7 @@ export function parseConfig(env: Env = process.env): HotelConfig {
   const internalUrl = env["PERFECTMAN_INTERNAL_URL"] ?? "";
   const baseUrl = chain[0]?.baseUrl ?? env["PERFECTMAN_LLM_BASE_URL"] ?? "";
   const drama = parseDramaEnv(env["PERFECTMAN_DRAMA"]);
+  const ghost = parseDramaEnv(env["PERFECTMAN_DRAMA_GHOST_VOICE"]);
 
   const config: HotelConfig = {
     enabled,
@@ -171,6 +174,7 @@ export function parseConfig(env: Env = process.env): HotelConfig {
     // Off unless set, so a config built without it (or with drama off) is exactly today's.
     ...(drama.on ? { drama: true } : {}),
     ...(drama.warning ? { dramaWarning: drama.warning } : {}),
+    ...(drama.on && ghost.on ? { dramaGhostVoice: true } : {}),
   };
 
   if (enabled) {

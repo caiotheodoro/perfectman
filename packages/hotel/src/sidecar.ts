@@ -12,6 +12,7 @@ import type { FetchLike } from "./director/http-client.js";
 import { nodeSocketFactory } from "./director/transport.js";
 import type { SocketFactory } from "./director/transport.js";
 import { startHealth } from "./health.js";
+import type { DramaDecisionPort } from "./embodiment/drama-port.js";
 import type { DramaFrameSink } from "./run/drama-frame-sink.js";
 import { RunManager } from "./run/run-manager.js";
 import type { RunTiming } from "./run/run.js";
@@ -30,6 +31,8 @@ export type SidecarOptions = {
   narratorLlm?: NarratorLlm;
   /** Where the drama frames go (act-contract.md 11.2); without one they are read and dropped. */
   dramaSink?: DramaFrameSink;
+  /** The drama director's port for each run (packet P2). */
+  dramaPort?: (run: number) => DramaDecisionPort | undefined;
 };
 
 export type Sidecar = {
@@ -80,6 +83,7 @@ export async function startSidecar(config: HotelConfig, o: SidecarOptions = {}):
       ...(o.timing ? { timing: o.timing } : {}),
       ...(o.narratorLlm ? { narratorLlm: o.narratorLlm } : {}),
       ...(o.dramaSink ? { dramaSink: o.dramaSink } : {}),
+      ...(o.dramaPort ? { dramaPort: o.dramaPort } : {}),
       ...(o.statusIntervalMs !== undefined ? { statusIntervalMs: o.statusIntervalMs } : {}),
     });
     manager.start();

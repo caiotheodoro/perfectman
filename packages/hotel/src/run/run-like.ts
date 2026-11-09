@@ -1,5 +1,6 @@
 import type { RoomId } from "@perfectman/shared";
 import type { HotelFrame, PauseCause, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
+import type { DramaFrameSink } from "./drama-frame-sink.js";
 import type { RunStartParams, StopOptions } from "./run.js";
 
 /** What the manager needs of a run, so a live run and a replay of a recorded one are handled alike. */
@@ -10,6 +11,8 @@ export interface RunLike {
   state: RunState;
   pauseCause: PauseCause | undefined;
   readonly p95Drift: boolean;
+  /** The run's own half of the drama frames (the planner side, packet P3); a replay has none. */
+  readonly dramaSink?: DramaFrameSink;
   roomsInUse(): RoomId[];
   holdsActorIn(room: RoomId): boolean;
   handleFrame(frame: HotelFrame): void;

@@ -9,6 +9,8 @@ import type { HotelHttpClient } from "../director/http-client.js";
 import type { HotelFrame, SidecarMsg } from "../director/index.js";
 import { NOOP_DRAMA_SINK, routeDramaFrame } from "./drama-frame-sink.js";
 import type { DramaFrameSink } from "./drama-frame-sink.js";
+import type { DramaDecisionPort } from "../embodiment/drama-port.js";
+import type { DramaSession } from "../director/dialect.js";
 import type { SocketFactory } from "../director/transport.js";
 import { LlmGovernor } from "../llm/governor.js";
 import { parseScopedRef } from "../space/scoped-ref.js";
@@ -46,6 +48,8 @@ export type ManagerOptions = {
   narratorLlm?: NarratorLlm;
   /** Where the drama frames of a dialect 2 link go (act-contract.md 11.2); absent means a no-op, so the frames are read and dropped. */
   dramaSink?: DramaFrameSink;
+  /** The drama director's port for a run (packet P2); absent means nothing approves the model's `act`. */
+  dramaPort?: (run: number) => DramaDecisionPort | undefined;
 };
 
 /** The mirror's key for an actor as a run reads it: the run's own actors by their plain ref, everyone else's as they are. */
@@ -79,6 +83,8 @@ export class RunManager implements RunLink {
   private readonly resnap = new Map<RoomId, { attempts: number; nextAt: number }>();
   private readonly log: Logger;
   private readonly drama: DramaFrameSink;
+  /** The drama state of the current dialect 2 link, for a run that starts after the `hello` (null: dialect 1). */
+  private dramaSession: DramaSession | null = null;
   private readonly governor: LlmGovernor;
   private timers: TimerHandle[] = [];
   private loopLagMs = 0;
@@ -110,7 +116,11 @@ export class RunManager implements RunLink {
         onHello: (hello) => this.onHello(hello),
         onFrame: (frame) => this.onFrame(frame),
         onConnectionChange: (up) => this.onConnection(up),
-        onDramaSession: (session) => this.drama.onSession(session),
+        onDramaSession: (session) => {
+          this.dramaSession = session;
+          this.drama.onSession(session);
+          for (const r of this.runs.values()) r.dramaSink?.onSession(session);
+        },
       },
     });
   }
@@ -388,9 +398,13 @@ export class RunManager implements RunLink {
       case "human_down":
       case "human_up":
       case "scene_cut":
-      case "drama_state":
+      case "drama_state": {
         routeDramaFrame(frame, this.drama);
+        // The run's own planner side reads the same frame (the ledger, the reactions, the memory writes).
+        const own = this.runs.get(frame.run)?.dramaSink;
+        if (own) routeDramaFrame(frame, own);
         return;
+      }
       default:
         return; // lease is handled by the client; unknown frames are ignored (protocol 2)
     }
@@ -428,6 +442,7 @@ export class RunManager implements RunLink {
     if ([...this.runs.values()].some((r) => r.params.room === f.room)) return ack(false, "run_limit", "one run per room");
     if (this.runs.has(f.run)) return ack(false, "run_limit", "run already started");
 
+    const dramaPort = this.o.dramaPort?.(f.run);
     const run = new Run(params, {
       hotel: this.o.config,
       clock: this.o.clock,
@@ -437,6 +452,7 @@ export class RunManager implements RunLink {
       link: this,
       governor: this.governor,
       ...(this.o.narratorLlm ? { narratorLlm: this.o.narratorLlm } : {}),
+      ...(dramaPort ? { dramaPort } : {}),
       ...(this.o.timing ? { timing: this.o.timing } : {}),
       onEnded: (r) => {
         this.runs.delete(r.id);
@@ -445,6 +461,7 @@ export class RunManager implements RunLink {
       },
     });
     this.runs.set(f.run, run);
+    run.dramaSink?.onSession(this.dramaSession);
     this.trackRun(f.run);
     // A replay is asked for as a `pm_command` right behind the run's start: give a command that is already on
     // the wire the chance to claim the run before anything is validated or built for a live one.
