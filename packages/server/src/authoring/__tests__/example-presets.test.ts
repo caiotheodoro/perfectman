@@ -22,25 +22,31 @@ const LLM: LLMConfig = {
   retryCount: 0,
 };
 
-const PORTUGUESE_SCENES = new Set(["gato-no-telhado"]);
+const PORTUGUESE_SCENES = new Set(["gato-no-telhado", "tapa-na-cara", "confronto-da-traicao", "assassinato-na-festa", "reencontro-abraco", "anuncio-do-desmaio"]);
 
 describe("example presets compile when a scene is paired with its named cast", () => {
   it("loads the headline library and the polite control", async () => {
     const library = await loadPresets(PRESETS_ROOT);
     expect(library.casts.map((c) => c.id).sort()).toEqual([
       "building-aurora",
+      "casa-vilela",
       "elevator-four",
       "residencial-aurora",
       "studio-partners",
       "the-group",
     ]);
     expect(library.scenes.map((s) => s.id).sort()).toEqual([
+      "anuncio-do-desmaio",
+      "assassinato-na-festa",
       "cat-on-the-roof",
       "cinco-gorilas",
+      "confronto-da-traicao",
       "elevator-at-midnight",
       "gato-no-telhado",
       "live-que-nao-cai",
       "o-print",
+      "reencontro-abraco",
+      "tapa-na-cara",
       "the-slice",
       "ultima-proteina",
       "ultimo-thread",

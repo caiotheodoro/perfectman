@@ -67,6 +67,9 @@ importers:
       '@types/node':
         specifier: ^26.2.0
         version: 26.2.0
+      ajv:
+        specifier: 8.20.0
+        version: 8.20.0
       esbuild:
         specifier: 0.25.12
         version: 0.25.12

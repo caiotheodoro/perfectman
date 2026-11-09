@@ -157,3 +157,28 @@ export function resolveRunDrama(body: { drama?: ScenarioDrama }): RunDrama {
   const block = body.drama;
   return { block, effective: block ?? FREE_PLAY_DRAMA, freePlay: block === undefined, canSkip: block !== undefined };
 }
+
+/** A cast member as the compiled scenario names it: the agent id the run's refs use and the name a form would write. */
+export type SceneCastMember = { id: string; displayName: string };
+
+/**
+ * The `drama` block of a markdown scenario's frontmatter (the presets under `examples/presets/scenes`). A markdown author writes the agent
+ * ids the scene's `cast` already uses (`beatriz`), a form's author writes cast names (`Beatriz`); both read the same: an entry that
+ * is an agent id is turned into that person's name, then the form's own compile (SCN-5) runs. `sceneCuts` is how many `beats` of the scene
+ * cut the scene (SCN-6).
+ */
+export function compileSceneDrama(raw: unknown, cast: readonly SceneCastMember[], opts: { sceneCuts?: number } = {}): DramaCompile {
+  const nameOfId = (v: unknown): unknown => {
+    if (typeof v !== "string") return v;
+    const hit = cast.find((c) => c.id.toLowerCase() === v.trim().toLowerCase());
+    return hit ? hit.displayName : v;
+  };
+  const read = (o: unknown): unknown => {
+    if (!isRecord(o)) return o;
+    const out: Record<string, unknown> = { ...o };
+    if (Array.isArray(o["may_target"])) out["may_target"] = o["may_target"].map((pair) => (Array.isArray(pair) ? pair.map(nameOfId) : pair));
+    if (Array.isArray(o["may_die"])) out["may_die"] = o["may_die"].map(nameOfId);
+    return out;
+  };
+  return compileDramaForm(read(raw), { names: cast.map((c) => c.displayName), ids: cast.map((c) => c.id) }, opts);
+}

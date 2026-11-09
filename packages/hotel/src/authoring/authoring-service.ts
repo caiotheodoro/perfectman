@@ -2,6 +2,7 @@ import {
   compilePersonaMarkdown,
   compileRunInputs,
   defaultPresetsRoot,
+  parseMarkdown,
   draftStory,
   loadPresets,
   StoryDraftError,
@@ -16,7 +17,7 @@ import { parseBundle, makeBundle } from "./source-bundle.js";
 import { MAX_BODY_BYTES, SCENARIO_BODY_VERSION, parseScenarioBody, placeholderLlm } from "../run/scenario-body.js";
 import type { ScenarioBody } from "../run/scenario-body.js";
 import { draftToFiles } from "./draft-to-files.js";
-import { compileDramaForm } from "./scenario-drama.js";
+import { compileDramaForm, compileSceneDrama } from "./scenario-drama.js";
 import type { ScenarioDrama } from "./scenario-drama.js";
 import { formArrivals, formStage, formToDraft, parseForm } from "./scenario-form.js";
 import type { FormLooks, ScenarioStage } from "./scenario-form.js";
@@ -99,7 +100,21 @@ export class AuthoringService {
         if (range) delays[a.id] = [range[0], range[1]];
       }
     }
-    return { result, delays, looks, arrivals, dramaWarnings, ...(stage ? { stage } : {}), ...(drama ? { drama } : {}) };
+    // A markdown scenario (a preset) carries its `drama` block in the frontmatter; a form carried it already.
+    const scene = drama === undefined && result.ok && result.summary ? this.sceneDrama(bundle.scenario.text, result.summary.agents) : undefined;
+    return { result, delays, looks, arrivals, dramaWarnings: [...dramaWarnings, ...(scene?.warnings ?? [])], ...(stage ? { stage } : {}), ...(drama ? { drama } : scene?.drama ? { drama: scene.drama } : {}) };
+  }
+
+  /** SCN-5 for a markdown scenario's frontmatter `drama`; its `beats` that cut the scene are the cuts SCN-6 asks for. Errors fail the compile, as a form's do. */
+  private sceneDrama(text: string, agents: readonly { id: string; displayName: string }[]): { drama?: ScenarioDrama; warnings: PathMessage[] } | undefined {
+    const front = parseMarkdown(text).frontmatter;
+    if (front["drama"] === undefined) return undefined;
+    const beats = Array.isArray(front["beats"]) ? front["beats"] : [];
+    const sceneCuts = beats.filter((b) => b !== null && typeof b === "object" && "cut" in b).length;
+    const result = compileSceneDrama(front["drama"], agents, { sceneCuts });
+    if (result.errors.length > 0) throw new AuthoringError(422, "bad_scenario", "scenario did not compile", result.errors);
+    const disabled: PathMessage[] = this.deps.drama ? [] : [{ path: "drama", message: "drama.disabled: this sidecar's PERFECTMAN_DRAMA is off, so the drama block is kept but nothing will enforce or play it" }];
+    return { ...(result.drama ? { drama: result.drama } : {}), warnings: [...disabled, ...result.warnings] };
   }
 
   validate(req: ValidateRequest): ValidateResponse {

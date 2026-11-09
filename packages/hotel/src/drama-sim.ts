@@ -7,10 +7,10 @@
  */
 export { DramaBody } from "./embodiment/drama-body.js";
 export type { ActorPool, AgentStateStore, DramaBodyDeps } from "./embodiment/drama-body.js";
-export { plan } from "./embodiment/plan.js";
+export { plan, updateMemory } from "./embodiment/plan.js";
 export type { PlanInput, PlannedCommand } from "./embodiment/types.js";
 export { DramaDirector, composeDramaSinks, mirrorWorld, DEFAULT_DRAMA_TUNING } from "./director/drama/index.js";
-export type { DramaDecision, DramaDirectorDeps, DramaLink, DramaWorld, WorldAvatar } from "./director/drama/index.js";
+export type { DramaDecision, DramaDirectorDeps, DramaLink, DramaTuning, DramaWorld, WorldAvatar } from "./director/drama/index.js";
 export { routeDramaFrame } from "./run/drama-frame-sink.js";
 export type { DramaFrameSink } from "./run/drama-frame-sink.js";
 export { isDramaFrame, DRAMA_HOTEL_TYPES } from "./director/drama-frames.js";
@@ -22,9 +22,9 @@ export type { ActorCmd, HotelFrame } from "./director/index.js";
 export { VOCAB_CONSTANTS } from "./director/verb-vocab.generated.js";
 export { verbTable } from "./director/verb-table.js";
 export type { TableStep, VerbEntry, VerbTable } from "./director/verb-table.js";
-export { compileDramaForm, cleanDrama, resolveRunDrama, FREE_PLAY_DRAMA } from "./authoring/scenario-drama.js";
-export type { RunDrama, ScenarioDrama, ScenarioFormDrama } from "./authoring/scenario-drama.js";
+export { compileDramaForm, compileSceneDrama, cleanDrama, resolveRunDrama, FREE_PLAY_DRAMA } from "./authoring/scenario-drama.js";
+export type { RunDrama, SceneCastMember, ScenarioDrama, ScenarioFormDrama } from "./authoring/scenario-drama.js";
 export { MockActMemory, mockAct, malformedAct } from "./llm/mock-act.js";
-export type { MockDrama } from "./llm/mock-act.js";
+export type { MockActInput, MockDrama } from "./llm/mock-act.js";
 export type { ActorSpace, OwnActor } from "./space/space-mirror.js";
 export type { Clock, TimerHandle } from "./clock/clock.js";

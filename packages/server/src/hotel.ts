@@ -58,6 +58,8 @@ export type {
 
 export { compileRunInputs } from "./authoring/compile-run-inputs.js";
 export { compilePersonaMarkdown } from "./authoring/persona-md-compiler.js";
+export { parseMarkdown } from "./authoring/md/document.js";
+export type { MdDocument } from "./authoring/md/document.js";
 export type { RunInputs, CompileResult, CompileSummary, UploadedFile } from "./authoring/compile-run-inputs.js";
 export type { Diagnostic } from "./authoring/diagnostics.js";
 export type { RunSeeds } from "./authoring/assemble-config.js";

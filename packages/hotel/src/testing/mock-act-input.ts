@@ -9,6 +9,8 @@ export type Others = Array<{
   ref: string;
   rel?: Partial<RelationalState>;
   fallen?: boolean;
+  /** How far the person is; default `intimate`, beside the actor. */
+  band?: BodyPersonLine["band"];
 }>;
 
 const REL: Omit<RelationalState, "targetAgentId"> = {
@@ -22,7 +24,7 @@ const SOCIAL: SocialEmotions = {
 };
 
 export function consult(o: { me?: string; others: Others; social?: Partial<SocialEmotions>; blocked?: BlockedReason[]; drama?: boolean; places?: number }): AgentRuntimeInput {
-  const people: BodyPersonLine[] = o.others.map((p, i) => ({ handle: `p${i + 1}`, name: p.ref, band: "personal", posture: "stand", ...(p.fallen ? { activity: "fallen" } : {}) }));
+  const people: BodyPersonLine[] = o.others.map((p, i) => ({ handle: `p${i + 1}`, name: p.ref, band: p.band ?? "intimate", posture: "stand", ...(p.fallen ? { activity: "fallen" } : {}) }));
   const handles: BodyHandleMap = Object.fromEntries(o.others.map((p, i) => [`p${i + 1}`, { kind: "person", ref: p.ref }]));
   for (let i = 0; i < (o.places ?? 1); i++) handles[`z${i + 1}`] = { kind: "zone", roomId: "12", zoneId: `zone-${i}` };
   const body: BodyPerception = {

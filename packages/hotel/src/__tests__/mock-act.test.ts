@@ -69,7 +69,7 @@ describe("the mock model's acts (drama on)", () => {
     expect(ask(5, [{ code: "ladder", part: "act" }])).toBe("insult");
   });
 
-  it.each(["budget", "cooldown", "too_far"] as const)("[GATE-9] a %s veto is only about timing: the same step is asked again, never the next", (code) => {
+  it.each(["budget", "too_far"] as const)("[GATE-9] a %s veto is only about timing: the same step is asked again, never the next", (code) => {
     const memory = new MockActMemory();
     const ask = (n: number, blocked: Array<{ code: typeof code; part: "act" }> = []) => actOf(mockAct(consult({ others: [{ ref: "person-2", rel: hot }], blocked }), n, WIDE, memory))?.verb;
     expect(ask(1)).toBe("glare");
@@ -77,6 +77,40 @@ describe("the mock model's acts (drama on)", () => {
     // It waits one consult for the clock or the walk, then asks for the same step again, never the next.
     expect(ask(5, [{ code, part: "act" }])).toBeUndefined();
     expect(ask(6)).toBe("insult");
+  });
+
+  it("[GATE-10] a cooldown veto says the same verb happened a minute ago: the step counts as taken and the ladder goes on from it", () => {
+    const memory = new MockActMemory();
+    const ask = (n: number, blocked: Array<{ code: "cooldown"; part: "act" }> = []) => actOf(mockAct(consult({ others: [{ ref: "person-2", rel: hot }], blocked }), n, WIDE, memory))?.verb;
+    expect([ask(1), ask(4)]).toEqual(["glare", "insult"]);
+    expect(ask(5, [{ code: "cooldown", part: "act" }])).toBeUndefined();
+    expect(ask(7)).toBe("shove");
+  });
+
+  it("[LAD-1] a ladder veto means the step below was never taken: the mock goes back and takes it, then climbs again", () => {
+    const memory = new MockActMemory();
+    const ask = (n: number, blocked: Array<{ code: "ladder"; part: "act" }> = []) => actOf(mockAct(consult({ others: [{ ref: "person-2", rel: hot }], blocked }), n, WIDE, memory))?.verb;
+    expect([ask(1), ask(4), ask(7)]).toEqual(["glare", "insult", "shove"]);
+    // the shove never happened (too far, not reported); the slap is refused and the mock asks for the shove again
+    expect(ask(10)).toBe("slap");
+    expect(ask(11, [{ code: "ladder", part: "act" }])).toBe("shove");
+    expect(ask(14)).toBe("slap");
+  });
+
+  it("a blow is struck from beside the person: from afar the actor only steps in, and the ladder waits where it was", () => {
+    const memory = new MockActMemory();
+    const far = (n: number) => mockAct(consult({ others: [{ ref: "person-2", rel: hot, band: "social" }] }), n, WIDE, memory);
+    const near = (n: number) => actOf(mockAct(consult({ others: [{ ref: "person-2", rel: hot }] }), n, WIDE, memory))?.verb;
+    expect([near(1), near(4)]).toEqual(["glare", "insult"]);
+    expect(far(7)).toEqual({ move: { kind: "approach", target: "p1", band: "intimate" }, order: "together" });
+    expect(near(8)).toBe("shove");
+  });
+
+  it("a contact verb comes with a step in beside the person; a look or a word does not move anyone", () => {
+    const memory = new MockActMemory();
+    const bodies = [1, 4, 7].map((n) => mockAct(consult({ others: [{ ref: "person-2", rel: hot }] }), n, WIDE, memory));
+    expect(bodies.map((b) => b?.["move"])).toEqual([undefined, undefined, { kind: "approach", target: "p1", band: "intimate" }]);
+    expect(bodies[2]?.["order"]).toBe("together");
   });
 
   it("[GATE-5] a veto that says the scene does not allow it stops that pair for good", () => {
@@ -88,12 +122,13 @@ describe("the mock model's acts (drama on)", () => {
     for (let n = 6; n < 30; n++) expect(ask(n)).toBeUndefined();
   });
 
-  it("[NEG-6] warmth hugs, and kisses when there is attraction too, and never twice in a row", () => {
+  it("[NEG-6] warmth hugs, and kisses when there is attraction too, and does not do it again for six gaps", () => {
     const memory = new MockActMemory();
     const dear = (n: number, rel: Record<string, number>) => actOf(mockAct(consult({ others: [{ ref: "person-2", rel }] }), n, WIDE, memory));
     expect(dear(1, { affection: 0.7 })?.verb).toBe("hug");
     expect(dear(2, { affection: 0.7 })).toBeUndefined();
-    expect(dear(7, { affection: 0.9, attraction: 0.9 })?.verb).toBe("kiss");
+    expect(dear(18, { affection: 0.9, attraction: 0.9 })).toBeUndefined();
+    expect(dear(19, { affection: 0.9, attraction: 0.9 })?.verb).toBe("kiss");
   });
 
   it("[bible 4.2] shame cries once, a humiliation as deep as a swoon faints once, and neither has a target", () => {
@@ -117,6 +152,12 @@ describe("the mock model's acts (drama on)", () => {
     for (let n = 1; n <= 16; n++) mockAct(consult({ others: [{ ref: "person-2", rel: { resentment: 0.9 } }] }), n, WIDE, memory);
     expect(memory.killed.has("person-2")).toBe(true);
     expect(actOf(mockAct(consult({ others: [{ ref: "person-2", fallen: true, rel: { resentment: 0.9 } }] }), 17, WIDE, memory))).toMatchObject({ verb: "tableau" });
+  });
+
+  it("a body is reacted to at most twice by one actor, two gaps apart: a proposal can be held while the actor's own act is open", () => {
+    const memory = new MockActMemory();
+    const verbs = Array.from({ length: 30 }, (_, i) => actOf(mockAct(consult({ others: [{ ref: "person-2", fallen: true, rel: { affection: 0.5 } }] }), i + 1, WIDE, memory))?.verb);
+    expect(verbs.flatMap((v, i) => (v ? [[i + 1, v]] : []))).toEqual([[1, "tend_fallen"], [7, "tend_fallen"]]);
   });
 
   it("is deterministic: the same consults give the same proposals", () => {
