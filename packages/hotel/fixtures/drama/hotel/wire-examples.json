@@ -1,0 +1,547 @@
+[
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "hello",
+   "seq": 1,
+   "proto": 1,
+   "proto_max": 2,
+   "caps": [
+    "drama.v1"
+   ],
+   "session": "b2f1",
+   "hotel": {
+    "build": "517ae35",
+    "tick_ms": 300,
+    "max_chat": 200,
+    "max_actions_per_5s": 8,
+    "join_interval_ms": 200,
+    "human_reserve": 10,
+    "max_avatars_per_room": 50
+   },
+   "drama": {
+    "enabled": true,
+    "verb_vocab": {
+     "version": 1,
+     "rev": 2,
+     "sha256": "3f1c9a5e7b2d40688a1c0e94f5d27b3a6c8e1d0f9b4a7c25e83d6f0a1b9c4d72"
+    },
+    "chip_ttl_ms": 4000,
+    "harm_max": 3,
+    "harm_window_s": 300,
+    "dead": [
+     -702
+    ]
+   },
+   "runs": [],
+   "untrusted_text": [
+    "runs[].room_name",
+    "rooms[].name"
+   ],
+   "actors": []
+  }
+ },
+ {
+  "kind": "sidecar",
+  "frame": {
+   "t": "hello_ack",
+   "seq": 1,
+   "proto": 2,
+   "caps": [
+    "drama.v1"
+   ],
+   "resume": [
+    7
+   ],
+   "sidecar": {
+    "version": "0.9.0",
+    "build": "a41c7e2",
+    "schema_sha256": "9d2e6b41c8f07a35e1d94c2b60a7f3815de0c9b2a46f7e183b5d09c4a2e86f17",
+    "verb_vocab": {
+     "version": 1,
+     "rev": 2,
+     "sha256": "3f1c9a5e7b2d40688a1c0e94f5d27b3a6c8e1d0f9b4a7c25e83d6f0a1b9c4d72"
+    }
+   }
+  }
+ },
+ {
+  "kind": "sidecar",
+  "frame": {
+   "t": "hello_ack",
+   "seq": 1,
+   "proto": 1,
+   "resume": [
+    7
+   ],
+   "sidecar": {
+    "version": "0.8.3",
+    "build": "77be10c"
+   }
+  }
+ },
+ {
+  "kind": "sidecar",
+  "frame": {
+   "t": "actor_cmd",
+   "seq": 41,
+   "cid": 31,
+   "run": 7,
+   "lease": 3,
+   "actor": -701,
+   "cmd": {
+    "k": "act",
+    "act_id": "a17",
+    "verb": "slap",
+    "with": 9,
+    "intensity": 0.6,
+    "origin": "director"
+   }
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "act_started",
+   "seq": 201,
+   "run": 7,
+   "room": 12,
+   "act_id": "a17",
+   "verb": "slap",
+   "actor": -701,
+   "with": 9,
+   "intensity": 0.6,
+   "impact": "M",
+   "origin": "director",
+   "scene": "7.2",
+   "rung": 4,
+   "skipped_rungs": [],
+   "authored_skip": false,
+   "target_opt_in": true,
+   "chip": true,
+   "contact_in_ms": null,
+   "at": 1730000123456
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "act_beat",
+   "seq": 204,
+   "run": 7,
+   "room": 12,
+   "act_id": "a17",
+   "beat": "contact",
+   "at": 1730000124010,
+   "witnesses": [
+    -703,
+    -702,
+    11
+   ],
+   "owed": [
+    {
+     "who": -702,
+     "role": "witness",
+     "due_at": 1730000127010
+    },
+    {
+     "who": -703,
+     "role": "witness",
+     "due_at": 1730000127010
+    }
+   ]
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "act_reaction",
+   "seq": 205,
+   "run": 7,
+   "room": 12,
+   "act_id": "a17",
+   "who": -702,
+   "role": "witness",
+   "reaction": "freeze_gasp",
+   "source": "table",
+   "at": 1730000124790
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "act_done",
+   "seq": 209,
+   "run": 7,
+   "room": 12,
+   "act_id": "a17",
+   "verb": "slap",
+   "actor": -701,
+   "with": 9,
+   "outcome": "landed",
+   "answer": "take",
+   "owed_missed": [],
+   "downgraded": [],
+   "at": 1730000128510
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "act_done",
+   "seq": 212,
+   "run": 7,
+   "room": 12,
+   "act_id": "a18",
+   "verb": "punch",
+   "actor": -701,
+   "with": 9,
+   "outcome": "blocked",
+   "reason": "consent_off",
+   "owed_missed": [],
+   "downgraded": [],
+   "at": 1730000140002
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "act_done",
+   "seq": 215,
+   "run": 7,
+   "room": 12,
+   "act_id": "a19",
+   "verb": "slap",
+   "actor": -701,
+   "with": -702,
+   "outcome": "blocked",
+   "reason": "no_scenario_gate",
+   "detail": "free_play",
+   "owed_missed": [],
+   "downgraded": [],
+   "at": 1730000150101
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "drama_consent",
+   "seq": 202,
+   "run": 7,
+   "room": 12,
+   "act_id": "a17",
+   "phase": "shown",
+   "actor": -701,
+   "with": 9,
+   "verb": "slap",
+   "family": "violent",
+   "ttl_ms": 4000,
+   "at": 1730000123470
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "drama_consent",
+   "seq": 203,
+   "run": 7,
+   "room": 12,
+   "act_id": "a17",
+   "phase": "answered",
+   "actor": -701,
+   "with": 9,
+   "verb": "slap",
+   "family": "violent",
+   "answer": "take",
+   "at": 1730000123860
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "actor_death",
+   "seq": 230,
+   "run": 7,
+   "room": 12,
+   "actor": -702,
+   "cause": "kill",
+   "act_id": "a20",
+   "killer": -701,
+   "scene": "7.2",
+   "at": 1730000200180
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "actor_revive",
+   "seq": 251,
+   "run": 7,
+   "room": 12,
+   "actor": -702,
+   "scene": "7.3",
+   "prev": "7.2",
+   "x": 5,
+   "y": 6,
+   "effect": "",
+   "at": 1730000260000
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "human_down",
+   "seq": 231,
+   "run": 7,
+   "room": 12,
+   "human": 9,
+   "act_id": "a21",
+   "ms": 5000,
+   "scene": "7.2",
+   "at": 1730000208175
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "human_up",
+   "seq": 236,
+   "run": 7,
+   "room": 12,
+   "human": 9,
+   "act_id": "a21",
+   "reason": "timer",
+   "at": 1730000213175
+  }
+ },
+ {
+  "kind": "sidecar",
+  "frame": {
+   "t": "scene_advance",
+   "seq": 88,
+   "cid": 52,
+   "run": 7,
+   "lease": 3,
+   "reason": "scenario_beat_4"
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "scene_cut",
+   "seq": 250,
+   "run": 7,
+   "scene": "7.3",
+   "prev": "7.2",
+   "reason": "sidecar",
+   "revived": [
+    -702
+   ],
+   "removed": [],
+   "at": 1730000260000
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "drama_state",
+   "seq": 120,
+   "run": 7,
+   "room": 12,
+   "scene": "7.2",
+   "enabled": true,
+   "calm": false,
+   "paused": false,
+   "opt_in": [
+    9
+   ],
+   "at": 1730000100000
+  }
+ },
+ {
+  "kind": "hotel",
+  "frame": {
+   "t": "drama_state",
+   "seq": 300,
+   "run": 7,
+   "room": 12,
+   "scene": "7.2",
+   "enabled": true,
+   "calm": false,
+   "paused": true,
+   "paused_until": 1730000900000,
+   "opt_in": [
+    9
+   ],
+   "at": 1730000300000
+  }
+ },
+ {
+  "kind": "server",
+  "frame": {
+   "t": "act_prompt",
+   "act_id": "a17",
+   "from": -701,
+   "name": "Duda",
+   "verb": "slap",
+   "family": "violent",
+   "ttl_ms": 4000,
+   "timeout_as": "dodge",
+   "choices": [
+    "take",
+    "dodge",
+    "push_back"
+   ],
+   "default": "dodge"
+  }
+ },
+ {
+  "kind": "server",
+  "frame": {
+   "t": "act_prompt_close",
+   "act_id": "a17",
+   "reason": "answered"
+  }
+ },
+ {
+  "kind": "server",
+  "frame": {
+   "t": "act_timeline",
+   "act_id": "a17",
+   "verb": "slap",
+   "actor": -701,
+   "with": 9,
+   "class": "M",
+   "phase": "pre",
+   "base_at": 1730000123456,
+   "steps": [
+    {
+     "at": 0,
+     "p": "cue",
+     "on": -701,
+     "emotion": "angry",
+     "ms": 1500
+    }
+   ]
+  }
+ },
+ {
+  "kind": "server",
+  "frame": {
+   "t": "act_timeline",
+   "act_id": "a17",
+   "verb": "slap",
+   "actor": -701,
+   "with": 9,
+   "class": "M",
+   "phase": "post",
+   "base_at": 1730000124010,
+   "steps": [
+    {
+     "at": -50,
+     "p": "motion",
+     "who": -701,
+     "name": "lunge",
+     "toward": 9,
+     "px": 10,
+     "in_ms": 50,
+     "back_ms": 150
+    },
+    {
+     "at": 0,
+     "p": "sfx",
+     "cue": "slap"
+    },
+    {
+     "at": 0,
+     "p": "motion",
+     "who": "both",
+     "name": "hit_stop",
+     "ms": 100
+    }
+   ]
+  }
+ },
+ {
+  "kind": "server",
+  "frame": {
+   "t": "act_timeline",
+   "act_id": "a22",
+   "verb": "punch",
+   "actor": -701,
+   "with": 9,
+   "class": "H",
+   "phase": "post",
+   "base_at": 1730000160350,
+   "steps": [
+    {
+     "at": 450,
+     "p": "overlay",
+     "who": 9,
+     "id": "o1",
+     "name": "Twinkle",
+     "until": 1500
+    }
+   ]
+  }
+ },
+ {
+  "kind": "server",
+  "frame": {
+   "t": "act_timeline",
+   "act_id": "a21",
+   "verb": "kill",
+   "actor": -701,
+   "with": 9,
+   "class": "F",
+   "phase": "post",
+   "base_at": 1730000208000,
+   "steps": [
+    {
+     "at": 2175,
+     "p": "overlay",
+     "who": 9,
+     "id": "o2",
+     "name": "TrippyHalo",
+     "until": "cleared"
+    }
+   ]
+  }
+ },
+ {
+  "kind": "server",
+  "frame": {
+   "t": "act_overlay_clear",
+   "act_id": "a21",
+   "id": "o2",
+   "who": 9,
+   "name": "TrippyHalo",
+   "reason": "cleared"
+  }
+ },
+ {
+  "kind": "server",
+  "frame": {
+   "t": "drama_status",
+   "enabled": true,
+   "opt_in": false,
+   "calm": false,
+   "paused": false
+  }
+ },
+ {
+  "kind": "client",
+  "frame": {
+   "t": "act_reply",
+   "act_id": "a17",
+   "choice": "push_back"
+  }
+ },
+ {
+  "kind": "client",
+  "frame": {
+   "t": "drama_opt_in",
+   "on": true
+  }
+ }
+]

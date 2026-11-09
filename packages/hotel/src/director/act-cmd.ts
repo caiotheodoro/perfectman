@@ -22,23 +22,24 @@ export function validateActCmd(cmd: unknown, ctx: { run: number; actor: number }
   const c = cmd as Record<string, unknown>;
   if (c["k"] !== "act") return fail("bad_message");
 
-  // ACT-4: field types and ranges, the field path as detail.
+  // ACT-4: field types and ranges, the field path as detail. The hotel reads a `null` optional field as absent (its schema types them `T | null`), and counts `text` in characters.
+  const given = (key: string): boolean => c[key] !== undefined && c[key] !== null;
   if (typeof c["act_id"] !== "string" || !ACT_ID.test(c["act_id"])) return fail("bad_message", "act.act_id");
   if (typeof c["verb"] !== "string") return fail("bad_message", "act.verb");
-  if (c["intensity"] !== undefined && (typeof c["intensity"] !== "number" || !Number.isFinite(c["intensity"]) || c["intensity"] < 0 || c["intensity"] > 1)) return fail("bad_message", "act.intensity");
-  if (c["with"] !== undefined && !Number.isInteger(c["with"])) return fail("bad_message", "act.with");
-  if (c["text"] !== undefined && (typeof c["text"] !== "string" || c["text"].length > VOCAB_CONSTANTS.text_max_chars)) return fail("bad_message", "act.text");
-  if (c["origin"] !== undefined && !(ACT_ORIGINS as readonly unknown[]).includes(c["origin"])) return fail("bad_message", "act.origin");
-  if (c["authored_skip"] !== undefined && typeof c["authored_skip"] !== "boolean") return fail("bad_message", "act.authored_skip");
+  if (given("intensity") && (typeof c["intensity"] !== "number" || !Number.isFinite(c["intensity"]) || c["intensity"] < 0 || c["intensity"] > 1)) return fail("bad_message", "act.intensity");
+  if (given("with") && !Number.isInteger(c["with"])) return fail("bad_message", "act.with");
+  if (given("text") && (typeof c["text"] !== "string" || [...c["text"]].length > VOCAB_CONSTANTS.text_max_chars)) return fail("bad_message", "act.text");
+  if (given("origin") && !(ACT_ORIGINS as readonly unknown[]).includes(c["origin"])) return fail("bad_message", "act.origin");
+  if (given("authored_skip") && typeof c["authored_skip"] !== "boolean") return fail("bad_message", "act.authored_skip");
 
   // ACT-5: the id is consumed here, whatever happens next.
   if (consumed.has(c["act_id"])) return fail("bad_message", "act_id_reused");
   consumed.add(c["act_id"]);
 
   // ACT-6 to ACT-8.
-  if (!isVerb(c["verb"])) return fail("unknown_verb", c["verb"].slice(0, 40));
-  if (c["text"] !== undefined && c["verb"] !== "insult") return fail("bad_message", "act.text");
-  const target = c["with"];
+  if (!isVerb(c["verb"])) return fail("unknown_verb", [...c["verb"]].slice(0, 40).join(""));
+  if (given("text") && c["verb"] !== "insult") return fail("bad_message", "act.text");
+  const target = given("with") ? c["with"] : undefined;
   if (ACT_TARGET_MODE[c["verb"]] === "required" && target === undefined) return fail("target_required", c["verb"]);
   if (ACT_TARGET_MODE[c["verb"]] === "none" && target !== undefined) return fail("target_forbidden", c["verb"]);
 
