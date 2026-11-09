@@ -10,7 +10,7 @@ export type ReactionDeps = {
   ledger: ActLedger;
   /** The run's own actors: the only ones this planner answers for. */
   isOwn(ref: string): boolean;
-  /** The reactor's emotion state, or undefined when it is not known yet (it then gets the table's reaction alone). */
+  /** The reactor's emotion state, or undefined when it has not been planned yet (it then gets the plain default reaction). */
   state(ref: string): { agentState: AgentState; actionEmotions?: ActionEmotions } | undefined;
   presence(ref: string): Presence | undefined;
   nextActId(): string;
@@ -32,8 +32,7 @@ export class ReactionScheduler {
     for (const debt of owed) {
       if (!this.deps.isOwn(debt.who)) continue;
       const st = this.deps.state(debt.who);
-      if (!st) continue;
-      const reaction = chooseReaction({ debt, state: st.agentState, actionEmotions: st.actionEmotions, presence: this.deps.presence, nextActId: () => this.deps.nextActId() });
+      const reaction = chooseReaction({ debt, state: st?.agentState, actionEmotions: st?.actionEmotions, presence: this.deps.presence, nextActId: () => this.deps.nextActId() });
       if (!reaction) continue;
       const key = `${debt.actId}|${debt.who}`;
       this.timers.get(key)?.cancel();

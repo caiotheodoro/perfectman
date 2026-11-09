@@ -19,8 +19,8 @@ export function isReplaceable(verb: ActVerb, role: "target" | "witness"): boolea
 
 export type ReactionArgs = {
   debt: OwedDebt;
-  /** The reactor's own state: its feelings and its view of the two people in the act. */
-  state: AgentState;
+  /** The reactor's own state: its feelings and its view of the two people in the act. Absent for an actor not planned yet: it gets the plain default. */
+  state?: AgentState | undefined;
   actionEmotions?: ActionEmotions | undefined;
   /** Where somebody stands, for facing and for how close the blow was. */
   presence(ref: string): Presence | undefined;
@@ -41,6 +41,8 @@ const ZERO: ActionEmotions = {
   vulnerableRetreat: 0, contemptuousDismissal: 0, strategicPatience: 0, impulsiveProvocation: 0, comfortSeeking: 0, dominanceAssertion: 0, repairImpulse: 0,
 };
 
+const NO_SOCIAL = { jealousy: 0, envy: 0, humiliation: 0, pride: 0, shame: 0, affection: 0, resentment: 0, suspicion: 0, admiration: 0, contempt: 0, neediness: 0, socialAnxiety: 0, fearOfExclusion: 0, desireForStatus: 0, desireForIntimacy: 0 };
+
 const CLIMAX: ReadonlySet<ActVerb> = new Set<ActVerb>(["kill", "die", "faint"]);
 const AFFECTION: ReadonlySet<ActVerb> = new Set<ActVerb>(["hug", "kiss"]);
 const NONCONTACT: ReadonlySet<ActVerb> = new Set<ActVerb>(["glare", "insult"]);
@@ -53,9 +55,9 @@ export function chooseReaction(a: ReactionArgs): Reaction | undefined {
   const { debt, state } = a;
   if (!isReplaceable(debt.verb, debt.role)) return undefined;
   const A = a.actionEmotions ?? ZERO;
-  const S = state.socialEmotions;
+  const S = state?.socialEmotions ?? NO_SOCIAL;
   const me = debt.who;
-  const rels = state.relationalStates;
+  const rels = state?.relationalStates ?? new Map<string, RelationalState>();
   const aggressor = debt.actor;
   const victim = debt.target ?? debt.actor;
   const relA = rels.get(aggressor);

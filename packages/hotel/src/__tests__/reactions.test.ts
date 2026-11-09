@@ -58,6 +58,11 @@ describe("reactions the planner may give in place of the table's (REA-3)", () =>
     expect(choose(debt({ verb: "insult", who: "bia" }))?.cmd).toMatchObject({ cmd: "face" });
   });
 
+  it("[REA-3] an actor that has not been planned yet has no feelings on file and still answers, with the plain default", () => {
+    const r = chooseReaction({ debt: debt({ who: "bia" }), state: undefined, actionEmotions: undefined, presence: present, nextActId: () => "pb1" });
+    expect(r?.cmd).toMatchObject({ cmd: "act", verb: "freeze_gasp", owed: true });
+  });
+
   it("[REA-4] six witnesses who feel exactly the same still do not react in unison: the seeded variety changes what or when", () => {
     const seen = new Set<string>();
     for (const who of ["gabi", "leo", "bia", "caro", "rafa", "duda"]) {

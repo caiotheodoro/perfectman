@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import type { Sidecar } from "../sidecar.js";
 import { FakeDirector } from "../testing/fake-director.js";
+import { actFrames } from "../testing/fake-drama.js";
 import { TEST_SECRET, bootSidecar, waitFor } from "../testing/helpers.js";
 
 let fake: FakeDirector | undefined;
@@ -35,18 +36,21 @@ async function started() {
 }
 
 describe("the planner side of the drama contract against the fake hotel", () => {
-  it("[REA-1] [REA-3] a witness the hotel says owes a reaction answers with a qualifying command inside its window, and the hotel's frames are read from the run's own sink", async () => {
+  it("[REA-1] [REA-3] a witness the hotel says owes a reaction answers with a qualifying command inside its window, while the act is still open; the hotel's frames are read from the run's own sink", async () => {
     const { hotel, gabi, duda, rafa } = await started();
     const before = hotel.received.filter((f) => f.t === "actor_cmd").length;
+    // The real hotel closes an act seconds after contact (FRM-1): play the start and the beat now and the end later.
+    const frames = actFrames({ actId: "e1", verb: "slap", actor: duda, with: rafa, run: 7, outcome: "landed", witnesses: [gabi], owed: [{ who: gabi, role: "witness" }] });
     const beatAt = Date.now();
-    hotel.scriptAct({ actId: "e1", verb: "slap", actor: duda, with: rafa, run: 7, outcome: "landed", witnesses: [gabi], owed: [{ who: gabi, role: "witness" }] });
+    for (const f of frames.slice(0, 2)) hotel.send(f);
     const reply = await waitFor(
       () => hotel.received.slice(before).find((f) => f.t === "actor_cmd" && f.actor === gabi && ["face", "expression", "action", "act"].includes(f.cmd.k)),
       "gabi's reaction",
       3000,
     );
-    expect(reply).toBeDefined();
+    expect(reply).toMatchObject({ t: "actor_cmd", actor: gabi });
     expect(Date.now() - beatAt).toBeLessThan(3000);
+    for (const f of frames.slice(2)) hotel.send(f);
   });
 
   it("[REA-2] nothing owed, nothing sent: a human target and a witness list with no owed row leave the cast without a single act", async () => {
