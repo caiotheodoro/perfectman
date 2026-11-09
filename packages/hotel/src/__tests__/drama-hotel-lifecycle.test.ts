@@ -4,7 +4,7 @@ import { A, B, C, H, WIDE_BLOCK, emotion, makeRig } from "../testing/drama-rig.j
 import type { Rig } from "../testing/drama-rig.js";
 import { FakeDirector } from "../testing/fake-director.js";
 import { TEST_SECRET, bootSidecar, waitFor } from "../testing/helpers.js";
-import { lifecycleFrames } from "../testing/hotel-fixtures.js";
+import { lifecycleFrames, lifecycleMsgs } from "../testing/hotel-fixtures.js";
 import type { Lifecycle } from "../testing/hotel-fixtures.js";
 
 /** Feeds the frames of a recorded lifecycle to the director in the order the hotel sent them; `until` stops after the first frame it matches. */
@@ -90,7 +90,7 @@ describe("a sidecar on the fake hotel is fed the same frames", () => {
     const { hotel, run } = await boot();
     const ids = ["person-1", "person-2", "person-3"].map((r) => hotel.avatarByRef(r, 7)?.id);
     expect(ids).toEqual([-701, -702, -703]);
-    const frames = lifecycleFrames("kill-actor-revive");
+    const frames = lifecycleMsgs("kill-actor-revive");
     const death = frames.findIndex((f) => f["t"] === "actor_death");
     for (const f of frames.slice(0, death + 1)) hotel.send(f);
     await waitFor(() => run.dramaSink.isDead("person-2"), "person-2 dead");
@@ -102,8 +102,8 @@ describe("a sidecar on the fake hotel is fed the same frames", () => {
   it("[FRM-1] a whole recorded slap reaches the director and the planner side through the one hub: the director sees the act close, and nothing invalid goes back to the hotel", async () => {
     const { hotel, run } = await boot();
     const before = hotel.received.filter((f) => f.t === "actor_cmd" && f.cmd.k === "act").length;
-    const [started, ...rest] = lifecycleFrames("slap-human-take");
-    hotel.send(started ?? {});
+    const [started, ...rest] = lifecycleMsgs("slap-human-take");
+    if (started) hotel.send(started);
     await waitFor(() => run.dramaPort?.busyActId(-701) === "s1", "the director to see the act open");
     for (const f of rest) hotel.send(f);
     await waitFor(() => run.dramaPort?.busyActId(-701) === undefined, "the director to see the act close");

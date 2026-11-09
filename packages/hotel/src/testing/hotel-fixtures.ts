@@ -1,4 +1,6 @@
 import { DRAMA_HOTEL_TYPES } from "../director/drama-frames.js";
+import type { HotelMsg } from "../director/index.js";
+import { checkFrame } from "./frame-schema.js";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -64,4 +66,13 @@ export function asWire(frame: Record<string, unknown>, seq: number): Record<stri
   if (DRAMA_FRAMES_WITH_AT.has(String(frame["t"])) && out["at"] === undefined) out["at"] = 0;
   if (frame["t"] === "hello" && out["session"] === undefined) out["session"] = "SESSION";
   return out;
+}
+
+/** The frames of a lifecycle as typed hotel messages: each one is checked against the real schema first, so the single cast is a validated one. */
+export function lifecycleMsgs(name: Lifecycle): HotelMsg[] {
+  return lifecycleFrames(name).map((frame, i) => {
+    const check = checkFrame("hotel_to_sidecar", asWire(frame, i + 1));
+    if (!check.ok) throw new Error(`${name} frame ${i} (${String(frame["t"])}) is not a HotelMsg: ${check.errors.join("; ")}`);
+    return frame as unknown as HotelMsg;
+  });
 }
