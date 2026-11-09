@@ -284,8 +284,8 @@ cd packages/web
 VITE_API_BASE=<server-url> pnpm build
 npx vercel deploy --prebuilt --prod
 
-# run server — see deploying.md, the CPU and throttling flags are load-bearing
-gcloud run deploy perfectman-server --source . --region=us-central1 ...
+# run server — see deploying.md
+fly deploy -a perfectman-server --strategy rolling
 ```
 
 Presets are read off disk inside the container, so **adding a preset requires

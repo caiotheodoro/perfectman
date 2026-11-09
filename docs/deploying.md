@@ -1,115 +1,142 @@
 # Deploying
 
-The two halves host differently, because only one of them is a static asset.
+Three pieces, each deployed by hand. Nothing deploys on push to `main`: the only
+workflows are `pr-gate.yml`, `benchmark.yml` and `docker-release.yml` (publishes an
+image to GHCR on `v*` tags, and does not touch Fly or the Habbo server).
+
+| Piece | Where | How |
+|---|---|---|
+| Run server | Fly.io app `perfectman-server`, region `iad`, one machine | `fly deploy` |
+| Web interface | Vercel | see [The interface](#the-interface-on-vercel) |
+| Hotel sidecar | Habbo server, one container | rsync, then build there |
 
 ## Why the run server is not serverless
 
-A run is minutes of awaited work that keeps going after the request that
-started it returns. The controller holds its state and SSE backlog in process
-memory, and the stream is a separate request that has to reach that same
-process. A function gets none of those: it is billed and bounded per
-invocation, has no shared memory between them, and its filesystem is read-only.
-
-So the server wants one long-lived instance. Cloud Run with `--max-instances=1`
-and CPU always allocated is the smallest thing that qualifies.
-
-## The run server, on Cloud Run
-
-```bash
-gcloud run deploy perfectman-server \
-  --source . --region=us-central1 \
-  --allow-unauthenticated \
-  --port=8080 --cpu=4 --memory=2Gi \
-  --min-instances=0 --max-instances=1 \
-  --no-cpu-throttling --timeout=3600 \
-  --set-env-vars=PERFECTMAN_RUNS_DIR=/tmp/runs
-```
-
-Each flag is load-bearing:
-
-| Flag | Why |
-|---|---|
-| `--max-instances=1` | One run at a time, held in memory. A second instance would answer `/stream` for a run it has never heard of. |
-| `--no-cpu-throttling` | The pulse loop runs between requests. Throttled CPU stalls it the moment the POST response is sent. |
-| `--timeout=3600` | The SSE stream stays open for the length of the run. |
-| `--min-instances=0` | Scales to zero when idle. A cold start adds a few seconds; set it to 1 to avoid that and pay for the idle instance. |
-| `--cpu=4` | Measured, not guessed — see below. |
-| `PERFECTMAN_RUNS_DIR=/tmp/runs` | Cloud Run's filesystem is read-only apart from `/tmp`, which does not outlive the instance. Artifacts are readable while it is up and gone afterwards. |
-
-### On the CPU count
-
-One vCPU looks like plenty for a service that spends its time waiting on a
-model, and it is not. Measured on the same scene, model and key within minutes
-of each other:
-
-| Where | One pulse |
-|---|---|
-| Cloud Run, 1 vCPU | 483s |
-| Laptop | 80s |
-| Cloud Run, 4 vCPU | 61s |
-
-A pulse is not one request and a wait. It builds a prompt per agent, opens
-three TLS connections, and parses three large JSON replies, and all of that is
-CPU on a single-threaded runtime. A `mock` run hides it completely — ten pulses
-in under five seconds on the starved instance — because mock skips every part
-that costs anything.
-
-The failure mode is worth recognising because it does not look like slowness:
-`stop` cannot interrupt a pulse already in flight, so a starved instance sits
-in `stopping` for minutes and reads as a hang.
+A run is minutes of awaited work that keeps going after the request that started
+it returns. The controller holds its state and SSE backlog in process memory, and
+the stream is a separate request that has to reach that same process. A function
+gets none of those. So the server wants one long-lived machine, and exactly one:
+a second machine would answer `/stream` for a run it has never heard of.
 
 ## The run server, on Fly.io
 
-`fly.toml` at the repo root runs the same `Dockerfile` as one machine in `iad`.
-It stops when nothing is connected and starts on the next request, so idle costs
-nothing; a run holds its stream open, so it is not stopped while somebody watches.
+`fly.toml` at the repo root builds the root `Dockerfile` as one `shared-cpu-2x`
+machine with 2gb in `iad`. It stops when no connection is open and starts on the
+next request (`auto_stop_machines = "stop"`, `min_machines_running = 0`), so a
+`stopped` machine in `fly status` is normal. A run holds its stream open, so it is
+not stopped while someone watches.
+
+Deploy from a clean checkout of `main`:
 
 ```bash
-fly apps create perfectman-server
-fly deploy --ha=false --remote-only
+git switch main && git pull --ff-only && git status   # must be clean
+fly deploy -a perfectman-server --strategy rolling
 ```
 
-`--ha=false` matters for the same reason `--max-instances=1` does on Cloud Run: a
-second machine would answer `/stream` for a run it has never heard of. Keep it at one:
-`fly scale count 1`.
+Then check:
 
-The machine is `shared-cpu-2x` with 2gb because that is all a new Fly org may use
-(no `performance` sizes, two cores per machine). Pulses are CPU-bound, so measure a
-real run and move to `performance-2x` (4gb minimum) once the limits lift.
+| Request | Expect |
+|---|---|
+| `GET /api/health` | 200 |
+| `GET /api/presets` | 200 |
+| `GET /` | 404, on purpose: the image has no built UI, so the server has nothing to serve there |
 
-Point the interface at `https://perfectman-server.fly.dev` (see below). Logs:
-`fly logs`. Status: `fly status`.
+Notes:
+
+- The container listens on `PORT` (`fly.toml` sets `8080`, matching `internal_port`).
+  `PERFECTMAN_WEB_PORT` wins over it if both are set.
+- `PERFECTMAN_RUNS_DIR=/tmp/runs`: artifacts do not outlive the machine.
+- Presets are read from disk in the image, so adding a preset needs a server redeploy.
+- The Fly health check is `GET /api/runs/current` every 30s.
+- Keep it at one machine: `fly scale count 1`.
+- Read-only inspection: `fly status -a perfectman-server`, `fly releases -a perfectman-server`, `fly logs -a perfectman-server`.
+
+### On the CPU size
+
+One vCPU looks like plenty for a service that waits on a model, and it is not.
+Measured on the same scene, model and key (on a 1 vCPU host before the move to Fly):
+
+| Where | One pulse |
+|---|---|
+| 1 vCPU | 483s |
+| Laptop | 80s |
+| 4 vCPU | 61s |
+
+A pulse builds a prompt per agent, opens three TLS connections and parses three
+large JSON replies: CPU on a single-threaded runtime. A `mock` run hides it. The
+failure does not look like slowness: `stop` cannot interrupt a pulse in flight, so
+a starved machine sits in `stopping` for minutes and reads as a hang.
+
+`shared-cpu-2x` is what the Fly org was limited to when this was set up (see the
+comment in `fly.toml`). Measure a real run and move to a `performance` size once
+that is possible.
 
 ## The interface, on Vercel
 
-Built against the server's URL, because a static host has nothing to inject it
-at runtime:
+The root `vercel.json` is what a Git-connected Vercel project reads:
+
+- `buildCommand`: builds `@perfectman/web`, then copies `packages/web/dist` to a
+  top-level `dist`, which is the `outputDirectory`.
+- `build.env.VITE_API_BASE` is `https://perfectman-server.fly.dev`, so the built
+  bundle calls the Fly server. Unset, requests are relative, which is what the
+  local `pnpm web` path wants.
+- Rewrites send everything except `api/`, `assets/`, `audio/` and `favicon*` to
+  `/index.html` (single-page app); `/assets/*` is cached for a year, immutable.
+
+A manual deploy is also possible:
 
 ```bash
 cd packages/web
-VITE_API_BASE=https://<your-server-url> pnpm build
+VITE_API_BASE=https://perfectman-server.fly.dev pnpm build
 npx vercel deploy --prebuilt --prod
 ```
 
-`--prebuilt` matters. Vercel's own build runs `npm install`, which cannot
-resolve `@perfectman/shared` from a pnpm workspace; building here and shipping
-the output sidesteps it. The Build Output API config lives in
-`.vercel/output/config.json` and only needs single-page rewrites.
+`--prebuilt` because Vercel's own install cannot resolve `@perfectman/shared` from
+a pnpm workspace. The `.vercel/` directory is gitignored.
 
-Git-connected deploys build from the repo root and look for a top-level `dist`.
-The root `vercel.json` builds `@perfectman/web` and copies `packages/web/dist`
-there so that lookup succeeds.
+Not verifiable from the repo: which of the two paths the live project uses, whether
+Git integration is on, the production branch, and the project's dashboard settings.
+Check the Vercel project before relying on a push to deploy the interface.
 
-Unset `VITE_API_BASE` and every request goes back to being relative, which is
-what the local `pnpm web` path wants — one process serving both.
+## The Habbo hotel sidecar
+
+`packages/hotel` is a second container, built from `packages/hotel/Dockerfile`
+(repo-root context), that dials the hotel's Director listener. It publishes no port.
+It runs on the Habbo server next to the hotel, wired by the habbo repo's compose
+files (`packages/hotel/deploy/compose.sidecar.yaml` here is only the snippet shape).
+
+It is built on the Habbo server from `/opt/cmb/perfectman`. The habbo repo's
+`deploy/deploy.sh` does not update that tree, so push it first, from a clean
+checkout of `main`:
+
+```bash
+EXCLUDES=(--exclude node_modules --exclude .git --exclude dist --exclude out \
+  --exclude tmp --exclude .worktrees --exclude .env --exclude .deployed-sha \
+  --exclude packages/kb/corpus --exclude packages/kb/index)
+
+# dry run first; read the file list before going on
+rsync -az --delete --checksum -n -i "${EXCLUDES[@]}" ./ <habbo-server>:/opt/cmb/perfectman/
+
+rsync -az --delete --checksum "${EXCLUDES[@]}" ./ <habbo-server>:/opt/cmb/perfectman/
+ssh <habbo-server> "echo $(git rev-parse HEAD) > /opt/cmb/perfectman/.deployed-sha"
+```
+
+Then build and restart the sidecar the way the habbo repo's deploy docs say. Host
+address, user and key are in those docs, not here.
+
+`.deployed-sha` is excluded from the sync so `--delete` does not remove it; it
+records which commit the tree on the server came from.
+Check it before deploying habbo, since `deploy.sh` will build whatever tree is there.
+
+Not verifiable from this repo: the habbo-side compose and `deploy.sh`, and the
+rsync flags above beyond `--checksum -n` and the exclude list, which are the
+documented procedure rather than something a file here proves.
 
 ## What is exposed
 
-Both halves are public and unauthenticated, which is what makes the link
-shareable and also means anyone holding it can start a run. The runs cost
-container time, not model credits: a key is pasted per run in the browser,
-becomes an environment variable for that run's lifetime, and never reaches the
-stored config. `mock` needs no key at all.
-
-To close it off, drop `--allow-unauthenticated` and put an identity-aware proxy
-in front, or re-enable Vercel's deployment protection on the interface.
+The run server and the interface are public and unauthenticated, which makes the
+link shareable and means anyone holding it can start a run. Runs cost machine time,
+not model credits: a key is pasted per run in the browser, becomes an environment
+variable for that run's lifetime, and never reaches the stored config. `mock` needs
+no key. To close it off, put an auth proxy in front of the Fly app or turn on
+Vercel's deployment protection.
