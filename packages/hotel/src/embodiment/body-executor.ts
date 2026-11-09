@@ -37,6 +37,8 @@ export type ExecutorHooks = {
   ghost?(agentId: string, text: string): void;
   /** The hotel answered `actor_dead`: this actor is dead whatever the sidecar thought (ACT-11). */
   actorDead?(agentId: string): void;
+  /** The hotel retired an actor (`actor_gone`): for a permadeath this is the end of its place in the pulses (DEATH-7). */
+  gone?(agentId: string): void;
 };
 
 export type ExecutorDeps = {
@@ -231,6 +233,7 @@ export class BodyExecutor {
       case "actor_gone": {
         const ref = mirror.refOfAvatar(frame.actor);
         this.clearActor(ref);
+        this.deps.hooks.gone?.(ref);
         break;
       }
       default:
