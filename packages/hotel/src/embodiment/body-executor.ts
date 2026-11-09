@@ -1,6 +1,8 @@
 import type { BlockedReason, BodyCommand, BodyPlan, PairKind, PairedActAbortedPayload, RoomId, Tile } from "@perfectman/shared";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { validateActCmd } from "../director/act-cmd.js";
+import { isDramaFrame } from "../director/drama-frames.js";
+import type { DramaFrame } from "../director/drama-frames.js";
 import type { ActorCmd, ActorErrorCode, HotelFrame, PairOutcome, SidecarMsg } from "../director/index.js";
 import type { ActorSpace } from "../space/space-mirror.js";
 import { chebyshev } from "../space/geometry.js";
@@ -8,6 +10,7 @@ import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
 import { CMD_BUDGET, HOTEL_BACKSTOP, WALK_TICK_MS } from "./constants.js";
 import { pickTile } from "./tiles.js";
+import type { ActLock } from "./act-ledger.js";
 import type { PlannedCommand } from "./types.js";
 
 const CHAT_BACKSTOP = { count: 4, windowMs: 6000 } as const;
@@ -30,6 +33,10 @@ export type ExecutorHooks = {
   movedRoom?(agentId: string, from: RoomId, to: RoomId): void;
   pairAborted(info: PairInfo & { cause: PairedActAbortedPayload["cause"] }): void;
   pairOutcome(info: PairInfo & { outcome: PairOutcome }): void;
+  /** A dead actor's thought, kept on this side as its ghost voice (DEATH-5); it never reaches the hotel, which refuses it (DEATH-2). */
+  ghost?(agentId: string, text: string): void;
+  /** The hotel answered `actor_dead`: this actor is dead whatever the sidecar thought (ACT-11). */
+  actorDead?(agentId: string): void;
 };
 
 export type ExecutorDeps = {
@@ -41,6 +48,12 @@ export type ExecutorDeps = {
   nextCid(): number;
   send(msg: SidecarMsg): boolean;
   hooks: ExecutorHooks;
+  /** The speaker pool and the body of a dead actor are closed until its revive (DEATH-2, ACT-11). */
+  isDead?(ref: string): boolean;
+  /** The act that holds this actor's body commands (REA-9, TGT-1, TBL-11). Chat and typing are never held. */
+  lockOf?(ref: string): ActLock | undefined;
+  /** A dead actor may think aloud, only as a thought and only on this side (DEATH-5; cinematic mode behind a config flag). */
+  ghostVoice?: boolean;
   logger?: Logger;
   /** Mirror of every command in and out, for the body probes. */
   record?(dir: "in" | "out", room: RoomId | undefined, kind: string, data: Record<string, unknown>): void;
@@ -68,6 +81,9 @@ const BLOCK_MAP: Partial<Record<ActorErrorCode, BlockedReason["code"]>> = {
   not_adjacent: "too_far",
   // The hotel bumps every lease on a reconnect; a command from before the new one is stale, and the actor should look again.
   stale_lease: "stale_space",
+  // The act contract's errors: a body that is busy in an act, and a target the hotel will not take.
+  act_busy: "busy_moving",
+  bad_target: "target_elsewhere",
 };
 
 /**
@@ -120,6 +136,7 @@ export class BodyExecutor {
     const lease = this.deps.lease();
     const clean = text.replace(/\s+/g, " ").trim().slice(0, 200);
     if (id === undefined || lease === undefined || clean.length === 0) return;
+    if (this.deps.isDead?.(agentId)) return this.ghostThought(agentId, clean);
     const now = this.deps.clock.now();
     const times = (this.chatTimes.get(agentId) ?? []).filter((t) => now - t < CHAT_BACKSTOP.windowMs);
     if (times.length >= CHAT_BACKSTOP.count - 1) return; // keep the last slot for a spoken line
@@ -192,7 +209,8 @@ export class BodyExecutor {
         if (frame.cid !== undefined && frame.cid !== null) this.pendingCids.delete(frame.cid);
         const ref = pending?.agentId ?? (frame.actor !== undefined && frame.actor !== null ? mirror.refOfAvatar(frame.actor) : undefined);
         this.deps.record?.("in", ref ? mirror.roomOfRef(ref) : undefined, "actor_error", { code: frame.code, actor: ref ?? null, cmd: pending?.cmd ?? null });
-        if (ref) {
+        if (ref && frame.code === "actor_dead") this.deps.hooks.actorDead?.(ref);
+        else if (ref) {
           const code = BLOCK_MAP[frame.code];
           if (code) this.deps.hooks.blocked(ref, [{ code, ...(frame.detail ? { detail: String(frame.detail).slice(0, 80) } : {}) }]);
           // A refused walk is a plan that never started.
@@ -203,17 +221,57 @@ export class BodyExecutor {
         }
         break;
       }
-      case "pair_reaction":
+      case "pair_reaction": {
+        // PAIR-1: in a drama session a refused pair carries the blocked reason, which the planner treats like a blocked act.
+        const refused = frame.outcome === "aborted" && frame.reason ? BLOCK_REASONS.get(frame.reason) : undefined;
+        if (refused) this.deps.hooks.blocked(mirror.refOfAvatar(frame.actor), [{ code: refused, part: "gesture" }]);
         this.onPairReaction(frame.pair, frame.outcome);
         break;
+      }
       case "actor_gone": {
         const ref = mirror.refOfAvatar(frame.actor);
         this.clearActor(ref);
         break;
       }
       default:
+        if (isDramaFrame(frame)) this.onDramaFrame(frame);
         break;
     }
+  }
+
+  /**
+   * The second frame switch: the drama frames of act-contract.md section 3. The sink (`ActLedger`, the director, the memory writer)
+   * reads them; the executor only needs the one that says an act was refused outright (FRM-2), so the planner learns why. Exhaustive,
+   * so a new drama frame is a compile error here until somebody decides what the executor does with it.
+   */
+  private onDramaFrame(frame: DramaFrame): void {
+    switch (frame.t) {
+      case "act_done": {
+        const code = frame.outcome === "blocked" && frame.reason ? BLOCK_REASONS.get(frame.reason) : undefined;
+        if (code) this.deps.hooks.blocked(this.deps.mirror.refOfAvatar(frame.actor), [{ code, part: "act", ...(frame.detail ? { detail: String(frame.detail).slice(0, 80) } : {}) }]);
+        return;
+      }
+      case "act_started":
+      case "act_beat":
+      case "act_reaction":
+      case "drama_consent":
+      case "actor_death":
+      case "actor_revive":
+      case "human_down":
+      case "human_up":
+      case "scene_cut":
+      case "drama_state":
+        return;
+      default: {
+        const unhandled: never = frame;
+        return unhandled;
+      }
+    }
+  }
+
+  /** DEATH-5: a dead actor's thought stays on this side, and only when the run allows the ghost voice. */
+  private ghostThought(agentId: string, text: string): void {
+    if (this.deps.ghostVoice) this.deps.hooks.ghost?.(agentId, text.replace(/\s+/g, " ").trim().slice(0, 200));
   }
 
   /** Mirror listener: a pair in its face/act phase aborts when either party moves. */
@@ -245,13 +303,27 @@ export class BodyExecutor {
     return this.sendOne(c, this.deps.clock.now());
   }
 
-  private sendOne(c: BodyCommand, now: number): boolean {
+  private sendOne(c: PlannedCommand, now: number): boolean {
     const { mirror } = this.deps;
     const id = mirror.avatarId(c.agentId);
     const lease = this.deps.lease();
     if (id === undefined || lease === undefined) {
       this.deps.hooks.blocked(c.agentId, [{ code: "unknown_ref" }]);
       return false;
+    }
+    // DEATH-2: the dead say and do nothing. The hotel would answer actor_dead to all of it; the speaker pool is closed here first.
+    if (this.deps.isDead?.(c.agentId)) {
+      if (c.cmd === "chat" && this.deps.ghostVoice) this.ghostThought(c.agentId, c.text);
+      return false;
+    }
+    // REA-9, ACT-12: an actor held by an act sends no body command (the hotel would answer act_busy and the budget would be spent for
+    // nothing). A reaction owed to a debt is the one exception, and chat and typing are never held.
+    if (c.cmd !== "chat" && c.cmd !== "typing" && !c.owed) {
+      const lock = this.deps.lockOf?.(c.agentId);
+      if (lock) {
+        this.deps.hooks.blocked(c.agentId, [{ code: "busy_moving", part: partOf(c), detail: lock.why }]);
+        return false;
+      }
     }
     // An act the hotel would refuse on its face (ACT-4 to ACT-9) never spends one of the actor's commands.
     if (c.cmd === "act" && !this.toWire(c)) return false;
@@ -269,7 +341,8 @@ export class BodyExecutor {
       const body = mirror.bodyOf(c.agentId, now);
       body.budget.cmdTimes = body.budget.cmdTimes.filter((t) => now - t < CMD_BUDGET.windowMs);
       const isMove = c.cmd === "walk" || c.cmd === "sit" || c.cmd === "move_room" || c.cmd === "stand" || c.cmd === "lay";
-      const limit = isMove ? HOTEL_BACKSTOP.count : CMD_BUDGET.count;
+      // A reaction owed to a debt is not a luxury: like a move it may use the hotel's own 8 per 5 s, never the planner's soft 4 (REA-1).
+      const limit = isMove || c.owed ? HOTEL_BACKSTOP.count : CMD_BUDGET.count;
       if (body.budget.cmdTimes.length >= limit) {
         this.stats.droppedBudget++;
         this.deps.hooks.blocked(c.agentId, [{ code: "slow_down", part: partOf(c) }]);
@@ -484,6 +557,10 @@ export class BodyExecutor {
     this.pairs.delete(id);
   }
 }
+
+const BLOCK_REASONS: ReadonlyMap<string, BlockedReason["code"]> = new Map(
+  (["kill_switch", "calm_room", "consent_off", "ladder", "budget", "dead_target", "no_scenario_gate", "rate_limit", "too_far", "cooldown"] as const).map((r) => [r, r]),
+);
 
 function partOf(c: BodyCommand): NonNullable<BlockedReason["part"]> {
   switch (c.cmd) {
