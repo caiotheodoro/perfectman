@@ -121,7 +121,8 @@ export function rememberAct(state: AgentState, facts: ActFacts, role: "actor" | 
   const rels = new Map([...state.relationalStates].map(([k, v]) => [k, { ...v }]));
   const other = role === "actor" ? facts.target : facts.actor;
   const negative = entry.tone === "hostile" || entry.tone === "hurt" || entry.tone === "shocked" || entry.tone === "dismissive";
-  if (other && other !== state.agentId) {
+  const warm = entry.tone === "warm" || entry.tone === "tender";
+  if (other && other !== state.agentId && (negative || warm)) {
     const move: RelMove = negative
       ? role === "actor" ? { desireForDistance: 0.05 } : { trust: -0.3, resentment: role === "target" ? 0.3 : 0.1, threat: 0.2, desireForDistance: 0.2 }
       : tender;
