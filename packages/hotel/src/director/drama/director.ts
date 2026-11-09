@@ -177,6 +177,8 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     let best: Pick | undefined;
     for (const other of this.d.world.avatarsIn(room)) {
       if (other.id === turn.actor || other.id === this.narrator() || this.fallen.has(other.id)) continue;
+      // The reading names who the actor has a relationship with: those are the only people a beat can be aimed at.
+      if (!emotion.relations?.has(other.id)) continue;
       for (const verb of this.tuning.origination.verbs) {
         const m = motive(verb, emotion, emotion.relations?.get(other.id), emotion.at ?? now, this.tuning);
         if (!m.ok) continue;

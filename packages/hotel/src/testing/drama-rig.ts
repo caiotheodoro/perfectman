@@ -56,12 +56,12 @@ type Avatar = WorldAvatar & { ref?: string; room: number };
 
 export class ScriptWorld implements DramaWorld {
   readonly avatars = new Map<number, Avatar>();
-  cast = 3;
+  cast = 6;
 
   constructor() {
     this.put(A, { ref: "person-1", tile: [5, 5] });
     this.put(B, { ref: "person-2", tile: [6, 5] });
-    this.put(C, { ref: "person-3", tile: [9, 6] });
+    this.put(C, { ref: "person-3", tile: [5, 6] });
     this.put(H, { human: true, tile: [4, 5] });
   }
 

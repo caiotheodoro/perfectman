@@ -61,6 +61,7 @@ export type EmotionReading = {
   actionEmotions: ActionEmotions;
   social?: Partial<SocialEmotions>;
   core?: Partial<Pick<CoreMood, "arousal" | "momentumArousal">>;
+  /** Who the actor has a relationship with. The director aims a beat of its own only at someone listed here. */
   relations?: ReadonlyMap<number, RelationReading>;
   /** `Date.now()`-style time of the reading, for `lastNegativeAt`; absent means the director's clock. */
   at?: number;
