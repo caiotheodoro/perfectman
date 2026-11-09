@@ -15,6 +15,7 @@ import {
   HUMAN_FACE_HOLD_MS,
   INITIATIVE_COOLDOWN_MS,
   INTERLOCUTOR_MS,
+  KEEP,
   LAUGH_COOLDOWN_MS,
   MAX_APPROACHERS,
   PAIR_ACQUAINTED_MS,
@@ -32,11 +33,11 @@ import {
   WITHDRAW_AT,
 } from "./constants.js";
 import { tileKey } from "../space/geometry.js";
+import { ANXIOUS_ACQUAINT_CUT, LOOSE_STABILITY } from "./drama-readings.js";
+import { emotionRules } from "./emotion-body.js";
 import { blockedTiles, isFree, occupiedTiles, pickTile } from "./tiles.js";
 import type { EmbodimentPlanner, PlanInput, PlannedCommand, PlannerMemory, SpeechModeChoice } from "./types.js";
 
-/** Keep priority when over budget: moves never drop, then gestures, facing, fidgets. */
-const KEEP = { fidget: 1, face: 2, gesture: 3, move: 4 } as const;
 type Cand = { cmd: PlannedCommand; keep: number };
 
 const SIGN_HEART = 11;
@@ -57,9 +58,15 @@ export const plan: EmbodimentPlanner = (input) => {
   const remaining = CMD_BUDGET.count - used;
   if (remaining <= 0) return [];
 
+  // REA-9, ACT-12: while an act holds this actor the planner issues no body command; the hotel would answer act_busy.
+  if (input.drama?.lock || input.drama?.busyActId) return [];
+
   const ctx: Ctx = { input, room, self, cands: [], mem: input.memory ?? {} };
   fromBodyIntent(ctx);
   if (!input.bodyIntent?.move) automaticRules(ctx);
+  if (input.drama && !input.bodyIntent?.move) {
+    for (const c of emotionRules({ input, room, self, mem: ctx.mem, planId: planId(ctx) })) push(ctx, c.keep, c.cmd);
+  }
 
   const ranked = ctx.cands
     .map((c, i) => ({ ...c, i }))
@@ -439,7 +446,7 @@ function initiative(ctx: Ctx, exchange: boolean): void {
     if (tries(p) >= PAIR_TRIES_PER_PERSON || recentlyRefused(ctx, p)) continue;
     const rel = agentState.relationalStates.get(p.ref);
     const dist = chebyshev(p.tile, self.tile);
-    if (now - first < PAIR_ACQUAINTED_MS || p.state === "walk" || now - p.since < 8000) continue;
+    if (now - first < acquaintMs(ctx) || p.state === "walk" || now - p.since < 8000) continue;
     const named = p.name.length >= 3 && hasWord(text, fold(p.name).split(/\s+/)[0] ?? "");
     const wantsKiss = named && /\b(beij\w*|kiss\w*)\b/.test(text);
     const wantsHug = named && /\b(abra[cç]\w*|abrac\w*|hug\w*)\b/.test(text);
@@ -452,6 +459,12 @@ function initiative(ctx: Ctx, exchange: boolean): void {
     push(ctx, KEEP.move, { cmd: "pair", kind, with: p.ref, pair: `pi:${planId(ctx)}` });
     return;
   }
+}
+
+/** How long a person must have been around before an initiative hug or kiss; an overeager actor does not wait as long (bible 4.3, `anxiousOverreach`). */
+function acquaintMs(ctx: Ctx): number {
+  const over = ctx.input.drama ? (ctx.input.actionEmotions?.anxiousOverreach ?? 0) : 0;
+  return PAIR_ACQUAINTED_MS * (1 - ANXIOUS_ACQUAINT_CUT * over);
 }
 
 function pushLeave(ctx: Ctx, roomId: string): void {
@@ -468,6 +481,8 @@ function pushLeave(ctx: Ctx, roomId: string): void {
 function allowedMove(ctx: Ctx, to: Tile): boolean {
   const last = ctx.mem.lastMove;
   if (!last || ctx.input.now - last.at >= DWELL_ZONE_MS) return true;
+  // An unstable mood is erratic: the reversal lock does not hold (bible 4.4).
+  if (ctx.input.drama && ctx.input.agentState.coreMood.stability < LOOSE_STABILITY) return true;
   const dx = to[0] - ctx.self.tile[0];
   const dy = to[1] - ctx.self.tile[1];
   return dx * last.dx + dy * last.dy >= 0;

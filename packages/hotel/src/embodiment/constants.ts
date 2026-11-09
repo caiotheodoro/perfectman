@@ -60,3 +60,6 @@ export const HUMAN_FACE_HOLD_MS = 7000;
 export const NO_REWARD_MS = 5000;
 /** TBL-11: a tableau holds every actor within this many tiles of its actor. */
 export const TABLEAU_RADIUS_TILES = 6;
+
+/** Keep priority when over budget: moves never drop, then gestures, facing, fidgets. */
+export const KEEP = { fidget: 1, face: 2, gesture: 3, move: 4 } as const;
