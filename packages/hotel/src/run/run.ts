@@ -21,7 +21,7 @@ import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfStat
 import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
 import { resolveRunDrama } from "../authoring/scenario-drama.js";
-import { DramaDirector, composeDramaSinks, mirrorWorld } from "../director/drama/index.js";
+import { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld } from "../director/drama/index.js";
 import type { DramaDecisionPort, DramaHost, SceneAdvance } from "../director/drama/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
 import type { PairInfo } from "../embodiment/body-executor.js";
@@ -213,6 +213,8 @@ export class Run {
   private executor!: BodyExecutor;
   private ingestor!: GuestIngestor;
   private director: DramaDirector | undefined;
+  /** The scenario's authored beats, on this run's clock (errata P4-01); absent without drama or without a script. */
+  private beatPlayer: BeatPlayer | undefined;
   private loop!: WallClockPulseLoop;
   private breaker!: BreakerDriver;
   private unsubscribeBudget: (() => void) | undefined;
@@ -574,6 +576,7 @@ export class Run {
     this.enterRoom(now);
     this.state = "running";
     this.loop.start();
+    this.startBeats();
     this.scheduleArrivals(later);
     this.d.logger.info("run running", { run: this.id, actors: this.agents.size, arriving_later: later.length });
   }
@@ -598,6 +601,25 @@ export class Run {
     });
     // One mechanism: the hub hands every frame of this run to the director first, then to the planner side (ledger, reactions, memory of acts).
     host.hub.attach(this.id, composeDramaSinks(this.director, this.dramaSink));
+  }
+
+  /**
+   * The scenario's script starts when the cast is in and the run is live: its seconds count from here. Each beat goes through the director as a
+   * scenario-origin act, so every gate still applies (SCN-3, SCN-4); nothing is played when drama is not negotiated, and a replay builds no player.
+   */
+  private startBeats(): void {
+    const beats = this.body.beats ?? [];
+    if (!this.director || beats.length === 0) return;
+    this.beatPlayer = new BeatPlayer({
+      clock: this.d.clock,
+      port: () => this.director,
+      beats,
+      drama: resolveRunDrama(this.body),
+      wireOf: (ref) => this.space.avatarId(ref),
+      logger: this.d.logger,
+      onReport: (r) => this.d.logger.info("authored beat", { run: this.id, beat: r.beat.id, kind: r.beat.kind, outcome: r.outcome, why: r.why }),
+    });
+    this.beatPlayer.start();
   }
 
   /** What the planner asks to approve, veto or start an act (docs/drama/act-contract.md 11.5); undefined when drama is off for this process. */
@@ -1482,6 +1504,7 @@ export class Run {
     this.pendingEnd = reason;
     try {
       this.breaker?.dispose();
+      this.beatPlayer?.stop();
       this.unsubscribeBudget?.();
       // Nobody walks in after a stop; one already spawning is waited for (bounded), so the walk-out below sees it.
       for (const timer of this.arrivalTimers) timer.cancel();
