@@ -22,7 +22,7 @@ function setup(near: Record<string, string[]> = {}) {
       done: (f) => events.push(`done:${f.act_id}`),
     },
   });
-  const feed = (frames: readonly HotelFrame[]): void => feedFrames(ledger, frames);
+  const feed = (frames: Parameters<typeof feedFrames>[1]): void => feedFrames(ledger, frames);
   return { clock, ledger, feed, events };
 }
 

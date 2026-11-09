@@ -67,7 +67,7 @@ export type DramaPlanInput = {
  * `afterArrival`: the executor holds the command until the walk with that plan
  * id ends. `fidget`: lowest keep-priority, and it starts the 45 s fidget cooldown.
  */
-export type PlannedCommand = BodyCommand & { afterArrival?: string; fidget?: boolean };
+export type PlannedCommand = BodyCommand & { afterArrival?: string; fidget?: boolean; owed?: boolean };
 
 export type EmbodimentPlanner = (input: PlanInput) => PlannedCommand[];
 
