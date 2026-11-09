@@ -74,7 +74,7 @@ export type SimConfig = {
   drama?: ScenarioDrama;
   /** Drama off for the run: no director, no session, the planner exactly as it was. Default on. */
   dramaOn?: boolean;
-  /** The scenario's script as the body carries it (`ScenarioBeat`, refs are the actors' refs); played by the production `BeatPlayer`. Absent: no script. */
+  /** The scenario's script as the body carries it (`ScenarioBeat`, refs are the actors' refs); played by the production `BeatPlayer`, with the run's walker for a beat that starts `too_far`. Absent: no script. */
   beats?: readonly ScenarioBeat[];
   controls?: readonly SimControl[];
   /** The mock model's quirks (`MockDrama` less what the scenario gives it). */
@@ -423,10 +423,19 @@ export function runDramaSim(config: SimConfig): SimResult {
         port: () => port,
         beats: config.beats ?? [],
         drama: resolveRunDrama(config.drama ? { drama: config.drama } : {}),
+        ...(config.tuning ? { tuning: config.tuning.beats } : {}),
         wireOf: (ref) => space.avatarId(ref),
+        // The run's walker (run.ts): the planner's own approach, ordered through the same executor, so an authored contact beat that starts apart walks together (habbo#41).
+        walkCloser: (actor, target) => {
+          const cmds = body.approach(actor, target, space.view(actor, grid.now())?.room, rng);
+          if (cmds.length > 0) send(cmds);
+          return cmds.length > 0;
+        },
         onReport: (r) => {
           const decision = r.outcome === "played" ? `authored:${r.decision?.kind ?? "cut"}` : `authored:${r.decision?.kind ?? "dropped"}`;
-          const veto = r.decision?.kind === "veto" ? { reason: r.decision.reason, ...(r.decision.detail !== undefined ? { detail: r.decision.detail } : {}) } : { reason: r.why };
+          // A beat's own final detail (`retry_window_expired`, `scene_cut`) wins over the director's per-ask one (`distance`).
+          const detail = r.detail ?? (r.decision?.kind === "veto" ? r.decision.detail : undefined);
+          const veto = r.decision?.kind === "veto" ? { reason: r.decision.reason, ...(detail !== undefined ? { detail } : {}) } : { reason: r.why };
           if (r.beat.kind === "act") proposals.push({ atMs: r.at - startMs, actor: r.beat.actor, verb: r.beat.verb, ...(r.beat.with ? { with: r.beat.with } : {}), decision, ...(r.outcome === "dropped" ? veto : {}) });
           else cuts.push({ atMs: r.at - startMs, outcome: r.outcome, why: r.why });
         },
