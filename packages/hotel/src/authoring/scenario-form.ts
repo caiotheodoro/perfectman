@@ -1,5 +1,6 @@
 import { ROLES } from "@perfectman/shared";
 import type { RoomDraft } from "@perfectman/shared";
+import type { ScenarioFormBeat } from "./scenario-beats.js";
 import type { ScenarioFormDrama } from "./scenario-drama.js";
 
 /**
@@ -45,6 +46,11 @@ export type ScenarioForm = {
    * names, `@human` is any human who opted in. Absent is free play; `{}` is free play plus authored skips. Compiled into the body's `drama`.
    */
   drama?: ScenarioFormDrama;
+  /**
+   * The scene's script (errata P1-05, P4-01): authored acts and scene cuts at a second of the run, refs by cast name. Compiled into the body's
+   * `beats`. A cut here is what SCN-6 asks of a scene that can kill.
+   */
+  beats?: ScenarioFormBeat[];
   stage?: {
     room?: number | null;
     places?: unknown[];

@@ -1,3 +1,5 @@
+import { cleanBeats } from "../authoring/scenario-beats.js";
+import type { ScenarioBeat } from "../authoring/scenario-beats.js";
 import { cleanDrama } from "../authoring/scenario-drama.js";
 import type { ScenarioDrama } from "../authoring/scenario-drama.js";
 import { cleanVisit } from "../authoring/scenario-form.js";
@@ -28,6 +30,8 @@ export type ScenarioBody = {
   stage?: ScenarioStage;
   /** The drama block (act-contract.md section 7), refs as agent ids. Absent is free play. Additive and optional, so the body version stays 1. */
   drama?: ScenarioDrama;
+  /** The scene's script (errata P4-01): authored acts and scene cuts the sidecar plays on the run's clock. Absent is no script. Additive and optional like `drama`, and the hotel never reads it. */
+  beats?: ScenarioBeat[];
 };
 
 export type ParsedBody = { ok: true; body: ScenarioBody } | { ok: false; errors: { path: string; message: string }[] };
@@ -78,6 +82,7 @@ export function parseScenarioBody(raw: unknown): ParsedBody {
       ...(o["arrivals"] && typeof o["arrivals"] === "object" ? { arrivals: cleanArrivals(o["arrivals"] as Record<string, unknown>) } : {}),
       ...cleanStage(o["stage"]),
       ...cleanDrama(o["drama"], config.agents.map((a) => a.id)),
+      ...cleanBeats(o["beats"], config.agents.map((a) => a.id)),
     },
   };
 }
