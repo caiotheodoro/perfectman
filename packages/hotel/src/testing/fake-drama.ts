@@ -40,6 +40,8 @@ export type ActScript = {
   owed?: Array<{ who: number; role: ActRole }>;
   /** Reactions emitted, in order. */
   reactions?: Array<{ who: number; role: ActRole; reaction: string; source?: "table" | "planner" }>;
+  /** `target_opt_in` of a human target, default true (every started violent act has it, GATE-6). */
+  targetOptIn?: boolean;
   /** `landed` kill on an actor: the victim starts dying at contact. On a human: `human_down`. */
   death?: { victim: number; killer: number; human?: boolean; downMs?: number };
 };
@@ -71,7 +73,7 @@ export function actFrames(s: ActScript): Out[] {
   const chip = s.chip ?? false;
   out.push({
     t: "act_started", ...base, verb: s.verb, actor, ...withField, intensity, ...(impact ? { impact } : {}), origin: s.origin ?? "director", scene,
-    ...(rung !== undefined ? { rung } : {}), skipped_rungs: [], authored_skip: false, chip, contact_in_ms: chip ? null : 300, at: t0,
+    ...(rung !== undefined ? { rung } : {}), skipped_rungs: [], authored_skip: false, ...(target !== undefined && target > 0 ? { target_opt_in: s.targetOptIn ?? true } : {}), chip, contact_in_ms: chip ? null : 300, at: t0,
   });
   let at = t0;
   if (chip && target !== undefined) {
