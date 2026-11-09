@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { agreement, importTagLines, sampleIds, validateTag } from "../tags.js";
+import { STATUS_DELTAS, TACTIC_VERBS } from "../taxonomy.js";
+import { TAGGING_PROMPT, agreement, importTagLines, sampleIds, validateTag } from "../tags.js";
 import type { Beat, TagRecord } from "../types.js";
 
 const beat: Beat = {
@@ -58,5 +59,20 @@ describe("sampleIds and agreement", () => {
     const a = [t("1", "to threaten", "KILLING"), t("2", "to plead", "CRYING"), t("3", "to mock", "DIALOGUE_ONLY")];
     const b = [t("1", "to intimidate", "KILLING"), t("2", "to plead", "KISSING"), t("9", "to mock", "DIALOGUE_ONLY")];
     expect(agreement(a, b)).toEqual({ n: 2, tactic_exact: 0.5, tactic_group: 1, action_type: 0.5, status_delta: 1, emotion: 1 });
+  });
+});
+
+describe("TAGGING_PROMPT", () => {
+  it("gives every status_delta a line with an example, and lists every tactic verb", () => {
+    for (const v of STATUS_DELTAS) expect(TAGGING_PROMPT).toMatch(new RegExp(`- ${v}: .+Example: .+`));
+    for (const v of TACTIC_VERBS) expect(TAGGING_PROMPT).toContain(v);
+  });
+  it("forbids defaulting to a command and says when a boundary is bad", () => {
+    expect(TAGGING_PROMPT).toContain('Do NOT default to "to command"');
+    expect(TAGGING_PROMPT).toMatch(/Set false only for/);
+    expect(TAGGING_PROMPT).toMatch(/When unsure, true/);
+  });
+  it("keeps the output keys the validator expects", () => {
+    for (const k of ["id", "tactic_verb", "status_delta", "action_type", "emotion", "driver", "target", "confidence", "boundary_ok"]) expect(TAGGING_PROMPT).toContain(`"${k}"`);
   });
 });

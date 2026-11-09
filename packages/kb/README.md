@@ -89,9 +89,44 @@ How far to trust the labels: a second tagger (Sonnet, blind to Haiku's labels) r
 
 So the physical-action label is dependable and is the hard filter in `queryReferenceBeats`. The tactic, emotion and status labels are judgement calls that two careful readers split on, and they are soft signals: use them to rank, never as ground truth. Haiku also marked 47% of beats `boundary_ok: false` (Sonnet 31% on the sample), so the chunker's cuts are often wrong by a tagger's eye. Treat a reference beat as "a scene like this", not as a clean unit.
 
+## Label quality changes (2026-11-09, not yet applied to the index)
+
+The numbers above describe the first build. Afterwards the chunker and the tagging brief were changed; neither the committed beats nor the 946 stored tags have been regenerated, so they still describe the old cuts and the old brief. Beat ids are `<source>:<act>.<scene>.<n>`, so a rebuild renumbers them and the old tags no longer join: re-tag after `build-beats`.
+
+Chunker (`src/chunk.ts`). Reading 30 of the beats Haiku flagged showed the dominant causes: long beats (59% flagged at 1,200+ characters against 36% under 700), a character leaving mid-beat, a monologue glued to the exchange around it, four or more speakers in one beat, and an aside or exit direction stranded at the end of a beat but belonging to the next speech. The cuts now also close on the exit of a character who has been speaking, on a fourth distinct speaker, and around a speech of 900+ characters; the length cap went from 2,200 to 1,100 characters; and trailing asides move on to the speech they belong to. Same corpus (the 31 sources of the first build), before and after:
+
+| | before | after |
+|---|---|---|
+| Beats | 3,131 | 4,124 |
+| Characters per beat, mean / median / p90 | 1,105 / 880 / 2,271 | 839 / 847 / 1,313 |
+| Beats of 1,800+ characters | 713 (22.8%) | 71 (1.7%) |
+| Beats of 1,200+ characters | 1,158 (37.0%) | 736 (17.8%) |
+| Beats under 300 characters | 370 (11.8%) | 561 (13.6%) |
+| Beats with 4+ speakers | 246 | 161 |
+| Beats ending on a stray non-action, non-exit direction | 467 | 44 |
+
+Whether this lowers the tagger's `boundary_ok: false` rate on the new cuts is not measured: that needs the new beats tagged. Not fixed here: the play-text parser sometimes folds the next speakers into one speech or direction (about 10% of beats carry an inline speaker cue in their text, and a Faustus footnote becomes one 20,000-character beat). The chunker cannot repair that.
+
+Tagging brief (`TAGGING_PROMPT` in `src/tags.ts`, written to `index/tagging/PROMPT.md` by `export-tags`). It now gives a decision order for tactic (what must the listener do, then the group, then the narrowest verb), a one-line original example for each `status_delta` value, a ban on defaulting to "to command", and a rule for when `boundary_ok` is false. The controlled lists are unchanged.
+
+Measured on the same 107-beat sample, with two fresh Haiku taggers that saw only the new brief (the Sonnet labels were made under the old brief, so agreement with them understates the new brief):
+
+| Field | old Haiku vs Sonnet | new Haiku A / B vs Sonnet | new A vs new B |
+|---|---|---|---|
+| `action_type` | 93.5% | 96.3% / 95.3% | 97.2% |
+| driver | 86% | 86.9% / 79.4% | 86.9% |
+| emotion | 57.9% | 63.6% / 56.1% | 72.0% |
+| `status_delta` | 50.5% | 67.3% / 64.5% | 80.4% |
+| `tactic_verb`, same group | 50.5% | 54.2% / 51.4% | 70.1% |
+| `tactic_verb`, exact | 31.8% | 31.8% / 31.8% | 53.3% |
+| "to command" share | 9.3% | 0% / 0% | |
+| `boundary_ok: false` share | 50.5% | 25.2% / 26.2% | |
+
+The brief was adjusted once after a first round (it over-produced `EQUAL_STALEMATE`: 39 of 107 against Sonnet's 9) and the table is the second round, so the sample is no longer held out from the wording. Tactic agreement with Sonnet did not move; status improved the most. "to command" at 0% is probably too far the other way, and `boundary_ok` is still above Sonnet's 30.8%.
+
 ## Known limits
 
-- **Beats are a heuristic.** A beat closes on a physical-action direction (plus the reply), a new speaker after a settled pair, an entrance, or a length cap. The tagger reports `boundary_ok`, so the build measures how often the cut is wrong.
+- **Beats are a heuristic.** A beat closes on a physical-action direction (plus the reply), the exit of a speaker, a new speaker after a settled pair or past three speakers, an entrance, a monologue, or a length cap. The tagger reports `boundary_ok`, so the build measures how often the cut is wrong.
 - **`castSize` is the number of distinct speakers in the scene**, which is the cast the text shows, not the number on stage. In Ibsen the "scene" is a whole act.
 - **Physical action is sparse in stage directions.** Most beats are dialogue. The action hint is a keyword guess that the tagger confirms or corrects.
 - **Theatre only for now.** The Fountain parser is built and tested on synthetic fixtures, but no open screenplay corpus was found.

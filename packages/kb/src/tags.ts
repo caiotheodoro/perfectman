@@ -27,15 +27,45 @@ export const TAGGING_PROMPT = `You tag dramatic beats from plays for a retrieval
 For every input beat return ONE line of JSON (no markdown, no commentary, no code fence), exactly these keys:
 {"id": <same id>, "tactic_verb": "<one verb from the list>", "status_delta": "<one value>", "action_type": "<one value>", "emotion": "<one value>", "driver": "<speaker name from speakers>", "target": "<speaker name or null>", "confidence": <0..1>, "boundary_ok": <true|false>}
 
-Definitions
-- A beat is a stretch where one character holds one tactic toward one person. The driver is the speaker whose tactic defines the beat. The target is the person the driver acts on (null when the driver acts on nobody present).
-- tactic_verb: what the driver is DOING to the target, an active verb aimed at a person, never a feeling and never a result. Choose from the list only. When nothing fits, choose the closest.
-- status_delta: the DRIVER's own movement in social status against the target during the beat. ${STATUS_DELTAS.join(", ")}. HIGH_TO_LOW: the driver starts above and ends below. LOW_TO_HIGH: the reverse. EQUALIZE: the gap closes to even. EQUAL_STALEMATE: level and stuck. HIGH_STABLE / LOW_STABLE: no flip.
-- action_type: the strongest physical action that HAPPENS in the beat (not one that is only talked about). ${ACTION_TYPES.join(", ")}. DIALOGUE_ONLY when none. actionHint is a keyword guess: confirm or correct it from the text.
-- emotion: the driver's dominant emotion. ${EMOTIONS.join(", ")}.
-- confidence: your own, 0 to 1. Use below 0.5 when the beat is unclear.
-- boundary_ok: false when the chunk clearly holds two beats (split) or is a fragment of a beat (merge).
-- The text may be English or Portuguese. Answer with the English labels above either way.
+The text may be English or Portuguese. Answer with the English labels below either way. Work through the fields in this order: driver and target, tactic_verb, status_delta, emotion, action_type, boundary_ok.
+
+1. Driver and target
+- A beat is a stretch where one character holds one tactic toward one person. The driver is the speaker whose aim shapes the stretch: the one who wants something from the other, not the one who talks most. The target is the person the driver acts on (null when the driver acts on nobody present).
+- When the driver is talking to themselves or to the audience, the target is null.
+
+2. tactic_verb: what the driver is DOING to the target
+Decide in this order and stop at the first step that settles it.
+ a. Say to yourself what the target has to do, stop doing, know or feel by the end for the driver to get what they want. Put it in a few words ("hand over the letter", "stop asking", "feel safe", "believe the lie").
+ b. Pick the group by that effect on the target.
+    pressure: the target must give way or act under force. lowering: the target must feel smaller. soft: the target must be moved to give something freely. care: the target must feel held or safe. guard: the target must NOT get something (information, access, a reaction): the driver is protecting a position. truth: the target must come to know something. steer: the target must be led to a conclusion or act while thinking it is their own. end: the target is stopped, punished, left, or the driver gives in or breaks.
+ c. Inside the group take the narrowest verb that fits what the speaker is doing in the words, not the situation around them. Check the neighbours in the list before you settle (threaten names a harm to the target; warn names a harm for the target's sake; demand claims what is owed; press keeps pushing against resistance; tease is play, mock is a put-down).
+ d. Never choose a verb for a feeling ("to be angry") or a result ("to win"). Use only a verb from the list below; when nothing fits, choose the closest.
+- Do NOT default to "to command". Choose it only when an order is the whole point of the beat: the driver has the standing to give it, the target is expected to obey, and whether they obey is what the beat is about. Run this check before you write it: if you took the order away, would the beat still be about something else (a quarrel, a courtship, a plot, a piece of news)? Then use the verb for that something else. A servant sent on an errand, instructions given in passing, "come here / sit down / leave us" are not "to command": pick the verb for what the speaker is really working on, or "to inform" when the speech only passes facts. An order met with resistance is usually "to demand", "to press" or "to dominate".
+- "to inform" and "to explain" are not defaults either. Use them only when the speaker is giving facts and wants nothing else from the listener.
+
+3. status_delta: the DRIVER's own movement against the target, start of beat to end of beat
+Ask two questions. Is the driver above, below or level with the target at the start (rank, power over the outcome, who needs whom)? Is it the same at the end? Same place gives a STABLE value (EQUAL_STALEMATE only for a true tie, see below). A different place gives an arrow. Most beats are stable: pick an arrow only when someone visibly yields, is cornered, is exposed or turns the tables inside the beat. Do not choose HIGH_STABLE because the driver is loud or speaks most; choose it when the target defers, obeys, is silenced or is kept guessing.
+ ${STATUS_DELTAS.join(", ")}
+ - HIGH_STABLE: the driver holds the upper hand throughout. Example: an examiner picks apart a candidate's story and the candidate never gets a word in.
+ - LOW_STABLE: the driver needs something from the target and stays the one who needs it: asking, pleading, flattering, fearing. Example: a debtor begs for another week and is told to come back tomorrow.
+ - EQUAL_STALEMATE: a contest between level opponents that ends where it began: both push, neither gives. Use it rarely. Talk where one side clearly has more leverage, or where one side is just asking, informing or being kind, is not a stalemate: pick the STABLE value of the side the driver is on. Example: two old rivals trade barbs for a page and part exactly as they began.
+ - HIGH_TO_LOW: the driver starts above and ends below. Example: a boss sets out terms, then the clerk produces a signed confession and the boss starts bargaining.
+ - LOW_TO_HIGH: the driver starts below and ends above. Example: a nervous apprentice is scolded, then reveals she holds the only key and the master asks her politely.
+ - EQUALIZE: the gap closes to even. Example: a count talks down to a soldier until the soldier mentions the son they both buried and they speak as two fathers.
+
+4. emotion: the driver's dominant emotion in the beat, from what they say and do, not from the situation. ${EMOTIONS.join(", ")}.
+ - anger is hot and wants to hurt; contempt looks down and wants distance; resolve is decided and steady, with no heat; fear is flinching or hiding; shame is wanting to be unseen; neutral only when the driver is businesslike and nothing shows. If you picked neutral, look once more for the feeling behind the aim.
+
+5. action_type: the strongest physical action that HAPPENS in the beat (not one that is only talked about). ${ACTION_TYPES.join(", ")}. DIALOGUE_ONLY when none. actionHint is a keyword guess: confirm or correct it from the text.
+
+6. boundary_ok: is this chunk a usable unit? The chunker cuts by rule, so judge only the cut.
+- Set false only for one of these:
+   (a) two beats: after a clear turn (a new person takes over, someone leaves or arrives and the pair changes, the driver starts on a different aim) the second half would need a different driver, target or tactic;
+   (b) a fragment: it opens or closes in the middle of an exchange, so that you cannot say what the driver wants without text that is not here (it opens on a bare reply to a question you cannot see, or closes on a question left unanswered, or is only stage direction and a line or two).
+- Set true, and do not mark down, for: a long beat held on one tactic; a beat that opens with an entrance or closes with an exit; a speech cut short with "[...]"; stage-direction noise or a garbled speaker name inside the text; several short exchanges with the same two people and the same aim; a chunk you find dull.
+- When unsure, true. When false, still tag the stretch that has the most lines, and give confidence below 0.5.
+
+confidence: your own, 0 to 1. Use below 0.5 when the beat is unclear.
 
 Tactic verbs (one group per line)
 ${tacticPromptList()}
