@@ -151,7 +151,8 @@ export class ActLedger {
   }
 
   private prune(now: number): void {
-    for (const [id, r] of this.records) if (r.phase === "done" && r.doneAt !== undefined && now - r.doneAt > this.keepMs) this.records.delete(id);
+    // The rung of a pair is the highest used in the scene (LAD-1), however long ago: only an act of a scene already cut ages out with the windows.
+    for (const [id, r] of this.records) if (r.phase === "done" && r.doneAt !== undefined && r.scene !== this.sceneId && now - r.doneAt > this.keepMs) this.records.delete(id);
     for (const [h, until] of this.chipUntil) if (until <= now) this.chipUntil.delete(h);
   }
 
