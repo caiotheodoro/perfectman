@@ -36,6 +36,15 @@ export function blockedReasonLine(reason: BlockedReason, language: BodyLanguage)
     case "slow_down":
     case "too_far":
     case "cooldown":
+    // The act contract's reasons come from the hotel or the director's veto; the model is never told them as text.
+    case "kill_switch":
+    case "calm_room":
+    case "consent_off":
+    case "ladder":
+    case "budget":
+    case "dead_target":
+    case "no_scenario_gate":
+    case "rate_limit":
       return undefined;
   }
 }

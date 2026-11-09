@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { ACT_VERBS } from "./act-verbs.js";
 
 /** Per-render handle: `p#` person, `z#` place, `f#` furniture, `r#` room. */
 export const BodyRefSchema = z
@@ -28,11 +29,21 @@ export const BODY_GESTURES = ["wave", "kiss", "laugh", "thumbs", "dance", "sign"
 export const BODY_ORDERS = ["move_then_speak", "speak_then_move", "together"] as const;
 
 /**
- * The optional `body` block of the model's intent packet (ADR-0019,
- * docs/embodiment.md 6.1). Strict: an unknown key rejects the block, and the
- * parser then drops the block, never the speech half of the intent.
+ * The drama `act` key (act-contract.md 11.5): a verb the model proposes, with the per-render handle of its
+ * target and an optional intensity. Shape only: whether the verb needs a target, has one it must not have,
+ * or names a `p#` person is the validator's call (it drops the `act` alone and keeps the rest of the block).
+ * The director then approves or vetoes; the model never starts an act by itself.
  */
-export const BodyIntentSchema = z
+export const BodyActSchema = z
+  .object({
+    verb: z.enum(ACT_VERBS),
+    target: BodyRefSchema.optional(),
+    intensity: z.number().min(0).max(1).optional(),
+  })
+  .strict();
+
+/** The block as every run without drama has always seen it: the model-facing views are built from this one. */
+const BodyIntentBaseSchema = z
   .object({
     move: BodyMoveSchema.optional(),
     posture: z.object({ pose: z.enum(["stand", "sit", "lay"]), at: BodyRefSchema.optional() }).optional(),
@@ -49,4 +60,22 @@ export const BodyIntentSchema = z
   })
   .strict();
 
+/**
+ * The optional `body` block of the model's intent packet (ADR-0019,
+ * docs/embodiment.md 6.1). Strict: an unknown key rejects the block, and the
+ * parser then drops the block, never the speech half of the intent. `act`
+ * excludes `gesture` and `posture` (act-contract.md 11.5): a block with both is
+ * rejected whole, never the speech half.
+ */
+export const BodyIntentSchema = BodyIntentBaseSchema.extend({ act: BodyActSchema.optional() })
+  .strict()
+  .superRefine((body, ctx) => {
+    if (body.act && body.gesture) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["gesture"], message: "act excludes gesture" });
+    if (body.act && body.posture) ctx.addIssue({ code: z.ZodIssueCode.custom, path: ["posture"], message: "act excludes posture" });
+  });
+
+/** `BodyIntentSchema` without `act`: what a run without drama asks the model for (byte-identical prompts and decode grammar). */
+export const BodyIntentWithoutActSchema = BodyIntentBaseSchema;
+
 export type BodyIntent = z.infer<typeof BodyIntentSchema>;
+export type BodyAct = z.infer<typeof BodyActSchema>;

@@ -1,3 +1,4 @@
+import type { ActOrigin, ActVerb } from "./act-verbs.js";
 import type { ActorRef, AvatarState, BlockedReason, BodyPlanStatus, Direction8, RoomId, Tile } from "./space.types.js";
 
 /**
@@ -107,7 +108,13 @@ export type BodyCommandBody =
   | { cmd: "move_room"; to: RoomId }
   | { cmd: "typing"; on: boolean }
   /** `pair` is the sidecar-chosen id echoed back in `pair_reaction`. */
-  | { cmd: "pair"; kind: PairKind; with: ActorRef; pair: string };
+  | { cmd: "pair"; kind: PairKind; with: ActorRef; pair: string }
+  /**
+   * A drama act (act-contract.md section 2). `actId` is the sidecar's id, unique within the run and echoed on every
+   * act frame. `with` is required for the targeted verbs and forbidden for the solo ones (ACT-7, ACT-8). Dialect 2 only:
+   * on a dialect 1 link the Director client refuses it before the socket (NEG-5).
+   */
+  | { cmd: "act"; actId: string; verb: ActVerb; with?: ActorRef; intensity?: number; origin?: ActOrigin; authoredSkip?: boolean; text?: string };
 
 export type BodyCommandName = BodyCommandBody["cmd"];
 

@@ -4,7 +4,7 @@ import { createId } from "../utils/id.js";
 import type { ActionIntent, IntentType } from "./intent.types.js";
 import { IntentTypeSchema, IntentChannelTypeSchema, MemoryWriteProposalSchema, MemoryWriteShortSchema, MEMORY_TONE_UNSPECIFIED } from "./intent.schema.js";
 import type { MemoryWriteProposal } from "../memory/memory.types.js";
-import { BodyIntentSchema } from "../space/body-intent.schema.js";
+import { BodyIntentSchema, BodyIntentWithoutActSchema } from "../space/body-intent.schema.js";
 
 /**
  * The model-decision packet: only the fields the model legitimately decides.
@@ -112,8 +112,17 @@ export const ModelIntentPacketJsonSchema = zodToJsonSchema(ModelIntentPacketSche
   $refStrategy: "none",
 }) as JsonSchemaObject;
 
-/** The packet schema including the optional `body` block, for hotel-mode constrained decoding. */
-export const ModelIntentPacketWithBodyJsonSchema = zodToJsonSchema(ModelIntentPacketSchema, {
+/**
+ * The packet schema including the optional `body` block, for hotel-mode constrained decoding. The block is
+ * the one without the drama `act` key: a run without drama asks the model for exactly what it always did.
+ */
+export const ModelIntentPacketWithBodyJsonSchema = zodToJsonSchema(
+  ModelIntentPacketSchema.extend({ body: BodyIntentWithoutActSchema.optional().catch(undefined) }),
+  { $refStrategy: "none" },
+) as JsonSchemaObject;
+
+/** The same with the `act` key, for a run whose Director link negotiated drama (act-contract.md 11.5). */
+export const ModelIntentPacketWithActJsonSchema = zodToJsonSchema(ModelIntentPacketSchema, {
   $refStrategy: "none",
 }) as JsonSchemaObject;
 
@@ -172,8 +181,12 @@ function describePacketFieldType(def: JsonSchemaProp): string {
  * `json_schema` backends) — the tolerant parser can't repair a field the
  * model was never shown.
  */
-export function modelIntentPacketFieldContract(opts?: { body?: boolean }): string[] {
-  const { properties, required } = opts?.body ? ModelIntentPacketWithBodyJsonSchema : ModelIntentPacketJsonSchema;
+export function modelIntentPacketFieldContract(opts?: { body?: boolean; act?: boolean }): string[] {
+  const { properties, required } = opts?.body
+    ? opts.act
+      ? ModelIntentPacketWithActJsonSchema
+      : ModelIntentPacketWithBodyJsonSchema
+    : ModelIntentPacketJsonSchema;
   return Object.entries(properties).map(([name, def]) => {
     const isRequired = (required as readonly string[]).includes(name);
     const prop = def as JsonSchemaProp;
