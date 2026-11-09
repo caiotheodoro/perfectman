@@ -6,11 +6,20 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { AuthoringError, AuthoringService } from "../authoring/authoring-service.js";
 import { compileSceneDrama } from "../authoring/scenario-drama.js";
+import type { ScenarioDrama } from "../authoring/scenario-drama.js";
 import { parseScenarioBody } from "../run/scenario-body.js";
 
 const llm = { provider: "mock" as const, baseUrl: "", apiKeyEnv: "PERFECTMAN_LLM_API_KEY" as const, models: ["mock"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
 const presetsRoot = fileURLToPath(new URL("../../../../examples/presets", import.meta.url));
 const service = (drama: boolean) => new AuthoringService({ llm, apiKey: undefined, presetsRoot, drama });
+
+/** The compiled body, as the wire carries it (`unknown`), and its `drama` and agent ids read the way the hotel reads them. */
+const compiled = (source: string): { drama: ScenarioDrama | undefined; ids: string[]; raw: unknown } => {
+  const { body } = service(true).compile({ source });
+  const parsed = parseScenarioBody(JSON.parse(JSON.stringify(body)));
+  if (!parsed.ok) throw new Error(`body does not parse: ${JSON.stringify(parsed.errors)}`);
+  return { drama: parsed.body.drama, ids: parsed.body.config.agents.map((a) => a.id), raw: body };
+};
 
 const KEYS = ["tapa-na-cara", "confronto-da-traicao", "assassinato-na-festa", "reencontro-abraco", "anuncio-do-desmaio"] as const;
 const CAST = [{ id: "ana", displayName: "Ana Clara" }, { id: "bia", displayName: "Bia" }, { id: "caio", displayName: "Caio" }];
@@ -43,21 +52,18 @@ describe("the presets through the authoring service", () => {
   });
 
   it.each(KEYS)("%s compiles, and its body carries the scene's drama block in agent ids", async (key) => {
-    const { source } = await service(true).preset(key);
-    const { body } = service(true).compile({ source });
-    const ids = body.config.agents.map((a) => a.id);
-    expect(body.drama).toBeDefined();
-    for (const [a, v] of body.drama!.may_target) {
+    const { drama, ids, raw } = compiled((await service(true).preset(key)).source);
+    expect(drama).toBeDefined();
+    expect((raw as { drama?: ScenarioDrama }).drama).toEqual(drama);
+    for (const [a, v] of drama!.may_target) {
       expect(ids).toContain(a);
       expect(v === "@human" || ids.includes(v)).toBe(true);
     }
-    for (const id of body.drama!.may_die) expect(ids).toContain(id);
-    const parsed = parseScenarioBody(JSON.parse(JSON.stringify(body)));
-    expect(parsed.ok ? parsed.body.drama : undefined).toEqual(body.drama);
+    for (const id of drama!.may_die) expect(ids).toContain(id);
   });
 
   it("[SCN-5] the blocks are the ones the scenes were written with", async () => {
-    const drama = async (key: string) => service(true).compile({ source: (await service(true).preset(key)).source }).body.drama;
+    const drama = async (key: string) => compiled((await service(true).preset(key)).source).drama;
     expect(await drama("tapa-na-cara")).toEqual({ max_rung: 4, may_target: [["beatriz", "ricardo"]], may_die: [], permadeath: false });
     expect(await drama("assassinato-na-festa")).toEqual({ max_rung: 6, may_target: [["ricardo", "otavio"]], may_die: ["otavio"], permadeath: false });
     expect(await drama("reencontro-abraco")).toEqual({ max_rung: 0, may_target: [], may_die: [], permadeath: false });
@@ -81,8 +87,7 @@ describe("the presets through the authoring service", () => {
 
   it("the older presets carry no drama block and compile to a body without one", async () => {
     const { source } = await service(true).preset("gato-no-telhado");
-    const { body } = service(true).compile({ source });
-    expect(body.drama).toBeUndefined();
+    expect(compiled(source).drama).toBeUndefined();
     expect(service(false).validate({ source }).warnings).toEqual([]);
   });
 });
