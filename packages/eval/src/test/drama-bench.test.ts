@@ -5,7 +5,8 @@
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { DRAMA_SCENARIOS, runDramaBench } from "../bench/drama-bench.js";
 import type { DramaScenario } from "../bench/drama-bench.js";
@@ -141,7 +142,7 @@ describe("each scenario fails when what it guards is broken", () => {
 });
 
 describe("the bench gate (scripts/ci/check-bench-gate.mjs)", () => {
-  const SCRIPT = join(process.cwd(), "../../scripts/ci/check-bench-gate.mjs");
+  const SCRIPT = join(dirname(fileURLToPath(import.meta.url)), "../../../../scripts/ci/check-bench-gate.mjs");
   const base = { version: "bench-report-v1", scenariosRun: 3, scenariosFailed: 0, signalPassRate: 1, probePassRate: 0.937, perScenario: [] };
   const entry = (passed: boolean) => ({ id: "drama_x", name: "x", passed, checks: passed ? [] : [{ name: "the thing it guards", ok: false }], probesFailed: [], acts: 1 });
   const gate = (report: unknown, ...flags: string[]): { code: number; out: string } => {
