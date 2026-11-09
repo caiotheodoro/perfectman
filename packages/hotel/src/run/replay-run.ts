@@ -321,6 +321,9 @@ export class ReplayRun {
       }
       case "move_room":
         return { ...cmd, room: this.mapRoom(cmd.room) };
+      case "act":
+        // REPLAY-1: the plan already drops them; this is the second lock, so a hand-built plan cannot send one either.
+        return undefined;
       default:
         return cmd;
     }
