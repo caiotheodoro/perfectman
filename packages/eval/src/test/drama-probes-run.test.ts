@@ -37,6 +37,8 @@ describe("runDramaProbes", () => {
     "human-untouched-without-take",
     "scene-cut-revive",
     "down-window-exact",
+    "take-contact-windup",
+    "harm-window",
   ];
 
   it("returns one ProbeResult per probe, banded from PROBE_BANDS, passing a clean scene", () => {
