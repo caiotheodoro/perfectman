@@ -29,8 +29,8 @@ describe("the probes fail on the hotel's real lifecycles when they are corrupted
     expect(failures(without(take, isT("act_reaction")))).toEqual({ "witness-coverage": ["D1"] });
   });
 
-  it("[REA-1] the target of a kill never reacts and never dies on screen: the target's reaction latency fails with D1 (the death itself counts as the reaction, so dropping only the `die` reaction passes)", () => {
-    expect(failures(without(kill, (f) => f["t"] === "act_reaction" && f["who"] === -702))).toEqual({});
+  it("[REA-1] the target of a kill never reacts and never dies on screen: the target's reaction latency fails with D1 (the death frame excuses the target its reaction, so dropping only the `die` reaction is `kill-victim-die-reaction`'s, see drama-probe-gaps.test.ts)", () => {
+    expect(failures(without(kill, (f) => f["t"] === "act_reaction" && f["who"] === -702))).toEqual({ "kill-victim-die-reaction": ["D1"] });
     expect(failures(without(kill, (f) => (f["t"] === "act_reaction" && f["who"] === -702) || f["t"] === "actor_death"))).toMatchObject({ "reaction-latency-p90-target": ["D1"] });
   });
 

@@ -139,6 +139,9 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   // TBL-3 (contact 150 ms after a take) and SAFE-4 (at most N landed violent acts on humans per room per window).
   "take-contact-windup": [0, 0],
   "harm-window": [0, 0],
+  // FRM-1 (one act_done per act) and DEATH-1 (a kill's victim is shown dying): promises, so the band is zero.
+  "single-act-done": [0, 0],
+  "kill-victim-die-reaction": [0, 0],
 };
 
 export type ProbeInput = {

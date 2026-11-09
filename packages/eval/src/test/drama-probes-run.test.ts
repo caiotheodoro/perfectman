@@ -39,6 +39,8 @@ describe("runDramaProbes", () => {
     "down-window-exact",
     "take-contact-windup",
     "harm-window",
+    "single-act-done",
+    "kill-victim-die-reaction",
   ];
 
   it("returns one ProbeResult per probe, banded from PROBE_BANDS, passing a clean scene", () => {

@@ -55,10 +55,10 @@ export const innerOf = (line: Line): Record<string, unknown> => line["frame"] as
 export const load = (lines: readonly Line[]): BodyFrame[] => lines.map((l) => normalizeFrame(l)!);
 export const eventsOf = (lines: readonly Line[]): DramaEvent[] => extractDramaEvents(load(lines));
 
-/** Every drama probe over a set of lines, by name. `durationMs` is the span of the lines, as the harness measures it. */
-export function probesOf(lines: readonly Line[]): Map<string, DramaProbeResult> {
+/** Every drama probe over a set of lines, by name. `runMs` is how long the run lasted when the caller knows (the hotel's recorded run does: its `given.after_ms`); default, the span of the lines, as the harness measures it. */
+export function probesOf(lines: readonly Line[], runMs?: number): Map<string, DramaProbeResult> {
   const frames = load(lines);
-  const durationMs = Math.max(...frames.map((f) => f.atMs)) - Math.min(...frames.map((f) => f.atMs));
+  const durationMs = runMs ?? Math.max(...frames.map((f) => f.atMs)) - Math.min(...frames.map((f) => f.atMs));
   return new Map(runDramaProbes({ events: extractDramaEvents(frames), actorIds: ACTORS, durationMs }).map((r) => [r.probe, r]));
 }
 

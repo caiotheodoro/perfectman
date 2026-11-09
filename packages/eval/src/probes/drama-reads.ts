@@ -203,3 +203,20 @@ export function lifelinesOf(events: readonly DramaEvent[], isHuman: (ref: string
     deadAt: (ref, atMs) => (spans.get(ref) ?? []).some((s) => s.from < atMs && atMs < s.to),
   };
 }
+
+/**
+ * Who this very act killed, and when (run-relative ms): the actors an `actor_death` names this act for, else the victim of a
+ * kill that landed on an actor, at its `act_done` (an older stream with no death frame). A target's missing reaction is
+ * excused by a death only when the act caused it (REA-10 drops a reactor that dies before its step; the table's `die` is
+ * the victim's half of the act): a death some other act caused is no excuse.
+ */
+export function killedByAct(events: readonly DramaEvent[], ledger: ActLedger, isHuman: (ref: string) => boolean): ReadonlyMap<string, number> {
+  const died = new Map<string, number>();
+  const verb = ledger.started?.verb ?? ledger.done?.verb;
+  const victim = ledger.started?.with ?? ledger.done?.with;
+  const isKill = verb !== undefined && rungIndex(verb) === KILL_RUNG;
+  // A death frame names its act; an older stream's names none, and is read as this act's only when this is a kill on that actor.
+  for (const e of events) if (e.kind === "actor_death" && !died.has(e.actor) && (e.actId === ledger.actId || (e.actId === undefined && isKill && e.actor === victim))) died.set(e.actor, e.atMs);
+  if (isKill && victim !== undefined && !isHuman(victim) && ledger.done?.outcome === "landed" && !died.has(victim)) died.set(victim, ledger.done.atMs);
+  return died;
+}

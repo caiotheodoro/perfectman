@@ -20,6 +20,7 @@ import {
   firstReactionAfter,
   gapMs,
   humansOf,
+  killedByAct,
   ledgerOf,
   lifelinesOf,
   ratio,
@@ -158,7 +159,7 @@ export type ReactionLatencyReading = {
  * are never asked. A target that died before its deadline is dropped from the ledger by the hotel (REA-10) and here.
  */
 export function reactionLatencyP90(input: DramaProbeInput): ReactionLatencyReading {
-  const lives = lifelinesOf(input.events, humansOf(input));
+  const isHuman = humansOf(input);
   const targetMs: number[] = [];
   const witnessMs: number[] = [];
   const unreactedActIds: string[] = [];
@@ -179,7 +180,7 @@ export function reactionLatencyP90(input: DramaProbeInput): ReactionLatencyReadi
         anyReacted = true;
         clocks.push(reacted.clock);
         (debt.role === "target" ? targetMs : witnessMs).push(reacted.ms);
-      } else if (debt.role === "target" && !lives.deadAt(debt.who, beat.atMs + TARGET_DEADLINE_MS)) {
+      } else if (debt.role === "target" && !((killedByAct(input.events, ledger, isHuman).get(debt.who) ?? Infinity) <= beat.atMs + TARGET_DEADLINE_MS)) {
         unreactedActIds.push(ledger.actId);
         targetMs.push(UNREACTED_MS);
       }

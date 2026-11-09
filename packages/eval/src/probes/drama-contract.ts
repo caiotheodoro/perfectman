@@ -8,6 +8,8 @@
  *  - `human-untouched-without-take` HUM-1, CHIP-6   no physical act touched a human who did not `take`
  *  - `scene-cut-revive`            DEATH-7  a scene cut revives the dead it says it revives, in order
  *  - `down-window-exact`           DOWN-3   a `human_up` follows its `human_down` by `ms`
+ *  - `single-act-done`             FRM-1    exactly one `act_done` per act
+ *  - `kill-victim-die-reaction`    DEATH-1  the victim of a landed kill on an actor is shown dying: its `die` reaction, after contact
  *
  * Same shape as the probes in `drama.ts`: a pure reading each, then `runContractProbes` banding them.
  */
@@ -25,6 +27,7 @@ import {
 import { actsOf, clockOf, gapMs, humansOf, ledgerOf, lifelinesOf, type Clock, type DramaProbeInput, type DramaProbeResult, type ResultFn } from "./drama-reads.js";
 
 const SHOVE_RUNG = rungIndex("shove");
+const KILL_RUNG = rungIndex("kill");
 /** `chip_windup_ms` (section 0.3): contact comes this long after a `take`. */
 const CHIP_WINDUP_MS = 150;
 /** SAFE-4 defaults of `PERFECTMAN_DRAMA_HARM_MAX` and `PERFECTMAN_DRAMA_HARM_WINDOW_SECS`. */
@@ -298,6 +301,59 @@ export function downWindowExact(input: DramaProbeInput): DownWindowReading {
   return { measured: offenders.length, windows: downs.length, openWindows: open, toleranceMs: DOWN_TOLERANCE_MS, worstDeviationMs: worst, clock: clockOf(clocks), offenders };
 }
 
+// ── single-act-done ──────────────────────────────────────────────────────────
+
+export type SingleActDoneReading = {
+  /** `act_done` frames beyond the first, over every act: the contract says each act ends exactly once (FRM-1). */
+  measured: number;
+  judged: number;
+  offenders: Array<{ actId: string; count: number; outcomes: string[] }>;
+};
+
+/** FRM-1: `act_done` is the last frame of an act and there is exactly one. A repeat is a hotel that ended an act twice, or a log that replayed a frame. */
+export function singleActDone(input: DramaProbeInput): SingleActDoneReading {
+  const dones = new Map<string, string[]>();
+  for (const e of input.events) if (e.kind === "act_done") dones.set(e.actId, [...(dones.get(e.actId) ?? []), e.outcome]);
+  const offenders: SingleActDoneReading["offenders"] = [];
+  let measured = 0;
+  for (const [actId, outcomes] of dones) {
+    if (outcomes.length <= 1) continue;
+    measured += outcomes.length - 1;
+    offenders.push({ actId, count: outcomes.length, outcomes });
+  }
+  return { measured, judged: dones.size, offenders };
+}
+
+// ── kill-victim-die-reaction ─────────────────────────────────────────────────
+
+export type KillVictimReading = {
+  /** Landed kills on an actor whose victim was never shown dying after contact. */
+  measured: number;
+  judged: number;
+  offenders: Array<{ actId: string; victim: string }>;
+};
+
+/**
+ * DEATH-1 and REA-3: the victim of a kill is shown dying by the table's own `die` step (a label no planner command replaces),
+ * after contact. The death frame alone is not that: it says the actor is dead, and `reaction-latency-p90-target` excuses a victim
+ * its reaction because the act killed it, so without this a dropped `die` reaction would pass. A human victim is `down`,
+ * not dying, and owes nothing; a kill that did not land, or never made contact, is not judged.
+ */
+export function killVictimDieReaction(input: DramaProbeInput): KillVictimReading {
+  const isHuman = humansOf(input);
+  const offenders: KillVictimReading["offenders"] = [];
+  let judged = 0;
+  for (const ledger of ledgerOf(input.events).values()) {
+    const verb = ledger.started?.verb ?? ledger.done?.verb;
+    const victim = ledger.started?.with ?? ledger.done?.with;
+    if (verb === undefined || rungIndex(verb) !== KILL_RUNG || victim === undefined || isHuman(victim) || ledger.done?.outcome !== "landed" || ledger.beat === undefined) continue;
+    judged += 1;
+    const shown = ledger.reactions.some((r) => r.who === victim && r.reaction === "die" && gapMs(ledger.beat!, r).ms >= 0);
+    if (!shown) offenders.push({ actId: ledger.actId, victim });
+  }
+  return { measured: offenders.length, judged, offenders };
+}
+
 // ── take-contact-windup ──────────────────────────────────────────────────────
 
 export type WindupReading = {
@@ -396,6 +452,8 @@ export function runContractProbes(input: DramaProbeInput, result: ResultFn): Dra
   const down = downWindowExact(input);
   const windup = takeContactWindup(input);
   const harm = harmWindow(input);
+  const once = singleActDone(input);
+  const victims = killVictimDieReaction(input);
   return [
     result("owed-missed-empty", "Reactions still owed when an act's window closed", missed.measured, { ...missed }, (passed) => (passed ? [] : ["D1"])),
     result("blocked-reason-audit", "Blocked or aborted acts without a reason from the contract's enums", audit.measured, { ...audit }, noCodes),
@@ -405,5 +463,7 @@ export function runContractProbes(input: DramaProbeInput, result: ResultFn): Dra
     result("down-window-exact", "Down windows that did not end when the contract says", down.measured, { ...down }, noCodes, down.windows === 0 ? "no human went down" : undefined),
     result("take-contact-windup", "Takes whose contact did not come 150 ms later", windup.measured, { ...windup }, noCodes, windup.judged === 0 ? "no take reached contact" : undefined),
     result("harm-window", "Landed violent acts on humans past the room's window limit", harm.measured, { ...harm }, (passed) => (passed ? [] : ["D7"])),
+    result("single-act-done", "act_done frames beyond the first, per act", once.measured, { ...once }, noCodes),
+    result("kill-victim-die-reaction", "Landed kills whose victim was not shown dying", victims.measured, { ...victims }, (passed) => (passed ? [] : ["D1"]), victims.judged === 0 ? "no kill landed on an actor" : undefined),
   ];
 }

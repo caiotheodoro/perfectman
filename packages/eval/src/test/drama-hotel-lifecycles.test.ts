@@ -21,6 +21,8 @@ const NAMES = [
   "down-window-exact",
   "take-contact-windup",
   "harm-window",
+  "single-act-done",
+  "kill-victim-die-reaction",
 ];
 
 /** The probes that fail on a set of lines, with the D-codes they name. */
@@ -46,7 +48,7 @@ describe("the hotel's real lifecycles through extractDramaEvents and the drama p
   });
 
   for (const name of LIFECYCLES) {
-    it(`passes all 17 probes on ${name}, each banded from PROBE_BANDS`, () => {
+    it(`passes all 19 probes on ${name}, each banded from PROBE_BANDS`, () => {
       const results = probesOf(lifecycleLines(name));
       expect([...results.keys()]).toEqual(NAMES);
       for (const r of results.values()) {
