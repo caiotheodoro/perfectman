@@ -6,9 +6,8 @@ import { negotiate } from "../director/dialect.js";
 import { DRAMA_HOTEL_TYPES, isDramaFrame } from "../director/drama-frames.js";
 import type { HotelFrame } from "../director/index.js";
 import { routeDramaFrame } from "../run/drama-frame-sink.js";
-import type { DramaFrameSink } from "../run/drama-frame-sink.js";
 import { checkFrame } from "../testing/frame-schema.js";
-import { HOTEL_FIXTURE_DIR, HOTEL_FIXTURE_FILES, LIFECYCLES, asWire, hotelSha256, lifecycleFrames, pinnedShas, readHotelRows } from "../testing/hotel-fixtures.js";
+import { HOTEL_FIXTURE_DIR, HOTEL_FIXTURE_FILES, LIFECYCLES, asHotelFrame, asWire, hotelSha256, lifecycleFrames, pinnedShas, readHotelRows, recordingSink } from "../testing/hotel-fixtures.js";
 
 const JSONL = HOTEL_FIXTURE_FILES.filter((f) => f.endsWith(".jsonl"));
 
@@ -63,20 +62,21 @@ describe("the hotel's frames against the real schema and the TS frame types", ()
 
   it("every drama frame of the four recorded lifecycles is routed to its own handler by the exhaustive router", () => {
     const handled: string[] = [];
-    const sink = Object.fromEntries(
-      ["onSession", "onActStarted", "onActBeat", "onActReaction", "onActDone", "onDramaConsent", "onActorDeath", "onActorRevive", "onHumanDown", "onHumanUp", "onSceneCut", "onDramaState"].map((m) => [m, (f: { t?: string } | null) => void handled.push(f?.t ?? m)]),
-    ) as unknown as DramaFrameSink;
+    const sink = recordingSink(handled);
     const seen = new Set<string>();
+    let sent = 0;
     for (const life of LIFECYCLES) {
       lifecycleFrames(life).forEach((frame, n) => {
-        const wire = asWire(frame, n + 1) as unknown as HotelFrame;
+        const wire = asHotelFrame(frame, n + 1, life);
         expect(isDramaFrame(wire), String(frame["t"])).toBe(true);
         if (isDramaFrame(wire)) routeDramaFrame(wire, sink);
         seen.add(String(frame["t"]));
+        sent += 1;
       });
     }
     expect([...seen].sort()).toEqual([...DRAMA_HOTEL_TYPES].sort());
-    expect(handled.length).toBe(LIFECYCLES.flatMap((l) => lifecycleFrames(l)).length);
+    expect(handled).toHaveLength(sent);
+    expect(handled.every((t) => (DRAMA_HOTEL_TYPES as readonly string[]).includes(t))).toBe(true);
   });
 });
 
@@ -134,7 +134,11 @@ describe("the sidecar's own checks against the hotel's act-validation rows", () 
 describe("the sidecar's answer to the hotel's own hello", () => {
   const [off, on] = readHotelRows("hello-offer.jsonl");
   type Hello = Extract<HotelFrame, { t: "hello" }>;
-  const hello = (frame: Record<string, unknown> | undefined): Hello => asWire(frame ?? {}, 1) as unknown as Hello;
+  const hello = (frame: Record<string, unknown> | undefined): Hello => {
+    const wire = asHotelFrame(frame ?? {}, 1, "hello");
+    if (wire.t !== "hello") throw new Error(`expected a hello, got ${wire.t}`);
+    return wire;
+  };
 
   it("[NEG-2] a hotel with the switch off sends no offer, and a drama sidecar answers it as plain PROTO 1", () => {
     const frame = hello(off?.expect[0]);
