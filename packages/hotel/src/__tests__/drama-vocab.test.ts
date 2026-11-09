@@ -25,7 +25,7 @@ import { schemaEnum } from "../testing/frame-schema.js";
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SCHEMA_DIR = join(HERE, "../../schema");
 const bytes = readFileSync(join(SCHEMA_DIR, "verb-vocab.json"));
-type Step = { t: { a: string; ms: number; hs?: boolean; stagger?: boolean }; p: string; face?: string; on?: string; anchor?: string; action?: string };
+type Step = { t: { a: string; ms: number; hs?: boolean; stagger?: boolean }; p: string; face?: string; on?: string; anchor?: string; action?: string; cue?: string };
 type Roles = Record<string, Step[]>;
 type Verb = { id: string; gates: unknown; rung: number | null; target: "required" | "none"; timeline: { contact_at_ms: number }; roles: Roles; intensity: { default: number; class: { min: string; max: string } | null } };
 type Profile = { timeout: string; hold: Roles; dodge: Roles; push_back: Roles };
@@ -38,7 +38,7 @@ type Vocab = {
   verbs: Record<string, Verb>;
   consent_profiles: Record<string, Profile>;
 };
-const vocab = JSON.parse(bytes.toString("utf8")) as Vocab;
+const vocab = JSON.parse(bytes.toString("utf8")) as Vocab & Record<string, unknown>;
 
 /** The members of `expected` that `actual` lacks and the other way round, as readable strings; empty when equal as ordered lists. */
 function diffIds(expected: readonly string[], actual: readonly string[]): string[] {
@@ -81,7 +81,7 @@ describe("verb-vocab: the vendored table", () => {
   it("[VV-1] the stand-in verb table is the draft in docs/drama, minus the dropped keys", () => {
     const draft = JSON.parse(readFileSync(join(HERE, "../../../../docs/drama/verb-vocab.draft.json"), "utf8")) as Record<string, unknown>;
     const { $comment: _c, draft: _d, contract: _k, ...published } = draft;
-    const { $comment: _own, ...standIn } = vocab as unknown as Record<string, unknown>;
+    const { $comment: _own, ...standIn } = vocab;
     expect(standIn).toEqual(published);
   });
 });
@@ -160,7 +160,7 @@ describe("verb-vocab: the cue vocabulary, version 2", () => {
     const played = Object.values(vocab.verbs)
       .flatMap((v) => Object.values(v.roles).flat())
       .filter((s) => s.p === "sfx")
-      .map((s) => (s as unknown as { cue: string }).cue);
+      .map((s) => s.cue ?? "");
     expect(played.length).toBeGreaterThan(5);
     for (const cue of played) expect(SFX_CANONICAL as readonly string[], cue).toContain(cue);
   });
@@ -178,8 +178,8 @@ describe("verb-vocab: the table checks of the contract, run over the JSON", () =
 
   it("[TBL-1] a verb with a damaged step, a missing gate block or an unknown primitive fails", () => {
     const slap = vocab.verbs["slap"]!;
-    const damaged = structuredClone(slap) as unknown as { roles: { actor: { p: string }[] } };
-    damaged.roles.actor[0]!.p = "teleport";
+    const damaged = structuredClone(slap);
+    damaged.roles["actor"]![0]!.p = "teleport";
     expect(checkVerb(damaged)).toBe(false);
     const { gates: _g, ...noGates } = slap;
     expect(checkVerb(noGates)).toBe(false);

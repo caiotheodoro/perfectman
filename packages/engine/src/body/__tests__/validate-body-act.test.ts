@@ -75,14 +75,14 @@ describe("validateBodyIntent: the act key", () => {
     const parts = body({ move: { kind: "go_to", place: bar }, act: { verb: "glare", target: duda }, expression: "angry" });
     applySpaceAction(model, { type: "agent_body", agentId: "a1", patch: { budget: { cmdTimes: [NOW - 1000, NOW - 900] } } });
     const two = validateBodyIntent(viewOf(model, "a1", NOW), "a1", parts, NOW, handles);
-    expect(two.accepted.move).toBeDefined();
+    expect(two.accepted.move).toEqual({ kind: "go_to", place: bar });
     expect(two.accepted.act).toEqual({ verb: "glare", target: duda });
     expect(two.accepted.expression).toBeUndefined();
     expect(two.blocked).toEqual([{ code: "slow_down", part: "expression" }]);
 
     applySpaceAction(model, { type: "agent_body", agentId: "a1", patch: { budget: { cmdTimes: [NOW - 1000, NOW - 900, NOW - 800] } } });
     const three = validateBodyIntent(viewOf(model, "a1", NOW), "a1", parts, NOW, handles);
-    expect(three.accepted.move).toBeDefined();
+    expect(three.accepted.move).toEqual({ kind: "go_to", place: bar });
     expect(three.accepted.act).toBeUndefined();
     expect(three.blocked).toEqual([{ code: "slow_down", part: "act" }, { code: "slow_down", part: "expression" }]);
   });

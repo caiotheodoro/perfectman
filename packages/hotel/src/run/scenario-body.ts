@@ -1,3 +1,5 @@
+import { cleanDrama } from "../authoring/scenario-drama.js";
+import type { ScenarioDrama } from "../authoring/scenario-drama.js";
 import { cleanVisit } from "../authoring/scenario-form.js";
 import type { ScenarioStage } from "../authoring/scenario-form.js";
 import { parseSimulationConfig } from "@perfectman/server/hotel";
@@ -24,6 +26,8 @@ export type ScenarioBody = {
   arrivals?: Record<string, number>;
   /** Where the builder's stage step lets the cast go. Absent means every room the hotel names (older scenarios, presets). */
   stage?: ScenarioStage;
+  /** The drama block (act-contract.md section 7), refs as agent ids. Absent is free play. Additive and optional, so the body version stays 1. */
+  drama?: ScenarioDrama;
 };
 
 export type ParsedBody = { ok: true; body: ScenarioBody } | { ok: false; errors: { path: string; message: string }[] };
@@ -73,6 +77,7 @@ export function parseScenarioBody(raw: unknown): ParsedBody {
       ...(o["responseDelays"] ? { responseDelays: o["responseDelays"] as ScenarioBody["responseDelays"] & object } : {}),
       ...(o["arrivals"] && typeof o["arrivals"] === "object" ? { arrivals: cleanArrivals(o["arrivals"] as Record<string, unknown>) } : {}),
       ...cleanStage(o["stage"]),
+      ...cleanDrama(o["drama"], config.agents.map((a) => a.id)),
     },
   };
 }

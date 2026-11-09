@@ -1,5 +1,6 @@
 import { ROLES } from "@perfectman/shared";
 import type { RoomDraft } from "@perfectman/shared";
+import type { ScenarioFormDrama } from "./scenario-drama.js";
 
 /**
  * The hotel builder's form as it crosses the wire (`source` of validate/compile, and what a saved
@@ -39,6 +40,11 @@ export type ScenarioForm = {
   }>;
   /** The OpenRouter model picked in the builder (informational here: the run carries it, D54). */
   model?: string;
+  /**
+   * What the scene may do to people (act-contract.md section 7): the ladder ceiling, who may be hit or killed, permadeath. Refs are cast
+   * names, `@human` is any human who opted in. Absent is free play; `{}` is free play plus authored skips. Compiled into the body's `drama`.
+   */
+  drama?: ScenarioFormDrama;
   stage?: {
     room?: number | null;
     places?: unknown[];

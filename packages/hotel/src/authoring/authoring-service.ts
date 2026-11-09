@@ -16,6 +16,8 @@ import { parseBundle, makeBundle } from "./source-bundle.js";
 import { MAX_BODY_BYTES, SCENARIO_BODY_VERSION, parseScenarioBody, placeholderLlm } from "../run/scenario-body.js";
 import type { ScenarioBody } from "../run/scenario-body.js";
 import { draftToFiles } from "./draft-to-files.js";
+import { compileDramaForm } from "./scenario-drama.js";
+import type { ScenarioDrama } from "./scenario-drama.js";
 import { formArrivals, formStage, formToDraft, parseForm } from "./scenario-form.js";
 import type { FormLooks, ScenarioStage } from "./scenario-form.js";
 
@@ -37,6 +39,8 @@ export type AuthoringDeps = {
   apiKey: string | undefined;
   presetsRoot?: string;
   fetchImpl?: typeof fetch;
+  /** This sidecar's `PERFECTMAN_DRAMA`: a `drama` block while it is off compiles with the warning `drama.disabled`. Absent means off. */
+  drama?: boolean;
 };
 
 const toRows = (diagnostics: readonly Diagnostic[], level: "error" | "warning"): PathMessage[] =>
@@ -53,19 +57,33 @@ export class AuthoringService {
   constructor(private readonly deps: AuthoringDeps) {}
 
   /** A builder form (JSON) becomes the file bundle with `roomFiles`; a markdown bundle is read as is. */
-  private resolveSource(source: string): { bundle: ReturnType<typeof parseBundle>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } {
+  private resolveSource(source: string): { bundle: ReturnType<typeof parseBundle>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage; drama?: ScenarioDrama; dramaWarnings: PathMessage[] } {
     const form = parseForm(source);
-    if (!form) return { bundle: parseBundle(source), looks: {}, arrivals: {} };
+    if (!form) return { bundle: parseBundle(source), looks: {}, arrivals: {}, dramaWarnings: [] };
     const { draft, looks } = formToDraft(form);
+    const dramaPart = this.resolveDrama(form);
     try {
-      return { bundle: parseBundle(makeBundle(draftToFiles(draft))), looks, arrivals: formArrivals(form), ...(formStage(form) ? { stage: formStage(form) as ScenarioStage } : {}) };
+      return { bundle: parseBundle(makeBundle(draftToFiles(draft))), looks, arrivals: formArrivals(form), ...(formStage(form) ? { stage: formStage(form) as ScenarioStage } : {}), ...dramaPart };
     } catch (err) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", [{ path: "form", message: err instanceof Error ? err.message : String(err) }]);
     }
   }
 
-  private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } {
-    const { bundle, looks, arrivals, stage } = this.resolveSource(source);
+  /**
+   * The form's `drama` block as the body carries it (SCN-5). Cast refs become the agent ids `person-N` that `formArrivals` uses. The builder has no way to
+   * author a scene cut yet, so a scenario that can kill always warns `drama.no_scene_cut` (SCN-6).
+   */
+  private resolveDrama(form: NonNullable<ReturnType<typeof parseForm>>): { drama?: ScenarioDrama; dramaWarnings: PathMessage[] } {
+    if (form.drama === undefined) return { dramaWarnings: [] };
+    const cast = Array.isArray(form.cast) ? form.cast : [];
+    const result = compileDramaForm(form.drama, { names: cast.map((c) => (typeof c?.name === "string" ? c.name : "")), ids: cast.map((_c, i) => `person-${i + 1}`) }, { sceneCuts: 0 });
+    if (result.errors.length > 0) throw new AuthoringError(422, "bad_scenario", "scenario did not compile", result.errors);
+    const disabled: PathMessage[] = this.deps.drama ? [] : [{ path: "drama", message: "drama.disabled: this sidecar's PERFECTMAN_DRAMA is off, so the drama block is kept but nothing will enforce or play it" }];
+    return { ...(result.drama ? { drama: result.drama } : {}), dramaWarnings: [...disabled, ...result.warnings] };
+  }
+
+  private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage; drama?: ScenarioDrama; dramaWarnings: PathMessage[] } {
+    const { bundle, looks, arrivals, stage, drama, dramaWarnings } = this.resolveSource(source);
     if (!bundle.scenario) throw new AuthoringError(400, "bad_request", "source has no scenario file");
     const result = compileRunInputs(
       { kind: "markdown", scenario: bundle.scenario, personas: bundle.personas },
@@ -81,7 +99,7 @@ export class AuthoringService {
         if (range) delays[a.id] = [range[0], range[1]];
       }
     }
-    return { result, delays, looks, arrivals, ...(stage ? { stage } : {}) };
+    return { result, delays, looks, arrivals, dramaWarnings, ...(stage ? { stage } : {}), ...(drama ? { drama } : {}) };
   }
 
   validate(req: ValidateRequest): ValidateResponse {
@@ -91,18 +109,19 @@ export class AuthoringService {
     }
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "validate needs source or body");
     let result: CompileResult;
+    let dramaWarnings: PathMessage[];
     try {
-      ({ result } = this.compileSource(req.source));
+      ({ result, dramaWarnings } = this.compileSource(req.source));
     } catch (err) {
       if (err instanceof AuthoringError && err.errors) return { ok: false, errors: err.errors, warnings: [] };
       throw err;
     }
-    return { ok: result.ok, errors: toRows(result.diagnostics, "error"), warnings: toRows(result.diagnostics, "warning") };
+    return { ok: result.ok, errors: toRows(result.diagnostics, "error"), warnings: [...toRows(result.diagnostics, "warning"), ...dramaWarnings] };
   }
 
   compile(req: { source?: unknown }): CompileResponse {
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "compile needs source");
-    const { result, delays, looks, arrivals, stage } = this.compileSource(req.source);
+    const { result, delays, looks, arrivals, stage, drama } = this.compileSource(req.source);
     if (!result.ok || !result.config || !result.summary) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", toRows(result.diagnostics, "error"));
     }
@@ -116,6 +135,7 @@ export class AuthoringService {
       ...(Object.keys(looks).length > 0 ? { looks } : {}),
       ...(Object.keys(arrivals).length > 0 ? { arrivals } : {}),
       ...(stage ? { stage } : {}),
+      ...(drama ? { drama } : {}),
     };
     if (Buffer.byteLength(JSON.stringify(body)) > MAX_BODY_BYTES) {
       throw new AuthoringError(422, "bad_scenario", "compiled scenario is larger than 256 KiB", [{ path: "body", message: "too large" }]);
