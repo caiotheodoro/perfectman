@@ -84,18 +84,41 @@ export type ActRateReading = {
   measured: number;
   worstScene: string | undefined;
   perScene: Record<string, SceneActRate>;
+  /** Acts left out of the rate because they paid a reaction another act owed. */
+  reactionActs: number;
 };
+
+/** Longest an owed reaction's `act_started` may sit before its `act_reaction` row (the planner logs both in the same tick). */
+const REACTION_ACT_WINDOW_MS = 500;
+
+/**
+ * Acts that are a reaction the contract owes: an actor starts an act and, at the same moment, an `act_reaction` of
+ * `cmd:act` is logged for that actor against a different act. They are mandatory (D1), so they are not spam (D6).
+ */
+function reactionActIds(acts: readonly ActStartedEvent[], events: readonly DramaEvent[]): Set<string> {
+  const reactions = events.filter((e) => e.kind === "act_reaction" && e.reaction.startsWith("cmd:act"));
+  const owed = new Set<string>();
+  for (const a of acts) {
+    const paid = reactions.some(
+      (r) => r.kind === "act_reaction" && r.who === a.actor && r.actId !== a.actId && sceneOf(r) === sceneOf(a) && r.atMs >= a.atMs && r.atMs - a.atMs <= REACTION_ACT_WINDOW_MS,
+    );
+    if (paid) owed.add(a.actId);
+  }
+  return owed;
+}
 
 /**
  * `act_started` per scene-minute (D6). The busiest scene is the reading: spam in one scene is not diluted by a quiet one.
- * A blocked act has no `act_started` and is not an act here (FRM-2); an aborted one started and counts.
+ * A blocked act has no `act_started` and is not an act here (FRM-2); an aborted one started and counts. An act that pays
+ * a reaction another act owed is not counted (`reactionActs` in the evidence): D1 demands it, so D6 cannot also punish it.
  */
 export function actRate(input: DramaProbeInput): ActRateReading {
   const acts = actsOf(input.events);
+  const owed = reactionActIds(acts, input.events);
   const sceneOfAct = new Map(acts.map((a) => [a.actId, sceneOf(a)]));
   const sceneOfEvent = (e: DramaEvent): string => ("actId" in e && e.actId !== undefined ? sceneOfAct.get(e.actId) : undefined) ?? sceneOf(e);
   const counts = new Map<string, number>();
-  for (const a of acts) counts.set(sceneOf(a), (counts.get(sceneOf(a)) ?? 0) + 1);
+  for (const a of acts) if (!owed.has(a.actId)) counts.set(sceneOf(a), (counts.get(sceneOf(a)) ?? 0) + 1);
   const perScene: Record<string, SceneActRate> = {};
   let measured = 0;
   let worstScene: string | undefined;
@@ -109,7 +132,7 @@ export function actRate(input: DramaProbeInput): ActRateReading {
       worstScene = scene;
     }
   }
-  return { measured, worstScene, perScene };
+  return { measured, worstScene, perScene, reactionActs: owed.size };
 }
 
 // ── verb-diversity ───────────────────────────────────────────────────────────
