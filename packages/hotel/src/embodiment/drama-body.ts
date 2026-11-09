@@ -2,7 +2,7 @@ import type { ActVerb, AgentState, BodyIntent, BlockedReason, Presence, RoomView
 import { ACT_TARGET_MODE } from "@perfectman/shared";
 import { rememberAct, rememberDeath } from "@perfectman/engine";
 import type { ActFacts, ActLang } from "@perfectman/engine";
-import type { Clock } from "../clock/clock.js";
+import type { Clock, TimerHandle } from "../clock/clock.js";
 import type { DramaSession } from "../director/dialect.js";
 import type { HotelFrame } from "../director/index.js";
 import type { DramaFrameSink } from "../run/drama-frame-sink.js";
@@ -10,6 +10,7 @@ import { chebyshev } from "../space/geometry.js";
 import type { ActorSpace } from "../space/space-mirror.js";
 import { ActLedger } from "./act-ledger.js";
 import { ReactionScheduler } from "./reaction-scheduler.js";
+import { DEFAULT_DRAMA_TUNING } from "../director/drama/tuning.js";
 import type { ActProposal, DramaDecision, DramaDecisionPort, EmotionReading, RelationReading } from "../director/drama/ports.js";
 import { plan } from "./plan.js";
 import type { BodyExecutor } from "./body-executor.js";
@@ -49,6 +50,8 @@ export type DramaBodyDeps = {
   hooks: { blocked(agentId: string, reasons: BlockedReason[]): void };
   /** Test seam: where the planner's own act ids start. */
   idPrefix?: string;
+  /** How long and how often a climb's actor follows a target that keeps moving (`DramaTuning.origination.climb`); absent: the sidecar's default. */
+  follow?: { windowMs: number; everyMs: number };
 };
 
 /** How long a witness remembers a blow in front of it as something to put right (a rescuer's window), and how long a landed embrace is a held picture. */
@@ -79,9 +82,14 @@ export class DramaBody implements DramaFrameSink {
   private readonly staged = new Map<string, number>();
   private readonly retry = new Map<string, { proposal: ActProposal; target: string; until: number }>();
   private readonly writes = new Map<string, Promise<void>>();
+  /** An actor following the person its next blow is for (issue #262): who, until when, and the timer of its next look. */
+  private readonly following = new Map<string, { target: string; until: number; rng: () => number; timer: TimerHandle }>();
+  private readonly followCfg: { windowMs: number; everyMs: number };
   private ids = 0;
 
   constructor(private readonly d: DramaBodyDeps) {
+    const climb = DEFAULT_DRAMA_TUNING.origination.climb;
+    this.followCfg = d.follow ?? { windowMs: climb.followWindowMs, everyMs: climb.followEveryMs };
     this.ledger = new ActLedger({
       refOf: (id) => d.mirror.refOfAvatar(id),
       near: (ref, radius) => this.near(ref, radius),
@@ -191,6 +199,8 @@ export class DramaBody implements DramaFrameSink {
     if (!session) this.reactions.dispose();
   }
   onActStarted(f: Frame<"act_started">): void {
+    // The blow (or any act of its own): the follow has done its job.
+    this.stopFollow(this.d.mirror.refOfAvatar(f.actor));
     this.ledger.onActStarted(f);
   }
   onActBeat(f: Frame<"act_beat">): void {
@@ -218,6 +228,7 @@ export class DramaBody implements DramaFrameSink {
   }
   onSceneCut(f: Frame<"scene_cut">): void {
     this.ledger.onSceneCut(f);
+    this.stopFollows();
     this.retry.clear();
     this.rescue.clear();
   }
@@ -229,12 +240,14 @@ export class DramaBody implements DramaFrameSink {
   actorGone(ref: string): void {
     const wasDead = this.ledger.isDead(ref);
     this.ledger.onGone(ref);
+    this.stopFollow(ref);
     if (wasDead) this.d.pool.retire(ref);
   }
 
   /** An avatar left its room: it owes nothing any more (REA-10). */
   left(ref: string): void {
     this.ledger.onGone(ref, false);
+    this.stopFollow(ref);
   }
 
   /** Resolves when every memory write started so far has finished. */
@@ -243,6 +256,7 @@ export class DramaBody implements DramaFrameSink {
   }
 
   dispose(): void {
+    this.stopFollows();
     this.reactions.dispose();
   }
 
@@ -306,7 +320,7 @@ export class DramaBody implements DramaFrameSink {
     return out;
   }
 
-  private emotionOf(base: PlanInput): EmotionReading | undefined {
+  private emotionOf(base: Pick<PlanInput, "agentState" | "actionEmotions">): EmotionReading | undefined {
     if (!base.actionEmotions) return undefined;
     const relations = new Map<number, RelationReading>();
     for (const [other, r] of base.agentState.relationalStates) {
@@ -377,8 +391,78 @@ export class DramaBody implements DramaFrameSink {
     if (!emotion) return { hold: false, approach: [] };
     const res = port.decide({ actor: wire, emotion });
     if (res.kind === "initiate") return { hold: true, approach: [] };
-    if (res.kind === "pass" && res.approach !== undefined) return { hold: false, approach: this.approachTo(ref, res.approach, base) };
+    if (res.kind === "pass" && res.approach !== undefined) {
+      this.startFollow(ref, res.approach, base.rng);
+      return { hold: false, approach: this.approachTo(ref, res.approach, base) };
+    }
     return { hold: false, approach: [] };
+  }
+
+  // ---- following a target that keeps moving (issue #262) ------------------------------------------------------------
+
+  /**
+   * The director said the next blow of a climb is motivated and only the distance is missing. A model that is consulted every ~20 s sees a target that has walked
+   * off again by the time the walk ends, so the actor keeps after it for `follow.windowMs` (`DramaTuning.origination.climb`): see `followTick`. A window already open
+   * for the same person is kept as it is, never extended; the next `approach` after it ends opens a new one.
+   */
+  private startFollow(ref: string, wire: number, rng: () => number): void {
+    const { windowMs, everyMs } = this.followCfg;
+    const target = this.d.mirror.refOfAvatar(wire);
+    const now = this.d.clock.now();
+    if (!target || windowMs <= 0 || everyMs <= 0) return;
+    const open = this.following.get(ref);
+    if (open && open.target === target && open.until > now) {
+      open.rng = rng;
+      return;
+    }
+    this.stopFollow(ref);
+    const f = { target, until: now + windowMs, rng, timer: this.d.clock.setTimer(() => this.followTick(ref, everyMs), everyMs) };
+    this.following.set(ref, f);
+  }
+
+  /**
+   * One look of a follow, off the actor's own timer: the window over, the actor dead, locked or busy, or the scene cut, and the follow ends. Beside the target, the
+   * director is asked as a passive turn asks it (no proposal, the feelings the actor last planned with, `at` now), and every gate applies: it starts the blow when the
+   * two are still and the pace and the ladder allow it, and otherwise nothing happens until the next look. Apart, the actor is walked beside the target again unless it is
+   * already heading for a tile beside it.
+   */
+  private followTick(ref: string, everyMs: number): void {
+    const f = this.following.get(ref);
+    if (!f) return;
+    const now = this.d.clock.now();
+    const wire = this.d.mirror.avatarId(ref);
+    const port = this.d.port?.();
+    const target = this.presence(f.target);
+    if (now >= f.until || !this.active || !port?.active || wire === undefined || !target || this.ledger.isDead(ref) || this.ledger.lockOf(ref) || port.busyActId(wire) !== undefined) {
+      this.stopFollow(ref);
+      return;
+    }
+    if (this.adjacent(ref, f.target)) {
+      const seen = this.latest.get(ref);
+      const emotion = seen ? this.emotionOf(seen) : undefined;
+      if (emotion && port.decide({ actor: wire, emotion }).kind === "initiate") {
+        this.stopFollow(ref);
+        return;
+      }
+    } else {
+      const me = this.presence(ref);
+      const heading = me?.state === "walk" && me.walkGoal !== undefined && chebyshev(me.walkGoal, target.tile) <= 1;
+      const room = this.d.mirror.view(ref, now)?.room;
+      if (!heading) {
+        const cmds = this.approach(ref, f.target, room, f.rng);
+        if (cmds.length > 0) this.d.executor.send(cmds);
+      }
+    }
+    f.timer = this.d.clock.setTimer(() => this.followTick(ref, everyMs), everyMs);
+  }
+
+  private stopFollow(ref: string): void {
+    this.following.get(ref)?.timer.cancel();
+    this.following.delete(ref);
+  }
+
+  private stopFollows(): void {
+    for (const ref of [...this.following.keys()]) this.stopFollow(ref);
   }
 
   // ---- what an act leaves behind -------------------------------------------------------------------------------------

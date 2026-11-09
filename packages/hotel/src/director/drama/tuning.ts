@@ -45,8 +45,15 @@ export type DramaTuning = {
      * actor's last beat was a rung of the ladder, its next rung toward the same person (never above `maxRung`: the director fills the quiet up to the
      * slap, the punch and the kill are the model's or the author's) may follow after `gapMs` instead. It is the same beat through the same gates, only sooner;
      * with nowhere left to climb the slow gap is back. `gapMs` stays above the contract's 20 s between blows.
+     *
+     * The distance (issue #262, the live run of `tapa-na-cara`): a model consulted once every ~20 s, and a target that walks off on its own between two consults,
+     * left the actor a walk that ended where the target no longer was, so a shove that was due never started. Once the director has said the only thing missing is the
+     * distance (`approach`), the body follows the target for up to `followWindowMs`: every `followEveryMs`, off its own timer and not the model's, it walks the actor
+     * beside the target again if the target moved, and once the two are beside each other asks the director again (a plain `decide` with no proposal, the same call a
+     * passive turn makes, so every gate holds). The window ends on the blow (any act the actor starts), a scene cut, the actor's death or lock, or the timeout; it is
+     * never extended by the follow itself, only a later `approach` of a model turn may open a new one.
      */
-    climb: { gapMs: number; maxRung: number };
+    climb: { gapMs: number; maxRung: number; followWindowMs: number; followEveryMs: number };
   };
   /**
    * The same actor starting the same verb again, at anyone, sooner than this after it last started it is passed on (`pace`), whoever asked: the
@@ -106,7 +113,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
     turn_back: [d("act.resentfulColdness"), d("act.contemptuousDismissal"), d("act.shameWithdrawal")],
   },
   repeatMs: { turn_back: 60_000, storm_off: 120_000, cry: 90_000, faint: 300_000, recoil: 20_000, freeze_gasp: 30_000, tend_fallen: 60_000, restrain: 30_000, tableau: 60_000 },
-  origination: { verbs: ["glare", "insult", "shove", "slap", "punch", "turn_back"], minGapMs: 75_000, offLadderTheta: 0.6, climb: { gapMs: 25_000, maxRung: 4 } },
+  origination: { verbs: ["glare", "insult", "shove", "slap", "punch", "turn_back"], minGapMs: 75_000, offLadderTheta: 0.6, climb: { gapMs: 25_000, maxRung: 4, followWindowMs: 30_000, followEveryMs: 3000 } },
   sceneAdvancePendingMs: 3000,
   resumeAssumes: { physicalBeatJustStarted: true, killUsed: true },
   keepDoneMs: 60_000,
