@@ -81,6 +81,11 @@ export type SimConfig = {
   mock?: Pick<MockDrama, "gap" | "malformedEvery" | "skip">;
   /** The model only talks (a flash model that never fills `body.act`): the mock proposes nothing, so only the director's own beats can start an act (issue #262). */
   speechOnly?: boolean;
+  /**
+   * A scripted walker (a test seam, not a model): `actor` is sent to the next of `tiles` every `everyMs`, starting `everyMs` in, round and round, whatever else it
+   * is doing. It is how a target that keeps walking away from the actor that is after it is staged (issue #262, a live model's own walks). Absent: nobody wanders.
+   */
+  wander?: { actor: string; everyMs: number; tiles: readonly Tile[] };
   /** The harm limit of the room (SAFE-4). */
   harmMax?: number;
   /** The director's tuning; absent is the sidecar's default. */
@@ -316,6 +321,7 @@ export function runDramaSim(config: SimConfig): SimResult {
       },
     },
     hooks: { blocked: (agentId, reasons) => void blocked.set(agentId, [...reasons]) },
+    ...(config.tuning ? { follow: { windowMs: config.tuning.origination.climb.followWindowMs, everyMs: config.tuning.origination.climb.followEveryMs } } : {}),
   });
   sinkRef.current = composeDramaSinks(director, body);
   if (dramaOn) {
@@ -414,6 +420,8 @@ export function runDramaSim(config: SimConfig): SimResult {
   const next = new Map(actorRefs.map((ref, i) => [ref, startMs + 1000 + i * Math.floor(consultMs / Math.max(1, actorRefs.length))]));
   const controls = [...(config.controls ?? [])].sort((a, b) => a.atMs - b.atMs);
   const end = startMs + config.durationMs;
+  let wanderAt = config.wander ? startMs + config.wander.everyMs : Infinity;
+  let wanderStep = 0;
   if (dramaOn) acts.announce();
 
   // The production player, on the sim's clock: it counts the script's seconds from here, as a run's does once its cast is in.
@@ -457,6 +465,12 @@ export function runDramaSim(config: SimConfig): SimResult {
       if (c.optIn) acts.setOptIn(c.optIn.human, c.optIn.on);
     }
     if (script && now >= end) script.stop();
+    if (config.wander && now >= wanderAt && now < end) {
+      const w = config.wander;
+      wanderAt = now + w.everyMs;
+      const to = w.tiles[wanderStep++ % w.tiles.length]!;
+      if (!body.isDead(w.actor)) void grid.dispatch([{ agentId: w.actor, cmd: "walk", to, plan: `wander:${wanderStep}` }]);
+    }
     if (now < end) for (const ref of actorRefs) if ((next.get(ref) ?? Infinity) <= now) {
       next.set(ref, now + consultMs);
       consult(ref);
