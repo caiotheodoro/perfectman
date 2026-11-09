@@ -1,5 +1,5 @@
 import type { ActOrigin, ActVerb, AvatarState } from "@perfectman/shared";
-import { LADDER_VERBS, ladderRung } from "@perfectman/shared";
+import { LADDER_VERBS, PHYSICAL_VERBS, ladderRung } from "@perfectman/shared";
 import { HUMAN_REF } from "../../authoring/scenario-drama.js";
 import type { RunDrama } from "../../authoring/scenario-drama.js";
 import { chebyshev } from "../../space/geometry.js";
@@ -82,12 +82,12 @@ export function reviewGates(i: GateInput): GateVerdict {
   // GATE-8
   const ladder = ladderGate(i, rung);
   if (!ladder.ok) return ladder.verdict;
-  // GATE-9
-  if (gate.budget === "physical") {
+  // GATE-9: a kill is also a physical beat (LAD-3), so it is held to the spacing as well, after its own count (LAD-4).
+  if (gate.budget === "kill" && i.ladder.kills() >= LIMITS.killsPerScene) return block("budget", "GATE-9", "kill");
+  if ((PHYSICAL_VERBS as readonly string[]).includes(i.verb)) {
     const last = i.ladder.lastPhysicalAt();
     if (last !== undefined && i.now - last < LIMITS.physicalSpacingMs) return block("budget", "GATE-9", "physical");
   }
-  if (gate.budget === "kill" && i.ladder.kills() >= LIMITS.killsPerScene) return block("budget", "GATE-9", "kill");
   // GATE-10
   if (gate.cooldown) {
     const last = i.ladder.lastSameVerbAt(i.actor, i.verb, i.target);

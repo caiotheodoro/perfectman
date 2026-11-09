@@ -41,7 +41,7 @@ describe("the motive gate (LAD-6) reads the emotion state as ladder pressure", (
     expect(ask(rig, C, "shove", B, undefined, "scenario")).toMatchObject({ kind: "veto", reason: "ladder", detail: "rung" });
   });
 
-  it("[LAD-6] the tendencies are data: each one drives the verbs of verb-bible 4.3 and stops at its ceiling", () => {
+  it("[LAD-6] the tendencies are data: each one drives the verbs of verb-bible 4.3 and stops at its ceiling", async () => {
     const rig = makeRig({ block: WIDE_BLOCK });
     // defensiveness licenses a first strike from fear, and its ceiling is shove: it never drives a slap.
     const scared = emotion({ defensiveness: 1 });
@@ -54,6 +54,7 @@ describe("the motive gate (LAD-6) reads the emotion state as ladder pressure", (
     const everything = emotion(Object.fromEntries(Object.keys(emotion({}).actionEmotions).map((k) => [k, 1])));
     const primed = makeRig({ block: WIDE_BLOCK });
     primed.act({ actId: "p1", verb: "punch", actor: A, with: B, outcome: "landed" });
+    await primed.clock.advance(21_000);
     expect(ask(primed, A, "kill", B, everything)).toMatchObject({ kind: "veto", reason: "ladder", rule: "LAD-6", detail: "motive" });
   });
 
