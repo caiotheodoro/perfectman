@@ -10,7 +10,8 @@ import {
 } from "@perfectman/server/hotel";
 import type { AgentCommitInfo, BuiltPrompt, ConfiguredSimulationHandle, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
 import { join } from "node:path";
-import { withMockBody } from "../llm/mock-body.js";
+import { MockActMemory, withMockBody } from "../llm/mock-body.js";
+import type { MockDrama } from "../llm/mock-body.js";
 import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
@@ -233,6 +234,7 @@ export class Run {
   /** Events the in-memory log evicted, streamed to `events.jsonl` so a long run stays complete without growing. */
   private eventSink: NdjsonEventSink | undefined;
   private readonly mockConsults = new Map<string, number>();
+  private readonly mockActs = new MockActMemory();
   /** What the characters remember about the people they meet (D21, D47); absent when the hotel did not name the scenario. */
   private playerMemory: PlayerMemory | undefined;
   private scenarioId: number | undefined;
@@ -770,6 +772,12 @@ export class Run {
     return this.chain;
   }
 
+  /** The mock model's reading of this run's scenario: the ladder ceiling and who may die (the kill itself is the director's call). Free play without a block: rungs up to 3, nobody dies. */
+  private mockDrama(): MockDrama {
+    const { effective } = resolveRunDrama(this.body);
+    return { maxRung: effective.max_rung, mayDie: effective.may_die.filter((ref) => ref !== "@human") };
+  }
+
   private provider(llm: LLMConfig, agentId: string): LLMProvider {
     if (this.chain && llm.providerType !== "mock") {
       return this.chain.provider(llm, agentId, {
@@ -780,7 +788,7 @@ export class Run {
         onFailure: () => this.meter.recordFailure(),
       });
     }
-    const inner: LLMProvider = llm.providerType === "mock" ? withMockBody(new MockLLMProvider(), this.mockConsults) : createLLMProvider(llm, agentId);
+    const inner: LLMProvider = llm.providerType === "mock" ? withMockBody(new MockLLMProvider(), this.mockConsults, { scenario: () => this.mockDrama(), memory: this.mockActs }) : createLLMProvider(llm, agentId);
     return this.d.governor.wrap(inner, {
       onSuccess: (r) => {
         this.meter.recordSuccess(this.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs);

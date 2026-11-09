@@ -132,12 +132,11 @@ describe("the decode grammar follows the drama flag", () => {
   });
 
   it("the provider sends the `act` grammar only for a perception that carries `drama`", async () => {
-    const respond = (): Response => new Response(JSON.stringify({ message: { content: '{"intentType":"no_op"}' }, model: "m", prompt_eval_count: 1, eval_count: 1, done: true }), { status: 200 });
-    const spy = vi.fn(() => Promise.resolve(respond()));
+    const spy = vi.fn().mockImplementation(() => Promise.resolve(new Response(JSON.stringify({ message: { content: '{"intentType":"no_op"}' }, model: "m", prompt_eval_count: 1, eval_count: 1, done: true }), { status: 200 })));
     const config = { providerType: "ollama", baseUrl: "http://localhost:11434", modelName: "m", maxInputTokens: 1000, maxOutputTokens: 200, temperature: 1, timeoutMs: 5000, retryCount: 0, responseFormatJson: true } as never;
     const built = { system: "s", user: "u", inputTokensEstimate: 1, purpose: "action_intent", version: "v", templateVersion: "t" } as never;
-    const provider = new OllamaProvider(config, { fetch: spy as never });
-    const formatOf = (n: number): unknown => (JSON.parse((spy.mock.calls[n] as unknown as [unknown, { body: string }])[1].body) as { format: unknown }).format;
+    const provider = new OllamaProvider(config, { fetch: spy });
+    const formatOf = (n: number): unknown => JSON.parse(spy.mock.calls[n]![1].body as string).format;
     await provider.generateIntent(hotelInput(), { pulseIndex: 1, now: 0 }, built);
     await provider.generateIntent(withDrama(hotelInput()), { pulseIndex: 1, now: 0 }, built);
     expect(formatOf(0)).toEqual(ModelIntentPacketWithBodyJsonSchema);
