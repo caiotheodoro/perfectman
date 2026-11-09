@@ -79,6 +79,8 @@ export type SimConfig = {
   controls?: readonly SimControl[];
   /** The mock model's quirks (`MockDrama` less what the scenario gives it). */
   mock?: Pick<MockDrama, "gap" | "malformedEvery" | "skip">;
+  /** The model only talks (a flash model that never fills `body.act`): the mock proposes nothing, so only the director's own beats can start an act (issue #262). */
+  speechOnly?: boolean;
   /** The harm limit of the room (SAFE-4). */
   harmMax?: number;
   /** The director's tuning; absent is the sidecar's default. */
@@ -344,7 +346,7 @@ export function runDramaSim(config: SimConfig): SimResult {
     const built = buildBodyPerception({ view, relational: state.relationalStates, language: "pt-BR" });
     const perceived = { ...built.body, blocked: blocked.get(ref) ?? [], ...(dramaOn ? { drama: true as const } : {}) };
     blocked.delete(ref);
-    const proposed = mockAct({ agentId: ref, perceptionPacket: { body: perceived, bodyHandles: built.handles }, emotionalState: { socialEmotions: state.socialEmotions, relationalStates: state.relationalStates } }, n, drama, mock);
+    const proposed = config.speechOnly === true ? undefined : mockAct({ agentId: ref, perceptionPacket: { body: perceived, bodyHandles: built.handles }, emotionalState: { socialEmotions: state.socialEmotions, relationalStates: state.relationalStates } }, n, drama, mock);
     // The model's block, the way a run takes it: the schema first (a malformed block is dropped, the speech stays), then the engine's validator,
     // which drops an `act` that needs a target it does not have and names what it refused (`body.blocked` at the next consult).
     let bodyIntent: BodyIntent | undefined;

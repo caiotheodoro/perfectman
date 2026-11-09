@@ -8,9 +8,12 @@
  * social emotions and relational states from config, and overwriting those
  * would silently discard the familiarity matrix.
  */
-import type { CommittedEvent, EventPayload, Memory } from "@perfectman/shared";
+import type { AgentState, CommittedEvent, EventPayload, Memory } from "@perfectman/shared";
 import type { RunSeeds } from "../../authoring/assemble-config.js";
+import { appraise } from "../../authoring/seed-appraisal.js";
+import type { PriorEvent } from "../../authoring/seed-appraisal.js";
 import type { ConfiguredSimulationHandle } from "../../config/simulation-config.js";
+import type { SimulationRuntimeRepositories } from "../../simulation/simulation-runtime.js";
 
 /**
  * Memory timestamps live on the simulated clock, which starts at 0 — decay and
@@ -26,8 +29,13 @@ export type AppliedSeeds = {
   warnings: string[];
 };
 
+/** What the seeds are written to: the run's handle, or anything with its id and the two repositories they touch. */
+export type SeedTarget = Pick<ConfiguredSimulationHandle, "simulationId"> & {
+  repositories: { agentStateRepo: Pick<SimulationRuntimeRepositories["agentStateRepo"], "get" | "upsert">; eventRepo: Pick<SimulationRuntimeRepositories["eventRepo"], "append"> };
+};
+
 export async function applySeeds(
-  handle: ConfiguredSimulationHandle,
+  handle: SeedTarget,
   seeds: RunSeeds,
 ): Promise<AppliedSeeds> {
   const warnings: string[] = [];
@@ -60,12 +68,38 @@ export async function applySeeds(
     memoriesSeeded += memories.length;
   }
 
-  const priorEvents = buildPriorEvents(handle.simulationId, seeds);
+  const now = Date.now();
+  await appraisePriorEvents(handle, seeds, now);
+
+  const priorEvents = buildPriorEvents(handle.simulationId, seeds, now);
   if (priorEvents.length > 0) {
     await handle.repositories.eventRepo.append(handle.simulationId, priorEvents);
   }
 
   return { priorEvents, memoriesSeeded, warnings };
+}
+
+const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
+
+/**
+ * A prior message with a `tone` is a cause the author wrote down: whoever it was said to holds a grievance toward the speaker when the run
+ * starts (`appraise`). The engine never reads a tone, so this is the only place it becomes state; the drama director's motive gate reads it
+ * (LAD-6, issue #262). Only the states of the people addressed are rewritten, and only when some message carried a known tone.
+ */
+async function appraisePriorEvents(handle: SeedTarget, seeds: RunSeeds, now: number): Promise<void> {
+  const events: PriorEvent[] = seeds.priorEvents.flatMap((e) => {
+    const payload = isRecord(e.payload) ? e.payload : {};
+    const tone = payload["tone"];
+    const targets = Array.isArray(payload["personTargets"]) ? payload["personTargets"].filter((t): t is string => typeof t === "string") : [];
+    return typeof tone === "string" && targets.length > 0 ? [{ actorId: e.actorId, minutesAgo: e.minutesAgo ?? 0, tone, targets }] : [];
+  });
+  if (events.length === 0) return;
+  const states = new Map<string, AgentState>();
+  for (const id of new Set(events.flatMap((e) => e.targets))) {
+    const state = await handle.repositories.agentStateRepo.get(handle.simulationId, id);
+    if (state) states.set(id, state);
+  }
+  for (const next of appraise(states, events, now).values()) await handle.repositories.agentStateRepo.upsert(next);
 }
 
 /**
@@ -74,9 +108,8 @@ export async function applySeeds(
  * A gateway therefore never sees them, so the caller has to hand them to the
  * viewer itself; that is why they are returned rather than just written.
  */
-function buildPriorEvents(simulationId: string, seeds: RunSeeds): CommittedEvent[] {
+function buildPriorEvents(simulationId: string, seeds: RunSeeds, now: number): CommittedEvent[] {
   if (seeds.priorEvents.length === 0) return [];
-  const now = Date.now();
   const minPulse = Math.min(...seeds.priorEvents.map((e) => e.pulseIndex));
 
   return seeds.priorEvents.map((seed, index): CommittedEvent => ({

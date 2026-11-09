@@ -11,20 +11,25 @@ import { actFrames } from "../testing/fake-drama.js";
 const RESENTFUL = { resentfulColdness: 1, contemptuousDismissal: 1, impulsiveProvocation: 1, jealousInspection: 1, dominanceAssertion: 1 };
 
 describe("a passive actor's pace (P4-02)", () => {
-  it("[D6] a resentful actor consulted every 6 s for four minutes is started on at most one beat a minute", async () => {
+  it("[D6] a resentful actor consulted every 6 s for four minutes stays under the act-rate probe's 3 a minute, and only a step up the ladder with the same person comes sooner than the slow gap", async () => {
     const rig = makeRig({ block: WIDE_BLOCK });
-    let started = 0;
+    const beats: Array<{ at: number; verb: string; with: number | undefined; rung: number | undefined }> = [];
+    const t0 = rig.clock.now();
     for (let t = 0; t < 240_000; t += 6000) {
       const d = rig.dir.decide({ actor: A, emotion: emotion(RESENTFUL, { toward: [B, C] }) });
       if (d.kind === "initiate") {
-        started += 1;
-        // The hotel plays the act out and ends it, so the actor is free for the next consult.
+        beats.push({ at: rig.clock.now() - t0, verb: d.verb, with: d.with, rung: d.rung });
         rig.hotel(actFrames({ actId: d.actId, verb: d.verb, actor: A, ...(d.with !== undefined ? { with: d.with } : {}), outcome: "landed", scene: rig.dir.scene }));
       }
       await rig.clock.advance(6000);
     }
-    expect(started).toBeGreaterThan(0);
-    expect(started).toBeLessThanOrEqual(4);
+    expect(beats.length).toBeGreaterThan(0);
+    expect(beats.length / 4).toBeLessThanOrEqual(3);
+    for (let i = 1; i < beats.length; i++) {
+      if (beats[i]!.at - beats[i - 1]!.at >= DEFAULT_DRAMA_TUNING.origination.minGapMs) continue;
+      const [prev, now] = [beats[i - 1]!, beats[i]!];
+      expect({ verb: now.verb, with: now.with, up: (now.rung ?? 0) > (prev.rung ?? 0) }).toEqual({ verb: now.verb, with: prev.with, up: true });
+    }
   });
 
   it("the pace is the tuning's: a director built with a faster one starts more beats than the default does", async () => {

@@ -98,7 +98,7 @@ export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
       return [
         ok("the slap after a glare is vetoed as a skipped rung (LAD-1)", refused !== undefined, JSON.stringify(refused)),
         ok("the refused slap never became an act before a shove had", slap === undefined || (shove !== undefined && shove.atMs < slap.atMs)),
-        ok("the ladder still climbs afterwards: the insult comes after the veto", started(r).some((a) => a.verb === "insult" && a.atMs > (refused?.atMs ?? Infinity))),
+        ok("the ladder still climbs afterwards: the step the slap skipped, the shove, starts after the veto", started(r).some((a) => a.verb === "shove" && a.atMs > (refused?.atMs ?? Infinity))),
         ok("no skip reached the hotel", !r.probes.find((p) => p.probe === "ladder-compliance")?.codes.includes("D3")),
       ];
     },

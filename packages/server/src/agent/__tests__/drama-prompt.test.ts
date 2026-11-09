@@ -55,6 +55,13 @@ describe.each(["pt-BR", "en"] as const)("the drama prompt, %s", (language) => {
     expect(built.system).toMatch(language === "en" ? /Coming down is always fine/ : /Descer é sempre possível/);
   });
 
+  it("[#262] tells a model that only talks that a line which confronts someone goes with an act in the same answer, in the full prompt and the compact one", () => {
+    const rule = language === "en" ? /confronts, accuses or threatens someone[^.]*same answer/ : /confronta, acusa ou ameaça alguém[^.]*mesma resposta/;
+    expect(built.system).toMatch(rule);
+    expect(compact.system).toMatch(rule);
+    expect(built.system).toMatch(language === "en" ? /glare or insult/ : /glare ou insult/);
+  });
+
   it("says violence is stylized telenovela and that the scene sets the limit, and never that it needs permission", () => {
     expect(built.system).toMatch(language === "en" ? /telenovela, stylized/ : /novela, estilizado/);
     expect(built.system).toMatch(language === "en" ? /set by the scene itself/ : /definido pela própria cena/);

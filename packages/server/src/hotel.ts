@@ -67,6 +67,8 @@ export { draftStory, StoryDraftError } from "./authoring/story-draft.js";
 export type { StoryDraft } from "@perfectman/shared";
 
 export { applySeeds } from "./http/run/seed-applier.js";
+export { appraise } from "./authoring/seed-appraisal.js";
+export type { PriorEvent } from "./authoring/seed-appraisal.js";
 export { scrubConfigForArtifact } from "./http/run/secrets.js";
 export { drainInFlight } from "./http/run/pulse-loop.js";
 export type { InFlight } from "./http/run/pulse-loop.js";

@@ -34,7 +34,20 @@ export type DramaTuning = {
    * started a resentful actor 8.6 times a minute against the act-rate probe's 3 per scene-minute. With 75 s all five presets pass every drama probe
    * with a consult every 4, 6, 8, 10 and 12 s, and the ladder still peaks in a 4-minute scene (the model climbs it; the director only fills the quiet).
    */
-  origination: { verbs: readonly ActVerb[]; minGapMs: number; /** Off-ladder verbs have no rung, so no theta: a beat of one needs a volition of at least this. */ offLadderTheta: number };
+  origination: {
+    verbs: readonly ActVerb[];
+    minGapMs: number;
+    /** Off-ladder verbs have no rung, so no theta: a beat of one needs a volition of at least this. */
+    offLadderTheta: number;
+    /**
+     * A climb in progress (issue #262). The slow gap above spaces out an actor's beats, but a ladder started by the director has to be seen: a
+     * model that only talks shows the whole scene in about two minutes, and at 75 s a beat that is glare, insult, shove and slap takes four minutes. So once an
+     * actor's last beat was a rung of the ladder, its next rung toward the same person (never above `maxRung`: the director fills the quiet up to the
+     * slap, the punch and the kill are the model's or the author's) may follow after `gapMs` instead. It is the same beat through the same gates, only sooner;
+     * with nowhere left to climb the slow gap is back. `gapMs` stays above the contract's 20 s between blows.
+     */
+    climb: { gapMs: number; maxRung: number };
+  };
   /**
    * The same actor starting the same verb again, at anyone, sooner than this after it last started it is passed on (`pace`), whoever asked: the
    * model proposing it again, or the director's own beat. The hotel's cooldown (60 s, per target) covers the verbs with a `gates.cooldown`; these are
@@ -78,7 +91,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
     turn_back: [d("act.resentfulColdness"), d("act.contemptuousDismissal"), d("act.shameWithdrawal")],
   },
   repeatMs: { turn_back: 60_000, storm_off: 120_000, cry: 90_000, faint: 300_000, recoil: 20_000, freeze_gasp: 30_000, tend_fallen: 60_000, restrain: 30_000, tableau: 60_000 },
-  origination: { verbs: ["glare", "insult", "shove", "slap", "punch", "turn_back"], minGapMs: 75_000, offLadderTheta: 0.6 },
+  origination: { verbs: ["glare", "insult", "shove", "slap", "punch", "turn_back"], minGapMs: 75_000, offLadderTheta: 0.6, climb: { gapMs: 25_000, maxRung: 4 } },
   sceneAdvancePendingMs: 3000,
   resumeAssumes: { physicalBeatJustStarted: true, killUsed: true },
   keepDoneMs: 60_000,

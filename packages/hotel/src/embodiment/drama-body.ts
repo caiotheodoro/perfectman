@@ -156,7 +156,11 @@ export class DramaBody implements DramaFrameSink {
         approach.push(...out.approach);
       }
       // 2. nothing proposed: the emotion state may drive a beat of the director's own.
-      if (queue.length === 0 && !hold && base.actionEmotions) hold = this.passive(ref, wire, base, port);
+      if (queue.length === 0 && !hold && base.actionEmotions) {
+        const out = this.passive(ref, wire, base, port);
+        hold = out.hold;
+        approach.push(...out.approach);
+      }
     }
     if (hold) return [];
 
@@ -341,19 +345,37 @@ export class DramaBody implements DramaFrameSink {
   private walkCloser(ref: string, proposal: ActProposal, base: PlanInput): PlannedCommand[] {
     const targetRef = proposal.with === undefined ? undefined : this.d.mirror.refOfAvatar(proposal.with);
     const target = targetRef ? this.presence(targetRef) : undefined;
-    const space = base.space.room;
-    if (!targetRef || !target || !space) return [];
+    if (!targetRef || !target) return [];
     this.retry.set(ref, { proposal, target: targetRef, until: this.d.clock.now() + RETRY_MS });
-    const to = pickTile({ room: space, self: ref, near: target.tile, radius: 1, awayFrom: { tile: target.tile, ideal: 1 }, rng: base.rng });
+    return this.walkBeside(ref, target.tile, base);
+  }
+
+  /** The walk of a passive actor up to the person its next blow is for. */
+  private approachTo(ref: string, wire: number, base: PlanInput): PlannedCommand[] {
+    const targetRef = this.d.mirror.refOfAvatar(wire);
+    const target = targetRef ? this.presence(targetRef) : undefined;
+    return target ? this.walkBeside(ref, target.tile, base) : [];
+  }
+
+  private walkBeside(ref: string, near: readonly [number, number], base: PlanInput): PlannedCommand[] {
+    const space = base.space.room;
+    if (!space) return [];
+    const to = pickTile({ room: space, self: ref, near, radius: 1, awayFrom: { tile: near, ideal: 1 }, rng: base.rng });
     return to ? [{ agentId: ref, cmd: "walk", to, plan: `drama:${ref}:${this.d.clock.now().toString(36)}` }] : [];
   }
 
-  /** No proposal: let the director start a beat from the emotion state, if it has one (it keeps its own pace). */
-  private passive(ref: string, wire: number, base: PlanInput, port: DramaDecisionPort): boolean {
+  /**
+   * No proposal: let the director start a beat from the emotion state, if it has one (it keeps its own pace). When it would start the next blow of a
+   * climb but the two are not beside each other (GATE-7), it says whom to walk to: the actor walks up and the next turn starts the blow. Nothing is
+   * retried: the beat is the director's own and is decided again from the feelings then, not replayed as the model's proposal.
+   */
+  private passive(ref: string, wire: number, base: PlanInput, port: DramaDecisionPort): { hold: boolean; approach: PlannedCommand[] } {
     const emotion = this.emotionOf(base);
-    if (!emotion) return false;
+    if (!emotion) return { hold: false, approach: [] };
     const res = port.decide({ actor: wire, emotion });
-    return res.kind === "initiate";
+    if (res.kind === "initiate") return { hold: true, approach: [] };
+    if (res.kind === "pass" && res.approach !== undefined) return { hold: false, approach: this.approachTo(ref, res.approach, base) };
+    return { hold: false, approach: [] };
   }
 
   // ---- what an act leaves behind -------------------------------------------------------------------------------------

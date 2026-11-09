@@ -159,6 +159,16 @@ describe("the drama planner behind the director's port (NEG-2, NEG-6)", () => {
     expect(cmds).toEqual([]);
   });
 
+  it("[LAD-6] a pass that names someone to walk to (the climb's next blow is out of reach) sends the actor toward them and holds nothing else back", () => {
+    const r = rig();
+    r.port!.next = { kind: "pass", why: "no_drive", approach: -703 };
+    const cmds = r.body.planFor("duda", r.input({ actionEmotions: { ...ZERO_ACT, resentfulColdness: 0.8 } }));
+    const walk = cmds.find((c) => c.cmd === "walk");
+    expect(walk).toMatchObject({ agentId: "duda", cmd: "walk" });
+    const [x, y] = walk?.cmd === "walk" ? walk.to : [-9, -9];
+    expect(Math.max(Math.abs(x - 8), Math.abs(y - 6))).toBeLessThanOrEqual(1);
+  });
+
   it("[LAD-6] a pass falls through to the planner's own rules, and a port that is absent proposes nothing", () => {
     const withPort = rig();
     const cmds = withPort.body.planFor("duda", withPort.input({ actionEmotions: { ...ZERO_ACT, vulnerableRetreat: 0.9 } }));

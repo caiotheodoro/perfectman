@@ -44,10 +44,12 @@ const HEAD: Record<Lang, string> = {
 const LADDER: Record<Lang, string> = {
   en:
     "The ladder, in order: glare, insult, shove, slap, punch, kill. You climb one step at a time with the same person: start with glare or insult, and each step needs the step below it to have happened between you two in this scene. " +
-    "Coming down is always fine (turn_back, restrain, hug). Shove, slap, punch and kill leave a gap of about twenty seconds between them, and a scene has at most one kill.",
+    "Coming down is always fine (turn_back, restrain, hug). Shove, slap, punch and kill leave a gap of about twenty seconds between them, and a scene has at most one kill. " +
+    "When your line confronts, accuses or threatens someone (\"Repeat to the table what you said\"), that is the moment for the first step, glare or insult aimed at them, in the same answer: the words alone leave your body standing still.",
   "pt-BR":
     "A escada, em ordem: glare, insult, shove, slap, punch, kill. Você sobe um degrau de cada vez com a mesma pessoa: comece por glare ou insult, e cada degrau pede que o de baixo já tenha acontecido entre vocês dois nesta cena. " +
-    "Descer é sempre possível (turn_back, restrain, hug). Entre shove, slap, punch e kill passam uns vinte segundos, e uma cena tem no máximo uma morte.",
+    "Descer é sempre possível (turn_back, restrain, hug). Entre shove, slap, punch e kill passam uns vinte segundos, e uma cena tem no máximo uma morte. " +
+    "Quando a sua fala confronta, acusa ou ameaça alguém (\"Repete pra mesa o que você disse\"), é a hora do primeiro degrau, glare ou insult dirigido a essa pessoa, na mesma resposta: só as palavras deixam o seu corpo parado.",
 };
 
 const STYLE: Record<Lang, string> = {

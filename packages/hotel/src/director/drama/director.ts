@@ -14,9 +14,9 @@ import { reviewGates } from "./gates.js";
 import type { GateAvatar } from "./gates.js";
 import { ActLedger } from "./ledger.js";
 import type { Assumed } from "./ledger.js";
-import type { ActLifecycleFrame, ActProposal, DramaApproval, DramaDecision, DramaDecisionPort, DramaTurn, DramaVeto, EmotionReading, SceneAdvance } from "./ports.js";
+import type { ActLifecycleFrame, ActProposal, DramaApproval, DramaDecision, DramaDecisionPort, DramaTurn, DramaVeto, EmotionReading, RelationReading, SceneAdvance } from "./ports.js";
 import { intensityOf, motive, volition } from "./pressure.js";
-import { DEFAULT_DRAMA_TUNING, LIMITS } from "./tuning.js";
+import { DEFAULT_DRAMA_TUNING, LIMITS, VERB_GATES } from "./tuning.js";
 import type { DramaTuning } from "./tuning.js";
 import type { DramaWorld } from "./world.js";
 
@@ -53,6 +53,11 @@ const LAY_OK: ReadonlySet<ActVerb> = new Set<ActVerb>(["die", "cry", "tableau"])
 
 type Assessed = { ok: true; rung: number | undefined; skippedRungs: ActVerb[] } | { ok: false; veto: DramaVeto };
 
+/** How much the actor holds against one person, two decimals so that near-equal grudges tie: the strongest of resentment, envy and suspicion (the last a little less, as a doubt and not a wrong). */
+function grudgeOf(r: RelationReading | undefined): number {
+  return r ? Math.round(Math.max(r.resentment, r.envy, r.suspicion * 0.8) * 100) / 100 : 0;
+}
+
 /** `d1`, `d2`, ...: unique within a run (ACT-5) and inside the `act_id` pattern. A retry always takes a new one. */
 export function makeActIds(prefix = "d"): () => string {
   let n = 0;
@@ -84,7 +89,8 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   private resumedAdopt: boolean;
   private readonly nextId = makeActIds();
   private advancePending: number | undefined;
-  private readonly offered = new Map<number, number>();
+  /** The last beat the director started for each actor: when, toward whom, and the rung (0 off the ladder), for the pace and the climb. */
+  private readonly offered = new Map<number, { at: number; target: number; rung: number }>();
   /** When each actor last started each verb (`<actor>|<verb>`), for the repeat window of `DramaTuning.repeatMs`. */
   private readonly startedAt = new Map<string, number>();
 
@@ -176,41 +182,70 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     const emotion = turn.emotion;
     if (!emotion || !this.roomState(turn.actor).enabled) return { kind: "pass", why: "no_drive" };
     const now = this.d.clock.now();
+    const o = this.tuning.origination;
     const last = this.offered.get(turn.actor);
-    if (last !== undefined && now - last < this.tuning.origination.minGapMs) return { kind: "pass", why: "pace" };
+    const since = last === undefined ? Infinity : now - last.at;
+    // A climb is never slower than the base pace: a tuning with a shorter gap has no longer one for a climb.
+    if (since < Math.min(o.climb.gapMs, o.minGapMs)) return { kind: "pass", why: "pace" };
+    // Before the slow gap is over only the next rung of a climb in progress may go: the same person, a rung above the last one, up to the climb's ceiling.
+    const slow = since < o.minGapMs;
     const room = this.d.world.roomOf(turn.actor);
     if (room === undefined) return { kind: "pass", why: "not_placed" };
 
-    type Pick = { verb: ActVerb; target: number; margin: number; v: number; theta: number; rung: number };
+    let approach: { target: number; grudge: number } | undefined;
+    type Pick = { verb: ActVerb; target: number; margin: number; v: number; theta: number; rung: number; climbing: boolean; continuing: boolean; grudge: number };
     let best: Pick | undefined;
     for (const other of this.d.world.avatarsIn(room)) {
       if (other.id === turn.actor || other.id === this.narrator() || this.isFallen(other.id)) continue;
-      // The reading names who the actor has a relationship with: those are the only people a beat can be aimed at.
       if (!emotion.relations?.has(other.id)) continue;
-      for (const verb of this.tuning.origination.verbs) {
+      const cur = this.ledger.rungCur(turn.actor, other.id);
+      for (const verb of o.verbs) {
         if (this.repeating(turn.actor, verb)) continue;
+        const rung = ladderRung(verb) ?? 0;
+        // A ladder verb below the pair's rung is the way back down, which is the actors' to choose (turn_back, restrain, hug), not a beat to repeat for pace.
+        if (rung >= 1 && rung < cur) continue;
+        const continuing = last !== undefined && last.rung >= 1 && last.target === other.id && rung > last.rung && rung <= o.climb.maxRung;
+        if (slow && !continuing) continue;
         const m = motive(verb, emotion, emotion.relations?.get(other.id), emotion.at ?? now, this.tuning);
         if (!m.ok) continue;
-        const off = ladderRung(verb) === undefined;
-        const theta = off ? this.tuning.origination.offLadderTheta : m.theta;
+        const off = rung === 0;
+        const theta = off ? o.offLadderTheta : m.theta;
         const v = off ? volition(verb, emotion, emotion.relations?.get(other.id), this.tuning) : m.v;
         if (v < theta) continue;
         const a = this.assess(turn.actor, verb, other.id, "director", false, emotion);
+        if (!("pass" in a) && !a.ok && a.veto.reason === "too_far" && a.veto.detail === "distance" && VERB_GATES[verb].maxDist === 1 && rung > cur) {
+          // A blow that needs the two beside each other and is motivated, in time, and a step up: only the walk is missing.
+          const grudge = grudgeOf(emotion.relations?.get(other.id));
+          if (!approach || grudge > approach.grudge || (grudge === approach.grudge && other.id < approach.target)) approach = { target: other.id, grudge };
+        }
         if ("pass" in a || !a.ok) continue;
-        const pick: Pick = { verb, target: other.id, margin: v - theta, v, theta, rung: ladderRung(verb) ?? 0 };
-        if (!best || pick.margin > best.margin || (pick.margin === best.margin && (pick.rung < best.rung || (pick.rung === best.rung && pick.target < best.target)))) best = pick;
+        const pick: Pick = { verb, target: other.id, margin: v - theta, v, theta, rung, climbing: rung > cur, continuing, grudge: grudgeOf(emotion.relations?.get(other.id)) };
+        if (!best || this.better(pick, best)) best = pick;
       }
     }
-    if (!best) return { kind: "pass", why: "no_drive" };
+    if (!best) return approach ? { kind: "pass", why: "no_drive", approach: approach.target } : { kind: "pass", why: slow ? "pace" : "no_drive" };
     const wire = this.wireOf(turn.actor, best.verb, best.target, "director", intensityOf(emotion), undefined, false);
     const a = this.assess(turn.actor, best.verb, best.target, "director", false, emotion);
     if ("pass" in a || !a.ok) return { kind: "pass", why: "no_drive" };
     const out = this.dispatch("initiate", turn.actor, wire, a.rung, a.skippedRungs, { v: best.v, theta: best.theta });
-    if (out.kind === "initiate") this.offered.set(turn.actor, now);
+    if (out.kind === "initiate") this.offered.set(turn.actor, { at: now, target: best.target, rung: best.rung });
     return out;
   }
 
-  // ---- the review: hotel gates first, then the director's own policy ------------------------------------------
+  /**
+   * Which of two beats the director would start. A step up the ladder with someone beats a repeat or a beat off the ladder (a passive actor is
+   * shown climbing, not insulting the same person every minute). Then, aimed at the person it is already climbing with, else at the one it holds the
+   * most against (a glare needs no grievance, so without this it would go to whoever has the lowest id), and among steps up the lowest rung (the
+   * ladder is one rung at a time). Last the volition's margin over its threshold, then the lower rung and the lower id.
+   */
+  private better(a: { margin: number; rung: number; target: number; climbing: boolean; continuing: boolean; grudge: number }, b: typeof a): boolean {
+    if (a.climbing !== b.climbing) return a.climbing;
+    if (a.climbing && a.continuing !== b.continuing) return a.continuing;
+    if (a.grudge !== b.grudge) return a.grudge > b.grudge;
+    if (a.climbing && a.rung !== b.rung) return a.rung < b.rung;
+    if (a.margin !== b.margin) return a.margin > b.margin;
+    return a.rung !== b.rung ? a.rung < b.rung : a.target < b.target;
+  }
 
   private assess(actor: number, verb: ActVerb, target: number | undefined, origin: ActProposal["origin"] | "director", authoredSkip: boolean, emotion: EmotionReading | undefined): Assessed | { pass: DramaDecision } {
     const room = this.d.world.roomOf(actor);

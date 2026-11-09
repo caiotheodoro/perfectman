@@ -113,7 +113,15 @@ export type DramaVeto = {
  */
 export type DramaPassWhy = "inert" | "actor_dead" | "actor_busy" | "not_placed" | "target_gone" | "posture" | "no_drive" | "pace";
 
-export type DramaPass = { kind: "pass"; why: DramaPassWhy };
+export type DramaPass = {
+  kind: "pass";
+  why: DramaPassWhy;
+  /**
+   * Only on a passive turn (no proposal): the wire id of someone the actor should walk up to. The director would start the next blow of a climb in progress (the
+   * volition, the grievance and the pace all say yes) but the two are not beside each other (GATE-7); the planner walks the actor over and the next turn starts it.
+   */
+  approach?: number;
+};
 
 /** The link refused the frame. Nothing is reserved, so the same turn may be asked again. */
 export type DramaUnsent = { kind: "unsent"; cause: "dialect" | "no_lease" | "invalid"; error?: ActCmdError };
