@@ -6,6 +6,7 @@ import { negotiate } from "../director/dialect.js";
 import { DRAMA_HOTEL_TYPES, isDramaFrame } from "../director/drama-frames.js";
 import type { HotelFrame } from "../director/index.js";
 import { routeDramaFrame } from "../run/drama-frame-sink.js";
+import { VERB_VOCAB_REV, VERB_VOCAB_SHA256, VERB_VOCAB_VERSION } from "../director/verb-vocab.generated.js";
 import { checkFrame } from "../testing/frame-schema.js";
 import { HOTEL_FIXTURE_DIR, HOTEL_FIXTURE_FILES, LIFECYCLES, asHotelFrame, asWire, hotelSha256, lifecycleFrames, pinnedShas, readHotelRows, recordingSink } from "../testing/hotel-fixtures.js";
 
@@ -150,6 +151,19 @@ describe("the sidecar's answer to the hotel's own hello", () => {
   it("[NEG-3] [SAFE-2] a hotel with the switch on offers drama with `enabled:false` (the runtime switch is off until an admin turns it on), and the session still opens on dialect 2 with the vendored vocab sha", () => {
     const neg = negotiate(hello(on?.expect[0]), { enabled: true });
     expect(neg).toMatchObject({ dialect: 2, ackProto: 2, caps: ["drama.v1"], session: { enabled: false, chipTtlMs: 4000, harmMax: 3, harmWindowS: 300, dead: [] }, warnings: [] });
+  });
+
+  it("[NEG-7] [P5-12] a sidecar still holding verb table rev 2 (before the faint lost its effect) meets this hello, rev 3: same version, so dialect 2 and a warning only", () => {
+    const old = { version: 1, rev: 2, sha256: "002fa3807ce163fae67dc4d71e08cf8c93cf5851a899dae78d04fdbfa3b91263" };
+    const frame = hello(on?.expect[0]);
+    expect(frame.drama?.verb_vocab).toEqual({ version: VERB_VOCAB_VERSION, rev: VERB_VOCAB_REV, sha256: VERB_VOCAB_SHA256 });
+    expect(frame.drama?.verb_vocab.rev).toBe(3);
+    const neg = negotiate(frame, { enabled: true, vocab: old });
+    expect(neg).toMatchObject({ dialect: 2, ackProto: 2, caps: ["drama.v1"], verbVocab: old });
+    expect(neg.warnings).toEqual([`verb vocab differs from the hotel's (rev 3 vs 2, sha256 ${VERB_VOCAB_SHA256.slice(0, 8)} vs 002fa380): same version, going on`]);
+    // The same sidecar against a hotel that bumped `version` is the one case that turns drama off.
+    const next = { ...frame, drama: { ...frame.drama!, verb_vocab: { ...frame.drama!.verb_vocab, version: 2 } } };
+    expect(negotiate(next, { enabled: true, vocab: old })).toMatchObject({ dialect: 1, ackProto: 1, session: null });
   });
 
   it("[NEG-1] the golden hello of a hotel with the switch off is a valid hello of the real schema and a plain PROTO 1 session", () => {

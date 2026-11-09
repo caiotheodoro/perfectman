@@ -34,7 +34,8 @@ The stand-ins packet P1 carried (a hand-authored delta, each marked `STAND-IN` i
 
 Vendored, do not edit by hand.
 
-- Origin path: `docs/perfectman/schema/verb-vocab.json` (`version` 1, `rev` 2), next to `cue-vocab.json`; prose in `docs/drama/act-contract.md` sections 5 and 10.
+- Origin path: `docs/perfectman/schema/verb-vocab.json` (`version` 1, `rev` 3), next to `cue-vocab.json`; prose in `docs/drama/act-contract.md` sections 5 and 10.
+- `rev` 3 (habbo branch `fix/drama-faint-effect`, errata P5-12): the `faint` has no `effect` step (Twinkle read as sparkles on a lying body) and its confused `?` cue runs from contact for 7600 ms; the `camera` and `cut_fx` `maps_to` notes say what a default run sends. `version` stays 1, so a sidecar vendored at `rev` 2 only logs a warning (NEG-7).
 - `pnpm --filter @perfectman/hotel gen:director` validates it against its own embedded `table_schema` (TBL-1) and turns it into `src/director/verb-vocab.generated.ts`
   (ids, enums, constants, and the `{version, rev, sha256}` that `hello_ack.sidecar.verb_vocab` carries); `check:director` fails when that file is stale.
-- Pinned sha256 of the bytes of `verb-vocab.json`: `002fa3807ce163fae67dc4d71e08cf8c93cf5851a899dae78d04fdbfa3b91263`. The test `verb-vocab: sha is pinned` fails when the file differs from it.
+- Pinned sha256 of the bytes of `verb-vocab.json`: `36dce0430fb7bbea6c8d724532c8bdba87f066f79a18c84bec98b64cf0e32762`. The test `verb-vocab: sha is pinned` fails when the file differs from it.

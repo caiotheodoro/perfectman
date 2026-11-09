@@ -34,27 +34,29 @@ const PLAIN: Omit<Negotiation, "warnings"> = { dialect: 1, ackProto: 1, session:
  * NEG-3, NEG-4, NEG-7. The answer is `proto` 2 with `caps` and `sidecar.verb_vocab` only when this sidecar's own drama
  * switch is on, the hello offers `proto_max` of at least 2 and `drama.v1`, and the hotel's verb vocab has the same
  * `version` as the vendored one. Anything else is a plain PROTO 1 answer, which the hotel reads as dialect 1. A different
- * `rev` or `sha256` with an equal `version` is a warning only.
+ * `rev` or `sha256` with an equal `version` is a warning only. `own.vocab` stands in for the vendored triple (tests, to play a sidecar built
+ * against another revision of the table).
  */
-export function negotiate(hello: Hello, own: { enabled: boolean }): Negotiation {
+export function negotiate(hello: Hello, own: { enabled: boolean; vocab?: VerbVocabRef }): Negotiation {
+  const vocab = own.vocab ?? OWN_VOCAB;
   if (!own.enabled) return { ...PLAIN, warnings: [] };
   const offered = Math.min(PROTO_MAX, hello.proto_max ?? hello.proto);
   const drama = hello.drama;
   // `drama.enabled` is the hotel's runtime switch (SAFE-2) and is not a condition (NEG-3): the session stays open while it is off,
   // so an admin turning it on later needs no reconnect. The sidecar reads it from the session.
   if (offered < 2 || !hello.caps?.includes(DRAMA_CAP) || !drama) return { ...PLAIN, warnings: [] };
-  if (drama.verb_vocab.version !== OWN_VOCAB.version) {
-    return { ...PLAIN, warnings: [`verb vocab version mismatch (hotel ${drama.verb_vocab.version}, sidecar ${OWN_VOCAB.version}): drama is off for this session`] };
+  if (drama.verb_vocab.version !== vocab.version) {
+    return { ...PLAIN, warnings: [`verb vocab version mismatch (hotel ${drama.verb_vocab.version}, sidecar ${vocab.version}): drama is off for this session`] };
   }
   const warnings =
-    drama.verb_vocab.rev !== OWN_VOCAB.rev || drama.verb_vocab.sha256 !== OWN_VOCAB.sha256
-      ? [`verb vocab differs from the hotel's (rev ${drama.verb_vocab.rev} vs ${OWN_VOCAB.rev}, sha256 ${drama.verb_vocab.sha256.slice(0, 8)} vs ${OWN_VOCAB.sha256.slice(0, 8)}): same version, going on`]
+    drama.verb_vocab.rev !== vocab.rev || drama.verb_vocab.sha256 !== vocab.sha256
+      ? [`verb vocab differs from the hotel's (rev ${drama.verb_vocab.rev} vs ${vocab.rev}, sha256 ${drama.verb_vocab.sha256.slice(0, 8)} vs ${vocab.sha256.slice(0, 8)}): same version, going on`]
       : [];
   return {
     dialect: 2,
     ackProto: 2,
     caps: [DRAMA_CAP],
-    verbVocab: OWN_VOCAB,
+    verbVocab: vocab,
     session: { enabled: drama.enabled, chipTtlMs: drama.chip_ttl_ms, harmMax: drama.harm_max, harmWindowS: drama.harm_window_s, dead: [...(drama.dead ?? [])] },
     warnings,
   };

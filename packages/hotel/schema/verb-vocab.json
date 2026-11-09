@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rev": 2,
+  "rev": 3,
   "bible": "docs/drama/verb-bible.md",
   "table_schema_note": "JSON Schema draft-07. The root is the shape of one entry of `verbs`; $defs.profile is the shape of one entry of `consent_profiles`.",
   "table_schema": {
@@ -903,8 +903,8 @@
     "sfx": {"exec": "client", "maps_to": "PerfectmanUi::Sfx cue (cue-vocab sfx, five new names added)"},
     "caption": {"exec": "client", "maps_to": "overlay text near the actor; cinematic runs also PerfectmanUi::Caption"},
     "motion": {"exec": "client", "maps_to": "procedural client motion (new, one of the seven in motions)"},
-    "camera": {"exec": "server", "maps_to": "PerfectmanUi::Camera, cinematic runs only"},
-    "cut_fx": {"exec": "server", "maps_to": "PerfectmanUi::CutFx, cinematic runs only"}
+    "camera": {"exec": "server", "maps_to": "PerfectmanUi::Camera: a cinematic run sends every shot to its Audience; a default run sends only the shots that zoom in (zoom above 1) to the humans in the act's room, and a zoom-1 shot stays cinematic only"},
+    "cut_fx": {"exec": "server", "maps_to": "PerfectmanUi::CutFx, cinematic runs only (a default run never sends it)"}
   },
   "verbs": {
     "glare": {
@@ -1814,9 +1814,8 @@
           {"t": {"a": "Tc", "ms": 0}, "p": "posture", "pose": "lay"},
           {"t": {"a": "Tc", "ms": 0}, "p": "state", "to": "fainted"},
           {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "fall", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "confused", "ms": 7600},
           {"t": {"a": "Tc", "ms": 50}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
-          {"t": {"a": "Tc", "ms": 400}, "p": "effect", "name": "Twinkle", "ms": 7200, "restore": true},
-          {"t": {"a": "Tc", "ms": 400}, "p": "cue", "on": "actor", "emotion": "confused", "ms": 3000},
           {"t": {"a": "Tc", "ms": 400}, "p": "sfx", "cue": "sting_sad", "once": true},
           {"t": {"a": "Tc", "ms": 400}, "p": "hold", "ms": 7600},
           {"t": {"a": "Tc", "ms": 7600}, "p": "posture", "pose": "stand", "optional": true, "wakeable": true},
@@ -1838,7 +1837,7 @@
       },
       "ladder": {"deescalates": false},
       "follow_ups": [{"verb": "tableau", "at": "end"}],
-      "notes": "Alive marker is Twinkle (die uses TrippyHalo). State fainted (a fallen state, DOWN-1) lasts until the stand step; WAKE-1 moves the steps marked wakeable. Lying is refused while walking, on a seat, or with no room to lie: the actor then stays as it is and act_done lists downgraded:[posture]."
+      "notes": "No effect: the alive marker is the confused \"?\" cue, which runs from contact to the stand step (die uses TrippyHalo; Twinkle read as sparkles on a lying body, habbo#42, and none of the catalog effects reads as a faint). State fainted (a fallen state, DOWN-1) lasts until the stand step; WAKE-1 moves the steps marked wakeable. Lying is refused while walking, on a seat, or with no room to lie: the actor then stays as it is and act_done lists downgraded:[posture]."
     },
     "tend_fallen": {
       "id": "tend_fallen",

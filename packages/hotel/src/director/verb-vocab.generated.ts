@@ -6,10 +6,10 @@
  */
 export const VERB_VOCAB_VERSION = 1 as const;
 
-export const VERB_VOCAB_REV = 2 as const;
+export const VERB_VOCAB_REV = 3 as const;
 
 /** sha256 of the bytes of schema/verb-vocab.json: what `hello_ack.sidecar.verb_vocab` carries (NEG-7, VV-3). */
-export const VERB_VOCAB_SHA256 = "002fa3807ce163fae67dc4d71e08cf8c93cf5851a899dae78d04fdbfa3b91263" as const;
+export const VERB_VOCAB_SHA256 = "36dce0430fb7bbea6c8d724532c8bdba87f066f79a18c84bec98b64cf0e32762" as const;
 
 export const VERB_IDS = [
   "glare",
