@@ -81,7 +81,7 @@ export class RunManager implements RunLink {
   private readonly resnap = new Map<RoomId, { attempts: number; nextAt: number }>();
   private readonly log: Logger;
   private readonly drama: DramaFrameSink;
-  /** Routes the drama frames to each run's director; present only when `PERFECTMAN_DRAMA` is on. */
+  /** Routes the drama frames to each run's director and planner side; present only when `PERFECTMAN_DRAMA` is on. */
   private readonly dramaHub: DramaRunHub | undefined;
   private readonly governor: LlmGovernor;
   private timers: TimerHandle[] = [];

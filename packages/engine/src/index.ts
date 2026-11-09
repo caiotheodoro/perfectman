@@ -15,6 +15,9 @@ export {
 } from "./memory/get-new-events-since.js";
 
 // Attention
+export { ACT_MEMORY_PREFIX, DEATH_MEMORY_PREFIX, deathTone, rememberAct, rememberDeath, witnessWeight } from "./memory/act-memory.js";
+export type { ActFacts, ActLang, ActMemoryEntry, ActMemoryEvent, ActMemoryTone, DeathFacts } from "./memory/act-memory.js";
+
 export { scoreAttention } from "./attention/score-attention.js";
 
 // Perception

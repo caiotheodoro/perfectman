@@ -79,4 +79,18 @@ describe("a run's window on the shared mirror", () => {
     a.restrictTravel(null);
     expect(doors(a)).toEqual(["16", "3", "44"]);
   });
+
+  it("[DEATH-2] marks the avatars on the floor in the views it gives, for perception of bodies, and only while they are", () => {
+    const { a } = shared();
+    const floor = new Map<string, "dead" | "fainted" | "down">();
+    a.setFallen((ref) => floor.get(ref));
+    expect(a.view("duda", T0)?.room?.occupants.some((p) => p.fallen !== undefined)).toBe(false);
+    floor.set("h:9", "down");
+    floor.set("duda", "fainted");
+    const seen = a.view("duda", T0)?.room?.occupants.map((p) => [p.ref, p.fallen]).sort();
+    expect(seen).toContainEqual(["h:9", "down"]);
+    expect(seen).toContainEqual(["duda", "fainted"]);
+    floor.clear();
+    expect(a.view("duda", T0)?.room?.occupants.some((p) => p.fallen !== undefined)).toBe(false);
+  });
 });

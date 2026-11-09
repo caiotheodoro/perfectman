@@ -45,9 +45,18 @@ export class ScopedMirror implements ActorSpace {
     return p && p.run === this.run ? p.ref : key;
   }
 
+  /** Who is on the floor right now (the drama planner side's ledger); the views mark them so perception can tell a body from a person. */
+  private fallenOf: ((ref: string) => Presence["fallen"]) | undefined;
+
+  setFallen(source: ((ref: string) => Presence["fallen"]) | undefined): void {
+    this.fallenOf = source;
+  }
+
   private localPresence(p: Presence): Presence {
     const ref = this.local(p.ref);
-    return ref === p.ref ? p : { ...p, ref };
+    const fallen = this.fallenOf?.(ref);
+    if (ref === p.ref && !fallen) return p;
+    return { ...p, ref, ...(fallen ? { fallen } : {}) };
   }
 
   // ---- SpaceMirror (what the engine reads) -------------------------------------
