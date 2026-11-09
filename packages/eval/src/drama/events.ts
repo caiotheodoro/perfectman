@@ -30,6 +30,10 @@ export type ActStartedFrame = {
   with?: string;
   /** 0..1 */
   intensity: number;
+  /** The script meant this act to jump the escalation ladder; the ladder probe lets it through. */
+  authored_skip?: boolean;
+  /** The human target had opted in to physical drama (read by the consent probe when present). */
+  target_opt_in?: boolean;
   run?: number;
   seq?: number;
 };
@@ -74,6 +78,10 @@ export type ActStartedEvent = EventBase & {
   actor: string;
   with?: string;
   intensity: number;
+  /** See `ActStartedFrame.authored_skip`. */
+  authoredSkip?: boolean;
+  /** See `ActStartedFrame.target_opt_in`. */
+  targetOptIn?: boolean;
   run?: number;
   seq?: number;
 };
@@ -132,7 +140,8 @@ export type ConsentChipShownEvent = EventBase & {
   ttlMs: number;
 };
 
-export const CONSENT_ANSWERS = ["accept", "decline", "timeout"] as const;
+/** `take` is the answer to a consent chip for an act (the human agrees to take the hit); the others come from pair chips. */
+export const CONSENT_ANSWERS = ["accept", "decline", "timeout", "take"] as const;
 export type ConsentAnswer = (typeof CONSENT_ANSWERS)[number];
 
 export type ConsentChipAnsweredEvent = EventBase & {
@@ -142,6 +151,8 @@ export type ConsentChipAnsweredEvent = EventBase & {
   actor: string;
   with: string;
   answer: ConsentAnswer;
+  /** The act this chip was asked for, when it was asked for an act rather than a pair. */
+  actId?: string;
 };
 
 export type ConsentChipEvent = ConsentChipShownEvent | ConsentChipAnsweredEvent;
@@ -365,6 +376,8 @@ export function extractDramaEvents(frames: readonly BodyFrame[]): DramaEvent[] {
         if (room !== undefined) actRoom.set(actId, room);
         const run = finite(d["run"]);
         const seq = finite(d["seq"]);
+        const authoredSkip = d["authored_skip"];
+        const targetOptIn = d["target_opt_in"];
         out.push({
           kind: "act_started",
           atMs: f.atMs - start,
@@ -374,6 +387,8 @@ export function extractDramaEvents(frames: readonly BodyFrame[]): DramaEvent[] {
           actor,
           ...(d["with"] !== undefined && d["with"] !== null ? { with: who(d["with"]) } : {}),
           intensity,
+          ...(typeof authoredSkip === "boolean" ? { authoredSkip } : {}),
+          ...(typeof targetOptIn === "boolean" ? { targetOptIn } : {}),
           ...(run !== undefined ? { run } : {}),
           ...(seq !== undefined ? { seq } : {}),
         });

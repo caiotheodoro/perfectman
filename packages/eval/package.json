@@ -19,13 +19,15 @@
     "evidence": "node dist/cli/evidence.js",
     "calibrate": "node dist/cli/calibrate.js",
     "hotel": "node dist/cli/hotel.js",
+    "drama-judge": "node dist/cli/drama-judge.js",
     "narrate": "node dist/cli/narrate.js",
     "sweep:repetition": "node dist/cli/sweep-repetition.js",
     "sweep:goal-layer": "node dist/cli/sweep-goal-layer.js",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "sweep:temperature": "node dist/cli/sweep-temperature.js",
-    "video": "node dist/cli/video.js"
+    "video": "node dist/cli/video.js",
+    "label": "tsc -p tsconfig.json && node dist/drama/label-ui/cli.js"
   },
   "dependencies": {
     "@perfectman/engine": "workspace:*",

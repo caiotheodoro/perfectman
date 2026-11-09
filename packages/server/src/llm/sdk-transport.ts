@@ -260,12 +260,23 @@ export async function generateOpenAiCompatibleIntent(
   const strictModel = buildModel(true);
   const tolerantModel = buildModel(false);
 
+  type UserPart =
+    | { type: "text"; text: string }
+    | { type: "file"; mediaType: string; data: { type: "data"; data: string } };
+  const userParts: UserPart[] = [
+    { type: "text", text: prompt.user },
+    ...(prompt.userImages ?? []).map((image): UserPart => ({
+      type: "file",
+      mediaType: image.mediaType,
+      data: { type: "data", data: image.base64 },
+    })),
+  ];
   const messages: Array<
     | { role: "system"; content: string }
-    | { role: "user"; content: Array<{ type: "text"; text: string }> }
+    | { role: "user"; content: UserPart[] }
   > = [
     { role: "system", content: prompt.system },
-    { role: "user", content: [{ type: "text", text: prompt.user }] },
+    { role: "user", content: userParts },
   ];
 
   const schemaMode = config.responseFormatJson === true && config.responseFormatJsonSchema !== false;

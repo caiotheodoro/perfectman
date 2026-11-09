@@ -146,7 +146,7 @@ export type CompleteFn = (opts: ChatCompletionOptions) => Promise<string>;
 
 const STRICT_SUFFIX = "\n\nYour previous reply was not valid. Reply with the JSON object only, starting with { and ending with }. Every score is an integer 1-5 or null.";
 
-function extraBodyFor(model: string): Record<string, unknown> | undefined {
+export function extraBodyFor(model: string): Record<string, unknown> | undefined {
   if (model.includes("deepseek-v4")) return { thinking: { type: "disabled" } };
   // Instruct-2507 Qwen3 variants do not think; the older hybrid ones need the switch.
   if (/qwen3/i.test(model) && !/2507|instruct/i.test(model)) return { chat_template_kwargs: { enable_thinking: false } };
