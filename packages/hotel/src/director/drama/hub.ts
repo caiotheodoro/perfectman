@@ -1,5 +1,9 @@
 import type { DramaFrameSink } from "../../run/drama-frame-sink.js";
 import type { DramaSession } from "../dialect.js";
+import type { DramaLink } from "./director.js";
+
+/** What a run needs to have a drama director: the connection's two drama frames, and the hub that routes the hotel's frames to it. Absent when `PERFECTMAN_DRAMA` is off. */
+export type DramaHost = { link: DramaLink; hub: DramaRunHub };
 
 /**
  * The manager has one sink for the whole connection, but every drama frame carries its `run` (FRM-4). The hub is that

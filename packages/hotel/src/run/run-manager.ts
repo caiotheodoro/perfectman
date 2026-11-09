@@ -7,6 +7,8 @@ import { DirectorClient } from "../director/director-client.js";
 import type { FrameRecorder } from "../director/director-client.js";
 import type { HotelHttpClient } from "../director/http-client.js";
 import type { HotelFrame, SidecarMsg } from "../director/index.js";
+import { DramaRunHub, composeDramaSinks } from "../director/drama/index.js";
+import type { DramaHost } from "../director/drama/index.js";
 import { NOOP_DRAMA_SINK, routeDramaFrame } from "./drama-frame-sink.js";
 import type { DramaFrameSink } from "./drama-frame-sink.js";
 import type { SocketFactory } from "../director/transport.js";
@@ -79,6 +81,8 @@ export class RunManager implements RunLink {
   private readonly resnap = new Map<RoomId, { attempts: number; nextAt: number }>();
   private readonly log: Logger;
   private readonly drama: DramaFrameSink;
+  /** Routes the drama frames to each run's director; present only when `PERFECTMAN_DRAMA` is on. */
+  private readonly dramaHub: DramaRunHub | undefined;
   private readonly governor: LlmGovernor;
   private timers: TimerHandle[] = [];
   private loopLagMs = 0;
@@ -87,7 +91,8 @@ export class RunManager implements RunLink {
 
   constructor(private readonly o: ManagerOptions) {
     this.log = o.logger;
-    this.drama = o.dramaSink ?? NOOP_DRAMA_SINK;
+    this.dramaHub = o.config.drama === true ? new DramaRunHub() : undefined;
+    this.drama = this.dramaHub ? (o.dramaSink ? composeDramaSinks(this.dramaHub, o.dramaSink) : this.dramaHub) : (o.dramaSink ?? NOOP_DRAMA_SINK);
     this.governor = o.governor ?? new LlmGovernor(o.clock, o.rng);
     this.mirror = new HotelSpaceMirror({
       listener: {
@@ -121,6 +126,11 @@ export class RunManager implements RunLink {
 
   get connected(): boolean {
     return this.director.connected;
+  }
+
+  /** What a live run needs for its drama director; undefined with `PERFECTMAN_DRAMA` off, so a run is then built exactly as before. */
+  private dramaHost(): DramaHost | undefined {
+    return this.dramaHub ? { link: this.director, hub: this.dramaHub } : undefined;
   }
 
   /** A live run; a replay is `getReplay`. */
@@ -436,6 +446,7 @@ export class RunManager implements RunLink {
       mirror: this.mirror,
       link: this,
       governor: this.governor,
+      ...(this.dramaHost() ? { drama: this.dramaHost() as DramaHost } : {}),
       ...(this.o.narratorLlm ? { narratorLlm: this.o.narratorLlm } : {}),
       ...(this.o.timing ? { timing: this.o.timing } : {}),
       onEnded: (r) => {

@@ -1,6 +1,7 @@
 export { DramaDirector } from "./director.js";
 export type { DramaDirectorDeps, DramaLink } from "./director.js";
 export { DramaRunHub, composeDramaSinks } from "./hub.js";
+export type { DramaHost } from "./hub.js";
 export { ActLedger } from "./ledger.js";
 export type {
   ActLifecycleFrame,

@@ -19,6 +19,9 @@ import type { HotelConfig, ModelPrice } from "../config.js";
 import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfState } from "../director/cine/index.js";
 import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
+import { resolveRunDrama } from "../authoring/scenario-drama.js";
+import { DramaDirector, mirrorWorld } from "../director/drama/index.js";
+import type { DramaDecisionPort, DramaHost, SceneAdvance } from "../director/drama/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
 import type { PairInfo } from "../embodiment/body-executor.js";
 import { chooseSpeechMode, leaveDirective, namedIn, noteExchange, plan, planFacing, updateMemory } from "../embodiment/plan.js";
@@ -113,6 +116,8 @@ export type RunDeps = {
   mirror: HotelSpaceMirror;
   link: RunLink;
   governor: LlmGovernor;
+  /** The drama director's link and hub (act-contract.md 11.2); absent when `PERFECTMAN_DRAMA` is off, and the run is then exactly what it was. */
+  drama?: DramaHost;
   timing?: RunTiming;
   /** Overrides the narrator's model call (D19). Absent: a cinematic run builds its own from the provider chain; with the mock provider cards and captions are the deterministic fallback text. */
   narratorLlm?: NarratorLlm;
@@ -200,6 +205,7 @@ export class Run {
   private gateway!: HotelGateway;
   private executor!: BodyExecutor;
   private ingestor!: GuestIngestor;
+  private director: DramaDirector | undefined;
   private loop!: WallClockPulseLoop;
   private breaker!: BreakerDriver;
   private unsubscribeBudget: (() => void) | undefined;
@@ -388,6 +394,7 @@ export class Run {
       },
     });
 
+    this.startDrama();
     this.out = this.executor;
     if (this.params.mode === "cinematic") this.out = this.startCinematic(this.out);
 
@@ -532,6 +539,37 @@ export class Run {
     this.loop.start();
     this.scheduleArrivals(later);
     this.d.logger.info("run running", { run: this.id, actors: this.agents.size, arriving_later: later.length });
+  }
+
+  /**
+   * The drama director of this run (packet P2): built only when the sidecar's `PERFECTMAN_DRAMA` is on, and inert until the link
+   * negotiated `drama.v1` and the hotel said the room's state. The scenario's `drama` block, or free play without one, is its law.
+   */
+  private startDrama(): void {
+    const host = this.d.drama;
+    if (!host) return;
+    const world = mirrorWorld(this.space, () => [...this.agents].filter(([, a]) => !a.gone).map(([ref]) => ref), () => this.d.clock.now());
+    this.director = new DramaDirector({
+      run: this.id,
+      clock: this.d.clock,
+      link: host.link,
+      world,
+      scenario: resolveRunDrama(this.body),
+      session: host.hub.lastSession ?? null,
+      logger: this.d.logger,
+      record: this.frames.record,
+    });
+    host.hub.attach(this.id, this.director);
+  }
+
+  /** What the planner asks to approve, veto or start an act (docs/drama/act-contract.md 11.5); undefined when drama is off for this process. */
+  get dramaPort(): DramaDecisionPort | undefined {
+    return this.director;
+  }
+
+  /** The scenario's script advanced: cut the scene (SCENE-2). A cinematic cut is not this and never calls it. */
+  advanceScene(reason: string): SceneAdvance {
+    return this.director?.advanceScene(reason) ?? { kind: "refused", why: "inert" };
   }
 
   /** The entrance schedule of this run's cast (see `arrivalSchedule`). */
@@ -1455,6 +1493,7 @@ export class Run {
       }
       await this.handle?.close();
     } finally {
+      this.d.drama?.hub.detach(this.id);
       for (const ref of this.agents.keys()) mirror.unregisterActor(ref);
       link.untrackRun(this.id);
       this.state = reason === "failed" ? "failed" : "ended";
