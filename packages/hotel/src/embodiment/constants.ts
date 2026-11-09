@@ -58,6 +58,11 @@ export const HUMAN_FACE_HOLD_MS = 7000;
 
 /** LAD-8: the killer is locked from the celebration gestures this long from contact. */
 export const NO_REWARD_MS = 5000;
+/**
+ * REA-9: a witness whose table step ran is busy until that step ends, and no longer. The step is the nested `freeze_gasp`, whose last table row is
+ * at `Tc + 1500` (`verb-vocab.json`, a test pins it); a reaction the planner gave itself skips the step, so the witness is free at once.
+ */
+export const REACTION_STEP_MS = 1500;
 /** TBL-11: a tableau holds every actor within this many tiles of its actor. */
 export const TABLEAU_RADIUS_TILES = 6;
 

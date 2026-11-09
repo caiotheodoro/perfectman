@@ -3,7 +3,7 @@ import type { DramaSession } from "../director/dialect.js";
 import type { HotelFrame } from "../director/index.js";
 import type { DramaFrameSink } from "../run/drama-frame-sink.js";
 import { CONTACT_VERBS, HOLDS_THE_ROOM } from "./verb-facts.js";
-import { NO_REWARD_MS, TABLEAU_RADIUS_TILES } from "./constants.js";
+import { NO_REWARD_MS, REACTION_STEP_MS, TABLEAU_RADIUS_TILES } from "./constants.js";
 
 type Frame<T extends HotelFrame["t"]> = Extract<HotelFrame, { t: T }>;
 
@@ -61,8 +61,8 @@ type Open = {
   target?: string;
   owed: Map<string, OwedDebt>;
   held: Set<string>;
-  /** Reactors whose debt was settled: they stay held until act_done (REA-9), they just no longer owe. */
-  reacted: Set<string>;
+  /** Reactors whose debt was settled, and until when their own reaction step runs (REA-9): after that they are free, whatever the act goes on to do. */
+  reacted: Map<string, number>;
   /** An avatar this act put on the floor and that gets up with it (a fainted actor). */
   fainter?: string;
 };
@@ -110,10 +110,16 @@ export class ActLedger implements DramaFrameSink {
     const rank: Record<LockWhy, number> = { initiator: 0, target: 1, owed: 2, held: 3 };
     for (const [actId, o] of this.open) {
       const why: LockWhy | undefined =
-        o.actor === ref ? "initiator" : o.target === ref && this.locksTarget(o) ? "target" : o.owed.has(ref) || o.reacted.has(ref) ? "owed" : o.held.has(ref) ? "held" : undefined;
+        o.actor === ref ? "initiator" : o.target === ref && this.locksTarget(o) ? "target" : o.owed.has(ref) || this.reacting(o, ref) ? "owed" : o.held.has(ref) ? "held" : undefined;
       if (why && (!best || rank[why] < rank[best.why])) best = { actId, why };
     }
     return best;
+  }
+
+  /** The reactor's own table step is still running (REA-9). */
+  private reacting(o: Open, ref: string): boolean {
+    const until = o.reacted.get(ref);
+    return until !== undefined && this.deps.now() < until;
   }
 
   /** What `ref` owes right now: the open rows of `act_beat.owed` for it, oldest first. */
@@ -188,7 +194,7 @@ export class ActLedger implements DramaFrameSink {
   }
 
   onActStarted(f: Frame<"act_started">): void {
-    const o: Open = { frame: f, actor: this.deps.refOf(f.actor), owed: new Map(), held: new Set(), reacted: new Set() };
+    const o: Open = { frame: f, actor: this.deps.refOf(f.actor), owed: new Map(), held: new Set(), reacted: new Map() };
     if (f.with != null) o.target = this.deps.refOf(f.with);
     this.open.set(f.act_id, o);
     if (f.verb === "tableau") this.hold(o);
@@ -220,7 +226,8 @@ export class ActLedger implements DramaFrameSink {
   onActReaction(f: Frame<"act_reaction">): void {
     const o = this.open.get(f.act_id);
     const who = this.deps.refOf(f.who);
-    if (o?.owed.delete(who)) o.reacted.add(who);
+    // The table's reaction is a step that runs on; the planner's own command skips the step (REA-3), so nothing of it is left to wait for.
+    if (o?.owed.delete(who)) o.reacted.set(who, this.deps.now() + (f.source === "table" ? REACTION_STEP_MS : 0));
     this.deps.hooks?.reaction?.(f);
   }
 

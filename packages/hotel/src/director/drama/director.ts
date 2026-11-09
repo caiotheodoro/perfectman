@@ -74,6 +74,11 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   private readonly ledger: ActLedger;
   private readonly rooms = new Map<number, RoomDrama>();
   private fallen = new Set<number>();
+  /**
+   * Faints in flight: a faint has no stand-up frame (P2-10), so the faint's own frames say who is on the floor: from its contact (`act_beat`) to its
+   * `act_done`, which the hotel sends once the actor stood up. A scene cut ends them all (SCENE-3).
+   */
+  private readonly faints = new Map<string, { actor: number; down: boolean }>();
   private session: DramaSession | null;
   private ready: boolean;
   private resumedAdopt: boolean;
@@ -122,7 +127,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
 
   decide(turn: DramaTurn): DramaDecision {
     if (!this.active) return { kind: "pass", why: "inert" };
-    if (this.fallen.has(turn.actor)) return { kind: "pass", why: "actor_dead" };
+    if (this.isFallen(turn.actor)) return { kind: "pass", why: "actor_dead" };
     if (this.ledger.busyActId(turn.actor) !== undefined) return { kind: "pass", why: "actor_busy" };
     return turn.proposal ? this.propose(turn, turn.proposal) : this.originate(turn);
   }
@@ -158,7 +163,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   /** ACT-9 as far as the sidecar knows it: `restrain` never at a human, `tend_fallen` only at a fallen avatar. */
   private precheck(actor: number, p: ActProposal): { code: "bad_target"; detail: string } | undefined {
     if (p.verb === "restrain" && p.with !== undefined && p.with > 0) return { code: "bad_target", detail: "kind" };
-    if (p.verb === "tend_fallen" && p.with !== undefined && !this.fallen.has(p.with)) return { code: "bad_target", detail: "not_fallen" };
+    if (p.verb === "tend_fallen" && p.with !== undefined && !this.isFallen(p.with)) return { code: "bad_target", detail: "not_fallen" };
     return actor === p.with ? { code: "bad_target", detail: "self" } : undefined;
   }
 
@@ -176,7 +181,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     type Pick = { verb: ActVerb; target: number; margin: number; v: number; theta: number; rung: number };
     let best: Pick | undefined;
     for (const other of this.d.world.avatarsIn(room)) {
-      if (other.id === turn.actor || other.id === this.narrator() || this.fallen.has(other.id)) continue;
+      if (other.id === turn.actor || other.id === this.narrator() || this.isFallen(other.id)) continue;
       // The reading names who the actor has a relationship with: those are the only people a beat can be aimed at.
       if (!emotion.relations?.has(other.id)) continue;
       for (const verb of this.tuning.origination.verbs) {
@@ -210,7 +215,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     // ACT-13: a lying actor can only do the verbs that are done lying down.
     if (present.find((a) => a.id === actor)?.state === "lay" && !LAY_OK.has(verb)) return { pass: { kind: "pass", why: "posture" } };
     if (target !== undefined && !present.some((a) => a.id === target)) return { pass: { kind: "pass", why: "target_gone" } };
-    const avatars: GateAvatar[] = present.map((a) => ({ ...a, fallen: this.fallen.has(a.id) }));
+    const avatars: GateAvatar[] = present.map((a) => ({ ...a, fallen: this.isFallen(a.id) }));
     const now = this.d.clock.now();
     const state = this.roomState(actor);
     const verdict = reviewGates({
@@ -306,11 +311,15 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   }
 
   onActStarted(f: Frame<"act_started">): void {
-    if (f.run === this.d.run) this.ledger.started(f, this.d.clock.now(), f.room);
+    if (f.run !== this.d.run) return;
+    this.ledger.started(f, this.d.clock.now(), f.room);
+    if (f.verb === "faint") this.faints.set(f.act_id, { actor: f.actor, down: false });
   }
 
-  onActBeat(_f: Frame<"act_beat">): void {
-    // Contact is the planner's clock (REA-1), not the ladder's: nothing here counts from it.
+  onActBeat(f: Frame<"act_beat">): void {
+    // Contact is the planner's clock (REA-1), not the ladder's: nothing counts from it, except that a faint's actor is on the floor from here.
+    const faint = f.run === this.d.run ? this.faints.get(f.act_id) : undefined;
+    if (faint) faint.down = true;
   }
 
   onActReaction(_f: Frame<"act_reaction">): void {
@@ -320,6 +329,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   onActDone(f: Frame<"act_done">): void {
     if (f.run !== this.d.run) return;
     if (f.outcome === "blocked") this.log.info("act blocked by the hotel", { run: f.run, act: f.act_id, reason: f.reason ?? null, detail: f.detail ?? null });
+    this.faints.delete(f.act_id);
     this.ledger.done(f, this.d.clock.now());
   }
 
@@ -347,6 +357,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   onSceneCut(f: Frame<"scene_cut">): void {
     if (f.run !== this.d.run) return;
     this.ledger.cut(f.scene, this.d.clock.now());
+    this.faints.clear();
     this.advancePending = undefined;
     for (const id of f.revived) this.fallen.delete(id);
     for (const id of f.removed) this.fallen.add(id);
@@ -384,6 +395,13 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     return (this.session?.harmWindowS ?? VOCAB_CONSTANTS.harm_window_s_default) * 1000;
   }
 
+  /** On the floor: dead, down, or fainted (DOWN-1). */
+  private isFallen(id: number): boolean {
+    if (this.fallen.has(id)) return true;
+    for (const faint of this.faints.values()) if (faint.down && faint.actor === id) return true;
+    return false;
+  }
+
   /** Slot 0 of the run is its narrator (ACT-9). */
   private narrator(): number {
     return -(this.d.run * 100);
@@ -391,6 +409,6 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
 
   /** What the director currently believes about the scene: for tests and the run's status line. */
   snapshot(): { scene: string; highestRung: number; kills: number; lastPhysicalAt: number | undefined; fallen: number[]; rooms: number } {
-    return { scene: this.ledger.sceneId, highestRung: this.ledger.highestRung(), kills: this.ledger.kills(), lastPhysicalAt: this.ledger.lastPhysicalAt(), fallen: [...this.fallen].sort((x, y) => x - y), rooms: this.rooms.size };
+    return { scene: this.ledger.sceneId, highestRung: this.ledger.highestRung(), kills: this.ledger.kills(), lastPhysicalAt: this.ledger.lastPhysicalAt(), fallen: [...new Set([...this.fallen, ...[...this.faints.values()].filter((x) => x.down).map((x) => x.actor)])].sort((x, y) => x - y), rooms: this.rooms.size };
   }
 }
