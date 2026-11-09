@@ -70,9 +70,18 @@ describe("consent-violation (D7)", () => {
     expect(consentViolation(input([onHuman("punch")]))).toMatchObject({ measured: 0, unresolvedActIds: ["v"] });
   });
 
-  it("only judges violent acts: glare and insult need no consent, shove and above do", () => {
-    for (const verb of ["glare", "insult"]) expect(consentViolation(input([onHuman(verb), done("v", 2_000)])).measured).toBe(0);
-    for (const verb of ["shove", "slap", "punch", "kill"]) expect(consentViolation(input([onHuman(verb), done("v", 2_000)])).measured).toBe(1);
+  it("only judges violent acts: a glare needs no consent; an insult aimed at a human, and shove and above, do", () => {
+    expect(consentViolation(input([onHuman("glare"), done("v", 2_000)])).measured).toBe(0);
+    for (const verb of ["insult", "shove", "slap", "punch", "kill"]) expect(consentViolation(input([onHuman(verb), done("v", 2_000)])).measured).toBe(1);
+  });
+
+  it("takes an insult at a human as violent only for a human: at an actor it has no chip and nothing to flag", () => {
+    expect(consentViolation(input([started("v", 0, "a", "insult", { with: "b" }), done("v", 1_000)])).measured).toBe(0);
+    expect(consentViolation(input([onHuman("insult"), take("v", 1_500, "h:9"), done("v", 2_000)])).measured).toBe(0);
+  });
+
+  it("does not flag a hug that ended timeout: it completed with the initiator's steps and touched nobody", () => {
+    expect(consentViolation(input([onHuman("hug"), done("v", 5_000, "timeout", { answer: "timeout" })])).measured).toBe(0);
   });
 
   it("only judges acts on humans: an actor target or no target is not a D7 case", () => {

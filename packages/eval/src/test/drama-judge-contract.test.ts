@@ -80,7 +80,7 @@ describe("judge prompt on the act contract's frames", () => {
   };
 
   it("shows the act's scene, the beat with who saw it and who owes, and the chip answer", () => {
-    const lines = timeline(contractEvents("contract-slap-human-take").filter((e) => e.atMs >= 40_000 && e.atMs <= 50_000));
+    const lines = timeline(contractEvents("contract-slap-human-take").filter((e) => e.atMs >= 100_000 && e.atMs <= 110_000));
     expect(lines).toEqual([
       "act_started a17 slap rung 4 person-1 -> h:9 intensity 0.60 scene 7.2",
       "consent_chip shown a17 person-1 wants slap",

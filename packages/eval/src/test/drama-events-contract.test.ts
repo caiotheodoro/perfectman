@@ -9,7 +9,7 @@ describe("extractDramaEvents on the act contract: act_started and act_beat", () 
   it("reads every act_started field of the contract, with the human target as h:<id>", () => {
     expect(a17).toEqual({
       kind: "act_started",
-      atMs: 43_459,
+      atMs: 103_459,
       hotelAt: 1730000123456,
       room: "12",
       actId: "a17",
@@ -40,7 +40,7 @@ describe("extractDramaEvents on the act contract: act_started and act_beat", () 
     const beat = of(events, "act_beat").find((e) => e.actId === "a17")!;
     expect(beat).toEqual({
       kind: "act_beat",
-      atMs: 44_013,
+      atMs: 104_013,
       hotelAt: 1730000124010,
       room: "12",
       actId: "a17",
@@ -80,8 +80,8 @@ describe("extractDramaEvents on the act contract: drama_consent and act_done", (
   it("reads the chip's shown and answered frames keyed by act_id, keeping the raw answer", () => {
     const chips = of(events, "consent_chip").filter((e) => e.actId === "a17");
     expect(chips).toEqual([
-      { kind: "consent_chip", phase: "shown", atMs: 43_472, hotelAt: 1730000123470, room: "12", actId: "a17", pairId: "a17", from: "person-1", pairKind: "slap", family: "violent", ttlMs: 4000 },
-      { kind: "consent_chip", phase: "answered", atMs: 43_862, hotelAt: 1730000123860, room: "12", actId: "a17", pairId: "a17", actor: "person-1", with: "h:9", answer: "take", rawAnswer: "take", family: "violent" },
+      { kind: "consent_chip", phase: "shown", atMs: 103_472, hotelAt: 1730000123470, room: "12", actId: "a17", pairId: "a17", from: "person-1", pairKind: "slap", family: "violent", ttlMs: 4000 },
+      { kind: "consent_chip", phase: "answered", atMs: 103_862, hotelAt: 1730000123860, room: "12", actId: "a17", pairId: "a17", actor: "person-1", with: "h:9", answer: "take", rawAnswer: "take", family: "violent" },
     ]);
   });
 
@@ -105,7 +105,7 @@ describe("extractDramaEvents on the act contract: drama_consent and act_done", (
     const done = of(events, "act_done").find((e) => e.actId === "a17")!;
     expect(done).toEqual({
       kind: "act_done",
-      atMs: 48_513,
+      atMs: 108_513,
       hotelAt: 1730000128510,
       room: "12",
       actId: "a17",
