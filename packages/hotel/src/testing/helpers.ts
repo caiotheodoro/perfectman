@@ -6,6 +6,7 @@ import { draftToFiles } from "../authoring/draft-to-files.js";
 import { makeBundle } from "../authoring/source-bundle.js";
 import type { HotelConfig } from "../config.js";
 import type { FetchLike } from "../director/http-client.js";
+import type { DramaFrameSink } from "../run/drama-frame-sink.js";
 import type { RunTiming } from "../run/run.js";
 import { startSidecar } from "../sidecar.js";
 import { silentLogger } from "../util/log.js";
@@ -118,7 +119,7 @@ export const FAST_TIMING = {
 } as const;
 
 /** The sidecar against a fake Director with one room (12), one human (ana, id 9) and scenario version 31. */
-export async function bootSidecar(over: { config?: Partial<HotelConfig>; timing?: Partial<RunTiming>; fake?: FakeDirector; rng?: () => number; versions?: Record<number, unknown>; memory?: FakeMemoryTable; scenario?: number; ackTimeoutMs?: number } = {}) {
+export async function bootSidecar(over: { config?: Partial<HotelConfig>; timing?: Partial<RunTiming>; fake?: FakeDirector; rng?: () => number; versions?: Record<number, unknown>; memory?: FakeMemoryTable; scenario?: number; ackTimeoutMs?: number; dramaSink?: DramaFrameSink } = {}) {
   const fake = over.fake ?? (await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4, ...(over.ackTimeoutMs !== undefined ? { ackTimeoutMs: over.ackTimeoutMs } : {}) }));
   if (!over.fake) {
     fake.addRoom(12);
@@ -131,6 +132,7 @@ export async function bootSidecar(over: { config?: Partial<HotelConfig>; timing?
     fetchImpl: http.fetchImpl,
     timing: { ...FAST_TIMING, ...over.timing },
     statusIntervalMs: 100,
+    ...(over.dramaSink ? { dramaSink: over.dramaSink } : {}),
     ...(over.rng ? { rng: over.rng } : {}),
     logger: silentLogger,
   });

@@ -12,6 +12,7 @@ import type { FetchLike } from "./director/http-client.js";
 import { nodeSocketFactory } from "./director/transport.js";
 import type { SocketFactory } from "./director/transport.js";
 import { startHealth } from "./health.js";
+import type { DramaFrameSink } from "./run/drama-frame-sink.js";
 import { RunManager } from "./run/run-manager.js";
 import type { RunTiming } from "./run/run.js";
 import { consoleLogger } from "./util/log.js";
@@ -27,6 +28,8 @@ export type SidecarOptions = {
   statusIntervalMs?: number;
   /** Overrides the narrator's model call (D19); without it each cinematic run builds its own from the provider chain. */
   narratorLlm?: NarratorLlm;
+  /** Where the drama frames go (act-contract.md 11.2); without one they are read and dropped. */
+  dramaSink?: DramaFrameSink;
 };
 
 export type Sidecar = {
@@ -76,10 +79,12 @@ export async function startSidecar(config: HotelConfig, o: SidecarOptions = {}):
       sidecar: { version: "0.0.0", build: process.env["PERFECTMAN_BUILD"] ?? "dev", ...(sha ? { schema_sha256: sha } : {}) },
       ...(o.timing ? { timing: o.timing } : {}),
       ...(o.narratorLlm ? { narratorLlm: o.narratorLlm } : {}),
+      ...(o.dramaSink ? { dramaSink: o.dramaSink } : {}),
       ...(o.statusIntervalMs !== undefined ? { statusIntervalMs: o.statusIntervalMs } : {}),
     });
     manager.start();
-    logger.info("sidecar started", { authoringPort, directorUrl: config.directorUrl });
+    if (config.dramaWarning) logger.warn(config.dramaWarning);
+    logger.info("sidecar started", { authoringPort, directorUrl: config.directorUrl, drama: config.drama === true });
   } else {
     logger.info("PERFECTMAN_ENABLED is off: serving the health check only");
   }

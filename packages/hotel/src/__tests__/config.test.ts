@@ -19,6 +19,15 @@ describe("sidecar configuration", () => {
     expect(c.llm).toMatchObject({ models: ["fast-model", "other-model"], concurrency: 3, apiKeyEnv: "PERFECTMAN_LLM_API_KEY" });
   });
 
+  it("[SAFE-1] reads PERFECTMAN_DRAMA fail-closed: unset leaves the config as it was, on is on, a typo is off with a warning", () => {
+    expect(parseConfig(GOOD)).not.toHaveProperty("drama");
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "yes" })).toMatchObject({ drama: true });
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "off" })).not.toHaveProperty("drama");
+    const typo = parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "treu" });
+    expect(typo).not.toHaveProperty("drama");
+    expect(typo.dramaWarning).toContain("treu");
+  });
+
   it("is quiet when disabled: nothing is required", () => {
     expect(parseConfig({ PERFECTMAN_ENABLED: "0" }).enabled).toBe(false);
   });
