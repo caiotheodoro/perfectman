@@ -131,3 +131,40 @@ describe("adversarial frames in the real wrapper", () => {
     expect(failing(authored)).toEqual([]);
   });
 });
+
+describe("act-rate (D6) does not count the reactions the contract owes", () => {
+  type Ev = Parameters<typeof runDramaProbes>[0]["events"][number];
+  const started = (actId: string, actor: string, verb: string, atMs: number, extra: Record<string, unknown> = {}): Ev =>
+    ({ kind: "act_started", actId, verb, actor, intensity: 1, scene: "3.1", room: "3", atMs, ...extra }) as Ev;
+  const reaction = (actId: string, who: string, atMs: number, reaction: string, role: "target" | "witness" = "witness"): Ev =>
+    ({ kind: "act_reaction", actId, who, role, reaction, source: "planner", scene: "3.1", room: "3", atMs }) as Ev;
+  const rate = (events: Ev[]) => runDramaProbes({ events, actorIds: ["ricardo", "otavio", "sofia", "beatriz", "helena"], durationMs: 60_000 }).find((r) => r.probe === "act-rate")!;
+
+  // run 3 of assassinato-na-festa: one authored kill, then three witnesses cry inside 100 ms because the kill owes them a reaction.
+  const kill = started("d1", "ricardo", "kill", 1000, { with: "otavio", rung: 6, origin: "scenario", authoredSkip: true });
+  const cries: Ev[] = [
+    started("p3.3", "sofia", "cry", 1980, { origin: "director" }),
+    reaction("d1", "sofia", 1980, "cmd:act"),
+    started("p3.2", "beatriz", "cry", 2040, { origin: "director" }),
+    reaction("d1", "beatriz", 2040, "cmd:act"),
+    started("p3.1", "helena", "cry", 2050, { origin: "director" }),
+    reaction("d1", "helena", 2050, "cmd:act"),
+  ];
+
+  it("reads one act for a kill and its three witness reactions, and passes", () => {
+    const r = rate([kill, ...cries]);
+    expect(r.evidence).toMatchObject({ perScene: { "3.1": { acts: 1 } }, reactionActs: 3 });
+    expect(r.passed).toBe(true);
+  });
+
+  it("still fails a scene where an actor spams acts nobody owed", () => {
+    const spam = [1, 2, 3, 4].map((n) => started(`s${n}`, "ricardo", "shove", n * 5000, { with: "otavio", rung: 3 }));
+    expect(rate(spam).passed).toBe(false);
+  });
+
+  it("still counts an unprompted cry that lands right after a reaction by someone else", () => {
+    const r = rate([kill, started("x1", "sofia", "cry", 2000), started("x2", "helena", "cry", 20_000), started("x3", "beatriz", "cry", 30_000)]);
+    expect(r.evidence).toMatchObject({ perScene: { "3.1": { acts: 4 } }, reactionActs: 0 });
+    expect(r.passed).toBe(false);
+  });
+});
