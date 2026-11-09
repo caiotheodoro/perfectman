@@ -616,8 +616,13 @@ export class Run {
       beats,
       drama: resolveRunDrama(this.body),
       wireOf: (ref) => this.space.avatarId(ref),
+      walkCloser: (actor, target) => {
+        const cmds = this.dramaSink.approach(actor, target, this.space.view(actor, this.d.clock.now())?.room, this.d.rng);
+        if (cmds.length > 0) this.out.send(cmds);
+        return cmds.length > 0;
+      },
       logger: this.d.logger,
-      onReport: (r) => this.d.logger.info("authored beat", { run: this.id, beat: r.beat.id, kind: r.beat.kind, outcome: r.outcome, why: r.why }),
+      onReport: (r) => this.d.logger.info("authored beat", { run: this.id, beat: r.beat.id, kind: r.beat.kind, outcome: r.outcome, why: r.why, ...(r.detail ? { detail: r.detail } : {}) }),
     });
     this.beatPlayer.start();
   }

@@ -69,8 +69,23 @@ export type DramaTuning = {
    * `busyWindowMs`, then the beat is dropped; a beat whose time passed more than `pastToleranceMs` before the player started is dropped, never played
    * late; a cut the floor or the pending window refuses is asked again `cutRetryPadMs` after it says it may be, and a cut the hotel dropped
    * silently is asked again after `cutVerifyMs` (longer than `sceneAdvancePendingMs`), at most `cutAttempts` times in all.
+   * A contact verb whose gate says `too_far` (GATE-7) is not final for an authored beat (habbo#41): the pair is walked together (`walkCloser`) and the
+   * ask repeated every `walkRetryMs`, for at most `walkWindowMs` from the first `too_far`; the walk is ordered again every `walkRepathMs` while they are
+   * still apart (the target may have moved). Still apart at the window's end, or the scene cut meanwhile: the beat is dropped. 30 s is the walk across a
+   * party room (a tile a second at the hotel's pace, 20 s for the planner's own `RETRY_MS`) plus the busy window's slack; a beat is not worth holding a
+   * scene longer than that. Every other veto drops at once.
    */
-  beats: { busyRetryMs: number; busyWindowMs: number; pastToleranceMs: number; cutAttempts: number; cutVerifyMs: number; cutRetryPadMs: number };
+  beats: {
+    busyRetryMs: number;
+    busyWindowMs: number;
+    pastToleranceMs: number;
+    cutAttempts: number;
+    cutVerifyMs: number;
+    cutRetryPadMs: number;
+    walkWindowMs: number;
+    walkRetryMs: number;
+    walkRepathMs: number;
+  };
 };
 
 const d = (source: DriverSource, weight = 1): Driver => ({ source, weight });
@@ -95,7 +110,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
   sceneAdvancePendingMs: 3000,
   resumeAssumes: { physicalBeatJustStarted: true, killUsed: true },
   keepDoneMs: 60_000,
-  beats: { busyRetryMs: 1000, busyWindowMs: 15_000, pastToleranceMs: 1000, cutAttempts: 6, cutVerifyMs: 3500, cutRetryPadMs: 50 },
+  beats: { busyRetryMs: 1000, busyWindowMs: 15_000, pastToleranceMs: 1000, cutAttempts: 6, cutVerifyMs: 3500, cutRetryPadMs: 50, walkWindowMs: 30_000, walkRetryMs: 1000, walkRepathMs: 8000 },
 };
 
 /** The gates of each verb that the director mirrors (`verbs.<id>.gates` of the verb table); a test checks them against `verb-vocab.json`. */
