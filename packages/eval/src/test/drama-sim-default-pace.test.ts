@@ -13,15 +13,17 @@ const CADENCES = [4000, 6000, 8000, 10_000];
 const PEAK: Record<string, string> = { "tapa-na-cara": "slap", "confronto-da-traicao": "punch" };
 
 describe("the default pace on the presets", () => {
-  it("[D6] every drama probe passes on every preset with the default tuning, for 5 seeds at each consult cadence", async () => {
-    for (const id of DRAMA_PRESETS) {
-      for (const seed of SEEDS) {
-        for (const consultMs of CADENCES) {
-          const config = { ...(await presetSimConfig(id, { seed })), consultMs };
-          expect(config.tuning, "a sim names no tuning of its own").toBeUndefined();
-          const report = probeReport(runDramaSim(config));
-          expect({ id, seed, consultMs, total: report.total, failed: report.failed }).toEqual({ id, seed, consultMs, total: 19, failed: [] });
-        }
+  // One test per preset, so each one is a fifth of the work and has its own time limit: the 100 sims behind this claim (5 presets x 5 seeds x 4
+  // cadences) are CPU-bound, and in one test a busy machine (the whole suite running in parallel) pushed the sum past the 30 s default.
+  // A preset compiles once here; the seed and the cadence are the only things a sim differs by, and each sim gets its own copy of the compiled config.
+  it.each(DRAMA_PRESETS)("[D6] every drama probe passes on %s with the default tuning, for 5 seeds at each consult cadence", async (id) => {
+    const compiled = await presetSimConfig(id);
+    expect(compiled.tuning, "a sim names no tuning of its own").toBeUndefined();
+    for (const seed of SEEDS) {
+      for (const consultMs of CADENCES) {
+        const config = { ...structuredClone(compiled), seed, consultMs };
+        const report = probeReport(runDramaSim(config));
+        expect({ id, seed, consultMs, total: report.total, failed: report.failed }).toEqual({ id, seed, consultMs, total: 19, failed: [] });
       }
     }
   });

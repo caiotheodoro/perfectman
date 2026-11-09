@@ -5,31 +5,73 @@ import { parseScenarioBody } from "../run/scenario-body.js";
 import type { Sidecar } from "../sidecar.js";
 import type { FakeDirector } from "../testing/fake-director.js";
 import { bootSidecar, compiledScenario, waitFor } from "../testing/helpers.js";
+import { ManualClock } from "../testing/manual-clock.js";
 
 let fake: FakeDirector | undefined;
 let sidecar: Sidecar | undefined;
+let manual: ManualClock | undefined;
 
 afterEach(async () => {
+  // A run that is shut down walks its cast out on the clock, so a manual one has to keep moving until the close is done.
+  let closing = true;
+  const pump = (async () => {
+    while (closing && manual) {
+      await manual.advance(100);
+      await new Promise((r) => setTimeout(r, 5));
+    }
+  })();
   await sidecar?.close();
+  closing = false;
+  await pump;
   await fake?.stop();
-  sidecar = fake = undefined;
+  sidecar = fake = manual = undefined;
 });
 
-/** When (ms since the first) each actor_spawn frame reached the hotel, by name. */
-function spawnTimes(hotel: FakeDirector): Record<string, number> {
+/** How many times each actor_spawn frame reached the hotel, by name. */
+function spawnCounts(hotel: FakeDirector): Record<string, number> {
   const out: Record<string, number> = {};
   for (const f of hotel.received) if (f.t === "actor_spawn") out[f.name] = (out[f.name] ?? 0) + 1;
   return out;
 }
 
-async function watchSpawns(hotel: FakeDirector, count: number): Promise<Array<{ name: string; at: number }>> {
-  const seen = new Map<string, number>();
+/** Names in the order their actor_spawn frames reached the hotel. */
+const spawned = (hotel: FakeDirector): string[] => hotel.received.flatMap((f) => (f.t === "actor_spawn" ? [f.name] : []));
+
+
+/**
+ * The sidecar on a manual clock: every entrance timer, spawn pause and pulse waits for `clock.advance`, so the gaps
+ * between entrances are the schedule's own numbers and no load on the machine can stretch or squeeze them. Only the
+ * socket to the fake hotel is real, and `waitFor` polls it with real time while the clock stands still.
+ */
+async function bootOnManualClock(over: Parameters<typeof bootSidecar>[0] = {}) {
+  const clock = (manual = new ManualClock());
+  const booted = await bootSidecar({ ...over, clock, timing: { spawnIntervalMs: 0, ...over.timing } });
+  fake = booted.fake;
+  sidecar = booted.sidecar;
+  fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+  const run = await waitFor(() => booted.sidecar.manager?.getRun(7), "the run");
+  // The first cast member spawns at once. Her spawn pause is a zero-length timer set only after the hotel's answer reaches the
+  // sidecar, so keep asking the clock for what is due now (it never moves) until the run turns "running": in that same step the
+  // entrance timers are set, so from here the clock reads the run's own zero and every time below is relative to it.
+  await waitFor(() => spawned(booted.fake).length >= 1, "the first spawn");
   const t0 = Date.now();
-  await waitFor(() => {
-    for (const f of hotel.received) if (f.t === "actor_spawn" && !seen.has(f.name)) seen.set(f.name, Date.now() - t0);
-    return seen.size >= count;
-  }, `${count} spawns`, 8000);
-  return [...seen].map(([name, at]) => ({ name, at }));
+  while (run.state !== "running") {
+    if (Date.now() - t0 > 8000) throw new Error("timed out waiting for the run to be running");
+    await clock.advance(0);
+    await new Promise((r) => setTimeout(r, 1));
+  }
+  return { ...booted, clock, run };
+}
+
+/** Moves the manual clock on in small steps while the real sockets and the mock model get their turn, until `fn` is truthy. */
+async function pumpUntil<T>(clock: ManualClock, fn: () => T | undefined | false | Promise<T | undefined | false>, what: string, budgetClockMs = 20_000, stepMs = 25): Promise<T> {
+  for (let spent = 0; spent <= budgetClockMs; spent += stepMs) {
+    const v = await fn();
+    if (v) return v;
+    await clock.advance(stepMs);
+    await new Promise((r) => setTimeout(r, 5));
+  }
+  throw new Error(`${what}: not within ${budgetClockMs} ms of manual-clock time`);
 }
 
 const scheduleOf = (agents: Array<{ id: string; arrivalPulse?: number | null }>, arrivals: Record<string, number> | undefined, rng: () => number) =>
@@ -69,78 +111,82 @@ describe("staggered arrival", () => {
     expect(parsed.ok && parsed.body.arrivals).toEqual({ "person-1": 2000 });
   });
 
-  it("with no entrance times the cast walks in one after another with a gap, not all at once", async () => {
-    const booted = await bootSidecar({ timing: { arrivalStaggerMs: [150, 250], spawnIntervalMs: 5 } });
-    fake = booted.fake;
-    sidecar = booted.sidecar;
-    fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
-    const spawns = await watchSpawns(fake, 3);
-    expect(spawns.map((s) => s.name)).toEqual(["Duda", "Rafa", "Gabi"]);
-    const [a, b, c] = spawns.map((s) => s.at) as [number, number, number];
-    expect(b - a).toBeGreaterThanOrEqual(120);
-    expect(c - b).toBeGreaterThanOrEqual(120);
-    expect(spawnTimes(fake)).toEqual({ Duda: 1, Rafa: 1, Gabi: 1 });
-    // everyone ends up in the room and takes part
-    await waitFor(() => new Set(fake?.chats.map((x) => x.actor)).size >= 2, "two different speakers", 8000);
+  // The stagger is [150, 250] ms; the rng picks the gap inside it, so its two ends give the two exact gaps.
+  it.each([
+    { rng: 0, gapMs: 150 },
+    { rng: 0.999999, gapMs: 250 },
+  ])("with no entrance times the cast walks in one after another, $gapMs ms apart, not all at once", async ({ rng, gapMs }) => {
+    const { fake: hotel, clock } = await bootOnManualClock({ rng: () => rng, timing: { arrivalStaggerMs: [150, 250] } });
+    // Only the first is here when the run starts running; nobody else is early.
+    expect(spawned(hotel)).toEqual(["Duda"]);
+    await clock.advance(gapMs - 1);
+    expect(spawned(hotel)).toEqual(["Duda"]);
+    await clock.advance(1);
+    await waitFor(() => spawned(hotel).length >= 2, "the second to walk in");
+    expect(spawned(hotel)).toEqual(["Duda", "Rafa"]);
+    // The third is a full gap after the second.
+    await clock.advance(gapMs - 1);
+    expect(spawned(hotel)).toEqual(["Duda", "Rafa"]);
+    await clock.advance(1);
+    await pumpUntil(clock, () => spawned(hotel).length >= 3, "the third to walk in", 500, 1);
+    expect(spawned(hotel)).toEqual(["Duda", "Rafa", "Gabi"]);
+    expect(spawnCounts(hotel)).toEqual({ Duda: 1, Rafa: 1, Gabi: 1 });
+    await pumpUntil(clock, () => new Set(hotel.chats.map((x) => x.actor)).size >= 2, "two different speakers");
   }, 30_000);
 
   it("an actor who has not arrived is not consulted: nothing is decided for her until she walks in", async () => {
     const { body } = compiledScenario();
-    const late = { ...(body as object), arrivals: { "person-3": 1500 } };
-    const booted = await bootSidecar({ versions: { 31: late }, timing: { arrivalStaggerMs: [10, 20] } });
-    fake = booted.fake;
-    sidecar = booted.sidecar;
-    fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
-    const run = await waitFor(() => booted.sidecar.manager?.getRun(7), "the run");
+    const ENTRANCE_MS = 30_000;
+    const late = { ...(body as object), arrivals: { "person-3": ENTRANCE_MS } };
+    const { fake: hotel, clock, run } = await bootOnManualClock({ versions: { 31: late }, timing: { arrivalStaggerMs: [10, 20] }, rng: () => 0 });
+    const entranceAt = clock.now() + ENTRANCE_MS;
     const handle = await waitFor(() => run.simulation, "the simulation");
     const actorsWhoActed = async (): Promise<Set<string>> => {
       const events = await handle.repositories.eventRepo.getAfter(handle.simulationId);
       return new Set(events.filter((e) => e.type === "message_sent" || e.type === "no_op_recorded").map((e) => e.actorId));
     };
-    // two people are on the stage and the model is running for them; the third is on her way
-    await waitFor(() => fake?.received.filter((f) => f.t === "actor_spawn").length === 2, "the two who are due", 4000);
-    await new Promise((r) => setTimeout(r, 700));
-    expect(fake.received.filter((f) => f.t === "actor_spawn")).toHaveLength(2);
-    const before = await actorsWhoActed();
-    expect(before.size).toBeGreaterThan(0);
+    // The two who are due come in, and the scene plays on without her, for as much of the clock as it takes someone to act.
+    let before = new Set<string>();
+    await pumpUntil(clock, async () => spawned(hotel).length >= 2 && (before = await actorsWhoActed()).size > 0, "the two who are due to come in and act");
+    expect(clock.now()).toBeLessThan(entranceAt);
+    expect(spawned(hotel)).toEqual(["Duda", "Rafa"]);
     expect(before.has("person-3")).toBe(false);
     expect(run.state).toBe("running");
-    // she walks in, is admitted, and from then on is part of the pulses
-    await waitFor(() => fake?.received.filter((f) => f.t === "actor_spawn").length === 3, "her entrance", 4000);
-    const deadline = Date.now() + 8000;
-    while (!(await actorsWhoActed()).has("person-3") && Date.now() < deadline) await new Promise((r) => setTimeout(r, 20));
-    expect((await actorsWhoActed()).has("person-3")).toBe(true);
-    expect(fake.avatarByRef("person-3")?.name).toBe("Gabi");
+    // Right up to the instant before her entrance she is still outside and never decided for.
+    await clock.advance(entranceAt - clock.now() - 1);
+    expect(spawned(hotel)).toEqual(["Duda", "Rafa"]);
+    expect((await actorsWhoActed()).has("person-3")).toBe(false);
+    await clock.advance(1);
+    await pumpUntil(clock, () => spawned(hotel).length === 3, "her entrance", 500, 1);
+    await pumpUntil(clock, async () => (await actorsWhoActed()).has("person-3"), "her first decision");
+    expect(hotel.avatarByRef("person-3")?.name).toBe("Gabi");
   }, 30_000);
 
-  it("honours a fixed entrance time: 'after 1s' spawns about a second after the first", async () => {
+  it("honours a fixed entrance time: 'after 1s' spawns exactly a second after the first", async () => {
     const { body } = compiledScenario();
     const fixed = { ...(body as object), arrivals: { "person-2": 1000, "person-3": 1000 } };
-    const booted = await bootSidecar({ versions: { 31: fixed }, timing: { arrivalStaggerMs: [10, 20] } });
-    fake = booted.fake;
-    sidecar = booted.sidecar;
-    fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
-    const spawns = await watchSpawns(fake, 3);
-    const first = spawns.find((s) => s.name === "Duda")?.at ?? 0;
-    const rafa = spawns.find((s) => s.name === "Rafa")?.at ?? 0;
-    const gabi = spawns.find((s) => s.name === "Gabi")?.at ?? 0;
-    expect(rafa - first).toBeGreaterThanOrEqual(900);
-    expect(rafa - first).toBeLessThan(3000);
-    expect(gabi - first).toBeGreaterThanOrEqual(900);
+    const { fake: hotel, clock } = await bootOnManualClock({ versions: { 31: fixed }, timing: { arrivalStaggerMs: [10, 20] } });
+    expect(spawned(hotel)).toEqual(["Duda"]);
+    await clock.advance(999);
+    expect(spawned(hotel)).toEqual(["Duda"]);
+    await clock.advance(1);
+    await waitFor(() => spawned(hotel).length >= 2, "the second entrance");
+    expect(spawned(hotel)[1]).toBe("Rafa");
+    // Her timer is due at the same instant; she spawns once the second's own spawn is done.
+    await pumpUntil(clock, () => spawned(hotel).length >= 3, "the third entrance", 500, 1);
+    expect(spawned(hotel)).toEqual(["Duda", "Rafa", "Gabi"]);
   }, 30_000);
 
   it("a stop before the late ones arrive cancels their entrance", async () => {
     const { body } = compiledScenario();
     const fixed = { ...(body as object), arrivals: { "person-2": 5000, "person-3": 6000 } };
-    const booted = await bootSidecar({ versions: { 31: fixed } });
-    fake = booted.fake;
-    sidecar = booted.sidecar;
-    fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
-    await waitFor(() => fake?.received.some((f) => f.t === "actor_spawn"), "the first spawn");
-    fake.pmCommand(7, 12, "stop");
-    await waitFor(() => fake?.received.find((f) => f.t === "run_end"), "run_end", 6000);
-    await new Promise((r) => setTimeout(r, 300));
-    expect(fake.received.filter((f) => f.t === "actor_spawn")).toHaveLength(1);
-    expect(booted.sidecar.manager?.runCount).toBe(0);
+    const { fake: hotel, clock, sidecar: side } = await bootOnManualClock({ versions: { 31: fixed } });
+    expect(spawned(hotel)).toEqual(["Duda"]);
+    hotel.pmCommand(7, 12, "stop");
+    await pumpUntil(clock, () => hotel.received.find((f) => f.t === "run_end"), "run_end", 4000);
+    // Their turns come and go with nobody left to walk in.
+    await clock.advance(20_000);
+    expect(spawned(hotel)).toEqual(["Duda"]);
+    expect(side.manager?.runCount).toBe(0);
   }, 30_000);
 });
