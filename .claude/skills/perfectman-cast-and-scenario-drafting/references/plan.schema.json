@@ -1,0 +1,189 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://perfectman.local/schema/dramatic-plan.v1.json",
+  "title": "DramaticPlan",
+  "description": "Sidecar next to a scenario.md. Perfectman never reads it. It carries the tactic, status and emotion layer that the scenario frontmatter has no field for, and the runtime skill reads it. Adapted from DramaticSceneGenerationSchema (GOTE, Johnstone status, CHAE) to what Habbo can render.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "language", "render_mode", "scene_metadata", "stage_frame", "characters", "dramatic_beats", "drama", "scene_cuts", "reference_beats"],
+  "properties": {
+    "schema_version": { "const": 1 },
+    "language": {
+      "type": "string",
+      "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$",
+      "description": "BCP-47 tag of the authored prose (es, pt-BR, en...). Any language. The scenario and persona frontmatter `language` is separate and may only be en or pt-BR (language-detect.ts)."
+    },
+    "render_mode": {
+      "enum": ["staged", "ideal"],
+      "default": "staged",
+      "description": "staged: every beat is playable with the 18 verbs and step primitives. ideal: beats may carry only an ideal_action that no verb renders."
+    },
+    "scene_metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "logline", "given_circumstances", "macro_conflict", "setting", "props", "time_of_day", "target_beat_count", "export_format"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "logline": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "given_circumstances": { "type": "string", "minLength": 1, "maxLength": 1200, "description": "Stanislavski: history, place, what just happened." },
+        "macro_conflict": { "type": "string", "minLength": 1, "maxLength": 400 },
+        "setting": { "enum": ["rooftop", "stairwell", "elevator", "kitchen", "living", "lobby", "street", "office"] },
+        "props": {
+          "type": "array",
+          "maxItems": 12,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9-]{0,31}$" }
+        },
+        "time_of_day": { "type": "string", "maxLength": 40 },
+        "target_beat_count": { "type": "integer", "minimum": 1, "maximum": 20 },
+        "export_format": { "enum": ["NONE", "FOUNTAIN", "SAMUEL_FRENCH"], "default": "NONE" }
+      }
+    },
+    "stage_frame": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["audience_edge"],
+      "properties": {
+        "audience_edge": { "enum": ["N", "E", "S", "W"], "default": "S", "description": "The room edge nearest the spectate camera. Downstage is the row against it." },
+        "note": { "type": "string", "maxLength": 240 }
+      }
+    },
+    "characters": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 12,
+      "items": { "$ref": "#/$defs/character" }
+    },
+    "dramatic_beats": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": { "$ref": "#/$defs/beat" }
+    },
+    "drama": { "$ref": "#/$defs/drama" },
+    "scene_cuts": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["at_s", "reason"],
+        "properties": {
+          "at_s": { "type": "number", "minimum": 0, "maximum": 3600 },
+          "reason": { "type": "string", "minLength": 1, "maxLength": 40 }
+        }
+      }
+    },
+    "reference_beats": {
+      "type": "array",
+      "maxItems": 8,
+      "default": [],
+      "description": "Filled later by the knowledge base (queryReferenceBeats). Leave empty.",
+      "items": { "type": "object" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "drama": { "properties": { "may_die": { "minItems": 1 } }, "required": ["may_die"] } }, "required": ["drama"] },
+      "then": { "properties": { "scene_cuts": { "minItems": 1 } } }
+    }
+  ],
+  "$defs": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9_-]{0,31}$", "description": "Matches the scenario agentId. Never @human." },
+    "zone": { "enum": ["downstage_left", "downstage_center", "downstage_right", "mid_left", "center", "mid_right", "upstage_left", "upstage_center", "upstage_right"] },
+    "unit": { "type": "number", "minimum": 0, "maximum": 1 },
+    "verb": {
+      "enum": ["glare", "insult", "shove", "slap", "punch", "kill", "die", "recoil", "freeze_gasp", "hug", "kiss", "turn_back", "cry", "storm_off", "tableau", "restrain", "faint", "tend_fallen"]
+    },
+    "drama": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["max_rung", "may_target", "may_die", "permadeath"],
+      "properties": {
+        "max_rung": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "may_target": {
+          "type": "array",
+          "items": { "type": "array", "prefixItems": [{ "$ref": "#/$defs/id" }, { "$ref": "#/$defs/id" }], "minItems": 2, "maxItems": 2 }
+        },
+        "may_die": { "type": "array", "uniqueItems": true, "items": { "$ref": "#/$defs/id" } },
+        "permadeath": { "type": "boolean" }
+      }
+    },
+    "character": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["character_id", "name", "archetype_or_role", "baseline_status", "super_objective", "scene_goal", "obstacle", "expectation", "start_zone", "dramatic_function"],
+      "properties": {
+        "character_id": { "$ref": "#/$defs/id" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "archetype_or_role": { "type": "string", "minLength": 1, "maxLength": 60 },
+        "baseline_status": { "$ref": "#/$defs/unit", "description": "Johnstone. 0.0 lowest, 1.0 highest, before the scene starts." },
+        "super_objective": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "scene_goal": { "type": "string", "minLength": 1, "maxLength": 240, "description": "What they want from another person, in this scene." },
+        "obstacle": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "expectation": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "start_zone": { "$ref": "#/$defs/zone" },
+        "dramatic_function": { "enum": ["driver", "target", "observer", "chorus"] },
+        "language": { "type": "string", "pattern": "^[a-z]{2,3}(-[A-Za-z0-9]{2,8})*$", "description": "Only when it differs from the plan language (mixed-language casts)." }
+      }
+    },
+    "beat": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["beat_id", "at_s", "delivery", "active_character_id", "active_tactic_verb", "tactic_label", "emotion_vector", "status_transaction", "physical_action_tag", "act"],
+      "properties": {
+        "beat_id": { "type": "string", "pattern": "^b[0-9]{1,2}$" },
+        "at_s": { "type": "number", "minimum": 0, "maximum": 3600, "description": "Second of the run. For STEERED beats, the middle of the intended window." },
+        "delivery": { "enum": ["SCRIPTED", "STEERED"], "description": "SCRIPTED: becomes a scenario `beats:` entry. STEERED: carried by hidden objectives, triggers and priorEvents, never forced." },
+        "active_character_id": { "$ref": "#/$defs/id" },
+        "target_character_id": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+        "observer_character_id": { "oneOf": [{ "$ref": "#/$defs/id" }, { "type": "null" }] },
+        "active_tactic_verb": { "type": "string", "pattern": "^to [a-z]+( [a-z]+){0,2}$", "description": "English infinitive, always canonical (to intimidate, to plead)." },
+        "tactic_label": { "type": "string", "minLength": 1, "maxLength": 60, "description": "The same tactic in the plan language." },
+        "emotion_vector": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["primary_emotion", "intensity"],
+          "properties": {
+            "primary_emotion": { "enum": ["anger", "contempt", "fear", "sadness", "shame", "joy", "love", "relief", "surprise", "jealousy", "resolve", "neutral"] },
+            "secondary_emotion": { "enum": ["anger", "contempt", "fear", "sadness", "shame", "joy", "love", "relief", "surprise", "jealousy", "resolve", "neutral"] },
+            "intensity": { "$ref": "#/$defs/unit" }
+          }
+        },
+        "status_transaction": { "enum": ["RAISE_STATUS", "LOWER_STATUS", "MAINTAIN_STATUS", "COLLAPSE_STATUS"] },
+        "status_delta": { "enum": ["HIGH_TO_LOW", "LOW_TO_HIGH", "EQUAL_STALEMATE", "EQUALIZE", "HIGH_STABLE", "LOW_STABLE"], "description": "The active character's own movement in this beat, against the target. EQUALIZE: ends level with the target. Optional." },
+        "physical_action_tag": { "enum": ["NONE", "KILLING", "KISSING", "HUGGING", "CRYING", "VIOLENT_PUSH", "VIOLENT_STRIKE", "PHYSICAL_RETREAT"] },
+        "act": { "oneOf": [{ "$ref": "#/$defs/verb" }, { "type": "null" }], "description": "One of the 18 verbs, or null for a dialogue-only or staged beat." },
+        "intensity": { "$ref": "#/$defs/unit" },
+        "skip": { "type": "boolean", "default": false, "description": "Authored ladder skip. Needs drama.max_rung >= the verb rung." },
+        "staged_as": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["steps", "note"],
+              "properties": {
+                "steps": { "type": "array", "minItems": 1, "maxItems": 8, "items": { "enum": ["move.approach", "move.go_to", "move.follow", "move.leave", "move.stay", "posture", "gesture", "expression", "face", "chat", "order", "scene_cut"] }, "description": "Only what an actor's body block and the scenario file can express today. Hotel step primitives (forced_step, motion, camera...) belong to the verbs and are not authorable." },
+                "note": { "type": "string", "maxLength": 240 }
+              }
+            }
+          ]
+        },
+        "ideal_action": { "oneOf": [{ "type": "string", "maxLength": 240 }, { "type": "null" }], "description": "What the story wants when no verb renders it. Never played." },
+        "subtext_prompt": { "type": "string", "maxLength": 240 }
+      },
+      "allOf": [
+        { "if": { "properties": { "physical_action_tag": { "const": "KILLING" } }, "required": ["physical_action_tag"] }, "then": { "anyOf": [{ "properties": { "act": { "const": "kill" } } }, { "required": ["staged_as"], "properties": { "staged_as": { "type": "object" } } }] } },
+        { "if": { "properties": { "physical_action_tag": { "const": "KISSING" } }, "required": ["physical_action_tag"] }, "then": { "anyOf": [{ "properties": { "act": { "const": "kiss" } } }, { "required": ["staged_as"], "properties": { "staged_as": { "type": "object" } } }] } },
+        { "if": { "properties": { "physical_action_tag": { "const": "HUGGING" } }, "required": ["physical_action_tag"] }, "then": { "anyOf": [{ "properties": { "act": { "const": "hug" } } }, { "required": ["staged_as"], "properties": { "staged_as": { "type": "object" } } }] } },
+        { "if": { "properties": { "physical_action_tag": { "const": "CRYING" } }, "required": ["physical_action_tag"] }, "then": { "anyOf": [{ "properties": { "act": { "const": "cry" } } }, { "required": ["staged_as"], "properties": { "staged_as": { "type": "object" } } }] } },
+        { "if": { "properties": { "physical_action_tag": { "const": "VIOLENT_PUSH" } }, "required": ["physical_action_tag"] }, "then": { "anyOf": [{ "properties": { "act": { "const": "shove" } } }, { "required": ["staged_as"], "properties": { "staged_as": { "type": "object" } } }] } },
+        { "if": { "properties": { "physical_action_tag": { "const": "VIOLENT_STRIKE" } }, "required": ["physical_action_tag"] }, "then": { "anyOf": [{ "properties": { "act": { "enum": ["slap", "punch"] } } }, { "required": ["staged_as"], "properties": { "staged_as": { "type": "object" } } }] } },
+        { "if": { "properties": { "physical_action_tag": { "const": "PHYSICAL_RETREAT" } }, "required": ["physical_action_tag"] }, "then": { "anyOf": [{ "properties": { "act": { "enum": ["turn_back", "storm_off"] } } }, { "required": ["staged_as"], "properties": { "staged_as": { "type": "object" } } }] } },
+        { "if": { "properties": { "act": { "enum": ["glare", "insult", "shove", "slap", "punch", "kill", "hug", "kiss", "turn_back", "restrain", "tend_fallen"] } }, "required": ["act"] }, "then": { "required": ["target_character_id"], "properties": { "target_character_id": { "$ref": "#/$defs/id" } } } },
+        { "if": { "properties": { "act": { "enum": ["die", "recoil", "freeze_gasp", "cry", "storm_off", "tableau", "faint"] } }, "required": ["act"] }, "then": { "properties": { "target_character_id": { "type": "null" } } } },
+        { "if": { "properties": { "act": { "type": "null" } }, "required": ["act"] }, "then": { "properties": { "delivery": { "const": "STEERED" } } } }
+      ]
+    }
+  }
+}
