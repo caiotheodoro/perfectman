@@ -55,7 +55,9 @@ const validReply = {
   notes: "short, clean beat",
 };
 
-function fakeProvider(model: string, replies: Array<string | Error>): DramaJudgeProvider & { calls: DramaJudgeRequest[] } {
+type FakeReply = string | { content: string; finishReason?: string } | Error;
+
+function fakeProvider(model: string, replies: FakeReply[]): DramaJudgeProvider & { calls: DramaJudgeRequest[] } {
   const calls: DramaJudgeRequest[] = [];
   return {
     model,
@@ -251,6 +253,55 @@ describe("judgeDramaClip", () => {
     };
     const label = await judgeDramaClip({ ...base(), provider: fakeProvider("acme/vision-1", [JSON.stringify(reply)]) });
     expect(label.scores.restraint.score).toBe(4);
+  });
+
+  it("asks for 2500 tokens by default", async () => {
+    const provider = fakeProvider("acme/vision-1", [JSON.stringify(validReply)]);
+    await judgeDramaClip({ ...base(), provider });
+    expect(provider.calls[0]!.maxTokens).toBe(2500);
+  });
+
+  it("uses the provider's own token limit when the caller gives none", async () => {
+    const provider = { ...fakeProvider("acme/vision-1", [JSON.stringify(validReply)]), maxTokens: 1200 };
+    await judgeDramaClip({ ...base(), provider });
+    expect(provider.calls[0]!.maxTokens).toBe(1200);
+  });
+
+  describe("a reply cut off at the token limit", () => {
+    const cut = { content: '{"scores": {"restraint": {"score": 4, "evidence": "calm at 5', finishReason: "length" };
+
+    it("retries once with double the limit, says why in the stricter prompt, and returns the complete reply", async () => {
+      const provider = fakeProvider("acme/vision-1", [cut, JSON.stringify(validReply)]);
+      const label = await judgeDramaClip({ ...base(), provider });
+      expect(label.scores.restraint.score).toBe(4);
+      expect(provider.calls.map((c) => c.maxTokens)).toEqual([2500, 5000]);
+      expect(provider.calls[1]!.system).toContain("cut off at 2500 tokens");
+      expect(provider.calls[1]!.system).not.toContain("not valid JSON");
+    });
+
+    it("caps the bigger limit at 8000 and never lowers a limit above it", async () => {
+      const first = fakeProvider("acme/vision-1", [cut, JSON.stringify(validReply)]);
+      await judgeDramaClip({ ...base(), provider: first, maxTokens: 6000 });
+      expect(first.calls.map((c) => c.maxTokens)).toEqual([6000, 8000]);
+
+      const big = fakeProvider("acme/vision-1", [cut, JSON.stringify(validReply)]);
+      await judgeDramaClip({ ...base(), provider: big, maxTokens: 10000 });
+      expect(big.calls.map((c) => c.maxTokens)).toEqual([10000, 10000]);
+    });
+
+    it("names the cut-off and the variable to raise when the retry is cut off too", async () => {
+      const provider = fakeProvider("acme/vision-1", [cut, cut]);
+      const err = (await judgeDramaClip({ ...base(), provider }).catch((e: unknown) => e)) as DramaJudgeReplyError;
+      expect(err).toBeInstanceOf(DramaJudgeReplyError);
+      expect(err.message).toContain("the judge reply was cut off at 5000 tokens: raise DRAMA_JUDGE_MAX_TOKENS");
+      expect(err.message).not.toContain("not valid JSON");
+    });
+
+    it("does not double the limit for an ordinary malformed reply", async () => {
+      const provider = fakeProvider("acme/vision-1", [{ content: "Sure!", finishReason: "stop" }, JSON.stringify(validReply)]);
+      await judgeDramaClip({ ...base(), provider });
+      expect(provider.calls.map((c) => c.maxTokens)).toEqual([2500, 2500]);
+    });
   });
 
   it("does not retry a provider failure: the error comes back as it was", async () => {

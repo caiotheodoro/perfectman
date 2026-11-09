@@ -47,6 +47,20 @@ describe("drama-judge CLI usage and guards (no ffmpeg, no model)", () => {
     expect(h.err.join("\n")).toContain("Usage:");
   });
 
+  it("documents the header and token variables in the usage text", async () => {
+    const h = harness({ DRAMA_JUDGE_MODEL: "fake/judge" }, fakeModel({}));
+    await runDramaJudgeCli([], h.deps);
+    const text = h.err.join("\n");
+    for (const name of ["DRAMA_JUDGE_HEADERS", "DRAMA_JUDGE_SESSION_HEADER", "DRAMA_JUDGE_MAX_TOKENS", "x-opencode-session"]) expect(text).toContain(name);
+  });
+
+  it("exits 2 on bad DRAMA_JUDGE_HEADERS, without echoing a value", async () => {
+    const h = harness({ DRAMA_JUDGE_MODEL: "fake/judge", DRAMA_JUDGE_HEADERS: '{"Authorization":"SECRET-VALUE"}' }, fakeModel({}));
+    expect(await runDramaJudgeCli(["--clip", "c.mp4", "--run", FIXTURE_RUN], h.deps)).toBe(2);
+    expect(h.err.join("\n")).toContain("DRAMA_JUDGE_HEADERS");
+    expect(h.err.join("\n")).not.toContain("SECRET-VALUE");
+  });
+
   it("exits 2 when the calibrate flags are incomplete, naming the missing one", async () => {
     const h = harness({ DRAMA_JUDGE_MODEL: "fake/judge" }, fakeModel({}));
     expect(await runDramaJudgeCli(["--calibrate", "--clips-manifest", "m.json", "--labels", "labels"], h.deps)).toBe(2);

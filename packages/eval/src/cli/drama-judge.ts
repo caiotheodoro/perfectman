@@ -34,7 +34,11 @@ const USAGE = [
   "  drama-judge --clip <clip.mp4> --run <run-dir> [--out label.json] [--model id] [--actor-model id]... [--clip-id id] [--clip-start-s n] [--sheets-dir dir]",
   "  drama-judge --calibrate --clips-manifest <manifest.json> --labels <human-labels-dir> --judge-out <dir> [--model id] [--actor-model id]...",
   "Environment: DRAMA_JUDGE_MODEL (judge model, no default), DRAMA_ACTOR_MODELS (comma separated), DRAMA_JUDGE_BASE_URL,",
-  "  key from DRAMA_JUDGE_API_KEY, HOTEL_JUDGE_API_KEY or OPENROUTER_API_KEY, DRAMA_JUDGE_MAX_USD (spend cap, default 1).",
+  "  key from DRAMA_JUDGE_API_KEY, HOTEL_JUDGE_API_KEY or OPENROUTER_API_KEY, DRAMA_JUDGE_MAX_USD (spend cap, default 1),",
+  "  DRAMA_JUDGE_MAX_TOKENS (reply limit, default 2500; a cut-off reply is retried once with double, up to 8000), DRAMA_JUDGE_TIMEOUT_MS.",
+  "  DRAMA_JUDGE_HEADERS (optional JSON object of extra string headers; Authorization, Content-Type, Host and newlines are refused).",
+  "  DRAMA_JUDGE_SESSION_HEADER (optional header name that carries one pm-judge-<random> id for the whole run, e.g. x-opencode-session).",
+  "  OpenCode Go: DRAMA_JUDGE_BASE_URL=https://opencode.ai/zen/go/v1 DRAMA_JUDGE_SESSION_HEADER=x-opencode-session",
 ].join("\n");
 
 function defaultMakeProvider(config: DramaJudgeConfig, meter: SpendMeter): DramaJudgeProvider {

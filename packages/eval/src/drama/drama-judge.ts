@@ -28,10 +28,18 @@ export type DramaJudgeRequest = {
   maxTokens: number;
 };
 
+/**
+ * A reply: the text, or the text with the endpoint's `finish_reason`. `"length"` means the model hit
+ * `maxTokens` and the text is cut off.
+ */
+export type DramaJudgeCompletion = string | { content: string; finishReason?: string };
+
 /** A vision model behind some transport. Tests use fakes; the CLI uses `createChatCompletionProvider`. */
 export type DramaJudgeProvider = {
   model: string;
-  complete(request: DramaJudgeRequest): Promise<string>;
+  /** Token limit for a call when the caller gives none (the CLI's `DRAMA_JUDGE_MAX_TOKENS`). */
+  maxTokens?: number;
+  complete(request: DramaJudgeRequest): Promise<DramaJudgeCompletion>;
 };
 
 export type JudgeDramaClipInput = DramaPromptInput & {
@@ -136,10 +144,13 @@ function toLabel(reply: DramaReply, clipId: string, model: string, labeledAt: st
   });
 }
 
-const strictSuffix = (reason: string): string =>
-  `\n\nYour previous reply was not valid: ${reason.slice(0, 300)}. Reply with the JSON object only, starting with { and ending with }. Include all six axes; each score is an integer 1-5 or null, and every scored axis has an evidence string that cites a clip timestamp, an act_id or a frame number.`;
+const strictSuffix = (reason: string, truncated: boolean): string =>
+  `\n\nYour previous reply was not valid: ${reason.slice(0, 300)}.${truncated ? " Keep every evidence sentence short." : ""} Reply with the JSON object only, starting with { and ending with }. Include all six axes; each score is an integer 1-5 or null, and every scored axis has an evidence string that cites a clip timestamp, an act_id or a frame number.`;
 
-const DEFAULT_MAX_TOKENS = 900;
+/** Six axes, each with an evidence sentence of up to a few hundred characters, plus codes and notes: well over 900 tokens at worst. */
+export const DEFAULT_DRAMA_JUDGE_MAX_TOKENS = 2500;
+/** The retry after a cut-off reply doubles the limit up to this. */
+const TRUNCATION_RETRY_CAP = 8000;
 
 /**
  * Judges one clip. Throws `JudgeSeparationError` before any call when the judge is an actor model, and
@@ -151,22 +162,28 @@ export async function judgeDramaClip(input: JudgeDramaClipInput): Promise<ClipLa
   const prompt = buildDramaJudgePrompt(input);
   const images: ChatCompletionImage[] = prompt.images.map((ref) => ({ mediaType: ref.mediaType, base64: readFileSync(ref.path).toString("base64") }));
   const actIds = input.events.flatMap((e) => (e.kind === "act_started" ? [e.actId] : []));
-  const maxTokens = input.maxTokens ?? DEFAULT_MAX_TOKENS;
+  let maxTokens = input.maxTokens ?? input.provider.maxTokens ?? DEFAULT_DRAMA_JUDGE_MAX_TOKENS;
 
   let reason = "";
   let raw = "";
+  let truncated = false;
   for (let attempt = 1; attempt <= 2; attempt++) {
-    raw = await input.provider.complete({
-      system: attempt === 1 ? prompt.system : prompt.system + strictSuffix(reason),
+    // A reply cut off at the limit gets one retry with a bigger one (twice as much, up to the cap, never below what it had).
+    if (attempt === 2 && truncated) maxTokens = Math.max(maxTokens, Math.min(TRUNCATION_RETRY_CAP, maxTokens * 2));
+    const reply = await input.provider.complete({
+      system: attempt === 1 ? prompt.system : prompt.system + strictSuffix(reason, truncated),
       user: prompt.user,
       images,
       temperature: 0,
       maxTokens,
     });
+    raw = typeof reply === "string" ? reply : reply.content;
+    const finishReason = typeof reply === "string" ? undefined : reply.finishReason;
     try {
       return toLabel(parseReply(raw, actIds), input.clipId, input.provider.model, input.labeledAt ?? new Date().toISOString());
     } catch (err) {
-      reason = err instanceof Error ? err.message : String(err);
+      truncated = finishReason === "length";
+      reason = truncated ? `the judge reply was cut off at ${maxTokens} tokens: raise DRAMA_JUDGE_MAX_TOKENS` : err instanceof Error ? err.message : String(err);
     }
   }
   throw new DramaJudgeReplyError(reason, 2, raw.slice(0, 2000));
