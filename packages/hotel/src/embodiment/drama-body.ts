@@ -1,4 +1,4 @@
-import type { ActVerb, AgentState, BodyIntent, BlockedReason, Presence } from "@perfectman/shared";
+import type { ActVerb, AgentState, BodyIntent, BlockedReason, Presence, RoomView } from "@perfectman/shared";
 import { ACT_TARGET_MODE } from "@perfectman/shared";
 import { rememberAct, rememberDeath } from "@perfectman/engine";
 import type { ActFacts, ActLang } from "@perfectman/engine";
@@ -340,11 +340,19 @@ export class DramaBody implements DramaFrameSink {
   /** GATE-7: a contact verb needs the two beside each other; walk up, then ask again once (the executor's own arrival releases nothing here, the next plan does). */
   private walkCloser(ref: string, proposal: ActProposal, base: PlanInput): PlannedCommand[] {
     const targetRef = proposal.with === undefined ? undefined : this.d.mirror.refOfAvatar(proposal.with);
-    const target = targetRef ? this.presence(targetRef) : undefined;
-    const space = base.space.room;
-    if (!targetRef || !target || !space) return [];
+    if (!targetRef || !this.presence(targetRef) || !base.space.room) return [];
     this.retry.set(ref, { proposal, target: targetRef, until: this.d.clock.now() + RETRY_MS });
-    const to = pickTile({ room: space, self: ref, near: target.tile, radius: 1, awayFrom: { tile: target.tile, ideal: 1 }, rng: base.rng });
+    return this.approach(ref, targetRef, base.space.room, base.rng);
+  }
+
+  /**
+   * The walk that puts `ref` on a free tile beside `targetRef`: the one `walkCloser` makes for the model's `too_far` act, and the one the
+   * `BeatPlayer` makes for an authored beat's (habbo#41). Empty when either is not placed or no tile beside the target is free. Sends nothing.
+   */
+  approach(ref: string, targetRef: string, room: RoomView | undefined, rng: () => number): PlannedCommand[] {
+    const target = this.presence(targetRef);
+    if (!target || !room) return [];
+    const to = pickTile({ room, self: ref, near: target.tile, radius: 1, awayFrom: { tile: target.tile, ideal: 1 }, rng });
     return to ? [{ agentId: ref, cmd: "walk", to, plan: `drama:${ref}:${this.d.clock.now().toString(36)}` }] : [];
   }
 

@@ -15,6 +15,8 @@ export type BeatReport = {
   outcome: "played" | "dropped";
   /** `approve` or `sent`; or `inert`, `past`, `not_placed`, `target_gone`, `free_play`, `may_die`, `kill_budget`, `veto:<reason>`, `unsent:<cause>`, or the director's own pass (`actor_busy`, `actor_dead`, `posture`). */
   why: string;
+  /** Why a distance veto is final: `retry_window_expired` (the pair never came adjacent) or `scene_cut` (the scene ended while they walked). Absent otherwise. */
+  detail?: "retry_window_expired" | "scene_cut";
   decision?: DramaDecision;
   advance?: SceneAdvance;
 };
@@ -28,6 +30,11 @@ export type BeatPlayerDeps = {
   drama: RunDrama;
   /** The wire id of a cast member (the avatar the run spawned for that agent id), or undefined while it has none. */
   wireOf(ref: string): number | undefined;
+  /**
+   * Walks the actor beside the target (the planner's own `walkCloser`: a free tile next to the target, a `walk` command to it). True when a walk was
+   * ordered, false when there was nowhere to go. Absent: a beat that is `too_far` cannot be helped and is dropped at once.
+   */
+  walkCloser?(actor: string, target: string): boolean;
   /** The run clock's zero: the second a beat's `at_ms` counts from. Default: the clock when the player is built. */
   startedAt?: number;
   /** Beat ids already played, for a player rebuilt over the same body (a resume). They are never played again. */
@@ -39,12 +46,17 @@ export type BeatPlayerDeps = {
 
 type Pending = { timer: TimerHandle | undefined };
 
+/** A contact beat that was `too_far` and is being walked into reach: when it started waiting, in which scene, and when the walk was last ordered. */
+type Walking = { since: number; scene: string; walkedAt: number };
+
 /**
  * The scenario's script, played by the production path (errata P4-01). The contract has the director veto a model's `kill` by design (LAD-5:
  * mortality is authored), so in a run a kill happens only here: a beat of `body.beats` is scheduled on the run's clock and handed to the
  * `DramaDirector` as a scenario-origin act (`origin:"scenario"`, `authored_skip` where the author wrote `skip`). It is still subject to
  * `may_target`, `may_die`, `max_rung` and every hotel gate (SCN-3, SCN-4, GATE-1 to GATE-10); the director runs them. A beat they veto is
- * logged and dropped, never retried: the one wait is for an actor that is busy with an act of its own, which is not a gate. A cut goes to
+ * logged and dropped, never retried: the waits are for an actor that is busy with an act of its own, which is not a gate, and for a pair that is
+ * too far apart (GATE-7, habbo#41): that beat walks the pair together (`walkCloser`) and is asked again for `walkWindowMs`, then dropped with
+ * `retry_window_expired`, or dropped at once with `scene_cut` if the scene ended meanwhile (a kill is never carried into the next scene). A cut goes to
  * `advanceScene`, which keeps the scene's 20 s floor (SCENE-5) and the pending window (SCENE-4); a cut the floor or the window refuses waits
  * and is asked again, and one the hotel dropped silently is asked again a bounded number of times.
  *
@@ -58,6 +70,7 @@ export class BeatPlayer {
   private readonly done = new Set<string>();
   private readonly timers = new Map<string, Pending>();
   private readonly killedIn = new Set<string>();
+  private readonly walking = new Map<string, Walking>();
   /** Cuts that were sent and whose scene_cut has not been seen yet. */
   private readonly confirming = new Set<string>();
   private stopped = false;
@@ -92,6 +105,7 @@ export class BeatPlayer {
     this.stopped = true;
     for (const p of this.timers.values()) p.timer?.cancel();
     this.timers.clear();
+    this.walking.clear();
   }
 
   // ---- one beat -----------------------------------------------------------------------------------------------
@@ -124,6 +138,9 @@ export class BeatPlayer {
   private playAct(beat: Extract<ScenarioBeat, { kind: "act" }>, port: DramaDecisionPort, attempt: number): void {
     const actor = this.d.wireOf(beat.actor);
     const target = beat.with === undefined ? undefined : this.d.wireOf(beat.with);
+    // A beat that was walking when the scene was cut is over: not asked in the next scene, even if the pair has come together by now.
+    const walked = this.walking.get(beat.id);
+    if (walked && walked.scene !== port.scene) return this.settle(beat, "dropped", "veto:too_far", { detail: "scene_cut" });
     if (actor === undefined) return this.settle(beat, "dropped", "not_placed");
     if (beat.with !== undefined && target === undefined) return this.settle(beat, "dropped", "target_gone");
     if (beat.verb === "kill") {
@@ -142,6 +159,7 @@ export class BeatPlayer {
         if (beat.verb === "kill") this.killedIn.add(port.scene);
         return this.settle(beat, "played", "approve", { decision });
       case "veto":
+        if (decision.reason === "too_far") return this.closeIn(beat, port, attempt, decision);
         return this.settle(beat, "dropped", `veto:${decision.reason}`, { decision });
       case "pass":
         // The actor is in the middle of an act of its own: wait for it, a little. Nothing was asked of any gate yet.
@@ -154,6 +172,23 @@ export class BeatPlayer {
         return unhandled;
       }
     }
+  }
+
+  /**
+   * GATE-7 vetoed an authored contact verb: the pair is apart. Walk them together and ask again, until they are adjacent (the gate then says yes), the
+   * window ends, or the scene is cut. Only a distance veto comes here; no other gate is cured by walking, so none is retried.
+   */
+  private closeIn(beat: Extract<ScenarioBeat, { kind: "act" }>, port: DramaDecisionPort, attempt: number, decision: DramaDecision): void {
+    const now = this.d.clock.now();
+    const walk = this.walking.get(beat.id) ?? { since: now, scene: port.scene, walkedAt: Number.NEGATIVE_INFINITY };
+    // Without a way to walk, or without a target to walk to, a distance veto is as final as any other.
+    if (!this.d.walkCloser || beat.with === undefined) return this.settle(beat, "dropped", "veto:too_far", { decision });
+    if (now - walk.since >= this.tuning.walkWindowMs) return this.settle(beat, "dropped", "veto:too_far", { decision, detail: "retry_window_expired" });
+    if (now - walk.walkedAt >= this.tuning.walkRepathMs && this.d.walkCloser(beat.actor, beat.with)) walk.walkedAt = now;
+    this.walking.set(beat.id, walk);
+    // Never past the window's end: the last ask is made when it closes, so the drop is not a retry's delay late.
+    const wait = Math.min(this.tuning.walkRetryMs, Math.max(0, walk.since + this.tuning.walkWindowMs - now));
+    this.schedule(beat, wait, () => this.play(beat, attempt));
   }
 
   private playCut(beat: Extract<ScenarioBeat, { kind: "cut" }>, port: DramaDecisionPort, attempt: number): void {
@@ -197,14 +232,15 @@ export class BeatPlayer {
   }
 
   /** The beat is settled, once: played or dropped, and no timer of it is left. */
-  private settle(beat: ScenarioBeat, outcome: BeatReport["outcome"], why: string, extra: Pick<BeatReport, "decision" | "advance"> = {}): void {
+  private settle(beat: ScenarioBeat, outcome: BeatReport["outcome"], why: string, extra: Pick<BeatReport, "decision" | "advance" | "detail"> = {}): void {
     this.done.add(beat.id);
+    this.walking.delete(beat.id);
     if (!this.confirming.has(beat.id)) {
       this.timers.get(beat.id)?.timer?.cancel();
       this.timers.delete(beat.id);
     }
     const report: BeatReport = { beat, at: this.d.clock.now(), outcome, why, ...extra };
-    if (outcome === "dropped") this.log.info("authored beat dropped", { beat: beat.id, kind: beat.kind, why });
+    if (outcome === "dropped") this.log.info("authored beat dropped", { beat: beat.id, kind: beat.kind, why, ...(extra.detail ? { detail: extra.detail } : {}) });
     this.d.onReport?.(report);
   }
 }
