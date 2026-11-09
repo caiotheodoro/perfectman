@@ -100,7 +100,7 @@ Breaking point: o Otávio repetir o horário do tribunal
 ## Agent: otavio
 
 ### Hidden Objective
-Entregar a cópia dos extratos sem ser impedido e sem trair o sigilo do testamento (resource: a_copia)
+Entregar a cópia dos extratos sem ser impedido e sem trair o sigilo do testamento (resource: a_copia_dos_extratos)
 Constraint: não pode revelar o testamento nem sair da casa antes da meia-noite
 Cost of exposure: perde a licença e a Helena
 Breaking point: o Ricardo chegar perto demais
@@ -108,7 +108,7 @@ Breaking point: o Ricardo chegar perto demais
 ## Agent: sofia
 
 ### Hidden Objective
-Ficar perto do Otávio, o único adulto que a trata como gente (resource: o_unico_aliado)
+Ficar perto do Otávio, o único adulto que a trata como gente (resource: a_noite)
 Constraint: não pode contar o que sabe do Ricardo
 Cost of exposure: fica sem ninguém
 Breaking point: o Ricardo olhar para ela
@@ -116,7 +116,7 @@ Breaking point: o Ricardo olhar para ela
 ## Agent: beatriz
 
 ### Hidden Objective
-Descobrir o que o Otávio entrega ao tribunal (resource: a_prova)
+Descobrir o que o Otávio entrega ao tribunal (resource: a_noite)
 Constraint: não pode perguntar diretamente
 Cost of exposure: a família a vê como cúmplice do marido
 Breaking point: o Otávio ser calado
@@ -124,7 +124,7 @@ Breaking point: o Otávio ser calado
 ## Agent: helena
 
 ### Hidden Objective
-Manter a festa de pé até a meia-noite (resource: a_festa)
+Manter a festa de pé até a meia-noite (resource: a_noite)
 Constraint: não pode demonstrar medo
 Cost of exposure: a cidade comenta a família por anos
 Breaking point: alguém gritar

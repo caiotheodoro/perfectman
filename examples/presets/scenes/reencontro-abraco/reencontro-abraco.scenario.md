@@ -79,7 +79,7 @@ A Sofia desce do carro e olha para a varanda antes de entrar.
 ## Agent: sofia
 
 ### Hidden Objective
-Ser abraçada por todos antes de contar por que voltou (resource: a_volta)
+Ser abraçada por todos antes de contar por que voltou (resource: o_primeiro_abraco)
 Constraint: não pode contar a verdade da volta nem a doença da mãe
 Cost of exposure: volta a ser a menina de quem se tem pena
 Breaking point: a Helena perguntar por quanto tempo ela fica
@@ -103,7 +103,7 @@ Breaking point: a Sofia olhar para ele por mais de um segundo
 ## Agent: otavio
 
 ### Hidden Objective
-Esperar a vez dele sem atrapalhar ninguém (resource: a_espera)
+Esperar a vez dele sem atrapalhar ninguém (resource: o_perdao)
 Constraint: não pode dizer o quanto sentiu falta
 Cost of exposure: vira o velho emotivo da casa
 Breaking point: a Sofia chamá-lo de pai

@@ -77,7 +77,7 @@ A Sofia precisa respirar fundo antes de responder à Dona Helena.
 ## Agent: sofia
 
 ### Hidden Objective
-Não desmoronar diante da família inteira (resource: a_dignidade)
+Não desmoronar diante da família inteira (resource: o_lugar_na_casa)
 Constraint: não pode chorar nem pedir
 Cost of exposure: perde a casa e a única família que teve
 Breaking point: a Helena repetir a frase
@@ -85,7 +85,7 @@ Breaking point: a Helena repetir a frase
 ## Agent: helena
 
 ### Hidden Objective
-Deixar claro, de uma vez e em público, quem pertence à casa (resource: o_motivo_do_testamento)
+Deixar claro, de uma vez e em público, quem pertence à casa (resource: o_lugar_na_casa)
 Constraint: não pode explicar o motivo da exclusão
 Cost of exposure: a família vê que ela está protegendo outra pessoa
 Breaking point: alguém perguntar por quê
@@ -101,7 +101,7 @@ Breaking point: a Sofia olhar para ele pedindo ajuda
 ## Agent: ricardo
 
 ### Hidden Objective
-Ficar calado enquanto a mãe humilha a Sofia, para não se expor (resource: o_silencio)
+Ficar calado enquanto a mãe humilha a Sofia, para não se expor (resource: o_documento)
 Constraint: não pode defender a Sofia nem olhar para ela
 Cost of exposure: a Beatriz descobre o caso
 Breaking point: a Sofia dizer o nome dele
@@ -109,7 +109,7 @@ Breaking point: a Sofia dizer o nome dele
 ## Agent: beatriz
 
 ### Hidden Objective
-Ver quem defende a Sofia e quem se cala (resource: a_prova_do_caso)
+Ver quem defende a Sofia e quem se cala (resource: o_documento)
 Constraint: não pode demonstrar que sabe do caso
 Cost of exposure: perde a vantagem de saber primeiro
 Breaking point: o Ricardo sair da sala

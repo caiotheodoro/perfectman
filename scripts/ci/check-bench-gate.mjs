@@ -4,13 +4,14 @@
  *
  * Fails (exit 1) when:
  *  - any scenario run failed outright, or
- *  - the aggregate signal pass rate is below 1.0.
+ *  - the aggregate signal pass rate is below 1.0, or
+ *  - the drama bench (report.drama, mock runs) has a failing scenario, or is missing when --require-drama is passed.
  *
  * The repo's iteration discipline requires expected signals to hold at
  * 100%; rule-judge axis scores are advisory until the judge passes its
  * kappa calibration gate, so they are NOT gated here.
  *
- * Usage: node scripts/ci/check-bench-gate.mjs [--skip-signal-gate] <bench-report.json> [expectedIdsCsv]
+ * Usage: node scripts/ci/check-bench-gate.mjs [--skip-signal-gate] [--require-drama] <bench-report.json> [expectedIdsCsv]
  *
  * --skip-signal-gate: assert only structural sanity (no scenario run
  * hard-failed, expected ids present). Used for real-model runs where
@@ -23,6 +24,7 @@
 import { readFileSync } from "node:fs";
 
 const skipSignalGate = process.argv.includes("--skip-signal-gate");
+const requireDrama = process.argv.includes("--require-drama");
 const positional = process.argv.slice(2).filter(a => !a.startsWith("--"));
 const path = positional[0];
 if (!path) {
@@ -67,8 +69,24 @@ if (expectedIds.length > 0) {
   }
 }
 
+// The drama bench is its own gate: every scenario of the act contract must hold, and the roleplay numbers above never stand in for it.
+if (report.drama) {
+  const failed = (report.drama.perScenario ?? []).filter((s) => !s.passed);
+  if (failed.length > 0) {
+    failures.push(
+      `${failed.length} drama bench scenario(s) failed:\n    ` +
+        failed
+          .map((s) => `${s.id}: ${s.failed ?? ""}${(s.probesFailed ?? []).length ? ` probes ${s.probesFailed.join(", ")};` : ""}${(s.checks ?? []).filter((c) => !c.ok).map((c) => ` ${c.name}`).join(";")}`)
+          .join("\n    "),
+    );
+  }
+} else if (requireDrama) {
+  failures.push("the report has no drama bench (run bench with --drama, or a full mock run)");
+}
+
 console.log(
-  `bench gate: ${report.scenariosRun} scenarios, signal pass ${(report.signalPassRate * 100).toFixed(1)}%, probe pass ${(report.probePassRate * 100).toFixed(1)}%`,
+  `bench gate: ${report.scenariosRun} scenarios, signal pass ${(report.signalPassRate * 100).toFixed(1)}%, probe pass ${(report.probePassRate * 100).toFixed(1)}%` +
+    (report.drama ? `, drama bench ${report.drama.scenariosRun - report.drama.scenariosFailed}/${report.drama.scenariosRun}` : ""),
 );
 
 if (failures.length > 0) {

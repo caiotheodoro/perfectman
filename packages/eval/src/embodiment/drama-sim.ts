@@ -191,10 +191,10 @@ export function runDramaSim(config: SimConfig): SimResult {
     const ref = grid.humanEnter(String(h.id), h.name, String(ROOM), h.tile);
     space.assign(ref, h.id);
   }
-  log("out", { t: "run_start", run: RUN, room: ROOM, lease: LEASE, mode: "default", cap_actors: 12, admin: { id: 27, name: "a" } }, startMs - 100);
+  log("out", { t: "run_start", run: RUN, room: ROOM, scenario_version: 31, lease: LEASE, mode: "default", cap_actors: 12, admin: { id: 27, name: "a" } }, startMs - 100);
   config.actors.forEach((a, i) => {
     const t = grid.model().rooms.get(String(ROOM))?.occupants.get(a.ref)?.tile ?? [0, 0];
-    log("out", { t: "actor_spawned", run: RUN, room: ROOM, actor: slotOf.get(a.ref)!, ref: a.ref, cid: i + 1, x: t[0], y: t[1], dir: 2 }, startMs - 90 + i);
+    log("out", { t: "actor_spawned", room: ROOM, actor: slotOf.get(a.ref)!, ref: a.ref, cid: i + 1, x: t[0], y: t[1], dir: 2 }, startMs - 90 + i);
   });
 
   const actorRefs = config.actors.map((a) => a.ref);

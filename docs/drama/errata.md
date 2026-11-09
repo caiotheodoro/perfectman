@@ -159,6 +159,19 @@ Resolution words:
 | E-09 | section 3.6, section 12 | `dodged` and `declined` are separate outcomes but section 12 maps both chip answers to `decline` | **agreed**: the raw answer is kept next to the mapped one. |
 | E-10 | judge | A human target owes no reaction; the spec leaves it unstated for the judge | **agreed**: the hotel never sends an `act_reaction` for a human (H2-07). |
 
+### P4 (prompts, mock, presets, sim and bench: 8 readings)
+
+| Id | Rule | Defect or reading | Resolution |
+| --- | --- | --- | --- |
+| P4-01 | LAD-5, LAD-6, SCENE-2 | A model's `kill` is always vetoed `ladder` / `motive`: `kill` has no driver in the tuning (pinned by `drama-director-motive.test.ts`), and nothing in the sidecar sends `origin:"scenario"` or calls `Run.advanceScene`, so an authored kill and a scene cut have no player. | **open**: the sim plays the scene's `beats` (frontmatter, read by `drama:sim`) through `DramaDirector.decide` as `origin:"scenario"` and `advanceScene`. The mock proposes a kill when the scenario lets the victim die; the director refuses it, as designed. |
+| P4-02 | D6, act-rate | With the director's default tuning a resentful passive actor is offered a beat every 6 s (`origination.minGapMs`), and the verbs include `turn_back`, which has no cooldown: 8.6 acts a minute against the probe's 3. At 30 s the busiest preset still reads 3.8 to 5.7. | **open**: the sim and the bench run with `minGapMs` 60 000 (`SIM_TUNING`) and say so; the default is PI's to set. |
+| P4-03 | REA-9, DEATH-7 | An owed witness is locked until `act_done`, which for a `faint` comes after the fainted actor has stood up, so no witness can `tend_fallen` after a faint; after a kill the witnesses kneel from `act_done` on (about 5 s). | **open**: observed in `anuncio-do-desmaio` (witnesses gasp, nobody kneels) and `assassinato-na-festa` (they do). |
+| P4-04 | GATE-7, LAD-1 | A `too_far` veto walks the actor closer and asks again once, and is not reported in `body.blocked` (the other vetoes are), so a model cannot tell a blow that never happened from one that did; the next rung is then refused `ladder`. | **agreed**: the mock steps back on a `ladder` veto and only strikes from the `intimate` band. |
+| P4-05 | 11.5, ACT-8 | `DramaBody.proposalsOf` reads an `act` with a target on a solo verb as the solo verb without it; 11.5 says the `act` is dropped. | **open**: no frame is affected (the verb is solo either way). |
+| P4-06 | 11.5, NEG-2 | The task says the prompt states violence is gated by the scenario; 11.5 says it must not say violence needs permission, since the director decides. | **agreed**: the prompt says how far a scene may go is set by the scene and that a beat that does not happen leaves the words standing, and never uses "permission" (`drama-prompt.test.ts`). |
+| P4-07 | section 7.1 | The scene presets are markdown: the compiler ignores unknown frontmatter keys, so `drama` and `beats` ride there. The authoring service reads `drama` for a bundle (`compileSceneDrama`, agent ids or cast names) and compiles it into the body. | **fixed**: `drama-presets.test.ts`. |
+| P4-08 | FRM-4, PI-07 | The sim's `run_start` and `actor_spawned` frames are checked against the vendored schema; the hotel's own kit writes `lease`, `mode` and `run` on frames that carry none of them. | **agreed**: the sim writes what the schema says; `drama-sim.test.ts` validates every frame. |
+
 ## 4. P1's fixtures against the hotel's
 
 `drama-hotel-diff.test.ts` asserts these lists.

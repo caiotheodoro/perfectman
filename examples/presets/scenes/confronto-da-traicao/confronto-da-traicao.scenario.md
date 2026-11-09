@@ -97,7 +97,7 @@ Breaking point: o Ricardo mentir de novo na frente dos outros
 ## Agent: ricardo
 
 ### Hidden Objective
-Desacreditar o Otávio antes que o cofre fale por ele (resource: os_extratos)
+Desacreditar o Otávio antes que o cofre fale por ele (resource: a_verdade_completa)
 Constraint: não pode admitir as ações nem a Sofia
 Cost of exposure: perde a empresa e o casamento na mesma noite
 Breaking point: alguém ler os extratos em voz alta
@@ -105,7 +105,7 @@ Breaking point: alguém ler os extratos em voz alta
 ## Agent: otavio
 
 ### Hidden Objective
-Manter o sigilo do testamento e, ao mesmo tempo, não mentir sobre as ações (resource: o_sigilo)
+Manter o sigilo do testamento e, ao mesmo tempo, não mentir sobre as ações (resource: o_controle_da_sala)
 Constraint: não pode mentir sobre um documento nem revelar o testamento
 Cost of exposure: perde a licença e a confiança da Helena
 Breaking point: alguém exigir o testamento
@@ -121,7 +121,7 @@ Breaking point: alguém a chamar de cúmplice
 ## Agent: sofia
 
 ### Hidden Objective
-Não ser nomeada pela segunda vez (resource: o_nome_da_sofia)
+Não ser nomeada pela segunda vez (resource: o_controle_da_sala)
 Constraint: não pode defender o Ricardo nem acusá-lo
 Cost of exposure: é expulsa da casa e fica sem ninguém
 Breaking point: a Beatriz olhar diretamente para ela

@@ -73,7 +73,7 @@ A Beatriz precisa decidir se responde ao Ricardo agora ou espera ele continuar f
 ## Agent: beatriz
 
 ### Hidden Objective
-Fazer o Ricardo admitir a traição diante da família, e não em particular (resource: a_verdade_na_mesa)
+Fazer o Ricardo admitir a traição diante da família, e não em particular (resource: a_verdade_da_mesa)
 Constraint: não pode pedir explicação em voz baixa nem sair da mesa
 Cost of exposure: vira a nora histérica que a Helena sempre achou que ela era
 Breaking point: o Ricardo rir ou desviar de novo
@@ -81,7 +81,7 @@ Breaking point: o Ricardo rir ou desviar de novo
 ## Agent: ricardo
 
 ### Hidden Objective
-Sair da mesa sem confessar nada e sem a Beatriz tocar no nome da Sofia (resource: o_nome_da_sofia)
+Sair da mesa sem confessar nada e sem a Beatriz tocar no nome da Sofia (resource: a_verdade_da_mesa)
 Constraint: não pode admitir o caso nem desmentir em voz alta
 Cost of exposure: a mãe corta a herança e a Sofia é expulsa da casa
 Breaking point: alguém dizer o nome da Sofia
@@ -97,7 +97,7 @@ Breaking point: alguém perguntar onde ela passou o verão
 ## Agent: helena
 
 ### Hidden Objective
-Terminar o jantar de aniversário como se nada tivesse acontecido (resource: a_ordem_da_casa)
+Terminar o jantar de aniversário como se nada tivesse acontecido (resource: o_lugar_na_casa)
 Constraint: não pode tomar partido diante das visitas
 Cost of exposure: a família vira assunto da cidade
 Breaking point: alguém levantar a mão ou a voz na mesa dela
