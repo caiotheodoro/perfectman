@@ -10,6 +10,7 @@ import { cleanBeats, compileSceneBeats } from "../authoring/scenario-beats.js";
 import type { ScenarioBeat } from "../authoring/scenario-beats.js";
 import type { ScenarioDrama } from "../authoring/scenario-drama.js";
 import { parseScenarioBody } from "../run/scenario-body.js";
+import type { ScenarioBody } from "../run/scenario-body.js";
 
 const CAST = [{ id: "ana", displayName: "Ana Clara" }, { id: "bia", displayName: "Bia" }, { id: "caio", displayName: "Caio" }];
 const BLOCK: ScenarioDrama = { max_rung: 6, may_target: [["ana", "bia"]], may_die: ["bia"], permadeath: false };
@@ -19,6 +20,7 @@ const compile = (raw: unknown, ...drama: [] | [ScenarioDrama | undefined]) => co
 const llm = { provider: "mock" as const, baseUrl: "", apiKeyEnv: "PERFECTMAN_LLM_API_KEY" as const, models: ["mock"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
 const presetsRoot = fileURLToPath(new URL("../../../../examples/presets", import.meta.url));
 const service = new AuthoringService({ llm, apiKey: undefined, presetsRoot, drama: true });
+const bodyOf = (source: string): ScenarioBody => service.compile({ source }).body as ScenarioBody;
 
 describe("compileSceneBeats: the authored script of a scene", () => {
   it("turns the author's seconds, cast refs and skip flag into ms, agent ids and authored_skip, numbered in time order", () => {
@@ -109,7 +111,7 @@ describe("cleanBeats: the body's half", () => {
 describe("beats through the authoring service and the body", () => {
   it("[SCN-6] the murder preset's beats compile into its body, in agent ids, and the body parses with them", async () => {
     const { source } = await service.preset("assassinato-na-festa");
-    const { body } = service.compile({ source });
+    const body = bodyOf(source);
     expect(body.beats).toEqual([
       { id: "b1", at_ms: 90_000, kind: "act", actor: "ricardo", verb: "kill", with: "otavio", authored_skip: true },
       { id: "b2", at_ms: 170_000, kind: "cut", reason: "fim da festa" },
@@ -120,7 +122,7 @@ describe("beats through the authoring service and the body", () => {
   });
 
   it("a scene without beats compiles to a body without the key, and a bad beat fails the compile with its path", async () => {
-    expect(service.compile({ source: (await service.preset("tapa-na-cara")).source }).body).not.toHaveProperty("beats");
+    expect(bodyOf((await service.preset("tapa-na-cara")).source)).not.toHaveProperty("beats");
     const broken = (await service.preset("assassinato-na-festa")).source.replace("verb: kill", "verb: waltz");
     expect(service.validate({ source: broken }).errors.map((e) => e.path)).toEqual(["beats[0].verb"]);
     expect(() => service.compile({ source: broken })).toThrow(AuthoringError);
@@ -133,7 +135,7 @@ describe("beats through the authoring service and the body", () => {
       drama: { max_rung: "slap", may_target: [["Ana Clara", "Bia"]] },
       beats: [{ at: 60, actor: "Ana Clara", verb: "slap", with: "Bia", skip: true }, { at: 100, cut: "fim" }],
     };
-    const { body } = service.compile({ source: JSON.stringify(form) });
+    const body = bodyOf(JSON.stringify(form));
     expect(body.beats).toEqual([
       { id: "b1", at_ms: 60_000, kind: "act", actor: "person-1", verb: "slap", with: "person-2", authored_skip: true },
       { id: "b2", at_ms: 100_000, kind: "cut", reason: "fim" },

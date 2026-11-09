@@ -40,6 +40,13 @@ export type DramaTuning = {
   resumeAssumes: { physicalBeatJustStarted: boolean; killUsed: boolean };
   /** Records of finished acts are kept this long past the longest window that reads them, then dropped. */
   keepDoneMs: number;
+  /**
+   * How the `BeatPlayer` treats the scenario's authored beats. An actor busy with an act of its own is asked again every `busyRetryMs` for up to
+   * `busyWindowMs`, then the beat is dropped; a beat whose time passed more than `pastToleranceMs` before the player started is dropped, never played
+   * late; a cut the floor or the pending window refuses is asked again `cutRetryPadMs` after it says it may be, and a cut the hotel dropped
+   * silently is asked again after `cutVerifyMs` (longer than `sceneAdvancePendingMs`), at most `cutAttempts` times in all.
+   */
+  beats: { busyRetryMs: number; busyWindowMs: number; pastToleranceMs: number; cutAttempts: number; cutVerifyMs: number; cutRetryPadMs: number };
 };
 
 const d = (source: DriverSource, weight = 1): Driver => ({ source, weight });
@@ -63,6 +70,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
   sceneAdvancePendingMs: 3000,
   resumeAssumes: { physicalBeatJustStarted: true, killUsed: true },
   keepDoneMs: 60_000,
+  beats: { busyRetryMs: 1000, busyWindowMs: 15_000, pastToleranceMs: 1000, cutAttempts: 6, cutVerifyMs: 3500, cutRetryPadMs: 50 },
 };
 
 /** The gates of each verb that the director mirrors (`verbs.<id>.gates` of the verb table); a test checks them against `verb-vocab.json`. */

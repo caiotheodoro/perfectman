@@ -1,3 +1,5 @@
+export { BeatPlayer } from "./beat-player.js";
+export type { BeatPlayerDeps, BeatReport } from "./beat-player.js";
 export { DramaDirector } from "./director.js";
 export type { DramaDirectorDeps, DramaLink } from "./director.js";
 export { DramaRunHub, composeDramaSinks } from "./hub.js";
