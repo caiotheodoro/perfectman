@@ -77,8 +77,24 @@
       "type": "array",
       "maxItems": 8,
       "default": [],
-      "description": "Filled later by the knowledge base (queryReferenceBeats). Leave empty.",
-      "items": { "type": "object" }
+      "description": "Pointers to reference beats from the local knowledge base (packages/kb, queryReferenceBeats, toPlanRefs). Labels and locations only, never the text. Leave empty when the index is not built.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "title", "act", "scene", "tactic_verb", "action_type", "status_delta", "castSize", "score", "license_class"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "act": { "type": "string" },
+          "scene": { "type": "string" },
+          "tactic_verb": { "type": "string" },
+          "action_type": { "enum": ["KILLING", "KISSING", "HUGGING", "CRYING", "VIOLENT_PUSH", "VIOLENT_STRIKE", "PHYSICAL_RETREAT", "FAINTING", "DIALOGUE_ONLY"] },
+          "status_delta": { "enum": ["HIGH_TO_LOW", "LOW_TO_HIGH", "EQUAL_STALEMATE", "EQUALIZE", "HIGH_STABLE", "LOW_STABLE"] },
+          "castSize": { "type": "integer", "minimum": 1 },
+          "score": { "type": "number" },
+          "license_class": { "type": "string" }
+        }
+      }
     }
   },
   "allOf": [

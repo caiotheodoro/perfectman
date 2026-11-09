@@ -96,6 +96,16 @@ Rules for the arc:
 
 Anything no verb renders is rewritten with a recipe from `tag-to-verb.md` and tagged `staged_as`; the wish goes in `ideal_action`. Never invent a verb. Never write a weapon or blood.
 
+### 5b. Reference beats (optional)
+
+When the local KB index exists (`packages/kb/index/kb.sqlite`, built with the steps in `packages/kb/README.md`), look up real scenes for each beat that carries a physical action or a status flip:
+
+```bash
+cd packages/kb && node dist/cli.js query --tactic "to intimidate" --action KILLING --cast 3 --limit 3 --plan
+```
+
+`--action` takes the beat's `physical_action_tag` (NONE for dialogue only). Put the `--plan` output in `plan.json` `reference_beats`: pointers and labels, never text. To read a reference for inspiration, add `--text` and look at how the tactic is played, how long the beat runs and who stands where. Never copy lines, names or images into a persona or scenario. Only the physical-action label is dependable (about 93% agreement between two taggers); tactic and status labels are soft, so judge the scene, not the label. If the index is not built, or nothing comes back for a rare action, leave `reference_beats` as `[]` and say so in the hand-off.
+
 ### 6. Emit the files
 
 - **Persona** per `persona-template.md`. Status goes into `Voice`, `social` and `mood`. Never write a verb id, "act", "character", "actor" or "role" in a persona.
