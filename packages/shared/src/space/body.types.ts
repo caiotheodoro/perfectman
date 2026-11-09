@@ -87,6 +87,11 @@ export type BodyPerception = {
   rooms: BodyRoomLine[];
   /** The room could not be synced cleanly: the prompt says the actor cannot see clearly. */
   degraded?: boolean;
+  /**
+   * Drama is negotiated and on for this run: the prompt teaches the `act` key and the decode grammar carries it
+   * (act-contract.md 11.5). Absent for every run without drama, which is how those stay byte-identical.
+   */
+  drama?: true;
 };
 
 // ---- commands --------------------------------------------------------------

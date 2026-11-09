@@ -52,6 +52,13 @@ export class ScopedMirror implements ActorSpace {
     this.fallenOf = source;
   }
 
+  /** Whether drama is negotiated and on for this run; while it is, every view says so and the prompt teaches the `act` key. Never set otherwise. */
+  private dramaOn: (() => boolean) | undefined;
+
+  setDrama(source: (() => boolean) | undefined): void {
+    this.dramaOn = source;
+  }
+
   private localPresence(p: Presence): Presence {
     const ref = this.local(p.ref);
     const fallen = this.fallenOf?.(ref);
@@ -91,6 +98,7 @@ export class ScopedMirror implements ActorSpace {
     if (allowed) out.adjacency = v.adjacency.filter((a) => allowed.has(a.roomId));
     if (v.room) out.room = { ...v.room, occupants: v.room.occupants.map((p) => this.localPresence(p)) };
     if (v.self) out.self = this.localPresence(v.self);
+    if (this.dramaOn?.()) out.drama = true;
     return out;
   }
 

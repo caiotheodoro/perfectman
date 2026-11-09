@@ -300,7 +300,7 @@ export function runEngineStep(snapshot: EngineSnapshot): EngineStepResult {
       events: visibleEvents,
       relational: finalRelational,
     });
-    perceptionPacket.body = built.body;
+    perceptionPacket.body = snapshot.space.drama ? { ...built.body, drama: true } : built.body;
     perceptionPacket.bodyHandles = built.handles;
   }
 

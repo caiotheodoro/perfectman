@@ -1,7 +1,7 @@
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import type { ChatRequest } from "ollama";
 import { APICallError, type JSONSchema7 } from "ai";
-import { ModelIntentPacketJsonSchema, ModelIntentPacketWithBodyJsonSchema } from "@perfectman/shared";
+import { ModelIntentPacketJsonSchema, ModelIntentPacketWithActJsonSchema, ModelIntentPacketWithBodyJsonSchema } from "@perfectman/shared";
 import type { BuiltPrompt } from "../agent/agent-runtime.types.js";
 import type { LLMConfig } from "./llm-config.js";
 import type { LLMProviderResult } from "./llm-provider.js";
@@ -210,8 +210,17 @@ export function buildOpenAiCompatibleRequestBody(
   };
 }
 
-/** Hotel mode asks the model for the optional `body` block, so decoding is constrained by the schema that has it. */
-export type IntentSchemaOptions = { withBody?: boolean };
+/**
+ * Hotel mode asks the model for the optional `body` block, so decoding is constrained by the schema that has it. `withAct` adds the drama
+ * `act` key to that block (act-contract.md 11.5): only for a run whose Director link negotiated drama and has it on.
+ */
+export type IntentSchemaOptions = { withBody?: boolean; withAct?: boolean };
+
+/** The decode grammar for these options; a run without drama never reaches the `act` branch. */
+export function intentSchemaFor(schemaOptions?: IntentSchemaOptions): typeof ModelIntentPacketJsonSchema {
+  if (!schemaOptions?.withBody) return ModelIntentPacketJsonSchema;
+  return schemaOptions.withAct ? ModelIntentPacketWithActJsonSchema : ModelIntentPacketWithBodyJsonSchema;
+}
 
 export async function generateOpenAiCompatibleIntent(
   config: LLMConfig,
@@ -220,7 +229,7 @@ export async function generateOpenAiCompatibleIntent(
   deps?: LlmTransportDeps,
   schemaOptions?: IntentSchemaOptions,
 ): Promise<LLMProviderResult> {
-  const intentSchema = schemaOptions?.withBody ? ModelIntentPacketWithBodyJsonSchema : ModelIntentPacketJsonSchema;
+  const intentSchema = intentSchemaFor(schemaOptions);
   if (!config.baseUrl) {
     throw new LLMConfigurationError("Missing baseUrl for OpenAI-compatible provider.");
   }
@@ -410,7 +419,7 @@ export async function generateOllamaIntent(
   deps?: LlmTransportDeps,
   schemaOptions?: IntentSchemaOptions,
 ): Promise<LLMProviderResult> {
-  const intentSchema = schemaOptions?.withBody ? ModelIntentPacketWithBodyJsonSchema : ModelIntentPacketJsonSchema;
+  const intentSchema = intentSchemaFor(schemaOptions);
   if (!config.baseUrl) {
     throw new LLMConfigurationError("Missing baseUrl for Ollama provider.");
   }

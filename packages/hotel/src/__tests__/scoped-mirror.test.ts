@@ -93,4 +93,15 @@ describe("a run's window on the shared mirror", () => {
     floor.clear();
     expect(a.view("duda", T0)?.room?.occupants.some((p) => p.fallen !== undefined)).toBe(false);
   });
+  it("[NEG-2] marks the views with `drama` only while drama is negotiated and on, so a run without it never carries the key", () => {
+    const { a } = shared();
+    let on = false;
+    expect("drama" in (a.view("duda", T0) ?? {})).toBe(false);
+    a.setDrama(() => on);
+    expect("drama" in (a.view("duda", T0) ?? {})).toBe(false);
+    on = true;
+    expect(a.view("duda", T0)?.drama).toBe(true);
+    a.setDrama(undefined);
+    expect("drama" in (a.view("duda", T0) ?? {})).toBe(false);
+  });
 });

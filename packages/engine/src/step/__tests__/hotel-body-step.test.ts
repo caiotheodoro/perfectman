@@ -51,6 +51,15 @@ describe("runEngineStep in hotel mode", () => {
     expect(r.perceptionPacket.body?.hearing).toEqual([{ name: "Duda", level: "garbled" }]);
   });
 
+  it("[NEG-2] the body block carries `drama` only when the view does, and a view without it leaves no key behind", () => {
+    const model = loungeModel([person("a1", "Ana", [5, 4]), person("a2", "Duda", [6, 4])], ["a1"]);
+    const plain = runEngineStep(snapshot({ space: viewOf(model, "a1", T0 + 1000) }));
+    expect("drama" in plain.perceptionPacket.body!).toBe(false);
+    const on = runEngineStep(snapshot({ space: { ...viewOf(model, "a1", T0 + 1000), drama: true } }));
+    expect(on.perceptionPacket.body?.drama).toBe(true);
+    expect(on.perceptionPacket.body?.people).toEqual(plain.perceptionPacket.body?.people);
+  });
+
   it("arriving (own body_arrived) wakes the agent for the model", () => {
     const model = loungeModel([person("a1", "Ana", [5, 4])], ["a1"]);
     const arrived = makeEvent("body_arrived", { id: "e9", channelId: "room:lounge", actorId: "a1", payload: { planId: "p", room: "lounge", tile: [5, 4] } });

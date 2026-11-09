@@ -1,0 +1,63 @@
+{
+  "prompts": {
+    "pt-BR/full/quiet": {
+      "system": "e24633b094b04a24e491387cedd9493163dc54ee700c057acd7a2bc9b9fe2e44",
+      "user": "17290249b4c251badd6e4ac21fb36725f2b67acc9725f5e9c6558aa2358cd7f6",
+      "templateVersion": "1dkl6l2",
+      "tokens": 2850
+    },
+    "pt-BR/full/busy": {
+      "system": "6e75b8824f899951d2a3d47bbc37e74b52059024dd493609336684a1beddadf0",
+      "user": "611f51f1bccf004b5db168d6326a1f80cf31635df9149e5483967ac8e630cf22",
+      "templateVersion": "1dkl6l2",
+      "tokens": 3072
+    },
+    "pt-BR/compact/quiet": {
+      "system": "fe3530cd2d8ff1d47a2c2c8a494e03781ee459eff4496fa78272841cd2a47e6c",
+      "user": "83ec2b4b75a3a48901f3ebedbac318715dd94aae964e87392b58a7bbf0f5e94f",
+      "templateVersion": "3jajez",
+      "tokens": 1116
+    },
+    "pt-BR/compact/busy": {
+      "system": "aefcde6f9f503e3d27bbe1f747e92c187683a4e5bec2e549c4ce5d523c908962",
+      "user": "a86206e542fabac5a4080b3178ac13110dede741f3875bcc2a9787af39c3f112",
+      "templateVersion": "3jajez",
+      "tokens": 1244
+    },
+    "en/full/quiet": {
+      "system": "837a1a2c6265c84a63300549eedf6fb8624764b0d208ac9050f6ad3a10b7f67f",
+      "user": "451f83dbe3e06896b5965c95cd76311e7644fa7c645686a8aee156f6a956b538",
+      "templateVersion": "1dkl6l2",
+      "tokens": 2775
+    },
+    "en/full/busy": {
+      "system": "127e762d46c9c62e305f18ba1e09e0b60fce578acb8780e51c14f75b47cf4935",
+      "user": "7bb41e5ca8ed3c043851d1601a3fe56c46314c5c00670cc872ec9c7efdb8bafe",
+      "templateVersion": "1dkl6l2",
+      "tokens": 2998
+    },
+    "en/compact/quiet": {
+      "system": "014e0170059cacebba7cf64b0b8233decd3682203ade7ea9a741eee6e7714671",
+      "user": "c235fef1c30db0ea14f89179e03c7e06d3e2107a9e7acc193928b49c041fb007",
+      "templateVersion": "3jajez",
+      "tokens": 1087
+    },
+    "en/compact/busy": {
+      "system": "cb7ff6461f37b9104e108da7c75a437cb2d41bda486675bdb5512d4bb83a13f9",
+      "user": "10d3104c4a88fa3e8931b867b74b4984672b16f6935802072dfa81fc32ae071f",
+      "templateVersion": "3jajez",
+      "tokens": 1213
+    },
+    "non-hotel": {
+      "system": "b2e7923c9eb62c4f6d8e42df3ffac3b2327b89f8a9d141d513546012f849f04a",
+      "user": "935e1f86ef46848b18da8c018f4abb3150f28bc5dd08a1c5e982c91133baa242",
+      "templateVersion": "fjq17d"
+    }
+  },
+  "grammar": {
+    "plain": "467947144b370f55e917f45d7f7866f09ae5e3f8310c38a3b399b973c09d3452",
+    "withBody": "92f76a0999ad89ef87d094cf82f52d3487ccc40a6d65b401f8eea9c67a5196a5",
+    "fieldsPlain": "a25e97a9ac3f806537752f2d33504a439f00a69582c7652016391ce50e9f1f57",
+    "fieldsBody": "8535e4555db45e1eeb2b2ee9238edc95ae7d4b21c05a0cead881ab281c03e504"
+  }
+}

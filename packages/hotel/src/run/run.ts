@@ -300,6 +300,7 @@ export class Run {
       hooks: { blocked: (agentId, reasons) => void this.appendBodyEvent("body_blocked", agentId, { reasons: reasons as unknown as never }, false) },
     });
     this.space.setFallen((ref) => this.dramaSink.ledger.fallenKind(ref));
+    this.space.setDrama(() => this.dramaSink.active);
   }
 
   /** The built simulation; undefined until `launch` has built it. */

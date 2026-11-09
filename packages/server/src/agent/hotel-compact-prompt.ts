@@ -2,6 +2,7 @@ import { PromptSection } from "@perfectman/shared";
 import type { AgentRuntimeInput, BodyPerception, CommittedEvent } from "@perfectman/shared";
 import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@perfectman/engine";
 import { bodyContractLines, rotateSamples, seed } from "./hotel-body-hint.js";
+import { dramaCompactLines } from "./hotel-drama-hint.js";
 import { roomLinesHeard } from "./repetition-guard.js";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 import { whisperNote, whisperedBy } from "./whisper-note.js";
@@ -135,6 +136,7 @@ function renderContract(s: PromptSection, input: AgentRuntimeInput, profile: Per
     ...(body ? ['"body": optional, see below'] : []),
   ]);
   if (body) for (const block of bodyContractLines(profile.language, body, input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? input.agentId, profile.styleExamples.default, heardLines(input))) s.raw(block);
+  if (body?.drama === true) for (const block of dramaCompactLines(profile.language, body)) s.raw(block);
 }
 
 /** What is already said: the actor's own newest lines, and what the others just said, so neither is said again. */

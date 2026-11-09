@@ -32,6 +32,12 @@ export type SpaceView = {
   /** Rooms reachable from here, by travel time. */
   adjacency: RoomAdjacency[];
   body: AgentBody;
+  /**
+   * Set by the hotel's drama planner side on the views it hands out, only while drama is negotiated and on for the run
+   * (act-contract.md NEG-2). Absent everywhere else, so a run without drama never carries the key and builds the prompts and
+   * the decode grammar it always did.
+   */
+  drama?: true;
 };
 
 /**

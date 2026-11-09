@@ -6,6 +6,7 @@ import { GENERIC_PROMPT_PROFILE, type PersonaPromptProfile, type ScenarioContext
 import type { BuiltPrompt, PromptTrim } from "./agent-runtime.types.js";
 import { promptVersionHash } from "./prompt-version.js";
 import { bodyContractLines } from "./hotel-body-hint.js";
+import { dramaContractLines } from "./hotel-drama-hint.js";
 import { heardLines, renderCompactHotelPrompt } from "./hotel-compact-prompt.js";
 
 /**
@@ -493,7 +494,8 @@ export class ActionIntentPromptBuilder {
         : `The fields id, actorId, preferredDelay and fallbackIfBlocked are assigned by the system — never set them (actorId is ${actorId}).`,
     );
     s.raw("The schema is enforced at decoding time where the provider honors it; where it isn't, these are the only fields you may set — set intentType to one value from <actions> below, set targets/content only where they apply, and never omit privateMotiveSummary:");
-    s.list("Fields", modelIntentPacketFieldContract(withBody ? { body: true } : undefined));
+    const drama = withBody && input?.perceptionPacket.body?.drama === true;
+    s.list("Fields", modelIntentPacketFieldContract(withBody ? (drama ? { body: true, act: true } : { body: true }) : undefined));
     s.list("Ensure", [
       // Hotel mode never calls its reader "a real person": that framing tells the
       // reader it is something else (ADR-0023, D43).
@@ -511,6 +513,8 @@ export class ActionIntentPromptBuilder {
       ...(hotel && withBody && input
         ? bodyContractLines(language, input.perceptionPacket.body, input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? input.agentId, styleSamples, heardLines(input))
         : []),
+      // Drama negotiated and on: the `act` key, the ladder and three short answers. Absent otherwise, so the prompt is byte-identical to a run without drama.
+      ...(hotel && drama ? dramaContractLines(language, input?.perceptionPacket.body) : []),
     ]);
   }
 
