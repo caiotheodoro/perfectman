@@ -108,7 +108,7 @@ describe("solo and targeted verbs from the emotion model (bible 3.3, 3.4)", () =
     const far = run({ others: [person("rafa", [8, 4]), person("gabi", [9, 5])] }, o, { rescue: { aggressor: "rafa", victim: "gabi" } });
     const walk = far.find((c) => c.cmd === "walk");
     const restrain = far.find((c) => c.cmd === "act");
-    expect(walk).toBeDefined();
+    expect(walk).toMatchObject({ cmd: "walk" });
     expect(restrain).toMatchObject({ cmd: "act", verb: "restrain", with: "rafa", afterArrival: walk?.cmd === "walk" ? walk.plan : "?" });
     const near = run({ others: [person("rafa", [5, 4]), person("gabi", [9, 5])] }, o, { rescue: { aggressor: "rafa", victim: "gabi" } });
     expect(near).toEqual([{ agentId: "duda", cmd: "act", actId: "pb1", verb: "restrain", with: "rafa", origin: "director" }]);
