@@ -38,7 +38,10 @@ export type LlmLink = {
   promptStyle?: PromptStyle;
   /**
    * Extra fields merged into this link's request body (a reasoning switch, for a model that thinks
-   * before it answers). Set by the code that builds the link, never read from `PERFECTMAN_LLM_CHAIN`.
+   * before it answers: `{"thinking":{"type":"disabled"}}`). Set by the code that builds the link (the
+   * picked model's reasoning switch) or read from the link's `extraBody` in `PERFECTMAN_LLM_CHAIN`, a
+   * plain JSON object that may not set a field in {@link RESERVED_EXTRA_BODY_KEYS}. The link's own
+   * replaces the base config's, and the sampling fields (`frequencyPenalty`, `presencePenalty`) go on top.
    */
   extraBody?: Record<string, unknown>;
   /**
@@ -126,6 +129,30 @@ export function linkSampling(link: Pick<LlmLink, "model" | "frequencyPenalty" | 
   return { ...(frequency !== undefined ? { frequency_penalty: frequency } : {}), ...(presence !== undefined ? { presence_penalty: presence } : {}) };
 }
 
+/**
+ * Request-body fields a link's `extraBody` may not set. The first group is what the request builder
+ * (`buildOpenAiCompatibleRequestBody` and the AI SDK chat model under it) writes itself, so an extra
+ * would swap the model, the prompt, the answer cap or the decode grammar from under the runtime;
+ * the penalties belong to `frequencyPenalty`/`presencePenalty`, which the retry logic adjusts.
+ */
+export const RESERVED_EXTRA_BODY_KEYS: readonly string[] = [
+  "model",
+  "messages",
+  "stream",
+  "stream_options",
+  "max_tokens",
+  "max_completion_tokens",
+  "temperature",
+  "tools",
+  "tool_choice",
+  "functions",
+  "function_call",
+  "n",
+  "response_format",
+  "frequency_penalty",
+  "presence_penalty",
+];
+
 const HEADER_NAME = /^[A-Za-z0-9!#$%&'*+.^_`|~-]+$/;
 const FORBIDDEN_HEADERS = new Set(["authorization", "proxy-authorization", "cookie", "content-type", "content-length", "host"]);
 
@@ -208,6 +235,18 @@ export function parseChain(raw: string, problems: string[]): LlmLink[] {
     if (session !== undefined && session !== null) {
       if (typeof session !== "string" || !HEADER_NAME.test(session) || FORBIDDEN_HEADERS.has(session.toLowerCase())) problems.push(`${at}.sessionHeader must be a header name`);
       else link.sessionHeader = session;
+    }
+    const extra = entry["extraBody"];
+    if (extra !== undefined && extra !== null) {
+      if (!isRecord(extra)) problems.push(`${at}.extraBody must be a JSON object`);
+      else {
+        const reserved = Object.keys(extra).filter((k) => RESERVED_EXTRA_BODY_KEYS.includes(k));
+        for (const k of reserved) problems.push(`${at}.extraBody.${k} is set by the runtime and cannot be overridden`);
+        // The SDK builds its own reasoning_effort after the extras, so only the camelCase option reaches the wire.
+        const dropped = "reasoning_effort" in extra;
+        if (dropped) problems.push(`${at}.extraBody.reasoning_effort is dropped by the transport; write "reasoningEffort"`);
+        if (reserved.length === 0 && !dropped) link.extraBody = extra;
+      }
     }
     const headers = entry["headers"];
     if (headers !== undefined && headers !== null) {

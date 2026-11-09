@@ -87,7 +87,25 @@ Changes outside `packages/hotel`: one export line in `packages/server/src/hotel.
 
 ### Config
 
-`PERFECTMAN_LLM_CHAIN` is a JSON array. Per link: `name` (unique), `baseUrl`, `apiKeyEnv` (the NAME of the variable, never a key), `model`; optional `maxContextTokens`, `sessionHeader`, `headers`, `timeoutMs` (default 8 s), `tokenRatio`, `promptStyle` (`full` or `compact`; default by window), `harden` (default true). A bad entry names every problem at once; a missing key variable on any link fails startup. When the chain is set its models are the allowlist and `PERFECTMAN_LLM_MODELS` is not read. Prices come from a built-in table (MythoMax 0.08/0.11, Lunaris 0.04/0.05, in $ per million tokens) that `PERFECTMAN_LLM_PRICES` overrides; where the provider bills a call (OpenRouter's `usage.cost`) the billed amount is used instead. An enabled sidecar refuses to start when a link's model has no price, naming the link, so a forgotten price is not metered as free; a subscription link (OpenCode `glm-5.3-flash`) declares `{"inUsdPerMTok":0,"outUsdPerMTok":0}` in `PERFECTMAN_LLM_PRICES` explicitly. The chain is not parsed or validated while `PERFECTMAN_ENABLED` is off.
+`PERFECTMAN_LLM_CHAIN` is a JSON array. Per link: `name` (unique), `baseUrl`, `apiKeyEnv` (the NAME of the variable, never a key), `model`; optional `maxContextTokens`, `sessionHeader`, `headers`, `timeoutMs` (default 5000 ms, and never more than what is left of the 13 s chain deadline; the narrator's chain caps it at 4 s), `tokenRatio`, `promptStyle` (`full` or `compact`; default by window), `harden` (default true), `extraBody` (a JSON object merged into the request body: see below). A bad entry names every problem at once; a missing key variable on any link fails startup. When the chain is set its models are the allowlist and `PERFECTMAN_LLM_MODELS` is not read. Prices come from a built-in table (MythoMax 0.08/0.11, Lunaris 0.04/0.05, in $ per million tokens) that `PERFECTMAN_LLM_PRICES` overrides; where the provider bills a call (OpenRouter's `usage.cost`) the billed amount is used instead. An enabled sidecar refuses to start when a link's model has no price, naming the link, so a forgotten price is not metered as free; a subscription link (OpenCode `glm-5.3-flash`) declares `{"inUsdPerMTok":0,"outUsdPerMTok":0}` in `PERFECTMAN_LLM_PRICES` explicitly. The chain is not parsed or validated while `PERFECTMAN_ENABLED` is off.
+
+#### A thinking model: `extraBody`
+
+A model that reasons before it answers spends the answer budget (400 tokens) thinking and returns an empty `content`, and takes longer than the 5 s default to do it. Measured live on OpenCode Go, `deepseek-v4.1-flash`: with the default timeout every call timed out; with a 120-token cap all tokens went to `reasoning_content`; with the reasoning switched off it answered in 1 to 2 s with 0 reasoning tokens. So give such a link a longer `timeoutMs` and a reasoning switch in `extraBody`:
+
+```json
+[{"name":"opencode-go","baseUrl":"https://opencode.ai/zen/go/v1","apiKeyEnv":"OPENCODE_KEY","model":"deepseek-v4.1-flash","sessionHeader":"x-opencode-session","timeoutMs":60000,"extraBody":{"thinking":{"type":"disabled"}}}]
+```
+
+with the price line it needs (a flat subscription is 0/0, declared, so a forgotten price is not mistaken for a free model):
+
+```
+PERFECTMAN_LLM_PRICES={"deepseek-v4.1-flash":{"inUsdPerMTok":0,"outUsdPerMTok":0}}
+```
+
+`OPENCODE_KEY` is the NAME of the variable that holds the key; the key itself is set in the environment, never in the chain. The switch is provider-specific: DeepSeek-style endpoints take `{"thinking":{"type":"disabled"}}`, OpenAI-style ones `{"reasoningEffort":"none"}`. Write it camelCase: the transport sets `reasoning_effort` itself from `reasoningEffort` and drops a snake_case extra, so `reasoning_effort` is refused at startup with that hint.
+
+`extraBody` is merged exactly as a code-built one: the link's own replaces the base config's (the picked model's reasoning switch still replaces it for that link), and the link's penalties (`frequencyPenalty`, `presencePenalty`, or the model's known entry) go on top. It must be a plain JSON object and may not set a field the runtime owns: `model`, `messages`, `stream`, `stream_options`, `max_tokens`, `max_completion_tokens`, `temperature`, `tools`, `tool_choice`, `functions`, `function_call`, `n`, `response_format`, `frequency_penalty`, `presence_penalty` (`RESERVED_EXTRA_BODY_KEYS`). Anything else (`top_p`, `seed`, a vendor's own flag) goes through. A violation fails the whole config (`Invalid sidecar configuration`) naming the link and the key.
 
 OpenRouter links send `HTTP-Referer` and `X-Title: CMB` unless the link sets its own. A link with `sessionHeader` sends the run id in it.
 
