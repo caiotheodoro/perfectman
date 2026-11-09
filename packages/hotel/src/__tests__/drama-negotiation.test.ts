@@ -83,18 +83,23 @@ describe("[NEG-2] the offer on the wire", () => {
     expect(hotel.ack?.proto).toBe(2);
   });
 
-  it("[NEG-2] answers every row of fixtures/drama/hello-offer.jsonl as the contract fixes (the vocab sha is the vendored file's, so it is not compared)", async () => {
+  it("[NEG-2] answers every row of fixtures/drama/hello-offer.jsonl as the contract fixes (the vocab rev and sha are the vendored file's, so they are not compared with the contract's example, which keeps the rev it was written at)", async () => {
     const rows = readDramaFixture("hello-offer.jsonl");
     expect(rows).toHaveLength(5);
     for (const row of rows) {
       await client?.stop();
       await fake?.stop();
       const { fake: hotel } = await connect({ drama: true, configure: (f) => (f.nextHello = row.in) });
-      const want = JSON.parse(JSON.stringify(row.expect[0])) as { seq: number; sidecar: { verb_vocab?: { sha256?: string } } };
+      const want = JSON.parse(JSON.stringify(row.expect[0])) as { seq: number; sidecar: { verb_vocab?: { rev?: number; sha256?: string } } };
       const got = JSON.parse(JSON.stringify(hotel.ack)) as typeof want;
-      if (want.sidecar.verb_vocab) expect(got.sidecar.verb_vocab?.sha256).toBe(VERB_VOCAB_SHA256);
+      if (want.sidecar.verb_vocab) {
+        expect(got.sidecar.verb_vocab?.sha256).toBe(VERB_VOCAB_SHA256);
+        expect(got.sidecar.verb_vocab?.rev).toBe(VERB_VOCAB_REV);
+      }
       delete want.sidecar.verb_vocab?.sha256;
       delete got.sidecar.verb_vocab?.sha256;
+      delete want.sidecar.verb_vocab?.rev;
+      delete got.sidecar.verb_vocab?.rev;
       expect(got, JSON.stringify(row.in)).toEqual(want);
     }
   });

@@ -121,12 +121,13 @@ describe("P1's contract-derived fixtures against the hotel's (hello-offer.jsonl)
     expect([p1.length, hotel.length]).toEqual([5, 2]);
   });
 
-  it("[NEG-3] [SAFE-2] [VV-3] the offering hello differs by exactly the runtime switch (the contract's example says true, the hotel's is false until an admin turns it on), the dead set, the vocab sha and the build", () => {
+  it("[NEG-3] [SAFE-2] [VV-3] the offering hello differs by exactly the runtime switch (the contract's example says true, the hotel's is false until an admin turns it on), the dead set, the vocab rev and sha and the build", () => {
     const offer = p1[0]?.in;
     const real = hotel[1]?.expect[0];
     expect(diffPaths(offer, real)).toEqual([
       "/drama/dead: [-702] -> []",
       "/drama/enabled: true -> false",
+      "/drama/verb_vocab/rev: 2 -> 3",
       `/drama/verb_vocab/sha256: "3f1c9a5e7b2d40688a1c0e94f5d27b3a6c8e1d0f9b4a7c25e83d6f0a1b9c4d72" -> "${OWN_VOCAB.sha256}"`,
       '/hotel/build: "517ae35" -> "dev"',
       "/seq: 1 -> (absent)",
