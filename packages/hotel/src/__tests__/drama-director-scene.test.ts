@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { ActVerb } from "@perfectman/shared";
 import { DramaRunHub, composeDramaSinks } from "../director/drama/index.js";
 import type { DramaDecision } from "../director/drama/index.js";
 import { buildReplayPlan, isRecordedDramaCmd } from "../run/replay-plan.js";
@@ -8,7 +9,7 @@ import type { DramaFrame } from "../director/drama-frames.js";
 import { actFrames, dramaStateFrame } from "../testing/fake-drama.js";
 import { A, B, C, H, ROOM, RUN, SESSION, WIDE_BLOCK, emotion, makeRig } from "../testing/drama-rig.js";
 
-const ask = (rig: ReturnType<typeof makeRig>, actor: number, verb: "glare" | "shove" | "insult" | "slap" | "kill" | "punch", target: number, origin: "model" | "scenario" = "scenario", skip = false): DramaDecision =>
+const ask = (rig: ReturnType<typeof makeRig>, actor: number, verb: ActVerb, target: number, origin: "model" | "scenario" = "scenario", skip = false): DramaDecision =>
   rig.dir.decide({ actor, proposal: { verb, with: target, origin, ...(skip ? { authoredSkip: true } : {}) }, emotion: emotion({ resentfulColdness: 1, impulsiveProvocation: 1, dominanceAssertion: 1 }) });
 
 describe("scenes (SCENE-1 to SCENE-5, DEATH-7)", () => {
