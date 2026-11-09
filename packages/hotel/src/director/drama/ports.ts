@@ -104,7 +104,13 @@ export type DramaVeto = {
   rule: string;
 };
 
-export type DramaPassWhy = "inert" | "actor_dead" | "actor_busy" | "no_drive" | "pace";
+/**
+ * `inert`: drama is not negotiated for this run (or the hotel's switch is off and no proposal was made). `actor_dead`, `actor_busy`
+ * (ACT-11, ACT-12), `posture` (ACT-13: a lying actor cannot make a gesture), `not_placed` (the mirror has no room for the actor yet), `target_gone` (ACT-10: the target is not in the actor's
+ * room): nothing to send. `no_drive`: no beat is driven by the emotion state, there is no emotion state, or a `restrain` has no aggressor to restrain (RES-1). `pace`: this actor was
+ * offered a beat too recently.
+ */
+export type DramaPassWhy = "inert" | "actor_dead" | "actor_busy" | "not_placed" | "target_gone" | "posture" | "no_drive" | "pace";
 
 export type DramaPass = { kind: "pass"; why: DramaPassWhy };
 
@@ -123,7 +129,10 @@ export type SceneAdvance =
   | { kind: "refused"; why: "inert" | "too_young" | "pending" | "unsent"; retryInMs?: number };
 
 export interface DramaDecisionPort {
-  /** True while drama is negotiated (dialect 2) and the hotel's runtime switch is on; false makes every `decide` a `pass` of `inert`. */
+  /**
+   * True while drama is negotiated for this run (dialect 2 link, a `drama_state` read). False makes every `decide` a `pass` of
+   * `inert`. When it is true but the hotel's runtime switch is off, a proposal is vetoed `kill_switch` (GATE-1) and a passive turn passes.
+   */
   readonly active: boolean;
   /** The current scene id (`"<run>.<n>"`), as the hotel last told us (SCENE-4). */
   readonly scene: string;
