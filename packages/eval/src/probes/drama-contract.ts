@@ -25,6 +25,12 @@ import {
 import { actsOf, clockOf, gapMs, humansOf, ledgerOf, lifelinesOf, type Clock, type DramaProbeInput, type DramaProbeResult, type ResultFn } from "./drama-reads.js";
 
 const SHOVE_RUNG = rungIndex("shove");
+/** `chip_windup_ms` (section 0.3): contact comes this long after a `take`. */
+const CHIP_WINDUP_MS = 150;
+/** SAFE-4 defaults of `PERFECTMAN_DRAMA_HARM_MAX` and `PERFECTMAN_DRAMA_HARM_WINDOW_SECS`. */
+export const HARM_MAX_DEFAULT = 3;
+export const HARM_WINDOW_MS_DEFAULT = 300_000;
+const VIOLENT_ON_HUMAN = new Set(["insult", "shove", "slap", "punch", "kill"]);
 /** DEATH-1: a `dying` actor is a `body` this long after `actor_death`; DEATH-7 revives bodies. */
 const BODY_AFTER_MS = 2000;
 /** TBL-9: the act scheduler runs a step at most 100 ms after its due instant, and the down timer is one of its entries. */
@@ -292,9 +298,95 @@ export function downWindowExact(input: DramaProbeInput): DownWindowReading {
   return { measured: offenders.length, windows: downs.length, openWindows: open, toleranceMs: DOWN_TOLERANCE_MS, worstDeviationMs: worst, clock: clockOf(clocks), offenders };
 }
 
+// ── take-contact-windup ──────────────────────────────────────────────────────
+
+export type WindupReading = {
+  /** Takes whose contact did not come `chip_windup_ms` later. */
+  measured: number;
+  judged: number;
+  offenders: Array<{ actId: string; gapMs: number }>;
+  clock: Clock | "mixed" | "none";
+};
+
+/**
+ * TBL-3: after a `take` the contact (`act_beat`) is `answer + 150 ms`. The hotel computes it, so on its own `at` it is
+ * exact; on the frame log's stamps (no `at`) the log's own jitter is allowed, `DOWN_TOLERANCE_MS`. A take whose act
+ * never reached contact (RSV-2 re-check aborted it) is not judged.
+ */
+export function takeContactWindup(input: DramaProbeInput): WindupReading {
+  const ledgers = ledgerOf(input.events);
+  const offenders: WindupReading["offenders"] = [];
+  const clocks: Clock[] = [];
+  let judged = 0;
+  const seen = new Set<string>();
+  for (const e of input.events) {
+    if (e.kind !== "consent_chip" || e.phase !== "answered" || e.rawAnswer !== "take" || e.actId === undefined || seen.has(e.actId)) continue;
+    seen.add(e.actId);
+    const beat = ledgers.get(e.actId)?.beat;
+    if (beat === undefined) continue;
+    judged += 1;
+    const gap = gapMs(e, beat);
+    clocks.push(gap.clock);
+    const tolerance = gap.clock === "hotel_at" ? 0 : DOWN_TOLERANCE_MS;
+    if (Math.abs(gap.ms - CHIP_WINDUP_MS) > tolerance) offenders.push({ actId: e.actId, gapMs: gap.ms });
+  }
+  return { measured: offenders.length, judged, offenders, clock: clockOf(clocks) };
+}
+
+// ── harm-window ──────────────────────────────────────────────────────────────
+
+export type HarmWindowReading = {
+  /** Landed violent acts on humans that took a room past `harmMax` inside one window. */
+  measured: number;
+  harmMax: number;
+  windowMs: number;
+  offenders: Array<{ actId: string; room: string; inWindow: number }>;
+};
+
+/**
+ * SAFE-4: per room, the acts with a violent verb (shove, slap, punch, kill, or insult) and a human target that
+ * landed in the last window are at most N (default 3 in 300 s). An act is counted at its contact (its `act_beat`, else
+ * its `act_done`). A pause that ended (`drama_state` paused going false) empties the window, as the hotel's resume does.
+ */
+export function harmWindow(input: DramaProbeInput): HarmWindowReading {
+  const harmMax = input.harmMax ?? HARM_MAX_DEFAULT;
+  const windowMs = input.harmWindowMs ?? HARM_WINDOW_MS_DEFAULT;
+  const isHuman = humansOf(input);
+  const ledgers = ledgerOf(input.events);
+  const landed = new Map<string, { atMs: number; room: string }>();
+  for (const ledger of ledgers.values()) {
+    const { started, done, beat } = ledger;
+    const verb = started?.verb ?? done?.verb;
+    const target = started?.with ?? done?.with;
+    if (done?.outcome !== "landed" || verb === undefined || !VIOLENT_ON_HUMAN.has(verb) || target === undefined || !isHuman(target)) continue;
+    landed.set(ledger.actId, { atMs: (beat ?? done).atMs, room: started?.room ?? done.room ?? "" });
+  }
+  // a pause that ends (paused true, then false) empties the room's window, as the hotel's resume does
+  const resumes = new Map<string, number[]>();
+  const paused = new Map<string, boolean>();
+  for (const e of input.events) {
+    if (e.kind !== "drama_state" || e.paused === undefined) continue;
+    const room = e.room ?? "";
+    if (paused.get(room) === true && !e.paused) resumes.set(room, [...(resumes.get(room) ?? []), e.atMs]);
+    paused.set(room, e.paused);
+  }
+  const offenders: HarmWindowReading["offenders"] = [];
+  const byRoom = new Map<string, Array<{ actId: string; atMs: number }>>();
+  for (const [actId, a] of landed) byRoom.set(a.room, [...(byRoom.get(a.room) ?? []), { actId, atMs: a.atMs }]);
+  for (const [room, acts] of byRoom) {
+    const sorted = [...acts].sort((x, y) => x.atMs - y.atMs);
+    sorted.forEach((act, i) => {
+      const since = Math.max(act.atMs - windowMs + 1, ...(resumes.get(room) ?? []).filter((r) => r <= act.atMs));
+      const inWindow = sorted.slice(0, i + 1).filter((p) => p.atMs >= since).length;
+      if (inWindow > harmMax) offenders.push({ actId: act.actId, room, inWindow });
+    });
+  }
+  return { measured: offenders.length, harmMax, windowMs, offenders };
+}
+
 // ── aggregate ────────────────────────────────────────────────────────────────
 
-/** The six contract probes as banded results, in the order above. */
+/** The contract probes as banded results, in the order above. */
 export function runContractProbes(input: DramaProbeInput, result: ResultFn): DramaProbeResult[] {
   const missed = owedMissedEmpty(input);
   const audit = blockedReasonAudit(input);
@@ -302,6 +394,8 @@ export function runContractProbes(input: DramaProbeInput, result: ResultFn): Dra
   const untouched = humanUntouchedWithoutTake(input);
   const cuts = sceneCutRevive(input);
   const down = downWindowExact(input);
+  const windup = takeContactWindup(input);
+  const harm = harmWindow(input);
   return [
     result("owed-missed-empty", "Reactions still owed when an act's window closed", missed.measured, { ...missed }, (passed) => (passed ? [] : ["D1"])),
     result("blocked-reason-audit", "Blocked or aborted acts without a reason from the contract's enums", audit.measured, { ...audit }, noCodes),
@@ -309,5 +403,7 @@ export function runContractProbes(input: DramaProbeInput, result: ResultFn): Dra
     result("human-untouched-without-take", "Physical acts that touched a human who did not take them", untouched.measured, { ...untouched }, (passed) => (passed ? [] : ["D7"])),
     result("scene-cut-revive", "Scene cuts whose revives break the contract", cuts.measured, { ...cuts }, (passed) => (passed ? [] : ["D4"])),
     result("down-window-exact", "Down windows that did not end when the contract says", down.measured, { ...down }, noCodes, down.windows === 0 ? "no human went down" : undefined),
+    result("take-contact-windup", "Takes whose contact did not come 150 ms later", windup.measured, { ...windup }, noCodes, windup.judged === 0 ? "no take reached contact" : undefined),
+    result("harm-window", "Landed violent acts on humans past the room's window limit", harm.measured, { ...harm }, (passed) => (passed ? [] : ["D7"])),
   ];
 }

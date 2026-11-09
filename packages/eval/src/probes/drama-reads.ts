@@ -22,6 +22,10 @@ export type DramaProbeInput = {
   humanIds?: readonly string[];
   /** Length of the run in ms. Default: the span of the events. */
   durationMs?: number;
+  /** SAFE-4's N (`PERFECTMAN_DRAMA_HARM_MAX`): landed violent acts on humans allowed per room per window. Default 3. */
+  harmMax?: number;
+  /** SAFE-4's window in ms (`PERFECTMAN_DRAMA_HARM_WINDOW_SECS`). Default 300 000. */
+  harmWindowMs?: number;
 };
 
 export type DramaProbeResult = ProbeResult & {

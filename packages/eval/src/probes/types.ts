@@ -136,6 +136,9 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   "human-untouched-without-take": [0, 0],
   "scene-cut-revive": [0, 0],
   "down-window-exact": [0, 0],
+  // TBL-3 (contact 150 ms after a take) and SAFE-4 (at most N landed violent acts on humans per room per window).
+  "take-contact-windup": [0, 0],
+  "harm-window": [0, 0],
 };
 
 export type ProbeInput = {
