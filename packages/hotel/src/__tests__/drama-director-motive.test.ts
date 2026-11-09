@@ -100,7 +100,9 @@ describe("HYBRID: the director may also start a beat when the model is passive",
     const first = rig.dir.decide({ actor: A, emotion: emotion({ resentfulColdness: 1 }, { toward: [B] }) }) as DramaApproval;
     rig.act({ actId: first.actId, verb: first.verb, actor: A, with: B, outcome: "landed" });
     expect(rig.dir.decide({ actor: A, emotion: emotion({ resentfulColdness: 1 }, { toward: [C] }) })).toEqual({ kind: "pass", why: "pace" });
-    await rig.clock.advance(6_000);
+    await rig.clock.advance(DEFAULT_DRAMA_TUNING.origination.minGapMs - 1);
+    expect(rig.dir.decide({ actor: A, emotion: emotion({ resentfulColdness: 1 }, { toward: [C] }) })).toEqual({ kind: "pass", why: "pace" });
+    await rig.clock.advance(1);
     expect(rig.dir.decide({ actor: A, emotion: emotion({ resentfulColdness: 1 }, { toward: [C] }) })).toMatchObject({ kind: "initiate", with: C });
   });
 

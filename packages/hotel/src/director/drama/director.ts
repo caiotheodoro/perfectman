@@ -85,6 +85,8 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   private readonly nextId = makeActIds();
   private advancePending: number | undefined;
   private readonly offered = new Map<number, number>();
+  /** When each actor last started each verb (`<actor>|<verb>`), for the repeat window of `DramaTuning.repeatMs`. */
+  private readonly startedAt = new Map<string, number>();
 
   constructor(private readonly d: DramaDirectorDeps) {
     this.tuning = d.tuning ?? DEFAULT_DRAMA_TUNING;
@@ -152,6 +154,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     const wire = this.wireOf(turn.actor, p.verb, p.with, p.origin, p.intensity, p.text, p.authoredSkip === true);
     const bad = this.precheck(turn.actor, p) ?? validateActCmd(wire, { run: this.d.run, actor: turn.actor }, new Set());
     if (bad) return { kind: "unsent", cause: "invalid", error: bad };
+    if (p.origin !== "scenario" && this.repeating(turn.actor, p.verb)) return { kind: "pass", why: "pace" };
     // RES-1: a `restrain` needs an aggressor, someone who has used a rung in this scene.
     if (p.verb === "restrain" && p.with !== undefined && this.ledger.rungOfActor(p.with) === 0) return { kind: "pass", why: "no_drive" };
     const assessed = this.assess(turn.actor, p.verb, p.with, p.origin, p.authoredSkip === true, turn.emotion);
@@ -185,6 +188,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
       // The reading names who the actor has a relationship with: those are the only people a beat can be aimed at.
       if (!emotion.relations?.has(other.id)) continue;
       for (const verb of this.tuning.origination.verbs) {
+        if (this.repeating(turn.actor, verb)) continue;
         const m = motive(verb, emotion, emotion.relations?.get(other.id), emotion.at ?? now, this.tuning);
         if (!m.ok) continue;
         const off = ladderRung(verb) === undefined;
@@ -249,6 +253,13 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     return { ok: true, rung: verdict.rung, skippedRungs: verdict.skippedRungs };
   }
 
+  /** The actor started this verb less than its window ago (`DramaTuning.repeatMs`). */
+  private repeating(actor: number, verb: ActVerb): boolean {
+    const window = this.tuning.repeatMs[verb];
+    const at = this.startedAt.get(`${actor}|${verb}`);
+    return window !== undefined && at !== undefined && this.d.clock.now() - at < window;
+  }
+
   /** LAD-10: the cap of actors at rung 3 or above is reached and this actor is not one of them. */
   private contagious(actor: number, avatars: readonly GateAvatar[]): boolean {
     const c = this.tuning.contagion;
@@ -278,6 +289,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     const now = this.d.clock.now();
     const room = this.d.world.roomOf(actor);
     const target = cmd.with ?? undefined;
+    this.startedAt.set(`${actor}|${cmd.verb}`, now);
     this.ledger.reserve({ actId: cmd.act_id, actor, target, room, verb: cmd.verb, origin: cmd.origin ?? "director", scene: this.ledger.sceneId, humanTarget: target !== undefined && target > 0, at: now });
     this.d.record?.("out", room === undefined ? undefined : String(room), "actor_cmd", { actor: this.d.world.refOf(actor) ?? String(actor), cmd: cmd as unknown as Record<string, unknown> });
     const approval: DramaApproval = {

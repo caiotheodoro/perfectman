@@ -29,8 +29,19 @@ export type DramaTuning = {
   contagion: { minRung: number; maxActors: number; castFraction: number };
   /** Which tendencies drive which verb. A verb with no driver is never started by emotion alone: `kill` is authored (LAD-5). */
   drivers: Readonly<Partial<Record<ActVerb, readonly Driver[]>>>;
-  /** Beats the director may originate when the model is passive, and how often one actor may be offered a beat. */
+  /**
+   * Beats the director may originate when the model is passive, and how often one actor may be offered a beat. 75 s (errata P4-02): the first seed, 6 s,
+   * started a resentful actor 8.6 times a minute against the act-rate probe's 3 per scene-minute. With 75 s all five presets pass every drama probe
+   * with a consult every 4, 6, 8, 10 and 12 s, and the ladder still peaks in a 4-minute scene (the model climbs it; the director only fills the quiet).
+   */
   origination: { verbs: readonly ActVerb[]; minGapMs: number; /** Off-ladder verbs have no rung, so no theta: a beat of one needs a volition of at least this. */ offLadderTheta: number };
+  /**
+   * The same actor starting the same verb again, at anyone, sooner than this after it last started it is passed on (`pace`), whoever asked: the
+   * model proposing it again, or the director's own beat. The hotel's cooldown (60 s, per target) covers the verbs with a `gates.cooldown`; these are
+   * the ones it leaves open, which a model that is shown a body on the floor on every consult would otherwise repeat on every consult. An authored beat
+   * is exempt (the script is the author's pace). A verb that is not listed has no window.
+   */
+  repeatMs: Readonly<Partial<Record<ActVerb, number>>>;
   /** A `scene_advance` carries no `cid` here, so a refusal is silent: ask again only after this long without a `scene_cut` (SCENE-4). */
   sceneAdvancePendingMs: number;
   /**
@@ -66,7 +77,8 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
     punch: [d("act.dominanceAssertion")],
     turn_back: [d("act.resentfulColdness"), d("act.contemptuousDismissal"), d("act.shameWithdrawal")],
   },
-  origination: { verbs: ["glare", "insult", "shove", "slap", "punch", "turn_back"], minGapMs: 6000, offLadderTheta: 0.6 },
+  repeatMs: { turn_back: 60_000, storm_off: 120_000, cry: 90_000, faint: 300_000, recoil: 20_000, freeze_gasp: 30_000, tend_fallen: 60_000, restrain: 30_000, tableau: 60_000 },
+  origination: { verbs: ["glare", "insult", "shove", "slap", "punch", "turn_back"], minGapMs: 75_000, offLadderTheta: 0.6 },
   sceneAdvancePendingMs: 3000,
   resumeAssumes: { physicalBeatJustStarted: true, killUsed: true },
   keepDoneMs: 60_000,
