@@ -1,109 +1,190 @@
 /**
  * Drama events: what happened on stage, read from a run's frames.
  *
- * Everything that depends on the hotel's wire format lives in this one file, so
- * realigning to the frozen act contract is one edit:
- *  - the real frames it reads today: `actor_cmd` (chat, action, expression, pair,
+ * Everything that depends on the hotel's wire format lives in this one file. It reads:
+ *  - the frames the hotel already sent: `actor_cmd` (chat, action, expression, pair,
  *    appearance), `human_chat`, the deltas `chat`, `avatar_action`,
  *    `appearance_changed`, `pair_prompt`, and `pair_reaction` (shapes learned from
  *    recorded runs, see the run 7 excerpt under `__fixtures__`);
- *  - the PROVISIONAL act frames (`act_started`, `act_reaction`, `act_done`, and
- *    `actor_death`) below. They are not frozen; the field names are a guess.
+ *  - the act frames of the frozen act contract (docs/drama/act-contract.md, revision 2, section 3):
+ *    `act_started`, `act_beat`, `act_reaction`, `act_done`, `drama_consent`, `actor_death`,
+ *    `actor_revive`, `human_down`, `human_up`, `scene_cut` and `drama_state`. `scene_advance` and
+ *    `act_overlay_clear` are not read: the first is the sidecar's own command, the second only
+ *    ends a client overlay, which no probe or judge looks at.
  *
  * Input is `BodyFrame[]` as `normalizeFrame` / `loadHotelRun` produce them, aligned
- * (`alignWireFrames`) or not: numeric avatar ids are resolved to refs here too.
+ * (`alignWireFrames`) or not: numeric avatar ids are resolved to refs here too, by one rule:
+ * a positive id is the human `h:<id>`, a negative id is its actor's ref (learned from
+ * `actor_spawned`, else the id as text).
+ *
+ * Two clocks. `atMs` is run-relative and comes from the frame log's wrapper (`ts_ms`), the one clock every
+ * frame has. `hotelAt` is the hotel's own `at` (epoch ms) when the frame carries one: the contract's latency
+ * rules (REA-1, DOWN-3) are stated on it, so the probes prefer it and fall back to `atMs`.
  */
 import type { BodyFrame } from "@perfectman/shared";
 
 // ---------------------------------------------------------------------------
-// Provisional wire frames (NOT frozen)
+// Closed sets of the act contract (section 0.2)
 // ---------------------------------------------------------------------------
 
-export const ACT_OUTCOMES = ["landed", "dodged", "blocked", "declined", "timeout"] as const;
+export const ACT_OUTCOMES = ["landed", "dodged", "blocked", "declined", "timeout", "aborted"] as const;
 export type ActOutcome = (typeof ACT_OUTCOMES)[number];
 
-export type ActStartedFrame = {
-  t: "act_started";
-  act_id: string;
-  verb: string;
-  actor: string;
-  with?: string;
-  /** 0..1 */
-  intensity: number;
-  /** The script meant this act to jump the escalation ladder; the ladder probe lets it through. */
-  authored_skip?: boolean;
-  /** The human target had opted in to physical drama (read by the consent probe when present). */
-  target_opt_in?: boolean;
-  run?: number;
-  seq?: number;
-};
+export const BLOCKED_REASONS = ["kill_switch", "calm_room", "consent_off", "ladder", "budget", "cooldown", "too_far", "dead_target", "no_scenario_gate", "rate_limit"] as const;
+export type BlockedReason = (typeof BLOCKED_REASONS)[number];
 
-export type ActReactionFrame = {
-  t: "act_reaction";
-  act_id: string;
-  who: string;
-  role: "target" | "witness";
-  reaction: string;
-};
+export const ABORT_REASONS = ["target_moved", "target_gone", "actor_gone", "actor_dead", "scene_cut", "run_end", "kill_switch", "calm_room", "paused", "opt_out"] as const;
+export type AbortReason = (typeof ABORT_REASONS)[number];
 
-export type ActDoneFrame = {
-  t: "act_done";
-  act_id: string;
-  outcome: ActOutcome;
-};
+export const CHIP_ANSWERS = ["take", "dodge", "push_back", "timeout"] as const;
+export type ChipAnswer = (typeof CHIP_ANSWERS)[number];
 
-/** Not in the brief's list of act frames, but `actor_death` events need some wire frame to come from. */
-export type ActorDeathFrame = {
-  t: "actor_death";
-  actor: string;
-  cause?: string;
-};
+export const IMPACT_CLASSES = ["L", "M", "H", "F"] as const;
+export type ImpactClass = (typeof IMPACT_CLASSES)[number];
 
-export type ProvisionalActFrame = ActStartedFrame | ActReactionFrame | ActDoneFrame | ActorDeathFrame;
+export const ACT_ORIGINS = ["model", "director", "scenario"] as const;
+export type ActOrigin = (typeof ACT_ORIGINS)[number];
 
 // ---------------------------------------------------------------------------
 // Events
 // ---------------------------------------------------------------------------
 
 type EventBase = {
-  /** Milliseconds from run start (the `run_start` frame, else the first frame). */
+  /** Milliseconds from run start (the `run_start` frame, else the first frame), on the frame log's clock. */
   atMs: number;
+  /** The hotel's own `at` (epoch ms), when the frame carries one. */
+  hotelAt?: number;
   room?: string;
 };
+
+/** Who owes a reaction, as `act_beat.owed` and `act_done.owed_missed` list them (actors only). */
+export type OwedRole = "target" | "witness";
+export type OwedDebt = { who: string; role: OwedRole };
 
 export type ActStartedEvent = EventBase & {
   kind: "act_started";
   actId: string;
   verb: string;
   actor: string;
+  /** Absent for the solo verbs. A human target is `h:<id>`. */
   with?: string;
   intensity: number;
-  /** See `ActStartedFrame.authored_skip`. */
+  /** `<run>.<n>`. Every ladder, spacing and kill rule is per scene. */
+  scene?: string;
+  impact?: ImpactClass;
+  origin?: ActOrigin;
+  /** The verb's ladder rung, 1 to 6; absent off the ladder. */
+  rung?: number;
+  skippedRungs?: string[];
+  /** The script meant this act to jump the escalation ladder; the ladder probe lets it through. */
   authoredSkip?: boolean;
-  /** See `ActStartedFrame.target_opt_in`. */
+  /** Present only when the target is a human: that human's session flag at the start. */
   targetOptIn?: boolean;
+  /** A consent chip will be shown. */
+  chip?: boolean;
+  /** Planned contact after the start when there is no chip; absent when the chip decides. */
+  contactInMs?: number;
   run?: number;
   seq?: number;
+};
+
+/** Contact: the clock for the reaction deadlines, and the only ground truth of who owes a reaction. */
+export type ActBeatEvent = EventBase & {
+  kind: "act_beat";
+  actId: string;
+  beat: string;
+  /** Everybody who saw it, humans included. */
+  witnesses: string[];
+  owed: Array<OwedDebt & { dueAt?: number }>;
+  scene?: string;
 };
 
 export type ActReactionEvent = EventBase & {
   kind: "act_reaction";
   actId: string;
   who: string;
-  role: "target" | "witness";
+  role: OwedRole;
+  /** A table label, or `cmd:<k>` for a planner command. */
   reaction: string;
+  /** `table` or `planner`; both count. */
+  source?: string;
+  scene?: string;
 };
 
 export type ActDoneEvent = EventBase & {
   kind: "act_done";
   actId: string;
   outcome: ActOutcome;
+  /** Present on every contract frame; a blocked act has no `act_started`, so this is all that says what it was. */
+  verb?: string;
+  actor?: string;
+  with?: string;
+  /** The chip answer, present iff a chip was shown. */
+  answer?: ChipAnswer;
+  /** A blocked reason (outcome `blocked`) or an abort reason (outcome `aborted`), as sent. */
+  reason?: string;
+  detail?: string;
+  /** Reactions still owed when the window closed; empty for every table-driven act (REA-10). */
+  owedMissed?: OwedDebt[];
+  downgraded?: string[];
+  scene?: string;
 };
 
 export type ActorDeathEvent = EventBase & {
   kind: "actor_death";
   actor: string;
+  /** `kill` or `die`. */
   cause?: string;
+  actId?: string;
+  killer?: string;
+  scene?: string;
+};
+
+/** A dead actor stands up at a scene cut. */
+export type ActorReviveEvent = EventBase & {
+  kind: "actor_revive";
+  actor: string;
+  scene?: string;
+  prev?: string;
+  x?: number;
+  y?: number;
+};
+
+/** A killed human is down for `ms`; they are not dead. */
+export type HumanDownEvent = EventBase & {
+  kind: "human_down";
+  human: string;
+  actId?: string;
+  ms: number;
+  scene?: string;
+};
+
+export type HumanUpEvent = EventBase & {
+  kind: "human_up";
+  human: string;
+  actId?: string;
+  /** `timer`, `left` or `closed`. */
+  reason?: string;
+};
+
+export type SceneCutEvent = EventBase & {
+  kind: "scene_cut";
+  /** The new scene. */
+  scene: string;
+  prev?: string;
+  revived: string[];
+  removed: string[];
+};
+
+export type DramaStateEvent = EventBase & {
+  kind: "drama_state";
+  scene?: string;
+  enabled?: boolean;
+  calm?: boolean;
+  paused?: boolean;
+  pausedUntil?: number;
+  /** Humans in the room whose session flag is on. */
+  optIn: string[];
 };
 
 export type SpeechEvent = EventBase & {
@@ -134,10 +215,15 @@ export type BodyActEvent = EventBase & {
 export type ConsentChipShownEvent = EventBase & {
   kind: "consent_chip";
   phase: "shown";
+  /** The act's id for an act chip. */
   pairId: string;
   from: string;
   pairKind: string;
   ttlMs: number;
+  /** The act this chip was shown for, when it was shown for an act rather than a pair. */
+  actId?: string;
+  /** `violent` or `affection`. */
+  family?: string;
 };
 
 /** `take` is the answer to a consent chip for an act (the human agrees to take the hit); the others come from pair chips. */
@@ -153,15 +239,24 @@ export type ConsentChipAnsweredEvent = EventBase & {
   answer: ConsentAnswer;
   /** The act this chip was asked for, when it was asked for an act rather than a pair. */
   actId?: string;
+  /** The chip answer as the hotel sent it (`take`, `dodge`, `push_back`, `timeout`); absent for a pair chip. */
+  rawAnswer?: ChipAnswer;
+  family?: string;
 };
 
 export type ConsentChipEvent = ConsentChipShownEvent | ConsentChipAnsweredEvent;
 
 export type DramaEvent =
   | ActStartedEvent
+  | ActBeatEvent
   | ActReactionEvent
   | ActDoneEvent
   | ActorDeathEvent
+  | ActorReviveEvent
+  | HumanDownEvent
+  | HumanUpEvent
+  | SceneCutEvent
+  | DramaStateEvent
   | SpeechEvent
   | BodyActEvent
   | ConsentChipEvent;
@@ -178,15 +273,21 @@ const isObj = (v: unknown): v is Json => v !== null && typeof v === "object" && 
 const text = (v: unknown): string | undefined => (typeof v === "string" && v !== "" ? v : undefined);
 const finite = (v: unknown): number | undefined => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
 
-/** Same-instant events read in this order, so an act is never `done` before it is `started`. */
+/** Same-instant events read in this order (the contract's FRM-1 order), so an act is never `done` before it is `started`. */
 const KIND_ORDER: Record<DramaEventKind, number> = {
   act_started: 0,
-  act_reaction: 1,
-  act_done: 2,
-  actor_death: 3,
-  consent_chip: 4,
-  body_act: 5,
-  speech: 6,
+  consent_chip: 1,
+  act_beat: 2,
+  act_reaction: 3,
+  actor_death: 4,
+  human_down: 5,
+  act_done: 6,
+  human_up: 7,
+  scene_cut: 8,
+  actor_revive: 9,
+  drama_state: 10,
+  body_act: 11,
+  speech: 12,
 };
 
 /** A command, the hotel's echo of it and the sidecar's copy of it are one event inside this window (each source counts once). */
@@ -220,21 +321,60 @@ function outcomeToAnswer(outcome: string): ConsentAnswer | undefined {
   }
 }
 
+/** The chip answer as a `ConsentAnswer`: a dodge and a push back both decline. */
+function chipAnswerToConsent(answer: ChipAnswer): ConsentAnswer {
+  switch (answer) {
+    case "take":
+      return "take";
+    case "dodge":
+    case "push_back":
+      return "decline";
+    case "timeout":
+      return "timeout";
+    default: {
+      const unreachable: never = answer;
+      return unreachable;
+    }
+  }
+}
+
+/** `act_beat.owed` (with `due_at`) or `act_done.owed_missed`: actors only. An entry that names no one or has no role is skipped. */
+function owedList(raw: unknown, who: (id: unknown) => string, withDue: true): Array<OwedDebt & { dueAt?: number }> | undefined;
+function owedList(raw: unknown, who: (id: unknown) => string, withDue: false): OwedDebt[] | undefined;
+function owedList(raw: unknown, who: (id: unknown) => string, withDue: boolean): OwedDebt[] | undefined {
+  if (!Array.isArray(raw)) return undefined;
+  const debts: Array<OwedDebt & { dueAt?: number }> = [];
+  for (const entry of raw) {
+    if (!isObj(entry) || entry["who"] === undefined || (entry["role"] !== "target" && entry["role"] !== "witness")) continue;
+    const due = finite(entry["due_at"]);
+    debts.push({ who: who(entry["who"]), role: entry["role"], ...(withDue && due !== undefined ? { dueAt: due } : {}) });
+  }
+  return debts;
+}
+
 export function extractDramaEvents(frames: readonly BodyFrame[]): DramaEvent[] {
   const sorted = [...frames].sort(compareFrames);
   if (sorted.length === 0) return [];
   const runStart = sorted.find((f) => f.kind === "run_start");
   const start = (runStart ?? sorted[0]!).atMs;
 
-  // Who is who: the hotel's numeric avatar ids to the actors' refs; a human the hotel names h:<id>.
+  // Who is who: the hotel's negative avatar ids to the actors' refs (learned from `actor_spawned`). A positive id is a
+  // human, always `h:<id>`: a chat line never renames them.
   const names = new Map<string, string>();
-  for (const f of sorted) {
-    if (f.kind === "actor_spawned" && f.data["actor"] !== undefined && text(f.data["ref"])) names.set(String(f.data["actor"]), String(f.data["ref"]));
-    if (f.kind === "human_chat" && text(f.data["fromId"])) names.set(String(f.data["fromId"]), String(f.data["ref"]));
-  }
+  for (const f of sorted) if (f.kind === "actor_spawned" && f.data["actor"] !== undefined && text(f.data["ref"])) names.set(String(f.data["actor"]), String(f.data["ref"]));
   const who = (id: unknown): string => {
     const key = String(id);
     return names.get(key) ?? (/^\d+$/.test(key) ? `h:${key}` : key);
+  };
+  const whoList = (v: unknown): string[] | undefined => (Array.isArray(v) ? v.filter((id) => typeof id === "number" || typeof id === "string").map(who) : undefined);
+
+  // The scene and room of each act, from its `act_started`, for the frames that carry only an act_id (they may sort before it on a tied stamp).
+  const actScene = new Map<string, string>();
+  for (const f of sorted) if (f.kind === "act_started" && text(f.data["act_id"]) && text(f.data["scene"])) actScene.set(String(f.data["act_id"]), String(f.data["scene"]));
+  const sceneOfAct = (actId: string): { scene?: string } => (actScene.has(actId) ? { scene: actScene.get(actId)! } : {});
+  const stamped = (d: Json): { hotelAt?: number } => {
+    const at = finite(d["at"]);
+    return at !== undefined ? { hotelAt: at } : {};
   };
 
   const roomOf = new Map<string, string>();
@@ -376,21 +516,53 @@ export function extractDramaEvents(frames: readonly BodyFrame[]): DramaEvent[] {
         if (room !== undefined) actRoom.set(actId, room);
         const run = finite(d["run"]);
         const seq = finite(d["seq"]);
+        const rung = finite(d["rung"]);
+        const contactInMs = finite(d["contact_in_ms"]);
+        const impact = IMPACT_CLASSES.find((c) => c === d["impact"]);
+        const origin = ACT_ORIGINS.find((o) => o === d["origin"]);
+        const skipped = Array.isArray(d["skipped_rungs"]) ? d["skipped_rungs"].filter((v): v is string => typeof v === "string") : undefined;
         const authoredSkip = d["authored_skip"];
         const targetOptIn = d["target_opt_in"];
+        const chip = d["chip"];
         out.push({
           kind: "act_started",
           atMs: f.atMs - start,
+          ...stamped(d),
           ...withRoom(room),
           actId,
           verb,
           actor,
           ...(d["with"] !== undefined && d["with"] !== null ? { with: who(d["with"]) } : {}),
           intensity,
+          ...(text(d["scene"]) ? { scene: String(d["scene"]) } : {}),
+          ...(impact !== undefined ? { impact } : {}),
+          ...(origin !== undefined ? { origin } : {}),
+          ...(rung !== undefined && Number.isInteger(rung) && rung >= 1 && rung <= 6 ? { rung } : {}),
+          ...(skipped !== undefined ? { skippedRungs: skipped } : {}),
           ...(typeof authoredSkip === "boolean" ? { authoredSkip } : {}),
           ...(typeof targetOptIn === "boolean" ? { targetOptIn } : {}),
+          ...(typeof chip === "boolean" ? { chip } : {}),
+          ...(contactInMs !== undefined ? { contactInMs } : {}),
           ...(run !== undefined ? { run } : {}),
           ...(seq !== undefined ? { seq } : {}),
+        });
+        break;
+      }
+      case "act_beat": {
+        const actId = text(d["act_id"]);
+        const witnesses = whoList(d["witnesses"]);
+        const owed = owedList(d["owed"], who, true);
+        if (!actId || witnesses === undefined || owed === undefined) break;
+        out.push({
+          kind: "act_beat",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room ?? actRoom.get(actId)),
+          actId,
+          beat: text(d["beat"]) ?? "contact",
+          witnesses,
+          owed,
+          ...sceneOfAct(actId),
         });
         break;
       }
@@ -400,21 +572,182 @@ export function extractDramaEvents(frames: readonly BodyFrame[]): DramaEvent[] {
         const role = d["role"];
         if (!actId || !reaction || d["who"] === undefined || (role !== "target" && role !== "witness")) break;
         const reactor = who(d["who"]);
-        out.push({ kind: "act_reaction", atMs: f.atMs - start, ...withRoom(f.room ?? actRoom.get(actId) ?? roomOf.get(reactor)), actId, who: reactor, role, reaction });
+        const source = text(d["source"]);
+        out.push({
+          kind: "act_reaction",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room ?? actRoom.get(actId) ?? roomOf.get(reactor)),
+          actId,
+          who: reactor,
+          role,
+          reaction,
+          ...(source !== undefined ? { source } : {}),
+          ...sceneOfAct(actId),
+        });
         break;
       }
       case "act_done": {
         const actId = text(d["act_id"]);
         const outcome = ACT_OUTCOMES.find((o) => o === d["outcome"]);
         if (!actId || outcome === undefined) break;
-        out.push({ kind: "act_done", atMs: f.atMs - start, ...withRoom(f.room ?? actRoom.get(actId)), actId, outcome });
+        const answer = CHIP_ANSWERS.find((a) => a === d["answer"]);
+        const missed = owedList(d["owed_missed"], who, false);
+        const downgraded = Array.isArray(d["downgraded"]) ? d["downgraded"].filter((v): v is string => typeof v === "string") : undefined;
+        out.push({
+          kind: "act_done",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room ?? actRoom.get(actId)),
+          actId,
+          outcome,
+          ...(text(d["verb"]) ? { verb: String(d["verb"]) } : {}),
+          ...(d["actor"] !== undefined && d["actor"] !== null ? { actor: who(d["actor"]) } : {}),
+          ...(d["with"] !== undefined && d["with"] !== null ? { with: who(d["with"]) } : {}),
+          ...(answer !== undefined ? { answer } : {}),
+          ...(text(d["reason"]) ? { reason: String(d["reason"]) } : {}),
+          ...(text(d["detail"]) ? { detail: String(d["detail"]) } : {}),
+          ...(missed !== undefined ? { owedMissed: missed } : {}),
+          ...(downgraded !== undefined ? { downgraded } : {}),
+          ...sceneOfAct(actId),
+        });
+        break;
+      }
+      case "drama_consent": {
+        const actId = text(d["act_id"]);
+        if (!actId || d["actor"] === undefined || d["with"] === undefined) break;
+        const actor = who(d["actor"]);
+        const room = f.room ?? actRoom.get(actId) ?? roomOf.get(actor);
+        const family = text(d["family"]);
+        if (d["phase"] === "shown") {
+          out.push({
+            kind: "consent_chip",
+            phase: "shown",
+            atMs: f.atMs - start,
+            ...stamped(d),
+            ...withRoom(room),
+            actId,
+            pairId: actId,
+            from: actor,
+            pairKind: text(d["verb"]) ?? "act",
+            ttlMs: finite(d["ttl_ms"]) ?? 0,
+            ...(family !== undefined ? { family } : {}),
+          });
+        } else if (d["phase"] === "answered") {
+          const rawAnswer = CHIP_ANSWERS.find((a) => a === d["answer"]);
+          if (rawAnswer === undefined) break;
+          out.push({
+            kind: "consent_chip",
+            phase: "answered",
+            atMs: f.atMs - start,
+            ...stamped(d),
+            ...withRoom(room),
+            actId,
+            pairId: actId,
+            actor,
+            with: who(d["with"]),
+            answer: chipAnswerToConsent(rawAnswer),
+            rawAnswer,
+            ...(family !== undefined ? { family } : {}),
+          });
+        }
         break;
       }
       case "actor_death": {
         if (d["actor"] === undefined) break;
         const actor = who(d["actor"]);
         const cause = text(d["cause"]);
-        out.push({ kind: "actor_death", atMs: f.atMs - start, ...withRoom(f.room ?? roomOf.get(actor)), actor, ...(cause !== undefined ? { cause } : {}) });
+        const actId = text(d["act_id"]);
+        out.push({
+          kind: "actor_death",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room ?? roomOf.get(actor)),
+          actor,
+          ...(cause !== undefined ? { cause } : {}),
+          ...(actId !== undefined ? { actId } : {}),
+          ...(d["killer"] !== undefined && d["killer"] !== null ? { killer: who(d["killer"]) } : {}),
+          ...(text(d["scene"]) ? { scene: String(d["scene"]) } : {}),
+        });
+        break;
+      }
+      case "actor_revive": {
+        if (d["actor"] === undefined) break;
+        const actor = who(d["actor"]);
+        const x = finite(d["x"]);
+        const y = finite(d["y"]);
+        out.push({
+          kind: "actor_revive",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room ?? roomOf.get(actor)),
+          actor,
+          ...(text(d["scene"]) ? { scene: String(d["scene"]) } : {}),
+          ...(text(d["prev"]) ? { prev: String(d["prev"]) } : {}),
+          ...(x !== undefined ? { x } : {}),
+          ...(y !== undefined ? { y } : {}),
+        });
+        break;
+      }
+      case "human_down": {
+        const ms = finite(d["ms"]);
+        if (d["human"] === undefined || ms === undefined) break;
+        const actId = text(d["act_id"]);
+        out.push({
+          kind: "human_down",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room),
+          human: who(d["human"]),
+          ...(actId !== undefined ? { actId } : {}),
+          ms,
+          ...(text(d["scene"]) ? { scene: String(d["scene"]) } : {}),
+        });
+        break;
+      }
+      case "human_up": {
+        if (d["human"] === undefined) break;
+        const actId = text(d["act_id"]);
+        out.push({
+          kind: "human_up",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room),
+          human: who(d["human"]),
+          ...(actId !== undefined ? { actId } : {}),
+          ...(text(d["reason"]) ? { reason: String(d["reason"]) } : {}),
+        });
+        break;
+      }
+      case "scene_cut": {
+        const scene = text(d["scene"]);
+        if (!scene) break;
+        out.push({
+          kind: "scene_cut",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room),
+          scene,
+          ...(text(d["prev"]) ? { prev: String(d["prev"]) } : {}),
+          revived: whoList(d["revived"]) ?? [],
+          removed: whoList(d["removed"]) ?? [],
+        });
+        break;
+      }
+      case "drama_state": {
+        const pausedUntil = finite(d["paused_until"]);
+        out.push({
+          kind: "drama_state",
+          atMs: f.atMs - start,
+          ...stamped(d),
+          ...withRoom(f.room),
+          ...(text(d["scene"]) ? { scene: String(d["scene"]) } : {}),
+          ...(typeof d["enabled"] === "boolean" ? { enabled: d["enabled"] } : {}),
+          ...(typeof d["calm"] === "boolean" ? { calm: d["calm"] } : {}),
+          ...(typeof d["paused"] === "boolean" ? { paused: d["paused"] } : {}),
+          ...(pausedUntil !== undefined ? { pausedUntil } : {}),
+          optIn: whoList(d["opt_in"]) ?? [],
+        });
         break;
       }
       default:

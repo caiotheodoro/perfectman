@@ -82,7 +82,7 @@ describe("extractDramaEvents on real run 7 frames", () => {
   });
 });
 
-describe("extractDramaEvents on the provisional act frames", () => {
+describe("extractDramaEvents on the minimal act frames (the first guess, still read)", () => {
   const spawn = (id: number, ref: string, room = 17): BodyFrame =>
     wire({ actor: id, cid: 1, dir: 2, ref, room, seq: 1, t: "actor_spawned", x: 0, y: 8 }, 1000);
   const base = [
@@ -148,7 +148,7 @@ describe("extractDramaEvents on the provisional act frames", () => {
   });
 
   it("accepts every act_done outcome the wire allows", () => {
-    const outcomes = ["landed", "dodged", "blocked", "declined", "timeout"] as const;
+    const outcomes = ["landed", "dodged", "blocked", "declined", "timeout", "aborted"] as const;
     const frames = [...base, ...outcomes.map((o, i) => wire({ t: "act_done", act_id: `a${i}`, outcome: o }, 2000 + i))];
     expect(of(extractDramaEvents(frames), "act_done").map((e) => e.outcome)).toEqual([...outcomes]);
   });
