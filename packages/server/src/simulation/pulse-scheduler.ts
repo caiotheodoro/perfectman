@@ -929,6 +929,7 @@ export class PulseScheduler {
           ...(resolved.body ? { body: resolved.body } : {}),
           ...(decision.space ? { space: decision.space } : {}),
           agentState: stepResult.updatedAgentState,
+          actionEmotions: stepResult.actionEmotions,
         });
       } catch (err) {
         await this.emitOperatorEvent(this.schedulerError("onAgentCommitted failed", err, agent.id));

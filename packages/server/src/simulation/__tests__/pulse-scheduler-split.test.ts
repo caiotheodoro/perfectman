@@ -13,6 +13,7 @@ import { EngineEventBuilder } from "../engine-event-builder.js";
 import { MockDeliveryGateway } from "../../delivery/mock-delivery-gateway.js";
 import { cannedNoOpStep, makeAgentState, makePersona, SETTINGS } from "./fixtures.js";
 import type { ActionIntent, AttentionReason, EngineSnapshot, Simulation } from "@perfectman/shared";
+import type { AgentCommitInfo } from "../hotel-options.js";
 
 const SIM: Simulation = {
   id: "sim_split",
@@ -236,6 +237,29 @@ describe("PulseScheduler split pulse (ADR-0020)", () => {
     for (const call of h.calls.splice(0)) call.resolve();
     await run;
     expect(preview).not.toHaveBeenCalled();
+  });
+
+  it("[P3] hands the planner seam the step's 15 action tendencies, which are computed and never on AgentState", async () => {
+    const commits: AgentCommitInfo[] = [];
+    const resolver = (snap: EngineSnapshot) => {
+      const base = cannedNoOpStep(snap);
+      return {
+        ...base,
+        actionEmotions: { ...base.actionEmotions, resentfulColdness: 0.77 },
+        attentionResults: { ...base.attentionResults, reasons: ["direct_mention" as AttentionReason], needsLLM: true },
+        decision: { ...base.decision, needsLLM: true, outcome: "respond" as const },
+        availableActions: [{ intentType: "no_op" as const, channelTargets: [], personTargets: [], blocked: false }],
+        updatedAgentState: { ...base.updatedAgentState, simulationId: SIM.id },
+      };
+    };
+    const h = await harness({ generateConcurrency: 5, stepResolver: resolver, onAgentCommitted: (info) => commits.push(info) });
+    const base = h.scheduler.runPulse({ reason: "base" });
+    await tick();
+    for (const call of h.calls.splice(0)) call.resolve();
+    await tick();
+    await base;
+    expect(commits.length).toBeGreaterThan(0);
+    expect(commits.every((c) => c.actionEmotions?.resentfulColdness === 0.77)).toBe(true);
   });
 
   it("falls back to a recorded silence when a generate call outlives its deadline", async () => {
