@@ -22,7 +22,7 @@ type FakeRoom = { id: number; name: string; official: boolean; section: string |
  * What a hotel with `PERFECTMAN_DRAMA` on adds to its `hello` (act-contract.md NEG-2): `proto_max`, `caps` and `drama`.
  * Absent means a hotel with the switch off (or an old one): today's hello, byte for byte.
  */
-export type FakeDramaOffer = { vocab?: VerbVocabRef; caps?: string[]; dead?: number[]; protoMax?: number };
+export type FakeDramaOffer = { vocab?: VerbVocabRef; caps?: string[]; dead?: number[]; protoMax?: number; enabled?: boolean };
 
 export type FakeDirectorOptions = {
   secret: string;
@@ -324,7 +324,7 @@ export class FakeDirector {
     this.send({
       t: "hello",
       proto: this.helloProto,
-      ...(offer ? { proto_max: offer.protoMax ?? 2, caps: offer.caps ?? ["drama.v1"], drama: helloDrama({ ...(offer.vocab ? { vocab: offer.vocab } : {}), dead: offer.dead ?? [] }) } : {}),
+      ...(offer ? { proto_max: offer.protoMax ?? 2, caps: offer.caps ?? ["drama.v1"], drama: helloDrama({ ...(offer.vocab ? { vocab: offer.vocab } : {}), dead: offer.dead ?? [], ...(offer.enabled !== undefined ? { enabled: offer.enabled } : {}) }) } : {}),
       ...this.helloExtra,
       session: `s${this.connections}`,
       hotel: { build: "fake", tick_ms: 300, max_chat: 200, max_actions_per_5s: 8, join_interval_ms: 200, human_reserve: 10, max_avatars_per_room: 50 },

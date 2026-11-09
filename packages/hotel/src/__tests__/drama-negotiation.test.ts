@@ -119,6 +119,12 @@ describe("[NEG-3] the answer", () => {
     expect(hotel.dialect).toBe(1);
   });
 
+  it("[NEG-3] [SAFE-2] a hello whose drama.enabled is false (the runtime switch is off) still negotiates dialect 2, and hands the handler enabled:false", async () => {
+    const { fake: hotel, sessions } = await connect({ offer: { enabled: false }, drama: true });
+    expect(hotel.dialect).toBe(2);
+    expect(sessions[0]).toMatchObject({ enabled: false });
+  });
+
   it("[NEG-3] answers proto 1 to a hello whose proto_max is 1", async () => {
     const { fake: hotel } = await connect({ offer: { protoMax: 1 }, drama: true });
     expect(hotel.ack?.proto).toBe(1);

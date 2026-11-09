@@ -40,7 +40,9 @@ export function negotiate(hello: Hello, own: { enabled: boolean }): Negotiation 
   if (!own.enabled) return { ...PLAIN, warnings: [] };
   const offered = Math.min(PROTO_MAX, hello.proto_max ?? hello.proto);
   const drama = hello.drama;
-  if (offered < 2 || !hello.caps?.includes(DRAMA_CAP) || !drama || drama.enabled === false) return { ...PLAIN, warnings: [] };
+  // `drama.enabled` is the hotel's runtime switch (SAFE-2) and is not a condition (NEG-3): the session stays open while it is off,
+  // so an admin turning it on later needs no reconnect. The sidecar reads it from the session.
+  if (offered < 2 || !hello.caps?.includes(DRAMA_CAP) || !drama) return { ...PLAIN, warnings: [] };
   if (drama.verb_vocab.version !== OWN_VOCAB.version) {
     return { ...PLAIN, warnings: [`verb vocab version mismatch (hotel ${drama.verb_vocab.version}, sidecar ${OWN_VOCAB.version}): drama is off for this session`] };
   }

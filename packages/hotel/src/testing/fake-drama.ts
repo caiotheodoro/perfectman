@@ -122,6 +122,6 @@ export function dramaStateFrame(p: { run?: number; room?: number; scene?: string
 }
 
 /** The `hello.drama` block of an offering hotel (NEG-2). */
-export function helloDrama(p: { vocab?: VerbVocabRef; dead?: number[] } = {}): HelloDrama {
-  return { enabled: true, verb_vocab: p.vocab ?? VOCAB, chip_ttl_ms: VOCAB_CONSTANTS.chip_ttl_ms, harm_max: VOCAB_CONSTANTS.harm_max_default, harm_window_s: VOCAB_CONSTANTS.harm_window_s_default, dead: p.dead ?? [] };
+export function helloDrama(p: { vocab?: VerbVocabRef; dead?: number[]; enabled?: boolean } = {}): HelloDrama {
+  return { enabled: p.enabled ?? true, verb_vocab: p.vocab ?? VOCAB, chip_ttl_ms: VOCAB_CONSTANTS.chip_ttl_ms, harm_max: VOCAB_CONSTANTS.harm_max_default, harm_window_s: VOCAB_CONSTANTS.harm_window_s_default, dead: p.dead ?? [] };
 }
