@@ -48,6 +48,9 @@ importers:
       '@perfectman/engine':
         specifier: workspace:*
         version: link:../engine
+      '@perfectman/hotel':
+        specifier: workspace:*
+        version: link:../hotel
       '@perfectman/server':
         specifier: workspace:*
         version: link:../server
