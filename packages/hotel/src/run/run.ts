@@ -296,6 +296,7 @@ export class Run {
       ghostVoice: d.hotel.dramaGhostVoice === true && params.mode === "cinematic",
       hooks: { blocked: (agentId, reasons) => void this.appendBodyEvent("body_blocked", agentId, { reasons: reasons as unknown as never }, false) },
     });
+    this.space.setFallen((ref) => this.dramaSink.ledger.fallenKind(ref));
   }
 
   /** The built simulation; undefined until `launch` has built it. */
@@ -414,6 +415,8 @@ export class Run {
       ghostVoice: this.d.hotel.dramaGhostVoice === true && this.params.mode === "cinematic",
       hooks: {
         gone: (ref) => this.dramaSink.actorGone(ref),
+        // DEATH-5: the ghost voice stays on this side of the wire (the hotel refuses a dead actor's thought); it is kept in the run's frame log.
+        ghost: (agentId, text) => this.frames.record("out", this.space.roomOfRef(agentId), "ghost_thought", { agentId, text }),
         blocked: (agentId, reasons) => void this.appendBodyEvent("body_blocked", agentId, { reasons: reasons as unknown as never }, false),
         arrived: (agentId, plan, tile, room) => void this.onArrived(agentId, plan.id, tile, room),
         movedRoom: (agentId, from, to) => this.onMovedRoom(agentId, from, to),

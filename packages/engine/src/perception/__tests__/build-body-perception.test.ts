@@ -107,4 +107,17 @@ describe("buildBodyPerception", () => {
     expect(moving.handles).toEqual({});
     expect(estimateBodyTokens(renderBodyBlock(moving.body, { language: "en" }))).toBeLessThan(40);
   });
+
+  it("[DEATH-2] a body on the floor is told as such in both languages, is never the interlocutor, and keeps no other activity", () => {
+    const occ = [person("a1", "Ana", [5, 4], { dir: 6 }), person("a2", "Duda", [6, 4], { state: "lay", fallen: "dead", lastSpokeAt: T0 + 39_000 }), person("a3", "Rafa", [4, 4])];
+    const view = viewOf(loungeModel(occ, ["a1", "a2", "a3"]), "a1", T0 + 40_000);
+    const events = [say("e1", "a2", "oi Ana", { addresseeIds: ["a1"] })];
+    const pt = buildBodyPerception({ view, events, language: "pt-BR" });
+    const en = buildBodyPerception({ view, events, language: "en" });
+    expect(pt.body.people.find((p) => p.name === "Duda")).toMatchObject({ activity: "fallen" });
+    expect(pt.body.people.find((p) => p.name === "Duda")?.pinned).toBeUndefined();
+    expect(renderBodyBlock(pt.body, { language: "pt-BR" }).join("\n")).toContain("no chão, sem reagir");
+    expect(renderBodyBlock(en.body, { language: "en" }).join("\n")).toContain("on the floor, not responding");
+    expect(renderBodyBlock(en.body, { language: "en" }).join("\n")).not.toMatch(/\bdead\b/i);
+  });
 });

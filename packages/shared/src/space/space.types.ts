@@ -89,6 +89,11 @@ export type Presence = {
   since: number;
   lastSpokeAt?: number;
   lastMovedAt: number;
+  /**
+   * On the floor and not answering: a dead actor (`dying`, `body`), a fainted one, a killed human who is down (act-contract.md DOWN-1).
+   * Set by the drama planner side on the views it hands out; absent everywhere else, so a run without drama never sees it.
+   */
+  fallen?: "dead" | "fainted" | "down";
 };
 
 export type RoomAdjacency = {
