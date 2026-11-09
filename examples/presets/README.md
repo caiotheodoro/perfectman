@@ -55,17 +55,17 @@ Scored with the rubric in `docs/eval/roleplay-rubric/`.
 - `reencontro-abraco` — Sofia comes home after five years; affection only (`max_rung: 0`): hugs and a kiss.
 - `anuncio-do-desmaio` — the will is read in front of everyone and Sofia faints (`max_rung: 2`: looks and words, no blows).
 
-Three frontmatter keys beyond the ones above are read by the drama layer and ignored by the compiler:
+Three frontmatter keys beyond the ones above are read by the drama layer (the authoring service compiles `drama` and `beats` into the scenario body) and ignored by the compiler:
 
 ```yaml
 drama: { max_rung: 4, may_target: [[beatriz, ricardo]], may_die: [] }   # agent ids or cast names; the authoring service compiles it into the body
-beats:                                                                  # the scene's script, seconds in; read by the drama sim
+beats:                                                                  # the scene's script, seconds into the run; the sidecar's BeatPlayer plays it
   - { at: 90, actor: ricardo, verb: kill, with: otavio, skip: true }
   - { at: 170, cut: "fim da festa" }
 priorEvents:                                                            # payload.tone and payload.personTargets are how a message becomes a grievance
   - { ..., payload: { content: "...", tone: betrayal, personTargets: [beatriz] } }
 ```
 
-`tone` is `hostile`, `accusing`, `betrayal`, `humiliating`, `tender` or `romantic`: the sim turns a message into a grievance (or warmth) of its target toward its speaker, with the time it was said, so the director's motive gate (`rel.resentment` or a recent negative event) has something to read. `beats` are not played by the hotel sidecar yet: the sidecar has no player for authored acts or scene cuts (errata P4-01).
+`tone` is `hostile`, `accusing`, `betrayal`, `humiliating`, `tender` or `romantic`: the sim turns a message into a grievance (or warmth) of its target toward its speaker, with the time it was said, so the director's motive gate (`rel.resentment` or a recent negative event) has something to read. `beats` are the scene's script: authored acts (`skip: true` is `authored_skip`) and scene cuts at a second of the run. The sidecar's `BeatPlayer` plays each one once, as a scenario-origin act through the director (so `may_target`, `may_die`, `max_rung` and every hotel gate still apply; a beat they refuse is logged and dropped) or as a `scene_advance` (errata P4-01).
 
 To watch one: `pnpm --filter @perfectman/eval drama:sim -- --scenario tapa-na-cara --out out/tapa` writes `frames.jsonl`, `events.jsonl`, `probes.json` and `timeline.txt`; `--all` runs the five.
