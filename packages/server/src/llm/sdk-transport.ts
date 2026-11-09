@@ -315,11 +315,12 @@ export async function generateOpenAiCompatibleIntent(
       });
 
       const data = (result.response?.body ?? {}) as {
-        choices?: Array<{ message?: { content?: string | null } }>;
+        choices?: Array<{ message?: { content?: string | null }; finish_reason?: string | null }>;
         usage?: { prompt_tokens?: number; completion_tokens?: number };
         model?: string;
       };
       const content = data.choices?.[0]?.message?.content;
+      const finishReason = data.choices?.[0]?.finish_reason;
       if (content === undefined || content === null) {
         throw new LLMResponseError("Empty or missing content in OpenAI completion choices.");
       }
@@ -345,6 +346,7 @@ export async function generateOpenAiCompatibleIntent(
         requestedModel,
         routedModel,
         fallbackAttempts: fallbackFromHeader > 0 ? fallbackFromHeader : attempts - 1,
+        ...(typeof finishReason === "string" ? { finishReason } : {}),
       };
     } catch (error) {
       let resolvedError: Error;

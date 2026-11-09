@@ -35,7 +35,12 @@ export type ChatCompletionOptions = {
   timeoutMs?: number;
   /** Spread onto the request body root — e.g. DeepSeek's `thinking: {type: "disabled"}`. */
   extraBody?: Record<string, unknown>;
+  /** Extra request headers (never credentials: the key goes in `apiKey`). Added to what the transport sends; values are never logged. */
+  headers?: Readonly<Record<string, string>>;
 };
+
+/** A completion with the endpoint's `finish_reason` (`"length"` = the reply was cut off at `maxTokens`), when it sent one. */
+export type ChatCompletionResult = { content: string; finishReason?: string };
 
 export class ChatCompletionError extends Error {
   override readonly cause?: unknown;
@@ -72,8 +77,22 @@ function buildPrompt(messages: ChatCompletionMessage[]): BuiltPrompt {
   };
 }
 
+/** The transport's fetch (the global one, read at call time) with `headers` set on every request. */
+function fetchWithHeaders(headers: Readonly<Record<string, string>>): typeof fetch {
+  return (input, init) => {
+    const merged = new Headers(init?.headers);
+    for (const [name, value] of Object.entries(headers)) merged.set(name, value);
+    return globalThis.fetch(input, { ...init, headers: merged });
+  };
+}
+
 /** Resolves to the raw assistant content ("" when the model sent none). */
 export async function chatCompletion(opts: ChatCompletionOptions): Promise<string> {
+  return (await chatCompletionDetailed(opts)).content;
+}
+
+/** Like {@link chatCompletion}, plus the finish reason. */
+export async function chatCompletionDetailed(opts: ChatCompletionOptions): Promise<ChatCompletionResult> {
   const timeoutMs = opts.timeoutMs ?? 60000;
   const config: LLMConfig = {
     // Any OpenAI-compatible endpoint; the transport never reads
@@ -96,16 +115,19 @@ export async function chatCompletion(opts: ChatCompletionOptions): Promise<strin
     extraBody: opts.extraBody,
   };
 
-  const deps: LlmTransportDeps = opts.apiKey ? { env: { [API_KEY_SENTINEL]: opts.apiKey } } : {};
+  const deps: LlmTransportDeps = {
+    ...(opts.apiKey ? { env: { [API_KEY_SENTINEL]: opts.apiKey } } : {}),
+    ...(opts.headers && Object.keys(opts.headers).length > 0 ? { fetch: fetchWithHeaders(opts.headers) } : {}),
+  };
 
   try {
     const result = await generateOpenAiCompatibleIntent(config, buildPrompt(opts.messages), Date.now(), deps);
-    return result.content;
+    return { content: result.content, ...(result.finishReason !== undefined ? { finishReason: result.finishReason } : {}) };
   } catch (error) {
     if (error instanceof LLMResponseError) {
       // The seam reports missing content as a typed error; the old
       // primitive resolved "" instead — keep the caller contract.
-      return "";
+      return { content: "" };
     }
     // LLMHttpError already carries "HTTP <status>: <message>", so the
     // label prefix reproduces the old "caller HTTP 500: boom" wording.

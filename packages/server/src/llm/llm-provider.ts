@@ -13,6 +13,8 @@ export type LLMProviderResult = {
   requestedModel?: string;
   routedModel?: string;
   fallbackAttempts?: number;
+  /** The endpoint's `finish_reason` of the first choice (`"length"` = cut off at the token limit), when it sent one. */
+  finishReason?: string;
 };
 
 export interface LLMProvider {
