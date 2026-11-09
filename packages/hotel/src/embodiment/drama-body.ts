@@ -127,6 +127,8 @@ export class DramaBody implements DramaFrameSink {
    */
   planFor(ref: string, base: PlanInput): PlannedCommand[] {
     if (!this.active) return plan(base);
+    // ACT-11, DEATH-2: the dead plan nothing; the hotel would answer actor_dead to all of it.
+    if (this.ledger.isDead(ref)) return [];
     this.latest.set(ref, { agentState: base.agentState, ...(base.actionEmotions ? { actionEmotions: base.actionEmotions } : {}) });
     const wire = this.d.mirror.avatarId(ref);
     const port = this.d.port;

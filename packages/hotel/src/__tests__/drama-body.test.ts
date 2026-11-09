@@ -176,7 +176,7 @@ describe("death in the engine and the memory (DEATH-2, DEATH-4, DEATH-7, REA-8, 
     feedFrames(r.body, kill());
     expect(r.pool).toContain("defer:rafa");
     expect(r.body.isDead("rafa")).toBe(true);
-    r.body.planFor("rafa", r.input({}, "rafa"));
+    expect(r.body.planFor("rafa", r.input({ actionEmotions: { ...ZERO_ACT, vulnerableRetreat: 0.9 } }, "rafa"))).toEqual([]);
     feedFrames(r.body, sceneCutFrames({ scene: "7.3", prev: "7.2", revived: [-702] }));
     expect(r.pool.at(-1)).toBe("admit:rafa");
     expect(r.body.isDead("rafa")).toBe(false);
