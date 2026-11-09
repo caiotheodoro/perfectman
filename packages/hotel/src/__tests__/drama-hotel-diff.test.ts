@@ -37,7 +37,7 @@ describe("P1's contract-derived fixtures against the hotel's (act-validation.jso
   const targeted = ["glare", "insult", "shove", "punch", "kill", "hug", "kiss", "turn_back", "restrain", "tend_fallen"];
   const solo = ["die", "recoil", "freeze_gasp", "storm_off", "tableau", "faint"];
 
-  it("[ACT-4] [ACT-6] [ACT-7] [ACT-8] rows only P1 wrote: the 11 required-target and 6 forbidden-target verbs one by one, the authored_skip type, a 50 character unknown verb cut at 40", () => {
+  it("[ACT-4] [ACT-6] [ACT-7] [ACT-8] rows only P1 wrote: the 10 required-target and 6 forbidden-target verbs one by one, the authored_skip type, a 50 character unknown verb cut at 40", () => {
     expect(diff.onlyP1).toEqual([
       "actor_error bad_message/act.authored_skip",
       ...solo.map((v) => `actor_error target_forbidden/${v}`),
