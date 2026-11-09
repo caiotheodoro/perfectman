@@ -46,13 +46,14 @@ jobs:
       # the golden-labeled scenario subset. No model, no API key. Signals
       # must hold at 100%; rule-judge axis scores stay advisory until the
       # judge clears its kappa >= 0.7 calibration gate.
+      # The drama bench (act contract scenarios on the fake grid hotel, mock model, rule judge) rides on the same report and the same gate.
       # NOTE: pnpm --filter runs inside packages/eval, so --out gets an
       # absolute workspace path to keep the later steps root-relative.
       - name: Golden-scenario bench (mock + rule judge)
-        run: pnpm --filter @perfectman/eval bench --mode mock --judge rule --scenarios "$GOLDEN_SCENARIOS" --out "$GITHUB_WORKSPACE/out/bench-pr-gate.json"
+        run: pnpm --filter @perfectman/eval bench --mode mock --judge rule --scenarios "$GOLDEN_SCENARIOS" --drama --out "$GITHUB_WORKSPACE/out/bench-pr-gate.json"
 
       - name: Assert bench gate
-        run: node scripts/ci/check-bench-gate.mjs out/bench-pr-gate.json "$GOLDEN_SCENARIOS"
+        run: node scripts/ci/check-bench-gate.mjs --require-drama out/bench-pr-gate.json "$GOLDEN_SCENARIOS"
 
       # Hotel suite, offline: mock-actor canaries (jailbreak, D43 leaks, untrusted
       # names, whisper privacy) plus the broken-stub self-test. No model, no key.

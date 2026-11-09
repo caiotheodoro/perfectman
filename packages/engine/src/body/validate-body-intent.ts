@@ -10,6 +10,7 @@ import type {
   Tile,
   Zone,
 } from "@perfectman/shared";
+import { ACT_TARGET_MODE } from "@perfectman/shared";
 import {
   CMD_BUDGET_COUNT,
   CMD_BUDGET_WINDOW_MS,
@@ -81,8 +82,9 @@ function validate(view: SpaceView, agentId: string, body: BodyIntent, now: numbe
   }
   const ctx: Ctx = { view, room, self, agentId, now, handles, blocked, used: new Set(), extra: {} };
 
-  // Command budget: moves are never dropped; then posture, gesture, expression, face in that order of value.
-  const wanted = (["move", "posture", "gesture", "expression", "face"] as const).filter((k) => body[k] !== undefined);
+  // Command budget: moves are never dropped; then the drama act (the director already vets it), then posture, gesture,
+  // expression, face in that order of value.
+  const wanted = (["move", "act", "posture", "gesture", "expression", "face"] as const).filter((k) => body[k] !== undefined);
   const used = view.body.budget.cmdTimes.filter((t) => now - t < CMD_BUDGET_WINDOW_MS).length;
   const slots = Math.max(0, CMD_BUDGET_COUNT - used);
   const kept = new Set<string>();
@@ -94,6 +96,10 @@ function validate(view: SpaceView, agentId: string, body: BodyIntent, now: numbe
   if (kept.has("move") && body.move) {
     const move = moveFor(ctx, body.move);
     if (move) accepted.move = move;
+  }
+  if (kept.has("act") && body.act) {
+    const act = actFor(ctx, body.act);
+    if (act) accepted.act = act;
   }
   if (kept.has("posture") && body.posture) {
     const posture = postureFor(ctx, body.posture);
@@ -297,6 +303,34 @@ function moveFor(ctx: Ctx, move: Move): Move | undefined {
   }
   ctx.used.add(handle);
   return move;
+}
+
+type Act = NonNullable<BodyIntent["act"]>;
+
+/**
+ * The drama `act` (act-contract.md 11.5). Only the act is dropped on a bad target, never the rest of the block or the
+ * speech: a verb that needs a target and has none (ACT-7), a solo verb that has one (ACT-8), a handle that is not a
+ * `p#` person, a person who is not here, or the actor itself.
+ */
+function actFor(ctx: Ctx, act: Act): Act | undefined {
+  if (ACT_TARGET_MODE[act.verb] === "none") {
+    if (act.target === undefined) return act;
+    ctx.blocked.push({ code: "unknown_ref", part: "act", ref: act.target, detail: "target_forbidden" });
+    return undefined;
+  }
+  if (act.target === undefined) {
+    ctx.blocked.push({ code: "unknown_ref", part: "act", detail: "target_required" });
+    return undefined;
+  }
+  const h = lookup(ctx, act.target, "act", ["person"]);
+  if (!h || h.target.kind !== "person") return undefined;
+  if (h.target.ref === ctx.agentId) {
+    ctx.blocked.push({ code: "unknown_ref", part: "act", ref: act.target, detail: "self" });
+    return undefined;
+  }
+  if (!presentInRoom(ctx, h.target, act.target, "act")) return undefined;
+  ctx.used.add(act.target);
+  return act;
 }
 
 type Posture = NonNullable<BodyIntent["posture"]>;

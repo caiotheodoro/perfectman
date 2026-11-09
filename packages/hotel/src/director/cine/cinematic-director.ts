@@ -20,6 +20,7 @@ import type { PlannedCommand } from "../../embodiment/types.js";
 import type { Logger } from "../../util/log.js";
 import type { PerfectmanUi, SidecarMsg } from "../index.js";
 import { canonicalize } from "./cue-vocab.js";
+import { drawThought, dropLeave, dropPair, dropWalk } from "./hold-spot.js";
 import { computeMetrics } from "./metrics.js";
 import type { DirectorMetrics } from "./metrics.js";
 import { Narrator } from "./narrator.js";
@@ -187,6 +188,8 @@ export class CinematicDirector {
       send: (cmds) => this.intercept(cmds),
       sendThought: (agentId, text) => {
         if (this.phase === "ended") return inner.sendThought(agentId, text);
+        if (!drawThought(this.o.home)) return;
+        if (!showThought(text)) return;
         this.enqueue({ kind: "thought", ref: agentId, text, room: this.roomOf(agentId), salience: 0.5 });
       },
     };
@@ -215,6 +218,7 @@ export class CinematicDirector {
           } else pass.push(c);
           break;
         case "walk": {
+          if (dropWalk(this.o.home, c.plan)) break;
           const from = this.o.world.tileOf(c.agentId);
           const steps = from ? Math.max(Math.abs(from[0] - c.to[0]), Math.abs(from[1] - c.to[1])) : 0;
           // A short walk is never filmed, and the cast walking in is part of the opening: both go straight out.
@@ -222,10 +226,12 @@ export class CinematicDirector {
           break;
         }
         case "move_room": {
+          if (dropLeave(this.o.home)) break;
           if (!this.enqueueAct({ kind: "hop", ref: c.agentId, to: Number(c.to), room: this.roomOf(c.agentId), salience: 0.45 }, c, true, inner)) pass.push(c);
           break;
         }
         case "pair": {
+          if (dropPair(this.o.home)) break;
           if (!this.enqueueAct({ kind: "pair", ref: c.agentId, pair: c.kind, with: c.with, room: this.roomOf(c.agentId), salience: 0.7 }, c, true, inner)) pass.push(c);
           break;
         }
@@ -467,3 +473,13 @@ export class CinematicDirector {
 }
 
 type DistributiveOmit<T, K extends PropertyKey> = T extends unknown ? Omit<T, K> : never;
+
+/** A thought the audience can read: a short line. Planner notes, temperament words and code stay off the screen. */
+function showThought(text: string): boolean {
+  const t = text.trim();
+  if (t.length < 2 || t.length > 90) return false;
+  if (/^(connector|skeptic|performer)$/i.test(t)) return false;
+  if (/[{}<>]|\/goto|=>|[a-z][A-Z]/.test(t)) return false;
+  if (/\b(mostrar|objetivo|plano|ambiente|curiosidade|esp[ií]rito|estrat[eé]gia|confort[aá]vel|latente|parecer)\b/i.test(t)) return false;
+  return true;
+}

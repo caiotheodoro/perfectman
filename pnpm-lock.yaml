@@ -48,6 +48,9 @@ importers:
       '@perfectman/engine':
         specifier: workspace:*
         version: link:../engine
+      '@perfectman/hotel':
+        specifier: workspace:*
+        version: link:../hotel
       '@perfectman/server':
         specifier: workspace:*
         version: link:../server
@@ -64,6 +67,9 @@ importers:
       '@types/node':
         specifier: ^26.2.0
         version: 26.2.0
+      ajv:
+        specifier: 8.20.0
+        version: 8.20.0
       esbuild:
         specifier: 0.25.12
         version: 0.25.12
@@ -101,6 +107,9 @@ importers:
       '@types/ws':
         specifier: ^8.18.2
         version: 8.18.2
+      ajv:
+        specifier: 8.20.0
+        version: 8.20.0
       fast-check:
         specifier: 4.9.0
         version: 4.9.0

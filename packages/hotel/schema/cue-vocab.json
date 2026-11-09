@@ -1,6 +1,6 @@
 {
   "$comment": "Canonical cue vocabularies for PerfectmanUi sfx.cue, cue.emotion and hud.fade.to. Prose and rationale: docs/perfectman/camera-and-audio.md section 8. The client (web/sfx.js, crates/client/src/render.rs) accepts exactly these names plus the aliases, after lower-casing, trimming and turning spaces and hyphens into underscores; tests/browser/cue_vocab.mjs and a Rust test keep them in step. The sidecar should emit canonical names only.",
-  "version": 1,
+  "version": 2,
   "sfx": {
     "canonical": [
       "footsteps",
@@ -15,7 +15,12 @@
       "sting_comedy",
       "sting_sad",
       "transition_whoosh",
-      "ui_tick"
+      "ui_tick",
+      "slap",
+      "thud",
+      "gasp",
+      "sob",
+      "whoosh_short"
     ],
     "aliases": {
       "footstep": "footsteps",
@@ -50,6 +55,9 @@
       "fade": "transition_whoosh",
       "meanwhile": "transition_whoosh",
       "swish": "transition_whoosh",
+      "smack": "slap",
+      "thump": "thud",
+      "swish_short": "whoosh_short",
       "tick": "ui_tick",
       "click": "ui_tick"
     },

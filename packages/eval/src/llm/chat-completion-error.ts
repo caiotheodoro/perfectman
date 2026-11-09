@@ -10,12 +10,16 @@
  * `@perfectman/server`, the only package allowed to depend on the AI SDKs.
  */
 import { generateOpenAiCompatibleIntent } from "@perfectman/server";
-import type { BuiltPrompt, LLMConfig, LlmTransportDeps } from "@perfectman/server";
+import type { BuiltPrompt, LLMConfig, LlmTransportDeps, PromptImage } from "@perfectman/server";
 import { LLMResponseError } from "@perfectman/server";
+
+export type ChatCompletionImage = PromptImage;
 
 export type ChatCompletionMessage = {
   role: "system" | "user" | "assistant";
   content: string;
+  /** User messages only: inline images sent after `content`, in order. */
+  images?: readonly ChatCompletionImage[];
 };
 
 export type ChatCompletionOptions = {
@@ -54,9 +58,11 @@ function buildPrompt(messages: ChatCompletionMessage[]): BuiltPrompt {
     .filter((m) => m.role !== "system")
     .map((m) => m.content)
     .join("\n");
+  const userImages = messages.filter((m) => m.role === "user").flatMap((m) => m.images ?? []);
   return {
     system,
     user,
+    ...(userImages.length > 0 ? { userImages } : {}),
     inputTokensEstimate: 0,
     // The transport reads only system/user/inputTokensEstimate; the
     // remaining fields are agent-prompt identity stamps, inert here.

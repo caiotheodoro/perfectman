@@ -1,0 +1,18 @@
+{"conn":4,"dir":"out","frame":{"admin":{"id":27,"name":"a"},"cap_actors":12,"lease":3,"mode":"default","room":12,"run":7,"seq":1,"t":"run_start"},"run":7,"ts_ms":1730000080000}
+{"conn":4,"dir":"out","frame":{"actor":-701,"cid":1,"dir":2,"ref":"person-1","room":12,"seq":2,"t":"actor_spawned","x":0,"y":8},"run":7,"ts_ms":1730000080010}
+{"conn":4,"dir":"out","frame":{"actor":-702,"cid":2,"dir":2,"ref":"person-2","room":12,"seq":3,"t":"actor_spawned","x":1,"y":8},"run":7,"ts_ms":1730000080011}
+{"conn":4,"dir":"out","frame":{"actor":-703,"cid":3,"dir":2,"ref":"person-3","room":12,"seq":4,"t":"actor_spawned","x":2,"y":8},"run":7,"ts_ms":1730000080012}
+{"conn":4,"dir":"out","frame":{"t":"drama_state","seq":120,"run":7,"room":12,"scene":"7.2","enabled":true,"calm":false,"paused":false,"opt_in":[9],"at":1730000100000},"run":7,"ts_ms":1730000100002}
+{"conn":4,"dir":"in","frame":{"actor":-702,"cid":300,"cmd":{"k":"chat","mode":"say","text":"Não precisava disso."},"lease":3,"run":7,"seq":300,"t":"actor_cmd"},"run":7,"ts_ms":1730000150000}
+{"conn":4,"dir":"out","frame":{"t":"act_started","seq":301,"run":7,"room":12,"act_id":"a20","verb":"kill","actor":-701,"with":-702,"intensity":1,"impact":"F","origin":"scenario","scene":"7.2","rung":6,"skipped_rungs":["insult","shove","slap","punch"],"authored_skip":true,"chip":false,"contact_in_ms":500,"at":1730000199500},"run":7,"ts_ms":1730000199503}
+{"conn":4,"dir":"out","frame":{"t":"act_beat","seq":302,"run":7,"room":12,"act_id":"a20","beat":"contact","at":1730000200000,"witnesses":[-703,11],"owed":[{"who":-702,"role":"target","due_at":1730000201500},{"who":-703,"role":"witness","due_at":1730000203000}]},"run":7,"ts_ms":1730000200004}
+{"conn":4,"dir":"out","frame":{"t":"actor_death","seq":230,"run":7,"room":12,"actor":-702,"cause":"kill","act_id":"a20","killer":-701,"scene":"7.2","at":1730000200180},"run":7,"ts_ms":1730000200183}
+{"conn":4,"dir":"out","frame":{"t":"act_reaction","seq":303,"run":7,"room":12,"act_id":"a20","who":-702,"role":"target","reaction":"die","source":"table","at":1730000200180},"run":7,"ts_ms":1730000200184}
+{"conn":4,"dir":"out","frame":{"t":"act_reaction","seq":304,"run":7,"room":12,"act_id":"a20","who":-703,"role":"witness","reaction":"freeze_gasp","source":"table","at":1730000200900},"run":7,"ts_ms":1730000200903}
+{"conn":4,"dir":"out","frame":{"t":"act_done","seq":305,"run":7,"room":12,"act_id":"a20","verb":"kill","actor":-701,"with":-702,"outcome":"landed","owed_missed":[],"downgraded":[],"at":1730000203010},"run":7,"ts_ms":1730000203013}
+{"conn":4,"dir":"in","frame":{"actor":-703,"cid":306,"cmd":{"k":"chat","mode":"say","text":"Meu Deus."},"lease":3,"run":7,"seq":306,"t":"actor_cmd"},"run":7,"ts_ms":1730000204000}
+{"conn":4,"dir":"in","frame":{"t":"scene_advance","seq":88,"cid":52,"run":7,"lease":3,"reason":"scenario_beat_4"},"run":7,"ts_ms":1730000259990}
+{"conn":4,"dir":"out","frame":{"t":"scene_cut","seq":250,"run":7,"scene":"7.3","prev":"7.2","reason":"sidecar","revived":[-702],"removed":[],"at":1730000260000},"run":7,"ts_ms":1730000260002}
+{"conn":4,"dir":"out","frame":{"t":"actor_revive","seq":251,"run":7,"room":12,"actor":-702,"scene":"7.3","prev":"7.2","x":5,"y":6,"effect":"","at":1730000260000},"run":7,"ts_ms":1730000260003}
+{"conn":4,"dir":"out","frame":{"t":"drama_state","seq":252,"run":7,"room":12,"scene":"7.3","enabled":true,"calm":false,"paused":false,"opt_in":[9],"at":1730000260005},"run":7,"ts_ms":1730000260007}
+{"conn":4,"dir":"in","frame":{"actor":-702,"cid":307,"cmd":{"k":"chat","mode":"say","text":"Que sonho estranho."},"lease":3,"run":7,"seq":307,"t":"actor_cmd"},"run":7,"ts_ms":1730000262000}

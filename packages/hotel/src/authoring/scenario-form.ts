@@ -1,5 +1,7 @@
 import { ROLES } from "@perfectman/shared";
 import type { RoomDraft } from "@perfectman/shared";
+import type { ScenarioFormBeat } from "./scenario-beats.js";
+import type { ScenarioFormDrama } from "./scenario-drama.js";
 
 /**
  * The hotel builder's form as it crosses the wire (`source` of validate/compile, and what a saved
@@ -12,6 +14,8 @@ export type ScenarioForm = {
   situation: string;
   language?: "en" | "pt-BR";
   mode?: "default" | "cinematic";
+  /** `spite` compiles a scene of contained hatred over one object (pt-BR only); anything else is the default tone. */
+  tone?: string;
   cast: Array<{
     name: string;
     /** Free text ("bartender") or one of the temperaments; anything else is assigned in turn. */
@@ -37,6 +41,16 @@ export type ScenarioForm = {
   }>;
   /** The OpenRouter model picked in the builder (informational here: the run carries it, D54). */
   model?: string;
+  /**
+   * What the scene may do to people (act-contract.md section 7): the ladder ceiling, who may be hit or killed, permadeath. Refs are cast
+   * names, `@human` is any human who opted in. Absent is free play; `{}` is free play plus authored skips. Compiled into the body's `drama`.
+   */
+  drama?: ScenarioFormDrama;
+  /**
+   * The scene's script (errata P1-05, P4-01): authored acts and scene cuts at a second of the run, refs by cast name. Compiled into the body's
+   * `beats`. A cut here is what SCN-6 asks of a scene that can kill.
+   */
+  beats?: ScenarioFormBeat[];
   stage?: {
     room?: number | null;
     places?: unknown[];
@@ -160,8 +174,15 @@ export function formToDraft(form: ScenarioForm): { draft: RoomDraft; looks: Form
       ...(lines.length ? { lines } : {}), ...(identity ? { identity } : {}), ...(triggers.length ? { triggers } : {}), ...(speed ? { speed } : {}),
     };
   });
+  const tone = form.tone === "spite" ? "spite" : undefined;
   return {
-    draft: { title: text(form.title), situation: text(form.situation), people, language: form.language === "en" ? "en" : "pt-BR" },
+    draft: {
+      title: text(form.title),
+      situation: text(form.situation),
+      people,
+      language: form.language === "en" ? "en" : "pt-BR",
+      ...(tone ? { tone } : {}),
+    },
     looks,
   };
 }

@@ -1,0 +1,1891 @@
+{
+  "version": 1,
+  "rev": 2,
+  "bible": "docs/drama/verb-bible.md",
+  "table_schema_note": "JSON Schema draft-07. The root is the shape of one entry of `verbs`; $defs.profile is the shape of one entry of `consent_profiles`.",
+  "table_schema": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "Verb table entry (act-contract.md section 5): every value of `verbs` validates against this root",
+    "$ref": "#/$defs/verb",
+    "$defs": {
+      "time": {
+        "type": "object",
+        "properties": {
+          "a": {"enum": ["T0", "Tc", "Ta", "Tarr"]},
+          "ms": {"type": "integer"},
+          "hs": {"type": "boolean", "description": "add the hit-stop of the act's impact class"},
+          "stagger": {"type": "boolean", "description": "witness stagger: base + per_tile * distance + seeded jitter, capped"},
+          "plus": {"enum": ["human_down"], "description": "add human_down_ms (human-only steps)"}
+        },
+        "required": ["a", "ms"],
+        "additionalProperties": false
+      },
+      "step": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "toward": {"enum": ["actor", "target", "victim", "source"]},
+              "away_from": {"enum": ["actor", "target", "victim", "source"]},
+              "offset": {"type": "integer", "minimum": -4, "maximum": 4},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "face"}
+            },
+            "required": ["t", "p"],
+            "additionalProperties": false,
+            "anyOf": [{"required": ["toward"]}, {"required": ["away_from"]}]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "face": {"enum": ["neutral", "smile", "angry", "sad", "surprised", "sleepy"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "expression"}
+            },
+            "required": ["t", "p", "face"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "action": {"enum": ["wave", "blow", "laugh", "thumbs", "sign", "dance", "idle"]},
+              "style": {"type": "integer", "minimum": 0, "maximum": 17},
+              "ms": {"type": "integer", "minimum": 1, "maximum": 5000},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "gesture"}
+            },
+            "required": ["t", "p", "action"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "pose": {"enum": ["stand", "lay", "sit_floor"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "posture"}
+            },
+            "required": ["t", "p", "pose"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "mover": {"enum": ["actor", "target", "victim", "source"]},
+              "away_from": {"enum": ["actor", "target", "victim", "source"]},
+              "into_vacated": {"enum": ["actor", "target", "victim", "source"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "forced_step"}
+            },
+            "required": ["t", "p", "mover"],
+            "additionalProperties": false,
+            "anyOf": [{"required": ["away_from"]}, {"required": ["into_vacated"]}]
+          },
+          {
+            "type": "object",
+            "properties": {
+              "dest": {"enum": ["door"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "walk_to"}
+            },
+            "required": ["t", "p", "dest"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {"enum": ["Love", "Raincloud", "TrippyHalo", "Twinkle"]},
+              "ms": {"type": ["integer", "null"]},
+              "restore": {"type": "boolean"},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "effect"}
+            },
+            "required": ["t", "p", "name", "ms", "restore"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "mode": {"enum": ["say", "shout"]},
+              "text_from": {"enum": ["act.text"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "chat"}
+            },
+            "required": ["t", "p", "mode", "text_from"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "ms": {"type": "integer", "minimum": 0},
+              "override_face_lock": {"type": "boolean"},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "hold"}
+            },
+            "required": ["t", "p", "ms"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "ms": {"type": "integer", "minimum": 0},
+              "forbid": {"type": "array", "items": {"enum": ["dance", "thumbs", "laugh", "wave", "blow", "sign"]}},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "lock"}
+            },
+            "required": ["t", "p", "ms", "forbid"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "to": {"enum": ["dying", "body", "fainted", "normal", "rung_reset"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "state"}
+            },
+            "required": ["t", "p", "to"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "stop_walk"}
+            },
+            "required": ["t", "p"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "anchor": {"enum": ["actor", "target"]},
+              "name": {"enum": ["Love", "Raincloud", "TrippyHalo", "Twinkle"]},
+              "until": {"oneOf": [{"type": "integer", "minimum": 1}, {"enum": ["scene_cut", "cleared"]}]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "overlay"}
+            },
+            "required": ["t", "p", "anchor", "name", "until"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "anchor": {"enum": ["actor", "target"]},
+              "name": {"enum": ["Love", "Raincloud", "TrippyHalo", "Twinkle"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "overlay_clear"}
+            },
+            "required": ["t", "p", "anchor", "name"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "verb": {"enum": ["die", "recoil", "freeze_gasp", "restrain", "tend_fallen", "turn_back"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "verb"}
+            },
+            "required": ["t", "p", "verb"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "on": {"enum": ["actor", "target", "victim", "source"]},
+              "emotion": {"enum": ["love", "joy", "sad", "angry", "surprised", "confused", "afraid", "thinking"]},
+              "ms": {"type": "integer", "minimum": 1},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "cue"}
+            },
+            "required": ["t", "p", "on", "emotion", "ms"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "cue": {
+                "enum": [
+                  "footsteps",
+                  "door_open",
+                  "door_close",
+                  "kiss",
+                  "hug",
+                  "laugh",
+                  "crowd_murmur",
+                  "sting_tension",
+                  "sting_romance",
+                  "sting_comedy",
+                  "sting_sad",
+                  "transition_whoosh",
+                  "ui_tick",
+                  "slap",
+                  "thud",
+                  "gasp",
+                  "sob",
+                  "whoosh_short"
+                ]
+              },
+              "once": {"type": "boolean"},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "sfx"}
+            },
+            "required": ["t", "p", "cue", "once"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "ms": {"type": "integer", "minimum": 1},
+              "text": {
+                "type": "object",
+                "properties": {"pt-BR": {"type": "string", "maxLength": 100}, "en": {"type": "string", "maxLength": 100}},
+                "required": ["pt-BR", "en"],
+                "additionalProperties": false
+              },
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "caption"}
+            },
+            "required": ["t", "p", "ms", "text"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "name": {"enum": ["lunge", "hit_stop", "tint_flash", "knockback", "shake", "recoil", "fall"]},
+              "who": {"enum": ["actor", "target", "both"]},
+              "toward": {"enum": ["actor", "target", "victim", "source"]},
+              "away_from": {"enum": ["actor", "target", "victim", "source"]},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "motion"}
+            },
+            "required": ["t", "p", "name"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "shot": {"enum": ["establishing", "two_shot", "close_up", "tracking", "reaction", "insert", "transition"]},
+              "target": {"enum": ["actor", "target", "pair"]},
+              "zoom": {"enum": [0.5, 1, 2]},
+              "ease_ms": {"type": "integer", "minimum": 0},
+              "hold_ms": {"type": "integer", "minimum": 0},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "camera"}
+            },
+            "required": ["t", "p", "shot", "target", "zoom", "ease_ms", "hold_ms"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {"enum": ["fade", "door", "meanwhile"]},
+              "ms": {"type": "integer", "minimum": 1},
+              "t": {"$ref": "#/$defs/time"},
+              "reaction": {"type": "string"},
+              "optional": {"type": "boolean"},
+              "human": {"type": "boolean", "description": "the step may touch a human avatar (server-state primitives only)"},
+              "only": {"enum": ["actor", "human"]},
+              "needs": {"type": "array", "items": {"enum": ["b", "sfx", "overlay", "dur"]}, "uniqueItems": true},
+              "wakeable": {"type": "boolean", "description": "WAKE-1: the sequencer moves this step earlier when a tend_fallen lands on the actor"},
+              "when": {"enum": ["target_moved", "target_not_moved"]},
+              "note": {"type": "string"},
+              "p": {"const": "cut_fx"}
+            },
+            "required": ["t", "p", "kind", "ms"],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "profile_roles": {
+        "type": "object",
+        "properties": {"actor": {"$ref": "#/$defs/steps"}, "target": {"$ref": "#/$defs/steps"}, "room": {"$ref": "#/$defs/steps"}},
+        "required": ["actor", "room"],
+        "additionalProperties": false
+      },
+      "profile": {
+        "type": "object",
+        "properties": {
+          "timeout": {"enum": ["dodge", "initiator_only"]},
+          "hold": {"$ref": "#/$defs/profile_roles"},
+          "dodge": {"$ref": "#/$defs/profile_roles"},
+          "push_back": {"$ref": "#/$defs/profile_roles"}
+        },
+        "required": ["timeout", "hold", "dodge", "push_back"],
+        "additionalProperties": false
+      },
+      "steps": {"type": "array", "items": {"$ref": "#/$defs/step"}},
+      "verb": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "enum": [
+              "glare",
+              "insult",
+              "shove",
+              "slap",
+              "punch",
+              "kill",
+              "die",
+              "recoil",
+              "freeze_gasp",
+              "hug",
+              "kiss",
+              "turn_back",
+              "cry",
+              "storm_off",
+              "tableau",
+              "restrain",
+              "faint",
+              "tend_fallen"
+            ]
+          },
+          "rung": {"type": ["integer", "null"], "minimum": 1, "maximum": 6},
+          "family": {"enum": ["conflict_noncontact", "conflict_contact", "climax", "affection", "solo", "director"]},
+          "violent": {"type": "boolean"},
+          "contact": {"type": "boolean"},
+          "target": {"enum": ["required", "none"]},
+          "target_kinds": {"type": "array", "items": {"enum": ["actor", "human"]}},
+          "text": {"type": "boolean"},
+          "gates": {
+            "type": "object",
+            "properties": {
+              "calm_blocks": {"type": "boolean"},
+              "consent": {"enum": ["violent_chip", "violent_chip_noncontact", "affection_chip", "affection_chip_dodge", null]},
+              "budget": {"enum": ["physical", "kill", null]},
+              "cooldown": {"type": "boolean"},
+              "scenario": {"enum": ["free_ok", "needs_block", "needs_block_and_may_die", "needs_may_die"]},
+              "max_dist": {"type": ["integer", "null"]},
+              "still": {"type": "boolean"},
+              "actor_posture": {"type": "array", "items": {"enum": ["stand", "sit", "lay"]}},
+              "target_state": {"enum": ["fallen"]}
+            },
+            "required": ["calm_blocks", "consent", "budget", "cooldown", "scenario", "max_dist", "still", "actor_posture"],
+            "additionalProperties": false
+          },
+          "intensity": {
+            "type": "object",
+            "properties": {
+              "default": {"type": "number", "minimum": 0, "maximum": 1},
+              "class": {
+                "anyOf": [
+                  {"type": "null"},
+                  {
+                    "type": "object",
+                    "properties": {"min": {"enum": ["L", "M", "H", "F"]}, "max": {"enum": ["L", "M", "H", "F"]}},
+                    "required": ["min", "max"],
+                    "additionalProperties": false
+                  }
+                ]
+              }
+            },
+            "required": ["default", "class"],
+            "additionalProperties": false
+          },
+          "timeline": {
+            "type": "object",
+            "properties": {"contact_at_ms": {"type": "integer", "minimum": 0}},
+            "required": ["contact_at_ms"],
+            "additionalProperties": false
+          },
+          "roles": {
+            "type": "object",
+            "properties": {
+              "actor": {"$ref": "#/$defs/steps"},
+              "target": {"$ref": "#/$defs/steps"},
+              "witnesses": {"$ref": "#/$defs/steps"},
+              "room": {"$ref": "#/$defs/steps"},
+              "camera": {"$ref": "#/$defs/steps"}
+            },
+            "required": ["actor", "witnesses", "room", "camera"],
+            "additionalProperties": false
+          },
+          "owed": {
+            "type": "object",
+            "properties": {
+              "target_ms": {"type": ["integer", "null"]},
+              "witness_ms": {"type": ["integer", "null"]},
+              "witness_when": {"enum": ["always", "never", "scene_rung_ge_2", "standalone_only"]}
+            },
+            "required": ["target_ms", "witness_ms", "witness_when"],
+            "additionalProperties": false
+          },
+          "memory": {
+            "type": "object",
+            "properties": {
+              "actor": {
+                "type": "object",
+                "properties": {
+                  "event": {"enum": ["aggressor", "victim", "witnessed", "affectionate", "receiver", "death", "none"]},
+                  "tone": {"enum": ["hostile", "hurt", "shocked", "warm", "tender", "grief", "dismissive", "neutral"]}
+                },
+                "required": ["event", "tone"],
+                "additionalProperties": false
+              },
+              "target": {
+                "type": "object",
+                "properties": {
+                  "event": {"enum": ["aggressor", "victim", "witnessed", "affectionate", "receiver", "death", "none"]},
+                  "tone": {"enum": ["hostile", "hurt", "shocked", "warm", "tender", "grief", "dismissive", "neutral"]}
+                },
+                "required": ["event", "tone"],
+                "additionalProperties": false
+              },
+              "witnesses": {
+                "type": "object",
+                "properties": {
+                  "event": {"enum": ["aggressor", "victim", "witnessed", "affectionate", "receiver", "death", "none"]},
+                  "tone": {"enum": ["hostile", "hurt", "shocked", "warm", "tender", "grief", "dismissive", "neutral"]}
+                },
+                "required": ["event", "tone"],
+                "additionalProperties": false
+              }
+            },
+            "required": ["actor", "target", "witnesses"],
+            "additionalProperties": false
+          },
+          "ladder": {"type": "object", "properties": {"deescalates": {"type": "boolean"}}, "required": ["deescalates"], "additionalProperties": false},
+          "follow_ups": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {"verb": {"enum": ["tableau"]}, "at": {"enum": ["end"]}},
+              "required": ["verb", "at"],
+              "additionalProperties": false
+            }
+          },
+          "notes": {"type": "string"}
+        },
+        "required": [
+          "id",
+          "rung",
+          "family",
+          "violent",
+          "contact",
+          "target",
+          "target_kinds",
+          "text",
+          "gates",
+          "intensity",
+          "timeline",
+          "roles",
+          "owed",
+          "memory",
+          "ladder"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "constants": {
+    "chip_ttl_ms": 4000,
+    "chip_windup_ms": 150,
+    "chip_cooldown_ms": 60000,
+    "target_deadline_ms": 1500,
+    "witness_deadline_ms": 3000,
+    "earshot_tiles": 6,
+    "physical_spacing_ms": 20000,
+    "kills_per_scene": 1,
+    "same_verb_target_cooldown_ms": 60000,
+    "ladder_open_rung": 2,
+    "zero_witness_cap_rung": 3,
+    "deescalate_to_rung": 2,
+    "no_reward_ms": 5000,
+    "tableau_hold_ms": 2500,
+    "tableau_radius_tiles": 6,
+    "human_down_ms_default": 5000,
+    "scene_min_age_ms": 20000,
+    "harm_max_default": 3,
+    "harm_window_s_default": 300,
+    "pause_s_default": 600,
+    "act_id_pattern": "^[A-Za-z0-9_.:-]{1,32}$",
+    "text_max_chars": 200,
+    "hit_stop_ms": {"L": 50, "M": 100, "H": 150, "F": 175},
+    "class_bounds": {"L_below": 0.34, "M_to_inclusive": 0.67},
+    "witness_stagger": {"base_ms": 600, "per_tile_ms": 150, "jitter_ms": 200, "cap_ms": 2800}
+  },
+  "enums": {
+    "verbs": [
+      "glare",
+      "insult",
+      "shove",
+      "slap",
+      "punch",
+      "kill",
+      "die",
+      "recoil",
+      "freeze_gasp",
+      "hug",
+      "kiss",
+      "turn_back",
+      "cry",
+      "storm_off",
+      "tableau",
+      "restrain",
+      "faint",
+      "tend_fallen"
+    ],
+    "ladder": ["glare", "insult", "shove", "slap", "punch", "kill"],
+    "physical": ["shove", "slap", "punch", "kill"],
+    "origins": ["model", "director", "scenario"],
+    "outcomes": ["landed", "dodged", "blocked", "declined", "timeout", "aborted"],
+    "chip_answers": ["take", "dodge", "push_back", "timeout"],
+    "blocked_reasons": ["kill_switch", "calm_room", "consent_off", "ladder", "budget", "cooldown", "too_far", "dead_target", "no_scenario_gate", "rate_limit"],
+    "gate_order": ["kill_switch", "calm_room", "rate_limit", "dead_target", "no_scenario_gate", "consent_off", "too_far", "ladder", "budget", "cooldown"],
+    "abort_reasons": ["target_moved", "target_gone", "actor_gone", "actor_dead", "scene_cut", "run_end", "kill_switch", "calm_room", "paused", "opt_out"],
+    "act_error_codes": [
+      "bad_message",
+      "unknown_verb",
+      "target_required",
+      "target_forbidden",
+      "bad_target",
+      "act_busy",
+      "actor_dead",
+      "action_not_here",
+      "target_gone",
+      "slow_down",
+      "stale_lease",
+      "unknown_actor",
+      "no_such_run",
+      "run_ended"
+    ],
+    "new_act_error_codes": ["unknown_verb", "target_required", "target_forbidden", "bad_target", "act_busy", "actor_dead"],
+    "impact_classes": ["L", "M", "H", "F"],
+    "memory_events": ["aggressor", "victim", "witnessed", "affectionate", "receiver", "death", "none"],
+    "memory_tones": ["hostile", "hurt", "shocked", "warm", "tender", "grief", "dismissive", "neutral"],
+    "motions": ["lunge", "hit_stop", "tint_flash", "knockback", "shake", "recoil", "fall"],
+    "new_sfx": ["slap", "thud", "gasp", "sob", "whoosh_short"],
+    "families": ["conflict_noncontact", "conflict_contact", "climax", "affection", "solo", "director"],
+    "consent_profiles": ["violent_chip", "violent_chip_noncontact", "affection_chip", "affection_chip_dodge"],
+    "overlay_until": ["<ms integer>", "scene_cut", "cleared"],
+    "down_states": ["fainted", "dying", "body", "down"],
+    "reaction_labels": ["die", "freeze_gasp", "head_snap", "hug_back", "kiss_back", "look_back", "stagger", "struggle", "surprised", "watch"]
+  },
+  "consent_profiles": {
+    "violent_chip": {
+      "timeout": "dodge",
+      "hold": {
+        "actor": [{"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"}, {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "angry"}],
+        "room": [{"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500}]
+      },
+      "dodge": {
+        "target": [{"t": {"a": "Ta", "ms": 0}, "p": "forced_step", "mover": "target", "away_from": "actor", "human": true}],
+        "actor": [
+          {"t": {"a": "Ta", "ms": 0}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Ta", "ms": 300}, "p": "expression", "face": "neutral"},
+          {"t": {"a": "Ta", "ms": 0}, "p": "hold", "ms": 1000}
+        ],
+        "room": []
+      },
+      "push_back": {
+        "actor": [
+          {"t": {"a": "Ta", "ms": 0}, "p": "forced_step", "mover": "actor", "away_from": "target"},
+          {"t": {"a": "Ta", "ms": 0}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Ta", "ms": 1200}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [],
+        "room": [{"t": {"a": "Ta", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200}]
+      }
+    },
+    "affection_chip": {
+      "timeout": "initiator_only",
+      "hold": {"actor": [{"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"}], "room": []},
+      "dodge": {
+        "target": [{"t": {"a": "Ta", "ms": 0}, "p": "forced_step", "mover": "target", "away_from": "actor", "human": true}],
+        "actor": [{"t": {"a": "Ta", "ms": 300}, "p": "face", "away_from": "target"}],
+        "room": []
+      },
+      "push_back": {
+        "actor": [
+          {"t": {"a": "Ta", "ms": 0}, "p": "forced_step", "mover": "actor", "away_from": "target"},
+          {"t": {"a": "Ta", "ms": 0}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Ta", "ms": 1200}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [],
+        "room": [{"t": {"a": "Ta", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200}]
+      }
+    },
+    "violent_chip_noncontact": {
+      "timeout": "dodge",
+      "hold": {
+        "actor": [{"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"}, {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "angry"}],
+        "room": [{"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500}]
+      },
+      "dodge": {
+        "actor": [{"t": {"a": "Ta", "ms": 0}, "p": "expression", "face": "neutral"}, {"t": {"a": "Ta", "ms": 0}, "p": "hold", "ms": 800}],
+        "target": [],
+        "room": []
+      },
+      "push_back": {
+        "actor": [{"t": {"a": "Ta", "ms": 0}, "p": "expression", "face": "surprised"}, {"t": {"a": "Ta", "ms": 1200}, "p": "expression", "face": "neutral"}],
+        "target": [],
+        "room": [{"t": {"a": "Ta", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200}]
+      }
+    },
+    "affection_chip_dodge": {
+      "timeout": "dodge",
+      "hold": {"actor": [{"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"}], "room": []},
+      "dodge": {
+        "target": [{"t": {"a": "Ta", "ms": 0}, "p": "forced_step", "mover": "target", "away_from": "actor", "human": true}],
+        "actor": [{"t": {"a": "Ta", "ms": 300}, "p": "face", "away_from": "target"}],
+        "room": []
+      },
+      "push_back": {
+        "actor": [
+          {"t": {"a": "Ta", "ms": 0}, "p": "forced_step", "mover": "actor", "away_from": "target"},
+          {"t": {"a": "Ta", "ms": 0}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Ta", "ms": 1200}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [],
+        "room": [{"t": {"a": "Ta", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200}]
+      }
+    }
+  },
+  "motions": {
+    "lunge": {
+      "needs": "b",
+      "desc": "attacker offset toward the target, then back",
+      "params": {"toward": "role", "px": "number", "in_ms": "int", "back_ms": "int"},
+      "by_class": {
+        "L": {"px": 5, "in_ms": 100, "back_ms": 120},
+        "M": {"px": 10, "in_ms": 50, "back_ms": 150},
+        "H": {"px": 14, "in_ms": 50, "back_ms": 180},
+        "F": {"px": 14, "in_ms": 60, "back_ms": 200}
+      },
+      "by_verb": {
+        "glare": {"px": 4, "in_ms": 150, "back_ms": 150},
+        "kiss": {"px": 4, "in_ms": 300, "back_ms": 300},
+        "restrain": {"px": 6, "in_ms": 100, "back_ms": 150}
+      }
+    },
+    "hit_stop": {
+      "needs": "b",
+      "desc": "freeze actor and target motion clocks for hit_stop_ms[class]; effect overlays keep running",
+      "params": {"ms": "constants.hit_stop_ms[class]"},
+      "by_class": {"L": {"ms": 50}, "M": {"ms": 100}, "H": {"ms": 150}, "F": {"ms": 175}}
+    },
+    "tint_flash": {
+      "needs": "b",
+      "desc": "white tint on the struck avatar",
+      "params": {"color": "string", "frames": "int", "frame_ms": "int"},
+      "by_class": {
+        "M": {"color": "#ffffff", "frames": 1, "frame_ms": 33},
+        "H": {"color": "#ffffff", "frames": 2, "frame_ms": 33},
+        "F": {"color": "#ffffff", "frames": 2, "frame_ms": 33}
+      }
+    },
+    "knockback": {
+      "needs": "b",
+      "desc": "decaying slide away from the attacker; cosmetic, never moves the tile",
+      "params": {"away_from": "role", "px": "number", "ms": "int", "curve": "string"},
+      "by_class": {
+        "L": {"px": 16, "ms": 300, "curve": "decay"},
+        "M": {"px": 8, "ms": 300, "curve": "decay"},
+        "H": {"px": 22, "ms": 300, "curve": "decay"},
+        "F": {"px": 24, "ms": 300, "curve": "decay"}
+      },
+      "by_verb": {"die": {"px": 14, "ms": 300, "curve": "decay"}}
+    },
+    "shake": {
+      "needs": "b",
+      "desc": "translation shake with a small rotation that decays",
+      "params": {"px": "number", "rot_deg": "number", "ms": "int"},
+      "by_class": {"M": {"px": 2, "rot_deg": 1, "ms": 200}, "H": {"px": 3, "rot_deg": 2, "ms": 250}, "F": {"px": 3, "rot_deg": 3, "ms": 400}},
+      "by_verb": {
+        "insult": {"px": 2, "rot_deg": 0, "ms": 300},
+        "cry": {"px": 1, "rot_deg": 0, "ms": 4000},
+        "storm_off": {"px": 2, "rot_deg": 0, "ms": 300},
+        "faint": {"px": 2, "rot_deg": 0, "ms": 800}
+      }
+    },
+    "recoil": {
+      "needs": "b",
+      "desc": "lean away and settle, with a small overshoot",
+      "params": {"away_from": "role", "px": "number", "overshoot_px": "number", "ms": "int"},
+      "by_class": {"M": {"px": 8, "overshoot_px": 1.5, "ms": 300}, "H": {"px": 10, "overshoot_px": 2, "ms": 350}},
+      "by_verb": {"recoil": {"px": 8, "overshoot_px": 1.5, "ms": 300}}
+    },
+    "fall": {
+      "needs": "b",
+      "desc": "drop to the lying pose with a bounce",
+      "params": {"drop_px": "number", "bounce_px": "number", "ms": "int"},
+      "by_verb": {"die": {"drop_px": 6, "bounce_px": 1.5, "ms": 350}, "faint": {"drop_px": 6, "bounce_px": 1.5, "ms": 350}}
+    }
+  },
+  "motions_resolve": "params = by_verb[verb] when present, else by_class[class]; a motion with neither for the act is a table error",
+  "primitives": {
+    "face": {"exec": "server", "maps_to": "ActorCmd::Face / Action::Turn (style 0..7); even directions only when seated; refused when lying"},
+    "expression": {"exec": "server", "maps_to": "ActorCmd::Expression, Face enum, FACE_TTL_MS 15000"},
+    "gesture": {
+      "exec": "server",
+      "maps_to": "Room::act with Action wave|blow|laugh|thumbs|sign|dance|idle, refused while walking or lying (action_not_here); optional ms is NEW: the AvatarAction broadcast carries ms and the client plays the gesture for min(ms, lasts_ms) without any Stop"
+    },
+    "posture": {"exec": "server", "maps_to": "Action::Stand | Action::Lay | ActorCmd::Sit{floor:true}"},
+    "forced_step": {
+      "exec": "server",
+      "maps_to": "R6 forced step: one-tile Room::request_walk, order opposite, two neighbours, else nobody moves; standing avatars only"
+    },
+    "walk_to": {"exec": "server", "maps_to": "Room::request_walk to the door tile; plan id act:<act_id>"},
+    "effect": {
+      "exec": "server",
+      "maps_to": "actors only: ActorCmd::Appearance{effect}; the previous effect is saved and restored when ms ends (null: until the scene cut)"
+    },
+    "overlay": {
+      "exec": "client",
+      "maps_to": "NEW wire kind in act_timeline: a catalog effect drawn over any avatar by the client, never touching Avatar.effect; ends by `until` (ms, scene_cut or cleared)"
+    },
+    "overlay_clear": {"exec": "client", "maps_to": "NEW public act_overlay_clear message: ends an overlay whose until is cleared or scene_cut"},
+    "stop_walk": {"exec": "server", "maps_to": "Room::request_walk(id, own tile): a request to stop that the next tick settles (existing)"},
+    "chat": {"exec": "server", "maps_to": "ActorCmd::Chat say|shout"},
+    "hold": {"exec": "server", "maps_to": "planner lock for ms (body commands answer act_busy)"},
+    "lock": {"exec": "server", "maps_to": "forbid actions for ms (no_reward)"},
+    "state": {"exec": "server", "maps_to": "death/down/rung state machine transition"},
+    "verb": {"exec": "server", "maps_to": "nested invocation of another verb's actor-role steps on the reactor"},
+    "cue": {"exec": "client", "maps_to": "PerfectmanUi::Cue emotion icon (cue-vocab emotion)"},
+    "sfx": {"exec": "client", "maps_to": "PerfectmanUi::Sfx cue (cue-vocab sfx, five new names added)"},
+    "caption": {"exec": "client", "maps_to": "overlay text near the actor; cinematic runs also PerfectmanUi::Caption"},
+    "motion": {"exec": "client", "maps_to": "procedural client motion (new, one of the seven in motions)"},
+    "camera": {"exec": "server", "maps_to": "PerfectmanUi::Camera, cinematic runs only"},
+    "cut_fx": {"exec": "server", "maps_to": "PerfectmanUi::CutFx, cinematic runs only"}
+  },
+  "verbs": {
+    "glare": {
+      "id": "glare",
+      "rung": 1,
+      "family": "conflict_noncontact",
+      "violent": false,
+      "contact": false,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": true,
+        "scenario": "free_ok",
+        "max_dist": 8,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.4, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"},
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 2000},
+          {"t": {"a": "Tc", "ms": 2000}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [{"t": {"a": "Tc", "ms": 400}, "p": "face", "toward": "actor", "reaction": "look_back"}],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
+        "room": [
+          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
+          {"t": {"a": "T0", "ms": 0}, "p": "sfx", "cue": "sting_tension", "once": true},
+          {
+            "t": {"a": "T0", "ms": 0},
+            "p": "caption",
+            "ms": 2000,
+            "text": {"pt-BR": "* {actor} encara {target} *", "en": "* {actor} glares at {target} *"}
+          }
+        ],
+        "camera": [
+          {"t": {"a": "T0", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 1, "ease_ms": 0, "hold_ms": 600},
+          {"t": {"a": "Tc", "ms": 600}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 700},
+          {"t": {"a": "Tc", "ms": 1300}, "p": "camera", "shot": "reaction", "target": "target", "zoom": 2, "ease_ms": 0, "hold_ms": 1000}
+        ]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": 3000, "witness_when": "scene_rung_ge_2"},
+      "memory": {
+        "actor": {"event": "aggressor", "tone": "hostile"},
+        "target": {"event": "victim", "tone": "hurt"},
+        "witnesses": {"event": "witnessed", "tone": "shocked"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Table end = Tc + 2000. Witnesses owe a reaction only when the pair already reached rung 2 in this scene."
+    },
+    "insult": {
+      "id": "insult",
+      "rung": 2,
+      "family": "conflict_noncontact",
+      "violent": true,
+      "contact": false,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": true,
+      "gates": {
+        "calm_blocks": false,
+        "consent": "violent_chip_noncontact",
+        "budget": null,
+        "cooldown": true,
+        "scenario": "free_ok",
+        "max_dist": 6,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 300},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": -300}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": -300}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "chat", "mode": "shout", "text_from": "act.text"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "gesture", "action": "sign", "style": 16, "ms": 1500, "optional": true, "needs": ["dur"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 900},
+          {"t": {"a": "Tc", "ms": 900}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 300}, "p": "expression", "face": "surprised", "reaction": "surprised"},
+          {"t": {"a": "Tc", "ms": 500}, "p": "face", "toward": "actor"}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "face", "toward": "actor", "reaction": "watch"}],
+        "room": [
+          {"t": {"a": "Tc", "ms": -300}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
+          {"t": {"a": "Tc", "ms": 300}, "p": "cue", "on": "target", "emotion": "surprised", "ms": 1200},
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "sting_tension", "once": true},
+          {
+            "t": {"a": "Tc", "ms": 0},
+            "p": "caption",
+            "ms": 2000,
+            "text": {"pt-BR": "* {actor} xinga {target} *", "en": "* {actor} shouts at {target} *"}
+          }
+        ],
+        "camera": [
+          {"t": {"a": "T0", "ms": 0}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 800},
+          {"t": {"a": "Tc", "ms": 800}, "p": "camera", "shot": "reaction", "target": "target", "zoom": 2, "ease_ms": 0, "hold_ms": 1500}
+        ]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": 3000, "witness_when": "always"},
+      "memory": {
+        "actor": {"event": "aggressor", "tone": "hostile"},
+        "target": {"event": "victim", "tone": "hurt"},
+        "witnesses": {"event": "witnessed", "tone": "shocked"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Against a human the line (act.text) is spoken only after the chip answer is take. Dodge and push_back speak nothing."
+    },
+    "shove": {
+      "id": "shove",
+      "rung": 3,
+      "family": "conflict_contact",
+      "violent": true,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": "violent_chip",
+        "budget": "physical",
+        "cooldown": true,
+        "scenario": "free_ok",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.25, "class": {"min": "L", "max": "M"}},
+      "timeline": {"contact_at_ms": 250},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": -250}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": -250}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": -100}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "hit_stop", "who": "both", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 100, "hs": true}, "p": "forced_step", "mover": "actor", "into_vacated": "target", "when": "target_moved"},
+          {"t": {"a": "Tc", "ms": 400}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "forced_step", "mover": "target", "away_from": "actor", "human": true, "reaction": "stagger"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "face", "toward": "actor", "offset": 1, "when": "target_not_moved"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "motion", "name": "knockback", "away_from": "actor", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 1200}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
+        "room": [
+          {"t": {"a": "Tc", "ms": -250}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
+          {"t": {"a": "Tc", "ms": -100}, "p": "sfx", "cue": "whoosh_short", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "cue", "on": "target", "emotion": "surprised", "ms": 1200},
+          {
+            "t": {"a": "Tc", "ms": 0},
+            "p": "caption",
+            "ms": 2000,
+            "text": {"pt-BR": "* {actor} empurra {target} *", "en": "* {actor} shoves {target} *"}
+          }
+        ],
+        "camera": [
+          {"t": {"a": "Tc", "ms": -250}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 600},
+          {"t": {"a": "Tc", "ms": 350}, "p": "camera", "shot": "reaction", "target": "target", "zoom": 2, "ease_ms": 0, "hold_ms": 1000}
+        ]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": 3000, "witness_when": "always"},
+      "memory": {
+        "actor": {"event": "aggressor", "tone": "hostile"},
+        "target": {"event": "victim", "tone": "hurt"},
+        "witnesses": {"event": "witnessed", "tone": "shocked"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "A target that is not standing and still is not moved: the face jolt replaces the forced step and act_done lists downgraded:[forced_step]."
+    },
+    "slap": {
+      "id": "slap",
+      "rung": 4,
+      "family": "conflict_contact",
+      "violent": true,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": "violent_chip",
+        "budget": "physical",
+        "cooldown": true,
+        "scenario": "needs_block",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.5, "class": {"min": "M", "max": "H"}},
+      "timeline": {"contact_at_ms": 300},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": -300}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": -300}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": -300}, "p": "gesture", "action": "wave", "ms": 350, "optional": true, "needs": ["dur"]},
+          {"t": {"a": "Tc", "ms": -50}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "hit_stop", "who": "both", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 1500}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "tint_flash", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "face", "toward": "actor", "offset": 1, "reaction": "head_snap"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "motion", "name": "recoil", "away_from": "actor", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 1200}, "p": "face", "toward": "actor"},
+          {"t": {"a": "Tc", "ms": 2000}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
+        "room": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "slap", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "cue", "on": "target", "emotion": "surprised", "ms": 1500},
+          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
+          {
+            "t": {"a": "Tc", "ms": 0},
+            "p": "caption",
+            "ms": 2000,
+            "text": {"pt-BR": "* {actor} dá um tapa em {target} *", "en": "* {actor} slaps {target} *"}
+          }
+        ],
+        "camera": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "close_up", "target": "target", "zoom": 2, "ease_ms": 0, "hold_ms": 1500},
+          {"t": {"a": "Tc", "ms": 1500}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 1, "ease_ms": 0, "hold_ms": 800}
+        ]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": 3000, "witness_when": "always"},
+      "memory": {
+        "actor": {"event": "aggressor", "tone": "hostile"},
+        "target": {"event": "victim", "tone": "hurt"},
+        "witnesses": {"event": "witnessed", "tone": "shocked"}
+      },
+      "ladder": {"deescalates": false},
+      "follow_ups": [{"verb": "tableau", "at": "end"}],
+      "notes": "Against a human only cosmetic client steps run on the target (no face, no expression)."
+    },
+    "punch": {
+      "id": "punch",
+      "rung": 5,
+      "family": "conflict_contact",
+      "violent": true,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": "violent_chip",
+        "budget": "physical",
+        "cooldown": true,
+        "scenario": "needs_block",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.8, "class": {"min": "M", "max": "H"}},
+      "timeline": {"contact_at_ms": 350},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": -350}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": -350}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": -350}, "p": "gesture", "action": "wave", "ms": 400, "optional": true, "needs": ["dur"]},
+          {"t": {"a": "Tc", "ms": -60}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "hit_stop", "who": "both", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 1800}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "tint_flash", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "forced_step", "mover": "target", "away_from": "actor", "human": true, "reaction": "stagger"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "motion", "name": "knockback", "away_from": "actor", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 300, "hs": true}, "p": "face", "toward": "actor", "offset": 2},
+          {"t": {"a": "Tc", "ms": 300, "hs": true}, "p": "effect", "name": "Twinkle", "ms": 1500, "restore": true, "only": "actor"},
+          {
+            "t": {"a": "Tc", "ms": 300, "hs": true},
+            "p": "overlay",
+            "anchor": "target",
+            "name": "Twinkle",
+            "until": 1500,
+            "only": "human",
+            "needs": ["overlay"]
+          },
+          {"t": {"a": "Tc", "ms": 2000}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
+        "room": [
+          {"t": {"a": "Tc", "ms": -150}, "p": "sfx", "cue": "whoosh_short", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "cue", "on": "target", "emotion": "surprised", "ms": 1500},
+          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
+          {
+            "t": {"a": "Tc", "ms": 0},
+            "p": "caption",
+            "ms": 2000,
+            "text": {"pt-BR": "* {actor} dá um soco em {target} *", "en": "* {actor} punches {target} *"}
+          }
+        ],
+        "camera": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "close_up", "target": "target", "zoom": 2, "ease_ms": 0, "hold_ms": 600},
+          {"t": {"a": "Tc", "ms": 600}, "p": "camera", "shot": "reaction", "target": "target", "zoom": 2, "ease_ms": 0, "hold_ms": 1200}
+        ]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": 3000, "witness_when": "always"},
+      "memory": {
+        "actor": {"event": "aggressor", "tone": "hostile"},
+        "target": {"event": "victim", "tone": "hurt"},
+        "witnesses": {"event": "witnessed", "tone": "shocked"}
+      },
+      "ladder": {"deescalates": false},
+      "follow_ups": [{"verb": "tableau", "at": "end"}]
+    },
+    "kill": {
+      "id": "kill",
+      "rung": 6,
+      "family": "climax",
+      "violent": true,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": "violent_chip",
+        "budget": "kill",
+        "cooldown": true,
+        "scenario": "needs_block_and_may_die",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 1.0, "class": {"min": "F", "max": "F"}},
+      "timeline": {"contact_at_ms": 500},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": -500}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": -500}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": -60}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "hit_stop", "who": "both", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "lock", "ms": 5000, "forbid": ["dance", "thumbs", "laugh"]},
+          {"t": {"a": "Tc", "ms": 600, "hs": true}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 1500, "hs": true}, "p": "expression", "face": "neutral"},
+          {"t": {"a": "Tc", "ms": 1500, "hs": true}, "p": "hold", "ms": 1000}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "tint_flash", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "verb", "verb": "die", "reaction": "die", "human": true}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
+        "room": [
+          {"t": {"a": "Tc", "ms": -500}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
+          {"t": {"a": "Tc", "ms": 600, "hs": true}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200},
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "sfx", "cue": "sting_tension", "once": true},
+          {
+            "t": {"a": "Tc", "ms": 0, "hs": true},
+            "p": "caption",
+            "ms": 2500,
+            "text": {"pt-BR": "* {target} desaba *", "en": "* {target} collapses *"}
+          }
+        ],
+        "camera": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "close_up", "target": "target", "zoom": 2, "ease_ms": 0, "hold_ms": 600},
+          {"t": {"a": "Tc", "ms": 600}, "p": "camera", "shot": "reaction", "target": "target", "zoom": 2, "ease_ms": 0, "hold_ms": 1500}
+        ]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": 3000, "witness_when": "always"},
+      "memory": {
+        "actor": {"event": "aggressor", "tone": "hostile"},
+        "target": {"event": "death", "tone": "grief"},
+        "witnesses": {"event": "witnessed", "tone": "shocked"}
+      },
+      "ladder": {"deescalates": false},
+      "follow_ups": [{"verb": "tableau", "at": "end"}],
+      "notes": "The victim half is the nested die verb. Victim becomes dying at Tc + hit_stop; actor_death follows in the same tick. A human victim is down for human_down_ms and gets no actor_death."
+    },
+    "die": {
+      "id": "die",
+      "rung": null,
+      "family": "climax",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "needs_may_die",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit", "lay"]
+      },
+      "intensity": {"default": 1.0, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "state", "to": "dying", "human": true},
+          {"t": {"a": "Tc", "ms": 0}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "forced_step", "mover": "actor", "away_from": "source", "human": true},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "knockback", "away_from": "source", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 900},
+          {"t": {"a": "Tc", "ms": 300}, "p": "hold", "ms": 600},
+          {"t": {"a": "Tc", "ms": 900}, "p": "gesture", "action": "wave", "ms": 500, "optional": true, "needs": ["dur"]},
+          {"t": {"a": "Tc", "ms": 1400}, "p": "posture", "pose": "lay", "human": true},
+          {"t": {"a": "Tc", "ms": 1400}, "p": "motion", "name": "fall", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 1450}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 1750}, "p": "expression", "face": "neutral"},
+          {"t": {"a": "Tc", "ms": 2000}, "p": "effect", "name": "TrippyHalo", "ms": null, "restore": true, "only": "actor"},
+          {
+            "t": {"a": "Tc", "ms": 2000},
+            "p": "overlay",
+            "anchor": "actor",
+            "name": "TrippyHalo",
+            "until": "cleared",
+            "only": "human",
+            "needs": ["overlay"]
+          },
+          {"t": {"a": "Tc", "ms": 2000}, "p": "state", "to": "body", "only": "actor"},
+          {"t": {"a": "Tc", "ms": 2000}, "p": "cue", "on": "actor", "emotion": "sad", "ms": 1500},
+          {"t": {"a": "Tc", "ms": 2000}, "p": "sfx", "cue": "sting_sad", "once": true},
+          {
+            "t": {"a": "Tc", "ms": 0, "plus": "human_down"},
+            "p": "overlay_clear",
+            "anchor": "actor",
+            "name": "TrippyHalo",
+            "only": "human",
+            "needs": ["overlay"]
+          },
+          {"t": {"a": "Tc", "ms": 0, "plus": "human_down"}, "p": "posture", "pose": "stand", "optional": true, "human": true, "only": "human"},
+          {"t": {"a": "Tc", "ms": 0, "plus": "human_down"}, "p": "state", "to": "normal", "human": true, "only": "human"}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
+        "room": [],
+        "camera": [{"t": {"a": "Tc", "ms": 1400}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 1500}]
+      },
+      "owed": {"target_ms": null, "witness_ms": 3000, "witness_when": "standalone_only"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "death", "tone": "grief"},
+        "witnesses": {"event": "witnessed", "tone": "shocked"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Standalone die is authored (actor in may_die) and has no target. Nested under kill it runs on the victim with `source` = the killer and is gated by kill. The state step dying emits actor_death (actors) or human_down (humans, state down). The human steps at Tc + down are the DOWN-3 stand-up, a non-abortable hotel timer. Lying is refused on a seat and with no room to lie: the body or the down human then stays where it is and act_done lists downgraded:[posture]."
+    },
+    "recoil": {
+      "id": "recoil",
+      "rung": null,
+      "family": "solo",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "face", "toward": "source", "offset": 2},
+          {"t": {"a": "Tc", "ms": 0}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "recoil", "away_from": "source", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200},
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "gasp", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 500},
+          {"t": {"a": "Tc", "ms": 1200}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [],
+        "camera": []
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "none", "tone": "neutral"},
+        "witnesses": {"event": "none", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Self-directed: a standalone act has no `with`. `source` exists only when the verb is nested as a reaction (the act's actor); the steps that name it are skipped otherwise."
+    },
+    "freeze_gasp": {
+      "id": "freeze_gasp",
+      "rung": null,
+      "family": "solo",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "stop_walk", "optional": true},
+          {"t": {"a": "Tc", "ms": 0}, "p": "face", "toward": "source"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1500},
+          {"t": {"a": "Tc", "ms": 0}, "p": "gesture", "action": "sign", "style": 13, "ms": 1500, "optional": true, "needs": ["dur"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "gasp", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 1200},
+          {"t": {"a": "Tc", "ms": 1500}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [],
+        "camera": []
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "none", "tone": "neutral"},
+        "witnesses": {"event": "none", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Self-directed. The walk of a walking witness is stopped with the existing own-tile request_walk (it settles on the next tick); the expression and the cue count as the visible response either way."
+    },
+    "hug": {
+      "id": "hug",
+      "rung": null,
+      "family": "affection",
+      "violent": false,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": "affection_chip",
+        "budget": null,
+        "cooldown": true,
+        "scenario": "free_ok",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "gesture", "action": "blow"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "effect", "name": "Love", "ms": 2400, "restore": true, "needs": ["overlay"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 1500}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 300}, "p": "gesture", "action": "sign", "style": 11, "human": true, "reaction": "hug_back"},
+          {"t": {"a": "Tc", "ms": 300}, "p": "effect", "name": "Love", "ms": 2100, "restore": true, "only": "actor"},
+          {"t": {"a": "Tc", "ms": 300}, "p": "overlay", "anchor": "target", "name": "Love", "until": 2100, "only": "human", "needs": ["overlay"]}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "face", "toward": "actor", "reaction": "watch"}],
+        "room": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "hug", "once": true},
+          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "love", "ms": 1500},
+          {"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} abraça {target} *", "en": "* {actor} hugs {target} *"}}
+        ],
+        "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 2000}]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "affectionate", "tone": "warm"},
+        "target": {"event": "receiver", "tone": "tender"},
+        "witnesses": {"event": "witnessed", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Parity with the existing pair act: initiator blow at Tc, partner sign 11 at Tc+300. Against a human the target steps run only on take; a timeout completes with the initiator steps only."
+    },
+    "kiss": {
+      "id": "kiss",
+      "rung": null,
+      "family": "affection",
+      "violent": false,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": "affection_chip_dodge",
+        "budget": null,
+        "cooldown": true,
+        "scenario": "free_ok",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "gesture", "action": "blow"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "effect", "name": "Love", "ms": 2000, "restore": true, "needs": ["overlay"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 1500}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 300}, "p": "gesture", "action": "blow", "human": true, "reaction": "kiss_back"},
+          {"t": {"a": "Tc", "ms": 300}, "p": "effect", "name": "Love", "ms": 1700, "restore": true, "only": "actor"},
+          {"t": {"a": "Tc", "ms": 300}, "p": "overlay", "anchor": "target", "name": "Love", "until": 1700, "only": "human", "needs": ["overlay"]}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "face", "toward": "actor", "reaction": "watch"}],
+        "room": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "kiss", "once": true},
+          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "love", "ms": 1500},
+          {
+            "t": {"a": "Tc", "ms": 0},
+            "p": "caption",
+            "ms": 2000,
+            "text": {"pt-BR": "* {actor} dá um beijo no rosto de {target} *", "en": "* {actor} kisses {target} on the cheek *"}
+          }
+        ],
+        "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 2000}]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "affectionate", "tone": "warm"},
+        "target": {"event": "receiver", "tone": "tender"},
+        "witnesses": {"event": "witnessed", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Cheek or air kiss with a heart. The staging never shows lip contact: the lunge is 4 px and the heart carries it. A human who does not answer is treated as dodge."
+    },
+    "turn_back": {
+      "id": "turn_back",
+      "rung": null,
+      "family": "conflict_noncontact",
+      "violent": false,
+      "contact": false,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "face", "toward": "target", "offset": 4},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 3000, "override_face_lock": true}
+        ],
+        "witnesses": [],
+        "room": [],
+        "camera": []
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "none", "tone": "neutral"},
+        "witnesses": {"event": "none", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": true},
+      "notes": "offset 4 = 180 degrees from the direction toward the target (opposite). A seated actor snaps to an even direction; a lying actor cannot turn (act_done lists downgraded:[face]). It owes no reaction. When the actor is the aggressor toward the target this lowers rung_cur(actor to target) to at most 2."
+    },
+    "cry": {
+      "id": "cry",
+      "rung": null,
+      "family": "solo",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit", "lay"]
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "expression", "face": "sad"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "effect", "name": "Raincloud", "ms": 4500, "restore": true},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 4500},
+          {"t": {"a": "Tc", "ms": 4500}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "sad", "ms": 2000},
+          {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "sob", "once": true, "needs": ["sfx"]}
+        ],
+        "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 2500}]
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "none", "tone": "neutral"},
+        "witnesses": {"event": "none", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Sadness stays slow: the shake is 1 px over 4 s (motions.shake.by_verb.cry)."
+    },
+    "storm_off": {
+      "id": "storm_off",
+      "rung": null,
+      "family": "solo",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.6, "class": null},
+      "timeline": {"contact_at_ms": 400},
+      "roles": {
+        "actor": [
+          {"t": {"a": "T0", "ms": 0}, "p": "posture", "pose": "stand", "optional": true},
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "walk_to", "dest": "door"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tarr", "ms": 0}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [
+          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
+          {"t": {"a": "Tarr", "ms": 0}, "p": "sfx", "cue": "door_close", "once": true},
+          {"t": {"a": "Tarr", "ms": 0}, "p": "caption", "ms": 1500, "text": {"pt-BR": "* {actor} sai furioso(a) *", "en": "* {actor} storms off *"}}
+        ],
+        "camera": [
+          {"t": {"a": "T0", "ms": 0}, "p": "camera", "shot": "tracking", "target": "actor", "zoom": 1, "ease_ms": 300, "hold_ms": 3000},
+          {"t": {"a": "Tarr", "ms": 0}, "p": "cut_fx", "kind": "door", "ms": 600}
+        ]
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "none", "tone": "neutral"},
+        "witnesses": {"event": "none", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Ends at Tarr + 500 (Tarr is the walk's arrived frame). The hotel stops at the door tile; leaving the room is the sidecar's move_room after act_done, when the scenario allows travel. With no route to the door the walk step is skipped, the act ends at Tc + 400 and act_done lists downgraded:[walk_to]."
+    },
+    "tableau": {
+      "id": "tableau",
+      "rung": null,
+      "family": "director",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit", "lay"]
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [{"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 2500}],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 2500}],
+        "room": [{"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "sting_tension", "once": true}],
+        "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 1, "ease_ms": 0, "hold_ms": 2500}]
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "none", "tone": "neutral"},
+        "witnesses": {"event": "none", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Every actor within tableau_radius_tiles of the actor, standing or sitting and alive, holds: body commands answer act_busy, chat stays allowed. Humans are never held. Also the follow_up of slap, punch, kill and faint."
+    },
+    "restrain": {
+      "id": "restrain",
+      "rung": null,
+      "family": "conflict_contact",
+      "violent": false,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.3, "class": {"min": "L", "max": "L"}},
+      "timeline": {"contact_at_ms": 200},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": -200}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": -100}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "hit_stop", "who": "both", "needs": ["b"]}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "forced_step", "mover": "target", "away_from": "victim", "reaction": "struggle"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": 200, "hs": true}, "p": "face", "toward": "actor", "offset": 1},
+          {"t": {"a": "Tc", "ms": 400, "hs": true}, "p": "face", "toward": "actor", "offset": -1},
+          {"t": {"a": "Tc", "ms": 1400}, "p": "expression", "face": "neutral"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "state", "to": "rung_reset"}
+        ],
+        "witnesses": [],
+        "room": [
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "cue", "on": "target", "emotion": "angry", "ms": 1200},
+          {"t": {"a": "Tc", "ms": -100}, "p": "sfx", "cue": "whoosh_short", "once": true, "needs": ["sfx"]},
+          {
+            "t": {"a": "Tc", "ms": 0},
+            "p": "caption",
+            "ms": 2000,
+            "text": {"pt-BR": "* {actor} segura {target} *", "en": "* {actor} holds {target} back *"}
+          }
+        ],
+        "camera": [{"t": {"a": "Tc", "ms": -200}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 1200}]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "none", "tone": "neutral"},
+        "witnesses": {"event": "none", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": true},
+      "notes": "Actor to actor only. The victim is the aggressor's most recent act target in this scene if still within 2 tiles, else the nearest other avatar, else the actor (RES-1). rung_reset lowers rung_cur(aggressor to victim) to at most 2."
+    },
+    "faint": {
+      "id": "faint",
+      "rung": null,
+      "family": "climax",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.7, "class": null},
+      "timeline": {"contact_at_ms": 800},
+      "roles": {
+        "actor": [
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "sad"},
+          {"t": {"a": "T0", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "posture", "pose": "lay"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "state", "to": "fainted"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "fall", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 50}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 400}, "p": "effect", "name": "Twinkle", "ms": 7200, "restore": true},
+          {"t": {"a": "Tc", "ms": 400}, "p": "cue", "on": "actor", "emotion": "confused", "ms": 3000},
+          {"t": {"a": "Tc", "ms": 400}, "p": "sfx", "cue": "sting_sad", "once": true},
+          {"t": {"a": "Tc", "ms": 400}, "p": "hold", "ms": 7600},
+          {"t": {"a": "Tc", "ms": 7600}, "p": "posture", "pose": "stand", "optional": true, "wakeable": true},
+          {"t": {"a": "Tc", "ms": 7600}, "p": "state", "to": "normal", "wakeable": true},
+          {"t": {"a": "Tc", "ms": 7600}, "p": "expression", "face": "neutral", "wakeable": true}
+        ],
+        "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
+        "room": [
+          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "sad", "ms": 800},
+          {"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} desmaia *", "en": "* {actor} faints *"}}
+        ],
+        "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 1500}]
+      },
+      "owed": {"target_ms": null, "witness_ms": 3000, "witness_when": "always"},
+      "memory": {
+        "actor": {"event": "none", "tone": "neutral"},
+        "target": {"event": "none", "tone": "neutral"},
+        "witnesses": {"event": "witnessed", "tone": "shocked"}
+      },
+      "ladder": {"deescalates": false},
+      "follow_ups": [{"verb": "tableau", "at": "end"}],
+      "notes": "Alive marker is Twinkle (die uses TrippyHalo). State fainted (a fallen state, DOWN-1) lasts until the stand step; WAKE-1 moves the steps marked wakeable. Lying is refused while walking, on a seat, or with no room to lie: the actor then stays as it is and act_done lists downgraded:[posture]."
+    },
+    "tend_fallen": {
+      "id": "tend_fallen",
+      "rung": null,
+      "family": "affection",
+      "violent": false,
+      "contact": false,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": 1,
+        "still": false,
+        "actor_posture": ["stand", "sit"],
+        "target_state": "fallen"
+      },
+      "intensity": {"default": 0.5, "class": null},
+      "timeline": {"contact_at_ms": 0},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": 0}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": 200}, "p": "posture", "pose": "sit_floor"},
+          {"t": {"a": "Tc", "ms": 200}, "p": "expression", "face": "sad"},
+          {"t": {"a": "Tc", "ms": 200}, "p": "hold", "ms": 6000},
+          {"t": {"a": "Tc", "ms": 6200}, "p": "posture", "pose": "stand"},
+          {"t": {"a": "Tc", "ms": 6200}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [
+          {"t": {"a": "Tc", "ms": 200}, "p": "cue", "on": "actor", "emotion": "sad", "ms": 2000},
+          {"t": {"a": "Tc", "ms": 200}, "p": "sfx", "cue": "sting_sad", "once": true}
+        ],
+        "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 2000}]
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {
+        "actor": {"event": "affectionate", "tone": "tender"},
+        "target": {"event": "receiver", "tone": "tender"},
+        "witnesses": {"event": "none", "tone": "neutral"}
+      },
+      "ladder": {"deescalates": false},
+      "notes": "Target must be fallen (state fainted, dying, body or down); otherwise actor_error bad_target detail not_fallen. The kneel is sit_floor (no real kneel pose exists); a seated tender stays seated."
+    }
+  }
+}

@@ -105,6 +105,28 @@ describe("the builder's persona fields reach the persona file", () => {
     expect(scenario.text).not.toMatch(/Expectant|Private goal/);
   });
 
+  it("a spite scene is not calibrated as Goulart and cannot invent a second object", () => {
+    const { draft } = formToDraft({
+      title: "Tira o teu dente do meu copo.",
+      situation: "Na pia tem um copo com um dente. Nanda fica na pia. Biro fica no banco.",
+      language: "pt-BR",
+      tone: "spite",
+      cast: [
+        { name: "Nanda", temperament: "performer", goal: "Tira o teu dente do meu copo.", voice: "Seca, sem piada.", identity: "De pé na pia. Não senta.", lines: ["Tira o teu dente do meu copo."] },
+        { name: "Biro", temperament: "skeptic", goal: "Foi a azeitona. Eu juro.", voice: "Baixo, sem desculpa.", identity: "No banco. Não levanta.", lines: ["Foi a azeitona. Eu juro."] },
+      ],
+    });
+    const { personas, scenario } = roomFiles(draft);
+    expect(personas[0]!.text).not.toContain("calibrationFrom");
+    expect(personas[1]!.text).not.toContain("calibrationFrom");
+    expect(personas[0]!.text).not.toMatch(/goulart|mariana|caio/);
+    expect(scenario.text).toContain("O que você diz: Tira o teu dente do meu copo.");
+    expect(scenario.text).toContain("(resource: the_object)");
+    expect(scenario.text).not.toContain("the_groups_attention");
+    expect(scenario.text).toContain("Não inventa objeto");
+    expect(scenario.text).not.toContain("Objetivo secreto");
+  });
+
   it("holds a cast of twelve", () => {
     const twelve = Array.from({ length: 12 }, (_, i) => ({ name: `Pessoa${i + 1}`, role: "connector", goal: "Passar a noite." }));
     expect(() => roomFiles(formToDraft({ ...form, cast: twelve }).draft)).not.toThrow();

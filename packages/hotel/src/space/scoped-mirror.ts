@@ -45,9 +45,25 @@ export class ScopedMirror implements ActorSpace {
     return p && p.run === this.run ? p.ref : key;
   }
 
+  /** Who is on the floor right now (the drama planner side's ledger); the views mark them so perception can tell a body from a person. */
+  private fallenOf: ((ref: string) => Presence["fallen"]) | undefined;
+
+  setFallen(source: ((ref: string) => Presence["fallen"]) | undefined): void {
+    this.fallenOf = source;
+  }
+
+  /** Whether drama is negotiated and on for this run; while it is, every view says so and the prompt teaches the `act` key. Never set otherwise. */
+  private dramaOn: (() => boolean) | undefined;
+
+  setDrama(source: (() => boolean) | undefined): void {
+    this.dramaOn = source;
+  }
+
   private localPresence(p: Presence): Presence {
     const ref = this.local(p.ref);
-    return ref === p.ref ? p : { ...p, ref };
+    const fallen = this.fallenOf?.(ref);
+    if (ref === p.ref && !fallen) return p;
+    return { ...p, ref, ...(fallen ? { fallen } : {}) };
   }
 
   // ---- SpaceMirror (what the engine reads) -------------------------------------
@@ -82,6 +98,7 @@ export class ScopedMirror implements ActorSpace {
     if (allowed) out.adjacency = v.adjacency.filter((a) => allowed.has(a.roomId));
     if (v.room) out.room = { ...v.room, occupants: v.room.occupants.map((p) => this.localPresence(p)) };
     if (v.self) out.self = this.localPresence(v.self);
+    if (this.dramaOn?.()) out.drama = true;
     return out;
   }
 

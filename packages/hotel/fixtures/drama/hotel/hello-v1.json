@@ -1,0 +1,1 @@
+{"actors":[],"hotel":{"build":"dev","human_reserve":10,"join_interval_ms":200,"max_actions_per_5s":8,"max_avatars_per_room":50,"max_chat":200,"tick_ms":300},"proto":1,"runs":[],"seq":1,"session":"SESSION","t":"hello","untrusted_text":["runs[].room_name","rooms[].name"]}

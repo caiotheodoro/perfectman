@@ -15,6 +15,7 @@ import {
   HUMAN_FACE_HOLD_MS,
   INITIATIVE_COOLDOWN_MS,
   INTERLOCUTOR_MS,
+  KEEP,
   LAUGH_COOLDOWN_MS,
   MAX_APPROACHERS,
   PAIR_ACQUAINTED_MS,
@@ -32,11 +33,12 @@ import {
   WITHDRAW_AT,
 } from "./constants.js";
 import { tileKey } from "../space/geometry.js";
+import { ANXIOUS_ACQUAINT_CUT, LOOSE_STABILITY, SOLO_THETA, TURN_BACK_HOLD_MS } from "./drama-readings.js";
+import { emotionRules } from "./emotion-body.js";
+import { CELEBRATION_GESTURES } from "./verb-facts.js";
 import { blockedTiles, isFree, occupiedTiles, pickTile } from "./tiles.js";
 import type { EmbodimentPlanner, PlanInput, PlannedCommand, PlannerMemory, SpeechModeChoice } from "./types.js";
 
-/** Keep priority when over budget: moves never drop, then gestures, facing, fidgets. */
-const KEEP = { fidget: 1, face: 2, gesture: 3, move: 4 } as const;
 type Cand = { cmd: PlannedCommand; keep: number };
 
 const SIGN_HEART = 11;
@@ -57,9 +59,15 @@ export const plan: EmbodimentPlanner = (input) => {
   const remaining = CMD_BUDGET.count - used;
   if (remaining <= 0) return [];
 
+  // REA-9, ACT-12: while an act holds this actor the planner issues no body command; the hotel would answer act_busy.
+  if (input.drama?.lock || input.drama?.busyActId) return [];
+
   const ctx: Ctx = { input, room, self, cands: [], mem: input.memory ?? {} };
   fromBodyIntent(ctx);
   if (!input.bodyIntent?.move) automaticRules(ctx);
+  if (input.drama && !input.bodyIntent?.move) {
+    for (const c of emotionRules({ input, room, self, mem: ctx.mem, planId: planId(ctx) })) push(ctx, c.keep, c.cmd);
+  }
 
   const ranked = ctx.cands
     .map((c, i) => ({ ...c, i }))
@@ -233,6 +241,11 @@ function recentlyRefused(ctx: Ctx, target: Presence): boolean {
   return at !== undefined && ctx.input.now - at < PAIR_REFUSAL_COOLDOWN_MS;
 }
 
+/** A body, a faint or a down human: not an interlocutor, not someone to approach (DOWN-1). */
+function onTheFloor(ctx: Ctx, p: Presence): boolean {
+  return ctx.input.drama?.fallen.has(p.ref) === true;
+}
+
 /** Tiles other actors are walking to right now: nobody is sent to the same spot. */
 function walkingGoals(ctx: Ctx): Set<string> {
   const goals = new Set<string>();
@@ -254,6 +267,8 @@ function crowdedApproach(ctx: Ctx, target: Presence): boolean {
 /** Gesture with the 15 s cooldown per kind and never the same twice in a row. */
 function gesture(ctx: Ctx, kind: string, style: number | undefined, keep: number): boolean {
   const { input, mem } = ctx;
+  // LAD-8: a killer plays no celebration for 5 s after the kill lands.
+  if (input.drama?.noReward && CELEBRATION_GESTURES.has(kind)) return false;
   const last = ctx.input.space.body.dwell.lastGestureAt[kind];
   if (last !== undefined && input.now - last < GESTURE_COOLDOWN_MS) return false;
   if (mem.lastGesture?.a === kind && input.now - mem.lastGesture.at < GESTURE_COOLDOWN_MS * 2) return false;
@@ -274,19 +289,21 @@ function automaticRules(ctx: Ctx): void {
 
   // 2. Face the speaker within 6 tiles, unless already within 45 degrees.
   const speaker = room.occupants
-    .filter((p) => p.ref !== self.ref && p.lastSpokeAt !== undefined && now - (p.lastSpokeAt ?? 0) <= SPEAKER_RECENT_MS && chebyshev(p.tile, self.tile) <= BAND.socialMax)
+    .filter((p) => p.ref !== self.ref && !onTheFloor(ctx, p) && p.lastSpokeAt !== undefined && now - (p.lastSpokeAt ?? 0) <= SPEAKER_RECENT_MS && chebyshev(p.tile, self.tile) <= BAND.socialMax)
     .sort((a, b) => (b.lastSpokeAt ?? 0) - (a.lastSpokeAt ?? 0))[0];
   // Keep facing whoever the exchange is with, not only whoever spoke last.
-  const talking = mem.interlocutor && mem.interlocutor.until > now ? room.occupants.find((p) => p.ref === mem.interlocutor?.ref) : undefined;
-  const held = mem.holdFace && mem.holdFace.until > now ? room.occupants.find((p) => p.ref === mem.holdFace?.ref) : undefined;
-  const faceTarget = held ?? speaker ?? talking;
+  const talking = mem.interlocutor && mem.interlocutor.until > now ? room.occupants.find((p) => p.ref === mem.interlocutor?.ref && !onTheFloor(ctx, p)) : undefined;
+  const held = mem.holdFace && mem.holdFace.until > now ? room.occupants.find((p) => p.ref === mem.holdFace?.ref && !onTheFloor(ctx, p)) : undefined;
+  // REA-9: someone this actor just turned its back on is not faced again until the hold ends.
+  const wanted = held ?? speaker ?? talking;
+  const faceTarget = wanted && ctx.input.drama && mem.turnedBack?.ref === wanted.ref && mem.turnedBack.until > now ? undefined : wanted;
   if (faceTarget && self.state !== "walk") {
     const want = sectorTo(self.tile, faceTarget.tile);
     if (dirDiffDeg(want, self.dir) > FACE_TOLERANCE_DEG) push(ctx, KEEP.face, { cmd: "face", targetTile: faceTarget.tile });
   }
 
   // Interlocutor: the speaker, else the nearest person in conversation range.
-  const other = speaker ?? room.occupants.filter((p) => p.ref !== self.ref).sort((a, b) => chebyshev(a.tile, self.tile) - chebyshev(b.tile, self.tile))[0];
+  const other = speaker ?? room.occupants.filter((p) => p.ref !== self.ref && !onTheFloor(ctx, p)).sort((a, b) => chebyshev(a.tile, self.tile) - chebyshev(b.tile, self.tile))[0];
   const rel = other ? agentState.relationalStates.get(other.ref) : undefined;
   const closeness = rel?.desireForCloseness ?? 0.5;
   const distance = rel?.desireForDistance ?? 0.2;
@@ -433,13 +450,13 @@ function initiative(ctx: Ctx, exchange: boolean): void {
 
   // -- reaching for a person
   if (mem.lastInitiativeAt !== undefined && now - mem.lastInitiativeAt < INITIATIVE_COOLDOWN_MS) return;
-  const candidates = room.occupants.filter((p) => p.ref !== self.ref);
+  const candidates = room.occupants.filter((p) => p.ref !== self.ref && !onTheFloor(ctx, p));
   const tries = (p: Presence): number => mem.pairTries?.[p.ref] ?? 0;
   for (const p of candidates) {
     if (tries(p) >= PAIR_TRIES_PER_PERSON || recentlyRefused(ctx, p)) continue;
     const rel = agentState.relationalStates.get(p.ref);
     const dist = chebyshev(p.tile, self.tile);
-    if (now - first < PAIR_ACQUAINTED_MS || p.state === "walk" || now - p.since < 8000) continue;
+    if (now - first < acquaintMs(ctx) || p.state === "walk" || now - p.since < 8000) continue;
     const named = p.name.length >= 3 && hasWord(text, fold(p.name).split(/\s+/)[0] ?? "");
     const wantsKiss = named && /\b(beij\w*|kiss\w*)\b/.test(text);
     const wantsHug = named && /\b(abra[cç]\w*|abrac\w*|hug\w*)\b/.test(text);
@@ -452,6 +469,12 @@ function initiative(ctx: Ctx, exchange: boolean): void {
     push(ctx, KEEP.move, { cmd: "pair", kind, with: p.ref, pair: `pi:${planId(ctx)}` });
     return;
   }
+}
+
+/** How long a person must have been around before an initiative hug or kiss; an overeager actor does not wait as long (bible 4.3, `anxiousOverreach`). */
+function acquaintMs(ctx: Ctx): number {
+  const over = ctx.input.drama ? (ctx.input.actionEmotions?.anxiousOverreach ?? 0) : 0;
+  return PAIR_ACQUAINTED_MS * (1 - ANXIOUS_ACQUAINT_CUT * over);
 }
 
 function pushLeave(ctx: Ctx, roomId: string): void {
@@ -468,6 +491,8 @@ function pushLeave(ctx: Ctx, roomId: string): void {
 function allowedMove(ctx: Ctx, to: Tile): boolean {
   const last = ctx.mem.lastMove;
   if (!last || ctx.input.now - last.at >= DWELL_ZONE_MS) return true;
+  // An unstable mood is erratic: the reversal lock does not hold (bible 4.4).
+  if (ctx.input.drama && ctx.input.agentState.coreMood.stability < LOOSE_STABILITY) return true;
   const dx = to[0] - ctx.self.tile[0];
   const dy = to[1] - ctx.self.tile[1];
   return dx * last.dx + dy * last.dy >= 0;
@@ -476,9 +501,16 @@ function allowedMove(ctx: Ctx, to: Tile): boolean {
 // ---- memory and speech mode ------------------------------------------------------
 
 /** Folds sent commands into the planner memory (the executor calls this on send). */
-export function updateMemory(mem: PlannerMemory, cmds: readonly PlannedCommand[], now: number, from: Tile, roomId?: string): PlannerMemory {
+export function updateMemory(mem: PlannerMemory, cmds: readonly PlannedCommand[], now: number, from: Tile, roomId?: string, door?: Tile): PlannerMemory {
   const next: PlannerMemory = { ...mem };
   for (const c of cmds) {
+    if (c.cmd === "act") {
+      // The planner's own solo verbs: a cooldown per verb, and the lock memory the table's steps leave behind (REA-9). A turn_back is held so
+      // the face rule does not undo it; a storm_off is a purposeful walk toward the door, so the 30 s reversal lock holds the way back.
+      if (c.verb in SOLO_THETA) next.soloAt = { ...next.soloAt, [c.verb]: now };
+      if (c.verb === "turn_back" && c.with) next.turnedBack = { ref: c.with, until: now + TURN_BACK_HOLD_MS };
+      if (c.verb === "storm_off" && door) next.lastMove = { at: now, dx: door[0] - from[0], dy: door[1] - from[1] };
+    }
     if (c.cmd === "sit") {
       next.lastSatAt = now;
       next.lastSeatTryAt = now;

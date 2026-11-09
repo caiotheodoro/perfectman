@@ -2,6 +2,7 @@ import {
   compilePersonaMarkdown,
   compileRunInputs,
   defaultPresetsRoot,
+  parseMarkdown,
   draftStory,
   loadPresets,
   StoryDraftError,
@@ -16,6 +17,10 @@ import { parseBundle, makeBundle } from "./source-bundle.js";
 import { MAX_BODY_BYTES, SCENARIO_BODY_VERSION, parseScenarioBody, placeholderLlm } from "../run/scenario-body.js";
 import type { ScenarioBody } from "../run/scenario-body.js";
 import { draftToFiles } from "./draft-to-files.js";
+import { compileSceneBeats, countCuts } from "./scenario-beats.js";
+import type { ScenarioBeat } from "./scenario-beats.js";
+import { FREE_PLAY_DRAMA, compileDramaForm, compileSceneDrama } from "./scenario-drama.js";
+import type { ScenarioDrama } from "./scenario-drama.js";
 import { formArrivals, formStage, formToDraft, parseForm } from "./scenario-form.js";
 import type { FormLooks, ScenarioStage } from "./scenario-form.js";
 
@@ -37,7 +42,15 @@ export type AuthoringDeps = {
   apiKey: string | undefined;
   presetsRoot?: string;
   fetchImpl?: typeof fetch;
+  /** This sidecar's `PERFECTMAN_DRAMA`: a `drama` block while it is off compiles with the warning `drama.disabled`. Absent means off. */
+  drama?: boolean;
 };
+
+/** What the scene's `drama` block and `beats` leave after compile, and the warnings of both. */
+type DramaPart = { drama?: ScenarioDrama | undefined; beats?: ScenarioBeat[] | undefined; dramaWarnings: PathMessage[] };
+
+/** The block the beats are read against. One that failed to compile has said so already: the beats are not told "no block" on top of it. */
+const blockFor = (result: { drama?: ScenarioDrama } | undefined): ScenarioDrama | undefined => (result === undefined ? undefined : (result.drama ?? FREE_PLAY_DRAMA));
 
 const toRows = (diagnostics: readonly Diagnostic[], level: "error" | "warning"): PathMessage[] =>
   diagnostics
@@ -53,19 +66,41 @@ export class AuthoringService {
   constructor(private readonly deps: AuthoringDeps) {}
 
   /** A builder form (JSON) becomes the file bundle with `roomFiles`; a markdown bundle is read as is. */
-  private resolveSource(source: string): { bundle: ReturnType<typeof parseBundle>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } {
+  private resolveSource(source: string): { bundle: ReturnType<typeof parseBundle>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } & DramaPart {
     const form = parseForm(source);
-    if (!form) return { bundle: parseBundle(source), looks: {}, arrivals: {} };
+    if (!form) return { bundle: parseBundle(source), looks: {}, arrivals: {}, dramaWarnings: [] };
     const { draft, looks } = formToDraft(form);
+    const dramaPart = this.resolveDrama(form);
     try {
-      return { bundle: parseBundle(makeBundle(draftToFiles(draft))), looks, arrivals: formArrivals(form), ...(formStage(form) ? { stage: formStage(form) as ScenarioStage } : {}) };
+      return { bundle: parseBundle(makeBundle(draftToFiles(draft))), looks, arrivals: formArrivals(form), ...(formStage(form) ? { stage: formStage(form) as ScenarioStage } : {}), ...dramaPart };
     } catch (err) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", [{ path: "form", message: err instanceof Error ? err.message : String(err) }]);
     }
   }
 
-  private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } {
-    const { bundle, looks, arrivals, stage } = this.resolveSource(source);
+  /**
+   * The form's `drama` block and `beats` as the body carries them (SCN-5). Cast refs become the agent ids `person-N` that `formArrivals` uses. The
+   * beats that cut the scene are the cuts SCN-6 asks of a scenario that can kill; a form without them warns `drama.no_scene_cut`.
+   */
+  private resolveDrama(form: NonNullable<ReturnType<typeof parseForm>>): DramaPart {
+    if (form.drama === undefined && form.beats === undefined) return { dramaWarnings: [] };
+    const cast = Array.isArray(form.cast) ? form.cast : [];
+    const people = cast.map((c, i) => ({ id: `person-${i + 1}`, displayName: typeof c?.name === "string" ? c.name : "" }));
+    const result = form.drama === undefined ? undefined : compileDramaForm(form.drama, { names: people.map((p) => p.displayName), ids: people.map((p) => p.id) }, { sceneCuts: countCuts(form.beats) });
+    const script = form.beats === undefined ? undefined : compileSceneBeats(form.beats, people, { drama: blockFor(result) });
+    const errors = [...(result?.errors ?? []), ...(script?.errors ?? [])];
+    if (errors.length > 0) throw new AuthoringError(422, "bad_scenario", "scenario did not compile", errors);
+    return { ...this.dramaPart(result, script) };
+  }
+
+  /** The block and the script as the body keeps them, with the warnings of both and `drama.disabled` when this sidecar plays nothing. */
+  private dramaPart(result: { drama?: ScenarioDrama; warnings: PathMessage[] } | undefined, script: { beats: ScenarioBeat[]; warnings: PathMessage[] } | undefined): DramaPart {
+    const disabled: PathMessage[] = !this.deps.drama && (result?.drama || script?.beats.length) ? [{ path: result?.drama ? "drama" : "beats", message: "drama.disabled: this sidecar's PERFECTMAN_DRAMA is off, so the drama block and the beats are kept but nothing will enforce or play them" }] : [];
+    return { ...(result?.drama ? { drama: result.drama } : {}), ...(script && script.beats.length > 0 ? { beats: script.beats } : {}), dramaWarnings: [...disabled, ...(result?.warnings ?? []), ...(script?.warnings ?? [])] };
+  }
+
+  private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } & DramaPart {
+    const { bundle, looks, arrivals, stage, drama, beats, dramaWarnings } = this.resolveSource(source);
     if (!bundle.scenario) throw new AuthoringError(400, "bad_request", "source has no scenario file");
     const result = compileRunInputs(
       { kind: "markdown", scenario: bundle.scenario, personas: bundle.personas },
@@ -81,7 +116,21 @@ export class AuthoringService {
         if (range) delays[a.id] = [range[0], range[1]];
       }
     }
-    return { result, delays, looks, arrivals, ...(stage ? { stage } : {}) };
+    // A markdown scenario (a preset) carries its `drama` block and `beats` in the frontmatter; a form carried them already.
+    const scene = drama === undefined && beats === undefined && result.ok && result.summary ? this.sceneScript(bundle.scenario.text, result.summary.agents) : undefined;
+    const part = scene ?? { drama, beats, dramaWarnings: [] };
+    return { result, delays, looks, arrivals, dramaWarnings: [...dramaWarnings, ...part.dramaWarnings], ...(stage ? { stage } : {}), ...(part.drama ? { drama: part.drama } : {}), ...(part.beats ? { beats: part.beats } : {}) };
+  }
+
+  /** SCN-5 for a markdown scenario's frontmatter `drama` and `beats`; the beats that cut the scene are the cuts SCN-6 asks for. Errors fail the compile, as a form's do. */
+  private sceneScript(text: string, agents: readonly { id: string; displayName: string }[]): DramaPart | undefined {
+    const front = parseMarkdown(text).frontmatter;
+    if (front["drama"] === undefined && front["beats"] === undefined) return undefined;
+    const result = front["drama"] === undefined ? undefined : compileSceneDrama(front["drama"], agents, { sceneCuts: countCuts(front["beats"]) });
+    const script = front["beats"] === undefined ? undefined : compileSceneBeats(front["beats"], agents, { drama: blockFor(result) });
+    const errors = [...(result?.errors ?? []), ...(script?.errors ?? [])];
+    if (errors.length > 0) throw new AuthoringError(422, "bad_scenario", "scenario did not compile", errors);
+    return this.dramaPart(result, script);
   }
 
   validate(req: ValidateRequest): ValidateResponse {
@@ -91,18 +140,19 @@ export class AuthoringService {
     }
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "validate needs source or body");
     let result: CompileResult;
+    let dramaWarnings: PathMessage[];
     try {
-      ({ result } = this.compileSource(req.source));
+      ({ result, dramaWarnings } = this.compileSource(req.source));
     } catch (err) {
       if (err instanceof AuthoringError && err.errors) return { ok: false, errors: err.errors, warnings: [] };
       throw err;
     }
-    return { ok: result.ok, errors: toRows(result.diagnostics, "error"), warnings: toRows(result.diagnostics, "warning") };
+    return { ok: result.ok, errors: toRows(result.diagnostics, "error"), warnings: [...toRows(result.diagnostics, "warning"), ...dramaWarnings] };
   }
 
   compile(req: { source?: unknown }): CompileResponse {
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "compile needs source");
-    const { result, delays, looks, arrivals, stage } = this.compileSource(req.source);
+    const { result, delays, looks, arrivals, stage, drama, beats } = this.compileSource(req.source);
     if (!result.ok || !result.config || !result.summary) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", toRows(result.diagnostics, "error"));
     }
@@ -116,6 +166,8 @@ export class AuthoringService {
       ...(Object.keys(looks).length > 0 ? { looks } : {}),
       ...(Object.keys(arrivals).length > 0 ? { arrivals } : {}),
       ...(stage ? { stage } : {}),
+      ...(drama ? { drama } : {}),
+      ...(beats ? { beats } : {}),
     };
     if (Buffer.byteLength(JSON.stringify(body)) > MAX_BODY_BYTES) {
       throw new AuthoringError(422, "bad_scenario", "compiled scenario is larger than 256 KiB", [{ path: "body", message: "too large" }]);

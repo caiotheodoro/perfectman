@@ -44,3 +44,28 @@ sets a `storyClock`, so the cast writes chat-sized messages and refers to the ho
 They also name where they happen with `setting:` (rooftop, stairwell, elevator, kitchen, living, lobby, street, office), optional `props:` and side `rooms:`; the viewer draws from these and the simulation never reads them.
 **`residencial-aurora` / `gato-no-telhado`** is the same cat scene written natively in pt-BR (not a translation of the lines: new voices for the same four people, same secrets and resources).
 Scored with the rubric in `docs/eval/roleplay-rubric/`.
+
+## Telenovela (pt-BR, drama)
+
+**`casa-vilela`** is a cast of five for the drama verbs: Dona Helena (the matriarch who controls the inheritance), Ricardo (the son who betrayed his wife), Beatriz (the daughter-in-law who has stopped swallowing), Otávio (the lawyer who knows too much) and Sofia (the goddaughter who depends on everyone's affection). Five scenes use it, each with a `drama` block in its frontmatter (act contract section 7):
+
+- `tapa-na-cara` — a birthday dinner, a betrayal said out loud; the ladder climbs to the slap (`max_rung: 4`).
+- `confronto-da-traicao` — the safe is open; the confrontation climbs to the punch (`max_rung: 5`), and a second pair, Ricardo and Otávio, may be at each other.
+- `assassinato-na-festa` — one murder at the party (`may_die: [otavio]`), authored as a beat, ending in a held picture, someone kneeling by the body and a scene cut that brings him back.
+- `reencontro-abraco` — Sofia comes home after five years; affection only (`max_rung: 0`): hugs and a kiss.
+- `anuncio-do-desmaio` — the will is read in front of everyone and Sofia faints (`max_rung: 2`: looks and words, no blows).
+
+Three frontmatter keys beyond the ones above are read by the drama layer (the authoring service compiles `drama` and `beats` into the scenario body) and ignored by the compiler:
+
+```yaml
+drama: { max_rung: 4, may_target: [[beatriz, ricardo]], may_die: [] }   # agent ids or cast names; the authoring service compiles it into the body
+beats:                                                                  # the scene's script, seconds into the run; the sidecar's BeatPlayer plays it
+  - { at: 90, actor: ricardo, verb: kill, with: otavio, skip: true }
+  - { at: 170, cut: "fim da festa" }
+priorEvents:                                                            # payload.tone and payload.personTargets are how a message becomes a grievance
+  - { ..., payload: { content: "...", tone: betrayal, personTargets: [beatriz] } }
+```
+
+`tone` is `hostile`, `accusing`, `betrayal`, `humiliating`, `tender` or `romantic`: the sim turns a message into a grievance (or warmth) of its target toward its speaker, with the time it was said, so the director's motive gate (`rel.resentment` or a recent negative event) has something to read. `beats` are the scene's script: authored acts (`skip: true` is `authored_skip`) and scene cuts at a second of the run. The sidecar's `BeatPlayer` plays each one once, as a scenario-origin act through the director (so `may_target`, `may_die`, `max_rung` and every hotel gate still apply; a beat they refuse is logged and dropped) or as a `scene_advance` (errata P4-01).
+
+To watch one: `pnpm --filter @perfectman/eval drama:sim -- --scenario tapa-na-cara --out out/tapa` writes `frames.jsonl`, `events.jsonl`, `probes.json` and `timeline.txt`; `--all` runs the five.

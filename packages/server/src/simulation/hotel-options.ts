@@ -1,4 +1,5 @@
 import type {
+  ActionEmotions,
   ActionIntent,
   AgentState,
   CommittedEvent,
@@ -31,6 +32,8 @@ export type AgentCommitInfo = {
   /** The agent's view of the space when it decided. */
   space?: SpaceView;
   agentState: AgentState;
+  /** The 15 action tendencies of the step this decision came from (computed, never persisted): the planner's reading of the whole emotion model. */
+  actionEmotions?: ActionEmotions;
 };
 
 export type OnAgentCommitted = (info: AgentCommitInfo) => void;

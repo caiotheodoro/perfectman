@@ -3,3 +3,4 @@ export * from "./space-view.types.js";
 export * from "./body.types.js";
 export * from "./body-events.types.js";
 export * from "./body-intent.schema.js";
+export * from "./act-verbs.js";

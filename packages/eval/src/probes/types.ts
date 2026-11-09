@@ -112,6 +112,36 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   "plan-abandon-rate": [0, 0.25],
   "slowdown-count": [0, 0],
   "prompt-identity-lint": [0, 0],
+  // Drama probes over DramaEvent[] (probes/drama.ts). Same calibration-pending
+  // seeds. body-act-rate and verb-diversity are informational (nothing can fail
+  // them): the first is read before/after against the baseline aggregate.
+  "body-act-rate": [0, 1e9],
+  // Spam guard (D6): at most 3 acts started per scene-minute, judged on the busiest scene.
+  "act-rate": [0, 3],
+  // p90 ms from act_beat (contact) to the first reaction of the owed target, then of the owed witnesses.
+  "reaction-latency-p90-target": [0, 1500],
+  "reaction-latency-p90-witness": [0, 3000],
+  "witness-coverage": [0.8, 1],
+  "verb-diversity": [0, 1],
+  // Escalation ladder and violence budget: every act complies, or the scene is a D3/D6 case.
+  "ladder-compliance": [1, 1],
+  "dead-speech": [0, 0],
+  "consent-violation": [0, 0],
+  // Act contract rev 2 probes (probes/drama-contract.ts). All are rules the hotel promises outright, so the
+  // band is the promise: nothing owed missed (REA-10), every reason in the enum, every timed-out chip resolved
+  // as CHIP-3 says (a share, 1 = all), no human touched without a take, no scene-cut breach, no down window off.
+  "owed-missed-empty": [0, 0],
+  "blocked-reason-audit": [0, 0],
+  "chip-timeout-dodge": [1, 1],
+  "human-untouched-without-take": [0, 0],
+  "scene-cut-revive": [0, 0],
+  "down-window-exact": [0, 0],
+  // TBL-3 (contact 150 ms after a take) and SAFE-4 (at most N landed violent acts on humans per room per window).
+  "take-contact-windup": [0, 0],
+  "harm-window": [0, 0],
+  // FRM-1 (one act_done per act) and DEATH-1 (a kill's victim is shown dying): promises, so the band is zero.
+  "single-act-done": [0, 0],
+  "kill-victim-die-reaction": [0, 0],
 };
 
 export type ProbeInput = {

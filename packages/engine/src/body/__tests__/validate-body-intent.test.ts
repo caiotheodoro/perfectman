@@ -123,7 +123,8 @@ describe("validateBodyIntent", () => {
   it("every code has a line or is explicitly silent", () => {
     for (const code of BLOCKED_REASON_CODES) {
       const line = blockedReasonLine({ code, ref: "X" }, "pt-BR");
-      expect(["slow_down", "too_far", "cooldown"].includes(code) ? line === undefined : typeof line === "string").toBe(true);
+      const silent = ["slow_down", "too_far", "cooldown", "kill_switch", "calm_room", "consent_off", "ladder", "budget", "dead_target", "no_scenario_gate", "rate_limit"];
+      expect(silent.includes(code) ? line === undefined : typeof line === "string").toBe(true);
     }
   });
 

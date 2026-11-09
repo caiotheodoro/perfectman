@@ -89,6 +89,11 @@ export type Presence = {
   since: number;
   lastSpokeAt?: number;
   lastMovedAt: number;
+  /**
+   * On the floor and not answering: a dead actor (`dying`, `body`), a fainted one, a killed human who is down (act-contract.md DOWN-1).
+   * Set by the drama planner side on the views it hands out; absent everywhere else, so a run without drama never sees it.
+   */
+  fallen?: "dead" | "fainted" | "down";
 };
 
 export type RoomAdjacency = {
@@ -171,6 +176,17 @@ export const BLOCKED_REASON_CODES = [
   "stale_space",
   "not_in_earshot",
   "cooldown",
+  // The act contract's blocked reasons (act-contract.md 0.2) that the existing codes do not already cover: `too_far`
+  // and `cooldown` above are the same words. They come back from the hotel's `act_done{blocked}` or from the
+  // director's own veto, and the model is not told any of them as text (the director decides, never the model).
+  "kill_switch",
+  "calm_room",
+  "consent_off",
+  "ladder",
+  "budget",
+  "dead_target",
+  "no_scenario_gate",
+  "rate_limit",
 ] as const;
 
 export type BlockedReasonCode = (typeof BLOCKED_REASON_CODES)[number];
@@ -179,7 +195,7 @@ export type BlockedReasonCode = (typeof BLOCKED_REASON_CODES)[number];
 export type BlockedReason = {
   code: BlockedReasonCode;
   /** Which part of the body intent was refused. */
-  part?: "move" | "posture" | "gesture" | "expression" | "face" | "speech";
+  part?: "move" | "posture" | "gesture" | "expression" | "face" | "speech" | "act";
   /** The handle or name involved, already sanitized. */
   ref?: string;
   detail?: string;

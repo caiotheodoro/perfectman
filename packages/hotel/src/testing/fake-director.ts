@@ -3,7 +3,9 @@ import type { Server } from "node:http";
 import { WebSocketServer } from "ws";
 import type { WebSocket } from "ws";
 import { sectorTo } from "../space/geometry.js";
-import type { ActorCmd, ActorErrorCode, Avatar, AvatarState, HotelMsg, PairOutcome, RoomSnapshot, RunModel, ServerMsg, SidecarFrame, SidecarMsg } from "../director/index.js";
+import type { ActorCmd, ActorErrorCode, Avatar, AvatarState, HotelMsg, PairOutcome, RoomSnapshot, RunModel, ServerMsg, SidecarFrame, SidecarMsg, VerbVocabRef } from "../director/index.js";
+import { actFrames, dramaStateFrame, helloDrama, sceneCutFrames } from "./fake-drama.js";
+import type { ActScript } from "./fake-drama.js";
 
 /**
  * In-process stand-in for the hotel's Director listener (docs/plans/hotel-package.md
@@ -16,8 +18,18 @@ export type FakeAvatar = { id: number; name: string; x: number; y: number; dir: 
 
 type FakeRoom = { id: number; name: string; official: boolean; section: string | null; rev: number; avatars: Map<number, FakeAvatar>; w: number; h: number; door: [number, number] };
 
+/**
+ * What a hotel with `PERFECTMAN_DRAMA` on adds to its `hello` (act-contract.md NEG-2): `proto_max`, `caps` and `drama`.
+ * Absent means a hotel with the switch off (or an old one): today's hello, byte for byte.
+ */
+export type FakeDramaOffer = { vocab?: VerbVocabRef; caps?: string[]; dead?: number[]; protoMax?: number; enabled?: boolean };
+
 export type FakeDirectorOptions = {
   secret: string;
+  /** The drama offer; can be changed between connections with `offer`. */
+  drama?: FakeDramaOffer;
+  /** Play a `landed` act lifecycle for every act command that reaches a dialect 2 link (no chip, no witnesses). */
+  autoAct?: boolean;
   /** Real ms per hotel tick; the hotel's is 300. */
   tickMs?: number;
   pairOutcome?: PairOutcome;
@@ -57,6 +69,33 @@ export class FakeDirector {
   private readonly joinedAt = new Map<number, number>();
   readonly gone: { actor: number; reason: string }[] = [];
   connections = 0;
+  /** The drama offer of the next `hello`; `null` is a hotel without the switch. */
+  offer: FakeDramaOffer | null;
+  /** `hello.proto`: 1 in every hello (NEG-1); a test sets 2 to see a v1 sidecar's refusal. */
+  helloProto = 1;
+  /** Unknown top-level fields added to the next hellos (unknown fields are ignored on both ends). */
+  helloExtra: Record<string, unknown> = {};
+  /** A raw `hello` frame (without `seq`) sent once instead of the built one: the `in` of a fixture row. */
+  nextHello: Record<string, unknown> | undefined;
+  /** The `hello_ack` of the current connection. */
+  ack: Extract<SidecarMsg, { t: "hello_ack" }> | undefined;
+  /** NEG-4, from the hotel's side: 2 only for an ack with proto 2 and `drama.v1` while the offer was made. */
+  dialect: 1 | 2 = 1;
+  /** What the current connection's `hello` offered (`proto_max`, or 1 with no offer), for the NEG-1 and NEG-4 rules. */
+  private offeredMax = 1;
+  private offeredCaps: string[] = [];
+  /** Close codes the sidecar closed with, in order. */
+  readonly closeCodes: number[] = [];
+  /** Acts the sidecar sent on a dialect 2 link, and the ones a dialect 1 link refused as `bad_message` (NEG-5). */
+  readonly acts: Extract<SidecarMsg, { t: "actor_cmd" }>[] = [];
+  readonly rejectedActs: number[] = [];
+  /** `scene_advance` frames: kept on dialect 2, dropped silently on dialect 1. */
+  readonly sceneAdvances: Extract<SidecarMsg, { t: "scene_advance" }>[] = [];
+  readonly droppedSceneAdvances: number[] = [];
+  /** Drama frames a script wanted to send to a link that is not dialect 2: the hotel never sends them (NEG-5). */
+  suppressedDrama = 0;
+  /** Human ids that opted in, per room, for `drama_state`. */
+  readonly optIn = new Map<number, number[]>();
   /** Test switch: on hello_ack, do not renew leases (a hotel that is slow to bump them). */
   withholdLeases = false;
   /** Test switch: subscribe_room is refused silently (a hotel that rate-limits resnapshots). */
@@ -79,6 +118,7 @@ export class FakeDirector {
 
   constructor(private readonly o: FakeDirectorOptions) {
     this.tickMs = o.tickMs ?? 5;
+    this.offer = o.drama ?? null;
   }
 
   static async start(o: FakeDirectorOptions): Promise<FakeDirector> {
@@ -257,7 +297,10 @@ export class FakeDirector {
     this.connections++;
     this.sock = ws;
     this.seq = 0;
+    this.ack = undefined;
+    this.dialect = 1;
     this.subscribed.clear();
+    ws.on("close", (code) => this.closeCodes.push(code));
     ws.on("message", (data) => {
       const frame = JSON.parse(String(data)) as SidecarFrame;
       this.received.push(frame);
@@ -267,9 +310,22 @@ export class FakeDirector {
       [...r.avatars.values()].filter((a) => a.id < 0 && a.ref).map((a) => ({ actor: a.id, ref: a.ref ?? "", run: a.run ?? 0, name: a.name, room: r.id, x: a.x, y: a.y, dir: a.dir, state: "stand" as const })),
     );
     const runs = [...new Set(live.map((a) => a.run))].map((run) => ({ run, state: "running" as const, room: live.find((a) => a.run === run)?.room ?? 0, room_name: "Lounge", scenario_version: 1, mode: "default" as const }));
+    const nextHello = this.nextHello;
+    this.nextHello = undefined;
+    if (nextHello) {
+      this.offeredMax = typeof nextHello["proto_max"] === "number" ? nextHello["proto_max"] : 1;
+      this.offeredCaps = Array.isArray(nextHello["caps"]) ? (nextHello["caps"] as string[]) : [];
+      this.sock?.send(JSON.stringify({ ...nextHello, seq: ++this.seq }));
+      return;
+    }
+    const offer = this.offer;
+    this.offeredMax = offer ? (offer.protoMax ?? 2) : 1;
+    this.offeredCaps = offer ? (offer.caps ?? ["drama.v1"]) : [];
     this.send({
       t: "hello",
-      proto: 1,
+      proto: this.helloProto,
+      ...(offer ? { proto_max: offer.protoMax ?? 2, caps: offer.caps ?? ["drama.v1"], drama: helloDrama({ ...(offer.vocab ? { vocab: offer.vocab } : {}), dead: offer.dead ?? [], ...(offer.enabled !== undefined ? { enabled: offer.enabled } : {}) }) } : {}),
+      ...this.helloExtra,
       session: `s${this.connections}`,
       hotel: { build: "fake", tick_ms: 300, max_chat: 200, max_actions_per_5s: 8, join_interval_ms: 200, human_reserve: 10, max_avatars_per_room: 50 },
       runs,
@@ -290,6 +346,7 @@ export class FakeDirector {
     }
     switch (f.t) {
       case "hello_ack":
+        if (!this.acceptAck(f)) return;
         for (const run of [...this.liveRuns]) {
           if (f.resume?.includes(run)) continue;
           this.liveRuns.delete(run);
@@ -301,6 +358,18 @@ export class FakeDirector {
           this.lease.set(run, lease);
           this.send({ t: "lease", run, lease });
         }
+        // NEG-9: after each resuming lease, one drama_state per room of the run (dialect 2 only).
+        if (this.dialect === 2) {
+          for (const run of f.resume ?? []) {
+            const rooms = [...this.rooms.values()].filter((r) => [...r.avatars.values()].some((a) => a.run === run));
+            for (const r of rooms) this.send(dramaStateFrame({ run, room: r.id, scene: `${run}.1`, optIn: this.optIn.get(r.id) ?? [] }));
+          }
+        }
+        break;
+      case "scene_advance":
+        // A dialect 1 hotel cannot parse it and, with no `cid`, drops it silently (NEG-5).
+        if (this.dialect === 2) this.sceneAdvances.push(f);
+        else this.droppedSceneAdvances.push(f.run);
         break;
       case "subscribe_room": {
         const r = this.rooms.get(f.room);
@@ -316,11 +385,54 @@ export class FakeDirector {
         this.despawn(f);
         break;
       case "actor_cmd":
+        // NEG-5: in a dialect 1 session `k:"act"` is an unparseable frame, answered by the existing director_reject path:
+        // actor_error{bad_message} with the cid, no actor and no detail.
+        if (f.cmd.k === "act" && this.dialect !== 2) {
+          this.rejectedActs.push(f.cid);
+          this.err(f.cid, undefined, "bad_message");
+          break;
+        }
+        if (f.cmd.k === "act") this.acts.push(f);
         this.command(f);
         break;
       default:
         break;
     }
+  }
+
+  /** NEG-1 and NEG-4: `hello_ack.proto` must be in [1, offered max]; the dialect is 2 only for proto 2 with `drama.v1` while it was offered. */
+  private acceptAck(f: Extract<SidecarMsg, { t: "hello_ack" }>): boolean {
+    if (f.proto < 1 || f.proto > this.offeredMax) {
+      this.sock?.close(4002, "bad hello_ack proto");
+      return false;
+    }
+    this.ack = f;
+    this.dialect = f.proto === 2 && this.offeredCaps.includes("drama.v1") && f.caps?.includes("drama.v1") ? 2 : 1;
+    return true;
+  }
+
+  // ---- drama scripting (dialect 2) -----------------------------------------------------
+
+  /** Plays the frames of an act, in the order of FRM-1 (a blocked act is one `act_done`, FRM-2). To a link that is not dialect 2 nothing is sent. */
+  scriptAct(script: ActScript, o: { force?: boolean } = {}): void {
+    this.sendDrama(actFrames(script), o.force);
+  }
+
+  /** `scene_cut`, then the `actor_revive` / `actor_gone{died}` it causes (SCENE-4). */
+  scriptSceneCut(p: Parameters<typeof sceneCutFrames>[0], o: { force?: boolean } = {}): void {
+    this.sendDrama(sceneCutFrames(p), o.force);
+  }
+
+  scriptDramaState(p: Parameters<typeof dramaStateFrame>[0] = {}, o: { force?: boolean } = {}): void {
+    this.sendDrama([dramaStateFrame(p)], o.force);
+  }
+
+  private sendDrama(frames: HotelMsg[], force = false): void {
+    if (this.dialect !== 2 && !force) {
+      this.suppressedDrama += frames.length;
+      return;
+    }
+    for (const f of frames) this.send(f);
   }
 
   private err(cid: number | undefined, actor: number | undefined, code: ActorErrorCode, detail?: string): void {
@@ -432,6 +544,10 @@ export class FakeDirector {
         if (!this.subscribed.has(cmd.room)) return this.err(f.cid, f.actor, "not_subscribed");
         this.moveActorToRoom(a.ref ?? "", cmd.room, a.id);
         break;
+      case "act": {
+        if (this.o.autoAct) this.scriptAct({ actId: cmd.act_id, verb: cmd.verb, actor: f.actor, run: f.run, outcome: "landed", ...(cmd.with != null ? { with: cmd.with } : {}), ...(cmd.intensity != null ? { intensity: cmd.intensity } : {}), ...(cmd.origin ? { origin: cmd.origin } : {}) });
+        break;
+      }
       case "pair":
         setTimeout(() => this.send({ t: "pair_reaction", run: f.run, pair: cmd.pair, actor: f.actor, with: cmd.with, outcome: this.o.pairOutcome ?? "done", at: Date.now() }), this.tickMs);
         break;

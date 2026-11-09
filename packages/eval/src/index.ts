@@ -20,6 +20,10 @@ export * from "./judge/golden-labels.js";
 // Hotel evaluation layer (Phase 3)
 export * from "./hotel/index.js";
 export { runHotelCli } from "./cli/hotel.js";
+export { runDramaJudgeCli } from "./cli/drama-judge.js";
+
+// Drama grading core (axes, labels, agreement, events)
+export * from "./drama/index.js";
 
 // Bench
 export * from "./bench/persona-aware-mock.js";

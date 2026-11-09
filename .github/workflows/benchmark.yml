@@ -63,7 +63,7 @@ jobs:
 
       - name: Assert signals held at 100%
         if: ${{ github.event.inputs.judge != 'llm' }}
-        run: node scripts/ci/check-bench-gate.mjs out/bench-full.json
+        run: node scripts/ci/check-bench-gate.mjs --require-drama out/bench-full.json
 
       # Opt-in deep run (self-hosted runner with models configured via env).
       # Signal rates legitimately vary under real-model generation, so this

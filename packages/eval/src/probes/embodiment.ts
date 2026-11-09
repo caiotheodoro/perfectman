@@ -42,6 +42,38 @@ const durationMs = (log: BodyFrameLog): number => {
   return times.length < 2 ? 0 : Math.max(...times) - Math.min(...times);
 };
 
+export type ActorPosition = { room: string; tile: Tile };
+
+/** Where `ref` stood at run-relative `atMs` (optionally only in `room`), or undefined when no snapshot ever showed it there. */
+export type PositionLookup = (ref: string, atMs: number, room?: string) => ActorPosition | undefined;
+
+/**
+ * Position lookup over a log's space snapshots, in the run-relative time drama events use
+ * (zero at the `run_start` frame, else at the earliest frame). Answers with the latest snapshot at
+ * or before the instant, else the earliest one after it.
+ */
+export function positionLookup(log: BodyFrameLog): PositionLookup {
+  const runStart = log.frames.find((f) => f.kind === "run_start");
+  const start = runStart?.atMs ?? (log.frames.length === 0 ? 0 : Math.min(...log.frames.map((f) => f.atMs)));
+  const snaps = [...log.snapshots].sort((a, b) => a.atMs - b.atMs);
+  return (ref, atMs, room) => {
+    const wall = start + atMs;
+    let before: ActorPosition | undefined;
+    let after: ActorPosition | undefined;
+    for (const s of snaps) {
+      if (room !== undefined && s.room !== room) continue;
+      const o = s.occupants.find((x) => x.ref === ref);
+      if (!o) continue;
+      if (s.atMs <= wall) before = { room: s.room, tile: o.tile };
+      else {
+        after = { room: s.room, tile: o.tile };
+        break;
+      }
+    }
+    return before ?? after;
+  };
+}
+
 /** Steps that cover more than one tile per tick, outside a room change, over all steps. */
 export function teleportRate(log: BodyFrameLog): number {
   const last = new Map<string, { at: number; tile: Tile }>();

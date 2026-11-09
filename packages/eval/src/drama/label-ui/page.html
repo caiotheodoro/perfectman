@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Clip labeler</title>
+  <link rel="stylesheet" href="/page.css">
+</head>
+<body>
+  <header class="topbar">
+    <strong>Clip labeler</strong>
+    <span class="blind-badge" title="Judge and model scores are never shown while labeling">blind mode</span>
+    <span id="progress" class="progress">0/0 labelled</span>
+    <span class="spacer"></span>
+    <label class="labeler">labeler <input id="labeler" type="text" placeholder="your name" autocomplete="off"></label>
+    <span id="save-state" class="save-state" data-state="idle">no clip loaded</span>
+  </header>
+
+  <main class="layout">
+    <nav class="clip-list" aria-label="Clips">
+      <ol id="clip-list"></ol>
+    </nav>
+
+    <section class="player">
+      <h2 id="clip-title">Loading…</h2>
+      <p id="clip-meta" class="meta"></p>
+      <video id="video" controls preload="metadata" playsinline></video>
+      <div class="player-controls">
+        <span>speed</span>
+        <div id="speed" class="seg">
+          <button type="button" data-speed="0.5">0.5×</button>
+          <button type="button" data-speed="1" class="on">1×</button>
+          <button type="button" data-speed="2">2×</button>
+        </div>
+        <button type="button" id="contact-toggle">Contact sheet (c)</button>
+      </div>
+      <img id="contact" class="contact" alt="Contact sheet" hidden>
+    </section>
+
+    <section class="rating" aria-label="Rating">
+      <div id="axes"></div>
+
+      <fieldset class="codes">
+        <legend>Failure codes</legend>
+        <div id="code-boxes" class="code-boxes"></div>
+        <div class="extra-codes">
+          <input id="extra-code" type="text" placeholder="extra catalog code, e.g. E10" autocomplete="off" maxlength="8">
+          <button type="button" id="extra-add">Add</button>
+          <span id="extra-error" class="error" role="alert"></span>
+        </div>
+        <div id="extra-chips" class="chips"></div>
+      </fieldset>
+
+      <div class="verdict">
+        <span>Overall</span>
+        <div id="pass" class="seg">
+          <button type="button" data-pass="true">Pass (p)</button>
+          <button type="button" data-pass="false">Fail (f)</button>
+        </div>
+      </div>
+
+      <label class="notes">Notes
+        <textarea id="notes" rows="3" placeholder="Anything the scores do not capture"></textarea>
+      </label>
+
+      <div class="actions">
+        <button type="button" id="save-next" class="primary">Save &amp; next (⌘/Ctrl+Enter)</button>
+        <span id="hint" class="hint"></span>
+      </div>
+
+      <p class="keys">
+        <kbd>1</kbd>–<kbd>5</kbd> score · <kbd>n</kbd> N/A · <kbd>↑</kbd><kbd>↓</kbd>/<kbd>Tab</kbd> move axis ·
+        <kbd>p</kbd>/<kbd>f</kbd> pass/fail · <kbd>j</kbd>/<kbd>k</kbd> next/prev clip · <kbd>space</kbd> play/pause · <kbd>c</kbd> contact sheet
+      </p>
+    </section>
+  </main>
+  <script src="/page.js"></script>
+</body>
+</html>

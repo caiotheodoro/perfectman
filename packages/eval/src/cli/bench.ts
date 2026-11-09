@@ -4,6 +4,7 @@
  * Usage:
  *   node dist/cli/bench.js --mode mock --limit 12 --out out/bench-report.json
  *   node dist/cli/bench.js --mode local --scenarios edge_public_mock --judge llm
+ *   node dist/cli/bench.js --mode mock --scenarios v1_casual_chat --drama     the drama bench too (a full mock run has it already)
  *
  * mock mode is fully offline and deterministic (persona-aware mock provider
  * + rule judge). local mode drives the local uncensored model and can use
@@ -37,6 +38,8 @@ import { formatGradeTable, gradeRound, gradeRun, gradeScene, signalKind, type Ro
 import { GOLDEN_LABELS } from "../judge/golden-labels.js";
 import { GOLDEN_NARRATIONS } from "../judge/golden-narrations.js";
 import { loadJudgeConfig, applyJudgeShorthand } from "../llm/judge-config.js";
+import { runDramaBench } from "../bench/drama-bench.js";
+import type { DramaBenchReport } from "../bench/drama-bench.js";
 import type { ScenarioRunArtifact } from "../run/scenario-runner.js";
 import { aggregateSignalsByKind, type SignalOutcome } from "../run/signal-checker.js";
 import { BENCH_SLICES, resolveBenchSlice } from "../bench-slices.js";
@@ -103,6 +106,12 @@ export type BenchReport = {
   narrativeCalibration: ReturnType<typeof calibrateJudge>;
   /** Letter grades (per run, per scene, round) — only when a hidden-objective rubric ran; see grade/grade.ts. */
   grades?: RoundGrade;
+  /**
+   * The drama bench (bench/drama-bench.ts): the act contract's scenarios on the fake grid hotel with the mock model, judged by rule. Mock mode
+   * only, and only when the run is not narrowed to a few roleplay scenarios (or when `--drama` asks). Kept apart from the roleplay numbers above,
+   * which it never touches; the bench gate reads it on its own.
+   */
+  drama?: DramaBenchReport;
   perScenario: Array<{
     id: string;
     name: string;
@@ -171,6 +180,8 @@ export async function runBench(opts: {
   runId?: string;
   /** `--force`: allow `--run-id` to overwrite an existing evidence directory. */
   force?: boolean;
+  /** The drama bench: `true` always runs it (mock mode), `false` never; absent runs it on a full mock run, not on a narrowed one. */
+  drama?: boolean;
   /** Where `--run-id` directories go (default `docs/eval/evidence`). */
   evidenceRoot?: string;
 }): Promise<BenchReport> {
@@ -588,6 +599,9 @@ export async function runBench(opts: {
     );
   }
 
+  const narrowed = (opts.scenarios?.length ?? 0) > 0 || opts.slice !== undefined || opts.category !== undefined || (opts.limit ?? 0) > 0;
+  if (mode === "mock" && (opts.drama === true || (opts.drama !== false && !narrowed))) report.drama = await runDramaBench();
+
   if (opts.out) {
     const outPath = resolve(opts.out);
     mkdirSync(dirname(outPath), { recursive: true });
@@ -655,6 +669,14 @@ function printReport(report: BenchReport): void {
   console.log(`recovered fallbacks (retry fixed a guard violation): ${report.recoveredFallbacks}`);
   console.log(`signal pass rate: ${(report.signalPassRate * 100).toFixed(1)}%${report.signalsSkipped > 0 ? ` (${report.signalsSkipped} liveOnly signal(s) skipped in mock mode)` : ""}`);
   console.log(`probe pass rate: ${(report.probePassRate * 100).toFixed(1)}%`);
+  if (report.drama) {
+    const d = report.drama;
+    console.log(`drama bench: ${d.scenariosRun} scenarios, ${d.scenariosFailed} failed, ${d.checksRun - d.checksFailed}/${d.checksRun} checks`);
+    for (const e of d.perScenario.filter((x) => !x.passed)) {
+      console.log(`  FAIL ${e.id}${e.failed ? `: ${e.failed}` : ""}${e.probesFailed.length ? ` probes ${e.probesFailed.join(", ")}` : ""}`);
+      for (const c of e.checks.filter((x) => !x.ok)) console.log(`    - ${c.name}${c.detail ? ` (${c.detail})` : ""}`);
+    }
+  }
   const byKind = Object.entries(report.signalsByKind).sort((a, b) => a[1].passRate - b[1].passRate);
   if (byKind.length > 0) {
     console.log("\nsignal pass rate by kind (worst first):");
@@ -748,6 +770,7 @@ export async function main(): Promise<void> {
     pulseLimit: argValue("--pulse-limit") ? Number(argValue("--pulse-limit")) : undefined,
     runId: argValue("--run-id"),
     force: args.includes("--force"),
+    ...(args.includes("--no-drama") ? { drama: false } : args.includes("--drama") ? { drama: true } : {}),
   });
   printReport(report);
   if (report.grades) console.log(`\nletter grades (hidden-objective runs):\n${formatGradeTable(report.grades)}`);

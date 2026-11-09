@@ -1,4 +1,4 @@
-import type { ActionIntent, AgentRuntimeInput, AgentState, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
+import type { ActionEmotions, ActionIntent, AgentRuntimeInput, AgentState, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
 import {
   AgentRuntime,
   MockLLMProvider,
@@ -10,7 +10,8 @@ import {
 } from "@perfectman/server/hotel";
 import type { AgentCommitInfo, BuiltPrompt, ConfiguredSimulationHandle, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
 import { join } from "node:path";
-import { withMockBody } from "../llm/mock-body.js";
+import { MockActMemory, withMockBody } from "../llm/mock-body.js";
+import type { MockDrama } from "../llm/mock-body.js";
 import { WallClockPulseLoop } from "../clock/wall-clock-pulse-loop.js";
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import { sleepOn } from "../clock/clock.js";
@@ -19,9 +20,13 @@ import type { HotelConfig, ModelPrice } from "../config.js";
 import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfState } from "../director/cine/index.js";
 import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
+import { resolveRunDrama } from "../authoring/scenario-drama.js";
+import { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld } from "../director/drama/index.js";
+import type { DramaDecisionPort, DramaHost, SceneAdvance } from "../director/drama/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
 import type { PairInfo } from "../embodiment/body-executor.js";
-import { chooseSpeechMode, leaveDirective, namedIn, noteExchange, plan, planFacing, updateMemory } from "../embodiment/plan.js";
+import { DramaBody } from "../embodiment/drama-body.js";
+import { chooseSpeechMode, leaveDirective, namedIn, noteExchange, planFacing, updateMemory } from "../embodiment/plan.js";
 import { pickTile } from "../embodiment/tiles.js";
 import type { PlannedCommand, PlannerMemory } from "../embodiment/types.js";
 import { HotelGateway } from "../gateway/hotel-gateway.js";
@@ -113,6 +118,8 @@ export type RunDeps = {
   mirror: HotelSpaceMirror;
   link: RunLink;
   governor: LlmGovernor;
+  /** The drama director's link and hub (act-contract.md 11.2); absent when `PERFECTMAN_DRAMA` is off, and the run is then exactly what it was. */
+  drama?: DramaHost;
   timing?: RunTiming;
   /** Overrides the narrator's model call (D19). Absent: a cinematic run builds its own from the provider chain; with the mock provider cards and captions are the deterministic fallback text. */
   narratorLlm?: NarratorLlm;
@@ -129,6 +136,11 @@ export type StopOptions = { byHotel?: boolean; interrupted?: boolean };
 export type PrepareResult = { ok: true } | { ok: false; code: string; message: string };
 
 type PendingSpeech = { intent: ActionIntent; targetRef: string; walkPlans: Set<string>; timer: TimerHandle; rewalks: number };
+
+/** `{ [key]: value }` when there is a value, `{}` when there is none (exact optional properties). */
+function optional<K extends string, V>(key: K, value: V | undefined): { [P in K]?: V } {
+  return value === undefined ? {} : ({ [key]: value } as { [P in K]?: V });
+}
 
 /** The hotel's limits on an actor name (hotel-package.md 6): short, and neither a ref separator nor a mention. */
 export const MAX_ACTOR_NAME_CHARS = 16;
@@ -200,6 +212,9 @@ export class Run {
   private gateway!: HotelGateway;
   private executor!: BodyExecutor;
   private ingestor!: GuestIngestor;
+  private director: DramaDirector | undefined;
+  /** The scenario's authored beats, on this run's clock (errata P4-01); absent without drama or without a script. */
+  private beatPlayer: BeatPlayer | undefined;
   private loop!: WallClockPulseLoop;
   private breaker!: BreakerDriver;
   private unsubscribeBudget: (() => void) | undefined;
@@ -221,6 +236,7 @@ export class Run {
   /** Events the in-memory log evicted, streamed to `events.jsonl` so a long run stays complete without growing. */
   private eventSink: NdjsonEventSink | undefined;
   private readonly mockConsults = new Map<string, number>();
+  private readonly mockActs = new MockActMemory();
   /** What the characters remember about the people they meet (D21, D47); absent when the hotel did not name the scenario. */
   private playerMemory: PlayerMemory | undefined;
   private scenarioId: number | undefined;
@@ -228,6 +244,10 @@ export class Run {
   private readonly memory = new Map<string, PlannerMemory>();
   private readonly arousal = new Map<string, number>();
   private readonly noOpStreak = new Map<string, number>();
+  /** Each actor's last 15 action tendencies, from the commit seam (computed, never persisted): the planner's reading of the whole emotion model. */
+  private readonly tendencies = new Map<string, ActionEmotions>();
+  /** The planner side of the drama contract (packet P3): the act lock, the reactions owed, the dead pool, the memory of acts. Inert until a dialect 2 session says drama is on. */
+  readonly dramaSink: DramaBody;
   /** Actors the planner already ran for during the current pulse (the idle sweep skips them). */
   private readonly plannedThisPulse = new Set<string>();
   /** Lines held back until their speaker reaches the addressee (`move_then_speak`), by agent. */
@@ -266,6 +286,25 @@ export class Run {
       ? new LlmChain({ links, clock: d.clock, runId: params.run, simulationId: `hotel-run-${params.run}`, governor: d.governor, prices: this.prices, logger: d.logger, onCap: (cap, style) => this.setPromptCap(cap, style), addressed: (id) => this.waitingOn.has(id), rebuild: (req) => this.rebuildPrompt(req) })
       : undefined;
     this.frames = new FrameLogRecorder(d.clock);
+    this.dramaSink = new DramaBody({
+      run: params.run,
+      clock: d.clock,
+      mirror: this.space,
+      executor: { send: (cmds) => this.out.send([...cmds]) },
+      port: () => this.dramaPort,
+      isOwn: (ref) => this.agents.has(ref),
+      names: (ref) => this.agents.get(ref)?.name,
+      lang: "pt-BR",
+      pool: { defer: (ref) => void this.port?.deferActor(ref), admit: (ref) => void this.port?.admitActor(ref), retire: (ref) => void this.port?.retireActor(ref) },
+      store: {
+        get: async (ref) => (this.handle ? await this.handle.repositories.agentStateRepo.get(this.handle.simulationId, ref) : null),
+        upsert: async (state) => void (await this.handle?.repositories.agentStateRepo.upsert(state)),
+      },
+      ghostVoice: d.hotel.dramaGhostVoice === true && params.mode === "cinematic",
+      hooks: { blocked: (agentId, reasons) => void this.appendBodyEvent("body_blocked", agentId, { reasons: reasons as unknown as never }, false) },
+    });
+    this.space.setFallen((ref) => this.dramaSink.ledger.fallenKind(ref));
+    this.space.setDrama(() => this.dramaSink.active);
   }
 
   /** The built simulation; undefined until `launch` has built it. */
@@ -379,7 +418,13 @@ export class Run {
       send: (m) => link.send(m),
       logger: this.d.logger,
       record: this.frames.record,
+      isDead: (ref) => this.dramaSink.isDead(ref),
+      lockOf: (ref) => this.dramaSink.ledger.lockOf(ref),
+      ghostVoice: this.d.hotel.dramaGhostVoice === true && this.params.mode === "cinematic",
       hooks: {
+        gone: (ref) => this.dramaSink.actorGone(ref),
+        // DEATH-5: the ghost voice stays on this side of the wire (the hotel refuses a dead actor's thought); it is kept in the run's frame log.
+        ghost: (agentId, text) => this.frames.record("out", this.space.roomOfRef(agentId), "ghost_thought", { agentId, text }),
         blocked: (agentId, reasons) => void this.appendBodyEvent("body_blocked", agentId, { reasons: reasons as unknown as never }, false),
         arrived: (agentId, plan, tile, room) => void this.onArrived(agentId, plan.id, tile, room),
         movedRoom: (agentId, from, to) => this.onMovedRoom(agentId, from, to),
@@ -388,6 +433,7 @@ export class Run {
       },
     });
 
+    this.startDrama();
     this.out = this.executor;
     if (this.params.mode === "cinematic") this.out = this.startCinematic(this.out);
 
@@ -530,8 +576,60 @@ export class Run {
     this.enterRoom(now);
     this.state = "running";
     this.loop.start();
+    this.startBeats();
     this.scheduleArrivals(later);
     this.d.logger.info("run running", { run: this.id, actors: this.agents.size, arriving_later: later.length });
+  }
+
+  /**
+   * The drama director of this run (packet P2): built only when the sidecar's `PERFECTMAN_DRAMA` is on, and inert until the link
+   * negotiated `drama.v1` and the hotel said the room's state. The scenario's `drama` block, or free play without one, is its law.
+   */
+  private startDrama(): void {
+    const host = this.d.drama;
+    if (!host) return;
+    const world = mirrorWorld(this.space, () => [...this.agents].filter(([, a]) => !a.gone).map(([ref]) => ref), () => this.d.clock.now());
+    this.director = new DramaDirector({
+      run: this.id,
+      clock: this.d.clock,
+      link: host.link,
+      world,
+      scenario: resolveRunDrama(this.body),
+      session: host.hub.lastSession ?? null,
+      logger: this.d.logger,
+      record: this.frames.record,
+    });
+    // One mechanism: the hub hands every frame of this run to the director first, then to the planner side (ledger, reactions, memory of acts).
+    host.hub.attach(this.id, composeDramaSinks(this.director, this.dramaSink));
+  }
+
+  /**
+   * The scenario's script starts when the cast is in and the run is live: its seconds count from here. Each beat goes through the director as a
+   * scenario-origin act, so every gate still applies (SCN-3, SCN-4); nothing is played when drama is not negotiated, and a replay builds no player.
+   */
+  private startBeats(): void {
+    const beats = this.body.beats ?? [];
+    if (!this.director || beats.length === 0) return;
+    this.beatPlayer = new BeatPlayer({
+      clock: this.d.clock,
+      port: () => this.director,
+      beats,
+      drama: resolveRunDrama(this.body),
+      wireOf: (ref) => this.space.avatarId(ref),
+      logger: this.d.logger,
+      onReport: (r) => this.d.logger.info("authored beat", { run: this.id, beat: r.beat.id, kind: r.beat.kind, outcome: r.outcome, why: r.why }),
+    });
+    this.beatPlayer.start();
+  }
+
+  /** What the planner asks to approve, veto or start an act (docs/drama/act-contract.md 11.5); undefined when drama is off for this process. */
+  get dramaPort(): DramaDecisionPort | undefined {
+    return this.director;
+  }
+
+  /** The scenario's script advanced: cut the scene (SCENE-2). A cinematic cut is not this and never calls it. */
+  advanceScene(reason: string): SceneAdvance {
+    return this.director?.advanceScene(reason) ?? { kind: "refused", why: "inert" };
   }
 
   /** The entrance schedule of this run's cast (see `arrivalSchedule`). */
@@ -696,6 +794,12 @@ export class Run {
     return this.chain;
   }
 
+  /** The mock model's reading of this run's scenario: the ladder ceiling and who may die (the kill itself is the director's call). Free play without a block: rungs up to 3, nobody dies. */
+  private mockDrama(): MockDrama {
+    const { effective } = resolveRunDrama(this.body);
+    return { maxRung: effective.max_rung, mayDie: effective.may_die.filter((ref) => ref !== "@human") };
+  }
+
   private provider(llm: LLMConfig, agentId: string): LLMProvider {
     if (this.chain && llm.providerType !== "mock") {
       return this.chain.provider(llm, agentId, {
@@ -706,7 +810,7 @@ export class Run {
         onFailure: () => this.meter.recordFailure(),
       });
     }
-    const inner: LLMProvider = llm.providerType === "mock" ? withMockBody(new MockLLMProvider(), this.mockConsults) : createLLMProvider(llm, agentId);
+    const inner: LLMProvider = llm.providerType === "mock" ? withMockBody(new MockLLMProvider(), this.mockConsults, { scenario: () => this.mockDrama(), memory: this.mockActs }) : createLLMProvider(llm, agentId);
     return this.d.governor.wrap(inner, {
       onSuccess: (r) => {
         this.meter.recordSuccess(this.prices[r.model] ? r.model : llm.modelName, r.usage.inputTokens, r.usage.outputTokens, r.latencyMs);
@@ -739,20 +843,62 @@ export class Run {
     }
   }
 
-  /** Actors walk in: each to a distinct, uncrowded tile near the middle of the room. */
+  /**
+   * Walk the cast in. In the four wing rooms (43, 44, 45, 49) the first spots are fixed tiles beside
+   * the furniture the scene named and the rest go to the farthest non-door zone from anyone placed.
+   * Every other room is unchanged: a distinct, uncrowded tile near the middle of the room.
+   */
   private enterRoom(refs: readonly string[]): void {
+    const wing: Record<number, Array<[number, number]>> = {
+      45: [[3, 1], [4, 5]],
+      43: [[10, 3], [3, 6]],
+      44: [[1, 1], [3, 5]],
+      49: [[3, 1], [5, 6]],
+    };
     const { clock } = this.d;
     const mirror = this.space;
     const taken = this.enterTaken;
+    const spots = wing[this.params.room];
+    let spotAt = taken.size;
+    const occupied: Array<readonly [number, number]> = [...taken].flatMap((key) => {
+      const [x, y] = key.split(",").map(Number);
+      return Number.isFinite(x) && Number.isFinite(y) ? [[x, y] as [number, number]] : [];
+    });
     const cmds = [];
     for (const ref of refs) {
       const view = mirror.view(ref, clock.now());
       const room = view?.room;
       if (!room) continue;
-      const centre = room.zones.find((z) => z.kind === "middle")?.center ?? [Math.floor(room.w / 2), Math.floor(room.h / 2)];
-      const to = pickTile({ room, self: ref, near: [centre[0], centre[1]], radius: 4, rng: this.d.rng, avoid: taken });
+      let near: readonly [number, number];
+      let radius: number;
+      if (!spots) {
+        const centre = room.zones.find((z) => z.kind === "middle")?.center ?? [Math.floor(room.w / 2), Math.floor(room.h / 2)];
+        near = [centre[0], centre[1]];
+        radius = 4;
+      } else if (spotAt < spots.length) {
+        near = spots[spotAt]!;
+        spotAt += 1;
+        radius = 1;
+      } else {
+        const zones = room.zones.filter((z) => z.kind !== "door" && z.kind !== "middle");
+        const pool = zones.length >= 2 ? zones : room.zones.filter((z) => z.kind !== "door");
+        const door = room.zones.find((z) => z.kind === "door")?.center;
+        let best = pool[0];
+        let bestDist = -1;
+        for (const z of pool) {
+          const dist = occupied.length === 0 ? (door ? chebyshev(z.center, door) : 0) : Math.min(...occupied.map((p) => chebyshev(z.center, p)));
+          if (dist > bestDist) {
+            bestDist = dist;
+            best = z;
+          }
+        }
+        near = best?.center ?? [Math.floor(room.w / 2), Math.floor(room.h / 2)];
+        radius = Math.min(best?.radius ?? 2, 2);
+      }
+      const to = pickTile({ room, self: ref, near, radius, rng: this.d.rng, avoid: taken });
       if (!to) continue;
       taken.add(tileKey(to));
+      occupied.push(to);
       cmds.push({ agentId: ref, cmd: "walk" as const, to, plan: `${ref}:enter` });
     }
     this.out.send(cmds);
@@ -764,13 +910,15 @@ export class Run {
     const mirror = this.space;
     const first = this.body.config.agents[0]?.promptProfile;
     const language = first?.language === "en" ? "en" : "pt-BR";
-    const cast = new Map([...this.agents].map(([ref, a]) => [ref, { name: a.name, ...(this.archetype(ref) ? { role: this.archetype(ref) as string } : {}) }]));
+    const cast = new Map([...this.agents].map(([ref, a]) => [ref, { name: a.name }]));
     this.cineWorld = new MirrorCineWorld(mirror, () => clock.now(), cast);
     this.trackSink = new TrackFileSink(join(hotel.dataDir, "runs", String(this.id), TRACK_FILE), (err) =>
       this.d.logger.warn("director track write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
     // The injected call (tests, tools) wins; otherwise the run's own: the picked model first, the configured chain behind it.
     this.narratorChain = this.d.narratorLlm ? undefined : makeNarratorLlm({ links: withPickedModel(linksOf(hotel.llm), this.params.model), clock, runId: this.id, governor: this.d.governor, prices: this.prices, logger: this.d.logger });
-    const narratorLlm = this.d.narratorLlm ?? this.narratorChain?.call;
+    // The four wing rooms use the fallback card (the title and the names). A model caption was inventing a second plot.
+    const narratorOff = this.params.room === 45 || this.params.room === 43 || this.params.room === 44 || this.params.room === 49;
+    const narratorLlm = narratorOff ? undefined : (this.d.narratorLlm ?? this.narratorChain?.call);
     const narrator = new Narrator({ clock, language, ...(narratorLlm ? { llm: narratorLlm, deadlineMs: NARRATOR_CHAIN_DEADLINE_MS } : {}), logger: this.d.logger });
     this.narrator = narrator;
     this.cine = new CinematicDirector({
@@ -788,9 +936,6 @@ export class Run {
     return this.cine.wrapExecutor(executor);
   }
 
-  private archetype(ref: string): string | undefined {
-    return this.body.config.agents.find((a) => a.id === ref)?.persona.archetype;
-  }
 
   // ---- pulses and the body ----------------------------------------------------
 
@@ -910,6 +1055,7 @@ export class Run {
     if (mine.some((e) => e.type === "message_sent" || e.type === "reply_sent")) this.noOpStreak.set(ref, 0);
     else if (mine.some((e) => e.type === "no_op_recorded")) this.noOpStreak.set(ref, (this.noOpStreak.get(ref) ?? 0) + 1);
     this.arousal.set(ref, info.agentState.coreMood.arousal);
+    if (info.actionEmotions) this.tendencies.set(ref, info.actionEmotions);
     // A paused run commits nothing new to the body: no planning until it resumes.
     if (this.state === "paused") return;
     this.cineWorld?.noteMood(ref, moodOfState(info.agentState));
@@ -935,7 +1081,8 @@ export class Run {
     mem.firstPlanAt ??= now;
     this.memory.set(ref, mem);
     const motive = carried?.intent?.privateMotiveSummary;
-    const cmds = plan({
+    const door = space.room?.door;
+    const cmds = this.dramaSink.planFor(ref, {
       space,
       agentState,
       committedEvents,
@@ -944,10 +1091,11 @@ export class Run {
       memory: mem,
       noOpStreak: this.noOpStreak.get(ref) ?? 0,
       drives: { goalText: this.goalText(ref), ...(motive ? { motive } : {}), homeRoom: this.home },
+      ...optional("actionEmotions", this.tendencies.get(ref)),
       ...(carried ?? {}),
     });
     if (cmds.length === 0) return cmds;
-    this.memory.set(ref, updateMemory(mem, cmds, now, space.self?.tile ?? [0, 0], space.room?.id));
+    this.memory.set(ref, updateMemory(mem, cmds, now, space.self?.tile ?? [0, 0], space.room?.id, door));
     this.out.send(cmds);
     return cmds;
   }
@@ -1248,6 +1396,7 @@ export class Run {
 
   mirrorLeft(ref: string): void {
     this.executor?.onLeft(ref);
+    this.dramaSink.left(ref);
   }
 
   humanTyping(room: RoomId, typing: boolean, at: number): void {
@@ -1355,6 +1504,7 @@ export class Run {
     this.pendingEnd = reason;
     try {
       this.breaker?.dispose();
+      this.beatPlayer?.stop();
       this.unsubscribeBudget?.();
       // Nobody walks in after a stop; one already spawning is waited for (bounded), so the walk-out below sees it.
       for (const timer of this.arrivalTimers) timer.cancel();
@@ -1372,6 +1522,7 @@ export class Run {
       if (!opts.byHotel && link.connected) await this.walkOut();
       this.gateway?.dispose();
       this.executor?.dispose();
+      this.dramaSink.dispose();
 
       let events: CommittedEvent[] = [];
       try {
@@ -1414,6 +1565,7 @@ export class Run {
       }
       await this.handle?.close();
     } finally {
+      this.d.drama?.hub.detach(this.id);
       for (const ref of this.agents.keys()) mirror.unregisterActor(ref);
       link.untrackRun(this.id);
       this.state = reason === "failed" ? "failed" : "ended";

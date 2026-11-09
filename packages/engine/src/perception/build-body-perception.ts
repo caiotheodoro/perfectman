@@ -169,10 +169,12 @@ function assemble(input: BuildBodyPerceptionInput): Assembled {
 
   // Pinned: the interlocutor and whoever the agent last addressed. Never trimmed.
   const pinnedRefs = new Set<string>();
-  const interlocutor = input.interlocutorRef ?? deriveInterlocutor(speakers, view.agentId);
-  if (interlocutor) pinnedRefs.add(interlocutor);
+  // Nobody is in a conversation with someone on the floor (DOWN-1): a body is neither pinned nor the interlocutor.
+  const onFloor = new Set(room.occupants.filter((o) => o.fallen).map((o) => o.ref));
+  const interlocutor = input.interlocutorRef ?? deriveInterlocutor(speakers.filter((e) => !onFloor.has(e.actorId)), view.agentId);
+  if (interlocutor && !onFloor.has(interlocutor)) pinnedRefs.add(interlocutor);
   const myLast = [...speakers].reverse().find((e) => e.actorId === view.agentId);
-  for (const id of (myLast?.payload["addresseeIds"] as string[] | undefined) ?? []) pinnedRefs.add(id);
+  for (const id of (myLast?.payload["addresseeIds"] as string[] | undefined) ?? []) if (!onFloor.has(id)) pinnedRefs.add(id);
 
   // People
   const others = room.occupants.filter((o) => o.ref !== view.agentId);
@@ -311,6 +313,7 @@ function includes(v: unknown, id: string): boolean {
 }
 
 function activityOf(p: Presence, now: number): string | undefined {
+  if (p.fallen) return "fallen";
   if (p.action && p.action.until > now) return p.action.a;
   if (p.typing) return "typing";
   if (p.lastSpokeAt !== undefined && now - p.lastSpokeAt < HUMAN_TYPING_EXPIRY_MS) return "talking";

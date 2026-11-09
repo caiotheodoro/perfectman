@@ -136,7 +136,7 @@ const PT: Dict = {
   facing: { facing: "de frente pra você", side_on: "de lado pra você", back_turned: "de costas pra você" },
   activity: {
     wave: "acenando", blow: "mandando um beijo", kiss: "mandando um beijo", laugh: "rindo", thumbs: "fazendo joinha",
-    sign: "mostrando uma placa", dance: "dançando", typing: "digitando", talking: "falando", stop: "fazendo sinal de pare",
+    sign: "mostrando uma placa", dance: "dançando", typing: "digitando", talking: "falando", stop: "fazendo sinal de pare", fallen: "no chão, sem reagir",
   },
   tooClose: "alguém muito perto",
   group: (c) => `+${c} ${c === 1 ? "pessoa" : "pessoas"}`,
@@ -180,7 +180,7 @@ const EN: Dict = {
   facing: { facing: "facing you", side_on: "side-on to you", back_turned: "back turned to you" },
   activity: {
     wave: "waving", blow: "blowing a kiss", kiss: "blowing a kiss", laugh: "laughing", thumbs: "giving a thumbs up",
-    sign: "holding up a sign", dance: "dancing", typing: "typing", talking: "talking", stop: "signalling stop",
+    sign: "holding up a sign", dance: "dancing", typing: "typing", talking: "talking", stop: "signalling stop", fallen: "on the floor, not responding",
   },
   tooClose: "someone is very close",
   group: (c) => `+${c} ${c === 1 ? "person" : "people"}`,

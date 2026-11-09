@@ -22,6 +22,7 @@ import type {
   BodyFrameLog,
   Direction8,
   HearingLevel,
+  BodyCommandBody,
   Presence,
   RoomId,
   RoomModel,
@@ -75,7 +76,8 @@ export type GridErrorCode =
   | "not_a_seat"
   | "room_unreachable"
   | "too_far"
-  | "join_interval";
+  | "join_interval"
+  | "act_busy";
 
 /** Events the hotel would send back to the sidecar and the harness feeds into the log. */
 export type GridEvent =
@@ -110,6 +112,16 @@ export type FakeGridOptions = {
   onEvent?: (event: GridEvent) => void;
 };
 
+/**
+ * Where the grid sends the act half of the contract (act-contract.md section 2): the act sequencer behind it decides what an `act` command
+ * does and whether another body command of a locked actor is refused (`act_busy`, REA-9). Absent, the grid is the one every body probe has
+ * always run on and an `act` command is a no-op.
+ */
+export interface ActPort {
+  /** Called for every body command of an actor the grid knows, before the grid acts on it. A refusal is the code the hotel answers. */
+  command(agentId: string, command: BodyCommandBody): "act_busy" | undefined;
+}
+
 export class FakeGridHotel implements IBodyGateway, SpaceMirror {
   private readonly space: SpaceModel = createSpaceModel();
   private readonly layouts = new Map<RoomId, RoomLayout>();
@@ -129,6 +141,7 @@ export class FakeGridHotel implements IBodyGateway, SpaceMirror {
   private planSeq = 0;
   private readonly snapshotEveryMs: number;
   private onEvent?: (event: GridEvent) => void;
+  private acts?: ActPort;
 
   /** Counters the probes and tests read. */
   readonly stats = { slowDown: 0, refused: 0, commands: 0 };
@@ -153,6 +166,11 @@ export class FakeGridHotel implements IBodyGateway, SpaceMirror {
 
   setOnEvent(handler: (event: GridEvent) => void): void {
     this.onEvent = handler;
+  }
+
+  /** Attaches the act sequencer: from now on `act` commands reach it and its locks refuse the commands they hold. */
+  setActPort(port: ActPort | undefined): void {
+    this.acts = port;
   }
 
   // ---- SpaceMirror ---------------------------------------------------------
@@ -384,6 +402,10 @@ export class FakeGridHotel implements IBodyGateway, SpaceMirror {
     this.cmdTimes.set(agentId, times);
     this.syncBodyBudget(agentId, times);
 
+    // The sequencer first: an act is its to start, and a locked actor's other commands are its to refuse (REA-9).
+    const refused = this.acts?.command(agentId, command);
+    if (refused) return this.error(agentId, refused, cmd, room.id);
+
     const walking = this.walkers.get(agentId)?.route.length ? true : false;
     switch (command.cmd) {
       case "walk": {
@@ -456,6 +478,9 @@ export class FakeGridHotel implements IBodyGateway, SpaceMirror {
         this.startWalk(room, me, route, undefined, undefined, command.to);
         return;
       }
+      case "act":
+        // Played by the sequencer behind `ActPort`; the grid has no body step of its own for it.
+        return;
       case "pair": {
         const other = room.occupants.get(command.with);
         if (!other || chebyshev(me.tile, other.tile) > 1) return this.error(agentId, "too_far", cmd, room.id);

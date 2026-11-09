@@ -21,7 +21,7 @@ export class OllamaProvider implements LLMProvider {
     prompt: BuiltPrompt
   ): Promise<LLMProviderResult> {
     return input.perceptionPacket?.body !== undefined
-      ? generateOllamaIntent(this.config, prompt, Date.now(), this.deps, { withBody: true })
+      ? generateOllamaIntent(this.config, prompt, Date.now(), this.deps, input.perceptionPacket.body.drama === true ? { withBody: true, withAct: true } : { withBody: true })
       : generateOllamaIntent(this.config, prompt, Date.now(), this.deps);
   }
 }

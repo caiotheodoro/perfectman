@@ -1,5 +1,10 @@
 import type { LLMProvider } from "@perfectman/server/hotel";
 import { hashString } from "../util/stats.js";
+import { mockAct } from "./mock-act.js";
+import type { MockActMemory, MockDrama } from "./mock-act.js";
+
+export { MockActMemory } from "./mock-act.js";
+export type { MockDrama } from "./mock-act.js";
 
 /**
  * The sidecar's mock model with a body. The server's `MockLLMProvider` only talks; with it a hotel
@@ -12,15 +17,23 @@ import { hashString } from "../util/stats.js";
  * an actor still at the door, out of reach of any seat, and is silently dropped. Asking again is a no-op
  * once seated (the planner skips a sit for an actor who already sits). Only the mock provider is wrapped; a real model
  * writes its own body block.
+ *
+ * With drama on for the run (the view carries `drama`) the mock also proposes body acts from the actor's emotion state and
+ * the scenario's `drama` block (`mock-act.ts`): a ladder walk, a hug, a collapse, a kill the scenario allows. With drama
+ * off nothing here changes: `drama` is never read and the result is what it has always been.
  */
+/** What a run hands the mock for drama: this run's scenario (read at consult time, the block may arrive after the wrapper) and its memory. */
+export type MockDramaSource = { scenario: () => MockDrama | undefined; memory: MockActMemory };
+
 /** `consults` counts per agent across calls: the runtime builds a provider per call, so the counter belongs to the run. */
-export function withMockBody(inner: LLMProvider, consults: Map<string, number>): LLMProvider {
+export function withMockBody(inner: LLMProvider, consults: Map<string, number>, drama?: MockDramaSource): LLMProvider {
   return {
     async generateIntent(input, context, prompt) {
       const result = await inner.generateIntent(input, context, prompt);
       const n = (consults.get(input.agentId) ?? 0) + 1;
       consults.set(input.agentId, n);
-      const body = mockBody(input.agentId, n);
+      const scenario = drama && input.perceptionPacket.body?.drama === true ? drama.scenario() : undefined;
+      const body = (scenario && drama ? mockAct(input, n, scenario, drama.memory) : undefined) ?? mockBody(input.agentId, n);
       if (!body) return result;
       try {
         const intent = JSON.parse(result.content) as Record<string, unknown>;

@@ -11,8 +11,20 @@
 export type HotelMsg =
   | {
       actors: HelloActor[];
+      caps?: string[];
+      /**
+       * The drama offer: vocabulary, chip and harm numbers, and the dead set (NEG-2, NEG-8).
+       */
+      drama?: HelloDrama | null;
       hotel: HotelInfo;
+      /**
+       * Always `PROTO_BASE` (NEG-1).
+       */
       proto: number;
+      /**
+       * The highest dialect the hotel offers. Present only with `PERFECTMAN_DRAMA` on (NEG-2).
+       */
+      proto_max?: number | null;
       /**
        * Rooms the sidecar may travel to: every official room (the Perfectman wing included) and each room a live run is in, at most `HELLO_ROOMS_MAX`. Absent from an older hotel.
        */
@@ -177,9 +189,184 @@ export type HotelMsg =
       at: number;
       outcome: PairOutcome;
       pair: string;
+      /**
+       * Why a drama session's `pair` was refused (PAIR-1): `kill_switch`, `calm_room` or `cooldown`. Never set towards a dialect 1 session.
+       */
+      reason?: BlockedReason | null;
       run: number;
       t: "pair_reaction";
       with: number;
+    }
+  | {
+      act_id: string;
+      actor: number;
+      at: number;
+      authored_skip: boolean;
+      chip: boolean;
+      /**
+       * Planned `Tc - T0`; `null` when a chip decides.
+       */
+      contact_in_ms?: number | null;
+      impact?: ImpactClass | null;
+      intensity: number;
+      origin: Origin;
+      room: number;
+      run: number;
+      rung?: number | null;
+      /**
+       * `"<run>.<n>"` (SCENE-1).
+       */
+      scene: string;
+      skipped_rungs: Verb[];
+      t: "act_started";
+      /**
+       * Present only when `with` is a human.
+       */
+      target_opt_in?: boolean | null;
+      verb: Verb;
+      with?: number | null;
+    }
+  | {
+      act_id: string;
+      at: number;
+      beat: BeatKind;
+      /**
+       * The only ground truth of what is owed (REA-2).
+       */
+      owed: Owed[];
+      room: number;
+      run: number;
+      t: "act_beat";
+      /**
+       * Ascending numeric id: actors (negative) first.
+       */
+      witnesses: number[];
+    }
+  | {
+      act_id: string;
+      at: number;
+      /**
+       * A label of `enums.reaction_labels` (source `table`) or `cmd:<k>` (source `planner`).
+       */
+      reaction: string;
+      role: ReactionRole;
+      room: number;
+      run: number;
+      source: ReactionSource;
+      t: "act_reaction";
+      who: number;
+    }
+  | {
+      act_id: string;
+      actor: number;
+      /**
+       * The chip answer; present iff a chip was shown.
+       */
+      answer?: ChipAnswer | null;
+      at: number;
+      detail?: string | null;
+      downgraded: Downgrade[];
+      outcome: Outcome2;
+      /**
+       * Empty for every table-driven act (REA-10).
+       */
+      owed_missed: OwedMissed[];
+      reason?: ActReason | null;
+      room: number;
+      run: number;
+      t: "act_done";
+      verb: Verb;
+      with?: number | null;
+    }
+  | {
+      act_id: string;
+      actor: number;
+      /**
+       * On `answered`; a timeout is `answer:"timeout"` at `shown.at + ttl_ms`.
+       */
+      answer?: ChipAnswer | null;
+      at: number;
+      family: ConsentFamily;
+      phase: ConsentPhase;
+      room: number;
+      run: number;
+      t: "drama_consent";
+      /**
+       * On `shown`.
+       */
+      ttl_ms?: number | null;
+      verb: Verb;
+      with: number;
+    }
+  | {
+      act_id: string;
+      actor: number;
+      at: number;
+      cause: DeathCause;
+      killer?: number | null;
+      room: number;
+      run: number;
+      scene: string;
+      t: "actor_death";
+    }
+  | {
+      actor: number;
+      at: number;
+      /**
+       * The effect it had before it died; empty for none.
+       */
+      effect: string;
+      prev: string;
+      room: number;
+      run: number;
+      scene: string;
+      t: "actor_revive";
+      x: number;
+      y: number;
+    }
+  | {
+      act_id: string;
+      at: number;
+      human: number;
+      ms: number;
+      room: number;
+      run: number;
+      scene: string;
+      t: "human_down";
+    }
+  | {
+      act_id: string;
+      at: number;
+      human: number;
+      reason: HumanUpReason;
+      room: number;
+      run: number;
+      t: "human_up";
+    }
+  | {
+      at: number;
+      prev: string;
+      reason: SceneCutReason;
+      removed: number[];
+      revived: number[];
+      run: number;
+      scene: string;
+      t: "scene_cut";
+    }
+  | {
+      at: number;
+      calm: boolean;
+      enabled: boolean;
+      /**
+       * Human ids in the room whose session opt-in is on.
+       */
+      opt_in: number[];
+      paused: boolean;
+      paused_until?: number | null;
+      room: number;
+      run: number;
+      scene: string;
+      t: "drama_state";
     };
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
@@ -225,14 +412,17 @@ export type CommandSource = "chat" | "panel" | "auto";
  * via the `definition` "ActorGoneReason".
  */
 export type ActorGoneReason =
-  | "despawned"
-  | "kicked"
-  | "muted_out"
-  | "room_closed"
-  | "lease_expired"
-  | "sidecar_lost"
-  | "killall"
-  | "hotel_shutdown";
+  | (
+      | "despawned"
+      | "kicked"
+      | "muted_out"
+      | "room_closed"
+      | "lease_expired"
+      | "sidecar_lost"
+      | "killall"
+      | "hotel_shutdown"
+    )
+  | "died";
 /**
  * `actor_error.code`, plus the section 9 table of the doc.
  *
@@ -264,7 +454,13 @@ export type ActorErrorCode =
   | "not_a_seat"
   | "not_adjacent"
   | "target_gone"
-  | "internal";
+  | "internal"
+  | "unknown_verb"
+  | "target_required"
+  | "target_forbidden"
+  | "bad_target"
+  | "act_busy"
+  | "actor_dead";
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "Action".
@@ -391,6 +587,10 @@ export type ServerMsg =
   | {
       action: Action;
       id: number;
+      /**
+       * How long a table gesture plays before the idle pose returns, with no `stop` (TBL-15). Set only by the drama sequencer.
+       */
+      ms?: number | null;
       style?: number | null;
       t: "avatar_action";
     }
@@ -537,6 +737,52 @@ export type ServerMsg =
   | {
       reason: string;
       t: "audience_ended";
+    }
+  | {
+      act_id: string;
+      choices: ChipChoice[];
+      /**
+       * The focused button and the Escape answer: always `dodge`.
+       */
+      default: ChipChoice;
+      family: ConsentFamily;
+      from: number;
+      name: string;
+      t: "act_prompt";
+      timeout_as: TimeoutAs;
+      ttl_ms: number;
+      verb: Verb;
+    }
+  | {
+      act_id: string;
+      reason: PromptClose;
+      t: "act_prompt_close";
+    }
+  | {
+      act_id: string;
+      actor: number;
+      base_at: number;
+      class?: ImpactClass | null;
+      phase: TimelinePhase;
+      steps: TimelineStep[];
+      t: "act_timeline";
+      verb: Verb;
+      with?: number | null;
+    }
+  | {
+      act_id: string;
+      id: string;
+      name: string;
+      reason: OverlayClear;
+      t: "act_overlay_clear";
+      who: number;
+    }
+  | {
+      calm: boolean;
+      enabled: boolean;
+      opt_in: boolean;
+      paused: boolean;
+      t: "drama_status";
     };
 /**
  * What an attachment is. Both `thumb` and `full` exist for every kind; the thumb is always a still.
@@ -900,15 +1146,287 @@ export type CutFxKind = "fade" | "door" | "meanwhile";
  */
 export type PairKind = "kiss" | "hug";
 /**
+ * What a human can press on the chip (`act_reply.choice`, `act_prompt.choices`).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ChipChoice".
+ */
+export type ChipChoice = "take" | "dodge" | "push_back";
+/**
+ * The label set of a chip.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ConsentFamily".
+ */
+export type ConsentFamily = "violent" | "affection";
+/**
+ * What silence means on a chip: `dodge`, or the act completing with the initiator's steps only (a hug).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "TimeoutAs".
+ */
+export type TimeoutAs = "dodge" | "initiator_only";
+/**
+ * The 18 verbs (section 0.2). The wire spelling is the table's id.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "Verb".
+ */
+export type Verb =
+  | "glare"
+  | "insult"
+  | "shove"
+  | "slap"
+  | "punch"
+  | "kill"
+  | "die"
+  | "recoil"
+  | "freeze_gasp"
+  | "hug"
+  | "kiss"
+  | "turn_back"
+  | "cry"
+  | "storm_off"
+  | "tableau"
+  | "restrain"
+  | "faint"
+  | "tend_fallen";
+/**
+ * Why `act_prompt_close` closed the chip.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "PromptClose".
+ */
+export type PromptClose = "answered" | "timeout" | "aborted";
+/**
+ * The impact class of an act (TBL-4). The wire spelling is one capital letter.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ImpactClass".
+ */
+export type ImpactClass = "L" | "M" | "H" | "F";
+/**
+ * Which phase of an act a `act_timeline` frame carries (section 3.11).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "TimelinePhase".
+ */
+export type TimelinePhase = "pre" | "post" | "all";
+/**
+ * A step of an `act_timeline`: `at` is in ms from the frame's `base_at` and may be negative.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "TimelineStep".
+ */
+export type TimelineStep = {
+  at: number;
+} & TimelineStep1;
+export type TimelineStep1 =
+  | {
+      emotion: string;
+      ms: number;
+      on: number;
+      p: "cue";
+    }
+  | {
+      cue: string;
+      p: "sfx";
+    }
+  | {
+      ms: number;
+      p: "caption";
+      text: string;
+    }
+  | {
+      away_from?: number | null;
+      back_ms?: number | null;
+      bounce_px?: number | null;
+      color?: string | null;
+      curve?: string | null;
+      drop_px?: number | null;
+      frame_ms?: number | null;
+      frames?: number | null;
+      in_ms?: number | null;
+      ms?: number | null;
+      name: Motion;
+      overshoot_px?: number | null;
+      p: "motion";
+      px?: number | null;
+      rot_deg?: number | null;
+      toward?: number | null;
+      who: MotionWho;
+    }
+  | {
+      id: string;
+      name: string;
+      p: "overlay";
+      until: OverlayUntil;
+      who: number;
+    };
+/**
+ * The seven client procedural motions (section 5.8).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "Motion".
+ */
+export type Motion =
+  "lunge" | "hit_stop" | "tint_flash" | "knockback" | "shake" | "recoil" | "fall";
+/**
+ * `motion.who`: an avatar id, or `"both"` (the actor and the target).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "MotionWho".
+ */
+export type MotionWho = number | Both;
+/**
+ * The only value of `motion.who` besides an avatar id.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "Both".
+ */
+export type Both = "both";
+/**
+ * `overlay.until`: after that many ms, at the next scene cut, or when `act_overlay_clear` says so.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "OverlayUntil".
+ */
+export type OverlayUntil = number | OverlayEnd;
+/**
+ * How an overlay ends besides a number of milliseconds.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "OverlayEnd".
+ */
+export type OverlayEnd = "scene_cut" | "cleared";
+/**
+ * Why `act_overlay_clear` ended an overlay (OVL-2, OVL-3).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "OverlayClear".
+ */
+export type OverlayClear = "cleared" | "scene_cut";
+/**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "PairOutcome".
  */
 export type PairOutcome = "accept" | "timeout" | "dodge" | "push" | "aborted" | "done";
 /**
+ * Why a gate refused an accepted command (`outcome:"blocked"`), in no order.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "BlockedReason".
+ */
+export type BlockedReason =
+  | "kill_switch"
+  | "calm_room"
+  | "consent_off"
+  | "ladder"
+  | "budget"
+  | "cooldown"
+  | "too_far"
+  | "dead_target"
+  | "no_scenario_gate"
+  | "rate_limit";
+/**
+ * Who asked for an act: the model, the director or the scenario's author.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "Origin".
+ */
+export type Origin = "model" | "director" | "scenario";
+/**
+ * `act_beat.beat`: only `contact` in this revision.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "BeatKind".
+ */
+export type BeatKind = "contact";
+/**
+ * Who owes a reaction.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ReactionRole".
+ */
+export type ReactionRole = "target" | "witness";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ReactionSource".
+ */
+export type ReactionSource = "table" | "planner";
+/**
+ * How a human answered a consent chip, including silence.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ChipAnswer".
+ */
+export type ChipAnswer = "take" | "dodge" | "push_back" | "timeout";
+/**
+ * Table steps that were skipped or replaced (`act_done.downgraded`). `chat` is REA-9's muted line, which the table of section 3.6 does not list (spec defect, see `docs/perfectman/decisions.md`).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "Downgrade".
+ */
+export type Downgrade = "forced_step" | "face" | "walk_to" | "gesture" | "posture" | "chat";
+/**
+ * `act_done.outcome`.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "Outcome2".
+ */
+export type Outcome2 = "landed" | "dodged" | "blocked" | "declined" | "timeout" | "aborted";
+/**
+ * `act_done.reason`: a blocked reason or an abort reason. `kill_switch` and `calm_room` are both.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ActReason".
+ */
+export type ActReason =
+  | "kill_switch"
+  | "calm_room"
+  | "consent_off"
+  | "ladder"
+  | "budget"
+  | "cooldown"
+  | "too_far"
+  | "dead_target"
+  | "no_scenario_gate"
+  | "rate_limit"
+  | "target_moved"
+  | "target_gone"
+  | "actor_gone"
+  | "actor_dead"
+  | "scene_cut"
+  | "run_end"
+  | "paused"
+  | "opt_out";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "ConsentPhase".
+ */
+export type ConsentPhase = "shown" | "answered";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "DeathCause".
+ */
+export type DeathCause = "kill" | "die";
+/**
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "HumanUpReason".
+ */
+export type HumanUpReason = "timer" | "left" | "closed";
+/**
+ * `scene_cut.reason`: always `sidecar`; the field stays so a later revision can add causes.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "SceneCutReason".
+ */
+export type SceneCutReason = "sidecar";
+/**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "JobOp".
  */
-export type JobOp = "validate" | "compile" | "draft" | "autolook";
+export type JobOp = "validate" | "compile" | "draft" | "autolook" | "ai_draft" | "ai_crew";
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "JobState".
@@ -920,6 +1438,10 @@ export type JobState = "queued" | "running" | "done" | "failed";
  */
 export type SidecarMsg =
   | {
+      /**
+       * `["drama.v1"]` from a dialect 2 sidecar; absent otherwise (NEG-3).
+       */
+      caps?: string[];
       proto: number;
       resume?: number[];
       sidecar: SidecarInfo;
@@ -1019,6 +1541,16 @@ export type SidecarMsg =
       t: "ui_push";
       to: UiTarget;
       ui: PerfectmanUi;
+    }
+  | {
+      cid?: number | null;
+      lease: number;
+      /**
+       * Free text, at most 40 characters, logged only.
+       */
+      reason: string;
+      run: number;
+      t: "scene_advance";
     };
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
@@ -1097,6 +1629,34 @@ export type ActorCmd =
       k: "appearance";
     }
   | {
+      /**
+       * `^[A-Za-z0-9_.:-]{1,32}$`, unique within the run for its whole life.
+       */
+      act_id: string;
+      /**
+       * Honoured only with `origin:"scenario"` (GATE-5).
+       */
+      authored_skip?: boolean;
+      /**
+       * `0..=1`; absent means the verb's default. Selects the impact class.
+       */
+      intensity?: number | null;
+      k: "act";
+      /**
+       * Absent means `director`.
+       */
+      origin?: Origin | null;
+      /**
+       * `insult` only; at most 200 characters.
+       */
+      text?: string | null;
+      verb: Verb;
+      /**
+       * An avatar in the actor's room: required for the targeted verbs, forbidden for the solo ones.
+       */
+      with?: number | null;
+    }
+  | {
       drink?: boolean | null;
       item?: string | null;
       k: "carry";
@@ -1134,7 +1694,7 @@ export type UiTarget =
     };
 
 /**
- * Generated from crates/sim/src/director.rs (proto 1). Do not edit by hand: run `cargo test -p tilehouse-sim director_schema`.
+ * Generated from crates/sim/src/director.rs (proto 2). Do not edit by hand: run `cargo test -p tilehouse-sim director_schema`.
  */
 export interface PerfectmanDirectorContract {
   api_error: ApiError;
@@ -1263,6 +1823,34 @@ export interface HelloActor {
   state: AvatarState;
   x: number;
   y: number;
+}
+/**
+ * What `hello.drama` tells a dialect 2 sidecar (NEG-2). Sent only with `PERFECTMAN_DRAMA` on.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "HelloDrama".
+ */
+export interface HelloDrama {
+  chip_ttl_ms: number;
+  /**
+   * Every actor that is `fainted`, `dying` or `body`: a full replacement set, not a delta (NEG-8).
+   */
+  dead?: number[];
+  enabled: boolean;
+  harm_max: number;
+  harm_window_s: number;
+  verb_vocab: VerbVocabRef;
+}
+/**
+ * `{version, rev, sha256}` of the published `verb-vocab.json` bytes (NEG-7, VV-3). A `version` mismatch makes the sidecar answer dialect 1; `rev` or `sha256` only warn.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "VerbVocabRef".
+ */
+export interface VerbVocabRef {
+  rev: number;
+  sha256: string;
+  version: number;
 }
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
@@ -1544,6 +2132,10 @@ export interface Card {
  * via the `definition` "GameView".
  */
 export interface GameView {
+  /**
+   * How long it runs, in seconds, for a game with a clock: the host's choice, or the default.
+   */
+  duration_secs?: number | null;
   host: number;
   kind: GameKind;
   min_players: number;
@@ -1623,6 +2215,27 @@ export interface PersonRef {
   name: string;
 }
 /**
+ * One reaction an actor owes (`act_beat.owed`), with its absolute deadline in epoch ms.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "Owed".
+ */
+export interface Owed {
+  due_at: number;
+  role: ReactionRole;
+  who: number;
+}
+/**
+ * A reaction still owed at the end of the window (`act_done.owed_missed`).
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "OwedMissed".
+ */
+export interface OwedMissed {
+  role: ReactionRole;
+  who: number;
+}
+/**
  * `GET /api/admin/perfectman/jobs/{id}`. In memory on the hotel: lost on restart, kept 10 min.
  *
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
@@ -1634,6 +2247,10 @@ export interface Job {
   id: string;
   op: JobOp;
   result?: unknown;
+  /**
+   * What a running job is doing now, for the AI jobs ("research", "build"). Absent for the rest.
+   */
+  stage?: string | null;
   state: JobState;
 }
 /**
@@ -1700,6 +2317,10 @@ export interface SidecarInfo {
    * SHA-256 of the vendored `director.schema.json`. A mismatch is logged as a warning; only a `proto` mismatch refuses (checklist 2).
    */
   schema_sha256?: string | null;
+  /**
+   * The vendored `verb-vocab.json` of a dialect 2 sidecar (NEG-3, NEG-7).
+   */
+  verb_vocab?: VerbVocabRef | null;
   version: string;
 }
 /**

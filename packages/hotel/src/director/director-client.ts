@@ -1,7 +1,12 @@
 import type { Clock, TimerHandle } from "../clock/clock.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
-import type { HotelFrame, SidecarMsg, SidecarFrame } from "./index.js";
+import { validateActCmd } from "./act-cmd.js";
+import type { ActCmdError } from "./act-cmd.js";
+import { negotiate } from "./dialect.js";
+import type { Dialect, DramaSession } from "./dialect.js";
+import { isDramaFrame } from "./drama-frames.js";
+import type { ActorCmd, HotelFrame, SidecarMsg, SidecarFrame } from "./index.js";
 import type { DirectorSocket, SocketFactory } from "./transport.js";
 
 export const PROTO = 1;
@@ -10,8 +15,13 @@ export const BACKOFF_MS = [1000, 2000, 4000, 8000] as const;
 export const HEARTBEAT_MS = 5000;
 /** How long the command loop waits for the hotel's fresh leases after a reconnect before it goes on regardless. */
 export const LEASE_WAIT_MS = 3000;
+/** What a `scene_advance` says when its caller gave no reason: the hotel's schema requires the field (errata E-01). */
+export const DEFAULT_ADVANCE_REASON = "script";
 
 export type FrameRecorder = (dir: "in" | "out", frame: SidecarFrame | HotelFrame) => void;
+
+/** What `sendAct` and `sendSceneAdvance` report: the frame went out, or why it did not (and nothing reached the socket). */
+export type ActSend = { sent: true; cid?: number } | { sent: false; reason: "dialect" | "no_lease" } | { sent: false; reason: "invalid"; error: ActCmdError };
 
 export type DirectorHandlers = {
   /** Called for `hello`; returns the run ids the sidecar still holds (`hello_ack.resume`). */
@@ -19,6 +29,11 @@ export type DirectorHandlers = {
   /** Every frame after `hello`. */
   onFrame(frame: HotelFrame): void;
   onConnectionChange(up: boolean): void;
+  /**
+   * Once per `hello`, before the `hello_ack` goes out: the drama state of a dialect 2 session (`dead` is a full replacement set,
+   * NEG-8), or null for a dialect 1 session (nothing drama-related survives a reconnect to a PROTO 1 peer, NEG-5).
+   */
+  onDramaSession?(session: DramaSession | null): void;
 };
 
 export type DirectorClientOptions = {
@@ -34,6 +49,8 @@ export type DirectorClientOptions = {
   recorder?: FrameRecorder;
   maxQueue?: number;
   heartbeatMs?: number;
+  /** This sidecar's own `PERFECTMAN_DRAMA` (NEG-3); absent means off, and the client then speaks PROTO 1 exactly as before. */
+  drama?: { enabled: boolean };
 };
 
 type Conn = { socket: DirectorSocket; id: number };
@@ -65,6 +82,13 @@ export class DirectorClient {
   private readonly tracked = new Set<number>();
   private readonly log: Logger;
   droppedWhileDown = 0;
+  /** Drama frames a dialect 1 link delivered and the client refused to pass up (NEG-5). */
+  droppedDrama = 0;
+  /** `act` and `scene_advance` frames refused before the socket because the link is not dialect 2 (NEG-5). */
+  refusedDrama = 0;
+  private negotiated: Dialect = 1;
+  /** `act_id`s consumed per run (ACT-5): unique for the run's whole life, so they survive a reconnect. */
+  private readonly actIds = new Map<number, Set<string>>();
 
   constructor(private readonly opts: DirectorClientOptions) {
     this.log = opts.logger ?? silentLogger;
@@ -72,6 +96,11 @@ export class DirectorClient {
 
   get connected(): boolean {
     return this.ready;
+  }
+
+  /** The dialect of the current connection: 2 only after a `hello_ack` that negotiated `drama.v1` (NEG-4); renegotiated on every reconnect. */
+  get dialect(): Dialect {
+    return this.ready ? this.negotiated : 1;
   }
 
   start(): void {
@@ -111,10 +140,50 @@ export class DirectorClient {
   untrackRun(run: number): void {
     this.tracked.delete(run);
     this.leases.delete(run);
+    this.actIds.delete(run);
+  }
+
+  /**
+   * A drama act. Refused before the socket on a link that is not dialect 2 (NEG-5), without a lease for the run, or when the
+   * hotel would refuse it at ACT-4 to ACT-9 on the frame alone (an act the hotel refuses still spends one of the actor's 8
+   * commands per 5 s, ACT-3). The command carries a fresh `cid` and the run's current lease.
+   */
+  sendAct(p: { run: number; actor: number; cmd: Extract<ActorCmd, { k: "act" }> }): ActSend {
+    if (this.dialect !== 2) return this.refuse();
+    const lease = this.leases.get(p.run);
+    if (lease === undefined || this.awaitingLease?.has(p.run)) return { sent: false, reason: "no_lease" };
+    let consumed = this.actIds.get(p.run);
+    if (!consumed) this.actIds.set(p.run, (consumed = new Set()));
+    const error = validateActCmd(p.cmd, { run: p.run, actor: p.actor }, consumed);
+    if (error) return { sent: false, reason: "invalid", error };
+    const cid = this.nextCid();
+    return this.send({ t: "actor_cmd", cid, run: p.run, lease, actor: p.actor, cmd: p.cmd }) ? { sent: true, cid } : { sent: false, reason: "no_lease" };
+  }
+
+  /**
+   * The sidecar's script advanced: cut the scene (SCENE-2). Dialect 2 only; honoured by the hotel at most once per `scene_min_age_ms` (SCENE-5).
+   * The hotel's schema requires `reason` (a Rust `String`, no default) where section 3.9 leaves it implicit, so one is always sent.
+   */
+  sendSceneAdvance(run: number, reason?: string): ActSend {
+    if (this.dialect !== 2) return this.refuse();
+    const lease = this.leases.get(run);
+    if (lease === undefined || this.awaitingLease?.has(run)) return { sent: false, reason: "no_lease" };
+    const ok = this.send({ t: "scene_advance", run, lease, reason: (reason || DEFAULT_ADVANCE_REASON).slice(0, 40) });
+    return ok ? { sent: true } : { sent: false, reason: "no_lease" };
+  }
+
+  private refuse(): ActSend {
+    this.refusedDrama++;
+    return { sent: false, reason: "dialect" };
   }
 
   /** True when the frame went out (or is queued for the post-hello flush). */
   send(msg: SidecarMsg): boolean {
+    // NEG-5: nothing introduced by the drama contract goes to a link that is not dialect 2. Before the `hello_ack` the dialect is 1.
+    if ((msg.t === "scene_advance" || (msg.t === "actor_cmd" && msg.cmd.k === "act")) && this.dialect !== 2) {
+      this.refusedDrama++;
+      return false;
+    }
     const conn = this.conn;
     if (!conn) {
       this.droppedWhileDown++;
@@ -163,6 +232,7 @@ export class DirectorClient {
     this.inSeq = 0;
     this.cid = 0;
     this.queue = [];
+    this.negotiated = 1;
     const socket = this.opts.socketFactory(
       this.opts.url,
       { Authorization: `Bearer ${this.opts.secret}` },
@@ -207,6 +277,12 @@ export class DirectorClient {
       return;
     }
     if (!this.ready) return; // nothing is meaningful before hello
+    // NEG-5: the hotel sends no drama frame to a link that is not dialect 2; one that arrives anyway is not processed.
+    if (isDramaFrame(frame) && this.negotiated !== 2) {
+      this.droppedDrama++;
+      this.log.warn("drama frame on a dialect 1 link, dropped", { t: frame.t });
+      return;
+    }
     this.opts.handlers.onFrame(frame);
   }
 
@@ -216,7 +292,15 @@ export class DirectorClient {
       return;
     }
     const resume = this.opts.handlers.onHello(hello);
-    this.send({ t: "hello_ack", proto: PROTO, resume, sidecar: this.opts.sidecar });
+    const neg = negotiate(hello, this.opts.drama ?? { enabled: false });
+    for (const warning of neg.warnings) this.log.warn(warning);
+    this.negotiated = neg.dialect;
+    this.opts.handlers.onDramaSession?.(neg.session);
+    this.send(
+      neg.dialect === 2
+        ? { t: "hello_ack", proto: neg.ackProto, caps: neg.caps ?? [], resume, sidecar: { ...this.opts.sidecar, ...(neg.verbVocab ? { verb_vocab: neg.verbVocab } : {}) } }
+        : { t: "hello_ack", proto: PROTO, resume, sidecar: this.opts.sidecar },
+    );
     this.ready = true;
     this.attempt = 0;
     for (const text of this.queue.splice(0)) this.conn?.socket.send(text);
@@ -259,6 +343,7 @@ export class DirectorClient {
     const wasUp = this.ready;
     const announced = this.awaitingLease === null;
     this.ready = false;
+    this.negotiated = 1;
     this.awaitingLease = null;
     this.leaseTimer?.cancel();
     this.leaseTimer = null;

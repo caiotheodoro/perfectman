@@ -53,3 +53,18 @@ export const ERRAND_STAY_MS = 70_000;
 
 /** After a person speaks to an actor (or the actor answers them) it keeps its eyes on them this long, whoever else talks. */
 export const HUMAN_FACE_HOLD_MS = 7000;
+
+// ---- drama (act-contract.md, verb-vocab.json `constants`) -----------------------------------------------------------
+
+/** LAD-8: the killer is locked from the celebration gestures this long from contact. */
+export const NO_REWARD_MS = 5000;
+/**
+ * REA-9: a witness whose table step ran is busy until that step ends, and no longer. The step is the nested `freeze_gasp`, whose last table row is
+ * at `Tc + 1500` (`verb-vocab.json`, a test pins it); a reaction the planner gave itself skips the step, so the witness is free at once.
+ */
+export const REACTION_STEP_MS = 1500;
+/** TBL-11: a tableau holds every actor within this many tiles of its actor. */
+export const TABLEAU_RADIUS_TILES = 6;
+
+/** Keep priority when over budget: moves never drop, then gestures, facing, fidgets. */
+export const KEEP = { fidget: 1, face: 2, gesture: 3, move: 4 } as const;

@@ -1,0 +1,46 @@
+{"conn":3,"dir":"out","frame":{"admin":{"id":27,"name":"pmadminceexs"},"cap_actors":12,"lease":1,"mode":"default","room":17,"run":7,"scenario_version":7,"seq":1605,"t":"run_start"},"run":7,"ts_ms":1794052313475}
+{"conn":3,"dir":"in","frame":{"cid":785,"figure":"hd-620-14.hr-890-61.ch-640-92.lg-715-82.sh-907-66","lease":1,"name":"Duda","ref":"person-1","room":17,"run":7,"seq":1151,"t":"actor_spawn","tile":null},"run":7,"ts_ms":1794052313693}
+{"conn":3,"dir":"out","frame":{"msg":{"avatar":{"dir":2,"effect":"","figure":"hd-620-14.hr-890-61.ch-640-92.lg-715-82.sh-907-66","id":-701,"look":{"hair":0,"pants":0,"shirt":0,"skin":0},"name":"Duda","state":"stand","x":0,"y":8},"t":"avatar_joined"},"rev":729,"room":17,"seq":1606,"t":"delta"},"run":7,"ts_ms":1794052313694}
+{"conn":3,"dir":"out","frame":{"actor":-701,"cid":785,"dir":2,"ref":"person-1","room":17,"seq":1607,"t":"actor_spawned","x":0,"y":8},"run":7,"ts_ms":1794052313694}
+{"conn":3,"dir":"in","frame":{"actor":-701,"cid":786,"cmd":{"k":"walk","plan":"person-1:enter","x":7,"y":5},"lease":1,"run":7,"seq":1152,"t":"actor_cmd"},"run":7,"ts_ms":1794052313904}
+{"conn":3,"dir":"out","frame":{"actor":-701,"eta_ms":2100,"plan":"person-1:enter","seq":1608,"steps":7,"t":"walk_started"},"run":7,"ts_ms":1794052313904}
+{"conn":3,"dir":"out","frame":{"msg":{"moves":[{"dir":2,"id":-701,"state":"walk","x":1,"y":8}],"t":"moves"},"rev":730,"room":17,"seq":1609,"t":"delta"},"run":7,"ts_ms":1794052314084}
+{"conn":3,"dir":"out","frame":{"msg":{"moves":[{"dir":2,"id":-701,"state":"walk","x":2,"y":8}],"t":"moves"},"rev":731,"room":17,"seq":1612,"t":"delta"},"run":7,"ts_ms":1794052314388}
+{"conn":3,"dir":"out","frame":{"msg":{"moves":[{"dir":2,"id":-701,"state":"walk","x":3,"y":8}],"t":"moves"},"rev":732,"room":17,"seq":1613,"t":"delta"},"run":7,"ts_ms":1794052314686}
+{"conn":3,"dir":"out","frame":{"msg":{"moves":[{"dir":2,"id":-701,"state":"walk","x":4,"y":8}],"t":"moves"},"rev":733,"room":17,"seq":1614,"t":"delta"},"run":7,"ts_ms":1794052314984}
+{"conn":3,"dir":"out","frame":{"actor":-701,"plan":"person-1:enter","room":17,"seq":1617,"t":"arrived","x":7,"y":5},"run":7,"ts_ms":1794052315884}
+{"conn":3,"dir":"in","frame":{"actor":-701,"cid":787,"cmd":{"k":"typing","on":true},"lease":1,"run":7,"seq":1153,"t":"actor_cmd"},"run":7,"ts_ms":1794052315893}
+{"conn":3,"dir":"out","frame":{"msg":{"id":-701,"on":true,"t":"typing"},"rev":737,"room":17,"seq":1619,"t":"delta"},"run":7,"ts_ms":1794052315893}
+{"conn":3,"dir":"in","frame":{"actor":-701,"cid":788,"cmd":{"k":"chat","mode":"thought","text":"quero puxar conversa e fazer os outros se sentirem à vontade"},"lease":1,"run":7,"seq":1154,"t":"actor_cmd"},"run":7,"ts_ms":1794052316895}
+{"conn":3,"dir":"out","frame":{"msg":{"avatar":{"dir":2,"effect":"","figure":"hd-185-10.hr-115-45.ch-215-73.lg-275-64.sh-300-92","id":-702,"look":{"hair":0,"pants":0,"shirt":0,"skin":0},"name":"Rafa","state":"stand","x":0,"y":8},"t":"avatar_joined"},"rev":739,"room":17,"seq":1627,"t":"delta"},"run":7,"ts_ms":1794052321915}
+{"conn":3,"dir":"out","frame":{"actor":-702,"cid":789,"dir":2,"ref":"person-2","room":17,"seq":1628,"t":"actor_spawned","x":0,"y":8},"run":7,"ts_ms":1794052321915}
+{"conn":3,"dir":"out","frame":{"actor":-703,"cid":792,"dir":2,"ref":"person-3","room":17,"seq":1649,"t":"actor_spawned","x":0,"y":8},"run":7,"ts_ms":1794052329918}
+{"conn":3,"dir":"in","frame":{"actor":-701,"cid":794,"cmd":{"k":"chat","mode":"thought","text":"não quero reagir logo à minha própria chegada, quero ver o que Rafa faz, observar o ambiente antes de entrar no papo"},"lease":1,"run":7,"seq":1168,"t":"actor_cmd"},"run":7,"ts_ms":1794052332964}
+{"conn":3,"dir":"in","frame":{"actor":-703,"cid":797,"cmd":{"k":"chat","mode":"thought","text":"quero saber onde ela está para tentar se aproximar"},"lease":1,"run":7,"seq":1171,"t":"actor_cmd"},"run":7,"ts_ms":1794052334201}
+{"conn":3,"dir":"in","frame":{"actor":-703,"cid":799,"cmd":{"k":"chat","mode":"say","text":"Você mora aqui por perto?"},"lease":1,"run":7,"seq":1173,"t":"actor_cmd"},"run":7,"ts_ms":1794052336972}
+{"conn":3,"dir":"out","frame":{"msg":{"from":-703,"mode":"say","name":"Gabi","t":"chat","text":"Você mora aqui por perto?"},"rev":759,"room":17,"seq":1667,"t":"delta"},"run":7,"ts_ms":1794052336972}
+{"conn":3,"dir":"out","frame":{"actor":-704,"cid":800,"dir":2,"ref":"person-4","room":17,"seq":1671,"t":"actor_spawned","x":0,"y":8},"run":7,"ts_ms":1794052337907}
+{"conn":3,"dir":"in","frame":{"actor":-704,"cid":803,"cmd":{"k":"chat","mode":"thought","text":"queria brincar de tocar música pra provocar um responses dos outros, e ver se há algum aqui interessado"},"lease":1,"run":7,"seq":1179,"t":"actor_cmd"},"run":7,"ts_ms":1794052341304}
+{"conn":3,"dir":"in","frame":{"actor":-701,"cid":804,"cmd":{"k":"face","tile":[6,4]},"lease":1,"run":7,"seq":1180,"t":"actor_cmd"},"run":7,"ts_ms":1794052341306}
+{"conn":3,"dir":"out","frame":{"msg":{"from":-704,"mode":"say","name":"Leo","t":"chat","text":"Toco aqui toda sexta, se quiser ouvir."},"rev":774,"room":17,"seq":1693,"t":"delta"},"run":7,"ts_ms":1794052343973}
+{"conn":3,"dir":"out","frame":{"msg":{"from":-702,"mode":"say","name":"Rafa","t":"chat","text":"Hmm, entendi."},"rev":783,"room":17,"seq":1705,"t":"delta"},"run":7,"ts_ms":1794052346522}
+{"conn":3,"dir":"in","frame":{"actor":-704,"cid":828,"cmd":{"action":"wave","k":"action"},"lease":1,"run":7,"seq":1208,"t":"actor_cmd"},"run":7,"ts_ms":1794052351941}
+{"conn":3,"dir":"out","frame":{"msg":{"action":"wave","id":-704,"t":"avatar_action"},"rev":798,"room":17,"seq":1726,"t":"delta"},"run":7,"ts_ms":1794052351942}
+{"conn":3,"dir":"in","frame":{"actor":-704,"cid":829,"cmd":{"face":"smile","k":"expression"},"lease":1,"run":7,"seq":1209,"t":"actor_cmd"},"run":7,"ts_ms":1794052351942}
+{"conn":3,"dir":"out","frame":{"msg":{"action":"expression","id":-704,"style":1,"t":"avatar_action"},"rev":799,"room":17,"seq":1727,"t":"delta"},"run":7,"ts_ms":1794052351942}
+{"conn":3,"dir":"out","frame":{"at":1794052354394,"from":{"id":28,"name":"pmguest1cef94"},"had_image":false,"mode":"say","rev":808,"room":17,"seq":1740,"t":"human_chat","text":"Rafa, tudo bem? Que lugar é esse?","untrusted":true,"untrusted_text":["from.name","text"]},"run":7,"ts_ms":1794052354394}
+{"conn":3,"dir":"out","frame":{"msg":{"action":"expression","id":-704,"style":0,"t":"avatar_action"},"rev":823,"room":17,"seq":1769,"t":"delta"},"run":7,"ts_ms":1794052367239}
+{"conn":3,"dir":"out","frame":{"at":1794052371750,"from":{"id":28,"name":"pmguest1cef94"},"had_image":false,"mode":"say","rev":827,"room":17,"seq":1780,"t":"human_chat","text":"Duda, o que você recomenda pra beber hoje?","untrusted":true,"untrusted_text":["from.name","text"]},"run":7,"ts_ms":1794052371750}
+{"conn":3,"dir":"in","frame":{"actor":-703,"cid":864,"cmd":{"action":"wave","k":"action"},"lease":1,"run":7,"seq":1267,"t":"actor_cmd"},"run":7,"ts_ms":1794052405549}
+{"conn":3,"dir":"in","frame":{"actor":-704,"cid":868,"cmd":{"action":"wave","k":"action"},"lease":1,"run":7,"seq":1271,"t":"actor_cmd"},"run":7,"ts_ms":1794052405582}
+{"conn":3,"dir":"out","frame":{"admin":{"id":27,"name":"pmadminceexs"},"args":"Gabi Agora: pmguest1cef94 esta pertinho de voce. Responda com \"body\": {\"gesture\": {\"kind\": \"kiss\", \"toward\": <o identificador de pmguest1cef94>}} e uma fala curta e carinhosa para pmguest1","cmd":"whisper","room":17,"run":7,"seq":1860,"source":"chat","t":"pm_command"},"run":7,"ts_ms":1794052414749}
+{"conn":3,"dir":"out","frame":{"actor":-703,"cid":910,"code":"action_not_here","seq":1920,"t":"actor_error"},"run":7,"ts_ms":1794052434680}
+{"conn":3,"dir":"in","frame":{"actor":-703,"cid":934,"cmd":{"face":"smile","k":"expression"},"lease":1,"run":7,"seq":1359,"t":"actor_cmd"},"run":7,"ts_ms":1794052452833}
+{"conn":3,"dir":"in","frame":{"actor":-702,"cid":983,"cmd":{"furni":1104,"k":"sit"},"lease":1,"run":7,"seq":1428,"t":"actor_cmd"},"run":7,"ts_ms":1794052497419}
+{"conn":3,"dir":"in","frame":{"actor":-703,"cid":1129,"cmd":{"k":"pair","kind":"kiss","pair":"pr:person-3:mw6cmik7","with":28},"lease":1,"run":7,"seq":1639,"t":"actor_cmd"},"run":7,"ts_ms":1794052652124}
+{"conn":3,"dir":"out","frame":{"actor":-703,"at":1794052652580,"outcome":"dodge","pair":"pr:person-3:mw6cmik7","run":7,"seq":2365,"t":"pair_reaction","with":28},"run":7,"ts_ms":1794052652580}
+{"conn":3,"dir":"in","frame":{"actor":-703,"cid":1302,"cmd":{"k":"pair","kind":"kiss","pair":"pr:person-3:mw6cu8fj","with":28},"lease":1,"run":7,"seq":1962,"t":"actor_cmd"},"run":7,"ts_ms":1794053008324}
+{"conn":3,"dir":"out","frame":{"actor":-703,"at":1794053008703,"outcome":"accept","pair":"pr:person-3:mw6cu8fj","run":7,"seq":2852,"t":"pair_reaction","with":28},"run":7,"ts_ms":1794053008703}
+{"conn":3,"dir":"out","frame":{"msg":{"id":-703,"t":"avatar_left"},"rev":1256,"room":17,"seq":2902,"t":"delta"},"run":7,"ts_ms":1794053030367}
+{"conn":3,"dir":"out","frame":{"actor":-703,"reason":"despawned","run":7,"seq":2903,"t":"actor_gone"},"run":7,"ts_ms":1794053030368}
+{"conn":3,"dir":"in","frame":{"reason":"stopped","run":7,"seq":2009,"t":"run_end"},"run":7,"ts_ms":1794053034367}

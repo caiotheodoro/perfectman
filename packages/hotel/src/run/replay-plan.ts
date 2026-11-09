@@ -103,10 +103,19 @@ export async function loadReplayArtifacts(dataDir: string, run: number): Promise
 
 type CmdFrame = { at: number; ref: string; cmd: ActorCmd; room: number | undefined };
 
+/**
+ * REPLAY-1 (SCN-6, act-contract.md 8.2): a replay never re-sends a recorded `act` or `scene_advance`. It would aim violence at a
+ * human id from a past run, kill, and cut a scene. A recorded `pair` and a `ui cut` stay: they go through the live gates.
+ */
+export function isRecordedDramaCmd(f: BodyFrame): boolean {
+  if (f.kind === "scene_advance") return true;
+  return f.kind === "actor_cmd" && (f.data["cmd"] as { k?: unknown } | undefined)?.k === "act";
+}
+
 function cmdFrames(frames: readonly BodyFrame[]): CmdFrame[] {
   const out: CmdFrame[] = [];
   for (const f of frames) {
-    if (f.dir !== "out" || f.kind !== "actor_cmd") continue;
+    if (f.dir !== "out" || f.kind !== "actor_cmd" || isRecordedDramaCmd(f)) continue;
     const ref = f.data["actor"];
     const cmd = f.data["cmd"] as ActorCmd | undefined;
     if (typeof ref !== "string" || !cmd || typeof cmd !== "object" || typeof (cmd as { k?: unknown }).k !== "string") continue;
@@ -147,6 +156,8 @@ export type PlanOptions = {
 export function buildReplayPlan(a: ReplayArtifacts, opts: PlanOptions): ReplayPlan {
   const warnings: string[] = [];
   const cmds = cmdFrames(a.frames);
+  const dramaDropped = a.frames.filter((f) => f.dir === "out" && isRecordedDramaCmd(f)).length;
+  if (dramaDropped > 0) warnings.push(`${dramaDropped} recorded act and scene_advance commands were not replayed`);
   const chats = cmds.filter((c) => c.cmd.k === "chat");
   const hasTrack = a.track.length > 0;
   const lineEntries = a.track.filter((e): e is Extract<TrackEntry, { k: "line" }> => e.k === "line");
