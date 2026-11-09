@@ -67,11 +67,21 @@ const refOfPerson = (p: unknown): string | undefined => {
   return v === undefined ? undefined : String(v);
 };
 
+type Stamp = { atMs: number; dir: "in" | "out" };
+
 /**
  * One raw frame to the normalized `BodyFrame` vocabulary the probes read
  * (`chat`, `human_chat`, `moves`, `avatar_state`, ...). A frame already in
  * `BodyFrame` shape passes through; a raw Director frame is mapped best-effort
  * for the kinds the judge renders (`human_chat`, `actor_cmd` chat and walk).
+ *
+ * The hotel server's own `frames.jsonl` wraps every Director frame as
+ * `{conn, dir, frame: {t, ...}, run, ts_ms}`. That wrapper is unwrapped here:
+ * `dir` comes from the wrapper (the frame's own `dir` can be an avatar
+ * orientation), `atMs` is the wrapper's `ts_ms` (the same wall clock the event
+ * log's `createdAt` uses, so the two stay mergeable), and everything else is
+ * mapped exactly like a raw frame. Note that wrapper `dir` is the hotel
+ * server's view of the wire, which is the sidecar's view reversed.
  */
 export function normalizeFrame(raw: Json): BodyFrame | undefined {
   if (typeof raw["kind"] === "string" && num(raw["atMs"]) !== undefined) {
@@ -79,19 +89,32 @@ export function normalizeFrame(raw: Json): BodyFrame | undefined {
     const data = isObj(raw["data"]) ? raw["data"] : {};
     return { atMs: raw["atMs"] as number, dir, kind: raw["kind"], data, ...(raw["room"] !== undefined ? { room: String(raw["room"]) } : {}) };
   }
+  const inner = raw["t"] === undefined && isObj(raw["frame"]) ? raw["frame"] : undefined;
+  if (inner) {
+    const stamp: Stamp = { atMs: num(raw["ts_ms"]) ?? num(inner["at"]) ?? 0, dir: raw["dir"] === "out" ? "out" : "in" };
+    return normalizeDirectorFrame(inner, stamp);
+  }
+  return normalizeDirectorFrame(raw, { atMs: num(raw["atMs"]) ?? num(raw["at"]) ?? num(raw["ts"]) ?? 0, dir: raw["dir"] === "out" ? "out" : "in" });
+}
+
+function normalizeDirectorFrame(raw: Json, stamp: Stamp): BodyFrame | undefined {
   const t = raw["t"];
   if (typeof t !== "string") return undefined;
-  const atMs = num(raw["atMs"]) ?? num(raw["at"]) ?? num(raw["ts"]) ?? 0;
-  const dir = raw["dir"] === "out" ? "out" : "in";
+  const { atMs, dir } = stamp;
   const room = raw["room"] !== undefined && raw["room"] !== null ? String(raw["room"]) : undefined;
   const base = { atMs, dir, ...(room ? { room } : {}) } as const;
   if (t === "human_chat") {
     const to = raw["to"];
+    const from = raw["from"];
+    const fromId = isObj(from) && from["id"] !== undefined ? String(from["id"]) : undefined;
+    // The hotel names a human `h:<id>` everywhere else (event log, body log); a bare name is only the fallback.
+    const ref = fromId !== undefined ? `h:${fromId}` : (refOfPerson(from) ?? "human");
     return {
       ...base,
       kind: "human_chat",
       data: {
-        ref: refOfPerson(raw["from"]) ?? "human",
+        ref,
+        ...(fromId !== undefined ? { fromId } : {}),
         text: String(raw["text"] ?? ""),
         mode: String(raw["mode"] ?? "say"),
         ...(to !== undefined && to !== null ? { toRef: String(to) } : {}),
@@ -114,6 +137,82 @@ export function normalizeFrame(raw: Json): BodyFrame | undefined {
   }
   const { t: _t, ...rest } = raw;
   return { ...base, kind: t, data: rest };
+}
+
+/**
+ * A line the sidecar's body log and the hotel's wire log both carry is the same line, if the two stamps are this close.
+ * The sidecar's log keeps no `text` in recorded runs, so a missing text on either side matches.
+ */
+const MIRROR_WINDOW_MS = 5_000;
+
+const speakerOf = (f: BodyFrame): string => String(f.data[f.kind === "chat" ? "agentId" : "ref"] ?? "");
+const isSpeech = (f: BodyFrame): boolean => f.kind === "chat" || f.kind === "human_chat";
+const mirrors = (a: BodyFrame, b: BodyFrame): boolean =>
+  a.kind === b.kind &&
+  a.dir !== b.dir &&
+  speakerOf(a) === speakerOf(b) &&
+  String(a.data["mode"] ?? "say") === String(b.data["mode"] ?? "say") &&
+  (a.data["text"] === undefined || b.data["text"] === undefined || a.data["text"] === b.data["text"]) &&
+  Math.abs(a.atMs - b.atMs) <= MIRROR_WINDOW_MS;
+
+/**
+ * Brings frames read from the hotel's wire log (`frames.jsonl`) into the
+ * vocabulary of the sidecar's body log:
+ *  - numeric avatar ids (`-701`, a human's `28`) become actor refs / human names, learned
+ *    from the run's own `actor_spawned` and `human_chat` frames; unknown ids stay as they are;
+ *  - `delta` `moves` and `avatar_action` become the per-actor `moves` / `avatar_action`
+ *    frames the body probes and the transcript read (other deltas stay `delta`);
+ *  - speech that `mirrored` (frames already loaded from `body-frames.json`) already has is dropped
+ *    from the result. The sidecar's log keeps no `text` in recorded runs, so the copy in `mirrored`
+ *    takes the wire copy's text (that array is updated in place) and keeps its own tile/distance data.
+ */
+export function alignWireFrames(frames: readonly BodyFrame[], mirrored: BodyFrame[] = []): BodyFrame[] {
+  const names = new Map<string, string>();
+  for (const f of frames) {
+    if (f.kind === "actor_spawned" && f.data["actor"] !== undefined && typeof f.data["ref"] === "string") names.set(String(f.data["actor"]), f.data["ref"]);
+    if (f.kind === "human_chat" && typeof f.data["fromId"] === "string") names.set(f.data["fromId"], String(f.data["ref"]));
+  }
+  const name = (id: unknown): string => {
+    const key = String(id);
+    return names.get(key) ?? key;
+  };
+  const out: BodyFrame[] = [];
+  for (const f of frames) {
+    // Derived body events are hotel-to-sidecar, `in` in the sidecar log's vocabulary the probes filter on.
+    const base = { atMs: f.atMs, dir: "in" as const, ...(f.room !== undefined ? { room: f.room } : {}) };
+    if (f.kind === "delta" && isObj(f.data["msg"])) {
+      const msg = f.data["msg"];
+      if (msg["t"] === "moves" && Array.isArray(msg["moves"])) {
+        for (const m of msg["moves"]) {
+          if (!isObj(m) || num(m["x"]) === undefined || num(m["y"]) === undefined) continue;
+          out.push({ ...base, kind: "moves", data: { agentId: name(m["id"]), tile: [m["x"], m["y"]], dir: num(m["dir"]) ?? 0, state: String(m["state"] ?? "walk") } });
+        }
+        continue;
+      }
+      if (msg["t"] === "avatar_action" && typeof msg["action"] === "string") {
+        out.push({ ...base, kind: "avatar_action", data: { agentId: name(msg["id"]), a: msg["action"] } });
+        continue;
+      }
+    }
+    if (f.kind === "chat") {
+      const { toRef, ...rest } = f.data;
+      out.push({ ...f, data: { ...rest, agentId: name(f.data["agentId"]), ...(toRef !== undefined ? { toRef: name(toRef) } : {}) } });
+      continue;
+    }
+    if (f.kind === "actor_cmd") {
+      out.push({ ...f, data: { ...f.data, agentId: name(f.data["agentId"]) } });
+      continue;
+    }
+    out.push(f);
+  }
+  return out.filter((f) => {
+    if (!isSpeech(f)) return true;
+    const i = mirrored.findIndex((m) => mirrors(f, m));
+    if (i < 0) return true;
+    const twin = mirrored[i]!;
+    if (twin.data["text"] === undefined && f.data["text"] !== undefined) mirrored[i] = { ...twin, data: { ...twin.data, text: f.data["text"] } };
+    return false;
+  });
 }
 
 function loadCast(dir: string, warnings: string[]): HotelCastMember[] {
@@ -175,11 +274,13 @@ export function loadHotelRun(dir: string): HotelRunArtifact {
   for (const name of ["frames.jsonl", "body-frames.jsonl"]) {
     const text = read(name);
     if (text === undefined) continue;
+    const fromFile: BodyFrame[] = [];
     for (const raw of parseNdjson(text, warnings, name)) {
       const n = normalizeFrame(raw);
-      if (n) frames.push(n);
+      if (n) fromFile.push(n);
       else warnings.push(`${name} has a frame with no kind or t`);
     }
+    frames.push(...alignWireFrames(fromFile, frames));
   }
 
   if (events.length === 0 && frames.length === 0) {

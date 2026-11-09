@@ -17,6 +17,7 @@ import {
 } from "@perfectman/server";
 
 export * from "./adapter.js";
+export * from "./drama.js";
 export type { BehavioralEvent, BehavioralEventKind, ProbeBound, ProbeInput, ProbeResult } from "./types.js";
 
 // ── Latency ──────────────────────────────────────────────────────────────────

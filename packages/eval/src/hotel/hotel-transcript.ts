@@ -52,6 +52,8 @@ type Item = { t: number; order: number; frame?: BodyFrame; event?: CommittedEven
 
 const SILENCE_MERGE_MS = 30_000;
 const WALK_GAP_MS = 1_500;
+/** Longest gap between a committed line and the wire-log copy of it. */
+const SPEECH_PAIR_MS = 45_000;
 
 const asTile = (v: unknown): Tile | undefined =>
   Array.isArray(v) && v.length === 2 && typeof v[0] === "number" && typeof v[1] === "number" ? ([v[0], v[1]] as Tile) : undefined;
@@ -124,8 +126,14 @@ export function buildHotelTranscript(run: HotelRunArtifact, opts: HotelTranscrip
 
   const out: Array<{ t: number; line: string }> = [];
   const stats = { humanLines: 0, actorLines: 0, whispers: 0, silences: 0, walks: 0, directorNotes: 0 };
-  const seenSpeech: Array<{ who: string; text: string; t: number }> = [];
-  const isDup = (who: string, text: string, t: number): boolean => seenSpeech.some((s) => s.who === who && s.text === text && Math.abs(s.t - t) <= 5_000);
+  // The sidecar commits a line, then the hotel's wire log sends it after typing and walking: up to ~20 s later in recorded
+  // runs. Each shown line absorbs at most one later copy, so an actor who really repeats itself is still shown repeating.
+  const seenSpeech: Array<{ who: string; text: string; t: number; absorbed: boolean }> = [];
+  const isDup = (who: string, text: string, t: number): boolean => {
+    const twin = seenSpeech.find((s) => !s.absorbed && s.who === who && s.text === text && Math.abs(s.t - t) <= SPEECH_PAIR_MS);
+    if (twin) twin.absorbed = true;
+    return twin !== undefined;
+  };
 
   // Walk collapsing: consecutive `moves` of one actor become a single line.
   const walks = new Map<string, { from: Tile; to: Tile; startT: number; lastT: number; maxStep: number }>();
@@ -204,7 +212,7 @@ export function buildHotelTranscript(run: HotelRunArtifact, opts: HotelTranscrip
     if (human) stats.humanLines++;
     else stats.actorLines++;
     if (mode === "whisper") stats.whispers++;
-    seenSpeech.push({ who, text, t });
+    seenSpeech.push({ who, text, t, absorbed: false });
     out.push({ t, line: speechLine(t, who, human, mode, text, toRef, d, room) });
   };
 
@@ -218,6 +226,7 @@ export function buildHotelTranscript(run: HotelRunArtifact, opts: HotelTranscrip
           const who = str(d["ref"]);
           if (asTile(d["tile"])) at(who).tile = asTile(d["tile"]);
           at(who).room = f.room ?? at(who).room;
+          if (isDup(who, str(d["text"]), f.atMs)) break;
           emitSpeech(f.atMs, who, true, str(d["mode"]) || "say", str(d["text"]), d["toRef"] ? str(d["toRef"]) : undefined, d, f.room);
           break;
         }
@@ -226,6 +235,7 @@ export function buildHotelTranscript(run: HotelRunArtifact, opts: HotelTranscrip
           const tile = asTile(d["tile"]);
           if (tile) at(who).tile = tile;
           at(who).room = f.room ?? at(who).room;
+          if (isDup(who, str(d["text"]), f.atMs)) break;
           emitSpeech(f.atMs, who, false, str(d["mode"]) || "say", str(d["text"]), d["toRef"] ? str(d["toRef"]) : undefined, d, f.room);
           break;
         }

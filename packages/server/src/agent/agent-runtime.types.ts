@@ -40,9 +40,17 @@ export type PromptTrim = {
   phase: "assembly" | "repetition_retry";
 };
 
+/** One inline image attached to the user turn (base64, no `data:` prefix). */
+export type PromptImage = {
+  mediaType: "image/png" | "image/jpeg";
+  base64: string;
+};
+
 export type BuiltPrompt = {
   system: string;
   user: string;
+  /** Images sent after `user` text, in order. Only the OpenAI-compatible transport reads this (the eval judge path); the agent runtime never sets it. */
+  userImages?: readonly PromptImage[];
   inputTokensEstimate: number;
   purpose: PromptPurpose;
   /** Deterministic content hash of the rendered prompt, for result attribution. */
