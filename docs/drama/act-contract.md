@@ -1,6 +1,6 @@
 # Act contract v1: the frozen spec for the drama verbs
 
-Status: **FROZEN CONTRACT SPEC, revision 2, for parallel implementation** (revision 1 plus the resolutions of the independent review in `contract-review.md`; Appendix B lists the disposition of every finding). Docs only: no code, no schema file and no wire change ships with this document. The hotel (Rust, repo `general/habbo`, "Tilehouse") and perfectman (TypeScript, this repo) are built against it at the same time, so every name, number and id below is exact. Owner decisions are settled and are not reopened here. Where [verb-bible.md](verb-bible.md) and this file disagree, **this file wins** (section 14.2 lists every bible rule it amends). The machine-readable verb table is `docs/drama/verb-vocab.draft.json`; it is the source of truth for timings, gates and step lists, and Appendix A is generated from it.
+Status: **FROZEN CONTRACT SPEC, revision 2, for parallel implementation** (revision 1 plus the resolutions of the independent review in `contract-review.md`; Appendix B lists the disposition of every finding). Docs only: no code, no schema file and no wire change ships with this document. The hotel (Rust, repo `general/habbo`, "Tilehouse") and perfectman (TypeScript, this repo) are built against it at the same time, so every name, number and id below is exact. Owner decisions are settled and are not reopened here. Where [verb-bible.md](verb-bible.md) and this file disagree, **this file wins** (section 14.2 lists every bible rule it amends). The machine-readable verb table is `docs/drama/verb-vocab.draft.json`; it is the source of truth for timings, gates and step lists, and Appendix A is generated from it. The published table, `packages/hotel/schema/verb-vocab.json` (VV-1), has since moved on: at `rev` 3 the `faint` carries no effect and its `confused` cue runs 7600 ms (errata P5-12). The draft is left at `rev` 2, and Appendix A's `faint` follows the published table.
 
 Anchors read for revision 1 (revision 2 re-checked every reviewer claim against the same code): hotel `drama-base` at `517ae35` (`crates/sim/src/director.rs`, `perfectman.rs`, `actions.rs`, `protocol.rs`, `crates/server/src/perfectman/*.rs`, `world/actors.rs`, `web/pair.js`, `docs/perfectman/*`); perfectman `docs/drama-verb-bible` plus the provisional drama events (`feat/drama-grading-core`), probes (`feat/drama-probes`) and judge rubric (`feat/drama-judge`) worktrees. Hotel facts below were checked in that code; where I could not check something it is marked **unverified**.
 
@@ -696,7 +696,7 @@ human:  alive --kill lands--> down (human_down) --exactly PERFECTMAN_DRAMA_HUMAN
 |---|---|
 | DEATH-1 | The state machine above. `actor_death` is emitted on entering `dying`. A `die` act (standalone) enters `dying` at its `Tc`. A `kill` is the only way a human goes `down`. |
 | DEATH-2 | While `dying` or `body`: the actor is out of the speaker pool and every `actor_cmd` it sends (including `chat`, `thought` and `typing`) answers `actor_error{actor_dead}` in a dialect 2 link (NEG-5 gives the dialect 1 answer); it is never owed a reaction and is never a witness. After a restart of the link the hotel lists such actors (and the `fainted` ones) in `hello.drama.dead`. |
-| DEATH-3 | The body is a lying avatar with effect `TrippyHalo` (the previous effect is saved). A faint uses `Twinkle` instead, so `die` and `faint` are told apart. No weapon, no blood: the only signifiers are the lying pose, the halo, the cue `sad` and the sound `sting_sad`. **Seats and cramped rooms:** `Lay` is refused on a seat tile and when three open floor tiles in a line are missing (section 5.9). The victim is **not** walked elsewhere: it stays as it is (a seated victim stays seated), the halo and the state still apply, and `act_done.downgraded` lists `posture`. |
+| DEATH-3 | The body is a lying avatar with effect `TrippyHalo` (the previous effect is saved). A faint carries **no effect** (errata P5-12, table `rev` 3): `die` and `faint` are told apart by the halo on a body and by the faint's `confused` "?" cue, which runs the whole faint. No weapon, no blood: the only signifiers are the lying pose, the halo, the cue `sad` and the sound `sting_sad`. **Seats and cramped rooms:** `Lay` is refused on a seat tile and when three open floor tiles in a line are missing (section 5.9). The victim is **not** walked elsewhere: it stays as it is (a seated victim stays seated), the halo and the state still apply, and `act_done.downgraded` lists `posture`. |
 | DEATH-4 | The death is the strongest memory event (the verb's `memory.target.event` `death`): the sidecar writes it for the victim and the killer and for every `witnesses` id, **kept after revive**. For a permadeath actor the memory is kept and the actor is retired for the run. |
 | DEATH-7 | At a scene cut (`scene_advance`, SCENE-2) every `body` actor is restored (the saved effect back, `Stand` where the avatar is not on a seat, same tile) and `actor_revive` is emitted, unless the scenario sets `permadeath`, in which case the avatar is removed and `actor_gone{reason:"died"}` is emitted. A body that stayed seated is not stood up and stays seated. At run end bodies are removed with the run's other actors. |
 | MEM-1 | The sidecar, not the hotel, writes memory. The hotel guarantees the frames the writes derive from: `act_done` (landed, with `with`), `act_beat.witnesses`, `actor_death`, `actor_revive`. |
@@ -831,7 +831,7 @@ Naming: the hotel test is `drama::<id>` with the id lower-cased and `-` as `_` (
 | SCN-6 | A body persists until `scene_advance` or run end; no timeout cut exists. | Compile warns `drama.no_scene_cut` for `may_die` without a cut. |
 | DEATH-1 | Kill lands: `actor_death` at `Tc + 175`, state `body` at `+2000`; a human goes `down` with `human_down` and no `actor_death`. | Probe `dead-speech` uses `actor_death` and ignores humans. |
 | DEATH-2 | A dying and a body actor answer every command, `chat`, `thought` and `typing` with `actor_dead` (dialect 2); the dead are not in `witnesses`. | Probe `dead-speech`: zero speech after `actor_death`; the arbiter drops the speaker. |
-| DEATH-3 | The body has lying posture and `TrippyHalo`; a faint has `Twinkle`; a victim on a seat stays seated with the halo and `downgraded:["posture"]`. | n/a (visual); the judge anchor reads both. |
+| DEATH-3 | The body has lying posture and `TrippyHalo`; a faint has no effect step and its `confused` cue runs 7600 ms (P5-12); a victim on a seat stays seated with the halo and `downgraded:["posture"]`. | n/a (visual); the judge anchor reads both. |
 | DEATH-4 | `act_done` of the kill and `actor_death` are enough to write the memory (fields present). | Death memory is written for victim, killer and witnesses and kept after revive. |
 | DEATH-7 | `scene_advance`: `scene_cut` then `actor_revive` with tile and saved effect; with permadeath `actor_gone{died}` instead; a seated body stays seated; run end removes bodies. | Probe `scene-cut-revive`; an actor speaking after revive is not flagged. |
 | MEM-1 | The frames MEM-1 lists are present with the fields the sidecar reads. | Memory write is derived only from those frames. |
@@ -1018,7 +1018,7 @@ Decisions the contract had to make that go beyond the owner's text, or that the 
 | 4 | Same-verb cooldown scope | Per actor, verb and target. The owner said "the same verb on the same target". | Per verb and target for any actor. |
 | 5 | "Exceed N" | The `(N+1)`th violent act on a human in the window is blocked and pauses the room, so landed acts never exceed N. | Let the `(N+1)`th land and pause afterwards. |
 | 6 | PROTO 2 for new enum members | Recorded as a lead decision (section 1.1). | Treat them as additive and stay on PROTO 1 with capability flags only. |
-| 7 | Q6, the effect that marks the dead | `TrippyHalo` for a body, `Twinkle` for a faint; unchanged from the bible's recommendation. | Another catalog effect after watching the animations. |
+| 7 | Q6, the effect that marks the dead | `TrippyHalo` for a body; a faint has no effect and is marked by the `confused` "?" cue for the whole faint (P5-12, table `rev` 3; the bible's `Twinkle` for a faint was dropped after watching it on lying avatars). | Another catalog effect after watching the animations. |
 | 8 | No timeout cut | Bodies last until a `scene_advance` or the end of the run; a scenario with `may_die` should author cuts (SCN-6). | A body timeout cut (the first revision's, removed by the mandate that only `scene_advance` cuts a scene). |
 | 9 | Kiss timeout on the legacy `pair` | In a drama session a `pair` `kiss` that times out is a dodge, like `act` `kiss`. | Keep D31 (completes) on the `pair` path only. |
 | 10 | Down window floor | `PERFECTMAN_DRAMA_HUMAN_DOWN_MS` is 3000 to 15 000 so the stand-up is after the fall. | A shorter floor with a shorter fall. |
@@ -1440,7 +1440,7 @@ camera:
 
 rung -; climax; target none; `contact_at_ms` 800; class -, default intensity 0.7; owed target - ms, witnesses yes (3000 ms); chip -; calm ok; budget -; cooldown -; memory actor `none`, target `none`, witnesses `witnessed`; follow-up tableau.
 
-Note: Alive marker is Twinkle (die uses TrippyHalo). State fainted (a fallen state, DOWN-1) lasts until the stand step; WAKE-1 moves the steps marked wakeable. Lying is refused while walking, on a seat, or with no room to lie: the actor then stays as it is and act_done lists downgraded:[posture].
+Note: The alive marker is the `confused` cue, which runs the whole faint; the faint has no effect step (P5-12, table `rev` 3), and `die` uses TrippyHalo. State fainted (a fallen state, DOWN-1) lasts until the stand step; WAKE-1 moves the steps marked wakeable. Lying is refused while walking, on a seat, or with no room to lie: the actor then stays as it is and act_done lists downgraded:[posture].
 
 ```text
 actor:
@@ -1449,9 +1449,8 @@ actor:
   Tc            posture        pose=lay
   Tc            state          to=fainted
   Tc            motion         name=fall  [b]
+  Tc            cue            on=actor emotion=confused ms=7600
   Tc+50         sfx            cue=thud once=true  [sfx]
-  Tc+400        effect         name=Twinkle ms=7200 restore=true
-  Tc+400        cue            on=actor emotion=confused ms=3000
   Tc+400        sfx            cue=sting_sad once=true
   Tc+400        hold           ms=7600
   Tc+7600       posture        pose=stand wakeable=true  optional wakeable

@@ -85,7 +85,7 @@ Ids come from file names (`<Name>_h_std_fx<N>_...`). "Looked at" means I viewed 
 | `Love` | 9 | hearts, emotion cue (hotel docs say present) | frame size seen; semantics from name |
 | `Raincloud` | 113 | sad cue (seen working per hotel docs, direction-0 art only) | `[F]` per docs |
 | `TrippyHalo` | 222 | death signifier candidate (halo) | one frame looked at: a purple halo ring `[F]`; 64 frames, animation not reviewed |
-| `Twinkle` | 4 | dizzy stars / "alive" marker candidate | one frame looked at: sparkles `[F]`; meaning is `[I]` |
+| `Twinkle` | 4 | dizzy stars / "alive" marker candidate | one frame looked at: sparkles `[F]`; meaning is `[I]`. Used for the dazed `punch` only: on a faint it read as sparkles, not a faint (errata P5-12) |
 | `GhostVille` | 681 | ghost candidate | one frame looked at: a dark round blob, unclear `[U]` |
 | `Splash` / `SplashEvil` | 28 / 184 | drink-throw hit | one frame looked at: cyan splash blob, 103 x 98 `[F]` |
 | `ProtectShield1` | 228 | block reaction | one frame looked at: cyan shield `[F]` |
@@ -357,7 +357,7 @@ Priority: **must** = needed for the ladder and the reaction contract; **should**
 - Drive: `max(social.shame, social.humiliation, social.fearOfExclusion) >= 0.85` or a scenario-authored faint; `core.energy` very low and a `core.arousal` spike; `act.vulnerableRetreat`, `act.shameWithdrawal`. Never random.
 - Obligations: no target reaction (it is self). Witnesses within 3 s: `freeze_gasp`; one rescuer within 6 s may `tend_fallen`.
 - Beats `[I]` `[R04]`: A sway 600 to 1000 (visible resistance: the faint reads better when it fights `[F]`) / C `Lay` drop 300 to 400 / H 0 / R hold >= 1000 plus a "…" or dizzy marker / Rec stand after 6 to 10 s or when tended.
-- Render (a): `Expression sad` or `surprised`, `Lay` (refused while walking, on a seat or with no room to lie `[F]`; fallback `Sit{floor}`), `Twinkle` fx4 or cue `confused` as the alive marker (`[I]` `[R05]`, Animotion), sfx `sting_sad`. (b) a 4 to 8 px drop with a 1 to 2 px bounce `[I]` `[R05]`. Missing: a sway animation, the drop thud.
+- Render (a): `Expression sad` or `surprised`, `Lay` (refused while walking, on a seat or with no room to lie `[F]`; fallback `Sit{floor}`), `Twinkle` fx4 or cue `confused` as the alive marker (`[I]` `[R05]`, Animotion; the contract settled on the cue alone, running the whole faint, P5-12), sfx `sting_sad`. (b) a 4 to 8 px drop with a 1 to 2 px bounce `[I]` `[R05]`. Missing: a sway animation, the drop thud.
 
 **`fake_faint`** (X, actor only), v1 cut, risk 3
 - A faint that ends abruptly after 3 to 5 s (`strategicPatience`, `impulsiveProvocation`). Witnesses must react as to a real one. Needs the base `faint` first; no new art; deferred because a fake that fails to read as fake is just a faint.
@@ -603,7 +603,7 @@ Written so that each clause can be checked from a frame log. A probe or a judge 
 |---|---|
 | DEATH-1 | State machine: `alive` → `dying` (the `die` beats, about 2.5 s) → `body` (lying, death effect on) → removed from `body` at the scene cut. |
 | DEATH-2 | While `dying` or `body`: the actor leaves the speaker pool (the room speech arbiter does not give it turns), and any `chat` or body command from it is rejected (a new code such as `dead`). The planner does not plan for it. |
-| DEATH-3 | The effect is a signifier that cannot be mistaken for gore. Candidates in 1.5; the final choice is Q6. The death pose must be distinguishable from `faint` and from sleeping (`faint` carries the alive marker, `die` does not; section 6 alive/dead test). |
+| DEATH-3 | The effect is a signifier that cannot be mistaken for gore. Candidates in 1.5; the final choice is Q6. The death pose must be distinguishable from `faint` and from sleeping (`faint` carries the alive marker, the `confused` "?" cue for the whole faint, and no effect (P5-12); `die` does not; section 6 alive/dead test). |
 | DEATH-4 | Memory: victim, killer and witnesses all get the death event (REA-8). Dread and social cost of killing `[F]` `[R03]` (CK3) is a candidate follow-up, not part of v1. |
 | DEATH-5 | `ghost_voice`: allowed only in cinematic mode, only as `Thought`, never as `Chat`. |
 | DEATH-6 | A killed human keeps the body for a few seconds (Q7 recommends 5000 ms), then regains control and the effect clears. |
@@ -671,7 +671,7 @@ Each has my recommendation. None blocks the rest of the document; each says what
 3. **Consent model between actors.** *Recommend:* a scenario `drama` block with `max_rung`, `may_target` pairs and `may_die`; no violence between actors outside a scenario that opts in.
 4. **Zero-witness cap (X15).** *Recommend:* adopt for autonomous beats only; authored beats may run unwitnessed.
 5. **Per-pair repeat and per-actor cooldown beyond S7.** *Recommend:* the same verb on the same target not twice within 60 s (Sims "boring after 3x", `[F]` `[R03]`); keep the `[R03]` per-actor numbers out until a playtest shows spam.
-6. **Death effect.** *Recommend:* `TrippyHalo` fx222 on a lying body as `die`, `Twinkle` fx4 for `faint` and for the dazed punch; avoid `Headless` and `BackKnife`. Someone must watch the animations first, I viewed one frame each.
+6. **Death effect.** *Recommend:* `TrippyHalo` fx222 on a lying body as `die`, `Twinkle` fx4 for `faint` and for the dazed punch; avoid `Headless` and `BackKnife`. Someone must watch the animations first, I viewed one frame each. (Watched since: `Twinkle` stays on the dazed punch, but a faint takes no effect, only the `confused` cue, errata P5-12.)
 7. **Killed human: how long, and may they chat while down?** *Recommend:* 5000 ms, and chat stays allowed; muting a person is punitive and the point is theatre. Blocks: DEATH-6.
 8. **Scene boundary and what happens after the cut.** *Recommend:* free play has no kills (no scene, no `may_die`); after a scene cut the victim is restored with the memory, unless `permadeath` is set. Telenovela deaths that are not final are a genre trope (`[R02]`: "who killed her?").
 9. **May humans who did not opt in still watch actor-on-actor violence in their room?** (X16) *Recommend:* yes, with a per-room "calm" switch (a VRChat-style panic button `[F]` `[R01]`) that blocks every contact verb and `kill`.
@@ -697,7 +697,7 @@ The owner has settled the cut. These supersede the recommendation below, which i
 - **Death:** the victim falls (lying plus a death effect), stays a body until the scene cuts and leaves the speaker pool. A killed human is down 5 s and may still chat. Actor victims are restored after the scene cut with the death kept in memory unless `permadeath` is set. `may_die` gates kill; free play has no kills. Kiss is a cheek or air kiss with a heart.
 - **Adopted defaults:** the zero-witness cap applies to autonomous beats only; the same verb on the same target not twice within 60 s; no verb depends on angry, sad or surprised face art; default-mode legibility comes from overlays, captions and a cue icon; `actionEmotions` is plumbed into the planner input; the tendency readings in section 4.3 are seeds, tunable data.
 - **Choreography** runs on the hotel server from a data table. Clients receive a compiled timeline for cosmetic sub-300 ms beats (hit-stop, shake) while the server executes the state-changing beats from the same table at the same offsets (Q12).
-- **Section 7 questions:** the decisions above close Q1 to Q5 and Q7 to Q17. Q6 (which effect marks the dead) is not decided by the owner: the contract uses `TrippyHalo` for a body and `Twinkle` for a faint, pending someone watching the animations.
+- **Section 7 questions:** the decisions above close Q1 to Q5 and Q7 to Q17. Q6 (which effect marks the dead) is not decided by the owner: the contract uses `TrippyHalo` for a body; a faint takes no effect and is marked by the `confused` cue for the whole faint (errata P5-12, after watching the animations).
 
 
 **Rationale in one line:** the smallest set that has a full ladder, all three tiers, the reaction contract, a death with a closing tableau, and enough solo language to show something other than a smile, with every verb buildable from existing primitives plus (b) procedural motion.
