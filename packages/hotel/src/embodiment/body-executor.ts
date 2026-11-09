@@ -1,5 +1,6 @@
 import type { BlockedReason, BodyCommand, BodyPlan, PairKind, PairedActAbortedPayload, RoomId, Tile } from "@perfectman/shared";
 import type { Clock, TimerHandle } from "../clock/clock.js";
+import { validateActCmd } from "../director/act-cmd.js";
 import type { ActorCmd, ActorErrorCode, HotelFrame, PairOutcome, SidecarMsg } from "../director/index.js";
 import type { ActorSpace } from "../space/space-mirror.js";
 import { chebyshev } from "../space/geometry.js";
@@ -252,6 +253,8 @@ export class BodyExecutor {
       this.deps.hooks.blocked(c.agentId, [{ code: "unknown_ref" }]);
       return false;
     }
+    // An act the hotel would refuse on its face (ACT-4 to ACT-9) never spends one of the actor's commands.
+    if (c.cmd === "act" && !this.toWire(c)) return false;
     const roomId = mirror.roomOfRef(c.agentId);
     const room = roomId ? mirror.roomHealth(roomId) : undefined;
     const counted = c.cmd !== "typing" && c.cmd !== "chat";
@@ -325,6 +328,23 @@ export class BodyExecutor {
       case "pair": {
         const w = num(c.with);
         return w === undefined ? undefined : { k: "pair", kind: c.kind, with: w, pair: c.pair };
+      }
+      case "act": {
+        const actor = num(c.agentId);
+        const target = c.with === undefined ? undefined : num(c.with);
+        if (actor === undefined || (c.with !== undefined && target === undefined)) return undefined;
+        const wire: ActorCmd = {
+          k: "act",
+          act_id: c.actId,
+          verb: c.verb,
+          ...(target !== undefined ? { with: target } : {}),
+          ...(c.intensity !== undefined ? { intensity: c.intensity } : {}),
+          ...(c.origin !== undefined ? { origin: c.origin } : {}),
+          ...(c.authoredSkip !== undefined ? { authored_skip: c.authoredSkip } : {}),
+          ...(c.text !== undefined ? { text: c.text } : {}),
+        };
+        // Ids are unique per run (ACT-5): that ledger is the director's, the link's `sendAct` keeps it. The frame itself is checked here.
+        return validateActCmd(wire, { run: this.deps.run, actor }, new Set()) === undefined ? wire : undefined;
       }
     }
   }
@@ -477,6 +497,8 @@ function partOf(c: BodyCommand): NonNullable<BlockedReason["part"]> {
     case "gesture":
     case "pair":
       return "gesture";
+    case "act":
+      return "act";
     case "expression":
       return "expression";
     case "face":
