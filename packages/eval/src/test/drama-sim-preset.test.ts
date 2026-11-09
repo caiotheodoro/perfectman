@@ -3,7 +3,7 @@
  */
 import { describe, expect, it } from "vitest";
 import type { AgentState } from "@perfectman/shared";
-import { DRAMA_PRESETS, appraise, beatsOf, presetSimConfig } from "../embodiment/drama-sim-preset.js";
+import { DRAMA_PRESETS, appraise, presetSimConfig } from "../embodiment/drama-sim-preset.js";
 import type { PriorEvent } from "../embodiment/drama-sim-preset.js";
 import { seedState } from "../embodiment/sim-states.js";
 
@@ -50,27 +50,6 @@ describe("appraise: what a scene's prior messages do to the people they were sai
   });
 });
 
-describe("beatsOf: a scene's script", () => {
-  it("reads acts and cuts, in milliseconds, and drops what it does not understand", () => {
-    const beats = beatsOf(
-      [
-        { at: 90, actor: "ana", verb: "kill", with: "bia", skip: true },
-        { at: 170, cut: "fim" },
-        { at: 5, actor: "ana", verb: "teleport", with: "bia" },
-        { at: 6, actor: "zed", verb: "glare", with: "bia" },
-        { actor: "ana", verb: "glare" },
-        "nonsense",
-      ],
-      refs,
-    );
-    expect(beats).toEqual([
-      { atMs: 90_000, kind: "act", actor: "ana", verb: "kill", with: "bia", skip: true },
-      { atMs: 170_000, kind: "cut", reason: "fim" },
-    ]);
-    expect(beatsOf(undefined, refs)).toEqual([]);
-  });
-});
-
 describe("the five presets as sims", () => {
   it("[SCN-5] carry the drama blocks the scenes were written with, in agent ids", async () => {
     const block = async (id: string) => (await presetSimConfig(id)).drama;
@@ -95,8 +74,8 @@ describe("the five presets as sims", () => {
   it("[SCN-6] the one scene where someone may die authors its murder and the scene cut that follows it", async () => {
     const c = await presetSimConfig("assassinato-na-festa");
     expect(c.beats).toEqual([
-      { atMs: 90_000, kind: "act", actor: "ricardo", verb: "kill", with: "otavio", skip: true },
-      { atMs: 170_000, kind: "cut", reason: "fim da festa" },
+      { id: "b1", at_ms: 90_000, kind: "act", actor: "ricardo", verb: "kill", with: "otavio", authored_skip: true },
+      { id: "b2", at_ms: 170_000, kind: "cut", reason: "fim da festa" },
     ]);
     for (const id of DRAMA_PRESETS.filter((x) => x !== "assassinato-na-festa")) expect((await presetSimConfig(id)).drama?.may_die).toEqual([]);
   });
@@ -109,8 +88,8 @@ describe("the five presets as sims", () => {
     }
   });
 
-  it("the sim reads the director's tuning with a 60 s pace for a passive actor, and says so", async () => {
-    expect((await presetSimConfig("tapa-na-cara")).tuning?.origination.minGapMs).toBe(60_000);
+  it("[P4-02] the sim runs the sidecar's own default tuning: a preset names none", async () => {
+    expect((await presetSimConfig("tapa-na-cara")).tuning).toBeUndefined();
     expect((await presetSimConfig("tapa-na-cara", { dramaOn: false })).dramaOn).toBe(false);
   });
 

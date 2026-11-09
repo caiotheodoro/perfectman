@@ -1,32 +1,24 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { DEFAULT_DRAMA_TUNING, compileSceneDrama } from "@perfectman/hotel/drama";
+import { compileSceneBeats, compileSceneDrama, countCuts } from "@perfectman/hotel/drama";
 import type { DramaTuning, ScenarioDrama } from "@perfectman/hotel/drama";
 import { compileRunInputs, loadPresets, parseMarkdown } from "@perfectman/server/hotel";
 import type { LLMConfig } from "@perfectman/server/hotel";
-import { ACT_VERBS } from "@perfectman/shared";
-import type { ActVerb, AgentState, RelationalState } from "@perfectman/shared";
-import type { SimBeat, SimConfig } from "./drama-sim.js";
+import type { AgentState, RelationalState } from "@perfectman/shared";
+import type { SimConfig } from "./drama-sim.js";
 import { seedState } from "./sim-states.js";
 
 /**
  * A scene preset (examples/presets/scenes/<id>) as a sim: the scene and its cast compiled the way an upload is, each actor's feelings
  * from the cast block (`mood`, `social`, `familiarity`), the scene's `drama` block read the way the authoring service reads it, the scene's
- * `priorEvents` appraised into grievances, and the `beats` of the scene played as its script (authored acts and scene cuts, which the hotel
- * sidecar has no player for yet).
+ * `priorEvents` appraised into grievances, and the `beats` of the scene read the way the authoring service reads them (`compileSceneBeats`) for the
+ * sidecar's own `BeatPlayer` to play as the scene's script.
  */
 
 /** The drama presets this packet ships, in the order a report lists them. */
 export const DRAMA_PRESETS = ["tapa-na-cara", "confronto-da-traicao", "assassinato-na-festa", "reencontro-abraco", "anuncio-do-desmaio"] as const;
 
 export const PRESETS_ROOT = join(dirname(fileURLToPath(import.meta.url)), "../../../../examples/presets");
-
-/**
- * The director's tuning for a sim: the sidecar's default, except that a passive actor is offered a beat of its own at most every 60 s instead of
- * every 6 s. At 6 s a resentful actor is started on `turn_back` every consult (8.6 acts a minute against the probe's 3, D6); at 30 s the
- * busiest scene still reads 3.8 to 5.7. That is the director's pace, not the scenes'; PI decides the default, the sim states what it ran with.
- */
-export const SIM_TUNING: DramaTuning = { ...DEFAULT_DRAMA_TUNING, origination: { ...DEFAULT_DRAMA_TUNING.origination, minGapMs: 60_000 } };
 
 const MOCK_LLM: LLMConfig = { providerType: "mock", modelName: "mock", maxInputTokens: 4096, maxOutputTokens: 512, temperature: 0.8, timeoutMs: 1000, retryCount: 0 };
 
@@ -92,21 +84,6 @@ export function appraise(states: ReadonlyMap<string, AgentState>, events: readon
 
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
 
-/** The scene's `beats` (seconds into the scene): an act by someone, or a scene cut. Anything that is not one of those is ignored. */
-export function beatsOf(raw: unknown, cast: readonly string[]): SimBeat[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.flatMap((b): SimBeat[] => {
-    if (!isRecord(b) || typeof b["at"] !== "number") return [];
-    const atMs = Math.round(b["at"] * 1000);
-    if (typeof b["cut"] === "string") return [{ atMs, kind: "cut", reason: b["cut"] }];
-    const actor = b["actor"];
-    const verb = b["verb"];
-    if (typeof actor !== "string" || !cast.includes(actor) || typeof verb !== "string" || !(ACT_VERBS as readonly string[]).includes(verb)) return [];
-    const withRef = typeof b["with"] === "string" && cast.includes(b["with"]) ? b["with"] : undefined;
-    return [{ atMs, kind: "act", actor, verb: verb as ActVerb, ...(withRef ? { with: withRef } : {}), ...(b["skip"] === true ? { skip: true } : {}) }];
-  });
-}
-
 export type PresetSimOptions = { root?: string; seed?: number; durationMs?: number; dramaOn?: boolean; tuning?: DramaTuning };
 
 export async function presetSimConfig(sceneId: string, o: PresetSimOptions = {}): Promise<SimConfig> {
@@ -124,13 +101,16 @@ export async function presetSimConfig(sceneId: string, o: PresetSimOptions = {})
   const agents = compiled.config.agents;
   const refs = agents.map((a) => a.id);
   const names = new Map(compiled.summary.agents.map((a) => [a.id, a.displayName]));
-  const beats = beatsOf(front["beats"], refs);
+  const people = refs.map((id) => ({ id, displayName: names.get(id) ?? id }));
   let drama: ScenarioDrama | undefined;
   if (front["drama"] !== undefined) {
-    const read = compileSceneDrama(front["drama"], refs.map((id) => ({ id, displayName: names.get(id) ?? id })), { sceneCuts: beats.filter((b) => b.kind === "cut").length });
+    const read = compileSceneDrama(front["drama"], people, { sceneCuts: countCuts(front["beats"]) });
     if (read.errors.length > 0) throw new Error(`scene ${sceneId} has a bad drama block: ${read.errors.map((e) => `${e.path}: ${e.message}`).join("; ")}`);
     drama = read.drama;
   }
+  const script = front["beats"] === undefined ? undefined : compileSceneBeats(front["beats"], people, { drama });
+  if (script && script.errors.length > 0) throw new Error(`scene ${sceneId} has bad beats: ${script.errors.map((e) => `${e.path}: ${e.message}`).join("; ")}`);
+  const beats = script?.beats ?? [];
 
   const startMs = 1_000_000;
   const seeded = new Map<string, AgentState>(
@@ -155,6 +135,6 @@ export async function presetSimConfig(sceneId: string, o: PresetSimOptions = {})
     ...(drama ? { drama } : {}),
     ...(beats.length > 0 ? { beats } : {}),
     ...(o.dramaOn === false ? { dramaOn: false } : {}),
-    tuning: o.tuning ?? SIM_TUNING,
+    ...(o.tuning ? { tuning: o.tuning } : {}),
   };
 }

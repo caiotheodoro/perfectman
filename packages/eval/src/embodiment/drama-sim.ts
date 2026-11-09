@@ -1,5 +1,6 @@
 import { buildBodyPerception, computeActionEmotions, validateBodyIntent } from "@perfectman/engine";
 import {
+  BeatPlayer,
   DramaBody,
   DramaDirector,
   MockActMemory,
@@ -13,9 +14,9 @@ import {
   updateMemory,
   validateActCmd,
 } from "@perfectman/hotel/drama";
-import type { ActSend, Clock, DramaDecision, DramaFrame, DramaFrameSink, DramaLink, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioDrama } from "@perfectman/hotel/drama";
+import type { ActSend, Clock, DramaDecision, DramaFrame, DramaFrameSink, DramaLink, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
 import { BodyIntentSchema } from "@perfectman/shared";
-import type { ActOrigin, ActVerb, AgentState, BlockedReason, BodyCommand, BodyIntent, Tile } from "@perfectman/shared";
+import type { ActVerb, AgentState, BlockedReason, BodyCommand, BodyIntent, Tile } from "@perfectman/shared";
 import { extractDramaEvents } from "../drama/index.js";
 import type { DramaEvent } from "../drama/index.js";
 import { runDramaProbes } from "../probes/drama.js";
@@ -34,8 +35,8 @@ import { GridActorSpace } from "./grid-actor-space.js";
  * hotel underneath with its act sequencer. Time only moves when the loop says so, so a run is the same every time for one seed.
  *
  * Not in the loop: the LLM, the prompt (it is tested on its own, `drama-prompt.test.ts`), and the engine's chat-driven emotion update
- * (the actors' feelings start from the scenario's seeds and move with what the acts do to them, `rememberAct`). Authored beats and scene
- * cuts, which the hotel sidecar has no player for yet, are played by the `beats` of the config: the scenario's script.
+ * (the actors' feelings start from the scenario's seeds and move with what the acts do to them, `rememberAct`). The scenario's script (`beats`:
+ * authored acts and scene cuts) is played by the sidecar's own `BeatPlayer`, the one a run uses, so the sim exercises the production path.
  */
 
 const CONN = 4;
@@ -56,7 +57,6 @@ const MOCK_SPEECH: Record<string, string[]> = {
   tableau: [""],
 };
 
-export type SimBeat = { atMs: number } & ({ kind: "act"; actor: string; verb: ActVerb; with?: string; skip?: boolean } | { kind: "cut"; reason: string });
 export type SimControl = { atMs: number; calm?: boolean; enabled?: boolean; optIn?: { human: number; on: boolean } };
 export type SimHuman = { id: number; name: string; tile: Tile; optIn: boolean; answer?: ChipAnswer | ((q: ChipQuestion) => ChipAnswer) };
 
@@ -74,7 +74,8 @@ export type SimConfig = {
   drama?: ScenarioDrama;
   /** Drama off for the run: no director, no session, the planner exactly as it was. Default on. */
   dramaOn?: boolean;
-  beats?: readonly SimBeat[];
+  /** The scenario's script as the body carries it (`ScenarioBeat`, refs are the actors' refs); played by the production `BeatPlayer`. Absent: no script. */
+  beats?: readonly ScenarioBeat[];
   controls?: readonly SimControl[];
   /** The mock model's quirks (`MockDrama` less what the scenario gives it). */
   mock?: Pick<MockDrama, "gap" | "malformedEvery" | "skip">;
@@ -107,6 +108,8 @@ export type SimResult = {
   droppedBodies: number;
   /** Proposals whose `act` the engine's validator dropped (the rest of the block and the speech stayed). */
   droppedActs: number;
+  /** What became of each authored scene cut (`BeatPlayer`): sent, or dropped and why. */
+  cuts: Array<{ atMs: number; outcome: "played" | "dropped"; why: string }>;
   /** Acts that held: started, and how each ended. */
   stats: { started: number; blocked: number; aborted: number; done: number };
 };
@@ -329,6 +332,7 @@ export function runDramaSim(config: SimConfig): SimResult {
   const mock = new MockActMemory();
   const drama: MockDrama = { maxRung: (config.drama ?? { max_rung: 3 }).max_rung, mayDie: (config.drama?.may_die ?? []).filter((r) => r !== "@human"), ...config.mock };
   const consults = new Map<string, number>();
+  const cuts: SimResult["cuts"] = [];
 
   function consult(ref: string): void {
     const now = grid.now();
@@ -406,23 +410,27 @@ export function runDramaSim(config: SimConfig): SimResult {
   // ---- the loop --------------------------------------------------------------------------------------------
   const consultMs = config.consultMs ?? 8000;
   const next = new Map(actorRefs.map((ref, i) => [ref, startMs + 1000 + i * Math.floor(consultMs / Math.max(1, actorRefs.length))]));
-  const beats = [...(config.beats ?? [])].sort((a, b) => a.atMs - b.atMs);
   const controls = [...(config.controls ?? [])].sort((a, b) => a.atMs - b.atMs);
   const end = startMs + config.durationMs;
   if (dramaOn) acts.announce();
 
-  const playBeat = (b: SimBeat): void => {
-    if (b.kind === "cut") {
-      director.advanceScene(b.reason);
-      return;
-    }
-    const actor = slotOf.get(b.actor);
-    const target = b.with === undefined ? undefined : space.avatarId(b.with);
-    if (actor === undefined) return;
-    const origin: ActOrigin = "scenario";
-    const decision = director.decide({ actor, proposal: { verb: b.verb, ...(target !== undefined ? { with: target } : {}), origin, ...(b.skip ? { authoredSkip: true } : {}) } });
-    proposals.push({ atMs: grid.now() - startMs, actor: b.actor, verb: b.verb, ...(b.with ? { with: b.with } : {}), decision: `authored:${decision.kind}`, ...(decision.kind === "veto" ? { reason: decision.reason, ...(decision.detail !== undefined ? { detail: decision.detail } : {}) } : {}) });
-  };
+  // The production player, on the sim's clock: it counts the script's seconds from here, as a run's does once its cast is in.
+  const script = dramaOn && (config.beats?.length ?? 0) > 0
+    ? new BeatPlayer({
+        clock,
+        port: () => port,
+        beats: config.beats ?? [],
+        drama: resolveRunDrama(config.drama ? { drama: config.drama } : {}),
+        wireOf: (ref) => space.avatarId(ref),
+        onReport: (r) => {
+          const decision = r.outcome === "played" ? `authored:${r.decision?.kind ?? "cut"}` : `authored:${r.decision?.kind ?? "dropped"}`;
+          const veto = r.decision?.kind === "veto" ? { reason: r.decision.reason, ...(r.decision.detail !== undefined ? { detail: r.decision.detail } : {}) } : { reason: r.why };
+          if (r.beat.kind === "act") proposals.push({ atMs: r.at - startMs, actor: r.beat.actor, verb: r.beat.verb, ...(r.beat.with ? { with: r.beat.with } : {}), decision, ...(r.outcome === "dropped" ? veto : {}) });
+          else cuts.push({ atMs: r.at - startMs, outcome: r.outcome, why: r.why });
+        },
+      })
+    : undefined;
+  script?.start();
 
   const settleMs = 12_000;
   const stopAt = end + settleMs;
@@ -437,7 +445,7 @@ export function runDramaSim(config: SimConfig): SimResult {
       if (c.enabled !== undefined) acts.setEnabled(c.enabled);
       if (c.optIn) acts.setOptIn(c.optIn.human, c.optIn.on);
     }
-    while (beats.length > 0 && startMs + beats[0]!.atMs <= now && now < end) playBeat(beats.shift()!);
+    if (script && now >= end) script.stop();
     if (now < end) for (const ref of actorRefs) if ((next.get(ref) ?? Infinity) <= now) {
       next.set(ref, now + consultMs);
       consult(ref);
@@ -448,5 +456,5 @@ export function runDramaSim(config: SimConfig): SimResult {
   const frames = lines.map((l) => normalizeFrame(l)).flatMap((f) => (f ? [f] : []));
   const events = extractDramaEvents(frames);
   const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs });
-  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, stats: { ...acts.stats } };
+  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, stats: { ...acts.stats } };
 }

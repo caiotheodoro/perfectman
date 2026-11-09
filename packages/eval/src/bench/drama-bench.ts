@@ -1,8 +1,9 @@
 import { runDramaSim } from "../embodiment/drama-sim.js";
 import type { SimConfig, SimResult } from "../embodiment/drama-sim.js";
-import { presetSimConfig, SIM_TUNING } from "../embodiment/drama-sim-preset.js";
+import { presetSimConfig } from "../embodiment/drama-sim-preset.js";
 import { seedState } from "../embodiment/sim-states.js";
 import type { SeedRelations } from "../embodiment/sim-states.js";
+import type { ScenarioBeat } from "@perfectman/hotel/drama";
 import type { ActStartedEvent, DramaEvent } from "../drama/index.js";
 import type { SocialEmotions, CoreMood } from "@perfectman/shared";
 
@@ -49,7 +50,6 @@ const base = (title: string, over: Partial<SimConfig> & Pick<SimConfig, "states"
   seed: 1,
   durationMs: 120_000,
   actors: REFS.map((ref) => ({ ref, name: NAMES[ref]! })),
-  tuning: SIM_TUNING,
   ...over,
 });
 
@@ -63,6 +63,10 @@ const isSubsequence = (want: readonly string[], got: readonly string[]): boolean
   for (const g of got) if (g === want[i]) i += 1;
   return i === want.length;
 };
+/** One line of a script as a scenario author thinks of it (ms into the run, `skip` for the authored skip); `script` numbers them as the compiled body does. */
+type BenchBeat = { atMs: number; kind: "act"; actor: string; verb: ScenarioBeat extends infer B ? (B extends { verb: infer V } ? V : never) : never; with?: string; skip?: boolean } | { atMs: number; kind: "cut"; reason: string };
+const script = (beats: readonly BenchBeat[]): ScenarioBeat[] =>
+  beats.map((b, i): ScenarioBeat => (b.kind === "cut" ? { id: `b${i + 1}`, at_ms: b.atMs, kind: "cut", reason: b.reason } : { id: `b${i + 1}`, at_ms: b.atMs, kind: "act", actor: b.actor, verb: b.verb, ...(b.with ? { with: b.with } : {}), ...(b.skip ? { authored_skip: true as const } : {}) }));
 const block = (max_rung: number, may_target: Array<[string, string]> = [], may_die: string[] = []) => ({ max_rung, may_target, may_die, permadeath: false });
 
 // ---- the scenarios --------------------------------------------------------------------------------------------
@@ -120,18 +124,18 @@ export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
         durationMs: 110_000,
         states: CALM(),
         drama: block(6, [["ana", "bia"], ["ana", "caio"]], ["bia", "caio"]),
-        beats: [
+        beats: script([
           { atMs: 20_000, kind: "act", actor: "ana", verb: "kill", with: "bia", skip: true },
           { atMs: 50_000, kind: "act", actor: "ana", verb: "kill", with: "caio", skip: true },
           { atMs: 62_000, kind: "cut", reason: "next scene" },
           { atMs: 90_000, kind: "act", actor: "ana", verb: "kill", with: "caio", skip: true },
-        ],
+        ]),
       }),
     check: (r) => {
       const deaths = of(r, "actor_death");
       const kills = started(r).filter((a) => a.verb === "kill");
       return [
-        ok("the second kill in the scene is vetoed as budget (kill)", vetoes(r, "budget", "kill").length + r.proposals.filter((p) => p.decision === "authored:veto" && p.reason === "budget" && p.detail === "kill").length > 0, JSON.stringify(r.proposals.filter((p) => p.decision.includes("veto")))),
+        ok("the second kill in the scene is refused as budget (kill): by the director's gate, or by the beat player before it asks", vetoes(r, "budget", "kill").length + r.proposals.filter((p) => p.decision.startsWith("authored:") && ((p.reason === "budget" && p.detail === "kill") || p.reason === "kill_budget")).length > 0, JSON.stringify(r.proposals.filter((p) => p.decision.includes("authored")))),
         ok("two kills landed in all, one in each scene", kills.length === 2 && deaths.length === 2 && deaths[0]!.scene !== deaths[1]!.scene, `${kills.length} kills, ${deaths.map((d) => d.scene).join(", ")}`),
         ok("the scene cut revived the first victim", of(r, "actor_revive").some((v) => v.actor === "bia")),
         ok("the death probes are clean (scene-cut-revive, kill-victim-die-reaction)", r.probes.filter((p) => ["scene-cut-revive", "kill-victim-die-reaction", "ladder-compliance"].includes(p.probe)).every((p) => p.passed)),
@@ -147,7 +151,7 @@ export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
         states: CALM(),
         actors: [{ ref: "ana", name: "Ana", tile: [4, 4] }, { ref: "bia", name: "Bia", tile: [5, 4] }, { ref: "caio", name: "Caio", tile: [4, 5] }, { ref: "duda", name: "Duda", tile: [6, 5] }],
         drama: block(4, [["ana", "bia"]]),
-        beats: [{ atMs: 15_000, kind: "act", actor: "ana", verb: "slap", with: "bia", skip: true }],
+        beats: script([{ atMs: 15_000, kind: "act", actor: "ana", verb: "slap", with: "bia", skip: true }]),
       }),
     check: (r) => {
       const beat = of(r, "act_beat")[0];
@@ -169,10 +173,10 @@ export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
         durationMs: 110_000,
         states: states({ bia: { social: { contempt: 0.6, resentment: 0.5 }, relations: grievance("ana") } }),
         drama: block(6, [["ana", "bia"]], ["bia"]),
-        beats: [
+        beats: script([
           { atMs: 18_000, kind: "act", actor: "ana", verb: "kill", with: "bia", skip: true },
           { atMs: 60_000, kind: "cut", reason: "next scene" },
-        ],
+        ]),
       }),
     check: (r) => {
       const death = of(r, "actor_death").find((d) => d.actor === "bia");
@@ -199,11 +203,11 @@ export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
           { id: 10, name: "Outro", tile: [4, 5], optIn: false },
         ],
         drama: block(4, [["ana", "@human"]]),
-        beats: [
+        beats: script([
           { atMs: 10_000, kind: "act", actor: "ana", verb: "shove", with: "h:10", skip: true },
           { atMs: 30_000, kind: "act", actor: "ana", verb: "slap", with: "h:9", skip: true },
           { atMs: 70_000, kind: "act", actor: "ana", verb: "shove", with: "h:9", skip: true },
-        ],
+        ]),
       }),
     check: (r) => {
       const toOut = started(r).filter((a) => a.with === "h:10");
@@ -227,12 +231,12 @@ export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
         actors: [{ ref: "ana", name: "Ana", tile: [4, 4] }, { ref: "bia", name: "Bia", tile: [5, 4] }],
         drama: block(4, [["ana", "bia"]]),
         controls: [{ atMs: 30_000, calm: true }, { atMs: 60_000, calm: false }, { atMs: 95_000, enabled: false }],
-        beats: [
+        beats: script([
           { atMs: 10_000, kind: "act", actor: "ana", verb: "slap", with: "bia", skip: true },
           { atMs: 45_000, kind: "act", actor: "ana", verb: "shove", with: "bia", skip: true },
           { atMs: 80_000, kind: "act", actor: "ana", verb: "glare", with: "bia" },
           { atMs: 100_000, kind: "act", actor: "ana", verb: "glare", with: "bia" },
-        ],
+        ]),
       }),
     check: (r) => {
       const authored = (verb: string) => r.proposals.find((p) => p.decision.startsWith("authored:") && p.verb === verb && p.atMs > 40_000);
