@@ -24,8 +24,8 @@ export const B = -702;
 export const C = -703;
 export const H = 9;
 
-/** A block that lets everything through up to the kill: person-1 may slap, punch and kill person-2 and the human, who may die. */
-export const WIDE_BLOCK: ScenarioDrama = { max_rung: 6, may_target: [["person-1", "person-2"], ["person-1", "@human"], ["person-2", "person-1"]], may_die: ["person-2", "@human"], permadeath: false };
+/** A block that lets everything through up to the kill: person-1 and person-3 may slap, punch and kill person-2, person-1 may do so to the human, who may die. */
+export const WIDE_BLOCK: ScenarioDrama = { max_rung: 6, may_target: [["person-1", "person-2"], ["person-1", "@human"], ["person-2", "person-1"], ["person-3", "person-2"], ["person-3", "person-1"]], may_die: ["person-2", "@human"], permadeath: false };
 
 export class FakeLink implements DramaLink {
   dialect: Dialect = 2;
