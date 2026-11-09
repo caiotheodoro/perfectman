@@ -7,7 +7,9 @@
  * Numbers in the anchors come from the verb bible (sections 5.2, 5.3): the
  * 1500 ms target and 3000 ms witness reaction deadlines (REA-1, REA-2), the 6
  * tile witness radius, the 20 s spacing of physical beats (LAD-3) and the one
- * rung per beat ladder rule (LAD-1). Scores of 2 and 4 sit between anchors.
+ * rung per beat ladder rule (LAD-1), as the frozen act contract (docs/drama/act-contract.md rev 2)
+ * states them: reaction deadlines run from `act_beat` (contact), who owes a reaction is `act_beat.owed`,
+ * and the ladder and the 20 s spacing are per scene. Scores of 2 and 4 sit between anchors.
  */
 import { DRAMA_FAILURE_CODES, type DramaAxis, type DramaFailureId } from "./axes.js";
 
@@ -40,11 +42,11 @@ export const DRAMA_RUBRIC: readonly DramaAxisSpec[] = [
     label: "Action legibility",
     question: "From the frames alone, can a viewer tell what each act was, who did it, to whom, and how hard?",
     anchors: {
-      1: "At the act_started frame and the 2.5 s after it you cannot name the verb, the actor or the target without reading the log; or two different verbs (slap, punch, shove) look the same in the frames.",
+      1: "At the act_beat frame (contact) and the 2.5 s after it you cannot name the verb, the actor or the target without reading the log; or two different verbs (slap, punch, shove) look the same in the frames.",
       3: "Actor and target can be named in every act from the frames, but you would name the verb correctly for fewer than 4 of every 5 acts, or a light act (intensity 0.3) and a heavy one (intensity 0.8) cannot be told apart.",
-      5: "For every act the frames from 0.5 s before to 2.5 s after act_started show, with no help from the log: who acted, who received it, which verb (not confusable with a neighbour such as slap/punch/shove or faint/die), and whether it was light or heavy.",
+      5: "For every act the frames from 0.5 s before to 2.5 s after act_beat show, with no help from the log: who acted, who received it, which verb (not confusable with a neighbour such as slap/punch/shove or faint/die), and whether it was light or heavy.",
     },
-    notApplicableWhen: "No physical act occurs: the log has no act_started event and no gesture or pair body act.",
+    notApplicableWhen: "No physical act occurs: the log has no act_beat event (an act that was blocked, or aborted before contact, touched no one) and no gesture or pair body act.",
     failureCodes: ["D5"],
   },
   {
@@ -64,11 +66,11 @@ export const DRAMA_RUBRIC: readonly DramaAxisSpec[] = [
     label: "Reaction integrity",
     question: "After an act lands, do the target and the witnesses visibly react in time, and does the scene keep the consequences?",
     anchors: {
-      1: "An act with outcome landed has no act_reaction from its target within 1.5 s and no visible response in the frames; or an actor keeps speaking or acting after actor_death; or an actor who declined is acted on anyway.",
-      3: "The target reacts within 1.5 s for every landed act, but a witness within 6 tiles shows nothing in the 3 s after the contact, or all witnesses react in the same instant with the same reaction.",
-      5: "For every landed act the target reacts within 1.5 s and every witness within 6 tiles within 3 s, the reactions differ between people and start at different moments, dodged and declined outcomes are respected, and a dead actor stays silent and still.",
+      1: "An act with outcome landed has no act_reaction from its target within 1.5 s of its act_beat and no visible response in the frames (a human target owes none); or an actor keeps speaking or acting after actor_death and before its actor_revive; or an actor who declined is acted on anyway.",
+      3: "The target reacts within 1.5 s of act_beat for every landed act, but a witness within 6 tiles that act_beat.owed lists shows nothing in the 3 s after the act_beat, or all witnesses react in the same instant with the same reaction.",
+      5: "For every landed act the target reacts within 1.5 s of act_beat and every witness within 6 tiles that act_beat.owed lists within 3 s of it, the reactions differ between people and start at different moments, dodged and declined outcomes are respected, and a dead actor stays silent and still until its actor_revive.",
     },
-    notApplicableWhen: "No act lands on anyone: the log has no act_started with a target and no pair act, or every act has outcome declined or timeout.",
+    notApplicableWhen: "No act lands on anyone: the log has no act_started with a target and no pair act, or every act has outcome declined, timeout, dodged, blocked or aborted.",
     failureCodes: ["D1", "D4", "D7"],
   },
   {
@@ -76,9 +78,9 @@ export const DRAMA_RUBRIC: readonly DramaAxisSpec[] = [
     label: "Escalation arc",
     question: "Does conflict climb the ladder (glare, insult, shove, slap, punch, kill) one rung per beat, with room between beats and an ending?",
     anchors: {
-      1: "A beat jumps 2 or more rungs above the highest rung used so far against that target with no beat in between (insult straight to punch, a first act that is a slap, a kill with no earlier contact), or physical acts start less than 20 s apart with no build.",
+      1: "A beat jumps 2 or more rungs above the highest rung used so far against that target in this scene with no beat in between (insult straight to punch, a first act that is a slap, a kill with no earlier contact; an act marked authored_skip is exempt), or physical acts start less than 20 s apart in the same scene with no build.",
       3: "Rungs rise by at most 1 per beat, but there is no build or no ending: the clip stays on one rung, or it stops at its peak with nobody de-escalating, leaving or dealing with the result.",
-      5: "Every step up is 1 rung, physical acts start at least 20 s apart, the build runs over at least 3 beats, and the clip ends with a visible payoff or de-escalation (an apology, a restraint, someone walking away, the aftermath).",
+      5: "Every step up is 1 rung, physical acts in the same scene start at least 20 s apart, the build runs over at least 3 beats, and the clip ends with a visible payoff or de-escalation (an apology, a restraint, someone walking away, the aftermath).",
     },
     notApplicableWhen: "No ladder act (glare, insult, shove, slap, punch, kill) occurs and no actor voices a conflict, so there is no escalation to read.",
     failureCodes: ["D3"],
@@ -88,9 +90,9 @@ export const DRAMA_RUBRIC: readonly DramaAxisSpec[] = [
     label: "Restraint",
     question: "Does the clip hold back, using stillness, silence and small gestures on purpose, and keeping physical acts rare enough to matter?",
     anchors: {
-      1: "One actor repeats the same act 3 or more times within 30 s, or 2 or more pairs of physical acts start less than 20 s apart, or no stretch of 5 s in the frames has nobody speaking, acting or walking.",
-      3: "Physical acts are at least 20 s apart, but one verb is more than half of all acts, or fewer than 2 stretches of 3 s or more have nobody speaking or acting.",
-      5: "Physical acts are at least 20 s apart and no verb repeats more than 2 times; there are at least 2 stretches of 3 s or more with nobody speaking or acting, and at least 1 moment where anger is carried by a face, a glare or a turn when an act was possible.",
+      1: "One actor repeats the same act 3 or more times within 30 s, or 2 or more pairs of physical acts in the same scene start less than 20 s apart, or no stretch of 5 s in the frames has nobody speaking, acting or walking.",
+      3: "Physical acts in each scene are at least 20 s apart, but one verb is more than half of all acts, or fewer than 2 stretches of 3 s or more have nobody speaking or acting.",
+      5: "Physical acts in each scene are at least 20 s apart and no verb repeats more than 2 times; there are at least 2 stretches of 3 s or more with nobody speaking or acting, and at least 1 moment where anger is carried by a face, a glare or a turn when an act was possible.",
     },
     notApplicableWhen: "The clip is shorter than 10 s, so spacing and stillness cannot be judged.",
     failureCodes: ["D6"],

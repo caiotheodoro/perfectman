@@ -188,13 +188,19 @@ export function planLayout(video: { width: number; height: number }, nFrames: nu
   return { tile: { width: tileW, height: tileH }, sheets };
 }
 
-/** Act starts as clip-relative marks. `clipStartMs` is where the clip begins in run time (events are run-relative). */
+/**
+ * One mark per started act, clip-relative, where the act made contact (`act_beat`) and else where it started
+ * (an act aborted before contact has no beat). A chipped act waits up to 4 s for the human, so its start is not
+ * where the hit is. `clipStartMs` is where the clip begins in run time (events are run-relative).
+ */
 export function actMarksFromEvents(events: readonly DramaEvent[], opts: { clipStartMs?: number; durationS?: number } = {}): ActMark[] {
   const start = opts.clipStartMs ?? 0;
+  const contactAt = new Map<string, number>();
+  for (const e of events) if (e.kind === "act_beat" && !contactAt.has(e.actId)) contactAt.set(e.actId, e.atMs);
   const marks: ActMark[] = [];
   for (const e of events) {
     if (e.kind !== "act_started") continue;
-    const atS = round3((e.atMs - start) / 1000);
+    const atS = round3(((contactAt.get(e.actId) ?? e.atMs) - start) / 1000);
     if (atS < 0 || (opts.durationS !== undefined && atS > opts.durationS)) continue;
     marks.push({ actId: e.actId, atS });
   }

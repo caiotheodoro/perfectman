@@ -10,9 +10,9 @@ Status: built and tested against fake providers only. Nothing here has been run 
 
 | Input | Where it comes from | Notes |
 | --- | --- | --- |
-| Contact sheets | `buildContactSheets` on the clip's mp4 | Dense around each act (0.5 s before to 2.5 s after, 4 fps), one frame every 2 s elsewhere. At most 48 frames, 4 sheets, 1536 x 1152 px per sheet. Every tile carries `#N` and its clip time, burned in. |
+| Contact sheets | `buildContactSheets` on the clip's mp4 | Dense around each act's contact (`act_beat`; its start when it never made contact): 0.5 s before to 2.5 s after, 4 fps, one frame every 2 s elsewhere. At most 48 frames, 4 sheets, 1536 x 1152 px per sheet. Every tile carries `#N` and its clip time, burned in. |
 | Frame map | the same call | The prompt lists every tile by image, row and column, with the act ids a tile belongs to, so the judge can cite `#7` or `2.50s`. |
-| Event timeline | `extractDramaEvents(run.frames)` | One line per event in clip time: acts with their ladder rung, reactions, outcomes, deaths, speech, body acts, consent chips. Capped at 400 lines. |
+| Event timeline | `extractDramaEvents(run.frames)` | One line per event in clip time: acts with their ladder rung and scene, the contact (`act_beat`) with who saw it and who owes a reaction, reactions, outcomes with their reason or chip answer, deaths and revives, the down state of a killed human, scene cuts, speech, body acts, consent chips. Capped at 400 lines. |
 | Transcript | `buildHotelTranscript(run, { fromS, toS })` | Capped at 12000 characters. Its times are run time; the prompt says so when the clip does not start at 0. |
 | Emotion state | optional, per clip in the manifest | One short string per actor, for example `angry at rafa (0.8)`. |
 
@@ -20,7 +20,7 @@ Stock ffmpeg builds have no `drawtext`, so the tile label is drawn with `drawbox
 
 ## Rubric
 
-Six axes, each scored 1 to 5 or null. The question, the 1, 3 and 5 anchors, the not-applicable rule and the mapped D-codes live in `DRAMA_RUBRIC`; `renderRubricPrompt()` renders them into the system prompt. Anchors are written in things you can see in the frames or read in the log (reaction within 1.5 s, witnesses within 6 tiles, physical acts 20 s apart, one rung per beat), taken from the verb bible's ladder and witness contract.
+Six axes, each scored 1 to 5 or null. The question, the 1, 3 and 5 anchors, the not-applicable rule and the mapped D-codes live in `DRAMA_RUBRIC`; `renderRubricPrompt()` renders them into the system prompt. Anchors are written in things you can see in the frames or read in the log (reaction within 1.5 s of contact, witnesses within 6 tiles, physical acts 20 s apart in a scene, one rung per beat), taken from the verb bible's ladder and witness contract as the frozen act contract (`docs/drama/act-contract.md`, section 12) restates them: deadlines run from `act_beat`, `act_beat.owed` says who owes a reaction, a dead actor is silent until its `actor_revive`, and the ladder and the 20 s spacing are per scene.
 
 | Axis | Asks | D-codes | Null when |
 | --- | --- | --- | --- |
