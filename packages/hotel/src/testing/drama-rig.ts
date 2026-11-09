@@ -137,7 +137,7 @@ export function makeRig(o: { block?: ScenarioDrama; tuning?: DramaTuning; resume
   });
   let seq = 0;
   const hotel: Rig["hotel"] = (frames) => {
-    for (const f of frames) routeDramaFrame({ ...f, seq: ++seq } as unknown as DramaFrame, dir);
+    for (const f of frames) routeDramaFrame(asFrame(f, ++seq), dir);
   };
   const rig: Rig = {
     dir,
@@ -152,6 +152,11 @@ export function makeRig(o: { block?: ScenarioDrama; tuning?: DramaTuning; resume
   };
   if (!o.noState && !o.resumed) rig.state({ scene: `${RUN}.1` });
   return rig;
+}
+
+/** A scripted hotel frame as the router receives it (the builders in `fake-drama` leave `seq` to the connection). */
+export function asFrame(f: Record<string, unknown>, seq = 1): DramaFrame {
+  return { ...f, seq } as unknown as DramaFrame;
 }
 
 export const NO_TENDENCY: ActionEmotions = {

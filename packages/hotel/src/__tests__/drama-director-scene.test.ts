@@ -5,9 +5,8 @@ import type { DramaDecision } from "../director/drama/index.js";
 import { buildReplayPlan, isRecordedDramaCmd } from "../run/replay-plan.js";
 import type { DramaFrameSink } from "../run/drama-frame-sink.js";
 import { NOOP_DRAMA_SINK, routeDramaFrame } from "../run/drama-frame-sink.js";
-import type { DramaFrame } from "../director/drama-frames.js";
 import { actFrames, dramaStateFrame } from "../testing/fake-drama.js";
-import { A, B, C, H, ROOM, RUN, SESSION, WIDE_BLOCK, emotion, makeRig } from "../testing/drama-rig.js";
+import { A, B, C, H, ROOM, RUN, SESSION, WIDE_BLOCK, asFrame, emotion, makeRig } from "../testing/drama-rig.js";
 
 const ask = (rig: ReturnType<typeof makeRig>, actor: number, verb: ActVerb, target: number, origin: "model" | "scenario" = "scenario", skip = false): DramaDecision =>
   rig.dir.decide({ actor, proposal: { verb, with: target, origin, ...(skip ? { authoredSkip: true } : {}) }, emotion: emotion({ resentfulColdness: 1, impulsiveProvocation: 1, dominanceAssertion: 1 }) });
@@ -152,7 +151,7 @@ describe("resume (NEG-8, NEG-9)", () => {
 });
 
 describe("routing (FRM-4) and the replay filter (REPLAY-1)", () => {
-  const frame = (f: Record<string, unknown>, seq = 1): DramaFrame => ({ ...f, seq }) as unknown as DramaFrame;
+  const frame = asFrame;
 
   it("[FRM-4] the hub hands each frame to the director of the run it names, and the session to all, also to one that attaches later", () => {
     const hub = new DramaRunHub();
