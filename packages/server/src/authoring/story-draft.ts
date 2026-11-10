@@ -12,7 +12,11 @@ import { ACT_TARGET_MODE, ACT_VERBS, LADDER_VERBS, repairBeats } from "@perfectm
 import type { DraftRole, DraftStoryRequest, StoryDraft } from "@perfectman/shared";
 
 export class StoryDraftError extends Error {
-  constructor(message: string, readonly status: 422 | 502, readonly hint?: string) {
+  /**
+   * `detail` is for the operator, not the person at the form: per link, what the provider said. It never carries a key
+   * (every key in play is scrubbed from it), and `message` stays one short sentence.
+   */
+  constructor(message: string, readonly status: 422 | 502, readonly hint?: string, readonly detail?: string) {
     super(message);
     this.name = "StoryDraftError";
   }
@@ -23,6 +27,14 @@ const MAX_PEOPLE = 6;
 const STANDINGS = ["high", "low"] as const;
 const ROLES: readonly DraftRole[] = ["connector", "skeptic", "performer"];
 const REQUEST_TIMEOUT_MS = 90_000;
+/**
+ * A chain link's own `timeoutMs` is sized for a pulse (5 s by default, 60 s for a slow link); a draft is a 3 000-token
+ * JSON answer from a model that may think first, so it never gets less than this per attempt. The ceiling is the
+ * existing {@link REQUEST_TIMEOUT_MS}: a link that asks for more than the legacy single call got is not given more.
+ */
+const DRAFT_MIN_LINK_TIMEOUT_MS = 60_000;
+/** How much of a provider's own answer one link may put into the error detail. */
+const DETAIL_PER_LINK_CHARS = 160;
 const DRAFT_MAX_TOKENS = 3200;
 
 const text = (max: number) => z.string().transform((value) => value.replace(/\s+/g, " ").trim().slice(0, max));
@@ -133,9 +145,111 @@ export function toStoryDraft(reply: string, language?: "en" | "pt-BR"): StoryDra
 
 type Fetch = typeof fetch;
 
-export async function draftStory(request: DraftStoryRequest, fetchImpl: Fetch = fetch): Promise<StoryDraft> {
+/** One link of the host's model chain, resolved by the caller: the key is the value, the headers are the ones the chain client sends. */
+export type DraftLink = {
+  /** The label the error detail uses. */
+  name: string;
+  baseUrl: string;
+  model: string;
+  apiKey: string;
+  /** Besides `content-type` and `authorization`: the session header, the link's own, an attribution default. */
+  headers?: Record<string, string>;
+  /** Merged into the request body last. */
+  extraBody?: Record<string, unknown>;
+  /** The link's own deadline; a draft uses {@link draftLinkTimeoutMs} of it. */
+  timeoutMs?: number;
+};
+
+/** The configured chain in failover order, plus the links the caller left out and why (shown in the final error). */
+export type DraftChain = { links: readonly DraftLink[]; skipped?: readonly string[] };
+
+export const draftLinkTimeoutMs = (link: Pick<DraftLink, "timeoutMs">): number => Math.min(REQUEST_TIMEOUT_MS, Math.max(DRAFT_MIN_LINK_TIMEOUT_MS, link.timeoutMs ?? 0));
+
+/** What a provider said about a failed call: `error.type` and `error.message` (or the flat forms), else the start of the body. */
+export function providerMessage(raw: string): string {
+  const squash = (value: string): string => value.replace(/\s+/g, " ").trim();
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    const record = (value: unknown): value is Record<string, unknown> => typeof value === "object" && value !== null;
+    if (record(parsed)) {
+      const error = parsed["error"];
+      const said = record(error)
+        ? [error["type"] ?? error["code"], error["message"]].filter((part): part is string => typeof part === "string" && part !== "")
+        : [typeof error === "string" ? error : parsed["message"]].filter((part): part is string => typeof part === "string" && part !== "");
+      if (said.length > 0) return squash(said.join(" "));
+    }
+  } catch {
+    // not JSON: the body itself is the message
+  }
+  return squash(raw);
+}
+
+/**
+ * Drafts through the configured chain, link by link. A link that answers non-2xx (401, 402, 429, 400 and 5xx alike), cannot be
+ * reached, times out, returns nothing, or returns two unreadable drafts hands over to the next. Only when every link has failed
+ * does it throw, with each link's own words in `detail`.
+ */
+async function draftOverChain(request: DraftStoryRequest, idea: string, chain: DraftChain, fetchImpl: Fetch): Promise<StoryDraft> {
+  const prompt = draftPrompt(idea, request.people, request.language);
+  const secrets = chain.links.map((link) => link.apiKey).filter(Boolean);
+  const scrub = (value: string): string => secrets.reduce((text, secret) => text.split(secret).join("[key]"), value);
+  const notes: string[] = chain.skipped ? [...chain.skipped] : [];
+
+  for (const link of chain.links) {
+    const timeoutMs = draftLinkTimeoutMs(link);
+    const body = {
+      model: link.model,
+      messages: [{ role: "system", content: prompt.system }, { role: "user", content: prompt.user }],
+      temperature: 0.9,
+      max_tokens: DRAFT_MAX_TOKENS,
+      ...(request.llm.responseFormatJson === false ? {} : { response_format: { type: "json_object" } }),
+      ...(link.extraBody ?? {}),
+    };
+    let problem = "";
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      let reply: string;
+      try {
+        const response = await fetchImpl(`${link.baseUrl.replace(/\/+$/, "")}/chat/completions`, {
+          method: "POST",
+          headers: { ...link.headers, "content-type": "application/json", authorization: `Bearer ${link.apiKey}` },
+          body: JSON.stringify(body),
+          signal: AbortSignal.timeout(timeoutMs),
+        });
+        if (!response.ok) {
+          const said = await response.text().catch(() => "");
+          problem = `${response.status} ${providerMessage(said)}`.trim();
+          break;
+        }
+        const payload = (await response.json()) as { choices?: Array<{ message?: { content?: string | null } }> };
+        reply = payload.choices?.[0]?.message?.content ?? "";
+      } catch (error) {
+        problem = error instanceof Error && error.name === "TimeoutError" ? `timed out after ${Math.round(timeoutMs / 1000)}s` : "could not be reached";
+        break;
+      }
+      if (reply.trim() === "") {
+        problem = "empty reply";
+        break;
+      }
+      try {
+        return toStoryDraft(reply, request.language);
+      } catch (error) {
+        problem = `unusable draft (${error instanceof Error ? error.message : "unreadable reply"})`;
+      }
+    }
+    notes.push(`${link.name}: ${scrub(problem).slice(0, DETAIL_PER_LINK_CHARS)}`);
+  }
+  throw new StoryDraftError("No model could draft this story.", 502, "Try again in a moment, or tell the owner the model chain is failing.", notes.join("; "));
+}
+
+export async function draftStory(request: DraftStoryRequest, fetchImpl: Fetch = fetch, chain?: DraftChain): Promise<StoryDraft> {
   const idea = request.idea.replace(/\s+/g, " ").trim().slice(0, 2000);
   if (idea.length < 8) throw new StoryDraftError("Say a little more about the story.", 422, "A sentence is enough: who is there, and what just happened.");
+  if (chain) {
+    if (chain.links.length === 0) {
+      throw new StoryDraftError("No model in the chain has a key.", 502, "Tell the owner to set the chain's keys.", (chain.skipped ?? []).join("; "));
+    }
+    return draftOverChain(request, idea, chain, fetchImpl);
+  }
   const { llm } = request;
   if (!llm.baseUrl || !llm.modelName || !llm.apiKey) {
     throw new StoryDraftError("Drafting needs a model and a key.", 422, "Paste a key for a model first.");

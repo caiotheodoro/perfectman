@@ -7,11 +7,12 @@ import {
   loadPresets,
   StoryDraftError,
 } from "@perfectman/server/hotel";
-import type { CompileResult, Diagnostic, StoryDraft } from "@perfectman/server/hotel";
-import { createHash } from "node:crypto";
+import type { CompileResult, Diagnostic, DraftChain, StoryDraft } from "@perfectman/server/hotel";
+import { createHash, randomUUID } from "node:crypto";
 import type { AutolookRequest, AutolookResponse, CompileResponse, ValidateRequest, ValidateResponse, PresetList, PathMessage } from "../director/index.js";
 import type { LlmEnv } from "../config.js";
 import { hashString } from "../util/stats.js";
+import { linkHeaders } from "../llm/chain-config.js";
 import { hostLlmConfig } from "../llm/env.js";
 import { parseBundle, makeBundle } from "./source-bundle.js";
 import { MAX_BODY_BYTES, SCENARIO_BODY_VERSION, parseScenarioBody, placeholderLlm } from "../run/scenario-body.js";
@@ -42,6 +43,8 @@ export type AuthoringDeps = {
   apiKey: string | undefined;
   presetsRoot?: string;
   fetchImpl?: typeof fetch;
+  /** Reads a chain link's key by its env var NAME; defaults to `process.env`. Tests inject it so no real variable is touched. */
+  env?: (name: string) => string | undefined;
   /** This sidecar's `PERFECTMAN_DRAMA`: a `drama` block while it is off compiles with the warning `drama.disabled`. Absent means off. */
   drama?: boolean;
 };
@@ -175,6 +178,38 @@ export class AuthoringService {
     return { body, schema_version: SCENARIO_BODY_VERSION };
   }
 
+  /**
+   * The configured chain as the draft runs it: each link with its own key (`process.env[link.apiKeyEnv]`), the headers the chain
+   * client sends it (`linkHeaders`, one fresh session id for this draft: OpenCode Go answers 400 MissingSessionID without it) and its
+   * `extraBody`. A link whose variable is empty is left out and named in `skipped`. Undefined when no `PERFECTMAN_LLM_CHAIN` is set:
+   * the draft then makes the one request the legacy `baseUrl` + `apiKey` describe.
+   */
+  private draftChain(): DraftChain | undefined {
+    const chain = this.deps.llm.chain;
+    if (!chain || chain.length === 0) return undefined;
+    const read = this.deps.env ?? ((name: string) => process.env[name]);
+    const sessionId = randomUUID();
+    const links: DraftChain["links"][number][] = [];
+    const skipped: string[] = [];
+    for (const link of chain) {
+      const apiKey = read(link.apiKeyEnv)?.trim();
+      if (!apiKey) {
+        skipped.push(`${link.name}: ${link.apiKeyEnv} is empty, skipped`);
+        continue;
+      }
+      links.push({
+        name: link.name,
+        baseUrl: link.baseUrl,
+        model: link.model,
+        apiKey,
+        headers: linkHeaders(link, sessionId),
+        ...(link.extraBody ? { extraBody: link.extraBody } : {}),
+        ...(link.timeoutMs !== undefined ? { timeoutMs: link.timeoutMs } : {}),
+      });
+    }
+    return { links, skipped };
+  }
+
   async draft(req: { brief?: unknown; language?: unknown; cast_size?: unknown }): Promise<{ source: string }> {
     if (typeof req.brief !== "string" || req.brief.trim().length < 8) {
       throw new AuthoringError(400, "bad_request", "brief needs a sentence or two");
@@ -199,11 +234,15 @@ export class AuthoringService {
           },
         },
         this.deps.fetchImpl,
+        this.draftChain(),
       );
       return { source: this.draftSource(story) };
     } catch (err) {
       if (err instanceof StoryDraftError) {
-        throw err.status === 422 ? new AuthoringError(400, "bad_request", err.message) : new AuthoringError(503, "llm_unavailable", err.message);
+        // `detail` (each link's name and what its provider said, never a key) rides in `errors` so the operator can read it.
+        throw err.status === 422
+          ? new AuthoringError(400, "bad_request", err.message)
+          : new AuthoringError(503, "llm_unavailable", err.message, err.detail ? [{ path: "draft", message: err.detail }] : undefined);
       }
       throw err;
     }

@@ -64,6 +64,7 @@ export type { RunInputs, CompileResult, CompileSummary, UploadedFile } from "./a
 export type { Diagnostic } from "./authoring/diagnostics.js";
 export type { RunSeeds } from "./authoring/assemble-config.js";
 export { draftStory, StoryDraftError } from "./authoring/story-draft.js";
+export type { DraftChain, DraftLink } from "./authoring/story-draft.js";
 export type { StoryDraft } from "@perfectman/shared";
 
 export { applySeeds } from "./http/run/seed-applier.js";
