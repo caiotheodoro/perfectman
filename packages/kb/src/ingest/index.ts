@@ -7,8 +7,8 @@ import { parsePlayText, type PlayTextOptions } from "./play-text.js";
 
 export { parseFountain, parsePlayText };
 
-/** A manifest entry may carry `parse: { mixedCaseSpeaker: "<regex source>", notSpeakers: [...] }` for a file that needs it. */
-type ManifestEntry = Partial<SourceMeta> & { file: string; parse?: { mixedCaseSpeaker?: string; notSpeakers?: string[] } };
+/** A manifest entry may carry `parse: { mixedCaseSpeaker: "<regex source>", notSpeakers: [...], stopBefore: "<regex source>" }` for a file that needs it. */
+type ManifestEntry = Partial<SourceMeta> & { file: string; parse?: { mixedCaseSpeaker?: string; notSpeakers?: string[]; stopBefore?: string } };
 
 export type LoadedSource = { id: string; meta: SourceMeta; text: string; parse?: ManifestEntry["parse"] };
 
@@ -68,6 +68,7 @@ export function scenesOf(source: LoadedSource): Scene[] {
   const opts: PlayTextOptions = {};
   if (entryParse?.mixedCaseSpeaker) opts.mixedCaseSpeaker = new RegExp(entryParse.mixedCaseSpeaker);
   if (entryParse?.notSpeakers) opts.notSpeakers = entryParse.notSpeakers;
+  if (entryParse?.stopBefore) opts.stopBefore = new RegExp(entryParse.stopBefore, "m");
   return source.meta.file.endsWith(".fountain") ? parseFountain(source.text, source.id) : parsePlayText(source.text, source.id, opts);
 }
 

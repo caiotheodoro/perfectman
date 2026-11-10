@@ -25,7 +25,7 @@ What is committed: the code, the taxonomy, the tests and this README. What is no
 pnpm --filter @perfectman/kb build
 cd packages/kb
 node dist/cli.js build-beats
-node dist/cli.js export-tags --dialogue-fraction 0.25 --batch 40
+node dist/cli.js export-tags --dialogue-fraction 0.25 --dialogue-fraction-pt 0.5 --heldout 0.1 --batch 40
 # run taggers over index/tagging/*.in.jsonl, writing batch-NNNN.out.jsonl (index/tagging/PROMPT.md is the brief)
 node dist/cli.js check-tags index/tagging/batch-0001.out.jsonl
 node dist/cli.js import-tags index/tagging --by haiku
@@ -59,6 +59,7 @@ The tactic list is authored here, in our own words. No published verb list is re
 | `gutenberg-shakespeare` | Project Gutenberg, PG Shakespeare Team texts | public-domain-us | Othello, Romeo and Juliet, Macbeth, Hamlet, King Lear, Julius Caesar, Much Ado About Nothing, A Midsummer Night's Dream, The Taming of the Shrew, Antony and Cleopatra, Titus Andronicus, The Winter's Tale |
 | `gutenberg-plays` | Project Gutenberg | public-domain-us | Ibsen (A Doll's House, Hedda Gabler, Ghosts, The Wild Duck, The Master Builder), Strindberg (The Father), Chekhov (Uncle Vanya), Wilde (Earnest, An Ideal Husband), Marlowe (Doctor Faustus), Rostand (Cyrano), Molière (Tartuffe), Synge (Riders to the Sea, The Playboy of the Western World) |
 | `pt-plays` | pt.wikisource | cc-by-sa | Martins Pena (O Juiz de Paz na Roça, Quem casa quer casa, Os Irmãos das Almas, O Namorador), Gil Vicente (Auto da Barca do Inferno) |
+| `pt-plays-extra` | pt.wikisource, one Project Gutenberg text | cc-by-sa, public-domain-us | 14 more Portuguese-language plays (Alencar, Azevedo, Dias, França Júnior, Garrett, Machado de Assis, Martins Pena, Qorpo-Santo) |
 | `screenplays` | none | | Nothing legally open with real scenes was found. `terms.json` records what the commercial script sites say: their pages say "educational purposes" or "fair use" and grant no right to copy, so none was ingested. |
 
 Project Gutenberg's licence covers its trademark and asks that redistributions keep the header. Raw text stays in `corpus/` and never in git. The Wikisource texts are share-alike: anything derived from them that is redistributed keeps CC BY-SA. Folger Digital Texts (CC BY-NC) were left out on purpose.
@@ -105,7 +106,7 @@ Chunker (`src/chunk.ts`). Reading 30 of the beats Haiku flagged showed the domin
 | Beats with 4+ speakers | 246 | 161 |
 | Beats ending on a stray non-action, non-exit direction | 467 | 44 |
 
-Whether this lowers the tagger's `boundary_ok: false` rate on the new cuts is not measured: that needs the new beats tagged. Not fixed here: the play-text parser sometimes folds the next speakers into one speech or direction (about 10% of beats carry an inline speaker cue in their text, and a Faustus footnote becomes one 20,000-character beat). The chunker cannot repair that.
+Whether this lowers the tagger's `boundary_ok: false` rate on the new cuts is not measured: that needs the new beats tagged. The play-text parser's own failures (a following speaker folded into a speech or direction) are fixed separately, see "Parser fixes" below.
 
 Tagging brief (`TAGGING_PROMPT` in `src/tags.ts`, written to `index/tagging/PROMPT.md` by `export-tags`). It now gives a decision order for tactic (what must the listener do, then the group, then the narrowest verb), a one-line original example for each `status_delta` value, a ban on defaulting to "to command", and a rule for when `boundary_ok` is false. The controlled lists are unchanged.
 
@@ -123,6 +124,29 @@ Measured on the same 107-beat sample, with two fresh Haiku taggers that saw only
 | `boundary_ok: false` share | 50.5% | 25.2% / 26.2% | |
 
 The brief was adjusted once after a first round (it over-produced `EQUAL_STALEMATE`: 39 of 107 against Sonnet's 9) and the table is the second round, so the sample is no longer held out from the wording. Tactic agreement with Sonnet did not move; status improved the most. "to command" at 0% is probably too far the other way, and `boundary_ok` is still above Sonnet's 30.8%.
+
+## Parser fixes and the 45-source rebuild (2026-11-09)
+
+`src/ingest/play-text.ts` swallowed the next speaker into a speech or direction in about 5% of beats (273 of 5,286 on the 45 sources, counting a speaker cue in the middle of a line) and turned a Faustus footnote into one 20,000-character beat. Causes and fixes:
+
+- An unclosed `[` (a missing `]` in the source, common in the Ibsen texts) matched across blank lines up to the next `]` and ate the cue in between. A direction can no longer cross a blank line or hold another opener, and an unclosed one ends at the next blank line.
+- Speakers that appear only once or twice (a Messenger, an OCR-damaged name) were not recognised as cues. An upper-case name is now a cue even when rare, and a rare name one letter off a frequent one (two, for names of nine letters or more) is read as the frequent one. Mixed-case rare names are still not accepted: they cannot be told from prose.
+- `NAME (direction):` cues (Cyrano, 740 of them) were not read. The direction becomes its own item.
+- Two speeches on one line in the dash style, and `D. MARIA -` style names, are split and read.
+- Apparatus is dropped: `[Footnote n: ...]` and `[Illustration]` blocks, the Gutenberg licence tail (also when the end marker has no stars), and a lone `CURTAIN.` / `THE END` ends the speech. A manifest entry may carry `parse.stopBefore` (a regex) to cut an editor's afterword or a playbill after the play; used for Frei Luís de Sousa and Playboy.
+- No speech item is longer than 1,200 characters (`MAX_SPEECH_CHARS`): longer ones are split at sentence ends into consecutive speeches of the same speaker. No beat is longer than 2,400 characters (`hardMaxChars` in `chunkScene`): a short leftover is no longer merged into a long beat, and an over-long group is cut at item boundaries.
+
+Same corpus (45 sources), chunker unchanged otherwise:
+
+| | before | after |
+|---|---|---|
+| Beats | 5,286 | 5,625 |
+| Characters per beat, mean / median / p90 / p99 / max | 804 / 777 / 1,298 / 2,230 / 20,000 | 757 / 714 / 1,267 / 1,797 / 2,374 |
+| Beats over 2,500 characters | 37 | 0 |
+| Beats of 1,800+ characters | 83 | 56 |
+| Beats with an inline speaker cue | 273 | 25 (stage-direction names and cast lists, and a few joint cues like `GREMIO, TRANIO.`) |
+
+Beats by folder: `gutenberg-plays` 2,213 (14 sources), `gutenberg-shakespeare` 1,967 (12), `pt-plays` 272 (5), `pt-plays-extra` 1,173 (14). 4,180 en, 1,445 pt. `export-tags --dialogue-fraction 0.25 --dialogue-fraction-pt 0.5 --heldout 0.1` exports every action-hint beat, 25% of English dialogue-only beats and 50% of Portuguese ones (stage directions rarely name weeping or similar in Portuguese), then holds out 10% of that set (`sampleIds`, the same selection `sample` uses) in `index/tagging/heldout.ids.json` and `index/tagging/heldout/`, out of the main batches for a blind second tagger.
 
 ## Known limits
 

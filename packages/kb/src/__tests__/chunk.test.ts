@@ -101,4 +101,15 @@ describe("chunkScene", () => {
     expect(beats.length).toBeGreaterThan(2);
     for (const b of beats) expect(b.text.length).toBeLessThanOrEqual(1100 + 2 * 110);
   });
+
+  it("keeps every beat under the hard cap: a long leftover speech is not merged into a long beat, and a reply that does not fit starts the next one", () => {
+    const big = (n: number) => `${"word ".repeat(Math.floor(n / 5))}end.`;
+    const items = [sp("A", big(600)), sp("B", big(500)), sp("A", big(1100)), sp("B", big(1100)), sp("A", big(1100)), dir("Slaps him."), sp("B", big(1100)), sp("A", "ok"), sp("B", "ok")];
+    const beats = chunkScene(scene(items), meta);
+    expect(beats.length).toBeGreaterThan(2);
+    expect(Math.max(...beats.map((b) => b.text.length))).toBeLessThanOrEqual(2400 + 40);
+    const oversize = chunkScene(scene([sp("A", big(1200)), sp("B", big(1200)), dir("Enters C."), sp("C", big(1200)), sp("A", big(1200))]), meta, { hardMaxChars: 1500, maxChars: 5000 });
+    expect(oversize.every((b) => b.text.length <= 1500 + 40)).toBe(true);
+    expect(oversize.flatMap((b) => b.speakers).length).toBeGreaterThanOrEqual(4);
+  });
 });

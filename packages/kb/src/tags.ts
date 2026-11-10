@@ -72,6 +72,29 @@ ${tacticPromptList()}
 
 Rules: never copy long passages of the text into the output; never invent speakers; one output line per input line, same order; output nothing else.`;
 
+export type SelectionOptions = {
+  /** Share of dialogue-only beats to tag (a beat with a physical-action hint is always kept). */
+  dialogueFraction: number;
+  /** Share for Portuguese dialogue-only beats, whose stage directions rarely name a physical action. Defaults to `dialogueFraction`. */
+  dialogueFractionPt?: number;
+};
+
+/** Every beat with a physical-action hint, plus a deterministic share of the dialogue-only ones (per language: Portuguese may take more). */
+export function selectForTagging(beats: readonly Beat[], opts: SelectionOptions): Beat[] {
+  const keep = new Set<string>();
+  const pt = beats.filter((b) => b.actionHint === "DIALOGUE_ONLY" && b.language === "pt");
+  const other = beats.filter((b) => b.actionHint === "DIALOGUE_ONLY" && b.language !== "pt");
+  for (const id of sampleIds(other.map((b) => b.id), opts.dialogueFraction, "kb-dialogue-1")) keep.add(id);
+  for (const id of sampleIds(pt.map((b) => b.id), opts.dialogueFractionPt ?? opts.dialogueFraction, "kb-dialogue-1")) keep.add(id);
+  return beats.filter((b) => b.actionHint !== "DIALOGUE_ONLY" || keep.has(b.id));
+}
+
+/** Holds out a deterministic share of the beats for blind re-tagging. Same selection as the `sample` command (`sampleIds`, default seed). */
+export function splitHeldOut(beats: readonly Beat[], fraction: number): { main: Beat[]; heldOut: Beat[] } {
+  const held = new Set(sampleIds(beats.map((b) => b.id), fraction));
+  return { main: beats.filter((b) => !held.has(b.id)), heldOut: beats.filter((b) => held.has(b.id)) };
+}
+
 export function writeTaggingBatches(beats: readonly Beat[], dir: string, batchSize: number): string[] {
   mkdirSync(dir, { recursive: true });
   writeFileSync(path.join(dir, "PROMPT.md"), `${TAGGING_PROMPT}\n`);

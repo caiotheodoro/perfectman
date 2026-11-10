@@ -5,13 +5,15 @@ import { buildBeats } from "./ingest/index.js";
 import { makeEmbedder } from "./embed.js";
 import { queryReferenceBeats, toPlanRefs } from "./query.js";
 import { Store } from "./store.js";
-import { agreement, importTagLines, sampleIds, writeTaggingBatches } from "./tags.js";
+import { agreement, importTagLines, sampleIds, selectForTagging, splitHeldOut, writeTaggingBatches } from "./tags.js";
 import type { Beat, TagRecord, TaggedBeat } from "./types.js";
 
 /**
  * pm-kb <command>. Everything reads and writes under the package's `corpus/` and `index/` folders, both gitignored.
  *   build-beats                      corpus/<dir>/manifest.json -> index/beats.jsonl
- *   export-tags [--batch 40] [--action X] [--dialogue-fraction 0.25] [--only-ids file] [--out dir]   index/beats.jsonl -> batch-NNNN.in.jsonl + PROMPT.md
+ *   export-tags [--batch 40] [--action X] [--dialogue-fraction 0.25] [--dialogue-fraction-pt 0.5] [--heldout 0.1] [--only-ids file] [--out dir]
+ *                                    index/beats.jsonl -> batch-NNNN.in.jsonl + PROMPT.md; --heldout writes heldout.ids.json and heldout/batch-NNNN.in.jsonl
+ *                                    and leaves those beats out of the main batches
  *   import-tags <dir> [--by haiku]   index/tagging/*.out.jsonl -> index/tags.jsonl, errors to index/tag-errors.jsonl
  *   check-tags <files...>            validate tagger output, writes nothing
  *   sample [--fraction 0.1]          ids to re-tag with a second tagger -> index/verify-ids.json
@@ -56,18 +58,24 @@ async function main(): Promise<void> {
       let beats = readJsonl<Beat>(path.join(idx, "beats.jsonl"));
       if (typeof flags["action"] === "string") beats = beats.filter((b) => b.actionHint === flags["action"]);
       if (typeof flags["dialogue-fraction"] === "string") {
-        // Keep every beat with a physical-action hint, and a deterministic share of the dialogue-only ones.
-        const dialogue = beats.filter((b) => b.actionHint === "DIALOGUE_ONLY");
-        const keep = new Set(sampleIds(dialogue.map((b) => b.id), Number(flags["dialogue-fraction"]), "kb-dialogue-1"));
-        beats = beats.filter((b) => b.actionHint !== "DIALOGUE_ONLY" || keep.has(b.id));
+        // Keep every beat with a physical-action hint, and a deterministic share of the dialogue-only ones (Portuguese may take more).
+        const fraction = Number(flags["dialogue-fraction"]);
+        beats = selectForTagging(beats, { dialogueFraction: fraction, dialogueFractionPt: typeof flags["dialogue-fraction-pt"] === "string" ? Number(flags["dialogue-fraction-pt"]) : fraction });
       }
       if (typeof flags["only-ids"] === "string") {
         const ids = new Set(JSON.parse(readFileSync(flags["only-ids"], "utf8")) as string[]);
         beats = beats.filter((b) => ids.has(b.id));
       }
       const dir = typeof flags["out"] === "string" ? flags["out"] : path.join(idx, "tagging");
+      let heldOut: Beat[] = [];
+      if (typeof flags["heldout"] === "string") {
+        ({ main: beats, heldOut } = splitHeldOut(beats, Number(flags["heldout"])));
+        mkdirSync(dir, { recursive: true });
+        writeFileSync(path.join(dir, "heldout.ids.json"), JSON.stringify(heldOut.map((b) => b.id)));
+      }
       const files = writeTaggingBatches(beats, dir, Number(flags["batch"] ?? 40));
-      console.log(`${beats.length} beats in ${files.length} batches under ${dir}`);
+      const heldFiles = heldOut.length ? writeTaggingBatches(heldOut, path.join(dir, "heldout"), Number(flags["batch"] ?? 40)) : [];
+      console.log(`${beats.length} beats in ${files.length} batches under ${dir}${heldOut.length ? `; ${heldOut.length} held out (heldout.ids.json, ${heldFiles.length} batches in heldout/)` : ""}`);
       return;
     }
     case "import-tags": {

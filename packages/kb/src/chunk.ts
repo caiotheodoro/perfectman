@@ -11,12 +11,14 @@ import type { Beat, Item, Scene, SourceMeta } from "./types.js";
  *  - an entrance direction arrives after at least `minItems` items;
  *  - a speech of at least `bigSpeech` characters arrives (a monologue is its own beat, closed after the reply it gets);
  *  - the text passes `maxChars`.
+ * No beat is longer than `hardMaxChars`: a short leftover is merged into the previous beat only while the result stays under it, a
+ * reaction is appended to a strong action only while it fits, and a group still over the cap is cut at item boundaries.
  * Stage directions that sit at the end of a beat but belong to the speech that follows ("[Aside.]", "[Turning to her.]") move to
  * the next beat when the cut is a seam. Beats shorter than `minSpeeches` speeches are merged into the previous one, unless they carry
  * an action cue.
  */
 
-export type ChunkOptions = { maxChars?: number; minItems?: number; minSpeeches?: number; recentWindow?: number; maxSpeakers?: number; bigSpeech?: number };
+export type ChunkOptions = { maxChars?: number; minItems?: number; minSpeeches?: number; recentWindow?: number; maxSpeakers?: number; bigSpeech?: number; hardMaxChars?: number };
 
 const HINTS: ReadonlyArray<[ActionType, RegExp]> = [
   ["KILLING", /\b(kill(?:s|ed|ing)?|stab(?:s|bed|bing)?|slay(?:s|ing)?|slain|murder(?:s|ed)?|strangl(?:e|es|ed)|smother(?:s|ed)?|shoots? (?:him|her|himself|herself)|dies|falls dead|matou|mata|apunhala|assassina|morre|estrangula|mata-o)\b/i],
@@ -56,6 +58,30 @@ function exitsASpeaker(text: string, cast: readonly string[], inBeat: ReadonlySe
   return named.length === 0 || named.some((n) => inBeat.has(n));
 }
 
+/** Cuts a group longer than `max` at item boundaries into pieces under it. A piece with no speech joins the one after it. */
+function splitOversize(g: Item[], max: number): Item[][] {
+  const len = (x: Item) => itemText(x).length + 1;
+  if (g.reduce((n, x) => n + len(x), 0) <= max) return [g];
+  const pieces: Item[][] = [];
+  let cur: Item[] = [];
+  let n = 0;
+  for (const x of g) {
+    if (cur.length && n + len(x) > max && cur.some((y) => y.kind === "speech")) {
+      pieces.push(cur);
+      cur = [];
+      n = 0;
+    }
+    cur.push(x);
+    n += len(x);
+  }
+  if (cur.length) {
+    const last = pieces[pieces.length - 1];
+    if (last && !cur.some((y) => y.kind === "speech")) last.push(...cur);
+    else pieces.push(cur);
+  }
+  return pieces;
+}
+
 export function chunkScene(scene: Scene, meta: Pick<SourceMeta, "title" | "author" | "language" | "medium" | "license_class">, opts: ChunkOptions = {}): Beat[] {
   const maxChars = opts.maxChars ?? 1100;
   const minItems = opts.minItems ?? 4;
@@ -63,6 +89,7 @@ export function chunkScene(scene: Scene, meta: Pick<SourceMeta, "title" | "autho
   const recentWindow = opts.recentWindow ?? 6;
   const maxSpeakers = opts.maxSpeakers ?? 3;
   const bigSpeech = opts.bigSpeech ?? 900;
+  const hardMax = opts.hardMaxChars ?? 2400;
 
   const castSet = new Set(scene.items.flatMap((it) => (it.kind === "speech" ? [it.speaker] : [])));
   const cast = [...castSet];
@@ -109,7 +136,7 @@ export function chunkScene(scene: Scene, meta: Pick<SourceMeta, "title" | "autho
     }
     if (it.kind === "direction" && STRONG.has(actionHint(it.text))) {
       const next = scene.items[i + 1];
-      if (next && next.kind === "speech") {
+      if (next && next.kind === "speech" && chars + itemText(next).length + 1 <= hardMax) {
         cur.push(next);
         recent.push(next.speaker);
         chars += itemText(next).length + 1;
@@ -125,18 +152,19 @@ export function chunkScene(scene: Scene, meta: Pick<SourceMeta, "title" | "autho
   close();
 
   // Merge fragments.
+  const size = (g: readonly Item[]) => g.reduce((n, x) => n + itemText(x).length + 1, 0);
   const merged: Item[][] = [];
   for (const g of groups) {
     const speeches = g.filter((x) => x.kind === "speech").length;
     const dirText = g.flatMap((x) => (x.kind === "direction" ? [x.text] : [])).join(" ");
     const hasAction = STRONG.has(actionHint(dirText));
     const prev = merged[merged.length - 1];
-    if (speeches < minSpeeches && !hasAction && prev) prev.push(...g);
+    if (speeches < minSpeeches && !hasAction && prev && size(prev) + size(g) <= hardMax) prev.push(...g);
     else merged.push([...g]);
   }
+  const capped = merged.flatMap((g) => splitOversize(g, hardMax));
 
-  // A beat with nobody speaking (stage directions only, no neighbour to merge into) carries nothing to tag.
-  return merged.filter((g) => g.some((x) => x.kind === "speech")).map((g, index) => {
+  return capped.filter((g) => g.some((x) => x.kind === "speech")).map((g, index) => {
     const directions = g.flatMap((x) => (x.kind === "direction" ? [x.text] : []));
     const speakers = [...new Set(g.flatMap((x) => (x.kind === "speech" ? [x.speaker] : [])))];
     const text = g.map(itemText).join("\n");

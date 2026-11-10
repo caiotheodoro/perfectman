@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { STATUS_DELTAS, TACTIC_VERBS } from "../taxonomy.js";
-import { TAGGING_PROMPT, agreement, importTagLines, sampleIds, validateTag } from "../tags.js";
+import { TAGGING_PROMPT, agreement, importTagLines, sampleIds, selectForTagging, splitHeldOut, validateTag } from "../tags.js";
 import type { Beat, TagRecord } from "../types.js";
 
 const beat: Beat = {
@@ -74,5 +74,40 @@ describe("TAGGING_PROMPT", () => {
   });
   it("keeps the output keys the validator expects", () => {
     for (const k of ["id", "tactic_verb", "status_delta", "action_type", "emotion", "driver", "target", "confidence", "boundary_ok"]) expect(TAGGING_PROMPT).toContain(`"${k}"`);
+  });
+});
+
+describe("selectForTagging and splitHeldOut", () => {
+  const mk = (language: string, n: number, hint: Beat["actionHint"]): Beat[] => Array.from({ length: n }, (_, i) => ({ ...beat, id: `${language}-${hint}:1.1.${i + 1}`, language, actionHint: hint }));
+  const beats = [...mk("en", 2000, "DIALOGUE_ONLY"), ...mk("pt", 2000, "DIALOGUE_ONLY"), ...mk("en", 30, "KISSING"), ...mk("pt", 30, "CRYING")];
+  const share = (b: Beat[], language: string) => b.filter((x) => x.language === language && x.actionHint === "DIALOGUE_ONLY").length / 2000;
+
+  it("keeps every action-hint beat and takes the dialogue fraction per language", () => {
+    const out = selectForTagging(beats, { dialogueFraction: 0.25, dialogueFractionPt: 0.5 });
+    expect(out.filter((b) => b.actionHint !== "DIALOGUE_ONLY").length).toBe(60);
+    expect(share(out, "en")).toBeGreaterThan(0.21);
+    expect(share(out, "en")).toBeLessThan(0.29);
+    expect(share(out, "pt")).toBeGreaterThan(0.46);
+    expect(share(out, "pt")).toBeLessThan(0.54);
+  });
+  it("uses one fraction for both languages when the Portuguese one is not given, and is deterministic", () => {
+    const a = selectForTagging(beats, { dialogueFraction: 0.25 });
+    expect(share(a, "pt")).toBeLessThan(0.29);
+    expect(selectForTagging(beats, { dialogueFraction: 0.25 }).map((b) => b.id)).toEqual(a.map((b) => b.id));
+    expect(a.map((b) => b.id)).toEqual(selectForTagging(beats, { dialogueFraction: 0.25, dialogueFractionPt: 0.25 }).map((b) => b.id));
+  });
+  it("a higher Portuguese fraction only adds beats", () => {
+    const low = new Set(selectForTagging(beats, { dialogueFraction: 0.25, dialogueFractionPt: 0.25 }).map((b) => b.id));
+    const high = new Set(selectForTagging(beats, { dialogueFraction: 0.25, dialogueFractionPt: 0.5 }).map((b) => b.id));
+    for (const id of low) expect(high.has(id)).toBe(true);
+    expect(high.size).toBeGreaterThan(low.size);
+  });
+  it("holds out the same ids as the verification sample, and the two sets partition the beats", () => {
+    const { main, heldOut } = splitHeldOut(beats, 0.1);
+    expect(heldOut.map((b) => b.id)).toEqual(sampleIds(beats.map((b) => b.id), 0.1));
+    expect(main.length + heldOut.length).toBe(beats.length);
+    expect(main.some((b) => heldOut.includes(b))).toBe(false);
+    expect(heldOut.length / beats.length).toBeGreaterThan(0.08);
+    expect(heldOut.length / beats.length).toBeLessThan(0.12);
   });
 });
