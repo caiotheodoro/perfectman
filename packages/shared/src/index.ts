@@ -127,3 +127,6 @@ export * from "./kb/slim-select.js";
 export * from "./kb/slim-render.js";
 export * from "./kb/beat-craft.js";
 export * from "./kb/slim-fixture.js";
+
+// Script-likeness: dialogue metrics measured against real plays, the norms they are read against, and the score (docs/plans/script-likeness.md).
+export * from "./script-likeness/index.js";

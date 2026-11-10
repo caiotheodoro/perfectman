@@ -5,6 +5,7 @@ import path from "node:path";
 import { buildBeats } from "./ingest/index.js";
 import { makeEmbedder } from "./embed.js";
 import { queryReferenceBeats, toPlanRefs } from "./query.js";
+import { exportNorms } from "./norms.js";
 import { buildSlim } from "./slim/build.js";
 import { Store } from "./store.js";
 import { agreement, importTagLines, sampleIds, selectForTagging, splitHeldOut, writeTaggingBatches } from "./tags.js";
@@ -24,6 +25,8 @@ import type { Beat, TagRecord, TaggedBeat } from "./types.js";
  *   query --tactic "to intimidate" --action KILLING --cast 3 [--limit 5] [--text] [--plan]
  *   export-slim [--out slim/kb-slim.json] [--built YYYY-MM-DD] [--index path]
  *                                    index/kb.sqlite -> the slim reference file production reads (open text only, whole-line excerpts, no model needed)
+ *   export-norms [--out ../shared/src/script-likeness] [--built YYYY-MM-DD] [--holdout 100] [--beats path] [--tags path]
+ *                                    index/beats.jsonl + tags.jsonl -> script-norms.json and script-norms.generated.ts (numbers only; --holdout beats per language are kept out and used by the eval benchmark to check them)
  *   stats
  */
 
@@ -182,6 +185,21 @@ async function main(): Promise<void> {
       console.log(JSON.stringify({ out, bytes: Buffer.byteLength(json), ...stats }, null, 2));
       return;
     }
+    case "export-norms": {
+      const beatsFile = typeof flags["beats"] === "string" ? path.resolve(flags["beats"]) : path.join(idx, "beats.jsonl");
+      const tagsFile = typeof flags["tags"] === "string" ? path.resolve(flags["tags"]) : path.join(idx, "tags.jsonl");
+      if (!existsSync(beatsFile)) throw new Error("no beats yet: run build-beats");
+      const outDir = path.resolve(typeof flags["out"] === "string" ? flags["out"] : path.join(root, "..", "shared", "src", "script-likeness"));
+      const r = exportNorms({
+        beatsFile,
+        ...(existsSync(tagsFile) ? { tagsFile } : {}),
+        outDir,
+        ...(typeof flags["built"] === "string" ? { built: flags["built"] } : {}),
+        ...(typeof flags["holdout"] === "string" ? { holdoutPerLanguage: Number(flags["holdout"]) } : {}),
+      });
+      console.log(JSON.stringify({ files: r.files, bytes: Buffer.byteLength(r.json), beats: r.beats, eligible: r.eligible, heldOut: r.heldOut, byLanguage: r.byLanguage }, null, 2));
+      return;
+    }
     case "stats": {
       const file = path.join(idx, "kb.sqlite");
       if (!existsSync(file)) throw new Error("no index yet: run embed");
@@ -191,7 +209,7 @@ async function main(): Promise<void> {
       return;
     }
     default:
-      console.error("commands: build-beats | export-tags | import-tags | sample | agreement | embed | query | export-slim | stats");
+      console.error("commands: build-beats | export-tags | import-tags | sample | agreement | embed | query | export-slim | export-norms | stats");
       process.exitCode = cmd ? 1 : 0;
   }
 }
