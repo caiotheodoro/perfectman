@@ -8,6 +8,7 @@ import { promptVersionHash } from "./prompt-version.js";
 import { bodyContractLines } from "./hotel-body-hint.js";
 import { dramaContractLines } from "./hotel-drama-hint.js";
 import { heardLines, renderCompactHotelPrompt } from "./hotel-compact-prompt.js";
+import { stallNoteFor } from "./scene-stall.js";
 
 /**
  * How the hotel prompt is written. "full" is the whole persona, output contract
@@ -153,6 +154,7 @@ export class ActionIntentPromptBuilder {
       templateVersion: this.templateVersion(this.isHotel(input, profile), compact),
       ...(compact ? { promptStyle: "compact" as const } : {}),
       ...(trim ? { trim } : {}),
+      ...(stallNoteFor(input, profile.language) !== undefined ? { stallNudged: true as const } : {}),
     };
   }
 
@@ -670,6 +672,9 @@ export class ActionIntentPromptBuilder {
     s.raw(
       'You can ONLY perform ONE action. Pick exactly one permitted combination from <actions>, fill every relevant field per <output_contract>, and emit the JSON object. The conversation moves FORWARD: if you already said something similar, react differently, change the topic, address someone new, move elsewhere. Withholding is also a move: staying silent while a question hangs, waiting someone out, or refusing to answer is something the room notices — when that is what this person would do, choose "no_op" and say why in privateMotiveSummary.',
     );
+    // Hotel drama only, and only while the room's last lines went over old ground (scene-stall.ts): one line, else nothing.
+    const stalled = stallNoteFor(input, language);
+    if (stalled) s.raw(stalled);
     // Root-caused via a live capture + a static read of the prompt: nothing
     // anywhere told agents to take a creative risk, so a real transcript
     // read as a "sensible negotiation" — safe, agreeable, never provoking —

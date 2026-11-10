@@ -4,6 +4,7 @@ import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@pe
 import { bodyContractLines, rotateSamples, seed } from "./hotel-body-hint.js";
 import { dramaCompactLines } from "./hotel-drama-hint.js";
 import { roomLinesHeard } from "./repetition-guard.js";
+import { stallNoteFor } from "./scene-stall.js";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 import { whisperNote, whisperedBy } from "./whisper-note.js";
 
@@ -269,6 +270,8 @@ function renderDecision(s: PromptSection, input: AgentRuntimeInput, lang: Lang, 
   if (!whisperer && !askedNow(input)) {
     s.raw(lang === "pt-BR" ? `Se for falar: ${angle}. Use palavras novas.` : `If you speak: ${angle}. Use new words.`);
   }
+  const stalled = stallNoteFor(input, lang);
+  if (stalled) s.raw(stalled);
   if (input.holdSuggested) {
     s.raw('Right now you are inclined to hold back; if this person would, choose "no_op" and put the real reason in privateMotiveSummary.');
   }
