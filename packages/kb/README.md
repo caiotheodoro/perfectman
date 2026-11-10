@@ -32,10 +32,15 @@ node dist/cli.js import-tags index/tagging --by haiku
 node dist/cli.js embed                       # Xenova/multilingual-e5-small, q8; --embedder hash for a model-free run
 node dist/cli.js query --tactic "to intimidate" --action KILLING --cast 3 --limit 5 [--text] [--plan]
 node dist/cli.js export-slim --out slim/kb-slim.json --built 2026-11-10   # the file production reads; needs the index, no model
+node dist/cli.js export-norms --beats index/beats.jsonl --tags index/tags.jsonl --built 2026-11-10 --holdout 100   # script-norms.json + script-norms.generated.ts in packages/shared/src/script-likeness (numbers only)
 node dist/cli.js stats
 ```
 
 `queryReferenceBeats(store, embedder, tactic, actionTag, castSize, opts)` is the library call. `createReferenceQuery(store, embedder)` binds it to the three-argument shape `(tactic, actionTag, castSize)`. `toPlanRefs()` turns results into the pointers that go into `plan.json` `reference_beats`: ids, titles, labels and scores, never the text. Beat text is returned only with `includeText`, for prompt injection at generation time.
+
+## Script norms
+
+`export-norms` turns the index into percentile ladders of how real plays read: words per turn, share of long and short turns, lexical novelty, motif and progress rates by size of beat, and the status-delta and tactic transitions of the tagged beats. Numbers only, and a test checks that no line of any (invented) beat reaches the file. 200 beats are held out for the eval benchmark's check. What the numbers are used for, and what they measured, is in `docs/plans/script-likeness.md`.
 
 ## Slim artifact: how the KB reaches the code that writes scenes
 
