@@ -116,7 +116,9 @@ export function selectSlimBeats(kb: SlimKb, query: SlimQuery): SlimPick[] {
       limit,
       maxPerWork,
     );
-    if (picks.length >= limit) break;
+    // Enough means enough in the language asked for: language outweighs cast distance in the score, so a wider window that brings a beat in
+    // that language is better than a narrow one that does not. A language the KB lacks for this action runs to the widest window and gives up.
+    if (picks.filter((p) => language === undefined || p.beat.language === language).length >= limit) break;
   }
   return picks;
 }

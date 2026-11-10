@@ -93,6 +93,14 @@ describe("selectSlimBeats", () => {
     expect(selectSlimBeats(kb, { action: "KISSING", cast: 9, limit: 3 }).map((p) => p.beat.id)).toEqual(["glass:2.1.1"]);
   });
 
+  it("widens the cast window until the language asked for is there, since language outweighs cast distance", () => {
+    const far = kbOf({ ...slimFixture(), beats: slimFixture().beats.map((b) => (b.id === "farol:2.1.1" ? { ...b, cast: 9 } : b)) });
+    expect(selectSlimBeats(far, { action: "KILLING", cast: 3, language: "en", limit: 1 })[0]!.beat.language).toBe("en");
+    expect(selectSlimBeats(far, { action: "KILLING", cast: 3, language: "pt", limit: 1 })[0]!.beat.id).toBe("farol:2.1.1");
+    expect(selectSlimBeats(far, { action: "KILLING", cast: 3, limit: 1 })[0]!.beat.language).toBe("en");
+    expect(selectSlimBeats(kb, { action: "CRYING", cast: 3, language: "en", limit: 1 }).map((p) => p.beat.id)).toEqual(["ventos:1.1.1"]);
+  });
+
   it("ranks the exact tactic over its group even from a farther cast, and language over the tactic", () => {
     const grouped = selectSlimBeats(kb, { action: "DIALOGUE_ONLY", cast: 3, tactic: "to corner", limit: 5, maxPerWork: 5 });
     expect(grouped[0]!.beat.id).toBe("salt:2.2.1");
