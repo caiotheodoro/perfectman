@@ -1,11 +1,11 @@
 import type { AgentRuntimeInput, PerceptionPacket } from "@perfectman/shared";
-import { answersFirst, lengthTargetFor, nameKeysOf, owedQuestion, roomNames } from "@perfectman/shared";
-import type { LengthTarget, MessageLength, OwedLine, OwedQuestion } from "@perfectman/shared";
+import { OUTPUT_GUARD_MARKER, answersFirst, lengthTargetFor, moveBefore, nameKeysOf, owedQuestion, roomNames } from "@perfectman/shared";
+import type { LengthTarget, MessageLength, MoveKind, OwedLine, OwedMove, OwedQuestion, QuoteIssue } from "@perfectman/shared";
 import { whisperedBy } from "./whisper-note.js";
 
 /**
- * The script checks of a hotel actor's turn (length, novelty, motif, question debt): what the prompt says about them, the notes a retry
- * carries, and the room as they read it. The numbers come from `@perfectman/shared` (norms measured on real plays); this file is the
+ * The script checks of a hotel actor's turn (length, novelty, motif, question debt, narration, quotes, a move made at the actor): what the
+ * prompt says about them, the notes a retry carries, and the room as they read it. The numbers come from `@perfectman/shared` (norms measured on real plays); this file is the
  * wording and the plumbing. Deterministic and pure: the same packet renders the same notes, so a replayed run builds the same prompts.
  *
  * Everything here is on only when the hotel run's runtime policy says `script: true`. Without it no prompt changes by a byte.
@@ -44,7 +44,7 @@ export function spokenLines(packet: Pick<PerceptionPacket, "agentId" | "triggeri
     if (p?.["mode"] === "whisper" || p?.["channelType"] === "private_channel" || e.visibility.visibilityReason.includes("private")) continue;
     const name = p?.["senderName"];
     const aimed = [p?.["addresseeIds"], p?.["mentionedAgentIds"]].flatMap((ids) => (Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : []));
-    out.push({ speaker: typeof name === "string" && name !== "" ? name : e.actorId, text, own: e.actorId === packet.agentId, ...(aimed.length > 0 ? { aimedAt: aimed } : {}) });
+    out.push({ speaker: typeof name === "string" && name !== "" ? name : e.actorId, text, own: e.actorId === packet.agentId, ...(p?.["untrusted"] === true ? { untrusted: true } : {}), ...(aimed.length > 0 ? { aimedAt: aimed } : {}) });
   }
   return out;
 }
@@ -98,15 +98,15 @@ export function lengthRetryNote(words: number, cap: number, language: Lang): str
 export function motifRetryNote(motif: string, language: Lang): string {
   const m = said(motif, 60);
   return language === "pt-BR"
-    ? `IMPORTANTE: a expressão "${m}" já apareceu em duas das últimas falas da sala. Não use essa expressão nem outra parecida. Traga uma coisa nova: um fato, um objeto, uma acusação ou uma decisão. Se não tiver nada novo, diga uma reação curta.`
-    : `IMPORTANT: the phrase "${m}" is already in two of the room's last lines. Do not use it or a variation of it. Bring one new thing: a fact, an object, an accusation or a decision. If you have nothing new, give a short reaction.`;
+    ? `IMPORTANTE: a expressão "${m}" já apareceu em duas das últimas falas da sala. Não use essa expressão nem outra parecida. Traga uma coisa nova: um fato, um objeto, uma acusação ou uma decisão.`
+    : `IMPORTANT: the phrase "${m}" is already in two of the room's last lines. Do not use it or a variation of it. Bring one new thing: a fact, an object, an accusation or a decision.`;
 }
 
 /** Retry: the line says nothing the room has not just heard. */
 export function noveltyRetryNote(language: Lang): string {
   return language === "pt-BR"
-    ? "IMPORTANTE: sua última tentativa só repete o que a sala acabou de ouvir. Traga uma coisa nova: um fato, um objeto, uma acusação ou uma decisão. Se não tiver nada novo, diga uma reação curta."
-    : "IMPORTANT: your last attempt only gives the room back what it just heard. Bring one new thing: a fact, an object, an accusation or a decision. If you have nothing new, give a short reaction.";
+    ? "IMPORTANTE: sua última tentativa só repete o que a sala acabou de ouvir. Traga uma coisa nova: um fato, um objeto, uma acusação ou uma decisão."
+    : "IMPORTANT: your last attempt only gives the room back what it just heard. Bring one new thing: a fact, an object, an accusation or a decision.";
 }
 
 /** Retry: the actor asked while it owed an answer. */
@@ -115,6 +115,115 @@ export function owedRetryNote(q: OwedQuestion, language: Lang): string {
   return language === "pt-BR"
     ? `IMPORTANTE: ${q.asker} te perguntou ("${quote}") e a sua última tentativa fez outra pergunta sem responder. Responda a ${q.asker} primeiro, numa frase; não pergunte nada nesta fala.`
     : `IMPORTANT: ${q.asker} asked you ("${quote}") and your last attempt asked something else without answering. Answer ${q.asker} first, in one sentence; ask nothing in this line.`;
+}
+
+/** Retry: the line quotes or reports words nobody said in the room's last lines. Names the claim. */
+export function quoteRetryNote(issues: readonly QuoteIssue[], language: Lang): string {
+  const claim = said(issues[0]?.claim ?? "", 70);
+  return language === "pt-BR"
+    ? `IMPORTANTE: sua última tentativa atribui a alguém algo que não foi dito nas últimas falas ("${claim}"). Cite só o que está lá, com as palavras da própria pessoa; ou não atribua nada a ninguém.`
+    : `IMPORTANT: your last attempt puts words in someone's mouth that the last lines do not hold ("${claim}"). Quote only what is there, in the person's own words; or attribute nothing to anyone.`;
+}
+
+/** Retry: the line was only stage business ("Olho pra ela, sorriso atravessado."), so nothing was left to say out loud. */
+export function narrationRetryNote(removed: string, language: Lang): string {
+  const quote = said(removed, 80);
+  return language === "pt-BR"
+    ? `IMPORTANTE: sua última tentativa só descrevia o que você faz ("${quote}"). Ações e expressões vão em "body.gesture" e "body.expression", nunca em "visibleContent": ali vai só o que a pessoa diz em voz alta. Diga uma fala de verdade.`
+    : `IMPORTANT: your last attempt only described what you do ("${quote}"). Actions and expressions go in "body.gesture" and "body.expression", never in "visibleContent": that holds only what the person says out loud. Say a real line.`;
+}
+
+/**
+ * One note for a retry that fixes several things: the notes of every rule the attempt broke (length, motif, novelty, debt, echo, quote, ...), numbered under one heading,
+ * so the model is told once and gets one more call, not one call per rule. A single note goes out as it is.
+ */
+export function mergeRetryNotes(notes: readonly string[], language: Lang): string {
+  if (notes.length <= 1) return notes[0] ?? "";
+  const bare = (n: string): string => n.replace(/^(?:IMPORTANTE|IMPORTANT):\s*/u, "");
+  const head = language === "pt-BR" ? "IMPORTANTE: sua última tentativa tem mais de um problema; corrija todos de uma vez." : "IMPORTANT: your last attempt has more than one problem; fix all of them at once.";
+  return [head, ...notes.map((n, i) => `${i + 1}. ${bare(n)}`)].join("\n");
+}
+
+// ---- the contract line: speech is speech --------------------------------------------------------------------------------------------
+
+/**
+ * The contract line of a run with the script checks on: "visibleContent" holds only what the person says out loud. What the person does and how they look
+ * ("olho pra ela", "I smile") goes in the body block (`body.gesture`, `body.expression`) when the run has bodies; a line that narrates is cut back to its speech.
+ */
+export function speechOnlyLine(language: Lang, withBody: boolean): string {
+  if (language === "pt-BR") {
+    return withBody
+      ? '"visibleContent" é só o que a pessoa diz em voz alta. Ações, olhares e expressões ("olho pra ela", um sorriso, um suspiro) vão em "body.gesture" ou "body.expression", nunca dentro de "visibleContent".'
+      : '"visibleContent" é só o que a pessoa diz em voz alta: nenhuma ação, olhar ou expressão descrita ("olho pra ela", "sorrio").';
+  }
+  return withBody
+    ? '"visibleContent" is only what the person says out loud. Actions, looks and expressions ("I look at her", a smile, a sigh) go in "body.gesture" or "body.expression", never inside "visibleContent".'
+    : '"visibleContent" is only what the person says out loud: no action, look or expression described in it ("I look at her", "I smile").';
+}
+
+// ---- a move made at this actor ------------------------------------------------------------------------------------------------------
+
+const MOVE_VERB: Record<Lang, Record<MoveKind, string>> = {
+  "pt-BR": { reveal: "revelar", accusation: "acusar", threat: "ameaçar", proposal: "propor" },
+  en: { reveal: "revealed", accusation: "accused", threat: "threatened", proposal: "proposed" },
+};
+
+/** The first words of a line, for a note to quote: no quotation marks or line breaks, at most 12 words. */
+const firstWords = (text: string, n: number): string => text.replace(/["“”«»\n\r]+/g, " ").replace(/\s+/g, " ").trim().split(" ").slice(0, n).join(" ");
+
+/** In the decision of the actor the last line was a move at: react to it first (deny, admit, counter, give in), do not walk past it. */
+export function answerNote(m: OwedMove, language: Lang): string {
+  const quote = firstWords(m.text, 12);
+  return language === "pt-BR"
+    ? `${m.speaker} acabou de ${MOVE_VERB["pt-BR"][m.kind]}: "${quote}". Reaja a isso primeiro: negar, admitir, contra-atacar ou ceder. Não ignore.`
+    : `${m.speaker} just ${MOVE_VERB.en[m.kind]}: "${quote}". React to that first: deny, admit, counter or give in. Do not ignore it.`;
+}
+
+/**
+ * The move note for this actor's decision, or undefined: the room's last line (not this actor's, not a guest's) revealed, accused, threatened or offered
+ * something, and everyone who hears it gets the note, the person named first of all (a three-person scene has no bystanders). Never on a whisper (its own note)
+ * or when a guest's line aimed at the actor is the trigger (the prompt already answers it).
+ */
+export function answerNoteFor(input: AgentRuntimeInput, displayName: string, language: Lang): string | undefined {
+  if (whisperedBy(input)) return undefined;
+  const p = input.perceptionPacket.triggeringEvent?.payload as Record<string, unknown> | undefined;
+  if (p?.["untrusted"] === true && [p["addresseeIds"], p["mentionedAgentIds"]].some((ids) => Array.isArray(ids) && ids.includes(input.agentId))) return undefined;
+  const m = moveBefore(spokenLines(input.perceptionPacket), nameKeysOf([displayName]), input.agentId);
+  return m ? answerNote(m, language) : undefined;
+}
+
+// ---- silence instead of a filler -----------------------------------------------------------------------------------------------------
+
+/**
+ * `PERFECTMAN_FILLER_SILENCE=0` brings back the old fallback: a line the guard could not repair was swapped for "Ah." or "Hm." and said. Anything else leaves it
+ * on: such a line becomes silence (a no-op with the output-guard motive), because a filler is a line nobody wrote, and it also closed question debts.
+ */
+export function fillerSilenceEnabled(): boolean {
+  return process.env["PERFECTMAN_FILLER_SILENCE"] !== "0";
+}
+
+/** The no-op motive of a turn the guard silenced. It starts with the output-guard marker, so every reader that skips engine-written motives skips it. */
+export function silenceMotive(why: string): string {
+  return `${OUTPUT_GUARD_MARKER}: no fresh line (${why}); staying quiet.`;
+}
+
+type Expression = "neutral" | "smile" | "angry" | "sad" | "surprised" | "sleepy";
+
+const EXPRESSION_WORDS: ReadonlyArray<[Expression, readonly string[]]> = [
+  ["angry", ["raiva", "ira", "irritacao", "irritado", "irritada", "furia", "furioso", "bravo", "brava", "desprezo", "indignacao", "indignado", "angry", "anger", "rage", "furious", "irritated", "contempt", "indignant"]],
+  ["sad", ["tristeza", "triste", "luto", "desanimo", "melancolia", "vergonha", "culpa", "sad", "grief", "sorrow", "shame", "guilt", "sadness"]],
+  ["surprised", ["surpresa", "surpreso", "surpresa", "choque", "susto", "medo", "assombro", "surprise", "surprised", "shock", "fear", "afraid", "startled"]],
+  ["smile", ["alegria", "feliz", "riso", "diversao", "divertido", "satisfacao", "alivio", "deboche", "joy", "amusement", "happy", "glee", "relief", "smug", "amused"]],
+  ["sleepy", ["sono", "cansaco", "tedio", "entediado", "sleepy", "tired", "boredom", "bored", "weary"]],
+];
+
+/** The face for the strongest feeling the model named (`emotionDrivers`, strongest first), in the body block's own vocabulary; undefined when none maps to one. */
+export function expressionFor(emotionDrivers: readonly string[]): Expression | undefined {
+  for (const driver of emotionDrivers) {
+    const words = driver.toLowerCase().normalize("NFKD").replace(/\p{M}/gu, "").split(/[^a-z]+/u);
+    for (const [expression, list] of EXPRESSION_WORDS) if (words.some((w) => list.includes(w))) return expression;
+  }
+  return undefined;
 }
 
 const REACTIONS: Record<Lang, readonly string[]> = {

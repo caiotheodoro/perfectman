@@ -4,7 +4,7 @@ import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@pe
 import { bodyContractLines, rotateSamples, seed } from "./hotel-body-hint.js";
 import { dramaCompactLines } from "./hotel-drama-hint.js";
 import { roomLinesHeard } from "./repetition-guard.js";
-import { lengthLine, owedNoteFor } from "./script-guard.js";
+import { answerNoteFor, lengthLine, owedNoteFor } from "./script-guard.js";
 import { stallNoteFor } from "./scene-stall.js";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 import { whisperNote, whisperedBy } from "./whisper-note.js";
@@ -133,7 +133,7 @@ function renderContract(s: PromptSection, input: AgentRuntimeInput, profile: Per
   s.raw('Reply with ONE JSON object and nothing else: no markdown, no commentary. Never set id, actorId, preferredDelay or fallbackIfBlocked.');
   s.list("Keys", [
     '"intentType" (required): one of the intents in <actions>',
-    `"visibleContent": the words you say out loud to the people here${pt ? ", in Portuguese (pt-BR)" : ""}, as speech; only the final message, no drafting, no numbers or metrics, and never what you want or think (that goes in "privateMotiveSummary")`,
+    `"visibleContent": the words you say out loud to the people here${pt ? ", in Portuguese (pt-BR)" : ""}, as speech; only the final message, no drafting, no numbers or metrics, and never what you want or think (that goes in "privateMotiveSummary")${profile.scriptPrompt ? (body ? ', and never an action or a look ("olho pra ela", "I smile"): those go in "body.gesture" or "body.expression"' : ', and never an action or a look ("olho pra ela", "I smile")') : ""}`,
     `"privateMotiveSummary" (required): the real, slightly uncomfortable thought behind what you do${pt ? ", in Portuguese (pt-BR)" : ""}`,
     '"replyToEventId" / "targetEventId": an event handle from <events> such as "e1", copied exactly',
     '"personTargets": names from <actions>',
@@ -278,6 +278,8 @@ function renderDecision(s: PromptSection, input: AgentRuntimeInput, profile: Per
   const stalled = stallNoteFor(input, lang);
   if (stalled) s.raw(stalled);
   // Script checks on: a direct question that has waited two turns is answered first.
+  const answered = profile.scriptPrompt ? answerNoteFor(input, profile.displayName, lang) : undefined;
+  if (answered) s.raw(answered);
   const owed = profile.scriptPrompt ? owedNoteFor(input, profile.displayName, lang) : undefined;
   if (owed) s.raw(owed);
   if (input.holdSuggested) {

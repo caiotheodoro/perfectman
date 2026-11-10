@@ -23,19 +23,29 @@ import {
   REPETITION_GUARD_MARKER,
   REPETITION_SIMILARITY_THRESHOLD,
   roomLinesHeard,
+  type GuardInfo,
   type GuardKind,
 } from "../repetition-guard.js";
-import { OUTPUT_GUARD_MARKER, SCRIPT_NORMS, answersFirst, lengthOf, lowNovelty, motifRepeat, noveltyFloor, splitAfter, trimToCap, withoutQuestions } from "@perfectman/shared";
+import { OUTPUT_GUARD_MARKER, SCRIPT_NORMS, answersFirst, falseQuotes, lengthOf, lowNovelty, motifRepeat, noveltyFloor, splitAfter, stripNarration, trimToCap, withoutFalseQuotes, withoutQuestions } from "@perfectman/shared";
+import type { OwedLine } from "@perfectman/shared";
 import { findGarble, findOwnEcho, findPhraseLoop, findRoomEcho, type GarbleHit, type LoopHit } from "../echo-guard.js";
 import {
+  answerNoteFor,
+  expressionFor,
+  fillerSilenceEnabled,
   lengthRetryNote,
+  mergeRetryNotes,
   motifRetryNote,
+  narrationRetryNote,
   noveltyRetryNote,
   owedFor,
+  owedNoteFor,
   owedRetryNote,
+  quoteRetryNote,
   reactionFor,
   roomNameKeys,
   scriptLang,
+  silenceMotive,
   spokenLines,
   lengthTargetOf,
 } from "../script-guard.js";
@@ -74,12 +84,17 @@ function visibleText(packet: AgentRuntimeInput["perceptionPacket"]): string[] {
 }
 
 /** A counter hook must never break a turn. */
-function notify(hook: ((kind: GuardKind) => void) | undefined, kind: GuardKind): void {
+function notify(hook: ((kind: GuardKind, info?: GuardInfo) => void) | undefined, kind: GuardKind, info?: GuardInfo): void {
   try {
-    hook?.(kind);
+    hook?.(kind, info);
   } catch {
     // counters are best effort
   }
+}
+
+/** What a guard did, for the run's guard log: the actor, the text it was given and the text it left (either may be absent). */
+function guardInfo(actor: string, before?: string, after?: string): GuardInfo {
+  return { actor, ...(before !== undefined ? { before } : {}), ...(after !== undefined ? { after } : {}) };
 }
 
 /**
@@ -210,7 +225,9 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     // closed (see prompt-builder.ts) and the render entry stays singular.
     const built = PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens, ctx.llmConfig.promptStyle);
     if (built.stallNudged) notify(ctx.repetitionPolicy?.onGuard, "stall_nudge");
-    if (built.owedNoted) notify(ctx.repetitionPolicy?.onGuard, "debt_note");
+    const actor = ctx.profile.displayName ?? input.agentId;
+    if (built.owedNoted) notify(ctx.repetitionPolicy?.onGuard, "debt_note", guardInfo(actor, undefined, owedNoteFor(input, ctx.profile.displayName, ctx.profile.language)));
+    if (built.answerNoted) notify(ctx.repetitionPolicy?.onGuard, "answer_note", guardInfo(actor, undefined, answerNoteFor(input, ctx.profile.displayName, ctx.profile.language)));
     return built;
   }
 
@@ -354,9 +371,16 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const roomNamesSet = script ? roomNameKeys(input, ctx.profile.displayName ?? "") : new Set<string>();
     const noveltyFloorValue = script ? noveltyFloor(SCRIPT_NORMS, scriptLang(lang)) : 0;
     const owedQuestionNow = script && !askedByPerson(input, agentId) && !whisperedBy(input) ? owedFor(input, ctx.profile.displayName ?? "") : undefined;
+    // A line the guard cannot repair is silence, not a filler said in its place (`PERFECTMAN_FILLER_SILENCE=0` brings the filler back).
+    const fillerSilence = script && fillerSilenceEnabled();
+    const actor = ctx.profile.displayName ?? agentId;
+    const tell = (kind: GuardKind, before?: string, after?: string): void => notify(policy.onGuard, kind, guardInfo(actor, before, after));
+    const noveltyOf = (text: string) => lowNovelty(text, spoken, noveltyFloorValue, { names: roomNamesSet });
     let lengthRetried = false;
     let motifRetried = false;
     let debtRetried = false;
+    let quoteRetried = false;
+    let narrationRetried = false;
     let totalInputTokens = providerResult.usage.inputTokens;
     let totalOutputTokens = providerResult.usage.outputTokens;
     const mainInputTokens = providerResult.usage.inputTokens;
@@ -376,6 +400,22 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         return seen.get(candidateIntent) as T;
       };
     };
+    // Narration in speech: the sentences of a candidate that only say what the actor does ("Olho pra ela, sorriso atravessado.") are taken out before any
+    // check reads it, so length, novelty and echo are judged on what the person says out loud. A candidate with nothing else is speechless (`narrationOnly`).
+    const narrationOnly = new Map<object, string>();
+    const withoutNarration = (parsed: typeof parseResult): typeof parseResult => {
+      if (!script || parsed.fallbackApplied || !speaks(parsed.intent)) return parsed;
+      const before = parsed.intent.visibleContent!;
+      const out = stripNarration(before);
+      if (out.removed.length === 0) return parsed;
+      tell("narration_stripped", before, out.text);
+      if (out.text !== "") return { ...parsed, intent: { ...parsed.intent, visibleContent: out.text } };
+      const { visibleContent: _gone, ...speechless } = parsed.intent;
+      narrationOnly.set(speechless, before);
+      return { ...parsed, intent: speechless as typeof parsed.intent };
+    };
+    parseResult = withoutNarration(parseResult);
+    intent = parseResult.intent;
     const isOwnRepeat = once((candidateIntent: typeof intent): boolean =>
       speaks(candidateIntent) &&
       (isNearRepeat(candidateIntent.visibleContent!, ownLines, threshold) || (strict && findOwnEcho(candidateIntent.visibleContent!, ownLines) !== undefined)));
@@ -401,23 +441,28 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       return words > target.cap ? { words, cap: target.cap } : undefined;
     });
     const motifOf = once((candidateIntent: typeof intent) => (script && speaks(candidateIntent) ? motifRepeat(candidateIntent.visibleContent!, spoken, roomNamesSet) : undefined));
-    const staleOf = once((candidateIntent: typeof intent) => (script && speaks(candidateIntent) ? lowNovelty(candidateIntent.visibleContent!, spoken, noveltyFloorValue) : undefined));
+    const staleOf = once((candidateIntent: typeof intent) => (script && speaks(candidateIntent) ? noveltyOf(candidateIntent.visibleContent!) : undefined));
+    // A quotation or a claim ("ela te chamou de burro") that the room's last 10 lines do not hold.
+    const quotesOf = once((candidateIntent: typeof intent) => (script && speaks(candidateIntent) ? falseQuotes(candidateIntent.visibleContent!, spoken as OwedLine[]) : []));
     const dodgesOf = once((candidateIntent: typeof intent): boolean => owedQuestionNow !== undefined && speaks(candidateIntent) && !answersFirst(candidateIntent.visibleContent!));
     // What would still earn a retry: each script check gets one, so a line that stays long after its retry is cut, not retried again.
     const scriptBlocking = (candidateIntent: typeof intent): boolean =>
       script &&
       ((tooLongOf(candidateIntent) !== undefined && !lengthRetried) ||
         ((motifOf(candidateIntent) !== undefined || staleOf(candidateIntent) !== undefined) && !motifRetried) ||
-        (dodgesOf(candidateIntent) && !debtRetried));
+        (dodgesOf(candidateIntent) && !debtRetried) ||
+        (quotesOf(candidateIntent).length > 0 && !quoteRetried) ||
+        (narrationOnly.has(candidateIntent) && !narrationRetried));
     // A line the guards refuse: a repeat, a signature phrase the actor keeps coming back to, or corrupt text.
     const isBad = (candidateIntent: typeof intent): boolean => isRepeat(candidateIntent) || loopOf(candidateIntent) !== undefined || garbleOf(candidateIntent) !== undefined;
     // One count per flagged candidate, by what it is first: corrupt, an echo of the actor, of the room, a signature phrase.
     const tally = (candidateIntent: typeof intent): void => {
       if (!policy.onGuard) return;
-      if (garbleOf(candidateIntent)) notify(policy.onGuard, "garble");
-      else if (isOwnRepeat(candidateIntent)) notify(policy.onGuard, "repeat_own");
-      else if (isRoomRepeat(candidateIntent)) notify(policy.onGuard, "repeat_room");
-      else if (loopOf(candidateIntent)) notify(policy.onGuard, "phrase_loop");
+      const said = candidateIntent.visibleContent;
+      if (garbleOf(candidateIntent)) tell("garble", said);
+      else if (isOwnRepeat(candidateIntent)) tell("repeat_own", said);
+      else if (isRoomRepeat(candidateIntent)) tell("repeat_room", said);
+      else if (loopOf(candidateIntent)) tell("phrase_loop", said);
     };
     if (!fallbackApplied) tally(intent);
 
@@ -446,6 +491,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         !unusable && motifOf(intent) ? "motif_repeat" : null,
         !unusable && !motifOf(intent) && staleOf(intent) ? "low_novelty" : null,
         !unusable && dodgesOf(intent) ? "owed_answer" : null,
+        !unusable && quotesOf(intent).length > 0 ? "false_quote" : null,
+        !unusable && narrationOnly.has(intent) ? "narration_only" : null,
         unusable ? "unusable_answer" : null,
         !unusable && aimedElsewhere(intent) ? "aimed_elsewhere" : null,
       ].filter((v): v is string => v !== null);
@@ -461,8 +508,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           if (garbleRetried) break;
           garbleRetried = true;
         }
-        // A script check already retried once, and nothing else wrong: the line is repaired below, not asked for again.
-        if (script && attempt > 0 && !fallbackApplied && !(isBad(intent) || parseResult.unresolvedTarget || aimedElsewhere(intent) || scriptBlocking(intent))) break;
+        // One retry per turn, whatever the rules the first attempt broke (they are all in its one note): what is still wrong is repaired below, not asked for again.
+        if (script && attempt > 0) break;
         const corrections: string[] = [];
         const garbled = garbleOf(intent);
         if (garbled) corrections.push(garbleRetryNote(garbled.token, ctx.profile.language));
@@ -488,19 +535,29 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           if (long && !lengthRetried) {
             lengthRetried = true;
             corrections.push(lengthRetryNote(long.words, long.cap, lang));
-            notify(policy.onGuard, "len_retry");
+            tell("len_retry", intent.visibleContent);
           }
           const motif = motifOf(intent);
           const stale = staleOf(intent);
           if ((motif || stale) && !motifRetried) {
             motifRetried = true;
             corrections.push(motif ? motifRetryNote(motif.said, lang) : noveltyRetryNote(lang));
-            notify(policy.onGuard, motif ? "motif_retry" : "novelty_retry");
+            tell(motif ? "motif_retry" : "novelty_retry", intent.visibleContent);
           }
           if (owedQuestionNow && dodgesOf(intent) && !debtRetried) {
             debtRetried = true;
             corrections.push(owedRetryNote(owedQuestionNow, lang));
-            notify(policy.onGuard, "debt_retry");
+            tell("debt_retry", intent.visibleContent);
+          }
+          const falseQuote = quotesOf(intent);
+          if (falseQuote.length > 0 && !quoteRetried) {
+            quoteRetried = true;
+            corrections.push(quoteRetryNote(falseQuote, lang));
+            tell("quote_retry", intent.visibleContent);
+          }
+          if (narrationOnly.has(intent) && !narrationRetried) {
+            narrationRetried = true;
+            corrections.push(narrationRetryNote(narrationOnly.get(intent)!, lang));
           }
         }
         // The failed attempt joins "your last lines": the retry is shown it as said, and its angle rotates (compact hotel prompt only).
@@ -508,7 +565,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           ctx.llmConfig.promptStyle === "compact" && intent.visibleContent
             ? { ...input, perceptionPacket: { ...input.perceptionPacket, ownRecentUtterances: [...input.perceptionPacket.ownRecentUtterances, intent.visibleContent] } }
             : input;
-        const retryPrompt = this.buildRetryPrompt(retryInput, ctx, prompt, corrections.join("\n\n"));
+        const retryPrompt = this.buildRetryPrompt(retryInput, ctx, prompt, script ? mergeRetryNotes(corrections, lang) : corrections.join("\n\n"));
         const retryTrimEvent = this.promptTrimEvent(
           retryPrompt,
           simulationId,
@@ -548,7 +605,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
             latencyMs: retryResult.latencyMs,
             promptVersion: retryPrompt.version,
           });
-          const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext);
+          const retryParse = withoutNarration(IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext));
           if (!retryParse.fallbackApplied) tally(retryParse.intent);
           if (!retryParse.fallbackApplied && !isBad(retryParse.intent) && !retryParse.unresolvedTarget && !aimedElsewhere(retryParse.intent) && !scriptBlocking(retryParse.intent)) {
             parseResult = retryParse;
@@ -604,32 +661,55 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       }
     }
 
-    // Script repairs of the line that is left. A person who asked this actor something gets their answer as it is (a repeat is what people
-    // give when asked twice); a line that still brings back a motif or says nothing new becomes the sentences of it that do not, or a short
-    // reaction; a line that still asks while it owes an answer loses its questions; and a line over the cap is cut at a sentence boundary.
-    if (script && !fallbackApplied && !repetitionBlocked && !garbleDropped && speaks(intent)) {
+    // Script repairs of the line that is left. Sentences that quote or report words nobody said are struck; a person who asked this actor something gets their
+    // answer as it is otherwise (a repeat is what people give when asked twice); a line that still brings back a motif or says nothing new becomes the sentences
+    // of it that do not; a line that still asks while it owes an answer loses its questions; and a line over the cap is cut at a sentence boundary. When nothing
+    // is left of the line the turn is silence (a no-op with the output-guard motive, the face the model gave it or one for its feeling): the guard never speaks for
+    // the actor. `PERFECTMAN_FILLER_SILENCE=0` brings back the old short reaction ("Ah.", "Hm.") said in its place.
+    let silenced: { why: string; before: string } | undefined;
+    if (script && !fallbackApplied && !repetitionBlocked && !garbleDropped && narrationOnly.has(intent)) {
+      silenced = { why: "only narration, nothing said out loud", before: narrationOnly.get(intent)! };
+    } else if (script && !fallbackApplied && !repetitionBlocked && !garbleDropped && speaks(intent)) {
       const original = intent.visibleContent!;
       let text = original;
       const reaction = (): string => reactionFor(`${agentId}|${ctx.pulseIndex}|${original.length}`, lang);
-      if (!asked && (motifOf(intent) !== undefined || staleOf(intent) !== undefined)) {
+      const giveUp = (why: string): void => {
+        if (fillerSilence) {
+          silenced ??= { why, before: original };
+          text = "";
+        } else text = reaction();
+      };
+      const falseQuote = quotesOf(intent);
+      if (falseQuote.length > 0) {
+        const before = text;
+        text = withoutFalseQuotes(text, falseQuote);
+        tell("quote_struck", before, text);
+        if (text === "") giveUp("every sentence put words in someone's mouth");
+      }
+      if (!silenced && !asked && (motifOf(intent) !== undefined || staleOf(intent) !== undefined)) {
+        const before = text;
         const kept = splitAfter(text, ".!?…")
           .filter((sentence) => motifRepeat(sentence, spoken, roomNamesSet) === undefined)
           .join(" ")
           .trim();
-        const usable = kept !== "" && normalizeWords(kept).length >= 2 && lowNovelty(kept, spoken, noveltyFloorValue) === undefined;
-        text = usable ? kept : reaction();
-        notify(policy.onGuard, "motif_reaction");
+        const usable = kept !== "" && normalizeWords(kept).length >= 2 && noveltyOf(kept) === undefined;
+        if (usable) text = kept;
+        else giveUp("nothing the room had not just heard");
+        if (!silenced) tell("motif_reaction", before, text);
       }
-      if (owedQuestionNow && !asked && !answersFirst(text)) {
+      if (!silenced && owedQuestionNow && !asked && !answersFirst(text)) {
+        const before = text;
         const rest = withoutQuestions(text);
-        text = rest !== "" ? rest : reaction();
-        notify(policy.onGuard, "debt_stripped");
+        if (rest !== "") text = rest;
+        else giveUp("a question asked while one was owed");
+        if (!silenced && text !== before) tell("debt_stripped", before, text);
       }
-      if (target && lengthOf(text) > target.cap) {
+      if (!silenced && target && lengthOf(text) > target.cap) {
+        const before = text;
         text = trimToCap(text, target.cap, target.sentences);
-        notify(policy.onGuard, "len_trimmed");
+        tell("len_trimmed", before, text);
       }
-      if (text !== original) intent = { ...intent, visibleContent: text };
+      if (!silenced && text !== original) intent = { ...intent, visibleContent: text };
     }
 
     const retryPhrase =
@@ -641,20 +721,27 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     if (garbleDropped) {
       // Not "Fallback applied:": the provider answered, so neither the breaker nor the health watch may count it as a failure.
       fallbackApplied = true;
+      const dropped = intent.visibleContent;
       intent = IntentParser.createFallback(
         agentId,
         "no_op",
         `${OUTPUT_GUARD_MARKER}: corrupt text ("${quoted(garbleDropped.token, 40)}") in the line, ${retryPhrase} — dropped, staying quiet.`,
       );
-      notify(policy.onGuard, "garble_dropped");
+      tell("garble_dropped", dropped, "");
+    } else if (silenced) {
+      fallbackApplied = true;
+      const face = this.silentBody(intent, input);
+      intent = { ...IntentParser.createFallback(agentId, "no_op", silenceMotive(silenced.why)), ...(face ? { body: face } : {}) };
+      tell("guard_silenced", silenced.before, "");
     } else if (repetitionBlocked) {
       fallbackApplied = true;
       const blockedOwn = lastRepeatWasOwn;
       const what = lastBlockedLoop
         ? `a signature phrase ("${quoted(lastBlockedLoop.phrase, 60)}") you keep coming back to`
         : `near-duplicate of ${blockedOwn ? "a message you already sent" : "a line someone else in the room just said, or of your own thought"}`;
+      const blocked = intent.visibleContent;
       intent = IntentParser.createFallback(agentId, "no_op", `${REPETITION_GUARD_MARKER}: ${what}, ${retryPhrase} — blocked structurally.`);
-      notify(policy.onGuard, "repeat_blocked");
+      tell("repeat_blocked", blocked, "");
     }
 
     // Target floor: after the retry arm, an intent whose reply/react target
@@ -792,7 +879,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       });
     }
 
-    if (fallbackApplied && !repetitionBlocked && !garbleDropped) {
+    if (fallbackApplied && !repetitionBlocked && !garbleDropped && !silenced) {
       const detail =
         retryKind === "provider_failed"
           ? `Retry provider call failed for agent ${agentId}; falling back to no_op.`
@@ -818,7 +905,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       });
     }
 
-    if (garbleDropped || repetitionBlocked) {
+    if (garbleDropped || repetitionBlocked || silenced) {
       operatorEvents.push({
         type: "intent_blocked",
         simulationId,
@@ -826,7 +913,9 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         pulseIndex: ctx.pulseIndex,
         detail: garbleDropped
           ? `Output guard dropped a line with corrupt text from agent ${agentId}; substituted no_op.`
-          : `Repetition guard blocked a near-duplicate message from agent ${agentId}; substituted no_op.`,
+          : silenced
+            ? `Output guard held back a line from agent ${agentId} (${silenced.why}); substituted no_op.`
+            : `Repetition guard blocked a near-duplicate message from agent ${agentId}; substituted no_op.`,
         createdAt: Date.now(),
       });
     }
@@ -842,6 +931,19 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     };
 
     return { ok: true, value: output };
+  }
+
+  /**
+   * The body of a turn the guard silenced: the block the model gave, when it names a face, a gesture or an act (the silence still shows what the
+   * person feels); else a face for the strongest feeling the model named (`emotionDrivers`), when this run asks for bodies at all; else whatever
+   * block it had (a walk, a posture). Never speech.
+   */
+  private silentBody(intent: AgentRuntimeOutput["intent"], input: AgentRuntimeInput): AgentRuntimeOutput["intent"]["body"] {
+    const given = intent.body;
+    if (given && (given.expression !== undefined || given.gesture !== undefined || given.act !== undefined)) return given;
+    const expression = input.perceptionPacket.body !== undefined ? expressionFor(intent.emotionDrivers ?? []) : undefined;
+    if (expression === undefined) return given;
+    return { ...(given ?? { order: "move_then_speak" as const }), expression };
   }
 
   /**

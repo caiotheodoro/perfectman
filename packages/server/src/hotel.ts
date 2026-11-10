@@ -26,7 +26,8 @@ export type { EventLog } from "./simulation/event-log.js";
 export { ChannelRegistry } from "./simulation/channel-registry.js";
 
 export { AgentRuntime } from "./agent/agent-runtime.js";
-export type { RepetitionPolicy, GuardKind } from "./agent/repetition-guard.js";
+export type { RepetitionPolicy, GuardKind, GuardInfo, GuardLogRule } from "./agent/repetition-guard.js";
+export { GUARD_LOG_RULE } from "./agent/repetition-guard.js";
 export { PromptBuilder } from "./agent/prompt-builder.js";
 export type { AgentRuntimeContext, AgentRuntimeOutput, BuiltPrompt } from "./agent/agent-runtime.types.js";
 
