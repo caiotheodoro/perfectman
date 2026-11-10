@@ -224,7 +224,7 @@ export function guardRatesOnCorpus(beats: readonly CorpusBeat[], lang: ScriptLan
       const room = say.slice(0, i).map((t) => ({ speaker: t.speaker, text: t.text }));
       const text = say[i]!.text;
       r.turns++;
-      const n = lowNovelty(text, room, floor) !== undefined;
+      const n = lowNovelty(text, room, floor, { names, self: say[i]!.speaker }) !== undefined;
       const m = motifRepeat(text, room, names) !== undefined;
       if (n) r.novelty++;
       if (m) r.motif++;
