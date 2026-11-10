@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import type { Server } from "node:http";
 import { join } from "node:path";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import type { LlmEnv } from "../config.js";
 import type { Sidecar } from "../sidecar.js";
 import type { FakeDirector } from "../testing/fake-director.js";
@@ -20,6 +20,8 @@ afterEach(async () => {
   sidecar = fake = llm = undefined;
   delete process.env["TEST_LINK_A_KEY"];
   delete process.env["TEST_LINK_B_KEY"];
+  delete process.env["OPENROUTER_API_KEY"];
+  vi.unstubAllGlobals();
 });
 
 type Status = Extract<SidecarFrame, { t: "run_status" }>;
@@ -82,9 +84,11 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
     b.fake.pmCommand(7, 12, "stop");
     await waitFor(() => b.fake.received.find((f) => f.t === "run_end"), "run_end", 6000);
     await waitFor(() => b.http.registered.length > 0, "artifact registration");
-    const manifest = JSON.parse(readFileSync(join(b.cfg.dataDir, "runs", "7", "replay.json"), "utf8")) as { counters: Record<string, number> };
-    expect(manifest.counters).toMatchObject({ llm_served_b: expect.any(Number), llm_failures_a: expect.any(Number) });
+    const manifest = JSON.parse(readFileSync(join(b.cfg.dataDir, "runs", "7", "replay.json"), "utf8")) as { counters: Record<string, number>; llm?: unknown };
+    expect(manifest.counters).toMatchObject({ llm_served_b: expect.any(Number), llm_failures_a: expect.any(Number), llm_failreason_a_http_503: expect.any(Number) });
     expect(manifest.counters["llm_served_b"]).toBeGreaterThan(0);
+    // which model and tier each link was, for an audit that only has the manifest; no pick, so no picked_* fields
+    expect(manifest.llm).toEqual({ links: { a: { model: "model-a", tier: "experimental" }, b: { model: "model-b", tier: "recommended" } } });
   }, 20_000);
 
   it("writes the compact hotel prompt to a 4K link, and logs an addressed line with its addressee's distance for the earshot probe", async () => {
@@ -204,5 +208,39 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
     expect(snap?.links[1]).toMatchObject({ served: expect.any(Number), skipped: {} });
     expect(snap?.links[1]?.served).toBeGreaterThan(0);
     expect(snap?.exhausted).toBe(0);
+  }, 25_000);
+  it("runs on the model the admin picked, an experimental 8B, and the manifest says which model, its tier and the cast it was picked for", async () => {
+    const intent = JSON.stringify({ intentType: "send_message", visibleContent: "oi, tudo certo por aqui!", privateMotiveSummary: "responder", personTargets: [] });
+    const asked: string[] = [];
+    // The pick goes to OpenRouter; no network in a test, so that host (and only that host) is answered here.
+    const realFetch = globalThis.fetch;
+    vi.stubGlobal("fetch", async (input: Parameters<typeof fetch>[0], init?: RequestInit) => {
+      if (!String(input).startsWith("https://openrouter.ai/")) return realFetch(input, init);
+      const parsed = JSON.parse(String(init?.body)) as { model: string; max_tokens?: number };
+      asked.push(parsed.model);
+      if (parsed.max_tokens === 1) return new Response("{}", { status: 200 });
+      return new Response(JSON.stringify({ choices: [{ message: { content: intent } }], usage: { prompt_tokens: 900, completion_tokens: 40 }, model: parsed.model }), { status: 200, headers: { "content-type": "application/json" } });
+    });
+    process.env["OPENROUTER_API_KEY"] = "or-test";
+    process.env["TEST_LINK_A_KEY"] = "key-a";
+    const chain = [{ name: "a", baseUrl: "http://127.0.0.1:9/a/v1", apiKeyEnv: "TEST_LINK_A_KEY", model: "model-a" }];
+    const llmEnv: LlmEnv = { provider: "openai-compatible", baseUrl: chain[0]!.baseUrl, apiKeyEnv: "TEST_LINK_A_KEY", models: ["model-a"], chain, prices: { "model-a": { inUsdPerMTok: 0, outUsdPerMTok: 0 }, "sao10k/l3-lunaris-8b": { inUsdPerMTok: 0.04, outUsdPerMTok: 0.05 } }, concurrency: 3, softCallsPerMin: 600, softTokensPerHour: 5_000_000 };
+    const b = await bootSidecar({ config: { llm: llmEnv }, timing: { baseIntervalMs: 60_000 } });
+    fake = b.fake;
+    sidecar = b.sidecar;
+    b.fake.startRun({ run: 7, room: 12, scenarioVersion: 31, model: { id: "sao10k/l3-lunaris-8b", context: 8192, price_in: 0.04, price_out: 0.05 } });
+    await waitFor(() => lastStatus(b.fake)?.state === "running", "running");
+    await waitFor(() => b.fake.received.some((f) => f.t === "actor_cmd" && f.cmd.k === "walk"), "the cast walking in");
+    b.fake.humanSay(12, 9, "Duda, tudo bem?");
+    await waitFor(() => b.fake.chats.find((c) => c.text.includes("tudo certo por aqui")), "the reply served by the pick", 8000);
+    expect(asked).toContain("sao10k/l3-lunaris-8b");
+
+    b.fake.pmCommand(7, 12, "stop");
+    await waitFor(() => b.fake.received.find((f) => f.t === "run_end"), "run_end", 6000);
+    await waitFor(() => b.http.registered.length > 0, "artifact registration");
+    const manifest = JSON.parse(readFileSync(join(b.cfg.dataDir, "runs", "7", "replay.json"), "utf8")) as { counters: Record<string, number>; llm?: { picked_model?: string; picked_tier?: string; picked_actors?: number; links: Record<string, { model: string; tier: string }> } };
+    expect(manifest.llm).toMatchObject({ picked_model: "sao10k/l3-lunaris-8b", picked_tier: "experimental", links: { pick: { model: "sao10k/l3-lunaris-8b", tier: "experimental" }, a: { model: "model-a", tier: "recommended" } } });
+    expect(manifest.llm?.picked_actors).toBeGreaterThan(0);
+    expect(manifest.counters["llm_served_pick"]).toBeGreaterThan(0);
   }, 25_000);
 });
