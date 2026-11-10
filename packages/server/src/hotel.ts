@@ -58,6 +58,8 @@ export type {
 } from "./config/simulation-config.js";
 
 export { compileRunInputs } from "./authoring/compile-run-inputs.js";
+export { loadSlimKbFromEnv, beatCraftEnabled, KB_SLIM_ENV, KB_CRAFT_ENV } from "./kb/slim-file.js";
+export type { SlimLoadOptions } from "./kb/slim-file.js";
 export { compilePersonaMarkdown } from "./authoring/persona-md-compiler.js";
 export { parseMarkdown } from "./authoring/md/document.js";
 export type { MdDocument } from "./authoring/md/document.js";

@@ -17,12 +17,12 @@ index/kb.sqlite   (gitignored)
    | query / queryReferenceBeats(tactic, actionTag, castSize)
 ```
 
-What is committed: the code, the taxonomy, the tests and this README. What is not: `corpus/` and `index/`.
+What is committed: the code, the taxonomy, the tests, the notice and this README. What is not: `corpus/`, `index/` and `slim/`.
 
 ## Commands
 
 ```bash
-pnpm --filter @perfectman/kb build
+pnpm --filter "@perfectman/kb..." build   # kb, and shared, which it imports for the slim format
 cd packages/kb
 node dist/cli.js build-beats
 node dist/cli.js export-tags --dialogue-fraction 0.25 --dialogue-fraction-pt 0.5 --heldout 0.1 --batch 40
@@ -31,10 +31,40 @@ node dist/cli.js check-tags index/tagging/batch-0001.out.jsonl
 node dist/cli.js import-tags index/tagging --by haiku
 node dist/cli.js embed                       # Xenova/multilingual-e5-small, q8; --embedder hash for a model-free run
 node dist/cli.js query --tactic "to intimidate" --action KILLING --cast 3 --limit 5 [--text] [--plan]
+node dist/cli.js export-slim --out slim/kb-slim.json --built 2026-11-10   # the file production reads; needs the index, no model
 node dist/cli.js stats
 ```
 
 `queryReferenceBeats(store, embedder, tactic, actionTag, castSize, opts)` is the library call. `createReferenceQuery(store, embedder)` binds it to the three-argument shape `(tactic, actionTag, castSize)`. `toPlanRefs()` turns results into the pointers that go into `plan.json` `reference_beats`: ids, titles, labels and scores, never the text. Beat text is returned only with `includeText`, for prompt injection at generation time.
+
+## Slim artifact: how the KB reaches the code that writes scenes
+
+The full index cannot go to production: `corpus/` and `index/` are never rsynced (see `docs/deploying.md`), and the sidecar image carries no ONNX runtime. So scene writing reads a second, redistributable file built from the index, and retrieval over it needs no embedding model.
+
+```
+index/kb.sqlite  --export-slim-->  slim/kb-slim.json   (gitignored, built on the owner's machine)
+                                        |  PERFECTMAN_KB_SLIM=<path>   (unset = the KB does nothing; the draft block follows this alone)
+                      +-----------------+------------------------------+
+        draft prompt (story-draft.ts)                      beat craft (hotel run)
+        2-3 reference scenes, <= 1,500 chars,              <= 2 style lines per authored beat, <= 600 chars,
+        in the draft's language only                       in the scene's language only, precomputed when
+        chosen once per draft                              the run starts, shown only while the beat is near;
+                                                           OFF unless PERFECTMAN_KB_CRAFT=1
+```
+
+Design, in five points. Language is gated, not preferred, wherever text reaches a model: the draft block holds scenes in the draft's language only (a Portuguese draft over a KB with no Portuguese scene gets no block; the one exception is an explicitly English idea under a pinned Portuguese draft, which gets English scenes only when the KB has no Portuguese scene at all, never a mix), and the runtime feed holds quips in the scene's language only.
+
+1. **The file.** `node dist/cli.js export-slim --out <path> [--built YYYY-MM-DD]` writes one deterministic JSON file (same index and flags, same bytes: the header's `built` is the `--built` value and is omitted without it, the clock is never read). A header carries the format name and version, the notice text, the licence line per class, and the tactic-to-group map. A `works` table holds title, author, licence class and language once per play; each beat holds its id, work index, language, cast size, `action_type`, `status_delta`, `tactic_verb`, `emotion`, `medium`, the tagger's confidence, `boundary_ok`, an excerpt of at most 420 characters, and a quip of at most 200 characters. Embeddings, full text, speakers' list, drivers and targets are left out.
+2. **Excerpts are cut on whole lines, never mid-line.** The exporter picks the window of consecutive lines (speeches and directions) that fits the cap and has the most voices, preferring a window that holds the stage direction of the physical action. Speakers are named `A`, `B`, `C` in the excerpt, in the speech lines and in the directions (a name that only appears inside a speech, or in a direction for someone who does not speak in the beat, stays). A beat whose lines are all longer than the cap has no window and is left out. The quip is the same pick under 200 characters, used only for the runtime style lines.
+3. **Only open text.** A beat is exported only when its licence class is `public-domain-us` or `cc-by-sa`. Every rendering of an excerpt names the work and author and its class; the CC BY-SA ones keep the share-alike note (anything derived from them that is redistributed carries source and licence). `NOTICE.md` next to the exporter has the full text, the exporter writes the same text into the file, and a test pins the two equal.
+4. **Ranking is metadata only.** Hard filter: `action_type` (the plan's `NONE` is `DIALOGUE_ONLY`) and cast size within one of the ask; if that leaves fewer than the limit (in the preferred language, when one is given: language outweighs cast distance), the window widens to 2, 4, then any, and nearer casts rank higher. Then a weighted score: language match, the exact tactic, the tactic's group, `status_delta`, `emotion`, `boundary_ok`, the tagger's confidence, and a little for an excerpt that is a scene and not a stub; ties break on beat id, so the same ask always returns the same beats. At most one beat per work, so three references are three plays. Callers that must not show another language ask with `languageOnly`, which makes the language a hard filter and returns nothing when the KB has none. Labels are about 40% exact on tactic, so tactic ranks and never decides. Embeddings stay in the full index and in `queryReferenceBeats`; the slim path does not use them.
+5. **Where the code lives.** The format, parser, ranking and renderers are in `@perfectman/shared` (`src/kb/`), because that is the one package every image builds; `@perfectman/kb` is not built in the Docker images and must not become a runtime dependency of the server or the hotel. The exporter is here and imports the format from shared. The file loader (`PERFECTMAN_KB_SLIM`, cached by path and mtime, any read or parse failure logged once and treated as "no KB") is in the server. With `PERFECTMAN_KB_SLIM` unset, no prompt changes by a byte; with `PERFECTMAN_KB_CRAFT` unset (its default, only exactly `1` turns it on), no actor prompt changes by a byte even when the file is loaded.
+
+First export (2026-11-10, from the second build): 1,910 of the 1,924 tagged beats (14 had no whole-line window), 45 works, 1,203 en and 707 pt, 1,851 with a quip, 1.4 MB, byte-identical on a second run.
+
+The runtime feed, in detail. An authored beat has no tactic field, so its verb stands for one (`CRAFT_FOR_VERB` in `@perfectman/shared`: `insult` is dialogue that humbles, `slap` a rebuke that strikes, `kill` the killing, `hug`, `kiss`, `cry`, `storm_off`, `turn_back`, `faint` their own actions; `tableau`, `recoil`, `freeze_gasp`, `restrain`, `tend_fallen` and `die` stand for none and get no lines). Off by default: only `PERFECTMAN_KB_CRAFT=1` (with the slim file) turns it on, because the labels are loose and the quips are archaic English beside pt-BR actors. When a run's script starts, `BeatCraft.build` picks up to two quips per beat with the same filters (cast size is the run's, no quip is given to two beats) and only in the run's language: a pt-BR scene gets Portuguese quips and nothing else, and a beat the KB has no quip for in that language gets none, renders them under a one-line header with title, author and licence in at most 600 characters, and keeps them in memory. The hotel view of the beat's actor carries them (`SpaceView.craft`, then `BodyPerception.craft`) from 20 s before the beat to 10 s after it; the prompt puts them under the scene-craft digest, in the compact and in the full contract alike. No retrieval happens per pulse.
+
+What a reference is allowed to do. It is prompt context for the model, framed as "study the pressure and the turn, never copy lines or names". The model's reply is untrusted exactly as before (`toStoryDraft`, `repairBeats`); on top, `guardDraft` cuts a line that repeats a run of five words of a reference the model was shown, and refuses a draft whose prose does, or whose person is named after a word of a shown play's title or author that the idea did not use (the caller then asks again). Nothing from a reference is written into a scenario, a compiled body, a frame log or a run artifact: the style lines of the runtime feed live in memory for the run only.
 
 ## Labels
 

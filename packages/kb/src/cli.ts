@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+import { parseSlimKb } from "@perfectman/shared";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { buildBeats } from "./ingest/index.js";
 import { makeEmbedder } from "./embed.js";
 import { queryReferenceBeats, toPlanRefs } from "./query.js";
+import { buildSlim } from "./slim/build.js";
 import { Store } from "./store.js";
 import { agreement, importTagLines, sampleIds, selectForTagging, splitHeldOut, writeTaggingBatches } from "./tags.js";
 import type { Beat, TagRecord, TaggedBeat } from "./types.js";
@@ -20,6 +22,8 @@ import type { Beat, TagRecord, TaggedBeat } from "./types.js";
  *   agreement <a.jsonl> <b.jsonl>
  *   embed [--embedder hash|transformers] [--model name]       tags + beats -> index/kb.sqlite
  *   query --tactic "to intimidate" --action KILLING --cast 3 [--limit 5] [--text] [--plan]
+ *   export-slim [--out slim/kb-slim.json] [--built YYYY-MM-DD] [--index path]
+ *                                    index/kb.sqlite -> the slim reference file production reads (open text only, whole-line excerpts, no model needed)
  *   stats
  */
 
@@ -162,6 +166,22 @@ async function main(): Promise<void> {
       store.close();
       return;
     }
+    case "export-slim": {
+      const file = typeof flags["index"] === "string" ? path.resolve(flags["index"]) : path.join(idx, "kb.sqlite");
+      if (!existsSync(file)) throw new Error("no index yet: run embed");
+      const out = path.resolve(typeof flags["out"] === "string" ? flags["out"] : path.join(root, "slim", "kb-slim.json"));
+      const store = new Store(file);
+      const { json, stats } = buildSlim(store.candidates({}), typeof flags["built"] === "string" ? { built: flags["built"] } : {});
+      store.close();
+      // The file is read back through the reader production uses: a file it would refuse, or drop a beat from, is not written.
+      const check = parseSlimKb(JSON.parse(json));
+      if (!check.ok) throw new Error(`the slim file does not read back: ${check.error}`);
+      if (check.dropped > 0) throw new Error(`the slim file does not read back whole: the reader would drop ${check.dropped} beats`);
+      mkdirSync(path.dirname(out), { recursive: true });
+      writeFileSync(out, json);
+      console.log(JSON.stringify({ out, bytes: Buffer.byteLength(json), ...stats }, null, 2));
+      return;
+    }
     case "stats": {
       const file = path.join(idx, "kb.sqlite");
       if (!existsSync(file)) throw new Error("no index yet: run embed");
@@ -171,7 +191,7 @@ async function main(): Promise<void> {
       return;
     }
     default:
-      console.error("commands: build-beats | export-tags | import-tags | sample | agreement | embed | query | stats");
+      console.error("commands: build-beats | export-tags | import-tags | sample | agreement | embed | query | export-slim | stats");
       process.exitCode = cmd ? 1 : 0;
   }
 }

@@ -59,6 +59,17 @@ export class ScopedMirror implements ActorSpace {
     this.dramaOn = source;
   }
 
+  /**
+   * The style lines of an authored beat that is near for this agent at this run-clock time (the slim KB's runtime feed, `BeatCraft`). Set only
+   * when a slim KB is configured and a beat has lines; while it is, the view of a person with a beat near carries `craft` and the prompt
+   * shows it with the scene craft. Never set otherwise.
+   */
+  private craftOf: ((agentId: string, now: number) => string | undefined) | undefined;
+
+  setCraft(source: ((agentId: string, now: number) => string | undefined) | undefined): void {
+    this.craftOf = source;
+  }
+
   private localPresence(p: Presence): Presence {
     const ref = this.local(p.ref);
     const fallen = this.fallenOf?.(ref);
@@ -99,6 +110,8 @@ export class ScopedMirror implements ActorSpace {
     if (v.room) out.room = { ...v.room, occupants: v.room.occupants.map((p) => this.localPresence(p)) };
     if (v.self) out.self = this.localPresence(v.self);
     if (this.dramaOn?.()) out.drama = true;
+    const craft = this.craftOf?.(agentId, now);
+    if (craft !== undefined) out.craft = craft;
     return out;
   }
 

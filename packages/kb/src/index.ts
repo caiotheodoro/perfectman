@@ -8,3 +8,6 @@ export { TAGGING_PROMPT, toTaggingInput, writeTaggingBatches, validateTag, impor
 export { HashEmbedder, TransformersEmbedder, makeEmbedder, dot, type Embedder } from "./embed.js";
 export { Store, type Filter, type StoredBeat } from "./store.js";
 export { queryReferenceBeats, createReferenceQuery, toPlanRefs, type QueryOptions } from "./query.js";
+export { buildSlim, type SlimBuildOptions, type SlimBuildStats } from "./slim/build.js";
+export { SLIM_NOTICE, SLIM_LICENSE_LINES } from "./slim/notice.js";
+export { parseBeatLines, anonymise, pickWindow, type RenderedLine } from "./slim/window.js";

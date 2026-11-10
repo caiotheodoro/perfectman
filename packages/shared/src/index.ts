@@ -120,3 +120,10 @@ export * from "./stage/index.js";
 export * from "./director/index.js";
 export * from "./stage-art/index.js";
 export * from "./demo/index.js";
+
+// The slim KB: reference scenes for the draft prompt and style lines for authored beats (packages/kb README, "Slim artifact").
+export * from "./kb/slim.js";
+export * from "./kb/slim-select.js";
+export * from "./kb/slim-render.js";
+export * from "./kb/beat-craft.js";
+export * from "./kb/slim-fixture.js";

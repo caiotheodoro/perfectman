@@ -1,5 +1,5 @@
 import type { BodyPerception } from "@perfectman/shared";
-import { ACT_TARGET_MODE, ACT_VERBS } from "@perfectman/shared";
+import { ACT_TARGET_MODE, ACT_VERBS, BEAT_CRAFT_MAX_CHARS } from "@perfectman/shared";
 import type { ActVerb } from "@perfectman/shared";
 
 /**
@@ -139,14 +139,23 @@ function verbLines(lang: Lang): string {
   return [lead, ...WHEN[lang].map((w) => `- ${w.feeling}: ${w.verbs.join(", ")} (${w.use})`)].join("\n");
 }
 
+/**
+ * The scene-craft digest, and under it the style lines of an authored beat that is near for this person (`BodyPerception.craft`, the slim KB's
+ * runtime feed), when there are any. Cut at the feed's own budget as a last guard. Without `craft` this is the digest itself, unchanged.
+ */
+function withCraft(digest: string, body: BodyPerception | undefined): string {
+  const craft = body?.craft;
+  return typeof craft === "string" && craft !== "" ? `${digest}\n\n${craft.slice(0, BEAT_CRAFT_MAX_CHARS)}` : digest;
+}
+
 /** The drama block of the output contract (full prompt): shape, verbs by feeling, the ladder, the style rule, scene craft, three answers. */
 export function dramaContractLines(lang: Lang, body: BodyPerception | undefined): string[] {
   const header = lang === "pt-BR" ? "Exemplos de resposta com act (só o formato: use as suas próprias palavras):" : "Examples of an answer with act (the format only: use your own words):";
-  return [HEAD[lang], verbLines(lang), LADDER[lang], STYLE[lang], SCENE_CRAFT[lang], [header, ...dramaExamples(lang, body)].join("\n")];
+  return [HEAD[lang], verbLines(lang), LADDER[lang], STYLE[lang], withCraft(SCENE_CRAFT[lang], body), [header, ...dramaExamples(lang, body)].join("\n")];
 }
 
 /** The same, shorter, for the compact hotel prompt: shape, the ladder, the style rule and a short scene craft, and two answers. */
 export function dramaCompactLines(lang: Lang, body: BodyPerception | undefined): string[] {
   const header = lang === "pt-BR" ? "Exemplos com act:" : "Examples with act:";
-  return [HEAD[lang], LADDER[lang], STYLE[lang], SCENE_CRAFT_COMPACT[lang], [header, ...dramaExamples(lang, body).slice(0, 2)].join("\n")];
+  return [HEAD[lang], LADDER[lang], STYLE[lang], withCraft(SCENE_CRAFT_COMPACT[lang], body), [header, ...dramaExamples(lang, body).slice(0, 2)].join("\n")];
 }

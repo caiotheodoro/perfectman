@@ -9,7 +9,10 @@
  */
 import { z } from "zod";
 import { ACT_TARGET_MODE, ACT_VERBS, LADDER_VERBS, repairBeats } from "@perfectman/shared";
-import type { DraftRole, DraftStoryRequest, StoryDraft } from "@perfectman/shared";
+import type { DraftRole, DraftStoryRequest, SlimKb, StoryDraft } from "@perfectman/shared";
+import { loadSlimKbFromEnv } from "../kb/slim-file.js";
+import { draftReferences, guardDraft } from "./draft-references.js";
+import type { DraftReferences } from "./draft-references.js";
 
 export class StoryDraftError extends Error {
   /**
@@ -60,7 +63,11 @@ const Reply = z.object({
 
 const verbsWhere = (mode: "required" | "none"): string => ACT_VERBS.filter((verb) => ACT_TARGET_MODE[verb] === mode).join(", ");
 
-export function draftPrompt(idea: string, people: number | undefined, language?: "en" | "pt-BR"): { system: string; user: string } {
+/**
+ * `references` is the rendered reference-scenes block (`draftReferences`), added at the very end of the user message. Absent, the prompt is
+ * the one it always was, byte for byte.
+ */
+export function draftPrompt(idea: string, people: number | undefined, language?: "en" | "pt-BR", references?: string): { system: string; user: string } {
   const count = people === undefined ? "three to five" : String(Math.min(MAX_PEOPLE, Math.max(MIN_PEOPLE, Math.round(people))));
   return {
     system: [
@@ -92,6 +99,7 @@ export function draftPrompt(idea: string, people: number | undefined, language?:
       "First beat at 15 s or later; shove, slap, punch, kill at least 20 s apart; at most one death (kill or die), followed by a cut.",
       "No weapon, blood or gore (a blow is a hand, a death a swoon and a fall). No verb for it? stab, shoot, strangle, poison = kill; hold hands, stroke a cheek = hug; slam a door, throw something = storm_off then a cut; else no beat. Never @human or a visitor in beats.",
       "Text values are what people say and do, with no technical words.",
+      ...(references !== undefined ? ["", references] : []),
     ].join("\n"),
   };
 }
@@ -189,8 +197,8 @@ export function providerMessage(raw: string): string {
  * reached, times out, returns nothing, or returns two unreadable drafts hands over to the next. Only when every link has failed
  * does it throw, with each link's own words in `detail`.
  */
-async function draftOverChain(request: DraftStoryRequest, idea: string, chain: DraftChain, fetchImpl: Fetch): Promise<StoryDraft> {
-  const prompt = draftPrompt(idea, request.people, request.language);
+async function draftOverChain(request: DraftStoryRequest, idea: string, chain: DraftChain, fetchImpl: Fetch, references?: DraftReferences): Promise<StoryDraft> {
+  const prompt = draftPrompt(idea, request.people, request.language, references?.block);
   const secrets = chain.links.map((link) => link.apiKey).filter(Boolean);
   const scrub = (value: string): string => secrets.reduce((text, secret) => text.split(secret).join("[key]"), value);
   const notes: string[] = chain.skipped ? [...chain.skipped] : [];
@@ -231,7 +239,7 @@ async function draftOverChain(request: DraftStoryRequest, idea: string, chain: D
         break;
       }
       try {
-        return toStoryDraft(reply, request.language);
+        return checked(toStoryDraft(reply, request.language), idea, references);
       } catch (error) {
         problem = `unusable draft (${error instanceof Error ? error.message : "unreadable reply"})`;
       }
@@ -241,20 +249,31 @@ async function draftOverChain(request: DraftStoryRequest, idea: string, chain: D
   throw new StoryDraftError("No model could draft this story.", 502, "Try again in a moment, or tell the owner the model chain is failing.", notes.join("; "));
 }
 
-export async function draftStory(request: DraftStoryRequest, fetchImpl: Fetch = fetch, chain?: DraftChain): Promise<StoryDraft> {
+/** The reply, held against the references it was shown (none: unchanged). */
+function checked(draft: StoryDraft, idea: string, references: DraftReferences | undefined): StoryDraft {
+  return references ? guardDraft(draft, references.guard, idea) : draft;
+}
+
+/**
+ * `kb` is the slim reference KB for the prompt: absent, it is read from `PERFECTMAN_KB_SLIM` (unset or unreadable means none); `null` means
+ * none whatever the environment says. With none, the request and the checks are exactly what they were before the KB existed.
+ */
+export async function draftStory(request: DraftStoryRequest, fetchImpl: Fetch = fetch, chain?: DraftChain, kb?: SlimKb | null): Promise<StoryDraft> {
   const idea = request.idea.replace(/\s+/g, " ").trim().slice(0, 2000);
   if (idea.length < 8) throw new StoryDraftError("Say a little more about the story.", 422, "A sentence is enough: who is there, and what just happened.");
+  const slim = kb === null ? undefined : (kb ?? loadSlimKbFromEnv());
+  const references = slim ? draftReferences(slim, idea, request.people, request.language) : undefined;
   if (chain) {
     if (chain.links.length === 0) {
       throw new StoryDraftError("No model in the chain has a key.", 502, "Tell the owner to set the chain's keys.", (chain.skipped ?? []).join("; "));
     }
-    return draftOverChain(request, idea, chain, fetchImpl);
+    return draftOverChain(request, idea, chain, fetchImpl, references);
   }
   const { llm } = request;
   if (!llm.baseUrl || !llm.modelName || !llm.apiKey) {
     throw new StoryDraftError("Drafting needs a model and a key.", 422, "Paste a key for a model first.");
   }
-  const prompt = draftPrompt(idea, request.people, request.language);
+  const prompt = draftPrompt(idea, request.people, request.language, references?.block);
   const body = {
     model: llm.modelName,
     messages: [{ role: "system", content: prompt.system }, { role: "user", content: prompt.user }],
@@ -285,7 +304,7 @@ export async function draftStory(request: DraftStoryRequest, fetchImpl: Fetch = 
       throw new StoryDraftError("Could not reach the model.", 502, "Check the connection and try again.");
     }
     try {
-      return toStoryDraft(reply, request.language);
+      return checked(toStoryDraft(reply, request.language), idea, references);
     } catch (error) {
       lastProblem = error instanceof Error ? error.message : "unreadable reply";
     }

@@ -1,11 +1,14 @@
 import type { ActionEmotions, ActionIntent, AgentRuntimeInput, AgentState, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
+import { BeatCraft } from "@perfectman/shared";
 import {
   AgentRuntime,
   MockLLMProvider,
   PromptBuilder,
   applySeeds,
   buildConfiguredSimulation,
+  beatCraftEnabled,
   createLLMProvider,
+  loadSlimKbFromEnv,
   scrubConfigForArtifact,
 } from "@perfectman/server/hotel";
 import type { AgentCommitInfo, BuiltPrompt, ConfiguredSimulationHandle, GuardKind, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
@@ -21,6 +24,7 @@ import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfStat
 import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
 import { resolveRunDrama, summarizeRunDrama } from "../authoring/scenario-drama.js";
+import type { ScenarioBeat } from "../authoring/scenario-beats.js";
 import { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld } from "../director/drama/index.js";
 import type { DramaDecisionPort, DramaHost, SceneAdvance } from "../director/drama/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
@@ -628,8 +632,11 @@ export class Run {
   private startBeats(): void {
     const beats = this.body.beats ?? [];
     if (!this.director || beats.length === 0) return;
+    const startedAt = this.d.clock.now();
+    this.startBeatCraft(beats, startedAt);
     this.beatPlayer = new BeatPlayer({
       clock: this.d.clock,
+      startedAt,
       port: () => this.director,
       beats,
       drama: resolveRunDrama(this.body),
@@ -647,6 +654,23 @@ export class Run {
       },
     });
     this.beatPlayer.start();
+  }
+
+  /**
+   * The slim KB's runtime feed (packages/kb README): when `PERFECTMAN_KB_CRAFT=1` (off by default, and independent of the draft prompt) and
+   * `PERFECTMAN_KB_SLIM` points at a slim file, each authored beat that stands for a tactic gets up to two short style lines in the run's own
+   * language, worked out here once and shown to that beat's actor only while the beat is near. Kept in memory for the run: never in the body,
+   * the frame log or an artifact. Flag off, no file, no line in the run's language, or a file that does not read: nothing happens and no prompt changes.
+   */
+  private startBeatCraft(beats: readonly ScenarioBeat[], startedAt: number): void {
+    if (!beatCraftEnabled()) return;
+    const kb = loadSlimKbFromEnv({ warn: (message) => this.d.logger.warn(message) });
+    if (!kb) return;
+    const language = this.body.config.agents[0]?.promptProfile.language === "en" ? "en" : "pt-BR";
+    const craft = BeatCraft.build(beats, kb, { language, cast: this.body.config.agents.length });
+    if (!craft) return;
+    this.space.setCraft((agent, now) => craft.textFor(agent, now - startedAt));
+    this.d.logger.info("beat craft", { run: this.id, beats: craft.size });
   }
 
   /** What the planner asks to approve, veto or start an act (docs/drama/act-contract.md 11.5); undefined when drama is off for this process. */
