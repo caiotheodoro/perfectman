@@ -128,6 +128,53 @@ address, user and key are in those docs, not here.
 records which commit the tree on the server came from.
 Check it before deploying habbo, since `deploy.sh` will build whatever tree is there.
 
+### Optional: the reference-scenes file (slim KB)
+
+Scene writing can read a small file of reference scenes (`packages/kb/README.md`,
+"Slim artifact"): the draft prompt gets two or three, and an authored beat's actor
+gets two short style lines while the beat is near. It is optional. With
+`PERFECTMAN_KB_SLIM` unset, or pointing at a file that is missing or not a slim
+file, the sidecar builds exactly the prompts it always did (a bad file is logged
+once, `the reference KB is off`).
+
+**Where it is built.** On the owner's machine, from the full index, which exists
+only there (`packages/kb/corpus` and `packages/kb/index` are never synced):
+
+```bash
+cd packages/kb && pnpm build
+node dist/cli.js export-slim --out slim/kb-slim.json --built "$(date +%F)"
+# in a checkout without the index: add --index <path to kb.sqlite>
+```
+
+About 1.4 MB, open text only (public domain and CC BY-SA), every excerpt with its
+work, author and licence, the notice in the file's own header. It is deterministic:
+the same index gives the same bytes, so a rebuilt file that `cmp`s equal needs no
+deploy. `packages/kb/slim/` is gitignored, so the file never dirties the checkout.
+
+**How it is rsynced.** It travels with the tree, as `packages/kb/slim/kb-slim.json`.
+The `EXCLUDES` list above does not cover it on purpose. Put the file in the checkout
+you sync from before the dry run (the file list should show it); a checkout without
+it makes `--delete` remove the copy on the server, which is how to switch the
+feature off.
+
+**How the container sees it.** The image copies only the packages' `dist`, so the
+file is not in the image: mount the synced directory read-only and name the file.
+In the sidecar service of the habbo repo's compose file (the snippet in
+`packages/hotel/deploy/compose.sidecar.yaml` has the lines, commented out):
+
+```yaml
+environment:
+  PERFECTMAN_KB_SLIM: /kb/kb-slim.json
+volumes:
+  - /opt/cmb/perfectman/packages/kb/slim:/kb:ro
+```
+
+An environment change needs the container recreated (`up -d`), not restarted.
+To roll back, remove the variable (or the file and the sync) and recreate. Nothing
+in the file needs an embedding model or an ONNX runtime. Do not publish the file
+anywhere without its notice. This section describes the procedure; nothing here
+was deployed.
+
 Not verifiable from this repo: the habbo-side compose and `deploy.sh`, and the
 rsync flags above beyond `--checksum -n` and the exclude list, which are the
 documented procedure rather than something a file here proves.

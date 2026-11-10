@@ -60,6 +60,19 @@ describe("runEngineStep in hotel mode", () => {
     expect(on.perceptionPacket.body?.people).toEqual(plain.perceptionPacket.body?.people);
   });
 
+  it("the body block carries `craft` (the slim KB's style lines) only with drama and only when the view does, and a view without it leaves no key behind", () => {
+    const model = loungeModel([person("a1", "Ana", [5, 4]), person("a2", "Duda", [6, 4])], ["a1"]);
+    const view = viewOf(model, "a1", T0 + 1000);
+    const lines = "Style reference, for the pressure and pace of the talk only, never quoted:\n- A: Sit. (The Tin Crown, A. Nobody, public domain)";
+    const plain = runEngineStep(snapshot({ space: { ...view, drama: true } }));
+    expect("craft" in plain.perceptionPacket.body!).toBe(false);
+    const with_ = runEngineStep(snapshot({ space: { ...view, drama: true, craft: lines } }));
+    expect(with_.perceptionPacket.body?.craft).toBe(lines);
+    expect(with_.perceptionPacket.body?.people).toEqual(plain.perceptionPacket.body?.people);
+    const noDrama = runEngineStep(snapshot({ space: { ...view, craft: lines } }));
+    expect("craft" in noDrama.perceptionPacket.body!).toBe(false);
+  });
+
   it("arriving (own body_arrived) wakes the agent for the model", () => {
     const model = loungeModel([person("a1", "Ana", [5, 4])], ["a1"]);
     const arrived = makeEvent("body_arrived", { id: "e9", channelId: "room:lounge", actorId: "a1", payload: { planId: "p", room: "lounge", tile: [5, 4] } });

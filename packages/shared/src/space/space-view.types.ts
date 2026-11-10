@@ -38,6 +38,8 @@ export type SpaceView = {
    * the decode grammar it always did.
    */
   drama?: true;
+  /** The style lines of an authored beat that is near for this agent (the KB's runtime feed), carried to `BodyPerception.craft`. Absent unless a slim KB is configured. */
+  craft?: string;
 };
 
 /**

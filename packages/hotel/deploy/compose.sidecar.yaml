@@ -26,6 +26,8 @@ services:
       PERFECTMAN_MAX_RUNS: "3"
       PERFECTMAN_DATA_DIR: /data/perfectman
       PERFECTMAN_HEALTH_PORT: "9100"      # loopback inside the container; used by the image HEALTHCHECK
+      # Optional reference scenes (packages/kb README, "Slim artifact"; docs/deploying.md). Both lines together, or neither:
+      # PERFECTMAN_KB_SLIM: /kb/kb-slim.json
       # PERFECTMAN_LLM_BASE_URL, PERFECTMAN_LLM_API_KEY, PERFECTMAN_LLM_MODELS,
       # PERFECTMAN_LLM_PRICES and PERFECTMAN_LLM_CONCURRENCY come from perfectman.env.
       # Or PERFECTMAN_LLM_CHAIN (a JSON array of links, failover in order) instead of the first three.
@@ -33,6 +35,7 @@ services:
       # shows p95 <= 6 s at our prompt size (D53).
     volumes:
       - perfectman-data:/data/perfectman  # shared with the hotel container; same uid (node, 1000) or a group-writable directory
+      # - /opt/cmb/perfectman/packages/kb/slim:/kb:ro   # the slim KB file, rsynced with the tree; not in the image
     # no `ports:`, no `expose:`
 
   tilehouse:

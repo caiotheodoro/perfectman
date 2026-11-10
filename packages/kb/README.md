@@ -61,6 +61,8 @@ Design, in five points.
 
 First export (2026-11-10, from the second build): 1,910 of the 1,924 tagged beats (14 had no whole-line window), 45 works, 1,203 en and 707 pt, 1,851 with a quip, 1.4 MB, byte-identical on a second run.
 
+The runtime feed, in detail. An authored beat has no tactic field, so its verb stands for one (`CRAFT_FOR_VERB` in `@perfectman/shared`: `insult` is dialogue that humbles, `slap` a rebuke that strikes, `kill` the killing, `hug`, `kiss`, `cry`, `storm_off`, `turn_back`, `faint` their own actions; `tableau`, `recoil`, `freeze_gasp`, `restrain`, `tend_fallen` and `die` stand for none and get no lines). When a run's script starts, `BeatCraft.build` picks up to two quips per beat with the same filters (cast size is the run's, language is the run's, no quip is given to two beats), renders them under a one-line header with title, author and licence in at most 600 characters, and keeps them in memory. The hotel view of the beat's actor carries them (`SpaceView.craft`, then `BodyPerception.craft`) from 20 s before the beat to 10 s after it; the prompt puts them under the scene-craft digest, in the compact and in the full contract alike. No retrieval happens per pulse.
+
 What a reference is allowed to do. It is prompt context for the model, framed as "study the pressure and the turn, never copy lines or names". The model's reply is untrusted exactly as before (`toStoryDraft`, `repairBeats`); on top, a draft whose lines repeat a run of five words of a reference it was shown is cut back line by line. Nothing from a reference is written into a scenario, a compiled body, a frame log or a run artifact: the style lines of the runtime feed live in memory for the run only.
 
 ## Labels

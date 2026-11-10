@@ -92,6 +92,12 @@ export type BodyPerception = {
    * (act-contract.md 11.5). Absent for every run without drama, which is how those stay byte-identical.
    */
   drama?: true;
+  /**
+   * Style lines for this person while an authored beat of theirs is near: a short reference from the slim KB (packages/kb README), added to the
+   * scene-craft digest of the prompt. At most `BEAT_CRAFT_MAX_CHARS`. Set only with `drama`, and only when a slim KB is configured; absent
+   * everywhere else, which is how those prompts stay byte-identical.
+   */
+  craft?: string;
 };
 
 // ---- commands --------------------------------------------------------------
