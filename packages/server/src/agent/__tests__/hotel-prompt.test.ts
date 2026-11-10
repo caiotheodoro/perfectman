@@ -88,12 +88,48 @@ describe("IntentParser with a body block (ADR-0019)", () => {
     expect(parsed.bodyDropped).toBeUndefined();
   });
 
-  it("drops the whole block on a stale handle and keeps the line", () => {
+  it("drops a block that has nothing left once its stale handle is out, and keeps the line", () => {
     const parsed = IntentParser.parse(packet({ move: { kind: "approach", target: "p9" } }), "a1", actions, "no_op", ctx);
     expect(parsed.fallbackApplied).toBe(false);
     expect(parsed.intent.visibleContent).toBe("ja vou");
     expect(parsed.intent.body).toBeUndefined();
-    expect(parsed.bodyDropped).toEqual([{ code: "unknown_ref", ref: "p9" }]);
+    expect(parsed.bodyDropped).toEqual([{ code: "unknown_ref", part: "move", ref: "p9" }]);
+  });
+
+  it("strips only the part that names a stale handle and keeps the rest of the block (errata P7: run 56's `f02`)", () => {
+    const withFurniture = { ...handles, f2: { kind: "furni" as const, roomId: "lounge", furniId: 2 } };
+    const stale = IntentParser.parse(
+      packet({ posture: { pose: "sit", at: "f9" }, gesture: { kind: "wave", toward: "p9" }, expression: "angry" }),
+      "a1",
+      actions,
+      "no_op",
+      { ...ctx, bodyHandles: withFurniture },
+    );
+    expect(stale.fallbackApplied).toBe(false);
+    expect(stale.intent.visibleContent).toBe("ja vou");
+    expect(stale.intent.body).toEqual({ gesture: { kind: "wave" }, expression: "angry", order: "move_then_speak" });
+    expect(stale.bodyDropped).toEqual([
+      { code: "unknown_ref", part: "posture", ref: "f9" },
+      { code: "unknown_ref", part: "gesture", ref: "p9" },
+    ]);
+    // The act survives a stale face: the shove is what the director is asked about, and the line is kept.
+    const act = IntentParser.parse(packet({ act: { verb: "shove", target: "p1" }, face: "f9", expression: "angry" }), "a1", actions, "no_op", { ...ctx, bodyHandles: withFurniture });
+    expect(act.intent.body).toEqual({ act: { verb: "shove", target: "p1" }, expression: "angry", order: "move_then_speak" });
+    expect(act.bodyDropped).toEqual([{ code: "unknown_ref", part: "face", ref: "f9" }]);
+    // A stale `at` on a stand keeps the pose; a stale face is dropped alone.
+    const stand = IntentParser.parse(packet({ posture: { pose: "stand", at: "f9" }, face: "p9", expression: "sad" }), "a1", actions, "no_op", { ...ctx, bodyHandles: withFurniture });
+    expect(stand.intent.body).toEqual({ posture: { pose: "stand" }, expression: "sad", order: "move_then_speak" });
+    expect(stand.bodyDropped).toEqual([
+      { code: "unknown_ref", part: "posture", ref: "f9" },
+      { code: "unknown_ref", part: "face", ref: "p9" },
+    ]);
+  });
+
+  it("reads a handle with a stray zero as the one in view (f02 for f2), and counts nothing as stripped", () => {
+    const withFurniture = { ...handles, f2: { kind: "furni" as const, roomId: "lounge", furniId: 2 } };
+    const parsed = IntentParser.parse(packet({ posture: { pose: "sit", at: "f02" }, move: { kind: "approach", target: "p01" } }), "a1", actions, "no_op", { ...ctx, bodyHandles: withFurniture });
+    expect(parsed.intent.body).toEqual({ posture: { pose: "sit", at: "f2" }, move: { kind: "approach", target: "p1", band: "personal" }, order: "move_then_speak" });
+    expect(parsed.bodyDropped).toBeUndefined();
   });
 
   it("keeps the speech when the block is malformed, and drops a body nobody asked for", () => {

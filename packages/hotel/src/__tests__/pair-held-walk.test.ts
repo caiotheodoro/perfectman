@@ -97,7 +97,12 @@ describe("a pair act and a walk that is still under way", () => {
     r.exec.send([{ agentId: "rafa", cmd: "walk", to: [9, 4], plan: "r2" }]);
     r.exec.send([{ agentId: "duda", cmd: "pair", kind: "kiss", with: "rafa", pair: "k3" }]);
     expect(r.cmdsOf(-701)).toEqual([]);
-    r.frame({ t: "actor_error", cid: 1, actor: -702, code: "no_route" });
+    // The hotel finds no route to the tile asked for or to the two nearest ones the body tries instead (errata P7): then the act stops waiting.
+    for (let i = 0; i < 3; i++) {
+      const cid = r.sent.flatMap((m) => (m.t === "actor_cmd" && m.actor === -702 && m.cmd.k === "walk" ? [m.cid] : [])).at(-1);
+      r.frame({ t: "actor_error", cid, actor: -702, code: "no_route" });
+      if (i < 2) expect(r.cmdsOf(-701)).toEqual([]);
+    }
     await r.wait(1000);
     expect(r.cmdsOf(-701).map((c) => c.k)).toEqual(["face", "pair"]);
   });

@@ -39,7 +39,7 @@ export class FakePort implements DramaDecisionPort {
   }
 }
 
-export function rig(o: { port?: FakePort | undefined; drama?: boolean; ghost?: boolean } = {}) {
+export function rig(o: { port?: FakePort | undefined; drama?: boolean; ghost?: boolean; allow?: (observer: string, offender: string) => boolean; note?: (agentId: string, reasons: BlockedReason[]) => void } = {}) {
   const clock = new ManualClock(50_000);
   const mirror = new HotelSpaceMirror();
   const refresh = (): void => mirror.applySnapshot(snapshot(12, 1, [avatar(-701, "Duda", 4, 4), avatar(-702, "Rafa", 6, 4), avatar(-703, "Gabi", 8, 6), avatar(-704, "Leo", 2, 2), avatar(9, "ana", 7, 5)]), clock.now());
@@ -63,6 +63,8 @@ export function rig(o: { port?: FakePort | undefined; drama?: boolean; ghost?: b
     run: 7, clock, mirror, executor: exec, ...(port ? { port: () => port } : {}), isOwn: (r) => ["duda", "rafa", "gabi", "leo"].includes(r),
     names: (r) => ({ duda: "Duda", rafa: "Rafa", gabi: "Gabi", leo: "Leo" })[r], lang: "en", pool: poolApi, store, ghostVoice: o.ghost === true,
     hooks: { blocked: (a, r) => blocked.push([a, r]) },
+    ...(o.allow ? { provocation: { allow: o.allow } } : {}),
+    ...(o.note ? { note: o.note } : {}),
   });
   if (o.drama !== false) {
     body.onSession({ enabled: true, chipTtlMs: 4000, harmMax: 3, harmWindowS: 300, dead: [] });

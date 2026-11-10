@@ -16,10 +16,70 @@ export type TargetResolutionContext = {
   /**
    * Hotel mode (ADR-0019): the body handles minted for this render. Without it
    * a `body` block is dropped (a run that was not asked for one must not
-   * carry one); with it, a block naming any unknown handle is dropped too.
+   * carry one); with it, a part of the block that names an unknown handle is
+   * stripped and the rest of the block (and the line) is kept (errata P7).
    */
   bodyHandles?: BodyHandleMap;
 };
+
+/**
+ * A handle the model wrote with a stray zero (`f02` for `f2`) means the same thing: it is read as the one in view. Anything else not in `known` stays unknown.
+ * Zero-padded handles were a live model's habit (run 56, 2026-11-10: `f02`).
+ */
+function readHandle(ref: string, known: BodyHandleMap): string {
+  if (known[ref] !== undefined) return ref;
+  const plain = ref.replace(/^([pzfr])0+(\d)/, "$1$2");
+  return known[plain] !== undefined ? plain : ref;
+}
+
+/**
+ * The body block with every part that names a handle this render does not have taken out, and the rest kept (errata P7: a block used to be dropped whole, so
+ * a shove proposed beside one stale furniture handle was lost with it). A move or a face naming an unknown handle goes; a posture goes, or keeps its pose
+ * when it only said where; a gesture keeps its kind and loses its `toward`. The `act` is left to the validator, which already drops it alone. What went is
+ * returned as `unknown_ref` reasons that say which part. A block with nothing left is dropped.
+ */
+export function stripUnknownBodyRefs(body: BodyIntent, known: BodyHandleMap): { body: BodyIntent | undefined; dropped: BlockedReason[] } {
+  const dropped: BlockedReason[] = [];
+  const out: BodyIntent = { ...body };
+  const say = (ref: string, part: NonNullable<BlockedReason["part"]>): void => void dropped.push({ code: "unknown_ref", part, ref });
+  const fix = (ref: string): string => readHandle(ref, known);
+  if (out.move) {
+    const move = { ...out.move } as Record<string, unknown>;
+    for (const key of ["target", "place", "to"] as const) if (typeof move[key] === "string") move[key] = fix(move[key] as string);
+    const refs = ["target", "place", "to"].flatMap((k) => (typeof move[k] === "string" ? [move[k] as string] : []));
+    const bad = refs.find((r) => known[r] === undefined);
+    if (bad !== undefined) {
+      say(bad, "move");
+      delete out.move;
+    } else out.move = move as BodyIntent["move"] & object;
+  }
+  if (out.posture?.at !== undefined) {
+    const at = fix(out.posture.at);
+    if (known[at] === undefined) {
+      say(at, "posture");
+      if (out.posture.pose === "sit") delete out.posture;
+      else out.posture = { pose: out.posture.pose };
+    } else out.posture = { ...out.posture, at };
+  }
+  if (out.gesture?.toward !== undefined) {
+    const toward = fix(out.gesture.toward);
+    if (known[toward] === undefined) {
+      say(toward, "gesture");
+      const { toward: _gone, ...rest } = out.gesture;
+      out.gesture = rest;
+    } else out.gesture = { ...out.gesture, toward };
+  }
+  if (out.face !== undefined) {
+    const face = fix(out.face);
+    if (known[face] === undefined) {
+      say(face, "face");
+      delete out.face;
+    } else out.face = face;
+  }
+  if (out.act?.target !== undefined) out.act = { ...out.act, target: fix(out.act.target) };
+  const meaningful = out.move || out.posture || out.gesture || out.expression || out.face || out.act;
+  return { body: meaningful ? out : undefined, dropped };
+}
 
 /** Every handle a `body` block refers to, in field order. */
 export function bodyRefs(body: BodyIntent): string[] {
@@ -298,13 +358,14 @@ export class IntentParser {
       let bodyDropped: BlockedReason[] | undefined;
       if (intent.body) {
         const known = targetContext?.bodyHandles;
-        const unknown = known ? bodyRefs(intent.body).filter((ref) => known[ref] === undefined) : undefined;
-        if (!known || (unknown && unknown.length > 0)) {
-          if (unknown && unknown.length > 0) {
-            bodyDropped = unknown.map((ref) => ({ code: "unknown_ref" as const, ref }));
-          }
+        if (!known) {
           const { body: _dropped, ...withoutBody } = intent;
           intent = withoutBody;
+        } else {
+          const stripped = stripUnknownBodyRefs(intent.body, known);
+          if (stripped.dropped.length > 0) bodyDropped = stripped.dropped;
+          const { body: _old, ...withoutBody } = intent;
+          intent = stripped.body ? { ...withoutBody, body: stripped.body } : withoutBody;
         }
       }
 

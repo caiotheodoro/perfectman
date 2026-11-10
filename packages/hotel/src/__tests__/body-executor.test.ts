@@ -84,9 +84,43 @@ describe("BodyExecutor", () => {
   it("maps hotel errors to blocked reasons for the next prompt", () => {
     const { exec, blocked, frame } = setup();
     exec.send([{ agentId: "duda", cmd: "walk", to: [4, 4] }]);
+    frame({ t: "actor_error", cid: 1, actor: -701, code: "not_a_seat" });
+    expect(blocked).toEqual([{ agentId: "duda", reasons: [{ code: "not_a_seat" }] }]);
+    expect(exec.planOf("duda")).toBeUndefined();
+  });
+
+  it("a walk the hotel finds no route for is tried at the nearest reachable tile, twice, then reported and counted (errata P7)", () => {
+    const { exec, blocked, frame, sent } = setup();
+    const walks = () => sent.flatMap((m) => (m.t === "actor_cmd" && m.cmd.k === "walk" ? [{ cid: m.cid, x: m.cmd.x, y: m.cmd.y, plan: m.cmd.plan }] : []));
+    exec.send([{ agentId: "duda", cmd: "walk", to: [4, 4], plan: "w1" }]);
     frame({ t: "actor_error", cid: 1, actor: -701, code: "no_route" });
+    // Not told yet: the body is already walking to another tile, with the same plan id.
+    expect(blocked).toEqual([]);
+    expect(walks()).toHaveLength(2);
+    const second = walks()[1]!;
+    expect(second.plan).toBe("w1");
+    expect(Math.max(Math.abs(second.x - 4), Math.abs(second.y - 4))).toBe(1);
+    expect(exec.planOf("duda")?.id).toBe("w1");
+    frame({ t: "actor_error", cid: second.cid, actor: -701, code: "no_route" });
+    expect(walks()).toHaveLength(3);
+    expect(walks()[2]!.x === second.x && walks()[2]!.y === second.y).toBe(false);
+    expect(blocked).toEqual([]);
+    frame({ t: "actor_error", cid: walks()[2]!.cid, actor: -701, code: "no_route" });
+    expect(walks()).toHaveLength(3);
     expect(blocked).toEqual([{ agentId: "duda", reasons: [{ code: "no_route" }] }]);
     expect(exec.planOf("duda")).toBeUndefined();
+    expect(exec.routeCounters()).toEqual({ no_route_retries: 2, no_route_dropped: 1 });
+  });
+
+  it("a walk with no free tile anywhere near the one asked for is dropped at once and counted", () => {
+    const { exec, blocked, frame, sent } = setup();
+    // 100 tiles away from any floor: nothing within three tiles is on the map.
+    exec.send([{ agentId: "duda", cmd: "walk", to: [90, 90], plan: "far" }]);
+    expect(sent.filter((m) => m.t === "actor_cmd")).toHaveLength(1);
+    frame({ t: "actor_error", cid: 1, actor: -701, code: "no_route" });
+    expect(sent.filter((m) => m.t === "actor_cmd")).toHaveLength(1);
+    expect(blocked).toEqual([{ agentId: "duda", reasons: [{ code: "no_route" }] }]);
+    expect(exec.routeCounters()).toEqual({ no_route_retries: 0, no_route_dropped: 1 });
   });
 });
 

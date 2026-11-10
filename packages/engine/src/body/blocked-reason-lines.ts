@@ -33,6 +33,20 @@ export function blockedReasonLine(reason: BlockedReason, language: BodyLanguage)
       return pt
         ? `Você chegou, mas ${ref ?? "a pessoa"} já tinha saído.`
         : `You got there, but ${ref ?? "they"} had already left.`;
+    // An act the ladder refused for want of a motive or a grievance is not yet earned (errata P7): told so, with what would earn it. The ladder's other
+    // refusals (the ceiling, contagion) stay unshown: the director decides those, the model is not told.
+    case "ladder":
+      if (reason.detail === "motive") {
+        return pt
+          ? `Ainda não dá pra partir pra cima de ${ref ?? "essa pessoa"}: falta provocação. Comece com um olhar ou uma ofensa, um passo de cada vez.`
+          : `It is not earned yet to go for ${ref ?? "that person"}: nothing has pushed you that far. Start with a look or a sharp word, one step at a time.`;
+      }
+      if (reason.detail === "grievance") {
+        return pt
+          ? `Você ainda não tem motivo claro contra ${ref ?? "essa pessoa"}. Diga na cara o que te incomodou antes de agir.`
+          : `You have no clear grievance against ${ref ?? "that person"} yet. Say to their face what bothers you before you act.`;
+      }
+      return undefined;
     case "slow_down":
     case "too_far":
     case "cooldown":
@@ -40,7 +54,6 @@ export function blockedReasonLine(reason: BlockedReason, language: BodyLanguage)
     case "kill_switch":
     case "calm_room":
     case "consent_off":
-    case "ladder":
     case "budget":
     case "dead_target":
     case "no_scenario_gate":
