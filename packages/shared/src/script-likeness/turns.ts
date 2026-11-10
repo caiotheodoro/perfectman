@@ -1,4 +1,4 @@
-import { isBodyDirection, joinedKeys, wordsOf } from "./text.js";
+import { isBodyDirection, isFillerText, joinedKeys, wordsOf } from "./text.js";
 
 /**
  * One turn of a scene: somebody says something, or does something with their body. A run's chat log, an eval simulation's transcript and
@@ -13,9 +13,18 @@ export type ScriptTurn = {
   atMs?: number;
   /** `say` (the default) or `act`: a move, a sit, a gesture, an exit. */
   kind?: "say" | "act";
+  /**
+   * What an `act` is: a bare `move` (a walk, a posture change, a gesture: the default when absent) or a `verb` (a real act: a stage direction with an act
+   * verb, an exit, a drama act). Only a `verb` moves the scene; a body that shuffles about does not.
+   */
+  actKind?: "move" | "verb";
+  /** A `say` the actor loop swapped in for a line the room had already heard ("Ah.", "Hm."): a reaction, not a contribution. Lines that are only an interjection are read as one without the flag. */
+  filler?: boolean;
 };
 
 export const isSay = (t: ScriptTurn): boolean => t.kind !== "act";
+/** A say turn that is a guard reaction or only an interjection: it adds nothing to length, novelty or loops and answers nothing. */
+export const isReaction = (t: ScriptTurn): boolean => isSay(t) && (t.filler === true || isFillerText(t.text));
 export const sayTurns = (turns: readonly ScriptTurn[]): ScriptTurn[] => turns.filter(isSay);
 
 // ---- play text ----------------------------------------------------------------------------------------------------
@@ -32,7 +41,7 @@ export function parseBeatText(text: string): ScriptTurn[] {
   for (const line of text.split("\n")) {
     if (line.startsWith("[")) {
       const direction = line.replace(/^\[|\]$/gu, "");
-      if (isBodyDirection(joinedKeys(wordsOf(direction)))) turns.push({ speaker: "", text: "", kind: "act" });
+      if (isBodyDirection(joinedKeys(wordsOf(direction)))) turns.push({ speaker: "", text: "", kind: "act", actKind: "verb" });
       continue;
     }
     const m = SPEECH_LINE.exec(line);
@@ -58,6 +67,8 @@ export type EventLike = {
 };
 
 const BODY_EVENTS = new Set(["body_action_committed", "body_arrived", "moved_room", "agent_left"]);
+/** Of the body events, the ones that are a real act: leaving the scene is an exit. The rest are a body moving about. */
+const VERB_EVENTS = new Set(["agent_left"]);
 
 /**
  * Speech and body events of a hotel run as turns, in the order they were committed. A host's steering note and an admin whisper are not
@@ -76,7 +87,7 @@ export function turnsFromEvents(events: readonly EventLike[]): ScriptTurn[] {
       const name = p["senderName"];
       out.push({ speaker: typeof name === "string" && name !== "" ? name : e.actorId, text: content, kind: "say", ...at });
     } else if (BODY_EVENTS.has(e.type)) {
-      out.push({ speaker: e.actorId, text: "", kind: "act", ...at });
+      out.push({ speaker: e.actorId, text: "", kind: "act", actKind: VERB_EVENTS.has(e.type) ? "verb" : "move", ...at });
     }
   }
   return out;

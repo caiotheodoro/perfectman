@@ -32,8 +32,9 @@ export class SceneRecorder {
     this.note(atMs, before);
   }
 
-  act(speaker: string, atMs: number): void {
-    const t: ScriptTurn = { speaker, text: "", kind: "act", atMs };
+  /** A body event: a bare move (walk, sit, gesture) unless `verb`, a real act of the drama director, which is the only kind that moves the scene. */
+  act(speaker: string, atMs: number, verb = false): void {
+    const t: ScriptTurn = { speaker, text: "", kind: "act", actKind: verb ? "verb" : "move", atMs };
     this.turns.push(t);
     const before = this.tracker.events.length;
     this.tracker.push(t);
@@ -49,7 +50,8 @@ export class SceneRecorder {
   score(opts: { norms: ScriptNorms; language: ScriptLang; medium: ScriptMedium; frames: readonly BodyFrame[]; startedAt: number }): ScriptScore {
     const say = this.turns.filter((t) => t.kind !== "act");
     const acts = turnsFromBodyFrames(opts.frames).map((t) => (t.atMs === undefined ? t : { ...t, atMs: t.atMs - opts.startedAt }));
-    return scoreTurns(mergeTurns(say, acts), { norms: opts.norms, language: opts.language, medium: opts.medium, names: [...new Set(say.map((t) => t.speaker))] });
+    const verbs = this.turns.filter((t) => t.kind === "act" && t.actKind === "verb");
+    return scoreTurns(mergeTurns(say, acts, verbs), { norms: opts.norms, language: opts.language, medium: opts.medium, names: [...new Set(say.map((t) => t.speaker))] });
   }
 }
 

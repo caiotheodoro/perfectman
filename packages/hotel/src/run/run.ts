@@ -1158,7 +1158,7 @@ export class Run {
       if ((e.type === "message_sent" || e.type === "reply_sent") && typeof content === "string" && content.trim() !== "") scene.say(name, content, now);
     }
     const b = info.body?.accepted;
-    if (b && (b.act !== undefined || b.move !== undefined || b.posture !== undefined || b.gesture !== undefined)) scene.act(name, now);
+    if (b && (b.act !== undefined || b.move !== undefined || b.posture !== undefined || b.gesture !== undefined)) scene.act(name, now, b.act !== undefined);
   }
 
   /** The lines an actor spoke, handed to the body's grievance ledger (errata P7): who they name, who they are for, and what mode. */

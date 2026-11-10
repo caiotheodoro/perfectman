@@ -18,7 +18,9 @@ import {
   wordsOf,
 } from "./text.js";
 import type { ScriptLang, Word } from "./text.js";
-import { isSay } from "./turns.js";
+import { findDemandLoops, findTics } from "./loops.js";
+import type { DemandHit, TicHit } from "./loops.js";
+import { isReaction, isSay } from "./turns.js";
 import type { ScriptTurn } from "./turns.js";
 
 /**
@@ -29,7 +31,10 @@ import type { ScriptTurn } from "./turns.js";
  *  - motif: a phrase, a simile frame or a topic word that recurs in 3 or more turns inside a window (90 s, or 7 turns without times), whoever says it;
  *  - progress: the turns that bring something new (a name, a number, an object) and the ones that move the scene (a promise, an accusation,
  *    a reveal, an act, a reversal of who asks and who answers);
- *  - debt: questions nobody answered within 3 turns.
+ *  - debt: questions nobody answered within 3 turns;
+ *  - reactions: lines that are only an interjection ("Ué.", "Hm."), a guard reaction or a bare filler. They are counted ({@link ScriptStats.reactionShare}) and
+ *    left out of length, novelty, loops and progress, and they answer no question;
+ *  - demand loops and tics: one actor making the same demand again and again, or leaning on one word.
  *
  * Everything is deterministic and reads only the turns it is given.
  */
@@ -251,9 +256,12 @@ export function echoShare(say: readonly Analyzed[], names: ReadonlySet<string>):
 
 // ---- progress and debt -----------------------------------------------------------------------------------------------------
 
-export type ProgressKind = "entity" | "number" | "object" | "commitment" | "accusation" | "reveal" | "act" | "reversal" | "answer";
+export type ProgressKind = "entity" | "number" | "object" | "commitment" | "accusation" | "reveal" | "act" | "reversal" | "answer" | "move";
 export type ProgressEvent = { kind: ProgressKind; /** Index among all the turns pushed. */ turn: number; atMs?: number };
-/** Events that move the scene; the others only add a fact to it. */
+/**
+ * Events that move the scene; the others only add a fact to it. A `move` (a body that walks, sits or gestures: an `act` turn that is not a real act verb)
+ * is not one of them: a scene where people shuffle about has not changed.
+ */
 export const MAJOR_KINDS: ReadonlySet<ProgressKind> = new Set(["commitment", "accusation", "reveal", "act", "reversal"]);
 
 export type OpenQuestion = { turn: number; sayIndex: number; asker: string; addressee?: string; answered: boolean; age: number };
@@ -315,12 +323,18 @@ export class ProgressTracker {
       this.events.push(e);
     };
     if (!isSay(turn)) {
-      add("act");
+      add(turn.actKind === "verb" ? "act" : "move");
       return out;
     }
     if (turn.speaker !== "") this.learn(turn.speaker);
-    const a = analyze(turn);
     const who = turn.speaker.toLowerCase();
+    if (isReaction(turn)) {
+      // A reaction takes a slot and brings nothing: it answers no question, swaps no roles, and the questions open to others age past it.
+      this.sayIndex++;
+      for (const q of this.questions) if (!q.answered && q.asker !== who) q.age++;
+      return out;
+    }
+    const a = analyze(turn);
     const sayIndex = this.sayIndex++;
 
     // New information: a name, a number, an object introduced by a determiner that nobody has named yet.
@@ -388,11 +402,15 @@ export type ProgressStats = {
   /** Turns (say and act) that brought anything. */
   progressTurns: number;
   majorEvents: number;
-  /** Major events per 10 say turns. */
+  /** Major events per 10 content say turns (reactions do not count as turns). */
   majorPer10: number;
-  /** The most say turns in a row with no major event. */
+  /** The most content say turns in a row with no major event. */
   stall: number;
   reversals: number;
+  /** Bare moves (walks, sits, gestures): events, never major. */
+  moves: number;
+  /** A reversal of who asks and who answers fell in the second half of the say turns. */
+  lateReversal: boolean;
 };
 
 export type DebtStats = { questions: number; unanswered: number; rate: number; open: number };
@@ -401,25 +419,40 @@ export type DebtStats = { questions: number; unanswered: number; rate: number; o
 export function progressAndDebt(turns: readonly ScriptTurn[], names: Iterable<string> = []): { progress: ProgressStats; debt: DebtStats; tracker: ProgressTracker } {
   const tracker = new ProgressTracker({ names });
   const majorAt: boolean[] = [];
+  const sayAt: number[] = [];
+  let said = 0;
   for (const t of turns) {
+    sayAt.push(said);
     const ev = tracker.push(t);
     majorAt.push(ev.some((e) => MAJOR_KINDS.has(e.kind)));
+    if (isSay(t)) said++;
   }
   let stall = 0;
   let run = 0;
   turns.forEach((t, i) => {
     if (majorAt[i]) run = 0;
-    else if (isSay(t)) run++;
+    else if (isSay(t) && !isReaction(t)) run++;
     stall = Math.max(stall, run);
   });
   const sayN = turns.filter(isSay).length;
+  const contentN = turns.filter((t) => isSay(t) && !isReaction(t)).length;
+  const lateReversal = tracker.events.some((e) => e.kind === "reversal" && sayAt[e.turn]! >= Math.floor(sayN / 2));
   const majorEvents = tracker.events.filter((e) => MAJOR_KINDS.has(e.kind)).length;
   const progressTurns = new Set(tracker.events.map((e) => e.turn)).size;
   // A question is judged once the scene has gone ANSWER_WINDOW turns past it; later ones are still open, not owed.
   const judged = tracker.questions.filter((q) => sayN - 1 - q.sayIndex >= ANSWER_WINDOW);
   const unanswered = judged.filter((q) => !q.answered).length;
   return {
-    progress: { events: tracker.events, progressTurns, majorEvents, majorPer10: sayN === 0 ? 0 : (majorEvents / sayN) * 10, stall, reversals: tracker.reversalCount },
+    progress: {
+      events: tracker.events,
+      progressTurns,
+      majorEvents,
+      majorPer10: contentN === 0 ? 0 : (majorEvents / contentN) * 10,
+      stall,
+      reversals: tracker.reversalCount,
+      moves: tracker.events.filter((e) => e.kind === "move").length,
+      lateReversal,
+    },
     debt: { questions: judged.length, unanswered, rate: judged.length === 0 ? 0 : unanswered / judged.length, open: tracker.questions.filter((q) => !q.answered).length - unanswered },
     tracker,
   };
@@ -429,7 +462,14 @@ export function progressAndDebt(turns: readonly ScriptTurn[], names: Iterable<st
 
 export type ScriptStats = {
   language: ScriptLang;
+  /** All say turns, reactions included. Every other per-turn figure below is over the content turns (`sayTurns - reactions`). */
   sayTurns: number;
+  /** Say turns that are not reactions. */
+  contentTurns: number;
+  /** Reactions: guard fillers and lines that are only an interjection. */
+  reactions: number;
+  /** `reactions / sayTurns`. */
+  reactionShare: number;
   actTurns: number;
   speakers: number;
   length: LengthStats;
@@ -441,6 +481,12 @@ export type ScriptStats = {
   /** Share of say turns in a topic-word motif (a word three turns keep coming back to; real scenes have these). */
   topicTurns: number;
   echoTurns: number;
+  /** Demand loops (one actor, one demand, 3 or more turns inside 90 s) and the share of content turns in one. */
+  demandLoops: DemandHit[];
+  demandTurns: number;
+  /** Single-word tics (one word in 5 or more of an actor's turns inside a scene window) and the share of content turns in one. */
+  tics: TicHit[];
+  ticTurns: number;
   progress: ProgressStats;
   debt: DebtStats;
   /** Fewer say turns than {@link MIN_SAY_TURNS}: the numbers are there, the verdict is weak. */
@@ -451,27 +497,39 @@ export type StatsOptions = { language?: ScriptLang; names?: Iterable<string> };
 
 export function computeScriptStats(turns: readonly ScriptTurn[], opts: StatsOptions = {}): ScriptStats {
   const sayList = turns.filter(isSay);
-  const say = sayList.map(analyze);
+  const all = sayList.map(analyze);
+  // Reactions take a slot in the room but are not read: no length, no novelty lookback slot, no loop, no progress.
+  const say = all.filter((a) => !isReaction(a.turn));
   const language = opts.language ?? detectLang(sayList.map((t) => t.text));
   const speakers = new Set(sayList.map((t) => t.speaker.toLowerCase()));
   const { progress, debt, tracker } = progressAndDebt(turns, [...(opts.names ?? []), ...sayList.map((t) => t.speaker)]);
   const names = tracker.nameSet;
   const motifs = findMotifs(say, names);
+  const demandLoops = findDemandLoops(say, names);
+  const tics = findTics(say, names);
+  const turnShare = (hits: ReadonlyArray<{ turns: readonly number[] }>): number => (say.length === 0 ? 0 : new Set(hits.flatMap((h) => h.turns)).size / say.length);
   return {
     language,
-    sayTurns: say.length,
-    actTurns: turns.length - say.length,
+    sayTurns: all.length,
+    contentTurns: say.length,
+    reactions: all.length - say.length,
+    reactionShare: all.length === 0 ? 0 : (all.length - say.length) / all.length,
+    actTurns: turns.length - all.length,
     speakers: speakers.size,
     length: lengthStats(say.map((a) => a.words.length)),
-    rhythm: rhythmStats(say),
+    rhythm: rhythmStats(all),
     novelty: noveltyStats(say),
     motifs,
     loopTurns: share(motifs, ["phrase", "frame"], say.length),
     topicTurns: share(motifs, ["word"], say.length),
     echoTurns: echoShare(say, names),
+    demandLoops,
+    demandTurns: turnShare(demandLoops),
+    tics,
+    ticTurns: turnShare(tics),
     progress,
     debt,
-    lowN: say.length < MIN_SAY_TURNS,
+    lowN: all.length < MIN_SAY_TURNS,
   };
 }
 

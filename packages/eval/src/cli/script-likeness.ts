@@ -1,9 +1,9 @@
 /**
  * script-likeness: how much a transcript reads like a real script, measured against norms derived from real plays.
  *
- *   pnpm --filter @perfectman/eval script-likeness --run <hotel run dir | events.jsonl | turns.json> [--lang pt|en] [--json]
- *   pnpm --filter @perfectman/eval script-likeness --fixtures                  the three production-style transcripts (they must score under 60)
- *   pnpm --filter @perfectman/eval script-likeness --validate-corpus <beats.jsonl>   held-out real beats: the share that reach 80 (local corpus only)
+ *   pnpm --filter @perfectman/eval script-likeness --run <hotel run dir | events.jsonl | transcript.jsonl | turns.json> [--actors "A,B"] [--lang pt|en] [--json]
+ *   pnpm --filter @perfectman/eval script-likeness --fixtures                  the production-style transcripts and summaries (they must score under 60)
+ *   pnpm --filter @perfectman/eval script-likeness --validate-corpus <beats.jsonl> [--salts a,b,c]   held-out real beats: the share that reach 80 (local corpus only); --salts repeats it on other held-out sets
  *   pnpm --filter @perfectman/eval script-likeness --guard-rates <beats.jsonl> [--beats 300]  how often the novelty and motif checks would flag real dialogue
  *
  * Deterministic, no network. Exit 1 when `--fixtures` finds a fixture at 60 or over, or `--validate-corpus` finds fewer than 80% of the
@@ -19,7 +19,9 @@ import {
   scoreFixtures,
   scoreTranscript,
   validateOnCorpus,
+  validateSalted,
 } from "../script-likeness/index.js";
+import type { CorpusValidation } from "../script-likeness/index.js";
 
 const pct = (v: number): string => `${(v * 100).toFixed(1)}%`;
 
@@ -45,12 +47,20 @@ export async function runScriptLikenessCli(args: string[]): Promise<void> {
 
   const corpus = value("--validate-corpus");
   if (corpus) {
-    const v = validateOnCorpus(readBeats(corpus));
-    if (json) console.log(JSON.stringify(v, null, 2));
+    const beats = readBeats(corpus);
+    const v = validateOnCorpus(beats);
+    const salts = (value("--salts") ?? "").split(",").map((x) => x.trim()).filter((x) => x !== "");
+    const salted: Array<{ salt: string; v: CorpusValidation }> = salts.map((salt) => ({ salt, v: validateSalted(beats, salt) }));
+    if (json) console.log(JSON.stringify({ committed: v, salted }, null, 2));
     else {
-      console.log(`held-out real beats: ${v.heldOut}`);
-      for (const [l, s] of Object.entries(v.byLanguage)) console.log(`  ${l}: ${s.beats} beats, ${s.atLeast80} at ${SCRIPT_LIKE_AT} or over (${pct(s.share)}), median ${s.median}, p10 ${s.p10}, min ${s.min}`);
-      console.log(`  all: ${v.total.atLeast80}/${v.total.beats} (${pct(v.total.share)})`);
+      const show = (label: string, x: CorpusValidation): void => {
+        console.log(`${label}: ${x.heldOut} held-out real beats`);
+        for (const [l, s] of Object.entries(x.byLanguage)) console.log(`  ${l}: ${s.beats} beats, ${s.atLeast80} at ${SCRIPT_LIKE_AT} or over (${pct(s.share)}), median ${s.median}, p10 ${s.p10}, min ${s.min}`);
+        console.log(`  all: ${x.total.atLeast80}/${x.total.beats} (${pct(x.total.share)})`);
+        console.log(`  whole scenes holding one of them (13+ turns, scored as one run): ${x.scenes.atLeast80}/${x.scenes.scenes} at ${SCRIPT_LIKE_AT} or over (${pct(x.scenes.share)}), median ${x.scenes.median}, p10 ${x.scenes.p10}`);
+      };
+      show("committed norms", v);
+      for (const r of salted) show(`salt "${r.salt}"`, r.v);
     }
     if (v.total.share < 0.8) process.exit(1);
     return;
@@ -75,18 +85,20 @@ export async function runScriptLikenessCli(args: string[]): Promise<void> {
     console.error("usage: script-likeness --run <run dir | events.jsonl | turns.json> | --fixtures | --validate-corpus <beats.jsonl> | --guard-rates <beats.jsonl>");
     process.exit(2);
   }
-  const report = scoreTranscript(run, loadTurns(run), lang ? { language: lang } : {});
+  const actors = value("--actors")?.split(",").map((x) => x.trim()).filter((x) => x !== "");
+  const report = scoreTranscript(run, loadTurns(run, actors ? { actors } : {}), lang ? { language: lang } : {});
   if (json) console.log(JSON.stringify(report, null, 2));
   else {
     const s = report.score;
     console.log(`${report.source}`);
-    console.log(`script-likeness ${s.score}/100 (${report.verdict}), percentile ${s.percentile} of real beats; ${s.sayTurns} speech turns, ${s.windows.length} window(s), worst ${s.worst}${s.lowN ? ", too few turns for a verdict" : ""}${s.mediumFallback ? ", medium read as THEATRE" : ""}`);
+    console.log(`script-likeness ${s.score}/100 (${report.verdict}), whole run read next to real ${s.whole.scale === "scene" ? "scenes" : "beats"}, percentile ${s.percentile}; ${s.sayTurns} speech turns (${s.stats.reactions} reactions), ${s.windows.length} window(s) for diagnosis, worst ${s.worst}${s.lowN ? ", too few turns for a verdict" : ""}${s.mediumFallback ? ", medium read as THEATRE" : ""}`);
     console.log(`  sub-scores: ${Object.entries(s.sub).map(([k, v]) => `${k} ${v}`).join(", ")}`);
-    for (const [i, w] of s.windows.entries())
-      for (const [name, sub] of Object.entries(w.sub)) {
-        const low = sub?.metrics.filter((m) => m.score < 80) ?? [];
-        if (low.length > 0) console.log(`  window ${i + 1} ${name}: ${low.map((m) => `${m.metric}=${m.value} (worse than ${m.percentile}% of real beats, score ${m.score})`).join("; ")}`);
-      }
+    for (const [name, sub] of Object.entries(s.whole.sub)) {
+      const low = sub?.metrics.filter((m) => m.score < 80) ?? [];
+      if (low.length > 0) console.log(`  ${name}: ${low.map((m) => `${m.metric}=${m.value} (limit ${m.good}, zero at ${m.bad}, score ${m.score})`).join("; ")}`);
+    }
+    for (const h of s.stats.demandLoops) console.log(`  demand loop: ${h.speaker} in ${h.turns.length} turns${h.shared.length > 0 ? ` (${h.shared.join(", ")})` : ""}`);
+    for (const h of s.stats.tics) console.log(`  tic: ${h.speaker} says "${h.word}" in ${h.turns.length} turns`);
     for (const h of s.stats.motifs.filter((m) => m.family !== "word")) console.log(`  motif: ${h.key.slice(2)} in ${h.turns.length} turns by ${h.speakers.join(", ")}`);
     if (s.stats.debt.unanswered > 0) console.log(`  ${s.stats.debt.unanswered} of ${s.stats.debt.questions} questions went unanswered`);
   }

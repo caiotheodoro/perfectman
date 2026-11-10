@@ -1,10 +1,11 @@
 import { MIN_SAY_TURNS, analyze, computeScriptStats, noveltyStats } from "./metrics.js";
 import type { ScriptStats } from "./metrics.js";
-import { BEAT_METRICS, BUCKETS, beatMetrics, bucketOf, ladderOf } from "./norms.js";
-import type { BeatMetric, Bucket, BucketNorms, Ladder, LangNorms, ScriptMedium, ScriptNorms, TacticNorms } from "./norms.js";
+import { BEAT_METRICS, BUCKETS, SCENE_BUCKETS, SCENE_FROM_TURNS, beatMetrics, bucketOf, ladderOf, sceneBucketOf } from "./norms.js";
+import type { BeatMetric, Bucket, BucketNorms, Ladder, LangNorms, SceneBucket, SceneNorms, ScriptMedium, ScriptNorms, TacticNorms } from "./norms.js";
 import { scoreStats } from "./score.js";
 import type { ScriptLang } from "./text.js";
 import { isSay, parseBeatText } from "./turns.js";
+import type { ScriptTurn } from "./turns.js";
 
 const round = (v: number, digits = 4): number => Math.round(v * 10 ** digits) / 10 ** digits;
 
@@ -65,6 +66,62 @@ export function heldOutIds(beats: readonly CorpusBeat[], perLanguage: number, sa
     for (const id of ids.slice(0, perLanguage)) out.add(id);
   }
   return out;
+}
+
+/** A scene of the corpus: its consecutive beats (by `index`) joined into one list of turns. */
+export type CorpusScene = { key: string; beats: CorpusBeat[]; lang: ScriptLang; medium: ScriptMedium; turns: ScriptTurn[] };
+
+/**
+ * Scenes of a corpus: beats grouped by source, act and scene and read in `index` order, their turns joined. A scene is the unit a long run is
+ * read against, and a beat's neighbours are what makes it one (the corpus has no gaps in a scene's indices).
+ */
+export function joinScenes(beats: readonly CorpusBeat[]): CorpusScene[] {
+  const groups = new Map<string, CorpusBeat[]>();
+  for (const b of beats) {
+    if (!langOf(b)) continue;
+    const key = `${b.sourceId ?? ""}|${b.act ?? ""}|${b.scene ?? ""}`;
+    groups.set(key, [...(groups.get(key) ?? []), b]);
+  }
+  const out: CorpusScene[] = [];
+  for (const [key, list] of [...groups].sort((a, b) => (a[0] < b[0] ? -1 : 1))) {
+    list.sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
+    const first = list[0]!;
+    out.push({ key, beats: list, lang: langOf(first)!, medium: first.medium === "CINEMA" ? "CINEMA" : "THEATRE", turns: list.flatMap((b) => parseBeatText(b.text)) });
+  }
+  return out;
+}
+
+type PreparedScene = { scene: CorpusScene; stats: ScriptStats };
+
+/** Scenes of 13 or more speech turns that hold no held-out beat, with their stats. */
+function prepareScenes(beats: readonly CorpusBeat[], held: ReadonlySet<string>): PreparedScene[] {
+  const out: PreparedScene[] = [];
+  for (const scene of joinScenes(beats)) {
+    if (scene.beats.some((b) => held.has(b.id))) continue;
+    const stats = computeScriptStats(scene.turns, { language: scene.lang, names: scene.beats.flatMap((b) => b.speakers ?? []) });
+    if (stats.sayTurns >= SCENE_FROM_TURNS) out.push({ scene, stats });
+  }
+  return out;
+}
+
+function sceneNorms(group: readonly PreparedScene[]): SceneNorms {
+  const buckets = {} as SceneNorms["buckets"];
+  for (const bucket of SCENE_BUCKETS) {
+    const inBucket = group.filter((p) => sceneBucketOf(p.stats.sayTurns) === bucket);
+    const metrics = {} as Record<BeatMetric, Ladder>;
+    for (const m of BEAT_METRICS) metrics[m] = ladderOf(inBucket.map((p) => beatMetrics(p.stats)[m]));
+    buckets[bucket] = { beats: inBucket.length, metrics, lateReversal: inBucket.length === 0 ? 0 : round(inBucket.filter((p) => p.stats.progress.lateReversal).length / inBucket.length) };
+  }
+  const beatCount = group.reduce((a, p) => a + p.scene.beats.length, 0);
+  const sayCount = group.reduce((a, p) => a + p.stats.sayTurns, 0);
+  return {
+    scenes: group.length,
+    beatsPerScene: group.length === 0 ? 0 : round(beatCount / group.length, 2),
+    turnsPerBeat: beatCount === 0 ? 0 : round(sayCount / beatCount, 2),
+    sayTurns: ladderOf(group.map((p) => p.stats.sayTurns)),
+    buckets,
+    score: [],
+  };
 }
 
 function tacticNorms(beats: readonly CorpusBeat[], tags: ReadonlyMap<string, CorpusTag>): TacticNorms | undefined {
@@ -149,6 +206,7 @@ export function buildScriptNorms(beats: readonly CorpusBeat[], tags: readonly Co
   const prepared = prepare(beats);
   const eligible = prepared.filter((p) => p.stats.sayTurns >= MIN_SAY_TURNS);
   const kept = eligible.filter((p) => !held.has(p.beat.id));
+  const scenes = prepareScenes(beats, held);
 
   const norms: ScriptNorms = {
     format: "perfectman-script-norms",
@@ -195,6 +253,7 @@ export function buildScriptNorms(beats: readonly CorpusBeat[], tags: readonly Co
         beats.filter((b) => langOf(b) === lang && (b.medium === "CINEMA" ? "CINEMA" : "THEATRE") === medium && !held.has(b.id)),
         tagMap,
       );
+      const sceneGroup = scenes.filter((p) => p.scene.lang === lang && p.scene.medium === medium);
       const lang_norms: LangNorms = {
         beats: group.length,
         turns: turnCount,
@@ -203,6 +262,7 @@ export function buildScriptNorms(beats: readonly CorpusBeat[], tags: readonly Co
         novelty: { mean: round(noveltyMeans.reduce((a, b) => a + b, 0) / Math.max(1, noveltyMeans.length)), judged: ladderOf(judged) },
         rhythm: { runMean: round(runMeans.reduce((a, b) => a + b, 0) / runMeans.length), cutOff: round(cut / turnCount), trailOff: round(trail / turnCount) },
         buckets,
+        ...(sceneGroup.length > 0 ? { scene: sceneNorms(sceneGroup) } : {}),
         score: [],
         ...(tactic ? { tactic } : {}),
       };
@@ -216,8 +276,9 @@ export function buildScriptNorms(beats: readonly CorpusBeat[], tags: readonly Co
     for (const medium of ["THEATRE", "CINEMA"] as const) {
       const block = norms.languages[lang]?.[medium];
       if (!block) continue;
-      const scores = kept.filter((p) => p.lang === lang && p.medium === medium).map((p) => scoreStats(p.stats, norms, medium).score);
+      const scores = kept.filter((p) => p.lang === lang && p.medium === medium).map((p) => scoreStats(p.stats, norms, medium, "beat").score);
       block.score = ladderOf(scores);
+      if (block.scene) block.scene.score = ladderOf(scenes.filter((p) => p.scene.lang === lang && p.scene.medium === medium).map((p) => scoreStats(p.stats, norms, medium, "scene").score));
     }
   }
   return norms;

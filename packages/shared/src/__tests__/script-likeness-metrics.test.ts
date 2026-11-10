@@ -120,7 +120,7 @@ describe("progress and question debt", () => {
       say("bento", "Mas você sabe onde ele estava, Ana?"),
       say("ana", "Você mentiu pra mim. Foi você que pegou."),
       say("bento", "Na verdade, eu escondi na casa da Dona Neide por 300 reais."),
-      { speaker: "ana", text: "", kind: "act" },
+      { speaker: "ana", text: "", kind: "act", actKind: "verb" },
       say("ana", "Eu prometo que vou contar tudo pra ela."),
     ];
     const { progress } = progressAndDebt(turns, ["ana", "bento"]);
@@ -160,7 +160,7 @@ describe("adapters", () => {
     ]);
     expect(turns).toEqual([
       { speaker: "Ian", text: "Oi, gente.", kind: "say", atMs: 10 },
-      { speaker: "caio", text: "", kind: "act", atMs: 12 },
+      { speaker: "caio", text: "", kind: "act", actKind: "move", atMs: 12 },
     ]);
   });
 
@@ -174,10 +174,11 @@ describe("adapters", () => {
     expect(turnsFromBodyFrames(frames).map((t) => t.atMs)).toEqual([1000, 9000]);
   });
 
-  it("cuts a long run into windows of 10 speech turns and folds a short remainder into the last window", () => {
+  it("cuts a long run into windows of 13 speech turns and folds a short remainder into the last window", () => {
     const turns = Array.from({ length: 23 }, (_, i) => say("a", `linha ${i}`));
-    expect(windowsOf(turns).map((w) => w.length)).toEqual([10, 13]);
-    expect(windowsOf(Array.from({ length: 24 }, (_, i) => say("a", `linha ${i}`))).map((w) => w.length)).toEqual([10, 10, 4]);
+    expect(windowsOf(turns).map((w) => w.length)).toEqual([13, 10]);
+    expect(windowsOf(Array.from({ length: 30 }, (_, i) => say("a", `linha ${i}`))).map((w) => w.length)).toEqual([13, 13, 4]);
+    expect(windowsOf(Array.from({ length: 15 }, (_, i) => say("a", `linha ${i}`))).map((w) => w.length)).toEqual([15]);
   });
 });
 
