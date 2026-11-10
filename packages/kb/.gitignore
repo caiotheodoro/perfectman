@@ -2,3 +2,4 @@ corpus/
 index/
 node_modules/
 dist/
+/slim/
