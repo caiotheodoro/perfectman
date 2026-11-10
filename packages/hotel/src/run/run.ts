@@ -6,6 +6,7 @@ import {
   PromptBuilder,
   applySeeds,
   buildConfiguredSimulation,
+  beatCraftEnabled,
   createLLMProvider,
   loadSlimKbFromEnv,
   scrubConfigForArtifact,
@@ -634,11 +635,13 @@ export class Run {
   }
 
   /**
-   * The slim KB's runtime feed (packages/kb README): when `PERFECTMAN_KB_SLIM` points at a slim file, each authored beat that stands for a tactic gets
-   * up to two short style lines, worked out here once and shown to that beat's actor only while the beat is near. Kept in memory for the run: never
-   * in the body, the frame log or an artifact. No file, no beat with lines, or a file that does not read: nothing happens and no prompt changes.
+   * The slim KB's runtime feed (packages/kb README): when `PERFECTMAN_KB_CRAFT=1` (off by default, and independent of the draft prompt) and
+   * `PERFECTMAN_KB_SLIM` points at a slim file, each authored beat that stands for a tactic gets up to two short style lines in the run's own
+   * language, worked out here once and shown to that beat's actor only while the beat is near. Kept in memory for the run: never in the body,
+   * the frame log or an artifact. Flag off, no file, no line in the run's language, or a file that does not read: nothing happens and no prompt changes.
    */
   private startBeatCraft(beats: readonly ScenarioBeat[], startedAt: number): void {
+    if (!beatCraftEnabled()) return;
     const kb = loadSlimKbFromEnv({ warn: (message) => this.d.logger.warn(message) });
     if (!kb) return;
     const language = this.body.config.agents[0]?.promptProfile.language === "en" ? "en" : "pt-BR";

@@ -91,7 +91,8 @@ Environment (names marked * are proposed here; `PERFECTMAN_ENABLED`, `PERFECTMAN
 | `PERFECTMAN_LLM_SOFT_CALLS_PER_MIN`*, `PERFECTMAN_LLM_SOFT_TOKENS_PER_HOUR`* | Warn-mode thresholds |
 | `PERFECTMAN_DATA_DIR`* | Volume root shared with the hotel, default `/data/perfectman` (layout in section 6.4) |
 | `PERFECTMAN_HEALTH_PORT`* | Loopback health port, default 9100 |
-| `PERFECTMAN_KB_SLIM` | Optional path of the slim reference-scenes file (`packages/kb`, "Slim artifact"). Set: the draft prompt gets reference scenes and an authored beat's actor gets style lines while the beat is near. Unset or unreadable: no prompt changes. How it ships: docs/deploying.md |
+| `PERFECTMAN_KB_SLIM` | Optional path of the slim reference-scenes file (`packages/kb`, "Slim artifact"). Set: the draft prompt gets reference scenes in the draft's language (none when the KB has none in it). Unset or unreadable: no prompt changes. How it ships: docs/deploying.md |
+| `PERFECTMAN_KB_CRAFT` | Off unless exactly `1`, independent of the draft prompt, and needs `PERFECTMAN_KB_SLIM`: an authored beat's actor gets up to two style lines in the scene's language while the beat is near. Off: no actor prompt changes by a byte, even with the file loaded |
 
 Startup: parse env (fail fast on a missing secret, URL or model list) -> start health endpoint and authoring listener -> connect Director WS -> receive `hello` and reconcile -> accept `pm_command` and `run_start` frames. Authoring works without a Director connection; run starts do not.
 

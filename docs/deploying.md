@@ -131,11 +131,19 @@ Check it before deploying habbo, since `deploy.sh` will build whatever tree is t
 ### Optional: the reference-scenes file (slim KB)
 
 Scene writing can read a small file of reference scenes (`packages/kb/README.md`,
-"Slim artifact"): the draft prompt gets two or three, and an authored beat's actor
-gets two short style lines while the beat is near. It is optional. With
-`PERFECTMAN_KB_SLIM` unset, or pointing at a file that is missing or not a slim
-file, the sidecar builds exactly the prompts it always did (a bad file is logged
-once, `the reference KB is off`).
+"Slim artifact"). It is optional, and it has two independent switches:
+
+- `PERFECTMAN_KB_SLIM` (the file): the draft prompt gets two or three reference
+  scenes, in the draft's language only (no scene in that language means no block).
+  With it unset, or pointing at a file that is missing or not a slim file, the
+  sidecar builds exactly the prompts it always did (a bad file is logged once,
+  `the reference KB is off`).
+- `PERFECTMAN_KB_CRAFT=1` (the runtime feed): an authored beat's actor gets up to
+  two short style lines, in the scene's language only, while the beat is near.
+  **It ships off.** Unset, or anything but exactly `1`, no actor prompt changes by
+  a byte even when the slim file is loaded. Turn it on only after reading what the
+  lines look like for a real scenario: the KB's labels are about 40% exact on
+  tactic, so they are loose style references.
 
 **Where it is built.** On the owner's machine, from the full index, which exists
 only there (`packages/kb/corpus` and `packages/kb/index` are never synced):
@@ -170,8 +178,12 @@ volumes:
   - /opt/cmb/perfectman/packages/kb/slim:/kb:ro
 ```
 
+The runtime feed is a third, separate line in the same service, left out until
+someone chooses to turn it on: `PERFECTMAN_KB_CRAFT: "1"`.
+
 An environment change needs the container recreated (`up -d`), not restarted.
-To roll back, remove the variable (or the file and the sync) and recreate. Nothing
+To roll back, remove the variable (or the file and the sync) and recreate; to
+switch only the actor feed off, remove `PERFECTMAN_KB_CRAFT`. Nothing
 in the file needs an embedding model or an ONNX runtime. Do not publish the file
 anywhere without its notice. This section describes the procedure; nothing here
 was deployed.

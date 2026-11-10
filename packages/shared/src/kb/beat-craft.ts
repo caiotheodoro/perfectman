@@ -43,7 +43,7 @@ export class BeatCraft {
   private constructor(private readonly entries: readonly Entry[]) {}
 
   /**
-   * Works out the lines for every act beat that has a tactic. `language` is the run's language (the lines prefer it, and the header is in it);
+   * Works out the lines for every act beat that has a tactic. `language` is the run's language (the lines are in it and only in it, and so is the header);
    * `cast` is how many people the run has. Lines already given to another beat of the run are not given twice. Undefined when no beat got any.
    */
   static build(beats: readonly CraftBeat[], kb: SlimKb, opts: { language: "en" | "pt-BR"; cast: number }): BeatCraft | undefined {
@@ -54,7 +54,8 @@ export class BeatCraft {
       if (beat.kind !== "act" || beat.actor === undefined || beat.verb === undefined) continue;
       const craft = CRAFT_FOR_VERB[beat.verb as ActVerb];
       if (!craft) continue;
-      const picks = selectSlimBeats(kb, { action: craft.action, tactic: craft.tactic, cast: opts.cast, language: opts.language, limit: BEAT_CRAFT_PER_BEAT, maxPerWork: 1, exclude: used, needQuip: true });
+      // Only quips in the scene's own language: a pt-BR scene never gets an English line, and a beat the KB has no line for in that language gets none.
+      const picks = selectSlimBeats(kb, { action: craft.action, tactic: craft.tactic, cast: opts.cast, language: opts.language, languageOnly: true, limit: BEAT_CRAFT_PER_BEAT, maxPerWork: 1, exclude: used, needQuip: true });
       const shown = renderStyleReference(picks, opts.language, BEAT_CRAFT_MAX_CHARS);
       if (shown === undefined) continue;
       // The renderer may have dropped a pick that did not fit: only the ones that were shown are spent.

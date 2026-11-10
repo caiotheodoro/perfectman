@@ -107,12 +107,17 @@ function shinglesOf(text: string): Set<string> {
 
 /**
  * Two or three scenes from the KB for this idea: the scene with the physical peak first, then dialogue scenes for the climb, each from a
- * different play, in the draft's language when the KB has one. Undefined when the KB has nothing that fits or the block cannot fit its cap,
- * and then the prompt is the one it always was.
+ * different play. Only in the draft's language: a slot the KB has no scene for in that language is left empty, and no scene at all is better
+ * than a mismatched one, and never a mix. The one exception is an idea that is explicitly English under a pinned Portuguese draft, where
+ * English scenes stand in when the KB has no Portuguese scene at all. Undefined when nothing fits or the block cannot fit its cap, and then
+ * the prompt is the one it always was.
  */
 export function draftReferences(kb: SlimKb, idea: string, people: number | undefined, language: "en" | "pt-BR" | undefined): DraftReferences | undefined {
   const intent = inferDraftIntent(idea, people);
-  const tongue = language ?? detectLanguage(idea).language;
+  const detected = detectLanguage(idea);
+  const tongue = language ?? detected.language;
+  // Explicitly English: the detector is sure (nothing Portuguese in it, at least two English function words and nearly all markers English).
+  const explicitlyEnglish = detected.language === "en" && detected.confidence >= 0.8 && detected.markers.length >= 2;
   const asks: Array<{ action: SlimAction; tactic: string }> =
     intent.peak === "DIALOGUE_ONLY"
       ? intent.tactics.map((tactic) => ({ action: "DIALOGUE_ONLY", tactic }))
@@ -122,18 +127,24 @@ export function draftReferences(kb: SlimKb, idea: string, people: number | undef
           { action: "DIALOGUE_ONLY", tactic: intent.tactics[2] ?? (intent.tactics[0] as string) },
         ];
 
-  const picks: SlimPick[] = [];
-  const ids = new Set<string>();
-  const works = new Set<number>();
-  for (const ask of asks) {
-    const query = { action: ask.action, tactic: ask.tactic, cast: intent.cast, language: tongue, limit: 1, ...(intent.emotion ? { emotion: intent.emotion } : {}) };
-    // A different play for each slot while the KB has one; a rare action may leave only the same play.
-    const pick = selectSlimBeats(kb, { ...query, exclude: ids, excludeWorks: works })[0] ?? selectSlimBeats(kb, { ...query, exclude: ids })[0];
-    if (!pick) continue;
-    picks.push(pick);
-    ids.add(pick.beat.id);
-    works.add(pick.beat.work);
-  }
+  const collect = (scenes: "en" | "pt-BR"): SlimPick[] => {
+    const picks: SlimPick[] = [];
+    const ids = new Set<string>();
+    const works = new Set<number>();
+    for (const ask of asks) {
+      const query = { action: ask.action, tactic: ask.tactic, cast: intent.cast, language: scenes, languageOnly: true, limit: 1, ...(intent.emotion ? { emotion: intent.emotion } : {}) };
+      // A different play for each slot while the KB has one; a rare action may leave only the same play.
+      const pick = selectSlimBeats(kb, { ...query, exclude: ids, excludeWorks: works })[0] ?? selectSlimBeats(kb, { ...query, exclude: ids })[0];
+      if (!pick) continue;
+      picks.push(pick);
+      ids.add(pick.beat.id);
+      works.add(pick.beat.work);
+    }
+    return picks;
+  };
+  // Never a mix, and never the wrong language: the draft's own, or, for an explicitly English idea whose KB has no scene at all in a pinned Portuguese draft's language, English.
+  let picks = collect(tongue);
+  if (picks.length === 0 && tongue === "pt-BR" && explicitlyEnglish) picks = collect("en");
   const shown = renderReferenceScenes(picks, DRAFT_REFERENCE_MAX_CHARS);
   if (!shown) return undefined;
 

@@ -28,6 +28,8 @@ services:
       PERFECTMAN_HEALTH_PORT: "9100"      # loopback inside the container; used by the image HEALTHCHECK
       # Optional reference scenes (packages/kb README, "Slim artifact"; docs/deploying.md). Both lines together, or neither:
       # PERFECTMAN_KB_SLIM: /kb/kb-slim.json
+      # Separate switch, OFF unless exactly "1", and only with the line above: style lines in an authored beat's actor prompt.
+      # PERFECTMAN_KB_CRAFT: "1"
       # PERFECTMAN_LLM_BASE_URL, PERFECTMAN_LLM_API_KEY, PERFECTMAN_LLM_MODELS,
       # PERFECTMAN_LLM_PRICES and PERFECTMAN_LLM_CONCURRENCY come from perfectman.env.
       # Or PERFECTMAN_LLM_CHAIN (a JSON array of links, failover in order) instead of the first three.

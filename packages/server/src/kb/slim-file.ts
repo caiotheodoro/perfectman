@@ -10,6 +10,15 @@ import type { SlimKb } from "@perfectman/shared";
  * Light on purpose (`node:fs` and shared only): the hotel entry (`hotel.ts`) re-exports it and must not load a heavy dependency.
  */
 export const KB_SLIM_ENV = "PERFECTMAN_KB_SLIM";
+/**
+ * The runtime beat feed (style lines in an actor's prompt) has its own switch, off unless it is exactly `1`, whatever `PERFECTMAN_KB_SLIM`
+ * says: the draft prompt's reference scenes follow the slim file alone, and an actor's prompt follows this flag and the file together.
+ */
+export const KB_CRAFT_ENV = "PERFECTMAN_KB_CRAFT";
+
+export function beatCraftEnabled(env: NodeJS.ProcessEnv = process.env): boolean {
+  return env[KB_CRAFT_ENV]?.trim() === "1";
+}
 
 type Cached = { key: string; kb: SlimKb | undefined };
 let cached: Cached | undefined;

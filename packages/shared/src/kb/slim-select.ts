@@ -14,8 +14,10 @@ export type SlimQuery = {
   tactic?: string;
   status?: string;
   emotion?: string;
-  /** "en", "pt" or "pt-BR". A preference, not a filter. */
+  /** "en", "pt" or "pt-BR". A preference, unless `languageOnly`. */
   language?: string;
+  /** Make `language` a hard filter: only beats in that language, and nothing at all when the KB has none for this ask. */
+  languageOnly?: boolean;
   /** Default 3. */
   limit?: number;
   /** At most this many beats from one work while another work can fill the slot. Default 1. */
@@ -93,7 +95,8 @@ export function selectSlimBeats(kb: SlimKb, query: SlimQuery): SlimPick[] {
   const tactic = slimTacticOf(query.tactic);
   const wantGroup = tactic === undefined ? undefined : kb.groups[tactic];
   const maxPerWork = Math.max(1, Math.floor(query.maxPerWork ?? 1));
-  const usable = all.filter((b) => !query.exclude?.has(b.id) && !query.excludeWorks?.has(b.work) && (!query.needQuip || b.quip !== undefined));
+  const strict = query.languageOnly === true && language !== undefined;
+  const usable = all.filter((b) => !query.exclude?.has(b.id) && !query.excludeWorks?.has(b.work) && (!query.needQuip || b.quip !== undefined) && (!strict || b.language === language));
 
   const score = (b: SlimBeat): number => {
     let s = SLIM_WEIGHTS.confidence * b.confidence + SLIM_WEIGHTS.richness * Math.min(1, b.excerpt.length / 300) - SLIM_WEIGHTS.castStep * Math.min(3, Math.abs(b.cast - query.cast));

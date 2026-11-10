@@ -101,6 +101,15 @@ describe("selectSlimBeats", () => {
     expect(selectSlimBeats(kb, { action: "CRYING", cast: 3, language: "en", limit: 1 }).map((p) => p.beat.id)).toEqual(["ventos:1.1.1"]);
   });
 
+  it("with languageOnly, takes beats in that language and nothing else, however far the cast, and nothing when there are none", () => {
+    const far = kbOf({ ...slimFixture(), beats: slimFixture().beats.map((b) => (b.id === "farol:2.1.1" ? { ...b, cast: 9 } : b)) });
+    expect(selectSlimBeats(far, { action: "KILLING", cast: 3, language: "pt-BR", languageOnly: true, limit: 3 }).map((p) => p.beat.id)).toEqual(["farol:2.1.1"]);
+    expect(selectSlimBeats(kb, { action: "KILLING", cast: 3, language: "en", languageOnly: true, limit: 5, maxPerWork: 5 }).every((p) => p.beat.language === "en")).toBe(true);
+    const english = kbOf({ ...slimFixture(), beats: slimFixture().beats.filter((b) => b.language === "en") });
+    expect(selectSlimBeats(english, { action: "KILLING", cast: 3, language: "pt", languageOnly: true })).toEqual([]);
+    expect(selectSlimBeats(english, { action: "KILLING", cast: 3, language: "pt" })).not.toEqual([]);
+  });
+
   it("ranks the exact tactic over its group even from a farther cast, and language over the tactic", () => {
     const grouped = selectSlimBeats(kb, { action: "DIALOGUE_ONLY", cast: 3, tactic: "to corner", limit: 5, maxPerWork: 5 });
     expect(grouped[0]!.beat.id).toBe("salt:2.2.1");
@@ -217,6 +226,21 @@ describe("BeatCraft", () => {
     expect(craft.textFor("bia", 60_000)).toBeUndefined();
     expect(craft.textFor("bia", 119_000)).toBeDefined();
     expect(craft.textFor("nobody", 60_000)).toBeUndefined();
+  });
+
+  it("gives a beat lines in the scene's language only: a pt-BR scene gets Portuguese quips, an English one English, and a beat with none in that language gets nothing", () => {
+    const insult = [{ id: "b1", at_ms: 60_000, kind: "act", actor: "ana", verb: "insult" }];
+    const pt = BeatCraft.build(insult, kb, { language: "pt-BR", cast: 3 })!.textFor("ana", 60_000)!;
+    expect(pt).toMatch(/^Referência de estilo/);
+    expect(pt).toContain("CC BY-SA");
+    expect(pt).not.toContain("public domain");
+    const en = BeatCraft.build(insult, kb, { language: "en", cast: 3 })!.textFor("ana", 60_000)!;
+    expect(en).toContain("public domain");
+    expect(en).not.toContain("CC BY-SA");
+    const english = kbOf({ ...slimFixture(), beats: slimFixture().beats.filter((b) => b.language === "en") });
+    expect(BeatCraft.build(insult, english, { language: "pt-BR", cast: 3 })).toBeUndefined();
+    const mixed = [...insult, { id: "b2", at_ms: 120_000, kind: "act", actor: "bia", verb: "kill" }];
+    expect(BeatCraft.build(mixed, kbOf({ ...slimFixture(), beats: slimFixture().beats.filter((b) => b.language === "en" || b.action === "KILLING") }), { language: "pt-BR", cast: 3 })!.size).toBe(1);
   });
 
   it("keeps every beat's text within the budget, and gives no line to two beats of the run", () => {
