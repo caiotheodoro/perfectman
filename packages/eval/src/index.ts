@@ -22,6 +22,10 @@ export * from "./hotel/index.js";
 export { runHotelCli } from "./cli/hotel.js";
 export { runDramaJudgeCli } from "./cli/drama-judge.js";
 
+// Script-likeness: the benchmark that scores a transcript against norms from real plays
+export * from "./script-likeness/index.js";
+export { runScriptLikenessCli } from "./cli/script-likeness.js";
+
 // Drama grading core (axes, labels, agreement, events)
 export * from "./drama/index.js";
 

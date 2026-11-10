@@ -43,7 +43,7 @@ export const SHORT_REPLY_WORDS = 5;
 /** Say turns a stretch needs before its statistics mean anything; fewer is scored but flagged. */
 export const MIN_SAY_TURNS = 4;
 /** A turn needs this many words of 4+ letters before its novelty is judged (a "Sim, claro." has nothing to be new about). */
-export const NOVELTY_MIN_CONTENT = 4;
+export const NOVELTY_MIN_CONTENT = 5;
 
 /** Nearest-rank quantile of a list (q in 0..1). */
 export function quantile(values: readonly number[], q: number): number {
@@ -145,7 +145,7 @@ export type NoveltyStats = {
   mean: number;
   /** Every such turn's novelty, in order. */
   values: number[];
-  /** Novelty of turns with at least {@link NOVELTY_MIN_CONTENT} words, for the guard's floor. */
+  /** Novelty of turns with at least {@link NOVELTY_MIN_CONTENT} words of 4+ letters, for the guard's floor. */
   judged: number[];
 };
 

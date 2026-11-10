@@ -19,6 +19,7 @@
     "evidence": "node dist/cli/evidence.js",
     "calibrate": "node dist/cli/calibrate.js",
     "hotel": "node dist/cli/hotel.js",
+    "script-likeness": "node dist/cli/script-likeness.js",
     "drama-judge": "node dist/cli/drama-judge.js",
     "narrate": "node dist/cli/narrate.js",
     "sweep:repetition": "node dist/cli/sweep-repetition.js",

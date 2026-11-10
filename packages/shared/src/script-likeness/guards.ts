@@ -103,7 +103,7 @@ export function trimExample(text: string, target: LengthTarget): string {
 export type RoomTurn = { speaker: string; text: string };
 
 /**
- * The novelty a candidate must reach: the 10th percentile of the plays' own turn novelty (turns of 4 or more words of 4+ letters, against the
+ * The novelty a candidate must reach: the 10th percentile of the plays' own turn novelty (turns of 5 or more words of 4+ letters, against the
  * 6 turns before). Below it, a turn gives the room back what it just said. `pct` moves the percentile; the default is 10.
  */
 export function noveltyFloor(norms: ScriptNorms, lang: ScriptLang, pct = 10): number {
