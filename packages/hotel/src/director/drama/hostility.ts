@@ -97,8 +97,8 @@ const REPORT_EN = [
 const REPORT = word([...REPORT_PT, ...REPORT_EN]);
 /** The speaker's own subject right before a frame: "eu disse", "eu ja falei", "i said". */
 const OWN_SUBJECT = /(?:^|[^a-z0-9])(?:eu|i)(?: (?:ja|bem|sempre|tambem|also|always|already|just))? $/;
-/** Where the reported words stop: a sentence end, a dash, a turn ("mas", "e eu", "e voce"). */
-const CLAUSE_BREAK = /[.!?;\n—]|(?:^|[^a-z])(?:mas|porem|but|e eu|e voce|and i|and you)(?:[^a-z]|$)/;
+/** Where the reported words stop: a sentence end, a dash, a turn ("mas", "e eu", "e voce"), or a vocative that turns to the person spoken to (", seu idiota"). */
+const CLAUSE_BREAK = /[.!?;\n—]|[a-z0-9]\s*,\s*(?:seu|sua)(?![a-z])|(?:^|[^a-z])(?:mas|porem|but|e eu|e voce|and i|and you)(?:[^a-z]|$)/;
 /** How far past the frame the reported words may run. */
 const REPORT_REACH = 45;
 

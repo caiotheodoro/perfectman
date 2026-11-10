@@ -127,6 +127,9 @@ describe("reported speech is not the speaker's own", () => {
     expect(classifyHostility("Ela disse que sim, mas você é um idiota.")).toBe("insult");
     expect(classifyHostility("Ela te chamou de burro? Repete na minha cara.")).toBe("threat");
     expect(readHostility("Ela disse que você é um idiota. Você é um idiota.")).toEqual({ own: "insult", reported: "insult" });
+    // A vocative that turns to the person spoken to is the speaker's own, even in the same sentence as a report.
+    expect(classifyHostility("Ela disse que não, seu idiota!")).toBe("insult");
+    expect(readHostility("Ela disse que, na verdade, você é idiota.")).toEqual({ reported: "insult" });
   });
 
   it("a report with nothing hostile in it is nothing", () => {
