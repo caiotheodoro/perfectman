@@ -14,6 +14,7 @@ import type { ScenarioBeat } from "../authoring/scenario-beats.js";
 import type { LlmEnv } from "../config.js";
 import type { ScenarioBody } from "../run/scenario-body.js";
 import { SCENE_SPINE_ENV } from "../run/scene-recorder.js";
+import { SPINE_ESCALATE_ENV } from "../run/spine-escalation.js";
 import type { Sidecar } from "../sidecar.js";
 import { FakeDirector } from "../testing/fake-director.js";
 import { TEST_SECRET, bootSidecar, compiledScenario, waitFor } from "../testing/helpers.js";
@@ -23,6 +24,7 @@ let sidecar: Sidecar | undefined;
 let llm: Server | undefined;
 afterEach(async () => {
   delete process.env[SCENE_SPINE_ENV];
+  delete process.env[SPINE_ESCALATE_ENV];
   delete process.env["TEST_LINK_A_KEY"];
   await sidecar?.close();
   await fake?.stop();
@@ -79,6 +81,31 @@ describe("the scene spine in a run", () => {
   });
 });
 
+/** The spine's coupling to the ladder (errata P8): built with the spine, and gone with it or with its own switch. */
+describe("the spine's coupling to the ladder in a run", () => {
+  const escalationOf = (run: object): unknown => Reflect.get(run, "escalation");
+
+  it("is built with the spine of a scene that has no authored beats", async () => {
+    const { run } = await boot({});
+    expect(escalationOf(run)).toBeDefined();
+  });
+
+  it("is off with PERFECTMAN_SPINE_ESCALATE=0 while the spine still writes its notes: the old spine", async () => {
+    process.env[SPINE_ESCALATE_ENV] = "0";
+    const { run, space } = await boot({});
+    expect(escalationOf(run)).toBeUndefined();
+    const note = await waitFor(() => space.view("person-1", Date.now())?.craft, "the first actor's note");
+    expect(note).toContain("A cena, agora: pressão");
+  });
+
+  it("is not there for a scene with authored beats or with drama off", async () => {
+    expect(escalationOf((await boot({ beats: [insult] })).run)).toBeUndefined();
+    await sidecar?.close();
+    await fake?.stop();
+    expect(escalationOf((await boot({ drama: DRAMA_OFF, drama_mode: "off" })).run)).toBeUndefined();
+  });
+});
+
 describe("the run's manifest", () => {
   it("carries the script-likeness score, the spine's step and every new counter", async () => {
     let n = 0;
@@ -117,7 +144,7 @@ describe("the run's manifest", () => {
     const manifest = JSON.parse(readFileSync(join(b.cfg.dataDir, "runs", "7", "replay.json"), "utf8")) as {
       counters: Record<string, number>;
       script_likeness?: { score: number; percentile: number; sub: Record<string, number>; language: string; medium: string; say_turns: number; norms_built?: string };
-      scene_spine?: { step: number };
+      scene_spine?: { step: number; unlocks?: { shove: number; slap: number; skipped_no_evidence: number; grants: unknown[] } };
     };
     for (const key of ["llm_len_retry", "llm_len_trimmed", "llm_motif_retry", "llm_novelty_retry", "llm_motif_reaction", "llm_debt_note", "llm_debt_retry", "llm_debt_stripped"]) {
       expect(manifest.counters[key], key).toEqual(expect.any(Number));
@@ -129,5 +156,7 @@ describe("the run's manifest", () => {
     expect(manifest.counters["script_likeness_score"]).toBe(Math.round(manifest.script_likeness!.score));
     expect(manifest.scene_spine?.step).toEqual(expect.any(Number));
     expect(manifest.counters["scene_spine_step"]).toBe(manifest.scene_spine!.step);
+    // The coupling's own account (errata P8): nothing was opened by a human asking about a lantern.
+    expect(manifest.scene_spine?.unlocks).toMatchObject({ shove: 0, slap: 0, grants: [] });
   }, 30_000);
 });

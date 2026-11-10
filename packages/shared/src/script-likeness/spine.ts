@@ -189,6 +189,8 @@ export class SpineClock {
   constructor(
     private readonly spine: Spine,
     private readonly holdMs: number = SPINE_HOLD_MS,
+    /** Called once for each step the clock moves into, after it has moved (errata P8: the hotel's run couples the turn and the decision to the ladder). */
+    private readonly onAdvance?: (advance: SpineAdvance) => void,
   ) {}
 
   get step(): number {
@@ -207,7 +209,9 @@ export class SpineClock {
       if (!seen && nowMs < Math.max(next.atMs, began) + this.holdMs) break;
       this.current++;
       this.started[this.current] = nowMs;
-      this.advances.push({ step: this.current, atMs: nowMs, via: seen ? "progress" : "released" });
+      const moved: SpineAdvance = { step: this.current, atMs: nowMs, via: seen ? "progress" : "released" };
+      this.advances.push(moved);
+      this.onAdvance?.(moved);
     }
     return this.current;
   }

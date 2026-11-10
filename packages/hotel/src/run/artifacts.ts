@@ -51,7 +51,12 @@ export type ReplayManifest = {
     norms_built?: string;
   };
   /** The scene spine of a run with no authored beats: the step it ended on and when each step began, and whether the progress gate or the hold released it. */
-  scene_spine?: { step: number; advances: Array<{ step: number; at_ms: number; via: string }> };
+  scene_spine?: {
+    step: number;
+    advances: Array<{ step: number; at_ms: number; via: string }>;
+    /** What the spine opened of the ladder (errata P8): the shove at its turn, the slap at its decision, and the steps that found no evidence; each grant with when, who and why. Absent with `PERFECTMAN_SPINE_ESCALATE=0`. */
+    unlocks?: { shove: number; slap: number; skipped_no_evidence: number; grants: Array<{ at_ms: number; level: string; aggressor: string; target: string; why: string }> };
+  };
   /** The scenario's drama as the run enforced it: where the block came from (`authored`, `default`, `off`, `free_play`) and what it allowed. */
   drama?: { source: string; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean };
   /** A pulse did not drain before teardown, as in the HTTP controller's manifest. */

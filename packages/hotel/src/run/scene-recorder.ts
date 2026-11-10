@@ -61,13 +61,20 @@ export class SceneSpine {
     readonly spine: Spine,
     private readonly recorder: SceneRecorder,
     private readonly startedAt: number,
+    /** Called for each step the arc moves into (errata P8), with the run clock; the run uses it to open the ladder at the turn and the decision. */
+    onAdvance?: (advance: SpineAdvance) => void,
   ) {
-    this.clock = new SpineClock(spine);
+    this.clock = new SpineClock(spine, undefined, onAdvance);
   }
 
   /** The note for this actor at this run-clock time, or undefined. Advancing the arc is idempotent per instant. */
   textFor(actorId: string, now: number): string | undefined {
     return this.clock.textFor(actorId, now - this.startedAt, this.recorder.events);
+  }
+
+  /** Moves the arc on as far as the rules allow at this run-clock time and says which step is current (errata P8: the run looks when a hostile line is said, not only when a prompt is built). */
+  advance(now: number): number {
+    return this.clock.advance(now - this.startedAt, this.recorder.events);
   }
 
   get step(): number {

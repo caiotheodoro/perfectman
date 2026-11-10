@@ -59,6 +59,7 @@ import { NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
 import type { ReplayManifest } from "./artifacts.js";
 import { MEMORY_ID_PREFIX, PlayerMemory } from "./player-memory.js";
 import { SceneRecorder, SceneSpine, buildSceneSpine, sceneSpineEnabled, scriptGuardEnabled, scriptLikenessManifest } from "./scene-recorder.js";
+import { SpineEscalation, spineEscalateEnabled } from "./spine-escalation.js";
 import type { MemoryStore } from "./player-memory.js";
 import type { WrittenArtifacts } from "./artifacts.js";
 import { FrameLogRecorder } from "./frame-log.js";
@@ -264,6 +265,8 @@ export class Run {
   private scene: SceneRecorder | undefined;
   /** The spine of a scene with no authored beats (scene-recorder.ts); absent when the scene has beats, drama is off, or the cast is one. */
   private spine: SceneSpine | undefined;
+  /** The spine's coupling to the ladder (errata P8): opens the shove at its turn and the slap at its decision for a cast that was heard heating up; absent with `PERFECTMAN_SPINE_ESCALATE=0`. */
+  private escalation: SpineEscalation | undefined;
   /** The run's script-likeness once it has ended, for the manifest and the log. */
   private scriptScore: ScriptScore | undefined;
   /** The run clock when the scene started (the cast is in): what the recorder's times and the spine's seconds count from. */
@@ -695,10 +698,17 @@ export class Run {
       cast: cast.map((a) => ({ id: a.id, name: a.promptProfile.displayName, objective: a.promptProfile.hiddenObjective })),
     });
     if (!built) return;
-    this.spine = new SceneSpine(built, this.scene, this.sceneStart);
+    // Errata P8: the turn and the decision open the ladder for a cast that was heard heating up (`PERFECTMAN_SPINE_ESCALATE=0` leaves the spine as it was).
+    const escalation = spineEscalateEnabled() ? new SpineEscalation(this.dramaSink, built, language) : undefined;
+    this.spine = new SceneSpine(built, this.scene, this.sceneStart, escalation?.onAdvance);
     const spine = this.spine;
-    this.space.setCraft((agent, now) => spine.textFor(agent, now));
-    this.d.logger.info("scene spine", { run: this.id, steps: built.steps.length, roles: built.roles });
+    escalation?.attach(spine);
+    this.escalation = escalation;
+    this.space.setCraft((agent, now) => {
+      const note = spine.textFor(agent, now);
+      return escalation ? escalation.craftFor(agent, note) : note;
+    });
+    this.d.logger.info("scene spine", { run: this.id, steps: built.steps.length, roles: built.roles, escalate: escalation !== undefined });
   }
 
   /**
@@ -1177,6 +1187,8 @@ export class Run {
         mentioned: strs(p["mentionedAgentIds"]),
         ...(whisper ? { mode: "whisper" as const } : {}),
       });
+      // The spine looks at what the cast has now earned (errata P8): the line was just handed to the body's ledger.
+      this.escalation?.onLine(this.d.clock.now());
     }
   }
 
@@ -1776,7 +1788,7 @@ export class Run {
           pulse: this.port?.pulseIndex() ?? 0,
           ...(this.chain ? { llm: this.llmManifest(this.chain) } : {}),
           ...(sl ? { script_likeness: scriptLikenessManifest(sl) } : {}),
-          ...(this.spine ? { scene_spine: { step: this.spine.step, advances: this.spine.advances.map((a) => ({ step: a.step, at_ms: a.atMs, via: a.via })) } } : {}),
+          ...(this.spine ? { scene_spine: { step: this.spine.step, advances: this.spine.advances.map((a) => ({ step: a.step, at_ms: a.atMs, via: a.via })), ...(this.escalation ? { unlocks: this.escalation.manifest(this.sceneStart) } : {}) } } : {}),
           counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...this.guardCounters(), ...this.scriptScoreCounters(), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks, narrator_repaired: this.narrator.repaired } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0, ...this.scriptCounters(), ...this.bodyCounters() },
           drama: summarizeRunDrama(resolveRunDrama(this.body)),
           ...(this.drained ? {} : { dirty: true as const }),
