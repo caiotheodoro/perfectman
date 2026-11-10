@@ -107,6 +107,9 @@ export class NdjsonEventSink {
 /** The cinematic director's streamed track, beside events.jsonl. */
 export const TRACK_FILE = "director-track.jsonl";
 
+/** The guards' log, beside events.jsonl: one line per thing a guard did to an actor's line (guard-log.ts). For the operator; no player or replay reads it. */
+export const GUARD_LOG_FILE = "guard-log.jsonl";
+
 export type WrittenArtifacts = { dir: string; files: Record<string, string> };
 
 /**
@@ -128,7 +131,9 @@ export async function writeRunArtifacts(
   const base = { events: "events.jsonl", director: "director.json", replay: "replay.json", body_frames: "body-frames.json" };
   // A cinematic run streams its track here as it plays (cine/track.ts); a default run leaves no file.
   const hasTrack = await stat(join(dir, TRACK_FILE)).then((s) => s.isFile(), () => false);
-  const files: Record<string, string> = hasTrack ? { ...base, director_track: TRACK_FILE } : base;
+  // A run whose guards did nothing leaves no guard log.
+  const hasGuardLog = await stat(join(dir, GUARD_LOG_FILE)).then((s) => s.isFile(), () => false);
+  const files: Record<string, string> = { ...base, ...(hasTrack ? { director_track: TRACK_FILE } : {}), ...(hasGuardLog ? { guard_log: GUARD_LOG_FILE } : {}) };
   if (sink) await sink.finish(events);
   else await writeFile(join(dir, base.events), events.map((e) => JSON.stringify(e)).join("\n") + (events.length ? "\n" : ""));
   await writeFile(join(dir, base.director), JSON.stringify({ track: [] }));
