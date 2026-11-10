@@ -212,6 +212,17 @@ describe("motif and novelty", () => {
     expect(r.seen).toEqual(["novelty_retry"]);
   });
 
+  it("reads the actor's own last lines from the packet too, not only the events in view", async () => {
+    const mine = "O cofre emprestado sumiu da sala dos fundos esta madrugada, ninguém viu nada.";
+    const again = "Madrugada fria, cofre sumido, ninguém viu quem levou da sala dos fundos o cofre emprestado.";
+    const fresh = "Quem pagou a conta do bar foi o Caco, eu vi o recibo dobrado no bolso dele.";
+    const withOwn = await run([again, fresh], input(QUIET, [mine]));
+    expect(withOwn.seen).toEqual(["novelty_retry"]);
+    expect(withOwn.said).toBe(fresh);
+    // Without that own line in the packet nothing in view says it again.
+    expect((await run([again], input(QUIET))).calls).toBe(1);
+  });
+
   it("delivers the line anyway to a person who just asked this actor something", async () => {
     const guest = line("h:42", "Visitante", "Bento, você já viu um pato de perto?", { untrusted: true, addresseeIds: ["bento"], mentionedAgentIds: ["bento"] });
     const r = await run(["Um pato de perto, claro que já vi.", "Já vi sim, um pato de perto, no sítio."], input([...PATO, guest], [], guest));

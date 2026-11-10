@@ -375,7 +375,10 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const fillerSilence = script && fillerSilenceEnabled();
     const actor = ctx.profile.displayName ?? agentId;
     const tell = (kind: GuardKind, before?: string, after?: string): void => notify(policy.onGuard, kind, guardInfo(actor, before, after));
-    const noveltyOf = (text: string) => lowNovelty(text, spoken, noveltyFloorValue, { names: roomNamesSet });
+    // Novelty reads the actor's own last 3 lines and the turn before: own lines older than the events in view come from the packet's own-utterance list.
+    const inViewOwn = new Set(spoken.filter((l) => l.own).map((l) => l.text));
+    const noveltyRoom: OwedLine[] = script ? [...input.perceptionPacket.ownRecentUtterances.filter((t) => !inViewOwn.has(t)).slice(-3).map((text) => ({ speaker: ctx.profile.displayName ?? agentId, text, own: true })), ...spoken] : [];
+    const noveltyOf = (text: string) => lowNovelty(text, noveltyRoom, noveltyFloorValue, { names: roomNamesSet });
     let lengthRetried = false;
     let motifRetried = false;
     let debtRetried = false;
