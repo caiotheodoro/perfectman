@@ -42,8 +42,12 @@ export const OVER_CAPS = [25, 40] as const;
 export const SHORT_REPLY_WORDS = 5;
 /** Say turns a stretch needs before its statistics mean anything; fewer is scored but flagged. */
 export const MIN_SAY_TURNS = 4;
-/** A turn needs this many words of 4+ letters before its novelty is judged (a "Sim, claro." has nothing to be new about). */
-export const NOVELTY_MIN_CONTENT = 5;
+/**
+ * A turn needs this many words of 4+ letters before its novelty is judged. Short chat lines share their topic words with the lines around them
+ * (an answer about the taxi says "táxi"), so a floor measured on the plays flags a tenth of them; from 7 words up it flags under 1% of ordinary
+ * chat and under 3% of the plays' turns. An exact repeat of a short line is the echo guard's business, not this one's.
+ */
+export const NOVELTY_MIN_CONTENT = 7;
 
 /** Nearest-rank quantile of a list (q in 0..1). */
 export function quantile(values: readonly number[], q: number): number {

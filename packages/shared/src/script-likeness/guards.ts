@@ -103,7 +103,7 @@ export function trimExample(text: string, target: LengthTarget): string {
 export type RoomTurn = { speaker: string; text: string };
 
 /**
- * The novelty a candidate must reach: the 10th percentile of the plays' own turn novelty (turns of 5 or more words of 4+ letters, against the
+ * The novelty a candidate must reach: the 10th percentile of the plays' own turn novelty (turns of 7 or more words of 4+ letters, against the
  * 6 turns before). Below it, a turn gives the room back what it just said. `pct` moves the percentile; the default is 10.
  */
 export function noveltyFloor(norms: ScriptNorms, lang: ScriptLang, pct = 10): number {
@@ -152,7 +152,12 @@ export const roomNames = (speakers: Iterable<string>): Set<string> => nameKeys(s
 // ---- questions owed ---------------------------------------------------------------------------------------------------
 
 /** What the room said, oldest first, with who the line was aimed at when the log says so. */
-export type OwedLine = RoomTurn & { /** Folded names or ids this line was aimed at, from the event's addressee list. */ aimedAt?: readonly string[] };
+export type OwedLine = RoomTurn & {
+  /** Folded names or ids this line was aimed at, from the event's addressee list. */
+  aimedAt?: readonly string[];
+  /** The line is the actor's own. */
+  own?: boolean;
+};
 
 export type OwedQuestion = { text: string; asker: string; /** Room turns after it. */ age: number };
 
