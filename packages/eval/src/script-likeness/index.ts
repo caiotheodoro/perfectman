@@ -2,7 +2,9 @@ import { existsSync, readFileSync, statSync } from "node:fs";
 import { join } from "node:path";
 import {
   SCRIPT_NORMS,
+  buildScriptNorms,
   heldOutIds,
+  joinScenes,
   lowNovelty,
   motifRepeat,
   nameKeysOf,
@@ -23,7 +25,7 @@ import { SUMMARY_FIXTURES, TURN_FIXTURES } from "./fixtures.js";
 
 export { SUMMARY_FIXTURES, TURN_FIXTURES } from "./fixtures.js";
 
-/** What a score means, by size: real beats score 80 and over (92% of held-out beats on the committed norms), the production runs under 60. */
+/** What a score means, by size: real beats score 80 and over (about 95% of held-out beats on the committed norms), the production runs under 60. Advisory: no human has labelled it. */
 export const SCRIPT_LIKE_AT = 80;
 export const NOT_SCRIPT_LIKE_BELOW = 60;
 export type Verdict = "script-like" | "borderline" | "not script-like";
@@ -46,26 +48,58 @@ function readJsonLines(file: string): Record<string, unknown>[] {
 }
 
 export type LoadedTurns = { turns: ScriptTurn[]; names: string[]; source: string };
+export type LoadOptions = {
+  /** Keep only these speakers of a transcript file (the actors: a transcript can hold the players' lines too). Matched without case. */
+  actors?: readonly string[];
+};
+
+/** A transcript row as the production export writes it: seconds since the run's start, who, what kind, what was said. */
+const isTranscriptRow = (r: Record<string, unknown>): boolean => typeof r["text"] === "string" && typeof r["name"] === "string";
+
+/** Say turns of transcript rows (`{t, name, kind, text}`), the clock in ms, optionally only the given actors'. */
+export function turnsFromTranscript(rows: readonly Record<string, unknown>[], actors?: readonly string[]): ScriptTurn[] {
+  const keep = actors ? new Set(actors.map((a) => a.trim().toLowerCase())) : undefined;
+  const out: ScriptTurn[] = [];
+  for (const r of rows) {
+    if (!isTranscriptRow(r) || (r["kind"] !== undefined && r["kind"] !== "say")) continue;
+    const name = r["name"] as string;
+    if (keep && !keep.has(name.trim().toLowerCase())) continue;
+    if ((r["text"] as string).trim() === "") continue;
+    out.push({ speaker: name, text: r["text"] as string, kind: "say", ...(typeof r["t"] === "number" ? { atMs: Math.round(r["t"] * 1000) } : {}) });
+  }
+  return out;
+}
 
 /**
  * Turns from what a run leaves behind: a hotel run directory (`events.jsonl`, plus the frame log for walks and sits), an `events.jsonl` /
- * eval simulation event log, or a JSON file of turns (`[{speaker, text, atMs?, kind?}]` or `{turns: [...]}`).
+ * eval simulation event log, a transcript export (`{t, name, kind, text}` per line), or a JSON file of turns (`[{speaker, text, atMs?, kind?}]` or `{turns: [...]}`).
  */
-export function loadTurns(input: string): LoadedTurns {
+export function loadTurns(input: string, opts: LoadOptions = {}): LoadedTurns {
   if (!existsSync(input)) throw new Error(`no such file or directory: ${input}`);
   if (statSync(input).isDirectory()) {
     const run = loadHotelRun(input);
     const turns = mergeTurns(turnsFromEvents(run.events as unknown as EventLike[]), turnsFromBodyFrames(run.frames));
     return { turns, names: run.cast.map((m) => m.name), source: `hotel run ${input}` };
   }
-  if (input.endsWith(".jsonl")) return { turns: turnsFromEvents(readJsonLines(input) as unknown as EventLike[]), names: [], source: `event log ${input}` };
+  if (input.endsWith(".jsonl")) {
+    const rows = readJsonLines(input);
+    if (rows.length > 0 && rows.every(isTranscriptRow)) return { turns: turnsFromTranscript(rows, opts.actors), names: opts.actors ? [...opts.actors] : [], source: `transcript ${input}` };
+    return { turns: turnsFromEvents(rows as unknown as EventLike[]), names: [], source: `event log ${input}` };
+  }
   const raw: unknown = JSON.parse(readFileSync(input, "utf8"));
   const list = Array.isArray(raw) ? raw : isObj(raw) && Array.isArray(raw["turns"]) ? (raw["turns"] as unknown[]) : undefined;
   if (!list) throw new Error(`${input}: expected an array of turns or {"turns": [...]}`);
   const turns: ScriptTurn[] = [];
   for (const t of list) {
     if (!isObj(t) || typeof t["speaker"] !== "string" || typeof t["text"] !== "string") continue;
-    turns.push({ speaker: t["speaker"], text: t["text"], ...(typeof t["atMs"] === "number" ? { atMs: t["atMs"] } : {}), ...(t["kind"] === "act" ? { kind: "act" as const } : {}) });
+    turns.push({
+      speaker: t["speaker"],
+      text: t["text"],
+      ...(typeof t["atMs"] === "number" ? { atMs: t["atMs"] } : {}),
+      ...(t["kind"] === "act" ? { kind: "act" as const } : {}),
+      ...(t["actKind"] === "move" || t["actKind"] === "verb" ? { actKind: t["actKind"] } : {}),
+      ...(t["filler"] === true ? { filler: true } : {}),
+    });
   }
   return { turns, names: [], source: `turns ${input}` };
 }
@@ -105,6 +139,8 @@ export type CorpusValidation = {
   heldOut: number;
   byLanguage: Record<string, { beats: number; atLeast80: number; share: number; median: number; p10: number; min: number }>;
   total: { beats: number; atLeast80: number; share: number };
+  /** Whole scenes (13 or more speech turns) that hold a held-out beat, so were left out of the scene norms: how many reach 80 as one run. */
+  scenes: { scenes: number; atLeast80: number; share: number; median: number; p10: number };
 };
 
 const q = (sorted: number[], p: number): number => sorted[Math.min(sorted.length - 1, Math.floor(p * sorted.length))] ?? 0;
@@ -130,7 +166,28 @@ export function validateOnCorpus(beats: readonly CorpusBeat[], norms: ScriptNorm
     all += scores.length;
     pass += ok;
   }
-  return { heldOut: held.size, byLanguage, total: { beats: all, atLeast80: pass, share: all === 0 ? 0 : Math.round((pass / all) * 1000) / 1000 } };
+  const sceneScores = joinScenes(beats)
+    .filter((sc) => sc.beats.some((b) => held.has(b.id)))
+    .map((sc) => scoreTurns(sc.turns, { norms, language: sc.lang, names: sc.beats.flatMap((b) => b.speakers ?? []) }))
+    .filter((r) => r.sayTurns >= 13)
+    .map((r) => r.score)
+    .sort((a, b) => a - b);
+  const sceneOk = sceneScores.filter((x) => x >= SCRIPT_LIKE_AT).length;
+  return {
+    heldOut: held.size,
+    byLanguage,
+    total: { beats: all, atLeast80: pass, share: all === 0 ? 0 : Math.round((pass / all) * 1000) / 1000 },
+    scenes: { scenes: sceneScores.length, atLeast80: sceneOk, share: sceneScores.length === 0 ? 0 : Math.round((sceneOk / sceneScores.length) * 1000) / 1000, median: q(sceneScores, 0.5), p10: q(sceneScores, 0.1) },
+  };
+}
+
+/**
+ * The same check on another held-out set: norms rebuilt without the beats a `salt` picks (100 per language), validated on those. An independent
+ * read of whether the committed norms were fitted to their own held-out beats. Tags are not needed (they only feed the tactic block).
+ */
+export function validateSalted(beats: readonly CorpusBeat[], salt: string, perLanguage = 100): CorpusValidation {
+  const norms = buildScriptNorms(beats, [], { built: "salted", holdoutPerLanguage: perLanguage, holdoutSalt: salt });
+  return validateOnCorpus(beats, norms);
 }
 
 export type GuardRates = {
