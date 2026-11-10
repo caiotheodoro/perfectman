@@ -49,10 +49,12 @@ const KNOWN_HEADINGS = [
   "hard limits",
 ] as const;
 
+// `short` is the default turn length (pt-BR: aim 5 to 12 words, at most 22; see `lengthTargetFor`): a builder persona that says nothing about it used to get
+// `medium` (cap 40), and a production run with that cap had a median line of 19 words and a quarter of them over 25, where the plays' median is 7.
 const DEFAULT_PRESENCE: PresenceProfile = {
   responseDelayMs: [800, 4000],
   silenceTolerancePulses: 3,
-  messageLength: "medium",
+  messageLength: "short",
   punctuationTells: [],
 };
 
