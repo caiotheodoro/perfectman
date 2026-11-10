@@ -118,7 +118,7 @@ describe("reported speech is not the speaker's own", () => {
   ])("%s is reported", (text) => {
     const r = readHostility(text);
     expect(r.own, text).toBeUndefined();
-    expect(r.reported, text).toBeDefined();
+    expect(r.reported, text).toMatch(/^(insult|accusation|blackmail|threat|challenge|mockery)$/);
   });
 
   it("your own words stay your own, even next to a report", () => {

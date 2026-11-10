@@ -14,7 +14,7 @@ import type { ScenarioBeat } from "../authoring/scenario-beats.js";
 import type { LlmEnv } from "../config.js";
 import type { ScenarioBody } from "../run/scenario-body.js";
 import { SCENE_SPINE_ENV } from "../run/scene-recorder.js";
-import { SPINE_ESCALATE_ENV } from "../run/spine-escalation.js";
+import { SPINE_ESCALATE_ENV, SpineEscalation } from "../run/spine-escalation.js";
 import type { Sidecar } from "../sidecar.js";
 import { FakeDirector } from "../testing/fake-director.js";
 import { TEST_SECRET, bootSidecar, compiledScenario, waitFor } from "../testing/helpers.js";
@@ -87,7 +87,7 @@ describe("the spine's coupling to the ladder in a run", () => {
 
   it("is built with the spine of a scene that has no authored beats", async () => {
     const { run } = await boot({});
-    expect(escalationOf(run)).toBeDefined();
+    expect(escalationOf(run)).toBeInstanceOf(SpineEscalation);
   });
 
   it("is off with PERFECTMAN_SPINE_ESCALATE=0 while the spine still writes its notes: the old spine", async () => {
