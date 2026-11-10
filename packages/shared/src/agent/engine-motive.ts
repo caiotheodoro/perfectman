@@ -19,6 +19,9 @@
 /** Marker the repetition guard writes into a blocked intent's motive. */
 export const REPETITION_GUARD_MARKER = "Repetition guard";
 
+/** Marker the output guard writes into the motive of a line it dropped for corrupt text (hotel mode). */
+export const OUTPUT_GUARD_MARKER = "Output guard";
+
 /**
  * Prefixes written by `IntentParser.createFallback`, the retry-exhausted floor,
  * the budget and provider gates in `action-intent-step.ts`, and the repetition
@@ -27,6 +30,7 @@ export const REPETITION_GUARD_MARKER = "Repetition guard";
 export const ENGINE_MOTIVE_PREFIXES: readonly string[] = [
   "Fallback applied:",
   `${REPETITION_GUARD_MARKER}:`,
+  `${OUTPUT_GUARD_MARKER}:`,
   "LLM budget exceeded:",
   "Provider failed:",
   "Retry call failed.",

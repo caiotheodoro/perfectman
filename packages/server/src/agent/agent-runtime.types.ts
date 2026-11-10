@@ -69,6 +69,8 @@ export type BuiltPrompt = {
    * and the answer was not usable. A provider chain reads it to ask a different model the second time.
    */
   retry?: "correction";
+  /** Hotel drama mode: the room stalled and the decision carries the one-line nudge to commit to a move (scene-stall.ts). Unset otherwise. */
+  stallNudged?: true;
 };
 
 export type AgentRuntimeOutput = {

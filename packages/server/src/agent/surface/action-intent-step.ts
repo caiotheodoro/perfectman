@@ -23,7 +23,10 @@ import {
   REPETITION_GUARD_MARKER,
   REPETITION_SIMILARITY_THRESHOLD,
   roomLinesHeard,
+  type GuardKind,
 } from "../repetition-guard.js";
+import { OUTPUT_GUARD_MARKER } from "@perfectman/shared";
+import { findGarble, findOwnEcho, findPhraseLoop, findRoomEcho, type GarbleHit, type LoopHit } from "../echo-guard.js";
 import { answerWhisper } from "../../simulation/whisper-reply.js";
 import { promptVersionHash } from "../prompt-version.js";
 import { ActionIntentPromptBuilder } from "../action-intent-prompt-builder.js";
@@ -46,6 +49,25 @@ function askedByPerson(input: AgentRuntimeInput, agentId: string): boolean {
 }
 
 type RetryKind = "none" | "repeat_failed" | "parse_failed" | "provider_failed";
+
+/** Everything written in the actor's view (lines and speakers' names): letters in it are the room's own, not corruption. */
+function visibleText(packet: AgentRuntimeInput["perceptionPacket"]): string[] {
+  const out: string[] = [];
+  for (const e of [...packet.visibleContextEvents, ...(packet.triggeringEvent ? [packet.triggeringEvent] : [])]) {
+    const p = e.payload as Record<string, unknown> | undefined;
+    for (const key of ["content", "senderName"]) if (typeof p?.[key] === "string") out.push(p[key] as string);
+  }
+  return out;
+}
+
+/** A counter hook must never break a turn. */
+function notify(hook: ((kind: GuardKind) => void) | undefined, kind: GuardKind): void {
+  try {
+    hook?.(kind);
+  } catch {
+    // counters are best effort
+  }
+}
 
 /**
  * The retry note when a person asked this actor something and its answer could not be used (the output was invalid
@@ -109,6 +131,35 @@ export function retryCorrectionNote(lastAttempt: string, language: "pt-BR" | "en
   return `IMPORTANT: your last attempt this turn ("${lastAttempt}") was too close to something you already said. Say something genuinely different — a new angle, a reaction to someone else, a topic change — while staying true to what you actually want right now; do not invent novelty that your current motive and emotional state wouldn't justify. Or choose "no_op" on purpose — letting the point stand unanswered is a move, if it is the move this person would make.`;
 }
 
+/** A quoted piece of the actor's own text for a note: one line, no quotes of its own, short. */
+const quoted = (text: string, max: number): string => text.replace(/["\n\r]+/g, " ").replace(/\s+/g, " ").trim().slice(0, max);
+
+/**
+ * The retry note for a signature phrase or question the actor keeps coming back to (echo-guard.ts `findPhraseLoop`):
+ * names the phrase, bans it and its variations, and asks for new information or a decision instead. When a person is
+ * waiting the answer stays aimed at them and is not offered a silence.
+ */
+export function loopRetryNote(phrase: string, language: "pt-BR" | "en", askedBy = false): string {
+  const said = quoted(phrase, 80);
+  if (language === "pt-BR") {
+    return askedBy
+      ? `IMPORTANTE: você já usou "${said}" em várias das suas últimas falas. Alguém acabou de falar com você e espera uma resposta: responda ao que essa pessoa disse, sem essa frase nem uma variação dela, com algo que ainda não foi dito. Não fale com o resto da sala.`
+      : `IMPORTANTE: você já usou "${said}" em várias das suas últimas falas. Não use essa frase, nem a mesma pergunta, nem uma variação dela. Traga uma informação nova ou tome uma decisão agora: diga algo concreto que ainda não foi dito, ou mexa na cena (acusar, revelar, recusar dando um motivo, sair).`;
+  }
+  return askedBy
+    ? `IMPORTANT: you already used "${said}" in several of your last lines. Someone just spoke to you and is waiting: answer what that person said, without that phrase or a variation of it, with something not said yet. Do not talk to the rest of the room.`
+    : `IMPORTANT: you already used "${said}" in several of your last lines. Do not use that phrase, the same question or a variation of it. Bring new information or make a decision now: say something concrete that was not said yet, or move the scene (accuse, reveal, refuse and say why, leave).`;
+}
+
+/** The retry note for corrupt text in the line (echo-guard.ts `findGarble`): rewrite it in plain words. */
+export function garbleRetryNote(token: string, language: "pt-BR" | "en"): string {
+  const bad = quoted(token, 40);
+  if (language === "pt-BR") {
+    return `IMPORTANTE: sua última tentativa nesta rodada tinha texto corrompido ("${bad}"). Escreva a fala de novo em português normal, só com palavras inteiras, separadas por espaço.`;
+  }
+  return `IMPORTANT: your last attempt this turn had corrupted text ("${bad}"). Write the line again in plain, normal words, whole words separated by spaces.`;
+}
+
 /**
  * Correction appended to the system prompt on the single reply/react target
  * retry: names the unresolvable handle, lists the valid handle set for this
@@ -144,7 +195,9 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
   render(input: AgentRuntimeInput, ctx: StepRunContext): BuiltPrompt {
     // Route through the dispatcher so unused prompt purposes still fail
     // closed (see prompt-builder.ts) and the render entry stays singular.
-    return PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens, ctx.llmConfig.promptStyle);
+    const built = PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens, ctx.llmConfig.promptStyle);
+    if (built.stallNudged) notify(ctx.repetitionPolicy?.onGuard, "stall_nudge");
+    return built;
   }
 
   gate(input: AgentRuntimeInput, ctx: StepRunContext): StepOutcome<AgentRuntimeOutput> | undefined {
@@ -262,12 +315,19 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       Math.floor(ambient && policy.ambientMaxRetries !== undefined ? Math.min(policy.ambientMaxRetries, policy.maxRetries ?? DEFAULT_REPETITION_MAX_RETRIES) : (policy.maxRetries ?? DEFAULT_REPETITION_MAX_RETRIES)),
     );
     const roomThreshold = policy.roomThreshold === undefined ? undefined : Math.min(1, Math.max(0, policy.roomThreshold));
-    const roomLines = roomThreshold === undefined ? [] : roomLinesHeard(input.perceptionPacket);
+    // Hotel mode (RepetitionPolicy.strict): also compare word sequences, name a signature phrase, and refuse corrupt text.
+    const strict = policy.strict === true;
+    const roomLines = roomThreshold === undefined && !strict ? [] : roomLinesHeard(input.perceptionPacket);
+    const ownLines = input.perceptionPacket.ownRecentUtterances;
+    const seenText = strict ? visibleText(input.perceptionPacket) : [];
 
     let intent = parseResult.intent;
     let fallbackApplied = parseResult.fallbackApplied;
     let repetitionBlocked = false;
     let lastRepeatWasOwn = true;
+    let lastBlockedLoop: LoopHit | undefined;
+    let garbleDropped: GarbleHit | undefined;
+    let garbleRetried = false;
     let retryKind: RetryKind = "none";
     let retriesAttempted = 0;
     let totalInputTokens = providerResult.usage.inputTokens;
@@ -281,10 +341,25 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     const speaks = (candidateIntent: typeof intent): boolean =>
       (candidateIntent.intentType === "send_message" || candidateIntent.intentType === "reply_to_message") &&
       !!candidateIntent.visibleContent;
-    const isOwnRepeat = (candidateIntent: typeof intent): boolean =>
-      speaks(candidateIntent) && isNearRepeat(candidateIntent.visibleContent!, input.perceptionPacket.ownRecentUtterances, threshold);
-    const isRoomRepeat = (candidateIntent: typeof intent): boolean =>
-      roomThreshold !== undefined && speaks(candidateIntent) && isRoomCopy(candidateIntent.visibleContent!, roomLines, roomThreshold);
+    // Each check runs once per candidate: the retry arm asks the same questions of the same intent several times.
+    const once = <T,>(check: (candidateIntent: typeof intent) => T): ((candidateIntent: typeof intent) => T) => {
+      const seen = new WeakMap<object, T>();
+      return (candidateIntent) => {
+        if (!seen.has(candidateIntent)) seen.set(candidateIntent, check(candidateIntent));
+        return seen.get(candidateIntent) as T;
+      };
+    };
+    const isOwnRepeat = once((candidateIntent: typeof intent): boolean =>
+      speaks(candidateIntent) &&
+      (isNearRepeat(candidateIntent.visibleContent!, ownLines, threshold) || (strict && findOwnEcho(candidateIntent.visibleContent!, ownLines) !== undefined)));
+    const isRoomRepeat = once((candidateIntent: typeof intent): boolean =>
+      speaks(candidateIntent) &&
+      ((roomThreshold !== undefined && isRoomCopy(candidateIntent.visibleContent!, roomLines, roomThreshold)) ||
+        (strict && findRoomEcho(candidateIntent.visibleContent!, roomLines) !== undefined)));
+    const loopOf = once((candidateIntent: typeof intent): LoopHit | undefined =>
+      strict && speaks(candidateIntent) ? findPhraseLoop(candidateIntent.visibleContent!, ownLines) : undefined);
+    const garbleOf = once((candidateIntent: typeof intent): GarbleHit | undefined =>
+      strict && speaks(candidateIntent) ? findGarble(candidateIntent.visibleContent!, seenText) : undefined);
     // Hotel only (it rides on the room threshold): a line that is the actor's own private thought spoken out loud.
     const isThoughtSpoken = (candidateIntent: typeof intent): boolean =>
       roomThreshold !== undefined &&
@@ -293,6 +368,17 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         similarity(candidateIntent.visibleContent!, candidateIntent.privateMotiveSummary ?? "") >= 0.6) ||
         EXAMPLE_MOTIVES.some((m) => similarity(candidateIntent.visibleContent!, m) >= 0.7));
     const isRepeat = (candidateIntent: typeof intent): boolean => isOwnRepeat(candidateIntent) || isRoomRepeat(candidateIntent) || isThoughtSpoken(candidateIntent);
+    // A line the guards refuse: a repeat, a signature phrase the actor keeps coming back to, or corrupt text.
+    const isBad = (candidateIntent: typeof intent): boolean => isRepeat(candidateIntent) || loopOf(candidateIntent) !== undefined || garbleOf(candidateIntent) !== undefined;
+    // One count per flagged candidate, by what it is first: corrupt, an echo of the actor, of the room, a signature phrase.
+    const tally = (candidateIntent: typeof intent): void => {
+      if (!policy.onGuard) return;
+      if (garbleOf(candidateIntent)) notify(policy.onGuard, "garble");
+      else if (isOwnRepeat(candidateIntent)) notify(policy.onGuard, "repeat_own");
+      else if (isRoomRepeat(candidateIntent)) notify(policy.onGuard, "repeat_room");
+      else if (loopOf(candidateIntent)) notify(policy.onGuard, "phrase_loop");
+    };
+    if (!fallbackApplied) tally(intent);
 
     // A person asked this actor something. An invalid output (which would fall back to a no-op) or an answer aimed at
     // somebody else leaves them without one, so both get the retry arm too.
@@ -305,13 +391,15 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         : candidateIntent.personTargets.length > 0);
     const unusable = fallbackApplied && asked;
 
-    if (unusable || (!fallbackApplied && (isRepeat(intent) || parseResult.unresolvedTarget || aimedElsewhere(intent)))) {
+    if (unusable || (!fallbackApplied && (isBad(intent) || parseResult.unresolvedTarget || aimedElsewhere(intent)))) {
       // What the *first* attempt got wrong. A retry that fixes it clears every
       // in-band signal (`fallbackApplied` goes back to false, no llm_failure is
       // pushed), so without capturing it here the failed attempt vanishes and
       // the offline counters report a clean run.
       const firstAttemptViolations = [
         isRepeat(intent) ? "near_duplicate" : null,
+        loopOf(intent) ? "phrase_loop" : null,
+        garbleOf(intent) ? "garbled_text" : null,
         parseResult.unresolvedTarget ? "unresolved_target" : null,
         unusable ? "unusable_answer" : null,
         !unusable && aimedElsewhere(intent) ? "aimed_elsewhere" : null,
@@ -323,10 +411,19 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         // the retry prompt is re-assembled and re-trimmed against the same cap
         // before it goes anywhere near the wire; the trim event and the budget
         // gate below therefore see the corrected, final estimate.
+        // Corrupt text gets one retry and no more: a second corrupt answer is dropped below.
+        if (garbleOf(intent) !== undefined) {
+          if (garbleRetried) break;
+          garbleRetried = true;
+        }
         const corrections: string[] = [];
-        if (isRepeat(intent)) {
+        const garbled = garbleOf(intent);
+        if (garbled) corrections.push(garbleRetryNote(garbled.token, ctx.profile.language));
+        const looped = loopOf(intent);
+        if (isRepeat(intent) && !(looped && asked)) {
           corrections.push(retryCorrectionNote(intent.visibleContent ?? "", ctx.profile.language, askedByPerson(input, agentId), isOwnRepeat(intent) ? "own" : isRoomRepeat(intent) ? "room" : "thought"));
         }
+        if (looped) corrections.push(loopRetryNote(looped.phrase, ctx.profile.language, asked));
         if (unusable && fallbackApplied) corrections.push(answerOwedNote(unusableWhy, ctx.profile.language));
         else if (!fallbackApplied && aimedElsewhere(intent) && !isRepeat(intent)) corrections.push(aimedElsewhereNote(intent.visibleContent ?? "", ctx.profile.language));
         if (parseResult.unresolvedTarget) {
@@ -365,9 +462,10 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           inputTokensEstimate: retryPrompt.inputTokensEstimate,
         });
         if (!budgetDecision.allowed) {
-          if (isRepeat(intent)) {
+          if (isRepeat(intent) || loopOf(intent) !== undefined) {
             repetitionBlocked = true;
             lastRepeatWasOwn = isOwnRepeat(intent);
+            lastBlockedLoop = isRepeat(intent) ? undefined : loopOf(intent);
             retryKind = "repeat_failed";
           }
           break;
@@ -384,7 +482,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
             promptVersion: retryPrompt.version,
           });
           const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext);
-          if (!retryParse.fallbackApplied && !isRepeat(retryParse.intent) && !retryParse.unresolvedTarget && !aimedElsewhere(retryParse.intent)) {
+          if (!retryParse.fallbackApplied) tally(retryParse.intent);
+          if (!retryParse.fallbackApplied && !isBad(retryParse.intent) && !retryParse.unresolvedTarget && !aimedElsewhere(retryParse.intent)) {
             parseResult = retryParse;
             intent = retryParse.intent;
             fallbackApplied = false;
@@ -422,27 +521,45 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       }
       // Exhausted the retry budget with the model still repeating. A person who asked this actor something and is
       // waiting is answered anyway: a repeated answer is what people give when asked twice, and silence is not.
-      if (!fallbackApplied && isRepeat(intent) && !askedByPerson(input, agentId)) {
+      // Corrupt text is never delivered, to a person who asked either: silence is better than "Éduğunu".
+      const stillGarbled = fallbackApplied ? undefined : garbleOf(intent);
+      if (stillGarbled) {
+        garbleDropped = stillGarbled;
+      } else if (!fallbackApplied && isRepeat(intent) && !askedByPerson(input, agentId)) {
         repetitionBlocked = true;
         lastRepeatWasOwn = isOwnRepeat(intent);
+        lastBlockedLoop = undefined;
+        retryKind = "repeat_failed";
+      } else if (!fallbackApplied && loopOf(intent) !== undefined && !askedByPerson(input, agentId)) {
+        repetitionBlocked = true;
+        lastBlockedLoop = loopOf(intent);
         retryKind = "repeat_failed";
       }
     }
 
-    if (repetitionBlocked) {
+    const retryPhrase =
+      retriesAttempted === 0
+        ? "with no retry allowed"
+        : retriesAttempted === 1
+          ? "even after a retry"
+          : `even after ${retriesAttempted} retries`;
+    if (garbleDropped) {
+      // Not "Fallback applied:": the provider answered, so neither the breaker nor the health watch may count it as a failure.
       fallbackApplied = true;
-      const blockedOwn = lastRepeatWasOwn;
-      const retryPhrase =
-        retriesAttempted === 0
-          ? "with no retry allowed"
-          : retriesAttempted === 1
-            ? "even after a retry"
-            : `even after ${retriesAttempted} retries`;
       intent = IntentParser.createFallback(
         agentId,
         "no_op",
-        `${REPETITION_GUARD_MARKER}: near-duplicate of ${blockedOwn ? "a message you already sent" : "a line someone else in the room just said, or of your own thought"}, ${retryPhrase} — blocked structurally.`,
+        `${OUTPUT_GUARD_MARKER}: corrupt text ("${quoted(garbleDropped.token, 40)}") in the line, ${retryPhrase} — dropped, staying quiet.`,
       );
+      notify(policy.onGuard, "garble_dropped");
+    } else if (repetitionBlocked) {
+      fallbackApplied = true;
+      const blockedOwn = lastRepeatWasOwn;
+      const what = lastBlockedLoop
+        ? `a signature phrase ("${quoted(lastBlockedLoop.phrase, 60)}") you keep coming back to`
+        : `near-duplicate of ${blockedOwn ? "a message you already sent" : "a line someone else in the room just said, or of your own thought"}`;
+      intent = IntentParser.createFallback(agentId, "no_op", `${REPETITION_GUARD_MARKER}: ${what}, ${retryPhrase} — blocked structurally.`);
+      notify(policy.onGuard, "repeat_blocked");
     }
 
     // Target floor: after the retry arm, an intent whose reply/react target
@@ -580,7 +697,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       });
     }
 
-    if (fallbackApplied && !repetitionBlocked) {
+    if (fallbackApplied && !repetitionBlocked && !garbleDropped) {
       const detail =
         retryKind === "provider_failed"
           ? `Retry provider call failed for agent ${agentId}; falling back to no_op.`
@@ -606,13 +723,15 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       });
     }
 
-    if (repetitionBlocked) {
+    if (garbleDropped || repetitionBlocked) {
       operatorEvents.push({
         type: "intent_blocked",
         simulationId,
         agentId,
         pulseIndex: ctx.pulseIndex,
-        detail: `Repetition guard blocked a near-duplicate message from agent ${agentId}; substituted no_op.`,
+        detail: garbleDropped
+          ? `Output guard dropped a line with corrupt text from agent ${agentId}; substituted no_op.`
+          : `Repetition guard blocked a near-duplicate message from agent ${agentId}; substituted no_op.`,
         createdAt: Date.now(),
       });
     }
