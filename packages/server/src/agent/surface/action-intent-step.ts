@@ -25,7 +25,7 @@ import {
   roomLinesHeard,
   type GuardKind,
 } from "../repetition-guard.js";
-import { OUTPUT_GUARD_MARKER, SCRIPT_NORMS, answersFirst, lengthOf, lowNovelty, motifRepeat, noveltyFloor, trimToCap, withoutQuestions } from "@perfectman/shared";
+import { OUTPUT_GUARD_MARKER, SCRIPT_NORMS, answersFirst, lengthOf, lowNovelty, motifRepeat, noveltyFloor, splitAfter, trimToCap, withoutQuestions } from "@perfectman/shared";
 import { findGarble, findOwnEcho, findPhraseLoop, findRoomEcho, type GarbleHit, type LoopHit } from "../echo-guard.js";
 import {
   lengthRetryNote,
@@ -612,8 +612,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       let text = original;
       const reaction = (): string => reactionFor(`${agentId}|${ctx.pulseIndex}|${original.length}`, lang);
       if (!asked && (motifOf(intent) !== undefined || staleOf(intent) !== undefined)) {
-        const kept = text
-          .split(/(?<=[.!?…])\s+/u)
+        const kept = splitAfter(text, ".!?…")
           .filter((sentence) => motifRepeat(sentence, spoken, roomNamesSet) === undefined)
           .join(" ")
           .trim();

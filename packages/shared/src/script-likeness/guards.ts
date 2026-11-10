@@ -2,7 +2,7 @@ import { NOVELTY_MIN_CONTENT, NOVELTY_WINDOW, analyze, motifKeys, noveltyAgainst
 import type { Analyzed } from "./metrics.js";
 import { ladderValue, normsFor } from "./norms.js";
 import type { ScriptNorms } from "./norms.js";
-import { fold, letterCount, nameKeys, stripDirections, wordCount } from "./text.js";
+import { fold, letterCount, nameKeys, splitAfter, stripDirections, wordCount } from "./text.js";
 import type { ScriptLang } from "./text.js";
 
 /**
@@ -46,14 +46,7 @@ export function lengthTargetFor(messageLength: MessageLength | undefined, lang: 
 /** Words of a line the way the length cap counts them (directions and laughter do not count). */
 export const lengthOf = (text: string): number => wordCount(text);
 
-const SENTENCE_END = /(?<=[.!?…])\s+/u;
-
-const sentenceList = (text: string): string[] =>
-  stripDirections(text)
-    .trim()
-    .split(SENTENCE_END)
-    .map((s) => s.trim())
-    .filter((s) => s !== "");
+const sentenceList = (text: string): string[] => splitAfter(stripDirections(text).trim(), ".!?…");
 
 const endsAsQuestion = (s: string): boolean => /\?["”')\]]*$/u.test(s);
 
@@ -79,7 +72,7 @@ export function trimToCap(text: string, cap: number, maxSentences = 2): string {
   if (kept.length > 0) return kept.join(" ");
   // The first sentence is over the cap by itself.
   const first = sentences[0]!;
-  const parts = first.split(/(?<=[,;:—–])\s+/u);
+  const parts = splitAfter(first, ",;:—–");
   let acc = "";
   for (const part of parts) {
     const next = acc === "" ? part : `${acc} ${part}`;
@@ -118,7 +111,9 @@ export function lowNovelty(candidate: string, room: readonly RoomTurn[], floor: 
   if (room.length < 3) return undefined;
   const a = analyze({ speaker: "", text: candidate });
   const prior = room.slice(-NOVELTY_WINDOW).map((t) => new Set(analyze(t).content));
-  const novelty = noveltyAgainst(a.content, prior, NOVELTY_MIN_CONTENT);
+  const raw = noveltyAgainst(a.content, prior, NOVELTY_MIN_CONTENT);
+  // The floor is a rounded ladder value (4 places): the candidate is rounded the same way, so a turn exactly on the 10th percentile (5 of 7 words new) is not under it.
+  const novelty = raw === undefined ? undefined : Math.round(raw * 10_000) / 10_000;
   return novelty !== undefined && novelty < floor ? { novelty, floor } : undefined;
 }
 

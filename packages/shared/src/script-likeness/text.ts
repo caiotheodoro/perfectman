@@ -46,6 +46,27 @@ export function wordsOf(text: string): Word[] {
   return out;
 }
 
+/**
+ * Splits `text` after each of `enders` that is followed by white space, dropping the white space (what a regex lookbehind split does, without one:
+ * this module is bundled into the browser build, and lookbehind is a syntax error in older Safari).
+ */
+export function splitAfter(text: string, enders: string): string[] {
+  const parts: string[] = [];
+  let cur = "";
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i]!;
+    cur += ch;
+    const next = text[i + 1];
+    if (enders.includes(ch) && (next === undefined || /\s/u.test(next))) {
+      parts.push(cur.trim());
+      cur = "";
+      while (i + 1 < text.length && /\s/u.test(text[i + 1]!)) i++;
+    }
+  }
+  if (cur.trim() !== "") parts.push(cur.trim());
+  return parts.filter((p) => p !== "");
+}
+
 /** Number of words a turn is counted as. */
 export function wordCount(text: string): number {
   return wordsOf(text).length;

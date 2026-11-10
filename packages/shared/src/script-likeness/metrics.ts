@@ -12,6 +12,7 @@ import {
   letterCount,
   nameKeys,
   similesIn,
+  splitAfter,
   stemOf,
   stripDirections,
   wordsOf,
@@ -74,11 +75,7 @@ export type Analyzed = {
 function sentencesOf(text: string): Sentence[] {
   const t = stripDirections(text).trim();
   if (t === "") return [];
-  return t
-    .split(/(?<=[.!?…])\s+/u)
-    .map((s) => s.trim())
-    .filter((s) => s !== "")
-    .map((s) => ({ text: s, question: /\?["”')\]]*$/u.test(s), words: wordsOf(s).length }));
+  return splitAfter(t, ".!?…").map((s) => ({ text: s, question: /\?["”')\]]*$/u.test(s), words: wordsOf(s).length }));
 }
 
 export function analyze(turn: ScriptTurn): Analyzed {
@@ -149,7 +146,7 @@ export type NoveltyStats = {
   mean: number;
   /** Every such turn's novelty, in order. */
   values: number[];
-  /** Novelty of turns with at least {@link NOVELTY_MIN_CONTENT} words of 4+ letters, for the guard's floor. */
+  /** Novelty of turns with at least {@link NOVELTY_MIN_CONTENT} words of 4+ letters and 3 or more turns before them, for the guard's floor. */
   judged: number[];
 };
 
@@ -161,7 +158,8 @@ export function noveltyStats(say: readonly Analyzed[]): NoveltyStats {
     if (i > 0 && a.content.length > 0) {
       const v = noveltyAgainst(a.content, sets, 1);
       if (v !== undefined) values.push(v);
-      const j = noveltyAgainst(a.content, sets);
+      // The guard only judges a line with 3 or more turns before it, so the floor is measured on the same turns.
+      const j = i >= 3 ? noveltyAgainst(a.content, sets) : undefined;
       if (j !== undefined) judged.push(j);
     }
     sets.push(new Set(a.content));
