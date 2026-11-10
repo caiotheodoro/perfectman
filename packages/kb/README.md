@@ -22,7 +22,7 @@ What is committed: the code, the taxonomy, the tests, the notice and this README
 ## Commands
 
 ```bash
-pnpm --filter @perfectman/kb build
+pnpm --filter "@perfectman/kb..." build   # kb, and shared, which it imports for the slim format
 cd packages/kb
 node dist/cli.js build-beats
 node dist/cli.js export-tags --dialogue-fraction 0.25 --dialogue-fraction-pt 0.5 --heldout 0.1 --batch 40
@@ -63,7 +63,7 @@ First export (2026-11-10, from the second build): 1,910 of the 1,924 tagged beat
 
 The runtime feed, in detail. An authored beat has no tactic field, so its verb stands for one (`CRAFT_FOR_VERB` in `@perfectman/shared`: `insult` is dialogue that humbles, `slap` a rebuke that strikes, `kill` the killing, `hug`, `kiss`, `cry`, `storm_off`, `turn_back`, `faint` their own actions; `tableau`, `recoil`, `freeze_gasp`, `restrain`, `tend_fallen` and `die` stand for none and get no lines). When a run's script starts, `BeatCraft.build` picks up to two quips per beat with the same filters (cast size is the run's, language is the run's, no quip is given to two beats), renders them under a one-line header with title, author and licence in at most 600 characters, and keeps them in memory. The hotel view of the beat's actor carries them (`SpaceView.craft`, then `BodyPerception.craft`) from 20 s before the beat to 10 s after it; the prompt puts them under the scene-craft digest, in the compact and in the full contract alike. No retrieval happens per pulse.
 
-What a reference is allowed to do. It is prompt context for the model, framed as "study the pressure and the turn, never copy lines or names". The model's reply is untrusted exactly as before (`toStoryDraft`, `repairBeats`); on top, a draft whose lines repeat a run of five words of a reference it was shown is cut back line by line. Nothing from a reference is written into a scenario, a compiled body, a frame log or a run artifact: the style lines of the runtime feed live in memory for the run only.
+What a reference is allowed to do. It is prompt context for the model, framed as "study the pressure and the turn, never copy lines or names". The model's reply is untrusted exactly as before (`toStoryDraft`, `repairBeats`); on top, `guardDraft` cuts a line that repeats a run of five words of a reference the model was shown, and refuses a draft whose prose does, or whose person is named after a word of a shown play's title or author that the idea did not use (the caller then asks again). Nothing from a reference is written into a scenario, a compiled body, a frame log or a run artifact: the style lines of the runtime feed live in memory for the run only.
 
 ## Labels
 

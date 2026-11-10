@@ -48,7 +48,8 @@ async function boot(slim?: string) {
   await waitFor(() => booted.fake.received.filter((f) => f.t === "actor_spawn").length === 3, "three spawns");
   const run = await waitFor(() => booted.sidecar.manager!.getRun(7), "the run");
   await waitFor(() => run.state === "running", "a running run");
-  const space = (run as unknown as { space: { view(ref: string, now: number): { craft?: string; drama?: true } | undefined } }).space;
+  // The run's own window on the shared mirror: private, read here the way the pulse scheduler reads it.
+  const space: { view(ref: string, now: number): { craft?: string; drama?: true } | undefined } = Reflect.get(run, "space");
   return { run, space };
 }
 

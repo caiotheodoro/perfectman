@@ -8,7 +8,7 @@ import { KB_SLIM_ENV, loadSlimKbFromEnv, resetSlimKbCache } from "../../kb/slim-
 import { draftReferences, guardDraft, inferDraftIntent } from "../draft-references.js";
 import { draftPrompt, draftStory } from "../story-draft.js";
 
-function kbOf(raw: Record<string, unknown> = slimFixture()): SlimKb {
+function kbOf(raw: unknown = slimFixture()): SlimKb {
   const parsed = parseSlimKb(raw);
   if (!parsed.ok) throw new Error(parsed.error);
   return parsed.kb;
@@ -67,13 +67,13 @@ describe("draftReferences", () => {
 
   it("is deterministic, and is nothing when the KB holds nothing the ask can use", () => {
     expect(draftReferences(kb, IDEA, 4, "en")).toEqual(draftReferences(kb, IDEA, 4, "en"));
-    const kisses = kbOf({ ...slimFixture(), beats: (slimFixture()["beats"] as Array<{ action: string }>).filter((b) => b.action === "KISSING") });
+    const kisses = kbOf({ ...slimFixture(), beats: slimFixture().beats.filter((b) => b.action === "KISSING") });
     expect(draftReferences(kisses, IDEA, 4, "en")).toBeUndefined();
   });
 
   it("never lets the block pass its cap, even from full-length excerpts", () => {
     const line = "A: ".padEnd(100, "x");
-    const fat = (slimFixture()["beats"] as Array<Record<string, unknown>>).map((b) => ({ ...b, excerpt: [line, line, line, line].join("\n").slice(0, SLIM_EXCERPT_MAX_CHARS) }));
+    const fat = slimFixture().beats.map((b) => ({ ...b, excerpt: [line, line, line, line].join("\n").slice(0, SLIM_EXCERPT_MAX_CHARS) }));
     const refs = draftReferences(kbOf({ ...slimFixture(), beats: fat }), IDEA, 4, "en")!;
     expect(refs.block.length).toBeLessThanOrEqual(DRAFT_REFERENCE_MAX_CHARS);
     expect(refs.ids.length).toBeGreaterThanOrEqual(2);
@@ -93,7 +93,7 @@ describe("the draft prompt with references", () => {
 
   it("stays inside the budget: the block adds at most 1,502 characters, and the whole prompt stays under 4,700 (about 1,200 tokens at four characters each)", () => {
     for (const language of ["en", "pt-BR"] as const) {
-      const fat = (slimFixture()["beats"] as Array<Record<string, unknown>>).map((b) => ({ ...b, excerpt: Array.from({ length: 4 }, (_, i) => `${"AB"[i % 2]}: ${"y".repeat(97)}`).join("\n") }));
+      const fat = slimFixture().beats.map((b) => ({ ...b, excerpt: Array.from({ length: 4 }, (_, i) => `${"AB"[i % 2]}: ${"y".repeat(97)}`).join("\n") }));
       const worst = draftReferences(kbOf({ ...slimFixture(), beats: fat }), "x".repeat(2000), 3, language)!;
       const plain = draftPrompt("x".repeat(2000), 3, language);
       const full = draftPrompt("x".repeat(2000), 3, language, worst.block);
@@ -238,9 +238,9 @@ describe("loadSlimKbFromEnv", () => {
     const file = path.join(dir, "kb-slim.json");
     writeFileSync(file, JSON.stringify(slimFixture()));
     const first = loadSlimKbFromEnv({ env: env(file), warn });
-    expect(first?.beats.length).toBe((slimFixture()["beats"] as unknown[]).length);
+    expect(first?.beats.length).toBe(slimFixture().beats.length);
     expect(loadSlimKbFromEnv({ env: env(file), warn })).toBe(first);
-    const fewer = { ...slimFixture(), beats: (slimFixture()["beats"] as unknown[]).slice(0, 3) };
+    const fewer = { ...slimFixture(), beats: slimFixture().beats.slice(0, 3) };
     writeFileSync(file, JSON.stringify(fewer));
     utimesSync(file, new Date(), new Date(Date.now() + 5000));
     expect(loadSlimKbFromEnv({ env: env(file), warn })?.beats).toHaveLength(3);

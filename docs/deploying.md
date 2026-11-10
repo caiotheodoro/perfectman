@@ -141,7 +141,8 @@ once, `the reference KB is off`).
 only there (`packages/kb/corpus` and `packages/kb/index` are never synced):
 
 ```bash
-cd packages/kb && pnpm build
+pnpm --filter "@perfectman/kb..." build      # kb and what it imports (shared)
+cd packages/kb
 node dist/cli.js export-slim --out slim/kb-slim.json --built "$(date +%F)"
 # in a checkout without the index: add --index <path to kb.sqlite>
 ```

@@ -7,6 +7,18 @@ import { SLIM_FORMAT, SLIM_VERSION } from "./slim.js";
  */
 export const SLIM_FIXTURE_NOTICE = "Invented fixture text. Real files carry the full source and licence notice.";
 
+export type SlimFixtureBeat = { id: string; work: number; language: string; cast: number; action: string; status: string; tactic: string; emotion: string; medium: string; confidence: number; boundaryOk: boolean; excerpt: string; quip?: string };
+export type SlimFixtureFile = {
+  format: string;
+  version: number;
+  built: string;
+  notice: string;
+  licenses: Record<string, string>;
+  groups: Record<string, string>;
+  works: Array<{ title: string; author: string; license: string; language: string }>;
+  beats: SlimFixtureBeat[];
+};
+
 type Row = { id: string; work: number; cast: number; action: string; status: string; tactic: string; emotion: string; confidence?: number; ok?: boolean; excerpt: string; quip?: string };
 
 const GROUPS: Record<string, string> = {
@@ -43,7 +55,7 @@ const ROWS: Row[] = [
   { id: "tin:3.1.1", work: 0, cast: 3, action: "FAINTING", status: "LOW_STABLE", tactic: "to yield", emotion: "fear", confidence: 0.6, excerpt: "A: The lamp is out.\n[B faints.]" },
 ];
 
-export function slimFixture(): Record<string, unknown> {
+export function slimFixture(): SlimFixtureFile {
   return {
     format: SLIM_FORMAT,
     version: SLIM_VERSION,
