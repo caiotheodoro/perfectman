@@ -19,20 +19,19 @@ describe("sidecar configuration", () => {
     expect(c.llm).toMatchObject({ models: ["fast-model", "other-model"], concurrency: 3, apiKeyEnv: "PERFECTMAN_LLM_API_KEY" });
   });
 
-  it("[SAFE-1] reads PERFECTMAN_DRAMA fail-closed: unset leaves the config as it was, on is on, a typo is off with a warning", () => {
-    expect(parseConfig(GOOD)).not.toHaveProperty("drama");
-    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "yes" })).toMatchObject({ drama: true });
-    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "off" })).not.toHaveProperty("drama");
-    const typo = parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "treu" });
-    expect(typo).not.toHaveProperty("drama");
-    expect(typo.dramaWarning).toContain("treu");
+  it("[SAFE-1] PERFECTMAN_DRAMA is ignored: whatever it holds, the config is the same and has no drama switch", () => {
+    const base = parseConfig(GOOD);
+    expect(base).not.toHaveProperty("drama");
+    expect(base).not.toHaveProperty("dramaWarning");
+    for (const raw of ["yes", "on", "off", "0", "false", "treu", ""]) expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: raw })).toEqual(base);
   });
 
-  it("[DEATH-5] the ghost voice is a flag that is off unless asked, parsed like the drama switch, and means nothing without drama", () => {
-    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "on" })).not.toHaveProperty("dramaGhostVoice");
-    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "on", PERFECTMAN_DRAMA_GHOST_VOICE: "yes" })).toMatchObject({ dramaGhostVoice: true });
-    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA: "on", PERFECTMAN_DRAMA_GHOST_VOICE: "treu" })).not.toHaveProperty("dramaGhostVoice");
-    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA_GHOST_VOICE: "on" })).not.toHaveProperty("dramaGhostVoice");
+  it("[DEATH-5] the ghost voice is a flag that is off unless asked, parsed fail-closed, and needs no other flag", () => {
+    expect(parseConfig(GOOD)).not.toHaveProperty("dramaGhostVoice");
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA_GHOST_VOICE: "yes" })).toMatchObject({ dramaGhostVoice: true });
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA_GHOST_VOICE: "on" })).toMatchObject({ dramaGhostVoice: true });
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA_GHOST_VOICE: "treu" })).not.toHaveProperty("dramaGhostVoice");
+    expect(parseConfig({ ...GOOD, PERFECTMAN_DRAMA_GHOST_VOICE: "off" })).not.toHaveProperty("dramaGhostVoice");
   });
 
   it("is quiet when disabled: nothing is required", () => {

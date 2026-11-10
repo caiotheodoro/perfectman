@@ -1,4 +1,3 @@
-import { parseDramaEnv } from "./director/dialect.js";
 import { KNOWN_PRICES, legacyLink, parseChain } from "./llm/chain-config.js";
 import type { LlmLink } from "./llm/chain-config.js";
 
@@ -42,11 +41,7 @@ export type HotelConfig = {
   healthPort: number;
   /** In-memory events kept per run; older ones go to the run's `events.jsonl` as they fall out. 0 keeps everything. */
   eventRetention?: number;
-  /** `PERFECTMAN_DRAMA` (SAFE-1): the sidecar offers the drama dialect only when this is on. Absent means off. */
-  drama?: boolean;
-  /** Why `PERFECTMAN_DRAMA` was read as off though it was set (a typo); logged at start. */
-  dramaWarning?: string;
-  /** `PERFECTMAN_DRAMA_GHOST_VOICE` (DEATH-5): a dead actor may think aloud in a cinematic run, as a thought and never on the wire. Needs drama on. */
+  /** `PERFECTMAN_DRAMA_GHOST_VOICE` (DEATH-5): a dead actor may think aloud in a cinematic run, as a thought and never on the wire. Takes effect on a dialect 2 link (drama is always offered; the hotel decides). */
   dramaGhostVoice?: boolean;
 };
 
@@ -75,6 +70,11 @@ type Env = Readonly<Record<string, string | undefined>>;
 function flag(value: string | undefined, fallback: boolean): boolean {
   if (value === undefined || value === "") return fallback;
   return !["0", "false", "off", "no"].includes(value.trim().toLowerCase());
+}
+
+/** Fail-closed: `on`, `1`, `true`, `yes` (any case, trimmed) are on; anything else, a typo included, is off. */
+function parseBoolEnv(raw: string | undefined): boolean {
+  return ["on", "1", "true", "yes"].includes((raw ?? "").trim().toLowerCase());
 }
 
 function int(env: Env, name: string, fallback: number, problems: string[], min = 1): number {
@@ -146,8 +146,7 @@ export function parseConfig(env: Env = process.env): HotelConfig {
   const directorUrl = env["PERFECTMAN_DIRECTOR_URL"] ?? "";
   const internalUrl = env["PERFECTMAN_INTERNAL_URL"] ?? "";
   const baseUrl = chain[0]?.baseUrl ?? env["PERFECTMAN_LLM_BASE_URL"] ?? "";
-  const drama = parseDramaEnv(env["PERFECTMAN_DRAMA"]);
-  const ghost = parseDramaEnv(env["PERFECTMAN_DRAMA_GHOST_VOICE"]);
+  const ghost = parseBoolEnv(env["PERFECTMAN_DRAMA_GHOST_VOICE"]);
 
   const config: HotelConfig = {
     enabled,
@@ -171,10 +170,8 @@ export function parseConfig(env: Env = process.env): HotelConfig {
     dataDir: env["PERFECTMAN_DATA_DIR"] ?? "/data/perfectman",
     healthPort: int(env, "PERFECTMAN_HEALTH_PORT", DEFAULT_HEALTH_PORT, problems, 0),
     eventRetention: int(env, "PERFECTMAN_EVENT_RETENTION", DEFAULT_EVENT_RETENTION, problems, 0),
-    // Off unless set, so a config built without it (or with drama off) is exactly today's.
-    ...(drama.on ? { drama: true } : {}),
-    ...(drama.warning ? { dramaWarning: drama.warning } : {}),
-    ...(drama.on && ghost.on ? { dramaGhostVoice: true } : {}),
+    // Off unless set.
+    ...(ghost ? { dramaGhostVoice: true } : {}),
   };
 
   if (enabled) {

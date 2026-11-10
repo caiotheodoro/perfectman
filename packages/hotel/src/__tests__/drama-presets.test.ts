@@ -11,11 +11,11 @@ import { parseScenarioBody } from "../run/scenario-body.js";
 
 const llm = { provider: "mock" as const, baseUrl: "", apiKeyEnv: "PERFECTMAN_LLM_API_KEY" as const, models: ["mock"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
 const presetsRoot = fileURLToPath(new URL("../../../../examples/presets", import.meta.url));
-const service = (drama: boolean) => new AuthoringService({ llm, apiKey: undefined, presetsRoot, drama });
+const service = () => new AuthoringService({ llm, apiKey: undefined, presetsRoot });
 
 /** The compiled body, as the wire carries it (`unknown`), and its `drama` and agent ids read the way the hotel reads them. */
 const compiled = (source: string): { drama: ScenarioDrama | undefined; ids: string[]; raw: unknown } => {
-  const { body } = service(true).compile({ source });
+  const { body } = service().compile({ source });
   const parsed = parseScenarioBody(JSON.parse(JSON.stringify(body)));
   if (!parsed.ok) throw new Error(`body does not parse: ${JSON.stringify(parsed.errors)}`);
   return { drama: parsed.body.drama, ids: parsed.body.config.agents.map((a) => a.id), raw: body };
@@ -47,12 +47,12 @@ describe("compileSceneDrama: a markdown scene's drama block", () => {
 
 describe("the presets through the authoring service", () => {
   it("lists the five among the Portuguese presets", async () => {
-    const keys = (await service(true).presets()).presets.map((p) => p.key);
+    const keys = (await service().presets()).presets.map((p) => p.key);
     for (const k of KEYS) expect(keys).toContain(k);
   });
 
   it.each(KEYS)("%s compiles, and its body carries the scene's drama block in agent ids", async (key) => {
-    const { drama, ids, raw } = compiled((await service(true).preset(key)).source);
+    const { drama, ids, raw } = compiled((await service().preset(key)).source);
     expect(drama).toBeDefined();
     expect((raw as { drama?: ScenarioDrama }).drama).toEqual(drama);
     for (const [a, v] of drama!.may_target) {
@@ -63,31 +63,28 @@ describe("the presets through the authoring service", () => {
   });
 
   it("[SCN-5] the blocks are the ones the scenes were written with", async () => {
-    const drama = async (key: string) => compiled((await service(true).preset(key)).source).drama;
+    const drama = async (key: string) => compiled((await service().preset(key)).source).drama;
     expect(await drama("tapa-na-cara")).toEqual({ max_rung: 4, may_target: [["beatriz", "ricardo"]], may_die: [], permadeath: false });
     expect(await drama("assassinato-na-festa")).toEqual({ max_rung: 6, may_target: [["ricardo", "otavio"]], may_die: ["otavio"], permadeath: false });
     expect(await drama("reencontro-abraco")).toEqual({ max_rung: 0, may_target: [], may_die: [], permadeath: false });
   });
 
-  it("[SCN-6] the murder scene authors its cut, so it validates with no drama.no_scene_cut; with the sidecar's drama off every preset says drama.disabled", async () => {
-    const murder = (await service(true).preset("assassinato-na-festa")).source;
-    expect(service(true).validate({ source: murder })).toEqual({ ok: true, errors: [], warnings: [] });
-    const off = service(false).validate({ source: murder });
-    expect(off.ok).toBe(true);
-    expect(off.warnings.map((w) => w.message.split(":")[0])).toEqual(["drama.disabled"]);
+  it("[SCN-6] the murder scene authors its cut, so it validates with no drama.no_scene_cut; and the sidecar's drama is always on, so no preset warns", async () => {
+    const murder = (await service().preset("assassinato-na-festa")).source;
+    expect(service().validate({ source: murder })).toEqual({ ok: true, errors: [], warnings: [] });
   });
 
   it("[SCN-5] a bad block in the frontmatter fails the compile with its path, as a form's would", async () => {
-    const murder = (await service(true).preset("assassinato-na-festa")).source.replace("max_rung: 6", "max_rung: 9");
-    const v = service(true).validate({ source: murder });
+    const murder = (await service().preset("assassinato-na-festa")).source.replace("max_rung: 6", "max_rung: 9");
+    const v = service().validate({ source: murder });
     expect(v.ok).toBe(false);
     expect(v.errors.map((e) => e.path)).toEqual(["drama.max_rung"]);
-    expect(() => service(true).compile({ source: murder })).toThrow(AuthoringError);
+    expect(() => service().compile({ source: murder })).toThrow(AuthoringError);
   });
 
   it("the older presets carry no drama block and compile to a body without one", async () => {
-    const { source } = await service(true).preset("gato-no-telhado");
+    const { source } = await service().preset("gato-no-telhado");
     expect(compiled(source).drama).toBeUndefined();
-    expect(service(false).validate({ source }).warnings).toEqual([]);
+    expect(service().validate({ source }).warnings).toEqual([]);
   });
 });

@@ -10,7 +10,7 @@ Rules they follow:
 - Never says violence needs permission. A beat that does not happen is said the way the hint's own STYLE block says it: the words still stand.
 - The words always count.
 - About 200 words (full) and about 70 words (compact) each. pt-BR is a faithful translation, not a different text.
-- Added only when `BodyPerception.drama` is set, after the existing HEAD, LADDER and STYLE blocks and before the examples, never instead of them. No new flag: a run without drama builds the prompt it always did (`drama-off-identity.test.ts` holds that byte for byte).
+- Added only when `BodyPerception.drama` is set, after the existing HEAD, LADDER and STYLE blocks and before the examples, never instead of them. No flag of the sidecar's own (it has none, errata P4-10): the gate is the negotiated dialect, so a run for a hotel that does not offer drama builds the prompt it always did (`drama-off-identity.test.ts` holds that byte for byte).
 
 Size (chars added to the system prompt, en / pt-BR): full 1218 / 1329 (about 300 tokens), compact 430 / 448 (about 110 tokens).
 

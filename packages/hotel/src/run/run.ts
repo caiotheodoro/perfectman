@@ -118,7 +118,7 @@ export type RunDeps = {
   mirror: HotelSpaceMirror;
   link: RunLink;
   governor: LlmGovernor;
-  /** The drama director's link and hub (act-contract.md 11.2); absent when `PERFECTMAN_DRAMA` is off, and the run is then exactly what it was. */
+  /** The drama director's link and hub (act-contract.md 11.2); absent only for a run built without a manager (tests); a dialect 1 link leaves it inert. */
   drama?: DramaHost;
   timing?: RunTiming;
   /** Overrides the narrator's model call (D19). Absent: a cinematic run builds its own from the provider chain; with the mock provider cards and captions are the deterministic fallback text. */
@@ -582,7 +582,7 @@ export class Run {
   }
 
   /**
-   * The drama director of this run (packet P2): built only when the sidecar's `PERFECTMAN_DRAMA` is on, and inert until the link
+   * The drama director of this run (packet P2): built whenever the manager gives the run a host, and inert until the link
    * negotiated `drama.v1` and the hotel said the room's state. The scenario's `drama` block, or free play without one, is its law.
    */
   private startDrama(): void {

@@ -74,7 +74,7 @@ describe("a sidecar on the fake hotel is fed the same frames", () => {
     fake = await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4, drama: { dead: [] } });
     fake.addRoom(12);
     fake.addHuman(12, 9, "ana", 6, 5);
-    const booted = await bootSidecar({ fake, config: { drama: true } });
+    const booted = await bootSidecar({ fake });
     sidecars.push(booted.sidecar);
     await waitFor(() => fake?.dialect === 2, "dialect 2");
     fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });

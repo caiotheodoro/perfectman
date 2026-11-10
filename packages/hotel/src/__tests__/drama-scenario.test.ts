@@ -128,43 +128,42 @@ describe("the drama block in the compiled body", () => {
 
 describe("the drama block through authoring (validate and compile)", () => {
   const dramaRows = (rows: Array<{ path: string; message: string }>) => rows.filter((r) => r.path.startsWith("drama"));
-  const svc = (drama?: boolean) => new AuthoringService({ llm, apiKey: undefined, ...(drama === undefined ? {} : { drama }) });
+  const svc = () => new AuthoringService({ llm, apiKey: undefined });
 
   it("[SCN-5] compile writes the block into the body with agent ids, and the body validates", () => {
-    const { body } = svc(true).compile({ source: formSource({ max_rung: "slap", may_target: [["Ana Clara", "Duda"]], may_die: ["Duda"], permadeath: true }) }) as { body: { v: number; drama?: unknown } };
+    const { body } = svc().compile({ source: formSource({ max_rung: "slap", may_target: [["Ana Clara", "Duda"]], may_die: ["Duda"], permadeath: true }) }) as { body: { v: number; drama?: unknown } };
     expect(body.drama).toEqual({ max_rung: 4, may_target: [["person-1", "person-2"]], may_die: ["person-2"], permadeath: true });
-    expect(svc(true).validate({ body })).toMatchObject({ ok: true, errors: [] });
+    expect(svc().validate({ body })).toMatchObject({ ok: true, errors: [] });
   });
 
   it("[SCN-2] a form with no drama key compiles to a body with no drama key (free play)", () => {
-    const { body } = svc(true).compile({ source: formSource() }) as { body: object };
+    const { body } = svc().compile({ source: formSource() }) as { body: object };
     expect(body).not.toHaveProperty("drama");
   });
 
   it("[SCN-5] compile refuses a bad block with 422 and the path; validate reports it as an error row", () => {
     const source = formSource({ may_die: ["Ninguem"], max_rung: 9 });
-    expect(() => svc(true).compile({ source })).toThrow(AuthoringError);
+    expect(() => svc().compile({ source })).toThrow(AuthoringError);
     try {
-      svc(true).compile({ source });
+      svc().compile({ source });
     } catch (err) {
       expect(err).toMatchObject({ status: 422, code: "bad_scenario", errors: [{ path: "drama.max_rung" }, { path: "drama.may_die[0]" }] });
     }
-    expect(svc(true).validate({ source })).toMatchObject({ ok: false, errors: [{ path: "drama.max_rung" }, { path: "drama.may_die[0]" }] });
+    expect(svc().validate({ source })).toMatchObject({ ok: false, errors: [{ path: "drama.max_rung" }, { path: "drama.may_die[0]" }] });
   });
 
-  it("[SCN-5] a drama block while the sidecar's PERFECTMAN_DRAMA is off is a warning drama.disabled, not an error", () => {
-    const off = svc(false).validate({ source: formSource({ max_rung: 4 }) });
-    expect(off.ok).toBe(true);
-    expect(dramaRows(off.warnings)).toEqual([{ path: "drama", message: expect.stringContaining("PERFECTMAN_DRAMA") }]);
-    expect(dramaRows(off.warnings)[0]?.message).toContain("drama.disabled");
-    expect(dramaRows(svc().validate({ source: formSource({}) }).warnings)).toHaveLength(1);
-    expect(dramaRows(svc(true).validate({ source: formSource({ max_rung: 4 }) }).warnings)).toEqual([]);
-    expect(dramaRows(svc(false).validate({ source: formSource() }).warnings)).toEqual([]);
-    expect(() => svc(false).compile({ source: formSource({ max_rung: 4 }) })).not.toThrow();
+  it("[SCN-5] a drama block always compiles with no drama.disabled warning: the sidecar has no switch (errata P4-10)", () => {
+    const v = svc().validate({ source: formSource({ max_rung: 4 }) });
+    expect(v.ok).toBe(true);
+    expect(dramaRows(v.warnings)).toEqual([]);
+    expect(v.warnings.some((w) => w.message.includes("drama.disabled"))).toBe(false);
+    expect(dramaRows(svc().validate({ source: formSource({}) }).warnings)).toEqual([]);
+    expect(dramaRows(svc().validate({ source: formSource() }).warnings)).toEqual([]);
+    expect(() => svc().compile({ source: formSource({ max_rung: 4 }) })).not.toThrow();
   });
 
   it("[SCN-6] validate warns drama.no_scene_cut for a scenario that can kill and authors no cut", () => {
-    const res = svc(true).validate({ source: formSource({ may_die: ["Duda"] }) });
+    const res = svc().validate({ source: formSource({ may_die: ["Duda"] }) });
     expect(res.ok).toBe(true);
     expect(dramaRows(res.warnings)).toEqual([{ path: "drama.may_die", message: expect.stringContaining("drama.no_scene_cut") }]);
   });

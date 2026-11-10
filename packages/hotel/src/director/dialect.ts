@@ -31,15 +31,14 @@ type Hello = Extract<HotelFrame, { t: "hello" }>;
 const PLAIN: Omit<Negotiation, "warnings"> = { dialect: 1, ackProto: 1, session: null };
 
 /**
- * NEG-3, NEG-4, NEG-7. The answer is `proto` 2 with `caps` and `sidecar.verb_vocab` only when this sidecar's own drama
- * switch is on, the hello offers `proto_max` of at least 2 and `drama.v1`, and the hotel's verb vocab has the same
- * `version` as the vendored one. Anything else is a plain PROTO 1 answer, which the hotel reads as dialect 1. A different
+ * NEG-3, NEG-4, NEG-7. The sidecar always offers the drama dialect (the owner's order of 2026-11-09, errata P4-10): the answer is
+ * `proto` 2 with `caps` and `sidecar.verb_vocab` whenever the hello offers `proto_max` of at least 2 and `drama.v1`, and the hotel's
+ * verb vocab has the same `version` as the vendored one. Anything else (an older hotel) is a plain PROTO 1 answer, which the hotel reads as dialect 1. A different
  * `rev` or `sha256` with an equal `version` is a warning only. `own.vocab` stands in for the vendored triple (tests, to play a sidecar built
  * against another revision of the table).
  */
-export function negotiate(hello: Hello, own: { enabled: boolean; vocab?: VerbVocabRef }): Negotiation {
+export function negotiate(hello: Hello, own: { vocab?: VerbVocabRef } = {}): Negotiation {
   const vocab = own.vocab ?? OWN_VOCAB;
-  if (!own.enabled) return { ...PLAIN, warnings: [] };
   const offered = Math.min(PROTO_MAX, hello.proto_max ?? hello.proto);
   const drama = hello.drama;
   // `drama.enabled` is the hotel's runtime switch (SAFE-2) and is not a condition (NEG-3): the session stays open while it is off,
@@ -60,15 +59,4 @@ export function negotiate(hello: Hello, own: { enabled: boolean; vocab?: VerbVoc
     session: { enabled: drama.enabled, chipTtlMs: drama.chip_ttl_ms, harmMax: drama.harm_max, harmWindowS: drama.harm_window_s, dead: [...(drama.dead ?? [])] },
     warnings,
   };
-}
-
-/**
- * SAFE-1: `on`, `1`, `true`, `yes` (any case, trimmed) are on; `off`, `0`, `false`, `no`, unset and empty are off; anything
- * else is off too, with a warning (fail-closed, so a typo can never switch the feature on).
- */
-export function parseDramaEnv(raw: string | undefined): { on: boolean; warning?: string } {
-  const value = (raw ?? "").trim().toLowerCase();
-  if (["on", "1", "true", "yes"].includes(value)) return { on: true };
-  if (["", "off", "0", "false", "no"].includes(value)) return { on: false };
-  return { on: false, warning: `PERFECTMAN_DRAMA="${raw}" is not recognised: drama stays off` };
 }

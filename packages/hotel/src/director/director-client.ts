@@ -49,8 +49,6 @@ export type DirectorClientOptions = {
   recorder?: FrameRecorder;
   maxQueue?: number;
   heartbeatMs?: number;
-  /** This sidecar's own `PERFECTMAN_DRAMA` (NEG-3); absent means off, and the client then speaks PROTO 1 exactly as before. */
-  drama?: { enabled: boolean };
 };
 
 type Conn = { socket: DirectorSocket; id: number };
@@ -292,7 +290,7 @@ export class DirectorClient {
       return;
     }
     const resume = this.opts.handlers.onHello(hello);
-    const neg = negotiate(hello, this.opts.drama ?? { enabled: false });
+    const neg = negotiate(hello);
     for (const warning of neg.warnings) this.log.warn(warning);
     this.negotiated = neg.dialect;
     this.opts.handlers.onDramaSession?.(neg.session);

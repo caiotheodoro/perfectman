@@ -19,7 +19,7 @@ export type FakeAvatar = { id: number; name: string; x: number; y: number; dir: 
 type FakeRoom = { id: number; name: string; official: boolean; section: string | null; rev: number; avatars: Map<number, FakeAvatar>; w: number; h: number; door: [number, number] };
 
 /**
- * What a hotel with `PERFECTMAN_DRAMA` on adds to its `hello` (act-contract.md NEG-2): `proto_max`, `caps` and `drama`.
+ * What a hotel that offers drama adds to its `hello` (act-contract.md NEG-2): `proto_max`, `caps` and `drama`.
  * Absent means a hotel with the switch off (or an old one): today's hello, byte for byte.
  */
 export type FakeDramaOffer = { vocab?: VerbVocabRef; caps?: string[]; dead?: number[]; protoMax?: number; enabled?: boolean };

@@ -10,7 +10,7 @@ import { parseScenarioBody } from "../run/scenario-body.js";
 const llm = { provider: "openai-compatible" as const, baseUrl: "https://llm.test/v1", apiKeyEnv: "PERFECTMAN_LLM_API_KEY" as const, models: ["m"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
 const person = (name: string, standing: "high" | "low") => ({ name, role: "connector", goal: `Fazer ${name === "Rocha" ? "a Dalila" : "o Rocha"} responder.`, obstacle: "O outro vira as costas.", method: "insiste, mais perto", standing, flips: standing === "low", voice: "Seca.", lines: ["Olha pra mim.", "Responde.", "Eu conferi."] });
 const story = (beats: unknown) => ({ title: "O livro-caixa", situation: "Fim do expediente. A conta não fecha.", language: "pt-BR", people: [person("Rocha", "high"), person("Dalila", "low"), person("Kleber", "low")], beats });
-const service = (reply: unknown) => new AuthoringService({ llm, apiKey: "sk-test", drama: true, fetchImpl: vi.fn<typeof fetch>(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reply) } }] }), { status: 200 })) });
+const service = (reply: unknown) => new AuthoringService({ llm, apiKey: "sk-test", fetchImpl: vi.fn<typeof fetch>(async () => new Response(JSON.stringify({ choices: [{ message: { content: JSON.stringify(reply) } }] }), { status: 200 })) });
 /** What the run reads: the compiled body, parsed the way a run parses it. */
 const compiled = (svc: AuthoringService, source: string) => {
   const parsed = parseScenarioBody(svc.compile({ source }).body);

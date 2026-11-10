@@ -64,7 +64,7 @@ export async function startSidecar(config: HotelConfig, o: SidecarOptions = {}):
   let authoringPort: number | undefined;
 
   if (config.enabled) {
-    const service = new AuthoringService({ llm: config.llm, apiKey: process.env[config.llm.apiKeyEnv], drama: config.drama === true, ...(process.env["PERFECTMAN_PRESETS_DIR"] ? { presetsRoot: process.env["PERFECTMAN_PRESETS_DIR"] } : {}) });
+    const service = new AuthoringService({ llm: config.llm, apiKey: process.env[config.llm.apiKeyEnv], ...(process.env["PERFECTMAN_PRESETS_DIR"] ? { presetsRoot: process.env["PERFECTMAN_PRESETS_DIR"] } : {}) });
     authoring = new AuthoringServer({ service, secret: config.secret, host: config.authoringHost, port: config.authoringPort, logger });
     authoringPort = await authoring.listen();
     const http = new HotelHttpClient({ baseUrl: config.internalUrl, secret: config.secret, ...(o.fetchImpl ? { fetchImpl: o.fetchImpl } : {}) });
@@ -83,8 +83,7 @@ export async function startSidecar(config: HotelConfig, o: SidecarOptions = {}):
       ...(o.statusIntervalMs !== undefined ? { statusIntervalMs: o.statusIntervalMs } : {}),
     });
     manager.start();
-    if (config.dramaWarning) logger.warn(config.dramaWarning);
-    logger.info("sidecar started", { authoringPort, directorUrl: config.directorUrl, drama: config.drama === true });
+    logger.info("sidecar started", { authoringPort, directorUrl: config.directorUrl });
   } else {
     logger.info("PERFECTMAN_ENABLED is off: serving the health check only");
   }

@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { DEFAULT_ADVANCE_REASON, DirectorClient } from "../director/director-client.js";
 import type { DirectorHandlers } from "../director/director-client.js";
-import { parseDramaEnv } from "../director/dialect.js";
 import type { DramaSession } from "../director/dialect.js";
 import type { HotelFrame } from "../director/index.js";
 import { nodeSocketFactory } from "../director/transport.js";
@@ -33,7 +32,7 @@ type Rig = {
   clock: ManualClock;
 };
 
-async function connect(o: { offer?: FakeDramaOffer; drama?: boolean; resume?: number[]; configure?: (f: FakeDirector) => void } = {}): Promise<Rig> {
+async function connect(o: { offer?: FakeDramaOffer; resume?: number[]; configure?: (f: FakeDirector) => void } = {}): Promise<Rig> {
   fake = await FakeDirector.start({ secret: TEST_SECRET, ...(o.offer ? { drama: o.offer } : {}) });
   fake.addRoom(12);
   o.configure?.(fake);
@@ -43,7 +42,7 @@ async function connect(o: { offer?: FakeDramaOffer; drama?: boolean; resume?: nu
   const warnings: string[] = [];
   const logger: Logger = { info: () => undefined, warn: (m) => void warnings.push(m), error: () => undefined };
   const handlers: DirectorHandlers = { onHello: () => o.resume ?? [], onFrame: (f) => frames.push(f), onConnectionChange: () => undefined, onDramaSession: (s) => sessions.push(s) };
-  client = new DirectorClient({ url: fake.url, secret: TEST_SECRET, clock, socketFactory: nodeSocketFactory, handlers, rng: () => 0.5, sidecar: SIDECAR, logger, ...(o.drama === undefined ? {} : { drama: { enabled: o.drama } }) });
+  client = new DirectorClient({ url: fake.url, secret: TEST_SECRET, clock, socketFactory: nodeSocketFactory, handlers, rng: () => 0.5, sidecar: SIDECAR, logger });
   client.start();
   await waitFor(() => fake?.ack ?? fake?.closeCodes.length, "hello_ack or a close");
   return { fake, client, frames, sessions, warnings, clock };
@@ -53,7 +52,7 @@ const OFFER: FakeDramaOffer = {};
 
 describe("[NEG-1] hello.proto stays 1", () => {
   it("[NEG-1] a client given hello{proto:1, proto_max:2} does not close 4002", async () => {
-    const { fake: hotel, client: c } = await connect({ offer: OFFER, drama: true });
+    const { fake: hotel, client: c } = await connect({ offer: OFFER });
     expect(hotel.ack?.proto).toBe(2);
     expect(hotel.closeCodes).toEqual([]);
     expect(c.connected).toBe(true);
@@ -66,20 +65,20 @@ describe("[NEG-1] hello.proto stays 1", () => {
   });
 
   it("[NEG-1] [VV-6] a drama-capable client against a hotel that offers nothing runs unchanged: a plain PROTO 1 session", async () => {
-    const { fake: hotel, client: c } = await connect({ drama: true });
+    const { fake: hotel, client: c } = await connect();
     expect(hotel.ack).toEqual({ t: "hello_ack", seq: 1, proto: 1, resume: [], sidecar: SIDECAR });
     expect(c.dialect).toBe(1);
   });
 });
 
 describe("[NEG-2] the offer on the wire", () => {
-  it("[NEG-2] a client with drama off answers a hello with the offer exactly as it answers today's hello", async () => {
-    const { fake: hotel } = await connect({ offer: OFFER, drama: false });
+  it("[NEG-2] a hello without the offer is answered exactly as today's hello", async () => {
+    const { fake: hotel } = await connect();
     expect(hotel.ack).toEqual({ t: "hello_ack", seq: 1, proto: 1, resume: [], sidecar: SIDECAR });
   });
 
   it("[NEG-2] ignores unknown fields on the hello, with and without the offer", async () => {
-    const { fake: hotel } = await connect({ offer: OFFER, drama: true, configure: (f) => (f.helloExtra = { from_the_future: { a: 1 } }) });
+    const { fake: hotel } = await connect({ offer: OFFER, configure: (f) => (f.helloExtra = { from_the_future: { a: 1 } }) });
     expect(hotel.ack?.proto).toBe(2);
   });
 
@@ -89,7 +88,7 @@ describe("[NEG-2] the offer on the wire", () => {
     for (const row of rows) {
       await client?.stop();
       await fake?.stop();
-      const { fake: hotel } = await connect({ drama: true, configure: (f) => (f.nextHello = row.in) });
+      const { fake: hotel } = await connect({ configure: (f) => (f.nextHello = row.in) });
       const want = JSON.parse(JSON.stringify(row.expect[0])) as { seq: number; sidecar: { verb_vocab?: { rev?: number; sha256?: string } } };
       const got = JSON.parse(JSON.stringify(hotel.ack)) as typeof want;
       if (want.sidecar.verb_vocab) {
@@ -107,17 +106,16 @@ describe("[NEG-2] the offer on the wire", () => {
 
 describe("[NEG-3] the answer", () => {
   it("[NEG-3] answers min(2, proto_max ?? proto), with caps and the vendored vocab triple, when all of its conditions hold", async () => {
-    const { fake: hotel } = await connect({ offer: { protoMax: 3 }, drama: true });
+    const { fake: hotel } = await connect({ offer: { protoMax: 3 } });
     expect(hotel.ack).toMatchObject({ proto: 2, caps: ["drama.v1"], sidecar: { verb_vocab: { version: VERB_VOCAB_VERSION, rev: VERB_VOCAB_REV, sha256: VERB_VOCAB_SHA256 } } });
   });
 
   it.each([
-    ["its own env is off", { drama: false as boolean | undefined }, {}],
-    ["the hello lacks drama.v1", { drama: true as boolean | undefined }, { caps: [] as string[] }],
-    ["the hello offers other caps only", { drama: true as boolean | undefined }, { caps: ["something.else"] }],
-    ["the vocab version differs", { drama: true as boolean | undefined }, { vocab: { version: VERB_VOCAB_VERSION + 1, rev: 1, sha256: "a".repeat(64) } }],
-  ])("[NEG-3] answers proto 1 with no caps and no vocab when %s", async (_name, own, offer) => {
-    const { fake: hotel } = await connect({ offer, ...own });
+    ["the hello lacks drama.v1", { caps: [] as string[] }],
+    ["the hello offers other caps only", { caps: ["something.else"] }],
+    ["the vocab version differs", { vocab: { version: VERB_VOCAB_VERSION + 1, rev: 1, sha256: "a".repeat(64) } }],
+  ])("[NEG-3] answers proto 1 with no caps and no vocab when %s", async (_name, offer) => {
+    const { fake: hotel } = await connect({ offer });
     expect(hotel.ack?.proto).toBe(1);
     expect(hotel.ack?.caps).toBeUndefined();
     expect(hotel.ack?.sidecar.verb_vocab).toBeUndefined();
@@ -125,20 +123,20 @@ describe("[NEG-3] the answer", () => {
   });
 
   it("[NEG-3] [SAFE-2] a hello whose drama.enabled is false (the runtime switch is off) still negotiates dialect 2, and hands the handler enabled:false", async () => {
-    const { fake: hotel, sessions } = await connect({ offer: { enabled: false }, drama: true });
+    const { fake: hotel, sessions } = await connect({ offer: { enabled: false } });
     expect(hotel.dialect).toBe(2);
     expect(sessions[0]).toMatchObject({ enabled: false });
   });
 
   it("[NEG-3] answers proto 1 to a hello whose proto_max is 1", async () => {
-    const { fake: hotel } = await connect({ offer: { protoMax: 1 }, drama: true });
+    const { fake: hotel } = await connect({ offer: { protoMax: 1 } });
     expect(hotel.ack?.proto).toBe(1);
   });
 });
 
 describe("[NEG-4] [NEG-5] the dialect", () => {
   it("[NEG-4] is 2 for an ack with proto 2 and drama.v1, and renegotiated on every reconnect: a hello with no offer makes the client answer proto 1 and stop sending acts", async () => {
-    const { fake: hotel, client: c, clock } = await connect({ offer: OFFER, drama: true });
+    const { fake: hotel, client: c, clock } = await connect({ offer: OFFER });
     expect([hotel.dialect, c.dialect]).toEqual([2, 2]);
     hotel.offer = null;
     hotel.dropConnection();
@@ -151,7 +149,7 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
   });
 
   it("[NEG-5] with a dialect 1 link sendAct and sendSceneAdvance are refused before the socket, and so is a raw actor_cmd act", async () => {
-    const { fake: hotel, client: c } = await connect({ drama: true });
+    const { fake: hotel, client: c } = await connect();
     c.trackRun(7);
     c.setLease(7, 3);
     expect(c.sendAct({ run: 7, actor: -701, cmd: { k: "act", act_id: "a1", verb: "cry" } })).toEqual({ sent: false, reason: "dialect" });
@@ -165,7 +163,7 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
   });
 
   it("[NEG-5] a dialect 2 link sends acts and scene_advance with a cid and the run's lease, and refuses an act the hotel would refuse (ACT-4 to ACT-8) before the socket", async () => {
-    const { fake: hotel, client: c } = await connect({ offer: OFFER, drama: true });
+    const { fake: hotel, client: c } = await connect({ offer: OFFER });
     c.trackRun(7);
     hotel.grantLease(7, 3);
     await waitFor(() => c.leaseOf(7) === 3, "the lease");
@@ -182,7 +180,7 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
   });
 
   it("[NEG-5] a scene_advance with no reason still carries one, because the hotel's schema requires it", async () => {
-    const { fake: hotel, client: c } = await connect({ offer: OFFER, drama: true });
+    const { fake: hotel, client: c } = await connect({ offer: OFFER });
     c.trackRun(7);
     hotel.grantLease(7, 3);
     await waitFor(() => c.leaseOf(7) === 3, "the lease");
@@ -193,7 +191,7 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
   });
 
   it("[ACT-2] an act waits for the resumed run's bumped lease: nothing goes out while the new lease has not landed", async () => {
-    const { fake: hotel, client: c } = await connect({ offer: OFFER, drama: true, resume: [7], configure: (f) => (f.withholdLeases = true) });
+    const { fake: hotel, client: c } = await connect({ offer: OFFER, resume: [7], configure: (f) => (f.withholdLeases = true) });
     c.trackRun(7);
     c.setLease(7, 2);
     expect(c.sendAct({ run: 7, actor: -701, cmd: { k: "act", act_id: "a1", verb: "cry" } })).toEqual({ sent: false, reason: "no_lease" });
@@ -204,7 +202,7 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
   });
 
   it("[NEG-5] no drama frame is processed on a dialect 1 link, even one a misbehaving hotel sends; on dialect 2 they all arrive", async () => {
-    const v1 = await connect({ drama: true });
+    const v1 = await connect();
     v1.fake.scriptAct({ actId: "x1", verb: "slap", with: -702, outcome: "landed" }, { force: true });
     v1.fake.scriptDramaState({}, { force: true });
     v1.fake.send({ t: "lease", run: 7, lease: 9 });
@@ -213,7 +211,7 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
     expect(v1.client.droppedDrama).toBe(actFrames({ actId: "x1", verb: "slap", with: -702, outcome: "landed" }).length + 1);
     await v1.client.stop();
     await v1.fake.stop();
-    const v2 = await connect({ offer: OFFER, drama: true });
+    const v2 = await connect({ offer: OFFER });
     v2.fake.scriptAct({ actId: "x1", verb: "slap", with: -702, outcome: "landed" });
     v2.fake.send({ t: "lease", run: 7, lease: 9 });
     await waitFor(() => v2.frames.some((f) => f.t === "lease"), "the lease sentinel");
@@ -222,7 +220,7 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
   });
 
   it("[NEG-5] the fake hotel sends no act frame to a link that is not dialect 2, and answers an act it cannot parse with bad_message and the cid only", async () => {
-    const { fake: hotel, frames } = await connect({ drama: true });
+    const { fake: hotel, frames } = await connect();
     const planned = actFrames({ actId: "x1", verb: "slap", with: -702, outcome: "landed" }).length;
     hotel.scriptAct({ actId: "x1", verb: "slap", with: -702, outcome: "landed" });
     expect(hotel.suppressedDrama).toBe(planned);
@@ -232,25 +230,25 @@ describe("[NEG-4] [NEG-5] the dialect", () => {
 
 describe("[NEG-7] the vocab handshake", () => {
   it("[NEG-7] a version mismatch answers dialect 1 and logs a notice; the same version with another rev and sha answers dialect 2 and a warning", async () => {
-    const mismatch = await connect({ offer: { vocab: { version: VERB_VOCAB_VERSION + 1, rev: 1, sha256: "a".repeat(64) } }, drama: true });
+    const mismatch = await connect({ offer: { vocab: { version: VERB_VOCAB_VERSION + 1, rev: 1, sha256: "a".repeat(64) } } });
     expect(mismatch.fake.ack?.proto).toBe(1);
     expect(mismatch.warnings.some((w) => w.includes("verb vocab version"))).toBe(true);
     await mismatch.client.stop();
     await mismatch.fake.stop();
-    const sha = await connect({ offer: { vocab: { version: VERB_VOCAB_VERSION, rev: VERB_VOCAB_REV + 5, sha256: "b".repeat(64) } }, drama: true });
+    const sha = await connect({ offer: { vocab: { version: VERB_VOCAB_VERSION, rev: VERB_VOCAB_REV + 5, sha256: "b".repeat(64) } } });
     expect(sha.fake.ack?.proto).toBe(2);
     expect(sha.warnings.some((w) => w.includes("verb vocab differs"))).toBe(true);
   });
 
   it("[VV-3] the ack carries the vendored file's triple", async () => {
-    const { fake: hotel } = await connect({ offer: OFFER, drama: true });
+    const { fake: hotel } = await connect({ offer: OFFER });
     expect(hotel.ack?.sidecar.verb_vocab).toEqual({ version: VERB_VOCAB_VERSION, rev: VERB_VOCAB_REV, sha256: VERB_VOCAB_SHA256 });
   });
 });
 
 describe("[NEG-8] the dead set", () => {
   it("[NEG-8] every dialect 2 hello hands the handler hello.drama.dead as a full replacement, and a dialect 1 hello hands it null", async () => {
-    const { fake: hotel, client: c, sessions, clock } = await connect({ offer: { dead: [-702, -703] }, drama: true });
+    const { fake: hotel, client: c, sessions, clock } = await connect({ offer: { dead: [-702, -703] } });
     expect(sessions).toEqual([{ enabled: true, chipTtlMs: 4000, harmMax: 3, harmWindowS: 300, dead: [-702, -703] }]);
     hotel.offer = { dead: [] };
     hotel.dropConnection();
@@ -270,17 +268,37 @@ describe("[NEG-8] the dead set", () => {
   });
 });
 
-describe("[SAFE-1] the sidecar's PERFECTMAN_DRAMA", () => {
-  it.each(["on", "1", "true", "yes", "ON", " On ", "TRUE", "Yes"])("[SAFE-1] %j is on", (raw) => {
-    expect(parseDramaEnv(raw)).toEqual({ on: true });
+describe("[SAFE-1] the sidecar has no drama switch (owner's order 2026-11-09, errata P4-10)", () => {
+  const saved = process.env["PERFECTMAN_DRAMA"];
+  afterEach(() => {
+    if (saved === undefined) delete process.env["PERFECTMAN_DRAMA"];
+    else process.env["PERFECTMAN_DRAMA"] = saved;
   });
 
-  it.each([undefined, "", "off", "0", "false", "no", "OFF"])("[SAFE-1] %j is off, with no warning", (raw) => {
-    expect(parseDramaEnv(raw)).toEqual({ on: false });
+  it("the hello_ack always offers proto 2 and drama.v1 when the hotel offers drama", async () => {
+    const { fake: hotel, sessions } = await connect({ offer: OFFER });
+    expect(hotel.ack).toMatchObject({ proto: 2, caps: ["drama.v1"], sidecar: { verb_vocab: { version: VERB_VOCAB_VERSION, rev: VERB_VOCAB_REV, sha256: VERB_VOCAB_SHA256 } } });
+    expect(hotel.dialect).toBe(2);
+    expect(sessions[0]).not.toBeNull();
   });
 
-  it("[SAFE-1] an unrecognised value (a typo) is off, fail-closed, with a warning", () => {
-    expect(parseDramaEnv("treu")).toEqual({ on: false, warning: 'PERFECTMAN_DRAMA="treu" is not recognised: drama stays off' });
-    expect(parseDramaEnv("2")).toMatchObject({ on: false });
+  it("a hotel that does not offer drama (an older build) still gets dialect 1: proto 1, no caps, no vocab, no session", async () => {
+    const { fake: hotel, sessions } = await connect();
+    expect(hotel.ack?.proto).toBe(1);
+    expect(hotel.ack?.caps).toBeUndefined();
+    expect(hotel.ack?.sidecar.verb_vocab).toBeUndefined();
+    expect(hotel.dialect).toBe(1);
+    expect(sessions).toEqual([null]);
+  });
+
+  it.each(["off", "0", "false", "no", "", "treu", "2"])("PERFECTMAN_DRAMA=%j in the environment is ignored: the answer is the same", async (raw) => {
+    process.env["PERFECTMAN_DRAMA"] = raw;
+    const withOffer = await connect({ offer: OFFER });
+    expect(withOffer.fake.dialect).toBe(2);
+    expect(withOffer.fake.ack).toMatchObject({ proto: 2, caps: ["drama.v1"] });
+    await withOffer.client.stop();
+    await withOffer.fake.stop();
+    const without = await connect();
+    expect(without.fake.dialect).toBe(1);
   });
 });

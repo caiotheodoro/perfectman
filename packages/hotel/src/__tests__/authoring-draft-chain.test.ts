@@ -36,7 +36,7 @@ function rig(chain: LlmLink[] | undefined, handler: Handler, env: Record<string,
     calls.push(call);
     return handler(call, calls.length);
   });
-  const service = new AuthoringService({ llm: llmEnv(chain), apiKey, drama: true, fetchImpl, env: (name) => env[name] });
+  const service = new AuthoringService({ llm: llmEnv(chain), apiKey, fetchImpl, env: (name) => env[name] });
   return { service, calls, fetchImpl };
 }
 const brief = { brief: "uma contadora e o chefe, fim do expediente", language: "pt-BR" };

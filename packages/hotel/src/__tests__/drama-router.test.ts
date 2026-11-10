@@ -109,20 +109,20 @@ afterEach(async () => {
   fake = undefined;
 });
 
-async function boot(o: { offer?: boolean; drama?: boolean }) {
+async function boot(o: { offer?: boolean }) {
   const { sink, calls } = recordingSink();
   fake = await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4, ...(o.offer ? { drama: { dead: [-702] } } : {}) });
   fake.addRoom(12);
   fake.addHuman(12, 9, "ana", 6, 5);
   fake.optIn.set(12, [9]);
-  const booted = await bootSidecar({ fake, config: { drama: o.drama ?? true }, dramaSink: sink });
+  const booted = await bootSidecar({ fake, dramaSink: sink });
   sidecars.push(booted.sidecar);
   return { calls, ...booted };
 }
 
 describe("a drama-capable sidecar against a hotel that offers nothing", () => {
   it("[VV-6] connects as PROTO 1, starts a run and spawns its cast exactly as before", async () => {
-    const booted = await bootSidecar({ config: { drama: true } });
+    const booted = await bootSidecar();
     sidecars.push(booted.sidecar);
     fake = booted.fake;
     const hotel = booted.fake;

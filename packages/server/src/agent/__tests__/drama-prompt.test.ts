@@ -1,7 +1,7 @@
 /**
  * The drama prompt (act-contract.md 11.5, verb-bible.md 3 and 4): with `BodyPerception.drama` set the output contract teaches the `act`
  * key, lists the 18 verbs, states the ladder and the telenovela rule, and shows three answers that parse. Without it nothing changes
- * (`drama-off-identity.test.ts` holds that byte for byte). The decode grammar follows the same flag.
+ * (`drama-off-identity.test.ts` holds that byte for byte). The decode grammar follows the same field (`BodyPerception.drama`, present iff the hotel offered drama and the link negotiated it).
  */
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -204,7 +204,7 @@ describe("the three few-shot answers", () => {
   });
 });
 
-describe("the decode grammar follows the drama flag", () => {
+describe("the decode grammar follows the negotiated drama field", () => {
   it("[NEG-2] no body: plain; a body without drama: the one every run has always had; drama: the one with `act`", () => {
     expect(intentSchemaFor(undefined)).toBe(ModelIntentPacketJsonSchema);
     expect(intentSchemaFor({ withBody: true })).toBe(ModelIntentPacketWithBodyJsonSchema);

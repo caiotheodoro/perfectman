@@ -22,12 +22,12 @@ afterEach(async () => {
 });
 
 /** The sidecar against a fake hotel (room 12, human 9 opted in) with a three-person scenario running as run 7. */
-async function boot(o: { offer?: FakeDramaOffer; drama: boolean; mode?: "default" | "cinematic" }) {
+async function boot(o: { offer?: FakeDramaOffer; mode?: "default" | "cinematic" }) {
   fake = await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4, autoAct: true, ...(o.offer ? { drama: o.offer } : {}) });
   fake.addRoom(12);
   fake.addHuman(12, 9, "ana", 6, 5);
   fake.optIn.set(12, [9]);
-  const booted = await bootSidecar({ fake, config: { drama: o.drama }, timing: { cine: FAST_CINE } });
+  const booted = await bootSidecar({ fake, timing: { cine: FAST_CINE } });
   sidecar = booted.sidecar;
   const hotel = booted.fake;
   hotel.startRun({ run: 7, room: 12, scenarioVersion: 31, ...(o.mode ? { mode: o.mode } : {}) });
@@ -44,24 +44,16 @@ async function boot(o: { offer?: FakeDramaOffer; drama: boolean; mode?: "default
 const acts = (hotel: FakeDirector) => hotel.received.flatMap((f) => (f.t === "actor_cmd" && f.cmd.k === "act" ? [f] : []));
 
 describe("the director inside a run, against the fake hotel", () => {
-  it("[NEG-5] with PERFECTMAN_DRAMA off a run has no director and no act is ever sent: today's behaviour", async () => {
-    const { hotel, run } = await boot({ offer: {}, drama: false });
-    expect(run.dramaPort).toBeUndefined();
-    expect(run.advanceScene("x")).toEqual({ kind: "refused", why: "inert" });
-    await new Promise((r) => setTimeout(r, 60));
-    expect(acts(hotel)).toHaveLength(0);
-    expect(hotel.received.some((f) => f.t === "scene_advance")).toBe(false);
-  });
-
-  it("[NEG-4] on a dialect 1 link the director exists but is inert: it passes and sends nothing", async () => {
-    const { hotel, run, a, b } = await boot({ drama: true });
+  it("[NEG-4] on a dialect 1 link (a hotel that does not offer drama) the director exists but is inert: it passes and sends nothing", async () => {
+    const { hotel, run, a, b } = await boot({});
     expect(run.dramaPort?.active).toBe(false);
+    expect(run.advanceScene("x")).toEqual({ kind: "refused", why: "inert" });
     expect(run.dramaPort?.decide({ actor: a, proposal: { verb: "glare", with: b, origin: "model" }, emotion: emotion({ resentfulColdness: 1 }) })).toEqual({ kind: "pass", why: "inert" });
     expect(acts(hotel)).toHaveLength(0);
   });
 
   it("[FRM-1] [HYBRID] an approved proposal goes out as origin model, is held busy until the hotel's act_done, and is in the frame log", async () => {
-    const { hotel, run, a, b } = await boot({ offer: {}, drama: true });
+    const { hotel, run, a, b } = await boot({ offer: {} });
     hotel.scriptDramaState({ run: 7, room: 12, scene: "7.1", optIn: [9] });
     const port = run.dramaPort!;
     await waitFor(() => port.active, "an active director");
@@ -74,7 +66,7 @@ describe("the director inside a run, against the fake hotel", () => {
   });
 
   it("[FRM-1] a passive model is given a beat by the director, as origin director", async () => {
-    const { hotel, run, a, b } = await boot({ offer: {}, drama: true });
+    const { hotel, run, a, b } = await boot({ offer: {} });
     const port = run.dramaPort!;
     await waitFor(() => port.active, "an active director");
     const d = port.decide({ actor: a, emotion: emotion({ resentfulColdness: 1, contemptuousDismissal: 1 }, { toward: [b] }) });
@@ -84,14 +76,14 @@ describe("the director inside a run, against the fake hotel", () => {
   });
 
   it("[SCENE-5] the run's scene_advance is refused while the scene is young and nothing reaches the hotel", async () => {
-    const { hotel, run } = await boot({ offer: {}, drama: true });
+    const { hotel, run } = await boot({ offer: {} });
     await waitFor(() => run.dramaPort?.active, "an active director");
     expect(run.advanceScene("scenario_beat_1")).toMatchObject({ kind: "refused", why: "too_young" });
     expect(hotel.received.some((f) => f.t === "scene_advance")).toBe(false);
   });
 
   it("[SCENE-2] a cinematic run films cuts and cues and never sends a scene_advance", async () => {
-    const { hotel, run } = await boot({ offer: {}, drama: true, mode: "cinematic" });
+    const { hotel, run } = await boot({ offer: {}, mode: "cinematic" });
     await waitFor(() => run.dramaPort?.active, "an active director");
     await waitFor(() => hotel.received.some((f) => f.t === "ui_push"), "the audience's frames", 8000);
     await new Promise((r) => setTimeout(r, 300));

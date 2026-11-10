@@ -130,7 +130,7 @@ describe("the fake hotel as a link", () => {
     fake.addRoom(12);
     const frames: HotelFrame[] = [];
     client = new DirectorClient({
-      url: fake.url, secret: TEST_SECRET, clock: new ManualClock(), socketFactory: nodeSocketFactory, rng: () => 0.5, sidecar: { version: "1", build: "t" }, drama: { enabled: true },
+      url: fake.url, secret: TEST_SECRET, clock: new ManualClock(), socketFactory: nodeSocketFactory, rng: () => 0.5, sidecar: { version: "1", build: "t" },
       handlers: { onHello: () => [], onFrame: (f) => frames.push(f), onConnectionChange: () => undefined },
     });
     client.start();

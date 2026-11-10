@@ -45,8 +45,6 @@ export type AuthoringDeps = {
   fetchImpl?: typeof fetch;
   /** Reads a chain link's key by its env var NAME; defaults to `process.env`. Tests inject it so no real variable is touched. */
   env?: (name: string) => string | undefined;
-  /** This sidecar's `PERFECTMAN_DRAMA`: a `drama` block while it is off compiles with the warning `drama.disabled`. Absent means off. */
-  drama?: boolean;
 };
 
 /** What the scene's `drama` block and `beats` leave after compile, and the warnings of both. */
@@ -96,10 +94,9 @@ export class AuthoringService {
     return { ...this.dramaPart(result, script) };
   }
 
-  /** The block and the script as the body keeps them, with the warnings of both and `drama.disabled` when this sidecar plays nothing. */
+  /** The block and the script as the body keeps them, with the warnings of both. */
   private dramaPart(result: { drama?: ScenarioDrama; warnings: PathMessage[] } | undefined, script: { beats: ScenarioBeat[]; warnings: PathMessage[] } | undefined): DramaPart {
-    const disabled: PathMessage[] = !this.deps.drama && (result?.drama || script?.beats.length) ? [{ path: result?.drama ? "drama" : "beats", message: "drama.disabled: this sidecar's PERFECTMAN_DRAMA is off, so the drama block and the beats are kept but nothing will enforce or play them" }] : [];
-    return { ...(result?.drama ? { drama: result.drama } : {}), ...(script && script.beats.length > 0 ? { beats: script.beats } : {}), dramaWarnings: [...disabled, ...(result?.warnings ?? []), ...(script?.warnings ?? [])] };
+    return { ...(result?.drama ? { drama: result.drama } : {}), ...(script && script.beats.length > 0 ? { beats: script.beats } : {}), dramaWarnings: [...(result?.warnings ?? []), ...(script?.warnings ?? [])] };
   }
 
   private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } & DramaPart {

@@ -2,7 +2,7 @@ import type { DramaFrameSink } from "../../run/drama-frame-sink.js";
 import type { DramaSession } from "../dialect.js";
 import type { DramaLink } from "./director.js";
 
-/** What a run needs to have a drama director: the connection's two drama frames, and the hub that routes the hotel's frames to it. Absent when `PERFECTMAN_DRAMA` is off. */
+/** What a run needs to have a drama director: the connection's two drama frames, and the hub that routes the hotel's frames to it. Inert on a dialect 1 link. */
 export type DramaHost = { link: DramaLink; hub: DramaRunHub };
 
 /**

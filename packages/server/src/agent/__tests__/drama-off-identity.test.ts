@@ -1,5 +1,5 @@
 /**
- * Drama OFF is byte-identical to today (act-contract.md NEG-2, 11.3): every prompt a run without drama builds, full or compact,
+ * No drama offered is byte-identical to today (act-contract.md NEG-2, 11.3): every prompt a run builds for a hotel that did not offer drama (no `BodyPerception.drama`), full or compact,
  * in either language, and the decode grammar it sends, hash to what the code produced before the `act` key reached the prompt.
  * `drama-off.golden.json` was written from the tree before the drama prompt existed; a change to a run without drama moves a
  * hash here. Regenerate on purpose with `UPDATE_DRAMA_GOLDEN=1`, never to make a failure go away.

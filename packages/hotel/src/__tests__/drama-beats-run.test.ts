@@ -20,13 +20,13 @@ afterEach(async () => {
 
 const insult: ScenarioBeat = { id: "b1", at_ms: 1200, kind: "act", actor: "person-1", verb: "insult", with: "person-2", authored_skip: true };
 
-async function boot(o: { offer?: FakeDramaOffer; drama: boolean; beats: ScenarioBeat[] }) {
+async function boot(o: { offer?: FakeDramaOffer; beats: ScenarioBeat[] }) {
   fake = await FakeDirector.start({ secret: TEST_SECRET, tickMs: 4, autoAct: true, ...(o.offer ? { drama: o.offer } : {}) });
   fake.addRoom(12);
   fake.addHuman(12, 9, "ana", 6, 5);
   fake.optIn.set(12, [9]);
   const body: ScenarioBody = { ...(compiledScenario().body as ScenarioBody), drama: { max_rung: 2, may_target: [], may_die: [], permadeath: false }, beats: o.beats };
-  const booted = await bootSidecar({ fake, config: { drama: o.drama }, versions: { 31: body } });
+  const booted = await bootSidecar({ fake, versions: { 31: body } });
   sidecar = booted.sidecar;
   const hotel = booted.fake;
   hotel.startRun({ run: 7, room: 12, scenarioVersion: 31 });
@@ -42,7 +42,7 @@ const acts = (hotel: FakeDirector) => hotel.received.flatMap((f) => (f.t === "ac
 
 describe("the authored script inside a run", () => {
   it("[SCN-4] plays an authored act as a scenario act with the skip flag, from the director's own port, and records it in the frame log", async () => {
-    const { hotel, run } = await boot({ offer: {}, drama: true, beats: [insult] });
+    const { hotel, run } = await boot({ offer: {}, beats: [insult] });
     const sent = await waitFor(() => acts(hotel)[0], "the authored act on the wire");
     expect(sent.cmd).toMatchObject({ k: "act", verb: "insult", origin: "scenario", authored_skip: true });
     const a = (await waitFor(() => hotel.avatarByRef("person-1", 7), "person-1")).id;
@@ -52,20 +52,15 @@ describe("the authored script inside a run", () => {
     expect(run.frameLog.frames.some((f) => f.kind === "actor_cmd" && f.dir === "out" && (f.data["cmd"] as { origin?: string }).origin === "scenario")).toBe(true);
   });
 
-  it("[NEG-5] plays nothing with PERFECTMAN_DRAMA off, and nothing on a dialect 1 link", async () => {
-    const off = await boot({ offer: {}, drama: false, beats: [insult] });
-    await new Promise((r) => setTimeout(r, 1800));
-    expect(acts(off.hotel)).toHaveLength(0);
-    await sidecar?.close();
-    await fake?.stop();
-    const v1 = await boot({ drama: true, beats: [insult] });
+  it("[NEG-5] plays nothing on a dialect 1 link (a hotel that does not offer drama)", async () => {
+    const v1 = await boot({ beats: [insult] });
     await new Promise((r) => setTimeout(r, 1800));
     expect(acts(v1.hotel)).toHaveLength(0);
   });
 
   it("a script with a beat for someone who is not in the room drops that beat and plays the rest", async () => {
     const stranger: ScenarioBeat = { id: "b0", at_ms: 300, kind: "act", actor: "person-9", verb: "insult", with: "person-2" };
-    const { hotel } = await boot({ offer: {}, drama: true, beats: [stranger, insult] });
+    const { hotel } = await boot({ offer: {}, beats: [stranger, insult] });
     await waitFor(() => acts(hotel).length >= 1, "the authored act on the wire");
     expect(acts(hotel)).toHaveLength(1);
     expect(acts(hotel)[0]?.cmd).toMatchObject({ verb: "insult", origin: "scenario" });

@@ -19,7 +19,7 @@ const compile = (raw: unknown, ...drama: [] | [ScenarioDrama | undefined]) => co
 
 const llm = { provider: "mock" as const, baseUrl: "", apiKeyEnv: "PERFECTMAN_LLM_API_KEY" as const, models: ["mock"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
 const presetsRoot = fileURLToPath(new URL("../../../../examples/presets", import.meta.url));
-const service = new AuthoringService({ llm, apiKey: undefined, presetsRoot, drama: true });
+const service = new AuthoringService({ llm, apiKey: undefined, presetsRoot });
 const bodyOf = (source: string): ScenarioBody => service.compile({ source }).body as ScenarioBody;
 
 describe("compileSceneBeats: the authored script of a scene", () => {
