@@ -33,18 +33,33 @@ export function blockedReasonLine(reason: BlockedReason, language: BodyLanguage)
       return pt
         ? `Você chegou, mas ${ref ?? "a pessoa"} já tinha saído.`
         : `You got there, but ${ref ?? "they"} had already left.`;
-    // An act the ladder refused for want of a motive or a grievance is not yet earned (errata P7): told so, with what would earn it. The ladder's other
-    // refusals (the ceiling, contagion) stay unshown: the director decides those, the model is not told.
+    // An act the ladder refused for want of a motive or a grievance is not yet earned (errata P7): told so, with what would earn it. A skipped rung, a cast that already
+    // has too many at each other's throats and a blow nobody would see (errata P8) are told too. The ceiling (`max_rung`) stays unshown: the director decides it.
     case "ladder":
       if (reason.detail === "motive") {
         return pt
-          ? `Ainda não dá pra partir pra cima de ${ref ?? "essa pessoa"}: falta provocação. Comece com um olhar ou uma ofensa, um passo de cada vez.`
-          : `It is not earned yet to go for ${ref ?? "that person"}: nothing has pushed you that far. Start with a look or a sharp word, one step at a time.`;
+          ? `Ainda não dá pra partir pra cima de ${ref ?? "essa pessoa"}: falta provocação. Uma ofensa direta com o nome da pessoa esquenta. Um passo de cada vez.`
+          : `It is not earned yet to go for ${ref ?? "that person"}: nothing has pushed you that far. A direct insult that names them heats it up. One step at a time.`;
       }
       if (reason.detail === "grievance") {
         return pt
-          ? `Você ainda não tem motivo claro contra ${ref ?? "essa pessoa"}. Diga na cara o que te incomodou antes de agir.`
-          : `You have no clear grievance against ${ref ?? "that person"} yet. Say to their face what bothers you before you act.`;
+          ? `Você ainda não tem motivo claro contra ${ref ?? "essa pessoa"}. Uma ameaça ou acusação na cara, com o nome da pessoa, cria o motivo.`
+          : `You have no clear grievance against ${ref ?? "that person"} yet. A threat or an accusation to their face, using their name, builds one.`;
+      }
+      if (reason.detail === "rung") {
+        return pt
+          ? `Um passo de cada vez com ${ref ?? "essa pessoa"}: antes um olhar ou uma ofensa.`
+          : `One step at a time with ${ref ?? "that person"}: a look or a sharp word first.`;
+      }
+      if (reason.detail === "zero_witness") {
+        return pt
+          ? `Não com ninguém olhando: sem plateia por perto, você não parte pra cima de ${ref ?? "essa pessoa"}.`
+          : `Not with nobody watching: without someone close enough to see it, you do not go for ${ref ?? "that person"}.`;
+      }
+      if (reason.detail === "contagion") {
+        return pt
+          ? `A sala já está pegando fogo: espere o clima baixar antes de partir pra cima de ${ref ?? "essa pessoa"}.`
+          : `The room is already on fire: wait for it to cool before going for ${ref ?? "that person"}.`;
       }
       return undefined;
     case "slow_down":

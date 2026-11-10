@@ -4,6 +4,10 @@ import {
   DramaBody,
   DramaDirector,
   MockActMemory,
+  SceneRecorder,
+  SceneSpine,
+  SpineEscalation,
+  buildSceneSpine,
   composeDramaSinks,
   isDramaFrame,
   mirrorWorld,
@@ -16,7 +20,7 @@ import {
 } from "@perfectman/hotel/drama";
 import type { ActSend, Clock, DramaDecision, DramaFrame, DramaFrameSink, DramaLink, DramaMode, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
 import { BodyIntentSchema } from "@perfectman/shared";
-import type { ActVerb, AgentState, BlockedReason, BodyCommand, BodyHandleMap, BodyIntent, Tile } from "@perfectman/shared";
+import type { ActVerb, AgentState, BlockedReason, BodyCommand, BodyHandleMap, BodyIntent, SpineObjective, Tile } from "@perfectman/shared";
 import { extractDramaEvents } from "../drama/index.js";
 import type { DramaEvent } from "../drama/index.js";
 import { runDramaProbes } from "../probes/drama.js";
@@ -99,6 +103,13 @@ export type SimConfig = {
    * ledger as a run's committed lines do (`DramaBody.noteSpoken`: who it names, who it is for), so a cast that only talks can be heated, or left cold, by what it says.
    */
   dialogue?: ReadonlyArray<{ atMs: number; actor: string; text: string; to?: string }>;
+  /**
+   * The scene spine of a run with no authored beats (errata P8), as a run builds it: four steps, the turn and the decision opening the ladder for a cast that was heard
+   * heating up (`SpineEscalation`, the run's own class on the sim's clock). Absent: no spine, the sim as it was. `cast` gives an actor's private objective (people who share
+   * a `scarceResourceId` contend: the first is the holder, the rest challengers); `escalate: false` is `PERFECTMAN_SPINE_ESCALATE=0`, the spine that writes notes and opens
+   * nothing. The spine is inert, as in a run, when the scene has authored beats, drama is off, or fewer than two actors. The notes themselves are not read (the sim has no prompt).
+   */
+  spine?: { language?: "pt-BR" | "en"; cast?: ReadonlyArray<{ ref: string; objective?: SpineObjective }>; escalate?: boolean };
   /** The harm limit of the room (SAFE-4). */
   harmMax?: number;
   /** The director's tuning; absent is the sidecar's default. */
@@ -134,8 +145,10 @@ export type SimResult = {
   bodyBlocked: Array<{ atMs: number; actor: string; code: string; detail?: string }>;
   /** Acts that held: started, and how each ended. */
   stats: { started: number; blocked: number; aborted: number; done: number };
-  /** The body's own counters, as a run's summary carries them (`grievance_raised`, `act_blocked_notes`, ...): only the ones that are not zero. */
+  /** The body's own counters, as a run's summary carries them (`grievance_raised`, `act_blocked_notes`, `spine_unlock_*`, ...): only the ones that are not zero. */
   counters: Record<string, number>;
+  /** The scene spine when the config had one (errata P8): the step it ended on, each advance (ms on the sim clock, `progress` or `released`) and what it opened of the ladder. */
+  spine?: { step: number; advances: Array<{ step: number; atMs: number; via: string }>; unlocks?: ReturnType<SpineEscalation["manifest"]> };
 };
 
 /** Timers on the sim's own clock. */
@@ -362,6 +375,23 @@ export function runDramaSim(config: SimConfig): SimResult {
     space.setDrama(true);
   }
 
+  // The scene spine of a run with no authored beats, and its coupling to the ladder: built as `Run.startSpine` builds it, driven by the sim's clock and lines.
+  const recorder = new SceneRecorder(config.actors.map((a) => a.name));
+  let spineScene: SceneSpine | undefined;
+  let escalation: SpineEscalation | undefined;
+  const spineLang = config.spine?.language ?? "pt-BR";
+  if (dramaOn && config.spine && (config.beats?.length ?? 0) === 0 && !resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}) }).off) {
+    const built = buildSceneSpine({
+      language: spineLang,
+      cast: config.actors.map((a) => ({ id: a.ref, name: a.name, ...(config.spine?.cast?.find((c) => c.ref === a.ref)?.objective ? { objective: config.spine.cast.find((c) => c.ref === a.ref)!.objective! } : {}) })),
+    });
+    if (built) {
+      escalation = config.spine.escalate === false ? undefined : new SpineEscalation(body, built, spineLang);
+      spineScene = new SceneSpine(built, recorder, startMs, escalation?.onAdvance);
+      escalation?.attach(spineScene);
+    }
+  }
+
   function send(cmds: readonly PlannedCommand[]): void {
     const out: BodyCommand[] = cmds.map(({ afterArrival: _a, fidget: _f, owed: _o, ...c }) => c);
     // The executor folds what it sent into the planner's memory (cooldowns, the held turn, the last walk), as the run's does.
@@ -435,6 +465,8 @@ export function runDramaSim(config: SimConfig): SimResult {
       return;
     }
     asked.length = 0;
+    // A run's prompt build reads the spine's note, which brings the arc up to the clock (and so opens the ladder at its turn and decision).
+    spineScene?.advance(now);
     const cmds = body.planFor(ref, input);
     for (const a of asked) {
       const d = a.decision;
@@ -509,7 +541,10 @@ export function runDramaSim(config: SimConfig): SimResult {
     speech.push({ atMs: grid.now() - startMs, actor: l.actor, text: l.text });
     log("in", { t: "actor_cmd", cid: ++cid, run: RUN, lease: LEASE, actor: slotOf.get(l.actor)!, cmd: { k: "chat", mode: "say", text: l.text, ...(l.to ? { to: slotOf.get(l.to) ?? space.avatarId(l.to) } : {}) } });
     void grid.dispatch([{ agentId: l.actor, cmd: "chat", mode: "say", text: l.text, ...(l.to ? { to: l.to } : {}) }]);
+    recorder.say(nameOf(l.actor), l.text, grid.now() - startMs);
     if (dramaOn) body.noteSpoken({ speaker: l.actor, content: l.text, addressees: l.to ? [l.to] : [], mentioned });
+    escalation?.onLine(grid.now());
+    if (!escalation) spineScene?.advance(grid.now());
   }
 
   const settleMs = 12_000;
@@ -547,5 +582,5 @@ export function runDramaSim(config: SimConfig): SimResult {
   const frames = lines.map((l) => normalizeFrame(l)).flatMap((f) => (f ? [f] : []));
   const events = extractDramaEvents(frames);
   const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs });
-  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters() };
+  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters(), ...(spineScene ? { spine: { step: spineScene.step, advances: spineScene.advances.map((a) => ({ step: a.step, atMs: a.atMs, via: a.via })), ...(escalation ? { unlocks: escalation.manifest(startMs) } : {}) } } : {}) };
 }

@@ -12,22 +12,23 @@ import { avatar, snapshot } from "../testing/fixtures.js";
 const own = (a: string, b: string): boolean => a !== b && ["duda", "rafa", "gabi", "leo"].includes(a) && ["duda", "rafa", "gabi", "leo"].includes(b);
 
 describe("a refusal of the ladder is a note for the model's next prompt", () => {
-  it.each([["motive"], ["grievance"]])("a model's act refused for %s is noted, with the name it aimed at, and counted; the log still gets the plain reason", (detail) => {
+  it.each([["motive"], ["grievance"], ["rung"], ["contagion"], ["zero_witness"]])("a model's act refused for %s is noted, with the name it aimed at, and counted; the log still gets the reason, the verb and the target", (detail) => {
     const noted: Array<[string, BlockedReason[]]> = [];
     const r = rig({ note: (a, reasons) => noted.push([a, reasons]) });
     r.port!.next = { kind: "veto", reason: "ladder", rule: "LAD-6", detail };
     r.body.planFor("duda", r.input({ bodyIntent: intent({ act: { verb: "insult", target: "p1" } }), handles }));
-    expect(r.blocked).toEqual([["duda", [{ code: "ladder", part: "act", detail }]]]);
-    expect(noted).toEqual([["duda", [{ code: "ladder", part: "act", detail, ref: "Rafa" }]]]);
+    // The audit (errata P8) says what was blocked, not only why: the verb the actor tried and who it was aimed at.
+    expect(r.blocked).toEqual([["duda", [{ code: "ladder", part: "act", detail, verb: "insult", target: "rafa" }]]]);
+    expect(noted).toEqual([["duda", [{ code: "ladder", part: "act", detail, verb: "insult", target: "rafa", ref: "Rafa" }]]]);
     expect(r.body.counters()).toEqual({ act_blocked_notes: 1 });
   });
 
-  it("the other refusals of the ladder (the ceiling, contagion) and every other veto are not noted: the director decides those, the model is not told", () => {
+  it("the ceiling (max_rung) and every other veto are not noted: the director decides those, the model is not told; the log still carries the verb and the target", () => {
     const noted: Array<[string, BlockedReason[]]> = [];
     const r = rig({ note: (a, reasons) => noted.push([a, reasons]) });
     for (const veto of [
       { reason: "ladder" as const, rule: "LAD-3", detail: "max_rung" },
-      { reason: "ladder" as const, rule: "LAD-10", detail: "contagion" },
+      { reason: "budget" as const, rule: "GATE-9", detail: "physical" },
       { reason: "consent_off" as const, rule: "GATE-6" },
     ]) {
       r.port!.next = { kind: "veto", ...veto };
@@ -35,6 +36,11 @@ describe("a refusal of the ladder is a note for the model's next prompt", () => 
     }
     expect(noted).toEqual([]);
     expect(r.body.counters()).toEqual({});
+    expect(r.blocked.map(([, reasons]) => reasons[0])).toEqual([
+      { code: "ladder", part: "act", detail: "max_rung", verb: "slap", target: "rafa" },
+      { code: "budget", part: "act", detail: "physical", verb: "slap", target: "rafa" },
+      { code: "consent_off", part: "act", verb: "slap", target: "rafa" },
+    ]);
   });
 });
 

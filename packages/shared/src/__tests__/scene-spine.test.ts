@@ -114,6 +114,21 @@ describe("SpineClock", () => {
     expect(SPINE_STEPS.length).toBe(4);
   });
 
+  it("tells a listener each step it moves into, once, after it has moved (errata P8: the hotel opens the ladder at the turn and the decision)", () => {
+    const seen: Array<{ step: number; now: number; clockStep: number }> = [];
+    const clock: SpineClock = new SpineClock(spine, undefined, (a) => seen.push({ step: a.step, now: a.atMs, clockStep: clock.step }));
+    clock.advance(10_000, none);
+    expect(seen).toEqual([]);
+    clock.advance(45_000, { any: [1000], major: [] });
+    clock.advance(45_000, { any: [1000], major: [] });
+    clock.advance(90_000, { any: [1000], major: [60_000] });
+    expect(seen).toEqual([
+      { step: 1, now: 45_000, clockStep: 1 },
+      { step: 2, now: 90_000, clockStep: 2 },
+    ]);
+    expect(clock.advances.map((a) => a.step)).toEqual([1, 2]);
+  });
+
   it("gives an actor the note of the current step and nothing to a stranger", () => {
     const clock = new SpineClock(spine);
     expect(clock.textFor("ana", 0, none)).toBe(spine.steps[0]!.notes["ana"]);

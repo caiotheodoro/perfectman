@@ -62,7 +62,7 @@ describe("the drama planner behind the director's port (NEG-2, NEG-6)", () => {
     r.port!.next = { kind: "veto", reason: "consent_off", rule: "GATE-6" };
     const cmds = r.body.planFor("duda", r.input({ bodyIntent: intent({ act: { verb: "slap", target: "p1" } }), handles }));
     expect(cmds.some((c) => c.cmd === "walk")).toBe(false);
-    expect(r.blocked).toEqual([["duda", [{ code: "consent_off", part: "act" }]]]);
+    expect(r.blocked).toEqual([["duda", [{ code: "consent_off", part: "act", verb: "slap", target: "rafa" }]]]);
   });
 
   it("[REA-9] an actor the director says is busy plans nothing, and is not asked about anything", () => {

@@ -53,6 +53,11 @@ export type ActProposal = {
 export type RelationReading = Pick<RelationalState, "resentment" | "threat" | "envy" | "suspicion" | "lastNegativeAt"> & {
   /** The grievance the cast's talk built toward this person, 0 to 1 (`ProvocationLedger`, errata P7); absent is none. */
   provocation?: number;
+  /**
+   * The top rung the scene spine has opened toward this person (errata P8, `ProvocationLedger.unlock`): 3 (the shove) or 4 (the slap), absent when nothing is open. It makes
+   * the volition of every ladder verb up to that rung `provocation.unlock.volition` and opens their grievance; it is never above the slap, and one rung per beat still applies.
+   */
+  unlocked?: number;
 };
 
 /**

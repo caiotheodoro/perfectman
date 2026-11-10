@@ -1,5 +1,5 @@
 import type { ActVerb, AgentState, BodyIntent, BlockedReason, Presence, RoomView } from "@perfectman/shared";
-import { ACT_TARGET_MODE } from "@perfectman/shared";
+import { ACT_TARGET_MODE, ladderRung } from "@perfectman/shared";
 import { rememberAct, rememberDeath } from "@perfectman/engine";
 import type { ActFacts, ActLang } from "@perfectman/engine";
 import type { Clock, TimerHandle } from "../clock/clock.js";
@@ -13,7 +13,8 @@ import { ReactionScheduler } from "./reaction-scheduler.js";
 import { DEFAULT_DRAMA_TUNING } from "../director/drama/tuning.js";
 import type { DramaTuning } from "../director/drama/tuning.js";
 import { ProvocationLedger } from "../director/drama/provocation.js";
-import type { SpokenLine } from "../director/drama/provocation.js";
+import type { SpokenLine, UnlockLevel } from "../director/drama/provocation.js";
+import { pickEscalation } from "../director/drama/escalation.js";
 import { SAY_CLEAR_TILES } from "../space/hearing.js";
 import type { ActProposal, DramaDecision, DramaDecisionPort, EmotionReading, RelationReading } from "../director/drama/ports.js";
 import { plan } from "./plan.js";
@@ -74,6 +75,8 @@ const RETRY_MS = 20_000;
 const FOLLOW_PLAN_PREFIX = "drama:";
 /** The `detail` of the `busy_moving` told to the `blocked` hook for each own walk a follow window did not send. */
 const FOLLOW_SUPPRESSED = "follow_suppressed_walk";
+/** The `detail`s of a `ladder` refusal the model is told about in its next prompt (`blockedReasonLine` has a line for each); the ceiling (`max_rung`) stays unshown. */
+const TOLD_LADDER: ReadonlySet<string> = new Set(["motive", "grievance", "rung", "contagion", "zero_witness"]);
 const VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["insult", "shove", "slap", "punch", "kill"]);
 const PHYSICAL_VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch"]);
 
@@ -109,6 +112,11 @@ export class DramaBody implements DramaFrameSink {
   readonly provocation: ProvocationLedger;
   /** Refusals told to the model as a line in its next prompt (`DramaBodyDeps.note`). */
   private actBlockedNotes = 0;
+  /** The highest rung each ordered pair has started in this scene, `actor>target` by ref (errata P8: the spine's slap wants a pair that already shoved). */
+  private readonly reached = new Map<string, number>();
+  /** What the scene spine opened (errata P8): grants by level, the evaluations that found no evidence, and each grant with when and why, for the run's manifest. */
+  private readonly unlocked = { shove: 0, slap: 0, skippedNoEvidence: 0 };
+  readonly unlockLog: Array<{ at: number; level: UnlockLevel; observer: string; offender: string; why: string }> = [];
 
   constructor(private readonly d: DramaBodyDeps) {
     this.provocation = new ProvocationLedger(
@@ -255,6 +263,7 @@ export class DramaBody implements DramaFrameSink {
     // The blow (or any act of its own): the follow has done its job.
     const ref = this.d.mirror.refOfAvatar(f.actor);
     this.stopFollow(ref);
+    this.noteReached(ref, f);
     this.ledger.onActStarted(f);
     this.armClimbWatch(ref, f);
   }
@@ -285,6 +294,7 @@ export class DramaBody implements DramaFrameSink {
     this.ledger.onSceneCut(f);
     // A new scene starts the cast fresh: what was said in the last one is not held against anyone in this one (errata P7).
     this.provocation.clear();
+    this.reached.clear();
     this.stopFollows();
     this.stopClimbWatches();
     this.retry.clear();
@@ -397,10 +407,64 @@ export class DramaBody implements DramaFrameSink {
     return { actionEmotions: base.actionEmotions, social: base.agentState.socialEmotions, core: { arousal: m.arousal, momentumArousal: m.momentumArousal }, relations, at: this.d.clock.now() };
   }
 
-  /** The grievance the talk built toward `other`, as the field the director reads (none when there is none). */
-  private provoked(ref: string, other: string): { provocation?: number } {
+  /** The grievance the talk built toward `other`, and the rung the scene spine opened toward them, as the fields the director reads (none when there is none). */
+  private provoked(ref: string, other: string): { provocation?: number; unlocked?: number } {
     const level = this.provocation.levelOf(ref, other);
-    return level > 0 ? { provocation: level } : {};
+    const rung = this.provocation.unlockedRung(ref, other);
+    return { ...(level > 0 ? { provocation: level } : {}), ...(rung !== undefined ? { unlocked: rung } : {}) };
+  }
+
+  /** The highest rung `ref` has started at someone in this scene (the frame's own `rung` when it carries one), kept per pair for `escalate`. */
+  private noteReached(ref: string, f: Frame<"act_started">): void {
+    const rung = f.rung ?? ladderRung(f.verb);
+    if (rung === undefined || f.with == null) return;
+    const other = this.d.mirror.refOfAvatar(f.with);
+    const key = `${ref}>${other}`;
+    this.reached.set(key, Math.max(this.reached.get(key) ?? 0, rung));
+    // The blow the spine opened has been thrown: the unlock ends with it (one climax per unlock).
+    this.provocation.consume(ref, other, rung);
+  }
+
+  /**
+   * The scene spine asks to open the ladder (errata P8): `level` is `shove` at its turn and `slap` at its decision, `holders` are the actors the spine calls holders.
+   * It looks at what the cast has said (`ProvocationLedger.events`): a pair that was heard heating up (`provocation.unlock`) is opened for the person the hostile lines
+   * were about toward the person who said them, through `ProvocationLedger.unlock`. No evidence, drama not in charge, a pair the scenario does not let, a human: nothing is
+   * opened, and `countSkip` says whether the miss is counted (`spine_unlock_skipped_no_evidence`, once per step the spine reaches, not once per later look). It starts no
+   * act: the climb stays the director's, one rung per beat.
+   */
+  escalate(level: UnlockLevel, holders: readonly string[], countSkip: boolean): "granted" | "refreshed" | "already" | "none" {
+    const port = this.d.port?.();
+    if (!this.active || !port?.active) return "none";
+    const pick = pickEscalation({
+      ledger: this.provocation,
+      tuning: this.d.provocation?.tuning?.() ?? DEFAULT_DRAMA_TUNING.provocation,
+      level,
+      holders,
+      rungOf: (observer, offender) => this.reached.get(`${observer}>${offender}`) ?? 0,
+      now: this.d.clock.now(),
+    });
+    // The evidence is there but the pair has thrown that rung already: nothing left to open, and not a miss.
+    if (pick === "already") return "already";
+    const result = pick ? this.provocation.unlock(pick.observer, pick.offender, pick.level) : "skipped";
+    if (!pick || result === "skipped") {
+      if (countSkip) this.unlocked.skippedNoEvidence++;
+      return "none";
+    }
+    if (result === "granted") {
+      this.unlocked[level]++;
+      this.unlockLog.push({ at: this.d.clock.now(), level, observer: pick.observer, offender: pick.offender, why: pick.why });
+    }
+    return result;
+  }
+
+  /** The line the aggressor of an open unlock reads in its next prompt (errata P8), naming who it is aimed at; undefined for an actor with no open unlock. */
+  unlockNote(ref: string, language: "pt-BR" | "en"): string | undefined {
+    const open = this.provocation.unlockOf(ref);
+    if (!open) return undefined;
+    const name = this.d.names(open.offender) ?? open.offender;
+    return language === "en"
+      ? `You have had enough: if "${name}" provokes you again, go for them.`
+      : `Você não aguenta mais: se "${name}" provocar de novo, parta pra cima.`;
   }
 
   /**
@@ -424,7 +488,16 @@ export class DramaBody implements DramaFrameSink {
   /** The run summary's flat counters for what this body did on its own: grievance raised from talk, and the refusals it told the model about. */
   counters(): Record<string, number> {
     const p = this.provocation;
-    const all: Record<string, number> = { grievance_raised: p.total, grievance_skipped: p.skipped, act_blocked_notes: this.actBlockedNotes };
+    const all: Record<string, number> = {
+      grievance_raised: p.total,
+      grievance_skipped: p.skipped,
+      grievance_reported: p.reportedRaised,
+      grievance_reported_ignored: p.reportedIgnored,
+      act_blocked_notes: this.actBlockedNotes,
+      spine_unlock_shove: this.unlocked.shove,
+      spine_unlock_slap: this.unlocked.slap,
+      spine_unlock_skipped_no_evidence: this.unlocked.skippedNoEvidence,
+    };
     for (const [k, n] of Object.entries(p.raised)) all[`grievance_${k}`] = n;
     return Object.fromEntries(Object.entries(all).filter(([, n]) => n > 0));
   }
@@ -440,12 +513,13 @@ export class DramaBody implements DramaFrameSink {
         return { hold: true, approach: [] };
       case "veto": {
         if (res.reason === "too_far" && proposal.with !== undefined) return { hold: false, approach: this.walkCloser(ref, proposal, base) };
-        const reason: BlockedReason = { code: res.reason, part: "act", ...(res.detail ? { detail: res.detail } : {}) };
+        const targetRef = proposal.with === undefined ? undefined : this.d.mirror.refOfAvatar(proposal.with);
+        const reason: BlockedReason = { code: res.reason, part: "act", ...(res.detail ? { detail: res.detail } : {}), verb: proposal.verb, ...(targetRef ? { target: targetRef } : {}) };
         this.d.hooks.blocked(ref, [reason]);
-        // An act the ladder refused for want of a motive or a grievance is not yet earned: the model is told so in its next prompt, with the name it aimed at.
-        if (res.reason === "ladder" && (res.detail === "motive" || res.detail === "grievance") && proposal.with !== undefined && this.d.note) {
-          const target = this.d.mirror.refOfAvatar(proposal.with);
-          this.d.note(ref, [{ ...reason, ref: this.d.names(target) ?? target }]);
+        // An act the ladder refused for want of a motive or a grievance, one rung too many, a witness or a calmer room is not yet earned: the model is told so in its
+        // next prompt, with the name it aimed at and what would earn it (errata P7, P8).
+        if (res.reason === "ladder" && res.detail !== undefined && TOLD_LADDER.has(res.detail) && targetRef !== undefined && this.d.note) {
+          this.d.note(ref, [{ ...reason, ref: this.d.names(targetRef) ?? targetRef }]);
           this.actBlockedNotes++;
         }
         return { hold: false, approach: [] };
