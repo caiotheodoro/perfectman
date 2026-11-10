@@ -159,7 +159,7 @@ Resolution words:
 | E-09 | section 3.6, section 12 | `dodged` and `declined` are separate outcomes but section 12 maps both chip answers to `decline` | **agreed**: the raw answer is kept next to the mapped one. |
 | E-10 | judge | A human target owes no reaction; the spec leaves it unstated for the judge | **agreed**: the hotel never sends an `act_reaction` for a human (H2-07). |
 
-### P4 (prompts, mock, presets, sim and bench: 8 readings)
+### P4 (prompts, mock, presets, sim and bench: 9 readings)
 
 | Id | Rule | Defect or reading | Resolution |
 | --- | --- | --- | --- |
@@ -171,6 +171,7 @@ Resolution words:
 | P4-06 | 11.5, NEG-2 | The task says the prompt states violence is gated by the scenario; 11.5 says it must not say violence needs permission, since the director decides. | **agreed**: the prompt says how far a scene may go is set by the scene and that a beat that does not happen leaves the words standing, and never uses "permission" (`drama-prompt.test.ts`). |
 | P4-07 | section 7.1 | The scene presets are markdown: the compiler ignores unknown frontmatter keys, so `drama` and `beats` ride there. The authoring service reads `drama` for a bundle (`compileSceneDrama`, agent ids or cast names) and compiles it into the body. | **fixed**: `drama-presets.test.ts`. |
 | P4-08 | FRM-4, PI-07 | The sim's `run_start` and `actor_spawned` frames are checked against the vendored schema; the hotel's own kit writes `lease`, `mode` and `run` on frames that carry none of them. | **agreed**: the sim writes what the schema says; `drama-sim.test.ts` validates every frame. |
+| P4-09 | 11.5, NEG-2, D43 | The act hint taught the key, the ladder and the style rule but not how to play a beat: the scene-craft guidance of the `perfectman-scene-runtime` skill (one thing to do to the person in front of you, held until it works or fails; status carried in the body; the body does what words cannot; a refused beat leaves the words standing; silence is an answer) was written and never injected. | **fixed**: `hotel-drama-hint.ts` returns it from `dramaContractLines` (full text) and `dramaCompactLines` (under 450 characters), behind the same `BodyPerception.drama` gate and no new flag; the skill's `digest*.md` files are pinned equal to the code constants, drama off stays byte-identical (`drama-prompt.test.ts`, `drama-off-identity.test.ts`). It never says what the reader is or mentions permission. |
 
 ### P5 (authored beats, default pace, witness locks: 9 readings)
 

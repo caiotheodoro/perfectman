@@ -10,7 +10,7 @@ How to run a scene that perfectman plays in a Habbo room: who wants what, who is
 Two audiences:
 
 - **You, the operator or director** (an agent or a person reading a run, steering it, or judging it): this file.
-- **The characters' own prompts**: `digest.en.md` and `digest.pt-BR.md` next to this file. They are short, in-world text written to be injected into the drama hint later. Nothing injects them today.
+- **The characters' own prompts**: `digest.en.md` and `digest.pt-BR.md` next to this file. They are short, in-world text that the drama hint injects when drama is on (`digest-compact.*.md` is the shorter one for the compact prompt). `digest-notes.md` says how the files and the code are kept equal.
 
 Sources of truth, in order: `docs/drama/act-contract.md` (frozen, rev 2), `docs/drama/verb-bible.md`, `packages/hotel/schema/verb-vocab.json` (rev 3, sha-pinned), `docs/drama/judge.md`. This skill summarises them. If it disagrees, they win.
 

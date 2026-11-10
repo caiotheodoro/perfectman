@@ -9,6 +9,11 @@ import type { ActVerb } from "@perfectman/shared";
  * in plain words, says violence is stylized telenovela and that the scene sets how far it goes, and teaches by three short
  * answers whose handles are this render's own. It never says what the reader is (D43) and never says violence "needs
  * permission": whether a beat happens is not the actor's call, and the words always count.
+ *
+ * The scene-craft block (one thing to do to the person in front of you, held until it works or fails; status carried in the body;
+ * the body does what words cannot; a refused beat leaves your words standing; silence is an answer) is the text of
+ * `.claude/skills/perfectman-scene-runtime/digest.<lang>.md` (full) and `digest-compact.<lang>.md` (compact prompt, under 450
+ * characters). The constants below and those files are the same text: `__tests__/drama-prompt.test.ts` pins them equal, so edit both.
  */
 type Lang = "pt-BR" | "en";
 
@@ -61,6 +66,32 @@ const STYLE: Record<Lang, string> = {
     "um gesto que não acontece deixa a sua fala de pé, então diga o que diria de qualquer jeito. Não use verbo em quem está caído no chão, só tend_fallen.",
 };
 
+/** Scene craft, full prompt: the digest text, verbatim (pinned equal to `digest.<lang>.md` by a test). No comments in the text itself. */
+export const SCENE_CRAFT: Record<Lang, string> = {
+  en:
+    "Before you speak, know what you want from the person in front of you, and pick one thing to do to get it: plead, tease, stonewall, corner, comfort, test. Do that one thing until it works, fails, or something new happens. Then change what you do.\n\n" +
+    "Carry how high or low you stand in how you stand. Holding still, a steady look, a pause and cutting in are what it looks like to be above someone. Fast, hedged lines, looking away, stepping back and sitting down are what it looks like to be below. It can flip in one moment: when a secret comes out, when someone you thought small stops backing down.\n\n" +
+    "Say your line first; the words always count. Let the body do what words cannot: stepping closer, turning your back, sitting, a look, a smile. Use \"act\" only when the feeling is too big for words, and take the lowest step that carries it. Hug, kiss, cry, turn away and storm off are for love, grief and being done. Shove, slap, punch and kill are the last steps of a long climb, never a first move. Keep it stylized, no blood, no weapons.\n\n" +
+    "If something you tried does not happen, your words still stand. Let the next thing you say show it, and do not try the same thing again. Staying silent and still is also an answer.",
+  "pt-BR":
+    "Antes de falar, saiba o que você quer da pessoa na sua frente e escolha uma coisa para fazer para conseguir: suplicar, provocar, calar, encurralar, consolar, testar. Faça só essa coisa até ela funcionar, falhar ou acontecer algo novo. Aí mude o que você faz.\n\n" +
+    "Leve o quanto você está por cima ou por baixo no jeito de ficar. Parar, um olhar firme, uma pausa e cortar a fala do outro é o jeito de estar por cima. Frase rápida e cheia de ressalvas, desviar o olhar, dar um passo atrás e sentar é o jeito de estar por baixo. Isso pode virar num instante: quando um segredo vem à tona, quando quem você achava pequeno para de recuar.\n\n" +
+    "Diga a sua fala primeiro; as palavras sempre valem. Deixe o corpo fazer o que as palavras não fazem: chegar mais perto, dar as costas, sentar, um olhar, um sorriso. Use \"act\" só quando o sentimento é grande demais para palavras, e dê o menor passo que o carrega. Abraçar, beijar, chorar, virar as costas e sair batendo a porta são para amor, luto e cansaço. Empurrar, dar tapa, dar soco e matar são os últimos degraus de uma subida longa, nunca o primeiro gesto. Mantenha estilizado, sem sangue, sem arma.\n\n" +
+    "Se algo que você tentou não acontece, as suas palavras continuam valendo. Deixe a sua próxima fala mostrar isso e não tente a mesma coisa de novo. Ficar quieto e parado também é uma resposta.",
+};
+
+/** Scene craft, compact prompt: the same six ideas in under 450 characters (pinned equal to `digest-compact.<lang>.md`). */
+export const SCENE_CRAFT_COMPACT: Record<Lang, string> = {
+  en:
+    "Know what you want from the person in front of you and pick one thing to do to get it: plead, tease, stonewall, corner, comfort, test. Keep at it until it works, fails or something new happens. " +
+    "Carry how high or low you stand in your body: stillness and a steady look are above; hurried lines and looking away are below. The body does what words cannot. " +
+    "If a beat does not happen, your words still stand. Silence is an answer too.",
+  "pt-BR":
+    "Saiba o que quer da pessoa na sua frente e escolha uma coisa para fazer: suplicar, provocar, calar, encurralar, consolar, testar. Insista até funcionar, falhar ou acontecer algo novo. " +
+    "Mostre no corpo se está por cima ou por baixo: parar e um olhar firme é por cima; frase apressada e desviar o olhar é por baixo. O corpo faz o que as palavras não fazem. " +
+    "Se um gesto não acontece, suas palavras continuam valendo. Ficar quieto também é uma resposta.",
+};
+
 /** What each example's private thought says: about the beat itself, so a copy is plausible. */
 const MOTIVE: Record<Lang, { glare: string; insult: string; hug: string; cry: string }> = {
   en: {
@@ -108,14 +139,14 @@ function verbLines(lang: Lang): string {
   return [lead, ...WHEN[lang].map((w) => `- ${w.feeling}: ${w.verbs.join(", ")} (${w.use})`)].join("\n");
 }
 
-/** The drama block of the output contract (full prompt): shape, verbs by feeling, the ladder, the style rule, three answers. */
+/** The drama block of the output contract (full prompt): shape, verbs by feeling, the ladder, the style rule, scene craft, three answers. */
 export function dramaContractLines(lang: Lang, body: BodyPerception | undefined): string[] {
   const header = lang === "pt-BR" ? "Exemplos de resposta com act (só o formato: use as suas próprias palavras):" : "Examples of an answer with act (the format only: use your own words):";
-  return [HEAD[lang], verbLines(lang), LADDER[lang], STYLE[lang], [header, ...dramaExamples(lang, body)].join("\n")];
+  return [HEAD[lang], verbLines(lang), LADDER[lang], STYLE[lang], SCENE_CRAFT[lang], [header, ...dramaExamples(lang, body)].join("\n")];
 }
 
-/** The same, shorter, for the compact hotel prompt: shape, the ladder and the style rule in one line each, and two answers. */
+/** The same, shorter, for the compact hotel prompt: shape, the ladder, the style rule and a short scene craft, and two answers. */
 export function dramaCompactLines(lang: Lang, body: BodyPerception | undefined): string[] {
   const header = lang === "pt-BR" ? "Exemplos com act:" : "Examples with act:";
-  return [HEAD[lang], LADDER[lang], STYLE[lang], [header, ...dramaExamples(lang, body).slice(0, 2)].join("\n")];
+  return [HEAD[lang], LADDER[lang], STYLE[lang], SCENE_CRAFT_COMPACT[lang], [header, ...dramaExamples(lang, body).slice(0, 2)].join("\n")];
 }

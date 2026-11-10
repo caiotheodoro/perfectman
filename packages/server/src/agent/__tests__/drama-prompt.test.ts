@@ -3,6 +3,9 @@
  * key, lists the 18 verbs, states the ladder and the telenovela rule, and shows three answers that parse. Without it nothing changes
  * (`drama-off-identity.test.ts` holds that byte for byte). The decode grammar follows the same flag.
  */
+import { readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
 import {
   ACT_TARGET_MODE,
@@ -16,12 +19,17 @@ import {
 import type { AgentRuntimeInput, BodyPerception } from "@perfectman/shared";
 import { EXAMPLE_PROMPT_PROFILE } from "../persona-prompt-profile.js";
 import { PromptBuilder } from "../prompt-builder.js";
-import { dramaExamples } from "../hotel-drama-hint.js";
+import { SCENE_CRAFT, SCENE_CRAFT_COMPACT, dramaCompactLines, dramaContractLines, dramaExamples } from "../hotel-drama-hint.js";
 import { OllamaProvider } from "../../llm/ollama-provider.js";
 import { intentSchemaFor } from "../../llm/sdk-transport.js";
 import { hotelInput, humanLine } from "./hotel-test-helpers.js";
 
 const FORBIDDEN = /\b(ai|ia|bots?|rob[oô]s?|models?|modelos?|agents?|agentes?|simulations?|simula[cç][aã]o|pulses?|badge|real person)\b/i;
+
+/** What the reader is, by role or by permission, in either language, on top of FORBIDDEN (D43, act-contract.md 11.5). */
+const FORBIDDEN_CRAFT = /\b(characters?|personagens?|actors?|actress|atores|atriz|roles?|papel|papéis|act as|permissions?|permiss[aã]o|allowed to|roleplay|role-play|game|jogo|prompt|assistant|assistente|npc|llm|chatbot|simulated)\b/i;
+
+const SKILL_DIR = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "..", ".claude", "skills", "perfectman-scene-runtime");
 
 const profileOf = (language: "pt-BR" | "en") => ({ ...EXAMPLE_PROMPT_PROFILE, language, hotelMode: true, relationshipBiases: {}, messageLength: "short" as const });
 
@@ -88,7 +96,7 @@ describe.each(["pt-BR", "en"] as const)("the drama prompt, %s", (language) => {
     expect(compact.inputTokensEstimate).toBeLessThan(built.inputTokensEstimate);
   });
 
-  it("the drama block is never what a tight budget sheds: events go first, the verbs stay, and the block costs under 900 tokens", () => {
+  it("the drama block is never what a tight budget sheds: events go first, the verbs stay, and the block costs under 1200 tokens (about 800 before the scene-craft block, about 300 for it)", () => {
     const events = Array.from({ length: 12 }, (_, i) => ({ ...humanLine(`linha ${i} ${"x".repeat(120)}`, "Visitante"), id: `evt-${i}`, pulseIndex: i }));
     const busy = withDrama(hotelInput(events));
     const full = PromptBuilder.build(busy, profile, "action_intent");
@@ -96,7 +104,74 @@ describe.each(["pt-BR", "en"] as const)("the drama prompt, %s", (language) => {
     expect(capped.trim?.withinCap).toBe(true);
     expect(capped.trim?.droppedEvents).toBeGreaterThan(0);
     expect(capped.system).toContain("tend_fallen");
-    expect(full.inputTokensEstimate - PromptBuilder.build(hotelInput(events), profile, "action_intent").inputTokensEstimate).toBeLessThan(900);
+    expect(full.inputTokensEstimate - PromptBuilder.build(hotelInput(events), profile, "action_intent").inputTokensEstimate).toBeLessThan(1200);
+  });
+});
+
+describe.each(["pt-BR", "en"] as const)("the scene-craft block, %s", (language) => {
+  const profile = profileOf(language);
+  const built = PromptBuilder.build(withDrama(hotelInput()), profile, "action_intent");
+  const compact = PromptBuilder.build(withDrama(hotelInput()), profile, "action_intent", undefined, "compact");
+  const off = PromptBuilder.build(hotelInput(), profile, "action_intent");
+  const offCompact = PromptBuilder.build(hotelInput(), profile, "action_intent", undefined, "compact");
+  const body = withDrama(hotelInput()).perceptionPacket.body;
+
+  it("is returned by dramaContractLines (whole) and dramaCompactLines (the short one), after the style rule and before the examples", () => {
+    const full = dramaContractLines(language, body);
+    const short = dramaCompactLines(language, body);
+    expect(full).toContain(SCENE_CRAFT[language]);
+    expect(short).toContain(SCENE_CRAFT_COMPACT[language]);
+    expect(short).not.toContain(SCENE_CRAFT[language]);
+    expect(full.indexOf(SCENE_CRAFT[language])).toBe(full.length - 2);
+    expect(short.indexOf(SCENE_CRAFT_COMPACT[language])).toBe(short.length - 2);
+  });
+
+  it("reaches the full prompt and the compact prompt with drama on, and neither without it", () => {
+    expect(built.system).toContain(SCENE_CRAFT[language]);
+    expect(compact.system).toContain(SCENE_CRAFT_COMPACT[language]);
+    const marker = language === "en" ? "stonewall" : "encurralar";
+    expect(off.system + off.user).not.toContain(marker);
+    expect(offCompact.system + offCompact.user).not.toContain(marker);
+    expect(built.user).not.toContain(marker);
+  });
+
+  it("carries the six ideas: one thing to do, held until it works or fails, status in the body, the body past words, a refused beat leaves the words standing, silence", () => {
+    const text = SCENE_CRAFT[language];
+    const ideas = language === "en"
+      ? [/pick one thing to do/, /until it works, fails, or something new happens/, /how high or low you stand/, /do what words cannot/, /your words still stand/, /silent and still is also an answer/]
+      : [/escolha uma coisa para fazer/, /até ela funcionar, falhar ou acontecer algo novo/, /por cima ou por baixo/, /fazer o que as palavras não fazem/, /as suas palavras continuam valendo/, /quieto e parado também é uma resposta/];
+    for (const idea of ideas) expect(text).toMatch(idea);
+  });
+
+  it("the compact one stays under 450 characters and still holds the ideas", () => {
+    const text = SCENE_CRAFT_COMPACT[language];
+    expect(text.length).toBeLessThan(450);
+    const ideas = language === "en"
+      ? [/pick one thing to do/, /until it works, fails or something new happens/, /how high or low you stand/, /words cannot/, /your words still stand/, /Silence is an answer/]
+      : [/escolha uma coisa para fazer/, /até funcionar, falhar ou acontecer algo novo/, /por cima ou por baixo/, /o que as palavras não fazem/, /suas palavras continuam valendo/, /quieto também é uma resposta/];
+    for (const idea of ideas) expect(text).toMatch(idea);
+  });
+
+  it("[D43] says nothing about what the reader is, no permission, in the constants or in what both prompts render", () => {
+    for (const text of [SCENE_CRAFT[language], SCENE_CRAFT_COMPACT[language]]) {
+      expect(text.match(new RegExp(FORBIDDEN.source, "i"))).toBeNull();
+      expect(text.match(FORBIDDEN_CRAFT)).toBeNull();
+    }
+    // The rest of the prompt has its own words; what the block adds must not add a hit to either prompt.
+    const hits = (text: string): string[] => [...text.matchAll(new RegExp(FORBIDDEN_CRAFT.source, "gi"))].map((m) => m[0]);
+    expect(hits(built.system)).toEqual(hits(off.system));
+    expect(hits(compact.system)).toEqual(hits(offCompact.system));
+  });
+
+  it("the skill's digest files are the same text as the constants, so the two cannot drift, and carry no comment", () => {
+    const full = readFileSync(join(SKILL_DIR, `digest.${language}.md`), "utf8");
+    const short = readFileSync(join(SKILL_DIR, `digest-compact.${language}.md`), "utf8");
+    expect(full).toBe(`${SCENE_CRAFT[language]}\n`);
+    expect(short).toBe(`${SCENE_CRAFT_COMPACT[language]}\n`);
+    for (const text of [full, short]) {
+      expect(text).not.toMatch(/<!--|^#|^\/\/|^>|^\s*[-*] /m);
+      expect(text.match(FORBIDDEN_CRAFT)).toBeNull();
+    }
   });
 });
 
