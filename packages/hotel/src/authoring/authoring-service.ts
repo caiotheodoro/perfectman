@@ -20,8 +20,8 @@ import type { ScenarioBody } from "../run/scenario-body.js";
 import { draftToFiles } from "./draft-to-files.js";
 import { compileSceneBeats, countCuts } from "./scenario-beats.js";
 import type { ScenarioBeat } from "./scenario-beats.js";
-import { FREE_PLAY_DRAMA, compileDramaForm, compileSceneDrama } from "./scenario-drama.js";
-import type { ScenarioDrama } from "./scenario-drama.js";
+import { FREE_PLAY_DRAMA, compileDramaForm, compileSceneDrama, defaultSceneDrama } from "./scenario-drama.js";
+import type { DramaCompile, DramaMode, SceneCastMember, ScenarioDrama } from "./scenario-drama.js";
 import { formArrivals, formStage, formToDraft, parseForm } from "./scenario-form.js";
 import type { FormLooks, ScenarioStage } from "./scenario-form.js";
 
@@ -47,11 +47,8 @@ export type AuthoringDeps = {
   env?: (name: string) => string | undefined;
 };
 
-/** What the scene's `drama` block and `beats` leave after compile, and the warnings of both. */
-type DramaPart = { drama?: ScenarioDrama | undefined; beats?: ScenarioBeat[] | undefined; dramaWarnings: PathMessage[] };
-
-/** The block the beats are read against. One that failed to compile has said so already: the beats are not told "no block" on top of it. */
-const blockFor = (result: { drama?: ScenarioDrama } | undefined): ScenarioDrama | undefined => (result === undefined ? undefined : (result.drama ?? FREE_PLAY_DRAMA));
+/** What the scene's `drama` block and `beats` leave after compile, the body's `drama_mode`, and the warnings of both. */
+type DramaPart = { drama?: ScenarioDrama | undefined; dramaMode?: DramaMode | undefined; beats?: ScenarioBeat[] | undefined; dramaWarnings: PathMessage[] };
 
 const toRows = (diagnostics: readonly Diagnostic[], level: "error" | "warning"): PathMessage[] =>
   diagnostics
@@ -84,14 +81,27 @@ export class AuthoringService {
    * beats that cut the scene are the cuts SCN-6 asks of a scenario that can kill; a form without them warns `drama.no_scene_cut`.
    */
   private resolveDrama(form: NonNullable<ReturnType<typeof parseForm>>): DramaPart {
-    if (form.drama === undefined && form.beats === undefined) return { dramaWarnings: [] };
     const cast = Array.isArray(form.cast) ? form.cast : [];
     const people = cast.map((c, i) => ({ id: `person-${i + 1}`, displayName: typeof c?.name === "string" ? c.name : "" }));
     const result = form.drama === undefined ? undefined : compileDramaForm(form.drama, { names: people.map((p) => p.displayName), ids: people.map((p) => p.id) }, { sceneCuts: countCuts(form.beats) });
-    const script = form.beats === undefined ? undefined : compileSceneBeats(form.beats, people, { drama: blockFor(result) });
+    return this.settleDrama(result, form.beats, people);
+  }
+
+  /**
+   * The one place a scene's drama is settled, for a builder form and for a markdown scene alike. A scene that wrote no `drama` key gets the conservative
+   * default (`defaultSceneDrama`: every ordered pair of its actors, up to a slap, nobody dies) and the beats are read against it; a scene that wrote
+   * one keeps exactly that, `{}` and `off` included. `result` is undefined only when no `drama` key was written.
+   */
+  private settleDrama(result: DramaCompile | undefined, rawBeats: unknown, people: readonly SceneCastMember[]): DramaPart {
+    const fallback = result === undefined ? defaultSceneDrama(people.map((p) => p.id)) : undefined;
+    // A block that failed to compile has said so already: the beats are not told "no block" on top of it.
+    const block = result === undefined ? fallback : (result.drama ?? FREE_PLAY_DRAMA);
+    const script = rawBeats === undefined ? undefined : compileSceneBeats(rawBeats, people, { drama: block });
     const errors = [...(result?.errors ?? []), ...(script?.errors ?? [])];
     if (errors.length > 0) throw new AuthoringError(422, "bad_scenario", "scenario did not compile", errors);
-    return { ...this.dramaPart(result, script) };
+    const part = this.dramaPart(result, script);
+    if (fallback) return { ...part, drama: fallback, dramaMode: "default" };
+    return result?.mode === "off" ? { ...part, dramaMode: "off" } : part;
   }
 
   /** The block and the script as the body keeps them, with the warnings of both. */
@@ -100,7 +110,7 @@ export class AuthoringService {
   }
 
   private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } & DramaPart {
-    const { bundle, looks, arrivals, stage, drama, beats, dramaWarnings } = this.resolveSource(source);
+    const { bundle, looks, arrivals, stage, drama, dramaMode, beats, dramaWarnings } = this.resolveSource(source);
     if (!bundle.scenario) throw new AuthoringError(400, "bad_request", "source has no scenario file");
     const result = compileRunInputs(
       { kind: "markdown", scenario: bundle.scenario, personas: bundle.personas },
@@ -116,21 +126,17 @@ export class AuthoringService {
         if (range) delays[a.id] = [range[0], range[1]];
       }
     }
-    // A markdown scenario (a preset) carries its `drama` block and `beats` in the frontmatter; a form carried them already.
+    // A markdown scenario (a preset) carries its `drama` block and `beats` in the frontmatter, or none: it is settled here. A form was settled already.
     const scene = drama === undefined && beats === undefined && result.ok && result.summary ? this.sceneScript(bundle.scenario.text, result.summary.agents) : undefined;
-    const part = scene ?? { drama, beats, dramaWarnings: [] };
-    return { result, delays, looks, arrivals, dramaWarnings: [...dramaWarnings, ...part.dramaWarnings], ...(stage ? { stage } : {}), ...(part.drama ? { drama: part.drama } : {}), ...(part.beats ? { beats: part.beats } : {}) };
+    const part = scene ?? { drama, dramaMode, beats, dramaWarnings: [] };
+    return { result, delays, looks, arrivals, dramaWarnings: [...dramaWarnings, ...part.dramaWarnings], ...(stage ? { stage } : {}), ...(part.drama ? { drama: part.drama } : {}), ...(part.dramaMode ? { dramaMode: part.dramaMode } : {}), ...(part.beats ? { beats: part.beats } : {}) };
   }
 
   /** SCN-5 for a markdown scenario's frontmatter `drama` and `beats`; the beats that cut the scene are the cuts SCN-6 asks for. Errors fail the compile, as a form's do. */
-  private sceneScript(text: string, agents: readonly { id: string; displayName: string }[]): DramaPart | undefined {
+  private sceneScript(text: string, agents: readonly { id: string; displayName: string }[]): DramaPart {
     const front = parseMarkdown(text).frontmatter;
-    if (front["drama"] === undefined && front["beats"] === undefined) return undefined;
     const result = front["drama"] === undefined ? undefined : compileSceneDrama(front["drama"], agents, { sceneCuts: countCuts(front["beats"]) });
-    const script = front["beats"] === undefined ? undefined : compileSceneBeats(front["beats"], agents, { drama: blockFor(result) });
-    const errors = [...(result?.errors ?? []), ...(script?.errors ?? [])];
-    if (errors.length > 0) throw new AuthoringError(422, "bad_scenario", "scenario did not compile", errors);
-    return this.dramaPart(result, script);
+    return this.settleDrama(result, front["beats"], agents);
   }
 
   validate(req: ValidateRequest): ValidateResponse {
@@ -152,7 +158,7 @@ export class AuthoringService {
 
   compile(req: { source?: unknown }): CompileResponse {
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "compile needs source");
-    const { result, delays, looks, arrivals, stage, drama, beats } = this.compileSource(req.source);
+    const { result, delays, looks, arrivals, stage, drama, dramaMode, beats } = this.compileSource(req.source);
     if (!result.ok || !result.config || !result.summary) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", toRows(result.diagnostics, "error"));
     }
@@ -167,6 +173,7 @@ export class AuthoringService {
       ...(Object.keys(arrivals).length > 0 ? { arrivals } : {}),
       ...(stage ? { stage } : {}),
       ...(drama ? { drama } : {}),
+      ...(dramaMode ? { drama_mode: dramaMode } : {}),
       ...(beats ? { beats } : {}),
     };
     if (Buffer.byteLength(JSON.stringify(body)) > MAX_BODY_BYTES) {
@@ -248,7 +255,7 @@ export class AuthoringService {
   /**
    * The drafted story as the bundle the builder loads. A draft with a script is compiled here the way a loaded scene is: if the loader
    * refuses it, or the scene's own block would veto a beat or the scene could kill with no cut, the script is dropped and the story ships
-   * without it (free play). `repairBeats` already made that unlikely; this is the proof, not the repair.
+   * without it (the compile then gives it the conservative default block, as it does any scene that writes none). `repairBeats` already made that unlikely; this is the proof, not the repair.
    */
   private draftSource(story: StoryDraft): string {
     const source = makeBundle(draftToFiles(story));

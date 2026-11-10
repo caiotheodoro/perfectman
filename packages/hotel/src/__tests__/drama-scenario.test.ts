@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { AuthoringError, AuthoringService } from "../authoring/authoring-service.js";
-import { FREE_PLAY_DRAMA, cleanDrama, compileDramaForm, resolveRunDrama } from "../authoring/scenario-drama.js";
+import { DEFAULT_SCENE_MAX_RUNG, FREE_PLAY_DRAMA, cleanDrama, compileDramaForm, resolveRunDrama } from "../authoring/scenario-drama.js";
 import { SCENARIO_BODY_VERSION, parseScenarioBody } from "../run/scenario-body.js";
 import { compiledScenario } from "../testing/helpers.js";
 
@@ -87,10 +87,12 @@ describe("the drama block in the compiled body", () => {
     return parsed.ok ? parsed.body.drama : "refused";
   };
 
-  it("[SCN-2] keeps SCENARIO_BODY_VERSION at 1 and reads a body without a drama block as it always did", () => {
+  it("[SCN-2] keeps SCENARIO_BODY_VERSION at 1 and reads a body without a drama block as it always did (free play: a body saved before the default is not given one at run time)", () => {
     expect(SCENARIO_BODY_VERSION).toBe(1);
-    const parsed = parseScenarioBody(compiledScenario().body);
+    const { drama: _drama, drama_mode: _mode, ...legacy } = compiledScenario().body as Record<string, unknown>;
+    const parsed = parseScenarioBody(legacy);
     expect(parsed.ok && parsed.body).not.toHaveProperty("drama");
+    expect(parsed.ok && parsed.body).not.toHaveProperty("drama_mode");
   });
 
   it("[SCN-2] reads a compiled block, filling the defaults of omitted keys", () => {
@@ -116,7 +118,7 @@ describe("the drama block in the compiled body", () => {
   });
 
   it("[SCN-1] a run with no block resolves to free play: max rung 3, no pairs, no deaths, no authored skips", () => {
-    expect(resolveRunDrama({})).toEqual({ block: undefined, effective: FREE_PLAY_DRAMA, freePlay: true, canSkip: false });
+    expect(resolveRunDrama({})).toEqual({ block: undefined, effective: FREE_PLAY_DRAMA, freePlay: true, canSkip: false, mode: "free_play", off: false });
     expect(cleanDrama(undefined, ["person-1"])).toEqual({});
   });
 
@@ -136,9 +138,11 @@ describe("the drama block through authoring (validate and compile)", () => {
     expect(svc().validate({ body })).toMatchObject({ ok: true, errors: [] });
   });
 
-  it("[SCN-2] a form with no drama key compiles to a body with no drama key (free play)", () => {
-    const { body } = svc().compile({ source: formSource() }) as { body: object };
-    expect(body).not.toHaveProperty("drama");
+  it("a form with no drama key compiles to the conservative default for its three actors (see the default block tests below)", () => {
+    const { body } = svc().compile({ source: formSource() }) as { body: { drama?: { max_rung: number; may_target: string[][] }; drama_mode?: string } };
+    expect(body.drama?.max_rung).toBe(DEFAULT_SCENE_MAX_RUNG);
+    expect(body.drama?.may_target).toHaveLength(6);
+    expect(body.drama_mode).toBe("default");
   });
 
   it("[SCN-5] compile refuses a bad block with 422 and the path; validate reports it as an error row", () => {

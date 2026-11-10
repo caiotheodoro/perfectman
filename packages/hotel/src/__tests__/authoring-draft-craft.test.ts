@@ -75,10 +75,14 @@ describe("AuthoringService.draft applies the drafting skill", () => {
     expect(compiled(svc, source).beats).toBeUndefined();
   });
 
-  it("a story with no physical moment is as before: no drama block, no beats", async () => {
+  it("a story with no physical moment ships as before (no drama block, no beats in the source); the compile gives the scene the conservative default", async () => {
     const svc = service(story([]));
     const { source } = await svc.draft({ brief: "uma contadora e o chefe, fim do expediente" });
     expect(source).not.toMatch(/drama:|beats:/);
-    expect(compiled(svc, source).drama).toBeUndefined();
+    const body = compiled(svc, source);
+    expect(body.drama).toMatchObject({ max_rung: 4, may_die: [], permadeath: false });
+    expect(body.drama?.may_target).toHaveLength(6);
+    expect(body.drama_mode).toBe("default");
+    expect(body.beats).toBeUndefined();
   });
 });

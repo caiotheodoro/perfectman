@@ -1,6 +1,6 @@
 import type { ActionEmotions, AvatarState } from "@perfectman/shared";
 import { resolveRunDrama } from "../authoring/scenario-drama.js";
-import type { ScenarioDrama } from "../authoring/scenario-drama.js";
+import type { DramaMode, ScenarioDrama } from "../authoring/scenario-drama.js";
 import { validateActCmd } from "../director/act-cmd.js";
 import type { ActSend } from "../director/director-client.js";
 import type { Dialect, DramaSession } from "../director/dialect.js";
@@ -118,7 +118,7 @@ export type Rig = {
   recorded: Array<{ dir: string; room: string | undefined; kind: string; data: Record<string, unknown> }>;
 };
 
-export function makeRig(o: { block?: ScenarioDrama; tuning?: DramaTuning; resumed?: boolean; session?: DramaSession | null; noState?: boolean; deps?: Partial<DramaDirectorDeps> } = {}): Rig {
+export function makeRig(o: { block?: ScenarioDrama; mode?: DramaMode; tuning?: DramaTuning; resumed?: boolean; session?: DramaSession | null; noState?: boolean; deps?: Partial<DramaDirectorDeps> } = {}): Rig {
   const clock = new ManualClock();
   const link = new FakeLink();
   const world = new ScriptWorld();
@@ -128,7 +128,7 @@ export function makeRig(o: { block?: ScenarioDrama; tuning?: DramaTuning; resume
     clock,
     link,
     world,
-    scenario: resolveRunDrama(o.block ? { drama: o.block } : {}),
+    scenario: resolveRunDrama({ ...(o.block ? { drama: o.block } : {}), ...(o.mode ? { drama_mode: o.mode } : {}) }),
     session: o.session === undefined ? SESSION : o.session,
     record: (d, room, kind, data) => void recorded.push({ dir: d, room, kind, data }),
     ...(o.tuning ? { tuning: o.tuning } : {}),

@@ -43,9 +43,11 @@ export type ScenarioForm = {
   model?: string;
   /**
    * What the scene may do to people (act-contract.md section 7): the ladder ceiling, who may be hit or killed, permadeath. Refs are cast
-   * names, `@human` is any human who opted in. Absent is free play; `{}` is free play plus authored skips. Compiled into the body's `drama`.
+   * names, `@human` is any human who opted in. Absent is the conservative default for a scene of two or more actors (glare, insult, shove and slap
+   * between them, no punch, no kill, nobody dies: `defaultSceneDrama`); `{}` is the contract's free play plus authored skips; `"off"` (or `false`)
+   * is no act of any kind. Compiled into the body's `drama` (and `drama_mode` for the default and off).
    */
-  drama?: ScenarioFormDrama;
+  drama?: ScenarioFormDrama | "off" | false;
   /**
    * The scene's script (errata P1-05, P4-01): authored acts and scene cuts at a second of the run, refs by cast name. Compiled into the body's
    * `beats`. A cut here is what SCN-6 asks of a scene that can kill.

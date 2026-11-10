@@ -14,7 +14,7 @@ import {
   updateMemory,
   validateActCmd,
 } from "@perfectman/hotel/drama";
-import type { ActSend, Clock, DramaDecision, DramaFrame, DramaFrameSink, DramaLink, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
+import type { ActSend, Clock, DramaDecision, DramaFrame, DramaFrameSink, DramaLink, DramaMode, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
 import { BodyIntentSchema } from "@perfectman/shared";
 import type { ActVerb, AgentState, BlockedReason, BodyCommand, BodyHandleMap, BodyIntent, Tile } from "@perfectman/shared";
 import { extractDramaEvents } from "../drama/index.js";
@@ -72,6 +72,8 @@ export type SimConfig = {
   states: ReadonlyMap<string, AgentState>;
   /** The scenario's `drama` block (refs are the actors' refs). Absent: free play. */
   drama?: ScenarioDrama;
+  /** The body's `drama_mode`: `default` for the block a scene with none is given, `off` for `drama: off` (then `drama` is the off block and the director starts no act). */
+  dramaMode?: DramaMode;
   /** Drama off for the run: no director, no session, the planner exactly as it was. Default on. */
   dramaOn?: boolean;
   /** The scenario's script as the body carries it (`ScenarioBeat`, refs are the actors' refs); played by the production `BeatPlayer`, with the run's walker for a beat that starts `too_far`. Absent: no script. */
@@ -291,7 +293,7 @@ export function runDramaSim(config: SimConfig): SimResult {
   };
 
   const world = mirrorWorld(space, () => actorRefs, () => grid.now());
-  const director = new DramaDirector({ run: RUN, clock, link, world, scenario: resolveRunDrama(config.drama ? { drama: config.drama } : {}), session: dramaOn ? SESSION : null, ...(config.tuning ? { tuning: config.tuning } : {}) });
+  const director = new DramaDirector({ run: RUN, clock, link, world, scenario: resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}) }), session: dramaOn ? SESSION : null, ...(config.tuning ? { tuning: config.tuning } : {}) });
 
   /** The port the planner asks, recording every answer so a proposal's fate is read, not guessed. */
   const asked: Array<{ actor: number; proposed: boolean; decision: DramaDecision }> = [];

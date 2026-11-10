@@ -28,6 +28,8 @@ export type ReplayManifest = {
     links: Record<string, { model: string; tier: ModelTier }>;
   };
   counters: Record<string, number>;
+  /** The scenario's drama as the run enforced it: where the block came from (`authored`, `default`, `off`, `free_play`) and what it allowed. */
+  drama?: { source: string; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean };
   /** A pulse did not drain before teardown, as in the HTTP controller's manifest. */
   dirty?: true;
   files: Record<string, string>;

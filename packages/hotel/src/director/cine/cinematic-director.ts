@@ -385,7 +385,7 @@ export class CinematicDirector {
     // A held act that is not filmed still happens (late, off camera); only a stop discards it.
     if (why !== "stopped" && this.heldActs.has(item.id)) this.release(item.id);
     this.held.delete(item.id);
-    this.track.add({ t: this.t(), k: "drop", beat: item.id, why });
+    this.track.add({ t: this.t(), k: "drop", beat: item.id, why, item: item.kind });
   }
 
   private armIdle(): void {
