@@ -490,8 +490,12 @@ export class LlmChain {
         const reason = describeError(err);
         attempts.push({ link: s.link.name, outcome: "error", reason, latencyMs: clock.now() - started });
         this.tap?.({ link: s.link.name, agentId, prompt: sent, outcome: "error", latencyMs: clock.now() - started, error: reason });
-        if (err instanceof LinkUnavailableError) this.coolDown(s, err);
-        else if (overflow) {
+        if (err instanceof LinkUnavailableError) {
+          this.coolDown(s, err);
+          // A half-open trial that ends in a spent quota or a refused key must still settle the breaker: left half-open,
+          // `skipReason` passes the link over as `breaker_open` for the rest of the run, even after its cooldown.
+          if (s.trial) s.breaker.observe(this.probeEvent(false));
+        } else if (overflow) {
           // The link's real window is smaller than the budget assumed: remember it, and do not blame its health.
           s.inputBudget = Math.max(256, Math.min(s.inputBudget, sent.inputTokensEstimate - 1));
           variants.delete(s);
