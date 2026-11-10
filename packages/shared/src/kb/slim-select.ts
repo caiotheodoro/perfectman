@@ -21,6 +21,8 @@ export type SlimQuery = {
   /** At most this many beats from one work while another work can fill the slot. Default 1. */
   maxPerWork?: number;
   exclude?: ReadonlySet<string>;
+  /** Works (indexes into `works`) to leave out, so several asks in one prompt draw on different plays. */
+  excludeWorks?: ReadonlySet<number>;
   /** Only beats that have a quip (the runtime style lines need one). */
   needQuip?: boolean;
 };
@@ -36,6 +38,8 @@ export const SLIM_WEIGHTS = {
   emotion: 0.75,
   boundaryOk: 0.5,
   confidence: 0.25,
+  /** Up to this for an excerpt of 300 characters or more: a two-line stub teaches less than a scene. */
+  richness: 0.3,
   /** Per step of cast distance, up to three steps. */
   castStep: 0.4,
 } as const;
@@ -89,10 +93,10 @@ export function selectSlimBeats(kb: SlimKb, query: SlimQuery): SlimPick[] {
   const tactic = slimTacticOf(query.tactic);
   const wantGroup = tactic === undefined ? undefined : kb.groups[tactic];
   const maxPerWork = Math.max(1, Math.floor(query.maxPerWork ?? 1));
-  const usable = all.filter((b) => !query.exclude?.has(b.id) && (!query.needQuip || b.quip !== undefined));
+  const usable = all.filter((b) => !query.exclude?.has(b.id) && !query.excludeWorks?.has(b.work) && (!query.needQuip || b.quip !== undefined));
 
   const score = (b: SlimBeat): number => {
-    let s = SLIM_WEIGHTS.confidence * b.confidence - SLIM_WEIGHTS.castStep * Math.min(3, Math.abs(b.cast - query.cast));
+    let s = SLIM_WEIGHTS.confidence * b.confidence + SLIM_WEIGHTS.richness * Math.min(1, b.excerpt.length / 300) - SLIM_WEIGHTS.castStep * Math.min(3, Math.abs(b.cast - query.cast));
     if (language !== undefined && b.language === language) s += SLIM_WEIGHTS.language;
     if (tactic !== undefined) {
       if (b.tactic === tactic) s += SLIM_WEIGHTS.tacticExact;
