@@ -7,6 +7,7 @@
  * everything crosses a JSON boundary anyway, so the shared shapes stay at the
  * level the UI actually reads.
  */
+import type { DraftBeat } from "./draft-beats.js";
 
 export type DiagnosticLevel = "error" | "warning" | "info";
 
@@ -114,7 +115,15 @@ export type StoryDraft = {
     voice: string;
     /** Things they would say, in their own register. */
     lines: string[];
+    /** What stands in the way of the goal, and what they do about it. */
+    obstacle?: string;
+    method?: string;
+    /** Who holds the room when the scene opens, and whether that reverses by its peak. */
+    standing?: "high" | "low";
+    flips?: boolean;
   }>;
+  /** The scene's script by cast name, already repaired (`repairBeats`): acts from the 18 verbs and cuts, at a second of the run. Absent when nothing physical happens. */
+  beats?: DraftBeat[];
 };
 
 /** `POST /api/draft`. The key is used for this one call and never kept. */

@@ -7,7 +7,7 @@ import {
   loadPresets,
   StoryDraftError,
 } from "@perfectman/server/hotel";
-import type { CompileResult, Diagnostic } from "@perfectman/server/hotel";
+import type { CompileResult, Diagnostic, StoryDraft } from "@perfectman/server/hotel";
 import { createHash } from "node:crypto";
 import type { AutolookRequest, AutolookResponse, CompileResponse, ValidateRequest, ValidateResponse, PresetList, PathMessage } from "../director/index.js";
 import type { LlmEnv } from "../config.js";
@@ -200,13 +200,31 @@ export class AuthoringService {
         },
         this.deps.fetchImpl,
       );
-      return { source: makeBundle(draftToFiles(story)) };
+      return { source: this.draftSource(story) };
     } catch (err) {
       if (err instanceof StoryDraftError) {
         throw err.status === 422 ? new AuthoringError(400, "bad_request", err.message) : new AuthoringError(503, "llm_unavailable", err.message);
       }
       throw err;
     }
+  }
+
+  /**
+   * The drafted story as the bundle the builder loads. A draft with a script is compiled here the way a loaded scene is: if the loader
+   * refuses it, or the scene's own block would veto a beat or the scene could kill with no cut, the script is dropped and the story ships
+   * without it (free play). `repairBeats` already made that unlikely; this is the proof, not the repair.
+   */
+  private draftSource(story: StoryDraft): string {
+    const source = makeBundle(draftToFiles(story));
+    if (!story.beats?.length) return source;
+    try {
+      const { result, dramaWarnings } = this.compileSource(source);
+      if (result.ok && !dramaWarnings.some((w) => /drama\.(beat_vetoed|no_scene_cut)/.test(w.message))) return source;
+    } catch {
+      // The loader refused the script: fall through to the story without it.
+    }
+    const { beats: _script, ...plain } = story;
+    return makeBundle(draftToFiles(plain));
   }
 
   /** Deterministic for now (hash of name and traits over the hotel's catalog); an LLM pass is Phase 3. */
