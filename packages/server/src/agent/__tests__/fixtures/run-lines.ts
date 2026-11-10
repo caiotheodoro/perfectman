@@ -175,3 +175,12 @@ export const RUN_LINES: Readonly<Record<number, readonly RunLine[]>> = {
 
 /** Run 60 (Heloísa, Otávio, Renato): the lines the dialogue-guard tests replay. */
 export const RUN60 = RUN_LINES[60]!;
+
+/** The last 10 lines of run 60 before second `upTo`, as the guards read the room: the lines of `me` marked as the actor's own. */
+export const roomOf = (upTo: number, me: string): Array<{ speaker: string; text: string; own: boolean }> =>
+  RUN60.filter((l) => l.t < upTo)
+    .slice(-10)
+    .map((l) => ({ speaker: l.name, text: l.text, own: l.name === me }));
+
+/** The line run 60 has at second `t`. */
+export const said = (t: number): string => RUN60.find((l) => l.t === t)!.text;
