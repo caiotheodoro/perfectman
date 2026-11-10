@@ -25,8 +25,21 @@ import {
   roomLinesHeard,
   type GuardKind,
 } from "../repetition-guard.js";
-import { OUTPUT_GUARD_MARKER } from "@perfectman/shared";
+import { OUTPUT_GUARD_MARKER, SCRIPT_NORMS, answersFirst, lengthOf, lowNovelty, motifRepeat, noveltyFloor, trimToCap, withoutQuestions } from "@perfectman/shared";
 import { findGarble, findOwnEcho, findPhraseLoop, findRoomEcho, type GarbleHit, type LoopHit } from "../echo-guard.js";
+import {
+  lengthRetryNote,
+  motifRetryNote,
+  noveltyRetryNote,
+  owedFor,
+  owedRetryNote,
+  reactionFor,
+  roomNameKeys,
+  scriptLang,
+  spokenLines,
+  lengthTargetOf,
+} from "../script-guard.js";
+import { whisperedBy } from "../whisper-note.js";
 import { answerWhisper } from "../../simulation/whisper-reply.js";
 import { promptVersionHash } from "../prompt-version.js";
 import { ActionIntentPromptBuilder } from "../action-intent-prompt-builder.js";
@@ -197,6 +210,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     // closed (see prompt-builder.ts) and the render entry stays singular.
     const built = PromptBuilder.build(input, ctx.profile, "action_intent", ctx.llmConfig.maxInputTokens, ctx.llmConfig.promptStyle);
     if (built.stallNudged) notify(ctx.repetitionPolicy?.onGuard, "stall_nudge");
+    if (built.owedNoted) notify(ctx.repetitionPolicy?.onGuard, "debt_note");
     return built;
   }
 
@@ -330,6 +344,19 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
     let garbleRetried = false;
     let retryKind: RetryKind = "none";
     let retriesAttempted = 0;
+
+    // The script checks (hotel runs, `policy.script`): a line over its word cap, a line that says nothing new or brings back a phrase or
+    // simile the room already carries, and a line that asks while its speaker owes an answer. Each is retried once, then repaired below.
+    const script = policy.script === true;
+    const lang = ctx.profile.language;
+    const target = script ? (ctx.profile.scriptPrompt?.length ?? lengthTargetOf(ctx.profile.messageLength, lang)) : undefined;
+    const spoken = script ? spokenLines(input.perceptionPacket) : [];
+    const roomNamesSet = script ? roomNameKeys(input, ctx.profile.displayName ?? "") : new Set<string>();
+    const noveltyFloorValue = script ? noveltyFloor(SCRIPT_NORMS, scriptLang(lang)) : 0;
+    const owedQuestionNow = script && !askedByPerson(input, agentId) && !whisperedBy(input) ? owedFor(input, ctx.profile.displayName ?? "") : undefined;
+    let lengthRetried = false;
+    let motifRetried = false;
+    let debtRetried = false;
     let totalInputTokens = providerResult.usage.inputTokens;
     let totalOutputTokens = providerResult.usage.outputTokens;
     const mainInputTokens = providerResult.usage.inputTokens;
@@ -368,6 +395,20 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         similarity(candidateIntent.visibleContent!, candidateIntent.privateMotiveSummary ?? "") >= 0.6) ||
         EXAMPLE_MOTIVES.some((m) => similarity(candidateIntent.visibleContent!, m) >= 0.7));
     const isRepeat = (candidateIntent: typeof intent): boolean => isOwnRepeat(candidateIntent) || isRoomRepeat(candidateIntent) || isThoughtSpoken(candidateIntent);
+    const tooLongOf = once((candidateIntent: typeof intent): { words: number; cap: number } | undefined => {
+      if (!target || !speaks(candidateIntent)) return undefined;
+      const words = lengthOf(candidateIntent.visibleContent!);
+      return words > target.cap ? { words, cap: target.cap } : undefined;
+    });
+    const motifOf = once((candidateIntent: typeof intent) => (script && speaks(candidateIntent) ? motifRepeat(candidateIntent.visibleContent!, spoken, roomNamesSet) : undefined));
+    const staleOf = once((candidateIntent: typeof intent) => (script && speaks(candidateIntent) ? lowNovelty(candidateIntent.visibleContent!, spoken, noveltyFloorValue) : undefined));
+    const dodgesOf = once((candidateIntent: typeof intent): boolean => owedQuestionNow !== undefined && speaks(candidateIntent) && !answersFirst(candidateIntent.visibleContent!));
+    // What would still earn a retry: each script check gets one, so a line that stays long after its retry is cut, not retried again.
+    const scriptBlocking = (candidateIntent: typeof intent): boolean =>
+      script &&
+      ((tooLongOf(candidateIntent) !== undefined && !lengthRetried) ||
+        ((motifOf(candidateIntent) !== undefined || staleOf(candidateIntent) !== undefined) && !motifRetried) ||
+        (dodgesOf(candidateIntent) && !debtRetried));
     // A line the guards refuse: a repeat, a signature phrase the actor keeps coming back to, or corrupt text.
     const isBad = (candidateIntent: typeof intent): boolean => isRepeat(candidateIntent) || loopOf(candidateIntent) !== undefined || garbleOf(candidateIntent) !== undefined;
     // One count per flagged candidate, by what it is first: corrupt, an echo of the actor, of the room, a signature phrase.
@@ -391,7 +432,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         : candidateIntent.personTargets.length > 0);
     const unusable = fallbackApplied && asked;
 
-    if (unusable || (!fallbackApplied && (isBad(intent) || parseResult.unresolvedTarget || aimedElsewhere(intent)))) {
+    if (unusable || (!fallbackApplied && (isBad(intent) || parseResult.unresolvedTarget || aimedElsewhere(intent) || scriptBlocking(intent)))) {
       // What the *first* attempt got wrong. A retry that fixes it clears every
       // in-band signal (`fallbackApplied` goes back to false, no llm_failure is
       // pushed), so without capturing it here the failed attempt vanishes and
@@ -401,6 +442,10 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         loopOf(intent) ? "phrase_loop" : null,
         garbleOf(intent) ? "garbled_text" : null,
         parseResult.unresolvedTarget ? "unresolved_target" : null,
+        !unusable && tooLongOf(intent) ? "too_long" : null,
+        !unusable && motifOf(intent) ? "motif_repeat" : null,
+        !unusable && !motifOf(intent) && staleOf(intent) ? "low_novelty" : null,
+        !unusable && dodgesOf(intent) ? "owed_answer" : null,
         unusable ? "unusable_answer" : null,
         !unusable && aimedElsewhere(intent) ? "aimed_elsewhere" : null,
       ].filter((v): v is string => v !== null);
@@ -416,6 +461,8 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           if (garbleRetried) break;
           garbleRetried = true;
         }
+        // A script check already retried once, and nothing else wrong: the line is repaired below, not asked for again.
+        if (script && attempt > 0 && !fallbackApplied && !(isBad(intent) || parseResult.unresolvedTarget || aimedElsewhere(intent) || scriptBlocking(intent))) break;
         const corrections: string[] = [];
         const garbled = garbleOf(intent);
         if (garbled) corrections.push(garbleRetryNote(garbled.token, ctx.profile.language));
@@ -435,6 +482,26 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
               ctx.profile.language,
             ),
           );
+        }
+        if (!fallbackApplied) {
+          const long = tooLongOf(intent);
+          if (long && !lengthRetried) {
+            lengthRetried = true;
+            corrections.push(lengthRetryNote(long.words, long.cap, lang));
+            notify(policy.onGuard, "len_retry");
+          }
+          const motif = motifOf(intent);
+          const stale = staleOf(intent);
+          if ((motif || stale) && !motifRetried) {
+            motifRetried = true;
+            corrections.push(motif ? motifRetryNote(motif.said, lang) : noveltyRetryNote(lang));
+            notify(policy.onGuard, motif ? "motif_retry" : "novelty_retry");
+          }
+          if (owedQuestionNow && dodgesOf(intent) && !debtRetried) {
+            debtRetried = true;
+            corrections.push(owedRetryNote(owedQuestionNow, lang));
+            notify(policy.onGuard, "debt_retry");
+          }
         }
         // The failed attempt joins "your last lines": the retry is shown it as said, and its angle rotates (compact hotel prompt only).
         const retryInput: AgentRuntimeInput =
@@ -483,7 +550,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
           });
           const retryParse = IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext);
           if (!retryParse.fallbackApplied) tally(retryParse.intent);
-          if (!retryParse.fallbackApplied && !isBad(retryParse.intent) && !retryParse.unresolvedTarget && !aimedElsewhere(retryParse.intent)) {
+          if (!retryParse.fallbackApplied && !isBad(retryParse.intent) && !retryParse.unresolvedTarget && !aimedElsewhere(retryParse.intent) && !scriptBlocking(retryParse.intent)) {
             parseResult = retryParse;
             intent = retryParse.intent;
             fallbackApplied = false;
@@ -535,6 +602,35 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         lastBlockedLoop = loopOf(intent);
         retryKind = "repeat_failed";
       }
+    }
+
+    // Script repairs of the line that is left. A person who asked this actor something gets their answer as it is (a repeat is what people
+    // give when asked twice); a line that still brings back a motif or says nothing new becomes the sentences of it that do not, or a short
+    // reaction; a line that still asks while it owes an answer loses its questions; and a line over the cap is cut at a sentence boundary.
+    if (script && !fallbackApplied && !repetitionBlocked && !garbleDropped && speaks(intent)) {
+      const original = intent.visibleContent!;
+      let text = original;
+      const reaction = (): string => reactionFor(`${agentId}|${ctx.pulseIndex}|${original.length}`, lang);
+      if (!asked && (motifOf(intent) !== undefined || staleOf(intent) !== undefined)) {
+        const kept = text
+          .split(/(?<=[.!?…])\s+/u)
+          .filter((sentence) => motifRepeat(sentence, spoken, roomNamesSet) === undefined)
+          .join(" ")
+          .trim();
+        const usable = kept !== "" && normalizeWords(kept).length >= 2 && lowNovelty(kept, spoken, noveltyFloorValue) === undefined;
+        text = usable ? kept : reaction();
+        notify(policy.onGuard, "motif_reaction");
+      }
+      if (owedQuestionNow && !asked && !answersFirst(text)) {
+        const rest = withoutQuestions(text);
+        text = rest !== "" ? rest : reaction();
+        notify(policy.onGuard, "debt_stripped");
+      }
+      if (target && lengthOf(text) > target.cap) {
+        text = trimToCap(text, target.cap, target.sentences);
+        notify(policy.onGuard, "len_trimmed");
+      }
+      if (text !== original) intent = { ...intent, visibleContent: text };
     }
 
     const retryPhrase =

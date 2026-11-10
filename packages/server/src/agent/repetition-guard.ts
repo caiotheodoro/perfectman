@@ -90,6 +90,13 @@ export type RepetitionPolicy = {
    * text gets one retry and is then dropped. Absent means none of that, the shipped behavior.
    */
   strict?: boolean;
+  /**
+   * Hotel mode: the script-likeness checks of `script-guard.ts`: a turn over the persona's word cap is retried once and then cut at a
+   * sentence boundary; a turn that says nothing new, or brings back a phrase or simile two of the room's last six turns already carry, is
+   * retried once and then swapped for a short reaction; an actor that owes an answer is told to answer first and may not ask. Absent means
+   * none of that, the shipped behavior.
+   */
+  script?: boolean;
   /** Called once per thing the guard did, so a run can count them (see {@link GuardKind}). A throw is swallowed. */
   onGuard?: (kind: GuardKind) => void;
 };
@@ -100,7 +107,25 @@ export type RepetitionPolicy = {
  * `repeat_blocked` and `garble_dropped` count turns that ended without a line because of them; `stall_nudge` counts
  * prompts that carried the scene-stall line; `held_repeat` is a held line dropped on release as a repeat.
  */
-export type GuardKind = "repeat_own" | "repeat_room" | "phrase_loop" | "garble" | "repeat_blocked" | "garble_dropped" | "stall_nudge" | "held_repeat";
+export type GuardKind =
+  | "repeat_own"
+  | "repeat_room"
+  | "phrase_loop"
+  | "garble"
+  | "repeat_blocked"
+  | "garble_dropped"
+  | "stall_nudge"
+  | "held_repeat"
+  // The script checks (`RepetitionPolicy.script`): a retry because a line was over its word cap, brought back a motif the room already had,
+  // said nothing new, or asked while it owed an answer; the line cut to the cap; the line swapped for a short reaction; the questions cut from it.
+  | "len_retry"
+  | "len_trimmed"
+  | "motif_retry"
+  | "novelty_retry"
+  | "motif_reaction"
+  | "debt_retry"
+  | "debt_stripped"
+  | "debt_note";
 
 /** Content words a line needs before it can be a copy of another person's (see `RepetitionPolicy.roomThreshold`). */
 export const ROOM_REPEAT_MIN_WORDS = 3;

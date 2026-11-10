@@ -1,4 +1,4 @@
-import type { AgentObjective, ScenarioContextBlock } from "@perfectman/shared";
+import type { AgentObjective, LengthTarget, ScenarioContextBlock } from "@perfectman/shared";
 
 // Re-exported for existing consumers (e.g. packages/server/src/__e2e__/4-persona-scenario.ts)
 // — the canonical definition now lives in @perfectman/shared so scenario
@@ -54,6 +54,12 @@ export type PersonaPromptProfile = {
    * perception already carries a body block is hotel mode as well.
    */
   hotelMode?: boolean;
+  /**
+   * Hotel runs with the script checks on (`RepetitionPolicy.script`): the length target in numbers, which the prompt states in place
+   * of the character count, and which also switches on the owed-answer note. Set by the runtime, never by a persona or a scenario;
+   * absent, the prompt is exactly what it always was.
+   */
+  scriptPrompt?: { length: LengthTarget };
   styleExamples: PersonaStyleExamples;
   privateMotivePatterns: string[];
   hardAvoids: string[];

@@ -71,6 +71,8 @@ export type BuiltPrompt = {
   retry?: "correction";
   /** Hotel drama mode: the room stalled and the decision carries the one-line nudge to commit to a move (scene-stall.ts). Unset otherwise. */
   stallNudged?: true;
+  /** Hotel runs with the script checks on: the decision carries the note that this actor owes a direct question an answer (script-guard.ts). Unset otherwise. */
+  owedNoted?: true;
 };
 
 export type AgentRuntimeOutput = {

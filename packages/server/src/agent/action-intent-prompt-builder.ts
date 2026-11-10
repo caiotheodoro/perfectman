@@ -1,4 +1,4 @@
-import { PromptSection, modelIntentPacketFieldContract, type AgentRuntimeInput, type CommittedEvent, type Memory } from "@perfectman/shared";
+import { PromptSection, modelIntentPacketFieldContract, trimExample, type AgentRuntimeInput, type CommittedEvent, type Memory } from "@perfectman/shared";
 import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@perfectman/engine";
 import { whisperMark, whisperNote, whisperedBy } from "./whisper-note.js";
 import { quoteUntrusted, safeDisplayName, sanitizeUntrustedText, UNTRUSTED_LIMITS } from "./untrusted-text.js";
@@ -9,6 +9,7 @@ import { bodyContractLines } from "./hotel-body-hint.js";
 import { dramaContractLines } from "./hotel-drama-hint.js";
 import { heardLines, renderCompactHotelPrompt } from "./hotel-compact-prompt.js";
 import { stallNoteFor } from "./scene-stall.js";
+import { lengthLine, owedNoteFor } from "./script-guard.js";
 
 /**
  * How the hotel prompt is written. "full" is the whole persona, output contract
@@ -155,6 +156,7 @@ export class ActionIntentPromptBuilder {
       ...(compact ? { promptStyle: "compact" as const } : {}),
       ...(trim ? { trim } : {}),
       ...(stallNoteFor(input, profile.language) !== undefined ? { stallNudged: true as const } : {}),
+      ...(profile.scriptPrompt && owedNoteFor(input, profile.displayName, profile.language) !== undefined ? { owedNoted: true as const } : {}),
     };
   }
 
@@ -338,7 +340,7 @@ export class ActionIntentPromptBuilder {
       .container("pressures", (s) => this.renderPressures(s, translatedEmotionalState, input.activeMotivations))
       .container("memories", (s) => this.renderMemories(s, perceptionPacket.relevantMemories))
       .container("actions", (s) => this.renderActions(s, input))
-      .container("decision", (s) => this.renderDecision(s, input, profile.language));
+      .container("decision", (s) => this.renderDecision(s, input, profile));
     const userPrompt = user.toString();
 
     return { systemPrompt, userPrompt };
@@ -665,7 +667,8 @@ export class ActionIntentPromptBuilder {
   }
 
   // The actionable decision question goes LAST (context first, decision last).
-  private static renderDecision(s: PromptSection, input: AgentRuntimeInput, language: PersonaPromptProfile["language"]): void {
+  private static renderDecision(s: PromptSection, input: AgentRuntimeInput, profile: PersonaPromptProfile): void {
+    const language = profile.language;
     s.heading("Decide now");
     const whisperer = whisperedBy(input);
     if (whisperer) s.raw(whisperNote(whisperer, language));
@@ -675,6 +678,9 @@ export class ActionIntentPromptBuilder {
     // Hotel drama only, and only while the room's last lines went over old ground (scene-stall.ts): one line, else nothing.
     const stalled = stallNoteFor(input, language);
     if (stalled) s.raw(stalled);
+    // Script checks on: a direct question that has waited two turns is answered first.
+    const owed = profile.scriptPrompt ? owedNoteFor(input, profile.displayName, language) : undefined;
+    if (owed) s.raw(owed);
     // Root-caused via a live capture + a static read of the prompt: nothing
     // anywhere told agents to take a creative risk, so a real transcript
     // read as a "sensible negotiation" — safe, agreeable, never provoking —
@@ -750,12 +756,19 @@ export class ActionIntentPromptBuilder {
    * the one place it reaches the model.
    */
   private static renderMessageLength(s: PromptSection, profile: PersonaPromptProfile): void {
+    // Script checks on (hotel runs): the length in words, not characters.
+    if (profile.scriptPrompt) {
+      s.list("Message length", [lengthLine(profile.scriptPrompt.length, profile.language)]);
+      return;
+    }
     if (profile.messageLength === undefined) return;
     s.list("Message length", [MESSAGE_LENGTH_GUIDANCE[profile.messageLength]]);
   }
 
   private static renderStyleExamples(s: PromptSection, profile: PersonaPromptProfile): void {
     const { styleExamples } = profile;
+    // Script checks on: no model line is longer than the answer it asks for.
+    const target = profile.scriptPrompt?.length;
     const groups = [
       ["default", styleExamples.default],
       ["animated", styleExamples.animated],
@@ -764,7 +777,7 @@ export class ActionIntentPromptBuilder {
     ] as const;
     const rendered = groups
       .filter(([, examples]) => examples.length > 0)
-      .map(([label, examples]) => `${label}: ${examples.map((example) => `"${example}"`).join(", ")}`);
+      .map(([label, examples]) => `${label}: ${examples.map((example) => `"${target ? trimExample(example, target) : example}"`).join(", ")}`);
     if (rendered.length === 0) return;
     s.raw("Tonal/register guide — these show HOW you express yourself (voice, rhythm, brevity), NOT phrases to repeat literally. Always say something substantive:");
     s.list(undefined, rendered);

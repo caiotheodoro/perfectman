@@ -1,9 +1,10 @@
-import { PromptSection } from "@perfectman/shared";
+import { PromptSection, trimExample } from "@perfectman/shared";
 import type { AgentRuntimeInput, BodyPerception, CommittedEvent } from "@perfectman/shared";
 import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@perfectman/engine";
 import { bodyContractLines, rotateSamples, seed } from "./hotel-body-hint.js";
 import { dramaCompactLines } from "./hotel-drama-hint.js";
 import { roomLinesHeard } from "./repetition-guard.js";
+import { lengthLine, owedNoteFor } from "./script-guard.js";
 import { stallNoteFor } from "./scene-stall.js";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 import { whisperNote, whisperedBy } from "./whisper-note.js";
@@ -93,9 +94,12 @@ function renderPersona(s: PromptSection, input: AgentRuntimeInput, profile: Pers
   const lines: string[] = [clip(profile.identityFrame, 330)];
   if (profile.coreTraits.length > 0) lines.push(`Traits: ${clip(profile.coreTraits.slice(0, 3).map(stop).join("; "), 150)}`);
   if (profile.voiceGuidelines.length > 0) lines.push(`Voice: ${profile.voiceGuidelines.slice(0, 3).map((v) => clip(stop(v), 110)).join(" | ")}`);
-  if (profile.messageLength !== undefined) lines.push(`Length: ${LENGTH[profile.messageLength]}.`);
+  // With the script checks on, the length is a number of words (and the samples below are cut to it); otherwise the persona's own wording.
+  const target = profile.scriptPrompt?.length;
+  if (target) lines.push(lengthLine(target, profile.language));
+  else if (profile.messageLength !== undefined) lines.push(`Length: ${LENGTH[profile.messageLength]}.`);
   const turnKey = `${profile.displayName}|${input.perceptionPacket.triggeringEvent?.id ?? input.perceptionPacket.visibleContextEvents.at(-1)?.id ?? ""}|${input.perceptionPacket.ownRecentUtterances.length}`;
-  const sample = rotateSamples(profile.styleExamples.default, turnKey, 2, heardLines(input)).map((e) => `"${clip(e, 90)}"`);
+  const sample = rotateSamples(profile.styleExamples.default, turnKey, 2, heardLines(input)).map((e) => `"${target ? trimExample(e, target) : clip(e, 90)}"`);
   if (sample.length > 0) lines.push(`Sounds like (tone, not lines to repeat): ${sample.join(", ")}`);
   if (profile.hardAvoids.length > 0) lines.push(`Never: ${profile.hardAvoids.slice(0, 2).map((a) => clip(a, 100)).join(" ")}`);
   const objective = profile.hiddenObjective;
@@ -259,7 +263,8 @@ export function angleFor(input: AgentRuntimeInput, lang: Lang, name: string): st
   return list[seed(key) % list.length]!;
 }
 
-function renderDecision(s: PromptSection, input: AgentRuntimeInput, lang: Lang, angle: string): void {
+function renderDecision(s: PromptSection, input: AgentRuntimeInput, profile: PersonaPromptProfile, angle: string): void {
+  const lang = profile.language;
   s.heading("Decide now");
   const whisperer = whisperedBy(input);
   if (whisperer) s.raw(whisperNote(whisperer, lang));
@@ -272,6 +277,9 @@ function renderDecision(s: PromptSection, input: AgentRuntimeInput, lang: Lang, 
   }
   const stalled = stallNoteFor(input, lang);
   if (stalled) s.raw(stalled);
+  // Script checks on: a direct question that has waited two turns is answered first.
+  const owed = profile.scriptPrompt ? owedNoteFor(input, profile.displayName, lang) : undefined;
+  if (owed) s.raw(owed);
   if (input.holdSuggested) {
     s.raw('Right now you are inclined to hold back; if this person would, choose "no_op" and put the real reason in privateMotiveSummary.');
   }
@@ -307,6 +315,6 @@ export function renderCompactHotelPrompt(
   const feelings = feelingLines(input);
   if (feelings.length > 0) user.container("state", (s) => s.heading("How you feel").list(undefined, feelings));
   if (perceptionPacket.relevantMemories.length > 0) user.container("memories", (s) => renderMemories(s, input));
-  user.container("actions", (s) => renderActions(s, input)).container("decision", (s) => renderDecision(s, input, profile.language, angleFor(input, profile.language, profile.displayName)));
+  user.container("actions", (s) => renderActions(s, input)).container("decision", (s) => renderDecision(s, input, profile, angleFor(input, profile.language, profile.displayName)));
   return { systemPrompt: system.toString(), userPrompt: user.toString() };
 }

@@ -11,6 +11,7 @@ import type { LLMConfig } from "../llm/llm-config.js";
 import type { LLMProvider } from "../llm/llm-provider.js";
 import type { AgentConfigRegistry } from "./agent-config-registry.js";
 import type { RepetitionPolicy } from "./repetition-guard.js";
+import { lengthTargetOf } from "./script-guard.js";
 
 export class AgentRuntime {
   constructor(
@@ -27,7 +28,9 @@ export class AgentRuntime {
     const startTime = Date.now();
     const agentId = input.agentId;
 
-    const profile = this.agentConfigRegistry?.getPromptProfile(agentId) ?? PersonaLoader.getProfile(agentId);
+    const registered = this.agentConfigRegistry?.getPromptProfile(agentId) ?? PersonaLoader.getProfile(agentId);
+    // Hotel runs with the script checks on: the persona's message length becomes a word target the prompt states in numbers.
+    const profile = this.repetitionPolicy?.script === true ? { ...registered, scriptPrompt: { length: lengthTargetOf(registered.messageLength, registered.language) } } : registered;
     const llmConfig =
       this.agentConfigRegistry?.getLLMConfig(agentId) ??
       PersonaLoader.getLLMConfig(agentId, this.configOverrides?.[agentId]);
