@@ -5,8 +5,8 @@ import type { Clock } from "../clock/clock.js";
 import type { ModelPrice } from "../config.js";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
-import { DEFAULT_LINK_TIMEOUT_MS, linkHeaders, linkInputBudget, linkPromptStyle, linkSampling, RETRY_TEMPERATURE_BOOST, RETRY_TEMPERATURE_MAX } from "./chain-config.js";
-import type { LlmLink, PromptStyle } from "./chain-config.js";
+import { linkHeaders, linkInputBudget, linkPromptStyle, linkSampling, linkTimeoutMs, modelTier, RETRY_TEMPERATURE_BOOST, RETRY_TEMPERATURE_MAX } from "./chain-config.js";
+import type { LlmLink, ModelTier, PromptStyle } from "./chain-config.js";
 import { CHAIN_DEADLINE_MS } from "./env.js";
 import { guardAnswer, hardenSystem, houseRules, noOpAnswer } from "./guards.js";
 import type { GuardHit, GuardReason } from "./guards.js";
@@ -74,7 +74,23 @@ export class LinkUnavailableError extends LLMError {
   }
 }
 
-export type ChainAttempt = { link: string; outcome: "ok" | "error" | "skipped"; reason?: string; latencyMs?: number };
+/** A link answered with a blank `content` (a thinking model that spent its answer budget thinking): no answer, so the chain moves on. */
+export class EmptyAnswerError extends LLMError {
+  constructor(readonly link: string) {
+    super(`Empty answer from link ${link}`);
+    this.name = "EmptyAnswerError";
+  }
+}
+
+export type ChainAttempt = {
+  link: string;
+  outcome: "ok" | "error" | "skipped";
+  /** Free text for the log and the exhausted error (`http 503`, `timeout`, `skipped` carries the skip reason). */
+  reason?: string;
+  /** The closed class of a failed call (see {@link failureClass}); absent for a guard hold, a silence and a skip. */
+  failure?: string;
+  latencyMs?: number;
+};
 
 /** Every link failed or was skipped. The run-level breaker counts this as one provider failure. */
 export class ChainExhaustedError extends LLMError {
@@ -92,6 +108,8 @@ export type ServedRecord = {
   agentId: string;
   /** Links passed over (failed or skipped) before this one answered. */
   passedOver: number;
+  /** Why each was passed over, in order: `<link>:<reason>`, the reason being a {@link failureClass} (`timeout`, `http_503`, `invalid_json`, ...), `guard <name>`, `silent on an addressed line`, or `skipped <why>`. */
+  passed: string[];
   latencyMs: number;
   linkLatencyMs: number;
   inputTokens: number;
@@ -103,9 +121,13 @@ export type ServedRecord = {
 export type LinkSnapshot = {
   name: string;
   model: string;
+  /** How far the link's model is trusted (its config, else derived from window and size). */
+  tier: ModelTier;
   /** Calls made to the link (failures included). Skips are not calls. */
   calls: number;
   failures: number;
+  /** Why the failed calls failed, by {@link failureClass}. */
+  failReasons: Partial<Record<string, number>>;
   served: number;
   skipped: Partial<Record<SkipReason, number>>;
   /** Answers the output guards held back (never delivered), by guard. */
@@ -191,6 +213,7 @@ type LinkState = {
   /** Answers of this link that came back as a near-duplicate (the retry that followed them says so). */
   repeats: number;
   served: number;
+  failReasons: Record<string, number>;
   skipped: Partial<Record<SkipReason, number>>;
   guarded: Partial<Record<GuardReason, number>>;
   ratioSum: number;
@@ -241,6 +264,7 @@ export class LlmChain {
       unfit: false,
       served: 0,
       repeats: 0,
+      failReasons: {},
       skipped: {},
       guarded: {},
       ratioSum: 0,
@@ -286,8 +310,10 @@ export class LlmChain {
         return {
           name: s.link.name,
           model: s.link.model,
+          tier: modelTier({ id: s.link.model, context: s.link.maxContextTokens, tier: s.link.tier }),
           calls: m.calls,
           failures: m.failures,
+          failReasons: { ...s.failReasons },
           served: s.served,
           skipped: { ...s.skipped },
           guarded: { ...s.guarded },
@@ -312,6 +338,7 @@ export class LlmChain {
     for (const l of snap.links) {
       out[`llm_served_${l.name}`] = l.served;
       out[`llm_failures_${l.name}`] = l.failures;
+      for (const [reason, n] of Object.entries(l.failReasons)) out[`llm_failreason_${l.name}_${reason}`] = n ?? 0;
       for (const [reason, n] of Object.entries(l.skipped)) out[`llm_skipped_${l.name}_${reason}`] = n ?? 0;
       for (const [reason, n] of Object.entries(l.guarded)) out[`llm_guard_${reason}`] = (out[`llm_guard_${reason}`] ?? 0) + (n ?? 0);
     }
@@ -428,8 +455,11 @@ export class LlmChain {
       const started = clock.now();
       const hasNext = order.indexOf(s) < order.length - 1;
       const sent = promptFor(s);
+      const seen = s.meter.snapshot();
       try {
-        const result = await this.tryLink(s, base, [args[0], args[1], sent], Math.min(s.link.timeoutMs ?? DEFAULT_LINK_TIMEOUT_MS, remaining), hasNext);
+        const result = await this.tryLink(s, base, [args[0], args[1], sent], linkTimeoutMs(s.link, seen.p95Ms, seen.latencySamples, remaining), hasNext);
+        // The transport errors on a missing `content` but not on a blank one, which would reach the actor as an unparsable no_op.
+        if (result.content.trim() === "") throw new EmptyAnswerError(s.link.name);
         const linkMs = result.latencyMs;
         attempts.push({ link: s.link.name, outcome: "ok", latencyMs: linkMs });
         this.tap?.({ link: s.link.name, agentId, prompt: sent, outcome: "ok", latencyMs: linkMs, content: result.content, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens });
@@ -471,7 +501,7 @@ export class LlmChain {
         this.lastServed.set(agentId, { link: this.states.indexOf(s), at: clock.now() });
         if (passedOver > 0) this.failovers++;
         const total = wastedMs + linkMs;
-        this.served.push({ at: clock.now(), link: s.link.name, model: s.link.model, agentId, passedOver, latencyMs: total, linkLatencyMs: linkMs, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, promptEstimate: sent.inputTokensEstimate, costUsd });
+        this.served.push({ at: clock.now(), link: s.link.name, model: s.link.model, agentId, passedOver, passed: attempts.filter((a) => a.outcome !== "ok").map((a) => `${a.link}:${a.outcome === "skipped" ? `skipped ${a.reason}` : a.failure ?? a.reason}`), latencyMs: total, linkLatencyMs: linkMs, inputTokens: result.usage.inputTokens, outputTokens: result.usage.outputTokens, promptEstimate: sent.inputTokensEstimate, costUsd });
         if (this.served.length > RECORDS) this.served.shift();
         return {
           ...result,
@@ -488,7 +518,9 @@ export class LlmChain {
         s.meter.recordFailure();
         const overflow = !(err instanceof LinkUnavailableError) && isContextOverflow(err);
         const reason = describeError(err);
-        attempts.push({ link: s.link.name, outcome: "error", reason, latencyMs: clock.now() - started });
+        const failure = failureClass(err);
+        s.failReasons[failure] = (s.failReasons[failure] ?? 0) + 1;
+        attempts.push({ link: s.link.name, outcome: "error", reason, failure, latencyMs: clock.now() - started });
         this.tap?.({ link: s.link.name, agentId, prompt: sent, outcome: "error", latencyMs: clock.now() - started, error: reason });
         if (err instanceof LinkUnavailableError) {
           this.coolDown(s, err);
@@ -759,6 +791,19 @@ function isTransient(err: unknown): boolean {
   if (err instanceof LinkUnavailableError || isContextOverflow(err)) return false;
   if (err instanceof LLMHttpError) return err.status >= 500;
   return err instanceof Error && /Invalid JSON response|network|fetch failed|ECONNRESET|socket|Empty/i.test(err.message);
+}
+
+/** What a failed call is counted under in the link's `failReasons`: a small closed set, so counters stay readable. */
+export function failureClass(err: unknown): string {
+  if (err instanceof LinkUnavailableError) return err.kind;
+  if (isContextOverflow(err)) return "context";
+  if (err instanceof LLMHttpError) return `http_${err.status}`;
+  if (!(err instanceof Error)) return "error";
+  if (err.name === "LLMTimeoutError") return "timeout";
+  if (/Invalid JSON response/i.test(err.message)) return "invalid_json";
+  if (/Empty/i.test(err.message)) return "empty";
+  if (/network|fetch failed|ECONNRESET|socket/i.test(err.message)) return "network";
+  return "error";
 }
 
 function describeError(err: unknown): string {
