@@ -73,6 +73,8 @@ export type BuiltPrompt = {
   stallNudged?: true;
   /** Hotel runs with the script checks on: the decision carries the note that this actor owes a direct question an answer (script-guard.ts). Unset otherwise. */
   owedNoted?: true;
+  /** Hotel runs with the script checks on: the decision carries the note that the room's last line was a move at this actor (a reveal, an accusation, a threat, an offer) to react to first. Unset otherwise. */
+  answerNoted?: true;
 };
 
 export type AgentRuntimeOutput = {

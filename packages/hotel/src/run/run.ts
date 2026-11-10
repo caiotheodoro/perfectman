@@ -55,7 +55,8 @@ import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { ScopedMirror } from "../space/scoped-mirror.js";
 import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
-import { NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
+import { GUARD_LOG_FILE, NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
+import { GuardLog, guardLogEnabled } from "./guard-log.js";
 import type { ReplayManifest } from "./artifacts.js";
 import { MEMORY_ID_PREFIX, PlayerMemory } from "./player-memory.js";
 import { SceneRecorder, SceneSpine, buildSceneSpine, sceneSpineEnabled, scriptGuardEnabled, scriptLikenessManifest } from "./scene-recorder.js";
@@ -261,6 +262,8 @@ export class Run {
   private readonly noOpStreak = new Map<string, number>();
   /** What the repetition and output guards did this run (rejected repeats, garbles, stall nudges, over-long lines), for the run's artifact counters. */
   private readonly guardHits = new Map<GuardKind, number>();
+  /** What the guards did to which line, streamed to `guard-log.jsonl` (guard-log.ts); absent when `PERFECTMAN_GUARD_LOG=0`. */
+  private guardLog: GuardLog | undefined;
   /** The actors' lines and moves as the script-likeness metrics read them: the run's score at the end, and the progress the scene spine gates on. */
   private scene: SceneRecorder | undefined;
   /** The spine of a scene with no authored beats (scene-recorder.ts); absent when the scene has beats, drama is off, or the cast is one. */
@@ -449,6 +452,10 @@ export class Run {
     const cfg = this.hotelConfig();
     for (const a of cfg.agents) this.agents.set(a.id, { name: a.promptProfile.displayName, spawned: false, gone: false });
     this.startedAt = clock.now();
+    if (guardLogEnabled()) {
+      this.guardLog = new GuardLog(join(hotel.dataDir, "runs", String(this.id), GUARD_LOG_FILE), () => clock.now() - this.startedAt, (err) =>
+        this.d.logger.warn("guard log write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
+    }
     link.trackRun(this.id);
 
     this.executor = new BodyExecutor({
@@ -546,7 +553,10 @@ export class Run {
     const options = {
       agentRuntimeFactory: (registry: ConstructorParameters<typeof AgentRuntime>[1]) => {
         this.registry = registry;
-        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7, strict: true, script: scriptGuardEnabled(), onGuard: (kind) => this.guardHits.set(kind, (this.guardHits.get(kind) ?? 0) + 1) });
+        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7, strict: true, script: scriptGuardEnabled(), onGuard: (kind, info) => {
+          this.guardHits.set(kind, (this.guardHits.get(kind) ?? 0) + 1);
+          this.guardLog?.record(kind, info);
+        } });
       },
       extraGateways: { hotel: () => this.gateway, breaker: () => this.breaker.gateway },
       hotel: hotelOptions,
@@ -1311,6 +1321,12 @@ export class Run {
       llm_debt_note: n("debt_note"),
       llm_debt_retry: n("debt_retry"),
       llm_debt_stripped: n("debt_stripped"),
+      // The dialogue guards: narration cut out of a line, a retry and a strike for words nobody said, a turn silenced instead of a filler said, a move noted to the actor it was made at.
+      llm_narration_stripped: n("narration_stripped"),
+      llm_quote_retry: n("quote_retry"),
+      llm_quote_struck: n("quote_struck"),
+      llm_guard_silenced: n("guard_silenced"),
+      llm_answer_note: n("answer_note"),
     };
   }
 
@@ -1746,6 +1762,7 @@ export class Run {
       if (this.cine && link.connected) await this.cine.stop(reason, reason === "completed");
       else await this.cine?.stop(reason, false);
       await this.trackSink?.flush();
+      await this.guardLog?.flush();
 
       // Walk-out (bounded). When the hotel ended the run it walks them out itself; a dead link cannot.
       if (!opts.byHotel && link.connected) await this.walkOut();

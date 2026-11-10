@@ -1,6 +1,7 @@
 import { CONTACT_VERBS, repairBeats } from "./draft-beats.js";
 import type { DraftBeat } from "./draft-beats.js";
 import type { UploadedFile } from "./run-api.types.js";
+import type { MessageLength } from "../script-likeness/guards.js";
 
 /** The persona compiler rejects fewer style examples than this. */
 const MIN_EXAMPLES = 3;
@@ -22,6 +23,8 @@ export type CharacterDraft = {
   obstacle?: string; method?: string;
   /** Who holds the room when the scene opens, and whether that reverses by its peak; written into `## Voice` as manner, never as a label. */
   standing?: "high" | "low"; flips?: boolean;
+  /** How long a line runs (`presence.messageLength`): `short` when a draft does not say, so a drafted person speaks in lines of a few words, not paragraphs. */
+  messageLength?: MessageLength;
 };
 export type RoomDraft = {
   title: string; situation: string; people: CharacterDraft[]; language?: "en" | "pt-BR"; /** `spite`: a pt-BR scene of contained hatred over one object, with no temperament calibration. */ tone?: "spite"; /** What the person typed, kept so it can be drafted again. */ idea?: string;
@@ -125,7 +128,7 @@ export function roomFiles(draft: RoomDraft): RoomFiles {
     const speed = person.speed && REPLY_DELAY_MS[person.speed];
     return { filename: `${ids[index]}.persona.md`, text: header({ personaId: ids[index], displayName: name,
       archetype: person.role, language: draft.language ?? "en", ...(spite ? {} : { calibrationFrom: role.calibration }), writingStyle: voice,
-      ...(speed ? { presence: { responseDelayMs: speed } } : {}) }) +
+      presence: { messageLength: person.messageLength ?? "short", ...(speed ? { responseDelayMs: speed } : {}) } }) +
       `\n## Identity\n${words.identity} ${name}. ${identity ? `${identity} ` : ""}${voice}\n\n## Voice\n${[voice, ...carriage].map(line => `- ${line}`).join("\n")}\n\n## Style Examples\n${lines.map(line => `- ${line}`).join("\n")}\n\n## Private Motives\n- ${prose(person.goal)}\n` +
       (triggers.length ? `\n## Triggers\n\n\`\`\`yaml\n${triggers.map(t => `- trigger: ${JSON.stringify(t.trigger)}\n  behavior: ${JSON.stringify(t.behavior)}`).join("\n")}\n\`\`\`\n` : "") };
   });

@@ -132,11 +132,13 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
   }, 20_000);
   it("counts rejected repeats in the run's counters, with every guard counter present", async () => {
     const same = "Mamão, isso tá frio mesmo! Sente aí junto e vamos criar calor de conversa.";
+    let modelCalls = 0;
     llm = createServer((req, res) => {
       let body = "";
       req.on("data", (c: Buffer) => (body += c.toString()));
       req.on("end", () => {
         const parsed = JSON.parse(body || "{}") as { max_tokens?: number };
+        if (parsed.max_tokens !== 1) modelCalls++;
         const intent = JSON.stringify({ intentType: "send_message", visibleContent: same, channelTarget: "", personTargets: [], privateMotiveSummary: "responder" });
         res.writeHead(200, { "content-type": "application/json" }).end(parsed.max_tokens === 1 ? "{}" : JSON.stringify({ choices: [{ message: { content: intent } }], usage: { prompt_tokens: 900, completion_tokens: 50 }, model: "small" }));
       });
@@ -156,8 +158,10 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
     await new Promise((r) => setTimeout(r, 600));
     b.fake.humanSay(12, 9, "Duda, tudo bem?");
     await waitFor(() => b.fake.chats.some((c) => c.text === same), "a line said", 8000);
+    const callsBefore = modelCalls;
     b.fake.humanSay(12, 9, "Duda, e o bar, abre quando?");
-    await waitFor(() => (sidecar?.manager?.getRun(7)?.llmChain()?.snapshot().links[0]?.served ?? 0) >= 8, "enough calls for a repeat", 10_000);
+    // The same line again is flagged when its answer arrives and retried once (a turn gets one retry with the script checks on): two calls past the second line.
+    await waitFor(() => modelCalls >= callsBefore + 2, "enough calls for a repeat", 10_000);
 
     b.fake.pmCommand(7, 12, "stop");
     await waitFor(() => b.fake.received.find((f) => f.t === "run_end"), "run_end", 6000);

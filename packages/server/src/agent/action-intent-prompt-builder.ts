@@ -9,7 +9,7 @@ import { bodyContractLines } from "./hotel-body-hint.js";
 import { dramaContractLines } from "./hotel-drama-hint.js";
 import { heardLines, renderCompactHotelPrompt } from "./hotel-compact-prompt.js";
 import { stallNoteFor } from "./scene-stall.js";
-import { lengthLine, owedNoteFor } from "./script-guard.js";
+import { answerNoteFor, lengthLine, owedNoteFor, speechOnlyLine } from "./script-guard.js";
 
 /**
  * How the hotel prompt is written. "full" is the whole persona, output contract
@@ -157,6 +157,7 @@ export class ActionIntentPromptBuilder {
       ...(trim ? { trim } : {}),
       ...(stallNoteFor(input, profile.language) !== undefined ? { stallNudged: true as const } : {}),
       ...(profile.scriptPrompt && owedNoteFor(input, profile.displayName, profile.language) !== undefined ? { owedNoted: true as const } : {}),
+      ...(profile.scriptPrompt && answerNoteFor(input, profile.displayName, profile.language) !== undefined ? { answerNoted: true as const } : {}),
     };
   }
 
@@ -321,7 +322,7 @@ export class ActionIntentPromptBuilder {
     const system = new PromptSection()
       .container("persona", (s) => this.renderPersona(s, profile, input.hasActed === true, hotel))
       .container("output_contract", (s) =>
-        this.renderOutputContract(s, profile.language, input.agentId, hotel, perceptionPacket.body !== undefined, input, profile.styleExamples.default),
+        this.renderOutputContract(s, profile.language, input.agentId, hotel, perceptionPacket.body !== undefined, input, profile.styleExamples.default, profile.scriptPrompt !== undefined),
       );
     if (perceptionPacket.ownRecentUtterances.length > 0) {
       system.container("no_repeat", (s) => this.renderNoRepeat(s, perceptionPacket.ownRecentUtterances));
@@ -481,6 +482,7 @@ export class ActionIntentPromptBuilder {
     withBody = false,
     input?: AgentRuntimeInput,
     styleSamples: readonly string[] = [],
+    script = false,
   ): void {
     // The exemplars pull the model's language: with English examples inside
     // a Portuguese scene, 21 of 50 motives in the first real read came out in
@@ -511,6 +513,8 @@ export class ActionIntentPromptBuilder {
         : []),
       `Never leak numeric values or technical code metrics in "visibleContent" or "privateMotiveSummary".`,
       `"visibleContent" is the final message only — never include your own drafting process in it (no "let me reformulate", "deep breath", "wait, better phrasing:", stray self-corrections, or a first attempt left in before a second one). If you reconsider your wording, do that silently and output only the version you land on.`,
+      // Script checks on: the say text is only what is said out loud; what the person does goes in the body block.
+      ...(script ? [speechOnlyLine(language, withBody)] : []),
       `For reply_to_message set "replyToEventId", and for react set "targetEventId", to one of the bracketed event handles from <events> (e.g. "e1") — copy the handle text exactly, do not invent an id or describe the message.`,
       `Use "memoryWrites" whenever what you believe about someone in this room changed — a promise, a slight, a dodge, a revealed preference, a plan — one line each, in first person ("I…"), grounded in what actually happened in <events>. Shape: "memoryWrites": [{"summary": ${pt ? '"o Rafa desviou de novo quando falei em cartório"' : '"Rafa dodged again when I brought up the notary"'}, "about": ["rafa"]}] — "about" lists who it is about, as their ids or names appear in <events>; the system fills the rest. If nothing you believe changed, leave "memoryWrites" empty.`,
       // Hotel mode only: a shape hint and two short examples, because the field list alone left small readers never writing a body block.
@@ -679,6 +683,8 @@ export class ActionIntentPromptBuilder {
     const stalled = stallNoteFor(input, language);
     if (stalled) s.raw(stalled);
     // Script checks on: a direct question that has waited two turns is answered first.
+    const answered = profile.scriptPrompt ? answerNoteFor(input, profile.displayName, language) : undefined;
+    if (answered) s.raw(answered);
     const owed = profile.scriptPrompt ? owedNoteFor(input, profile.displayName, language) : undefined;
     if (owed) s.raw(owed);
     // Root-caused via a live capture + a static read of the prompt: nothing

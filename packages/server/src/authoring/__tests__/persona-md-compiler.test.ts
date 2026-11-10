@@ -191,3 +191,18 @@ describe("compilePersonaMarkdown — nothing fails silently", () => {
     expect(result.language?.source).toBe("heuristic");
   });
 });
+
+describe("compilePersonaMarkdown — presence defaults", () => {
+  const bare = (presence: string) => `---\npersonaId: "ana"\ndisplayName: "Ana"\narchetype: "connector"\nlanguage: "pt-BR"\n${presence}---\n\n## Identity\nVocê é Ana.\n\n## Voice\n- Fala curto.\n\n## Style Examples\n- Oi.\n- Pode ser.\n- Hm, não sei.\n`;
+
+  it("a persona that says nothing about its message length speaks in short lines (it used to be medium, cap 40)", () => {
+    expect(compile(bare(""), "ana.persona.md").pack?.presenceProfile.messageLength).toBe("short");
+    expect(compile(bare("presence:\n  responseDelayMs: [500, 2000]\n"), "ana.persona.md").pack?.presenceProfile.messageLength).toBe("short");
+  });
+
+  it("an explicit length is respected, medium included", () => {
+    expect(compile(bare("presence:\n  messageLength: medium\n"), "ana.persona.md").pack?.presenceProfile.messageLength).toBe("medium");
+    expect(compile(bare("presence:\n  messageLength: long\n"), "ana.persona.md").pack?.presenceProfile.messageLength).toBe("long");
+  });
+});
+

@@ -43,7 +43,8 @@ describe("would the checks flag ordinary Portuguese chat?", () => {
   it("does flag the production shapes: run 57's question in the room, run 56's sentence and joke", () => {
     const room = PISTOLINHA.slice(0, 3).map((text) => ({ speaker: "Pistolinha", text }));
     expect(motifRepeat(PISTOLINHA[3]!, room, new Set())?.said).toBe("pato de perto");
-    expect(lowNovelty(IAN_SECOND, [{ speaker: "Ian", text: IAN_FIRST }, { speaker: "Caio", text: CAIO_JOKE }, { speaker: "Caio", text: CAIO_JOKE }], floor)).toBeDefined();
+    // Ian's own earlier sentence is what the novelty check reads (the actor's last 3 lines and the turn before), not the room's last 6.
+    expect(lowNovelty(IAN_SECOND, [{ speaker: "Ian", text: IAN_FIRST }, { speaker: "Caio", text: CAIO_JOKE }, { speaker: "Caio", text: CAIO_JOKE }], floor, { self: "Ian" })).toBeDefined();
     expect(motifRepeat(HELOISA[3]!, HELOISA.slice(0, 3).map((text) => ({ speaker: "Heloísa", text })), new Set())).toBeUndefined();
   });
 });
@@ -51,16 +52,16 @@ describe("would the checks flag ordinary Portuguese chat?", () => {
 describe("notes", () => {
   it("states the length in numbers, in the persona's language", () => {
     const pt = lengthLine(lengthTargetFor("short", "pt"), "pt-BR");
-    expect(pt).toContain("de 6 a 12 palavras");
-    expect(pt).toContain("nunca mais de 25 palavras");
+    expect(pt).toContain("de 5 a 12 palavras");
+    expect(pt).toContain("nunca mais de 22 palavras");
     expect(pt).toContain("2 frases");
-    expect(lengthLine(lengthTargetFor("short", "en"), "en")).toContain("8 to 16 words");
+    expect(lengthLine(lengthTargetFor("short", "en"), "en")).toContain("6 to 14 words");
     expect(lengthLine(lengthTargetFor("rapid_fire", "pt"), "pt-BR")).toContain("uma frase");
   });
 
   it("names the count, the motif and who asked", () => {
-    expect(lengthRetryNote(41, 25, "pt-BR")).toContain("41 palavras e o limite é 25");
-    expect(lengthRetryNote(41, 25, "en")).toContain("41 words and the limit is 25");
+    expect(lengthRetryNote(41, 22, "pt-BR")).toContain("41 palavras e o limite é 22");
+    expect(lengthRetryNote(41, 22, "en")).toContain("41 words and the limit is 22");
     expect(motifRetryNote("pato de perto", "pt-BR")).toContain('"pato de perto"');
     expect(noveltyRetryNote("en")).toContain("one new thing");
     expect(owedRetryNote({ text: "Cadê a chave?", asker: "Ana", age: 2 }, "pt-BR")).toContain("Ana te perguntou");
@@ -99,13 +100,13 @@ describe("the prompts", () => {
     const on = PromptBuilder.build(quiet, withScript, "action_intent", undefined, "compact").system;
     expect(off).toContain("Length: one or two short lines, under about 140 characters.");
     expect(on).not.toContain("under about 140 characters");
-    expect(on).toContain("de 6 a 12 palavras");
+    expect(on).toContain("de 5 a 12 palavras");
     for (const m of on.matchAll(/Sounds like \(tone, not lines to repeat\): (.*)/g)) for (const q of m[1]!.matchAll(/"([^"]+)"/g)) expect(lengthOf(q[1]!)).toBeLessThanOrEqual(12);
   });
 
   it("full: the message-length section carries the numbers", () => {
     const on = PromptBuilder.build(hotelInput(), withScript, "action_intent").system;
-    expect(on).toContain("de 6 a 12 palavras");
+    expect(on).toContain("de 5 a 12 palavras");
     expect(on).not.toContain("under about 140 characters");
     expect(PromptBuilder.build(hotelInput(), profile, "action_intent").system).toContain("under about 140 characters");
   });

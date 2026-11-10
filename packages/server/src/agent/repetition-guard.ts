@@ -97,8 +97,8 @@ export type RepetitionPolicy = {
    * none of that, the shipped behavior.
    */
   script?: boolean;
-  /** Called once per thing the guard did, so a run can count them (see {@link GuardKind}). A throw is swallowed. */
-  onGuard?: (kind: GuardKind) => void;
+  /** Called once per thing the guard did, so a run can count them (see {@link GuardKind}) and log what it did to which line ({@link GuardInfo}). A throw is swallowed. */
+  onGuard?: (kind: GuardKind, info?: GuardInfo) => void;
 };
 
 /**
@@ -125,7 +125,64 @@ export type GuardKind =
   | "motif_reaction"
   | "debt_retry"
   | "debt_stripped"
-  | "debt_note";
+  | "debt_note"
+  // The dialogue guards: a line cut down to its speech (narration out), a retry or a strike for a quotation nobody made, a turn silenced because no fresh
+  // line was left (instead of a filler said in its place), and the note that tells an actor a move was just made at it.
+  | "narration_stripped"
+  | "quote_retry"
+  | "quote_struck"
+  | "guard_silenced"
+  | "answer_note";
+
+/** What a guard did, for the run's guard log: who, to which text, and what the text became (empty for a turn that was silenced or a note that only was shown). */
+export type GuardInfo = { actor?: string; before?: string; after?: string };
+
+/**
+ * The rule names of a run's `guard-log.jsonl`, one per kind of thing a guard did to a line. The first fifteen are the audit's own list; `motif_strike`,
+ * `debt_strip` and `quote_retry` are the three repairs and retries the counters already had that the list left out.
+ */
+export type GuardLogRule =
+  | "len_retry"
+  | "len_trim"
+  | "motif_retry"
+  | "novelty_retry"
+  | "echo_own"
+  | "echo_room"
+  | "phrase_loop"
+  | "garble"
+  | "garble_drop"
+  | "debt_note"
+  | "debt_retry"
+  | "silenced"
+  | "narration_stripped"
+  | "quote_struck"
+  | "answer_note"
+  | "motif_strike"
+  | "debt_strip"
+  | "quote_retry";
+
+/** The log rule of each guard kind; a kind with no entry (`stall_nudge`, `held_repeat`) changes no line and is not logged. */
+export const GUARD_LOG_RULE: Readonly<Partial<Record<GuardKind, GuardLogRule>>> = {
+  repeat_own: "echo_own",
+  repeat_room: "echo_room",
+  phrase_loop: "phrase_loop",
+  garble: "garble",
+  garble_dropped: "garble_drop",
+  repeat_blocked: "silenced",
+  len_retry: "len_retry",
+  len_trimmed: "len_trim",
+  motif_retry: "motif_retry",
+  novelty_retry: "novelty_retry",
+  motif_reaction: "motif_strike",
+  debt_note: "debt_note",
+  debt_retry: "debt_retry",
+  debt_stripped: "debt_strip",
+  narration_stripped: "narration_stripped",
+  quote_retry: "quote_retry",
+  quote_struck: "quote_struck",
+  guard_silenced: "silenced",
+  answer_note: "answer_note",
+};
 
 /** Content words a line needs before it can be a copy of another person's (see `RepetitionPolicy.roomThreshold`). */
 export const ROOM_REPEAT_MIN_WORDS = 3;

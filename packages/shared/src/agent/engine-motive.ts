@@ -22,15 +22,21 @@ export const REPETITION_GUARD_MARKER = "Repetition guard";
 /** Marker the output guard writes into the motive of a line it dropped for corrupt text (hotel mode). */
 export const OUTPUT_GUARD_MARKER = "Output guard";
 
+/** Prefix of the silent `no_op` the provider chain's output guards return for an answer they held back (hotel/src/llm/guards.ts), whatever the reason in the brackets. */
+export const CHAIN_GUARD_MARKER = "Line held back by the output guard";
+
 /**
  * Prefixes written by `IntentParser.createFallback`, the retry-exhausted floor,
- * the budget and provider gates in `action-intent-step.ts`, and the repetition
- * guard.
+ * the budget and provider gates in `action-intent-step.ts`, the repetition
+ * guard, and the output guards (the actor loop's `Output guard:` and the chain's
+ * `Line held back by the output guard`), so an audit can tell a line a guard held
+ * back from a silence the actor chose.
  */
 export const ENGINE_MOTIVE_PREFIXES: readonly string[] = [
   "Fallback applied:",
   `${REPETITION_GUARD_MARKER}:`,
   `${OUTPUT_GUARD_MARKER}:`,
+  CHAIN_GUARD_MARKER,
   "LLM budget exceeded:",
   "Provider failed:",
   "Retry call failed.",

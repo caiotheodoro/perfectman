@@ -244,3 +244,84 @@ export function demandCues(words: readonly Word[], joined: string): string[] {
   for (const w of words) if (w.start && IMPERATIVE_STARTS.has(w.key)) out.push(`>${w.key}`);
   return out;
 }
+
+// ---- dialogue-guard lexicons: moves a line makes, narration verbs, attribution cues (appended; the lexicons above are untouched) ------
+
+/** A phrase list folded the way the lexicons are matched: each phrase as its folded words joined by single spaces. */
+const foldPhrases = (phrases: readonly string[]): string[] => phrases.map((p) => wordsOf(p).map((w) => w.key).join(" "));
+
+/** What a line does to the scene when it is a move someone must answer. */
+export type MoveKind = "reveal" | "accusation" | "threat" | "proposal";
+
+/**
+ * Phrases of the moves that are owed an answer (pt-BR and en, matched on the folded words of a line, whole words only). These are a superset
+ * of the benchmark's `isReveal` and `isAccusation` lists, which stay as they are; `threat` is the blackmail or ultimatum, `proposal` an offer or a deal.
+ */
+export const MOVE_PHRASES: Readonly<Record<MoveKind, readonly string[]>> = {
+  reveal: foldPhrases([
+    "eu vi", "vi você", "sei que você", "foi você que", "descobri", "a mão que", "eu sei o que você", "eu ouvi",
+    "i saw you", "i saw", "i know you", "i know that you", "it was you who", "i found out", "i discovered", "the hand that",
+  ]),
+  accusation: foldPhrases([
+    "falsificou", "forjou", "mentiu", "mente", "assinou", "roubou", "enganou", "traiu", "foi você", "fraudou", "desviou",
+    "you forged", "forged", "you signed", "you lied", "you stole", "you cheated", "you betrayed", "you deceived", "it was you", "lied to us",
+  ]),
+  threat: foldPhrases([
+    "senão eu", "ou eu", "ou você", "vou contar", "abro a boca", "conto pra todos", "conto pra mesa", "escândalo",
+    "or else", "or i", "or you", "i will tell", "i'll tell", "open my mouth", "tell everyone", "tell the table", "scandal",
+  ]),
+  proposal: foldPhrases([
+    "proponho", "proposta", "ofereço", "te pago", "eu pago", "pago o", "aceito", "fechado", "combinado", "prometo", "juro que", "topo", "te dou", "eu cubro",
+    "i propose", "my offer", "i offer", "i will pay", "i'll pay", "i accept", "deal", "i promise", "i swear",
+  ]),
+};
+
+/** "se não" is a threat only with "eu" and a verb of doing something to the other person close behind it ("se não pagar, eu conto"); alone it is ordinary speech ("se não for incômodo, eu queria um café"). */
+const SE_NAO_THREAT = / se nao (?:\p{L}+ ){0,3}eu (?:vou|conto|digo|falo|abro|chamo|levo|mostro|entrego|denuncio|publico|rasgo|saio|desisto) /u;
+const IF_NOT_THREAT = / if not (?:\p{L}+ ){0,3}i (?:will|ll|tell|call|show|expose|leave|quit) /u;
+
+/** The kinds of move a folded, space-joined line (see `joinedKeys`) makes, strongest first: threat, accusation, reveal, proposal. */
+export function movesOf(joined: string): MoveKind[] {
+  const out: MoveKind[] = [];
+  if (has(joined, MOVE_PHRASES.threat) || SE_NAO_THREAT.test(joined) || IF_NOT_THREAT.test(joined)) out.push("threat");
+  if (has(joined, MOVE_PHRASES.accusation)) out.push("accusation");
+  if (has(joined, MOVE_PHRASES.reveal)) out.push("reveal");
+  if (has(joined, MOVE_PHRASES.proposal)) out.push("proposal");
+  return out;
+}
+
+/** The move a line makes first, or undefined when it makes none. */
+export const majorMoveOf = (joined: string): MoveKind | undefined => movesOf(joined)[0];
+
+/**
+ * First-person singular present verbs a person uses to narrate a body ("olho pra ela", "boto um copo na mão dele"), folded: what a speech line
+ * must not carry, because the body channel says it. A sentence that opens with one is stage business, unless a cue below shows it is a promise or a condition.
+ */
+export const NARRATION_VERBS_PT: ReadonlySet<string> = new Set(
+  ("olho encaro fito espio " +
+    "boto pego levanto sento sorrio viro cruzo aponto bato puxo empurro abro fecho ponho dou tiro deixo ando caminho respiro suspiro cerro " +
+    "balanco aceno ajeito mordo engulo estendo agarro pisco encosto recuo avanco aproximo afasto ergo " +
+    "sirvo encho bebo enxugo arrumo esfrego cutuco belisco amasso inclino gargalho gemo murmuro sussurro " +
+    "tremo estremeco engasgo tusso pigarreio hesito assinto bufo resmungo rosno franzo arqueio esmurro chuto corro tropeco acaricio afago sacudo debruco ajoelho encolho estico bocejo estalo apalpo vasculho tateio tamborilo roco soluco").split(" "),
+);
+
+/** English narration openers: "I" and one of these verbs. */
+export const NARRATION_VERBS_EN: ReadonlySet<string> = new Set(
+  ("look stare glance gaze watch put grab pick stand sit smile turn cross point slam bang pull push lean nod shrug sigh breathe clench raise lower step " +
+    "walk pour hand slide tap fold wipe roll take fix pause hesitate shake tremble cough swallow wave blink wink fold lift drop toss throw hold squeeze rub scratch").split(" "),
+);
+
+/** A sentence with one of these in it says something, so it is not narration even when it opens with a body verb ("Dou o que você quiser", "Abro o cofre amanhã"). */
+export const SPEECH_CUES: ReadonlySet<string> = new Set(
+  ("se caso quando enquanto ate amanha depois hoje segunda vou vamos prometo juro posso pode quer quero quiser voce voces senhor senhora vc palavra " +
+    "if when until tomorrow tonight later will ll promise swear word can could would want you your").split(" "),
+);
+
+/** Verbs of saying and calling that attribute words to someone: a quotation or a claim that comes with one is checked against what the room said. */
+export const ATTRIBUTION_VERBS: ReadonlySet<string> = new Set(
+  ("disse diz dizia falou fala respondeu contou jurou prometeu afirmou gritou perguntou chamou repetiu mandou garantiu confessou admitiu " +
+    "said says told tells called asked replied swore promised shouted claimed repeated admitted confessed").split(" "),
+);
+
+/** Pronouns and forms of address a reported claim may start from, besides the names of the people in the room. */
+export const CLAIM_SUBJECTS: ReadonlySet<string> = new Set("ela ele eles elas voce vc senhor senhora tu she he they you".split(" "));

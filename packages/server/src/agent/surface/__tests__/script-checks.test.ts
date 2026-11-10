@@ -1,91 +1,14 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AgentRuntimeInput, CommittedEvent, LLMProviderResult } from "@perfectman/shared";
-import { lengthOf } from "@perfectman/shared";
-import type { LLMConfig } from "../../../llm/llm-config.js";
-import { llmBudget } from "../../../llm/llm-budget.js";
-import { ActionIntentStep } from "../action-intent-step.js";
-import type { StepRunContext } from "../llm-step.js";
-import type { GuardKind, RepetitionPolicy } from "../../repetition-guard.js";
+import { describe, expect, it } from "vitest";
+import { isEngineAuthoredMotive, lengthOf } from "@perfectman/shared";
 import { lengthTargetOf } from "../../script-guard.js";
-
-const answer = (visibleContent: string): LLMProviderResult => ({
-  content: JSON.stringify({ intentType: "send_message", channelTarget: "general", visibleContent, privateMotiveSummary: "Uma razão de verdade.", emotionDrivers: [], motivationDrivers: [] }),
-  usage: { inputTokens: 50, outputTokens: 10 },
-  latencyMs: 5,
-  model: "m",
-  requestedModel: "m",
-  routedModel: "m",
-  fallbackAttempts: 0,
-});
-
-let n = 0;
-const line = (actorId: string, senderName: string, content: string, extra: Record<string, unknown> = {}): CommittedEvent =>
-  ({
-    id: `evt-${++n}`,
-    simulationId: "sim-1",
-    channelId: "general",
-    actorId,
-    type: "message_sent",
-    payload: { content, senderName, ...extra },
-    createdAt: n,
-    pulseIndex: n,
-    sourceEventIds: [],
-    emotionalSalience: "low",
-    visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "public" },
-  }) as CommittedEvent;
-
-function input(visible: CommittedEvent[], own: string[] = [], trigger: CommittedEvent | null = null): AgentRuntimeInput {
-  return {
-    simulationId: "sim-1",
-    agentId: "bento",
-    budgetPriority: "normal",
-    availableActions: [
-      { intentType: "no_op", channelTargets: [], personTargets: [], blocked: false },
-      { intentType: "send_message", channelTargets: ["general"], personTargets: [], blocked: false },
-    ],
-    perceptionPacket: {
-      agentId: "bento",
-      triggeringEvent: trigger,
-      visibleContextEvents: visible,
-      eventHandles: {},
-      ownRecentUtterances: own,
-      involvedPeople: [],
-      relevantChannels: ["general"],
-      relevantMemories: [],
-      translatedEmotionalState: { moodDescription: "Neutral.", socialContext: "Calm.", relationalFlavors: [], pressureDescriptions: [], inhibitionDescriptions: [] },
-      availableActions: [],
-    },
-  } as AgentRuntimeInput;
-}
-
-const llmConfig = { providerType: "mock", modelName: "m", baseUrl: "http://localhost", temperature: 1, maxOutputTokens: 256, timeoutMs: 5000, retryCount: 0, responseFormatJson: true } as LLMConfig;
-const prompt = { system: "sys", user: "user", inputTokensEstimate: 25, purpose: "action_intent" as const, version: "v" };
-beforeEach(() => llmBudget.reset());
-
-const HOTEL: RepetitionPolicy = { maxRetries: 2, roomThreshold: 0.7, strict: true, script: true };
-const profileOf = (extra: Record<string, unknown> = {}) => ({ language: "pt-BR", displayName: "Bento", ...extra }) as StepRunContext["profile"];
-
-async function run(answers: string[], inp: AgentRuntimeInput, policy: RepetitionPolicy = HOTEL, profile = profileOf()) {
-  const generateIntent = vi.fn();
-  for (const a of answers) generateIntent.mockResolvedValueOnce(answer(a));
-  const seen: GuardKind[] = [];
-  const ctx: StepRunContext = { now: 1000, pulseIndex: 3, provider: { generateIntent } as StepRunContext["provider"], llmConfig, profile, prompt, repetitionPolicy: { ...policy, onGuard: (k) => seen.push(k) } };
-  const outcome = await new ActionIntentStep().execute(inp, ctx);
-  const value = outcome.ok ? outcome.value : outcome.fallback;
-  const system = (i: number): string => (generateIntent.mock.calls[i]![2] as { system: string }).system;
-  return { value, calls: generateIntent.mock.calls.length, system, seen, said: value.intent.visibleContent ?? "" };
-}
-
-// Invented lines throughout.
-const LONG = "Ian, você tá parado aí que nem lasanha de véspera: parece firme, mas por baixo tá tudo deslizando e ninguém percebe nada. Eu juro que vi o cofre aberto ontem à noite, perto da escada. Depois ele sumiu de repente.";
-const QUIET = [line("ana", "Ana", "Quem abriu a janela do corredor?"), line("caco", "Caco", "Foi o vento, ninguém abriu nada."), line("ana", "Ana", "O vento não gira maçaneta, Caco.")];
+import { HOTEL, LONG, QUIET, input, line, profileOf, run } from "./script-step-harness.js";
 
 describe("length", () => {
   it("retries a line over the cap once, naming its word count, and sends the short one", async () => {
-    expect(lengthOf(LONG)).toBeGreaterThan(25);
+    expect(lengthOf(LONG)).toBeGreaterThan(22);
     const r = await run([LONG, "Vi o cofre aberto ontem à noite."], input(QUIET));
     expect(r.calls).toBe(2);
-    expect(r.system(1)).toContain(`tinha ${lengthOf(LONG)} palavras e o limite é 25`);
+    expect(r.system(1)).toContain(`tinha ${lengthOf(LONG)} palavras e o limite é 22`);
     expect(r.system(1)).toContain("primeira frase");
     expect(r.said).toBe("Vi o cofre aberto ontem à noite.");
     expect(r.seen).toEqual(["len_retry"]);
@@ -95,10 +18,29 @@ describe("length", () => {
     const r = await run([LONG, LONG.replace("Ian,", "Caio,")], input(QUIET));
     expect(r.calls).toBe(2);
     expect(r.seen).toEqual(["len_retry", "len_trimmed"]);
-    expect(lengthOf(r.said)).toBeLessThanOrEqual(25);
+    expect(lengthOf(r.said)).toBeLessThanOrEqual(22);
     expect(r.said).toMatch(/[.!?…]$/);
     expect(r.said.startsWith("Caio, você tá parado")).toBe(true);
     expect(r.value.fallbackApplied).toBe(false);
+  });
+
+  it("ends a scripted 30-word candidate under the cap, with the retry as long as the first try", async () => {
+    const thirty = "Você pagou ontem à noite, mas a conta continua aberta no balcão, o Caco já cobrou duas vezes, e eu não vou esperar o seu aviso chegar, nem hoje, nunca.";
+    expect(lengthOf(thirty)).toBe(30);
+    const r = await run([thirty, thirty], input(QUIET));
+    expect(r.calls).toBe(2);
+    expect(lengthOf(r.said)).toBeLessThanOrEqual(lengthTargetOf("short", "pt-BR").cap);
+    expect(r.seen).toEqual(["len_retry", "len_trimmed"]);
+  });
+
+  it("respects an explicit medium length (cap 40) and holds an unmarked persona to short (cap 22)", async () => {
+    const thirty = "Você pagou ontem à noite, mas a conta continua aberta no balcão, o Caco já cobrou duas vezes, e eu não vou esperar o seu aviso chegar, nem hoje, nunca.";
+    const medium = await run([thirty], input(QUIET), HOTEL, profileOf({ messageLength: "medium" }));
+    expect(medium.calls).toBe(1);
+    expect(medium.said).toBe(thirty);
+    const unmarked = await run([thirty, thirty], input(QUIET));
+    expect(unmarked.calls).toBe(2);
+    expect(lengthOf(unmarked.said)).toBeLessThanOrEqual(22);
   });
 
   it("respects the persona's message length: a long talker may run to 60 words", async () => {
@@ -132,12 +74,28 @@ describe("motif and novelty", () => {
     expect(r.seen).toEqual(["motif_retry"]);
   });
 
-  it("swaps the line for a short reaction when the retry brings it back again", async () => {
+  it("goes quiet when the retry brings the motif back again: no filler is said in its place", async () => {
     const r = await run(["Um pato de perto não muda nada.", "Pato de perto, pato de perto, eu sei."], input(PATO));
     expect(r.calls).toBe(2);
-    expect(r.seen).toEqual(["motif_retry", "motif_reaction"]);
-    expect(r.said).toMatch(/^(Ah|Hm|Ué|Sei|Tá)\.$/);
-    expect(r.value.fallbackApplied).toBe(false);
+    expect(r.seen).toEqual(["motif_retry", "guard_silenced"]);
+    expect(r.value.intent.intentType).toBe("no_op");
+    expect(r.value.intent.visibleContent).toBeUndefined();
+    expect(r.value.intent.privateMotiveSummary).toMatch(/^Output guard: no fresh line/);
+    expect(isEngineAuthoredMotive(r.value.intent.privateMotiveSummary)).toBe(true);
+    expect(r.value.operatorEvents.some((e) => e.type === "llm_failure")).toBe(false);
+    expect(r.value.operatorEvents.some((e) => e.type === "intent_blocked")).toBe(true);
+  });
+
+  it("PERFECTMAN_FILLER_SILENCE=0 brings the old short reaction back", async () => {
+    process.env["PERFECTMAN_FILLER_SILENCE"] = "0";
+    try {
+      const r = await run(["Um pato de perto não muda nada.", "Pato de perto, pato de perto, eu sei."], input(PATO));
+      expect(r.seen).toEqual(["motif_retry", "motif_reaction"]);
+      expect(r.said).toMatch(/^(Ah|Hm|Ué|Sei|Tá)\.$/);
+      expect(r.value.fallbackApplied).toBe(false);
+    } finally {
+      delete process.env["PERFECTMAN_FILLER_SILENCE"];
+    }
   });
 
   it("keeps the sentences of a retried line that do not carry the motif", async () => {
@@ -153,12 +111,24 @@ describe("motif and novelty", () => {
   });
 
   it("retries a line that only gives the room back what it said", async () => {
-    const stale = [line("ana", "Ana", "A lasanha esfriou no balcão ontem."), line("caco", "Caco", "Ninguém comeu aquela lasanha, nem o pão."), line("ana", "Ana", "O balcão ficou sujo, o pão duro.")];
-    const echoey = "Ontem ninguém comeu aquela lasanha suja no balcão, nem o pão duro.";
+    // The check reads the turn right before and the actor's own last three lines: this one says again, in other words, what the turn before it said.
+    const stale = [line("ana", "Ana", "A lasanha esfriou no balcão ontem."), line("caco", "Caco", "Quanto custou aquele relógio do primo?"), line("ana", "Ana", "A lasanha suja ficou esquecida no balcão, ninguém comeu aquela porcaria.")];
+    const echoey = "Ninguém comeu aquela lasanha suja no balcão, mas o cheiro de vinagre e mofo continua ali agora.";
     const r = await run([echoey, "O cofre emprestado sumiu da sala dos fundos esta madrugada."], input(stale));
     expect(r.calls).toBe(2);
     expect(r.system(1)).toContain("só repete o que a sala acabou de ouvir");
     expect(r.seen).toEqual(["novelty_retry"]);
+  });
+
+  it("reads the actor's own last lines from the packet too, not only the events in view", async () => {
+    const mine = "O cofre emprestado sumiu da sala dos fundos esta madrugada, ninguém viu nada.";
+    const again = "Madrugada fria, cofre sumido, ninguém viu quem levou da sala dos fundos o cofre emprestado.";
+    const fresh = "Quem pagou a conta do bar foi o Caco, eu vi o recibo dobrado no bolso dele.";
+    const withOwn = await run([again, fresh], input(QUIET, [mine]));
+    expect(withOwn.seen).toEqual(["novelty_retry"]);
+    expect(withOwn.said).toBe(fresh);
+    // Without that own line in the packet nothing in view says it again.
+    expect((await run([again], input(QUIET))).calls).toBe(1);
   });
 
   it("delivers the line anyway to a person who just asked this actor something", async () => {
@@ -182,14 +152,20 @@ describe("question debt", () => {
     expect(r.seen).toEqual(["debt_retry"]);
   });
 
-  it("cuts the questions from a line that still dodges after its retry", async () => {
+  it("goes quiet when a line still dodges after its retry and nothing is left but questions", async () => {
     const r = await run(["Não sei. E você, onde estava?", "E a Bia, onde estava ontem à noite?"], input(OWED));
     // The first answer already answers first ("Não sei."), so nothing is retried for debt.
     expect(r.calls).toBe(1);
     expect(r.said).toBe("Não sei. E você, onde estava?");
     const r2 = await run(["E você, onde estava ontem à noite?", "E a Bia, onde estava ontem à noite?"], input(OWED));
-    expect(r2.seen).toEqual(["debt_retry", "debt_stripped"]);
-    expect(r2.said).toMatch(/^(Ah|Hm|Ué|Sei|Tá)\.$/);
+    expect(r2.seen).toEqual(["debt_retry", "guard_silenced"]);
+    expect(r2.value.intent.intentType).toBe("no_op");
+  });
+
+  it("keeps the statements of a line that still asks after its retry and drops its questions", async () => {
+    const r = await run(["E você, onde estava ontem à noite?", "Onde você estava, Ana? Eu não sei de chave nenhuma."], input(OWED));
+    expect(r.seen).toEqual(["debt_retry", "debt_stripped"]);
+    expect(r.said).toBe("Eu não sei de chave nenhuma.");
   });
 
   it("does not hold an actor to a question that is not yet two turns old, or that was not aimed at it", async () => {

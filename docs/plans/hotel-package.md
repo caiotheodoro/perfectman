@@ -149,7 +149,7 @@ Paused runs hold their actors in place; they do not walk out until `stopping`. "
 
 ### 6.4 Artifacts
 
-Per run, under `PERFECTMAN_DATA_DIR/runs/<runId>/` (the volume layout is owned by the hotel's `data-model.md` section 3): `events.jsonl` (the evicted and final event log, [ADR-0024](../adr/0024-multi-run-wall-clock-loop-and-bounded-event-reads.md)), `director.json` (cinematic director track), and `replay.json`, the manifest that ties the files together (scenario version sha256, final state, counters, stop reason, `dirty` when a pulse did not drain, as in [`run-controller.ts:295-312`](../../packages/server/src/http/run/run-controller.ts)). The sidecar registers them with `POST /internal/v1/runs/{run}/artifacts`. The hotel writes `frames.jsonl` itself and joins it at replay (D39).
+Per run, under `PERFECTMAN_DATA_DIR/runs/<runId>/` (the volume layout is owned by the hotel's `data-model.md` section 3): `events.jsonl` (the evicted and final event log, [ADR-0024](../adr/0024-multi-run-wall-clock-loop-and-bounded-event-reads.md)), `director.json` (cinematic director track), and `replay.json`, the manifest that ties the files together (scenario version sha256, final state, counters, stop reason, `dirty` when a pulse did not drain, as in [`run-controller.ts:295-312`](../../packages/server/src/http/run/run-controller.ts)). The sidecar registers them with `POST /internal/v1/runs/{run}/artifacts`. The hotel writes `frames.jsonl` itself and joins it at replay (D39). `guard-log.jsonl` (what the actor-loop guards did to which line, [script-likeness.md](script-likeness.md)) is beside them and in the manifest's `files` as `guard_log` when a guard acted; it stays on the volume for the operator and is not part of that registration.
 
 ## 7. HotelGateway
 

@@ -134,7 +134,8 @@ describe("the committed norms", () => {
 
 describe("length target and trimming", () => {
   it("maps the persona's message length, short by default", () => {
-    expect(lengthTargetFor(undefined, "pt")).toEqual({ aim: [6, 12], cap: 25, sentences: 2 });
+    expect(lengthTargetFor(undefined, "pt")).toEqual({ aim: [5, 12], cap: 22, sentences: 2 });
+    expect(lengthTargetFor("short", "en")).toEqual({ aim: [6, 14], cap: 28, sentences: 2 });
     expect(lengthTargetFor("rapid_fire", "pt").cap).toBeLessThan(lengthTargetFor("short", "pt").cap);
     expect(lengthTargetFor("long", "pt").cap).toBeGreaterThan(lengthTargetFor("medium", "pt").cap);
   });
