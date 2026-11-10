@@ -13,6 +13,8 @@ export { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld, DEFAULT_DRAM
 export type { BeatPlayerDeps, BeatReport, DramaDecision, DramaDirectorDeps, DramaLink, DramaTuning, DramaWorld, WorldAvatar } from "./director/drama/index.js";
 export { classifyHostility, readHostility } from "./director/drama/hostility.js";
 export type { HostilityKind, LineReading } from "./director/drama/hostility.js";
+export { SceneRecorder, SceneSpine, buildSceneSpine } from "./run/scene-recorder.js";
+export { SpineEscalation, spineEscalateEnabled, SPINE_ESCALATE_ENV } from "./run/spine-escalation.js";
 export { routeDramaFrame } from "./run/drama-frame-sink.js";
 export type { DramaFrameSink } from "./run/drama-frame-sink.js";
 export { isDramaFrame, DRAMA_HOTEL_TYPES } from "./director/drama-frames.js";
