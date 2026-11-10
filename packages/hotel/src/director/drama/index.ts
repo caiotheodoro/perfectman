@@ -22,5 +22,9 @@ export type {
 } from "./ports.js";
 export { DEFAULT_DRAMA_TUNING } from "./tuning.js";
 export type { DramaTuning } from "./tuning.js";
+export { pickEscalation } from "./escalation.js";
+export type { EscalationPick, EscalationQuery } from "./escalation.js";
+export { ProvocationLedger } from "./provocation.js";
+export type { HostileEvent, UnlockLevel, UnlockResult } from "./provocation.js";
 export { mirrorWorld } from "./world.js";
 export type { DramaWorld, WorldAvatar } from "./world.js";

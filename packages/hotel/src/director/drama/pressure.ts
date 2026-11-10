@@ -16,11 +16,24 @@ function read(driver: Driver, emotion: EmotionReading, relation: RelationReading
   return typeof raw === "number" ? clamp01(raw) * driver.weight : 0;
 }
 
-/** `v`: the max over the verb's drivers, each in [0, 1], the `rel.*` ones read toward the target (4.5). A verb with no driver has `v = 0`. */
+/** The slap: no unlock opens a rung above it (errata P8). The punch and the kill stay the model's or the author's. */
+export const UNLOCK_MAX_RUNG = 4;
+
+/** True when the scene spine has opened `verb`'s rung toward this person (errata P8). Off-ladder verbs are never opened. */
+function unlockedFor(verb: ActVerb, relation: RelationReading | undefined): boolean {
+  const rung = ladderRung(verb);
+  return rung !== undefined && relation?.unlocked !== undefined && rung <= Math.min(relation.unlocked, UNLOCK_MAX_RUNG);
+}
+
+/**
+ * `v`: the max over the verb's drivers, each in [0, 1], the `rel.*` ones read toward the target (4.5). A verb with no driver has `v = 0`. A rung the scene spine opened
+ * toward this person (errata P8) reads `provocation.unlock.volition`: the slap has no driver the cast's talk can reach, so this is how a heated pair gets to it.
+ */
 export function volition(verb: ActVerb, emotion: EmotionReading, relation: RelationReading | undefined, tuning: DramaTuning): number {
   const drivers = tuning.drivers[verb] ?? [];
   let v = 0;
   for (const driver of drivers) v = Math.max(v, read(driver, emotion, relation));
+  if (unlockedFor(verb, relation)) v = Math.max(v, tuning.provocation.unlock.volition);
   return clamp01(v);
 }
 
@@ -44,6 +57,7 @@ export function hasGrievance(verb: ActVerb, relation: RelationReading | undefine
   if (!relation) return false;
   // What was said to the actor opens the grievance for the first rungs only (insult, shove): a slap and above still need a real resentment (errata P7).
   if ((relation.provocation ?? 0) >= tuning.provocation.grievanceAt && rung <= tuning.provocation.maxRung) return true;
+  if (unlockedFor(verb, relation)) return true;
   if (relation.resentment >= tuning.grievance.resentment) return true;
   return relation.lastNegativeAt !== null && relation.lastNegativeAt !== undefined && now - relation.lastNegativeAt <= tuning.grievance.windowMs;
 }

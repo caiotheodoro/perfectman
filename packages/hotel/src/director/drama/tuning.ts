@@ -1,5 +1,6 @@
 import type { ActionEmotions, ActVerb, RelationalState, SocialEmotions } from "@perfectman/shared";
 import { VOCAB_CONSTANTS } from "../verb-vocab.generated.js";
+import type { HostilityKind } from "./hostility.js";
 
 /**
  * Everything the drama director tunes, as data (verb-bible 4.3 and 4.5 say the numbers are seeds `[I]` to be tuned, so
@@ -36,7 +37,29 @@ export type DramaTuning = {
    * `maxRung` (never a slap or above: those keep needing a real resentment). The verbs it drives are in `drivers` with the weights that keep a single line short
    * of the shove (`gain.insult` x the shove's weight is below the lowest shove threshold, 0.5).
    */
-  provocation: { gain: Readonly<Record<"insult" | "threat" | "challenge" | "mockery", number>>; cap: number; windowMs: number; minGapMs: number; behindBack: number; grievanceAt: number; maxRung: number };
+  provocation: {
+    gain: Readonly<Record<HostilityKind, number>>;
+    cap: number;
+    windowMs: number;
+    minGapMs: number;
+    behindBack: number;
+    grievanceAt: number;
+    maxRung: number;
+    /**
+     * Words that only report someone else's ("ela te chamou de burro", errata P8) are not the speaker's insult and never a grievance against the messenger. When the
+     * alleged speaker is named and is a `may_target` pair of the person the line is said to, that person's grievance against the alleged speaker grows by this much.
+     */
+    reportedGain: number;
+    /**
+     * What the scene spine may open (errata P8, `ProvocationLedger.unlock`). The spine's turn and decision steps call it when the pair has been heard heating up: the
+     * evidence is the hostile lines of the last `windowMs` (counted lines of the pair, in either direction, at least one of them an insult, a threat, blackmail or an
+     * accusation by the person the aggressor holds it against); `shoveEvents` of them open the shove at the turn, `slapEvents` of them (or a shove already thrown by the
+     * pair) open the slap at the decision. An unlock lasts `holdMs` (renewed while the evidence stands), writes `provocation` as the pair's grievance and makes the
+     * volition of the unlocked rungs and below `volition` (the one dialogue-driven reading the slap has) and opens their grievance: the climb itself is the director's
+     * (one rung per beat, `origination.climb`, the witness rule, the spacing and the cooldown). Never the punch or the kill, never a human.
+     */
+    unlock: { windowMs: number; holdMs: number; shoveEvents: number; slapEvents: number; provocation: number; volition: number };
+  };
   /** LAD-10: at most `maxActors` actors, or `castFraction` of the cast if that is fewer (never fewer than one), hold a rung of `minRung` or more at once. */
   contagion: { minRung: number; maxActors: number; castFraction: number };
   /** Which tendencies drive which verb. A verb with no driver is never started by emotion alone: `kill` is authored (LAD-5). */
@@ -114,7 +137,17 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
   patienceBoost: 0.15,
   momentumGain: 0.1,
   grievance: { minRung: 2, resentment: 0.5, windowMs: 300_000 },
-  provocation: { gain: { insult: 0.5, threat: 0.5, challenge: 0.3, mockery: 0.3 }, cap: 0.9, windowMs: 120_000, minGapMs: 8000, behindBack: 0.5, grievanceAt: 0.3, maxRung: 3 },
+  provocation: {
+    gain: { insult: 0.5, threat: 0.5, blackmail: 0.5, accusation: 0.4, challenge: 0.3, mockery: 0.3 },
+    cap: 0.9,
+    windowMs: 120_000,
+    minGapMs: 8000,
+    behindBack: 0.5,
+    grievanceAt: 0.3,
+    maxRung: 3,
+    reportedGain: 0.15,
+    unlock: { windowMs: 90_000, holdMs: 90_000, shoveEvents: 2, slapEvents: 3, provocation: 0.85, volition: 0.95 },
+  },
   contagion: { minRung: 3, maxActors: 2, castFraction: 1 / 3 },
   drivers: {
     glare: [d("act.jealousInspection"), d("act.resentfulColdness"), d("social.jealousy"), d("social.envy"), d("rel.envy"), d("rel.provocation")],

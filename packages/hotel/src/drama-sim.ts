@@ -11,6 +11,8 @@ export { plan, updateMemory } from "./embodiment/plan.js";
 export type { PlanInput, PlannedCommand } from "./embodiment/types.js";
 export { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld, DEFAULT_DRAMA_TUNING } from "./director/drama/index.js";
 export type { BeatPlayerDeps, BeatReport, DramaDecision, DramaDirectorDeps, DramaLink, DramaTuning, DramaWorld, WorldAvatar } from "./director/drama/index.js";
+export { classifyHostility, readHostility } from "./director/drama/hostility.js";
+export type { HostilityKind, LineReading } from "./director/drama/hostility.js";
 export { routeDramaFrame } from "./run/drama-frame-sink.js";
 export type { DramaFrameSink } from "./run/drama-frame-sink.js";
 export { isDramaFrame, DRAMA_HOTEL_TYPES } from "./director/drama-frames.js";
