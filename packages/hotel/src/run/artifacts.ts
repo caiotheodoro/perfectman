@@ -28,6 +28,30 @@ export type ReplayManifest = {
     links: Record<string, { model: string; tier: ModelTier }>;
   };
   counters: Record<string, number>;
+  /**
+   * How much the actors' dialogue reads like a real script (docs/plans/script-likeness.md): the 0-100 score, the percentile of real beats it corresponds to, the
+   * sub-scores (length, novelty, motif, progress, debt), and what was measured. Absent when the actors said nothing or the norms have no block for the language.
+   */
+  script_likeness?: {
+    score: number;
+    percentile: number;
+    verdict: string;
+    sub: Record<string, number>;
+    worst_window: number;
+    windows: number;
+    say_turns: number;
+    language: string;
+    medium: string;
+    /** The norms had no block for the medium (cinematic runs read the THEATRE norms: no screenplay corpus). */
+    medium_fallback: boolean;
+    /** Fewer than 4 speech turns: too few for a verdict. */
+    low_n: boolean;
+    motifs: number;
+    unanswered_questions: number;
+    norms_built?: string;
+  };
+  /** The scene spine of a run with no authored beats: the step it ended on and when each step began, and whether the progress gate or the hold released it. */
+  scene_spine?: { step: number; advances: Array<{ step: number; at_ms: number; via: string }> };
   /** The scenario's drama as the run enforced it: where the block came from (`authored`, `default`, `off`, `free_play`) and what it allowed. */
   drama?: { source: string; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean };
   /** A pulse did not drain before teardown, as in the HTTP controller's manifest. */

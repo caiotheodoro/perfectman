@@ -7,3 +7,4 @@ export * from "./score.js";
 export { SCRIPT_NORMS } from "./script-norms.generated.js";
 export * from "./guards.js";
 export * from "./fixture-corpus.js";
+export * from "./spine.js";

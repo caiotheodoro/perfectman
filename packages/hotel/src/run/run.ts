@@ -1,5 +1,6 @@
 import type { ActionEmotions, ActionIntent, AgentRuntimeInput, AgentState, BlockedReason, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
-import { BeatCraft } from "@perfectman/shared";
+import { BeatCraft, SCRIPT_NORMS, normsFor } from "@perfectman/shared";
+import type { ScriptScore } from "@perfectman/shared";
 import {
   AgentRuntime,
   MockLLMProvider,
@@ -57,6 +58,7 @@ import { bodyDigest } from "../authoring/authoring-service.js";
 import { NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
 import type { ReplayManifest } from "./artifacts.js";
 import { MEMORY_ID_PREFIX, PlayerMemory } from "./player-memory.js";
+import { SceneRecorder, SceneSpine, buildSceneSpine, sceneSpineEnabled, scriptGuardEnabled, scriptLikenessManifest } from "./scene-recorder.js";
 import type { MemoryStore } from "./player-memory.js";
 import type { WrittenArtifacts } from "./artifacts.js";
 import { FrameLogRecorder } from "./frame-log.js";
@@ -256,8 +258,16 @@ export class Run {
   private readonly memory = new Map<string, PlannerMemory>();
   private readonly arousal = new Map<string, number>();
   private readonly noOpStreak = new Map<string, number>();
-  /** What the repetition and output guards did this run (rejected repeats, garbles, stall nudges), for the run's artifact counters. */
+  /** What the repetition and output guards did this run (rejected repeats, garbles, stall nudges, over-long lines), for the run's artifact counters. */
   private readonly guardHits = new Map<GuardKind, number>();
+  /** The actors' lines and moves as the script-likeness metrics read them: the run's score at the end, and the progress the scene spine gates on. */
+  private scene: SceneRecorder | undefined;
+  /** The spine of a scene with no authored beats (scene-recorder.ts); absent when the scene has beats, drama is off, or the cast is one. */
+  private spine: SceneSpine | undefined;
+  /** The run's script-likeness once it has ended, for the manifest and the log. */
+  private scriptScore: ScriptScore | undefined;
+  /** The run clock when the scene started (the cast is in): what the recorder's times and the spine's seconds count from. */
+  private sceneStart = 0;
   /** Each actor's last 15 action tendencies, from the commit seam (computed, never persisted): the planner's reading of the whole emotion model. */
   private readonly tendencies = new Map<string, ActionEmotions>();
   /** The planner side of the drama contract (packet P3): the act lock, the reactions owed, the dead pool, the memory of acts. Inert until a dialect 2 session says drama is on. */
@@ -533,7 +543,7 @@ export class Run {
     const options = {
       agentRuntimeFactory: (registry: ConstructorParameters<typeof AgentRuntime>[1]) => {
         this.registry = registry;
-        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7, strict: true, onGuard: (kind) => this.guardHits.set(kind, (this.guardHits.get(kind) ?? 0) + 1) });
+        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7, strict: true, script: scriptGuardEnabled(), onGuard: (kind) => this.guardHits.set(kind, (this.guardHits.get(kind) ?? 0) + 1) });
       },
       extraGateways: { hotel: () => this.gateway, breaker: () => this.breaker.gateway },
       hotel: hotelOptions,
@@ -607,6 +617,7 @@ export class Run {
     this.state = "running";
     this.loop.start();
     this.startBeats();
+    this.startSpine();
     this.scheduleArrivals(later);
     this.d.logger.info("run running", { run: this.id, actors: this.agents.size, arriving_later: later.length });
   }
@@ -664,6 +675,30 @@ export class Run {
       },
     });
     this.beatPlayer.start();
+  }
+
+  /**
+   * The scene spine (docs/plans/script-likeness.md): a scene with no authored beats gets a four-step arc worked out here, once, from what its
+   * scenario already carries, shown to each actor as one steering note while its step is current. Inert when the scene has beats (their own
+   * craft feed owns the slot), when drama is off or not negotiated (the notes ride the drama block of the prompt), with one actor, or with
+   * `PERFECTMAN_SCENE_SPINE=0`. The recorder runs either way: it is what the run's script-likeness score is read from.
+   */
+  private startSpine(): void {
+    const cast = this.body.config.agents;
+    this.sceneStart = this.d.clock.now();
+    this.scene = new SceneRecorder(cast.map((a) => a.promptProfile.displayName));
+    if (!sceneSpineEnabled() || !this.director || (this.body.beats ?? []).length > 0 || resolveRunDrama(this.body).off) return;
+    const language = cast[0]?.promptProfile.language === "en" ? "en" : "pt-BR";
+    const built = buildSceneSpine({
+      language,
+      situation: cast[0]?.promptProfile.scenarioContext?.roomContext,
+      cast: cast.map((a) => ({ id: a.id, name: a.promptProfile.displayName, objective: a.promptProfile.hiddenObjective })),
+    });
+    if (!built) return;
+    this.spine = new SceneSpine(built, this.scene, this.sceneStart);
+    const spine = this.spine;
+    this.space.setCraft((agent, now) => spine.textFor(agent, now));
+    this.d.logger.info("scene spine", { run: this.id, steps: built.steps.length, roles: built.roles });
   }
 
   /**
@@ -1112,6 +1147,20 @@ export class Run {
     return this.agents.has(observer) && this.agents.has(offender) && this.runDrama.effective.may_target.some(([a, b]) => a === observer && b === offender);
   }
 
+  /** The actor's committed lines and the moves of its body, for the run's script-likeness and the spine's progress gate. */
+  private recordScene(ref: string, info: AgentCommitInfo, mine: readonly CommittedEvent[]): void {
+    const scene = this.scene;
+    if (!scene) return;
+    const now = this.d.clock.now() - this.sceneStart;
+    const name = this.agents.get(ref)?.name ?? ref;
+    for (const e of mine) {
+      const content = (e.payload as Record<string, unknown>)["content"];
+      if ((e.type === "message_sent" || e.type === "reply_sent") && typeof content === "string" && content.trim() !== "") scene.say(name, content, now);
+    }
+    const b = info.body?.accepted;
+    if (b && (b.act !== undefined || b.move !== undefined || b.posture !== undefined || b.gesture !== undefined)) scene.act(name, now);
+  }
+
   /** The lines an actor spoke, handed to the body's grievance ledger (errata P7): who they name, who they are for, and what mode. */
   private noteSpoken(ref: string, intent: ActionIntent | undefined, events: ReadonlyArray<Pick<SimulationEvent, "actorId" | "type" | "payload">>): void {
     const strs = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
@@ -1145,6 +1194,7 @@ export class Run {
     const ref = info.agentId;
     if (!this.agents.has(ref) || this.agents.get(ref)?.gone || this.state === "stopping" || this.state === "ended") return;
     const mine = info.committedEvents.filter((e) => e.actorId === ref);
+    this.recordScene(ref, info, mine);
     // What the last turn's refusal said has been read by this turn's prompt (errata P7).
     const told = this.space.bodyOf(ref, this.d.clock.now());
     if (told.lastBlocked) delete told.lastBlocked;
@@ -1239,6 +1289,16 @@ export class Run {
       llm_guard_garble_dropped: n("garble_dropped"),
       llm_guard_held_repeat: n("held_repeat"),
       llm_stall_nudges: n("stall_nudge"),
+      // The script checks: a retry because a line was over its word cap (and the lines cut at a sentence boundary after it), said nothing new,
+      // brought back a phrase or simile the room already had (and the lines swapped for a short reaction), or asked while it owed an answer.
+      llm_len_retry: n("len_retry"),
+      llm_len_trimmed: n("len_trimmed"),
+      llm_motif_retry: n("motif_retry"),
+      llm_novelty_retry: n("novelty_retry"),
+      llm_motif_reaction: n("motif_reaction"),
+      llm_debt_note: n("debt_note"),
+      llm_debt_retry: n("debt_retry"),
+      llm_debt_stripped: n("debt_stripped"),
     };
   }
 
@@ -1693,7 +1753,10 @@ export class Run {
         await Promise.race([this.playerMemory.flush().catch(() => 0), sleepOn(clock, MEMORY_FLUSH_BOUND_MS)]);
       }
       const m = this.meter.snapshot();
-      if (this.chain) this.d.logger.info("run llm usage", { run: this.id, calls: m.calls, costUsd: m.costUsd, p50Ms: m.p50Ms, p95Ms: m.p95Ms, ...(this.pickNote ? { pickedTier: this.pickNote.tier } : {}), chain: this.chain.snapshot() });
+      this.scriptScore = this.scoreScene();
+      const sl = this.scriptScore;
+      if (this.chain) this.d.logger.info("run llm usage", { run: this.id, calls: m.calls, costUsd: m.costUsd, p50Ms: m.p50Ms, p95Ms: m.p95Ms, ...(this.pickNote ? { pickedTier: this.pickNote.tier } : {}), ...(sl ? { scriptLikeness: sl.score } : {}), chain: this.chain.snapshot() });
+      if (sl) this.d.logger.info("run script likeness", { run: this.id, ...scriptLikenessManifest(sl), ...(this.spine ? { spineStep: this.spine.step } : {}) });
       try {
         const written = await writeRunArtifacts(hotel.dataDir, this.id, events, this.frames.log, {
           run: this.id,
@@ -1712,7 +1775,9 @@ export class Run {
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
           ...(this.chain ? { llm: this.llmManifest(this.chain) } : {}),
-          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...this.guardCounters(), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks, narrator_repaired: this.narrator.repaired } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0, ...this.scriptCounters(), ...this.bodyCounters() },
+          ...(sl ? { script_likeness: scriptLikenessManifest(sl) } : {}),
+          ...(this.spine ? { scene_spine: { step: this.spine.step, advances: this.spine.advances.map((a) => ({ step: a.step, at_ms: a.atMs, via: a.via })) } } : {}),
+          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...this.guardCounters(), ...this.scriptScoreCounters(), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks, narrator_repaired: this.narrator.repaired } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0, ...this.scriptCounters(), ...this.bodyCounters() },
           drama: summarizeRunDrama(resolveRunDrama(this.body)),
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
@@ -1732,6 +1797,36 @@ export class Run {
       // (grace expiry, or the next hello_ack that does not resume it; D41).
       if (!opts.byHotel && !opts.interrupted) link.send({ t: "run_end", run: this.id, reason, ...(summary ? { summary } : {}) });
       this.d.onEnded(this, reason);
+    }
+  }
+
+  /** The run's script-likeness as flat counters (`script_likeness_score`, `_percentile`, one per sub-score) and how far the scene spine got. */
+  private scriptScoreCounters(): Record<string, number> {
+    const out: Record<string, number> = {};
+    const sl = this.scriptScore;
+    if (sl) {
+      out["script_likeness_score"] = Math.round(sl.score);
+      out["script_likeness_percentile"] = Math.round(sl.percentile);
+      for (const [k, v] of Object.entries(sl.sub)) out[`script_likeness_${k}`] = Math.round(v);
+    }
+    if (this.spine) {
+      out["scene_spine_step"] = this.spine.step;
+      out["scene_spine_released"] = this.spine.advances.filter((a) => a.via === "released").length;
+    }
+    return out;
+  }
+
+  /** The score of what the actors said and did this run against the norms from real plays; undefined when there was nothing to score or no norms for the language. */
+  private scoreScene(): ScriptScore | undefined {
+    const scene = this.scene;
+    if (!scene || !this.body || scene.turns.length === 0) return undefined;
+    try {
+      const language = this.body.config.agents[0]?.promptProfile.language === "en" ? "en" : "pt";
+      if (!normsFor(SCRIPT_NORMS, language)) return undefined;
+      return scene.score({ norms: SCRIPT_NORMS, language, medium: this.params.mode === "cinematic" ? "CINEMA" : "THEATRE", frames: this.frames.log.frames, startedAt: this.sceneStart });
+    } catch (err) {
+      this.d.logger.warn("script likeness not scored", { run: this.id, error: err instanceof Error ? err.message : String(err) });
+      return undefined;
     }
   }
 

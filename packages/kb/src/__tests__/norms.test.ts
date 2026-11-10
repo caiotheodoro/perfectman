@@ -2,9 +2,10 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { inventedCorpus } from "@perfectman/shared";
+import { SPINE_TACTICS, inventedCorpus } from "@perfectman/shared";
 import type { ScriptNorms } from "@perfectman/shared";
 import { exportNorms } from "../norms.js";
+import { isTacticVerb } from "../taxonomy.js";
 
 // The corpus is invented (shared's `inventedCorpus`): no third-party text is committed.
 function setup(): { dir: string; beats: string; tags: string } {
@@ -42,5 +43,11 @@ describe("export-norms", () => {
     const norms = JSON.parse(r.json) as ScriptNorms;
     expect(norms.built).toBeUndefined();
     expect(norms.languages.en?.THEATRE?.tactic).toBeUndefined();
+  });
+});
+
+describe("the scene spine's tactics", () => {
+  it("are all verbs of the KB's controlled list", () => {
+    for (const verbs of Object.values(SPINE_TACTICS)) for (const verb of verbs) expect(isTacticVerb(verb), verb).toBe(true);
   });
 });
