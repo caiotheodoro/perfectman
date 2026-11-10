@@ -6,8 +6,9 @@ import type { ScriptLang } from "./text.js";
  * `@perfectman/kb` and committed as `script-norms.json`. Numbers only: no line of any play is in them.
  *
  * A norm is a percentile ladder (the value at each of {@link LADDER_PCTS}). Beat-level ladders are kept per bucket of say turns
- * (4-7, 8-12, 13+), because the share of long turns in a beat of 5 is far noisier than in a beat of 11, and a run is judged next to
- * beats of its own size.
+ * (4-7, 8-12, 13+), because the share of long turns in a beat of 5 is far noisier than in a beat of 11, and a run of fewer than
+ * {@link SCENE_FROM_TURNS} turns is judged next to beats of its own size. A longer run is judged next to scenes: consecutive beats of one
+ * scene joined (`LangNorms.scene`), in two sizes (13-29 and 30 or more turns).
  */
 
 export type ScriptMedium = "THEATRE" | "CINEMA";
@@ -15,7 +16,23 @@ export type ScriptMedium = "THEATRE" | "CINEMA";
 export const LADDER_PCTS = [0, 0.5, 1, 2.5, 5, 10, 25, 50, 75, 90, 95, 97.5, 99, 99.5, 100] as const;
 export type Ladder = number[];
 
-export const BEAT_METRICS = ["medianWords", "p90Words", "over25", "over40", "short", "noveltyMean", "loopTurns", "topicTurns", "echoTurns", "majorPer10", "stall", "debtPer10"] as const;
+export const BEAT_METRICS = [
+  "medianWords",
+  "p90Words",
+  "over25",
+  "over40",
+  "short",
+  "noveltyMean",
+  "loopTurns",
+  "topicTurns",
+  "echoTurns",
+  "majorPer10",
+  "stall",
+  "debtPer10",
+  "reactionShare",
+  "demandTurns",
+  "ticTurns",
+] as const;
 export type BeatMetric = (typeof BEAT_METRICS)[number];
 export type MetricDir = "high" | "low";
 /** Which side of a metric is the failure: a run is penalised for long turns (high) and for few new things (low). */
@@ -32,13 +49,45 @@ export const METRIC_DIR: Readonly<Record<BeatMetric, MetricDir>> = {
   majorPer10: "low",
   stall: "high",
   debtPer10: "high",
+  reactionShare: "high",
+  demandTurns: "high",
+  ticTurns: "high",
 };
+
+/**
+ * Metrics read to a higher percentile of the real ladder than `params.goodPct`: detectors that fire in real dialogue only by accident (a line that is
+ * only "Ah.", a demand made three times, a word one speaker keeps using). At the 97.5th percentile each would turn 2.5% of real beats into failures by
+ * construction; at the 99th it is 1%.
+ */
+export const METRIC_GOOD_PCT: Readonly<Partial<Record<BeatMetric, number>>> = { reactionShare: 99, demandTurns: 99, ticTurns: 99 };
 
 export const BUCKETS = ["4-7", "8-12", "13+"] as const;
 export type Bucket = (typeof BUCKETS)[number];
 export const bucketOf = (sayTurns: number): Bucket => (sayTurns <= 7 ? "4-7" : sayTurns <= 12 ? "8-12" : "13+");
 
 export type BucketNorms = { beats: number; metrics: Record<BeatMetric, Ladder> };
+
+/** Say turns from which a run is read as a scene (joined beats) and not as a beat. */
+export const SCENE_FROM_TURNS = 13;
+/** Say turns from which a scene must show a move of its own (a major event every ~12 turns, a reversal in the second half). */
+export const SCENE_ARC_FROM_TURNS = 30;
+export const SCENE_BUCKETS = ["13-29", "30+"] as const;
+export type SceneBucket = (typeof SCENE_BUCKETS)[number];
+export const sceneBucketOf = (sayTurns: number): SceneBucket => (sayTurns >= SCENE_ARC_FROM_TURNS ? "30+" : "13-29");
+
+/** Norms of whole scenes: consecutive corpus beats of one scene joined, scored with the same metrics, for the units a run is (13 turns or more). */
+export type SceneNorms = {
+  /** Joined scenes of 13 or more speech turns that hold no held-out beat. */
+  scenes: number;
+  /** Beats per scene (mean, over all the scenes counted) and speech turns per joined beat (mean). */
+  beatsPerScene: number;
+  turnsPerBeat: number;
+  /** Speech turns per scene. */
+  sayTurns: Ladder;
+  buckets: Record<SceneBucket, BucketNorms & { /** Share of these scenes with a reversal in the second half. */ lateReversal: number }>;
+  /** Score of the counted scenes themselves, as a ladder (the percentile a whole-run score corresponds to). */
+  score: Ladder;
+};
 
 export type TacticNorms = {
   tagged: number;
@@ -64,6 +113,8 @@ export type LangNorms = {
   novelty: { mean: number; /** Novelty of turns with 4+ content words, as a ladder: the guard's floor reads it. */ judged: Ladder };
   rhythm: { runMean: number; cutOff: number; trailOff: number };
   buckets: Record<Bucket, BucketNorms>;
+  /** Whole scenes (consecutive beats joined): what a run of 13 or more speech turns is read against. Absent in norms built before scenes were. */
+  scene?: SceneNorms;
   /** Script-likeness score of the corpus beats themselves, as a ladder: the percentile a score corresponds to. */
   score: Ladder;
   tactic?: TacticNorms;
@@ -145,7 +196,10 @@ export function beatMetrics(s: ScriptStats): Record<BeatMetric, number> {
     echoTurns: s.echoTurns,
     majorPer10: s.progress.majorPer10,
     stall: s.progress.stall,
-    debtPer10: s.sayTurns === 0 ? 0 : (s.debt.unanswered / s.sayTurns) * 10,
+    debtPer10: s.contentTurns === 0 ? 0 : (s.debt.unanswered / s.contentTurns) * 10,
+    reactionShare: s.reactionShare,
+    demandTurns: s.demandTurns,
+    ticTurns: s.ticTurns,
   };
 }
 

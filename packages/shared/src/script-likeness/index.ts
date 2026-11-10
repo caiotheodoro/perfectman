@@ -1,6 +1,7 @@
 export * from "./text.js";
 export * from "./turns.js";
 export * from "./metrics.js";
+export * from "./loops.js";
 export * from "./norms.js";
 export * from "./build-norms.js";
 export * from "./score.js";

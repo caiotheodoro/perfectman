@@ -199,3 +199,48 @@ export function similesIn(joined: string): string[] {
 export function joinedKeys(words: readonly Word[]): string {
   return ` ${words.map((w) => w.key).join(" ")} `;
 }
+
+// ---- fillers and demands -----------------------------------------------------------------------------------------
+
+/**
+ * Interjections a turn can be made of and still say nothing: pt and en, folded ("Ué" is "ue", "Tá" is "ta", "É" is "e"). Laughter ("kkk", "ahahah") is
+ * dropped by {@link wordsOf} before this list is read, so a laugh-only turn has no words at all.
+ */
+export const INTERJECTIONS: ReadonlySet<string> = new Set(
+  "ue hm hmm hmmm mm mmm ah ahn ta sei e ne eh hum aham uhum uh oh ok okay huh right".split(" "),
+);
+
+/** The longest a filler can be, in words. */
+export const FILLER_MAX_WORDS = 3;
+
+/**
+ * A line that is only an interjection: at most {@link FILLER_MAX_WORDS} words, every one of them in {@link INTERJECTIONS} ("Ué.", "Hm.", "Tá, tá.",
+ * "Ah.", "Sei.", "Ahahah"). A line of laughter alone ("KKKK") counts; an empty line or a bare stage direction does not.
+ */
+export function isFillerText(text: string): boolean {
+  const plain = stripDirections(text).trim();
+  if (plain === "" || !/\p{L}/u.test(plain)) return false;
+  const words = wordsOf(plain);
+  if (words.length === 0) return true;
+  return words.length <= FILLER_MAX_WORDS && words.every((w) => INTERJECTIONS.has(w.key));
+}
+
+/** Phrases that put a demand to somebody (folded, matched on the joined words). Generic on purpose: a demand turn is only a candidate, a loop needs the same demand again. */
+const DEMAND_PHRASES = [
+  "cofre hoje", "abre", "abra", "abrir", "quero", "me da", "me de", "agora", "senao", "ou eu", "ou entao", "paga", "pague", "pagar", "diz", "diga", "fala", "fale", "entrega", "entregue", "devolve", "devolva",
+  "responde", "responda", "me conta", "me diga", "me fala", "cala", "chega aqui", "eu exijo", "exijo",
+  "give me", "i want", "tell me", "right now", "or else", "or i", "open the", "pay me", "hand over", "answer me", "say it", "i demand", "you will", "now",
+];
+
+/** First words of an imperative sentence (folded). */
+const IMPERATIVE_STARTS: ReadonlySet<string> = new Set(
+  ("abre abra fala fale diz diga paga pague entrega entregue deixa vem vai olha escuta sai volta tira pega solta mostra responde conta cala chega baixa levanta senta " +
+    "give open tell say pay hand answer stop come go look listen show bring take leave get let speak stay wait do dont").split(" "),
+);
+
+/** The demand cues a turn carries: the phrases it contains, and an imperative opening a sentence. Empty when it asks for nothing. */
+export function demandCues(words: readonly Word[], joined: string): string[] {
+  const out = DEMAND_PHRASES.filter((p) => joined.includes(` ${p} `));
+  for (const w of words) if (w.start && IMPERATIVE_STARTS.has(w.key)) out.push(`>${w.key}`);
+  return out;
+}
