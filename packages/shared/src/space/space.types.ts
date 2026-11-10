@@ -199,4 +199,7 @@ export type BlockedReason = {
   /** The handle or name involved, already sanitized. */
   ref?: string;
   detail?: string;
+  /** A refused `act` (errata P8): the verb the actor tried and the `person-N` ref it was aimed at, so the audit shows what was blocked, not only why. */
+  verb?: string;
+  target?: string;
 };

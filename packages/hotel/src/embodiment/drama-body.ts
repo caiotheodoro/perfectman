@@ -74,6 +74,8 @@ const RETRY_MS = 20_000;
 const FOLLOW_PLAN_PREFIX = "drama:";
 /** The `detail` of the `busy_moving` told to the `blocked` hook for each own walk a follow window did not send. */
 const FOLLOW_SUPPRESSED = "follow_suppressed_walk";
+/** The `detail`s of a `ladder` refusal the model is told about in its next prompt (`blockedReasonLine` has a line for each); the ceiling (`max_rung`) stays unshown. */
+const TOLD_LADDER: ReadonlySet<string> = new Set(["motive", "grievance", "rung", "contagion", "zero_witness"]);
 const VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["insult", "shove", "slap", "punch", "kill"]);
 const PHYSICAL_VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch"]);
 
@@ -440,12 +442,13 @@ export class DramaBody implements DramaFrameSink {
         return { hold: true, approach: [] };
       case "veto": {
         if (res.reason === "too_far" && proposal.with !== undefined) return { hold: false, approach: this.walkCloser(ref, proposal, base) };
-        const reason: BlockedReason = { code: res.reason, part: "act", ...(res.detail ? { detail: res.detail } : {}) };
+        const targetRef = proposal.with === undefined ? undefined : this.d.mirror.refOfAvatar(proposal.with);
+        const reason: BlockedReason = { code: res.reason, part: "act", ...(res.detail ? { detail: res.detail } : {}), verb: proposal.verb, ...(targetRef ? { target: targetRef } : {}) };
         this.d.hooks.blocked(ref, [reason]);
-        // An act the ladder refused for want of a motive or a grievance is not yet earned: the model is told so in its next prompt, with the name it aimed at.
-        if (res.reason === "ladder" && (res.detail === "motive" || res.detail === "grievance") && proposal.with !== undefined && this.d.note) {
-          const target = this.d.mirror.refOfAvatar(proposal.with);
-          this.d.note(ref, [{ ...reason, ref: this.d.names(target) ?? target }]);
+        // An act the ladder refused for want of a motive or a grievance, one rung too many, a witness or a calmer room is not yet earned: the model is told so in its
+        // next prompt, with the name it aimed at and what would earn it (errata P7, P8).
+        if (res.reason === "ladder" && res.detail !== undefined && TOLD_LADDER.has(res.detail) && targetRef !== undefined && this.d.note) {
+          this.d.note(ref, [{ ...reason, ref: this.d.names(targetRef) ?? targetRef }]);
           this.actBlockedNotes++;
         }
         return { hold: false, approach: [] };
