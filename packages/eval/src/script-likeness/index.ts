@@ -115,7 +115,7 @@ const q = (sorted: number[], p: number): number => sorted[Math.min(sorted.length
  */
 export function validateOnCorpus(beats: readonly CorpusBeat[], norms: ScriptNorms = SCRIPT_NORMS): CorpusValidation {
   const perLanguage = Math.round(norms.params.holdout / 2);
-  const held = heldOutIds(beats, perLanguage);
+  const held = heldOutIds(beats, perLanguage, norms.params.holdoutSalt ?? "");
   const byLanguage: CorpusValidation["byLanguage"] = {};
   let all = 0;
   let pass = 0;
@@ -154,7 +154,7 @@ export type GuardRates = {
 export function guardRatesOnCorpus(beats: readonly CorpusBeat[], lang: ScriptLang, opts: { count?: number; norms?: ScriptNorms; floorPct?: number } = {}): GuardRates {
   const norms = opts.norms ?? SCRIPT_NORMS;
   const floor = noveltyFloor(norms, lang, opts.floorPct ?? 10);
-  const held = heldOutIds(beats, Math.round(norms.params.holdout / 2));
+  const held = heldOutIds(beats, Math.round(norms.params.holdout / 2), norms.params.holdoutSalt ?? "");
   const inLang = beats.filter((b) => (b.language === lang || (lang === "pt" && b.language === "pt-BR")) && parseBeatText(b.text).filter(isSay).length >= 4);
   const ordered = [...inLang.filter((b) => held.has(b.id)), ...inLang.filter((b) => !held.has(b.id))].slice(0, opts.count ?? inLang.length);
   const cap = lengthTargetFor("short", lang).cap;

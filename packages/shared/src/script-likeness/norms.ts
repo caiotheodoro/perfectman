@@ -84,6 +84,8 @@ export type ScriptNorms = {
     goodPct: number;
     badPct: number;
     holdout: number;
+    /** Present only when the held-out set was picked with a salt. */
+    holdoutSalt?: string;
   };
   source: { beats: number; eligible: number; heldOut: number; byLanguage: Record<string, number> };
   languages: Partial<Record<ScriptLang, Partial<Record<ScriptMedium, LangNorms>>>>;

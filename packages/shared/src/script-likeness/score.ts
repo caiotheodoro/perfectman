@@ -12,22 +12,27 @@ import type { ScriptTurn } from "./turns.js";
  *
  * Each metric is read against the corpus beats of the same size: 100 while it is inside the real range (up to the `goodPct` percentile),
  * falling to 0 at the `badPct` percentile and beyond (mirrored for metrics where too little is the failure). Five sub-scores combine their
- * metrics, and the score combines the sub-scores by weight, never above the weakest sub-score plus {@link CAP_MARGIN}: a scene cannot be
+ * metrics, and the score combines the sub-scores by weight, never above the weakest hard sub-score plus {@link CAP_MARGIN}: a scene cannot be
  * carried by four good parts past one that fails. A run longer than a beat is judged in windows of {@link CHUNK_SAY_TURNS} speech turns.
  */
 
 export type SubName = "length" | "novelty" | "motif" | "progress" | "debt";
 
-const SUBS: Readonly<Record<SubName, { weight: number; metrics: ReadonlyArray<readonly [BeatMetric, number]> }>> = {
-  length: { weight: 0.3, metrics: [["medianWords", 0.3], ["over25", 0.3], ["over40", 0.1], ["p90Words", 0.1], ["short", 0.2]] },
-  novelty: { weight: 0.2, metrics: [["noveltyMean", 1]] },
-  motif: { weight: 0.2, metrics: [["loopTurns", 0.5], ["echoTurns", 0.25], ["topicTurns", 0.25]] },
-  progress: { weight: 0.2, metrics: [["majorPer10", 0.5], ["stall", 0.5]] },
-  debt: { weight: 0.1, metrics: [["debtPer10", 1]] },
+/**
+ * What each sub-score reads, with weights. A `hard` metric is one a real script almost never fails (turns of 30 words, a phrase three turns
+ * share, lines that only repeat the room): failing it caps the score. The others (few short replies, a topic word kept for three turns, no
+ * promise or accusation, a question left owing) are things a real beat does now and then and only pull the mean down.
+ */
+const SUBS: Readonly<Record<SubName, { weight: number; hard: boolean; metrics: ReadonlyArray<readonly [BeatMetric, number, boolean]> }>> = {
+  length: { weight: 0.3, hard: true, metrics: [["medianWords", 0.3, true], ["over25", 0.3, true], ["over40", 0.1, true], ["p90Words", 0.1, true], ["short", 0.2, false]] },
+  novelty: { weight: 0.2, hard: true, metrics: [["noveltyMean", 1, true]] },
+  motif: { weight: 0.2, hard: true, metrics: [["loopTurns", 0.5, true], ["echoTurns", 0.25, true], ["topicTurns", 0.25, false]] },
+  progress: { weight: 0.2, hard: false, metrics: [["majorPer10", 0.5, false], ["stall", 0.5, false]] },
+  debt: { weight: 0.1, hard: false, metrics: [["debtPer10", 1, false]] },
 };
 export const SUB_NAMES = Object.keys(SUBS) as SubName[];
 
-/** The score never exceeds the lowest sub-score by more than this; inside a sub-score the same rule is applied with {@link METRIC_CAP_MARGIN}. */
+/** The score never exceeds the lowest hard sub-score by more than this; inside a sub-score the same rule is applied, to its hard metrics, with {@link METRIC_CAP_MARGIN}. */
 export const CAP_MARGIN = 25;
 export const METRIC_CAP_MARGIN = 30;
 /** Speech turns in a scoring window; a remainder shorter than the minimum joins the window before it. */
@@ -74,12 +79,13 @@ export function metricScore(value: number, ladder: Ladder, dir: "high" | "low", 
   return { score: clamp100(((value - bad) / (good - bad)) * 100), good, bad };
 }
 
-/** Weighted mean, held to the lowest part plus `margin`. */
-function combine(parts: ReadonlyArray<{ score: number; weight: number }>, margin: number): number {
+/** Weighted mean, held to the lowest hard part plus `margin` (no cap when no part is hard). */
+function combine(parts: ReadonlyArray<{ score: number; weight: number; hard: boolean }>, margin: number): number {
   const total = parts.reduce((a, p) => a + p.weight, 0);
   if (total === 0) return 100;
   const mean = parts.reduce((a, p) => a + p.score * p.weight, 0) / total;
-  return Math.min(mean, Math.min(...parts.map((p) => p.score)) + margin);
+  const hard = parts.filter((p) => p.hard).map((p) => p.score);
+  return hard.length === 0 ? mean : Math.min(mean, Math.min(...hard) + margin);
 }
 
 const round1 = (v: number): number => Math.round(v * 10) / 10;
@@ -93,22 +99,22 @@ export function scoreMetrics(values: MetricValues, ctx: { language: ScriptLang; 
   const bucket = bucketOf(ctx.sayTurns);
   const ladders = found.block.buckets[bucket].metrics;
   const sub: Partial<Record<SubName, SubScore>> = {};
-  const parts: Array<{ score: number; weight: number }> = [];
+  const parts: Array<{ score: number; weight: number; hard: boolean }> = [];
   for (const name of SUB_NAMES) {
     const readings: MetricReading[] = [];
-    const weights: Array<{ score: number; weight: number }> = [];
-    for (const [metric, weight] of SUBS[name].metrics) {
+    const weights: Array<{ score: number; weight: number; hard: boolean }> = [];
+    for (const [metric, weight, hard] of SUBS[name].metrics) {
       const value = values[metric];
       if (value === undefined || Number.isNaN(value)) continue;
       const ladder = ladders[metric];
       const r = metricScore(value, ladder, METRIC_DIR[metric], ctx.norms.params.goodPct, ctx.norms.params.badPct);
       readings.push({ metric, value: Math.round(value * 1000) / 1000, score: round1(r.score), percentile: round1(percentileIn(ladder, value)), good: Math.round(r.good * 1000) / 1000, bad: Math.round(r.bad * 1000) / 1000 });
-      weights.push({ score: r.score, weight });
+      weights.push({ score: r.score, weight, hard });
     }
     if (weights.length === 0) continue;
     const score = combine(weights, METRIC_CAP_MARGIN);
     sub[name] = { score: round1(score), metrics: readings };
-    parts.push({ score, weight: SUBS[name].weight });
+    parts.push({ score, weight: SUBS[name].weight, hard: SUBS[name].hard });
   }
   const score = combine(parts, CAP_MARGIN);
   return {

@@ -53,15 +53,15 @@ function prepare(beats: readonly CorpusBeat[]): Prepared[] {
 
 /**
  * The beats kept out of the norms and used only to check them: `perLanguage` beats of each language with at least 4 speech turns,
- * the ones whose id hashes lowest. The same call on the same corpus gives the same ids.
+ * the ones whose id hashes lowest. The same call on the same corpus gives the same ids. A `salt` picks a different set (a second, independent check).
  */
-export function heldOutIds(beats: readonly CorpusBeat[], perLanguage: number): Set<string> {
+export function heldOutIds(beats: readonly CorpusBeat[], perLanguage: number, salt = ""): Set<string> {
   const out = new Set<string>();
   for (const lang of ["pt", "en"] as const) {
     const ids = beats
       .filter((b) => langOf(b) === lang && parseBeatText(b.text).filter(isSay).length >= MIN_SAY_TURNS)
       .map((b) => b.id)
-      .sort((a, b) => fnv1a(a) - fnv1a(b) || (a < b ? -1 : 1));
+      .sort((a, b) => fnv1a(salt + a) - fnv1a(salt + b) || (a < b ? -1 : 1));
     for (const id of ids.slice(0, perLanguage)) out.add(id);
   }
   return out;
@@ -135,6 +135,8 @@ export type BuildNormsOptions = {
   holdoutPerLanguage?: number;
   goodPct?: number;
   badPct?: number;
+  /** Picks a different held-out set (default none, which is what the committed norms use). */
+  holdoutSalt?: string;
 };
 
 /** Builds the norms from a corpus. Deterministic: the same beats and options give the same numbers. */
@@ -142,7 +144,7 @@ export function buildScriptNorms(beats: readonly CorpusBeat[], tags: readonly Co
   const holdPer = opts.holdoutPerLanguage ?? 100;
   const goodPct = opts.goodPct ?? 97.5;
   const badPct = opts.badPct ?? 100;
-  const held = heldOutIds(beats, holdPer);
+  const held = heldOutIds(beats, holdPer, opts.holdoutSalt ?? "");
   const tagMap = new Map(tags.map((t) => [t.id, t]));
   const prepared = prepare(beats);
   const eligible = prepared.filter((p) => p.stats.sayTurns >= MIN_SAY_TURNS);
@@ -152,7 +154,7 @@ export function buildScriptNorms(beats: readonly CorpusBeat[], tags: readonly Co
     format: "perfectman-script-norms",
     version: 1,
     ...(opts.built !== undefined ? { built: opts.built } : {}),
-    params: { minSayTurns: MIN_SAY_TURNS, noveltyWindow: 6, motifWindowTurns: 7, motifWindowMs: 90_000, capWords: [25, 40], shortReplyWords: 5, goodPct, badPct, holdout: held.size },
+    params: { minSayTurns: MIN_SAY_TURNS, noveltyWindow: 6, motifWindowTurns: 7, motifWindowMs: 90_000, capWords: [25, 40], shortReplyWords: 5, goodPct, badPct, holdout: held.size, ...(opts.holdoutSalt ? { holdoutSalt: opts.holdoutSalt } : {}) },
     source: { beats: beats.length, eligible: eligible.length, heldOut: held.size, byLanguage: {} },
     languages: {},
   };
