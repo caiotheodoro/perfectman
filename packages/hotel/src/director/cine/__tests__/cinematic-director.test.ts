@@ -69,6 +69,20 @@ describe("playback: speech is held for the clock, behind the camera", () => {
     expect(r.delivered.map((d) => d.cmd.cmd)).toContain("walk");
   });
 
+  it("a stale drop is a buffer item of a kind that expires (a walk, a door, a hug, an insert) and says so; speech and gestures never expire, however slow the film", async () => {
+    const r = rig();
+    r.director.start();
+    for (let i = 0; i < 6; i++) r.say(i % 2 ? "rafa" : "duda", `Fala número ${i + 1}, longa o bastante para ocupar a tela por um bom tempo, sem pressa nenhuma de acabar.`);
+    r.exec.send([{ agentId: "duda", cmd: "walk", to: [9, 4], plan: "p1" }, { agentId: "rafa", cmd: "gesture", a: "laugh" }]);
+    await r.clock.advance(5 * 60_000);
+    const drops = r.director.track.entries.flatMap((e) => (e.k === "drop" ? [e] : []));
+    expect(drops.length).toBeGreaterThan(0);
+    // `beat` is the buffer's own id (`b<n>`), not a scenario beat's: the kind is what tells them apart in the track.
+    expect(drops.map((d) => [d.why, d.item])).toEqual(drops.map(() => ["stale", "walk"]));
+    expect(r.spoken()).toHaveLength(6);
+    expect(r.delivered.map((d) => d.cmd.cmd)).toEqual(expect.arrayContaining(["walk", "gesture"]));
+  });
+
   it("films a thought as a bubble on the thinker instead of forwarding it", async () => {
     const r = rig();
     r.director.start();

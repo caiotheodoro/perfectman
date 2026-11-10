@@ -20,7 +20,7 @@ import type { HotelConfig, ModelPrice } from "../config.js";
 import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfState } from "../director/cine/index.js";
 import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
-import { resolveRunDrama } from "../authoring/scenario-drama.js";
+import { resolveRunDrama, summarizeRunDrama } from "../authoring/scenario-drama.js";
 import { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld } from "../director/drama/index.js";
 import type { DramaDecisionPort, DramaHost, SceneAdvance } from "../director/drama/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
@@ -215,6 +215,8 @@ export class Run {
   private director: DramaDirector | undefined;
   /** The scenario's authored beats, on this run's clock (errata P4-01); absent without drama or without a script. */
   private beatPlayer: BeatPlayer | undefined;
+  /** What became of the authored beats, for the run summary: how many played, and how many were dropped for each reason (`beats_dropped_<why>`). */
+  private readonly beatOutcomes = { played: 0, dropped: new Map<string, number>() };
   private loop!: WallClockPulseLoop;
   private breaker!: BreakerDriver;
   private unsubscribeBudget: (() => void) | undefined;
@@ -586,6 +588,8 @@ export class Run {
    * negotiated `drama.v1` and the hotel said the room's state. The scenario's `drama` block, or free play without one, is its law.
    */
   private startDrama(): void {
+    // Whether the scene has the conservative default, an author's block, `off` or none is told once, here and in the run summary.
+    this.d.logger.info("scenario drama", { run: this.id, ...summarizeRunDrama(resolveRunDrama(this.body)) });
     const host = this.d.drama;
     if (!host) return;
     const world = mirrorWorld(this.space, () => [...this.agents].filter(([, a]) => !a.gone).map(([ref]) => ref), () => this.d.clock.now());
@@ -622,7 +626,11 @@ export class Run {
         return cmds.length > 0;
       },
       logger: this.d.logger,
-      onReport: (r) => this.d.logger.info("authored beat", { run: this.id, beat: r.beat.id, kind: r.beat.kind, outcome: r.outcome, why: r.why, ...(r.detail ? { detail: r.detail } : {}) }),
+      onReport: (r) => {
+        if (r.outcome === "played") this.beatOutcomes.played += 1;
+        else this.beatOutcomes.dropped.set(r.why, (this.beatOutcomes.dropped.get(r.why) ?? 0) + 1);
+        this.d.logger.info("authored beat", { run: this.id, beat: r.beat.id, kind: r.beat.kind, outcome: r.outcome, why: r.why, ...(r.detail ? { detail: r.detail } : {}) });
+      },
     });
     this.beatPlayer.start();
   }
@@ -1559,7 +1567,8 @@ export class Run {
           })),
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
-          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
+          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0, ...this.scriptCounters() },
+          drama: summarizeRunDrama(resolveRunDrama(this.body)),
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
         await link.registerArtifacts(this.id, written);
@@ -1579,6 +1588,24 @@ export class Run {
       if (!opts.byHotel && !opts.interrupted) link.send({ t: "run_end", run: this.id, reason, ...(summary ? { summary } : {}) });
       this.d.onEnded(this, reason);
     }
+  }
+
+  /**
+   * The script's and the film's drops as flat counters for the run summary (`replay.json`): authored beats played, dropped, and dropped for each reason
+   * (`beats_dropped_veto_cooldown`), and the cinematic buffer's drops by reason (`cine_dropped_stale`). The two lists are separate: a track `drop` is a buffer
+   * item (a walk, a door, a hug that waited too long to be filmed; its command still went out), never an authored beat.
+   */
+  private scriptCounters(): Record<string, number> {
+    const out: Record<string, number> = {};
+    const key = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
+    const dropped = [...this.beatOutcomes.dropped.values()].reduce((a, b) => a + b, 0);
+    if (this.beatPlayer) {
+      out["beats_played"] = this.beatOutcomes.played;
+      out["beats_dropped"] = dropped;
+      for (const [why, n] of this.beatOutcomes.dropped) out[`beats_dropped_${key(why)}`] = n;
+    }
+    for (const e of this.cine?.track.entries ?? []) if (e.k === "drop") out[`cine_dropped_${key(e.why)}`] = (out[`cine_dropped_${key(e.why)}`] ?? 0) + 1;
+    return out;
   }
 
   private async walkOut(): Promise<void> {

@@ -1,7 +1,7 @@
 import { cleanBeats } from "../authoring/scenario-beats.js";
 import type { ScenarioBeat } from "../authoring/scenario-beats.js";
-import { cleanDrama } from "../authoring/scenario-drama.js";
-import type { ScenarioDrama } from "../authoring/scenario-drama.js";
+import { DRAMA_OFF, cleanDrama, defaultSceneDrama, isDramaOff } from "../authoring/scenario-drama.js";
+import type { DramaMode, ScenarioDrama } from "../authoring/scenario-drama.js";
 import { cleanVisit } from "../authoring/scenario-form.js";
 import type { ScenarioStage } from "../authoring/scenario-form.js";
 import { parseSimulationConfig } from "@perfectman/server/hotel";
@@ -28,8 +28,14 @@ export type ScenarioBody = {
   arrivals?: Record<string, number>;
   /** Where the builder's stage step lets the cast go. Absent means every room the hotel names (older scenarios, presets). */
   stage?: ScenarioStage;
-  /** The drama block (act-contract.md section 7), refs as agent ids. Absent is free play. Additive and optional, so the body version stays 1. */
+  /** The drama block (act-contract.md section 7), refs as agent ids. Absent is free play (a body saved before the default existed). Additive and optional, so the body version stays 1. */
   drama?: ScenarioDrama;
+  /**
+   * Where `drama` came from when the author did not write it: `default` (the conservative block the compile derives for a scene of two or more actors
+   * that declares none) or `off` (`drama: off`). Absent is a block the author wrote. The hotel never reads it (it ignores unknown keys and enforces
+   * `drama`); the sidecar reads it for the run summary and, for `off`, to start no act at all.
+   */
+  drama_mode?: DramaMode;
   /** The scene's script (errata P4-01): authored acts and scene cuts the sidecar plays on the run's clock. Absent is no script. Additive and optional like `drama`, and the hotel never reads it. */
   beats?: ScenarioBeat[];
 };
@@ -81,10 +87,22 @@ export function parseScenarioBody(raw: unknown): ParsedBody {
       ...(o["responseDelays"] ? { responseDelays: o["responseDelays"] as ScenarioBody["responseDelays"] & object } : {}),
       ...(o["arrivals"] && typeof o["arrivals"] === "object" ? { arrivals: cleanArrivals(o["arrivals"] as Record<string, unknown>) } : {}),
       ...cleanStage(o["stage"]),
-      ...cleanDrama(o["drama"], config.agents.map((a) => a.id)),
+      ...cleanDramaAndMode(o, config.agents.map((a) => a.id)),
       ...cleanBeats(o["beats"], config.agents.map((a) => a.id)),
     },
   };
+}
+
+/**
+ * `drama` and its `drama_mode`. `off` (the mode, or the word as the block) always reads as the off block: a body that says off is never read
+ * looser. `default` is kept only while the block that survived the strict read is the one `defaultSceneDrama` derives for this cast, so a mode never
+ * outlives its block and the run summary never calls an edited block the default.
+ */
+function cleanDramaAndMode(o: Record<string, unknown>, agentIds: readonly string[]): { drama?: ScenarioDrama; drama_mode?: DramaMode } {
+  if (o["drama_mode"] === "off" || isDramaOff(o["drama"])) return { drama: DRAMA_OFF, drama_mode: "off" };
+  const { drama } = cleanDrama(o["drama"], agentIds);
+  const isDefault = o["drama_mode"] === "default" && drama !== undefined && JSON.stringify(drama) === JSON.stringify(defaultSceneDrama(agentIds));
+  return drama === undefined ? {} : { drama, ...(isDefault ? { drama_mode: "default" as const } : {}) };
 }
 
 /** Finite, non-negative ms only; a bad entry is dropped, never a reason to refuse the scenario. */

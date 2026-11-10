@@ -27,8 +27,45 @@ export const HUMAN_REF = "@human";
 /** No block (free play) and `drama:{}` read the same keys the same way (SCN-1, SCN-2): rungs 1 to 3 between actors, no kills. */
 export const FREE_PLAY_DRAMA: ScenarioDrama = { max_rung: 3, may_target: [], may_die: [], permadeath: false };
 
+/**
+ * `drama: off` (the scenario's opt-out): no act of any kind is started, proposed or scripted. It is written as the
+ * strictest block the hotel already reads (`max_rung` 0: not even a glare) plus the body's `drama_mode: "off"`, which only the sidecar reads
+ * and which also shuts the off-ladder acts (cry, hug, storm off). The hotel, which ignores unknown body keys, sees an ordinary restrictive block.
+ */
+export const DRAMA_OFF: ScenarioDrama = { max_rung: 0, may_target: [], may_die: [], permadeath: false };
+
+/**
+ * How far a scene with no `drama` block may go: `glare`, `insult`, `shove` and `slap` (rungs 1 to 4). Never a `punch` or a `kill`, nobody may
+ * die, there is no permadeath. Rungs 1 to 3 need no pair, so the ceiling is what makes the pairs below matter: rung 4 is the first that needs
+ * `may_target` (SCN-3). This is a conservative product default, not the contract's free play (SCN-1, `max_rung` 3, which cannot slap).
+ */
+export const DEFAULT_SCENE_MAX_RUNG = 4;
+
+/**
+ * The block of a scene that declares none (the conservative default): every ordered pair of its bot actors may be the target of a rung 4 act,
+ * `max_rung` is `DEFAULT_SCENE_MAX_RUNG`, nobody may die, there is no permadeath. A human is never in a pair (`@human` is not a ref here: a
+ * slap at a person needs a block that says so). With fewer than two actors there is nobody to aim at and no block. It is the same strict shape
+ * an author writes, so the sidecar's read (`cleanDrama`) and the hotel's (`parse_block`) take it as it is. An explicit block, even `{}`, or
+ * `drama: off`, is never replaced by it: the callers use this only for a scene that wrote no `drama` key.
+ */
+export function defaultSceneDrama(actorIds: readonly string[]): ScenarioDrama | undefined {
+  const ids = [...new Set(actorIds)];
+  if (ids.length < 2) return undefined;
+  const may_target: Array<[string, string]> = [];
+  for (const a of ids) for (const b of ids) if (a !== b) may_target.push([a, b]);
+  return { max_rung: DEFAULT_SCENE_MAX_RUNG, may_target, may_die: [], permadeath: false };
+}
+
+/** `drama: off` as an author or a body may write it: the word, any case, or `false`. */
+export function isDramaOff(raw: unknown): boolean {
+  return raw === false || (typeof raw === "string" && raw.trim().toLowerCase() === "off");
+}
+
+/** How a body's block came to be, for the run summary: written by the author, derived by `defaultSceneDrama`, or `off`. Absent is free play. */
+export type DramaMode = "default" | "off";
+
 export type DramaRow = { path: string; message: string };
-export type DramaCompile = { drama?: ScenarioDrama; errors: DramaRow[]; warnings: DramaRow[] };
+export type DramaCompile = { drama?: ScenarioDrama; mode?: "off"; errors: DramaRow[]; warnings: DramaRow[] };
 
 const KEYS = ["max_rung", "may_target", "may_die", "permadeath"] as const;
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -53,7 +90,8 @@ function rungOf(value: unknown, allowVerb: boolean): number | undefined {
 export function compileDramaForm(raw: unknown, cast: { names: readonly string[]; ids: readonly string[] }, opts: { sceneCuts?: number } = {}): DramaCompile {
   const errors: DramaRow[] = [];
   const warnings: DramaRow[] = [];
-  if (!isRecord(raw)) return { errors: [{ path: "drama", message: "drama must be an object" }], warnings };
+  if (isDramaOff(raw)) return { drama: DRAMA_OFF, mode: "off", errors, warnings };
+  if (!isRecord(raw)) return { errors: [{ path: "drama", message: 'drama must be an object, or "off"' }], warnings };
   for (const key of Object.keys(raw)) if (!(KEYS as readonly string[]).includes(key)) errors.push({ path: `drama.${key}`, message: `unknown key "${key}"` });
 
   const idOf = (name: unknown, path: string, allowHuman: boolean, humanHint: string): string | undefined => {
@@ -124,6 +162,7 @@ export function compileDramaForm(raw: unknown, cast: { names: readonly string[];
  * reading than the author wrote. The hotel does the same with a block it cannot parse.
  */
 export function cleanDrama(raw: unknown, agentIds: readonly string[]): { drama?: ScenarioDrama } {
+  if (isDramaOff(raw)) return { drama: DRAMA_OFF };
   if (!isRecord(raw) || Object.keys(raw).some((k) => !(KEYS as readonly string[]).includes(k))) return {};
   const known = new Set(agentIds);
   const actor = (v: unknown): v is string => typeof v === "string" && known.has(v);
@@ -150,12 +189,25 @@ export function cleanDrama(raw: unknown, agentIds: readonly string[]): { drama?:
   return { drama: { max_rung, may_target, may_die, permadeath } };
 }
 
-/** What a run enforces: the block as the author wrote it, or free play when there is none (SCN-1). Authored skips need a block, even an empty one (SCN-4). */
-export type RunDrama = { block: ScenarioDrama | undefined; effective: ScenarioDrama; freePlay: boolean; canSkip: boolean };
+/**
+ * What a run enforces: the block as the body carries it, or free play when there is none (SCN-1). Authored skips need a block, even an empty one (SCN-4).
+ * `mode` says where the block came from (`authored` by the scenario, `default` derived at compile, `off`, or `free_play` for a body that has none: one
+ * saved before the default existed). `off` shuts the director: nothing is originated, approved or played.
+ */
+export type RunDrama = { block: ScenarioDrama | undefined; effective: ScenarioDrama; freePlay: boolean; canSkip: boolean; mode: "authored" | "default" | "off" | "free_play"; off: boolean };
 
-export function resolveRunDrama(body: { drama?: ScenarioDrama }): RunDrama {
-  const block = body.drama;
-  return { block, effective: block ?? FREE_PLAY_DRAMA, freePlay: block === undefined, canSkip: block !== undefined };
+export function resolveRunDrama(body: { drama?: ScenarioDrama; drama_mode?: DramaMode }): RunDrama {
+  const off = body.drama_mode === "off";
+  const block = off ? DRAMA_OFF : body.drama;
+  const mode = off ? "off" : block === undefined ? "free_play" : body.drama_mode === "default" ? "default" : "authored";
+  return { block, effective: block ?? FREE_PLAY_DRAMA, freePlay: block === undefined, canSkip: block !== undefined && !off, mode, off };
+}
+
+/** The run summary's line for the scenario's drama: where the block came from and what it allows. Numbers only, no names (`replay.json` `drama`). */
+export type DramaSummary = { source: RunDrama["mode"]; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean };
+
+export function summarizeRunDrama(run: RunDrama): DramaSummary {
+  return { source: run.mode, max_rung: run.effective.max_rung, may_target_pairs: run.effective.may_target.length, may_die: run.effective.may_die.length, permadeath: run.effective.permadeath };
 }
 
 /** A cast member as the compiled scenario names it: the agent id the run's refs use and the name a form would write. */

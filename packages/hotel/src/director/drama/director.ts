@@ -106,8 +106,9 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
 
   // ---- the port ---------------------------------------------------------------------------------------------
 
+  /** Negotiated and ready, and the scenario did not say `drama: off`: an off scene starts, approves and plays no act (every turn is `inert`). */
   get active(): boolean {
-    return this.d.link.dialect === 2 && this.session !== null && this.ready;
+    return !this.d.scenario.off && this.d.link.dialect === 2 && this.session !== null && this.ready;
   }
 
   get scene(): string {

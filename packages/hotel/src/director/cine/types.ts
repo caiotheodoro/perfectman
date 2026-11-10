@@ -97,7 +97,8 @@ export type TrackEntry =
   | { t: number; k: "cue"; room: number; beat?: string; ui: PerfectmanUi }
   | { t: number; k: "line"; room: number; beat: string; ref: string; avatar: number | null; mode: string; text: string; ms: number }
   | { t: number; k: "cut"; room: number; from: number }
-  | { t: number; k: "drop"; beat: string; why: string }
+  /** `beat` is the buffer item's id (`b<seq>`, the order the engine produced items in: NOT a scenario beat, whose ids (`b1`, `b2`...) are a different list), `item` its kind when it is one (`walk`, `hop`, `pair`, `object`...). */
+  | { t: number; k: "drop"; beat: string; why: string; item?: string }
   | { t: number; k: "pause" }
   | { t: number; k: "resume" }
   | { t: number; k: "end"; reason: string };

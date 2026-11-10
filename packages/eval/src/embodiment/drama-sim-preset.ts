@@ -1,7 +1,7 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { compileSceneBeats, compileSceneDrama, countCuts } from "@perfectman/hotel/drama";
-import type { DramaTuning, ScenarioDrama } from "@perfectman/hotel/drama";
+import { compileSceneBeats, compileSceneDrama, countCuts, defaultSceneDrama } from "@perfectman/hotel/drama";
+import type { DramaMode, DramaTuning, ScenarioDrama } from "@perfectman/hotel/drama";
 import { appraise, compileRunInputs, loadPresets, parseMarkdown } from "@perfectman/server/hotel";
 import type { PriorEvent } from "@perfectman/server/hotel";
 import type { LLMConfig } from "@perfectman/server/hotel";
@@ -49,10 +49,16 @@ export async function presetSimConfig(sceneId: string, o: PresetSimOptions = {})
   const names = new Map(compiled.summary.agents.map((a) => [a.id, a.displayName]));
   const people = refs.map((id) => ({ id, displayName: names.get(id) ?? id }));
   let drama: ScenarioDrama | undefined;
+  let dramaMode: DramaMode | undefined;
   if (front["drama"] !== undefined) {
     const read = compileSceneDrama(front["drama"], people, { sceneCuts: countCuts(front["beats"]) });
     if (read.errors.length > 0) throw new Error(`scene ${sceneId} has a bad drama block: ${read.errors.map((e) => `${e.path}: ${e.message}`).join("; ")}`);
     drama = read.drama;
+    dramaMode = read.mode;
+  } else {
+    // The compile's own rule for a scene that wrote no block (the authoring service's `settleDrama`): the conservative default.
+    drama = defaultSceneDrama(refs);
+    if (drama) dramaMode = "default";
   }
   const script = front["beats"] === undefined ? undefined : compileSceneBeats(front["beats"], people, { drama });
   if (script && script.errors.length > 0) throw new Error(`scene ${sceneId} has bad beats: ${script.errors.map((e) => `${e.path}: ${e.message}`).join("; ")}`);
@@ -79,6 +85,7 @@ export async function presetSimConfig(sceneId: string, o: PresetSimOptions = {})
     actors: agents.map((a) => ({ ref: a.id, name: names.get(a.id) ?? a.id })),
     states,
     ...(drama ? { drama } : {}),
+    ...(dramaMode ? { dramaMode } : {}),
     ...(beats.length > 0 ? { beats } : {}),
     ...(o.dramaOn === false ? { dramaOn: false } : {}),
     ...(o.tuning ? { tuning: o.tuning } : {}),

@@ -19,6 +19,8 @@ export type ReplayManifest = {
   /** Cast ref (the scenario's agent id) to the avatar id the hotel gave it, which is what the director track and the frame log mention. */
   actors?: Record<string, number>;
   counters: Record<string, number>;
+  /** The scenario's drama as the run enforced it: where the block came from (`authored`, `default`, `off`, `free_play`) and what it allowed. */
+  drama?: { source: string; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean };
   /** A pulse did not drain before teardown, as in the HTTP controller's manifest. */
   dirty?: true;
   files: Record<string, string>;

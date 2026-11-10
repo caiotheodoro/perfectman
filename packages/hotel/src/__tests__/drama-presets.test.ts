@@ -5,9 +5,10 @@
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { AuthoringError, AuthoringService } from "../authoring/authoring-service.js";
-import { compileSceneDrama } from "../authoring/scenario-drama.js";
+import { compileSceneDrama, defaultSceneDrama } from "../authoring/scenario-drama.js";
 import type { ScenarioDrama } from "../authoring/scenario-drama.js";
 import { parseScenarioBody } from "../run/scenario-body.js";
+import { hotelReadsBlock } from "../testing/hotel-block-read.js";
 
 const llm = { provider: "mock" as const, baseUrl: "", apiKeyEnv: "PERFECTMAN_LLM_API_KEY" as const, models: ["mock"], prices: {}, concurrency: 3, softCallsPerMin: 1, softTokensPerHour: 1 };
 const presetsRoot = fileURLToPath(new URL("../../../../examples/presets", import.meta.url));
@@ -82,9 +83,31 @@ describe("the presets through the authoring service", () => {
     expect(() => service().compile({ source: murder })).toThrow(AuthoringError);
   });
 
-  it("the older presets carry no drama block and compile to a body without one", async () => {
+  it("the older presets carry no drama block, so they compile to the conservative default: every ordered pair of the cast, up to a slap, nobody dies", async () => {
     const { source } = await service().preset("gato-no-telhado");
-    expect(compiled(source).drama).toBeUndefined();
+    const { drama, ids, raw } = compiled(source);
+    expect(drama).toEqual(defaultSceneDrama(ids));
+    expect(drama).toMatchObject({ max_rung: 4, may_die: [], permadeath: false });
+    expect(drama?.may_target).toHaveLength(ids.length * (ids.length - 1));
+    expect(raw).toMatchObject({ drama_mode: "default" });
     expect(service().validate({ source }).warnings).toEqual([]);
+  });
+
+  it("every preset without a block of its own compiles to a default that the hotel's strict read takes whole", async () => {
+    const lib = await service().presets();
+    const bare: string[] = [];
+    for (const { key } of lib.presets) {
+      const { source } = await service().preset(key);
+      if (/^drama:/m.test(source)) continue;
+      bare.push(key);
+      const { drama, ids, raw } = compiled(source);
+      if (ids.length < 2) {
+        expect(drama, key).toBeUndefined();
+        continue;
+      }
+      expect(drama, key).toEqual(defaultSceneDrama(ids));
+      expect(hotelReadsBlock(JSON.parse(JSON.stringify(raw))), key).toMatchObject({ kind: "valid", max_rung: 4, may_die: [], permadeath: false });
+    }
+    expect(bare).toContain("gato-no-telhado");
   });
 });
