@@ -117,7 +117,7 @@ Calls start at link 1 and take the first link that answers. Any error fails over
 - **Governor:** one `GovernorShared` penalty window per link. A link with another behind it retries a 429 once and waits at most 1.5 s.
 - **Deadline:** one 13 s chain deadline (the 20 s generate deadline is the outer bound) is shared by all attempts; each attempt gets the smaller of the link's timeout and what is left, and a link is skipped (`deadline`) when under 1.5 s is left.
 - **Health check:** run start and the breaker probe ping the links in order and succeed on the first that answers.
-- Each served call records its link: `routedModel` is the link name, `fallbackAttempts` the links passed over, `x-pm-link` the same in the headers. `run_status` `llm_p50_ms` / `llm_p95_ms` are over served calls and include the time lost to failed attempts. Per-link calls, failures, served, skipped by reason, tokens, cost, p50/p95 and breaker state are in `Run.llmChain().snapshot()`, logged at run end, and flattened into the replay manifest counters (`llm_served_<link>`, `llm_failures_<link>`, `llm_guard_<reason>`). The director's `run_status` schema is unchanged, so per-link numbers do not reach the panel; the repetition and output guards add `llm_guard_repeat_own` and the others listed in the seventh pass. Failed calls are counted by class per link (`failReasons`, `llm_failreason_<link>_<class>`: `timeout`, `http_<status>`, `invalid_json`, `empty`, `network`, `quota`, `auth`, `context`, `error`), and each served call records why the links before it were passed over (`ServedRecord.passed`, e.g. `pick:invalid_json`, `opencode-glm:timeout`). The answering link and model per call are in the `pulse_metrics` event (`routedModel`, `model`, `fallbackAttempts`).
+- Each served call records its link: `routedModel` is the link name, `fallbackAttempts` the links passed over, `x-pm-link` the same in the headers. `run_status` `llm_p50_ms` / `llm_p95_ms` are over served calls and include the time lost to failed attempts. Per-link calls, failures, served, skipped by reason, tokens, cost, p50/p95 and breaker state are in `Run.llmChain().snapshot()`, logged at run end, and flattened into the replay manifest counters (`llm_served_<link>`, `llm_failures_<link>`, `llm_guard_<reason>`). The director's `run_status` schema is unchanged, so per-link numbers do not reach the panel; the repetition and output guards add `llm_guard_repeat_own` and the others listed in the seventh pass, and the dialogue guards the ones in the eighth. Failed calls are counted by class per link (`failReasons`, `llm_failreason_<link>_<class>`: `timeout`, `http_<status>`, `invalid_json`, `empty`, `network`, `quota`, `auth`, `context`, `error`), and each served call records why the links before it were passed over (`ServedRecord.passed`, e.g. `pick:invalid_json`, `opencode-glm:timeout`). The answering link and model per call are in the `pulse_metrics` event (`routedModel`, `model`, `fallbackAttempts`).
 
 ### The builder's draft follows the chain
 
@@ -503,3 +503,31 @@ In the replay manifest, alongside `llm_guard_<reason>`; these eight are always p
 - A loop in which every line brings a new word (the stall check counts new names, numbers and topic words, so a paraphrase loop with fresh synonyms reads as moving).
 - A first-attempt prompt that already bans a phrase the actor's last lines carry: the ban is on the retry only, so a loop costs one retry per turn until it breaks.
 - No measurement on a real model; the tests are the quoted lines and the corpora above.
+
+## Eighth pass: dialogue the guards let through (2026-11-10, `fix/dialogue-v2`)
+
+Run 60 (pt-BR, three bot actors, a hand-written estate scene) read as actors that do not listen: 92 model calls for about 41 spoken lines (45% of the calls were guard retries), 10 lines that were the guard's own "Ah.", "Hm.", "Ué.", "Sei." or "Tá." (they also closed question debts), narration said out loud ("Olho pra ela, sorriso atravessado."), a median line of 19 words under a cap of 40, a reveal ("eu vi a caneta na sua mão") that nobody answered, and a quotation nobody made ("Ela te chamou de irmão e de burro"). The production event log keeps no guard action as text (only counters in `replay.json`); the causes below are read from the code and the 38 lines of the transcript. The numbers and the rules are in [script-likeness.md](script-likeness.md); this is the part that touches the chain-facing actor loop.
+
+| Change | Where |
+|---|---|
+| A turn gets one retry, whatever the rules the first attempt broke; the notes of every broken rule go in one numbered note (it was up to `maxRetries`, 2, one rule at a time) | `action-intent-step.ts`, `mergeRetryNotes` |
+| A line the guard cannot repair is a no-op with the motive `Output guard: no fresh line (...)`, plus the model's face or one for its strongest feeling, never a filler said in its place; the "give a short reaction" sentence is gone from the notes. `PERFECTMAN_FILLER_SILENCE=0` restores the old text | `silenceMotive`, `silentBody`, `fillerSilenceEnabled` |
+| `Line held back by the output guard` (the chain's silent no-op, `hotel/src/llm/guards.ts`) counts as an engine-written motive, so every reader that skips those skips it | `shared/src/agent/engine-motive.ts` |
+| Builder personas and a persona file with no `presence.messageLength` are `short` (pt aim 5-12, cap 22, en 6-14 and 28) | `persona-md-compiler.ts`, `room-files.ts`, `lengthTargetFor` |
+| Narration (first-person body verbs) is cut out of `visibleContent` before any check reads it; the contract line says speech only | `stripNarration`, `speechOnlyLine` |
+| Novelty is judged against the actor's own last 3 lines and the previous turn, leaving out the scene's topic words; a filler does not clear a question debt | `lowNovelty`, `isRealAnswer`, `owedQuestion` |
+| Quotations and claims ("X te chamou de Y", "X disse que ...") must be in the last 10 room lines: one retry, then the sentence is struck | `falseQuotes` |
+| A reveal, accusation, threat or offer in the room's last line puts a "react to this first" note in the decision of everyone who hears it | `moveBefore`, `answerNoteFor` |
+| `guard-log.jsonl` per run, one line per guard action `{t_ms, actor, rule, before, after}` (an operator artifact, `guard_log` in the manifest; `PERFECTMAN_GUARD_LOG=0` turns it off) | `hotel/src/run/guard-log.ts`, `artifacts.ts`, `RepetitionPolicy.onGuard(kind, info)` |
+
+### Counters
+
+Added to the run's counters, always present, zeros included: `llm_narration_stripped`, `llm_quote_retry`, `llm_quote_struck`, `llm_guard_silenced` (turns that ended in silence because nothing fresh was left) and `llm_answer_note` (prompts that carried the note). `llm_motif_reaction` now counts repairs that kept the sentences without the motif; with `PERFECTMAN_FILLER_SILENCE=0` it counts the swaps for a reaction as before.
+
+### Not covered
+
+- No real model ran: whether deepseek obeys a 22-word cap, keeps its actions in `body`, quotes only what was said or reacts first to a reveal is unmeasured. The replay of run 60's lines is on scripted candidates (what the old guard replaced with a filler was not kept).
+- A claim about an absent person with a pronoun ("ela disse que ...") is read as one about someone in the room, and can be struck wrongly.
+- A reveal said to one person is noted to everyone in earshot; a room of 12 gets 11 notes.
+- A repeated demand in new words is still invisible to the motif check, and the stall nudge is still suppressed whenever a body change is near the actor (`scene-stall.ts`).
+- Non-word detection ("efatigável") stays a non-goal: there is no dictionary.
