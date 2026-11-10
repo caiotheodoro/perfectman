@@ -390,20 +390,25 @@ const sameWord = (a: string, b: string): boolean => {
 };
 
 const SUBJECT_SKIP: ReadonlySet<string> = new Set("te me lhe nos vos a o um uma ja entao tambem".split(" "));
+/** Third-person singular pronouns: a claim about "ela" or "ele" is about someone in the room only when exactly one other person spoke in view. Plural pronouns are never checked. */
+const THIRD_PERSON: ReadonlySet<string> = new Set("ela ele she he".split(" "));
+const THIRD_PERSON_PLURAL: ReadonlySet<string> = new Set("eles elas they".split(" "));
 const CALL_SKIP: ReadonlySet<string> = new Set("te me lhe nos voce vc ele ela eles elas a o um uma de you him her us me an".split(" "));
 const CALL_VERBS: ReadonlySet<string> = new Set(["chamou", "called"]);
 const LEADING_THAT: ReadonlySet<string> = new Set(["que", "that", "se"]);
 
 /**
  * Quotations and reported claims in a candidate that the last 10 room lines do not support. Checked: a quoted span of 3 or more words (straight,
- * curly or guillemet quotes) in a sentence that says who said it; "X te chamou de Y" with X a speaker in view (or ela, ele, você: anyone else), where
- * Y must be a word X said; and "X disse que ..." (the "que" is required) with at least 3 content words, 60% of them in the lines of X (or of anyone else for a pronoun). A quoted
+ * curly or guillemet quotes) in a sentence that says who said it; "X te chamou de Y" with X a speaker in view (or você: anyone else; or ela or ele, when exactly
+ * one other person spoke in view, and never eles or elas), where Y must be a word X said; and "X disse que ..." (the "que" is required) with at least 3 content words, 60% of them in the lines of X (or of anyone else for a pronoun). A quoted
  * span passes when its words run unbroken in one line or 80% of its trigrams are in one; the comparison is folded (case, accents, punctuation, stage directions).
- * What cannot be checked passes: a speaker with no line in view, a quotation with no attribution (a letter, a saying), a claim of fewer than 3 content words.
+ * What cannot be checked passes: a speaker with no line in view, a quotation or claim with no person to attribute it to (a letter, a saying, someone who is not in the room,
+ * "ela" or "ele" when 2 or more other people spoke in view), a claim of fewer than 3 content words.
  */
 export function falseQuotes(candidate: string, room: readonly OwedLine[]): QuoteIssue[] {
   const lines = room.slice(-QUOTE_ROOM_LINES).map((l) => ({ line: l, keys: wordsOf(l.text).map((w) => w.key), speaker: nameKeys([l.speaker]) }));
   if (lines.length === 0) return [];
+  const otherSpeakers = new Set(lines.filter((l) => !l.line.own).map((l) => fold(l.line.speaker))).size;
   const issues: QuoteIssue[] = [];
   const said = (span: string): boolean => {
     const keys = wordsOf(span).map((w) => w.key);
@@ -415,24 +420,27 @@ export function falseQuotes(candidate: string, room: readonly OwedLine[]): Quote
     const words = wordsOf(sentence);
     const keys = words.map((w) => w.key);
     if (!keys.some((k) => ATTRIBUTION_VERBS.has(k))) continue;
+    // Who each verb of saying is about: the word before it (past a clitic), a speaker in view, "você" (anyone else), or "ela" and "ele" when exactly one other
+    // person spoke in view. Anything else (a letter, someone who is not here, a plural pronoun, a speaker with no line in view) is not a claim about this room.
+    const attributed: Array<{ v: number; pool: Array<(typeof lines)[number]> }> = [];
+    for (let v = 0; v < keys.length; v++) {
+      if (!ATTRIBUTION_VERBS.has(keys[v]!)) continue;
+      let s = v - 1;
+      while (s >= 0 && SUBJECT_SKIP.has(keys[s]!)) s--;
+      const subject = keys[s];
+      if (subject === undefined || THIRD_PERSON_PLURAL.has(subject) || (THIRD_PERSON.has(subject) && otherSpeakers !== 1)) continue;
+      const pool = CLAIM_SUBJECTS.has(subject) ? lines.filter((l) => !l.line.own) : lines.filter((l) => !l.line.own && l.speaker.has(subject));
+      if (pool.length > 0) attributed.push({ v, pool });
+    }
+    if (attributed.length === 0) continue;
     const before = issues.length;
     for (const m of sentence.matchAll(/"([^"]+)"|“([^”]+)”|«([^»]+)»/gu)) {
       const span = m[1] ?? m[2] ?? m[3] ?? "";
       if (wordsOf(span).length >= QUOTE_MIN_WORDS && !said(span)) issues.push({ sentence, claim: span.trim(), kind: "quote" });
     }
     const quoted = QUOTE_CHARS.test(sentence);
-    for (let v = 0; v < keys.length; v++) {
+    for (const { v, pool } of attributed) {
       const verb = keys[v]!;
-      if (!ATTRIBUTION_VERBS.has(verb)) continue;
-      // The subject: the word before the verb (past a clitic), a speaker in view or a pronoun. Anything else is not a claim about a person in this room.
-      let s = v - 1;
-      while (s >= 0 && SUBJECT_SKIP.has(keys[s]!)) s--;
-      const subject = keys[s];
-      if (subject === undefined) continue;
-      const pronoun = CLAIM_SUBJECTS.has(subject);
-      const byName = lines.filter((l) => !l.line.own && l.speaker.has(subject));
-      const pool = pronoun ? lines.filter((l) => !l.line.own) : byName;
-      if (pool.length === 0) continue;
       const poolKeys = pool.flatMap((l) => l.keys);
       if (CALL_VERBS.has(verb)) {
         const items: string[] = [];
@@ -475,19 +483,27 @@ export function withoutFalseQuotes(candidate: string, issues: readonly QuoteIssu
 
 // ---- a move that was just made at this actor ----------------------------------------------------------------------------------------
 
-export type OwedMove = { kind: MoveKind; speaker: string; text: string; /** The line names this actor or was aimed at it (else it was said to the room or to someone else in it). */ named: boolean };
+export type OwedMove = { kind: MoveKind; speaker: string; text: string; /** The line names this actor or was aimed at it; false when it named nobody and was said to the room. */ named: boolean };
 
 /**
- * The move the room's last line made, when it is a reveal, an accusation, a threat or an offer made by someone else: what this actor must react to
- * before anything else. Only the turn right before counts (an older one was answered by whoever spoke since, or by silence), a guest's line is left to the prompt's
- * own handling, and a line that makes no such move gives undefined.
+ * The move the room's last line made, when it is a reveal, an accusation, a threat or an offer made by someone else and it is this actor's to answer: what
+ * this actor must react to before anything else. A line that names someone or is aimed at someone (an addressee or reply target in the log, or a name of a
+ * person in the room: `roomNames`, folded) is for that person only; a line that names nobody is for everyone who hears it. Only the turn right before counts
+ * (an older one was answered by whoever spoke since, or by silence), a guest's line is left to the prompt's own handling, and a line that makes no such move
+ * gives undefined.
  */
-export function moveBefore(room: readonly OwedLine[], myNames: ReadonlySet<string>, myAimId: string | undefined): OwedMove | undefined {
+export function moveBefore(room: readonly OwedLine[], myNames: ReadonlySet<string>, myAimId: string | undefined, roomNames: ReadonlySet<string> = new Set()): OwedMove | undefined {
   const last = room[room.length - 1];
   if (!last || last.own === true || last.untrusted === true) return undefined;
   const a = analyze(last);
   const kind = majorMoveOf(a.joined);
   if (kind === undefined) return undefined;
-  const named = a.words.some((w) => myNames.has(w.key)) || (myAimId !== undefined && (last.aimedAt ?? []).some((id) => fold(id) === fold(myAimId)));
+  const aimed = last.aimedAt ?? [];
+  const named = a.words.some((w) => myNames.has(w.key)) || (myAimId !== undefined && aimed.some((id) => fold(id) === fold(myAimId)));
+  if (!named) {
+    const speaker = nameKeys([last.speaker]);
+    const namesOther = a.words.some((w) => roomNames.has(w.key) && !myNames.has(w.key) && !speaker.has(w.key));
+    if (aimed.length > 0 || namesOther) return undefined;
+  }
   return { kind, speaker: last.speaker, text: last.text, named };
 }

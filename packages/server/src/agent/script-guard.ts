@@ -43,7 +43,7 @@ export function spokenLines(packet: Pick<PerceptionPacket, "agentId" | "triggeri
     if (typeof text !== "string" || text.trim() === "") continue;
     if (p?.["mode"] === "whisper" || p?.["channelType"] === "private_channel" || e.visibility.visibilityReason.includes("private")) continue;
     const name = p?.["senderName"];
-    const aimed = [p?.["addresseeIds"], p?.["mentionedAgentIds"]].flatMap((ids) => (Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : []));
+    const aimed = [p?.["addresseeIds"], p?.["mentionedAgentIds"], p?.["replyToActorId"]].flatMap((ids) => (Array.isArray(ids) ? ids.filter((x): x is string => typeof x === "string") : typeof ids === "string" && ids !== "" ? [ids] : []));
     out.push({ speaker: typeof name === "string" && name !== "" ? name : e.actorId, text, own: e.actorId === packet.agentId, ...(p?.["untrusted"] === true ? { untrusted: true } : {}), ...(aimed.length > 0 ? { aimedAt: aimed } : {}) });
   }
   return out;
@@ -181,14 +181,15 @@ export function answerNote(m: OwedMove, language: Lang): string {
 
 /**
  * The move note for this actor's decision, or undefined: the room's last line (not this actor's, not a guest's) revealed, accused, threatened or offered
- * something, and everyone who hears it gets the note, the person named first of all (a three-person scene has no bystanders). Never on a whisper (its own note)
- * or when a guest's line aimed at the actor is the trigger (the prompt already answers it).
+ * something. A line that names someone, or is aimed at someone (an addressee, a reply target, a name of a person in the room), gives the note to that person
+ * only; a line that names nobody gives it to everyone who hears it. Never on a whisper (its own note) or when a guest's line aimed at the actor is the trigger
+ * (the prompt already answers it).
  */
 export function answerNoteFor(input: AgentRuntimeInput, displayName: string, language: Lang): string | undefined {
   if (whisperedBy(input)) return undefined;
   const p = input.perceptionPacket.triggeringEvent?.payload as Record<string, unknown> | undefined;
   if (p?.["untrusted"] === true && [p["addresseeIds"], p["mentionedAgentIds"]].some((ids) => Array.isArray(ids) && ids.includes(input.agentId))) return undefined;
-  const m = moveBefore(spokenLines(input.perceptionPacket), nameKeysOf([displayName]), input.agentId);
+  const m = moveBefore(spokenLines(input.perceptionPacket), nameKeysOf([displayName]), input.agentId, roomNameKeys(input, displayName));
   return m ? answerNote(m, language) : undefined;
 }
 

@@ -29,14 +29,30 @@ import { RUN60, RUN_LINES, roomOf, said } from "./fixtures/run-lines.js";
 describe("moves made at an actor", () => {
   const names = (n: string) => nameKeysOf([n]);
 
-  it("run 60: Renato's 'eu vi a caneta na sua mão, Heloísa' is a reveal, and the next speaker is told", () => {
+  const room3 = nameKeysOf(["Heloísa", "Otávio", "Renato"]);
+
+  it("run 60: Renato's 'eu vi a caneta na sua mão, Heloísa' is a reveal made at Heloísa, and only she is told", () => {
     const room = roomOf(259, "Heloísa").slice(-3);
     expect(room.at(-1)!.text).toBe(said(251));
-    const heloisa = moveBefore(room, names("Heloísa"), "heloisa");
-    expect(heloisa).toMatchObject({ kind: "reveal", speaker: "Renato", named: true });
-    // Otávio is not named: he is in the room, and a reveal said to the table is his to answer too.
-    const otavio = moveBefore(room.map((l) => ({ ...l, own: l.speaker === "Otávio" })), names("Otávio"), "otavio");
-    expect(otavio).toMatchObject({ kind: "reveal", named: false });
+    expect(moveBefore(room, names("Heloísa"), "heloisa", room3)).toMatchObject({ kind: "reveal", speaker: "Renato", named: true });
+    // Otávio is in the room, but the line names Heloísa: it is not his to answer.
+    expect(moveBefore(room.map((l) => ({ ...l, own: l.speaker === "Otávio" })), names("Otávio"), "otavio", room3)).toBeUndefined();
+  });
+
+  it("a line that names nobody is for everyone who hears it; one aimed at someone (an addressee or a reply target in the log) is for that person only", () => {
+    const toTheRoom = [{ speaker: "Renato", text: "Eu vi a caneta na mão de alguém, cofre aberto e eu esqueço a assinatura.", own: false }];
+    expect(moveBefore(toTheRoom, names("Heloísa"), "heloisa", room3)).toMatchObject({ kind: "reveal", named: false });
+    expect(moveBefore(toTheRoom, names("Otávio"), "otavio", room3)).toMatchObject({ kind: "reveal", named: false });
+    const aimed = [{ ...toTheRoom[0]!, aimedAt: ["heloisa"] }];
+    expect(moveBefore(aimed, names("Heloísa"), "heloisa", room3)).toMatchObject({ kind: "reveal", named: true });
+    expect(moveBefore(aimed, names("Otávio"), "otavio", room3)).toBeUndefined();
+    // "você" to the aimed actor: nothing in the words names anyone, the log says who.
+    const you = [{ speaker: "Renato", text: "Eu vi você com a caneta na mão.", own: false, aimedAt: ["otavio"] }];
+    expect(moveBefore(you, names("Otávio"), "otavio", room3)).toMatchObject({ kind: "reveal", named: true });
+    expect(moveBefore(you, names("Heloísa"), "heloisa", room3)).toBeUndefined();
+    // A name nobody in the room has (a dead husband) names nobody here.
+    const absent = [{ speaker: "Renato", text: "Eu vi a caneta do Henrique na sua mão.", own: false }];
+    expect(moveBefore(absent, names("Otávio"), "otavio", room3)).toMatchObject({ named: false });
   });
 
   it("the note quotes the first 12 words and says what to do first", () => {
@@ -76,11 +92,11 @@ describe("moves made at an actor", () => {
     for (const list of Object.values(MOVE_PHRASES)) expect(list.length).toBeGreaterThan(5);
   });
 
-  it("fires after at most 5% of the 128 ordinary lines, and the ones it fires on are moves", () => {
+  it("fires after at most 5% of the 128 ordinary lines", () => {
     const fired: string[] = [];
     for (let i = 3; i < NORMAL.length; i++) {
       const room = NORMAL.slice(Math.max(0, i - 10), i).map((text, j) => ({ speaker: j % 2 ? "Ana" : "Bia", text }));
-      if (moveBefore(room, names("Caco"), "caco")) fired.push(room.at(-1)!.text);
+      if (moveBefore(room, names("Caco"), "caco", nameKeysOf(["Ana", "Bia", "Caco"]))) fired.push(room.at(-1)!.text);
     }
     expect(fired.length / (NORMAL.length - 3)).toBeLessThanOrEqual(0.05);
   });
@@ -91,7 +107,7 @@ describe("the prompt of an actor a move was made at", () => {
   const withScript = { ...profile, scriptPrompt: { length: { aim: [5, 12] as [number, number], cap: 22, sentences: 2 } } };
   const ev = (id: string, actorId: string, name: string, content: string): CommittedEvent =>
     ({ id, simulationId: "sim-1", channelId: "room:lounge", actorId, type: "message_sent", payload: { content, senderName: name }, createdAt: 1, pulseIndex: 1, sourceEventIds: [], emotionalSalience: "low", visibility: { visibleToAgents: [], visibleToSpectators: true, visibleToOperators: true, visibilityReason: "public" } }) as CommittedEvent;
-  const events = [ev("e1", "otavio", "Otávio", said(207)), ev("e2", "renato", "Renato", said(251))];
+  const events = [ev("e0", "heloisa", "Heloísa", said(199)), ev("e1", "otavio", "Otávio", said(207)), ev("e2", "renato", "Renato", said(251))];
 
   it("compact and full: the note is in the decision, the prompt is flagged, and with the checks off neither is", () => {
     for (const style of ["compact", undefined] as const) {
@@ -102,6 +118,22 @@ describe("the prompt of an actor a move was made at", () => {
       expect(off.system + off.user).not.toContain("acabou de revelar");
       expect(off.answerNoted).toBeUndefined();
     }
+  });
+
+  it("only the person the line names is told: Otávio, in the same room, gets none", () => {
+    const otavio = { ...withScript, displayName: "Otávio" };
+    expect(PromptBuilder.build(hotelInput(events), otavio, "action_intent", undefined, "compact").answerNoted).toBeUndefined();
+    expect(answerNoteFor(hotelInput(events), "Otávio", "pt-BR")).toBeUndefined();
+    expect(answerNoteFor(hotelInput(events), "Heloísa", "pt-BR")).toContain("Renato acabou de revelar");
+  });
+
+  it("a line that names nobody, or is aimed at this actor in the log, reaches it", () => {
+    const toRoom = [...events.slice(0, 2), ev("e3", "renato", "Renato", "Eu vi a caneta na mão de alguém, cofre aberto e eu esqueço a assinatura.")];
+    expect(answerNoteFor(hotelInput(toRoom), "Otávio", "pt-BR")).toContain("Renato acabou de revelar");
+    const aimedAtOther = [...events.slice(0, 2), { ...ev("e4", "renato", "Renato", "Eu vi a caneta na mão de alguém, cofre aberto."), payload: { content: "Eu vi a caneta na mão de alguém, cofre aberto.", senderName: "Renato", addresseeIds: ["heloisa"] } } as CommittedEvent];
+    expect(answerNoteFor(hotelInput(aimedAtOther), "Otávio", "pt-BR")).toBeUndefined();
+    const aimedAtMe = [...events.slice(0, 2), { ...ev("e5", "renato", "Renato", "Eu vi a caneta na mão de alguém, cofre aberto."), payload: { content: "Eu vi a caneta na mão de alguém, cofre aberto.", senderName: "Renato", replyToActorId: hotelInput().agentId } } as CommittedEvent];
+    expect(answerNoteFor(hotelInput(aimedAtMe), "Otávio", "pt-BR")).toContain("Renato acabou de revelar");
   });
 
   it("a neutral last line gives no note", () => {

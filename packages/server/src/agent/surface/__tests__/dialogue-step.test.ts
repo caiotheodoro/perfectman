@@ -59,10 +59,12 @@ describe("narration in speech", () => {
 
 describe("quotes nobody made", () => {
   const OTAVIO_230 = said60(230);
+  // The real line says "Ela": Heloísa and Renato were both in view, so the check cannot know who "ela" is and leaves it. With her name it is checked.
+  const NAMED = OTAVIO_230.replace("Ela", "Heloísa");
 
-  it("flags Otávio's real line (Heloísa never called Renato 'burro') in the one retry note, and strikes the sentence when it comes back", async () => {
-    expect(OTAVIO_230).toContain("burro");
-    const r = await run([OTAVIO_230, OTAVIO_230], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
+  it("flags the line in the one retry note once Heloísa is named (she never called Renato 'burro'), and strikes the sentence when it comes back", async () => {
+    expect(NAMED).toContain("burro");
+    const r = await run([NAMED, NAMED], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
     expect(r.calls).toBe(2);
     expect(r.system(1)).toContain("burro");
     expect(r.system(1)).toContain("atribui a alguém algo que não foi dito");
@@ -70,17 +72,23 @@ describe("quotes nobody made", () => {
     // The line is also 24 words: both are in the one note (the real line is over the cap by 2).
     expect(r.system(1)).toContain("o limite é 22");
     expect(r.seen).toEqual(["len_retry", "quote_retry", "quote_struck"]);
-    expect(r.infos.at(-1)).toMatchObject({ kind: "quote_struck", before: OTAVIO_230, after: r.said });
+    expect(r.infos.at(-1)).toMatchObject({ kind: "quote_struck", before: NAMED, after: r.said });
+  });
+
+  it("never strikes a claim about 'ela' when two other people spoke in view: the real line only gets its length retry", async () => {
+    const r = await run([OTAVIO_230, OTAVIO_230], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
+    expect(r.seen).toEqual(["len_retry", "len_trimmed"]);
+    expect(r.said).toContain("Ela te chamou de irmão e de burro");
   });
 
   it("lets a true claim through: Heloísa did say 'irmão'", async () => {
-    const r = await run(["Rapaz, chega aqui. Ela te chamou de irmão, só isso. Eu te ofereço o copo e um lugar na mesa."], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
+    const r = await run(["Rapaz, chega aqui. Heloísa te chamou de irmão, só isso. Eu te ofereço o copo e um lugar na mesa."], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
     expect(r.calls).toBe(1);
     expect(r.seen).toEqual([]);
   });
 
   it("takes the retry that stops quoting", async () => {
-    const r = await run([OTAVIO_230, "Rapaz, chega aqui. Eu te ofereço o copo e um lugar na mesa."], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
+    const r = await run([NAMED, "Rapaz, chega aqui. Eu te ofereço o copo e um lugar na mesa."], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
     expect(r.seen).toEqual(["len_retry", "quote_retry"]);
     expect(r.said).toBe("Rapaz, chega aqui. Eu te ofereço o copo e um lugar na mesa.");
   });
