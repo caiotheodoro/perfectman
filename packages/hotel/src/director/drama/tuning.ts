@@ -11,7 +11,9 @@ import { VOCAB_CONSTANTS } from "../verb-vocab.generated.js";
 export type DriverSource =
   | `act.${keyof ActionEmotions}`
   | `social.${keyof SocialEmotions}`
-  | `rel.${keyof Pick<RelationalState, "resentment" | "threat" | "envy" | "suspicion">}`;
+  | `rel.${keyof Pick<RelationalState, "resentment" | "threat" | "envy" | "suspicion">}`
+  /** The ledger's grievance from what was said (`ProvocationLedger`, errata P7): 0 when nobody provoked the actor. */
+  | "rel.provocation";
 
 /** One driver of a verb. The verb's volition is the max of `value * weight` over its drivers (verb-bible 4.5). */
 export type Driver = { source: DriverSource; weight: number };
@@ -25,6 +27,16 @@ export type DramaTuning = {
   momentumGain: number;
   /** Rungs from `minRung` up need a grievance toward the target: `rel.resentment >= resentment`, or a negative event within `windowMs` (4.5). */
   grievance: { minRung: number; resentment: number; windowMs: number };
+  /**
+   * The grievance the cast's own talk builds (errata P7). The engine's relational rules do not read what was said, so a model that only talks never gives the
+   * motive gate (LAD-6) a grievance: `ProvocationLedger` reads each line (`classifyHostility`), per ordered pair of `may_target` bot actors, and the director reads
+   * the level as `rel.provocation`. One counted line adds `gain[kind]` (a line counts once, by its strongest kind); a line the target did not hear clearly but was
+   * said in its room (behind its back) adds `behindBack` of it; the level falls linearly to 0 over `windowMs` from the last counted line and never passes `cap`;
+   * a second counted line inside `minGapMs` of the first is the same outburst and adds nothing. From `grievanceAt` the level is a grievance for the rungs up to
+   * `maxRung` (never a slap or above: those keep needing a real resentment). The verbs it drives are in `drivers` with the weights that keep a single line short
+   * of the shove (`gain.insult` x the shove's weight is below the lowest shove threshold, 0.5).
+   */
+  provocation: { gain: Readonly<Record<"insult" | "threat" | "challenge" | "mockery", number>>; cap: number; windowMs: number; minGapMs: number; behindBack: number; grievanceAt: number; maxRung: number };
   /** LAD-10: at most `maxActors` actors, or `castFraction` of the cast if that is fewer (never fewer than one), hold a rung of `minRung` or more at once. */
   contagion: { minRung: number; maxActors: number; castFraction: number };
   /** Which tendencies drive which verb. A verb with no driver is never started by emotion alone: `kill` is authored (LAD-5). */
@@ -102,12 +114,13 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
   patienceBoost: 0.15,
   momentumGain: 0.1,
   grievance: { minRung: 2, resentment: 0.5, windowMs: 300_000 },
+  provocation: { gain: { insult: 0.5, threat: 0.5, challenge: 0.3, mockery: 0.3 }, cap: 0.9, windowMs: 120_000, minGapMs: 8000, behindBack: 0.5, grievanceAt: 0.3, maxRung: 3 },
   contagion: { minRung: 3, maxActors: 2, castFraction: 1 / 3 },
   drivers: {
-    glare: [d("act.jealousInspection"), d("act.resentfulColdness"), d("social.jealousy"), d("social.envy"), d("rel.envy")],
-    insult: [d("act.impulsiveProvocation"), d("act.contemptuousDismissal"), d("social.contempt")],
-    // `defensiveness` is the one tendency that licenses a first strike from fear, and its ceiling is `shove` (4.3).
-    shove: [d("act.impulsiveProvocation"), d("act.dominanceAssertion"), d("act.defensiveness")],
+    glare: [d("act.jealousInspection"), d("act.resentfulColdness"), d("social.jealousy"), d("social.envy"), d("rel.envy"), d("rel.provocation")],
+    insult: [d("act.impulsiveProvocation"), d("act.contemptuousDismissal"), d("social.contempt"), d("rel.provocation")],
+    // `defensiveness` is the one tendency that licenses a first strike from fear, and its ceiling is `shove` (4.3). A provocation reaches it at 0.9 of itself (see `provocation`).
+    shove: [d("act.impulsiveProvocation"), d("act.dominanceAssertion"), d("act.defensiveness"), d("rel.provocation", 0.9)],
     slap: [d("act.dominanceAssertion"), d("social.humiliation")],
     punch: [d("act.dominanceAssertion")],
     turn_back: [d("act.resentfulColdness"), d("act.contemptuousDismissal"), d("act.shameWithdrawal")],

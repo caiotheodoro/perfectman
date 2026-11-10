@@ -94,6 +94,11 @@ export type SimConfig = {
    * is not `drama:`) and meets whatever the body does about it. It is how a live model that keeps sending its actor somewhere else is staged. Absent: no own walks.
    */
   ownWalk?: { actor: string; everyMs: readonly [number, number] };
+  /**
+   * What the cast says (a test seam, errata P7): at `atMs` after the start `actor` says `text`, to `to` when given. The line goes to the grid as chat and to the body's grievance
+   * ledger as a run's committed lines do (`DramaBody.noteSpoken`: who it names, who it is for), so a cast that only talks can be heated, or left cold, by what it says.
+   */
+  dialogue?: ReadonlyArray<{ atMs: number; actor: string; text: string; to?: string }>;
   /** The harm limit of the room (SAFE-4). */
   harmMax?: number;
   /** The director's tuning; absent is the sidecar's default. */
@@ -129,6 +134,8 @@ export type SimResult = {
   bodyBlocked: Array<{ atMs: number; actor: string; code: string; detail?: string }>;
   /** Acts that held: started, and how each ended. */
   stats: { started: number; blocked: number; aborted: number; done: number };
+  /** The body's own counters, as a run's summary carries them (`grievance_raised`, `act_blocked_notes`, ...): only the ones that are not zero. */
+  counters: Record<string, number>;
 };
 
 /** Timers on the sim's own clock. */
@@ -337,6 +344,16 @@ export function runDramaSim(config: SimConfig): SimResult {
         for (const r of reasons) bodyBlocked.push({ atMs: grid.now() - startMs, actor: agentId, code: r.code, ...(r.detail !== undefined ? { detail: r.detail } : {}) });
       },
     },
+    // What the cast says may raise a grievance between the pairs the scenario lets (never a human, never off), as a run's `mayProvoke` decides.
+    provocation: {
+      allow: (observer, offender) => {
+        const rd = resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}) });
+        return !rd.off && slotOf.has(observer) && slotOf.has(offender) && rd.effective.may_target.some(([a, b]) => a === observer && b === offender);
+      },
+      ...(config.tuning ? { tuning: () => config.tuning!.provocation } : {}),
+    },
+    // The model reads the refusal at its next consult, as a run's prompt does.
+    note: (agentId, reasons) => void blocked.set(agentId, [...reasons]),
     ...(config.tuning ? { follow: { windowMs: config.tuning.origination.climb.followWindowMs, everyMs: config.tuning.origination.climb.followEveryMs, gapMs: config.tuning.origination.climb.gapMs, maxRung: config.tuning.origination.climb.maxRung } } : {}),
   });
   sinkRef.current = composeDramaSinks(director, body);
@@ -482,6 +499,19 @@ export function runDramaSim(config: SimConfig): SimResult {
     : undefined;
   script?.start();
 
+  const talk = [...(config.dialogue ?? [])].sort((a, b) => a.atMs - b.atMs);
+  /** One line of the seam: on the wire as chat, and in the ledger as a committed line (names found in the words are who it is about). */
+  function say(l: NonNullable<SimConfig["dialogue"]>[number]): void {
+    if (body.isDead(l.actor)) return;
+    const folded = (t: string): string => t.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+    const text = folded(l.text);
+    const mentioned = actorRefs.filter((r) => r !== l.actor && new RegExp(`(^|[^a-z0-9])${folded(nameOf(r))}($|[^a-z0-9])`).test(text));
+    speech.push({ atMs: grid.now() - startMs, actor: l.actor, text: l.text });
+    log("in", { t: "actor_cmd", cid: ++cid, run: RUN, lease: LEASE, actor: slotOf.get(l.actor)!, cmd: { k: "chat", mode: "say", text: l.text, ...(l.to ? { to: slotOf.get(l.to) ?? space.avatarId(l.to) } : {}) } });
+    void grid.dispatch([{ agentId: l.actor, cmd: "chat", mode: "say", text: l.text, ...(l.to ? { to: l.to } : {}) }]);
+    if (dramaOn) body.noteSpoken({ speaker: l.actor, content: l.text, addressees: l.to ? [l.to] : [], mentioned });
+  }
+
   const settleMs = 12_000;
   const stopAt = end + settleMs;
   while (grid.now() < stopAt) {
@@ -496,6 +526,7 @@ export function runDramaSim(config: SimConfig): SimResult {
       if (c.optIn) acts.setOptIn(c.optIn.human, c.optIn.on);
     }
     if (script && now >= end) script.stop();
+    while (talk.length > 0 && startMs + talk[0]!.atMs <= now && now < end) say(talk.shift()!);
     if (config.wander && now >= wanderAt && now < end) {
       const w = config.wander;
       wanderAt = now + w.everyMs;
@@ -516,5 +547,5 @@ export function runDramaSim(config: SimConfig): SimResult {
   const frames = lines.map((l) => normalizeFrame(l)).flatMap((f) => (f ? [f] : []));
   const events = extractDramaEvents(frames);
   const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs });
-  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats } };
+  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters() };
 }

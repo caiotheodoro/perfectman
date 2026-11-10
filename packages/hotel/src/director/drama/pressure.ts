@@ -42,6 +42,8 @@ export function hasGrievance(verb: ActVerb, relation: RelationReading | undefine
   const rung = ladderRung(verb);
   if (rung === undefined || rung < tuning.grievance.minRung) return true;
   if (!relation) return false;
+  // What was said to the actor opens the grievance for the first rungs only (insult, shove): a slap and above still need a real resentment (errata P7).
+  if ((relation.provocation ?? 0) >= tuning.provocation.grievanceAt && rung <= tuning.provocation.maxRung) return true;
   if (relation.resentment >= tuning.grievance.resentment) return true;
   return relation.lastNegativeAt !== null && relation.lastNegativeAt !== undefined && now - relation.lastNegativeAt <= tuning.grievance.windowMs;
 }

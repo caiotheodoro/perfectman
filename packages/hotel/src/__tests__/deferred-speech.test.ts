@@ -51,6 +51,17 @@ const intent = (text: string): ActionIntent => ({
 
 type Fixture = Awaited<ReturnType<typeof running>>;
 
+/** Stops the run the way an admin does and reads what it left: the summary's counters and the operator's `body_blocked` reasons. */
+async function stopped({ f, b }: Fixture) {
+  f.pmCommand(7, 12, "stop");
+  await waitFor(() => f.received.find((x) => x.t === "run_end"), "run_end", 6000);
+  const runs = join(b.cfg.dataDir, "runs", "7");
+  const summary = JSON.parse(readFileSync(join(runs, "replay.json"), "utf8")) as { counters: Record<string, number> };
+  const events = readFileSync(join(runs, "events.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l) as { type: string; actorId: string; payload: { reasons?: Array<{ code: string; detail?: string }> } });
+  const blocked = events.filter((e) => e.type === "body_blocked").flatMap((e) => e.payload.reasons ?? []).filter((r) => r.code === "not_in_earshot");
+  return { counters: summary.counters, blocked };
+}
+
 const commit = ({ run, state, space }: Fixture, text: string, body: AgentCommitInfo["body"]): void =>
   run.onCommitted({
     simulationId: run.simulation?.simulationId ?? "",
@@ -85,24 +96,71 @@ describe("a line held until its speaker arrives (move_then_speak, ADR-0019)", ()
     expect(sayAt).toBeGreaterThan(walkAt);
   });
 
-  it("drops the line when it expires before the speaker gets there, and tells the actor why", async () => {
-    const fx = await running();
-    const { f, b } = fx;
-    // No walk is planned (no move in the block), so nothing can release the line; it expires.
+  it("drops at once a line for which no walk could be planned, with the reason no_walk, counted, instead of holding it for the whole grace (errata P7)", async () => {
+    const fx = await running(24);
+    const { f } = fx;
+    // No walk is planned (no move in the block), and the speaker stands outside the say radius: nothing can bring it, so the line goes now.
+    f.moveHuman(12, 9, 23, 7);
+    await new Promise((r) => setTimeout(r, 100));
     commit(fx, "essa linha nunca chega", {
       accepted: { order: "move_then_speak" },
       targets: {},
       blocked: [],
-      deferral: { targetRef: "h:9", etaMs: 100, expiresAt: Date.now() + 150 },
+      deferral: { targetRef: "h:9", etaMs: 100, expiresAt: Date.now() + 60_000 },
     });
-    await new Promise((r) => setTimeout(r, 400));
+    await new Promise((r) => setTimeout(r, 200));
     expect(f.chats.some((c) => c.text === "essa linha nunca chega")).toBe(false);
-    f.pmCommand(7, 12, "stop");
-    await waitFor(() => f.received.find((x) => x.t === "run_end"), "run_end", 6000);
-    const events = readFileSync(join(b.cfg.dataDir, "runs", "7", "events.jsonl"), "utf8").trim().split("\n").map((l) => JSON.parse(l) as { type: string; actorId: string; payload: { reasons?: Array<{ code: string }> } });
-    const blocked = events.find((e) => e.type === "body_blocked" && e.payload.reasons?.some((r) => r.code === "not_in_earshot"));
-    expect(blocked?.actorId).toBe("person-1");
+    const done = await stopped(fx);
+    expect(done.blocked).toEqual([{ code: "not_in_earshot", part: "speech", detail: "no_walk" }]);
+    expect(done.counters).toMatchObject({ earshot_drops: 1, earshot_drops_no_walk: 1 });
+    expect(done.counters["earshot_approaches"]).toBeUndefined();
   });
+
+  it("says a line whose walk was never planned when the two are already within earshot, instead of dropping it", async () => {
+    const fx = await running();
+    const { f } = fx;
+    const me = f.avatarByRef("person-1");
+    if (!me) throw new Error("no speaker");
+    // Ana is beside the speaker by the time the held line is looked at.
+    f.moveHuman(12, 9, me.x + 1, me.y);
+    await new Promise((r) => setTimeout(r, 100));
+    commit(fx, "agora já dá pra ouvir", {
+      accepted: { order: "move_then_speak" },
+      targets: {},
+      blocked: [],
+      deferral: { targetRef: "h:9", etaMs: 100, expiresAt: Date.now() + 60_000 },
+    });
+    await waitFor(() => f.chats.some((c) => c.mode === "say" && c.text === "agora já dá pra ouvir"), "the line, said", 6000);
+    const done = await stopped(fx);
+    expect(done.blocked).toEqual([]);
+    expect(done.counters["earshot_drops"]).toBeUndefined();
+  });
+
+  it("walks again when the deadline passes while the speaker is still on its way, and says the line once it is there (the bound is not the end)", async () => {
+    const fx = await running(24);
+    const { f } = fx;
+    const text = "oi Ana, cheguei, mesmo atrasado";
+    const spoken = (): boolean => f.chats.some((c) => c.mode === "say" && c.text === text);
+    const manager = fx.b.sidecar.manager;
+    const listener = f.avatarByRef("person-2");
+    if (!manager || !listener) throw new Error("no listener to place");
+    // A line is only delivered when somebody hears it: one listener at the far end, beside where Ana will be.
+    manager.send({ t: "actor_cmd", run: 7, lease: manager.leaseOf(7) ?? 0, cid: manager.nextCid(7), actor: listener.id, cmd: { k: "walk", x: 20, y: 2 } });
+    await waitFor(() => f.avatarByRef("person-2")?.x === 20 && f.avatarByRef("person-2")?.state === "stand", "the listener at the far end", 6000);
+    f.moveHuman(12, 9, 22, 2);
+    await new Promise((r) => setTimeout(r, 100));
+    commit(fx, text, {
+      accepted: { order: "move_then_speak", move: { kind: "approach", target: "p1", band: "personal" } },
+      targets: { p1: { kind: "person", ref: "h:9" } },
+      blocked: [],
+      // A deadline that is gone before the walk can end.
+      deferral: { targetRef: "h:9", etaMs: 800, expiresAt: Date.now() + 1 },
+    });
+    await waitFor(spoken, "the line, said after the second walk", 12_000);
+    const done = await stopped(fx);
+    expect(done.blocked).toEqual([]);
+    expect(done.counters["earshot_approaches"]).toBeGreaterThanOrEqual(2);
+  }, 25_000);
 
   it("plans the walk again when the addressee moved off while the speaker walked, and says the line only once within the say radius", async () => {
     const fx = await running(24);

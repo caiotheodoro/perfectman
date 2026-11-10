@@ -11,6 +11,10 @@ import type { ActorSpace } from "../space/space-mirror.js";
 import { ActLedger } from "./act-ledger.js";
 import { ReactionScheduler } from "./reaction-scheduler.js";
 import { DEFAULT_DRAMA_TUNING } from "../director/drama/tuning.js";
+import type { DramaTuning } from "../director/drama/tuning.js";
+import { ProvocationLedger } from "../director/drama/provocation.js";
+import type { SpokenLine } from "../director/drama/provocation.js";
+import { SAY_CLEAR_TILES } from "../space/hearing.js";
 import type { ActProposal, DramaDecision, DramaDecisionPort, EmotionReading, RelationReading } from "../director/drama/ports.js";
 import { plan } from "./plan.js";
 import type { BodyExecutor } from "./body-executor.js";
@@ -48,6 +52,13 @@ export type DramaBodyDeps = {
   /** DEATH-5: a dead actor keeps its place in the pulses and thinks aloud; only ever as a thought, only in cinematic runs (the caller decides). */
   ghostVoice?: boolean;
   hooks: { blocked(agentId: string, reasons: BlockedReason[]): void };
+  /**
+   * What the cast's talk may do (errata P7): `observer` may hold a grievance against `offender` (both the run's own actors, the scenario lets `observer` target
+   * `offender`, drama is not off). Absent: nothing the cast says ever raises a grievance.
+   */
+  provocation?: { allow(observer: string, offender: string): boolean; tuning?: () => DramaTuning["provocation"] };
+  /** The model's next prompt says a refused move is not yet earned (errata P7): called with the reasons worth telling, besides the `blocked` hook that logs them. */
+  note?(agentId: string, reasons: BlockedReason[]): void;
   /** Test seam: where the planner's own act ids start. */
   idPrefix?: string;
   /** How long and how often a climb's actor follows a target that keeps moving (`DramaTuning.origination.climb`); absent: the sidecar's default. */
@@ -94,8 +105,17 @@ export class DramaBody implements DramaFrameSink {
   private ids = 0;
   /** The planner's own walks a follow window did not send, since the body was made (issue #262). */
   suppressedWalks = 0;
+  /** What the cast's talk did to the cast (errata P7): the grievance each line raised, per ordered pair, decaying. */
+  readonly provocation: ProvocationLedger;
+  /** Refusals told to the model as a line in its next prompt (`DramaBodyDeps.note`). */
+  private actBlockedNotes = 0;
 
   constructor(private readonly d: DramaBodyDeps) {
+    this.provocation = new ProvocationLedger(
+      () => d.provocation?.tuning?.() ?? DEFAULT_DRAMA_TUNING.provocation,
+      () => d.clock.now(),
+      (observer, offender) => d.provocation?.allow(observer, offender) === true,
+    );
     const climb = DEFAULT_DRAMA_TUNING.origination.climb;
     this.followCfg = { windowMs: climb.followWindowMs, everyMs: climb.followEveryMs, gapMs: climb.gapMs, maxRung: climb.maxRung, ...d.follow };
     this.ledger = new ActLedger({
@@ -263,6 +283,8 @@ export class DramaBody implements DramaFrameSink {
   }
   onSceneCut(f: Frame<"scene_cut">): void {
     this.ledger.onSceneCut(f);
+    // A new scene starts the cast fresh: what was said in the last one is not held against anyone in this one (errata P7).
+    this.provocation.clear();
     this.stopFollows();
     this.stopClimbWatches();
     this.retry.clear();
@@ -359,21 +381,58 @@ export class DramaBody implements DramaFrameSink {
     return out;
   }
 
-  private emotionOf(base: Pick<PlanInput, "agentState" | "actionEmotions">): EmotionReading | undefined {
+  private emotionOf(ref: string, base: Pick<PlanInput, "agentState" | "actionEmotions">): EmotionReading | undefined {
     if (!base.actionEmotions) return undefined;
     const relations = new Map<number, RelationReading>();
     for (const [other, r] of base.agentState.relationalStates) {
       const id = this.d.mirror.avatarId(other);
-      if (id !== undefined) relations.set(id, { resentment: r.resentment, threat: r.threat, envy: r.envy, suspicion: r.suspicion, lastNegativeAt: r.lastNegativeAt });
+      if (id !== undefined) relations.set(id, { resentment: r.resentment, threat: r.threat, envy: r.envy, suspicion: r.suspicion, lastNegativeAt: r.lastNegativeAt, ...this.provoked(ref, other) });
+    }
+    // Someone it has never dealt with can still have provoked it: the director aims a beat only at someone listed here.
+    for (const other of this.provocation.offenders(ref)) {
+      const id = this.d.mirror.avatarId(other);
+      if (id !== undefined && !relations.has(id)) relations.set(id, { resentment: 0, threat: 0, envy: 0, suspicion: 0, lastNegativeAt: null, ...this.provoked(ref, other) });
     }
     const m = base.agentState.coreMood;
     return { actionEmotions: base.actionEmotions, social: base.agentState.socialEmotions, core: { arousal: m.arousal, momentumArousal: m.momentumArousal }, relations, at: this.d.clock.now() };
   }
 
+  /** The grievance the talk built toward `other`, as the field the director reads (none when there is none). */
+  private provoked(ref: string, other: string): { provocation?: number } {
+    const level = this.provocation.levelOf(ref, other);
+    return level > 0 ? { provocation: level } : {};
+  }
+
+  /**
+   * A line the cast spoke (errata P7): who it was about, who heard it, and what it does to them (`ProvocationLedger`). The run calls it for every committed
+   * line of its own actors; nothing happens when drama is not in charge, which is also what keeps `drama: off` inert. The listeners are the run's actors in
+   * the speaker's room: heard clearly within the say radius (a shout carries to the room), otherwise in the room but not told.
+   */
+  noteSpoken(line: SpokenLine): void {
+    const port = this.d.port?.();
+    if (!this.active || !port?.active || !this.d.isOwn(line.speaker)) return;
+    const room = this.d.mirror.roomOfRef(line.speaker);
+    const me = this.presence(line.speaker);
+    if (!room || !me) return;
+    const listeners = this.d.mirror
+      .peopleIn(room, this.d.clock.now())
+      .filter((p) => p.ref !== line.speaker && this.d.isOwn(p.ref))
+      .map((p) => ({ ref: p.ref, heard: chebyshev(p.tile, me.tile) <= SAY_CLEAR_TILES }));
+    this.provocation.note(line, listeners);
+  }
+
+  /** The run summary's flat counters for what this body did on its own: grievance raised from talk, and the refusals it told the model about. */
+  counters(): Record<string, number> {
+    const p = this.provocation;
+    const all: Record<string, number> = { grievance_raised: p.total, grievance_skipped: p.skipped, act_blocked_notes: this.actBlockedNotes };
+    for (const [k, n] of Object.entries(p.raised)) all[`grievance_${k}`] = n;
+    return Object.fromEntries(Object.entries(all).filter(([, n]) => n > 0));
+  }
+
   private decide(ref: string, wire: number, proposal: ActProposal, base: PlanInput): { hold: boolean; approach: PlannedCommand[] } {
     const port = this.d.port?.();
     if (!port) return { hold: false, approach: [] };
-    const emotion = this.emotionOf(base);
+    const emotion = this.emotionOf(ref, base);
     const res: DramaDecision = port.decide({ actor: wire, proposal, ...(emotion ? { emotion } : {}) });
     switch (res.kind) {
       case "approve":
@@ -381,7 +440,14 @@ export class DramaBody implements DramaFrameSink {
         return { hold: true, approach: [] };
       case "veto": {
         if (res.reason === "too_far" && proposal.with !== undefined) return { hold: false, approach: this.walkCloser(ref, proposal, base) };
-        this.d.hooks.blocked(ref, [{ code: res.reason, part: "act", ...(res.detail ? { detail: res.detail } : {}) }]);
+        const reason: BlockedReason = { code: res.reason, part: "act", ...(res.detail ? { detail: res.detail } : {}) };
+        this.d.hooks.blocked(ref, [reason]);
+        // An act the ladder refused for want of a motive or a grievance is not yet earned: the model is told so in its next prompt, with the name it aimed at.
+        if (res.reason === "ladder" && (res.detail === "motive" || res.detail === "grievance") && proposal.with !== undefined && this.d.note) {
+          const target = this.d.mirror.refOfAvatar(proposal.with);
+          this.d.note(ref, [{ ...reason, ref: this.d.names(target) ?? target }]);
+          this.actBlockedNotes++;
+        }
         return { hold: false, approach: [] };
       }
       case "pass":
@@ -426,7 +492,7 @@ export class DramaBody implements DramaFrameSink {
    * retried: the beat is the director's own and is decided again from the feelings then, not replayed as the model's proposal.
    */
   private passive(ref: string, wire: number, base: PlanInput, port: DramaDecisionPort): { hold: boolean; approach: PlannedCommand[] } {
-    const emotion = this.emotionOf(base);
+    const emotion = this.emotionOf(ref, base);
     if (!emotion) return { hold: false, approach: [] };
     const res = port.decide({ actor: wire, emotion });
     if (res.kind === "initiate") return { hold: true, approach: [] };
@@ -478,7 +544,7 @@ export class DramaBody implements DramaFrameSink {
     }
     if (this.adjacent(ref, f.target)) {
       const seen = this.latest.get(ref);
-      const emotion = seen ? this.emotionOf(seen) : undefined;
+      const emotion = seen ? this.emotionOf(ref, seen) : undefined;
       if (emotion && port.decide({ actor: wire, emotion }).kind === "initiate") {
         this.stopFollow(ref);
         return;
@@ -516,7 +582,7 @@ export class DramaBody implements DramaFrameSink {
     const wire = this.d.mirror.avatarId(ref);
     const port = this.d.port?.();
     const seen = this.latest.get(ref);
-    const emotion = seen ? this.emotionOf(seen) : undefined;
+    const emotion = seen ? this.emotionOf(ref, seen) : undefined;
     if (!seen || !emotion || wire === undefined || !port?.active || !this.active || this.ledger.isDead(ref) || this.ledger.lockOf(ref) || port.busyActId(wire) !== undefined) return;
     if ((this.following.get(ref)?.until ?? 0) > now) return;
     const res = port.decide({ actor: wire, emotion });

@@ -1,4 +1,4 @@
-import type { ActionEmotions, ActionIntent, AgentRuntimeInput, AgentState, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
+import type { ActionEmotions, ActionIntent, AgentRuntimeInput, AgentState, BlockedReason, BodyHandleMap, BodyIntent, CommittedEvent, Memory, PairedActAbortedPayload, RoomId, SimulationEvent, SpaceView, SpeechMode } from "@perfectman/shared";
 import {
   AgentRuntime,
   MockLLMProvider,
@@ -21,6 +21,7 @@ import { CinematicDirector, MirrorCineWorld, Narrator, TrackFileSink, moodOfStat
 import type { CineConfig, NarratorLlm } from "../director/cine/index.js";
 import type { HotelFrame, PauseCause, RunMode, RunState, SidecarEndReason, SidecarMsg } from "../director/index.js";
 import { resolveRunDrama, summarizeRunDrama } from "../authoring/scenario-drama.js";
+import type { RunDrama } from "../authoring/scenario-drama.js";
 import { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld } from "../director/drama/index.js";
 import type { DramaDecisionPort, DramaHost, SceneAdvance } from "../director/drama/index.js";
 import { BodyExecutor } from "../embodiment/body-executor.js";
@@ -252,6 +253,10 @@ export class Run {
   readonly dramaSink: DramaBody;
   /** Actors the planner already ran for during the current pulse (the idle sweep skips them). */
   private readonly plannedThisPulse = new Set<string>();
+  /** The run's counts of what the body did about lines and handles (errata P7), for `bodyCounters`. */
+  private readonly earshot = { approaches: 0, drops: 0, stripped: 0, dropped: new Map<string, number>() };
+  /** The scenario's drama as the run enforces it, read once the body is built. */
+  private runDrama: RunDrama | undefined;
   /** Lines held back until their speaker reaches the addressee (`move_then_speak`), by agent. */
   private readonly pending = new Map<string, PendingSpeech>();
   /** Rooms whose channel (`room:<id>`) the runtime knows. */
@@ -304,6 +309,11 @@ export class Run {
       },
       ghostVoice: d.hotel.dramaGhostVoice === true && params.mode === "cinematic",
       hooks: { blocked: (agentId, reasons) => void this.appendBodyEvent("body_blocked", agentId, { reasons: reasons as unknown as never }, false) },
+      provocation: { allow: (observer, offender) => this.mayProvoke(observer, offender) },
+      // The model's next prompt says a refused move is not yet earned (errata P7): the body's `lastBlocked` is what the prompt's blocked line reads.
+      note: (agentId, reasons) => {
+        this.space.bodyOf(agentId, this.d.clock.now()).lastBlocked = [...reasons];
+      },
     });
     this.space.setFallen((ref) => this.dramaSink.ledger.fallenKind(ref));
     this.space.setDrama(() => this.dramaSink.active);
@@ -1056,6 +1066,38 @@ export class Run {
     return choice.mode;
   }
 
+  /** `observer` may hold a grievance against `offender` because of what was said (errata P7): both are this run's actors, the scenario lets `observer` target `offender`, drama is not off. */
+  private mayProvoke(observer: string, offender: string): boolean {
+    if (!this.body) return false;
+    this.runDrama ??= resolveRunDrama(this.body);
+    if (this.runDrama.off) return false;
+    return this.agents.has(observer) && this.agents.has(offender) && this.runDrama.effective.may_target.some(([a, b]) => a === observer && b === offender);
+  }
+
+  /** The lines an actor spoke, handed to the body's grievance ledger (errata P7): who they name, who they are for, and what mode. */
+  private noteSpoken(ref: string, intent: ActionIntent | undefined, events: ReadonlyArray<Pick<SimulationEvent, "actorId" | "type" | "payload">>): void {
+    const strs = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is string => typeof x === "string") : []);
+    for (const e of events) {
+      if (e.actorId !== ref || (e.type !== "message_sent" && e.type !== "reply_sent")) continue;
+      const p = e.payload as Record<string, unknown>;
+      const content = typeof p["content"] === "string" ? p["content"] : "";
+      const replyTo = typeof p["replyToActorId"] === "string" ? [p["replyToActorId"]] : intent?.replyToActorId ? [intent.replyToActorId] : [];
+      const whisper = typeof p["whisperTo"] === "string";
+      this.dramaSink.noteSpoken({
+        speaker: ref,
+        content,
+        addressees: [...new Set([...(whisper ? [p["whisperTo"] as string] : []), ...replyTo, ...strs(p["addresseeIds"]), ...strs(p["personTargets"])])],
+        mentioned: strs(p["mentionedAgentIds"]),
+        ...(whisper ? { mode: "whisper" as const } : {}),
+      });
+    }
+  }
+
+  /** The block kept the rest of an intent and lost the handles that named nothing in view: counted (errata P7). */
+  private countStripped(blocked: readonly BlockedReason[] | undefined): void {
+    for (const b of blocked ?? []) if (b.code === "unknown_ref" && b.part !== "act") this.earshot.stripped++;
+  }
+
   /**
    * The planner seam (hotel-package.md 7, embodiment.md 7): the runtime calls this
    * right after one actor's intent was resolved and appended, with the validated
@@ -1065,6 +1107,11 @@ export class Run {
     const ref = info.agentId;
     if (!this.agents.has(ref) || this.agents.get(ref)?.gone || this.state === "stopping" || this.state === "ended") return;
     const mine = info.committedEvents.filter((e) => e.actorId === ref);
+    // What the last turn's refusal said has been read by this turn's prompt (errata P7).
+    const told = this.space.bodyOf(ref, this.d.clock.now());
+    if (told.lastBlocked) delete told.lastBlocked;
+    this.countStripped(info.body?.blocked);
+    this.noteSpoken(ref, info.intent, mine);
     if (mine.some((e) => e.type === "message_sent" || e.type === "reply_sent")) this.noOpStreak.set(ref, 0);
     else if (mine.some((e) => e.type === "no_op_recorded")) this.noOpStreak.set(ref, (this.noOpStreak.get(ref) ?? 0) + 1);
     this.arousal.set(ref, info.agentState.coreMood.arousal);
@@ -1149,11 +1196,33 @@ export class Run {
     this.dropPending(ref);
     const walkPlans = new Set<string>();
     for (const c of cmds) if (c.cmd === "walk" && c.plan) walkPlans.add(c.plan);
+    if (walkPlans.size === 0) {
+      // No walk was planned (no free tile beside the addressee, or no way there): nothing will bring the speaker, so the line is not held for the whole grace.
+      // If the two have come within earshot since the line was decided it is said now; otherwise it is dropped, and counted.
+      const gap = this.gapTo(ref, deferral.targetRef);
+      if (gap !== undefined && gap <= SAY_CLEAR_TILES) {
+        this.pending.set(ref, { intent, targetRef: deferral.targetRef, walkPlans, timer: this.d.clock.setTimer(() => undefined, 0), rewalks: 0 });
+        void this.releaseSpeech(ref);
+      } else void this.dropSpeech(ref, intent.id, gap === undefined ? "left_room" : "no_walk");
+      return;
+    }
+    this.earshot.approaches++;
     const wait = Math.max(0, deferral.expiresAt - this.d.clock.now());
     const timer = this.d.clock.setTimer(() => void this.expireSpeech(ref, intent.id), wait);
     this.pending.set(ref, { intent, targetRef: deferral.targetRef, walkPlans, timer, rewalks: 0 });
     // The typing bubble would hang over a walk; it comes back at arrival.
     this.gateway.stopTyping(ref);
+  }
+
+  /**
+   * A line that is not said because its speaker never got within earshot of the addressee (errata P7): counted by why (`earshot_drops_<why>`) and logged as the
+   * operator's `body_blocked` with `not_in_earshot` and the why as its detail. `no_walk`: nothing could be planned; `expired`: the walk did not end in time;
+   * `moved_off`: the addressee kept walking away; `left_room`: they are no longer in the room.
+   */
+  private async dropSpeech(ref: string, intentId: string, why: "no_walk" | "expired" | "moved_off" | "left_room"): Promise<void> {
+    this.earshot.drops++;
+    this.earshot.dropped.set(why, (this.earshot.dropped.get(why) ?? 0) + 1);
+    await this.appendBodyEvent("body_blocked", ref, { intentId, reasons: [{ code: "not_in_earshot", part: "speech", detail: why }] }, false);
   }
 
   private dropPending(ref: string): PendingSpeech | undefined {
@@ -1164,9 +1233,16 @@ export class Run {
   }
 
   private async expireSpeech(ref: string, intentId: string): Promise<void> {
-    if (this.pending.get(ref)?.intent.id !== intentId) return;
+    const held = this.pending.get(ref);
+    if (held?.intent.id !== intentId) return;
+    const gap = this.gapTo(ref, held.targetRef);
+    // The speaker is within earshot by now, whatever the walk's own arrival said: the line is said, not dropped.
+    if (gap !== undefined && gap <= SAY_CLEAR_TILES) return this.releaseSpeech(ref);
+    // The walk did not end in time (it was replaced, or slow): one more walk before the line is given up, if the addressee is in the room and still out of earshot.
+    if (gap !== undefined && (await this.rewalk(ref, held))) return;
+    if (this.pending.get(ref) !== held) return;
     this.pending.delete(ref);
-    await this.appendBodyEvent("body_blocked", ref, { intentId, reasons: [{ code: "not_in_earshot", part: "speech" }] }, false);
+    await this.dropSpeech(ref, intentId, gap === undefined ? "left_room" : "expired");
   }
 
   /** Tiles between the speaker and the person a held line is for; undefined when they are not in the same room. */
@@ -1199,6 +1275,7 @@ export class Run {
       }
     }
     if (!walking) return false;
+    this.earshot.approaches++;
     held.timer.cancel();
     held.timer = this.d.clock.setTimer(() => void this.expireSpeech(ref, held.intent.id), REWALK_GRACE_MS);
     return true;
@@ -1214,7 +1291,7 @@ export class Run {
     if (gap === undefined || gap > SAY_CLEAR_TILES) {
       if (gap !== undefined && (await this.rewalk(ref, waiting))) return;
       this.dropPending(ref);
-      await this.appendBodyEvent("body_blocked", ref, { intentId: waiting.intent.id, reasons: [{ code: "not_in_earshot", part: "speech" }] }, false);
+      await this.dropSpeech(ref, waiting.intent.id, gap === undefined ? "left_room" : "moved_off");
       return;
     }
     const held = this.dropPending(ref);
@@ -1224,6 +1301,7 @@ export class Run {
     this.gateway.noteConsult(ref, this.d.clock.now() - DEFERRED_TYPING_HEAD_START_MS);
     try {
       const resolved = await this.port.resolveDeferred(ref, held.intent);
+      this.noteSpoken(ref, held.intent, resolved.committedEvents);
       if (!resolved.committedEvents.some((e) => e.type === "message_sent" || e.type === "reply_sent")) this.gateway.stopTyping(ref);
     } catch (err) {
       this.gateway.stopTyping(ref);
@@ -1567,7 +1645,7 @@ export class Run {
           })),
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
-          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0, ...this.scriptCounters() },
+          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0, ...this.scriptCounters(), ...this.bodyCounters() },
           drama: summarizeRunDrama(resolveRunDrama(this.body)),
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
@@ -1606,6 +1684,18 @@ export class Run {
     }
     for (const e of this.cine?.track.entries ?? []) if (e.k === "drop") out[`cine_dropped_${key(e.why)}`] = (out[`cine_dropped_${key(e.why)}`] ?? 0) + 1;
     return out;
+  }
+
+  /**
+   * The body's own counters for the run summary (errata P7), only the ones that are not zero: grievance raised from talk (`grievance_raised`, by kind), the
+   * refusals told to the model (`act_blocked_notes`), lines walked to their addressee (`earshot_approaches`) or dropped for want of one (`earshot_drops`,
+   * `earshot_drops_<why>`), unknown body handles stripped from a block that kept the rest (`unknown_ref_stripped`), and walks the hotel found no route for
+   * (`no_route_retries` to the nearest reachable tile, `no_route_dropped` when none was).
+   */
+  private bodyCounters(): Record<string, number> {
+    const all: Record<string, number> = { ...this.dramaSink.counters(), earshot_approaches: this.earshot.approaches, earshot_drops: this.earshot.drops, unknown_ref_stripped: this.earshot.stripped, ...this.executor?.routeCounters() };
+    for (const [why, n] of this.earshot.dropped) all[`earshot_drops_${why}`] = n;
+    return Object.fromEntries(Object.entries(all).filter(([, n]) => n > 0));
   }
 
   private async walkOut(): Promise<void> {

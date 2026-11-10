@@ -6,10 +6,11 @@ import type { DramaFrame } from "../director/drama-frames.js";
 import type { ActorCmd, ActorErrorCode, HotelFrame, PairOutcome, SidecarMsg } from "../director/index.js";
 import type { ActorSpace } from "../space/space-mirror.js";
 import { chebyshev } from "../space/geometry.js";
+import { findPath } from "@perfectman/engine";
 import type { Logger } from "../util/log.js";
 import { silentLogger } from "../util/log.js";
 import { CMD_BUDGET, HOTEL_BACKSTOP, WALK_TICK_MS } from "./constants.js";
-import { pickTile } from "./tiles.js";
+import { blockedTiles, isFree, occupiedTiles, pickTile } from "./tiles.js";
 import type { ActLock } from "./act-ledger.js";
 import type { PlannedCommand } from "./types.js";
 
@@ -19,6 +20,9 @@ const PAIR_HOLD_MS = 2000;
 const PAIR_APPROACH_TIMEOUT_MS = 15_000;
 const PAIR_REACTION_TIMEOUT_MS = 8000;
 const ETA_MISMATCH = 0.3;
+/** A walk the hotel found no route for is tried again at the nearest tile it can reach, this many times, within this many tiles of the one asked for (errata P7). */
+const ROUTE_RETRIES = 2;
+const ROUTE_RADIUS = 3;
 
 export type PairInfo = { pair: string; kind: PairKind; agentId: string; withRef: string; withHuman: boolean };
 
@@ -97,10 +101,15 @@ const BLOCK_MAP: Partial<Record<ActorErrorCode, BlockedReason["code"]>> = {
 export class BodyExecutor {
   private readonly plans = new Map<string, { plan: BodyPlan; goal: Tile; held: PlannedCommand[] }>();
   private readonly pairs = new Map<string, PairState>();
-  private readonly pendingCids = new Map<number, { agentId: string; cmd: string }>();
+  private readonly pendingCids = new Map<number, { agentId: string; cmd: string; walk?: Extract<BodyCommand, { cmd: "walk" }>; tries?: number; asked?: Tile }>();
   private readonly chatTimes = new Map<string, number[]>();
   private readonly log: Logger;
-  stats = { sent: 0, droppedBudget: 0, droppedStale: 0, errors: 0, etaMismatches: 0 };
+  stats = { sent: 0, droppedBudget: 0, droppedStale: 0, errors: 0, etaMismatches: 0, routeRetries: 0, routeDropped: 0 };
+
+  /** The run summary's counters for walks without a route (errata P7): retried at the nearest reachable tile, or given up on. */
+  routeCounters(): Record<string, number> {
+    return { no_route_retries: this.stats.routeRetries, no_route_dropped: this.stats.routeDropped };
+  }
 
   constructor(private readonly deps: ExecutorDeps) {
     this.log = deps.logger ?? silentLogger;
@@ -213,6 +222,9 @@ export class BodyExecutor {
         this.deps.record?.("in", ref ? mirror.roomOfRef(ref) : undefined, "actor_error", { code: frame.code, actor: ref ?? null, cmd: pending?.cmd ?? null });
         if (ref && frame.code === "actor_dead") this.deps.hooks.actorDead?.(ref);
         else if (ref) {
+          // No route to the tile a walk asked for: try the nearest tile that has one before telling the actor it cannot get there.
+          if (frame.code === "no_route" && pending?.walk && this.retryWalk(ref, pending, now)) break;
+          if (frame.code === "no_route" && pending?.walk) this.stats.routeDropped++;
           const code = BLOCK_MAP[frame.code];
           if (code) this.deps.hooks.blocked(ref, [{ code, ...(frame.detail ? { detail: String(frame.detail).slice(0, 80) } : {}) }]);
           // A refused walk is a plan that never started.
@@ -306,7 +318,7 @@ export class BodyExecutor {
     return this.sendOne(c, this.deps.clock.now());
   }
 
-  private sendOne(c: PlannedCommand, now: number): boolean {
+  private sendOne(c: PlannedCommand, now: number, retry?: { tries: number; asked: Tile }): boolean {
     const { mirror } = this.deps;
     const id = mirror.avatarId(c.agentId);
     const lease = this.deps.lease();
@@ -363,11 +375,44 @@ export class BodyExecutor {
     if (!wire) return false;
     const cid = this.deps.nextCid();
     if (c.cmd === "walk") this.trackPlan(c, now);
-    this.pendingCids.set(cid, { agentId: c.agentId, cmd: c.cmd });
+    this.pendingCids.set(cid, { agentId: c.agentId, cmd: c.cmd, ...(c.cmd === "walk" ? { walk: c, ...(retry ? { tries: retry.tries, asked: retry.asked } : { tries: 0, asked: c.to }) } : {}) });
     if (this.pendingCids.size > 512) this.pendingCids.delete(this.pendingCids.keys().next().value as number);
     this.stats.sent++;
     this.deps.record?.("out", roomId, "actor_cmd", { actor: c.agentId, cmd: wire as unknown as Record<string, unknown> });
     return this.deps.send({ t: "actor_cmd", cid, run: this.deps.run, lease, actor: id, cmd: wire });
+  }
+
+  /**
+   * The hotel answered `no_route` to a walk. The sidecar's own map may know a tile near the one asked for that has a route (a seat that is a wall to the hotel, a
+   * tile someone is standing on, a corner shut in by furniture): the nearest free one within `ROUTE_RADIUS` is walked to instead, with the same plan id so a held
+   * line or command still waits on the right walk, at most `ROUTE_RETRIES` times in a row. True when a walk was sent, false when there is none to try (the caller
+   * tells the actor, and counts the drop).
+   */
+  private retryWalk(ref: string, p: { walk?: Extract<BodyCommand, { cmd: "walk" }>; tries?: number; asked?: Tile }, now: number): boolean {
+    const walk = p.walk;
+    const tries = p.tries ?? 0;
+    if (!walk || tries >= ROUTE_RETRIES) return false;
+    const room = this.deps.mirror.view(ref, now)?.room;
+    const self = this.deps.mirror.presenceOf(ref);
+    if (!room || !self) return false;
+    const asked = p.asked ?? walk.to;
+    const blocked = blockedTiles(room);
+    const occupied = occupiedTiles(room, ref);
+    let best: { t: Tile; d: number; len: number } | undefined;
+    for (let dx = -ROUTE_RADIUS; dx <= ROUTE_RADIUS; dx++) {
+      for (let dy = -ROUTE_RADIUS; dy <= ROUTE_RADIUS; dy++) {
+        const t: Tile = [asked[0] + dx, asked[1] + dy];
+        if ((t[0] === walk.to[0] && t[1] === walk.to[1]) || !isFree(room, blocked, t, occupied)) continue;
+        const route = findPath(room, self.tile, [t]);
+        if (!route) continue;
+        const d = chebyshev(t, asked);
+        if (!best || d < best.d || (d === best.d && route.length < best.len)) best = { t, d, len: route.length };
+      }
+    }
+    if (!best) return false;
+    this.stats.routeRetries++;
+    this.plans.delete(ref);
+    return this.sendOne({ ...walk, to: best.t }, now, { tries: tries + 1, asked });
   }
 
   private toWire(c: BodyCommand): ActorCmd | undefined {

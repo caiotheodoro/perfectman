@@ -50,7 +50,10 @@ export type ActProposal = {
 };
 
 /** The relational fields of one actor toward one other avatar that the ladder reads (verb-bible 4.4 and 4.5). */
-export type RelationReading = Pick<RelationalState, "resentment" | "threat" | "envy" | "suspicion" | "lastNegativeAt">;
+export type RelationReading = Pick<RelationalState, "resentment" | "threat" | "envy" | "suspicion" | "lastNegativeAt"> & {
+  /** The grievance the cast's talk built toward this person, 0 to 1 (`ProvocationLedger`, errata P7); absent is none. */
+  provocation?: number;
+};
 
 /**
  * The emotion state that becomes ladder pressure. `actionEmotions` are the 15 tendencies (computed, not persisted);
