@@ -7,7 +7,10 @@ import {
   stripNarration,
   withoutFalseQuotes,
 } from "@perfectman/shared";
-import { expressionFor, mergeRetryNotes, quoteRetryNote, silenceMotive, spokenLines } from "../script-guard.js";
+import { expressionFor, mergeRetryNotes, quoteRetryNote, silenceMotive, spokenLines, speechOnlyLine } from "../script-guard.js";
+import { EXAMPLE_PROMPT_PROFILE } from "../persona-prompt-profile.js";
+import { PromptBuilder } from "../prompt-builder.js";
+import { lengthTargetFor } from "@perfectman/shared";
 import { GUARD_LOG_RULE } from "../repetition-guard.js";
 import { hotelInput } from "./hotel-test-helpers.js";
 import { NORMAL } from "./fixtures/ptbr-lines.js";
@@ -164,3 +167,30 @@ describe("helpers", () => {
     expect(spokenLines(input.perceptionPacket).map((l) => l.untrusted)).toEqual([true]);
   });
 });
+
+describe("the speech-only contract line", () => {
+  const profile = { ...EXAMPLE_PROMPT_PROFILE, language: "pt-BR" as const, hotelMode: true, relationshipBiases: {}, messageLength: "short" as const };
+  const withScript = { ...profile, scriptPrompt: { length: lengthTargetFor("short", "pt") } };
+
+  it("says actions and expressions go in the body channel, in the full and the compact prompt, only with the script checks on", () => {
+    const full = PromptBuilder.build(hotelInput(), withScript, "action_intent").system;
+    const compact = PromptBuilder.build(hotelInput(), withScript, "action_intent", undefined, "compact").system;
+    for (const system of [full, compact]) {
+      expect(system).toContain("body.gesture");
+      expect(system).toContain("body.expression");
+    }
+    expect(full).toContain('nunca dentro de "visibleContent"');
+    expect(compact).toContain("never an action or a look");
+    for (const system of [PromptBuilder.build(hotelInput(), profile, "action_intent").system, PromptBuilder.build(hotelInput(), profile, "action_intent", undefined, "compact").system]) {
+      expect(system).not.toContain("nunca dentro de");
+      expect(system).not.toContain("never an action or a look");
+    }
+  });
+
+  it("without a body channel it only says to leave the action out, in either language", () => {
+    expect(speechOnlyLine("pt-BR", false)).not.toContain("body.gesture");
+    expect(speechOnlyLine("en", false)).toContain("no action, look or expression");
+    expect(speechOnlyLine("en", true)).toContain("body.expression");
+  });
+});
+
