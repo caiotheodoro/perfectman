@@ -10,6 +10,8 @@ export type MeterSnapshot = {
   costUsd: number;
   p50Ms: number | undefined;
   p95Ms: number | undefined;
+  /** Successful calls the percentiles are over (at most the last 200). */
+  latencySamples: number;
   /** D53: the live p95 has drifted above the allowlist budget. */
   p95Drift: boolean;
 };
@@ -59,6 +61,7 @@ export class LlmMeter {
       costUsd: Math.round(this.costUsd * 1e6) / 1e6,
       p50Ms: percentile(this.latencies, 50),
       p95Ms: p95,
+      latencySamples: this.latencies.length,
       p95Drift: this.latencies.length >= MIN_SAMPLES_FOR_DRIFT && p95 !== undefined && p95 > LLM_P95_BUDGET_MS,
     };
   }

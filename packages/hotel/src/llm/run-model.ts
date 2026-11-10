@@ -1,7 +1,7 @@
 import type { ModelPrice } from "../config.js";
 import type { RunModel } from "../director/index.js";
-import { KNOWN_TOKEN_RATIOS } from "./chain-config.js";
-import type { LlmLink, PromptStyle } from "./chain-config.js";
+import { KNOWN_TOKEN_RATIOS, modelTier } from "./chain-config.js";
+import type { LlmLink, ModelTier, PromptStyle } from "./chain-config.js";
 
 /** A model picked for one run (D54), as the hotel's `run_start` carries it. */
 export type PickedModel = RunModel;
@@ -23,6 +23,14 @@ const isOpenRouter = (baseUrl: string): boolean => {
     return false;
   }
 };
+
+/**
+ * The tier of the model the admin picked, from the window and the size in its id. The window the hotel did not know counts
+ * for nothing here (the link below assumes 32K for sizing the prompt, which would read as `fast`).
+ */
+export function pickTier(pick: PickedModel): ModelTier {
+  return modelTier({ id: pick.id, context: pick.context });
+}
 
 /** The provider-specific body that keeps a thinking model from spending its answer budget thinking. */
 export function reasoningBody(reasoning: PickedModel["reasoning"]): Record<string, unknown> | undefined {
@@ -51,6 +59,7 @@ export function withPickedModel(base: readonly LlmLink[], pick: PickedModel | nu
     model: pick.id,
     maxContextTokens: window ?? UNKNOWN_WINDOW_TOKENS,
     promptStyle: style,
+    tier: pickTier(pick),
     ...(KNOWN_TOKEN_RATIOS[pick.id] !== undefined ? { tokenRatio: KNOWN_TOKEN_RATIOS[pick.id] } : {}),
     ...(extra ? { extraBody: extra } : {}),
   };

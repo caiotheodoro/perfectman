@@ -2,6 +2,41 @@ import type { ModelPrice } from "../config.js";
 
 export type PromptStyle = "full" | "compact";
 
+/**
+ * How far a model is trusted to carry a scene: `recommended` for a full cast, `fast` for cheap and quick but smaller,
+ * `experimental` for a model that is known to garble pt-BR, repeat itself and answer `no_op` too often (8B or an 8K window).
+ */
+export type ModelTier = "recommended" | "fast" | "experimental";
+export const MODEL_TIERS: readonly ModelTier[] = ["recommended", "fast", "experimental"];
+/** At or under this window, or at or under this many billion parameters, a model is `experimental`. */
+export const EXPERIMENTAL_WINDOW_TOKENS = 8192;
+export const EXPERIMENTAL_PARAMS_B = 8;
+/** At or under these (and above the experimental ones) a model is `fast`. */
+export const FAST_WINDOW_TOKENS = 32_768;
+export const FAST_PARAMS_B = 30;
+/** From this many actors on, a run on an `experimental` model is logged and marked in its manifest. */
+export const EXPERIMENTAL_CAST_WARN = 3;
+
+/** Parameters in billions that the model id states (`l3-lunaris-8b` 8, `mythomax-l2-13b` 13, `qwen3-30b-a3b` 30); undefined when it states none. */
+export function paramsBillions(id: string): number | undefined {
+  const m = /(?:^|[^a-z0-9.])(\d+(?:\.\d+)?)b(?![a-z0-9])/i.exec(id);
+  return m?.[1] === undefined ? undefined : Number(m[1]);
+}
+
+/**
+ * The tier of a model: its explicit `tier` when set, else the lower of what its window and its size (read from the id) allow.
+ * A window or size that is not known counts for nothing, so an unknown model is `recommended`.
+ * The same rule is the one the start-modal's model list should use, so what the admin is shown is what the run records.
+ */
+export function modelTier(m: { id: string; context?: number | null | undefined; tier?: ModelTier | undefined }): ModelTier {
+  if (m.tier !== undefined) return m.tier;
+  const params = paramsBillions(m.id);
+  const window = m.context ?? undefined;
+  if ((window !== undefined && window <= EXPERIMENTAL_WINDOW_TOKENS) || (params !== undefined && params <= EXPERIMENTAL_PARAMS_B)) return "experimental";
+  if ((window !== undefined && window <= FAST_WINDOW_TOKENS) || (params !== undefined && params <= FAST_PARAMS_B)) return "fast";
+  return "recommended";
+}
+
 /** A window this small cannot hold the full hotel prompt (about 4.6K real tokens) and gets the compact one. */
 export const COMPACT_WINDOW_TOKENS = 4096;
 
@@ -23,7 +58,7 @@ export type LlmLink = {
   sessionHeader?: string;
   /** Extra static headers. Never credentials: the key comes from `apiKeyEnv`. */
   headers?: Record<string, string>;
-  /** Per-attempt deadline; defaults to {@link DEFAULT_LINK_TIMEOUT_MS}. */
+  /** Per-attempt deadline. Absent: {@link DEFAULT_LINK_TIMEOUT_MS}, or more once the link has a latency history ({@link linkTimeoutMs}). Set, it is used as written. */
   timeoutMs?: number;
   /**
    * Real tokens per token the prompt builder counts (it counts chars/4). Above 1 for tokenizers
@@ -36,6 +71,8 @@ export type LlmLink = {
    * block, short event window) or "full". Absent means by window: compact for 4096 tokens or less.
    */
   promptStyle?: PromptStyle;
+  /** How far this link is trusted (see {@link ModelTier}); absent means derived from the window and the size in the model id ({@link modelTier}). Recorded, never used to order the chain. */
+  tier?: ModelTier;
   /**
    * Extra fields merged into this link's request body (a reasoning switch, for a model that thinks
    * before it answers: `{"thinking":{"type":"disabled"}}`). Set by the code that builds the link (the
@@ -67,6 +104,24 @@ export const LINK_INPUT_SAFETY = 0.92;
 /** Prompt cap when the link does not say how big its window is (the legacy default). */
 export const DEFAULT_MAX_INPUT_TOKENS = 6000;
 export const DEFAULT_LINK_TIMEOUT_MS = 5000;
+/** A link with no `timeoutMs` of its own waits this many times its recent p95 (never less than the default). */
+export const ADAPTIVE_TIMEOUT_FACTOR = 1.5;
+/** The most an adaptive timeout can be: the 13 s chain deadline has to leave room for a link behind it. */
+export const ADAPTIVE_TIMEOUT_CAP_MS = 9000;
+/** Successful calls a link needs before its p95 moves the timeout. */
+export const ADAPTIVE_MIN_SAMPLES = 10;
+
+/**
+ * What one attempt on a link may take. A `timeoutMs` in the link's config wins as written. Without one it is the default
+ * of 5 s, or 1.5 times the link's p95 over its last successful calls when that is more (capped at 9 s, and only after 10
+ * samples): a link whose normal tail is 5.9 s was timing out on 1 call in 10 at 5 s. Either way it is cut to what is left
+ * of the chain's deadline. A link with no successes has no p95 and keeps the default.
+ */
+export function linkTimeoutMs(link: Pick<LlmLink, "timeoutMs">, p95Ms: number | undefined, samples: number, remainingMs: number): number {
+  if (link.timeoutMs !== undefined) return Math.min(link.timeoutMs, remainingMs);
+  const adaptive = p95Ms !== undefined && samples >= ADAPTIVE_MIN_SAMPLES ? Math.min(ADAPTIVE_TIMEOUT_CAP_MS, Math.round(p95Ms * ADAPTIVE_TIMEOUT_FACTOR)) : 0;
+  return Math.min(Math.max(DEFAULT_LINK_TIMEOUT_MS, adaptive), remainingMs);
+}
 
 /** The prompt style a link is sent: its own setting, else by window size (compact at 4K or less). */
 export function linkPromptStyle(link: Pick<LlmLink, "maxContextTokens" | "promptStyle">): PromptStyle {
@@ -221,6 +276,11 @@ export function parseChain(raw: string, problems: string[]): LlmLink[] {
       if (v === undefined || v === null) continue;
       if (typeof v !== "number" || !(v >= -2 && v <= 2)) problems.push(`${at}.${key} must be a number between -2 and 2`);
       else link[key] = v;
+    }
+    const tier = entry["tier"];
+    if (tier !== undefined && tier !== null) {
+      if (typeof tier !== "string" || !MODEL_TIERS.includes(tier as ModelTier)) problems.push(`${at}.tier must be one of ${MODEL_TIERS.map((t) => `"${t}"`).join(", ")}`);
+      else link.tier = tier as ModelTier;
     }
     const style = entry["promptStyle"];
     if (style !== undefined && style !== null) {

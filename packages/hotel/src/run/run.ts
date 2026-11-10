@@ -38,7 +38,9 @@ import { AMBIENT_QUIET_MS, GENERATE_DEADLINE_MS, hostLlmConfig, pingLlm } from "
 import { LlmGovernor } from "../llm/governor.js";
 import { NARRATOR_CHAIN_DEADLINE_MS, makeNarratorLlm } from "../llm/narrator-llm.js";
 import type { RunNarratorLlm } from "../llm/narrator-llm.js";
-import { pricesWithPick, withPickedModel } from "../llm/run-model.js";
+import { EXPERIMENTAL_CAST_WARN } from "../llm/chain-config.js";
+import type { ModelTier } from "../llm/chain-config.js";
+import { pickTier, pricesWithPick, withPickedModel } from "../llm/run-model.js";
 import type { PickedModel } from "../llm/run-model.js";
 import { LlmMeter } from "../llm/meter.js";
 import { chebyshev, tileKey } from "../space/geometry.js";
@@ -48,6 +50,7 @@ import type { ScopedMirror } from "../space/scoped-mirror.js";
 import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
 import { NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
+import type { ReplayManifest } from "./artifacts.js";
 import { MEMORY_ID_PREFIX, PlayerMemory } from "./player-memory.js";
 import type { MemoryStore } from "./player-memory.js";
 import type { WrittenArtifacts } from "./artifacts.js";
@@ -240,6 +243,8 @@ export class Run {
   /** What the characters remember about the people they meet (D21, D47); absent when the hotel did not name the scenario. */
   private playerMemory: PlayerMemory | undefined;
   private scenarioId: number | undefined;
+  /** The model the admin picked, its tier and the size of the cast it was picked for: what the manifest says about the pick. */
+  private pickNote: { model: string; tier: ModelTier; actors: number } | undefined;
   private readonly agents = new Map<string, { name: string; spawned: boolean; gone: boolean }>();
   private readonly memory = new Map<string, PlannerMemory>();
   private readonly arousal = new Map<string, number>();
@@ -368,6 +373,13 @@ export class Run {
     this.scenarioId = scenarioIdOf(raw);
     if (this.body.config.agents.length > this.params.capActors) {
       return { ok: false, code: "actor_limit", message: `scenario has ${this.body.config.agents.length} characters, the cap is ${this.params.capActors}` };
+    }
+    // An experimental pick (8B, or a window of 8K or less) is still allowed, for any cast; the run says so in its log and manifest.
+    if (this.params.model) {
+      this.pickNote = { model: this.params.model.id, tier: pickTier(this.params.model), actors: this.body.config.agents.length };
+      if (this.pickNote.tier === "experimental" && this.pickNote.actors >= EXPERIMENTAL_CAST_WARN) {
+        this.d.logger.warn(`run ${this.id}: the picked model ${this.pickNote.model} is experimental and the cast is ${this.pickNote.actors}`, { run: this.id, ...this.pickNote });
+      }
     }
     // Names and looks go to the hotel as they are: refuse what it would refuse, before any model call or spawn.
     for (const a of this.body.config.agents) {
@@ -1472,6 +1484,14 @@ export class Run {
     };
   }
 
+  /** Which model and tier each link was, and what was picked: the audit trail `llm_served_<link>` alone cannot give (it says `pick`, not which model). */
+  private llmManifest(chain: LlmChain): NonNullable<ReplayManifest["llm"]> {
+    return {
+      ...(this.pickNote ? { picked_model: this.pickNote.model, picked_tier: this.pickNote.tier, picked_actors: this.pickNote.actors } : {}),
+      links: Object.fromEntries(chain.snapshot().links.map((l) => [l.name, { model: l.model, tier: l.tier }])),
+    };
+  }
+
   /** True when the live p95 passed the allowlist budget; the manager raises a notice once. */
   get p95Drift(): boolean {
     return this.meter.snapshot().p95Drift;
@@ -1541,7 +1561,7 @@ export class Run {
         await Promise.race([this.playerMemory.flush().catch(() => 0), sleepOn(clock, MEMORY_FLUSH_BOUND_MS)]);
       }
       const m = this.meter.snapshot();
-      if (this.chain) this.d.logger.info("run llm usage", { run: this.id, calls: m.calls, costUsd: m.costUsd, p50Ms: m.p50Ms, p95Ms: m.p95Ms, chain: this.chain.snapshot() });
+      if (this.chain) this.d.logger.info("run llm usage", { run: this.id, calls: m.calls, costUsd: m.costUsd, p50Ms: m.p50Ms, p95Ms: m.p95Ms, ...(this.pickNote ? { pickedTier: this.pickNote.tier } : {}), chain: this.chain.snapshot() });
       try {
         const written = await writeRunArtifacts(hotel.dataDir, this.id, events, this.frames.log, {
           run: this.id,
@@ -1559,7 +1579,8 @@ export class Run {
           })),
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
-          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
+          ...(this.chain ? { llm: this.llmManifest(this.chain) } : {}),
+          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks, narrator_repaired: this.narrator.repaired } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
         await link.registerArtifacts(this.id, written);

@@ -2,6 +2,7 @@ import { appendFile, mkdir, stat, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { BodyFrameLog } from "@perfectman/shared";
 import type { CommittedEvent } from "@perfectman/shared";
+import type { ModelTier } from "../llm/chain-config.js";
 
 export type ReplayManifest = {
   run: number;
@@ -18,6 +19,14 @@ export type ReplayManifest = {
   home?: number;
   /** Cast ref (the scenario's agent id) to the avatar id the hotel gave it, which is what the director track and the frame log mention. */
   actors?: Record<string, number>;
+  /** Which model answered for each chain link, and the admin's pick. Absent for the mock provider. */
+  llm?: {
+    /** The model the admin picked for the run (link `pick`), its tier (`experimental` for 8B or an 8K window) and how many characters the scene had. */
+    picked_model?: string;
+    picked_tier?: ModelTier;
+    picked_actors?: number;
+    links: Record<string, { model: string; tier: ModelTier }>;
+  };
   counters: Record<string, number>;
   /** A pulse did not drain before teardown, as in the HTTP controller's manifest. */
   dirty?: true;

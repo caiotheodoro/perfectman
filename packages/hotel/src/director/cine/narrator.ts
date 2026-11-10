@@ -98,18 +98,9 @@ function list(v: unknown, max: number, count: number): string[] {
   return v.map((x) => field(x, max)).filter((x): x is string => x !== undefined).slice(0, count);
 }
 
-/** Pulls the first JSON object out of a model reply and keeps only what is valid. */
-export function parseNarration(raw: string, fallback: Narration): Narration | undefined {
-  const start = raw.indexOf("{");
-  const end = raw.lastIndexOf("}");
-  if (start < 0 || end <= start) return undefined;
-  let obj: unknown;
-  try {
-    obj = JSON.parse(raw.slice(start, end + 1));
-  } catch {
-    return undefined;
-  }
-  if (obj === null || typeof obj !== "object") return undefined;
+/** What a parsed object makes of a card: the title is required, every other field falls back on its own. */
+function narrationFrom(obj: unknown, fallback: Narration): Narration | undefined {
+  if (obj === null || typeof obj !== "object" || Array.isArray(obj)) return undefined;
   const o = obj as Record<string, unknown>;
   const title = field(o["title"], LIMITS.title);
   if (!title) return undefined;
@@ -123,6 +114,94 @@ export function parseNarration(raw: string, fallback: Narration): Narration | un
     idle: idle.length ? [...idle, ...fallback.idle] : fallback.idle,
     source: "llm",
   };
+}
+
+/** The text of the first balanced `{...}` that starts at `from` (strings and escapes respected); undefined when it never closes. */
+function balancedObject(text: string, from: number): string | undefined {
+  let depth = 0;
+  let inString = false;
+  for (let i = from; i < text.length; i++) {
+    const ch = text[i];
+    if (inString) {
+      if (ch === "\\") i++;
+      else if (ch === '"') inString = false;
+    } else if (ch === '"') inString = true;
+    else if (ch === "{") depth++;
+    else if (ch === "}" && --depth === 0) return text.slice(from, i + 1);
+  }
+  return undefined;
+}
+
+/** Removes a comma that sits right before a `}` or `]` (`["a", "b",]`), the commonest way a model's JSON stops being JSON. Commas inside strings stay. */
+function dropTrailingCommas(json: string): string {
+  let out = "";
+  let inString = false;
+  for (let i = 0; i < json.length; i++) {
+    const ch = json[i]!;
+    if (inString) {
+      out += ch;
+      if (ch === "\\" && i + 1 < json.length) out += json[++i];
+      else if (ch === '"') inString = false;
+    } else if (ch === '"') {
+      inString = true;
+      out += ch;
+    } else if (ch === ",") {
+      let j = i + 1;
+      while (j < json.length && /\s/.test(json[j]!)) j++;
+      if (json[j] !== "}" && json[j] !== "]") out += ch;
+    } else out += ch;
+  }
+  return out;
+}
+
+function tryParse(json: string): unknown {
+  try {
+    return JSON.parse(json);
+  } catch {
+    return undefined;
+  }
+}
+
+/** How many `{` in a reply are tried as the start of the card: a sentence of prose before it may carry one. */
+const MAX_CANDIDATES = 6;
+
+export type NarrationParse = {
+  narration: Narration;
+  /** The reply was usable only after a repair: prose or a code fence around the object, trailing commas, text after it. */
+  repaired: boolean;
+};
+
+/**
+ * Reads a card out of a model reply. A clean object parses as it is. Otherwise each `{` is tried in turn: the balanced
+ * object that starts there is parsed, then parsed again with its trailing commas removed (a code fence, a sentence before
+ * it, or another array after it never get in the way). The first object with a title wins; `undefined` only when none has one.
+ */
+export function parseNarrationReply(raw: string, fallback: Narration): NarrationParse | undefined {
+  const text = raw.replace(/^﻿/, "").trim();
+  const clean = tryParse(text);
+  if (clean !== undefined) {
+    const narration = narrationFrom(clean, fallback);
+    return narration ? { narration, repaired: false } : undefined;
+  }
+  const candidates: string[] = [];
+  for (let at = text.indexOf("{"); at >= 0 && candidates.length < MAX_CANDIDATES; at = text.indexOf("{", at + 1)) {
+    const json = balancedObject(text, at);
+    if (json) candidates.push(json);
+  }
+  // Braces that do not balance (a stray `}` in prose): the old reading, first `{` to last `}`.
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start >= 0 && end > start) candidates.push(text.slice(start, end + 1));
+  for (const json of candidates) {
+    const narration = narrationFrom(tryParse(json) ?? tryParse(dropTrailingCommas(json)), fallback);
+    if (narration) return { narration, repaired: true };
+  }
+  return undefined;
+}
+
+/** Pulls the first usable card out of a model reply and keeps only what is valid. */
+export function parseNarration(raw: string, fallback: Narration): Narration | undefined {
+  return parseNarrationReply(raw, fallback)?.narration;
 }
 
 type Record_ = { brief: SceneBrief; value: Narration; settled: boolean; waiters: Array<() => void>; scene: number; idle: number };
@@ -143,7 +222,10 @@ export class Narrator implements NarrationSource {
   /** The room the opening card was written for: its asides come from that card's pass, since it has no scene card of its own. */
   private titleRoom: number | undefined;
   calls = 0;
+  /** Cards that played the deterministic text: the call failed, or the reply had no usable card. */
   fallbacks = 0;
+  /** Cards the model wrote that were usable only after a repair (see {@link parseNarrationReply}). */
+  repaired = 0;
 
   constructor(private readonly o: NarratorOptions) {
     this.lang = o.language;
@@ -199,9 +281,14 @@ export class Narrator implements NarrationSource {
         llm(prompt(rec.brief, this.lang), ac.signal),
         new Promise<never>((_, reject) => ac.signal.addEventListener("abort", () => reject(new Error("narrator deadline")), { once: true })),
       ]);
-      const parsed = parseNarration(raw, rec.value);
-      if (parsed) rec.value = parsed;
-      else {
+      const parsed = parseNarrationReply(raw, rec.value);
+      if (parsed) {
+        rec.value = parsed.narration;
+        if (parsed.repaired) {
+          this.repaired++;
+          logger?.info("narrator reply repaired", { room: rec.brief.roomName, reply: raw.slice(0, 300) });
+        }
+      } else {
         this.fallbacks++;
         logger?.warn("narrator reply unusable, using fallback text", { room: rec.brief.roomName, reply: raw.slice(0, 300) });
       }
