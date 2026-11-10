@@ -8,7 +8,7 @@ import {
   createLLMProvider,
   scrubConfigForArtifact,
 } from "@perfectman/server/hotel";
-import type { AgentCommitInfo, BuiltPrompt, ConfiguredSimulationHandle, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
+import type { AgentCommitInfo, BuiltPrompt, ConfiguredSimulationHandle, GuardKind, HotelSimulationOptions, LLMConfig, LLMProvider, OnConsult, ResolvedBody, SimulationAppConfig } from "@perfectman/server/hotel";
 import { join } from "node:path";
 import { MockActMemory, withMockBody } from "../llm/mock-body.js";
 import type { MockDrama } from "../llm/mock-body.js";
@@ -249,6 +249,8 @@ export class Run {
   private readonly memory = new Map<string, PlannerMemory>();
   private readonly arousal = new Map<string, number>();
   private readonly noOpStreak = new Map<string, number>();
+  /** What the repetition and output guards did this run (rejected repeats, garbles, stall nudges), for the run's artifact counters. */
+  private readonly guardHits = new Map<GuardKind, number>();
   /** Each actor's last 15 action tendencies, from the commit seam (computed, never persisted): the planner's reading of the whole emotion model. */
   private readonly tendencies = new Map<string, ActionEmotions>();
   /** The planner side of the drama contract (packet P3): the act lock, the reactions owed, the dead pool, the memory of acts. Inert until a dialect 2 session says drama is on. */
@@ -515,7 +517,7 @@ export class Run {
     const options = {
       agentRuntimeFactory: (registry: ConstructorParameters<typeof AgentRuntime>[1]) => {
         this.registry = registry;
-        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7 });
+        return new AgentRuntime(undefined, registry, (llm: LLMConfig, agentId: string) => this.provider(llm, agentId), { maxRetries: 2, roomThreshold: 0.7, strict: true, onGuard: (kind) => this.guardHits.set(kind, (this.guardHits.get(kind) ?? 0) + 1) });
       },
       extraGateways: { hotel: () => this.gateway, breaker: () => this.breaker.gateway },
       hotel: hotelOptions,
@@ -1142,6 +1144,25 @@ export class Run {
     this.plannedThisPulse.clear();
   }
 
+  /**
+   * The guards' counts as flat run counters, in the chain's `llm_guard_<reason>` naming. Always all of them, zeros
+   * included, so a run summary that shows no repeats says so. Flags count candidates (a first answer or a retry; a repeat delivered to a person who asked is still flagged);
+   * `blocked`/`dropped` count turns that ended without a line; `stall_nudge` counts prompts that carried the stall line.
+   */
+  private guardCounters(): Record<string, number> {
+    const n = (k: GuardKind): number => this.guardHits.get(k) ?? 0;
+    return {
+      llm_guard_repeat_own: n("repeat_own"),
+      llm_guard_repeat_room: n("repeat_room"),
+      llm_guard_phrase_loop: n("phrase_loop"),
+      llm_guard_garble: n("garble"),
+      llm_guard_repeat_blocked: n("repeat_blocked"),
+      llm_guard_garble_dropped: n("garble_dropped"),
+      llm_guard_held_repeat: n("held_repeat"),
+      llm_stall_nudges: n("stall_nudge"),
+    };
+  }
+
   // ---- held speech (move_then_speak) ------------------------------------------
 
   /**
@@ -1228,6 +1249,7 @@ export class Run {
     this.gateway.noteConsult(ref, this.d.clock.now() - DEFERRED_TYPING_HEAD_START_MS);
     try {
       const resolved = await this.port.resolveDeferred(ref, held.intent);
+      if (resolved.committedEvents.some((e) => e.type === "repetition_blocked")) this.guardHits.set("held_repeat", (this.guardHits.get("held_repeat") ?? 0) + 1);
       if (!resolved.committedEvents.some((e) => e.type === "message_sent" || e.type === "reply_sent")) this.gateway.stopTyping(ref);
     } catch (err) {
       this.gateway.stopTyping(ref);
@@ -1580,7 +1602,7 @@ export class Run {
           endedAt: clock.now(),
           pulse: this.port?.pulseIndex() ?? 0,
           ...(this.chain ? { llm: this.llmManifest(this.chain) } : {}),
-          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks, narrator_repaired: this.narrator.repaired } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
+          counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...this.guardCounters(), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks, narrator_repaired: this.narrator.repaired } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0 },
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
         await link.registerArtifacts(this.id, written);

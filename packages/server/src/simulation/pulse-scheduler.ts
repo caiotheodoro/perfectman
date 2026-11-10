@@ -23,6 +23,8 @@ import type {
 } from "@perfectman/shared";
 import { createId, createSeededRng, STAGNATION_WINDOW_PULSES, OWN_HISTORY_LIMIT, HOLD_VOICE_REFRACTORY_PULSES } from "@perfectman/shared";
 import { isEngineAuthoredMotive } from "../agent/engine-motive.js";
+import { IntentParser } from "../agent/intent-parser.js";
+import { heldLineRepeat, REPETITION_GUARD_MARKER } from "../agent/repetition-guard.js";
 import {
   runEngineStep,
   computeStagnationMetrics,
@@ -994,7 +996,13 @@ export class PulseScheduler {
       const channels = await this.config.channelRegistry.getChannels(sim.id);
       const membership = await this.config.channelRegistry.getMembershipsForSimulation(sim.id);
       const agentState = await this.currentState(agent);
-      const resolved = await this.config.intentResolver.resolve(intent, {
+      // The held line was never judged by the repetition guard: drop it when it has become a repeat while it waited.
+      const text = intent.visibleContent;
+      const repeat = text ? heldLineRepeat(agentId, text, await this.readContextEvents(this.pulseIndex)) : undefined;
+      const toResolve = repeat
+        ? IntentParser.createFallback(agentId, "no_op", `${REPETITION_GUARD_MARKER}: a line held while walking was already said ${repeat === "own" ? "by you" : "by someone else in the room"} by the time you arrived, dropped — blocked structurally.`)
+        : intent;
+      const resolved = await this.config.intentResolver.resolve(toResolve, {
         simulationId: sim.id,
         channelId: this.currentChannelIdByAgent.get(agentId) ?? context.channelAnchorId,
         pulseIndex: this.pulseIndex,
@@ -1015,9 +1023,9 @@ export class PulseScheduler {
       for (const opEv of resolved.operatorEvents) await this.emitOperatorEvent(opEv);
       const landed =
         resolved.outcome === "committed"
-          ? intent.intentType
+          ? toResolve.intentType
           : resolved.outcome === "fallback_committed"
-            ? intent.fallbackIfBlocked
+            ? toResolve.fallbackIfBlocked
             : undefined;
       if (landed && OUTWARD_SOCIAL_ACT_TYPES.has(landed)) {
         agentState.lastActionAt = this.simTime;

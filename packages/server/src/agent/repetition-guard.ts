@@ -10,7 +10,9 @@
  * sufficient. This is the enforcement backstop.
  */
 
-import type { PerceptionPacket } from "@perfectman/shared";
+import type { CommittedEvent, PerceptionPacket } from "@perfectman/shared";
+import { OWN_UTTERANCE_WINDOW } from "@perfectman/shared";
+import { findOwnEcho, findRoomEcho } from "./echo-guard.js";
 
 const STOPWORDS = new Set(["a", "o", "e", "de", "que", "do", "da", "em", "um", "uma", "and", "of", "to", "the"]);
 
@@ -81,7 +83,24 @@ export type RepetitionPolicy = {
    * is not worth the same spend as one a person asked for. Absent means `maxRetries`.
    */
   ambientMaxRetries?: number;
+  /**
+   * Hotel mode: also compare word SEQUENCES (echo-guard.ts), not only word sets. A shared opening, run or share of
+   * trigrams with one of the actor's last 8 lines, or a near-verbatim copy of one of the room's last 4, is a repeat; a
+   * phrase or question frame in 3 of the actor's last 5 lines is a loop, retried with a note that names it; corrupt
+   * text gets one retry and is then dropped. Absent means none of that, the shipped behavior.
+   */
+  strict?: boolean;
+  /** Called once per thing the guard did, so a run can count them (see {@link GuardKind}). A throw is swallowed. */
+  onGuard?: (kind: GuardKind) => void;
 };
+
+/**
+ * What `RepetitionPolicy.onGuard` reports. The first four count flagged candidates (a first answer or a retry), by what
+ * each is first: corrupt text, a copy of the actor's own line, of another actor's line, a signature phrase loop.
+ * `repeat_blocked` and `garble_dropped` count turns that ended without a line because of them; `stall_nudge` counts
+ * prompts that carried the scene-stall line; `held_repeat` is a held line dropped on release as a repeat.
+ */
+export type GuardKind = "repeat_own" | "repeat_room" | "phrase_loop" | "garble" | "repeat_blocked" | "garble_dropped" | "stall_nudge" | "held_repeat";
 
 /** Content words a line needs before it can be a copy of another person's (see `RepetitionPolicy.roomThreshold`). */
 export const ROOM_REPEAT_MIN_WORDS = 3;
@@ -132,4 +151,27 @@ export function isNearRepeat(
   // empty sets is now 0, but short-circuit here so the intent is explicit.
   if (normalizeWords(candidate).length === 0) return false;
   return ownRecentUtterances.some((prior) => similarity(candidate, prior) >= threshold);
+}
+
+/**
+ * A line held while its speaker walked (hotel `move_then_speak`) is released later, by the arrival and not by a model
+ * call, so no retry arm ever looked at it. Before it goes out it is checked against everything the log holds now: the
+ * actor's own last lines (which may include a line it said while this one waited) and what the others said in the
+ * meantime, with the same measures as a fresh answer in strict mode. Returns which kind of repeat it is, if any.
+ */
+export function heldLineRepeat(agentId: string, text: string, log: readonly CommittedEvent[]): "own" | "room" | undefined {
+  const own: string[] = [];
+  const room: string[] = [];
+  for (const e of log) {
+    if (e.type !== "message_sent" && e.type !== "reply_sent") continue;
+    const p = e.payload as Record<string, unknown> | undefined;
+    const content = p?.["content"];
+    if (typeof content !== "string" || content.trim().length === 0) continue;
+    if (e.actorId === agentId) own.push(content);
+    else if (p?.["untrusted"] !== true && e.visibility.visibleToAgents.includes(agentId)) room.push(content);
+  }
+  if (isNearRepeat(text, own.slice(-OWN_UTTERANCE_WINDOW)) || findOwnEcho(text, own) !== undefined) return "own";
+  const heard = room.slice(-ROOM_LINES_LIMIT);
+  if (isRoomCopy(text, heard, 0.7) || findRoomEcho(text, heard) !== undefined) return "room";
+  return undefined;
 }

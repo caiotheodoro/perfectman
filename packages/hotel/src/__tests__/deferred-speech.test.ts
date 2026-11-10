@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import type { Sidecar } from "../sidecar.js";
 import { FakeDirector } from "../testing/fake-director.js";
 import { bootSidecar, TEST_SECRET, waitFor } from "../testing/helpers.js";
+import { createRuntimePort } from "../run/runtime-port.js";
 
 let fake: FakeDirector | undefined;
 let sidecar: Sidecar | undefined;
@@ -133,4 +134,35 @@ describe("a line held until its speaker arrives (move_then_speak, ADR-0019)", ()
     const ana = f.rooms.get(12)?.avatars.get(9);
     expect(me && ana ? Math.max(Math.abs(me.x - ana.x), Math.abs(me.y - ana.y)) : 99).toBeLessThanOrEqual(6);
   }, 25_000);
+
+  it("drops a held line that became a repeat of the actor's own while it walked, instead of saying it twice", async () => {
+    const fx = await running(24);
+    const { f, run } = fx;
+    const handle = run.simulation;
+    if (!handle) throw new Error("the run has no simulation");
+    const text = "Mamão, isso tá frio mesmo! Sente aí junto e vamos criar calor de conversa.";
+    const saidTimes = (): number => f.chats.filter((c) => c.mode === "say" && c.text === text).length;
+    const approach = (): NonNullable<AgentCommitInfo["body"]> => ({
+      accepted: { order: "move_then_speak", move: { kind: "approach", target: "p1", band: "personal" } },
+      targets: { p1: { kind: "person", ref: "h:9" } },
+      blocked: [],
+      deferral: { targetRef: "h:9", etaMs: 800, expiresAt: Date.now() + 15_000 },
+    });
+    commit(fx, text, approach());
+    await waitFor(() => saidTimes() === 1, "the first line, said after the walk", 8000);
+    // The addressee goes to the far corner; the same line is held again and its speaker walks the whole room to say it.
+    f.moveHuman(12, 9, 23, 0);
+    commit(fx, text, approach());
+    const port = createRuntimePort(handle);
+    const dropped = async () => (await port.getEvents()).find((e) => e.type === "repetition_blocked" && e.actorId === "person-1");
+    const t0 = Date.now();
+    let blocked = await dropped();
+    while (!blocked && Date.now() - t0 < 15_000) {
+      await new Promise((r) => setTimeout(r, 50));
+      blocked = await dropped();
+    }
+    if (!blocked) throw new Error("timed out waiting for the repeat dropped on arrival");
+    expect((blocked.payload as { privateMotiveSummary?: string }).privateMotiveSummary).toMatch(/^Repetition guard: a line held while walking was already said by you/);
+    expect(saidTimes()).toBe(1);
+  }, 30_000);
 });

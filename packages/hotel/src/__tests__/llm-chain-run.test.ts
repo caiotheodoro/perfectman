@@ -130,6 +130,45 @@ describe("a run through the provider chain (local HTTP, no real model)", () => {
     expect(frames[0]?.data).toMatchObject({ mode: "say", toRef: "person-2", sameRoom: true });
     expect(Number(frames[0]?.data["distance"])).toBeGreaterThanOrEqual(0);
   }, 20_000);
+  it("counts rejected repeats in the run's counters, with every guard counter present", async () => {
+    const same = "Mamão, isso tá frio mesmo! Sente aí junto e vamos criar calor de conversa.";
+    llm = createServer((req, res) => {
+      let body = "";
+      req.on("data", (c: Buffer) => (body += c.toString()));
+      req.on("end", () => {
+        const parsed = JSON.parse(body || "{}") as { max_tokens?: number };
+        const intent = JSON.stringify({ intentType: "send_message", visibleContent: same, channelTarget: "", personTargets: [], privateMotiveSummary: "responder" });
+        res.writeHead(200, { "content-type": "application/json" }).end(parsed.max_tokens === 1 ? "{}" : JSON.stringify({ choices: [{ message: { content: intent } }], usage: { prompt_tokens: 900, completion_tokens: 50 }, model: "small" }));
+      });
+    });
+    await new Promise<void>((r) => llm?.listen(0, "127.0.0.1", () => r()));
+    const addr = llm.address();
+    const port = typeof addr === "object" && addr ? addr.port : 0;
+    process.env["TEST_LINK_A_KEY"] = "key-a";
+    const chain = [{ name: "small", baseUrl: `http://127.0.0.1:${port}/v1`, apiKeyEnv: "TEST_LINK_A_KEY", model: "small", maxContextTokens: 4096 }];
+    const llmEnv: LlmEnv = { provider: "openai-compatible", baseUrl: chain[0]!.baseUrl, apiKeyEnv: "TEST_LINK_A_KEY", models: ["small"], chain, prices: {}, concurrency: 3, softCallsPerMin: 600, softTokensPerHour: 5_000_000 };
+    const b = await bootSidecar({ config: { llm: llmEnv }, timing: { baseIntervalMs: 60_000 } });
+    fake = b.fake;
+    sidecar = b.sidecar;
+    b.fake.startRun({ run: 7, room: 12, scenarioVersion: 31 });
+    await waitFor(() => lastStatus(b.fake)?.state === "running", "running");
+    await waitFor(() => b.fake.received.some((f) => f.t === "actor_cmd" && f.cmd.k === "walk"), "the cast walking in");
+    await new Promise((r) => setTimeout(r, 600));
+    b.fake.humanSay(12, 9, "Duda, tudo bem?");
+    await waitFor(() => b.fake.chats.some((c) => c.text === same), "a line said", 8000);
+    b.fake.humanSay(12, 9, "Duda, e o bar, abre quando?");
+    await waitFor(() => (sidecar?.manager?.getRun(7)?.llmChain()?.snapshot().links[0]?.served ?? 0) >= 8, "enough calls for a repeat", 10_000);
+
+    b.fake.pmCommand(7, 12, "stop");
+    await waitFor(() => b.fake.received.find((f) => f.t === "run_end"), "run_end", 6000);
+    await waitFor(() => b.http.registered.length > 0, "artifact registration");
+    const manifest = JSON.parse(readFileSync(join(b.cfg.dataDir, "runs", "7", "replay.json"), "utf8")) as { counters: Record<string, number> };
+    for (const key of ["llm_guard_repeat_own", "llm_guard_repeat_room", "llm_guard_phrase_loop", "llm_guard_garble", "llm_guard_repeat_blocked", "llm_guard_garble_dropped", "llm_guard_held_repeat", "llm_stall_nudges"]) {
+      expect(manifest.counters[key], key).toEqual(expect.any(Number));
+    }
+    expect(manifest.counters["llm_guard_repeat_own"]).toBeGreaterThan(0);
+    expect(manifest.counters["llm_guard_garble"]).toBe(0);
+  }, 30_000);
   it("a model that fills channelTarget with an empty string still answers in the room, again and again (run 29: Leo mute for 40 s)", async () => {
     let n = 0;
     llm = createServer((req, res) => {

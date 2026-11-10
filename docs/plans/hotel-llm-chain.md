@@ -117,7 +117,7 @@ Calls start at link 1 and take the first link that answers. Any error fails over
 - **Governor:** one `GovernorShared` penalty window per link. A link with another behind it retries a 429 once and waits at most 1.5 s.
 - **Deadline:** one 13 s chain deadline (the 20 s generate deadline is the outer bound) is shared by all attempts; each attempt gets the smaller of the link's timeout and what is left, and a link is skipped (`deadline`) when under 1.5 s is left.
 - **Health check:** run start and the breaker probe ping the links in order and succeed on the first that answers.
-- Each served call records its link: `routedModel` is the link name, `fallbackAttempts` the links passed over, `x-pm-link` the same in the headers. `run_status` `llm_p50_ms` / `llm_p95_ms` are over served calls and include the time lost to failed attempts. Per-link calls, failures, served, skipped by reason, tokens, cost, p50/p95 and breaker state are in `Run.llmChain().snapshot()`, logged at run end, and flattened into the replay manifest counters (`llm_served_<link>`, `llm_failures_<link>`, `llm_guard_<reason>`). The director's `run_status` schema is unchanged, so per-link numbers do not reach the panel. Failed calls are counted by class per link (`failReasons`, `llm_failreason_<link>_<class>`: `timeout`, `http_<status>`, `invalid_json`, `empty`, `network`, `quota`, `auth`, `context`, `error`), and each served call records why the links before it were passed over (`ServedRecord.passed`, e.g. `pick:invalid_json`, `opencode-glm:timeout`). The answering link and model per call are in the `pulse_metrics` event (`routedModel`, `model`, `fallbackAttempts`).
+- Each served call records its link: `routedModel` is the link name, `fallbackAttempts` the links passed over, `x-pm-link` the same in the headers. `run_status` `llm_p50_ms` / `llm_p95_ms` are over served calls and include the time lost to failed attempts. Per-link calls, failures, served, skipped by reason, tokens, cost, p50/p95 and breaker state are in `Run.llmChain().snapshot()`, logged at run end, and flattened into the replay manifest counters (`llm_served_<link>`, `llm_failures_<link>`, `llm_guard_<reason>`). The director's `run_status` schema is unchanged, so per-link numbers do not reach the panel; the repetition and output guards add `llm_guard_repeat_own` and the others listed in the seventh pass. Failed calls are counted by class per link (`failReasons`, `llm_failreason_<link>_<class>`: `timeout`, `http_<status>`, `invalid_json`, `empty`, `network`, `quota`, `auth`, `context`, `error`), and each served call records why the links before it were passed over (`ServedRecord.passed`, e.g. `pick:invalid_json`, `opencode-glm:timeout`). The answering link and model per call are in the `pulse_metrics` event (`routedModel`, `model`, `fallbackAttempts`).
 
 ### The builder's draft follows the chain
 
@@ -456,3 +456,50 @@ Per link, `failReasons` and the run counters `llm_failreason_<link>_<class>` (se
 The tier is recorded and never used to order the chain or refuse a pick. A pick is allowed for any cast; with an `experimental` pick and 3 or more characters the run logs a warning at prepare. The manifest (`replay.json`) has an optional `llm` block: `picked_model`, `picked_tier`, `picked_actors` (only when the admin picked) and `links`, the model and tier behind each link name. The snapshot shows each link's tier.
 
 What this repo cannot do: the start-modal's list (`GET models`) and its default belong to Tilehouse. To label models in the picker and to default to a `recommended` one, Tilehouse needs a `tier` on each `ModelInfo` by the same rule (the rule is in `modelTier`, with its test vectors in `llm-model-tier.test.ts`) and a different `DEFAULT_MODEL`; the sidecar will then record whatever it is sent.
+
+## Seventh pass: repeats that got through (2026-11-10, `fix/repetition-guard`)
+
+Hotel runs 53 to 57 of 2026-11-10 (pt-BR, an 8B model, 3 actors) still had an actor saying the same sentence twice (Ian, 15:17:54 and 15:20:11), the same joke 27 s apart (Caio), one question in 5 of 6 lines (Pistolinha: "você já viu um pato de perto?"), a closing tic on nearly every line (Heloísa: "meu bem... não é, querido?"), a 90 s loop of "senta os dois / dois minutos / próximo passo", and corrupt tokens ("Éduğunu", "umapreciação"). The production event log was not available; the causes below are read from the code and measured on the lines quoted.
+
+### What covered, what did not
+
+| Mechanism | Covered | Gap (confirmed from the code unless marked) |
+| --- | --- | --- |
+| Own line vs `ownRecentUtterances` (12 lines), Jaccard 0.7 over word sets | an exact or near-exact repeat | a repeat whose changed tail is long: Ian's sentence plus 6 new words scores 0.67, plus 1 word 0.92 (measured); no check of word order, so an embedded question or a shared closing is invisible |
+| Room copy (`roomThreshold`) | a line of 3+ content words at 0.7 against the room's last 8 | same set measure; a copy with a few words changed passes |
+| A retry note, generic | "too close to something you already said" | never names the phrase, so a small model says it again |
+| After the retries, a person's question is answered with the repeat | a guest who asks twice gets an answer | the carve-out delivers any repeat to a line aimed at the actor, including a loop; likely for lines addressed to a guest (inferred) |
+| A line held for `move_then_speak` | the walk's arrival releases it | `releaseSpeech` re-submits it through `resolveDeferred` with no repetition check, and a held line is not in `ownRecentUtterances` until it is said, so an actor consulted while walking says it again and both go out |
+| Decoding penalties | `KNOWN_SAMPLING` models and links that set them | a run's picked model (`pick` link) not in that table sends none, on the first answer or the retry; only the temperature boost applies |
+| Corrupt text | nothing | no check reads the letters of a line |
+
+### What changed
+
+Everything below is hotel-only: `RepetitionPolicy.strict` is set in `run.ts`; without it the step behaves as before.
+
+| Change | Where |
+| --- | --- |
+| Own echo: a 6-word shared opening, or a 6-word shared run covering 60% of the shorter line, or 60% of its trigrams, against the actor's last 8 lines (folded: case, accents, punctuation, stage directions, laughter runs, letter elongation) | `echo-guard.ts` `findOwnEcho` |
+| Room echo: a 5-word run covering 70% of the shorter line, or 70% of its trigrams, against the room's last 4 lines | `findRoomEcho` |
+| Signature phrase: a shared phrase of 5 words or more (4 with 3 topic words, so "o envelope do Otávio" is not one), the same first or last 3 words, or the same question about the same 3 topic words, in 2 of the actor's last 4 lines plus the candidate (3 of 5). The retry note names the phrase, bans it and its variations, and asks for new information or a decision | `findPhraseLoop`, `loopRetryNote` |
+| Corrupt text: a replacement or control character, a letter outside Portuguese, Spanish, French and English (unless the room already wrote it), `uma`/`umas`/`voce` glued to a word, a word of 28 letters or more, one word 7 times running. One retry with a note that names the token, then the line is dropped | `findGarble`, `garbleRetryNote` |
+| A repeat or loop that survives the retries is blocked as before (`repetition_blocked`); corrupt text is dropped as a `no_op` with the `Output guard:` motive, which is not a provider failure, so it never feeds the breaker or the health watch | `action-intent-step.ts` |
+| A held line is checked against the log when it is released and dropped as `repetition_blocked` when it became a repeat while it walked | `heldLineRepeat`, `PulseScheduler.resolveDeferred` |
+| Scene stall (drama hotel runs): 4 room lines with no person's line, no body change near the actor, and at most 2 numbers, names or topic words the 8 lines before did not have add one line to the decision: reveal, accuse, refuse and say why, leave, touch. Not on a whisper or a line aimed at the actor. A scene with fewer than 7 lines is never stalled | `scene-stall.ts` |
+
+Unchanged on purpose: the carve-out for a person who asked (a repeat is still delivered to them, corrupt text is not), the chain's failover and breaker, and the penalty table (adding a retry-only default for unlisted models would send a parameter some providers reject; left for a measured follow-up).
+
+### Thresholds
+
+Chosen on 128 hand-written ordinary pt-BR lines (accents, "KKKK", slang, shouting, numbers, stock frames shared by different lines; 16,256 ordered pairs, and every window of 5 under 15 rotations) and the 63 chat lines the five persona packs carry (not written for this guard): no pair echoes, no window of 5 loops, no line is garbled. A shared opening of 5 words ("eu acho que você tem ...") is not an echo, which is why the own opening and run are 6. A line of fewer than 5 words is left to the older Jaccard check. The room rule is stricter than the own rule because answering in the other's words is half of talking.
+
+### Counters
+
+In the replay manifest, alongside `llm_guard_<reason>`; these eight are always present, zeros included: `llm_guard_repeat_own`, `llm_guard_repeat_room`, `llm_guard_phrase_loop`, `llm_guard_garble` (candidates flagged, a first answer or a retry, by what each is first; a repeat delivered to a person who asked is flagged too), `llm_guard_repeat_blocked`, `llm_guard_garble_dropped` (turns that ended without a line), `llm_guard_held_repeat` (held lines dropped on release) and `llm_stall_nudges` (prompts that carried the stall line). Operator events carry the new violations (`phrase_loop`, `garbled_text`) in `llm_retry_recovered.data.violations`.
+
+### Not covered
+
+- A number that contradicts the line before ("DUZENTAS" then "Duas mil pratas?").
+- A loop in which every line brings a new word (the stall check counts new names, numbers and topic words, so a paraphrase loop with fresh synonyms reads as moving).
+- A first-attempt prompt that already bans a phrase the actor's last lines carry: the ban is on the retry only, so a loop costs one retry per turn until it breaks.
+- No measurement on a real model; the tests are the quoted lines and the corpora above.
