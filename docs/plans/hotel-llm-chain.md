@@ -516,8 +516,8 @@ Run 60 (pt-BR, three bot actors, a hand-written estate scene) read as actors tha
 | Builder personas and a persona file with no `presence.messageLength` are `short` (pt aim 5-12, cap 22, en 6-14 and 28) | `persona-md-compiler.ts`, `room-files.ts`, `lengthTargetFor` |
 | Narration (first-person body verbs) is cut out of `visibleContent` before any check reads it; the contract line says speech only | `stripNarration`, `speechOnlyLine` |
 | Novelty is judged against the actor's own last 3 lines and the previous turn, leaving out the scene's topic words; a filler does not clear a question debt | `lowNovelty`, `isRealAnswer`, `owedQuestion` |
-| Quotations and claims ("X te chamou de Y", "X disse que ...") must be in the last 10 room lines: one retry, then the sentence is struck | `falseQuotes` |
-| A reveal, accusation, threat or offer in the room's last line puts a "react to this first" note in the decision of everyone who hears it | `moveBefore`, `answerNoteFor` |
+| Quotations and claims ("X te chamou de Y", "X disse que ...") must be in the last 10 room lines: one retry, then the sentence is struck. Only a named speaker, "você", or "ela"/"ele" with exactly one other person in view is checked: a claim about someone who may be absent is left alone | `falseQuotes` |
+| A reveal, accusation, threat or offer in the room's last line puts a "react to this first" note in the decision of the person it names or is aimed at (a name in the words, an addressee or reply target in the log), or of everyone who hears it when it names nobody | `moveBefore`, `answerNoteFor` |
 | `guard-log.jsonl` per run, one line per guard action `{t_ms, actor, rule, before, after}` (an operator artifact, `guard_log` in the manifest; `PERFECTMAN_GUARD_LOG=0` turns it off) | `hotel/src/run/guard-log.ts`, `artifacts.ts`, `RepetitionPolicy.onGuard(kind, info)` |
 
 ### Counters
@@ -527,7 +527,7 @@ Added to the run's counters, always present, zeros included: `llm_narration_stri
 ### Not covered
 
 - No real model ran: whether deepseek obeys a 22-word cap, keeps its actions in `body`, quotes only what was said or reacts first to a reveal is unmeasured. The replay of run 60's lines is on scripted candidates (what the old guard replaced with a filler was not kept).
-- A claim about an absent person with a pronoun ("ela disse que ...") is read as one about someone in the room, and can be struck wrongly.
-- A reveal said to one person is noted to everyone in earshot; a room of 12 gets 11 notes.
+- "Ela" or "ele" in a room where two or more other people spoke is not checked, so a false claim hides behind a pronoun (run 60's "Ela te chamou de irmão e de burro" is caught only by name).
+- A line that names a person who is not a speaker in view or near (a dead husband) names nobody here, so everyone in earshot gets its note.
 - A repeated demand in new words is still invisible to the motif check, and the stall nudge is still suppressed whenever a body change is near the actor (`scene-stall.ts`).
 - Non-word detection ("efatigável") stays a non-goal: there is no dictionary.
