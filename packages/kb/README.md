@@ -66,33 +66,37 @@ Project Gutenberg's licence covers its trademark and asks that redistributions k
 
 The embedding model is `Xenova/multilingual-e5-small`, an ONNX port of `intfloat/multilingual-e5-small`, which is MIT. The port's own card carries no licence field.
 
-## What the build produced (2026-11-09)
+## What the build produced (2026-11-09, second build)
+
+Built over all 45 sources with the fixed parser and chunker, and tagged with the new brief.
 
 | | |
 |---|---|
-| Sources parsed | 31 of 31 (26 en, 5 pt) |
-| Beats | 3,131 |
-| Beats tagged and indexed | 946 (every beat with a physical-action hint, plus a deterministic 25% of dialogue-only beats) |
-| Tagger | Haiku, 8 agents, 24 batches. 0 lines rejected by the validator after the ids were fixed. |
+| Sources parsed | 45 of 45 (31 en, 14 pt-BR in `pt-plays-extra`) |
+| Beats | 5,625 (4,180 en, 1,445 pt) |
+| Beats tagged and indexed | 1,924 (every action-hint beat, 25% of English dialogue beats, 50% of Portuguese dialogue beats; 193 of them are a held-out set tagged by Sonnet) |
+| Tagger | Haiku, 8 agents, 44 batches, with the Sonnet held-out. 0 lines rejected by the validator after the ids and targets were fixed. |
 | Embeddings | `Xenova/multilingual-e5-small`, q8, 384 dimensions, local |
-| Index split | 879 en, 67 pt. 728 dialogue-only, 38 killing, 51 kissing, 30 hugging, 31 strikes, 27 retreats, 18 crying, 17 pushes, 6 faints |
+| Index split | 1,213 en, 711 pt. 1,634 dialogue-only, 77 kissing, 50 hugging, 39 killing, 35 strikes, 28 retreats, 25 pushes, 25 crying, 11 faints |
 
-How far to trust the labels: a second tagger (Sonnet, blind to Haiku's labels) re-tagged a deterministic 10% sample of 107 beats.
+How far to trust the labels. The held-out set (193 beats, 55 of them Portuguese) was kept out of the batches the Haiku taggers worked on and tagged blind by Sonnet. A fresh Haiku run over the same 193 beats, under the same brief, gives the agreement below. Nothing was tuned against this set.
 
-| Field | Agreement |
-|---|---|
-| `action_type` | 93.5% |
-| driver | 86% |
-| emotion | 58% |
-| `tactic_verb`, same group | 50% |
-| `status_delta` | 50.5% |
-| `tactic_verb`, exact | 32% |
+| Field | First build (107-beat sample, old brief) | Second build (193-beat held-out) |
+|---|---|---|
+| `action_type` | 93.5% | 96.9% |
+| driver | 86% | 87.6% |
+| emotion | 58% | 64.8% |
+| `status_delta` | 50.5% | 72.0% |
+| `tactic_verb`, same group | 50% | 65.3% |
+| `tactic_verb`, exact | 32% | 39.9% |
 
-So the physical-action label is dependable and is the hard filter in `queryReferenceBeats`. The tactic, emotion and status labels are judgement calls that two careful readers split on, and they are soft signals: use them to rank, never as ground truth. Haiku also marked 47% of beats `boundary_ok: false` (Sonnet 31% on the sample), so the chunker's cuts are often wrong by a tagger's eye. Treat a reference beat as "a scene like this", not as a clean unit.
+"to command" is 2.3% of the tags in the index (it was 11%). `boundary_ok: false` is 24.4% of the index (29.5% for Haiku and 25.4% for Sonnet on the held-out, against 47% and 31% before), so the cuts are better but still wrong by a tagger's eye one time in four.
 
-## Label quality changes (2026-11-09, not yet applied to the index)
+The physical-action label is dependable and is the hard filter in `queryReferenceBeats`. Status is usable as a ranking signal. Tactic, emotion and driver are judgement calls that two careful readers still split on, so they rank and never decide. Treat a reference beat as "a scene like this", not as a clean unit. The Sonnet and Haiku labels for the held-out beats are both kept out of the Haiku batches; the index holds the Sonnet label for those 193 beats.
 
-The numbers above describe the first build. Afterwards the chunker and the tagging brief were changed; neither the committed beats nor the 946 stored tags have been regenerated, so they still describe the old cuts and the old brief. Beat ids are `<source>:<act>.<scene>.<n>`, so a rebuild renumbers them and the old tags no longer join: re-tag after `build-beats`.
+## Label quality changes (2026-11-09, applied in the second build)
+
+These changes were made after the first build and are in the second build above (the tables here were measured on the first build's 107-beat sample, before the rebuild). Beat ids are `<source>:<act>.<scene>.<n>`, so a rebuild renumbers them and the old tags no longer join: re-tag after `build-beats`.
 
 Chunker (`src/chunk.ts`). Reading 30 of the beats Haiku flagged showed the dominant causes: long beats (59% flagged at 1,200+ characters against 36% under 700), a character leaving mid-beat, a monologue glued to the exchange around it, four or more speakers in one beat, and an aside or exit direction stranded at the end of a beat but belonging to the next speech. The cuts now also close on the exit of a character who has been speaking, on a fourth distinct speaker, and around a speech of 900+ characters; the length cap went from 2,200 to 1,100 characters; and trailing asides move on to the speech they belong to. Same corpus (the 31 sources of the first build), before and after:
 

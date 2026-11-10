@@ -104,7 +104,7 @@ When the local KB index exists (`packages/kb/index/kb.sqlite`, built with the st
 cd packages/kb && node dist/cli.js query --tactic "to intimidate" --action KILLING --cast 3 --limit 3 --plan
 ```
 
-`--action` takes the beat's `physical_action_tag` (NONE for dialogue only). Put the `--plan` output in `plan.json` `reference_beats`: pointers and labels, never text. To read a reference for inspiration, add `--text` and look at how the tactic is played, how long the beat runs and who stands where. Never copy lines, names or images into a persona or scenario. Only the physical-action label is dependable (about 93% agreement between two taggers); tactic and status labels are soft, so judge the scene, not the label. If the index is not built, or nothing comes back for a rare action, leave `reference_beats` as `[]` and say so in the hand-off.
+`--action` takes the beat's `physical_action_tag` (NONE for dialogue only). Put the `--plan` output in `plan.json` `reference_beats`: pointers and labels, never text. To read a reference for inspiration, add `--text` and look at how the tactic is played, how long the beat runs and who stands where. Never copy lines, names or images into a persona or scenario. Only the physical-action label is dependable (about 97% agreement between two taggers on a held-out set); status is usable (72%) and tactic is soft (65% same group, 40% exact), so judge the scene, not the label. If the index is not built, or nothing comes back for a rare action, leave `reference_beats` as `[]` and say so in the hand-off.
 
 ### 6. Emit the files
 
