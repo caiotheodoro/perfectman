@@ -163,7 +163,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
   momentumGain: 0.1,
   grievance: { minRung: 2, resentment: 0.5, windowMs: 300_000 },
   provocation: {
-    gain: { insult: 0.5, threat: 0.5, blackmail: 0.5, accusation: 0.45, challenge: 0.35, mockery: 0.3 },
+    gain: { insult: 0.5, threat: 0.5, blackmail: 0.5, accusation: 0.45, challenge: 0.3, mockery: 0.3 },
     cap: 0.9,
     windowMs: 120_000,
     minGapMs: 8000,
@@ -223,10 +223,20 @@ export const VERB_GATES: Readonly<Record<ActVerb, VerbGate>> = {
   restrain: { calmBlocks: true, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: 1, still: true },
   faint: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
   tend_fallen: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: 1, still: false },
+  // The verbs of the cinematic revamp (wire-spec: point, grab, push_away, slump, kneel, flee, plead). Provisional rows until the hotel's table carries them: none is on the ladder and none
+  // needs the scenario's block; the two that touch someone (grab, push_away) are contact verbs, held to a chip at a human like the blows (their table row, when it lands, replaces these:
+  // `drama-vocab.test.ts` checks every verb the table has against this one).
+  point: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
+  grab: { calmBlocks: true, consent: "violent_chip", budget: null, cooldown: true, scenario: "free_ok", maxDist: 1, still: true },
+  push_away: { calmBlocks: true, consent: "violent_chip", budget: null, cooldown: true, scenario: "free_ok", maxDist: 1, still: true },
+  slump: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
+  kneel: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
+  flee: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
+  plead: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: 3, still: false },
 };
 
 /** SAFE-4: the verbs that count toward the harm window when aimed at a human (`insult` included, though it touches no one). */
-export const HARM_VERBS: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch", "kill", "insult"]);
+export const HARM_VERBS: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch", "kill", "insult", "grab", "push_away"]);
 
 /** The contract's own numbers the director reads, in one place. */
 export const LIMITS = {

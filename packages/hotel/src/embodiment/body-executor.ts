@@ -457,7 +457,8 @@ export class BodyExecutor {
         const wire: ActorCmd = {
           k: "act",
           act_id: c.actId,
-          verb: c.verb,
+          // The wire schema lists the verbs of the hotel's table; `validateActCmd` refuses any other before the command is sent.
+          verb: c.verb as Extract<ActorCmd, { k: "act" }>["verb"],
           ...(target !== undefined ? { with: target } : {}),
           ...(c.intensity !== undefined ? { intensity: c.intensity } : {}),
           ...(c.origin !== undefined ? { origin: c.origin } : {}),

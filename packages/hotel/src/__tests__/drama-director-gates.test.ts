@@ -8,7 +8,7 @@ import { actFrames } from "../testing/fake-drama.js";
 import { readDramaFixture } from "../testing/drama-fixtures.js";
 import { A, B, C, H, ROOM, RUN, WIDE_BLOCK, emotion, makeRig } from "../testing/drama-rig.js";
 import type { Rig } from "../testing/drama-rig.js";
-import { ACT_VERBS } from "@perfectman/shared";
+import { ACT_VERBS, KNOWN_ACT_VERBS } from "@perfectman/shared";
 import type { ActVerb } from "@perfectman/shared";
 
 const vocab = JSON.parse(readFileSync(join(dirname(fileURLToPath(import.meta.url)), "../../schema/verb-vocab.json"), "utf8")) as { verbs: Record<string, { gates: Record<string, unknown> }> };
@@ -131,7 +131,7 @@ describe("what the gates let through", () => {
   });
 
   it("[VV-4] the director's gate table equals the verb table's gates, verb by verb", () => {
-    expect(Object.keys(VERB_GATES).sort()).toEqual([...ACT_VERBS].sort());
+    expect(Object.keys(VERB_GATES).sort()).toEqual([...KNOWN_ACT_VERBS].sort());
     for (const verb of ACT_VERBS) {
       const g = vocab.verbs[verb]!.gates;
       const mine = VERB_GATES[verb];

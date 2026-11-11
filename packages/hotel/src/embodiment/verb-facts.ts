@@ -7,7 +7,7 @@ import type { ActMemoryEntry } from "@perfectman/engine";
  */
 
 /** `contact: true` in the table: the actor touches the target (TGT-1 locks an actor target for the whole act). */
-export const CONTACT_VERBS: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch", "kill", "hug", "kiss", "restrain"]);
+export const CONTACT_VERBS: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch", "kill", "hug", "kiss", "restrain", "grab", "push_away"]);
 
 /** Verbs whose table ends in a `tableau` (a `follow_ups` entry, or the verb itself): everyone within `tableau_radius_tiles` holds (TBL-11). */
 export const HOLDS_THE_ROOM: ReadonlySet<ActVerb> = new Set<ActVerb>(["slap", "punch", "kill", "faint", "tableau"]);

@@ -1,4 +1,5 @@
-import { LADDER_VERBS } from "@perfectman/shared";
+import { LADDER_VERBS, ladderRung } from "@perfectman/shared";
+import type { ActVerb } from "@perfectman/shared";
 
 /**
  * The scenario `drama` block (docs/drama/act-contract.md section 7). `max_rung` is the highest ladder rung any act in the
@@ -69,6 +70,29 @@ export function defaultSceneDrama(actorIds: readonly string[]): ScenarioDrama | 
   const may_target: Array<[string, string]> = [];
   for (const a of ids) for (const b of ids) if (a !== b) may_target.push([a, b]);
   return { max_rung: DEFAULT_SCENE_MAX_RUNG, may_target, may_die: [], permadeath: false };
+}
+
+/** An act a script authors, as the block has to know it: who does it, the verb, and to whom (cast names or agent ids, whatever the block's refs are). */
+export type AuthoredAct = { actor: string; verb: ActVerb; with?: string };
+
+/**
+ * The block a script of authored acts needs (GATE-5, SCN-3): `block` widened just enough that every one of `acts` passes the scenario gate and nothing else is looser. `max_rung`
+ * rises to the highest ladder rung among them, a blow of rung 4 or more adds its `[actor, with]` pair to `may_target`, a `kill` adds its victim and a `die` its actor to `may_die`.
+ * Never narrower than `block`; nothing is added for the verbs off the ladder (they need no block), and a pair or a victim already there is not repeated. The beat sheet's compile calls
+ * it so a sheet-authored punch, kill or die is not refused by the hotel's own read of the same block for want of a pair the sheet implies.
+ */
+export function dramaForAuthoredActs(block: ScenarioDrama, acts: readonly AuthoredAct[]): ScenarioDrama {
+  let max_rung = block.max_rung;
+  const may_target = block.may_target.map(([a, v]): [string, string] => [a, v]);
+  const may_die = [...block.may_die];
+  for (const act of acts) {
+    const rung = ladderRung(act.verb);
+    if (rung !== undefined) max_rung = Math.max(max_rung, rung);
+    if (rung !== undefined && rung >= 4 && act.with !== undefined && !may_target.some(([a, v]) => a === act.actor && v === act.with)) may_target.push([act.actor, act.with]);
+    const victim = act.verb === "kill" ? act.with : act.verb === "die" ? act.actor : undefined;
+    if (victim !== undefined && !may_die.includes(victim)) may_die.push(victim);
+  }
+  return { max_rung, may_target, may_die, permadeath: block.permadeath };
 }
 
 /** `drama: off` as an author or a body may write it: the word, any case, or `false`. */

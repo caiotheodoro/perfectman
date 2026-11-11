@@ -49,7 +49,7 @@ export type Assumed = { physicalAt?: number; killUsed?: boolean };
 type Cap = { scene: string; actor: number; target: number | undefined; to: number; seq: number };
 
 /** The verbs that lock an actor target (TGT-1). */
-const CONTACT = new Set<ActVerb>(["shove", "slap", "punch", "kill", "hug", "kiss", "restrain"]);
+const CONTACT = new Set<ActVerb>(["shove", "slap", "punch", "kill", "hug", "kiss", "restrain", "grab", "push_away"]);
 const HAS_CHIP = (verb: ActVerb): boolean => VERB_GATES[verb].consent !== null;
 
 export class ActLedger {

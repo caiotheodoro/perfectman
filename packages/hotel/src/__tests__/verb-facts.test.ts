@@ -18,7 +18,7 @@ const REPLACEABLE_LABELS = new Set(["look_back", "watch", "freeze_gasp", "surpri
 
 describe("the planner's verb facts equal the table (VV-4)", () => {
   it("[VV-4] the contact verbs, the verbs that end in a tableau and the constants are the table's", () => {
-    expect([...CONTACT_VERBS].sort()).toEqual(ACT_VERBS.filter((v) => table.verbs[v]?.contact).sort());
+    expect([...CONTACT_VERBS].filter((v) => (ACT_VERBS as readonly string[]).includes(v)).sort()).toEqual(ACT_VERBS.filter((v) => table.verbs[v]?.contact).sort());
     expect([...HOLDS_THE_ROOM].sort()).toEqual(ACT_VERBS.filter((v) => v === "tableau" || table.verbs[v]?.follow_ups?.some((f) => f.verb === "tableau")).sort());
     expect(NO_REWARD_MS).toBe(table.constants["no_reward_ms"]);
     expect(TABLEAU_RADIUS_TILES).toBe(table.constants["tableau_radius_tiles"]);

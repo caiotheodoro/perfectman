@@ -486,7 +486,8 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     return {
       k: "act",
       act_id: this.nextId(),
-      verb,
+      // The wire schema (`generated.ts`) lists the verbs of the hotel's table; `validateActCmd` refuses any other before it is sent.
+      verb: verb as ActCmd["verb"],
       ...(target !== undefined ? { with: target } : {}),
       ...(intensity !== undefined ? { intensity } : {}),
       origin,

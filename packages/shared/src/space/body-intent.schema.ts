@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ACT_VERBS } from "./act-verbs.js";
+import { ACT_VERBS, KNOWN_ACT_VERBS } from "./act-verbs.js";
 
 /** Per-render handle: `p#` person, `z#` place, `f#` furniture, `r#` room. */
 export const BodyRefSchema = z
@@ -36,7 +36,7 @@ export const BODY_ORDERS = ["move_then_speak", "speak_then_move", "together"] as
  */
 export const BodyActSchema = z
   .object({
-    verb: z.enum(ACT_VERBS),
+    verb: z.enum(KNOWN_ACT_VERBS).refine((v) => (ACT_VERBS as readonly string[]).includes(v), "not a verb of the hotel's verb table"),
     target: BodyRefSchema.optional(),
     intensity: z.number().min(0).max(1).optional(),
   })

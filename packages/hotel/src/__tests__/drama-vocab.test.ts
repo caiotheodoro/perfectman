@@ -10,6 +10,7 @@ import {
   ACT_ORIGINS,
   ACT_TARGET_MODE,
   ACT_VERBS,
+  KNOWN_ACT_VERBS,
   BLOCKED_REASON_CODES,
   BodyActSchema,
   LADDER_VERBS,
@@ -84,7 +85,8 @@ describe("verb-vocab: matches the generated ids", () => {
     expect(diffIds(vocab.enums["verbs"] ?? [], VERB_IDS)).toEqual([]);
     expect(diffIds(vocab.enums["verbs"] ?? [], ACT_VERBS)).toEqual([]);
     expect(diffIds(vocab.enums["verbs"] ?? [], schemaEnum("Verb"))).toEqual([]);
-    expect(diffIds(vocab.enums["verbs"] ?? [], BodyActSchema.shape.verb.options)).toEqual([]);
+    // BodyIntentSchema takes exactly the table's verbs: one the table lacks (a KNOWN verb the next table adds) is refused until it is generated in.
+    for (const id of KNOWN_ACT_VERBS) expect(BodyActSchema.safeParse({ verb: id }).success, id).toBe((vocab.enums["verbs"] ?? []).includes(id));
     expect(diffIds(vocab.enums["verbs"] ?? [], Object.keys(vocab.verbs))).toEqual([]);
   });
 

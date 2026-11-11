@@ -1,4 +1,4 @@
-import type { ActOrigin, ActVerb } from "@perfectman/shared";
+import type { ActOrigin, ActVerb, TableVerb } from "@perfectman/shared";
 import { ACT_TARGET_MODE, impactClassOf, ladderRung } from "@perfectman/shared";
 import type { ActReason, ChipAnswer, HelloDrama, HotelMsg, Owed, ReactionRole, VerbVocabRef } from "../director/index.js";
 import { VERB_VOCAB_REV, VERB_VOCAB_SHA256, VERB_VOCAB_VERSION, VOCAB_CONSTANTS } from "../director/verb-vocab.generated.js";
@@ -64,7 +64,7 @@ export function actFrames(s: ActScript): Out[] {
   const base = { run, room, act_id: s.actId } as const;
 
   if (s.outcome === "blocked") {
-    out.push({ t: "act_done", ...base, verb: s.verb, actor, ...withField, outcome: "blocked", ...(s.reason ? { reason: s.reason } : {}), ...(s.detail ? { detail: s.detail } : {}), owed_missed: [], downgraded: [], at: t0 });
+    out.push({ t: "act_done", ...base, verb: s.verb as TableVerb, actor, ...withField, outcome: "blocked", ...(s.reason ? { reason: s.reason } : {}), ...(s.detail ? { detail: s.detail } : {}), owed_missed: [], downgraded: [], at: t0 });
     return out;
   }
 
@@ -72,15 +72,15 @@ export function actFrames(s: ActScript): Out[] {
   const impact = impactClassOf(s.verb, intensity);
   const chip = s.chip ?? false;
   out.push({
-    t: "act_started", ...base, verb: s.verb, actor, ...withField, intensity, ...(impact ? { impact } : {}), origin: s.origin ?? "director", scene,
+    t: "act_started", ...base, verb: s.verb as TableVerb, actor, ...withField, intensity, ...(impact ? { impact } : {}), origin: s.origin ?? "director", scene,
     ...(rung !== undefined ? { rung } : {}), skipped_rungs: [], authored_skip: false, ...(target !== undefined && target > 0 ? { target_opt_in: s.targetOptIn ?? true } : {}), chip, contact_in_ms: chip ? null : 300, at: t0,
   });
   let at = t0;
   if (chip && target !== undefined) {
-    out.push({ t: "drama_consent", ...base, phase: "shown", actor, with: target, verb: s.verb, family: s.verb === "hug" || s.verb === "kiss" ? "affection" : "violent", ttl_ms: VOCAB_CONSTANTS.chip_ttl_ms, at: t0 + 14 });
+    out.push({ t: "drama_consent", ...base, phase: "shown", actor, with: target, verb: s.verb as TableVerb, family: s.verb === "hug" || s.verb === "kiss" ? "affection" : "violent", ttl_ms: VOCAB_CONSTANTS.chip_ttl_ms, at: t0 + 14 });
     const answer = s.answer ?? "take";
     at = t0 + 14 + (answer === "timeout" ? VOCAB_CONSTANTS.chip_ttl_ms : 400);
-    out.push({ t: "drama_consent", ...base, phase: "answered", actor, with: target, verb: s.verb, family: s.verb === "hug" || s.verb === "kiss" ? "affection" : "violent", answer, at });
+    out.push({ t: "drama_consent", ...base, phase: "answered", actor, with: target, verb: s.verb as TableVerb, family: s.verb === "hug" || s.verb === "kiss" ? "affection" : "violent", answer, at });
   }
   const contact = s.outcome === "landed" || s.outcome === "timeout";
   if (contact) {
@@ -93,7 +93,7 @@ export function actFrames(s: ActScript): Out[] {
   }
   const end = at + (contact ? 2200 : 800);
   out.push({
-    t: "act_done", ...base, verb: s.verb, actor, ...withField, outcome: s.outcome === "aborted" ? "aborted" : s.outcome,
+    t: "act_done", ...base, verb: s.verb as TableVerb, actor, ...withField, outcome: s.outcome === "aborted" ? "aborted" : s.outcome,
     ...(chip && s.answer ? { answer: s.answer } : chip && s.outcome === "landed" ? { answer: "take" as const } : {}),
     ...(s.reason ? { reason: s.reason } : {}), ...(s.detail ? { detail: s.detail } : {}), owed_missed: [], downgraded: [], at: end,
   });
