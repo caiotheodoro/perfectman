@@ -65,7 +65,7 @@ export type DramaTuning = {
    * `drama.pressure_floor` of the author's), never in free play. From `startFrac` of the deadline it grows linearly to `max` at the deadline, so a cast whose model only talks
    * (volition 0.36 against a theta of 0.52, run 63) is still pushed up the ladder in time for the climax. It reaches only the pairs with heat (a live grievance from what was said,
    * an open unlock, or a resentment of `heat`) and only the rungs up to `maxRung`; from `grievanceAt` the floor also stands in for the grievance LAD-6 asks the rungs from
-   * `grievance.minRung`. The ladder is still one rung per beat, 25 s apart, with the witness rule and the spacing: the floor moves the motive gate, no other.
+   * `grievance.minRung`. The ladder is still one rung per beat, 25 s apart, with the witness rule and the spacing: the floor moves the motive gate, no other. It is the director's own beats' floor: a model's proposal is judged on the feelings (a model that glares at every consult would otherwise put every cast member in a glare every 60 s, three acts a minute and more).
    */
   pressure: { floor: { startFrac: number; max: number; heat: number; maxRung: number; grievanceAt: number } };
   /**
@@ -163,7 +163,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
   momentumGain: 0.1,
   grievance: { minRung: 2, resentment: 0.5, windowMs: 300_000 },
   provocation: {
-    gain: { insult: 0.5, threat: 0.5, blackmail: 0.5, accusation: 0.4, challenge: 0.3, mockery: 0.3 },
+    gain: { insult: 0.5, threat: 0.5, blackmail: 0.5, accusation: 0.45, challenge: 0.35, mockery: 0.3 },
     cap: 0.9,
     windowMs: 120_000,
     minGapMs: 8000,
@@ -173,7 +173,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
     reportedGain: 0.15,
     unlock: { windowMs: 90_000, holdMs: 120_000, shoveEvents: 2, slapEvents: 3, provocation: 0.85, volition: 0.95, climbExtendMs: 60_000 },
   },
-  pressure: { floor: { startFrac: 0.2, max: 0.8, heat: 0.1, maxRung: 4, grievanceAt: 0.45 } },
+  pressure: { floor: { startFrac: 0.1, max: 0.8, heat: 0.1, maxRung: 4, grievanceAt: 0.45 } },
   contagion: { minRung: 3, maxActors: 2, castFraction: 1 / 3, answer: true, ageMs: 90_000 },
   drivers: {
     glare: [d("act.jealousInspection"), d("act.resentfulColdness"), d("social.jealousy"), d("social.envy"), d("rel.envy"), d("rel.provocation")],

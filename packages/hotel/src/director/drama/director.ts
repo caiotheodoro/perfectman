@@ -335,7 +335,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     // A pass whose nearest candidate was refused by a gate says that gate (`blocked:ladder/contagion`, LAD-10), not the pace or the lack of a drive it is filed under for the planner.
     const refused = reason === undefined && out.kind === "pass" && out.approach === undefined && focus?.why.startsWith("blocked:") === true;
     this.last = {
-      ...this.detailOf(turn.actor, focus?.verb, focus?.target, turn.emotion),
+      ...this.detailOf(turn.actor, focus?.verb, focus?.target, turn.emotion, this.floor()),
       actor: this.d.world.refOf(turn.actor) ?? String(turn.actor),
       kind: "originate",
       result: reason === "no_emotion" ? "no_emotion" : refused ? focus!.why : result,
@@ -352,18 +352,18 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   }
 
   /** The numbers behind one (person, verb): who it is about, the rung, the volition against its threshold, what the actor holds against that person, and how far away they are. */
-  private detailOf(actor: number, verb: ActVerb | undefined, target: number | undefined, emotion: EmotionReading | undefined): Pick<DecisionTrace, "pair" | "verb" | "rung" | "v" | "theta" | "unlocked" | "grievance" | "provocation" | "dist"> {
+  private detailOf(actor: number, verb: ActVerb | undefined, target: number | undefined, emotion: EmotionReading | undefined, floor = 0): Pick<DecisionTrace, "pair" | "verb" | "rung" | "v" | "theta" | "unlocked" | "grievance" | "provocation" | "dist"> {
     const rel = target !== undefined ? emotion?.relations?.get(target) : undefined;
     const rung = verb === undefined ? undefined : ladderRung(verb);
     let v: number | undefined;
     let theta: number | undefined;
     if (emotion && verb !== undefined && target !== undefined) {
       if (rung !== undefined) {
-        const m = motive(verb, emotion, rel, emotion.at ?? this.d.clock.now(), this.tuning, this.floor());
+        const m = motive(verb, emotion, rel, emotion.at ?? this.d.clock.now(), this.tuning, floor);
         v = m.v;
         theta = m.theta;
       } else if (this.tuning.drivers[verb] !== undefined) {
-        v = volition(verb, emotion, rel, this.tuning, this.floor());
+        v = volition(verb, emotion, rel, this.tuning, floor);
       }
     }
     const room = this.d.world.roomOf(actor);
@@ -433,7 +433,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     // LAD-6 and LAD-10 are the director's policy, not the hotel's. An authored beat bypasses the emotion gate (LAD-6) and the contagion cap, which guards the autonomous spiral.
     const rung = ladderRung(verb);
     if (rung !== undefined && origin !== "scenario") {
-      const m = emotion && target !== undefined ? motive(verb, emotion, emotion.relations?.get(target), emotion.at ?? now, this.tuning, this.floor(now)) : undefined;
+      const m = emotion && target !== undefined ? motive(verb, emotion, emotion.relations?.get(target), emotion.at ?? now, this.tuning, origin === "director" ? this.floor(now) : 0) : undefined;
       if (!m) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-6", detail: "motive" } };
       if (!m.ok) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-6", detail: m.why === "grievance" ? "grievance" : "motive" } };
       if (rung >= this.tuning.contagion.minRung && this.contagious(actor, avatars) && !this.answering(actor, target, emotion)) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-10", detail: "contagion" } };

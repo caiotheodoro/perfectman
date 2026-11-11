@@ -65,6 +65,8 @@ export type DramaBodyDeps = {
   log?: () => DramaLog | undefined;
   /** Test seam: where the planner's own act ids start. */
   idPrefix?: string;
+  /** `DramaTuning.origination.askAfterRefusal`: ask the director to originate after the model's proposals all came to nothing, and look at it on a heat watch. Absent: the sidecar's default (on). */
+  assist?: boolean;
   /** How long and how often a climb's actor follows a target that keeps moving (`DramaTuning.origination.climb`); absent: the sidecar's default. */
   follow?: { windowMs: number; everyMs: number; gapMs?: number; maxRung?: number };
 };
@@ -112,6 +114,9 @@ export class DramaBody implements DramaFrameSink {
   private readonly writes = new Map<string, Promise<void>>();
   /** An actor following the person its next blow is for (issue #262): who, until when, and the timer of its next look. */
   private readonly following = new Map<string, { target: string; until: number; rng: () => number; timer: TimerHandle }>();
+  private get assist(): boolean {
+    return this.d.assist ?? DEFAULT_DRAMA_TUNING.origination.askAfterRefusal;
+  }
   private readonly followCfg: { windowMs: number; everyMs: number; gapMs: number; maxRung: number };
   /** The look a climb's actor takes at its director once the climb's gap is over, one per actor, armed by the actor's own director beat (issue #262). */
   private readonly climbWatch = new Map<string, TimerHandle>();
@@ -227,7 +232,7 @@ export class DramaBody implements DramaFrameSink {
       // something the director refused (a glare at someone else, run 62: 79 times): the unlock is for the director to carry out, not for the model to ask for (errata P9).
       // A model that proposes on every consult (run 63: 13 glares refused on the motive, 12 originations never asked) must not leave the director idle: when nothing the model
       // proposed was approved the director is asked as for a passive turn, the same gates and the same pace. Only a proposal that went through (`hold`) keeps it out.
-      const ask = queue.length === 0 || this.provocation.unlockOf(ref) !== undefined || DEFAULT_DRAMA_TUNING.origination.askAfterRefusal;
+      const ask = queue.length === 0 || this.provocation.unlockOf(ref) !== undefined || this.assist;
       if (ask && !hold && base.actionEmotions) {
         const out = this.passive(ref, wire, base, port);
         hold = out.hold;
@@ -239,7 +244,7 @@ export class DramaBody implements DramaFrameSink {
         this.logConsult(ref, "skip", { result: "no_emotion", reason: "no_feelings" }, { queue: 0, hold });
       }
     }
-    if (!hold && wire !== undefined && port?.active) this.armHeatWatch(ref, HEAT_WATCH_MS);
+    if (!hold && wire !== undefined && port?.active && this.assist) this.armHeatWatch(ref, HEAT_WATCH_MS);
     if (hold) return [];
 
     const drama = this.dramaInput(ref, port, wire);
@@ -548,7 +553,7 @@ export class DramaBody implements DramaFrameSink {
     const before = this.provocation.total;
     this.provocation.note(line, listeners);
     // The ones the line was about answer it soon, not at their next consult.
-    if (this.provocation.total > before) for (const who of new Set([...line.mentioned, ...line.addressees])) if (who !== line.speaker && this.d.isOwn(who) && this.provocation.offenders(who).length > 0) this.armHeatWatch(who, HEAT_FIRST_MS);
+    if (this.assist && this.provocation.total > before) for (const who of new Set([...line.mentioned, ...line.addressees])) if (who !== line.speaker && this.d.isOwn(who) && this.provocation.offenders(who).length > 0) this.armHeatWatch(who, HEAT_FIRST_MS);
   }
 
   /** The run summary's flat counters for what this body did on its own: grievance raised from talk, and the refusals it told the model about. */

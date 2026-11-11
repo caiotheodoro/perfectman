@@ -144,6 +144,12 @@ export type SimConfig = {
    * evidence. It is how a live run's grants (the manifest's `scene_spine.unlocks`) are put back at their seconds when the talk that earned them is not.
    */
   grants?: ReadonlyArray<{ atMs: number; level: "shove" | "slap"; aggressor: string; target: string }>;
+  /** The scene lets a human be the target of an act without the consent chip (`may_target_humans`, `RunDrama.humansTargetable`); the fake hotel then asks no chip of a human who did not opt in. Default: the chip, as the sim has always run. */
+  humansTargetable?: boolean;
+  /** The scene's climax deadline (`drama.pressure_floor`): the ladder's volition gets a floor that rises toward it. Absent: free play, no floor. */
+  pressure?: { climax_at_ms: number };
+  /** The player's Block: true when the human blocked the actor (the actor never targets them). */
+  blocks?: (human: number, actor: number) => boolean;
   /** The harm limit of the room (SAFE-4). */
   harmMax?: number;
   /** The director's tuning; absent is the sidecar's default. */
@@ -298,6 +304,7 @@ export function runDramaSim(config: SimConfig): SimResult {
     emit: (frame) => deliver(frame),
     ...(config.drama ? { drama: config.drama } : {}),
     optIn: (config.humans ?? []).filter((h) => h.optIn).map((h) => h.id),
+    ...(config.humansTargetable === true ? { chiplessHumans: true } : {}),
     humanAnswer: (q) => {
       const policy = humanPolicy.get(q.human);
       return typeof policy === "function" ? policy(q) : (policy ?? (q.family === "affection" ? "take" : "dodge"));
@@ -350,8 +357,10 @@ export function runDramaSim(config: SimConfig): SimResult {
     },
   };
 
-  const world = mirrorWorld(space, () => actorRefs, () => grid.now());
-  const director = new DramaDirector({ run: RUN, clock, link, world, scenario: resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}) }), session: dramaOn ? SESSION : null, ...(config.tuning ? { tuning: config.tuning } : {}) });
+  const baseWorld = mirrorWorld(space, () => actorRefs, () => grid.now());
+  const world = config.blocks ? { ...baseWorld, blocks: config.blocks } : baseWorld;
+  const runDrama = resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}), drama_ext: { may_target_humans: config.humansTargetable === true, ...(config.pressure ? { pressure_floor: config.pressure } : {}) } }, {});
+  const director = new DramaDirector({ run: RUN, clock, link, world, scenario: runDrama, session: dramaOn ? SESSION : null, ...(config.tuning ? { tuning: config.tuning } : {}) });
 
   /** The port the planner asks, recording every answer so a proposal's fate is read, not guessed. */
   const asked: Array<{ actor: number; proposed: boolean; decision: DramaDecision }> = [];
@@ -371,6 +380,7 @@ export function runDramaSim(config: SimConfig): SimResult {
     advanceScene: (reason: string) => director.advanceScene(reason),
     busyActId: (actor: number) => director.busyActId(actor),
     trace: () => director.trace(),
+    pressure: () => director.pressure(),
   };
 
   const body = new DramaBody({
@@ -400,13 +410,14 @@ export function runDramaSim(config: SimConfig): SimResult {
     // What the cast says may raise a grievance between the pairs the scenario lets (never a human, never off), as a run's `mayProvoke` decides.
     provocation: {
       allow: (observer, offender) => {
-        const rd = resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}) });
+        const rd = runDrama;
         return !rd.off && slotOf.has(observer) && slotOf.has(offender) && rd.effective.may_target.some(([a, b]) => a === observer && b === offender);
       },
       ...(config.tuning ? { tuning: () => config.tuning!.provocation } : {}),
     },
     // The model reads the refusal at its next consult, as a run's prompt does.
     note: (agentId, reasons) => void blocked.set(agentId, [...reasons]),
+    ...(config.tuning ? { assist: config.tuning.origination.askAfterRefusal } : {}),
     ...(config.tuning ? { follow: { windowMs: config.tuning.origination.climb.followWindowMs, everyMs: config.tuning.origination.climb.followEveryMs, gapMs: config.tuning.origination.climb.gapMs, maxRung: config.tuning.origination.climb.maxRung } } : {}),
   });
   sinkRef.current = composeDramaSinks(director, body);
@@ -420,7 +431,7 @@ export function runDramaSim(config: SimConfig): SimResult {
   let spineScene: SceneSpine | undefined;
   let escalation: SpineEscalation | undefined;
   const spineLang = config.spine?.language ?? "pt-BR";
-  if (dramaOn && config.spine && (config.beats?.length ?? 0) === 0 && !resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}) }).off) {
+  if (dramaOn && config.spine && (config.beats?.length ?? 0) === 0 && !runDrama.off) {
     const built = buildSceneSpine({
       language: spineLang,
       cast: config.actors.map((a) => ({ id: a.ref, name: a.name, ...(config.spine?.cast?.find((c) => c.ref === a.ref)?.objective ? { objective: config.spine.cast.find((c) => c.ref === a.ref)!.objective! } : {}) })),
@@ -555,7 +566,7 @@ export function runDramaSim(config: SimConfig): SimResult {
         clock,
         port: () => port,
         beats: config.beats ?? [],
-        drama: resolveRunDrama(config.drama ? { drama: config.drama } : {}),
+        drama: runDrama,
         ...(config.tuning ? { tuning: config.tuning.beats } : {}),
         wireOf: (ref) => space.avatarId(ref),
         // The run's walker (run.ts): the planner's own approach, ordered through the same executor, so an authored contact beat that starts apart walks together (habbo#41).
