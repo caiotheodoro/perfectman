@@ -63,6 +63,7 @@ const KIND_KEYS: Record<string, readonly string[]> = {
   camera: ["intent"],
 };
 /** Keys that would carry a spoken line. A sheet that has one is refused, not trimmed (invariant 7). */
+const SOFT_KINDS = new Set(["note", "reveal", "expression", "camera", "pause"]);
 const DIALOGUE_KEYS = new Set(["text", "say", "line", "lines", "dialogue", "speech", "quote", "utterance", "reply"]);
 const QUOTED = /["“«]([^"“”«»]{18,})["”»]/u;
 
@@ -315,6 +316,16 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
         beat = { ...base, kind: "camera", intent };
         break;
       }
+    }
+    // Colour, not structure: a note, reveal, face, pause or camera beat a model gets wrong (a name that is not in the cast, an objective that is not text) is left out with a
+    // warning. Acts, cuts, blocks and props carry the arc and stay strict, and so does a line of dialogue, which is never trimmed (invariant 7).
+    if (errors.length > before && SOFT_KINDS.has(kind)) {
+      const added = errors.splice(before);
+      const hard = added.filter((e) => e.message.includes("beat_sheet.dialogue"));
+      const soft = added.filter((e) => !e.message.includes("beat_sheet.dialogue"));
+      errors.push(...hard);
+      if (soft.length > 0) warn(at, "beat_sheet.beat_dropped", `${kind} beat left out: ${soft.map((e) => e.message).join("; ")}`);
+      beat = undefined;
     }
     if (beat !== undefined && errors.length === before) drafts.push({ index, beat });
   });

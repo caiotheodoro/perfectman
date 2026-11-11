@@ -75,6 +75,29 @@ describe("a camera beat's polish fields", () => {
   });
 });
 
+describe("colour beats a model gets wrong", () => {
+  it("a note with no actor and a reveal to a stranger are left out with a warning, and the sheet stays valid", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "n9", at_ms: 700, phase: "setup", kind: "note", objective: "keep calm", tactic: "stall" });
+    beats.push({ id: "n8", at_ms: 800, phase: "setup", kind: "note", actor: "Heloísa", objective: 42 });
+    beats.push({ id: "r9", at_ms: 900, phase: "setup", kind: "reveal", fact: "the will was changed", to: ["Nobody Here"] });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    const r = validateBeatSheet(sheet, ctx);
+    expect(messages(r)).toBe("");
+    expect(r.sheet?.beats.some((b) => ["n9", "n8", "r9"].includes(b.id))).toBe(false);
+    expect(r.warnings.filter((w) => w.message.includes("beat_sheet.beat_dropped")).length).toBe(3);
+  });
+
+  it("dialogue in a note is still refused, never trimmed", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "n7", at_ms: 700, phase: "setup", kind: "note", actor: "Heloísa", objective: "keep calm", say: "you will pay for this" });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    expect(messages(validateBeatSheet(sheet, ctx))).toContain("beat_sheet.dialogue");
+  });
+});
+
 describe("mockBeatSheet", () => {
   it("is deterministic and passes the validator for a cast of two, three and five", () => {
     for (const n of [2, 3, 5]) {
