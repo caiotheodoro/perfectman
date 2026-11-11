@@ -127,8 +127,8 @@ describe("colour beats a model gets wrong", () => {
     const sheet = raw();
     const beats = sheet["beats"] as Array<Record<string, unknown>>;
     const rev = beats.find((b) => b["phase"] === "reversal");
-    expect(rev).toBeDefined();
-    beats.push({ id: "q9", at_ms: Number(rev?.["at_ms"]) + 1, phase: "escalation", kind: "note", actor: "Heloísa", objective: "stay calm", tactic: "stall" });
+    if (!rev) throw new Error("the mock has a reversal beat");
+    beats.push({ id: "q9", at_ms: Number(rev["at_ms"]) + 1, phase: "escalation", kind: "note", actor: "Heloísa", objective: "stay calm", tactic: "stall" });
     beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
     const r = validateBeatSheet(sheet, ctx);
     expect(messages(r)).not.toContain("phase_order");
