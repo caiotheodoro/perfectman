@@ -1,0 +1,10 @@
+{
+  "version": "cinematic-thresholds-v1",
+  "status": "uncalibrated",
+  "reasons": [
+    "no human grades have been imported"
+  ],
+  "clips": 0,
+  "graders": [],
+  "thresholds": null
+}

@@ -286,6 +286,10 @@ run the bench, diff against the baseline, keep only changes that hold signals
 at 100% and push probe/judge metrics up. No-regression first, improvement
 second — the two-gate discipline from the research repo's micro-adapter loop.
 
+## Cinematic score
+
+- [Cinematic score](cinematic-score.md) — arc, dialogue, embodiment, camera and an LLM engagement judge, 0-100, with the climax-by-4:00 invariant. [Baseline for runs 55-63](cinematic-baseline.md); [frozen thresholds](cinematic-thresholds.json) (uncalibrated until the owner's grades are imported).
+
 ## Labeling tools
 
 - [Drama clip labeling tool](drama-labeling.md) — local blind-mode page for hand-labeling golden clips.

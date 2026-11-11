@@ -3,7 +3,7 @@
  * run-metrics: a second, independent reading of a run's dialogue. Plain Node, no import from this repo's packages, so it can be run on a transcript
  * export anywhere and checks the benchmark (`packages/shared/src/script-likeness`) against code that shares none of it.
  *
- *   node scripts/run-metrics.mjs <transcript.jsonl | events.jsonl | run dir> [--actors "A,B,C"] [--json]
+ *   node scripts/run-metrics.mjs <transcript.jsonl | events.jsonl | run dir> [--actors "A,B,C"] [--json] [--no-cinematic]
  *
  * Input, one of:
  *  - a transcript export: one JSON per line, `{t: seconds since the run's start, name, kind, text}` (`kind` other than "say" is skipped, "act" is counted as an act);
@@ -20,7 +20,10 @@
  *    4+ letter non-stop words (0.4 or more) or by one shared cue and one shared word of 5 letters or more; a loop is 3 or more turns of one cluster inside 90 s;
  *  - tics: per actor, the 5 words (4+ letters, not stop words or names) in the most of their turns, and the ones in 5 or more turns inside 24 room turns;
  *  - from events.jsonl: acts (a committed pair or act body action) with the first act's time, body moves (walks, sits, gestures, room changes), and the
- *    no-op : message ratio.
+ *    no-op : message ratio;
+ *  - cinematic (a run directory with frames.jsonl and/or director-track.jsonl; `--no-cinematic` skips it): the acts of the wire log (frames.jsonl, not
+ *    events.jsonl) per minute, their verbs, the first physical act and whether it came by 4:00, owed reactions delivered, the camera's shot kinds, cut rate,
+ *    shot-on-speaker and dropped-cue rate. A second reader of what `packages/eval/src/cinematic` scores: it shares no code with it, and a test holds the two to the same figures.
  *
  * Deterministic. Exit 0 on success, 2 on bad usage.
  */
@@ -304,6 +307,124 @@ export function loadInput(input, actors) {
 
 // ---- output ------------------------------------------------------------------------------------------------------------------
 
+// ---- cinematic: acts from the wire log, camera from the director track ----------------------------------------------------------------------------
+
+const PHYSICAL = new Set(["shove", "slap", "punch", "kill", "die", "faint", "restrain", "hug", "kiss"]);
+const ACT_WEIGHT = { glare: 1, insult: 2, shove: 3, slap: 4, punch: 5, kill: 6, die: 6, faint: 4, restrain: 3, hug: 2, kiss: 2, cry: 2, storm_off: 3, tableau: 2, turn_back: 1, tend_fallen: 2, recoil: 0.5, freeze_gasp: 0.5 };
+const NOT_PLAYED = new Set(["aborted", "declined", "timeout"]);
+const CLIMAX_DEADLINE_S = 240;
+
+/** Cinematic figures of a run directory, or undefined when it has neither frames.jsonl nor director-track.jsonl. */
+export function computeCinematic(dir) {
+  const framesFile = path.join(dir, "frames.jsonl");
+  const trackFile = path.join(dir, "director-track.jsonl");
+  const hasFrames = existsSync(framesFile);
+  const hasTrack = existsSync(trackFile);
+  if (!hasFrames && !hasTrack) return undefined;
+  const out = {};
+
+  let t0;
+  let durationS = 0;
+  if (hasFrames) {
+    const rows = readJsonLines(framesFile);
+    const stamps = rows.map((r) => r.ts_ms).filter((v) => typeof v === "number");
+    let started;
+    const replayFile = path.join(dir, "replay.json");
+    if (existsSync(replayFile)) {
+      try {
+        started = JSON.parse(readFileSync(replayFile, "utf8")).startedAt;
+      } catch {
+        started = undefined;
+      }
+    }
+    t0 = typeof started === "number" ? started : rows.find((r) => r.frame?.t === "run_start")?.ts_ms ?? Math.min(...stamps);
+    durationS = stamps.length === 0 ? 0 : (Math.max(...stamps) - t0) / 1000;
+
+    const acts = new Map();
+    for (const r of rows) {
+      const f = r.frame;
+      if (!f || typeof f.act_id !== "string") continue;
+      const a = acts.get(f.act_id) ?? { reactions: 0, owed: 0, missed: 0 };
+      if (f.t === "act_started") Object.assign(a, { verb: f.verb, at: ((typeof f.at === "number" ? f.at : r.ts_ms) - t0) / 1000 });
+      else if (f.t === "act_beat") a.owed = Array.isArray(f.owed) ? f.owed.length : 0;
+      else if (f.t === "act_reaction") a.reactions++;
+      else if (f.t === "act_done") Object.assign(a, { outcome: f.outcome, missed: Array.isArray(f.owed_missed) ? f.owed_missed.length : 0 });
+      acts.set(f.act_id, a);
+    }
+    const played = [...acts.values()].filter((a) => a.verb !== undefined && !NOT_PLAYED.has(a.outcome)).sort((x, y) => x.at - y.at);
+    const verbs = {};
+    for (const a of played) verbs[a.verb] = (verbs[a.verb] ?? 0) + 1;
+    const physical = played.filter((a) => PHYSICAL.has(a.verb));
+    const top = Math.max(0, ...physical.map((a) => ACT_WEIGHT[a.verb] ?? 1));
+    const climax = physical.find((a) => (ACT_WEIGHT[a.verb] ?? 1) >= 0.8 * top);
+    const owed = played.reduce((n, a) => n + a.owed, 0);
+    const missed = played.reduce((n, a) => n + a.missed, 0);
+    out.acts = {
+      played: played.length,
+      perMin: round(played.length / Math.max(1 / 6, durationS / 60), 2),
+      firstAt: played.length === 0 ? null : round(played[0].at, 1),
+      verbs,
+      owedReactions: owed,
+      owedMissed: missed,
+      climax: climax ? { verb: climax.verb, at: round(climax.at, 1), byDeadline: climax.at <= CLIMAX_DEADLINE_S } : null,
+    };
+    out.durationS = round(durationS, 1);
+  }
+
+  if (hasTrack) {
+    const track = readJsonLines(trackFile).sort((a, b) => (a.t ?? 0) - (b.t ?? 0));
+    const cues = track.filter((e) => e.k === "cue");
+    const cams = cues.filter((e) => e.ui?.k === "camera");
+    const lostDrops = track.filter((e) => e.k === "drop" && (e.why === "stale" || e.why === "unstageable")).length;
+    const trackEnd = track.reduce((m, e) => Math.max(m, e.t ?? 0), 0);
+    const minutes = Math.max(1 / 6, trackEnd / 60000);
+    const kinds = {};
+    for (const c of cams) kinds[c.ui.shot] = (kinds[c.ui.shot] ?? 0) + 1;
+    // shot on the speaker: the line's avatar (or a pair holding it) framed by a camera cue that finished easing, same room, no cut since
+    let active;
+    let lines = 0;
+    let onSpeaker = 0;
+    for (const e of track) {
+      if (e.k === "cut") active = undefined;
+      else if (e.k === "cue" && e.ui?.k === "camera") active = e;
+      else if (e.k === "line") {
+        lines++;
+        if (!active || e.avatar == null) continue;
+        const ui = active.ui;
+        if (ui.shot === "establishing" || ui.shot === "insert" || ui.shot === "transition") continue;
+        if (active.room !== undefined && e.room !== undefined && active.room !== e.room) continue;
+        const covers = ui.target?.avatar === e.avatar || (Array.isArray(ui.target?.pair) && ui.target.pair.includes(e.avatar));
+        if (covers && active.t + (ui.ease_ms ?? 0) <= e.t) onSpeaker++;
+      }
+    }
+    out.camera = {
+      cameraCues: cams.length,
+      shotKinds: kinds,
+      distinctShots: Object.keys(kinds).length,
+      shotsPerMin: round(cams.length / minutes, 2),
+      roomCuts: track.filter((e) => e.k === "cut").length,
+      shotOnSpeaker: lines === 0 ? null : round(onSpeaker / lines, 3),
+      cuesShown: cues.length,
+      cuesLost: lostDrops,
+      lostRate: cues.length + lostDrops === 0 ? null : round(lostDrops / (cues.length + lostDrops), 3),
+    };
+  }
+  return out;
+}
+
+function formatCinematic(c) {
+  const out = ["  cinematic (frames.jsonl + director-track.jsonl):"];
+  if (c.acts) {
+    const verbs = Object.entries(c.acts.verbs).map(([k, v]) => `${k} x${v}`).join(", ");
+    out.push(`    acts on screen: ${c.acts.played} (${c.acts.perMin}/min)${verbs ? `: ${verbs}` : ""}; first at ${c.acts.firstAt === null ? "-" : `${c.acts.firstAt}s`}; reactions owed ${c.acts.owedReactions}, missed ${c.acts.owedMissed}`);
+    out.push(`    physical climax by ${CLIMAX_DEADLINE_S}s: ${c.acts.climax ? `${c.acts.climax.byDeadline ? "PASS" : "FAIL"} (${c.acts.climax.verb} at ${c.acts.climax.at}s)` : "FAIL (no physical act)"}`);
+  }
+  if (c.camera) {
+    out.push(`    camera: ${c.camera.cameraCues} cues, ${c.camera.distinctShots} kinds (${Object.entries(c.camera.shotKinds).map(([k, v]) => `${k} ${v}`).join(", ")}), ${c.camera.shotsPerMin}/min, ${c.camera.roomCuts} room cuts, on speaker ${c.camera.shotOnSpeaker === null ? "-" : pct(c.camera.shotOnSpeaker)}, ${c.camera.cuesLost} cues lost of ${c.camera.cuesShown + c.camera.cuesLost} queued${c.camera.lostRate === null ? "" : ` (${pct(c.camera.lostRate)})`}`);
+  }
+  return out.join("\n");
+}
+
 const pct = (v) => `${(v * 100).toFixed(1)}%`;
 
 export function formatReport(m, source) {
@@ -330,7 +451,7 @@ function main(argv) {
   };
   const input = args.find((a, i) => !a.startsWith("--") && args[i - 1] !== "--actors");
   if (!input) {
-    console.error('usage: node scripts/run-metrics.mjs <transcript.jsonl | events.jsonl | run dir> [--actors "A,B,C"] [--json]');
+    console.error('usage: node scripts/run-metrics.mjs <transcript.jsonl | events.jsonl | run dir> [--actors "A,B,C"] [--json] [--no-cinematic]');
     process.exit(2);
   }
   const actors = flag("--actors")?.split(",").map((a) => a.trim()).filter((a) => a !== "");
@@ -342,8 +463,9 @@ function main(argv) {
     process.exit(2);
   }
   const metrics = computeMetrics(loaded.turns, { actors, events: loaded.events });
-  if (args.includes("--json")) console.log(JSON.stringify({ source: loaded.source, ...metrics }, null, 2));
-  else console.log(formatReport(metrics, loaded.source));
+  const cinematic = !args.includes("--no-cinematic") && existsSync(input) && statSync(input).isDirectory() ? computeCinematic(input) : undefined;
+  if (args.includes("--json")) console.log(JSON.stringify({ source: loaded.source, ...metrics, ...(cinematic ? { cinematic } : {}) }, null, 2));
+  else console.log(formatReport(metrics, loaded.source) + (cinematic ? `\n${formatCinematic(cinematic)}` : ""));
 }
 
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) main(process.argv);
