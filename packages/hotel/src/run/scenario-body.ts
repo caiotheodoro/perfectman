@@ -103,11 +103,22 @@ export function parseScenarioBody(raw: unknown): ParsedBody {
       ...(o["arrivals"] && typeof o["arrivals"] === "object" ? { arrivals: cleanArrivals(o["arrivals"] as Record<string, unknown>) } : {}),
       ...cleanStage(o["stage"]),
       ...cleanDramaAndMode(o, config.agents.map((a) => a.id)),
-      ...(cleanDramaExt(o["drama_ext"]) ? { drama_ext: cleanDramaExt(o["drama_ext"]) as DramaExt } : {}),
+      ...cleanExt(o, config.agents.map((a) => a.id)),
       ...cleanBeats(o["beats"], config.agents.map((a) => a.id)),
       ...cleanSheet(o, config.agents.map((a) => ({ id: a.id, displayName: a.promptProfile.displayName }))),
     },
   };
+}
+
+/**
+ * `drama_ext`, with the block's own `may_target_humans` folded in: a block that says `false` (the hotel will ask the chip) is never read looser by an ext that says true or says nothing.
+ * `true` or absent in the block leaves the ext in charge (default true).
+ */
+function cleanExt(o: Record<string, unknown>, agentIds: readonly string[]): { drama_ext?: DramaExt } {
+  const ext = cleanDramaExt(o["drama_ext"]);
+  const blockFlag = o["drama_mode"] === "off" ? undefined : cleanDrama(o["drama"], agentIds).humans;
+  const merged: DramaExt | undefined = blockFlag === false ? { ...(ext ?? {}), may_target_humans: false } : ext;
+  return merged ? { drama_ext: merged } : {};
 }
 
 /** The sheet, read against the block and the script the body kept (the same strict read the compile used): one that does not hold is dropped with its reason, and the old spine plays. */

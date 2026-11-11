@@ -53,7 +53,7 @@ describe("a hand-written beat_sheet", () => {
     expect(body.beat_sheet?.arc.climax_at_ms).toBe(170_000);
     // an author's sheet has no origin: the compile never writes one over it
     expect(body.beat_sheet?.generated_by).toBeUndefined();
-    expect(body.drama).toEqual(defaultSceneDrama(IDS));
+    expect(body.drama).toEqual({ ...defaultSceneDrama(IDS), may_target_humans: true });
     expect(body.drama_mode).toBe("default");
   });
 

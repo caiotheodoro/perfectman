@@ -223,16 +223,15 @@ export const VERB_GATES: Readonly<Record<ActVerb, VerbGate>> = {
   restrain: { calmBlocks: true, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: 1, still: true },
   faint: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
   tend_fallen: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: 1, still: false },
-  // The verbs of the cinematic revamp (wire-spec: point, grab, push_away, slump, kneel, flee, plead). Provisional rows until the hotel's table carries them: none is on the ladder and none
-  // needs the scenario's block; the two that touch someone (grab, push_away) are contact verbs, held to a chip at a human like the blows (their table row, when it lands, replaces these:
-  // `drama-vocab.test.ts` checks every verb the table has against this one).
-  point: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
+  // The verbs of the cinematic revamp (verb table rev 4: point, grab, push_away, slump, kneel, flee, plead). None is on the ladder and none needs the scenario's block; the two that touch
+  // someone (grab, push_away) are contact verbs, held to a chip at a human like the blows. `drama-vocab.test.ts` checks every row against the table.
+  point: { calmBlocks: false, consent: null, budget: null, cooldown: true, scenario: "free_ok", maxDist: 8, still: false },
   grab: { calmBlocks: true, consent: "violent_chip", budget: null, cooldown: true, scenario: "free_ok", maxDist: 1, still: true },
   push_away: { calmBlocks: true, consent: "violent_chip", budget: null, cooldown: true, scenario: "free_ok", maxDist: 1, still: true },
   slump: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
   kneel: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
   flee: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: null, still: false },
-  plead: { calmBlocks: false, consent: null, budget: null, cooldown: false, scenario: "free_ok", maxDist: 3, still: false },
+  plead: { calmBlocks: false, consent: null, budget: null, cooldown: true, scenario: "free_ok", maxDist: 6, still: false },
 };
 
 /** SAFE-4: the verbs that count toward the harm window when aimed at a human (`insult` included, though it touches no one). */

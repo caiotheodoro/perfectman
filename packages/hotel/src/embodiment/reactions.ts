@@ -13,8 +13,8 @@ import type { PlannedCommand } from "./types.js";
 
 /** The labels the table gives and the planner may replace: `look_back`, `watch`, `freeze_gasp`, `surprised` (REA-3). */
 export function isReplaceable(verb: ActVerb, role: "target" | "witness"): boolean {
-  // target labels: glare look_back, insult surprised (replaceable); head_snap, stagger, die, hug_back, kiss_back, struggle (never).
-  return role === "witness" || verb === "glare" || verb === "insult";
+  // target labels: glare look_back, insult surprised, point and plead look_back (replaceable); head_snap, stagger, die, hug_back, kiss_back, struggle (never).
+  return role === "witness" || verb === "glare" || verb === "insult" || verb === "point" || verb === "plead";
 }
 
 export type ReactionArgs = {

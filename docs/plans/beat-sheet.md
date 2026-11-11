@@ -27,7 +27,7 @@ SheetBeat = { id, at_ms, phase: setup|inciting|escalation|reversal|climax|afterm
 6. `generated_by.cost_usd <= 0.30`.
 7. No dialogue: keys named `text`, `say`, `line`, `dialogue`... and quoted lines of 4 words or more are errors; `gist`, `fact`, `objective`, `subtext` are length-capped.
 
-Readings added by the implementation (all additive): the arc is reconciled with the beats (`arc_fixed` warnings: the inciting second is the first inciting beat's, the climax second the climax act's, `reversal_at_ms` the first reversal beat's, `aftermath_until_ms` at least the last beat); phases run in time order; ids are unique; `generated_by` may carry `input_hash`, `mock`, `attempts`; the wire has no `fear`, `disgust` or `smug` face yet, so an `expression` with one is sent as `surprised`, `angry`, `smile` until B3's styles ship (`wireFace`); `grab` is in the climax list but is not in the verb vocabulary, so it passes only once B3 adds it.
+Readings added by the implementation (all additive): the arc is reconciled with the beats (`arc_fixed` warnings: the inciting second is the first inciting beat's, the climax second the climax act's, `reversal_at_ms` the first reversal beat's, `aftermath_until_ms` at least the last beat); phases run in time order; ids are unique; `generated_by` may carry `input_hash`, `mock`, `attempts`; verb table rev 4 carries `fear`, `disgust` and `smug` (wire `Face` styles 6..=8) and `grab`, so a sheet's `expression` is sent as itself (`wireFace`; the nearest old face is only for a hotel that offers fewer) and `grab` passes the verb check.
 
 ## Compile (the director step)
 

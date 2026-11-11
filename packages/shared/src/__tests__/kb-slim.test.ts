@@ -214,7 +214,7 @@ describe("BeatCraft", () => {
   it("has lines for the beats whose verb stands for a tactic, and none for a tableau or a cut", () => {
     expect(BeatCraft.build(beats, kb, { language: "en", cast: 3 })!.size).toBe(2);
     expect(BeatCraft.build([beats[2]!, beats[3]!], kb, { language: "en", cast: 3 })).toBeUndefined();
-    expect(ACT_VERBS.filter((v) => CRAFT_FOR_VERB[v] === undefined).sort()).toEqual(["die", "freeze_gasp", "recoil", "restrain", "tableau", "tend_fallen"]);
+    expect(ACT_VERBS.filter((v) => CRAFT_FOR_VERB[v] === undefined).sort()).toEqual(["die", "flee", "freeze_gasp", "grab", "kneel", "plead", "point", "push_away", "recoil", "restrain", "slump", "tableau", "tend_fallen"]);
   });
 
   it("shows a beat's lines to its actor only, from the lead before it to the hold after it", () => {

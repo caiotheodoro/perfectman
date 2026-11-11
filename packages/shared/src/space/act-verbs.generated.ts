@@ -22,5 +22,12 @@ export const VOCAB_ACT_VERBS = [
   "tableau",
   "restrain",
   "faint",
-  "tend_fallen"
+  "tend_fallen",
+  "point",
+  "grab",
+  "push_away",
+  "slump",
+  "kneel",
+  "flee",
+  "plead"
 ] as const;

@@ -138,8 +138,9 @@ describe("planBlock, planProp, planFace", () => {
     expect(planProp("take", "envelope", undefined, ctx())).toEqual([]);
   });
 
-  it("a face the wire lacks is the nearest old one", () => {
-    expect(planFace("person-1", "fear")).toEqual([{ agentId: "person-1", cmd: "expression", face: "surprised" }]);
+  it("a face goes out as itself, and as the nearest old one only to a hotel that lacks it", () => {
+    expect(planFace("person-1", "fear")).toEqual([{ agentId: "person-1", cmd: "expression", face: "fear" }]);
+    expect(planFace("person-1", "fear", ["neutral", "surprised"])).toEqual([{ agentId: "person-1", cmd: "expression", face: "surprised" }]);
     expect(planFace("person-1", "smug", ["smug"])).toEqual([{ agentId: "person-1", cmd: "expression", face: "smug" }]);
     expect(chebyshev(placeToTile({ zone: "janela" }, ctx()) ?? [99, 99], [2, 9])).toBeLessThanOrEqual(2);
   });

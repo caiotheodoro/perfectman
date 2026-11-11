@@ -42,13 +42,13 @@ export const KNOWN_ACT_VERBS = [
 export type ActVerb = (typeof KNOWN_ACT_VERBS)[number];
 
 /**
- * The verbs of the hotel's verb table (`schema/verb-vocab.json`, generated into `act-verbs.generated.ts`): the ones a run may propose, validate, script and offer a model. 18
- * today. A verb of `KNOWN_ACT_VERBS` the table does not carry yet is not in it, and the director refuses it as unknown; the day the table does, regenerating makes it live with no
+ * The verbs of the hotel's verb table (`schema/verb-vocab.json`, generated into `act-verbs.generated.ts`): the ones a run may propose, validate, script and offer a model. 25
+ * today (verb table `rev` 4). A verb of `KNOWN_ACT_VERBS` the table does not carry yet is not in it, and the director refuses it as unknown; the day the table does, regenerating makes it live with no
  * other edit. A table verb this file does not know is a type error here, so the tables below are never silently short of a row.
  */
 export const ACT_VERBS: readonly ActVerb[] = VOCAB_ACT_VERBS;
 
-/** The ids of the hotel's verb table as a union: the verbs the wire schema (`Verb`) takes today. Equal to `ActVerb` once the table carries all 25. */
+/** The ids of the hotel's verb table as a union: the verbs the wire schema (`Verb`) takes today. Equal to `ActVerb` since the table carries all 25. */
 export type TableVerb = (typeof VOCAB_ACT_VERBS)[number];
 
 /** Who started the act: the model (a proposal the director approved), the director, or an authored scenario beat. */
@@ -127,13 +127,13 @@ export const ACT_INTENSITY: Readonly<Record<ActVerb, IntensityEntry>> = {
   restrain: { default: 0.3, class: { min: "L", max: "L" } },
   faint: { default: 0.7, class: null },
   tend_fallen: { default: 0.5, class: null },
-  point: { default: 0.4, class: null },
-  grab: { default: 0.4, class: { min: "L", max: "M" } },
-  push_away: { default: 0.2, class: { min: "L", max: "L" } },
-  slump: { default: 0.5, class: null },
-  kneel: { default: 0.5, class: null },
+  point: { default: 0.3, class: null },
+  grab: { default: 0.4, class: { min: "L", max: "L" } },
+  push_away: { default: 0.3, class: { min: "L", max: "L" } },
+  slump: { default: 0.4, class: null },
+  kneel: { default: 0.4, class: null },
   flee: { default: 0.7, class: null },
-  plead: { default: 0.6, class: null },
+  plead: { default: 0.4, class: null },
 };
 
 /**

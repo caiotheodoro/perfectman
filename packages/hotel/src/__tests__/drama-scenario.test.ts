@@ -134,7 +134,7 @@ describe("the drama block through authoring (validate and compile)", () => {
 
   it("[SCN-5] compile writes the block into the body with agent ids, and the body validates", () => {
     const { body } = svc().compile({ source: formSource({ max_rung: "slap", may_target: [["Ana Clara", "Duda"]], may_die: ["Duda"], permadeath: true }) }) as { body: { v: number; drama?: unknown } };
-    expect(body.drama).toEqual({ max_rung: 4, may_target: [["person-1", "person-2"]], may_die: ["person-2"], permadeath: true });
+    expect(body.drama).toEqual({ max_rung: 4, may_target: [["person-1", "person-2"]], may_die: ["person-2"], permadeath: true, may_target_humans: true });
     expect(svc().validate({ body })).toMatchObject({ ok: true, errors: [] });
   });
 

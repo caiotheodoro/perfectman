@@ -95,10 +95,9 @@ describe("a scene with a beat sheet, in a run", () => {
     expect(kinds.filter((k) => k === "sheet_beat").length).toBeGreaterThanOrEqual(7);
   }, 25_000);
 
-  it("a face the wire does not know yet is sent as the nearest old one", async () => {
+  it("a fear face goes out as the wire's own fear style, not as surprised", async () => {
     const { hotel } = await boot({ sheet: SHEET });
-    await waitFor(() => hotel.received.find((f) => f.t === "actor_cmd" && f.cmd.k === "expression" && f.cmd.face === "surprised"), "the fear face as surprised", 8000);
-    expect(hotel.received.some((f) => f.t === "actor_cmd" && f.cmd.k === "expression" && (f.cmd.face as string) === "fear")).toBe(false);
+    await waitFor(() => hotel.received.find((f) => f.t === "actor_cmd" && f.cmd.k === "expression" && f.cmd.face === "fear"), "the fear face", 8000);
   }, 25_000);
 });
 

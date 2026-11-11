@@ -4,7 +4,7 @@
  * `may_target` entry a pair of strings whose first is not `@human`, `may_die` strings, `permadeath` a boolean. Anything else is `invalid` there:
  * the run is free play and the admin gets a `drama_block_invalid` notice. Unknown keys of the body itself (`drama_mode`, `beats`) are ignored.
  */
-export type HotelBlockRead = { kind: "absent" } | { kind: "valid"; max_rung: number; may_target: Array<[string, string]>; may_die: string[]; permadeath: boolean } | { kind: "invalid"; why: string };
+export type HotelBlockRead = { kind: "absent" } | { kind: "valid"; max_rung: number; may_target: Array<[string, string]>; may_die: string[]; permadeath: boolean; may_target_humans: boolean } | { kind: "invalid"; why: string };
 
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
 
@@ -12,7 +12,7 @@ export function hotelReadsBlock(body: unknown): HotelBlockRead {
   if (!isRecord(body) || !("drama" in body)) return { kind: "absent" };
   const block = body["drama"];
   if (!isRecord(block)) return { kind: "invalid", why: "not an object" };
-  for (const key of Object.keys(block)) if (!["max_rung", "may_target", "may_die", "permadeath"].includes(key)) return { kind: "invalid", why: `unknown field ${key}` };
+  for (const key of Object.keys(block)) if (!["max_rung", "may_target", "may_die", "permadeath", "may_target_humans"].includes(key)) return { kind: "invalid", why: `unknown field ${key}` };
   const max_rung = block["max_rung"] ?? 3;
   if (typeof max_rung !== "number" || !Number.isInteger(max_rung) || max_rung < 0 || max_rung > 6) return { kind: "invalid", why: "max_rung" };
   const pairs = block["may_target"] ?? [];
@@ -27,5 +27,8 @@ export function hotelReadsBlock(body: unknown): HotelBlockRead {
   if (!Array.isArray(dying) || dying.some((d) => typeof d !== "string")) return { kind: "invalid", why: "may_die" };
   const permadeath = block["permadeath"] ?? false;
   if (typeof permadeath !== "boolean") return { kind: "invalid", why: "permadeath" };
-  return { kind: "valid", max_rung, may_target, may_die: dying as string[], permadeath };
+  // Verb table rev 4: `may_target_humans`, off when absent (the hotel's `DramaBlock` default).
+  const humans = block["may_target_humans"] ?? false;
+  if (typeof humans !== "boolean") return { kind: "invalid", why: "may_target_humans" };
+  return { kind: "valid", max_rung, may_target, may_die: dying as string[], permadeath, may_target_humans: humans };
 }

@@ -31,7 +31,7 @@ describe("validateBodyIntent: the act key", () => {
 
   it("accepts every solo verb without a target and every targeted verb with one", () => {
     const { view, handles, duda } = world();
-    const solo = ACT_VERBS.filter((v) => ["die", "recoil", "freeze_gasp", "cry", "storm_off", "tableau", "faint"].includes(v));
+    const solo = ACT_VERBS.filter((v) => ["die", "recoil", "freeze_gasp", "cry", "storm_off", "tableau", "faint", "slump", "kneel", "flee"].includes(v));
     for (const verb of solo) expect(validateBodyIntent(view, "a1", body({ act: { verb } }), NOW, handles).accepted.act, verb).toEqual({ verb });
     for (const verb of ACT_VERBS.filter((v) => !solo.includes(v))) {
       expect(validateBodyIntent(view, "a1", body({ act: { verb, target: duda } }), NOW, handles).accepted.act, verb).toEqual({ verb, target: duda });
@@ -47,7 +47,7 @@ describe("validateBodyIntent: the act key", () => {
 
   it("[ACT-8] drops the act of a solo verb that has a target, for every solo verb, and keeps the rest", () => {
     const { view, handles, duda } = world();
-    for (const verb of ["die", "recoil", "freeze_gasp", "cry", "storm_off", "tableau", "faint"] as const) {
+    for (const verb of ["die", "recoil", "freeze_gasp", "cry", "storm_off", "tableau", "faint", "slump", "kneel", "flee"] as const) {
       const r = validateBodyIntent(view, "a1", body({ act: { verb, target: duda }, expression: "sad" }), NOW, handles);
       expect(r.accepted.act, verb).toBeUndefined();
       expect(r.accepted.expression, verb).toBe("sad");

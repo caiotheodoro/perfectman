@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "rev": 3,
+  "rev": 4,
   "bible": "docs/drama/verb-bible.md",
   "table_schema_note": "JSON Schema draft-07. The root is the shape of one entry of `verbs`; $defs.profile is the shape of one entry of `consent_profiles`.",
   "table_schema": {
@@ -46,7 +46,7 @@
           {
             "type": "object",
             "properties": {
-              "face": {"enum": ["neutral", "smile", "angry", "sad", "surprised", "sleepy"]},
+              "face": {"enum": ["neutral", "smile", "angry", "sad", "surprised", "sleepy", "fear", "disgust", "smug"]},
               "t": {"$ref": "#/$defs/time"},
               "reaction": {"type": "string"},
               "optional": {"type": "boolean"},
@@ -495,7 +495,14 @@
               "tableau",
               "restrain",
               "faint",
-              "tend_fallen"
+              "tend_fallen",
+              "point",
+              "grab",
+              "push_away",
+              "slump",
+              "kneel",
+              "flee",
+              "plead"
             ]
           },
           "rung": {"type": ["integer", "null"], "minimum": 1, "maximum": 6},
@@ -681,7 +688,14 @@
       "tableau",
       "restrain",
       "faint",
-      "tend_fallen"
+      "tend_fallen",
+      "point",
+      "grab",
+      "push_away",
+      "slump",
+      "kneel",
+      "flee",
+      "plead"
     ],
     "ladder": ["glare", "insult", "shove", "slap", "punch", "kill"],
     "physical": ["shove", "slap", "punch", "kill"],
@@ -724,7 +738,7 @@
       "timeout": "dodge",
       "hold": {
         "actor": [{"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"}, {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "angry"}],
-        "room": [{"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500}]
+        "room": []
       },
       "dodge": {
         "target": [{"t": {"a": "Ta", "ms": 0}, "p": "forced_step", "mover": "target", "away_from": "actor", "human": true}],
@@ -742,7 +756,7 @@
           {"t": {"a": "Ta", "ms": 1200}, "p": "expression", "face": "neutral"}
         ],
         "target": [],
-        "room": [{"t": {"a": "Ta", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200}]
+        "room": []
       }
     },
     "affection_chip": {
@@ -760,14 +774,14 @@
           {"t": {"a": "Ta", "ms": 1200}, "p": "expression", "face": "neutral"}
         ],
         "target": [],
-        "room": [{"t": {"a": "Ta", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200}]
+        "room": []
       }
     },
     "violent_chip_noncontact": {
       "timeout": "dodge",
       "hold": {
         "actor": [{"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"}, {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "angry"}],
-        "room": [{"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500}]
+        "room": []
       },
       "dodge": {
         "actor": [{"t": {"a": "Ta", "ms": 0}, "p": "expression", "face": "neutral"}, {"t": {"a": "Ta", "ms": 0}, "p": "hold", "ms": 800}],
@@ -777,7 +791,7 @@
       "push_back": {
         "actor": [{"t": {"a": "Ta", "ms": 0}, "p": "expression", "face": "surprised"}, {"t": {"a": "Ta", "ms": 1200}, "p": "expression", "face": "neutral"}],
         "target": [],
-        "room": [{"t": {"a": "Ta", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200}]
+        "room": []
       }
     },
     "affection_chip_dodge": {
@@ -795,7 +809,7 @@
           {"t": {"a": "Ta", "ms": 1200}, "p": "expression", "face": "neutral"}
         ],
         "target": [],
-        "room": [{"t": {"a": "Ta", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200}]
+        "room": []
       }
     }
   },
@@ -853,7 +867,10 @@
         "insult": {"px": 2, "rot_deg": 0, "ms": 300},
         "cry": {"px": 1, "rot_deg": 0, "ms": 4000},
         "storm_off": {"px": 2, "rot_deg": 0, "ms": 300},
-        "faint": {"px": 2, "rot_deg": 0, "ms": 800}
+        "faint": {"px": 2, "rot_deg": 0, "ms": 800},
+        "slump": {"px": 1, "rot_deg": 0, "ms": 2500},
+        "grab": {"px": 1, "rot_deg": 0, "ms": 400},
+        "flee": {"px": 2, "rot_deg": 0, "ms": 300}
       }
     },
     "recoil": {
@@ -939,7 +956,6 @@
         "target": [{"t": {"a": "Tc", "ms": 400}, "p": "face", "toward": "actor", "reaction": "look_back"}],
         "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
         "room": [
-          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
           {"t": {"a": "T0", "ms": 0}, "p": "sfx", "cue": "sting_tension", "once": true},
           {
             "t": {"a": "T0", "ms": 0},
@@ -1000,8 +1016,6 @@
         ],
         "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "face", "toward": "actor", "reaction": "watch"}],
         "room": [
-          {"t": {"a": "Tc", "ms": -300}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
-          {"t": {"a": "Tc", "ms": 300}, "p": "cue", "on": "target", "emotion": "surprised", "ms": 1200},
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "sting_tension", "once": true},
           {
             "t": {"a": "Tc", "ms": 0},
@@ -1063,10 +1077,8 @@
         ],
         "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
         "room": [
-          {"t": {"a": "Tc", "ms": -250}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
           {"t": {"a": "Tc", "ms": -100}, "p": "sfx", "cue": "whoosh_short", "once": true, "needs": ["sfx"]},
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
-          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "cue", "on": "target", "emotion": "surprised", "ms": 1200},
           {
             "t": {"a": "Tc", "ms": 0},
             "p": "caption",
@@ -1129,8 +1141,6 @@
         "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
         "room": [
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "slap", "once": true, "needs": ["sfx"]},
-          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "cue", "on": "target", "emotion": "surprised", "ms": 1500},
-          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
           {
             "t": {"a": "Tc", "ms": 0},
             "p": "caption",
@@ -1206,8 +1216,6 @@
         "room": [
           {"t": {"a": "Tc", "ms": -150}, "p": "sfx", "cue": "whoosh_short", "once": true, "needs": ["sfx"]},
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
-          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "cue", "on": "target", "emotion": "surprised", "ms": 1500},
-          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
           {
             "t": {"a": "Tc", "ms": 0},
             "p": "caption",
@@ -1268,8 +1276,6 @@
         ],
         "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
         "room": [
-          {"t": {"a": "Tc", "ms": -500}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
-          {"t": {"a": "Tc", "ms": 600, "hs": true}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200},
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
           {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "sfx", "cue": "sting_tension", "once": true},
           {
@@ -1321,7 +1327,6 @@
           {"t": {"a": "Tc", "ms": 0}, "p": "expression", "face": "surprised"},
           {"t": {"a": "Tc", "ms": 0}, "p": "forced_step", "mover": "actor", "away_from": "source", "human": true},
           {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "knockback", "away_from": "source", "needs": ["b"]},
-          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 900},
           {"t": {"a": "Tc", "ms": 300}, "p": "hold", "ms": 600},
           {"t": {"a": "Tc", "ms": 900}, "p": "gesture", "action": "wave", "ms": 500, "optional": true, "needs": ["dur"]},
           {"t": {"a": "Tc", "ms": 1400}, "p": "posture", "pose": "lay", "human": true},
@@ -1339,7 +1344,6 @@
             "needs": ["overlay"]
           },
           {"t": {"a": "Tc", "ms": 2000}, "p": "state", "to": "body", "only": "actor"},
-          {"t": {"a": "Tc", "ms": 2000}, "p": "cue", "on": "actor", "emotion": "sad", "ms": 1500},
           {"t": {"a": "Tc", "ms": 2000}, "p": "sfx", "cue": "sting_sad", "once": true},
           {
             "t": {"a": "Tc", "ms": 0, "plus": "human_down"},
@@ -1391,7 +1395,6 @@
           {"t": {"a": "Tc", "ms": 0}, "p": "face", "toward": "source", "offset": 2},
           {"t": {"a": "Tc", "ms": 0}, "p": "expression", "face": "surprised"},
           {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "recoil", "away_from": "source", "needs": ["b"]},
-          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1200},
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "gasp", "once": true, "needs": ["sfx"]},
           {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 500},
           {"t": {"a": "Tc", "ms": 1200}, "p": "expression", "face": "neutral"}
@@ -1435,7 +1438,6 @@
           {"t": {"a": "Tc", "ms": 0}, "p": "stop_walk", "optional": true},
           {"t": {"a": "Tc", "ms": 0}, "p": "face", "toward": "source"},
           {"t": {"a": "Tc", "ms": 0}, "p": "expression", "face": "surprised"},
-          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "surprised", "ms": 1500},
           {"t": {"a": "Tc", "ms": 0}, "p": "gesture", "action": "sign", "style": 13, "ms": 1500, "optional": true, "needs": ["dur"]},
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "gasp", "once": true, "needs": ["sfx"]},
           {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 1200},
@@ -1490,7 +1492,6 @@
         "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "face", "toward": "actor", "reaction": "watch"}],
         "room": [
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "hug", "once": true},
-          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "love", "ms": 1500},
           {"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} abraça {target} *", "en": "* {actor} hugs {target} *"}}
         ],
         "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 2000}]
@@ -1541,7 +1542,6 @@
         "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "face", "toward": "actor", "reaction": "watch"}],
         "room": [
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "kiss", "once": true},
-          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "love", "ms": 1500},
           {
             "t": {"a": "Tc", "ms": 0},
             "p": "caption",
@@ -1623,14 +1623,12 @@
       "roles": {
         "actor": [
           {"t": {"a": "Tc", "ms": 0}, "p": "expression", "face": "sad"},
-          {"t": {"a": "Tc", "ms": 0}, "p": "effect", "name": "Raincloud", "ms": 4500, "restore": true},
           {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
           {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 4500},
           {"t": {"a": "Tc", "ms": 4500}, "p": "expression", "face": "neutral"}
         ],
         "witnesses": [],
         "room": [
-          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "sad", "ms": 2000},
           {"t": {"a": "Tc", "ms": 0}, "p": "sfx", "cue": "sob", "once": true, "needs": ["sfx"]}
         ],
         "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 2500}]
@@ -1642,7 +1640,7 @@
         "witnesses": {"event": "none", "tone": "neutral"}
       },
       "ladder": {"deescalates": false},
-      "notes": "Sadness stays slow: the shake is 1 px over 4 s (motions.shake.by_verb.cry)."
+      "notes": "Sadness stays slow: the shake is 1 px over 4 s (motions.shake.by_verb.cry). No effect: the tears are the client's art over the face."
     },
     "storm_off": {
       "id": "storm_off",
@@ -1675,7 +1673,6 @@
         ],
         "witnesses": [],
         "room": [
-          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "angry", "ms": 1500},
           {"t": {"a": "Tarr", "ms": 0}, "p": "sfx", "cue": "door_close", "once": true},
           {"t": {"a": "Tarr", "ms": 0}, "p": "caption", "ms": 1500, "text": {"pt-BR": "* {actor} sai furioso(a) *", "en": "* {actor} storms off *"}}
         ],
@@ -1766,7 +1763,6 @@
         ],
         "witnesses": [],
         "room": [
-          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "cue", "on": "target", "emotion": "angry", "ms": 1200},
           {"t": {"a": "Tc", "ms": -100}, "p": "sfx", "cue": "whoosh_short", "once": true, "needs": ["sfx"]},
           {
             "t": {"a": "Tc", "ms": 0},
@@ -1809,12 +1805,11 @@
       "timeline": {"contact_at_ms": 800},
       "roles": {
         "actor": [
-          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "sad"},
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "sleepy"},
           {"t": {"a": "T0", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
           {"t": {"a": "Tc", "ms": 0}, "p": "posture", "pose": "lay"},
           {"t": {"a": "Tc", "ms": 0}, "p": "state", "to": "fainted"},
           {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "fall", "needs": ["b"]},
-          {"t": {"a": "Tc", "ms": 0}, "p": "cue", "on": "actor", "emotion": "confused", "ms": 7600},
           {"t": {"a": "Tc", "ms": 50}, "p": "sfx", "cue": "thud", "once": true, "needs": ["sfx"]},
           {"t": {"a": "Tc", "ms": 400}, "p": "sfx", "cue": "sting_sad", "once": true},
           {"t": {"a": "Tc", "ms": 400}, "p": "hold", "ms": 7600},
@@ -1824,7 +1819,6 @@
         ],
         "witnesses": [{"t": {"a": "Tc", "ms": 0, "stagger": true}, "p": "verb", "verb": "freeze_gasp", "reaction": "freeze_gasp"}],
         "room": [
-          {"t": {"a": "T0", "ms": 0}, "p": "cue", "on": "actor", "emotion": "sad", "ms": 800},
           {"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} desmaia *", "en": "* {actor} faints *"}}
         ],
         "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 1500}]
@@ -1837,7 +1831,7 @@
       },
       "ladder": {"deescalates": false},
       "follow_ups": [{"verb": "tableau", "at": "end"}],
-      "notes": "No effect: the alive marker is the confused \"?\" cue, which runs from contact to the stand step (die uses TrippyHalo; Twinkle read as sparkles on a lying body, habbo#42, and none of the catalog effects reads as a faint). State fainted (a fallen state, DOWN-1) lasts until the stand step; WAKE-1 moves the steps marked wakeable. Lying is refused while walking, on a seat, or with no room to lie: the actor then stays as it is and act_done lists downgraded:[posture]."
+      "notes": "No effect and no icon: the closed eyes (sleepy face) and the fall are the marker (die uses TrippyHalo; Twinkle read as sparkles on a lying body, habbo#42). State fainted (a fallen state, DOWN-1) lasts until the stand step; WAKE-1 moves the steps marked wakeable. Lying is refused while walking, on a seat, or with no room to lie: the actor then stays as it is and act_done lists downgraded:[posture]."
     },
     "tend_fallen": {
       "id": "tend_fallen",
@@ -1872,7 +1866,6 @@
         ],
         "witnesses": [],
         "room": [
-          {"t": {"a": "Tc", "ms": 200}, "p": "cue", "on": "actor", "emotion": "sad", "ms": 2000},
           {"t": {"a": "Tc", "ms": 200}, "p": "sfx", "cue": "sting_sad", "once": true}
         ],
         "camera": [{"t": {"a": "Tc", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 2000}]
@@ -1885,6 +1878,270 @@
       },
       "ladder": {"deescalates": false},
       "notes": "Target must be fallen (state fainted, dying, body or down); otherwise actor_error bad_target detail not_fallen. The kneel is sit_floor (no real kneel pose exists); a seated tender stays seated."
+    },
+    "point": {
+      "id": "point",
+      "rung": null,
+      "family": "conflict_noncontact",
+      "violent": false,
+      "contact": false,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {"calm_blocks": false, "consent": null, "budget": null, "cooldown": true, "scenario": "free_ok", "max_dist": 8, "still": false, "actor_posture": ["stand", "sit"]},
+      "intensity": {"default": 0.3, "class": null},
+      "timeline": {"contact_at_ms": 300},
+      "roles": {
+        "actor": [
+          {"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"},
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 1800},
+          {"t": {"a": "Tc", "ms": 1800}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [{"t": {"a": "Tc", "ms": 400}, "p": "face", "toward": "actor", "reaction": "look_back"}],
+        "witnesses": [],
+        "room": [{"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} aponta para {target} *", "en": "* {actor} points at {target} *"}}],
+        "camera": [
+          {"t": {"a": "T0", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 1, "ease_ms": 0, "hold_ms": 600},
+          {"t": {"a": "Tc", "ms": 300}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 1400}
+        ]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": null, "witness_when": "never"},
+      "memory": {"actor": {"event": "none", "tone": "neutral"}, "target": {"event": "victim", "tone": "dismissive"}, "witnesses": {"event": "none", "tone": "neutral"}},
+      "ladder": {"deescalates": false},
+      "notes": "A raised arm and a finger; no contact, no consent. The arm is the client's stance, the table keeps the face and the hold."
+    },
+    "grab": {
+      "id": "grab",
+      "rung": null,
+      "family": "conflict_contact",
+      "violent": false,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": "violent_chip",
+        "budget": null,
+        "cooldown": true,
+        "scenario": "free_ok",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.4, "class": {"min": "L", "max": "L"}},
+      "timeline": {"contact_at_ms": 250},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": -250}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": -250}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": -100}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "hit_stop", "who": "both", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 1400},
+          {"t": {"a": "Tc", "ms": 1400}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "face", "toward": "actor", "offset": 1, "reaction": "struggle"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 1500}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [
+          {"t": {"a": "Tc", "ms": -100}, "p": "sfx", "cue": "whoosh_short", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} agarra {target} *", "en": "* {actor} grabs {target} *"}}
+        ],
+        "camera": [{"t": {"a": "Tc", "ms": -250}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 1800}]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": null, "witness_when": "never"},
+      "memory": {"actor": {"event": "aggressor", "tone": "hostile"}, "target": {"event": "victim", "tone": "hurt"}, "witnesses": {"event": "none", "tone": "neutral"}},
+      "ladder": {"deescalates": false},
+      "notes": "A hand on the arm: held for 1.4 s, then let go. The grip is the client's stance. No forced step: nobody changes tile."
+    },
+    "push_away": {
+      "id": "push_away",
+      "rung": null,
+      "family": "conflict_contact",
+      "violent": false,
+      "contact": true,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {
+        "calm_blocks": true,
+        "consent": "violent_chip",
+        "budget": null,
+        "cooldown": true,
+        "scenario": "free_ok",
+        "max_dist": 1,
+        "still": true,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.3, "class": {"min": "L", "max": "L"}},
+      "timeline": {"contact_at_ms": 250},
+      "roles": {
+        "actor": [
+          {"t": {"a": "Tc", "ms": -250}, "p": "face", "toward": "target"},
+          {"t": {"a": "Tc", "ms": -250}, "p": "expression", "face": "angry"},
+          {"t": {"a": "Tc", "ms": -100}, "p": "motion", "name": "lunge", "toward": "target", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "hit_stop", "who": "both", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 1000}, "p": "expression", "face": "neutral"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 1000}
+        ],
+        "target": [
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "expression", "face": "surprised"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "face", "toward": "actor", "offset": 1, "reaction": "stagger"},
+          {"t": {"a": "Tc", "ms": 0, "hs": true}, "p": "motion", "name": "knockback", "away_from": "actor", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 1200}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [
+          {"t": {"a": "Tc", "ms": -100}, "p": "sfx", "cue": "whoosh_short", "once": true, "needs": ["sfx"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} empurra {target} *", "en": "* {actor} pushes {target} away *"}}
+        ],
+        "camera": [{"t": {"a": "Tc", "ms": -250}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 1800}]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": null, "witness_when": "never"},
+      "memory": {"actor": {"event": "aggressor", "tone": "hostile"}, "target": {"event": "victim", "tone": "hurt"}, "witnesses": {"event": "none", "tone": "neutral"}},
+      "ladder": {"deescalates": false},
+      "notes": "Softer than shove: the target is knocked back as a motion and never moves tile (no forced step)."
+    },
+    "slump": {
+      "id": "slump",
+      "rung": null,
+      "family": "solo",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.4, "class": null},
+      "timeline": {"contact_at_ms": 400},
+      "roles": {
+        "actor": [
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "sad"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 2600},
+          {"t": {"a": "Tc", "ms": 2600}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [{"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} desaba *", "en": "* {actor} slumps *"}}],
+        "camera": [{"t": {"a": "T0", "ms": 0}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 2400}]
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {"actor": {"event": "none", "tone": "neutral"}, "target": {"event": "none", "tone": "neutral"}, "witnesses": {"event": "none", "tone": "neutral"}},
+      "ladder": {"deescalates": false},
+      "notes": "Shoulders drop, head down, knees give a little: the client's stance. Nobody changes posture on the server; the avatar stays standing."
+    },
+    "kneel": {
+      "id": "kneel",
+      "rung": null,
+      "family": "solo",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {"calm_blocks": false, "consent": null, "budget": null, "cooldown": false, "scenario": "free_ok", "max_dist": null, "still": false, "actor_posture": ["stand"]},
+      "intensity": {"default": 0.4, "class": null},
+      "timeline": {"contact_at_ms": 500},
+      "roles": {
+        "actor": [
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "sad"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 3000},
+          {"t": {"a": "Tc", "ms": 3000}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [{"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} se ajoelha *", "en": "* {actor} kneels *"}}],
+        "camera": [{"t": {"a": "T0", "ms": 0}, "p": "camera", "shot": "close_up", "target": "actor", "zoom": 2, "ease_ms": 0, "hold_ms": 2600}]
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {"actor": {"event": "none", "tone": "neutral"}, "target": {"event": "none", "tone": "neutral"}, "witnesses": {"event": "none", "tone": "neutral"}},
+      "ladder": {"deescalates": false},
+      "notes": "Down on the knees and up again; the posture is the client's stance, the server keeps the avatar standing. To kneel toward someone use plead."
+    },
+    "flee": {
+      "id": "flee",
+      "rung": null,
+      "family": "solo",
+      "violent": false,
+      "contact": false,
+      "target": "none",
+      "target_kinds": [],
+      "text": false,
+      "gates": {
+        "calm_blocks": false,
+        "consent": null,
+        "budget": null,
+        "cooldown": false,
+        "scenario": "free_ok",
+        "max_dist": null,
+        "still": false,
+        "actor_posture": ["stand", "sit"]
+      },
+      "intensity": {"default": 0.7, "class": null},
+      "timeline": {"contact_at_ms": 300},
+      "roles": {
+        "actor": [
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "fear"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "walk_to", "dest": "door"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "motion", "name": "shake", "needs": ["b"]},
+          {"t": {"a": "Tarr", "ms": 0}, "p": "expression", "face": "neutral"}
+        ],
+        "witnesses": [],
+        "room": [
+          {"t": {"a": "Tarr", "ms": 0}, "p": "sfx", "cue": "door_close", "once": true},
+          {"t": {"a": "Tarr", "ms": 0}, "p": "caption", "ms": 1500, "text": {"pt-BR": "* {actor} foge *", "en": "* {actor} flees *"}}
+        ],
+        "camera": [
+          {"t": {"a": "T0", "ms": 0}, "p": "camera", "shot": "tracking", "target": "actor", "zoom": 1, "ease_ms": 300, "hold_ms": 3000},
+          {"t": {"a": "Tarr", "ms": 0}, "p": "cut_fx", "kind": "door", "ms": 600}
+        ]
+      },
+      "owed": {"target_ms": null, "witness_ms": null, "witness_when": "never"},
+      "memory": {"actor": {"event": "none", "tone": "neutral"}, "target": {"event": "none", "tone": "neutral"}, "witnesses": {"event": "none", "tone": "neutral"}},
+      "ladder": {"deescalates": false},
+      "notes": "Like storm_off with a frightened face. Ends at Tarr + 500. With no route to the door the walk step is skipped, the act ends at Tc + 400 and act_done lists downgraded:[walk_to]."
+    },
+    "plead": {
+      "id": "plead",
+      "rung": null,
+      "family": "conflict_noncontact",
+      "violent": false,
+      "contact": false,
+      "target": "required",
+      "target_kinds": ["actor", "human"],
+      "text": false,
+      "gates": {"calm_blocks": false, "consent": null, "budget": null, "cooldown": true, "scenario": "free_ok", "max_dist": 6, "still": false, "actor_posture": ["stand", "sit"]},
+      "intensity": {"default": 0.4, "class": null},
+      "timeline": {"contact_at_ms": 400},
+      "roles": {
+        "actor": [
+          {"t": {"a": "T0", "ms": 0}, "p": "face", "toward": "target"},
+          {"t": {"a": "T0", "ms": 0}, "p": "expression", "face": "sad"},
+          {"t": {"a": "Tc", "ms": 0}, "p": "hold", "ms": 3200},
+          {"t": {"a": "Tc", "ms": 3200}, "p": "expression", "face": "neutral"}
+        ],
+        "target": [{"t": {"a": "Tc", "ms": 500}, "p": "face", "toward": "actor", "reaction": "look_back"}],
+        "witnesses": [],
+        "room": [{"t": {"a": "Tc", "ms": 0}, "p": "caption", "ms": 2000, "text": {"pt-BR": "* {actor} implora {target} *", "en": "* {actor} pleads with {target} *"}}],
+        "camera": [{"t": {"a": "T0", "ms": 0}, "p": "camera", "shot": "two_shot", "target": "pair", "zoom": 2, "ease_ms": 0, "hold_ms": 3000}]
+      },
+      "owed": {"target_ms": 1500, "witness_ms": null, "witness_when": "never"},
+      "memory": {"actor": {"event": "none", "tone": "neutral"}, "target": {"event": "receiver", "tone": "hurt"}, "witnesses": {"event": "none", "tone": "neutral"}},
+      "ladder": {"deescalates": false},
+      "notes": "On the knees with the hands together, to the target: the stance is the client's. No contact, no consent."
     }
   }
 }

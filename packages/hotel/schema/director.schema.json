@@ -150,7 +150,7 @@
           ]
         },
         {
-          "description": "Shows a face, `style` 0..=5 (`perfectman::Face`). Allowed while walking; clears itself.",
+          "description": "Shows a face, `style` 0..=8 (`perfectman::Face`). Allowed while walking; clears itself.",
           "type": "string",
           "enum": [
             "expression"
@@ -1259,7 +1259,10 @@
         "angry",
         "sad",
         "surprised",
-        "sleepy"
+        "sleepy",
+        "fear",
+        "disgust",
+        "smug"
       ]
     },
     "FaceTarget": {
@@ -1571,7 +1574,7 @@
       }
     },
     "HelloDrama": {
-      "description": "What `hello.drama` tells a dialect 2 sidecar (NEG-2). Sent only with `PERFECTMAN_DRAMA` on.",
+      "description": "What `hello.drama` tells a dialect 2 sidecar (NEG-2). Sent whenever Perfectman is on (D58).",
       "type": "object",
       "required": [
         "chip_ttl_ms",
@@ -1778,7 +1781,7 @@
               "minimum": 0.0
             },
             "proto_max": {
-              "description": "The highest dialect the hotel offers. Present only with `PERFECTMAN_DRAMA` on (NEG-2).",
+              "description": "The highest dialect the hotel offers. Present whenever Perfectman is on (NEG-2, D58).",
               "type": [
                 "integer",
                 "null"
@@ -2605,7 +2608,7 @@
               ]
             },
             "target_opt_in": {
-              "description": "Present only when `with` is a human.",
+              "description": "Present only when `with` is a human; always `true` since D59.",
               "type": [
                 "boolean",
                 "null"
@@ -3187,7 +3190,7 @@
               "type": "boolean"
             },
             "opt_in": {
-              "description": "Human ids in the room whose session opt-in is on.",
+              "description": "Every human avatar in the room: all of them are opted in since D59.",
               "type": "array",
               "items": {
                 "type": "integer",
@@ -3370,6 +3373,69 @@
         "optional",
         "mandatory"
       ]
+    },
+    "MoodLight": {
+      "description": "A room's mood light: three slots, `active` picks the one that tints the room.",
+      "type": "object",
+      "properties": {
+        "active": {
+          "default": 0,
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "on": {
+          "default": false,
+          "type": "boolean"
+        },
+        "presets": {
+          "default": [
+            {
+              "brightness": 5,
+              "colour": 16777215,
+              "surfaces_only": false
+            },
+            {
+              "brightness": 5,
+              "colour": 16777215,
+              "surfaces_only": false
+            },
+            {
+              "brightness": 5,
+              "colour": 16777215,
+              "surfaces_only": false
+            }
+          ],
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MoodPreset"
+          },
+          "maxItems": 3,
+          "minItems": 3
+        }
+      }
+    },
+    "MoodPreset": {
+      "description": "One slot of the mood light: a swatch from `COLOURS`, how strongly it tints, and whether furniture and people are spared.",
+      "type": "object",
+      "properties": {
+        "brightness": {
+          "default": 5,
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "colour": {
+          "default": 16777215,
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "surfaces_only": {
+          "default": false,
+          "type": "boolean"
+        }
+      }
     },
     "Motion": {
       "description": "The seven client procedural motions (section 5.8).",
@@ -4169,67 +4235,6 @@
           }
         },
         {
-          "type": "object",
-          "required": [
-            "cue",
-            "k"
-          ],
-          "properties": {
-            "at": {
-              "type": [
-                "array",
-                "null"
-              ],
-              "items": {
-                "type": "integer",
-                "format": "uint16",
-                "minimum": 0.0
-              },
-              "maxItems": 2,
-              "minItems": 2
-            },
-            "cue": {
-              "type": "string"
-            },
-            "gain": {
-              "type": [
-                "number",
-                "null"
-              ],
-              "format": "float"
-            },
-            "id": {
-              "type": [
-                "string",
-                "null"
-              ]
-            },
-            "in_ms": {
-              "type": [
-                "integer",
-                "null"
-              ],
-              "format": "uint32",
-              "minimum": 0.0
-            },
-            "k": {
-              "type": "string",
-              "enum": [
-                "sfx"
-              ]
-            },
-            "loop": {
-              "type": "boolean"
-            },
-            "stop": {
-              "type": [
-                "string",
-                "null"
-              ]
-            }
-          }
-        },
-        {
           "description": "A camera move that is not a shot (contract B). Only the fields its `move` reads are set; the rest are left out. Every number is clamped by the client, so a bad one cannot do harm.",
           "type": "object",
           "required": [
@@ -4319,6 +4324,67 @@
                 "null"
               ],
               "format": "double"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "cue",
+            "k"
+          ],
+          "properties": {
+            "at": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "integer",
+                "format": "uint16",
+                "minimum": 0.0
+              },
+              "maxItems": 2,
+              "minItems": 2
+            },
+            "cue": {
+              "type": "string"
+            },
+            "gain": {
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "float"
+            },
+            "id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "sfx"
+              ]
+            },
+            "loop": {
+              "type": "boolean"
+            },
+            "stop": {
+              "type": [
+                "string",
+                "null"
+              ]
             }
           }
         },
@@ -4590,6 +4656,31 @@
         }
       }
     },
+    "RoomShell": {
+      "description": "A room's walls and floor slab. Every value is an offset from the template's look, so 0 is today's; thickness runs from -2 (thinnest) to 1 (thick), `wall_height` is whole levels.",
+      "type": "object",
+      "properties": {
+        "floor_thickness": {
+          "default": 0,
+          "type": "integer",
+          "format": "int8"
+        },
+        "hide_walls": {
+          "default": false,
+          "type": "boolean"
+        },
+        "wall_height": {
+          "default": 0,
+          "type": "integer",
+          "format": "int8"
+        },
+        "wall_thickness": {
+          "default": 0,
+          "type": "integer",
+          "format": "int8"
+        }
+      }
+    },
     "RoomSnapshot": {
       "description": "The room mirror's first message. `layout.rows`, `walk` and `seats` are server-derived so the sidecar re-implements no rules. The public `Avatar.ai` is never set here (D43).",
       "type": "object",
@@ -4675,6 +4766,38 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "RoomSurfaces": {
+      "description": "A room's own floor and wall, replacing the template's. An empty texture and a `None` colour mean the template's.",
+      "type": "object",
+      "properties": {
+        "floor_colour": {
+          "default": null,
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "floor_texture": {
+          "default": "",
+          "type": "string"
+        },
+        "wall_colour": {
+          "default": null,
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "wall_texture": {
+          "default": "",
+          "type": "string"
         }
       }
     },
@@ -5027,6 +5150,42 @@
               "type": "integer",
               "format": "int64"
             },
+            "landscape": {
+              "default": "",
+              "type": "string"
+            },
+            "locked": {
+              "description": "The room has a password. Sent only to those who may change it.",
+              "type": "boolean"
+            },
+            "mood_light": {
+              "default": {
+                "active": 0,
+                "on": false,
+                "presets": [
+                  {
+                    "brightness": 5,
+                    "colour": 16777215,
+                    "surfaces_only": false
+                  },
+                  {
+                    "brightness": 5,
+                    "colour": 16777215,
+                    "surfaces_only": false
+                  },
+                  {
+                    "brightness": 5,
+                    "colour": 16777215,
+                    "surfaces_only": false
+                  }
+                ]
+              },
+              "allOf": [
+                {
+                  "$ref": "#/definitions/MoodLight"
+                }
+              ]
+            },
             "name": {
               "type": "string"
             },
@@ -5038,9 +5197,35 @@
               "default": "",
               "type": "string"
             },
+            "shell": {
+              "default": {
+                "floor_thickness": 0,
+                "hide_walls": false,
+                "wall_height": 0,
+                "wall_thickness": 0
+              },
+              "allOf": [
+                {
+                  "$ref": "#/definitions/RoomShell"
+                }
+              ]
+            },
             "spectating": {
               "description": "You are watching without an avatar (Audience, or a cut): `me` is not in `avatars`.",
               "type": "boolean"
+            },
+            "surfaces": {
+              "default": {
+                "floor_colour": null,
+                "floor_texture": "",
+                "wall_colour": null,
+                "wall_texture": ""
+              },
+              "allOf": [
+                {
+                  "$ref": "#/definitions/RoomSurfaces"
+                }
+              ]
             },
             "t": {
               "type": "string",
@@ -5050,6 +5235,48 @@
             },
             "template": {
               "type": "string"
+            }
+          }
+        },
+        {
+          "description": "Sent to those who may change it: the room's password was set or removed.",
+          "type": "object",
+          "required": [
+            "locked",
+            "t"
+          ],
+          "properties": {
+            "locked": {
+              "type": "boolean"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_lock_changed"
+              ]
+            }
+          }
+        },
+        {
+          "description": "The room you asked to join has a password. `wrong` when the one you sent didn't match.",
+          "type": "object",
+          "required": [
+            "room",
+            "t"
+          ],
+          "properties": {
+            "room": {
+              "type": "integer",
+              "format": "int64"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "password_needed"
+              ]
+            },
+            "wrong": {
+              "type": "boolean"
             }
           }
         },
@@ -5244,6 +5471,78 @@
               "type": "string",
               "enum": [
                 "room_style_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "surfaces",
+            "t"
+          ],
+          "properties": {
+            "surfaces": {
+              "$ref": "#/definitions/RoomSurfaces"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_surfaces_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "shell",
+            "t"
+          ],
+          "properties": {
+            "shell": {
+              "$ref": "#/definitions/RoomShell"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "room_shell_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "light",
+            "t"
+          ],
+          "properties": {
+            "light": {
+              "$ref": "#/definitions/MoodLight"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "mood_light_changed"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "landscape",
+            "t"
+          ],
+          "properties": {
+            "landscape": {
+              "type": "string"
+            },
+            "t": {
+              "type": "string",
+              "enum": [
+                "landscape_changed"
               ]
             }
           }
@@ -6265,7 +6564,7 @@
           }
         },
         {
-          "description": "Drama state for this session: sent on join, on change, and when calm or the pause changes. `enabled: false` hides the opt-in control.",
+          "description": "Drama state for this session: sent on join, on change, and when calm or the pause changes. `opt_in` is always `true` since D59 (the field stays so an old client keeps working).",
           "type": "object",
           "required": [
             "calm",
@@ -7434,7 +7733,7 @@
       }
     },
     "Verb": {
-      "description": "The 18 verbs (section 0.2). The wire spelling is the table's id.",
+      "description": "The 25 verbs (section 0.2, plus the seven of table rev 4). The wire spelling is the table's id.",
       "type": "string",
       "enum": [
         "glare",
@@ -7454,7 +7753,14 @@
         "tableau",
         "restrain",
         "faint",
-        "tend_fallen"
+        "tend_fallen",
+        "point",
+        "grab",
+        "push_away",
+        "slump",
+        "kneel",
+        "flee",
+        "plead"
       ]
     },
     "VerbVocabRef": {

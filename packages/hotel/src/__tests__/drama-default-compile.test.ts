@@ -41,7 +41,7 @@ describe("the conservative default block: a scene that writes no drama key", () 
 
   it("is written by the compile into the body, with the actors' own agent ids and drama_mode default, and the compile warns nothing about it", () => {
     const body = bodyOf(formSource());
-    expect(body.drama).toEqual(defaultSceneDrama(IDS));
+    expect(body.drama).toEqual({ ...defaultSceneDrama(IDS), may_target_humans: true });
     expect(body.drama_mode).toBe("default");
     const v = svc().validate({ source: formSource() });
     expect(v.ok).toBe(true);
@@ -60,7 +60,7 @@ describe("the conservative default block: a scene that writes no drama key", () 
     const parsed = parseScenarioBody(wire);
     expect(parsed.ok && parsed.body.drama).toEqual(defaultSceneDrama(IDS));
     expect(parsed.ok && parsed.body.drama_mode).toBe("default");
-    expect(hotelReadsBlock(wire)).toEqual({ kind: "valid", ...defaultSceneDrama(IDS) });
+    expect(hotelReadsBlock(wire)).toEqual({ kind: "valid", ...defaultSceneDrama(IDS), may_target_humans: true });
     expect(svc().validate({ body: wire })).toMatchObject({ ok: true, errors: [] });
   });
 
@@ -77,10 +77,10 @@ describe("the conservative default block: a scene that writes no drama key", () 
   it("never replaces an explicit block: {} stays {} (the contract's free play plus skips), a restrictive block stays restrictive, max_rung 0 stays hug-only", () => {
     for (const drama of [{}, { max_rung: 0 }, { max_rung: "insult" }, { max_rung: 6, may_target: [["Ana Clara", "Duda"]], may_die: ["Duda"] }]) {
       const body = bodyOf(formSource(drama));
-      expect(body.drama, JSON.stringify(drama)).toEqual(compileDramaForm(drama, CAST).drama);
+      expect(body.drama, JSON.stringify(drama)).toEqual({ ...compileDramaForm(drama, CAST).drama, may_target_humans: true });
       expect(body, JSON.stringify(drama)).not.toHaveProperty("drama_mode");
     }
-    expect(bodyOf(formSource({})).drama).toEqual(FREE_PLAY_DRAMA);
+    expect(bodyOf(formSource({})).drama).toEqual({ ...FREE_PLAY_DRAMA, may_target_humans: true });
   });
 
   it("drama: off is the opt-out: the strictest block the hotel reads plus drama_mode off; the form and a frontmatter write it as the word or false", () => {

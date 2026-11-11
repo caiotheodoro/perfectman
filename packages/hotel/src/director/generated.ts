@@ -22,7 +22,7 @@ export type HotelMsg =
        */
       proto: number;
       /**
-       * The highest dialect the hotel offers. Present only with `PERFECTMAN_DRAMA` on (NEG-2).
+       * The highest dialect the hotel offers. Present whenever Perfectman is on (NEG-2, D58).
        */
       proto_max?: number | null;
       /**
@@ -220,7 +220,7 @@ export type HotelMsg =
       skipped_rungs: Verb[];
       t: "act_started";
       /**
-       * Present only when `with` is a human.
+       * Present only when `with` is a human; always `true` since D59.
        */
       target_opt_in?: boolean | null;
       verb: Verb;
@@ -358,7 +358,7 @@ export type HotelMsg =
       calm: boolean;
       enabled: boolean;
       /**
-       * Human ids in the room whose session opt-in is on.
+       * Every human avatar in the room: all of them are opted in since D59.
        */
       opt_in: number[];
       paused: boolean;
@@ -499,15 +499,32 @@ export type ServerMsg =
       cut?: boolean;
       furni: Furni[];
       id: number;
+      landscape?: string;
+      /**
+       * The room has a password. Sent only to those who may change it.
+       */
+      locked?: boolean;
+      mood_light?: MoodLight;
       name: string;
       owner: number;
       pet?: string;
+      shell?: RoomShell;
       /**
        * You are watching without an avatar (Audience, or a cut): `me` is not in `avatars`.
        */
       spectating?: boolean;
+      surfaces?: RoomSurfaces;
       t: "room_joined";
       template: string;
+    }
+  | {
+      locked: boolean;
+      t: "room_lock_changed";
+    }
+  | {
+      room: number;
+      t: "password_needed";
+      wrong?: boolean;
     }
   | {
       can_edit: boolean;
@@ -549,6 +566,22 @@ export type ServerMsg =
       background: string;
       pet: string;
       t: "room_style_changed";
+    }
+  | {
+      surfaces: RoomSurfaces;
+      t: "room_surfaces_changed";
+    }
+  | {
+      shell: RoomShell;
+      t: "room_shell_changed";
+    }
+  | {
+      light: MoodLight;
+      t: "mood_light_changed";
+    }
+  | {
+      landscape: string;
+      t: "landscape_changed";
     }
   | {
       /**
@@ -1036,20 +1069,6 @@ export type PerfectmanUi =
     }
   | {
       /**
-       * @minItems 2
-       * @maxItems 2
-       */
-      at?: [number, number] | null;
-      cue: string;
-      gain?: number | null;
-      id?: string | null;
-      in_ms?: number | null;
-      k: "sfx";
-      loop?: boolean;
-      stop?: string | null;
-    }
-  | {
-      /**
        * `shake`: the strongest offset, in screen pixels.
        */
       amp_px?: number | null;
@@ -1084,6 +1103,20 @@ export type PerfectmanUi =
        * `dolly`: the zoom to reach, 0.5 to 2.5.
        */
       to_zoom?: number | null;
+    }
+  | {
+      /**
+       * @minItems 2
+       * @maxItems 2
+       */
+      at?: [number, number] | null;
+      cue: string;
+      gain?: number | null;
+      id?: string | null;
+      in_ms?: number | null;
+      k: "sfx";
+      loop?: boolean;
+      stop?: string | null;
     }
   | {
       in_ms?: number | null;
@@ -1218,7 +1251,7 @@ export type ConsentFamily = "violent" | "affection";
  */
 export type TimeoutAs = "dodge" | "initiator_only";
 /**
- * The 18 verbs (section 0.2). The wire spelling is the table's id.
+ * The 25 verbs (section 0.2, plus the seven of table rev 4). The wire spelling is the table's id.
  *
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "Verb".
@@ -1241,7 +1274,14 @@ export type Verb =
   | "tableau"
   | "restrain"
   | "faint"
-  | "tend_fallen";
+  | "tend_fallen"
+  | "point"
+  | "grab"
+  | "push_away"
+  | "slump"
+  | "kneel"
+  | "flee"
+  | "plead";
 /**
  * Why `act_prompt_close` closed the chip.
  *
@@ -1718,7 +1758,8 @@ export type ActorCmd =
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "Face".
  */
-export type Face = "neutral" | "smile" | "angry" | "sad" | "surprised" | "sleepy";
+export type Face =
+  "neutral" | "smile" | "angry" | "sad" | "surprised" | "sleepy" | "fear" | "disgust" | "smug";
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "Via".
@@ -1876,7 +1917,7 @@ export interface HelloActor {
   y: number;
 }
 /**
- * What `hello.drama` tells a dialect 2 sidecar (NEG-2). Sent only with `PERFECTMAN_DRAMA` on.
+ * What `hello.drama` tells a dialect 2 sidecar (NEG-2). Sent whenever Perfectman is on (D58).
  *
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "HelloDrama".
@@ -2118,6 +2159,56 @@ export interface Features {
    * Players may also send MP4 clips. Off when the server has no ffmpeg or `CHAT_VIDEO=off`.
    */
   video?: boolean;
+}
+/**
+ * A room's mood light: three slots, `active` picks the one that tints the room.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "MoodLight".
+ */
+export interface MoodLight {
+  active?: number;
+  on?: boolean;
+  /**
+   * @minItems 3
+   * @maxItems 3
+   */
+  presets?: [MoodPreset, MoodPreset, MoodPreset];
+}
+/**
+ * One slot of the mood light: a swatch from `COLOURS`, how strongly it tints, and whether furniture and people are spared.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "MoodPreset".
+ */
+export interface MoodPreset {
+  brightness?: number;
+  colour?: number;
+  surfaces_only?: boolean;
+}
+/**
+ * A room's walls and floor slab. Every value is an offset from the template's look, so 0 is today's; thickness runs from -2 (thinnest) to 1 (thick), `wall_height` is whole levels.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "RoomShell".
+ */
+export interface RoomShell {
+  floor_thickness?: number;
+  hide_walls?: boolean;
+  wall_height?: number;
+  wall_thickness?: number;
+}
+/**
+ * A room's own floor and wall, replacing the template's. An empty texture and a `None` colour mean the template's.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "RoomSurfaces".
+ */
+export interface RoomSurfaces {
+  floor_colour?: number | null;
+  floor_texture?: string;
+  wall_colour?: number | null;
+  wall_texture?: string;
 }
 /**
  * Someone who may edit a room's furniture because its owner said so.

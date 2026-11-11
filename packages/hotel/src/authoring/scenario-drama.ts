@@ -13,6 +13,12 @@ export type ScenarioDrama = {
   may_target: Array<[string, string]>;
   may_die: string[];
   permadeath: boolean;
+  /**
+   * The scene's one switch for acts on humans, as the hotel reads it (verb table rev 4: `DramaBlock.may_target_humans`, off by default there). The compile writes it explicitly
+   * (`withHumansFlag`) so the hotel and the sidecar agree: `true` unless the scene or `PERFECTMAN_HUMAN_TARGETS=0` turns it off. Reading a body moves it into `drama_ext`, so the sidecar's
+   * own `drama` stays these four keys.
+   */
+  may_target_humans?: boolean;
 };
 
 /** What the author writes: every key optional, `max_rung` also as a ladder verb id (`"slap"` means 4), refs by cast name. */
@@ -124,6 +130,8 @@ export function cleanDramaExt(raw: unknown): DramaExt | undefined {
 }
 
 const KEYS = ["max_rung", "may_target", "may_die", "permadeath"] as const;
+/** What a compiled body's block may carry beyond `KEYS` (the hotel's own switch, see `ScenarioDrama.may_target_humans`). */
+const BODY_KEYS = [...KEYS, "may_target_humans"] as const;
 /** The keys of the authoring form's `drama` that are not the hotel's block: they leave it for `drama_ext`. */
 const EXT_KEYS = ["may_target_humans", "pressure_floor"] as const;
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
@@ -229,9 +237,11 @@ export function compileDramaForm(raw: unknown, cast: { names: readonly string[];
  * `@human` as an aggressor, a `permadeath` that is not a boolean) is dropped whole, which is free play: never a looser
  * reading than the author wrote. The hotel does the same with a block it cannot parse.
  */
-export function cleanDrama(raw: unknown, agentIds: readonly string[]): { drama?: ScenarioDrama } {
+export function cleanDrama(raw: unknown, agentIds: readonly string[]): { drama?: ScenarioDrama; humans?: boolean } {
   if (isDramaOff(raw)) return { drama: DRAMA_OFF };
-  if (!isRecord(raw) || Object.keys(raw).some((k) => !(KEYS as readonly string[]).includes(k))) return {};
+  if (!isRecord(raw) || Object.keys(raw).some((k) => !(BODY_KEYS as readonly string[]).includes(k))) return {};
+  const humans = raw["may_target_humans"];
+  if (humans !== undefined && typeof humans !== "boolean") return {};
   const known = new Set(agentIds);
   const actor = (v: unknown): v is string => typeof v === "string" && known.has(v);
   const victim = (v: unknown): v is string => v === HUMAN_REF || actor(v);
@@ -254,7 +264,16 @@ export function cleanDrama(raw: unknown, agentIds: readonly string[]): { drama?:
     if (!victim(id)) return {};
     if (!may_die.includes(id)) may_die.push(id);
   }
-  return { drama: { max_rung, may_target, may_die, permadeath } };
+  return { drama: { max_rung, may_target, may_die, permadeath }, ...(humans !== undefined ? { humans } : {}) };
+}
+
+/**
+ * The block as the hotel will read it: with `may_target_humans` written out, so the hotel (off by default) and the sidecar (on by default) never disagree. `true` unless the scene's
+ * `drama_ext` says false or `PERFECTMAN_HUMAN_TARGETS=0`; `drama: off` and a body with no block are left alone (nothing to target with).
+ */
+export function withHumansFlag(drama: ScenarioDrama | undefined, ext: DramaExt | undefined, mode: DramaMode | undefined, env: NodeJS.ProcessEnv = process.env): ScenarioDrama | undefined {
+  if (drama === undefined || mode === "off") return drama;
+  return { ...drama, may_target_humans: env[HUMAN_TARGETS_ENV]?.trim() !== "0" && ext?.may_target_humans !== false };
 }
 
 /**

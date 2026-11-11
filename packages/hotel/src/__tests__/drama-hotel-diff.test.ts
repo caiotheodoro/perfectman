@@ -127,7 +127,7 @@ describe("P1's contract-derived fixtures against the hotel's (hello-offer.jsonl)
     expect(diffPaths(offer, real)).toEqual([
       "/drama/dead: [-702] -> []",
       "/drama/enabled: true -> false",
-      "/drama/verb_vocab/rev: 2 -> 3",
+      "/drama/verb_vocab/rev: 2 -> 4",
       `/drama/verb_vocab/sha256: "3f1c9a5e7b2d40688a1c0e94f5d27b3a6c8e1d0f9b4a7c25e83d6f0a1b9c4d72" -> "${OWN_VOCAB.sha256}"`,
       '/hotel/build: "517ae35" -> "dev"',
       "/seq: 1 -> (absent)",

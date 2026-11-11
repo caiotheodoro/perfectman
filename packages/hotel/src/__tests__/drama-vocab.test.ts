@@ -47,26 +47,18 @@ function diffIds(expected: readonly string[], actual: readonly string[]): string
   return [...expected.filter((x) => !actual.includes(x)).map((x) => `-${x}`), ...actual.filter((x) => !expected.includes(x)).map((x) => `+${x}`), "order or count differs"];
 }
 
-const subject = (role: string, s: Step): string | undefined => (s.p === "cue" ? s.on : s.p === "overlay" ? s.anchor : role);
-const isCompanion = (s: Step): boolean => ["cue", "posture", "effect", "overlay"].includes(s.p) || (s.p === "gesture" && s.action === "sign");
-
-/** TBL-14: a non-neutral expression needs a face-free companion on the same subject, at the same instant within 100 ms (T0 is `Tc - contact_at_ms`). */
-function faceArtDependents(roles: Roles, contactAtMs: number): string[] {
-  const at = (s: Step): { anchor: string; ms: number } => {
-    const base = s.t.a === "T0" ? -contactAtMs : s.t.a === "Tc" ? 0 : undefined;
-    return base === undefined ? { anchor: s.t.a, ms: s.t.ms } : { anchor: "Tc", ms: base + s.t.ms };
-  };
-  const all = Object.entries(roles).flatMap(([role, steps]) => steps.map((s) => ({ role, s })));
-  return all
-    .filter(({ s }) => s.p === "expression" && s.face !== "neutral")
-    .filter(({ role, s }) => !all.some((c) => isCompanion(c.s) && subject(c.role, c.s) === subject(role, s) && at(c.s).anchor === at(s).anchor && Math.abs(at(c.s).ms - at(s).ms) <= 100))
-    .map(({ role, s }) => `${role}:${s.face}@${s.t.a}${s.t.ms}`);
+/** Every step of a verb's timelines and of the consent profiles, with the role it sits in. */
+function allSteps(): { id: string; role: string; s: Step }[] {
+  const rows: { id: string; role: string; s: Step }[] = [];
+  for (const [id, v] of Object.entries(vocab.verbs)) for (const [role, steps] of Object.entries(v.roles)) for (const s of steps) rows.push({ id, role, s });
+  for (const [id, p] of Object.entries(vocab.consent_profiles)) for (const list of [p.hold, p.dodge, p.push_back]) for (const [role, steps] of Object.entries(list)) for (const s of steps) rows.push({ id, role, s });
+  return rows;
 }
 
 describe("verb-vocab: the vendored table", () => {
   it("[VV-1] sits beside cue-vocab.json and carries an integer version and rev", () => {
     expect(Number.isInteger(vocab.version) && Number.isInteger(vocab.rev)).toBe(true);
-    expect(Object.keys(vocab.verbs)).toHaveLength(18);
+    expect(Object.keys(vocab.verbs)).toHaveLength(25);
     expect(VERB_VOCAB_VERSION).toBe(vocab.version);
     expect(VERB_VOCAB_REV).toBe(vocab.rev);
   });
@@ -208,18 +200,12 @@ describe("verb-vocab: the table checks of the contract, run over the JSON", () =
     expect(VOCAB_CONSTANTS.hit_stop_ms).toEqual({ L: 50, M: 100, H: 150, F: 175 });
   });
 
-  it("verb-vocab: no verb depends on face art [TBL-14]", () => {
-    for (const [id, v] of Object.entries(vocab.verbs)) expect(faceArtDependents(v.roles, v.timeline.contact_at_ms), id).toEqual([]);
-    for (const [id, p] of Object.entries(vocab.consent_profiles)) for (const list of [p.hold, p.dodge, p.push_back]) expect(faceArtDependents(list, 0), id).toEqual([]);
+  it("verb-vocab: the table carries no emotion cue (TBL-14 was dropped at rev 4: every head draws the face as pieces)", () => {
+    expect(allSteps().filter(({ s }) => s.p === "cue").map(({ id, role }) => `${id}:${role}`)).toEqual([]);
+    // The faces the table asks for are the wire's: the nine of `Face`.
+    const faces = new Set(allSteps().flatMap(({ s }) => (s.p === "expression" && s.face ? [s.face] : [])));
+    for (const face of faces) expect(schemaEnum("Face"), face).toContain(face);
+    expect(faces.has("fear")).toBe(true);
   });
 
-  it("[TBL-14] the check fails when a companion cue is removed", () => {
-    const withoutCues = (roles: Roles): Roles => Object.fromEntries(Object.entries(roles).map(([role, steps]) => [role, steps.filter((s) => s.p !== "cue")]));
-    const recoil = vocab.verbs["recoil"]!;
-    expect(faceArtDependents(recoil.roles, 0)).toEqual([]);
-    expect(faceArtDependents(withoutCues(recoil.roles), 0)).toEqual(["actor:surprised@Tc0"]);
-    const hold = vocab.consent_profiles["violent_chip"]!.hold;
-    expect(faceArtDependents(hold, 0)).toEqual([]);
-    expect(faceArtDependents(withoutCues(hold), 0)).toEqual(["actor:angry@T00"]);
-  });
 });

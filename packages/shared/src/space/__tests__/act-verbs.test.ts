@@ -13,17 +13,17 @@ import {
 import type { ActVerb } from "../act-verbs.js";
 
 describe("act verbs (act-contract.md section 0.2)", () => {
-  it("[ACT-6] lists exactly the 18 verbs, once each", () => {
-    expect(ACT_VERBS).toHaveLength(18);
-    expect(new Set(ACT_VERBS).size).toBe(18);
+  it("[ACT-6] lists exactly the 25 verbs (the 18 of the contract and the 7 of verb table rev 4), once each", () => {
+    expect(ACT_VERBS).toHaveLength(25);
+    expect(new Set(ACT_VERBS).size).toBe(25);
     expect([...ACT_ORIGINS]).toEqual(["model", "director", "scenario"]);
   });
 
-  it("[ACT-7] [ACT-8] has 11 required-target verbs and 7 solo verbs, and the solo ones are the self-directed set", () => {
+  it("[ACT-7] [ACT-8] has 15 required-target verbs and 10 solo verbs, and the solo ones are the self-directed set", () => {
     const required = ACT_VERBS.filter((v) => ACT_TARGET_MODE[v] === "required");
     const none = ACT_VERBS.filter((v) => ACT_TARGET_MODE[v] === "none");
-    expect(required).toHaveLength(11);
-    expect(none.sort()).toEqual(["cry", "die", "faint", "freeze_gasp", "recoil", "storm_off", "tableau"]);
+    expect(required).toHaveLength(15);
+    expect(none.sort()).toEqual(["cry", "die", "faint", "flee", "freeze_gasp", "kneel", "recoil", "slump", "storm_off", "tableau"]);
   });
 
   it("[LAD-1] puts the six ladder verbs on rungs 1 to 6 and the physical beats at 3 to 6", () => {

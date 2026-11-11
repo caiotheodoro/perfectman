@@ -32,6 +32,10 @@ const VERB_MEMORY: Partial<Record<ActVerb, VerbMemory>> = {
   die: { actor: { event: "none", tone: "neutral" }, target: { event: "death", tone: "grief" }, witnesses: { event: "witnessed", tone: "shocked" } },
   hug: { actor: { event: "affectionate", tone: "warm" }, target: { event: "receiver", tone: "tender" }, witnesses: { event: "witnessed", tone: "neutral" } },
   kiss: { actor: { event: "affectionate", tone: "warm" }, target: { event: "receiver", tone: "tender" }, witnesses: { event: "witnessed", tone: "neutral" } },
+  point: { actor: NONE, target: { event: "victim", tone: "dismissive" }, witnesses: NONE },
+  grab: { actor: { event: "aggressor", tone: "hostile" }, target: { event: "victim", tone: "hurt" }, witnesses: NONE },
+  push_away: { actor: { event: "aggressor", tone: "hostile" }, target: { event: "victim", tone: "hurt" }, witnesses: NONE },
+  plead: { actor: NONE, target: { event: "receiver", tone: "hurt" }, witnesses: NONE },
   faint: { actor: NONE, target: NONE, witnesses: { event: "witnessed", tone: "shocked" } },
   tend_fallen: { actor: { event: "affectionate", tone: "tender" }, target: { event: "receiver", tone: "tender" }, witnesses: NONE },
 };

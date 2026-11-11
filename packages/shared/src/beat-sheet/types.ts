@@ -125,5 +125,5 @@ export const SHEET_PHYSICAL_SPACING_MS = 20_000;
 /** SCENE-5: a cut comes this long after the scene began or the cut before. */
 export const SHEET_CUT_FLOOR_MS = 20_000;
 
-/** Invariant 1: the climax is one of these (the contract's list; `grab` is B3's new verb and is not in the vocabulary yet, so it cannot pass the verb check until it is). */
+/** Invariant 1: the climax is one of these (the contract's list; `grab` is in the vocabulary since verb table rev 4). */
 export const CLIMAX_VERBS = ["slap", "punch", "kill", "die", "shove", "restrain", "grab", "hug", "kiss"] as const;

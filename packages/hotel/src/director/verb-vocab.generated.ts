@@ -6,10 +6,10 @@
  */
 export const VERB_VOCAB_VERSION = 1 as const;
 
-export const VERB_VOCAB_REV = 3 as const;
+export const VERB_VOCAB_REV = 4 as const;
 
 /** sha256 of the bytes of schema/verb-vocab.json: what `hello_ack.sidecar.verb_vocab` carries (NEG-7, VV-3). */
-export const VERB_VOCAB_SHA256 = "36dce0430fb7bbea6c8d724532c8bdba87f066f79a18c84bec98b64cf0e32762" as const;
+export const VERB_VOCAB_SHA256 = "d5e0def05670680e0b6fa775e9d1f7f6f233cfdde3de6c5b8f16e6d09c338d82" as const;
 
 export const VERB_IDS = [
   "glare",
@@ -29,7 +29,14 @@ export const VERB_IDS = [
   "tableau",
   "restrain",
   "faint",
-  "tend_fallen"
+  "tend_fallen",
+  "point",
+  "grab",
+  "push_away",
+  "slump",
+  "kneel",
+  "flee",
+  "plead"
 ] as const;
 
 export const VOCAB_ENUMS = {
@@ -51,7 +58,14 @@ export const VOCAB_ENUMS = {
     "tableau",
     "restrain",
     "faint",
-    "tend_fallen"
+    "tend_fallen",
+    "point",
+    "grab",
+    "push_away",
+    "slump",
+    "kneel",
+    "flee",
+    "plead"
   ],
   "ladder": [
     "glare",

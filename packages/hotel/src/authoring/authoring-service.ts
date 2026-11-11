@@ -26,7 +26,7 @@ import { compileBeatSheet, settleSheetDrama } from "./beat-sheet.js";
 import { buildSheetLinks, sheetMode } from "./beat-sheet-links.js";
 import { generateBeatSheet, sheetInputHashOf } from "./beat-sheet-generate.js";
 import type { SheetBrief, SheetLink } from "./beat-sheet-generate.js";
-import { FREE_PLAY_DRAMA, compileDramaForm, compileSceneDrama, defaultSceneDrama } from "./scenario-drama.js";
+import { FREE_PLAY_DRAMA, HUMAN_TARGETS_ENV, compileDramaForm, compileSceneDrama, defaultSceneDrama, withHumansFlag } from "./scenario-drama.js";
 import type { DramaCompile, DramaExt, DramaMode, SceneCastMember, ScenarioDrama } from "./scenario-drama.js";
 import { formArrivals, formStage, formToDraft, parseForm } from "./scenario-form.js";
 import type { FormLooks, ScenarioStage } from "./scenario-form.js";
@@ -256,7 +256,7 @@ export class AuthoringService {
       ...(Object.keys(looks).length > 0 ? { looks } : {}),
       ...(Object.keys(arrivals).length > 0 ? { arrivals } : {}),
       ...(stage ? { stage } : {}),
-      ...(drama ? { drama } : {}),
+      ...(drama ? { drama: this.withHumans(drama, dramaExt, dramaMode) } : {}),
       ...(dramaMode ? { drama_mode: dramaMode } : {}),
       ...(dramaExt ? { drama_ext: dramaExt } : {}),
       ...(beats ? { beats } : {}),
@@ -299,14 +299,21 @@ export class AuthoringService {
       for (const [k, v] of this.sheetCache) if (this.sheetCache.size > SHEET_CACHE_MAX || Date.now() - v.at > SHEET_CACHE_MS) this.sheetCache.delete(k);
     }
     body.beat_sheet = sheet;
-    const settled = settleSheetDrama(sheet, body.drama, body.drama_mode);
+    // The block as the sheet reads it has no `may_target_humans`: that is written last, so "still the default block" is judged on the four keys.
+    const plain = body.drama === undefined ? undefined : (({ may_target_humans: _flag, ...rest }) => rest)(body.drama);
+    const settled = settleSheetDrama(sheet, plain, body.drama_mode);
     if (settled) {
-      body.drama = settled.drama;
+      body.drama = this.withHumans(settled.drama, body.drama_ext, settled.drama_mode);
       if (settled.drama_mode) body.drama_mode = settled.drama_mode;
       else delete body.drama_mode;
     }
     this.checkSize(body);
     return { body, schema_version: SCENARIO_BODY_VERSION };
+  }
+
+  /** The block with the hotel's `may_target_humans` written out (see `withHumansFlag`), from the scene's flag and the process's `PERFECTMAN_HUMAN_TARGETS`. */
+  private withHumans(drama: ScenarioDrama, ext: DramaExt | undefined, mode: DramaMode | undefined): ScenarioDrama {
+    return withHumansFlag(drama, ext, mode, { [HUMAN_TARGETS_ENV]: this.env(HUMAN_TARGETS_ENV) }) ?? drama;
   }
 
   private env(name: string): string | undefined {

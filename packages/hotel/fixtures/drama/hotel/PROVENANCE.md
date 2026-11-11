@@ -11,7 +11,7 @@ sha256 below. To refresh, copy the files again from the hotel and update this ta
 
 | File | sha256 | Written by |
 |---|---|---|
-| `hello-offer.jsonl` | `ce9eede93742e13e45d452f9e36cce699ad98c46cc82c2f6e8a4115ce2856105` | H1, contract-derived (hotel's view: `in` is null, `expect` is the hotel's `hello`); refreshed for verb table rev 3 (see below) |
+| `hello-offer.jsonl` | `abaa83d4dfa56c8728109a152c37a390f3ca8bb98645fd5b42ef96cac18c1a45` | H1, contract-derived (hotel's view: `in` is null, `expect` is the hotel's `hello`); refreshed for verb table rev 4 (see below) |
 | `act-validation.jsonl` | `e3559b67c2347eceea7caaa00ca69edc71b68140b9ad448ef8bde52e862314ea` | H1, contract-derived |
 | `blocked-all-reasons.jsonl` | `a23b3b5291696fd37727da2dbf0a5368585b71d619fbe7f8e3bc5addd92bc9ee` | H1, contract-derived |
 | `slap-human-take.jsonl` | `18a23711e43fa1f2ab4d155fe5b3f2ebdb2efe7dc31a47bc60a17518bd27d487` | H2, recorded from the sequencer (test `fixtures_slap_human_take`) |
@@ -25,3 +25,5 @@ sha256 below. To refresh, copy the files again from the hotel and update this ta
 `hello-offer.jsonl` was copied again from the hotel's `crates/server/tests/fixtures/drama/hello-offer.jsonl` on its branch `fix/drama-faint-effect` (habbo, verb table `rev` 3). The only byte that moved is `hello.drama.verb_vocab`: `rev` 2 to 3 and the sha256 of `verb-vocab.json` (`002fa380...` to `36dce043...`); see errata P5-12.
 
 `PROVENANCE.md` is ours and is not pinned.
+
+For verb table `rev` 4 (habbo `integ/cine`, 25 verbs, no emotion cues) the same two values in `hello.drama.verb_vocab` were edited by hand: `rev` 3 to 4 and the sha256 `36dce043...` to `d5e0def0...`. The rest of the file is still the older two-row form (a runtime switch); the hotel has since made drama always on (one row, `drama.enabled: true`), which this sidecar does not need yet.

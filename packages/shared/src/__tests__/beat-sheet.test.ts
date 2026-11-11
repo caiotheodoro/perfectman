@@ -32,7 +32,7 @@ describe("mockBeatSheet", () => {
   });
 
   it("makes a valid sheet for every climax verb the contract names that the vocabulary has", () => {
-    for (const verb of CLIMAX_VERBS.filter((v) => v !== "grab")) {
+    for (const verb of CLIMAX_VERBS) {
       const r = validateBeatSheet(mock({ climax: verb }), ctx);
       expect(r.errors, verb).toEqual([]);
       expect(sheetActs(r.sheet!).filter((b) => b.kind === "act" && b.climax)).toHaveLength(1);
@@ -77,7 +77,7 @@ describe("validateBeatSheet: the shape", () => {
     expect(messages(validateBeatSheet(sheet, ctx))).toMatch(/"Fulano" is not in the cast/);
     const verb = raw();
     at(verb, "m10")["verb"] = "teleport";
-    expect(messages(validateBeatSheet(verb, ctx))).toMatch(/not one of the 18 verbs/);
+    expect(messages(validateBeatSheet(verb, ctx))).toMatch(/not one of the 25 verbs/);
     const noTarget = raw();
     delete at(noTarget, "m10")["with"];
     expect(messages(validateBeatSheet(noTarget, ctx))).toMatch(/needs a target/);
@@ -119,11 +119,12 @@ describe("deriveSheetDrama and wireFace", () => {
     expect(slap).toMatchObject({ max_rung: 4, may_die: [], permadeath: false });
   });
 
-  it("sends a new face as the nearest old one until the wire has it", () => {
-    expect(wireFace("fear")).toBe("surprised");
-    expect(wireFace("smug")).toBe("smile");
+  it("sends every face as itself, and the nearest old one only to a hotel that lacks it", () => {
+    for (const face of ["fear", "disgust", "smug", "angry", "neutral"] as const) expect(wireFace(face)).toBe(face);
+    expect(wireFace("fear", ["neutral", "smile", "angry", "sad", "surprised", "sleepy"])).toBe("surprised");
+    expect(wireFace("disgust", ["neutral", "angry"])).toBe("angry");
+    expect(wireFace("smug", ["neutral", "smile", "angry", "sad", "surprised", "sleepy"])).toBe("smile");
     expect(wireFace("fear", ["fear", "neutral"])).toBe("fear");
-    expect(wireFace("angry")).toBe("angry");
   });
 });
 

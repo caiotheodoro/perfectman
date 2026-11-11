@@ -175,10 +175,11 @@ describe("GATE-5 for authored acts and the verbs of the next table", () => {
     expect(bare.dir.decide({ actor: B, proposal: { verb: "die", origin: "scenario" } })).toMatchObject({ kind: "veto", rule: "GATE-5", detail: "may_die" });
   });
 
-  it("the seven new verbs are known to the code but refused with unknown_verb until the hotel's table carries them", () => {
+  it("the seven new verbs are in the table now (rev 4): point and plead (aimed) and slump, kneel and flee (solo) are approved; an unknown verb still is not", () => {
+    for (const verb of ["point", "plead"] as const) expect(makeRig({ block: WIDE_BLOCK }).dir.decide({ actor: A, proposal: { verb, with: B, origin: "scenario" } }), verb).toMatchObject({ kind: "approve", verb });
+    for (const verb of ["slump", "kneel", "flee"] as const) expect(makeRig({ block: WIDE_BLOCK }).dir.decide({ actor: A, proposal: { verb, origin: "scenario" } }), verb).toMatchObject({ kind: "approve", verb });
     const rig = makeRig({ block: WIDE_BLOCK });
-    for (const verb of ["point", "grab", "push_away", "plead"] as const) expect(rig.dir.decide({ actor: A, proposal: { verb, with: B, origin: "scenario" } }), verb).toMatchObject({ kind: "unsent", cause: "invalid", error: { code: "unknown_verb" } });
-    for (const verb of ["slump", "kneel", "flee"] as const) expect(rig.dir.decide({ actor: A, proposal: { verb, origin: "scenario" } }), verb).toMatchObject({ kind: "unsent", cause: "invalid", error: { code: "unknown_verb" } });
+    expect(rig.dir.decide({ actor: A, proposal: { verb: "teleport" as never, with: B, origin: "scenario" } })).toMatchObject({ kind: "unsent", cause: "invalid", error: { code: "unknown_verb" } });
   });
 });
 
