@@ -80,6 +80,9 @@ const FOLLOW_PLAN_PREFIX = "drama:";
 const FOLLOW_SUPPRESSED = "follow_suppressed_walk";
 /** The `detail`s of a `ladder` refusal the model is told about in its next prompt (`blockedReasonLine` has a line for each); the ceiling (`max_rung`) stays unshown. */
 const TOLD_LADDER: ReadonlySet<string> = new Set(["motive", "grievance", "rung", "contagion", "zero_witness"]);
+/** The same refusal (actor, verb, target, detail) is noted at most this many times in a row, each within `NOTE_REPEAT_MS` of the one before (errata P9). */
+const NOTE_REPEAT_MAX = 3;
+const NOTE_REPEAT_MS = 120_000;
 const VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["insult", "shove", "slap", "punch", "kill"]);
 const PHYSICAL_VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch"]);
 
@@ -115,6 +118,10 @@ export class DramaBody implements DramaFrameSink {
   readonly provocation: ProvocationLedger;
   /** Refusals told to the model as a line in its next prompt (`DramaBodyDeps.note`). */
   private actBlockedNotes = 0;
+  /** Refusals whose note was left out of the prompt because the same one had been told `NOTE_REPEAT_MAX` times in a row (errata P9). */
+  private notesSilenced = 0;
+  /** The run of identical refusals told to each actor: `actor|verb|target|detail`, how many in a row and when the last one was. */
+  private readonly noteRuns = new Map<string, { n: number; at: number }>();
   /** The highest rung each ordered pair has started in this scene, `actor>target` by ref (errata P8: the spine's slap wants a pair that already shoved). */
   private readonly reached = new Map<string, number>();
   /** What the scene spine opened (errata P8): grants by level, the evaluations that found no evidence, and each grant with when and why, for the run's manifest. */
@@ -210,13 +217,14 @@ export class DramaBody implements DramaFrameSink {
         hold ||= out.hold;
         approach.push(...out.approach);
       }
-      // 2. nothing proposed: the emotion state may drive a beat of the director's own.
-      if (queue.length === 0 && !hold && base.actionEmotions) {
+      // 2. nothing proposed: the emotion state may drive a beat of the director's own. An actor the scene spine has opened a rung for is asked even when its model proposed
+      // something the director refused (a glare at someone else, run 62: 79 times): the unlock is for the director to carry out, not for the model to ask for (errata P9).
+      if ((queue.length === 0 || this.provocation.unlockOf(ref) !== undefined) && !hold && base.actionEmotions) {
         const out = this.passive(ref, wire, base, port);
         hold = out.hold;
         approach.push(...out.approach);
       } else if (queue.length > 0) {
-        // The director is not asked to originate while the model proposes: what the log would otherwise not say.
+        // The director is not asked to originate while the model proposes (unless an unlock is open and nothing was approved): what the log would otherwise not say.
         this.logConsult(ref, "skip", { result: "not_asked", reason: hold ? "held" : "model_proposed" }, { queue: queue.length, hold });
       } else if (!base.actionEmotions) {
         this.logConsult(ref, "skip", { result: "no_emotion", reason: "no_feelings" }, { queue: 0, hold });
@@ -278,6 +286,7 @@ export class DramaBody implements DramaFrameSink {
     // The blow (or any act of its own): the follow has done its job.
     const ref = this.d.mirror.refOfAvatar(f.actor);
     this.stopFollow(ref);
+    for (const key of [...this.noteRuns.keys()]) if (key.startsWith(`${ref}|`)) this.noteRuns.delete(key);
     this.noteReached(ref, f);
     this.ledger.onActStarted(f);
     this.armClimbWatch(ref, f);
@@ -311,6 +320,7 @@ export class DramaBody implements DramaFrameSink {
     // A new scene starts the cast fresh: what was said in the last one is not held against anyone in this one (errata P7).
     this.provocation.clear();
     this.reached.clear();
+    this.noteRuns.clear();
     this.stopFollows();
     this.stopClimbWatches();
     this.retry.clear();
@@ -486,6 +496,14 @@ export class DramaBody implements DramaFrameSink {
   private noteGrant(level: UnlockLevel, observer: string, offender: string, why: string): void {
     this.unlocked[level]++;
     this.unlockLog.push({ at: this.d.clock.now(), level, observer, offender, why });
+    // The rung is open for `observer` now: the director is asked at once, as a climb watch's look is, and not at the actor's next turn or the next pulse's sweep (errata P9).
+    this.lookAt(observer);
+  }
+
+  /** One look at the director for `ref`, now: the plain `decide` of a passive turn with the feelings the actor last planned with. Every gate is the director's; it starts the next rung, says `approach` (the follow opens and the actor walks up) or does nothing. */
+  private lookAt(ref: string): void {
+    this.stopClimbWatch(ref);
+    this.climbWatchTick(ref);
   }
 
   /** The line the aggressor of an open unlock reads in its next prompt (errata P8), naming who it is aimed at; undefined for an actor with no open unlock. */
@@ -525,6 +543,7 @@ export class DramaBody implements DramaFrameSink {
       grievance_reported: p.reportedRaised,
       grievance_reported_ignored: p.reportedIgnored,
       act_blocked_notes: this.actBlockedNotes,
+      act_blocked_notes_silenced: this.notesSilenced,
       spine_unlock_shove: this.unlocked.shove,
       spine_unlock_slap: this.unlocked.slap,
       spine_unlock_skipped_no_evidence: this.unlocked.skippedNoEvidence,
@@ -551,8 +570,12 @@ export class DramaBody implements DramaFrameSink {
         // An act the ladder refused for want of a motive or a grievance, one rung too many, a witness or a calmer room is not yet earned: the model is told so in its
         // next prompt, with the name it aimed at and what would earn it (errata P7, P8).
         if (res.reason === "ladder" && res.detail !== undefined && TOLD_LADDER.has(res.detail) && targetRef !== undefined && this.d.note) {
-          this.d.note(ref, [{ ...reason, ref: this.d.names(targetRef) ?? targetRef }]);
-          this.actBlockedNotes++;
+          // The same refusal told again and again changes nothing (run 62: 79 refused glares, 80 notes, no uptake): after `NOTE_REPEAT_MAX` of them in a row (each within
+          // `NOTE_REPEAT_MS` of the one before) the note is left out of the prompt. The refusal is still logged; a quiet `NOTE_REPEAT_MS` or a blow of the actor's own starts the count over.
+          if (this.noteAgain(ref, proposal.verb, targetRef, res.detail)) {
+            this.d.note(ref, [{ ...reason, ref: this.d.names(targetRef) ?? targetRef }]);
+            this.actBlockedNotes++;
+          } else this.notesSilenced++;
         }
         return { hold: false, approach: [] };
       }
@@ -608,6 +631,16 @@ export class DramaBody implements DramaFrameSink {
       return { hold: false, approach: this.approachTo(ref, res.approach, base) };
     }
     return { hold: false, approach: [] };
+  }
+
+  /** True while this refusal is still worth a line in the actor's prompt: counts it, and starts the count over after `NOTE_REPEAT_MS` without one. */
+  private noteAgain(ref: string, verb: ActVerb, target: string, detail: string): boolean {
+    const now = this.d.clock.now();
+    const key = `${ref}|${verb}|${target}|${detail}`;
+    const run = this.noteRuns.get(key);
+    const n = run !== undefined && now - run.at <= NOTE_REPEAT_MS ? run.n + 1 : 1;
+    this.noteRuns.set(key, { n, at: now });
+    return n <= NOTE_REPEAT_MAX;
   }
 
   // ---- the decision log (errata P9) --------------------------------------------------------------------------------

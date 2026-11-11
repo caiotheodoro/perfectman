@@ -428,7 +428,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
       const m = emotion && target !== undefined ? motive(verb, emotion, emotion.relations?.get(target), emotion.at ?? now, this.tuning) : undefined;
       if (!m) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-6", detail: "motive" } };
       if (!m.ok) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-6", detail: m.why === "grievance" ? "grievance" : "motive" } };
-      if (rung >= this.tuning.contagion.minRung && this.contagious(actor, avatars)) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-10", detail: "contagion" } };
+      if (rung >= this.tuning.contagion.minRung && this.contagious(actor, avatars) && !this.answering(actor, target, emotion)) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-10", detail: "contagion" } };
     }
     return { ok: true, rung: verdict.rung, skippedRungs: verdict.skippedRungs };
   }
@@ -438,6 +438,17 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     const window = this.tuning.repeatMs[verb];
     const at = this.startedAt.get(`${actor}|${verb}`);
     return window !== undefined && at !== undefined && this.d.clock.now() - at < window;
+  }
+
+  /**
+   * An answer inside one fight is not a spread to someone new (errata P9): the scene spine opened this pair for the actor (`RelationReading.unlocked`) and the person it is for has already
+   * thrown a blow of the cap's rung at it. Without this a cast of 3 to 5 (cap of one actor) lets the first one to shove or slap in a scene do it, and nobody else ever, so every later unlock
+   * for anyone else was dead. Never for a third person: the cap still counts them. `DramaTuning.contagion.answer` turns it off.
+   */
+  private answering(actor: number, target: number | undefined, emotion: EmotionReading | undefined): boolean {
+    if (!this.tuning.contagion.answer || target === undefined) return false;
+    const unlocked = emotion?.relations?.get(target)?.unlocked ?? 0;
+    return unlocked > 0 && this.ledger.rungCur(target, actor) >= this.tuning.contagion.minRung;
   }
 
   /** LAD-10: the cap of actors at rung 3 or above is reached and this actor is not one of them. */

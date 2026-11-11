@@ -60,8 +60,12 @@ export type DramaTuning = {
      */
     unlock: { windowMs: number; holdMs: number; shoveEvents: number; slapEvents: number; provocation: number; volition: number };
   };
-  /** LAD-10: at most `maxActors` actors, or `castFraction` of the cast if that is fewer (never fewer than one), hold a rung of `minRung` or more at once. */
-  contagion: { minRung: number; maxActors: number; castFraction: number };
+  /**
+   * LAD-10: at most `maxActors` actors, or `castFraction` of the cast if that is fewer (never fewer than one), hold a rung of `minRung` or more at once. `answer` (errata P9): an
+   * actor the scene spine opened a pair for may answer a blow of `minRung` or more that person threw at it, beyond the cap: a fight of two is not a spread to a third. A third person is
+   * still capped. Off restores the cap as it was (one actor per scene in a cast of 3 to 5).
+   */
+  contagion: { minRung: number; maxActors: number; castFraction: number; answer: boolean };
   /** Which tendencies drive which verb. A verb with no driver is never started by emotion alone: `kill` is authored (LAD-5). */
   drivers: Readonly<Partial<Record<ActVerb, readonly Driver[]>>>;
   /**
@@ -148,7 +152,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
     reportedGain: 0.15,
     unlock: { windowMs: 90_000, holdMs: 90_000, shoveEvents: 2, slapEvents: 3, provocation: 0.85, volition: 0.95 },
   },
-  contagion: { minRung: 3, maxActors: 2, castFraction: 1 / 3 },
+  contagion: { minRung: 3, maxActors: 2, castFraction: 1 / 3, answer: true },
   drivers: {
     glare: [d("act.jealousInspection"), d("act.resentfulColdness"), d("social.jealousy"), d("social.envy"), d("rel.envy"), d("rel.provocation")],
     insult: [d("act.impulsiveProvocation"), d("act.contemptuousDismissal"), d("social.contempt"), d("rel.provocation")],
