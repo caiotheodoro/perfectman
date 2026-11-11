@@ -58,29 +58,44 @@ describe("playback: speech is held for the clock, behind the camera", () => {
     expect(r.director.track.entries.some((e) => e.k === "drop" && e.why === "stale")).toBe(false);
   });
 
-  it("an act that waited out its age limit still happens, off camera, and a stop discards the rest", async () => {
+  it("a held walk is not stale while the film is behind: it goes next once it has waited half its patience, filmed", async () => {
     const r = rig();
     r.director.start();
-    r.say("rafa", "Uma fala longa o bastante para ocupar a tela por um bom tempo, enquanto a caminhada fica velha demais.");
-    r.say("rafa", "Outra fala longa o bastante para ocupar a tela por mais um bom tempo, sem pressa nenhuma de acabar.");
+    for (let i = 0; i < 4; i++) r.say(i % 2 ? "rafa" : "duda", `Fala número ${i + 1}, longa o bastante para ocupar a tela por um bom tempo, sem pressa nenhuma de acabar.`);
     r.exec.send([{ agentId: "duda", cmd: "walk", to: [9, 4], plan: "p1" }]);
     await r.clock.advance(60_000);
-    expect(r.director.track.entries.some((e) => e.k === "drop" && e.why === "stale")).toBe(true);
+    expect(r.director.track.entries.some((e) => e.k === "drop" && e.why === "stale")).toBe(false);
     expect(r.delivered.map((d) => d.cmd.cmd)).toContain("walk");
+    expect(r.spoken()).toHaveLength(4);
+    const walkCue = r.director.track.sorted().find((e) => e.k === "cue" && e.ui.k === "camera" && e.ui.shot === "tracking");
+    expect(walkCue, "the walk got its tracking shot").toBeDefined();
+    expect(walkCue?.t ?? 0, "and did not wait for every line").toBeLessThan(24_000);
   });
 
-  it("a stale drop is a buffer item of a kind that expires (a walk, a door, a hug, an insert) and says so; speech and gestures never expire, however slow the film", async () => {
+  it("a held walk that the film never gets to is released unfilmed after heldMaxAgeMs and says so", async () => {
+    const r = rig({ heldMaxAgeMs: 3000, optionalMaxAgeMs: { walk: 1000, hop: 1000, pair: 1000, object: 1000, act: 1000, entrance: 1000 } });
+    r.director.start();
+    r.say("rafa", "Uma fala longa o bastante para ocupar a tela por um bom tempo, enquanto a caminhada fica velha demais.");
+    r.exec.send([{ agentId: "duda", cmd: "walk", to: [9, 4], plan: "p1" }]);
+    r.say("rafa", "Outra fala longa o bastante para ocupar a tela por mais um bom tempo, sem pressa nenhuma de acabar.");
+    await r.clock.advance(60_000);
+    const drops = r.director.track.entries.flatMap((e) => (e.k === "drop" ? [e] : []));
+    // The film cannot put a walk ahead of a line it is already speaking; one that waits past its patience is released off camera.
+    expect(r.delivered.map((d) => d.cmd.cmd)).toContain("walk");
+    expect(r.spoken()).toHaveLength(2);
+    expect(drops.map((d) => [d.why, d.item])).toEqual([["stale", "walk"]]);
+  });
+
+  it("an observed insert that waited past its age limit is a stale drop; speech never expires, however slow the film", async () => {
     const r = rig();
     r.director.start();
     for (let i = 0; i < 6; i++) r.say(i % 2 ? "rafa" : "duda", `Fala número ${i + 1}, longa o bastante para ocupar a tela por um bom tempo, sem pressa nenhuma de acabar.`);
-    r.exec.send([{ agentId: "duda", cmd: "walk", to: [9, 4], plan: "p1" }, { agentId: "rafa", cmd: "gesture", a: "laugh" }]);
+    r.director.noteObject({ room: 12, tile: [5, 5], label: "Uma xícara cai." });
     await r.clock.advance(5 * 60_000);
     const drops = r.director.track.entries.flatMap((e) => (e.k === "drop" ? [e] : []));
-    expect(drops.length).toBeGreaterThan(0);
     // `beat` is the buffer's own id (`b<n>`), not a scenario beat's: the kind is what tells them apart in the track.
-    expect(drops.map((d) => [d.why, d.item])).toEqual(drops.map(() => ["stale", "walk"]));
+    expect(drops.map((d) => [d.why, d.item])).toEqual([["stale", "object"]]);
     expect(r.spoken()).toHaveLength(6);
-    expect(r.delivered.map((d) => d.cmd.cmd)).toEqual(expect.arrayContaining(["walk", "gesture"]));
   });
 
   it("films a thought as a bubble on the thinker instead of forwarding it", async () => {
@@ -195,7 +210,7 @@ describe("pause, drain and stop", () => {
     expect(r.spoken()).toHaveLength(1);
   });
 
-  it("shows no stale walk when the film is behind, but still plays the speech that arrived with it", async () => {
+  it("shows a late walk once it is overdue instead of dropping it, and still plays the speech that arrived with it", async () => {
     const r = rig();
     r.director.start();
     r.say("rafa", "Uma fala longa o bastante para ocupar a tela por um bom tempo, enquanto a caminhada fica velha demais.");
@@ -203,7 +218,8 @@ describe("pause, drain and stop", () => {
     r.exec.send([{ agentId: "duda", cmd: "walk", to: [9, 4], plan: "p1" }]);
     await r.clock.advance(60_000);
     expect(r.spoken()).toHaveLength(2);
-    expect(r.director.track.entries.some((e) => e.k === "drop" && e.why === "stale")).toBe(true);
+    expect(r.director.track.entries.some((e) => e.k === "drop" && e.why === "stale")).toBe(false);
+    expect(computeMetrics(r.director.track.entries).staleDrops.rate).toBe(0);
     expect(computeMetrics(r.director.track.entries).cuts.shortShots).toBe(0);
   });
 });

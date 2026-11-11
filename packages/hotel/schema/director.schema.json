@@ -1384,6 +1384,63 @@
         }
       }
     },
+    "FxCurve": {
+      "description": "The ease of a `dolly`.",
+      "type": "string",
+      "enum": [
+        "in_out",
+        "linear",
+        "in",
+        "out"
+      ]
+    },
+    "FxMove": {
+      "description": "The camera moves beyond a shot (`PerfectmanUi::CameraFx`). A client that does not know a move ignores the cue.",
+      "oneOf": [
+        {
+          "description": "A continuous zoom to `to_zoom` (0.5 to 2.5) over `ms`; the camera stays where it looks.",
+          "type": "string",
+          "enum": [
+            "dolly"
+          ]
+        },
+        {
+          "description": "The picture shakes by up to `amp_px` and settles over `ms`.",
+          "type": "string",
+          "enum": [
+            "shake"
+          ]
+        },
+        {
+          "description": "Animation time runs at `factor` (0.25 to 1) for `ms`; the camera and sound do not.",
+          "type": "string",
+          "enum": [
+            "slowmo"
+          ]
+        },
+        {
+          "description": "Darkened edges at `intensity` (0 to 1): eases in over `ms`, holds `hold_ms` if given, eases out.",
+          "type": "string",
+          "enum": [
+            "vignette"
+          ]
+        },
+        {
+          "description": "Everybody in the room holds still for `ms`.",
+          "type": "string",
+          "enum": [
+            "hitstop"
+          ]
+        },
+        {
+          "description": "A colour wash of `tint` at `intensity`, with the same timing as `Vignette`.",
+          "type": "string",
+          "enum": [
+            "grade"
+          ]
+        }
+      ]
+    },
     "GameKind": {
       "type": "string",
       "enum": [
@@ -4169,6 +4226,99 @@
                 "string",
                 "null"
               ]
+            }
+          }
+        },
+        {
+          "description": "A camera move that is not a shot (contract B). Only the fields its `move` reads are set; the rest are left out. Every number is clamped by the client, so a bad one cannot do harm.",
+          "type": "object",
+          "required": [
+            "k",
+            "move",
+            "ms"
+          ],
+          "properties": {
+            "amp_px": {
+              "description": "`shake`: the strongest offset, in screen pixels.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "curve": {
+              "description": "`dolly`: the ease; `in_out` when absent.",
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/FxCurve"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "factor": {
+              "description": "`slowmo`: the animation time scale, 0.25 to 1.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "hold_ms": {
+              "description": "`vignette` and `grade`: how long it stays at full strength before it eases out. Absent: until the next one.",
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "in_ms": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "intensity": {
+              "description": "`vignette` and `grade`: how strong, 0 to 1. 0 clears it.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
+            },
+            "k": {
+              "type": "string",
+              "enum": [
+                "camera_fx"
+              ]
+            },
+            "move": {
+              "$ref": "#/definitions/FxMove"
+            },
+            "ms": {
+              "description": "How long the move takes (a `hitstop`, `slowmo` or `shake`: how long it lasts).",
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            },
+            "tint": {
+              "description": "`grade`: `#rrggbb`.",
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "to_zoom": {
+              "description": "`dolly`: the zoom to reach, 0.5 to 2.5.",
+              "type": [
+                "number",
+                "null"
+              ],
+              "format": "double"
             }
           }
         },

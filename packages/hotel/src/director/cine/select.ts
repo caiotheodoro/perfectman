@@ -18,15 +18,27 @@ export type SelectContext = {
   roomSince: number;
   followRef: string | undefined;
   cfg: CineConfig;
+  /** Items whose command the executor is holding until they play: they have not happened yet, so waiting does not make them stale. */
+  held?: ReadonlySet<string>;
 };
 
+/**
+ * How long an optional item may wait. An observed one (it already happened in the room) is only worth a shot while
+ * it is fresh. A held one (its command waits for its beat) has not happened, so it may wait for the film to get to it,
+ * up to `heldMaxAgeMs`; run 63 lost 32 of its 88 cues to the short limit while lines kept the stage.
+ */
+export function maxAgeOf(item: CineItem, cfg: CineConfig, held?: ReadonlySet<string>): number {
+  const observed = cfg.optionalMaxAgeMs[item.kind as keyof CineConfig["optionalMaxAgeMs"]];
+  return held?.has(item.id) ? Math.max(observed, cfg.heldMaxAgeMs) : observed;
+}
+
 /** Optional items that waited too long are not shown late; returns what was removed. */
-export function expire(queue: CineItem[], clockNow: number, cfg: CineConfig): CineItem[] {
+export function expire(queue: CineItem[], clockNow: number, cfg: CineConfig, held?: ReadonlySet<string>): CineItem[] {
   const dropped: CineItem[] = [];
   for (let i = queue.length - 1; i >= 0; i--) {
     const item = queue[i];
     if (!item || !OPTIONAL_KINDS.has(item.kind)) continue;
-    const max = cfg.optionalMaxAgeMs[item.kind as keyof CineConfig["optionalMaxAgeMs"]];
+    const max = maxAgeOf(item, cfg, held);
     if (clockNow - item.at > max) dropped.push(...queue.splice(i, 1));
   }
   return dropped.reverse();
@@ -35,6 +47,8 @@ export function expire(queue: CineItem[], clockNow: number, cfg: CineConfig): Ci
 export function scoreHead(item: CineItem, clockNow: number, here: boolean, roomHasItems: boolean, ctx: SelectContext): number {
   const age = Math.min(12, Math.max(0, clockNow - item.at) / 1000);
   let score = item.salience * 10 + age * 0.35;
+  // A held item the film has put off for half its patience goes next: its actor is standing still waiting for it.
+  if (ctx.held?.has(item.id) && clockNow - item.at > ctx.cfg.heldMaxAgeMs / 2) score += 20;
   if (here) {
     score += 2;
     if (item.kind === "hop") score += 2;

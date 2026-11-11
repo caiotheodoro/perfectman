@@ -24,16 +24,16 @@ import { drawThought, dropLeave, dropPair, dropWalk } from "./hold-spot.js";
 import { computeMetrics } from "./metrics.js";
 import type { DirectorMetrics } from "./metrics.js";
 import { Narrator } from "./narrator.js";
-import { ShotPlanner, canStage, estimateMs } from "./planner.js";
+import { ACT_FX, ACT_VERBS, ShotPlanner, canStage, estimateMs } from "./planner.js";
 import { expire, selectNext } from "./select.js";
 import { TrackRecorder } from "./track.js";
 import { DEFAULT_CINE } from "./types.js";
-import type { CineConfig, CineItem, CineMood, CineWorld, LineItem, ObjectItem, Program, Step, Tile } from "./types.js";
+import type { ActItem, CameraIntent, CineConfig, CineItem, CineMood, CineWorld, LineItem, ObjectItem, Program, Step, StoryPhase, Tile } from "./types.js";
 
 /** Gestures that are part of the film; the rest (fidgets, stand, idle) stay live. */
 const GATED_GESTURES: ReadonlySet<string> = new Set(["laugh", "wave", "thumbs", "sign", "dance"]);
 /** `ui` kinds that take `in_ms`; `next_room` and `cut` do not. */
-const TIMED_KINDS: ReadonlySet<PerfectmanUi["k"]> = new Set(["hud", "card", "lower_third", "caption", "thought", "cue", "camera", "sfx", "cut_fx"]);
+const TIMED_KINDS: ReadonlySet<PerfectmanUi["k"]> = new Set(["hud", "card", "lower_third", "caption", "thought", "cue", "camera", "camera_fx", "sfx", "cut_fx"]);
 
 export type CinematicOptions = {
   run: number;
@@ -170,7 +170,7 @@ export class CinematicDirector {
   }
 
   metrics(): DirectorMetrics {
-    return computeMetrics(this.track.entries, { deadAirMs: this.cfg.deadAirMs, minShotMs: this.cfg.minShotMs, ...(this.started && this.phase !== "ended" ? { now: this.t() } : {}) });
+    return computeMetrics(this.track.entries, { deadAirMs: this.cfg.deadAirMs, minShotMs: this.cfg.minShotMs, varietyWindowMs: this.cfg.varietyWindowMs, minShotKinds: this.cfg.minShotKinds, ...(this.started && this.phase !== "ended" ? { now: this.t() } : {}) });
   }
 
   // ---- the executor seam ------------------------------------------------------
@@ -219,6 +219,12 @@ export class CinematicDirector {
           break;
         case "walk": {
           if (dropWalk(this.o.home, c.plan)) break;
+          // A door entrance is a wide shot of the room, not a tracking shot of a few steps.
+          if (c.plan?.endsWith(":enter") && this.started) {
+            this.enqueue({ kind: "entrance", ref: c.agentId, room: this.roomOf(c.agentId), salience: 0.45 });
+            pass.push(c);
+            break;
+          }
           const from = this.o.world.tileOf(c.agentId);
           const steps = from ? Math.max(Math.abs(from[0] - c.to[0]), Math.abs(from[1] - c.to[1])) : 0;
           // A short walk is never filmed, and the cast walking in is part of the opening: both go straight out.
@@ -235,6 +241,10 @@ export class CinematicDirector {
           if (!this.enqueueAct({ kind: "pair", ref: c.agentId, pair: c.kind, with: c.with, room: this.roomOf(c.agentId), salience: 0.7 }, c, true, inner)) pass.push(c);
           break;
         }
+        case "act":
+          pass.push(c);
+          if (this.started && ACT_VERBS.has(c.verb)) this.playActFx(c.agentId, c.verb, c.with);
+          break;
         default:
           pass.push(c);
       }
@@ -273,6 +283,37 @@ export class CinematicDirector {
 
   private roomOf(ref: string): number {
     return this.o.world.roomOf(ref) ?? this.o.home;
+  }
+
+  /**
+   * An act with a body went out: the moves its contact calls for (stop the room, shake, slow motion on a kill), planned
+   * at once and not behind the film's current program, since the table plays the act on its own clock from now. The
+   * act is not held for the camera (a held act would stall the drama director's own timing and the scenario's forced climax).
+   */
+  private playActFx(ref: string, verb: string, withRef: string | undefined): void {
+    const fx = ACT_FX[verb];
+    if (!fx) return;
+    const seq = ++this.seq;
+    const item: ActItem = { kind: "act", id: `b${seq}`, seq, at: this.o.clock.now(), room: this.roomOf(ref), ref, verb, ...(withRef ? { with: withRef } : {}), contactMs: fx.contactMs, salience: 0.9 };
+    const program = this.planner.planAct(item, this.t());
+    if (program) this.schedule(program, item);
+  }
+
+  /** Where the scene is in its arc (a beat sheet's phase); the planner frames the next shots by it. */
+  setPhase(phase: StoryPhase): void {
+    this.planner.setPhase(phase);
+  }
+
+  /**
+   * A camera beat of a beat sheet, played now: its shot and its move. False when the film is not rolling or the beat
+   * names someone who is not in the picture.
+   */
+  playIntent(intent: CameraIntent): boolean {
+    if (!this.started || this.phase === "ended") return false;
+    const program = this.planner.planIntent(intent, this.t(), this.o.world);
+    if (!program) return false;
+    this.schedule(program);
+    return true;
   }
 
   /** A world event worth an insert shot ("a fire alarm goes off"). */
@@ -350,9 +391,10 @@ export class CinematicDirector {
     this.cancelIdle();
     const { clock, world, narrator } = this.o;
     for (;;) {
-      for (const d of expire(this.queue, clock.now(), this.cfg)) this.drop(d, "stale");
+      const held = new Set(this.heldActs.keys());
+      for (const d of expire(this.queue, clock.now(), this.cfg, held)) this.drop(d, "stale");
       const now = this.t();
-      const item = selectNext(this.queue, clock.now(), { now, room: this.planner.currentRoom, roomSince: this.planner.roomSince, followRef: this.planner.followRef(now), cfg: this.cfg });
+      const item = selectNext(this.queue, clock.now(), { now, room: this.planner.currentRoom, roomSince: this.planner.roomSince, followRef: this.planner.followRef(now), cfg: this.cfg, held });
       if (!item) {
         this.busy = false;
         if (this.phase === "draining") this.drainDone?.();

@@ -9,6 +9,11 @@
  *   line played. Target: at least 90%.
  * - cut rate: camera changes per minute, room cuts per minute, and how many
  *   shots were shorter than the minimum (jitter).
+ * - shot variety: how many different shot kinds the film shows in its leanest
+ *   window (the cinematic scorer's camera group asks for at least 4 in 4 minutes).
+ * - stale drops: items the film dropped because they waited too long, as a
+ *   share of what it showed (run 63 lost 32 of its 88 cues).
+ * - camera moves: the `camera_fx` cues played, by move.
  */
 import type { PerfectmanUi } from "../generated.js";
 import type { TrackEntry } from "./types.js";
@@ -21,6 +26,11 @@ export type DirectorMetrics = {
   cuts: { shots: number; shotsPerMin: number; roomCuts: number; roomCutsPerMin: number; shortShots: number; minShotMs: number; meanShotMs: number };
   fillers: number;
   drops: number;
+  /** Shot kinds over the whole film and in its leanest `windowMs` window (the whole film if it is shorter). */
+  variety: { kinds: Record<string, number>; distinct: number; minWindowKinds: number; windowMs: number; target: number; meets: boolean };
+  /** `rate` = stale / (stale + shots). */
+  staleDrops: { count: number; rate: number };
+  fx: { count: number; byMove: Record<string, number> };
 };
 
 type Interval = [start: number, end: number];
@@ -58,8 +68,22 @@ export function coversSpeaker(ui: PerfectmanUi, avatar: number): boolean {
   return false;
 }
 
-export function computeMetrics(track: readonly TrackEntry[], opts: { deadAirMs?: number; minShotMs?: number; now?: number } = {}): DirectorMetrics {
+const WINDOW_STEP_MS = 30_000;
+
+/** The fewest distinct kinds in any `windowMs` window of the film, windows stepping by 30 s; the whole film when it is shorter than one. */
+export function minKindsInWindow(shots: ReadonlyArray<{ t: number; shot: string }>, start: number, end: number, windowMs: number): number {
+  if (end - start <= windowMs) return new Set(shots.map((s) => s.shot)).size;
+  let min = Number.POSITIVE_INFINITY;
+  for (let from = start; from + windowMs <= end + 1; from += WINDOW_STEP_MS) {
+    min = Math.min(min, new Set(shots.filter((s) => s.t >= from && s.t < from + windowMs).map((s) => s.shot)).size);
+  }
+  return Number.isFinite(min) ? min : 0;
+}
+
+export function computeMetrics(track: readonly TrackEntry[], opts: { deadAirMs?: number; minShotMs?: number; now?: number; varietyWindowMs?: number; minShotKinds?: number } = {}): DirectorMetrics {
   const limit = opts.deadAirMs ?? 10_000;
+  const windowMs = opts.varietyWindowMs ?? 240_000;
+  const targetKinds = opts.minShotKinds ?? 4;
   const minShot = opts.minShotMs ?? 1800;
   const entries = [...track].sort((a, b) => a.t - b.t);
 
@@ -74,6 +98,17 @@ export function computeMetrics(track: readonly TrackEntry[], opts: { deadAirMs?:
   let lines = 0;
   const fillerBeats = new Set<string>();
   let drops = 0;
+  let staleCount = 0;
+  const shotKinds: Array<{ t: number; shot: string }> = [];
+  const kinds: Record<string, number> = {};
+  const byMove: Record<string, number> = {};
+  for (const e of entries) {
+    if (e.k === "cue" && e.ui.k === "camera") {
+      shotKinds.push({ t: e.t, shot: e.ui.shot });
+      kinds[e.ui.shot] = (kinds[e.ui.shot] ?? 0) + 1;
+    } else if (e.k === "cue" && e.ui.k === "camera_fx") byMove[e.ui.move] = (byMove[e.ui.move] ?? 0) + 1;
+    else if (e.k === "drop" && e.why === "stale") staleCount++;
+  }
   for (const e of entries) {
     if (e.k === "line") {
       activity.push([e.t, e.t + e.ms]);
@@ -149,5 +184,8 @@ export function computeMetrics(track: readonly TrackEntry[], opts: { deadAirMs?:
     },
     fillers: fillerBeats.size,
     drops,
+    variety: { kinds, distinct: Object.keys(kinds).length, minWindowKinds: minKindsInWindow(shotKinds, start, end, windowMs), windowMs, target: targetKinds, meets: minKindsInWindow(shotKinds, start, end, windowMs) >= targetKinds },
+    staleDrops: { count: staleCount, rate: staleCount + shots === 0 ? 0 : staleCount / (staleCount + shots) },
+    fx: { count: Object.values(byMove).reduce((a, b) => a + b, 0), byMove },
   };
 }
