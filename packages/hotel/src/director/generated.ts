@@ -1049,6 +1049,43 @@ export type PerfectmanUi =
       stop?: string | null;
     }
   | {
+      /**
+       * `shake`: the strongest offset, in screen pixels.
+       */
+      amp_px?: number | null;
+      /**
+       * `dolly`: the ease; `in_out` when absent.
+       */
+      curve?: FxCurve | null;
+      /**
+       * `slowmo`: the animation time scale, 0.25 to 1.
+       */
+      factor?: number | null;
+      /**
+       * `vignette` and `grade`: how long it stays at full strength before it eases out. Absent: until the next one.
+       */
+      hold_ms?: number | null;
+      in_ms?: number | null;
+      /**
+       * `vignette` and `grade`: how strong, 0 to 1. 0 clears it.
+       */
+      intensity?: number | null;
+      k: "camera_fx";
+      move: FxMove;
+      /**
+       * How long the move takes (a `hitstop`, `slowmo` or `shake`: how long it lasts).
+       */
+      ms: number;
+      /**
+       * `grade`: `#rrggbb`.
+       */
+      tint?: string | null;
+      /**
+       * `dolly`: the zoom to reach, 0.5 to 2.5.
+       */
+      to_zoom?: number | null;
+    }
+  | {
       in_ms?: number | null;
       k: "cut_fx";
       kind: CutFxKind;
@@ -1133,6 +1170,20 @@ export type ShotZoom = number | FitZoom;
  * via the `definition` "FitZoom".
  */
 export type FitZoom = "fit";
+/**
+ * The ease of a `dolly`.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "FxCurve".
+ */
+export type FxCurve = "in_out" | "linear" | "in" | "out";
+/**
+ * The camera moves beyond a shot (`PerfectmanUi::CameraFx`). A client that does not know a move ignores the cue.
+ *
+ * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
+ * via the `definition` "FxMove".
+ */
+export type FxMove = "dolly" | "shake" | "slowmo" | "vignette" | "hitstop" | "grade";
 /**
  * This interface was referenced by `PerfectmanDirectorContract`'s JSON-Schema
  * via the `definition` "CutFxKind".

@@ -44,16 +44,39 @@ export type PairItem = ItemBase & { kind: "pair"; pair: "kiss" | "hug"; with: st
 /** A thing worth an insert shot: a piece of furniture, a tile, an injected world event. */
 export type ObjectItem = ItemBase & { kind: "object"; furni?: number; tile?: Tile; label?: string; sfx?: string; salience: number };
 
-export type CineItem = LineItem | ThoughtItem | GestureItem | WalkItem | HopItem | PairItem | ObjectItem;
+/** Observed, live: an act with a body (a shove, a slap, a punch, a kill, a fall...). `contactMs` is where the table puts contact after the act starts. */
+export type ActItem = ItemBase & { kind: "act"; verb: string; with?: string; contactMs: number; salience: number };
+/** Observed, live: someone comes in through the door (the walk that ends `:enter`). */
+export type EntranceItem = ItemBase & { kind: "entrance"; salience: number };
+
+export type CineItem = LineItem | ThoughtItem | GestureItem | WalkItem | HopItem | PairItem | ObjectItem | ActItem | EntranceItem;
 export type CineItemKind = CineItem["kind"];
 
 /** Items that are dropped rather than shown late. */
-export const OPTIONAL_KINDS: ReadonlySet<CineItemKind> = new Set(["walk", "hop", "pair", "object"]);
+export const OPTIONAL_KINDS: ReadonlySet<CineItemKind> = new Set(["walk", "hop", "pair", "object", "act", "entrance"]);
 /**
  * Things that already happened in the room, live. They are not held back, so the film can only show them
  * while they are fresh; they may be picked out of order, because their moment passes.
  */
-export const LIVE_KINDS: ReadonlySet<CineItemKind> = new Set(["walk", "hop", "pair"]);
+export const LIVE_KINDS: ReadonlySet<CineItemKind> = new Set(["walk", "hop", "pair", "act", "entrance"]);
+
+/** The story phases of a beat sheet (beat-sheet contract A): the planner frames by where the scene is in its arc. */
+export type StoryPhase = "setup" | "inciting" | "escalation" | "reversal" | "climax" | "aftermath";
+
+/** A camera beat of a beat sheet (contract A `CameraIntent`), played on the run clock. Moves are the `camera_fx` kinds. */
+export type CameraIntent = {
+  shot: "establishing" | "two_shot" | "close_up" | "tracking" | "reaction" | "insert";
+  /** Actor refs: one for a close-up, reaction or tracking shot, two for a two-shot; none for the whole room. */
+  on?: string | readonly [string, string];
+  /** A rest zoom for the shot (0.5, 1 or 2; anything else is snapped by the client). */
+  zoom?: number;
+  move?: "dolly_in" | "dolly_out" | "shake" | "slowmo" | "vignette" | "hitstop";
+  /** How much: dolly = the share of the current zoom to add or remove (0.3 default), shake = pixels, slowmo = the speed (0.25 to 1), vignette = intensity, hitstop = ms. */
+  amount?: number;
+  ms?: number;
+  /** Room the intent is for; defaults to the room the film is in. */
+  room?: number;
+};
 
 /** What the planner asks of the hotel mirror. */
 export interface CineWorld {
@@ -123,7 +146,22 @@ export type CineConfig = {
   /** A room cut within this long of the last one needs a much better reason. */
   minRoomHoldMs: number;
   maxRoomHoldMs: number;
-  optionalMaxAgeMs: Record<"walk" | "hop" | "pair" | "object", number>;
+  optionalMaxAgeMs: Record<"walk" | "hop" | "pair" | "object" | "act" | "entrance", number>;
+  /**
+   * An optional item whose command the executor holds until the beat plays has not happened yet, so it is not stale
+   * the way an observed one is: it waits up to this long (the actor stands still meanwhile) and is overdue after half of it.
+   */
+  heldMaxAgeMs: number;
+  /** Cinema norms (until `cinema-norms` is published): this many shot kinds in every `varietyWindowMs`, and no more than `maxCutsPerMin` camera changes a minute. */
+  minShotKinds: number;
+  varietyWindowMs: number;
+  maxCutsPerMin: number;
+  /** A shot the planner adds only for variety waits at least this long after the last camera change. */
+  varietyGapMs: number;
+  /** An escalation shot pushes in slowly: this share of the shot's zoom, over the shot's hold. */
+  escalationDolly: number;
+  /** How long a climax or reveal close-up holds the vignette. */
+  climaxVignetteMs: number;
   /** Cues that take in_ms go this much early so socket latency does not eat the ease. */
   cueLeadMs: number;
   typingLeadMs: number;
@@ -153,7 +191,14 @@ export const DEFAULT_CINE: CineConfig = {
   deadAirMs: 10_000,
   minRoomHoldMs: 6000,
   maxRoomHoldMs: 25_000,
-  optionalMaxAgeMs: { walk: 5000, hop: 8000, pair: 4000, object: 4000 },
+  optionalMaxAgeMs: { walk: 5000, hop: 8000, pair: 4000, object: 4000, act: 6000, entrance: 6000 },
+  heldMaxAgeMs: 20_000,
+  minShotKinds: 4,
+  varietyWindowMs: 240_000,
+  maxCutsPerMin: 6,
+  varietyGapMs: 6000,
+  escalationDolly: 0.18,
+  climaxVignetteMs: 3500,
   cueLeadMs: 300,
   typingLeadMs: 500,
   closeUpSalience: 0.65,
