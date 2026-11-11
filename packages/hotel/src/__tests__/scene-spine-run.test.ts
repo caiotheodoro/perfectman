@@ -146,7 +146,7 @@ describe("the run's manifest", () => {
       script_likeness?: { score: number; percentile: number; sub: Record<string, number>; language: string; medium: string; say_turns: number; norms_built?: string };
       scene_spine?: { step: number; unlocks?: { shove: number; slap: number; skipped_no_evidence: number; grants: unknown[] } };
     };
-    for (const key of ["llm_len_retry", "llm_len_trimmed", "llm_motif_retry", "llm_novelty_retry", "llm_motif_reaction", "llm_debt_note", "llm_debt_retry", "llm_debt_stripped"]) {
+    for (const key of ["llm_len_retry", "llm_len_trimmed", "llm_motif_retry", "llm_novelty_retry", "llm_motif_reaction", "llm_debt_note", "llm_debt_retry", "llm_debt_stripped", "llm_len_trim_free", "llm_guard_tic", "llm_guard_tic_stripped", "llm_guard_echo_repaired"]) {
       expect(manifest.counters[key], key).toEqual(expect.any(Number));
     }
     expect(manifest.script_likeness?.score).toEqual(expect.any(Number));

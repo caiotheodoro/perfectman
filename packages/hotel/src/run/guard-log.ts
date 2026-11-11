@@ -15,7 +15,10 @@ export type GuardLogLine = {
   rule: GuardLogRule;
   /** The text the guard was given: the line it retried, cut, struck or silenced; the line a note answered; empty when there was none. */
   before: string;
-  /** The text it left, or the note it added; empty for a line that was silenced or dropped. */
+  /**
+   * The text it left, or the note it added; empty for a line that was silenced or dropped. For `echo_own` the short-line rule and the earlier line the candidate matched
+   * ("lead: Otávio, meu bem, sente-se. ..."), when one of those rules flagged it; for `tic` what was found ("address:rapaz", "opener:bebado", "tag:tag").
+   */
   after: string;
 };
 

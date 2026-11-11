@@ -125,7 +125,8 @@ describe("motif and novelty", () => {
     const again = "Madrugada fria, cofre sumido, ninguém viu quem levou da sala dos fundos o cofre emprestado.";
     const fresh = "Quem pagou a conta do bar foi o Caco, eu vi o recibo dobrado no bolso dele.";
     const withOwn = await run([again, fresh], input(QUIET, [mine]));
-    expect(withOwn.seen).toEqual(["novelty_retry"]);
+    // "again" is also an echo of "mine" by its topic words (7 of 10 shared, in another order): the short-line set rule flags it before the novelty check does.
+    expect(withOwn.seen).toEqual(["repeat_own", "novelty_retry"]);
     expect(withOwn.said).toBe(fresh);
     // Without that own line in the packet nothing in view says it again.
     expect((await run([again], input(QUIET))).calls).toBe(1);

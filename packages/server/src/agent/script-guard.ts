@@ -1,7 +1,8 @@
 import type { AgentRuntimeInput, PerceptionPacket } from "@perfectman/shared";
-import { OUTPUT_GUARD_MARKER, answersFirst, lengthTargetFor, moveBefore, nameKeysOf, owedQuestion, roomNames } from "@perfectman/shared";
+import { OUTPUT_GUARD_MARKER, answersFirst, lengthOf, lengthTargetFor, moveBefore, nameKeysOf, owedQuestion, roomNames } from "@perfectman/shared";
 import type { LengthTarget, MessageLength, MoveKind, OwedLine, OwedMove, OwedQuestion, QuoteIssue } from "@perfectman/shared";
 import { whisperedBy } from "./whisper-note.js";
+import type { TicHit } from "./echo-guard.js";
 
 /**
  * The script checks of a hotel actor's turn (length, novelty, motif, question debt, narration, quotes, a move made at the actor): what the
@@ -92,6 +93,43 @@ export function lengthRetryNote(words: number, cap: number, language: Lang): str
   return language === "pt-BR"
     ? `IMPORTANTE: sua última tentativa tinha ${words} palavras e o limite é ${cap}. Diga só a primeira frase: uma jogada, curta, como se fala numa cena.`
     : `IMPORTANT: your last attempt had ${words} words and the limit is ${cap}. Say only the first sentence: one move, short, the way people talk in a scene.`;
+}
+
+/** Share of the cap above which the actor's last line is pointed out to it in the next prompt: 17 words or more for a cap of 22. */
+export const LENGTH_FEEDBACK_SHARE = 0.75;
+
+/** The prompt line that tells an actor how long its last line ran, when it ran near the top of the allowance. */
+export function lengthFeedbackNote(words: number, t: LengthTarget, language: Lang): string {
+  const [lo, hi] = t.aim;
+  return language === "pt-BR"
+    ? `Sua última fala teve ${words} palavras (de ${lo} a ${hi}, no máximo ${t.cap}). Desta vez, mais curta.`
+    : `Your last line had ${words} words (${lo} to ${hi}, at most ${t.cap}). Shorter this time.`;
+}
+
+/**
+ * The length feedback for this actor's decision, or undefined: its newest line of its own had more than 75% of the cap's words. The guard cuts every committed
+ * line to the cap, so a line is never over it; the note reads the lines that sit at the top of the allowance, the ones a model that ignores the target writes.
+ */
+export function lengthFeedbackFor(ownRecentUtterances: readonly string[], t: LengthTarget, language: Lang): string | undefined {
+  const last = ownRecentUtterances[ownRecentUtterances.length - 1];
+  if (last === undefined) return undefined;
+  const words = lengthOf(last);
+  return words > Math.floor(t.cap * LENGTH_FEEDBACK_SHARE) ? lengthFeedbackNote(words, t, language) : undefined;
+}
+
+/**
+ * Retry: the actor keeps starting or ending its lines with the same word or form of address, or ends them with a tag question. Names it and asks to drop it
+ * for this line ("não comece com rapaz"). A form of address that is still there after the retry is taken off the line without asking again.
+ */
+export function ticRetryNote(tics: readonly TicHit[], language: Lang): string {
+  const parts = tics.map((t) => {
+    if (t.kind === "tag") {
+      return language === "pt-BR" ? `termina quase toda fala com uma pergunta de confirmação ("não é?", "não pode?"). Não termine assim desta vez.` : `ends almost every line with a tag question ("right?", "isn't it?"). Do not end that way this time.`;
+    }
+    const term = t.term.replace(/["\n\r]+/g, " ").trim();
+    return language === "pt-BR" ? `usa "${term}" no começo ou no fim de quase toda fala (${t.count} das últimas 6). Não comece com "${term}" e não termine com ele nesta fala.` : `uses "${term}" at the start or the end of almost every line (${t.count} of the last 6). Do not start with "${term}" or end with it in this line.`;
+  });
+  return language === "pt-BR" ? `IMPORTANTE: você ${parts.join("; você ")}` : `IMPORTANT: you ${parts.join("; you ")}`;
 }
 
 /** Retry: the line brings back a phrase or simile the room already used. Names it and asks for one new thing. */
@@ -201,6 +239,14 @@ export function answerNoteFor(input: AgentRuntimeInput, displayName: string, lan
  */
 export function fillerSilenceEnabled(): boolean {
   return process.env["PERFECTMAN_FILLER_SILENCE"] !== "0";
+}
+
+/**
+ * `PERFECTMAN_FREE_TRIM=0` sends every candidate over the cap to a retry again, as before the free cut: anything else leaves the cut on, which takes a candidate that is
+ * over the cap by a quarter or less down to a sentence or clause boundary without a model call.
+ */
+export function freeTrimEnabled(): boolean {
+  return process.env["PERFECTMAN_FREE_TRIM"] !== "0";
 }
 
 /** The no-op motive of a turn the guard silenced. It starts with the output-guard marker, so every reader that skips engine-written motives skips it. */

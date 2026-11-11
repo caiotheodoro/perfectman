@@ -175,7 +175,7 @@ describe("helpers", () => {
     expect(GUARD_LOG_RULE.stall_nudge).toBeUndefined();
     expect(GUARD_LOG_RULE.held_repeat).toBeUndefined();
     expect(new Set(Object.values(GUARD_LOG_RULE))).toEqual(
-      new Set(["len_retry", "len_trim", "motif_retry", "novelty_retry", "echo_own", "echo_room", "phrase_loop", "garble", "garble_drop", "debt_note", "debt_retry", "silenced", "narration_stripped", "quote_struck", "answer_note", "motif_strike", "debt_strip", "quote_retry"]),
+      new Set(["len_retry", "len_trim", "motif_retry", "novelty_retry", "echo_own", "echo_room", "phrase_loop", "garble", "garble_drop", "debt_note", "debt_retry", "silenced", "narration_stripped", "quote_struck", "answer_note", "motif_strike", "debt_strip", "quote_retry", "len_trim_free", "tic", "tic_strip", "echo_repair"]),
     );
   });
 

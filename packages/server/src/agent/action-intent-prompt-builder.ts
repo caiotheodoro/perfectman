@@ -9,7 +9,7 @@ import { bodyContractLines } from "./hotel-body-hint.js";
 import { dramaContractLines } from "./hotel-drama-hint.js";
 import { heardLines, renderCompactHotelPrompt } from "./hotel-compact-prompt.js";
 import { stallNoteFor } from "./scene-stall.js";
-import { answerNoteFor, lengthLine, owedNoteFor, speechOnlyLine } from "./script-guard.js";
+import { answerNoteFor, lengthFeedbackFor, lengthLine, owedNoteFor, speechOnlyLine } from "./script-guard.js";
 
 /**
  * How the hotel prompt is written. "full" is the whole persona, output contract
@@ -687,6 +687,9 @@ export class ActionIntentPromptBuilder {
     if (answered) s.raw(answered);
     const owed = profile.scriptPrompt ? owedNoteFor(input, profile.displayName, language) : undefined;
     if (owed) s.raw(owed);
+    // Script checks on: the actor's last line ran near the top of the cap, so it is told how long it was.
+    const longLast = profile.scriptPrompt ? lengthFeedbackFor(input.perceptionPacket.ownRecentUtterances, profile.scriptPrompt.length, language) : undefined;
+    if (longLast) s.raw(longLast);
     // Root-caused via a live capture + a static read of the prompt: nothing
     // anywhere told agents to take a creative risk, so a real transcript
     // read as a "sensible negotiation" — safe, agreeable, never provoking —
