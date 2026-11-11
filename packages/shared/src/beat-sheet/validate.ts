@@ -351,9 +351,16 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
   // ---- phases in order ---------------------------------------------------------------------------------------
   let high = -1;
   let highPhase: Phase = "setup";
-  for (const b of sorted) {
+  for (let i = 0; i < sorted.length; i++) {
+    const b = sorted[i]!;
     const p = PHASE_INDEX.get(b.phase) ?? 0;
     if (p < high) {
+      // A label a step out of order on an ordinary beat ("escalation" after the reversal began) is repaired to the phase the scene is in; the climax and the aftermath keep theirs.
+      if (!(b.kind === "act" && b.climax === true) && b.phase !== "climax" && b.phase !== "aftermath") {
+        warn(`beat_sheet.beats.${b.id}`, "beat_sheet.phase_fixed", `${b.phase} at ${b.at_ms} ms comes after ${highPhase}, so it is read as ${highPhase}`);
+        sorted[i] = { ...b, phase: highPhase } as SheetBeat;
+        continue;
+      }
       err(`beat_sheet.beats.${b.id}`, `beat_sheet.phase_order: ${b.phase} at ${b.at_ms} ms comes after ${highPhase}; phases run setup, inciting, escalation, reversal, climax, aftermath in time order`);
       break;
     }

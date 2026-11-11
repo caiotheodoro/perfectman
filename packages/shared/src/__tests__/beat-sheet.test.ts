@@ -123,6 +123,19 @@ describe("colour beats a model gets wrong", () => {
     expect(r.warnings.some((w) => w.message.includes("act beat left out"))).toBe(true);
   });
 
+  it("an ordinary beat labelled one phase behind the scene is read as the phase the scene is in", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    const rev = beats.find((b) => b["phase"] === "reversal");
+    expect(rev).toBeDefined();
+    beats.push({ id: "q9", at_ms: Number(rev?.["at_ms"]) + 1, phase: "escalation", kind: "note", actor: "Heloísa", objective: "stay calm", tactic: "stall" });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    const r = validateBeatSheet(sheet, ctx);
+    expect(messages(r)).not.toContain("phase_order");
+    expect(r.sheet?.beats.find((b) => b.id === "q9")?.phase).toBe("reversal");
+    expect(r.warnings.some((w) => w.message.includes("beat_sheet.phase_fixed"))).toBe(true);
+  });
+
   it("dialogue in a note is still refused, never trimmed", () => {
     const sheet = raw();
     const beats = sheet["beats"] as Array<Record<string, unknown>>;

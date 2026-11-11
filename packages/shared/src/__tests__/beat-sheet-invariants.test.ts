@@ -60,7 +60,7 @@ describe("validateBeatSheet: Contract A, invariants", () => {
   it("[1] the inciting incident comes by 90 s", () => {
     const sheet = raw();
     for (const b of sheet["beats"] as Array<Record<string, unknown>>) if (b["phase"] === "inciting") b["at_ms"] = 95_000 + (b["at_ms"] as number);
-    expect(messages(validateBeatSheet(sheet, ctx))).toMatch(/inciting_late|phase_order/);
+    expect(messages(validateBeatSheet(sheet, ctx))).toMatch(/inciting_late|phase_order|beat_sheet\.inciting: a beat has phase/);
   });
 
   it("[2] the ladder: one rung per beat unless authored_skip, and a skip needs a drama block", () => {
