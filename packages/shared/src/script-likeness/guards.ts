@@ -106,6 +106,50 @@ export function trimExample(text: string, target: LengthTarget): string {
   return wordCount(t) <= target.aim[1] ? t : trimToCap(t, target.aim[1], target.sentences);
 }
 
+// ---- a cut that costs no model call ----------------------------------------------------------------------------------------------
+
+/** A candidate over the cap by this share or less is cut at a sentence or clause boundary without asking the model again (cap 22 allows 27 words). */
+export const FREE_TRIM_SHARE = 0.25;
+/** Words the cut line must keep: a line cut to fewer than this has lost its point, and the model is asked again. */
+export const FREE_TRIM_MIN_WORDS = 5;
+
+/** The most words a candidate may have for {@link trimFree} to cut it (27 for a cap of 22). */
+export const freeTrimLimit = (cap: number): number => Math.floor(cap * (1 + FREE_TRIM_SHARE));
+
+const WH_WORDS: ReadonlySet<string> = new Set("que quem onde quando como qual quais quanto quantos quantas cade porque sera what who where when how why which".split(" "));
+
+/**
+ * The line cut to the cap at the last sentence or clause boundary, for a candidate a little over it (see {@link freeTrimLimit}); undefined when the
+ * cut would keep fewer than {@link FREE_TRIM_MIN_WORDS} words, so the caller asks again. Whole sentences while they fit (at most `maxSentences`, a trailing
+ * second question dropped); when the first sentence is over the cap by itself, the clauses before its last comma, semicolon, colon or dash that fit, ended
+ * with "?" if the sentence was a question that opens with a question word and with "." otherwise.
+ */
+export function trimFree(text: string, cap: number, maxSentences = 2): string | undefined {
+  const sentences = sentenceList(text);
+  if (sentences.length === 0) return undefined;
+  const kept: string[] = [];
+  let words = 0;
+  for (const s of sentences) {
+    const n = wordCount(s);
+    if (kept.length >= maxSentences || words + n > cap) break;
+    if (kept.length > 0 && endsAsQuestion(s) && endsAsQuestion(kept[kept.length - 1]!)) break;
+    kept.push(s);
+    words += n;
+  }
+  if (kept.length > 0) return words >= FREE_TRIM_MIN_WORDS ? kept.join(" ") : undefined;
+  const first = sentences[0]!;
+  let acc = "";
+  for (const part of splitAfter(first, ",;:—–")) {
+    const next = acc === "" ? part : `${acc} ${part}`;
+    if (wordCount(next) > cap) break;
+    acc = next;
+  }
+  if (wordCount(acc) < FREE_TRIM_MIN_WORDS) return undefined;
+  const lead = wordsOf(acc).map((w) => w.key);
+  const asks = endsAsQuestion(first) && (WH_WORDS.has(lead[0] ?? "") || (["por", "o", "a", "de", "e"].includes(lead[0] ?? "") && ["que", "se"].includes(lead[1] ?? "")));
+  return `${acc.replace(/[\s,;:—–.!?…]+$/u, "")}${asks ? "?" : "."}`;
+}
+
 // ---- novelty and motif ------------------------------------------------------------------------------------------------
 
 /** A line of the room as the guards read it. */
