@@ -322,9 +322,11 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
       }
       let errors: SheetIssue[];
       let made: ReturnType<typeof compileBeatSheet> | undefined;
+      let sheetRaw: unknown;
       try {
         const json = extractSheetJson(reply);
         const unwrapped = typeof json === "object" && json !== null && "beat_sheet" in json ? (json as { beat_sheet: unknown }).beat_sheet : json;
+        sheetRaw = unwrapped;
         const withOrigin = typeof unwrapped === "object" && unwrapped !== null ? { ...(unwrapped as Record<string, unknown>), generated_by: { model: link.model, cost_usd: usd(cost), ms: now() - started, input_hash: hash, attempts } } : unwrapped;
         made = compileBeatSheet(withOrigin, cast, opts);
         errors = [...made.errors];
@@ -341,7 +343,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
         return { ok: true, sheet, warnings: made.warnings, attempts, cost_usd: usd(cost), ms, model: link.model, promptChars: prompt.user.length + prompt.system.length };
       }
       lastErrors = errors;
-      lastFail = { reason: "invalid", detail: `${link.name}: ${errors.slice(0, 3).map((e) => e.message.replace(/^beat_sheet\.\w+: /, "")).join("; ")}`.slice(0, 300), model: link.model };
+      lastFail = { reason: "invalid", detail: `${link.name}: ${errors.slice(0, 3).map((e) => e.message.replace(/^beat_sheet\.\w+: /, "")).join("; ")}${offendingBeat(errors, sheetRaw)}`.slice(0, 520), model: link.model };
       firstFail ??= lastFail;
       // Told once what was wrong, with the sheet it wrote, and asked for the whole sheet again.
       messages = [
@@ -353,4 +355,12 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
   }
   const shown = firstFail && firstFail.detail !== lastFail.detail ? { ...lastFail, reason: firstFail.reason, detail: `${firstFail.detail}; then ${lastFail.detail}` } : lastFail;
   return { ok: false, reason: shown.reason, detail: shown.detail, errors: lastErrors, attempts, cost_usd: usd(cost), ms: now() - started, ...(lastFail.model ? { model: lastFail.model } : {}) };
+}
+
+/** The first beat a validation error points at, as the model wrote it (cut short), so a stored failure shows what the model got wrong and not only that it did. */
+function offendingBeat(errors: readonly SheetIssue[], sheet: unknown): string {
+  const index = /beats\[(\d+)\]/.exec(errors[0]?.path ?? "")?.[1];
+  const beats = typeof sheet === "object" && sheet !== null ? (sheet as { beats?: unknown }).beats : undefined;
+  if (index === undefined || !Array.isArray(beats)) return "";
+  return ` | beat ${index}: ${JSON.stringify(beats[Number(index)] ?? null).slice(0, 180)}`;
 }

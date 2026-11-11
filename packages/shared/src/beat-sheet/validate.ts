@@ -172,8 +172,8 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
     const id = typeof entry["id"] === "string" && entry["id"].trim() !== "" ? entry["id"].trim().slice(0, 32) : `s${index + 1}`;
     const gist = entry["gist"] === undefined ? undefined : prose(`${at}.gist`, entry["gist"], 180, false);
     const actorOf = (key: string): string => {
-      // A model that names the person "who", "character" or "person" instead of "actor" is read, not refused.
-      const given = entry[key] ?? (key === "actor" ? (entry["who"] ?? entry["character"] ?? entry["person"]) : undefined);
+      // A model that names the person "who", "character", "person", "by" or "agent" instead of "actor" is read, not refused.
+      const given = entry[key] ?? (key === "actor" ? (entry["who"] ?? entry["character"] ?? entry["person"] ?? entry["by"] ?? entry["agent"]) : undefined);
       const v = idOf(given);
       if (v === undefined) err(`${at}.${key}`, `"${String(given)}" is not in the cast`);
       return v ?? "";
@@ -184,13 +184,13 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
     switch (kind) {
       case "act": {
         const actor = actorOf("actor");
-        const verb = entry["verb"];
+        const verb = entry["verb"] ?? entry["action"] ?? entry["act"];
         if (!isVerb(verb)) {
           err(`${at}.verb`, `"${String(verb)}" is not one of the ${ACT_VERBS.length} verbs`);
           break;
         }
         const needs = ACT_TARGET_MODE[verb] === "required";
-        const given = entry["with"];
+        const given = entry["with"] ?? entry["target"];
         let target: string | undefined;
         if (given === undefined) {
           if (needs) err(`${at}.with`, `${verb} needs a target`);

@@ -103,6 +103,16 @@ describe("colour beats a model gets wrong", () => {
     expect(note && note.kind === "note" ? note.actor : undefined).toBe(CAST.find((c) => c.displayName === "Otávio")?.id);
   });
 
+  it("an act written with by, action and target is read as actor, verb and with", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "x9", at_ms: 740, phase: "escalation", kind: "act", by: "Heloísa", action: "slap", target: "Otávio" });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    const r = validateBeatSheet(sheet, ctx);
+    // The sheet as a whole may break a ladder rule with a slap dropped in at 740 ms; what matters is that the keys were read.
+    expect(messages(r)).not.toMatch(/is not in the cast|is not one of the \d+ verbs|needs a target/);
+  });
+
   it("dialogue in a note is still refused, never trimmed", () => {
     const sheet = raw();
     const beats = sheet["beats"] as Array<Record<string, unknown>>;

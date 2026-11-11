@@ -105,6 +105,16 @@ describe("generateBeatSheet", () => {
     expect(r.detail).toMatch(/strong:/);
   });
 
+  it("shows the beat a model got wrong, as it wrote it, in the stored failure", async () => {
+    const base = sheetByName() as unknown as { beats: unknown[] };
+    const bad = JSON.stringify({ ...base, beats: [{ id: "a1", at_ms: 1000, phase: "setup", kind: "act", by: "Heloísa", action: "slap" }, ...base.beats.slice(1)] });
+    const { run } = rig([{ content: bad }, { content: bad }]);
+    const r = await run();
+    if (r.ok) throw new Error("expected a failure");
+    expect(r.detail).toContain('| beat 0: {"id":"a1"');
+    expect(r.detail).toContain('"action":"slap"');
+  });
+
   it("refuses a sheet that writes dialogue", async () => {
     const talky = sheetByName();
     ((talky["beats"] as Array<Record<string, unknown>>)[0]!)["text"] = "Otávio, venha sentar e tomar um café comigo.";
