@@ -249,6 +249,75 @@ export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
     },
   },
   {
+    id: "drama_pressure_floor_climax",
+    name: "A climax deadline: a cold cast that is only heard heating up (a model that only talks) climbs glare, insult, shove, slap by the deadline, one rung at a time",
+    build: () =>
+      base("pressure-floor", {
+        durationMs: 270_000,
+        consultMs: 12_000,
+        // Caio is the witness the slap needs (LAD-11): nobody talks to him, nobody holds anything against him.
+        actors: [{ ref: "ana", name: "Ana" }, { ref: "bia", name: "Bia" }, { ref: "caio", name: "Caio" }],
+        states: new Map(["ana", "bia", "caio"].map((r) => [r, seedState(r, { others: ["ana", "bia", "caio"], ...(r === "caio" ? {} : { relations: { [r === "ana" ? "bia" : "ana"]: { resentment: 0.16 } } }) })])),
+        drama: block(4, [["ana", "bia"], ["bia", "ana"]]),
+        pressure: { climax_at_ms: 240_000 },
+        speechOnly: true,
+        dialogue: [
+          { atMs: 5000, actor: "bia", to: "ana", text: "Ana, essa assinatura aí não é do Henrique." },
+          { atMs: 45_000, actor: "ana", to: "bia", text: "Bia, meu bem, o café esfria." },
+          { atMs: 70_000, actor: "bia", to: "ana", text: "Ana, me dá um envelope e eu esqueço o que vi." },
+          { atMs: 120_000, actor: "bia", to: "ana", text: "Ana, eu vi você guardar a caneta." },
+          { atMs: 170_000, actor: "bia", to: "ana", text: "Ana, ou você paga ou eu abro a boca." },
+        ],
+      }),
+    check: (r) => {
+      const verbs = pairVerbs(r, "ana", "bia");
+      const at = (verb: string): number | undefined => started(r).find((a) => a.verb === verb && a.actor === "ana")?.atMs;
+      const physical = started(r).filter((a) => ["shove", "slap", "punch", "kill"].includes(a.verb)).map((a) => a.atMs);
+      return [
+        ok("the director answers the opening charge on its own, inside 30 s", started(r).some((a) => a.origin === "director" && a.atMs <= 30_000), String(started(r)[0]?.atMs)),
+        ok("ana climbs the ladder toward bia in order, glare, insult, shove, slap", isSubsequence(["glare", "insult", "shove", "slap"], verbs), verbs.join(" ")),
+        ok("the shove is in by 205 s and the slap by 250 s (the deadline is 240 s)", (at("shove") ?? Infinity) <= 205_000 && (at("slap") ?? Infinity) <= 250_000, `shove ${at("shove")}, slap ${at("slap")}`),
+        ok("the ladder stops at the slap: the director's pressure never throws a punch or a kill", !started(r).some((a) => a.verb === "punch" || a.verb === "kill")),
+        ok("physical beats are at least 20 s apart", physical.every((t, i) => i === 0 || t - physical[i - 1]! >= 20_000), physical.join(", ")),
+        ok("the model proposed nothing: every act is the director's", started(r).every((a) => a.origin === "director")),
+      ];
+    },
+  },
+  {
+    id: "drama_humans_no_chip",
+    name: "Humans without the chip: a human who did not opt in is a target when the scene allows it, the player's Block still holds, and the director's own beats stay at an insult",
+    build: () =>
+      base("humans-no-chip", {
+        durationMs: 120_000,
+        states: CALM(["ana", "bia"]),
+        actors: [{ ref: "ana", name: "Ana", tile: [4, 4] }, { ref: "bia", name: "Bia", tile: [2, 2] }],
+        humans: [
+          { id: 9, name: "Visitante", tile: [5, 4], optIn: false },
+          { id: 10, name: "Bloqueou", tile: [4, 5], optIn: false },
+        ],
+        humansTargetable: true,
+        // Human 10 blocked Ana: she never targets them. Human 9 did not.
+        blocks: (human, actor) => human === 10 && actor === -(7 * 100 + 1),
+        drama: block(4, [["ana", "@human"]]),
+        beats: script([
+          { atMs: 10_000, kind: "act", actor: "ana", verb: "shove", with: "h:10", skip: true },
+          { atMs: 30_000, kind: "act", actor: "ana", verb: "shove", with: "h:9", skip: true },
+          { atMs: 60_000, kind: "act", actor: "ana", verb: "slap", with: "h:9", skip: true },
+        ]),
+      }),
+    check: (r) => {
+      const toBlocker = started(r).filter((a) => a.with === "h:10");
+      const toVisitor = started(r).filter((a) => a.with === "h:9");
+      const chips = of(r, "consent_chip");
+      return [
+        ok("the player's Block holds: nothing started at the human who blocked ana, and the refusal says consent_off", toBlocker.length === 0 && r.proposals.some((p) => p.with === "h:10" && p.reason === "consent_off"), JSON.stringify(r.proposals.filter((p) => p.with === "h:10"))),
+        ok("the shove and the slap at the human who did not opt in started, with no chip asked", toVisitor.map((a) => a.verb).join(",") === "shove,slap" && chips.length === 0, toVisitor.map((a) => a.verb).join(",")),
+        ok("both landed", of(r, "act_done").filter((d) => d.with === "h:9").every((d) => d.outcome === "landed") && of(r, "act_done").filter((d) => d.with === "h:9").length === 2),
+        ok("no probe reads it as a consent violation (the scene lets it)", ["consent-violation", "human-untouched-without-take"].every((n) => r.probes.find((p) => p.probe === n)?.passed === true)),
+      ];
+    },
+  },
+  {
     id: "drama_off_unchanged",
     name: "Drama off: the same scene starts no act, sends no act command, and the planner plans what it always planned",
     build: () => presetSimConfig("tapa-na-cara", { dramaOn: false, durationMs: 120_000 }),

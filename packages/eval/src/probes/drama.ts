@@ -398,6 +398,8 @@ export function consentViolation(input: DramaProbeInput): ConsentReading {
   for (const act of actsOf(input.events)) {
     const violent = rungIndex(act.verb) >= SHOVE_RUNG || act.verb === INSULT_VERB;
     if (!violent || act.with === undefined || !isHuman(act.with)) continue;
+    // A scene that lets a human be struck with no chip (HUM-2): an act that started with none asked for no consent.
+    if (input.chiplessHumans === true && act.chip === false) continue;
     const done = ledgers.get(act.actId)?.done;
     if (done === undefined) {
       unresolvedActIds.push(act.actId);

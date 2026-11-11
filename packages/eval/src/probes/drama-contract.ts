@@ -187,6 +187,8 @@ export function humanUntouchedWithoutTake(input: DramaProbeInput): UntouchedRead
   for (const act of actsOf(input.events)) {
     const human = act.with;
     if (rungIndex(act.verb) < SHOVE_RUNG || human === undefined || !isHuman(human)) continue;
+    // A scene that lets a human be struck with no chip (HUM-2): an act that started with none needs no `take`; one that showed a chip still does.
+    if (input.chiplessHumans === true && act.chip === false) continue;
     judged += 1;
     const ledger = ledgers.get(act.actId);
     const touched: Touch[] = [];

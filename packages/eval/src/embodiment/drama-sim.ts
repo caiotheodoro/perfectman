@@ -653,7 +653,7 @@ export function runDramaSim(config: SimConfig): SimResult {
   // ---- what the frames say ---------------------------------------------------------------------------------
   const frames = lines.map((l) => normalizeFrame(l)).flatMap((f) => (f ? [f] : []));
   const events = extractDramaEvents(frames);
-  const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs });
+  const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs, ...(config.humansTargetable === true ? { chiplessHumans: true } : {}) });
   dramaLog.close();
   return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters(), dramaLog: dramaLines.map((l) => JSON.parse(l) as DramaLogLine), ...(spineScene ? { spine: { step: spineScene.step, advances: spineScene.advances.map((a) => ({ step: a.step, atMs: a.atMs, via: a.via })), ...(escalation ? { unlocks: escalation.manifest(startMs) } : {}) } } : {}) };
 }
