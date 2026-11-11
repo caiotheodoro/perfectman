@@ -106,7 +106,7 @@ describe("generateBeatSheet", () => {
   });
 
   it("shows the beat a model got wrong, as it wrote it, in the stored failure", async () => {
-    const base = sheetByName() as unknown as { beats: unknown[] };
+    const base = sheetByName();
     const bad = JSON.stringify({ ...base, beats: [{ id: "a1", at_ms: 1000, phase: "setup", kind: "act", by: "Heloísa", action: "slap" }, ...base.beats.slice(1)] });
     const { run } = rig([{ content: bad }, { content: bad }]);
     const r = await run();
