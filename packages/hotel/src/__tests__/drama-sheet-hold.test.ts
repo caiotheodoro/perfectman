@@ -74,7 +74,7 @@ describe("LAD-11: the sheet holds shove and up until the climax window opens", (
     await rig.clock.advance(30_000);
     rig.act({ actId: "i", verb: "insult", actor: B, with: A, origin: "model", outcome: "landed" });
     await rig.clock.advance(30_000);
-    rig.act({ actId: "s", verb: "shove", actor: A, with: B, origin: "scenario", authoredSkip: true, outcome: "landed" });
+    rig.act({ actId: "s", verb: "shove", actor: A, with: B, origin: "scenario", outcome: "landed" });
     await rig.clock.advance(21_000);
     expect(rig.dir.decide({ actor: B, proposal: { verb: "shove", with: A, origin: "model" }, emotion: emotion({ dominanceAssertion: 0.9, impulsiveProvocation: 0.9, defensiveness: 0.9 }, { toward: [A] }) })).toMatchObject({ kind: "approve", verb: "shove" });
     // A third person has no such answer to give.
@@ -87,7 +87,7 @@ describe("LAD-11: the sheet holds shove and up until the climax window opens", (
     await rig.clock.advance(30_000);
     rig.act({ actId: "i", verb: "insult", actor: B, with: A, origin: "model", outcome: "landed" });
     await rig.clock.advance(5_000);
-    rig.act({ actId: "s", verb: "shove", actor: A, with: B, origin: "scenario", authoredSkip: true, outcome: "landed" });
+    rig.act({ actId: "s", verb: "shove", actor: A, with: B, origin: "scenario", outcome: "landed" });
     await rig.clock.advance(60_000);
     expect(rig.dir.decide({ actor: B, proposal: { verb: "shove", with: A, origin: "model" }, emotion: hot })).toMatchObject({ kind: "veto", rule: "LAD-11" });
   });
@@ -96,7 +96,7 @@ describe("LAD-11: the sheet holds shove and up until the climax window opens", (
     const rig = sheetRig();
     await climbToTheShove(rig);
     await rig.clock.advance(CLIMAX - 60_000 + 5_000);
-    rig.act({ actId: "sl", verb: "slap", actor: A, with: B, origin: "scenario", authoredSkip: true, outcome: "landed" });
+    rig.act({ actId: "sl", verb: "slap", actor: A, with: B, origin: "scenario", outcome: "landed" });
     await rig.clock.advance(25_000);
     expect(rig.dir.decide({ actor: C, proposal: { verb: "shove", with: B, origin: "model" }, emotion: hot })).not.toMatchObject({ rule: "LAD-11" });
   });
