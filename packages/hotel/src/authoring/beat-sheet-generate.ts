@@ -51,7 +51,7 @@ export type SheetDeps = {
   kb?: SlimKb | null | undefined;
   /** The deterministic mock (tests, `PERFECTMAN_LLM_PROVIDER=mock`): no call, no cost. */
   mock?: boolean | undefined;
-  /** The whole step, retries included. Default 55 s for a compile (two calls of 25 s), 25 s for a step at run start. */
+  /** The whole step, retries included. Default 35 s for a compile (one call of up to 32 s), 25 s for a step at run start. */
   deadlineMs?: number | undefined;
   /** Output cap of a call. Default 3600 tokens. */
   maxTokens?: number | undefined;
@@ -67,6 +67,10 @@ export type SheetResult =
 /** USD per million tokens assumed for a model with no listed price: high enough that the cap is a cap, not a hope. */
 export const ASSUMED_PRICE = { inUsdPerMTok: 3, outUsdPerMTok: 15 } as const;
 export const SHEET_MAX_TOKENS = 3600;
+/** The whole compile-time step by default: a model that cannot write a sheet in this fails fast and the scene falls back to the spine, instead of holding the Save button for a minute. */
+export const SHEET_DEADLINE_MS = 35_000;
+/** One call may use nearly all of it: the first model is the one chosen for speed, and a failover with a few seconds left could not finish anyway. */
+export const SHEET_CALL_CAP_MS = 32_000;
 /** pt-BR splits finer than English; chars per token for the pre-call estimate. */
 const CHARS_PER_TOKEN = 3.2;
 const RETRY_MIN_MS = 8_000;
@@ -241,7 +245,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
   if (deps.links.length === 0) return { ok: false, reason: "no_model", detail: "no model with a key for the beat sheet", errors: [], attempts: 0, cost_usd: 0, ms: 0 };
 
   const fetchImpl = deps.fetchImpl ?? fetch;
-  const deadline = started + (deps.deadlineMs ?? SHEET_TIMEOUT_MS * 2 + 5_000);
+  const deadline = started + (deps.deadlineMs ?? SHEET_DEADLINE_MS);
   const maxTokens = deps.maxTokens ?? SHEET_MAX_TOKENS;
   const kb = deps.kb === null ? undefined : deps.kb;
   const refs: DraftReferences | undefined = kb ? draftReferences(kb, brief.situation, brief.cast.length, brief.language) : undefined;
@@ -287,7 +291,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
           method: "POST",
           headers: { ...(link.headers ?? {}), "content-type": "application/json", authorization: `Bearer ${link.apiKey}` },
           body: JSON.stringify(body),
-          signal: AbortSignal.timeout(Math.min(SHEET_TIMEOUT_MS, left)),
+          signal: AbortSignal.timeout(Math.min(SHEET_CALL_CAP_MS, left)),
         });
         if (!response.ok) {
           const said = await response.text().catch(() => "");
@@ -303,7 +307,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
         const timedOut = error instanceof Error && (error.name === "TimeoutError" || error.name === "AbortError");
         // A call that timed out was still billed for its prompt: count the prompt so a loop of timeouts cannot walk past the cap.
         cost += costOf(link, Math.ceil(promptChars / CHARS_PER_TOKEN), 0);
-        lastFail = { reason: timedOut ? "timeout" : "http", detail: scrub(`${link.name}: ${timedOut ? `timed out after ${Math.round(Math.min(SHEET_TIMEOUT_MS, left) / 1000)} s` : "could not be reached"}`), model: link.model };
+        lastFail = { reason: timedOut ? "timeout" : "http", detail: scrub(`${link.name}: ${timedOut ? `timed out after ${Math.round(Math.min(SHEET_CALL_CAP_MS, left) / 1000)} s` : "could not be reached"}`), model: link.model };
         break;
       }
       if (reply.trim() === "") {
