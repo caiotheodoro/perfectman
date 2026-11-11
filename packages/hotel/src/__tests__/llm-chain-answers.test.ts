@@ -99,7 +99,8 @@ describe("answers nobody should be left without", () => {
     await call();
     expect(calls).toEqual([MYTHO.model, LUNARIS.model, GO.model]);
     expect(configs.slice(0, 2).map((cfg) => cfg.timeoutMs)).toEqual([5000, 5000]);
-    expect(configs[2]?.timeoutMs).toBe(3000);
+    // The chain deadline is 16 s: the third link has 6 s left and its own 5 s.
+    expect(configs[2]?.timeoutMs).toBe(5000);
   });
 
   it("asks the same link once more when its body was not JSON, before moving on, and not on a refusal", async () => {

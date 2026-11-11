@@ -9,8 +9,11 @@ export const LLM_P95_BUDGET_MS = 6000;
 export const GENERATE_DEADLINE_MS = 20_000;
 /** An actor is not asked to "say something" again for this long while nothing new happened in its view (the ambient gate). */
 export const AMBIENT_QUIET_MS = 30_000;
-/** One chain call: every link it tries must answer inside this, so a slow first link cannot eat the turn. */
-export const CHAIN_DEADLINE_MS = 13_000;
+/**
+ * One chain call: every link it tries must answer inside this, so a slow first link cannot eat the turn. 16 s (13 s until run 63): two slow links at the adaptive cap (6.5 s each)
+ * still leave a third 3 s, and it stays under the 20 s a whole model turn has, the retry of a turn included (a turn with a retry is rare now that the guards cut and repair first).
+ */
+export const CHAIN_DEADLINE_MS = 16_000;
 
 export class ModelNotAllowedError extends Error {
   constructor(readonly model: string, readonly allowed: readonly string[]) {

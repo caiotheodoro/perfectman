@@ -15,6 +15,7 @@ import { QUIET, input, run } from "./script-step-harness.js";
 
 afterEach(() => {
   delete process.env["PERFECTMAN_FREE_TRIM"];
+  delete process.env["PERFECTMAN_FREE_TRIM_RAMBLE"];
 });
 
 describe("a candidate a little over the cap", () => {
@@ -34,9 +35,27 @@ describe("a candidate a little over the cap", () => {
     expect(lengthOf(r.said)).toBeLessThanOrEqual(cap);
   });
 
-  it("is retried when it is over by more than a quarter", async () => {
+  it("is cut too when it ran on, up to 14 times the cap (run 63: 23 turns came back at 500 to 940 characters), and the retry is saved", async () => {
     const text = candidate(28, "x");
     const r = await run([text, "Vi o cofre aberto ontem à noite."], input(QUIET));
+    expect(r.calls).toBe(1);
+    expect(r.seen).toEqual(["len_trim_free"]);
+    expect(r.said).toBe(`${words(12, "xa")}.`);
+    const ramble = await run([candidate(150, "z"), "Vi o cofre aberto ontem à noite."], input(QUIET));
+    expect(ramble.calls).toBe(1);
+    expect(ramble.said).toBe(`${words(12, "za")}.`);
+    expect(ramble.seen).toEqual(["len_trim_free"]);
+  });
+
+  it("is retried above 14 times the cap: an essay or a loop with a line in it that nobody can pick out", async () => {
+    const r = await run([candidate(14 * cap + 1, "x"), "Vi o cofre aberto ontem à noite."], input(QUIET));
+    expect(r.calls).toBe(2);
+    expect(r.seen).toEqual(["len_retry"]);
+  });
+
+  it("PERFECTMAN_FREE_TRIM_RAMBLE=0 retries what is over by more than a quarter again", async () => {
+    process.env["PERFECTMAN_FREE_TRIM_RAMBLE"] = "0";
+    const r = await run([candidate(28, "x"), "Vi o cofre aberto ontem à noite."], input(QUIET));
     expect(r.calls).toBe(2);
     expect(r.seen).toEqual(["len_retry"]);
     expect(r.said).toBe("Vi o cofre aberto ontem à noite.");
@@ -67,6 +86,7 @@ describe("a candidate a little over the cap", () => {
   });
 
   it("a retry that is a little over is cut, not retried a second time", async () => {
+    process.env["PERFECTMAN_FREE_TRIM_RAMBLE"] = "0";
     const r = await run([candidate(40, "x"), candidate(26, "y")], input(QUIET));
     expect(r.calls).toBe(2);
     expect(r.seen).toEqual(["len_retry", "len_trim_free"]);
@@ -108,24 +128,32 @@ describe("what the retry bill is when 35% of the candidates are over the cap", (
     .sort((a, b) => a - b);
   const REAL = Array.from({ length: 35 }, (_, i) => OVER[Math.floor((i * OVER.length) / 35)]!);
 
-  it("overshoots that are mostly small: 10% of the turns are retried (35% before), and every line ends within the cap", async () => {
+  it("overshoots that are mostly small: no turn is retried now (10% with the cut at a quarter over, 35% before), and every line ends within the cap", async () => {
     const after = await simulate(NEAR);
     expect(after.longest).toBeLessThanOrEqual(cap);
-    expect(after.retries).toBe(10);
-    expect(after.trims).toBe(25);
+    expect(after.retries).toBe(0);
+    expect(after.trims).toBe(35);
+    process.env["PERFECTMAN_FREE_TRIM_RAMBLE"] = "0";
+    const quarter = await simulate(NEAR);
+    expect(quarter.retries).toBe(10);
+    expect(quarter.trims).toBe(25);
     process.env["PERFECTMAN_FREE_TRIM"] = "0";
     const before = await simulate(NEAR);
     expect(before.retries).toBe(35);
     expect(before.longest).toBeLessThanOrEqual(cap);
   });
 
-  it("the overshoots of real lines (runs 52 to 60, a model that did not know the cap): 25% retried, because 25 of the 35 sampled are more than a quarter over", async () => {
+  it("the overshoots of real lines (runs 52 to 60, a model that did not know the cap): 0% retried now, 25% with the cut at a quarter over, because 25 of the 35 sampled are more than a quarter over", async () => {
     expect(OVER).toHaveLength(86);
     expect(REAL.filter((n) => n <= 5).length).toBe(10);
     const after = await simulate(REAL);
     expect(after.longest).toBeLessThanOrEqual(cap);
-    expect(after.retries).toBe(25);
-    expect(after.trims).toBe(10);
+    expect(after.retries).toBe(0);
+    expect(after.trims).toBe(35);
+    process.env["PERFECTMAN_FREE_TRIM_RAMBLE"] = "0";
+    const quarter = await simulate(REAL);
+    expect(quarter.retries).toBe(25);
+    expect(quarter.trims).toBe(10);
   });
 });
 

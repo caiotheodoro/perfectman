@@ -43,7 +43,8 @@ describe("short lines that repeat the actor's own", () => {
     const { visible, own } = heloisa(27);
     const half = "Otávio, meu bem, sente-se. Um café antes de qualquer palavra? A firma fecha às seis e ninguém assina nada depois.";
     const r = await run([half, half], input(visible, own), HOTEL, as("Heloísa"));
-    expect(r.calls).toBe(2);
+    // Repaired before it is retried: the clauses that repeat are struck and the rest is said, one call.
+    expect(r.calls).toBe(1);
     expect(r.said).toBe("A firma fecha às seis e ninguém assina nada depois.");
     expect(r.value.fallbackApplied).toBe(false);
     expect(r.seen).toContain("echo_repaired");
@@ -81,7 +82,7 @@ describe("short lines that repeat the actor's own", () => {
   });
 });
 
-describe("a line stale against the actor's own lines, after its retry", () => {
+describe("a line stale against the actor's own lines, repaired before a retry", () => {
   const room = [line("ana", "Ana", "A lasanha esfriou no balcão ontem."), line("caco", "Caco", "Quanto custou aquele relógio do primo?"), line("ana", "Ana", "A lasanha suja ficou esquecida no balcão, ninguém comeu aquela porcaria.")];
   // Every clause of it says what the room just said, and so does the retry.
   const stale = "Ninguém comeu aquela lasanha suja esquecida no balcão ontem, porcaria esfriou lá.";
@@ -96,7 +97,8 @@ describe("a line stale against the actor's own lines, after its retry", () => {
 
   it("keeps the clauses that are new when 4 words of them remain: the second half of the line, not silence", async () => {
     const r = await run([MORE, MORE], input(room));
-    expect(r.seen).toEqual(["novelty_retry", "echo_repaired"]);
+    expect(r.calls).toBe(1);
+    expect(r.seen).toEqual(["echo_repaired"]);
     expect(r.said).toBe("Mas o cheiro de vinagre e mofo continua ali agora.");
     expect(r.value.fallbackApplied).toBe(false);
   });
@@ -104,7 +106,8 @@ describe("a line stale against the actor's own lines, after its retry", () => {
   it("keeps the sentence that is new when 4 words of it remain", async () => {
     const mixed = "Ninguém comeu aquela lasanha suja esquecida no balcão ontem. O cofre emprestado sumiu da sala dos fundos esta madrugada.";
     const r = await run([mixed, mixed], input(room));
-    expect(r.seen).toEqual(["novelty_retry", "echo_repaired"]);
+    expect(r.calls).toBe(1);
+    expect(r.seen).toEqual(["echo_repaired"]);
     expect(r.said).toBe("O cofre emprestado sumiu da sala dos fundos esta madrugada.");
     expect(r.infos.at(-1)).toMatchObject({ kind: "echo_repaired", before: mixed, after: r.said });
   });

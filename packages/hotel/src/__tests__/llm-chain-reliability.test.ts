@@ -1,3 +1,5 @@
+import { ADAPTIVE_TIMEOUT_FACTOR, linkTimeoutMs } from "../llm/chain-config.js";
+import { CHAIN_DEADLINE_MS, GENERATE_DEADLINE_MS } from "../llm/env.js";
 import { LLMHttpError, LLMTimeoutError } from "@perfectman/server/hotel";
 import type { BuiltPrompt, LLMConfig, LLMProvider, LLMProviderResult } from "@perfectman/server/hotel";
 import { describe, expect, it } from "vitest";
@@ -253,22 +255,22 @@ describe("the deadline bounds every attempt", () => {
     throw new LLMTimeoutError(`Request timed out after ${ms}ms.`);
   };
 
-  it("gives a link behind two slow ones only what is left of the 13 s, and never more than its own timeout", async () => {
+  it("gives a link behind two slow ones only what is left of the 16 s, and never more than its own timeout", async () => {
     const clock = new ManualClock();
     const { call, configs } = chain({ [A.model]: [slowTimeout(5000, clock)], [B.model]: [slowTimeout(5000, clock)] }, [A, B, C], clock);
     await call();
-    expect(configs.map((x) => [x.modelName, x.timeoutMs])).toEqual([[A.model, 5000], [B.model, 5000], [C.model, 3000]]);
+    expect(configs.map((x) => [x.modelName, x.timeoutMs])).toEqual([[A.model, 5000], [B.model, 5000], [C.model, 5000]]);
   });
 
   it("cuts a link's long explicit timeout to the deadline", async () => {
     const { call, configs } = chain({}, [{ ...A, timeoutMs: 60_000 }, B]);
     await call();
-    expect(configs[0]?.timeoutMs).toBe(13_000);
+    expect(configs[0]?.timeoutMs).toBe(16_000);
   });
 
   it("skips the next link for the deadline once under 1.5 s is left, and throws naming it", async () => {
     const clock = new ManualClock();
-    const { c, call, calls } = chain({ [A.model]: [slowTimeout(6000, clock)], [B.model]: [slowTimeout(6000, clock)] }, [{ ...A, timeoutMs: 6000 }, { ...B, timeoutMs: 6000 }, C], clock);
+    const { c, call, calls } = chain({ [A.model]: [slowTimeout(8000, clock)], [B.model]: [slowTimeout(8000, clock)] }, [{ ...A, timeoutMs: 8000 }, { ...B, timeoutMs: 8000 }, C], clock);
     const err = await call().catch((e: unknown) => e);
     expect(calls).toEqual([A.model, B.model]);
     expect(err).toBeInstanceOf(ChainExhaustedError);
@@ -284,15 +286,37 @@ describe("the deadline bounds every attempt", () => {
   });
 });
 
+describe("run 63: a failing first link, a slow second one with a p95 of 6 s, and a third that must still get its turn", () => {
+  // 9 of the second link's 37 calls timed out and the third was skipped for the deadline 9 times: 9 turns with no line (llm_exhausted 9). The first link's failure took about 3 s.
+  const FIRST_FAILURE_MS = 3000;
+  const P95 = 6000;
+  const timeoutOfSecond = (): number => linkTimeoutMs({}, P95, 20, CHAIN_DEADLINE_MS - FIRST_FAILURE_MS);
+  const leftForThird = (): number => CHAIN_DEADLINE_MS - FIRST_FAILURE_MS - timeoutOfSecond();
+
+  it("as it was (13 s, an adaptive cap of 9 s) the third link had 1 s, under the 1.5 s an attempt needs", () => {
+    const oldDeadline = 13_000;
+    const oldTimeout = Math.min(oldDeadline - FIRST_FAILURE_MS, Math.min(9000, Math.round(P95 * ADAPTIVE_TIMEOUT_FACTOR)));
+    expect(oldTimeout).toBe(9000);
+    expect(oldDeadline - FIRST_FAILURE_MS - oldTimeout).toBe(1000);
+  });
+
+  it("now the second waits 6.5 s and the third link has the 6.5 s that are left: it is called and the turn gets a line", () => {
+    expect(timeoutOfSecond()).toBe(6500);
+    expect(leftForThird()).toBe(6500);
+    expect(leftForThird()).toBeGreaterThanOrEqual(1500);
+    expect(CHAIN_DEADLINE_MS).toBeLessThan(GENERATE_DEADLINE_MS);
+  });
+});
+
 describe("a link's timeout follows its own latency when the config does not set one", () => {
   const fast = (latencyMs: number) => ok({ latencyMs });
 
   it("stays at the 5 s default until the link has 10 successful calls, then waits 1.5 times their p95", async () => {
-    const { call, configs } = chain({ [A.model]: [fast(5900)] }, [A, B]);
+    const { call, configs } = chain({ [A.model]: [fast(4000)] }, [A, B]);
     for (let i = 0; i < 10; i++) await call();
     expect(new Set(configs.slice(0, 10).map((x) => x.timeoutMs))).toEqual(new Set([5000]));
     await call();
-    expect(configs[10]?.timeoutMs).toBe(8850);
+    expect(configs[10]?.timeoutMs).toBe(6000);
   });
 
   it("never moves a timeoutMs that the config sets", async () => {
@@ -301,15 +325,15 @@ describe("a link's timeout follows its own latency when the config does not set 
     expect(new Set(configs.map((x) => x.timeoutMs))).toEqual(new Set([5000]));
   });
 
-  it("is capped at 9 s and bounded by what is left of the deadline", async () => {
+  it("is capped at 6.5 s (9 s until run 63) and bounded by what is left of the deadline", async () => {
     const clock = new ManualClock();
     const { call, configs } = chain({ [A.model]: [fast(12_000)] }, [A, B], clock);
     for (let i = 0; i < 11; i++) await call();
-    expect(configs.at(-1)?.timeoutMs).toBe(9000);
-    // a fresh chain deadline is 13 s, so 9 s fits; an 8 s deadline leaves less
-    const short = chain({ [A.model]: [fast(12_000)] }, [A, B], new ManualClock(), { deadlineMs: 7000 });
+    expect(configs.at(-1)?.timeoutMs).toBe(6500);
+    // a fresh chain deadline is 16 s, so 6.5 s fits; a 5.5 s deadline leaves less
+    const short = chain({ [A.model]: [fast(12_000)] }, [A, B], new ManualClock(), { deadlineMs: 5500 });
     for (let i = 0; i < 11; i++) await short.call();
-    expect(short.configs.at(-1)?.timeoutMs).toBe(7000);
+    expect(short.configs.at(-1)?.timeoutMs).toBe(5500);
   });
 
   it("does not let failures raise it: only successful calls make the p95", async () => {
