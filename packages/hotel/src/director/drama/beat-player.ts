@@ -40,6 +40,13 @@ export type BeatPlayerDeps = {
   /** Beat ids already played, for a player rebuilt over the same body (a resume). They are never played again. */
   played?: Iterable<string>;
   tuning?: DramaTuning["beats"];
+  /**
+   * A beat the scene must not lose: a beat sheet's climax (Contract A, "physical climax by 4:00"). It is played as every beat is (a scenario-origin act, every gate
+   * the director's), and where a gate would only keep it from coming it is asked again instead of dropped: a `ladder` veto (the improvised arc did not climb the rungs
+   * below it) is asked again with the authored skip, which the scene's `drama` block must cover (SCN-4); a physical-spacing `budget` veto (an improvised shove a few seconds ago)
+   * and a busy actor are asked again every `retryMs` until `untilMs` after the run began. Any other veto (`may_target`, `may_die`, `calm_room`, `consent_off`, ...) is final, as for any beat.
+   */
+  force?: { id: string; untilMs: number; retryMs?: number };
   logger?: Logger;
   onReport?: (report: BeatReport) => void;
 };
@@ -73,6 +80,8 @@ export class BeatPlayer {
   private readonly walking = new Map<string, Walking>();
   /** Cuts that were sent and whose scene_cut has not been seen yet. */
   private readonly confirming = new Set<string>();
+  /** Forced beats whose `ladder` veto was answered by asking again with the authored skip. */
+  private readonly skipped = new Set<string>();
   private stopped = false;
 
   constructor(private readonly d: BeatPlayerDeps) {
@@ -149,9 +158,10 @@ export class BeatPlayer {
       if (beat.with === undefined || !this.d.drama.effective.may_die.includes(beat.with)) return this.settle(beat, "dropped", "may_die");
       if (this.killedIn.has(port.scene)) return this.settle(beat, "dropped", "kill_budget");
     }
+    const forced = this.d.force?.id === beat.id ? this.d.force : undefined;
     const decision = port.decide({
       actor,
-      proposal: { verb: beat.verb, ...(target !== undefined ? { with: target } : {}), origin: "scenario", ...(beat.authored_skip === true ? { authoredSkip: true } : {}) },
+      proposal: { verb: beat.verb, ...(target !== undefined ? { with: target } : {}), origin: "scenario", ...(beat.authored_skip === true || this.skipped.has(beat.id) ? { authoredSkip: true } : {}) },
     });
     switch (decision.kind) {
       case "approve":
@@ -160,9 +170,11 @@ export class BeatPlayer {
         return this.settle(beat, "played", "approve", { decision });
       case "veto":
         if (decision.reason === "too_far") return this.closeIn(beat, port, attempt, decision);
+        if (forced && this.forceAgain(beat, forced, decision, attempt)) return;
         return this.settle(beat, "dropped", `veto:${decision.reason}`, { decision });
       case "pass":
         // The actor is in the middle of an act of its own: wait for it, a little. Nothing was asked of any gate yet.
+        if (decision.why === "actor_busy" && forced && this.d.clock.now() < this.startedAt + forced.untilMs) return this.schedule(beat, forced.retryMs ?? 1000, () => this.play(beat, attempt + 1));
         if (decision.why === "actor_busy" && (attempt + 1) * this.tuning.busyRetryMs <= this.tuning.busyWindowMs) return this.schedule(beat, this.tuning.busyRetryMs, () => this.play(beat, attempt + 1));
         return this.settle(beat, "dropped", decision.why, { decision });
       case "unsent":
@@ -175,6 +187,23 @@ export class BeatPlayer {
   }
 
   /**
+   * A forced beat was vetoed by a gate that only delays it. True when it was asked for again: at once with the authored skip after a rung veto the beat did
+   * not already carry, or in `retryMs` after a spacing veto while the deadline has not passed. False for every other veto, and for these once nothing is left to try.
+   */
+  private forceAgain(beat: Extract<ScenarioBeat, { kind: "act" }>, force: NonNullable<BeatPlayerDeps["force"]>, decision: Extract<DramaDecision, { kind: "veto" }>, attempt: number): boolean {
+    if (decision.reason === "ladder" && decision.detail === "rung" && beat.authored_skip !== true && !this.skipped.has(beat.id) && this.d.drama.canSkip) {
+      this.skipped.add(beat.id);
+      this.schedule(beat, 0, () => this.play(beat, attempt + 1));
+      return true;
+    }
+    if (decision.reason === "budget" && decision.detail === "physical" && this.d.clock.now() < this.startedAt + force.untilMs) {
+      this.schedule(beat, force.retryMs ?? 1000, () => this.play(beat, attempt + 1));
+      return true;
+    }
+    return false;
+  }
+
+  /**
    * GATE-7 vetoed an authored contact verb: the pair is apart. Walk them together and ask again, until they are adjacent (the gate then says yes), the
    * window ends, or the scene is cut. Only a distance veto comes here; no other gate is cured by walking, so none is retried.
    */
@@ -183,11 +212,13 @@ export class BeatPlayer {
     const walk = this.walking.get(beat.id) ?? { since: now, scene: port.scene, walkedAt: Number.NEGATIVE_INFINITY };
     // Without a way to walk, or without a target to walk to, a distance veto is as final as any other.
     if (!this.d.walkCloser || beat.with === undefined) return this.settle(beat, "dropped", "veto:too_far", { decision });
-    if (now - walk.since >= this.tuning.walkWindowMs) return this.settle(beat, "dropped", "veto:too_far", { decision, detail: "retry_window_expired" });
+    // A forced beat keeps walking up to its deadline, not only for the usual window.
+    const end = Math.max(walk.since + this.tuning.walkWindowMs, this.d.force?.id === beat.id ? this.startedAt + this.d.force.untilMs : 0);
+    if (now >= end) return this.settle(beat, "dropped", "veto:too_far", { decision, detail: "retry_window_expired" });
     if (now - walk.walkedAt >= this.tuning.walkRepathMs && this.d.walkCloser(beat.actor, beat.with)) walk.walkedAt = now;
     this.walking.set(beat.id, walk);
     // Never past the window's end: the last ask is made when it closes, so the drop is not a retry's delay late.
-    const wait = Math.min(this.tuning.walkRetryMs, Math.max(0, walk.since + this.tuning.walkWindowMs - now));
+    const wait = Math.min(this.tuning.walkRetryMs, Math.max(0, end - now));
     this.schedule(beat, wait, () => this.play(beat, attempt));
   }
 

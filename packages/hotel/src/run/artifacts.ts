@@ -57,6 +57,19 @@ export type ReplayManifest = {
     /** What the spine opened of the ladder (errata P8): the shove at its turn, the slap at its decision, and the steps that found no evidence; each grant with when, who and why. Absent with `PERFECTMAN_SPINE_ESCALATE=0`. */
     unlocks?: { shove: number; slap: number; skipped_no_evidence: number; grants: Array<{ at_ms: number; level: string; aggressor: string; target: string; why: string }> };
   };
+  /**
+   * The scene's beat sheet as the run played it (Contract A): where it came from, its arc, what became of the climax (the contract's hard invariant is a physical act by 4:00, so
+   * `climax.at_ms` is the number to read) and how many beats played, played late or dropped. Absent for a scene that played the generic spine (see `beat_sheet_fallback` in the log).
+   */
+  beat_sheet?: {
+    generated_by?: { model: string; cost_usd: number; ms: number; mock?: true };
+    arc: { inciting_at_ms: number; reversal_at_ms?: number; climax_at_ms: number; aftermath_until_ms: number };
+    beats: number;
+    played: number;
+    late: number;
+    dropped: Record<string, number>;
+    climax: { id: string; planned_ms: number; outcome: "pending" | "played" | "dropped"; at_ms?: number; why?: string };
+  };
   /** The scenario's drama as the run enforced it: where the block came from (`authored`, `default`, `off`, `free_play`) and what it allowed. */
   drama?: { source: string; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean };
   /** A pulse did not drain before teardown, as in the HTTP controller's manifest. */

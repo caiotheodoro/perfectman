@@ -2,11 +2,13 @@ import {
   compilePersonaMarkdown,
   compileRunInputs,
   defaultPresetsRoot,
+  loadSlimKbFromEnv,
   parseMarkdown,
   draftStory,
   loadPresets,
   StoryDraftError,
 } from "@perfectman/server/hotel";
+import type { BeatSheet, SlimKb } from "@perfectman/shared";
 import type { CompileResult, Diagnostic, DraftChain, StoryDraft } from "@perfectman/server/hotel";
 import { createHash, randomUUID } from "node:crypto";
 import type { AutolookRequest, AutolookResponse, CompileResponse, ValidateRequest, ValidateResponse, PresetList, PathMessage } from "../director/index.js";
@@ -20,6 +22,10 @@ import type { ScenarioBody } from "../run/scenario-body.js";
 import { draftToFiles } from "./draft-to-files.js";
 import { compileSceneBeats, countCuts } from "./scenario-beats.js";
 import type { ScenarioBeat } from "./scenario-beats.js";
+import { compileBeatSheet, settleSheetDrama } from "./beat-sheet.js";
+import { buildSheetLinks, sheetMode } from "./beat-sheet-links.js";
+import { generateBeatSheet, sheetInputHashOf } from "./beat-sheet-generate.js";
+import type { SheetBrief, SheetLink } from "./beat-sheet-generate.js";
 import { FREE_PLAY_DRAMA, compileDramaForm, compileSceneDrama, defaultSceneDrama } from "./scenario-drama.js";
 import type { DramaCompile, DramaMode, SceneCastMember, ScenarioDrama } from "./scenario-drama.js";
 import { formArrivals, formStage, formToDraft, parseForm } from "./scenario-form.js";
@@ -45,10 +51,15 @@ export type AuthoringDeps = {
   fetchImpl?: typeof fetch;
   /** Reads a chain link's key by its env var NAME; defaults to `process.env`. Tests inject it so no real variable is touched. */
   env?: (name: string) => string | undefined;
+  /**
+   * The beat sheet's director step (Contract A). On with a real provider (`PERFECTMAN_BEAT_SHEET=0` turns it off, `mock` writes the deterministic sheet); `mode` overrides the env. `model` is
+   * `PERFECTMAN_BEATSHEET_MODEL` when not given. `kb` is the reference KB for the craft context (`undefined` reads `PERFECTMAN_KB_SLIM`, `null` none).
+   */
+  sheet?: { mode?: "off" | "mock" | "llm"; model?: string; kb?: SlimKb | null; deadlineMs?: number };
 };
 
-/** What the scene's `drama` block and `beats` leave after compile, the body's `drama_mode`, and the warnings of both. */
-type DramaPart = { drama?: ScenarioDrama | undefined; dramaMode?: DramaMode | undefined; beats?: ScenarioBeat[] | undefined; dramaWarnings: PathMessage[] };
+/** What the scene's `drama` block and `beats` leave after compile, the body's `drama_mode`, and the warnings of both. `rawSheet` is the `beat_sheet` the scene wrote, before it is read against the cast. */
+type DramaPart = { drama?: ScenarioDrama | undefined; dramaMode?: DramaMode | undefined; beats?: ScenarioBeat[] | undefined; dramaWarnings: PathMessage[]; rawSheet?: unknown };
 
 const toRows = (diagnostics: readonly Diagnostic[], level: "error" | "warning"): PathMessage[] =>
   diagnostics
@@ -84,7 +95,7 @@ export class AuthoringService {
     const cast = Array.isArray(form.cast) ? form.cast : [];
     const people = cast.map((c, i) => ({ id: `person-${i + 1}`, displayName: typeof c?.name === "string" ? c.name : "" }));
     const result = form.drama === undefined ? undefined : compileDramaForm(form.drama, { names: people.map((p) => p.displayName), ids: people.map((p) => p.id) }, { sceneCuts: countCuts(form.beats) });
-    return this.settleDrama(result, form.beats, people);
+    return { ...this.settleDrama(result, form.beats, people), ...(form.beat_sheet !== undefined ? { rawSheet: form.beat_sheet } : {}) };
   }
 
   /**
@@ -109,8 +120,8 @@ export class AuthoringService {
     return { ...(result?.drama ? { drama: result.drama } : {}), ...(script && script.beats.length > 0 ? { beats: script.beats } : {}), dramaWarnings: [...(result?.warnings ?? []), ...(script?.warnings ?? [])] };
   }
 
-  private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } & DramaPart {
-    const { bundle, looks, arrivals, stage, drama, dramaMode, beats, dramaWarnings } = this.resolveSource(source);
+  private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage; sheet?: BeatSheet; sheetStale?: boolean; brief?: SheetBrief } & DramaPart {
+    const { bundle, looks, arrivals, stage, drama, dramaMode, beats, dramaWarnings, rawSheet } = this.resolveSource(source);
     if (!bundle.scenario) throw new AuthoringError(400, "bad_request", "source has no scenario file");
     const result = compileRunInputs(
       { kind: "markdown", scenario: bundle.scenario, personas: bundle.personas },
@@ -129,14 +140,73 @@ export class AuthoringService {
     // A markdown scenario (a preset) carries its `drama` block and `beats` in the frontmatter, or none: it is settled here. A form was settled already.
     const scene = drama === undefined && beats === undefined && result.ok && result.summary ? this.sceneScript(bundle.scenario.text, result.summary.agents) : undefined;
     const part = scene ?? { drama, dramaMode, beats, dramaWarnings: [] };
-    return { result, delays, looks, arrivals, dramaWarnings: [...dramaWarnings, ...part.dramaWarnings], ...(stage ? { stage } : {}), ...(part.drama ? { drama: part.drama } : {}), ...(part.dramaMode ? { dramaMode: part.dramaMode } : {}), ...(part.beats ? { beats: part.beats } : {}) };
+    const sheetPart = this.settleSheet(scene?.rawSheet ?? rawSheet, result, part, source);
+    const finalDrama = sheetPart.drama ?? part.drama;
+    // `null` from the sheet: the block was widened to cover it, so it is no longer the default block.
+    const finalMode = sheetPart.dramaMode === undefined ? part.dramaMode : (sheetPart.dramaMode ?? undefined);
+    return {
+      result, delays, looks, arrivals,
+      dramaWarnings: [...dramaWarnings, ...part.dramaWarnings, ...sheetPart.warnings],
+      ...(stage ? { stage } : {}),
+      ...(finalDrama ? { drama: finalDrama } : {}),
+      ...(finalMode ? { dramaMode: finalMode } : {}),
+      ...(part.beats ? { beats: part.beats } : {}),
+      ...(sheetPart.sheet ? { sheet: sheetPart.sheet } : {}),
+      ...(sheetPart.stale ? { sheetStale: true } : {}),
+      ...(sheetPart.brief ? { brief: sheetPart.brief } : {}),
+    };
+  }
+
+  /**
+   * The scene's `beat_sheet`, if it wrote one (or saved one before): read against the cast and the scene's block. An error fails the compile as a script's
+   * does. A sheet this service wrote (`generated_by.input_hash`) for inputs that have since changed is stale: it is dropped (`sheetStale`) and the caller writes a
+   * new one; a sheet with no `generated_by` is the author's and stays, whatever else changes. A sheet that holds widens the scene's default block just enough to cover its acts.
+   */
+  private settleSheet(raw: unknown, result: CompileResult, part: DramaPart, source: string): { sheet?: BeatSheet; stale?: boolean; drama?: ScenarioDrama; dramaMode?: "default" | null; warnings: PathMessage[]; brief?: SheetBrief } {
+    if (!result.ok || !result.summary || !result.config || result.config.agents.length < 2) return { warnings: [] };
+    const brief = this.sheetBrief(result, part, source);
+    if (raw === undefined || raw === null) return { warnings: [], brief };
+    if ((part.beats?.length ?? 0) > 0) throw new AuthoringError(422, "bad_scenario", "scenario did not compile", [{ path: "beat_sheet", message: "beat_sheet and beats are two scripts for the same scene: write one" }]);
+    if (part.dramaMode === "off") throw new AuthoringError(422, "bad_scenario", "scenario did not compile", [{ path: "beat_sheet", message: "drama is off, so the scene has no acts to sheet" }]);
+    const people = result.summary.agents.map((a) => ({ id: a.id, displayName: a.displayName }));
+    const compiled = compileBeatSheet(raw, people, { drama: part.dramaMode === "default" || part.drama === undefined ? "derive" : part.drama, room: brief.room });
+    const warnings = compiled.warnings.map((w) => ({ path: w.path, message: w.message }));
+    if (!compiled.sheet) {
+      // A sheet the model wrote that no longer holds (the rules moved on, the cast changed) is written again; the author's own is an error they can read.
+      const mine = typeof raw === "object" && raw !== null && typeof (raw as { generated_by?: { input_hash?: unknown } }).generated_by?.input_hash === "string";
+      if (mine) return { stale: true, warnings: [{ path: "beat_sheet", message: "beat_sheet.stale: the saved sheet no longer holds and is written again" }], brief };
+      throw new AuthoringError(422, "bad_scenario", "scenario did not compile", compiled.errors);
+    }
+    const hash = compiled.sheet.generated_by?.input_hash;
+    if (hash !== undefined && hash !== sheetInputHashOf(brief)) return { stale: true, warnings: [{ path: "beat_sheet", message: "beat_sheet.stale: the scenario changed since the sheet was written, so it is written again" }], brief };
+    const settled = settleSheetDrama(compiled.sheet, part.drama, part.dramaMode === "default" ? "default" : undefined);
+    return { sheet: compiled.sheet, warnings, ...(settled ? { drama: settled.drama, dramaMode: settled.drama_mode ?? null } : {}), brief };
+  }
+
+  /** What the director step is told about the scene: the compiled cast (their goals and secrets), the situation, the language, the block, and the places the builder named. */
+  private sheetBrief(result: CompileResult, part: DramaPart, source: string): SheetBrief {
+    const agents = result.config?.agents ?? [];
+    const form = parseForm(source);
+    const places = (form?.stage?.places ?? []).flatMap((p) => (typeof p === "string" ? [p] : p && typeof p === "object" && typeof (p as { name?: unknown }).name === "string" ? [(p as { name: string }).name] : []));
+    const goals = new Map((form?.cast ?? []).map((c) => [String(c?.name ?? "").trim().toLowerCase(), { goal: typeof c?.goal === "string" ? c.goal : undefined, voice: typeof c?.voice === "string" ? c.voice : undefined }]));
+    return {
+      title: result.config?.simulation.name ?? "",
+      situation: agents[0]?.promptProfile.scenarioContext?.roomContext ?? "",
+      language: agents[0]?.promptProfile.language === "en" ? "en" : "pt-BR",
+      cast: agents.map((a) => {
+        const own = goals.get(a.promptProfile.displayName.trim().toLowerCase());
+        return { id: a.id, name: a.promptProfile.displayName, goal: own?.goal, voice: own?.voice, objective: a.promptProfile.hiddenObjective };
+      }),
+      drama: part.dramaMode === "default" || part.drama === undefined ? "derive" : part.drama,
+      ...(places.length > 0 ? { room: { places } } : {}),
+    };
   }
 
   /** SCN-5 for a markdown scenario's frontmatter `drama` and `beats`; the beats that cut the scene are the cuts SCN-6 asks for. Errors fail the compile, as a form's do. */
   private sceneScript(text: string, agents: readonly { id: string; displayName: string }[]): DramaPart {
     const front = parseMarkdown(text).frontmatter;
     const result = front["drama"] === undefined ? undefined : compileSceneDrama(front["drama"], agents, { sceneCuts: countCuts(front["beats"]) });
-    return this.settleDrama(result, front["beats"], agents);
+    return { ...this.settleDrama(result, front["beats"], agents), ...(front["beat_sheet"] !== undefined ? { rawSheet: front["beat_sheet"] } : {}) };
   }
 
   validate(req: ValidateRequest): ValidateResponse {
@@ -156,9 +226,14 @@ export class AuthoringService {
     return { ok: result.ok, errors: toRows(result.diagnostics, "error"), warnings: [...toRows(result.diagnostics, "warning"), ...dramaWarnings] };
   }
 
+  /** The compiled body, with a hand-written (or saved, still current) `beat_sheet` in it; sync, so it never calls a model. */
   compile(req: { source?: unknown }): CompileResponse {
+    return this.compileCore(req).response;
+  }
+
+  private compileCore(req: { source?: unknown }): { response: CompileResponse; body: ScenarioBody; brief?: SheetBrief; stale: boolean } {
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "compile needs source");
-    const { result, delays, looks, arrivals, stage, drama, dramaMode, beats } = this.compileSource(req.source);
+    const { result, delays, looks, arrivals, stage, drama, dramaMode, beats, sheet, sheetStale, brief } = this.compileSource(req.source);
     if (!result.ok || !result.config || !result.summary) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", toRows(result.diagnostics, "error"));
     }
@@ -175,11 +250,68 @@ export class AuthoringService {
       ...(drama ? { drama } : {}),
       ...(dramaMode ? { drama_mode: dramaMode } : {}),
       ...(beats ? { beats } : {}),
+      ...(sheet ? { beat_sheet: sheet } : {}),
     };
+    this.checkSize(body);
+    return { response: { body, schema_version: SCENARIO_BODY_VERSION }, body, ...(brief ? { brief } : {}), stale: sheetStale === true };
+  }
+
+  private checkSize(body: ScenarioBody): void {
     if (Buffer.byteLength(JSON.stringify(body)) > MAX_BODY_BYTES) {
       throw new AuthoringError(422, "bad_scenario", "compiled scenario is larger than 256 KiB", [{ path: "body", message: "too large" }]);
     }
+  }
+
+  /**
+   * `compile` plus the director step (Contract A): a scene of two or more actors that has no authored `beats`, is not `drama: off` and carries no current
+   * `beat_sheet` gets one written by a model here, with the cost cap and the timeout of `generateBeatSheet`. It never fails the compile: a sheet that could
+   * not be had leaves the body without one and with `beat_sheet_error` saying why, and the run then plays the old scene spine (`beat_sheet_fallback`).
+   * Called again for a new version of the scenario, it writes a new sheet; a saved sheet written for the same inputs is kept as it is.
+   */
+  async compileWithSheet(req: { source?: unknown }): Promise<CompileResponse> {
+    const core = this.compileCore(req);
+    const { body, brief } = core;
+    const mode = this.sheetMode();
+    if (!brief || body.beat_sheet || mode === "off" || (body.beats?.length ?? 0) > 0 || body.drama_mode === "off") return core.response;
+    const generated = await generateBeatSheet(brief, { links: mode === "mock" ? [] : this.sheetLinks(), mock: mode === "mock", kb: this.sheetKb(), ...(this.deps.fetchImpl ? { fetchImpl: this.deps.fetchImpl } : {}), ...(this.deps.sheet?.deadlineMs !== undefined ? { deadlineMs: this.deps.sheet.deadlineMs } : {}) });
+    if (!generated.ok) {
+      body.beat_sheet_error = `${generated.reason}: ${generated.detail}`.slice(0, 200);
+      return { body, schema_version: SCENARIO_BODY_VERSION };
+    }
+    body.beat_sheet = generated.sheet;
+    const settled = settleSheetDrama(generated.sheet, body.drama, body.drama_mode);
+    if (settled) {
+      body.drama = settled.drama;
+      if (settled.drama_mode) body.drama_mode = settled.drama_mode;
+      else delete body.drama_mode;
+    }
+    this.checkSize(body);
     return { body, schema_version: SCENARIO_BODY_VERSION };
+  }
+
+  private env(name: string): string | undefined {
+    return (this.deps.env ?? ((n: string) => process.env[n]))(name);
+  }
+
+  private sheetMode(): "off" | "mock" | "llm" {
+    return this.deps.sheet?.mode ?? sheetMode(this.deps.llm.provider, (n) => this.env(n));
+  }
+
+  private sheetKb(): SlimKb | null | undefined {
+    return this.deps.sheet?.kb !== undefined ? this.deps.sheet.kb : loadSlimKbFromEnv();
+  }
+
+  /** The models the director step may call: see `buildSheetLinks`. The legacy single link reads its key from the service's own `apiKey`. */
+  private sheetLinks(): SheetLink[] {
+    const llm = this.deps.llm;
+    const legacy = !llm.chain || llm.chain.length === 0;
+    return buildSheetLinks({
+      llm,
+      env: (name) => (legacy && name === llm.apiKeyEnv && this.deps.apiKey ? this.deps.apiKey : this.env(name)),
+      model: this.env("PERFECTMAN_BEATSHEET_MODEL") ?? this.deps.sheet?.model,
+      extraBody: this.env("PERFECTMAN_BEATSHEET_EXTRA_BODY"),
+      price: this.env("PERFECTMAN_BEATSHEET_PRICE"),
+    });
   }
 
   /**

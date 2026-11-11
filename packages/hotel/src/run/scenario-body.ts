@@ -1,3 +1,5 @@
+import type { BeatSheet } from "@perfectman/shared";
+import { cleanBeatSheet } from "../authoring/beat-sheet.js";
 import { cleanBeats } from "../authoring/scenario-beats.js";
 import type { ScenarioBeat } from "../authoring/scenario-beats.js";
 import { DRAMA_OFF, cleanDrama, defaultSceneDrama, isDramaOff } from "../authoring/scenario-drama.js";
@@ -38,6 +40,13 @@ export type ScenarioBody = {
   drama_mode?: DramaMode;
   /** The scene's script (errata P4-01): authored acts and scene cuts the sidecar plays on the run's clock. Absent is no script. Additive and optional like `drama`, and the hotel never reads it. */
   beats?: ScenarioBeat[];
+  /**
+   * The scene's beat sheet (Contract A, `packages/shared/src/beat-sheet`): arc, blocking, props, planted information, camera intent and a physical climax by 4:00, written at
+   * compile by a director step or by hand, refs as agent ids. A scene with a valid sheet plays it instead of the generic scene spine. Additive and optional; the hotel never reads it.
+   */
+  beat_sheet?: BeatSheet;
+  /** Why the scene has no `beat_sheet` when it should have had one (the generator failed or timed out at compile, the sheet did not hold when read): the run's `beat_sheet_fallback` line says it. */
+  beat_sheet_error?: string;
 };
 
 export type ParsedBody = { ok: true; body: ScenarioBody } | { ok: false; errors: { path: string; message: string }[] };
@@ -89,8 +98,17 @@ export function parseScenarioBody(raw: unknown): ParsedBody {
       ...cleanStage(o["stage"]),
       ...cleanDramaAndMode(o, config.agents.map((a) => a.id)),
       ...cleanBeats(o["beats"], config.agents.map((a) => a.id)),
+      ...cleanSheet(o, config.agents.map((a) => ({ id: a.id, displayName: a.promptProfile.displayName }))),
     },
   };
+}
+
+/** The sheet, read against the block and the script the body kept (the same strict read the compile used): one that does not hold is dropped with its reason, and the old spine plays. */
+function cleanSheet(o: Record<string, unknown>, cast: Array<{ id: string; displayName: string }>): { beat_sheet?: BeatSheet; beat_sheet_error?: string } {
+  const { drama } = cleanDramaAndMode(o, cast.map((c) => c.id));
+  const off = o["drama_mode"] === "off" || isDramaOff(o["drama"]);
+  const hasBeats = cleanBeats(o["beats"], cast.map((c) => c.id)).beats !== undefined;
+  return cleanBeatSheet(o["beat_sheet"], cast, { drama, off, hasBeats, error: o["beat_sheet_error"] });
 }
 
 /**

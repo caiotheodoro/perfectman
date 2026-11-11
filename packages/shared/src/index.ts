@@ -128,5 +128,8 @@ export * from "./kb/slim-render.js";
 export * from "./kb/beat-craft.js";
 export * from "./kb/slim-fixture.js";
 
+// The beat sheet (Contract A): the scene's arc, blocking, props, planted information and physical climax, written at scene compile.
+export * from "./beat-sheet/index.js";
+
 // Script-likeness: dialogue metrics measured against real plays, the norms they are read against, and the score (docs/plans/script-likeness.md).
 export * from "./script-likeness/index.js";

@@ -53,6 +53,12 @@ export type ScenarioForm = {
    * `beats`. A cut here is what SCN-6 asks of a scene that can kill.
    */
   beats?: ScenarioFormBeat[];
+  /**
+   * The scene's beat sheet (Contract A): arc, blocking, props, planted information, camera intent and the physical climax, cast refs by name. Absent, the
+   * compile writes one (a model, once per version of the scenario). A sheet with a `generated_by` is the compile's own and is written again when the scenario
+   * changes; one without is the author's and is kept. Compiled into the body's `beat_sheet`.
+   */
+  beat_sheet?: unknown;
   stage?: {
     room?: number | null;
     places?: unknown[];

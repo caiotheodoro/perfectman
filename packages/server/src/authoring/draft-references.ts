@@ -160,6 +160,19 @@ export function draftReferences(kb: SlimKb, idea: string, people: number | undef
 const copies = (text: string, guard: ReferenceGuard): boolean => [...shinglesOf(text)].some((s) => guard.shingles.has(s));
 
 /**
+ * The first of `texts` that repeats a run of five words of a reference the model was shown, or borrows a name from one (a word of a shown play's title or
+ * author that `given` does not use). The beat sheet's prose (premise, stakes, gists, notes) goes through this; undefined when it is clean.
+ */
+export function referenceCopy(texts: readonly string[], guard: ReferenceGuard, given: string): string | undefined {
+  const used = new Set(wordsOf(given));
+  for (const text of texts) {
+    if (copies(text, guard)) return `copies a run of five words of a reference scene: "${text.slice(0, 60)}"`;
+    for (const w of wordsOf(text)) if (guard.names.has(w) && !used.has(w)) return `borrows the name "${w}" from a reference scene`;
+  }
+  return undefined;
+}
+
+/**
  * What the model wrote, checked against what it was shown. A line (something a person would say) that repeats a run of five words of a
  * reference is cut; the rest of the draft is kept. Prose that does (title, situation, goal, obstacle, method, voice) or a person named by a
  * word of a shown play's title or author that the idea did not use is not a draft to repair: it throws, and the caller treats it as an
