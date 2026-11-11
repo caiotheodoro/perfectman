@@ -44,5 +44,6 @@ export type { Narration } from "./narrator/narrator.js";
 export { renderHtmlPage } from "./render/html.js";
 export type { BenchReport } from "./cli/bench.js";
 
-export * from "./humanlike/index.js";
+// A namespace: humanlike and cinematic both export `Band` and `bandScore`, and the two are different shapes.
+export * as humanlike from "./humanlike/index.js";
 export { runHumanlikeCli } from "./cli/humanlike.js";
