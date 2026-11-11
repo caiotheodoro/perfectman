@@ -119,7 +119,7 @@ export type Rig = {
   recorded: Array<{ dir: string; room: string | undefined; kind: string; data: Record<string, unknown> }>;
 };
 
-export function makeRig(o: { block?: ScenarioDrama; mode?: DramaMode; humans?: boolean; climaxAtMs?: number; blocks?: (human: number, actor: number) => boolean; tuning?: DramaTuning; resumed?: boolean; session?: DramaSession | null; noState?: boolean; deps?: Partial<DramaDirectorDeps> } = {}): Rig {
+export function makeRig(o: { block?: ScenarioDrama; mode?: DramaMode; humans?: boolean; climaxAtMs?: number; sheet?: { climaxAtMs: number }; blocks?: (human: number, actor: number) => boolean; tuning?: DramaTuning; resumed?: boolean; session?: DramaSession | null; noState?: boolean; deps?: Partial<DramaDirectorDeps> } = {}): Rig {
   const clock = new ManualClock();
   const link = new FakeLink();
   const world = new ScriptWorld();
@@ -131,7 +131,7 @@ export function makeRig(o: { block?: ScenarioDrama; mode?: DramaMode; humans?: b
     link,
     world,
     // The suite's default is the hotel's own gate (a violent act at a human needs the chip); a test of the owner's decision asks for `humans: true`.
-    scenario: resolveRunDrama({ ...(o.block ? { drama: o.block } : {}), ...(o.mode ? { drama_mode: o.mode } : {}), drama_ext: { may_target_humans: o.humans === true, ...(o.climaxAtMs ? { pressure_floor: { climax_at_ms: o.climaxAtMs } } : {}) } }, {}),
+    scenario: resolveRunDrama({ ...(o.block ? { drama: o.block } : {}), ...(o.mode ? { drama_mode: o.mode } : {}), drama_ext: { may_target_humans: o.humans === true, ...(o.climaxAtMs ? { pressure_floor: { climax_at_ms: o.climaxAtMs } } : {}) }, ...(o.sheet ? { beat_sheet: { arc: { climax_at_ms: o.sheet.climaxAtMs } } } : {}) }, {}),
     session: o.session === undefined ? SESSION : o.session,
     record: (d, room, kind, data) => void recorded.push({ dir: d, room, kind, data }),
     ...(o.tuning ? { tuning: o.tuning } : {}),

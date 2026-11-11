@@ -55,7 +55,8 @@ describe("the presets through the authoring service", () => {
   it.each(KEYS)("%s compiles, and its body carries the scene's drama block in agent ids", async (key) => {
     const { drama, ids, raw } = compiled((await service().preset(key)).source);
     expect(drama).toBeDefined();
-    expect((raw as { drama?: ScenarioDrama }).drama).toEqual({ ...drama, may_target_humans: true });
+    const written = { ...drama, may_target_humans: true };
+    expect((raw as { drama?: ScenarioDrama }).drama).toEqual(written);
     for (const [a, v] of drama!.may_target) {
       expect(ids).toContain(a);
       expect(v === "@human" || ids.includes(v)).toBe(true);

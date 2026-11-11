@@ -152,6 +152,7 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   "sheet-silence-kept": [0, 0],
   "sheet-not-all-talk": [3, 1e9],
   "sheet-beats-played": [0.9, 1],
+  "sheet-improv-held": [0, 0],
 };
 
 export type ProbeInput = {

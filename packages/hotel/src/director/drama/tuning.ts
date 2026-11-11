@@ -69,6 +69,13 @@ export type DramaTuning = {
    */
   pressure: { floor: { startFrac: number; max: number; heat: number; maxRung: number; grievanceAt: number } };
   /**
+   * LAD-11, the sheet owns the high rungs: in a scene with a beat sheet (`RunDrama.sheet`) the model's proposals and the director's own beats do not go above rung `minRung - 1` (a
+   * shove or anything higher is held) until the climax window opens, `beforeClimaxMs` before the sheet's `climax_at_ms`, so the reversal and the climax are the sheet's and not
+   * something the improvised arc used up at 0:34 and 0:59 (the integration of B1 and B2). An answer is the exception: the target of an authored act in the last `answerMs` may hit back.
+   * The sheet's own acts (scenario origin), the pressure floor and the climax forcing are not touched. `beforeClimaxMs: 0` with `minRung: 7` turns it off.
+   */
+  sheetHold: { minRung: number; beforeClimaxMs: number; answerMs: number };
+  /**
    * LAD-10: at most `maxActors` actors, or `castFraction` of the cast if that is fewer (never fewer than one), hold a rung of `minRung` or more at once. `answer` (errata P9): an
    * actor the scene spine opened a pair for may answer a blow of `minRung` or more that person threw at it, beyond the cap: a fight of two is not a spread to a third. A third person is
    * still capped. Off restores the cap as it was (one actor per scene in a cast of 3 to 5). `ageMs` (run 63): a rung of `minRung` or more
@@ -174,6 +181,7 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
     unlock: { windowMs: 90_000, holdMs: 120_000, shoveEvents: 2, slapEvents: 3, provocation: 0.85, volition: 0.95, climbExtendMs: 60_000 },
   },
   pressure: { floor: { startFrac: 0.1, max: 0.8, heat: 0.1, maxRung: 4, grievanceAt: 0.45 } },
+  sheetHold: { minRung: 3, beforeClimaxMs: 20_000, answerMs: 30_000 },
   contagion: { minRung: 3, maxActors: 2, castFraction: 1 / 3, answer: true, ageMs: 90_000 },
   drivers: {
     glare: [d("act.jealousInspection"), d("act.resentfulColdness"), d("social.jealousy"), d("social.envy"), d("rel.envy"), d("rel.provocation")],

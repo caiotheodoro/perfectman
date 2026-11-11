@@ -31,11 +31,11 @@ function judge(id: string, r: SimResult, edit: (events: DramaEvent[]) => DramaEv
 }
 
 describe("the drama bench on the stack as it is", () => {
-  it("runs the nine scenarios of the act contract, the two of the cinematic revamp and the five of the beat sheet, and every one passes, with every check and every probe", async () => {
+  it("runs the nine scenarios of the act contract, the two of the cinematic revamp and the seven of the beat sheet, and every one passes, with every check and every probe", async () => {
     const report = await runDramaBench();
     expect(report.perScenario.map((e) => e.id)).toEqual(DRAMA_SCENARIOS.map((s) => s.id));
     expect(report.perScenario.filter((e) => !e.passed).map((e) => ({ id: e.id, failed: e.failed, probes: e.probesFailed, checks: e.checks.filter((c) => !c.ok).map((c) => c.name) }))).toEqual([]);
-    expect({ run: report.scenariosRun, failed: report.scenariosFailed, rate: report.passRate }).toEqual({ run: 16, failed: 0, rate: 1 });
+    expect({ run: report.scenariosRun, failed: report.scenariosFailed, rate: report.passRate }).toEqual({ run: 18, failed: 0, rate: 1 });
     expect(report.checksFailed).toBe(0);
   });
 
@@ -57,6 +57,8 @@ describe("the drama bench on the stack as it is", () => {
       "sheet_climax_waits_for_spacing",
       "sheet_kill_climax_then_cut",
       "sheet_gates_hold",
+      "sheet_owns_high_rungs",
+      "sheet_hold_follows_the_climax",
     ]);
   });
 
@@ -197,6 +199,17 @@ describe("the bench gate (scripts/ci/check-bench-gate.mjs)", () => {
     expect(late.checks).toContain("the slap, the sheet's climax, started as a scenario act by 240 s");
     const twice = judge("sheet_climax_by_240", r, (e) => [...e, { ...e.find((x) => x.kind === "act_started" && x.verb === "slap")!, atMs: 270_000, actId: "again" } as DramaEvent]);
     expect(twice.checks.some((c) => c.startsWith("sheet-one-climax"))).toBe(true);
+  });
+
+  it("[LAD-11] an improvised shove or slap in the first minute under a sheet (run 63's shape) is a miss in the scenario and in the probe", async () => {
+    const r = await result("sheet_owns_high_rungs");
+    expect(judge("sheet_owns_high_rungs", r)).toEqual({ checks: [], probes: [] });
+    const early = judge("sheet_owns_high_rungs", r, (e) => [...e, { kind: "act_started", atMs: 34_000, actId: "early", verb: "shove", actor: "ana", with: "bia", origin: "director" } as DramaEvent].sort((a, b) => a.atMs - b.atMs));
+    expect(early.checks).toContain("no improvised blow before the window opens");
+    expect(early.checks.some((c) => c.startsWith("sheet-improv-held"))).toBe(true);
+    // The sheet's own shove at that second is not one.
+    const authored = judge("sheet_owns_high_rungs", r, (e) => e.map((x) => (x.kind === "act_started" && x.verb === "shove" ? { ...x, atMs: 34_000 } : x)));
+    expect(authored.checks.some((c) => c.startsWith("sheet-improv-held"))).toBe(false);
   });
 
   it("[Contract A] the sheet is the whole script: a scenario act it did not write, or a skip beyond its own, is a miss", async () => {

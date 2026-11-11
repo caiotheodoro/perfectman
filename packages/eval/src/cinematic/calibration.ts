@@ -56,6 +56,8 @@ export type HumanGrade = {
   otherAxes: Record<string, number>;
   /** Overall letter grade, when the page records one. */
   letter?: string;
+  /** The grader's own call on whether a physical climax happened (E3's `climax`), and when. */
+  climax?: { reached: "yes" | "no" | "unsure"; timeS?: number };
   notes?: string;
 };
 
@@ -89,12 +91,21 @@ export function parseHumanGrade(raw: unknown, where = "grade"): HumanGrade {
   }
   const num = (v: unknown): number | undefined => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
   const run = raw["run"] ?? raw["run_id"] ?? raw["runDir"];
+  // E3's export writes the cut as `window_s: [from, to]` (null for the whole run); the judge reads only that window.
+  const win = Array.isArray(raw["window_s"]) && raw["window_s"].length === 2 && raw["window_s"].every((x) => typeof x === "number" && Number.isFinite(x)) ? (raw["window_s"] as [number, number]) : undefined;
+  const climaxRaw = raw["climax"];
+  const reached = isObj(climaxRaw) ? climaxRaw["reached"] : undefined;
+  const climax: HumanGrade["climax"] | undefined =
+    isObj(climaxRaw) && (reached === "yes" || reached === "no" || reached === "unsure")
+      ? { reached, ...(num(climaxRaw["time_s"]) !== undefined ? { timeS: num(climaxRaw["time_s"])! } : {}) }
+      : undefined;
   return {
     clipId,
     grader: typeof raw["grader"] === "string" ? raw["grader"] : typeof raw["labeler"] === "string" ? raw["labeler"] : "human",
     ...(typeof run === "string" || typeof run === "number" ? { run: String(run) } : {}),
-    ...(num(raw["fromS"] ?? raw["from_s"] ?? raw["clipStartS"]) !== undefined ? { fromS: num(raw["fromS"] ?? raw["from_s"] ?? raw["clipStartS"])! } : {}),
-    ...(num(raw["toS"] ?? raw["to_s"]) !== undefined ? { toS: num(raw["toS"] ?? raw["to_s"])! } : {}),
+    ...(num(raw["fromS"] ?? raw["from_s"] ?? raw["clipStartS"] ?? win?.[0]) !== undefined ? { fromS: num(raw["fromS"] ?? raw["from_s"] ?? raw["clipStartS"] ?? win?.[0])! } : {}),
+    ...(num(raw["toS"] ?? raw["to_s"] ?? win?.[1]) !== undefined ? { toS: num(raw["toS"] ?? raw["to_s"] ?? win?.[1])! } : {}),
+    ...(climax ? { climax } : {}),
     scores,
     otherAxes,
     ...(typeof raw["grade"] === "string" ? { letter: raw["grade"].toUpperCase() } : typeof raw["letter"] === "string" ? { letter: raw["letter"].toUpperCase() } : {}),
@@ -107,7 +118,8 @@ export function loadHumanGrades(path: string): HumanGrade[] {
   if (!existsSync(path)) throw new Error(`no such file or directory: ${path}`);
   const files = statSync(path).isDirectory()
     ? readdirSync(path)
-        .filter((f) => f.endsWith(".json") || f.endsWith(".jsonl"))
+        // `index.json` is the importer's own listing of what it wrote and skipped (scripts/grading/import-grades.mjs), not a grade.
+        .filter((f) => (f.endsWith(".json") || f.endsWith(".jsonl")) && f !== "index.json")
         .sort()
         .map((f) => join(path, f))
     : [path];

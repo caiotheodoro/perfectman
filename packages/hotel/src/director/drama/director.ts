@@ -123,11 +123,16 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   private readonly startedAt = new Map<string, number>();
   /** What the last `decide` saw (errata P9). */
   private last: DecisionTrace | undefined;
+  /** When the run began as the director saw it: the sheet's seconds count from here (a scene cut resets the ledger's `sceneSince`, not this). */
+  private readonly runSince: number;
+  /** LAD-11: the run could not play its sheet, so the improvised arc is the scene and nothing is held. */
+  private sheetHoldLifted = false;
 
   constructor(private readonly d: DramaDirectorDeps) {
     this.tuning = d.tuning ?? DEFAULT_DRAMA_TUNING;
     this.log = d.logger ?? silentLogger;
     this.session = d.session ?? null;
+    this.runSince = d.clock.now();
     this.ledger = new ActLedger(`${d.run}.1`, d.clock.now());
     this.ready = !d.resumed;
     this.resumedAdopt = d.resumed === true;
@@ -241,6 +246,9 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     let best: Pick | undefined;
     // What each (person, verb) came to, so a pass can say which one was nearest (errata P9). Not read by the choice.
     const seen: Seen[] = [];
+    // LAD-11: this actor has a blow it wants to throw that the sheet is holding. It keeps it for the sheet: the lesser acts it could fill the wait with are what made the improvised arc
+    // run 4 acts a minute under a sheet, so a held blow keeps the actor quiet (a line, a look) rather than busy.
+    let held = false;
     let others = 0;
     let known = 0;
     for (const other of this.d.world.avatarsIn(room)) {
@@ -283,6 +291,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
           continue;
         }
         const a = this.assess(turn.actor, verb, other.id, "director", false, emotion);
+        if (!("pass" in a) && !a.ok && a.veto.rule === "LAD-11") held = true;
         if (!("pass" in a) && !a.ok && a.veto.reason === "too_far" && a.veto.detail === "distance" && VERB_GATES[verb].maxDist === 1 && rung > cur) {
           // A blow that needs the two beside each other and is motivated, in time, and a step up: only the walk is missing.
           const grudge = grudgeOf(emotion.relations?.get(other.id));
@@ -296,6 +305,9 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
         const pick: Pick = { verb, target: other.id, margin: v - theta, v, theta, rung, climbing: rung > cur, continuing, grudge: grudgeOf(emotion.relations?.get(other.id)) };
         if (!best || this.better(pick, best)) best = pick;
       }
+    }
+    if (held && best && (ladderRung(best.verb) ?? 0) < this.tuning.sheetHold.minRung) {
+      return this.noted({ kind: "pass", why: "no_drive" }, turn, { target: best.target, verb: best.verb, why: "sheet_hold", v: best.v, theta: best.theta }, "sheet_hold");
     }
     if (!best) {
       const out: DramaDecision = approach ? { kind: "pass", why: "no_drive", approach: approach.target } : { kind: "pass", why: slow ? "pace" : "no_drive" };
@@ -405,8 +417,10 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     // ACT-13: a lying actor can only do the verbs that are done lying down.
     if (present.find((a) => a.id === actor)?.state === "lay" && !LAY_OK.has(verb)) return { pass: { kind: "pass", why: "posture" } };
     if (target !== undefined && !present.some((a) => a.id === target)) return { pass: { kind: "pass", why: "target_gone" } };
-    const avatars: GateAvatar[] = present.map((a) => ({ ...a, fallen: this.isFallen(a.id) }));
     const now = this.d.clock.now();
+    // LAD-11 first, before any gate that would only ask for a walk: a blow the sheet is holding is not worth walking up to.
+    if (this.sheetHolds(actor, verb, origin, now)) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-11", detail: "sheet_hold" } };
+    const avatars: GateAvatar[] = present.map((a) => ({ ...a, fallen: this.isFallen(a.id) }));
     const state = this.roomState(actor);
     const verdict = reviewGates({
       verb,
@@ -439,6 +453,25 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
       if (rung >= this.tuning.contagion.minRung && this.contagious(actor, avatars) && !this.answering(actor, target, emotion)) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-10", detail: "contagion" } };
     }
     return { ok: true, rung: verdict.rung, skippedRungs: verdict.skippedRungs };
+  }
+
+  /**
+   * LAD-11. A scene with a beat sheet keeps the ladder's high rungs (shove and up) for the sheet until the climax window opens, `DramaTuning.sheetHold.beforeClimaxMs` before its
+   * `climax_at_ms`: a model's proposal and the director's own beat are held, an authored act never is. It ends with the window (the sheet's climax comes inside it, so the aftermath is free play) and for an answer: the target of an authored act in the last `answerMs` may hit back. The pressure floor and the climax forcing are not touched.
+   */
+  private sheetHolds(actor: number, verb: ActVerb, origin: ActProposal["origin"] | "director", now: number): boolean {
+    const sheet = this.d.scenario.sheet;
+    const hold = this.tuning.sheetHold;
+    if (!sheet || origin === "scenario" || this.sheetHoldLifted || this.d.scenario.off) return false;
+    const rung = ladderRung(verb);
+    if (rung === undefined || rung < hold.minRung) return false;
+    if (now - this.runSince >= sheet.climax_at_ms - hold.beforeClimaxMs) return false;
+    return !this.ledger.answersAuthored(actor, now, hold.answerMs);
+  }
+
+  /** The run could not play its sheet (it fell back to the spine): the improvised arc is the scene again, so nothing is held. */
+  releaseSheetHold(): void {
+    this.sheetHoldLifted = true;
   }
 
   /** The scene's pressure floor now (`DramaTuning.pressure`): 0 for a scene with no climax deadline, which is free play and every scene before a beat sheet. */

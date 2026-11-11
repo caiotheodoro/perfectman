@@ -435,9 +435,43 @@ const SHEET_SCENARIOS: readonly DramaScenario[] = [
       ok("the climax probe sees no climax (the bench's own tripwire)", sheetProbes(r, sheetOf(r)).find((p) => p.probe === "sheet-climax-by-240s")?.passed === false),
     ],
   },
+  {
+    id: "sheet_owns_high_rungs",
+    name: "LAD-11: under a sheet the improvised arc throws no shove, slap or punch before the climax window (20 s before the climax), and the sheet's climax still comes",
+    build: () => sheetScene("sheet-owns-rungs"),
+    check: (r) => {
+      const sheet = sheetOf(r);
+      const windowAt = sheet.arc.climax_at_ms - 20_000;
+      const early = started(r).filter((a) => ["shove", "slap", "punch", "kill"].includes(a.verb) && a.origin !== "scenario" && a.atMs < windowAt);
+      const climax = started(r).find((a) => a.verb === "slap" && a.atMs >= windowAt);
+      return [
+        ok("no improvised blow before the window opens", early.length === 0, early.map((a) => `${a.actor} ${a.verb} @${a.atMs}`).join(", ")),
+        probeOk(r, "sheet-improv-held"),
+        ok("the climax slap started inside the window and by 240 s (the sheet's own, or the arc's just ahead of it)", climax !== undefined && climax.atMs <= 240_000, String(climax?.atMs)),
+        ok("the sheet's player says the climax played or was thrown organically", ["played", "organic"].includes(r.sheet?.summary.climax.outcome ?? ""), JSON.stringify(r.sheet?.summary.climax)),
+        probeOk(r, "sheet-climax-by-240s"),
+        ok("the ladder, budget and death probes are clean", r.probes.filter((p) => ["ladder-compliance", "dead-speech", "single-act-done", "owed-missed-empty"].includes(p.probe)).every((p) => p.passed)),
+      ];
+    },
+  },
+  {
+    id: "sheet_hold_follows_the_climax",
+    name: "LAD-11: the hold ends 20 s before the sheet's own climax, whenever that is: a sheet that climaxes at 1:30 leaves the improvised arc free from 1:10",
+    build: () => sheetScene("sheet-early-window", { climaxAtMs: 90_000, durationMs: 200_000 }),
+    check: (r) => {
+      const sheet = sheetOf(r);
+      const windowAt = sheet.arc.climax_at_ms - 20_000;
+      return [
+        probeOk(r, "sheet-improv-held"),
+        ok("no improvised blow before 1:10", started(r).filter((a) => ["shove", "slap", "punch", "kill"].includes(a.verb) && a.origin !== "scenario" && a.atMs < windowAt).length === 0),
+        ok("the climax slap started by 240 s", started(r).some((a) => a.verb === "slap" && a.atMs <= 240_000), String(started(r).find((a) => a.verb === "slap")?.atMs)),
+        probeOk(r, "sheet-climax-by-240s"),
+      ];
+    },
+  },
 ];
 
-/** The act contract's nine scenarios, then the beat sheet's five (Contract A). */
+/** The act contract's nine scenarios, the cinematic revamp's two, then the beat sheet's seven (Contract A and LAD-11). */
 export const DRAMA_SCENARIOS: readonly DramaScenario[] = [...CORE_SCENARIOS, ...SHEET_SCENARIOS];
 
 // ---- running them ------------------------------------------------------------------------------------------

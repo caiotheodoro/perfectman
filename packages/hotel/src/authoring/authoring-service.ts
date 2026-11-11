@@ -258,7 +258,7 @@ export class AuthoringService {
       ...(stage ? { stage } : {}),
       ...(drama ? { drama: this.withHumans(drama, dramaExt, dramaMode) } : {}),
       ...(dramaMode ? { drama_mode: dramaMode } : {}),
-      ...(dramaExt ? { drama_ext: dramaExt } : {}),
+      ...(dramaExt || sheet ? { drama_ext: this.withSheetPressure(dramaExt, sheet) } : {}),
       ...(beats ? { beats } : {}),
       ...(sheet ? { beat_sheet: sheet } : {}),
     };
@@ -299,6 +299,7 @@ export class AuthoringService {
       for (const [k, v] of this.sheetCache) if (this.sheetCache.size > SHEET_CACHE_MAX || Date.now() - v.at > SHEET_CACHE_MS) this.sheetCache.delete(k);
     }
     body.beat_sheet = sheet;
+    body.drama_ext = this.withSheetPressure(body.drama_ext, sheet);
     // The block as the sheet reads it has no `may_target_humans`: that is written last, so "still the default block" is judged on the four keys.
     const plain = body.drama === undefined ? undefined : (({ may_target_humans: _flag, ...rest }) => rest)(body.drama);
     const settled = settleSheetDrama(sheet, plain, body.drama_mode);
@@ -309,6 +310,12 @@ export class AuthoringService {
     }
     this.checkSize(body);
     return { body, schema_version: SCENARIO_BODY_VERSION };
+  }
+
+  /** A sheet is a climax deadline: the ladder's pressure floor rises toward `arc.climax_at_ms` unless the author wrote a deadline of their own (`drama.pressure_floor`). */
+  private withSheetPressure(ext: DramaExt | undefined, sheet: BeatSheet | undefined): DramaExt {
+    if (!sheet || ext?.pressure_floor) return ext ?? {};
+    return { ...(ext ?? {}), pressure_floor: { climax_at_ms: sheet.arc.climax_at_ms } };
   }
 
   /** The block with the hotel's `may_target_humans` written out (see `withHumansFlag`), from the scene's flag and the process's `PERFECTMAN_HUMAN_TARGETS`. */

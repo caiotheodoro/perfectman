@@ -67,6 +67,16 @@ export class ActLedger {
     this.sceneSince = now;
   }
 
+  // ---- reads: the sheet's hold ---
+
+  /** The actor was the target of an authored act (scenario origin) that started in the last `windowMs`: what it does back is an answer, not the improvised arc's own blow (LAD-11). */
+  answersAuthored(actor: number, now: number, windowMs: number): boolean {
+    for (const r of this.records.values()) {
+      if (r.origin === "scenario" && r.target === actor && r.phase !== "sent" && now - r.at >= 0 && now - r.at <= windowMs) return true;
+    }
+    return false;
+  }
+
   // ---- writes ----------------------------------------------------------------------------------------------
 
   /** RSV-1: the act was sent, so it counts now, whatever comes of it. */

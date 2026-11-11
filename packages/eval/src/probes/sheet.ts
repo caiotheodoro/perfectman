@@ -1,3 +1,4 @@
+import { DEFAULT_DRAMA_TUNING } from "@perfectman/hotel/drama";
 import { CLIMAX_VERBS } from "@perfectman/shared";
 import type { BeatSheet, SheetBeat } from "@perfectman/shared";
 import type { ActStartedEvent } from "../drama/index.js";
@@ -17,9 +18,14 @@ import { PROBE_BANDS, checkProbe } from "./types.js";
  *  - `sheet-silence-kept`    lines said while a `pause` beat held (0).
  *  - `sheet-not-all-talk`    distinct blocking, prop and camera beats that reached the stage (3 or more).
  *  - `sheet-beats-played`    the share of the sheet's non-act beats that played (0.9 or more).
+ *  - `sheet-improv-held`     blows (shove and up) the improvised arc or the model threw before the climax window opened (`climax_at_ms` - 20 s) that were not an answer to an authored act (0): the sheet owns the high rungs until then.
  */
 
 const NEVER = 1e9;
+const SHEET_HOLD_BEFORE_MS = DEFAULT_DRAMA_TUNING.sheetHold.beforeClimaxMs;
+const SHEET_ANSWER_MS = DEFAULT_DRAMA_TUNING.sheetHold.answerMs;
+/** The ladder verbs from rung 3 up: shove, slap, punch, kill. */
+const HIGH_RUNG: ReadonlySet<string> = new Set(["shove", "slap", "punch", "kill"]);
 
 type ActBeat = Extract<SheetBeat, { kind: "act" }>;
 
@@ -44,6 +50,12 @@ export function sheetProbes(r: SimResult, sheet: BeatSheet): DramaProbeResult[] 
   const quiet = sheet.beats.filter((b) => b.kind !== "act" && b.kind !== "cut");
   const playedIds = new Set((r.sheet?.reports ?? []).filter((x) => x.outcome === "played").map((x) => x.beat));
 
+  // LAD-11: before the climax window opens only the sheet throws a blow. An answer (the target of an authored act in the last 30 s) is the exception.
+  const windowOpens = sheet.arc.climax_at_ms - SHEET_HOLD_BEFORE_MS;
+  const early = started.filter(
+    (a) => a.origin !== "scenario" && HIGH_RUNG.has(a.verb) && a.atMs < windowOpens && !scenario.some((s) => s.with === a.actor && a.atMs - s.atMs >= 0 && a.atMs - s.atMs <= SHEET_ANSWER_MS),
+  );
+
   return [
     result("sheet-climax-by-240s", "ms of the sheet's climax act", first ? first.atMs : NEVER, { climax: climax ? { actor: climax.actor, verb: climax.verb, with: climax.with, planned: climax.at_ms } : null, at: first?.atMs ?? null }),
     result("sheet-climax-physical", "The climax that started is a physical verb", first && (CLIMAX_VERBS as readonly string[]).includes(first.verb) ? 1 : 0, { verb: first?.verb ?? null }),
@@ -52,6 +64,7 @@ export function sheetProbes(r: SimResult, sheet: BeatSheet): DramaProbeResult[] 
     result("sheet-one-climax", "Times the sheet threw its climax act", hits.filter((a) => a.origin === "scenario").length, { at: hits.map((a) => `${a.atMs} ${a.origin ?? ""}`) }),
     result("sheet-silence-kept", "Lines said during an authored pause", spoken.length, { pauses, lines: spoken.map((s) => `${s.actor} @${s.atMs}`) }),
     result("sheet-not-all-talk", "Distinct block, prop and camera beats on the stage", stage.size, { beats: [...stage] }),
+    result("sheet-improv-held", "Blows by the improvised arc before the climax window", early.length, { windowOpensAtMs: windowOpens, acts: early.map((a) => `${a.actor} ${a.verb} ${a.with ?? ""} @${a.atMs} ${a.origin ?? ""}`) }),
     result("sheet-beats-played", "Share of the sheet's non-act beats that played", quiet.length === 0 ? 1 : quiet.filter((b) => playedIds.has(b.id)).length / quiet.length, { unplayed: quiet.filter((b) => !playedIds.has(b.id)).map((b) => b.id) }),
   ];
 }

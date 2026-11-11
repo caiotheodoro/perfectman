@@ -371,7 +371,7 @@ export function runDramaSim(config: SimConfig): SimResult {
 
   const baseWorld = mirrorWorld(space, () => actorRefs, () => grid.now());
   const world = config.blocks ? { ...baseWorld, blocks: config.blocks } : baseWorld;
-  const runDrama = resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}), drama_ext: { may_target_humans: config.humansTargetable === true, ...(config.pressure ? { pressure_floor: config.pressure } : {}) } }, {});
+  const runDrama = resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}), drama_ext: { may_target_humans: config.humansTargetable === true, ...(config.pressure ? { pressure_floor: config.pressure } : {}) }, ...(config.sheet && (config.beats?.length ?? 0) === 0 ? { beat_sheet: config.sheet } : {}) }, {});
   const director = new DramaDirector({ run: RUN, clock, link, world, scenario: runDrama, session: dramaOn ? SESSION : null, ...(config.tuning ? { tuning: config.tuning } : {}) });
 
   /** The port the planner asks, recording every answer so a proposal's fate is read, not guessed. */

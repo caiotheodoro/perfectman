@@ -1,3 +1,4 @@
+import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -23,6 +24,35 @@ import { goodScene, flatScene, writeRun } from "./cinematic-fixtures.js";
 /** SYNTHETIC grades, made up for the tests: no real human has graded anything yet. */
 const grade = (clipId: string, scores: Partial<Record<(typeof ENGAGEMENT_AXES)[number], number>>, grader = "synthetic"): HumanGrade => ({ clipId, grader, scores, otherAxes: {} });
 const all = (n: number) => Object.fromEntries(ENGAGEMENT_AXES.map((a) => [a, n])) as JudgedClip;
+
+describe("E3's real export, through E3's importer, into E2's loader", () => {
+  const IMPORTER = new URL("../../../../scripts/grading/import-grades.mjs", import.meta.url).pathname;
+  const axes = { narrative_arc: 4, dialogue_naturalness: 3, physical_expressiveness: 2, emotion_action_fit: 3, cinematography_staging: 3, entertainment: 5 };
+  const exported = {
+    kind: "perfectman-human-grades",
+    exported_at: "2026-01-01T00:00:00Z",
+    grades: [
+      { clip_id: "c03", run_id: 62, window_s: [300, 600], complete: true, scores: axes, climax_reached: "yes", climax_time_s: 390, updated_at: "2026-01-01T00:00:00Z", note: "synthetic" },
+      { clip_id: "c05", run_id: 63, window_s: null, complete: true, scores: { ...axes, entertainment: 2 }, climax_reached: "no" },
+      { clip_id: "c09", run_id: 58, window_s: null, complete: false, scores: {} },
+    ],
+  };
+
+  it("loads every clip it wrote, ignores its index.json, reads the window and the entertainment axis, and keeps the other five aside", () => {
+    const dir = mkdtempSync(join(tmpdir(), "pm-e3-"));
+    const input = join(dir, "export.json");
+    const out = join(dir, "grades");
+    writeFileSync(input, JSON.stringify(exported));
+    execFileSync(process.execPath, [IMPORTER, "--in", input, "--out", out, "--labeler", "synthetic"]);
+    const grades = loadHumanGrades(out);
+    expect(grades.map((g) => g.clipId)).toEqual(["c03", "c05"]);
+    const c03 = grades[0]!;
+    expect(c03).toMatchObject({ grader: "synthetic", run: "62", fromS: 300, toS: 600, climax: { reached: "yes", timeS: 390 }, scores: { entertaining: 5 } });
+    expect(c03.otherAxes).toEqual({ narrative_arc: 4, dialogue_naturalness: 3, physical_expressiveness: 2, emotion_action_fit: 3, cinematography_staging: 3 });
+    expect(grades[1]).toMatchObject({ run: "63", climax: { reached: "no" }, scores: { entertaining: 2 } });
+    expect(grades[1]).not.toHaveProperty("fromS");
+  });
+});
 
 describe("importing human grades (E3 format)", () => {
   it("reads six axes including entertainment, as numbers or {score, note}, with aliases", () => {

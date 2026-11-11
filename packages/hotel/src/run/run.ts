@@ -746,6 +746,7 @@ export class Run {
         // A sheet that cannot start is no reason to lose the scene: the spine plays instead.
         this.sheet.stop();
         this.sheet = undefined;
+        this.director?.releaseSheetHold();
         this.sheetFallback = `error: ${err instanceof Error ? err.message : String(err)}`.slice(0, 200);
       }
     }

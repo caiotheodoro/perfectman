@@ -10,7 +10,7 @@ import { probeReport } from "../embodiment/sim-report.js";
 import { sheetProbes } from "../probes/sheet.js";
 import type { ActStartedEvent } from "../drama/index.js";
 import { benchBriefs } from "../bench/sheet-briefs.js";
-import { generateBeatSheet } from "@perfectman/hotel/drama";
+import { DEFAULT_DRAMA_TUNING, generateBeatSheet } from "@perfectman/hotel/drama";
 
 const started = (r: ReturnType<typeof runDramaSim>): ActStartedEvent[] => r.events.filter((e): e is ActStartedEvent => e.kind === "act_started");
 
@@ -23,7 +23,9 @@ describe("a preset played from its beat sheet", () => {
         const sheet = config.sheet!;
         const bad = sheetProbes(r, sheet).filter((p) => !p.passed);
         expect(bad.map((p) => `${seed}: ${p.probe}=${p.measured}`)).toEqual([]);
-        const climax = started(r).find((a) => a.origin === "scenario" && a.verb === "slap");
+        // The sheet's slap, or the improvised arc's own just ahead of it once the window is open (the summary calls that `organic`).
+        const climax = started(r).find((a) => a.verb === "slap" && a.atMs >= sheet.arc.climax_at_ms - 20_000);
+        expect(["played", "organic"], `seed ${seed}`).toContain(r.sheet!.summary.climax.outcome);
         expect(climax?.atMs, `seed ${seed}`).toBeLessThanOrEqual(240_000);
         // the gates held: the physical beats are 20 s apart and nothing died but by the sheet's word
         const physical = started(r).filter((a) => ["shove", "slap", "punch", "kill"].includes(a.verb)).map((a) => a.atMs);
@@ -33,6 +35,26 @@ describe("a preset played from its beat sheet", () => {
       }
     });
   }
+
+  it("[LAD-11] the improvised arc throws no shove, slap or punch before the climax window, on every preset: the sheet's reversal and climax stay its own", async () => {
+    for (const id of DRAMA_PRESETS) {
+      const config = await sheetSimConfig(id, { seed: 2 });
+      const r = runDramaSim(config);
+      const window = config.sheet!.arc.climax_at_ms - DEFAULT_DRAMA_TUNING.sheetHold.beforeClimaxMs;
+      const early = started(r).filter((a) => ["shove", "slap", "punch", "kill"].includes(a.verb) && a.origin !== "scenario" && a.atMs < window);
+      expect(early.map((a) => `${a.actor} ${a.verb} @${a.atMs}`), id).toEqual([]);
+      expect(sheetProbes(r, config.sheet!).find((p) => p.probe === "sheet-improv-held")?.passed, id).toBe(true);
+    }
+  });
+
+  it("[LAD-11] without the hold the same scene reproduces run 63's shape: an improvised shove and slap in the first minute, before the sheet's reversal", async () => {
+    const off = { ...DEFAULT_DRAMA_TUNING, sheetHold: { ...DEFAULT_DRAMA_TUNING.sheetHold, minRung: 99 } };
+    const config = { ...(await sheetSimConfig("confronto-da-traicao", { seed: 1 })), tuning: off };
+    const r = runDramaSim(config);
+    const early = started(r).filter((a) => ["shove", "slap"].includes(a.verb) && a.origin !== "scenario" && a.atMs < 90_000);
+    expect(early.map((a) => a.verb)).toEqual(["shove", "slap"]);
+    expect(sheetProbes(r, config.sheet!).find((p) => p.probe === "sheet-improv-held")?.passed).toBe(false);
+  });
 
   it("plays the sheet's quiet beats on the stage: blocking, props, faces, camera, one pause", async () => {
     const r = runDramaSim(await sheetSimConfig("confronto-da-traicao", { seed: 7 }));

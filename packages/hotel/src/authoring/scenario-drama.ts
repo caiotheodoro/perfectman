@@ -292,15 +292,26 @@ export type RunDrama = {
   humansTargetable: boolean;
   /** The scene's climax deadline on its own clock (`DramaExt.pressure_floor`): the ladder's volition gets a floor that rises toward it. Absent: no floor. */
   pressure?: PressureFloor;
+  /**
+   * The scene has a beat sheet (LAD-11): the sheet owns the ladder's high rungs until the climax window opens (`DramaTuning.sheetHold`). `climax_at_ms` is the sheet's own.
+   * Absent: no sheet, nothing held.
+   */
+  sheet?: { climax_at_ms: number };
 };
 
-export function resolveRunDrama(body: { drama?: ScenarioDrama; drama_mode?: DramaMode; drama_ext?: DramaExt }, env: NodeJS.ProcessEnv = process.env): RunDrama {
+/** What `resolveRunDrama` needs of a beat sheet: its climax second. */
+export type SheetClimax = { arc: { climax_at_ms: number } };
+
+export function resolveRunDrama(body: { drama?: ScenarioDrama; drama_mode?: DramaMode; drama_ext?: DramaExt; beat_sheet?: SheetClimax }, env: NodeJS.ProcessEnv = process.env): RunDrama {
   const off = body.drama_mode === "off";
   const block = off ? DRAMA_OFF : body.drama;
   const mode = off ? "off" : block === undefined ? "free_play" : body.drama_mode === "default" ? "default" : "authored";
   const humansTargetable = !off && env[HUMAN_TARGETS_ENV]?.trim() !== "0" && body.drama_ext?.may_target_humans !== false;
-  const pressure = off ? undefined : pressureOf(body.drama_ext?.pressure_floor);
-  return { block, effective: block ?? FREE_PLAY_DRAMA, freePlay: block === undefined, canSkip: block !== undefined && !off, mode, off, humansTargetable, ...(pressure ? { pressure } : {}) };
+  // A beat sheet is a climax deadline of its own: the floor rises toward it unless the author wrote a different one.
+  const sheetClimax = off ? undefined : pressureOf(body.beat_sheet ? { climax_at_ms: body.beat_sheet.arc.climax_at_ms } : undefined);
+  const pressure = off ? undefined : (pressureOf(body.drama_ext?.pressure_floor) ?? sheetClimax);
+  const sheet = sheetClimax ? { climax_at_ms: sheetClimax.climax_at_ms } : undefined;
+  return { block, effective: block ?? FREE_PLAY_DRAMA, freePlay: block === undefined, canSkip: block !== undefined && !off, mode, off, humansTargetable, ...(pressure ? { pressure } : {}), ...(sheet ? { sheet } : {}) };
 }
 
 /** The run summary's line for the scenario's drama: where the block came from and what it allows. Numbers only, no names (`replay.json` `drama`). */
