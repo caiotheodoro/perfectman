@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "note": "Not shown to the grader. Join key for calibration: id -> run (+window).",
+  "clips": [
+    {
+      "id": "c01",
+      "run": 61,
+      "window_s": null,
+      "why": "Sobremesa, spine-fix build. Highest script-likeness of the baseline (96) but zero physical acts in 7:47: the 'good text, no body' anchor.",
+      "scenario": "Sobremesa na casa do falecido",
+      "scenario_sha": "3d55560a57d5",
+      "run_duration_s": 467,
+      "lines_in_clip": 57,
+      "acts_in_clip": 0,
+      "script_likeness": 96.3,
+      "spine_step": 3
+    },
+    {
+      "id": "c02",
+      "run": 55,
+      "window_s": null,
+      "why": "Earliest and shortest run (1:35), crude scenario, 3 actors, 5 replies, no acts. Floor anchor.",
+      "scenario": "Buceta Suja",
+      "scenario_sha": "7e96f8791f68",
+      "run_duration_s": 95,
+      "lines_in_clip": 8,
+      "acts_in_clip": 0,
+      "script_likeness": null,
+      "spine_step": null
+    },
+    {
+      "id": "c03",
+      "run": 62,
+      "window_s": [
+        300,
+        600
+      ],
+      "why": "Sobremesa 45-minute soak, minutes 5-10. Holds the only shove of the baseline (6:30) plus glares, an insult and gasps: the best physical-escalation window available.",
+      "scenario": "Sobremesa na casa do falecido",
+      "scenario_sha": "356556e6a377",
+      "run_duration_s": 2725,
+      "lines_in_clip": 39,
+      "acts_in_clip": 9,
+      "script_likeness": 25,
+      "spine_step": 3
+    },
+    {
+      "id": "c04",
+      "run": 58,
+      "window_s": null,
+      "why": "Quarto 1214 with the first director acts (glare, insult). Short (2:18). Pair with c09 and c12.",
+      "scenario": "Quarto 1214, depois do rateio",
+      "scenario_sha": "3275d152e271",
+      "run_duration_s": 138,
+      "lines_in_clip": 11,
+      "acts_in_clip": 2,
+      "script_likeness": null,
+      "spine_step": null
+    },
+    {
+      "id": "c05",
+      "run": 63,
+      "window_s": null,
+      "why": "Sobremesa (Terraco), the run the plan calls out: 1 act (a glare) in 7:28, no unlock, no arc. Same scenario sha as run 62.",
+      "scenario": "Sobremesa na casa do falecido",
+      "scenario_sha": "356556e6a377",
+      "run_duration_s": 448,
+      "lines_in_clip": 54,
+      "acts_in_clip": 1,
+      "script_likeness": 25,
+      "spine_step": 3
+    },
+    {
+      "id": "c06",
+      "run": 62,
+      "window_s": [
+        0,
+        300
+      ],
+      "why": "Sobremesa soak opening, minutes 0-5. Same scene as c05 and c03; first glare at 0:56, insult at 3:10.",
+      "scenario": "Sobremesa na casa do falecido",
+      "scenario_sha": "356556e6a377",
+      "run_duration_s": 2725,
+      "lines_in_clip": 46,
+      "acts_in_clip": 4,
+      "script_likeness": 25,
+      "spine_step": 3
+    },
+    {
+      "id": "c07",
+      "run": 56,
+      "window_s": null,
+      "why": "Buceta Suja, second take, 3:25. Pair with c02: same scene one build later.",
+      "scenario": "a buceta suja",
+      "scenario_sha": "c627c881cf8a",
+      "run_duration_s": 205,
+      "lines_in_clip": 16,
+      "acts_in_clip": 0,
+      "script_likeness": null,
+      "spine_step": null
+    },
+    {
+      "id": "c08",
+      "run": 62,
+      "window_s": [
+        2400,
+        2725
+      ],
+      "why": "Sobremesa soak tail, minutes 40-45. Late-run collapse after 40 minutes of repetition (novelty 0): the 'it never ends' anchor.",
+      "scenario": "Sobremesa na casa do falecido",
+      "scenario_sha": "356556e6a377",
+      "run_duration_s": 2725,
+      "lines_in_clip": 10,
+      "acts_in_clip": 1,
+      "script_likeness": 25,
+      "spine_step": 3
+    },
+    {
+      "id": "c09",
+      "run": 57,
+      "window_s": null,
+      "why": "Quarto 1214 before the director acts existed: dialogue and expressions only. Pair with c04 and c12.",
+      "scenario": "Quarto 1214, depois do rateio",
+      "scenario_sha": "bea97f7bf07a",
+      "run_duration_s": 186,
+      "lines_in_clip": 13,
+      "acts_in_clip": 0,
+      "script_likeness": null,
+      "spine_step": null
+    },
+    {
+      "id": "c10",
+      "run": 62,
+      "window_s": [
+        1140,
+        1440
+      ],
+      "why": "Sobremesa soak, minutes 19-24. Second flare-up after the 'meanwhile' cut-away: slap unlock, insults, gasps, glares in 90 seconds.",
+      "scenario": "Sobremesa na casa do falecido",
+      "scenario_sha": "356556e6a377",
+      "run_duration_s": 2725,
+      "lines_in_clip": 23,
+      "acts_in_clip": 8,
+      "script_likeness": 25,
+      "spine_step": 3
+    },
+    {
+      "id": "c11",
+      "run": 60,
+      "window_s": null,
+      "why": "Sobremesa (Terraco), 20 walks, 25 expressions, zero acts. Scripted 4-step spine, no unlock. Same scene family as c01.",
+      "scenario": "Sobremesa no Terraço",
+      "scenario_sha": "3d55560a57d5",
+      "run_duration_s": 416,
+      "lines_in_clip": 38,
+      "acts_in_clip": 0,
+      "script_likeness": 88.4,
+      "spine_step": 3
+    },
+    {
+      "id": "c12",
+      "run": 59,
+      "window_s": null,
+      "why": "Quarto 1214 with glare, insult, two gasps and a recoil in 5:37. Most acts per scene outside the soak, and 6 grievances raised.",
+      "scenario": "Quarto 1214, depois do rateio",
+      "scenario_sha": "2c5141e91eda",
+      "run_duration_s": 337,
+      "lines_in_clip": 36,
+      "acts_in_clip": 5,
+      "script_likeness": 80.5,
+      "spine_step": 3
+    }
+  ]
+}
