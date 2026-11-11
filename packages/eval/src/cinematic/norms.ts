@@ -5,34 +5,40 @@
  * `null` for a metric where more is never worse. Every metric the scorers read is named in {@link METRIC_IDS}; a norms file may carry any
  * subset, the rest comes from {@link FALLBACK_NORMS}.
  *
- * Where norms come from today (be honest about it):
- *  - dialogue's script-likeness sub-score reads `@perfectman/shared`'s `SCRIPT_NORMS` (derived from 45 public-domain plays; THEATRE only);
- *  - every other band is a PRIOR: a defensible screenwriting / editing convention written down here, `source: "prior"`, not measured on a corpus.
+ * Where a band comes from (`Band.source`, reported per metric in `normSources`):
+ *  - `cinema-norms`: measured on E1's corpus (`corpus-norms.ts`: which metric reads which bucket and feature, and which percentiles bound the band);
+ *  - `prior`: a defensible screenwriting / editing convention written down here, not measured on any corpus (the corpus has no counterpart: camera,
+ *    the engine's own body vocabulary, reply adherence, subtext ...);
+ *  - `product`: the owner's product requirement, not a statistic. Today that is the physical climax by 4:00 (`timeToClimaxS`); the pass/fail invariant
+ *    and the cap on the overall (arc.ts, score.ts) never read a norm at all.
+ * Dialogue's script-likeness sub-score reads `@perfectman/shared`'s `SCRIPT_NORMS` (45 public-domain plays; THEATRE only).
  *
- * When agent E1's reference distributions land (`cinema-norms.json`, built from films, series and plays) they replace the priors with no code
- * change: `loadCinemaNorms()` reads the file, converts percentile ladders to bands (`lo` = p10, `hi` = p90, `floor` = p0, `ceil` = p100 unless
- * the file gives them) and records which metrics came from where in the report (`normSources`). See docs/eval/cinematic-score.md, "Swapping in E1's norms".
+ * `fallbackNorms()` is all priors (and the product band), for before/after comparisons; `corpusNorms()` (corpus-norms.ts) is the default. A norms file
+ * (`normsFromFile`, `loadCinemaNorms`) still overrides any metric: percentile ladders become bands (`lo` = p10, `hi` = p90, `floor` = p0, `ceil` = p100).
  */
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { SCRIPT_NORMS, type ScriptNorms } from "@perfectman/shared";
+import { SCRIPT_NORMS, type CinemaCurveBand, type ScriptNorms } from "@perfectman/shared";
 
 export type Band = {
   lo: number;
   hi: number | null;
   floor: number;
   ceil: number | null;
-  source: "prior" | "cinema-norms";
+  source: BandSource;
 };
+
+export type BandSource = "prior" | "cinema-norms" | "product";
 
 export const METRIC_IDS = [
   // arc
-  "timeToIncitingS",
+  "incitingPos",
   "reversals",
   "escalationShape",
   "peakIntensity",
   "timeToClimaxS",
+  "climaxPos",
   "aftermathShare",
   "stakesChange",
   // dialogue
@@ -42,8 +48,12 @@ export const METRIC_IDS = [
   "subtext",
   "replyAdherence",
   "staleReplyShare",
+  "turnsPerMin",
+  "silenceShare",
+  "shortReplyShare",
   // embodiment
   "actsPerMin",
+  "hardActs",
   "distinctVerbs",
   "ladderSpan",
   "topVerbShare",
@@ -69,14 +79,18 @@ export type MetricId = (typeof METRIC_IDS)[number];
 export const CLIMAX_DEADLINE_S = 240;
 
 const prior = (lo: number, hi: number | null, floor: number, ceil: number | null): Band => ({ lo, hi, floor, ceil, source: "prior" });
+const product = (lo: number, hi: number | null, floor: number, ceil: number | null): Band => ({ lo, hi, floor, ceil, source: "product" });
 
 export const FALLBACK_NORMS: Readonly<Record<MetricId, Band>> = {
   // ---- arc (a scene budgeted to a physical climax by 4:00)
-  timeToIncitingS: prior(0, 45, 0, 120), // something disturbs the scene inside 45 s; zero at 2 min
-  reversals: prior(1, 4, 0, 8), // at least one turn of the scene; more than ~4 in a 4 minute scene is noise
+  incitingPos: prior(0.05, 0.4, 0, 0.8), // share of the scene before the inciting beat; something disturbs it early but not at the first word
+  reversals: prior(1, 4, 0, 8), // turning points of the intensity curve: at least one; many more is noise
   escalationShape: prior(0.8, null, 0.4, null), // share of (earlier, later) bucket pairs up to the peak that do not fall
   peakIntensity: prior(4, null, 1, null), // peak event weight: 3 = shove, 4 = slap, 5 = punch, 6 = kill
-  timeToClimaxS: prior(0, 210, 0, 300), // 100 up to 3:30, zero at 5:00; the pass/fail line is CLIMAX_DEADLINE_S
+  // PRODUCT, not corpus: 100 up to 3:30, zero at 5:00; the pass/fail line is CLIMAX_DEADLINE_S. (The corpus median climax is at ~0.58 of the scene,
+  // and 0.58 of a 6 minute scene is 3:30, so the two agree for a scene of the length the deadline is written for.)
+  timeToClimaxS: product(0, 210, 0, 300),
+  climaxPos: prior(0.4, 0.8, 0.1, 1), // share of the scene at which the peak falls
   aftermathShare: prior(0.08, 0.3, 0, 0.6),
   stakesChange: prior(0.5, null, 0.1, null),
   // ---- dialogue
@@ -86,8 +100,12 @@ export const FALLBACK_NORMS: Readonly<Record<MetricId, Band>> = {
   subtext: prior(0.3, 0.8, 0.05, 1),
   replyAdherence: prior(0.6, null, 0.2, null),
   staleReplyShare: prior(0, 0.1, 0, 0.4),
+  turnsPerMin: prior(8, 24, 2, 40),
+  silenceShare: prior(0.1, 0.5, 0, 0.85),
+  shortReplyShare: prior(0.2, 0.7, 0, 1),
   // ---- embodiment
   actsPerMin: prior(1, 6, 0, 15),
+  hardActs: prior(1, null, 0, null), // at least one hard physical act in the scene
   distinctVerbs: prior(4, null, 1, null),
   ladderSpan: prior(3, null, 0, null),
   topVerbShare: prior(0, 0.5, 0, 0.9),
@@ -117,14 +135,23 @@ export function bandScore(value: number, band: Band): number {
   return band.ceil === null || band.ceil <= hi ? 0 : Math.max(0, Math.min(100, ((band.ceil - value) / (band.ceil - hi)) * 100));
 }
 
+export type SizeStratum = "t8_19" | "t20_39" | "t40_plus";
+export const sizeStratum = (turns: number): SizeStratum | null => (turns < 8 ? null : turns < 20 ? "t8_19" : turns < 40 ? "t20_39" : "t40_plus");
+
 export type CinemaNorms = {
   bands: Record<MetricId, Band>;
   /** Norms the dialogue group's script-likeness reads. */
   scriptNorms: ScriptNorms;
   /** Where the bands came from: `fallback`, or the file read. */
   origin: string;
-  /** Per metric: `prior` or `cinema-norms`. */
-  normSources: Record<MetricId, "prior" | "cinema-norms">;
+  /** Per metric: `prior`, `cinema-norms` (measured) or `product` (the owner's requirement). */
+  normSources: Record<MetricId, BandSource>;
+  /** Scene-size variants of a band, for count-like metrics whose corpus ladders are stratified by spoken turns (8-19, 20-39, 40+). See {@link bandFor}. */
+  sized?: Partial<Record<MetricId, Partial<Record<SizeStratum, Band>>>>;
+  /** The corpus's escalation curve (each scene rescaled to its own low and peak, 10 slices), for the arc report's curve fit. */
+  shapeCurve?: CinemaCurveBand;
+  /** Per measured metric: where in the corpus the band came from (bucket keys, feature, percentiles). */
+  refs?: Partial<Record<MetricId, string>>;
   /** Free text from the norms file (corpus size, build date). */
   note?: string;
 };
@@ -171,7 +198,7 @@ export function normsFromFile(raw: unknown, origin: string): { norms: CinemaNorm
   const metrics = isObj(raw["metrics"]) ? raw["metrics"] : undefined;
   if (!metrics) throw new Error(`${origin}: no "metrics" object (expected { metrics: { <metric>: {lo,hi,floor,ceil} | [ladder] } })`);
   const bands: Record<MetricId, Band> = { ...FALLBACK_NORMS };
-  const normSources = Object.fromEntries(METRIC_IDS.map((m) => [m, "prior"])) as Record<MetricId, "prior" | "cinema-norms">;
+  const normSources = Object.fromEntries(METRIC_IDS.map((m) => [m, FALLBACK_NORMS[m].source])) as Record<MetricId, BandSource>;
   const ignored: string[] = [];
   let used = 0;
   for (const [key, entry] of Object.entries(metrics)) {
@@ -197,8 +224,14 @@ export function fallbackNorms(): CinemaNorms {
     bands: { ...FALLBACK_NORMS },
     scriptNorms: SCRIPT_NORMS,
     origin: "fallback (priors + script-norms)",
-    normSources: Object.fromEntries(METRIC_IDS.map((m) => [m, "prior"])) as Record<MetricId, "prior">,
+    normSources: Object.fromEntries(METRIC_IDS.map((m) => [m, FALLBACK_NORMS[m].source])) as Record<MetricId, BandSource>,
   };
+}
+
+/** The band of `metric` for a scene of `turns` spoken turns: the size-stratified one when the norms carry it, else the plain band. */
+export function bandFor(norms: CinemaNorms, metric: MetricId, turns: number): Band {
+  const s = sizeStratum(turns);
+  return (s && norms.sized?.[metric]?.[s]) || norms.bands[metric];
 }
 
 /** Where a committed norms file is looked for when none is named: the first that exists wins. */

@@ -39,6 +39,11 @@ export function read(metric: MetricId, value: number | null, weight: number, ban
   return { metric, value: round3(value), score: round1(bandScore(value, band)), weight, band, note };
 }
 
+/** A reading the run cannot be measured on (kept in the report with its band and why, left out of the group's mean). */
+export function readSkip(metric: MetricId | string, weight: number, band: Band | undefined, note: string): Reading {
+  return { metric, value: null, score: null, weight, ...(band ? { band } : {}), note };
+}
+
 /** A reading for a thing the run failed to do at all (no climax, no incident): it counts in the group's mean as 0 and has no value. */
 export function readFail(metric: MetricId | string, weight: number, note: string, band?: Band): Reading {
   return { metric, value: null, score: 0, weight, ...(band ? { band } : {}), note };

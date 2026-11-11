@@ -11,9 +11,11 @@
  * `invariants`, and the overall score is capped when it fails (see score.ts).
  */
 import { joinedKeys, movesOf, wordsOf } from "@perfectman/shared";
+import { curveFit } from "@perfectman/shared";
 import { AGGRESSIVE_ACT_VERBS, PHYSICAL_ACT_VERBS, isVisibleAct, type RunBundle } from "./bundle.js";
-import { CLIMAX_DEADLINE_S, type CinemaNorms } from "./norms.js";
-import { groupOf, read, readFail, round1, round3, type GroupScore } from "./types.js";
+import { measureRun } from "./measure.js";
+import { CLIMAX_DEADLINE_S, bandFor, type CinemaNorms, type MetricId } from "./norms.js";
+import { groupOf, read, readFail, readSkip, round1, round3, type GroupScore } from "./types.js";
 
 export const ACT_WEIGHT: Readonly<Record<string, number>> = {
   glare: 1,
@@ -171,32 +173,42 @@ export function scoreArc(bundle: RunBundle, norms: CinemaNorms): GroupScore {
   const reversals = (swaps + turns) / per4;
   const shape = escalationShape(series);
 
+  // ---- what the corpus's own reader makes of the run (see measure.ts): inciting, climax, aftermath and reversals are read only where the intensity
+  // proxy finds a strong arc; the proxy is near-blind to cold or afraid conflict (AUC 0.56), so "no strong arc" is not scored as "no arc"
+  const meas = measureRun(bundle);
+  const f = meas.features;
+  const noArc = (metric: MetricId, weight: number): ReturnType<typeof readSkip> =>
+    readSkip(metric, weight, B[metric], f === null ? "fewer than 3 spoken lines: nothing for the corpus's reader to measure" : `the intensity proxy finds no strong arc here (peak ${round3(f.peak)}, rise ${round3(f.peakRise)}; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as "no arc"`);
+
   const readings = [];
   readings.push(
-    inciting
-      ? read("timeToIncitingS", inciting.tS, 0.15, B.timeToIncitingS, `first real disturbance (${inciting.kind === "act" ? "act" : "line"} ${inciting.label}) at ${round1(inciting.tS)} s`)
-      : readFail("timeToIncitingS", 0.15, "nothing in the run was a real disturbance (no insult, accusation, threat, reveal or physical act)", B.timeToIncitingS),
+    meas.strong && f
+      ? read("incitingPos", f.tInciting!, 0.1, B.incitingPos, `the corpus's reader puts the inciting beat at ${round3(f.tInciting!)} of the scene (${round1(f.tInciting! * f.durSec)} s of ${round1(f.durSec)} s)`)
+      : noArc("incitingPos", 0.1),
   );
-  readings.push(read("reversals", reversals, 0.15, B.reversals, `${swaps} initiative swap(s) + ${turns} rise(s) after a lull, per 4 minutes of run`));
-  readings.push(read("escalationShape", shape, 0.15, B.escalationShape, "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"));
+  readings.push(
+    meas.strong && f
+      ? read("reversals", f.reversals, 0.15, bandFor(norms, "reversals", f.turns), `${f.reversals} turning point(s) of the intensity curve in ${f.turns} turns (beat-based: ${swaps} initiative swap(s) + ${turns} rise(s) after a lull, per 4 minutes: ${round1(swaps / per4 + turns / per4)})`)
+      : noArc("reversals", 0.15),
+  );
+  readings.push(read("escalationShape", shape, 0.1, B.escalationShape, "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"));
   readings.push(read("peakIntensity", peakW, 0.1, B.peakIntensity, `strongest beat is weight ${peakW}${peakBeat ? ` (${peakBeat.label})` : ""}; shove 3, slap 4, punch 5, kill 6`));
   readings.push(
     climax
-      ? read("timeToClimaxS", climax.atS, 0.25, B.timeToClimaxS, `physical climax (${climax.verb}) at ${round1(climax.atS)} s; the invariant is ${CLIMAX_DEADLINE_S} s`)
+      ? read("timeToClimaxS", climax.atS, 0.25, B.timeToClimaxS, `physical climax (${climax.verb}) at ${round1(climax.atS)} s; the invariant is ${CLIMAX_DEADLINE_S} s (a product requirement, not a corpus statistic)`)
       : readFail("timeToClimaxS", 0.25, "no physical act reached the screen", B.timeToClimaxS),
+  );
+  readings.push(
+    meas.strong && f
+      ? read("climaxPos", f.tClimax!, 0.1, B.climaxPos, `the corpus's reader puts the peak at ${round3(f.tClimax!)} of the scene (the corpus median for strong arcs is ~0.58)`)
+      : noArc("climaxPos", 0.1),
   );
 
   const peakAt = climax?.atS ?? peakBeat?.tS;
-  let aftermathShare: number | null = null;
-  let aftermathLines = 0;
-  if (peakAt !== undefined && lastActivity > 0) {
-    aftermathShare = Math.max(0, lastActivity - peakAt) / lastActivity;
-    aftermathLines = bundle.lines.filter((l) => l.tS > peakAt + 2).length;
-  }
   readings.push(
-    aftermathShare === null || aftermathLines < 2
-      ? readFail("aftermathShare", 0.1, aftermathShare === null ? "no peak, so no aftermath" : `the scene ends within 2 lines of the peak (${aftermathLines} after it)`, B.aftermathShare)
-      : read("aftermathShare", aftermathShare, 0.1, B.aftermathShare, `${round1(lastActivity - peakAt!)} s and ${aftermathLines} lines after the peak at ${round1(peakAt!)} s`),
+    meas.strong && f
+      ? read("aftermathShare", f.aftermathShare!, 0.1, B.aftermathShare, `${round3(f.aftermathShare!)} of the scene after the intensity last held 70% of its rise`)
+      : noArc("aftermathShare", 0.1),
   );
 
   // stakes: (a) how far the strongest beat rose above the opening level, (b) memory intensity first third -> last third, (c) change of emotional tone
@@ -216,7 +228,20 @@ export function scoreArc(bundle: RunBundle, norms: CinemaNorms): GroupScore {
   const stakes = parts.reduce((a, v) => a + v, 0) / parts.length;
   readings.push(read("stakesChange", stakes, 0.1, B.stakesChange, `mean of ${parts.length} signal(s): rise of the peak over the opening${intensityDelta !== undefined ? `, memory intensity ${intensityDelta >= 0 ? "+" : ""}${round3(intensityDelta)} first to last third, tone shift` : " (too few memories for the other two)"}`));
 
+  // how the run's escalation curve sits next to the corpus's (informational: the corpus has the curve but no scalar to score it by)
+  let shapeFit: { meanAbsDist: number; inBandShare: number } | null = null;
+  if (f && norms.shapeCurve) {
+    const lo = Math.min(...f.curve);
+    const hi = Math.max(...f.curve);
+    if (hi - lo > 1e-9) {
+      const c = curveFit(f.curve.map((v) => (v - lo) / (hi - lo)), norms.shapeCurve);
+      shapeFit = { meanAbsDist: round3(c.meanAbsDist), inBandShare: round3(c.inBandShare) };
+    }
+  }
   return groupOf("arc", readings, {
+    corpus: f
+      ? { strongArc: meas.strong, peak: f.peak, rise: f.peakRise, tInciting: f.tInciting, tClimax: f.tClimax, aftermathShare: f.aftermathShare, reversals: f.reversals, turns: f.turns, durSec: round1(f.durSec), curve: f.curve, shapeFit }
+      : null,
     beats: beats.length,
     incitingAtS: inciting ? round1(inciting.tS) : null,
     incitingKind: inciting?.label ?? null,

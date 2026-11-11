@@ -78,7 +78,7 @@ describe("the CLI", () => {
     expect(r.out).toContain("pass (slap 3:00)");
     expect(r.out).toContain("fail (none)");
     const doc = JSON.parse(readFileSync(file, "utf8"));
-    expect(doc.version).toBe("cinematic-baseline-v1");
+    expect(doc.version).toBe("cinematic-baseline-v2");
     expect(doc.runs.map((x: { run: string }) => x.run)).toEqual(["1", "2"]);
     expect(doc.runs[0].groups.arc.name).toBe("arc");
   });

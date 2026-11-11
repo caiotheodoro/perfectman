@@ -9,8 +9,9 @@
 import { contentKeys, isFillerText, joinedKeys, scoreTurns, similesIn, stemOf, STOP_WORDS, wordsOf } from "@perfectman/shared";
 import type { ScriptTurn } from "@perfectman/shared";
 import { isVisibleAct, type Line, type RunBundle } from "./bundle.js";
+import { measureRun } from "./measure.js";
 import type { CinemaNorms } from "./norms.js";
-import { groupOf, read, readFail, readScore, round1, round3, type GroupScore, type Reading } from "./types.js";
+import { groupOf, read, readFail, readScore, readSkip, round1, round3, type GroupScore, type Reading } from "./types.js";
 
 export function scriptTurnsFromBundle(bundle: RunBundle): ScriptTurn[] {
   const turns: ScriptTurn[] = [];
@@ -63,11 +64,11 @@ export function scoreDialogue(bundle: RunBundle, norms: CinemaNorms, opts: { scr
   // 1. script-likeness (existing benchmark)
   const turns = opts.scriptTurns ?? scriptTurnsFromBundle(bundle);
   if (lines.length === 0) {
-    readings.push(readFail("scriptLikeness", 0.35, "nobody spoke"));
+    readings.push(readFail("scriptLikeness", 0.3, "nobody spoke"));
   } else {
     const sl = scoreTurns(turns, { norms: norms.scriptNorms, language: bundle.language, medium: "CINEMA", names: bundle.cast });
     detail["scriptLikeness"] = { score: sl.score, percentile: sl.percentile, sub: sl.sub, sayTurns: sl.sayTurns, lowN: sl.lowN, mediumFallback: sl.mediumFallback };
-    readings.push(readScore("scriptLikeness", sl.score, sl.score, 0.35, `existing script-likeness benchmark, ${sl.sayTurns} speech turns${sl.lowN ? " (too few for a verdict)" : ""}${sl.mediumFallback ? ", read next to THEATRE norms (no cinema block yet)" : ""}`));
+    readings.push(readScore("scriptLikeness", sl.score, sl.score, 0.3, `existing script-likeness benchmark, ${sl.sayTurns} speech turns${sl.lowN ? " (too few for a verdict)" : ""}${sl.mediumFallback ? ", read next to THEATRE norms (no cinema block yet)" : ""}`));
   }
 
   // 2. interruption (proxy)
@@ -77,15 +78,15 @@ export function scoreDialogue(bundle: RunBundle, norms: CinemaNorms, opts: { scr
     for (let i = 0; i < lines.length; i++) if (isCutOff(lines[i]!.text) || (i > 0 && startsOnDash(lines[i]!.text) && lines[i - 1]!.speaker !== lines[i]!.speaker)) cut++;
     const share = (cut + overlaps) / lines.length;
     detail["interruptions"] = { cutOff: cut, overlaps, basis };
-    readings.push(read("interruptionShare", share, 0.15, B.interruptionShare, `PROXY: ${cut} cut-off lines and ${overlaps} staged overlaps out of ${lines.length} lines (the engine speaks one line at a time)`));
-  } else readings.push(readFail("interruptionShare", 0.15, "fewer than 2 lines", B.interruptionShare));
+    readings.push(read("interruptionShare", share, 0.1, B.interruptionShare, `PROXY: ${cut} cut-off lines and ${overlaps} staged overlaps out of ${lines.length} lines (the engine speaks one line at a time)`));
+  } else readings.push(readFail("interruptionShare", 0.1, "fewer than 2 lines", B.interruptionShare));
 
   // 3. silence: dead air and pauses with business in them
   if (lines.length >= 2) {
     const { gaps, basis } = lineGaps(bundle);
     const total = Math.max(1, bundle.durationS);
     const dead = gaps.filter((g) => g.gapS > DEAD_AIR_S).reduce((a, g) => a + (g.gapS - DEAD_AIR_S), 0);
-    readings.push(read("deadAirShare", dead / total, 0.1, B.deadAirShare, `${round1(dead)} s of silence beyond ${DEAD_AIR_S} s between lines (${basis} timeline), of ${round1(total)} s`));
+    readings.push(read("deadAirShare", dead / total, 0.05, B.deadAirShare, `${round1(dead)} s of silence beyond ${DEAD_AIR_S} s between lines (${basis} timeline), of ${round1(total)} s`));
     // a pause beat: 2 to 10 s with something to look at in it (an act, a non-neutral face, a walk), not just waiting
     const business = [
       ...bundle.acts.map((a) => a.tS),
@@ -94,10 +95,28 @@ export function scoreDialogue(bundle: RunBundle, norms: CinemaNorms, opts: { scr
     const pauses = gaps.filter((g) => g.gapS >= PAUSE_MIN_S && g.gapS <= DEAD_AIR_S && business.some((t) => t >= g.fromS - 0.5 && t <= g.toS + 0.5)).length;
     const perMin = pauses / Math.max(1 / 6, total / 60);
     detail["pauses"] = { count: pauses, gaps: gaps.length, basis };
-    readings.push(read("pauseBeatsPerMin", perMin, 0.1, B.pauseBeatsPerMin, `${pauses} silences of ${PAUSE_MIN_S}-${DEAD_AIR_S} s with business in them (an act, a face, a walk) in ${round1(total / 60)} min`));
+    readings.push(read("pauseBeatsPerMin", perMin, 0.05, B.pauseBeatsPerMin, `${pauses} silences of ${PAUSE_MIN_S}-${DEAD_AIR_S} s with business in them (an act, a face, a walk) in ${round1(total / 60)} min`));
   } else {
-    readings.push(readFail("deadAirShare", 0.1, "fewer than 2 lines", B.deadAirShare));
-    readings.push(readFail("pauseBeatsPerMin", 0.1, "fewer than 2 lines", B.pauseBeatsPerMin));
+    readings.push(readFail("deadAirShare", 0.05, "fewer than 2 lines", B.deadAirShare));
+    readings.push(readFail("pauseBeatsPerMin", 0.05, "fewer than 2 lines", B.pauseBeatsPerMin));
+  }
+
+  // 3b. rhythm, measured the way the corpus's subtitle files were (clock times, the reading-rate model for how long a line takes to say)
+  const f = measureRun(bundle).features;
+  const why = lines.length < 3 ? "fewer than 3 spoken lines" : "nothing to measure";
+  if (f) {
+    detail["rhythm"] = { turnsPerMin: round1(f.turnsPerMin), silenceShare: f.silenceShare === null ? null : round3(f.silenceShare), shortShare: round3(f.shortShare), spanS: round1(f.durSec) };
+    readings.push(read("turnsPerMin", f.turnsPerMin, 0.08, B.turnsPerMin, `${f.turns} spoken turns in ${round1(f.durSec)} s between the first line and the last`));
+    readings.push(
+      f.silenceShare === null
+        ? readSkip("silenceShare", 0.1, B.silenceShare, "no span to measure silence on")
+        : read("silenceShare", f.silenceShare, 0.1, B.silenceShare, `nobody talking for ${round3(f.silenceShare)} of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm`),
+    );
+    readings.push(read("shortReplyShare", f.shortShare, 0.07, B.shortReplyShare, `${Math.round(f.shortShare * f.turns)} of ${f.turns} lines are 5 words or fewer`));
+  } else {
+    readings.push(readSkip("turnsPerMin", 0.08, B.turnsPerMin, why));
+    readings.push(readSkip("silenceShare", 0.1, B.silenceShare, why));
+    readings.push(readSkip("shortReplyShare", 0.07, B.shortReplyShare, why));
   }
 
   // 4. subtext (weak proxy)
@@ -108,7 +127,7 @@ export function scoreDialogue(bundle: RunBundle, norms: CinemaNorms, opts: { scr
   // 5. reply adherence
   const ra = replyAdherence(lines);
   detail["reply"] = ra;
-  readings.push(ra.adherence === null ? readFail("replyAdherence", 0.2, "no exchanges between different speakers", B.replyAdherence) : read("replyAdherence", ra.adherence, 0.2, B.replyAdherence, `${ra.adherent} of ${ra.pairs} answers share a topic word with, or are an answer to, the line before`));
+  readings.push(ra.adherence === null ? readFail("replyAdherence", 0.15, "no exchanges between different speakers", B.replyAdherence) : read("replyAdherence", ra.adherence, 0.15, B.replyAdherence, `${ra.adherent} of ${ra.pairs} answers share a topic word with, or are an answer to, the line before`));
   if (ra.stale !== null) readings.push(read("staleReplyShare", ra.stale, 0.0, B.staleReplyShare, `${ra.staleCount} of ${ra.replyTargets} replies answer a line more than 3 lines back (reported, not weighted yet)`));
 
   return groupOf("dialogue", readings, detail);

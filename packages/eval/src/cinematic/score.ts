@@ -8,21 +8,24 @@
  * be compared before and after a change without spending a judge call.
  *
  * HARD INVARIANT: no physical climax by 4:00 caps the overall at {@link CLIMAX_CAP} (below "good"), however well the rest scores, and
- * `invariants.climaxByDeadline` reports pass/fail on its own.
+ * `invariants.climaxByDeadline` reports pass/fail on its own. It is the owner's product requirement, not a corpus statistic, and reads no norm.
  *
- * Calibration: nothing here is calibrated against human grades yet (see calibration.ts); the bands are priors, the engagement judge is unvalidated.
+ * Calibration: nothing here is calibrated against human grades yet (see calibration.ts). Where E1's corpus measured a thing the band comes from it
+ * (corpus-norms.ts has the map, `norms.fromCinemaNorms` counts them); the rest are priors; the engagement judge is unvalidated.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { loadTurns } from "../script-likeness/index.js";
-import type { ScriptTurn } from "@perfectman/shared";
+import type { CinemaGenre, ScriptTurn } from "@perfectman/shared";
 import { climaxInvariant, scoreArc, type ClimaxInvariant } from "./arc.js";
 import { loadRunBundle, type RunBundle } from "./bundle.js";
 import { scoreCamera } from "./camera.js";
 import { scoreDialogue } from "./dialogue.js";
 import { scoreEmbodiment } from "./embodiment.js";
 import { engagementGroup, judgeEngagement, type EngagementJudgment } from "./engagement.js";
-import { fallbackNorms, METRIC_IDS, type CinemaNorms } from "./norms.js";
+import { corpusNorms } from "./corpus-norms.js";
+import type { HumanLikeReport } from "./humanlike-hook.js";
+import { METRIC_IDS, type CinemaNorms } from "./norms.js";
 import { GROUP_NAMES, GROUP_WEIGHTS, round1, type GroupName, type GroupScore } from "./types.js";
 import type { DramaJudgeProvider } from "../drama/drama-judge.js";
 
@@ -41,13 +44,16 @@ export type CinematicScore = {
   capped: boolean;
   /** Mean of the four measured groups only (arc, dialogue, embodiment, camera): comparable without a judge. */
   deterministic: number | null;
+  /** The same four-group mean before the climax cap: what the capped runs differ by. */
+  deterministicRaw: number | null;
   partial: boolean;
   missing: GroupName[];
   groups: Record<GroupName, GroupScore>;
   /** The weights that were applied after leaving out missing groups. */
   weights: Partial<Record<GroupName, number>>;
   invariants: { climaxByDeadline: ClimaxInvariant };
-  norms: { origin: string; fromCinemaNorms: number; priors: number; note?: string };
+  /** Where the bands came from: measured on the cinema corpus, priors, and product requirements (the 4:00 climax). */
+  norms: { origin: string; fromCinemaNorms: number; priors: number; product: number; note?: string };
   engagement?: Pick<EngagementJudgment, "judge" | "mock" | "mean" | "score" | "notes" | "digestSha256">;
   sources: RunBundle["sources"];
 };
@@ -70,6 +76,7 @@ export function combineGroups(bundle: RunBundle, groups: Record<GroupName, Group
   const climax = climaxInvariant(bundle);
   const capped = raw !== null && !climax.pass && raw > CLIMAX_CAP;
   const fromCinema = METRIC_IDS.filter((m) => norms.normSources[m] === "cinema-norms").length;
+  const fromProduct = METRIC_IDS.filter((m) => norms.normSources[m] === "product").length;
   return {
     version: CINEMATIC_VERSION,
     run: bundle.runId,
@@ -78,30 +85,36 @@ export function combineGroups(bundle: RunBundle, groups: Record<GroupName, Group
     raw: raw === null ? null : round1(raw),
     capped,
     deterministic: det === null ? null : round1(!climax.pass && det > CLIMAX_CAP ? CLIMAX_CAP : det),
+    deterministicRaw: det === null ? null : round1(det),
     partial: missing.length > 0,
     missing,
     groups,
     weights,
     invariants: { climaxByDeadline: climax },
-    norms: { origin: norms.origin, fromCinemaNorms: fromCinema, priors: METRIC_IDS.length - fromCinema, ...(norms.note ? { note: norms.note } : {}) },
+    norms: { origin: norms.origin, fromCinemaNorms: fromCinema, priors: METRIC_IDS.length - fromCinema - fromProduct, product: fromProduct, ...(norms.note ? { note: norms.note } : {}) },
     ...(judgment ? { engagement: { judge: judgment.judge, mock: judgment.mock, mean: judgment.mean, score: judgment.score, ...(judgment.notes ? { notes: judgment.notes } : {}), digestSha256: judgment.digestSha256 } } : {}),
     sources: bundle.sources,
   };
 }
 
 export type ScoreRunOptions = {
+  /** Default: the cinema corpus's norms for the run's language ({@link corpusNorms}). `fallbackNorms()` gives the all-priors reading. */
   norms?: CinemaNorms;
+  /** Narrows the structure norms to one genre (`melodrama` reads the soap-opera transcripts); ignored when `norms` is given. */
+  genre?: CinemaGenre;
+  /** Agent B5's human-likeness report for this run; off by default. It enters the embodiment group as one reading (humanlike-hook.ts). */
+  humanlike?: HumanLikeReport;
   /** The engagement judge; omitted = not run (the overall is partial). */
   judge?: { provider: DramaJudgeProvider; mock?: boolean; actorModels?: readonly string[]; maxChars?: number; fromS?: number; toS?: number };
   /** Test seam: the turns script-likeness reads (default: the run directory read the way the script-likeness CLI reads it). */
   scriptTurns?: ScriptTurn[];
 };
 
-export function scoreBundleDeterministic(bundle: RunBundle, norms: CinemaNorms, scriptTurns?: ScriptTurn[]): Record<Exclude<GroupName, "engagement">, GroupScore> {
+export function scoreBundleDeterministic(bundle: RunBundle, norms: CinemaNorms, scriptTurns?: ScriptTurn[], humanlike?: HumanLikeReport): Record<Exclude<GroupName, "engagement">, GroupScore> {
   return {
     arc: scoreArc(bundle, norms),
     dialogue: scoreDialogue(bundle, norms, scriptTurns ? { scriptTurns } : {}),
-    embodiment: scoreEmbodiment(bundle, norms),
+    embodiment: scoreEmbodiment(bundle, norms, humanlike ? { humanlike } : {}),
     camera: scoreCamera(bundle, norms),
   };
 }
@@ -117,8 +130,8 @@ function benchmarkTurns(dir: string | undefined): ScriptTurn[] | undefined {
 }
 
 export async function scoreBundle(bundle: RunBundle, opts: ScoreRunOptions = {}): Promise<CinematicScore> {
-  const norms = opts.norms ?? fallbackNorms();
-  const det = scoreBundleDeterministic(bundle, norms, opts.scriptTurns ?? benchmarkTurns(bundle.dir));
+  const norms = opts.norms ?? corpusNorms({ lang: bundle.language, ...(opts.genre ? { genre: opts.genre } : {}) });
+  const det = scoreBundleDeterministic(bundle, norms, opts.scriptTurns ?? benchmarkTurns(bundle.dir), opts.humanlike);
   let judgment: EngagementJudgment | null = null;
   if (opts.judge) {
     judgment = await judgeEngagement({

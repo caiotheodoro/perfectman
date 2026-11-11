@@ -8,8 +8,10 @@
  */
 import { LADDER_RUNGS } from "../drama/axes.js";
 import { isVisibleAct, type RunBundle } from "./bundle.js";
-import type { CinemaNorms } from "./norms.js";
-import { groupOf, read, readFail, round1, type GroupScore, type Reading } from "./types.js";
+import { HUMANLIKE_WEIGHT, type HumanLikeReport } from "./humanlike-hook.js";
+import { measureRun } from "./measure.js";
+import { bandFor, type CinemaNorms } from "./norms.js";
+import { groupOf, read, readFail, readScore, round1, type GroupScore, type Reading } from "./types.js";
 
 const IDLE_GESTURES = new Set(["stop", "stand", "sit"]);
 /** Entrances / exits this close to the end of the run are the stop command clearing the stage, not staging. */
@@ -39,7 +41,7 @@ export function proximityChanges(bundle: RunBundle): number {
   return changes;
 }
 
-export function scoreEmbodiment(bundle: RunBundle, norms: CinemaNorms): GroupScore {
+export function scoreEmbodiment(bundle: RunBundle, norms: CinemaNorms, opts: { humanlike?: HumanLikeReport } = {}): GroupScore {
   const B = norms.bands;
   const minutes = Math.max(1 / 6, bundle.durationS / 60);
   const visible = bundle.acts.filter(isVisibleAct);
@@ -48,7 +50,11 @@ export function scoreEmbodiment(bundle: RunBundle, norms: CinemaNorms): GroupSco
   const nActors = Math.max(1, actors.length);
 
   // ---- acts per minute and the verb ladder
-  readings.push(read("actsPerMin", visible.length / minutes, 0.2, B.actsPerMin, `${visible.length} acts on screen in ${round1(minutes)} min (${bundle.acts.length - visible.length} more never played out)`));
+  // acts per minute of the run, the denominator `scripts/run-metrics.mjs` uses too; the corpus reader divides by first-to-last event (under 10% apart on
+  // the baseline runs). Hard acts are counted by the corpus's own reader (measure.ts renders each act on screen as a direction).
+  const f = measureRun(bundle).features;
+  readings.push(read("actsPerMin", visible.length / minutes, 0.16, B.actsPerMin, `${visible.length} acts on screen in ${round1(minutes)} min (${bundle.acts.length - visible.length} more never played out)`));
+  if (f?.hardActs != null) readings.push(read("hardActs", f.hardActs, 0.06, bandFor(norms, "hardActs", f.turns), `${f.hardActs} hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in ${f.turns} turns`));
   const verbs = new Map<string, number>();
   for (const a of visible) verbs.set(a.verb, (verbs.get(a.verb) ?? 0) + 1);
   if (visible.length === 0) {
@@ -100,7 +106,14 @@ export function scoreEmbodiment(bundle: RunBundle, norms: CinemaNorms): GroupSco
   const exits = bundle.exits.filter((e) => e.tS < bundle.durationS - END_CLEAR_S);
   readings.push(read("exits", exits.length, 0.05, B.exits, exits.length === 0 ? "nobody left the scene before the end" : `${exits.length} exit(s): ${exits.map((e) => `${e.actor} (${e.via}) at ${round1(e.tS)} s`).join(", ")}`));
 
+  // ---- human-likeness (agent B5's module), only when a report was handed in
+  if (opts.humanlike) {
+    const c = Object.entries(opts.humanlike.components).map(([k, v]) => `${k} ${round1(v)}`).join(", ");
+    readings.push(readScore("humanLike", opts.humanlike.score0to100, opts.humanlike.score0to100, HUMANLIKE_WEIGHT, `human-likeness report ${round1(opts.humanlike.score0to100)}/100${c ? ` (${c})` : ""}`));
+  }
+
   return groupOf("embodiment", readings, {
+    humanLike: opts.humanlike ? { score0to100: opts.humanlike.score0to100, components: opts.humanlike.components } : "off",
     acts: visible.length,
     actsNotPlayed: bundle.acts.length - visible.length,
     verbs: Object.fromEntries(verbs),

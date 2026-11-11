@@ -1,7 +1,7 @@
 /**
  * cinematic: the cinematic score of a run (arc, dialogue, embodiment, camera, engagement), 0-100, every part explained.
  *
- *   pnpm --filter @perfectman/eval cinematic --run <run dir> [--json] [--judge off|mock|llm] [--model id] [--norms file] [--write-replay] [--require-climax]
+ *   pnpm --filter @perfectman/eval cinematic --run <run dir> [--json] [--judge off|mock|llm] [--model id] [--norms file | --priors] [--genre g] [--humanlike report.json] [--write-replay] [--require-climax]
  *   pnpm --filter @perfectman/eval cinematic --baseline <runs root> --runs 55-63 [--out-json f.json] [--markdown] [--judge ...]
  *   pnpm --filter @perfectman/eval cinematic --calibrate --grades <file|dir> --runs-root <dir> [--judge mock|llm] [--freeze out.json] [--model id]
  *
@@ -9,30 +9,39 @@
  * --judge llm: the engagement judge on a stronger model (CINE_JUDGE_MODEL or --model; key CINE_JUDGE_API_KEY / OPENROUTER_API_KEY; CINE_JUDGE_BASE_URL and
  *   CINE_JUDGE_SESSION_HEADER for OpenCode; cap CINE_JUDGE_MAX_USD, default $0.30 a scene). The judge may not be a model the actors ran on.
  * --judge mock: fixed scores of 3 on every axis, no network. For tests; the engagement number measures nothing.
+ * Norms: by default the bands E1 measured on the cinema corpus (rhythm from the run's language's subtitle buckets, structure and action from English
+ *   screenplays and transcripts) and priors for the rest. --norms file (or CINEMA_NORMS_FILE) overrides; --priors reads every band as a prior (the
+ *   before-E1 scorer); --genre drama|melodrama|thriller|comedy narrows the structure norms.
+ * --humanlike report.json: agent B5's human-likeness report ({ score0to100, components }) as an input to the embodiment group; off without it.
  * --write-replay: add `cinematic_score` to <run>/replay.json (every other key kept).
  * --require-climax: exit 1 when the run has no physical climax by 4:00.
  *
  * Exit: 0 ok, 1 invariant failed (--require-climax) / calibration not frozen / error, 2 usage or configuration.
  */
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, resolve } from "node:path";
+import type { CinemaGenre } from "@perfectman/shared";
 import type { DramaJudgeProvider } from "../drama/drama-judge.js";
 import {
   ENGAGEMENT_AXES,
   GROUP_NAMES,
   createEngagementProvider,
   createMockEngagementProvider,
+  defaultNormsCandidates,
+  fallbackNorms,
   freezeThresholds,
   loadCinemaNorms,
   loadEngagementJudgeConfig,
   loadHumanGrades,
   loadRunBundle,
+  parseHumanLikeReport,
   scoreBundle,
   sliceBundle,
   writeCinematicToReplay,
   type CinematicScore,
   type CinemaNorms,
   type GroupScore,
+  type HumanLikeReport,
   type HumanGrade,
   type JudgedClip,
 } from "../cinematic/index.js";
@@ -47,11 +56,11 @@ export type CinematicCliDeps = {
 
 const USAGE = [
   "Usage:",
-  "  cinematic --run <run dir> [--json] [--judge off|mock|llm] [--model id] [--norms file] [--write-replay] [--require-climax]",
-  "  cinematic --baseline <runs root> --runs 55-63 [--out-json file] [--markdown] [--judge off|mock|llm]",
+  "  cinematic --run <run dir> [--json] [--judge off|mock|llm] [--model id] [--norms file | --priors] [--genre g] [--humanlike report.json] [--write-replay] [--require-climax]",
+  "  cinematic --baseline <runs root> --runs 55-63 [--out-json file] [--markdown] [--judge off|mock|llm] [--norms file | --priors] [--genre g]",
   "  cinematic --calibrate --grades <file|dir> --runs-root <dir> [--judge mock|llm] [--freeze out.json] [--model id]",
   "Judge: CINE_JUDGE_MODEL (or --model), CINE_JUDGE_API_KEY / OPENROUTER_API_KEY, CINE_JUDGE_BASE_URL, CINE_JUDGE_SESSION_HEADER, CINE_JUDGE_MAX_USD (default 0.30).",
-  "Norms: --norms file, CINEMA_NORMS_FILE, or docs/eval/cinema-norms.json when it exists; otherwise priors + script-norms.",
+  "Norms: --norms file, CINEMA_NORMS_FILE, or docs/eval/cinema-norms.json when it exists; otherwise the cinema corpus's norms (--priors: every band a prior). --genre drama|melodrama|thriller|comedy.",
 ].join("\n");
 
 /** "55-63" or "55,57,60-62" to a sorted list. */
@@ -84,7 +93,7 @@ export function formatReport(s: CinematicScore): string {
     if (low.length > 0) out.push(`  ${n} weak: ${low.slice(0, 4).map((r) => `${r.metric} ${r.score} (${r.note})`).join("; ")}`);
     if (g.score === null) out.push(`  ${n}: not scored (${String(g.detail["reason"] ?? "no data")})`);
   }
-  out.push(`  norms: ${s.norms.origin} (${s.norms.fromCinemaNorms} metrics from cinema norms, ${s.norms.priors} priors)`);
+  out.push(`  norms: ${s.norms.origin} (${s.norms.fromCinemaNorms} bands measured on the cinema corpus, ${s.norms.priors} priors, ${s.norms.product} product)`);
   if (s.engagement) out.push(`  engagement judge ${s.engagement.judge}${s.engagement.mock ? " (MOCK: measures nothing)" : ""}: mean ${s.engagement.mean}/5${s.engagement.notes ? ` - ${s.engagement.notes}` : ""}`);
   return out.join("\n");
 }
@@ -94,6 +103,8 @@ export type BaselineRow = {
   durationS: number;
   score: number | null;
   deterministic: number | null;
+  /** Before the climax cap. */
+  deterministicRaw: number | null;
   groups: Record<string, number | null>;
   climax: { pass: boolean; atS: number | null; verb: string | null };
   acts: number;
@@ -108,6 +119,7 @@ export function baselineRow(s: CinematicScore): BaselineRow {
     durationS: s.durationS,
     score: s.score,
     deterministic: s.deterministic,
+    deterministicRaw: s.deterministicRaw,
     groups: Object.fromEntries(GROUP_NAMES.map((n) => [n, s.groups[n].score])),
     climax: { pass: s.invariants.climaxByDeadline.pass, atS: s.invariants.climaxByDeadline.atS, verb: s.invariants.climaxByDeadline.verb },
     acts: Number(s.groups.embodiment.detail["acts"] ?? 0),
@@ -117,10 +129,10 @@ export function baselineRow(s: CinematicScore): BaselineRow {
 }
 
 export function baselineMarkdown(rows: BaselineRow[]): string {
-  const head = "| run | length | lines | acts | climax by 4:00 | arc | dialogue | embodiment | camera | deterministic | script-likeness |\n|---|---|---|---|---|---|---|---|---|---|---|";
+  const head = "| run | length | lines | acts | climax by 4:00 | arc | dialogue | embodiment | camera | deterministic | uncapped | script-likeness |\n|---|---|---|---|---|---|---|---|---|---|---|---|";
   const body = rows.map(
     (r) =>
-      `| ${r.run} | ${mmss(r.durationS)} | ${r.lines} | ${r.acts} | ${r.climax.pass ? `pass (${r.climax.verb} ${mmss(r.climax.atS!)})` : r.climax.atS === null ? "fail (none)" : `fail (${r.climax.verb} ${mmss(r.climax.atS)})`} | ${f1(r.groups["arc"] ?? null)} | ${f1(r.groups["dialogue"] ?? null)} | ${f1(r.groups["embodiment"] ?? null)} | ${f1(r.groups["camera"] ?? null)} | ${f1(r.deterministic)} | ${f1(r.scriptLikeness)} |`,
+      `| ${r.run} | ${mmss(r.durationS)} | ${r.lines} | ${r.acts} | ${r.climax.pass ? `pass (${r.climax.verb} ${mmss(r.climax.atS!)})` : r.climax.atS === null ? "fail (none)" : `fail (${r.climax.verb} ${mmss(r.climax.atS)})`} | ${f1(r.groups["arc"] ?? null)} | ${f1(r.groups["dialogue"] ?? null)} | ${f1(r.groups["embodiment"] ?? null)} | ${f1(r.groups["camera"] ?? null)} | ${f1(r.deterministic)} | ${f1(r.deterministicRaw)} | ${f1(r.scriptLikeness)} |`,
   );
   return `${head}\n${body.join("\n")}`;
 }
@@ -143,12 +155,27 @@ export async function runCinematicCli(args: string[], deps: CinematicCliDeps = {
   if (!["off", "mock", "llm"].includes(judgeMode)) return fail(2, `--judge must be off, mock or llm, got "${judgeMode}"`);
   const model = value("--model");
 
-  let norms: CinemaNorms;
+  // norms: a named file wins; else the corpus norms for each run's language (undefined here = scoreBundle builds them); --priors = the all-priors reading
+  const genre = value("--genre");
+  if (genre !== undefined && !["drama", "melodrama", "thriller", "comedy"].includes(genre)) return fail(2, `--genre must be drama, melodrama, thriller or comedy, got "${genre}"`);
+  let norms: CinemaNorms | undefined;
   try {
-    norms = loadCinemaNorms(value("--norms"), env);
+    const named = value("--norms") ?? env["CINEMA_NORMS_FILE"] ?? defaultNormsCandidates().find((p) => existsSync(p));
+    if (named !== undefined && args.includes("--priors")) return fail(2, "--priors and --norms / CINEMA_NORMS_FILE are two answers to the same question");
+    norms = args.includes("--priors") ? fallbackNorms() : named !== undefined ? loadCinemaNorms(named, env) : undefined;
   } catch (e) {
     return fail(2, e instanceof Error ? e.message : String(e));
   }
+  let humanlike: HumanLikeReport | undefined;
+  const humanlikeFile = value("--humanlike");
+  if (humanlikeFile !== undefined) {
+    try {
+      humanlike = parseHumanLikeReport(JSON.parse(readFileSync(humanlikeFile, "utf8")));
+    } catch (e) {
+      return fail(2, `--humanlike ${humanlikeFile}: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  }
+  const normsOpts = { ...(norms ? { norms } : {}), ...(genre ? { genre: genre as CinemaGenre } : {}) };
 
   let provider: DramaJudgeProvider | undefined;
   let meterOf: (() => { spentUsd: number; calls: number }) | undefined;
@@ -176,7 +203,7 @@ export async function runCinematicCli(args: string[], deps: CinematicCliDeps = {
     if (runDir !== undefined) {
       const bundle = loadRunBundle(runDir);
       const judge = judgeFor();
-      const score = await scoreBundle(bundle, { norms, ...(judge ? { judge } : {}) });
+      const score = await scoreBundle(bundle, { ...normsOpts, ...(humanlike ? { humanlike } : {}), ...(judge ? { judge } : {}) });
       if (args.includes("--write-replay") && !writeCinematicToReplay(runDir, score)) err(`no replay.json in ${runDir}: nothing written\n`);
       out(json ? `${JSON.stringify(score, null, 2)}\n` : `${formatReport(score)}\n`);
       if (meterOf) err(`judge spend: $${meterOf().spentUsd.toFixed(4)} in ${meterOf().calls} call(s)\n`);
@@ -197,11 +224,11 @@ export async function runCinematicCli(args: string[], deps: CinematicCliDeps = {
           continue;
         }
         const judge = judgeFor();
-        const score = await scoreBundle(loadRunBundle(dir), { norms, ...(judge ? { judge } : {}) });
+        const score = await scoreBundle(loadRunBundle(dir), { ...normsOpts, ...(judge ? { judge } : {}) });
         full.push(score);
         rows.push(baselineRow(score));
       }
-      const doc = { version: "cinematic-baseline-v1", norms: norms.origin, judge: judgeMode === "off" ? null : judgeMode, runs: full.map((s) => ({ ...baselineRow(s), score: s.score, raw: s.raw, capped: s.capped, groups: s.groups, invariants: s.invariants, weights: s.weights })) };
+      const doc = { version: "cinematic-baseline-v2", norms: full[0]?.norms.origin ?? null, genre: genre ?? null, judge: judgeMode === "off" ? null : judgeMode, runs: full.map((s) => ({ ...baselineRow(s), score: s.score, raw: s.raw, capped: s.capped, groups: s.groups, invariants: s.invariants, weights: s.weights, norms: s.norms })) };
       const file = value("--out-json");
       if (file) {
         mkdirSync(dirname(resolve(file)), { recursive: true });
@@ -228,7 +255,7 @@ export async function runCinematicCli(args: string[], deps: CinematicCliDeps = {
         let bundle = loadRunBundle(dir);
         if (g.fromS !== undefined || g.toS !== undefined) bundle = sliceBundle(bundle, g.fromS ?? 0, g.toS ?? bundle.durationS);
         const judge = judgeFor();
-        const s = await scoreBundle(bundle, { norms, ...(judge ? { judge } : {}) });
+        const s = await scoreBundle(bundle, { ...normsOpts, ...(judge ? { judge } : {}) });
         scores.set(g.clipId, { overall: s.score, deterministic: s.deterministic });
         if (s.engagement) {
           judgeName = s.engagement.judge;
@@ -239,7 +266,7 @@ export async function runCinematicCli(args: string[], deps: CinematicCliDeps = {
           judged.set(g.clipId, axes);
         }
       }
-      const frozen = freezeThresholds({ humans, judged, scores, ...(judgeName ? { judge: judgeName } : {}), normsOrigin: norms.origin });
+      const frozen = freezeThresholds({ humans, judged, scores, ...(judgeName ? { judge: judgeName } : {}), normsOrigin: scores.size > 0 ? (norms?.origin ?? "cinema-norms (corpus)") : "none" });
       const target = value("--freeze");
       if (target) {
         mkdirSync(dirname(resolve(target)), { recursive: true });

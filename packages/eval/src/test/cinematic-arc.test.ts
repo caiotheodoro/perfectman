@@ -81,28 +81,54 @@ describe("arc: shape of the tension", () => {
   });
 });
 
+/** A heated exchange that ends in a punch at 2:20 (and, with `after`, five more lines to the end of the scene). Hostile words and the act give the corpus's reader a strong arc. */
+const heated = (after: boolean): FxSpec => ({
+  durationS: 300,
+  lines: [
+    { tS: 5, ref: "p1", text: "Good evening, how was the drive?" },
+    { tS: 15, ref: "p2", text: "Long. Why did you ask me here?" },
+    { tS: 30, ref: "p1", text: "You lied to me about the money." },
+    { tS: 50, ref: "p2", text: "Careful, Ana. I will not hear that." },
+    { tS: 70, ref: "p1", text: "Liar! Thief! I hate you!" },
+    { tS: 90, ref: "p2", text: "Shut up! Get out of my house, you idiot!" },
+    { tS: 110, ref: "p1", text: "I will kill you, you bastard!" },
+    { tS: 130, ref: "p2", text: "Do it then, coward!" },
+    ...(after
+      ? [
+          { tS: 155, ref: "p1", text: "Why did you do that to me?" },
+          { tS: 175, ref: "p2", text: "I do not know. I am sorry." },
+          { tS: 200, ref: "p1", text: "Get out." },
+          { tS: 230, ref: "p2", text: "Fine." },
+          { tS: 260, ref: "p1", text: "Close the door." },
+        ]
+      : []),
+  ],
+  acts: [{ tS: 140, verb: "punch", actor: "p1", target: "p2" }],
+});
+
 describe("arc: the group", () => {
   it("scores a built scene far above a flat one, and explains the weak parts", () => {
     const good = scoreArc(load(goodScene()), norms);
     const flat = scoreArc(load(flatScene()), norms);
     expect(good.score!).toBeGreaterThan(85);
     expect(flat.score!).toBeLessThan(30);
-    expect(reading(flat, "timeToIncitingS").score).toBe(0);
-    expect(reading(flat, "timeToIncitingS").value).toBeNull();
+    // the corpus's reader finds no strong arc in a flat scene: its position readings are left out, not scored 0
+    expect(reading(flat, "incitingPos")).toMatchObject({ value: null, score: null });
+    expect(reading(flat, "timeToClimaxS").score).toBe(0);
+    expect(good.detail["corpus"]).toMatchObject({ strongArc: true });
     expect(reading(good, "timeToClimaxS")).toMatchObject({ value: 180, score: 100 });
     expect(good.detail["incitingKind"]).toBe("accusation");
   });
 
-  it("needs two lines after the peak for an aftermath", () => {
-    const abrupt = load({ durationS: 100, lines: [{ tS: 10, ref: "p1", text: "Hello there." }], acts: [{ tS: 60, verb: "punch", actor: "p1", target: "p2" }] });
-    expect(reading(scoreArc(abrupt, norms), "aftermathShare").score).toBe(0);
-    const after = load({
-      durationS: 100,
-      lines: [{ tS: 10, ref: "p1", text: "Hello there." }, { tS: 66, ref: "p2", text: "Why did you do that to me?" }, { tS: 72, ref: "p1", text: "I do not know, I am sorry." }, { tS: 80, ref: "p2", text: "Get out of my house." }],
-      acts: [{ tS: 60, verb: "punch", actor: "p1", target: "p2" }],
-    });
-    // last activity at 80 s, peak at 60 s: 20 / 80 = 0.25, inside the 8-30% band
-    expect(reading(scoreArc(after, norms), "aftermathShare")).toMatchObject({ value: 0.25, score: 100 });
+  it("reads the aftermath off the corpus's reader: an abrupt end after the peak leaves almost none", () => {
+    const abrupt = scoreArc(load(heated(false)), norms);
+    expect(abrupt.detail["corpus"]).toMatchObject({ strongArc: true });
+    expect(reading(abrupt, "aftermathShare").value!).toBeLessThan(0.05);
+    expect(reading(abrupt, "aftermathShare").score!).toBeLessThan(10);
+    const after = scoreArc(load(heated(true)), norms);
+    // 0.47 of the scene follows the peak: inside the prior band's reach and inside the corpus band (0.10-0.59)
+    expect(reading(after, "aftermathShare").value!).toBeGreaterThan(0.4);
+    expect(reading(after, "incitingPos").score).toBe(100);
   });
 
   it("reads stakes as a rise of the peak over the opening plus memory intensity and tone", () => {

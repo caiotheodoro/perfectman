@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
   CLIMAX_CAP,
   FALLBACK_NORMS,
+  fallbackNorms,
   GROUP_NAMES,
   GROUP_WEIGHTS,
   METRIC_IDS,
@@ -66,9 +67,10 @@ describe("norms: the interface E1's file plugs into", () => {
   it("a file replaces only the metrics it names, records which, and lists what it ignored", () => {
     const { norms, ignored } = normsFromFile({ note: "n=300 scenes", metrics: { shotsPerMin: { lo: 8, hi: 20, floor: 2, ceil: 40 }, notAMetric: { lo: 1, floor: 0 } } }, "x.json");
     expect(norms.bands.shotsPerMin).toMatchObject({ lo: 8, hi: 20, source: "cinema-norms" });
-    expect(norms.bands.timeToIncitingS).toEqual(FALLBACK_NORMS.timeToIncitingS);
+    expect(norms.bands.incitingPos).toEqual(FALLBACK_NORMS.incitingPos);
     expect(norms.normSources.shotsPerMin).toBe("cinema-norms");
-    expect(norms.normSources.timeToIncitingS).toBe("prior");
+    expect(norms.normSources.incitingPos).toBe("prior");
+    expect(norms.normSources.timeToClimaxS).toBe("product");
     expect(ignored).toEqual(["notAMetric"]);
     expect(norms.note).toBe("n=300 scenes");
   });
@@ -93,7 +95,7 @@ describe("norms: the interface E1's file plugs into", () => {
 
   it("swapping the norms changes the score of the metric and nothing else", async () => {
     const dir = writeRun(goodScene());
-    const base = await scoreRun(dir);
+    const base = await scoreRun(dir, { norms: fallbackNorms() });
     const { norms } = normsFromFile({ metrics: { shotsPerMin: { lo: 60, hi: 90, floor: 30, ceil: 120 } } }, "x.json");
     const swapped = await scoreRun(dir, { norms });
     const reading = (s: typeof base) => s.groups.camera.readings.find((r) => r.metric === "shotsPerMin")!;
@@ -103,6 +105,7 @@ describe("norms: the interface E1's file plugs into", () => {
     expect(swapped.groups.embodiment.score).toBe(base.groups.embodiment.score);
     expect(swapped.norms.fromCinemaNorms).toBe(1);
     expect(base.norms.fromCinemaNorms).toBe(0);
+    expect(base.norms.product).toBe(1);
   });
 });
 
