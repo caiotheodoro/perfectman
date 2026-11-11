@@ -1,0 +1,5377 @@
+{
+  "version": "cinematic-baseline-v1",
+  "norms": "fallback (priors + script-norms)",
+  "judge": null,
+  "runs": [
+    {
+      "run": "55",
+      "durationS": 94.5,
+      "score": 36.4,
+      "deterministic": 36.4,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 18.8,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": null,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "nothing in the run was a real disturbance (no insult, accusation, threat, reveal or physical act)"
+            },
+            {
+              "metric": "reversals",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 1,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 1,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 1 (proposal); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": null,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "no physical act reached the screen"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.692,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "55.8 s and 4 lines after the peak at 24.9 s"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0.25,
+              "score": 37.5,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 1 signal(s): rise of the peak over the opening (too few memories for the other two)"
+            }
+          ],
+          "detail": {
+            "beats": 4,
+            "incitingAtS": null,
+            "incitingKind": null,
+            "climax": null,
+            "peakAtS": 24.9,
+            "initiativeSwaps": 0,
+            "risingTurns": 0,
+            "lastActivityS": 80.7
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 58,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 25,
+              "score": 25,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 8 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 8 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "0 s of silence beyond 10 s between lines (track timeline), of 94.5 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 1.27,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "2 silences of 2-10 s with business in them (an act, a face, a walk) in 1.6 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.28,
+              "score": 92,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0, figurative 0, motiveGap 0.84"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 0.833,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "5 of 6 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 5 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 8,
+            "scriptLikeness": {
+              "score": 25,
+              "percentile": 0.5,
+              "sub": {
+                "length": 30,
+                "novelty": 0,
+                "motif": 25,
+                "progress": 100,
+                "debt": 100,
+                "reactions": 100,
+                "repeats": 100
+              },
+              "sayTurns": 8,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 2,
+              "gaps": 7,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0,
+              "figurative": 0,
+              "motiveGap": 0.8398074148074148
+            },
+            "reply": {
+              "adherence": 0.8333333333333334,
+              "pairs": 6,
+              "adherent": 5,
+              "stale": 0,
+              "staleCount": 0,
+              "replyTargets": 5
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 17.6,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0,
+              "score": 0,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "0 acts on screen in 1.6 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": null,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 1,
+              "score": 0,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: smile"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 2,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: laugh, wave"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": null,
+              "score": null,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no act owed a reaction, so nothing to check"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 1.481,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "7 walks by 3 actors in 1.6 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 1,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "1 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 0,
+              "score": 0,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 0 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "3 of 3 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 0,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "nobody left the scene before the end"
+            }
+          ],
+          "detail": {
+            "acts": 0,
+            "actsNotPlayed": 0,
+            "verbs": {},
+            "faces": [
+              "smile"
+            ],
+            "gestures": [
+              "laugh",
+              "wave"
+            ],
+            "owedReactions": 0,
+            "missedReactions": 0,
+            "walks": 7
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 94.4,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 5,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x1, tracking x3, close_up x3, two_shot x5, reaction x2"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.357,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "two_shot is 5 of 14 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 8.894,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "14 camera cues in 1.6 min (0 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0.077,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "1 of 13 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 8 of 8 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.143,
+              "score": 62.9,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "4 cue(s) dropped (stale or unstageable) against 24 shown: 14.3% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 14,
+            "allCues": 24,
+            "lost": 4,
+            "drops": 5,
+            "shotOnSpeaker": {
+              "onSpeaker": 8,
+              "lines": 8,
+              "ratio": 1
+            },
+            "roomCuts": 0,
+            "shots": {
+              "establishing": 1,
+              "tracking": 3,
+              "close_up": 3,
+              "two_shot": 5,
+              "reaction": 2
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": null,
+        "verb": null
+      },
+      "acts": 0,
+      "lines": 8,
+      "scriptLikeness": 25,
+      "raw": 36.4,
+      "capped": false,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": null,
+          "verb": null,
+          "reason": "no physical act (shove, slap, punch, kill, die, faint, restrain, hug, kiss) reached the screen"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    },
+    {
+      "run": "56",
+      "durationS": 205,
+      "score": 39.3,
+      "deterministic": 39.3,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 9.6,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": null,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "nothing in the run was a real disturbance (no insult, accusation, threat, reveal or physical act)"
+            },
+            {
+              "metric": "reversals",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 0.556,
+              "score": 38.9,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 1,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 1 (proposal); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": null,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "no physical act reached the screen"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "the scene ends within 2 lines of the peak (0 after it)"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0.25,
+              "score": 37.5,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 1 signal(s): rise of the peak over the opening (too few memories for the other two)"
+            }
+          ],
+          "detail": {
+            "beats": 1,
+            "incitingAtS": null,
+            "incitingKind": null,
+            "climax": null,
+            "peakAtS": 188.8,
+            "initiativeSwaps": 0,
+            "risingTurns": 0,
+            "lastActivityS": 189.5
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 68.8,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 53.6,
+              "score": 53.6,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 17 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 17 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0.007,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "1.5 s of silence beyond 10 s between lines (track timeline), of 205 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 1.463,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "5 silences of 2-10 s with business in them (an act, a face, a walk) in 3.4 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.551,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0.75, figurative 0, motiveGap 0.903"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 0.75,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "12 of 16 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 6 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 17,
+            "scriptLikeness": {
+              "score": 53.6,
+              "percentile": 4.4,
+              "sub": {
+                "length": 28.6,
+                "novelty": 81.5,
+                "motif": 30,
+                "progress": 100,
+                "debt": 100,
+                "reactions": 100,
+                "repeats": 100
+              },
+              "sayTurns": 17,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 5,
+              "gaps": 15,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0.75,
+              "figurative": 0,
+              "motiveGap": 0.9033516592340125
+            },
+            "reply": {
+              "adherence": 0.75,
+              "pairs": 16,
+              "adherent": 12,
+              "stale": 0,
+              "staleCount": 0,
+              "replyTargets": 6
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 31.5,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0,
+              "score": 0,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "0 acts on screen in 3.4 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": null,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 2,
+              "score": 33.3,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: angry, smile"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 3,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: laugh, thumbs, wave"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": null,
+              "score": null,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no act owed a reaction, so nothing to check"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 0.293,
+              "score": 97.6,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "3 walks by 3 actors in 3.4 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 2.333,
+              "score": 44.4,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "2.3 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 7,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 7 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "3 of 3 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 0,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "nobody left the scene before the end"
+            }
+          ],
+          "detail": {
+            "acts": 0,
+            "actsNotPlayed": 0,
+            "verbs": {},
+            "faces": [
+              "angry",
+              "smile"
+            ],
+            "gestures": [
+              "laugh",
+              "thumbs",
+              "wave"
+            ],
+            "owedReactions": 0,
+            "missedReactions": 0,
+            "walks": 3
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 100,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 4,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x1, close_up x18, reaction x15, two_shot x4"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.474,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "close_up is 18 of 38 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 11.256,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "38 camera cues in 3.4 min (0 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 37 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 16 of 16 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.049,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "3 cue(s) dropped (stale or unstageable) against 58 shown: 4.9% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 38,
+            "allCues": 58,
+            "lost": 3,
+            "drops": 5,
+            "shotOnSpeaker": {
+              "onSpeaker": 16,
+              "lines": 16,
+              "ratio": 1
+            },
+            "roomCuts": 0,
+            "shots": {
+              "establishing": 1,
+              "close_up": 18,
+              "reaction": 15,
+              "two_shot": 4
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": null,
+        "verb": null
+      },
+      "acts": 0,
+      "lines": 17,
+      "scriptLikeness": 53.6,
+      "raw": 39.3,
+      "capped": false,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": null,
+          "verb": null,
+          "reason": "no physical act (shove, slap, punch, kill, die, faint, restrain, hug, kiss) reached the screen"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    },
+    {
+      "run": "57",
+      "durationS": 185.7,
+      "score": 41.9,
+      "deterministic": 41.9,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 21.7,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": 8.198,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "first real disturbance (line threat) at 8.2 s"
+            },
+            {
+              "metric": "reversals",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 3 (threat); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": null,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "no physical act reached the screen"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.944,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "139.3 s and 11 lines after the peak at 8.2 s"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 1 signal(s): rise of the peak over the opening (too few memories for the other two)"
+            }
+          ],
+          "detail": {
+            "beats": 4,
+            "incitingAtS": 8.2,
+            "incitingKind": "threat",
+            "climax": null,
+            "peakAtS": 8.2,
+            "initiativeSwaps": 0,
+            "risingTurns": 0,
+            "lastActivityS": 147.4
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 58.8,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 25,
+              "score": 25,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 14 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 14 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "0 s of silence beyond 10 s between lines (track timeline), of 185.7 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 1.615,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "5 silences of 2-10 s with business in them (an act, a face, a walk) in 3.1 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.581,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0.75, figurative 0.143, motiveGap 0.849"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "13 of 13 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0.333,
+              "score": 22.2,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "2 of 6 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 14,
+            "scriptLikeness": {
+              "score": 25,
+              "percentile": 1,
+              "sub": {
+                "length": 0.6,
+                "novelty": 30.8,
+                "motif": 0,
+                "progress": 100,
+                "debt": 100,
+                "reactions": 100,
+                "repeats": 100
+              },
+              "sayTurns": 14,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 5,
+              "gaps": 12,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0.75,
+              "figurative": 0.14285714285714285,
+              "motiveGap": 0.8494289074856951
+            },
+            "reply": {
+              "adherence": 1,
+              "pairs": 13,
+              "adherent": 13,
+              "stale": 0.3333333333333333,
+              "staleCount": 2,
+              "replyTargets": 6
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 30.5,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0,
+              "score": 0,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "0 acts on screen in 3.1 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": null,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 2,
+              "score": 33.3,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: angry, smile"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 3,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: sign, wave, laugh"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": null,
+              "score": null,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no act owed a reaction, so nothing to check"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 0.323,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "4 walks by 4 actors in 3.1 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 1.75,
+              "score": 25,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "1.8 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 8,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 8 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "4 of 4 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 0,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "nobody left the scene before the end"
+            }
+          ],
+          "detail": {
+            "acts": 0,
+            "actsNotPlayed": 0,
+            "verbs": {},
+            "faces": [
+              "angry",
+              "smile"
+            ],
+            "gestures": [
+              "sign",
+              "wave",
+              "laugh"
+            ],
+            "owedReactions": 0,
+            "missedReactions": 0,
+            "walks": 4
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 100,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 5,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x1, tracking x2, close_up x11, two_shot x8, reaction x12"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.353,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "reaction is 12 of 34 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 11.25,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "34 camera cues in 3 min (0 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 33 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 13 of 13 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.038,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "2 cue(s) dropped (stale or unstageable) against 50 shown: 3.8% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 34,
+            "allCues": 50,
+            "lost": 2,
+            "drops": 3,
+            "shotOnSpeaker": {
+              "onSpeaker": 13,
+              "lines": 13,
+              "ratio": 1
+            },
+            "roomCuts": 0,
+            "shots": {
+              "establishing": 1,
+              "tracking": 2,
+              "close_up": 11,
+              "two_shot": 8,
+              "reaction": 12
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": null,
+        "verb": null
+      },
+      "acts": 0,
+      "lines": 14,
+      "scriptLikeness": 25,
+      "raw": 41.9,
+      "capped": false,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": null,
+          "verb": null,
+          "reason": "no physical act (shove, slap, punch, kill, die, faint, restrain, hug, kiss) reached the screen"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    },
+    {
+      "run": "58",
+      "durationS": 137.8,
+      "score": 56.4,
+      "deterministic": 56.4,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 32,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": 60.262,
+              "score": 79.7,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "first real disturbance (act insult) at 60.3 s"
+            },
+            {
+              "metric": "reversals",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 0.489,
+              "score": 22.3,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 3 (threat); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": null,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "no physical act reached the screen"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "the scene ends within 2 lines of the peak (0 after it)"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0.5,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 1 signal(s): rise of the peak over the opening (too few memories for the other two)"
+            }
+          ],
+          "detail": {
+            "beats": 6,
+            "incitingAtS": 60.3,
+            "incitingKind": "insult",
+            "climax": null,
+            "peakAtS": 131.4,
+            "initiativeSwaps": 0,
+            "risingTurns": 0,
+            "lastActivityS": 131.4
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 58.8,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 25,
+              "score": 25,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 14 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 14 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "0 s of silence beyond 10 s between lines (track timeline), of 137.8 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 1.307,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "3 silences of 2-10 s with business in them (an act, a face, a walk) in 2.3 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.637,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0.6, figurative 0.429, motiveGap 0.883"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 0.923,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "12 of 13 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0.333,
+              "score": 22.2,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "2 of 6 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 14,
+            "scriptLikeness": {
+              "score": 25,
+              "percentile": 1,
+              "sub": {
+                "length": 10.2,
+                "novelty": 44.2,
+                "motif": 0,
+                "progress": 100,
+                "debt": 100,
+                "reactions": 100,
+                "repeats": 100
+              },
+              "sayTurns": 14,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 3,
+              "gaps": 10,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0.6,
+              "figurative": 0.42857142857142855,
+              "motiveGap": 0.8828484169175421
+            },
+            "reply": {
+              "adherence": 0.9230769230769231,
+              "pairs": 13,
+              "adherent": 12,
+              "stale": 0.3333333333333333,
+              "staleCount": 2,
+              "replyTargets": 6
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 70.4,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0.871,
+              "score": 87.1,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "2 acts on screen in 2.3 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": 2,
+              "score": 33.3,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "verbs used: glare x1, insult x1"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": 1,
+              "score": 33.3,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "ladder rungs 1 to 2"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": 0.5,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "glare is 1 of 2 acts (act_spam above ~50%)"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 2,
+              "score": 33.3,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: angry, smile"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 2,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: sign, laugh"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": 1,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "4 of 4 owed reactions delivered; 0 act(s) with a contact and no reaction at all"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 0.436,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "4 walks by 4 actors in 2.3 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 2,
+              "score": 33.3,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "2 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 10,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 10 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "4 of 4 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 0,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "nobody left the scene before the end"
+            }
+          ],
+          "detail": {
+            "acts": 2,
+            "actsNotPlayed": 0,
+            "verbs": {
+              "glare": 1,
+              "insult": 1
+            },
+            "faces": [
+              "angry",
+              "smile"
+            ],
+            "gestures": [
+              "sign",
+              "laugh"
+            ],
+            "owedReactions": 4,
+            "missedReactions": 0,
+            "walks": 4
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 98.3,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 5,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x1, tracking x1, two_shot x6, reaction x10, close_up x4"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.455,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "reaction is 10 of 22 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 9.689,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "22 camera cues in 2.3 min (0 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 21 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 11 of 11 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.079,
+              "score": 88.4,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "3 cue(s) dropped (stale or unstageable) against 35 shown: 7.9% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 22,
+            "allCues": 35,
+            "lost": 3,
+            "drops": 7,
+            "shotOnSpeaker": {
+              "onSpeaker": 11,
+              "lines": 11,
+              "ratio": 1
+            },
+            "roomCuts": 0,
+            "shots": {
+              "establishing": 1,
+              "tracking": 1,
+              "two_shot": 6,
+              "reaction": 10,
+              "close_up": 4
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": null,
+        "verb": null
+      },
+      "acts": 2,
+      "lines": 14,
+      "scriptLikeness": 25,
+      "raw": 56.4,
+      "capped": false,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": null,
+          "verb": null,
+          "reason": "no physical act (shove, slap, punch, kill, die, faint, restrain, hug, kiss) reached the screen"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    },
+    {
+      "run": "59",
+      "durationS": 336.9,
+      "score": 52.8,
+      "deterministic": 52.8,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 23.4,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": 53.493,
+              "score": 88.7,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "first real disturbance (line accusation) at 53.5 s"
+            },
+            {
+              "metric": "reversals",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 0.535,
+              "score": 33.8,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 2.5,
+              "score": 50,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 2.5 (accusation); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": null,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "no physical act reached the screen"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.84,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "280.4 s and 30 lines after the peak at 53.5 s"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0.02,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 3 signal(s): rise of the peak over the opening, memory intensity +0.018 first to last third, tone shift"
+            }
+          ],
+          "detail": {
+            "beats": 10,
+            "incitingAtS": 53.5,
+            "incitingKind": "accusation",
+            "climax": null,
+            "peakAtS": 53.5,
+            "initiativeSwaps": 0,
+            "risingTurns": 0,
+            "lastActivityS": 333.8
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 52.7,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 25,
+              "score": 25,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 38 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 38 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "0 s of silence beyond 10 s between lines (track timeline), of 336.9 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 1.781,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "10 silences of 2-10 s with business in them (an act, a face, a walk) in 5.6 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.535,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0.714, figurative 0.026, motiveGap 0.864"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 0.478,
+              "score": 69.6,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "11 of 23 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0.529,
+              "score": 0,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "9 of 17 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 38,
+            "scriptLikeness": {
+              "score": 25,
+              "percentile": 1,
+              "sub": {
+                "length": 24.8,
+                "novelty": 0,
+                "motif": 15.8,
+                "progress": 70,
+                "debt": 100,
+                "reactions": 0,
+                "repeats": 100
+              },
+              "sayTurns": 38,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 10,
+              "gaps": 35,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0.7142857142857143,
+              "figurative": 0.02631578947368421,
+              "motiveGap": 0.8635500183040066
+            },
+            "reply": {
+              "adherence": 0.4782608695652174,
+              "pairs": 23,
+              "adherent": 11,
+              "stale": 0.5294117647058824,
+              "staleCount": 9,
+              "replyTargets": 17
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 73.3,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0.89,
+              "score": 89,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "5 acts on screen in 5.6 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": 4,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "verbs used: glare x1, insult x1, freeze_gasp x2, recoil x1"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": 1,
+              "score": 33.3,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "ladder rungs 1 to 2"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": 0.4,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "freeze_gasp is 2 of 5 acts (act_spam above ~50%)"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 2,
+              "score": 33.3,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: smile, angry"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 3,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: laugh, wave, thumbs"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": 1,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "4 of 4 owed reactions delivered; 0 act(s) with a contact and no reaction at all"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 0.178,
+              "score": 59.4,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "4 walks by 4 actors in 5.6 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 2.75,
+              "score": 58.3,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "2.8 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 16,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 16 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "4 of 4 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 0,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "nobody left the scene before the end"
+            }
+          ],
+          "detail": {
+            "acts": 5,
+            "actsNotPlayed": 0,
+            "verbs": {
+              "glare": 1,
+              "insult": 1,
+              "freeze_gasp": 2,
+              "recoil": 1
+            },
+            "faces": [
+              "smile",
+              "angry"
+            ],
+            "gestures": [
+              "laugh",
+              "wave",
+              "thumbs"
+            ],
+            "owedReactions": 4,
+            "missedReactions": 0,
+            "walks": 4,
+            "coreCap": 73.3
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 100,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 5,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x2, tracking x2, close_up x12, two_shot x20, reaction x22"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.379,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "reaction is 22 of 58 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 10.39,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "58 camera cues in 5.6 min (0 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 57 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 36 of 36 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.026,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "2 cue(s) dropped (stale or unstageable) against 74 shown: 2.6% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 58,
+            "allCues": 74,
+            "lost": 2,
+            "drops": 3,
+            "shotOnSpeaker": {
+              "onSpeaker": 36,
+              "lines": 36,
+              "ratio": 1
+            },
+            "roomCuts": 0,
+            "shots": {
+              "establishing": 2,
+              "tracking": 2,
+              "close_up": 12,
+              "two_shot": 20,
+              "reaction": 22
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": null,
+        "verb": null
+      },
+      "acts": 5,
+      "lines": 38,
+      "scriptLikeness": 25,
+      "raw": 52.8,
+      "capped": false,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": null,
+          "verb": null,
+          "reason": "no physical act (shove, slap, punch, kill, die, faint, restrain, hug, kiss) reached the screen"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    },
+    {
+      "run": "60",
+      "durationS": 416.3,
+      "score": 48.7,
+      "deterministic": 48.7,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 40,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": 10.042,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "first real disturbance (line accusation) at 10 s"
+            },
+            {
+              "metric": "reversals",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 0.622,
+              "score": 55.6,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 3 (threat); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": null,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "no physical act reached the screen"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.266,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "109.7 s and 9 lines after the peak at 303.2 s"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0.053,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 3 signal(s): rise of the peak over the opening, memory intensity +0.01 first to last third, tone shift"
+            }
+          ],
+          "detail": {
+            "beats": 12,
+            "incitingAtS": 10,
+            "incitingKind": "accusation",
+            "climax": null,
+            "peakAtS": 303.2,
+            "initiativeSwaps": 0,
+            "risingTurns": 0,
+            "lastActivityS": 412.9
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 50.2,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 25,
+              "score": 25,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 43 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 43 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0.133,
+              "score": 58.6,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "55.3 s of silence beyond 10 s between lines (track timeline), of 416.3 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 0.432,
+              "score": 86.5,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "3 silences of 2-10 s with business in them (an act, a face, a walk) in 6.9 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.423,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0.375, figurative 0, motiveGap 0.895"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 0.538,
+              "score": 84.6,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "14 of 26 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0.333,
+              "score": 22.2,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "3 of 9 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 43,
+            "scriptLikeness": {
+              "score": 25,
+              "percentile": 1,
+              "sub": {
+                "length": 30,
+                "novelty": 0,
+                "motif": 48.8,
+                "progress": 58.2,
+                "debt": 100,
+                "reactions": 0,
+                "repeats": 0
+              },
+              "sayTurns": 43,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 3,
+              "gaps": 37,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0.375,
+              "figurative": 0,
+              "motiveGap": 0.8950416405010941
+            },
+            "reply": {
+              "adherence": 0.5384615384615384,
+              "pairs": 26,
+              "adherent": 14,
+              "stale": 0.3333333333333333,
+              "staleCount": 3,
+              "replyTargets": 9
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 40,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0,
+              "score": 0,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "0 acts on screen in 6.9 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": null,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: smile, neutral, angry"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 1,
+              "score": 50,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: laugh"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": null,
+              "score": null,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no act owed a reaction, so nothing to check"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 0.961,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "20 walks by 3 actors in 6.9 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 7.667,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "7.7 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 26,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 26 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "3 of 3 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 2,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "2 exit(s): Renato (moved_room) at 131.9 s, Renato (moved_room) at 218.6 s"
+            }
+          ],
+          "detail": {
+            "acts": 0,
+            "actsNotPlayed": 0,
+            "verbs": {},
+            "faces": [
+              "smile",
+              "neutral",
+              "angry"
+            ],
+            "gestures": [
+              "laugh"
+            ],
+            "owedReactions": 0,
+            "missedReactions": 0,
+            "walks": 20,
+            "coreCap": 40
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 90.1,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 5,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x6, tracking x4, close_up x5, two_shot x16, reaction x2"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.485,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "two_shot is 16 of 33 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 4.782,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "33 camera cues in 6.9 min (0 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 32 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 38 of 38 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.215,
+              "score": 33.9,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "17 cue(s) dropped (stale or unstageable) against 62 shown: 21.5% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 33,
+            "allCues": 62,
+            "lost": 17,
+            "drops": 19,
+            "shotOnSpeaker": {
+              "onSpeaker": 38,
+              "lines": 38,
+              "ratio": 1
+            },
+            "roomCuts": 0,
+            "shots": {
+              "establishing": 6,
+              "tracking": 4,
+              "close_up": 5,
+              "two_shot": 16,
+              "reaction": 2
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": null,
+        "verb": null
+      },
+      "acts": 0,
+      "lines": 43,
+      "scriptLikeness": 25,
+      "raw": 48.7,
+      "capped": false,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": null,
+          "verb": null,
+          "reason": "no physical act (shove, slap, punch, kill, die, faint, restrain, hug, kiss) reached the screen"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    },
+    {
+      "run": "61",
+      "durationS": 467,
+      "score": 45.9,
+      "deterministic": 45.9,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 32.7,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": 91.475,
+              "score": 38,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "first real disturbance (line threat) at 91.5 s"
+            },
+            {
+              "metric": "reversals",
+              "value": 0.514,
+              "score": 51.4,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "0 initiative swap(s) + 1 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 0.736,
+              "score": 84.1,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 3 (threat); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": null,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "no physical act reached the screen"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.802,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "371.5 s and 46 lines after the peak at 91.5 s"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0.033,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 3 signal(s): rise of the peak over the opening, memory intensity +0.03 first to last third, tone shift"
+            }
+          ],
+          "detail": {
+            "beats": 11,
+            "incitingAtS": 91.5,
+            "incitingKind": "threat",
+            "climax": null,
+            "peakAtS": 91.5,
+            "initiativeSwaps": 0,
+            "risingTurns": 1,
+            "lastActivityS": 463
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 53.1,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 25,
+              "score": 25,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 58 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 58 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0.001,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "0.3 s of silence beyond 10 s between lines (track timeline), of 467 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 0.514,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "4 silences of 2-10 s with business in them (an act, a face, a walk) in 7.8 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.571,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0.778, figurative 0, motiveGap 0.936"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 0.486,
+              "score": 71.6,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "18 of 37 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0.4,
+              "score": 0,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "10 of 25 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 58,
+            "scriptLikeness": {
+              "score": 25,
+              "percentile": 1,
+              "sub": {
+                "length": 30,
+                "novelty": 0,
+                "motif": 30,
+                "progress": 100,
+                "debt": 82.3,
+                "reactions": 0,
+                "repeats": 0
+              },
+              "sayTurns": 58,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 4,
+              "gaps": 56,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0.7777777777777778,
+              "figurative": 0,
+              "motiveGap": 0.9359253544427975
+            },
+            "reply": {
+              "adherence": 0.4864864864864865,
+              "pairs": 37,
+              "adherent": 18,
+              "stale": 0.4,
+              "staleCount": 10,
+              "replyTargets": 25
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 35.1,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0,
+              "score": 0,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "0 acts on screen in 7.8 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": null,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": null,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "no acts"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: neutral, angry, smile"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 1,
+              "score": 50,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: laugh"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": null,
+              "score": null,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "no act owed a reaction, so nothing to check"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 0.3,
+              "score": 99.9,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "7 walks by 3 actors in 7.8 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 4.333,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "4.3 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 15,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 15 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "3 of 3 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 0,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "nobody left the scene before the end"
+            }
+          ],
+          "detail": {
+            "acts": 0,
+            "actsNotPlayed": 0,
+            "verbs": {},
+            "faces": [
+              "neutral",
+              "angry",
+              "smile"
+            ],
+            "gestures": [
+              "laugh"
+            ],
+            "owedReactions": 0,
+            "missedReactions": 0,
+            "walks": 7
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 96,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 5,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x4, tracking x2, close_up x2, two_shot x38, reaction x14"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.633,
+              "score": 66.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "two_shot is 38 of 60 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 7.758,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "60 camera cues in 7.7 min (0 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 59 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 57 of 57 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.062,
+              "score": 95.3,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "5 cue(s) dropped (stale or unstageable) against 76 shown: 6.2% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 60,
+            "allCues": 76,
+            "lost": 5,
+            "drops": 6,
+            "shotOnSpeaker": {
+              "onSpeaker": 57,
+              "lines": 57,
+              "ratio": 1
+            },
+            "roomCuts": 0,
+            "shots": {
+              "establishing": 4,
+              "tracking": 2,
+              "close_up": 2,
+              "two_shot": 38,
+              "reaction": 14
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": null,
+        "verb": null
+      },
+      "acts": 0,
+      "lines": 58,
+      "scriptLikeness": 25,
+      "raw": 45.9,
+      "capped": false,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": null,
+          "verb": null,
+          "reason": "no physical act (shove, slap, punch, kill, die, faint, restrain, hug, kiss) reached the screen"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    },
+    {
+      "run": "62",
+      "durationS": 2724.6,
+      "score": 59,
+      "deterministic": 59,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 43.1,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": 56.345,
+              "score": 84.9,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "first real disturbance (line threat) at 56.3 s"
+            },
+            {
+              "metric": "reversals",
+              "value": 0.881,
+              "score": 88.1,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "3 initiative swap(s) + 7 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 0.571,
+              "score": 42.9,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 3 (threat); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": 390.088,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "physical climax (shove) at 390.1 s; the invariant is 240 s"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.856,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "2318.3 s and 319 lines after the peak at 390.1 s"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0.261,
+              "score": 40.2,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 3 signal(s): rise of the peak over the opening, memory intensity +0.035 first to last third, tone shift"
+            }
+          ],
+          "detail": {
+            "beats": 76,
+            "incitingAtS": 56.3,
+            "incitingKind": "threat",
+            "climax": {
+              "atS": 390.088,
+              "verb": "shove",
+              "weight": 3,
+              "actor": "Renato",
+              "target": "Otávio"
+            },
+            "peakAtS": 390.1,
+            "initiativeSwaps": 3,
+            "risingTurns": 7,
+            "lastActivityS": 2708.4
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 40.6,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 25,
+              "score": 25,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 377 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 377 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0.31,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "844.7 s of silence beyond 10 s between lines (track timeline), of 2724.6 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 0.374,
+              "score": 74.9,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "17 silences of 2-10 s with business in them (an act, a face, a walk) in 45.4 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.49,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0.59, figurative 0.005, motiveGap 0.873"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 0.487,
+              "score": 71.8,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "151 of 310 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0.362,
+              "score": 12.6,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "21 of 58 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 377,
+            "scriptLikeness": {
+              "score": 25,
+              "percentile": 1,
+              "sub": {
+                "length": 70.7,
+                "novelty": 0,
+                "motif": 68.8,
+                "progress": 100,
+                "debt": 100,
+                "reactions": 100,
+                "repeats": 0
+              },
+              "sayTurns": 377,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 17,
+              "gaps": 207,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0.5903614457831325,
+              "figurative": 0.005305039787798408,
+              "motiveGap": 0.8729860374025897
+            },
+            "reply": {
+              "adherence": 0.4870967741935484,
+              "pairs": 310,
+              "adherent": 151,
+              "stale": 0.3620689655172414,
+              "staleCount": 21,
+              "replyTargets": 58
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 87.2,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0.529,
+              "score": 52.9,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "24 acts on screen in 45.4 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": 6,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "verbs used: glare x8, insult x4, recoil x5, freeze_gasp x5, shove x1, turn_back x1"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": 2,
+              "score": 66.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "ladder rungs 1 to 3"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": 0.333,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "glare is 8 of 24 acts (act_spam above ~50%)"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 5,
+              "score": 100,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: smile, neutral, angry, surprised, sad"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 3,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: sign, laugh, wave"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": 1,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "20 of 20 owed reactions delivered; 0 act(s) with a contact and no reaction at all"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 0.697,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "95 walks by 3 actors in 45.4 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 22.667,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "22.7 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 117,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 117 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "3 of 3 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 3,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "3 exit(s): Renato (moved_room) at 563.2 s, Renato (moved_room) at 631.6 s, Renato (moved_room) at 1302.1 s"
+            }
+          ],
+          "detail": {
+            "acts": 24,
+            "actsNotPlayed": 0,
+            "verbs": {
+              "glare": 8,
+              "insult": 4,
+              "recoil": 5,
+              "freeze_gasp": 5,
+              "shove": 1,
+              "turn_back": 1
+            },
+            "faces": [
+              "smile",
+              "neutral",
+              "angry",
+              "surprised",
+              "sad"
+            ],
+            "gestures": [
+              "sign",
+              "laugh",
+              "wave"
+            ],
+            "owedReactions": 20,
+            "missedReactions": 0,
+            "walks": 95
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 98.1,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 5,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x69, tracking x34, close_up x62, two_shot x85, reaction x160"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.39,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "reaction is 160 of 410 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 9.038,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "410 camera cues in 45.4 min (14 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 395 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 208 of 208 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.081,
+              "score": 87.4,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "60 cue(s) dropped (stale or unstageable) against 677 shown: 8.1% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 410,
+            "allCues": 677,
+            "lost": 60,
+            "drops": 60,
+            "shotOnSpeaker": {
+              "onSpeaker": 208,
+              "lines": 208,
+              "ratio": 1
+            },
+            "roomCuts": 14,
+            "shots": {
+              "establishing": 69,
+              "tracking": 34,
+              "close_up": 62,
+              "two_shot": 85,
+              "reaction": 160
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": 390.1,
+        "verb": "shove"
+      },
+      "acts": 24,
+      "lines": 377,
+      "scriptLikeness": 25,
+      "raw": 61.7,
+      "capped": true,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": 390.1,
+          "verb": "shove",
+          "reason": "shove came at 390.1 s, after 240 s"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    },
+    {
+      "run": "63",
+      "durationS": 448.2,
+      "score": 46.9,
+      "deterministic": 46.9,
+      "groups": {
+        "arc": {
+          "name": "arc",
+          "score": 36.4,
+          "readings": [
+            {
+              "metric": "timeToIncitingS",
+              "value": 22.076,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 45,
+                "floor": 0,
+                "ceil": 120,
+                "source": "prior"
+              },
+              "note": "first real disturbance (line reveal) at 22.1 s"
+            },
+            {
+              "metric": "reversals",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+            },
+            {
+              "metric": "escalationShape",
+              "value": 0.557,
+              "score": 39.2,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.8,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "share of (earlier, later) 10 s buckets up to the peak where tension did not fall; 0 when the peak comes at once or there is no peak"
+            },
+            {
+              "metric": "peakIntensity",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "strongest beat is weight 3 (threat); shove 3, slap 4, punch 5, kill 6"
+            },
+            {
+              "metric": "timeToClimaxS",
+              "value": null,
+              "score": 0,
+              "weight": 0.25,
+              "band": {
+                "lo": 0,
+                "hi": 210,
+                "floor": 0,
+                "ceil": 300,
+                "source": "prior"
+              },
+              "note": "no physical act reached the screen"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.371,
+              "score": 76.4,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.08,
+                "hi": 0.3,
+                "floor": 0,
+                "ceil": 0.6,
+                "source": "prior"
+              },
+              "note": "162.1 s and 15 lines after the peak at 275.1 s"
+            },
+            {
+              "metric": "stakesChange",
+              "value": 0.147,
+              "score": 11.7,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": null,
+                "floor": 0.1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "mean of 3 signal(s): rise of the peak over the opening, memory intensity +0.057 first to last third, tone shift"
+            }
+          ],
+          "detail": {
+            "beats": 11,
+            "incitingAtS": 22.1,
+            "incitingKind": "reveal",
+            "climax": null,
+            "peakAtS": 275.1,
+            "initiativeSwaps": 0,
+            "risingTurns": 0,
+            "lastActivityS": 437.2
+          }
+        },
+        "dialogue": {
+          "name": "dialogue",
+          "score": 50.4,
+          "readings": [
+            {
+              "metric": "scriptLikeness",
+              "value": 25,
+              "score": 25,
+              "weight": 0.35,
+              "note": "existing script-likeness benchmark, 54 speech turns, read next to THEATRE norms (no cinema block yet)"
+            },
+            {
+              "metric": "interruptionShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.03,
+                "hi": 0.2,
+                "floor": 0,
+                "ceil": 0.5,
+                "source": "prior"
+              },
+              "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 54 lines (the engine speaks one line at a time)"
+            },
+            {
+              "metric": "deadAirShare",
+              "value": 0.106,
+              "score": 72,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.25,
+                "source": "prior"
+              },
+              "note": "47.5 s of silence beyond 10 s between lines (track timeline), of 448.2 s"
+            },
+            {
+              "metric": "pauseBeatsPerMin",
+              "value": 1.205,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.5,
+                "hi": 4,
+                "floor": 0,
+                "ceil": 10,
+                "source": "prior"
+              },
+              "note": "9 silences of 2-10 s with business in them (an act, a face, a walk) in 7.5 min"
+            },
+            {
+              "metric": "subtext",
+              "value": 0.563,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.3,
+                "hi": 0.8,
+                "floor": 0.05,
+                "ceil": 1,
+                "source": "prior"
+              },
+              "note": "WEAK PROXY: mean of 3 indirectness signal(s): deflection 0.8, figurative 0.019, motiveGap 0.87"
+            },
+            {
+              "metric": "replyAdherence",
+              "value": 0.488,
+              "score": 72,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.6,
+                "hi": null,
+                "floor": 0.2,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "20 of 41 answers share a topic word with, or are an answer to, the line before"
+            },
+            {
+              "metric": "staleReplyShare",
+              "value": 0.192,
+              "score": 69.2,
+              "weight": 0,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "5 of 26 replies answer a line more than 3 lines back (reported, not weighted yet)"
+            }
+          ],
+          "detail": {
+            "lines": 54,
+            "scriptLikeness": {
+              "score": 25,
+              "percentile": 1,
+              "sub": {
+                "length": 77.6,
+                "novelty": 0,
+                "motif": 75,
+                "progress": 70,
+                "debt": 100,
+                "reactions": 100,
+                "repeats": 100
+              },
+              "sayTurns": 54,
+              "lowN": false,
+              "mediumFallback": true
+            },
+            "interruptions": {
+              "cutOff": 0,
+              "overlaps": 0,
+              "basis": "track"
+            },
+            "pauses": {
+              "count": 9,
+              "gaps": 53,
+              "basis": "track"
+            },
+            "subtext": {
+              "deflection": 0.8,
+              "figurative": 0.018518518518518517,
+              "motiveGap": 0.8698506728567441
+            },
+            "reply": {
+              "adherence": 0.4878048780487805,
+              "pairs": 41,
+              "adherent": 20,
+              "stale": 0.19230769230769232,
+              "staleCount": 5,
+              "replyTargets": 26
+            }
+          }
+        },
+        "embodiment": {
+          "name": "embodiment",
+          "score": 40,
+          "readings": [
+            {
+              "metric": "actsPerMin",
+              "value": 0.134,
+              "score": 13.4,
+              "weight": 0.2,
+              "band": {
+                "lo": 1,
+                "hi": 6,
+                "floor": 0,
+                "ceil": 15,
+                "source": "prior"
+              },
+              "note": "1 acts on screen in 7.5 min (0 more never played out)"
+            },
+            {
+              "metric": "distinctVerbs",
+              "value": 1,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "verbs used: glare x1"
+            },
+            {
+              "metric": "ladderSpan",
+              "value": 0,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "ladder rungs 1 to 1"
+            },
+            {
+              "metric": "topVerbShare",
+              "value": 1,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "glare is 1 of 1 acts (act_spam above ~50%)"
+            },
+            {
+              "metric": "distinctFaces",
+              "value": 3,
+              "score": 66.7,
+              "weight": 0.08,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "faces: smile, neutral, angry"
+            },
+            {
+              "metric": "distinctGestures",
+              "value": 3,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 2,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "gestures: sign, laugh, thumbs"
+            },
+            {
+              "metric": "reactionIntegrity",
+              "value": 1,
+              "score": 100,
+              "weight": 0.15,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.5,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "1 of 1 owed reactions delivered; 0 act(s) with a contact and no reaction at all"
+            },
+            {
+              "metric": "walksPerActorMin",
+              "value": 1.919,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.3,
+                "hi": 3,
+                "floor": 0,
+                "ceil": 8,
+                "source": "prior"
+              },
+              "note": "43 walks by 3 actors in 7.5 min"
+            },
+            {
+              "metric": "distinctTilesPerActor",
+              "value": 13,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "13 distinct tiles stood on per actor"
+            },
+            {
+              "metric": "proximityChanges",
+              "value": 58,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 3,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "pairs crossed between touching (<=2 tiles), talking (<=5) and across the room 58 times"
+            },
+            {
+              "metric": "entranceShare",
+              "value": 1,
+              "score": 100,
+              "weight": 0.05,
+              "band": {
+                "lo": 0.66,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "3 of 3 actors walked in"
+            },
+            {
+              "metric": "exits",
+              "value": 0,
+              "score": 0,
+              "weight": 0.05,
+              "band": {
+                "lo": 1,
+                "hi": null,
+                "floor": 0,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "nobody left the scene before the end"
+            }
+          ],
+          "detail": {
+            "acts": 1,
+            "actsNotPlayed": 0,
+            "verbs": {
+              "glare": 1
+            },
+            "faces": [
+              "smile",
+              "neutral",
+              "angry"
+            ],
+            "gestures": [
+              "sign",
+              "laugh",
+              "thumbs"
+            ],
+            "owedReactions": 1,
+            "missedReactions": 0,
+            "walks": 43,
+            "coreCap": 40
+          }
+        },
+        "camera": {
+          "name": "camera",
+          "score": 87,
+          "readings": [
+            {
+              "metric": "distinctShots",
+              "value": 5,
+              "score": 100,
+              "weight": 0.25,
+              "band": {
+                "lo": 4,
+                "hi": null,
+                "floor": 1,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "shots: establishing x4, tracking x11, close_up x6, two_shot x32, reaction x12"
+            },
+            {
+              "metric": "topShotShare",
+              "value": 0.492,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.5,
+                "floor": 0,
+                "ceil": 0.9,
+                "source": "prior"
+              },
+              "note": "two_shot is 32 of 65 camera cues"
+            },
+            {
+              "metric": "shotsPerMin",
+              "value": 8.739,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 4,
+                "hi": 14,
+                "floor": 0.5,
+                "ceil": 30,
+                "source": "prior"
+              },
+              "note": "65 camera cues in 7.4 min (0 room cut(s))"
+            },
+            {
+              "metric": "shortShotShare",
+              "value": 0,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0,
+                "hi": 0.1,
+                "floor": 0,
+                "ceil": 0.4,
+                "source": "prior"
+              },
+              "note": "0 of 64 shots lasted under 1800 ms"
+            },
+            {
+              "metric": "shotOnSpeaker",
+              "value": 1,
+              "score": 100,
+              "weight": 0.2,
+              "band": {
+                "lo": 0.9,
+                "hi": null,
+                "floor": 0.4,
+                "ceil": null,
+                "source": "prior"
+              },
+              "note": "camera was already on the speaker for 54 of 54 lines"
+            },
+            {
+              "metric": "staleDropRate",
+              "value": 0.267,
+              "score": 13.3,
+              "weight": 0.15,
+              "band": {
+                "lo": 0,
+                "hi": 0.05,
+                "floor": 0,
+                "ceil": 0.3,
+                "source": "prior"
+              },
+              "note": "32 cue(s) dropped (stale or unstageable) against 88 shown: 26.7% of everything the director queued"
+            }
+          ],
+          "detail": {
+            "cues": 65,
+            "allCues": 88,
+            "lost": 32,
+            "drops": 32,
+            "shotOnSpeaker": {
+              "onSpeaker": 54,
+              "lines": 54,
+              "ratio": 1
+            },
+            "roomCuts": 0,
+            "shots": {
+              "establishing": 4,
+              "tracking": 11,
+              "close_up": 6,
+              "two_shot": 32,
+              "reaction": 12
+            }
+          }
+        },
+        "engagement": {
+          "name": "engagement",
+          "score": null,
+          "readings": [],
+          "detail": {
+            "reason": "judge not run"
+          }
+        }
+      },
+      "climax": {
+        "pass": false,
+        "atS": null,
+        "verb": null
+      },
+      "acts": 1,
+      "lines": 54,
+      "scriptLikeness": 25,
+      "raw": 46.9,
+      "capped": false,
+      "invariants": {
+        "climaxByDeadline": {
+          "pass": false,
+          "deadlineS": 240,
+          "atS": null,
+          "verb": null,
+          "reason": "no physical act (shove, slap, punch, kill, die, faint, restrain, hug, kiss) reached the screen"
+        }
+      },
+      "weights": {
+        "arc": 40,
+        "dialogue": 20,
+        "embodiment": 26.7,
+        "camera": 13.3
+      }
+    }
+  ]
+}
