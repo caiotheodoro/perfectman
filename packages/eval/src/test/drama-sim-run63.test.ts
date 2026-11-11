@@ -66,14 +66,6 @@ describe("run 63 on the sim: what the director does with a model that only glare
   const assisted = runDramaSim(config({ assist: true, ageMs: 90_000, pressure: false }));
   const floor = runDramaSim(config({ assist: true, ageMs: 90_000, pressure: true }));
 
-  it.skipIf(!process.env["PRINT"])("prints the arms", () => {
-    for (const [name, r] of [["old", old], ["lexicon", lexicon], ["assisted", assisted], ["floor", floor]] as const) {
-      const orig = r.dramaLog.filter((l) => l.kind === "originate");
-      const tally = orig.reduce<Record<string, number>>((m, l) => ((m[l.result] = (m[l.result] ?? 0) + 1), m), {});
-      console.log(name, "acts", started(r).length, "director", byDirector(r).length, "first", started(r)[0]?.atMs, "originate", JSON.stringify(tally), "prov>0", r.dramaLog.filter((l) => (l.provocation ?? 0) > 0).length, "/", r.dramaLog.length, "|", started(r).map((a) => `${Math.round(a.atMs / 1000)}s ${a.actor}>${a.with} ${a.verb}/${a.origin}`).join("; "));
-    }
-  });
-
   it("the run as it was: the model's glares are refused, the director starts nothing, the cast's talk raises one grievance", () => {
     expect(byDirector(old)).toHaveLength(0);
     expect(started(old).filter((a) => a.verb !== "glare")).toEqual([]);
@@ -92,7 +84,7 @@ describe("run 63 on the sim: what the director does with a model that only glare
     expect(own.length).toBeGreaterThanOrEqual(4);
     expect(own[0]!.atMs).toBeLessThanOrEqual(30_000);
     expect(started(assisted).some((a) => a.verb === "insult")).toBe(true);
-    expect(rungAt(assisted, "shove")).toBeDefined();
+    expect(rungAt(assisted, "shove") ?? Infinity).toBeLessThanOrEqual(200_000);
   });
 
   it("the pressure floor of a scene with a climax at 240 s: a shove by 200 s and the slap by 250 s, with the contract's spacing and no skipped rung", () => {

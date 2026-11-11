@@ -10,8 +10,7 @@ import { ProvocationLedger } from "../director/drama/provocation.js";
 import { hasGrievance, motive, pressureFloor, volition } from "../director/drama/pressure.js";
 import { DEFAULT_DRAMA_TUNING } from "../director/drama/tuning.js";
 import type { RelationReading } from "../director/drama/ports.js";
-import { NO_TENDENCY, A, B, C, H, WIDE_BLOCK, emotion, makeRig } from "../testing/drama-rig.js";
-import { dramaStateFrame } from "../testing/fake-drama.js";
+import { A, B, C, H, WIDE_BLOCK, emotion, makeRig } from "../testing/drama-rig.js";
 
 const T = DEFAULT_DRAMA_TUNING;
 const COLD: RelationReading = { resentment: 0.16, threat: 0, envy: 0, suspicion: 0, lastNegativeAt: null };
@@ -176,7 +175,7 @@ describe("GATE-5 for authored acts and the verbs of the next table", () => {
     expect(bare.dir.decide({ actor: B, proposal: { verb: "die", origin: "scenario" } })).toMatchObject({ kind: "veto", rule: "GATE-5", detail: "may_die" });
   });
 
-  it("the seven new verbs are known to the code but refused as unknown until the hotel's table carries them", () => {
+  it("the seven new verbs are known to the code but refused with unknown_verb until the hotel's table carries them", () => {
     const rig = makeRig({ block: WIDE_BLOCK });
     for (const verb of ["point", "grab", "push_away", "plead"] as const) expect(rig.dir.decide({ actor: A, proposal: { verb, with: B, origin: "scenario" } }), verb).toMatchObject({ kind: "unsent", cause: "invalid", error: { code: "unknown_verb" } });
     for (const verb of ["slump", "kneel", "flee"] as const) expect(rig.dir.decide({ actor: A, proposal: { verb, origin: "scenario" } }), verb).toMatchObject({ kind: "unsent", cause: "invalid", error: { code: "unknown_verb" } });
@@ -268,5 +267,3 @@ describe("humans without the consent chip (may_target_humans)", () => {
     expect(cleanDramaExt({ may_target_humans: 1, pressure_floor: { climax_at_ms: 240_000, max: 0.6 }, junk: 1 })).toEqual({ pressure_floor: { climax_at_ms: 240_000, max: 0.6 } });
   });
 });
-void NO_TENDENCY;
-void dramaStateFrame;
