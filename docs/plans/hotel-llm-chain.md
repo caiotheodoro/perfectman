@@ -531,3 +531,30 @@ Added to the run's counters, always present, zeros included: `llm_narration_stri
 - A line that names a person who is not a speaker in view or near (a dead husband) names nobody here, so everyone in earshot gets its note.
 - A repeated demand in new words is still invisible to the motif check, and the stall nudge is still suppressed whenever a body change is near the actor (`scene-stall.ts`).
 - Non-word detection ("efatigável") stays a non-goal: there is no dictionary.
+
+## Ninth pass: echoes in short lines (2026-11-10, `fix/echo-short-lines`)
+
+Run 62 (production, pt-BR, 45 minutes, three bot actors, the eighth pass's code with the 22-word cap) kept the cap but not the variety: Heloísa said "Otávio, meu bem, sente-se." at 22 s and again at 27 s, Otávio opened 22 lines with "Rapaz", Heloísa 9 with "querido", Renato 6 with "mana", "Bêbado ..." opened four of Otávio's lines in a row of six and "Vinho não" three in 40 seconds. Its counters: `llm_guard_repeat_own` 25, `llm_guard_phrase_loop` 25, `llm_len_retry` 130 of 374 turns (35%), `llm_novelty_retry` 68, `llm_guard_silenced` 28, 1.8 model calls per spoken line. The echo checks were made for lines of 40 words (a shared opening of 6, a run of 6 over 60%, 60% of the trigrams, nothing under 5 words); at a median of 13 words a repeat has to be long to be one. The rules and the numbers are in [script-likeness.md](script-likeness.md#short-lines-echo-tics-repairs); this is the part that touches the chain.
+
+| Change | Where |
+|---|---|
+| Lines are also compared by what they say, with the room's names, forms of address ("meu bem", "rapaz", "minha cara") and edge fillers taken off each clause: the same address and opening words (`lead`), the same 3 opening words with half the topic words (`open`), 60% of the topic words in any order (`set`), the same first 2 words in 3 of the last 6 turns (`frame`). The sequence thresholds for long lines are unchanged | `echo-guard.ts` (`voiceOf`, `findOwnEcho`) |
+| A form of address, a tag question or an opening word in 4 of the actor's last 6 turns is a tic. A form of address is taken off the line with no retry (a retry that happens anyway carries "não comece com X"); an opening word or a tag question gets one retry | `findTics`, `stripTics`, `ticRetryNote` |
+| A candidate over the cap by a quarter or less (23 to 27 words at cap 22) is cut at its last sentence or clause boundary with no retry, kept only when 5 words or more survive; more than that, one retry as before. `PERFECTMAN_FREE_TRIM=0` restores the retry | `trimFree` in `shared/src/script-likeness/guards.ts`, `action-intent-step.ts` |
+| A repeat the retry did not fix, and a line stale against the actor's own lines after its retry, keep the clauses that say something new when 4 words of them remain, instead of becoming silence | `strikeEcho` |
+| The decision says how many words the actor's last line had, when it had more than 75% of the cap | `lengthFeedbackFor`, both prompt builders |
+
+### Counters
+
+Added to the run's counters, always present, zeros included: `llm_len_trim_free` (candidates cut with no retry), `llm_guard_tic` (candidates with a tic), `llm_guard_tic_stripped` (forms of address taken off a line) and `llm_guard_echo_repaired` (repeats and stale lines kept in part instead of silenced). The guard log has the matching rules `len_trim_free`, `tic`, `tic_strip` and `echo_repair`; `echo_own` now carries the short-line rule and the earlier line it matched. `PERFECTMAN_SCRIPT_GUARD=0` turns all of it off (the free cut, the tics, the short-line rules, the repairs and the length feedback in the prompt).
+
+### Measured
+
+On run 62's own lines as candidates the new rules flag 129 of 207 (62%; 63 lines said in the room: 23, 37%), against 1 for the checks of before; of those 19 are echoes that earn a retry and 123 carry a form of address that is only cut. On ordinary lines (the 128 pt-BR lines and the personas' 133 style examples) there are no echo or tic flags and the loop as a whole flags 0.8% of the pt-BR turns, all by the novelty rule of the eighth pass. The retry bill for length, on scripted candidates (35 of 100 over the cap, every line ending within 22): 10% of the turns when the overshoots are mostly small, 25% when they follow the real overshoots of runs 52 to 60, 35% without the free cut. The real-corpus flag rate was not measured: `beats.jsonl` is not on this machine.
+
+### Not covered
+
+- No real model ran. Whether deepseek drops "rapaz" when told, how far over 22 words it lands, and so what the retry bill is, is unmeasured: the 10% is on an assumed distribution, the 25% on lines from runs that had a cap of 40 and no number in the prompt. The target of 1.3 calls per spoken line is not reachable from the length path alone: run 62's novelty retries (68), echoes and loops (about 50 flagged candidates) and garble (18) are separate, and the new rules add retries for echoes the old ones let through.
+- The rules read words. A repeated idea in new words ("Cofre nunca fechou pra mim" then "Quero o cofre aberto agora") is not an echo; a tic is only as wide as the lists of forms of address and fillers.
+- A free cut drops the tail of a line, so a line whose point is in its last sentence loses it.
+- Phrase loops (`findPhraseLoop`) were not given short-line thresholds: a 3-word phrase held by 2 of the last 4 lines, a question frame of 2 shared topic words and a 2-word head or tail added at most 1 flag on run 62's 207 lines and none on the ordinary lines, so the vocative, opening and tag-question loops are caught by the tic and echo rules above.
