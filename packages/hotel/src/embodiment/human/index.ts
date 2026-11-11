@@ -1,0 +1,15 @@
+export { HT, HT_SOURCES, HUMAN_LIKENESS_ENV, DEFAULT_HUMAN_LIKENESS, resolveHumanLikeness, leafKeys, sourceOf, chance, mix, clamp01 } from "./tuning.js";
+export type { Provenance, SourceNote } from "./tuning.js";
+export { hrand, hbetween, hnormal, seedOf } from "./rng.js";
+export { lineFacts, wordCount } from "./lines.js";
+export { relationClass, windowFor, mustUnstack, nearestFree, groupScore, groupSpot } from "./proxemics.js";
+export type { ProxWindow, RelClass } from "./proxemics.js";
+export { feelOf, feelFactor, reactionLatencyMs, typingPlan, interrupts, overlapGapMs, cutLine } from "./turn.js";
+export type { Feel, FeelInput, TypingPlan } from "./turn.js";
+export { reactToLine } from "./reactions.js";
+export type { ReactCtx, ReactMem, ReactPerson, TimedCmd } from "./reactions.js";
+export { humanRules, HUMAN_PLAN_PREFIX } from "./rules.js";
+export type { HumanCand, HumanRuleCtx } from "./rules.js";
+export { HumanBody } from "./human-body.js";
+export type { GatewayHuman, HumanBodyDeps } from "./human-body.js";
+export type { HumanLine, HumanLogEntry, HumanLogKind, HumanPlanCtx, HumanProp } from "./types.js";

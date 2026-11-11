@@ -35,6 +35,7 @@ import {
 import { tileKey } from "../space/geometry.js";
 import { ANXIOUS_ACQUAINT_CUT, LOOSE_STABILITY, SOLO_THETA, TURN_BACK_HOLD_MS } from "./drama-readings.js";
 import { emotionRules } from "./emotion-body.js";
+import { humanRules } from "./human/rules.js";
 import { CELEBRATION_GESTURES } from "./verb-facts.js";
 import { blockedTiles, isFree, occupiedTiles, pickTile } from "./tiles.js";
 import type { EmbodimentPlanner, PlanInput, PlannedCommand, PlannerMemory, SpeechModeChoice } from "./types.js";
@@ -67,6 +68,13 @@ export const plan: EmbodimentPlanner = (input) => {
   if (!input.bodyIntent?.move) automaticRules(ctx);
   if (input.drama && !input.bodyIntent?.move) {
     for (const c of emotionRules({ input, room, self, mem: ctx.mem, planId: planId(ctx) })) push(ctx, c.keep, c.cmd);
+  }
+
+  if (input.human && input.human.h > 0 && !input.bodyIntent?.move) {
+    for (const c of humanRules({ input, human: input.human, room, self, mem: ctx.mem, planId: planId(ctx), postureMs: postureClock(ctx) })) {
+      push(ctx, c.keep, c.cmd);
+      input.human.log?.({ actor: self.ref, ...c.log });
+    }
   }
 
   const ranked = ctx.cands
@@ -108,7 +116,7 @@ function cmdBase(ctx: Ctx): { agentId: string; intentId?: string } {
 
 const planId = (ctx: Ctx): string => `${ctx.self.ref}:${ctx.input.now.toString(36)}`;
 
-function push(ctx: Ctx, keep: number, cmd: BodyCommandBody & { afterArrival?: string; fidget?: boolean }): void {
+function push(ctx: Ctx, keep: number, cmd: BodyCommandBody & { afterArrival?: string; fidget?: boolean; humanTag?: string }): void {
   ctx.cands.push({ keep, cmd: { ...cmdBase(ctx), ...cmd } as PlannedCommand });
 }
 
@@ -309,8 +317,12 @@ function automaticRules(ctx: Ctx): void {
   const distance = rel?.desireForDistance ?? 0.2;
   const dist = other ? chebyshev(other.tile, self.tile) : 0;
 
-  // 4. Withdrawal beats approach: strong distance desire or threat inside the personal band.
-  if (other && rel && (rel.desireForDistance > 0.6 || rel.threat > 0.5) && dist <= WITHDRAW_AT + 1) {
+  // 4. Withdrawal beats approach: strong distance desire or threat inside the personal band. With the human layer on, its conversation-distance
+  // window (human/proxemics.ts) does this job by relation and emotion, so 3 and 4 stand down.
+  const humanOn = input.human !== undefined && input.human.h > 0;
+  if (humanOn) {
+    // handled by humanRules
+  } else if (other && rel && (rel.desireForDistance > 0.6 || rel.threat > 0.5) && dist <= WITHDRAW_AT + 1) {
     const to = pickTile({ room, self: self.ref, near: self.tile, radius: 3, awayFrom: { tile: other.tile, ideal: BAND.personal + 1 }, rng: input.rng });
     if (to && allowedMove(ctx, to)) walkTo(ctx, to);
   } else if (other && speaker && dist >= APPROACH_AT && closeness > distance) {
@@ -529,6 +541,10 @@ export function updateMemory(mem: PlannerMemory, cmds: readonly PlannedCommand[]
       if (c.a === "laugh") next.lastLaughAt = now;
     } else if (c.cmd === "expression") next.lastExpression = c.face;
     if (c.fidget) next.lastFidgetAt = now;
+    if (c.humanTag) {
+      next.humanAt = { ...next.humanAt, [c.humanTag]: now };
+      if (c.humanTag === "pace") next.humanPace = [...(next.humanPace ?? []).filter((t) => now - t < 60_000), now];
+    }
   }
   return next;
 }

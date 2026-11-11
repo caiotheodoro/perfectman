@@ -1,3 +1,4 @@
+import type { HumanPlanCtx } from "./human/types.js";
 import type {
   ActionEmotions,
   ActionIntent,
@@ -43,6 +44,12 @@ export type PlanInput = {
   actionEmotions?: ActionEmotions;
   /** Present only when drama is negotiated and on for the run (a dialect 2 link, the hotel's switch on). Absent: every rule is today's. */
   drama?: DramaPlanInput;
+  /**
+   * The human layer's context (cinematic revamp B5, docs/embodiment-human.md): `human_likeness` and the recent talk. Absent, or h = 0: every rule in
+   * `embodiment/human/` is silent and the planner is exactly what it was. Present with h > 0: the conversation-distance, group and idle rules run, and the
+   * old approach and withdraw rules (3 and 4) stand down for them.
+   */
+  human?: HumanPlanCtx;
 };
 
 /** What the planner needs to know about the acts of the room, from the act ledger and the director (act-contract.md REA-9, LAD-8, DOWN-1). */
@@ -67,7 +74,7 @@ export type DramaPlanInput = {
  * `afterArrival`: the executor holds the command until the walk with that plan
  * id ends. `fidget`: lowest keep-priority, and it starts the 45 s fidget cooldown.
  */
-export type PlannedCommand = BodyCommand & { afterArrival?: string; fidget?: boolean; owed?: boolean };
+export type PlannedCommand = BodyCommand & { afterArrival?: string; fidget?: boolean; owed?: boolean; humanTag?: string };
 
 export type EmbodimentPlanner = (input: PlanInput) => PlannedCommand[];
 
@@ -99,6 +106,10 @@ export type PlannerMemory = {
   soloAt?: Record<string, number>;
   /** Whom this actor turned its back on, until when: rule 2 does not turn it round again (REA-9: the face lock must not undo a table step). */
   turnedBack?: { ref: string; until: number };
+  /** When each human-layer rule last acted for this actor (`humanTag` of the command), for the cooldowns in `human/rules.ts`. */
+  humanAt?: Record<string, number>;
+  /** Start times of the human layer's pacing legs in the last minute. */
+  humanPace?: number[];
 };
 
 export type SpeechModeChoice = { mode: SpeechMode; reason?: string };

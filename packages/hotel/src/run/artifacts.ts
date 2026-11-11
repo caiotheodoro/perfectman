@@ -118,6 +118,9 @@ export const GUARD_LOG_FILE = "guard-log.jsonl";
 /** The drama planner's decision log, beside events.jsonl: one line per consult (drama-log.ts). For the operator; no player or replay reads it. */
 export const DRAMA_LOG_FILE = "drama-log.jsonl";
 
+/** The human layer's body log, beside events.jsonl: one line per body decision with its rule (body-log.ts). For the operator and the eval; nothing reads it back in a run. */
+export const BODY_LOG_FILE = "body-log.jsonl";
+
 export type WrittenArtifacts = { dir: string; files: Record<string, string> };
 
 /**
@@ -143,7 +146,9 @@ export async function writeRunArtifacts(
   const hasGuardLog = await stat(join(dir, GUARD_LOG_FILE)).then((s) => s.isFile(), () => false);
   // A run that never consulted the drama planner leaves no decision log.
   const hasDramaLog = await stat(join(dir, DRAMA_LOG_FILE)).then((s) => s.isFile(), () => false);
-  const files: Record<string, string> = { ...base, ...(hasTrack ? { director_track: TRACK_FILE } : {}), ...(hasGuardLog ? { guard_log: GUARD_LOG_FILE } : {}), ...(hasDramaLog ? { drama_log: DRAMA_LOG_FILE } : {}) };
+  // A run at human_likeness 0 leaves no body log.
+  const hasBodyLog = await stat(join(dir, BODY_LOG_FILE)).then((s) => s.isFile(), () => false);
+  const files: Record<string, string> = { ...base, ...(hasTrack ? { director_track: TRACK_FILE } : {}), ...(hasGuardLog ? { guard_log: GUARD_LOG_FILE } : {}), ...(hasDramaLog ? { drama_log: DRAMA_LOG_FILE } : {}), ...(hasBodyLog ? { body_log: BODY_LOG_FILE } : {}) };
   if (sink) await sink.finish(events);
   else await writeFile(join(dir, base.events), events.map((e) => JSON.stringify(e)).join("\n") + (events.length ? "\n" : ""));
   await writeFile(join(dir, base.director), JSON.stringify({ track: [] }));

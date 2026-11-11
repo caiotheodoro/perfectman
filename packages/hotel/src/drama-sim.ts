@@ -37,3 +37,7 @@ export { MockActMemory, mockAct, malformedAct } from "./llm/mock-act.js";
 export type { MockActInput, MockDrama } from "./llm/mock-act.js";
 export type { ActorSpace, OwnActor } from "./space/space-mirror.js";
 export type { Clock, TimerHandle } from "./clock/clock.js";
+export * from "./embodiment/human/index.js";
+export { HotelGateway } from "./gateway/hotel-gateway.js";
+export type { GatewayDeps, CastEntry } from "./gateway/hotel-gateway.js";
+export { namedIn } from "./embodiment/plan.js";
