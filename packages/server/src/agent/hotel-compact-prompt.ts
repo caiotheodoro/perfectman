@@ -4,7 +4,7 @@ import { BODY_BLOCK_HEADING, compressBodyPerception, renderBodyBlock } from "@pe
 import { bodyContractLines, rotateSamples, seed } from "./hotel-body-hint.js";
 import { dramaCompactLines } from "./hotel-drama-hint.js";
 import { roomLinesHeard } from "./repetition-guard.js";
-import { answerNoteFor, lengthLine, owedNoteFor } from "./script-guard.js";
+import { answerNoteFor, lengthFeedbackFor, lengthLine, owedNoteFor } from "./script-guard.js";
 import { stallNoteFor } from "./scene-stall.js";
 import type { PersonaPromptProfile } from "./persona-prompt-profile.js";
 import { whisperNote, whisperedBy } from "./whisper-note.js";
@@ -282,6 +282,8 @@ function renderDecision(s: PromptSection, input: AgentRuntimeInput, profile: Per
   if (answered) s.raw(answered);
   const owed = profile.scriptPrompt ? owedNoteFor(input, profile.displayName, lang) : undefined;
   if (owed) s.raw(owed);
+  const longLast = profile.scriptPrompt ? lengthFeedbackFor(input.perceptionPacket.ownRecentUtterances, profile.scriptPrompt.length, lang) : undefined;
+  if (longLast) s.raw(longLast);
   if (input.holdSuggested) {
     s.raw('Right now you are inclined to hold back; if this person would, choose "no_op" and put the real reason in privateMotiveSummary.');
   }

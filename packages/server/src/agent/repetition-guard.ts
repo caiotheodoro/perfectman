@@ -132,14 +132,23 @@ export type GuardKind =
   | "quote_retry"
   | "quote_struck"
   | "guard_silenced"
-  | "answer_note";
+  | "answer_note"
+  // The short-line guards: a candidate over the cap by a quarter or less cut at a boundary with no model call; an actor's tic (an opener, a form of address or a
+  // tag question it keeps using) found in a candidate, and a form of address taken off a line; a repeat repaired by striking the clauses that repeat instead of
+  // being dropped.
+  | "len_trim_free"
+  | "tic"
+  | "tic_stripped"
+  | "echo_repaired";
 
 /** What a guard did, for the run's guard log: who, to which text, and what the text became (empty for a turn that was silenced or a note that only was shown). */
 export type GuardInfo = { actor?: string; before?: string; after?: string };
 
 /**
  * The rule names of a run's `guard-log.jsonl`, one per kind of thing a guard did to a line. The first fifteen are the audit's own list; `motif_strike`,
- * `debt_strip` and `quote_retry` are the three repairs and retries the counters already had that the list left out.
+ * `debt_strip` and `quote_retry` are the three repairs and retries the counters already had that the list left out; the last four are the short-line
+ * guards: `len_trim_free` (a cut with no retry), `tic` (an opener, form of address or tag question the actor keeps using), `tic_strip` (a form of address
+ * taken off) and `echo_repair` (a repeat repaired by striking the clauses that repeat).
  */
 export type GuardLogRule =
   | "len_retry"
@@ -159,7 +168,11 @@ export type GuardLogRule =
   | "answer_note"
   | "motif_strike"
   | "debt_strip"
-  | "quote_retry";
+  | "quote_retry"
+  | "len_trim_free"
+  | "tic"
+  | "tic_strip"
+  | "echo_repair";
 
 /** The log rule of each guard kind; a kind with no entry (`stall_nudge`, `held_repeat`) changes no line and is not logged. */
 export const GUARD_LOG_RULE: Readonly<Partial<Record<GuardKind, GuardLogRule>>> = {
@@ -182,6 +195,10 @@ export const GUARD_LOG_RULE: Readonly<Partial<Record<GuardKind, GuardLogRule>>> 
   quote_struck: "quote_struck",
   guard_silenced: "silenced",
   answer_note: "answer_note",
+  len_trim_free: "len_trim_free",
+  tic: "tic",
+  tic_stripped: "tic_strip",
+  echo_repaired: "echo_repair",
 };
 
 /** Content words a line needs before it can be a copy of another person's (see `RepetitionPolicy.roomThreshold`). */
@@ -252,7 +269,7 @@ export function heldLineRepeat(agentId: string, text: string, log: readonly Comm
     if (e.actorId === agentId) own.push(content);
     else if (p?.["untrusted"] !== true && e.visibility.visibleToAgents.includes(agentId)) room.push(content);
   }
-  if (isNearRepeat(text, own.slice(-OWN_UTTERANCE_WINDOW)) || findOwnEcho(text, own) !== undefined) return "own";
+  if (isNearRepeat(text, own.slice(-OWN_UTTERANCE_WINDOW)) || findOwnEcho(text, own, undefined, undefined, false) !== undefined) return "own";
   const heard = room.slice(-ROOM_LINES_LIMIT);
   if (isRoomCopy(text, heard, 0.7) || findRoomEcho(text, heard) !== undefined) return "room";
   return undefined;

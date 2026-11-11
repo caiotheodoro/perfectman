@@ -1327,6 +1327,12 @@ export class Run {
       llm_quote_struck: n("quote_struck"),
       llm_guard_silenced: n("guard_silenced"),
       llm_answer_note: n("answer_note"),
+      // The short-line guards: a candidate a little over the cap cut with no retry, a tic (an opener, a form of address or a tag question the actor keeps using)
+      // found, a form of address taken off a line, and a repeat repaired by striking the clauses that repeat instead of being dropped.
+      llm_len_trim_free: n("len_trim_free"),
+      llm_guard_tic: n("tic"),
+      llm_guard_tic_stripped: n("tic_stripped"),
+      llm_guard_echo_repaired: n("echo_repaired"),
     };
   }
 

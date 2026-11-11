@@ -29,8 +29,9 @@ describe("narration in speech", () => {
     const r = await run([OTAVIO_77, "Rapaz, baixa esse sorriso. Fala o que você viu na assinatura. Boto um copo na mão dele e olho fixo."], input(roomBefore(77, "Otávio")), HOTEL, as("Otávio"));
     expect(r.said).not.toMatch(/Boto|olho fixo/);
     expect(lengthOf(r.said)).toBeLessThanOrEqual(22);
-    expect(r.seen.filter((k) => k === "narration_stripped")).toHaveLength(2);
-    expect(r.calls).toBe(2);
+    // The line is over the cap by a few words once the narration is out: it is cut at a sentence boundary with no retry.
+    expect(r.seen.filter((k) => k === "narration_stripped")).toHaveLength(1);
+    expect(r.calls).toBe(1);
   });
 
   it("retries a line that was only stage business, asking for the body channel, and says the real line", async () => {
@@ -68,16 +69,18 @@ describe("quotes nobody made", () => {
     expect(r.calls).toBe(2);
     expect(r.system(1)).toContain("burro");
     expect(r.system(1)).toContain("atribui a alguém algo que não foi dito");
-    expect(r.said).toBe("Rapaz, chega aqui. Eu te ofereço o copo e um lugar na mesa.");
-    // The line is also 24 words: both are in the one note (the real line is over the cap by 2).
-    expect(r.system(1)).toContain("o limite é 22");
-    expect(r.seen).toEqual(["len_retry", "quote_retry", "quote_struck"]);
-    expect(r.infos.at(-1)).toMatchObject({ kind: "quote_struck", before: NAMED, after: r.said });
+    // The line is also 24 words, 2 over the cap: it is cut at its last sentence with no retry (the last sentence goes, the quoted claim stays), so the one note is about the quotation only.
+    expect(r.system(1)).not.toContain("o limite é 22");
+    // The struck sentence was the second of the two that were left: what is said is the opening.
+    expect(r.said).toBe("Rapaz, chega aqui.");
+    expect(r.seen).toEqual(["len_trim_free", "quote_retry", "len_trim_free", "quote_struck"]);
+    expect(r.infos.at(-1)).toMatchObject({ kind: "quote_struck", after: r.said });
   });
 
   it("never strikes a claim about 'ela' when two other people spoke in view: the real line only gets its length retry", async () => {
     const r = await run([OTAVIO_230, OTAVIO_230], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
-    expect(r.seen).toEqual(["len_retry", "len_trimmed"]);
+    expect(r.seen).toEqual(["len_trim_free"]);
+    expect(r.calls).toBe(1);
     expect(r.said).toContain("Ela te chamou de irmão e de burro");
   });
 
@@ -89,7 +92,7 @@ describe("quotes nobody made", () => {
 
   it("takes the retry that stops quoting", async () => {
     const r = await run([NAMED, "Rapaz, chega aqui. Eu te ofereço o copo e um lugar na mesa."], input(roomBefore(230, "Otávio")), HOTEL, as("Otávio"));
-    expect(r.seen).toEqual(["len_retry", "quote_retry"]);
+    expect(r.seen).toEqual(["len_trim_free", "quote_retry"]);
     expect(r.said).toBe("Rapaz, chega aqui. Eu te ofereço o copo e um lugar na mesa.");
   });
 });

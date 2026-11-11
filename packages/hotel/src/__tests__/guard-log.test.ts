@@ -38,6 +38,10 @@ describe("guardLogLine", () => {
     expect(rule("repeat_blocked")).toBe("silenced");
     expect(rule("answer_note")).toBe("answer_note");
     expect(rule("quote_struck")).toBe("quote_struck");
+    expect(rule("len_trim_free")).toBe("len_trim_free");
+    expect(rule("tic")).toBe("tic");
+    expect(rule("tic_stripped")).toBe("tic_strip");
+    expect(rule("echo_repaired")).toBe("echo_repair");
     expect(rule("stall_nudge")).toBeUndefined();
     expect(rule("held_repeat")).toBeUndefined();
   });
