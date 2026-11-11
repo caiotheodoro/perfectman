@@ -11,7 +11,16 @@ export { DramaLog, dramaLogLine, DRAMA_LOG_CAP } from "./director/drama/decision
 export type { DramaLogEntry, DramaLogLine } from "./director/drama/decision-log.js";
 export { plan, updateMemory } from "./embodiment/plan.js";
 export type { PlanInput, PlannedCommand } from "./embodiment/types.js";
-export { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld, DEFAULT_DRAMA_TUNING } from "./director/drama/index.js";
+export { BeatPlayer, DramaDirector, SheetNotes, SheetPlayer, composeDramaSinks, mirrorWorld, DEFAULT_DRAMA_TUNING, FORCE_UNTIL_MS, LATE_RELEASE_MS } from "./director/drama/index.js";
+export type { SheetPlayerDeps, SheetReport, SheetStageHooks, SheetSummary } from "./director/drama/index.js";
+export { planBlock, planFace, planProp, placeToTile } from "./embodiment/sheet-stage.js";
+export type { StageCtx } from "./embodiment/sheet-stage.js";
+export { compileBeatSheet, settleSheetDrama, sheetScenarioBeats, climaxBeat, sheetInputHash } from "./authoring/beat-sheet.js";
+export type { SheetCompile } from "./authoring/beat-sheet.js";
+export { mockSheetFor, buildSheetPrompt, generateBeatSheet, sheetInputHashOf, sheetIsCurrent } from "./authoring/beat-sheet-generate.js";
+export type { SheetBrief, SheetDeps, SheetLink, SheetResult } from "./authoring/beat-sheet-generate.js";
+export { buildSheetLinks, sheetMode } from "./authoring/beat-sheet-links.js";
+export { briefOfBody } from "./run/sheet-run.js";
 export type { BeatPlayerDeps, BeatReport, DramaDecision, DramaDirectorDeps, DramaLink, DramaTuning, DramaWorld, WorldAvatar } from "./director/drama/index.js";
 export { classifyHostility, readHostility } from "./director/drama/hostility.js";
 export type { HostilityKind, LineReading } from "./director/drama/hostility.js";

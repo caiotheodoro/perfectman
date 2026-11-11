@@ -31,6 +31,7 @@ Read these in order:
 - [`embodiment.md`](embodiment.md) - physical bodies, space, hearing and body intents for grid-hotel actors (hotel integration, with [`plans/hotel-package.md`](plans/hotel-package.md) and ADR-0018..0026).
 - [`plans/hotel-judge.md`](plans/hotel-judge.md) - hotel LLM judge, calibration kit (kappa) and the deterministic canary red-team set.
 - [`plans/script-likeness.md`](plans/script-likeness.md) - dialogue measured against real plays: the benchmark, the norms, the length, novelty, motif and question checks in the actor loop, the scene spine, and the score in each run's replay manifest.
+- [`plans/beat-sheet.md`](plans/beat-sheet.md) - the scene's shape written at compile (arc, blocking, props, planted information, camera, a physical climax by 4:00), the director step that writes it, and how a run plays it.
 - [`personas/`](personas/) - generic persona setup docs and templates only. Real/person-specific subfolders are local-only and gitignored.
 - [`video/README.md`](video/README.md) - convert saved runs, narratives, and scripts into video.
 

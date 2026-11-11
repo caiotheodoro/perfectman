@@ -62,6 +62,8 @@ import type { ReplayManifest } from "./artifacts.js";
 import { MEMORY_ID_PREFIX, PlayerMemory } from "./player-memory.js";
 import { SceneRecorder, SceneSpine, buildSceneSpine, sceneSpineEnabled, scriptGuardEnabled, scriptLikenessManifest } from "./scene-recorder.js";
 import { SpineEscalation, spineEscalateEnabled } from "./spine-escalation.js";
+import { SheetRuntime, ensureSheet, sheetIneligible } from "./sheet-run.js";
+import type { CameraIntent, SheetBeat } from "@perfectman/shared";
 import type { MemoryStore } from "./player-memory.js";
 import type { WrittenArtifacts } from "./artifacts.js";
 import { FrameLogRecorder } from "./frame-log.js";
@@ -136,6 +138,8 @@ export type RunDeps = {
   timing?: RunTiming;
   /** Overrides the narrator's model call (D19). Absent: a cinematic run builds its own from the provider chain; with the mock provider cards and captions are the deterministic fallback text. */
   narratorLlm?: NarratorLlm;
+  /** The cinematic director's seam for a beat sheet's camera intent (B4's `director/cine`); absent: the intent is only logged and recorded in the frame log. */
+  sheetCamera?: (run: number, intent: CameraIntent, beat: Extract<SheetBeat, { kind: "camera" }>) => void;
   onEnded(run: Run, reason: SidecarEndReason): void;
 };
 
@@ -228,6 +232,10 @@ export class Run {
   private director: DramaDirector | undefined;
   /** The scenario's authored beats, on this run's clock (errata P4-01); absent without drama or without a script. */
   private beatPlayer: BeatPlayer | undefined;
+  /** The scene's beat sheet in play (Contract A): arc, blocking, notes and the forced climax. Replaces the generic spine when present. */
+  private sheet: SheetRuntime | undefined;
+  /** Why the scene plays the generic spine instead of a sheet, for the `beat_sheet_fallback` line and the manifest. */
+  private sheetFallback: string | undefined;
   /** What became of the authored beats, for the run summary: how many played, and how many were dropped for each reason (`beats_dropped_<why>`). */
   private readonly beatOutcomes = { played: 0, dropped: new Map<string, number>() };
   private loop!: WallClockPulseLoop;
@@ -451,6 +459,9 @@ export class Run {
   // ---- stage B: build, spawn, start -------------------------------------------
 
   async launch(): Promise<void> {
+    // A scenario with no beat sheet gets one before anything is built (at most 25 s, the contract's compile timeout; never fails the run).
+    await this.writeSheetIfMissing();
+    if (this.stopping) return;
     const { clock, link, hotel } = this.d;
     const mirror = this.space;
     const cfg = this.hotelConfig();
@@ -494,6 +505,11 @@ export class Run {
     this.startDrama();
     this.out = this.executor;
     if (this.params.mode === "cinematic") this.out = this.startCinematic(this.out);
+    // A beat sheet's authored silence holds the actors' lines (and nothing else); a run without one is untouched.
+    if (this.body.beat_sheet && this.director) {
+      this.sheet = this.buildSheet(this.body.beat_sheet);
+      this.out = this.sheet.wrap(this.out);
+    }
 
     const cast = new Map<string, CastEntry>();
     for (const [id, a] of this.agents) cast.set(id, { name: a.name, responseDelayMs: this.body.responseDelays?.[id] ?? [600, 2500] });
@@ -668,10 +684,72 @@ export class Run {
   }
 
   /**
+   * A scenario compiled without a beat sheet (an older version, or the director step was off, timed out or failed at compile) gets one now when a model is
+   * configured, inside the 25 s the contract allows; the run launches only after. Nothing here can fail the run: the reason is kept for `beat_sheet_fallback`.
+   */
+  private async writeSheetIfMissing(): Promise<void> {
+    if (this.body.beat_sheet) return;
+    const drama = resolveRunDrama(this.body);
+    const wrote = await ensureSheet(this.body, { hotel: this.d.hotel, drama, hasDirector: this.d.drama !== undefined, logger: this.d.logger, run: this.id });
+    this.body = wrote.body;
+    if (wrote.fallback) this.sheetFallback = wrote.fallback;
+  }
+
+  /** The sheet and everything it needs from this run, built once the director and the body's executor exist. */
+  private buildSheet(sheet: NonNullable<ScenarioBody["beat_sheet"]>): SheetRuntime {
+    const cast = this.body.config.agents;
+    return new SheetRuntime(sheet, {
+      run: this.id,
+      clock: this.d.clock,
+      rng: this.d.rng,
+      logger: this.d.logger,
+      view: (ref, now) => this.space.view(ref, now),
+      send: (cmds) => this.out.send(cmds),
+      isOwn: (ref) => this.agents.has(ref),
+      isGone: (ref) => this.agents.get(ref)?.gone === true || this.dramaSink.isDead(ref),
+      port: () => this.director,
+      drama: resolveRunDrama(this.body),
+      wireOf: (ref) => this.space.avatarId(ref),
+      walkCloser: (actor, target) => {
+        const cmds = this.dramaSink.approach(actor, target, this.space.view(actor, this.d.clock.now())?.room, this.d.rng);
+        if (cmds.length > 0) this.out.send(cmds);
+        return cmds.length > 0;
+      },
+      record: (kind, data) => this.frames.record("out", this.params.room === undefined ? undefined : String(this.params.room), kind, data),
+      ...(this.d.sheetCamera ? { camera: (intent: CameraIntent, beat: Extract<SheetBeat, { kind: "camera" }>) => this.d.sheetCamera?.(this.id, intent, beat) } : {}),
+      names: new Map(cast.map((a) => [a.id, a.promptProfile.displayName])),
+      language: cast[0]?.promptProfile.language === "en" ? "en" : "pt-BR",
+    });
+  }
+
+  /** `beat_sheet_fallback`: the scene plays the generic spine, and says why (Contract A: no sheet, a sheet that did not hold, a generator that failed or timed out). */
+  private logSheetFallback(): void {
+    const reason = this.sheetFallback ?? this.body.beat_sheet_error ?? sheetIneligible(this.body, resolveRunDrama(this.body), this.director !== undefined) ?? "absent";
+    this.sheetFallback = reason;
+    this.d.logger.warn("beat_sheet_fallback", { run: this.id, reason });
+  }
+
+  /**
    * The scenario's script starts when the cast is in and the run is live: its seconds count from here. Each beat goes through the director as a
    * scenario-origin act, so every gate still applies (SCN-3, SCN-4); nothing is played when drama is not negotiated, and a replay builds no player.
    */
   private startBeats(): void {
+    if (this.sheet) {
+      // Contract A: the scene's sheet is its script. The generic spine does not start (startSpine), the sheet's acts and cuts go through the same gates as any authored beat.
+      try {
+        this.sheet.start();
+        this.space.setCraft((agent, now) => this.sheet?.craft(agent, now));
+        const climax = this.body.beat_sheet?.arc.climax_at_ms;
+        this.d.logger.info("beat sheet", { run: this.id, beats: this.body.beat_sheet?.beats.length, climax_at_ms: climax, generated_by: this.body.beat_sheet?.generated_by?.model });
+        return;
+      } catch (err) {
+        // A sheet that cannot start is no reason to lose the scene: the spine plays instead.
+        this.sheet.stop();
+        this.sheet = undefined;
+        this.sheetFallback = `error: ${err instanceof Error ? err.message : String(err)}`.slice(0, 200);
+      }
+    }
+    this.logSheetFallback();
     const beats = this.body.beats ?? [];
     if (!this.director || beats.length === 0) return;
     const startedAt = this.d.clock.now();
@@ -708,7 +786,7 @@ export class Run {
     const cast = this.body.config.agents;
     this.sceneStart = this.d.clock.now();
     this.scene = new SceneRecorder(cast.map((a) => a.promptProfile.displayName));
-    if (!sceneSpineEnabled() || !this.director || (this.body.beats ?? []).length > 0 || resolveRunDrama(this.body).off) return;
+    if (!sceneSpineEnabled() || !this.director || (this.body.beats ?? []).length > 0 || resolveRunDrama(this.body).off || this.sheet !== undefined) return;
     const language = cast[0]?.promptProfile.language === "en" ? "en" : "pt-BR";
     const built = buildSceneSpine({
       language,
@@ -1764,6 +1842,7 @@ export class Run {
     try {
       this.breaker?.dispose();
       this.beatPlayer?.stop();
+      this.sheet?.stop();
       this.unsubscribeBudget?.();
       // Nobody walks in after a stop; one already spawning is waited for (bounded), so the walk-out below sees it.
       for (const timer of this.arrivalTimers) timer.cancel();
@@ -1823,6 +1902,7 @@ export class Run {
           ...(this.spine ? { scene_spine: { step: this.spine.step, advances: this.spine.advances.map((a) => ({ step: a.step, at_ms: a.atMs, via: a.via })), ...(this.escalation ? { unlocks: this.escalation.manifest(this.sceneStart) } : {}) } } : {}),
           counters: { llm_calls: m.calls, llm_failures: m.failures, ...(this.chain?.counters() ?? {}), ...this.guardCounters(), ...this.scriptScoreCounters(), ...(this.narrator ? { narrator_calls: this.narrator.calls, narrator_fallbacks: this.narrator.fallbacks, narrator_repaired: this.narrator.repaired } : {}), undelivered_committed: this.gateway?.undeliveredCommitted ?? 0, commands_sent: this.executor?.stats.sent ?? 0, ...this.scriptCounters(), ...this.bodyCounters() },
           drama: summarizeRunDrama(resolveRunDrama(this.body)),
+          ...(this.sheet && this.body.beat_sheet ? { beat_sheet: { ...(this.body.beat_sheet.generated_by ? { generated_by: { model: this.body.beat_sheet.generated_by.model, cost_usd: this.body.beat_sheet.generated_by.cost_usd, ms: this.body.beat_sheet.generated_by.ms, ...(this.body.beat_sheet.generated_by.mock ? { mock: true as const } : {}) } } : {}), arc: this.body.beat_sheet.arc, ...this.sheet.summary() } } : {}),
           ...(this.drained ? {} : { dirty: true as const }),
         }, this.eventSink);
         await link.registerArtifacts(this.id, written);
@@ -1883,6 +1963,8 @@ export class Run {
     const out: Record<string, number> = {};
     const key = (s: string): string => s.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "");
     const dropped = [...this.beatOutcomes.dropped.values()].reduce((a, b) => a + b, 0);
+    if (this.sheet) Object.assign(out, this.sheet.counters());
+    else if (this.sheetFallback !== undefined) out["beat_sheet_fallback"] = 1;
     if (this.beatPlayer) {
       out["beats_played"] = this.beatOutcomes.played;
       out["beats_dropped"] = dropped;

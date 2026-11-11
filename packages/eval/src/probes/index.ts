@@ -18,6 +18,7 @@ import {
 
 export * from "./adapter.js";
 export * from "./drama.js";
+export * from "./sheet.js";
 export type { BehavioralEvent, BehavioralEventKind, ProbeBound, ProbeInput, ProbeResult } from "./types.js";
 
 // ── Latency ──────────────────────────────────────────────────────────────────

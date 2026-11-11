@@ -29,7 +29,8 @@
     "sweep:temperature": "node dist/cli/sweep-temperature.js",
     "video": "node dist/cli/video.js",
     "label": "tsc -p tsconfig.json && node dist/drama/label-ui/cli.js",
-    "drama:sim": "node dist/cli/drama-sim.js"
+    "drama:sim": "node dist/cli/drama-sim.js",
+    "beat-sheet:bench": "node dist/cli/beat-sheet-bench.js"
   },
   "dependencies": {
     "@perfectman/engine": "workspace:*",

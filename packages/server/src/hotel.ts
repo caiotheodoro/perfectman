@@ -59,6 +59,8 @@ export type {
 } from "./config/simulation-config.js";
 
 export { compileRunInputs } from "./authoring/compile-run-inputs.js";
+export { draftReferences, referenceCopy } from "./authoring/draft-references.js";
+export type { DraftReferences, ReferenceGuard } from "./authoring/draft-references.js";
 export { loadSlimKbFromEnv, beatCraftEnabled, KB_SLIM_ENV, KB_CRAFT_ENV } from "./kb/slim-file.js";
 export type { SlimLoadOptions } from "./kb/slim-file.js";
 export { compilePersonaMarkdown } from "./authoring/persona-md-compiler.js";

@@ -1,3 +1,6 @@
+export { SheetNotes } from "./sheet-notes.js";
+export { SheetPlayer, FORCE_UNTIL_MS, LATE_RELEASE_MS } from "./sheet-player.js";
+export type { SheetPlayerDeps, SheetReport, SheetStageHooks, SheetSummary } from "./sheet-player.js";
 export { BeatPlayer } from "./beat-player.js";
 export type { BeatPlayerDeps, BeatReport } from "./beat-player.js";
 export { DramaDirector } from "./director.js";

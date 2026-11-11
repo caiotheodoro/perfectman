@@ -7,6 +7,7 @@ import {
   MockActMemory,
   SceneRecorder,
   SceneSpine,
+  SheetPlayer,
   SpineEscalation,
   buildSceneSpine,
   composeDramaSinks,
@@ -14,14 +15,17 @@ import {
   mirrorWorld,
   mockAct,
   plan,
+  planBlock,
+  planFace,
+  planProp,
   resolveRunDrama,
   routeDramaFrame,
   updateMemory,
   validateActCmd,
 } from "@perfectman/hotel/drama";
-import type { ActSend, Clock, DramaDecision, DramaLogLine, DramaFrame, DramaFrameSink, DramaLink, DramaMode, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
+import type { ActSend, Clock, DramaDecision, SheetSummary, DramaLogLine, DramaFrame, DramaFrameSink, DramaLink, DramaMode, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
 import { BodyIntentSchema } from "@perfectman/shared";
-import type { ActVerb, AgentState, BlockedReason, BodyCommand, BodyHandleMap, BodyIntent, SpineObjective, Tile } from "@perfectman/shared";
+import type { ActVerb, AgentState, BeatSheet, BlockedReason, BodyCommand, BodyHandleMap, BodyIntent, SpineObjective, Tile } from "@perfectman/shared";
 import { extractDramaEvents } from "../drama/index.js";
 import type { DramaEvent } from "../drama/index.js";
 import { runDramaProbes } from "../probes/drama.js";
@@ -86,6 +90,12 @@ export type SimConfig = {
   dramaOn?: boolean;
   /** The scenario's script as the body carries it (`ScenarioBeat`, refs are the actors' refs); played by the production `BeatPlayer`, with the run's walker for a beat that starts `too_far`. Absent: no script. */
   beats?: readonly ScenarioBeat[];
+  /**
+   * The scene's beat sheet as the body carries it (Contract A; refs are the actors' refs), played by the production `SheetPlayer` on the sim's clock: its acts and cuts through the
+   * director as scenario acts, its blocking, props and faces as body commands on the grid, its camera and silence recorded in `SimResult.sheet`, and nobody speaks during a pause.
+   * Exclusive with `beats`; the scene spine is inert, as in a run.
+   */
+  sheet?: BeatSheet;
   controls?: readonly SimControl[];
   /** The mock model's quirks (`MockDrama` less what the scenario gives it). */
   mock?: Pick<MockDrama, "gap" | "malformedEvery" | "skip">;
@@ -183,6 +193,8 @@ export type SimResult = {
   cuts: Array<{ atMs: number; outcome: "played" | "dropped"; why: string }>;
   /** Every `blocked` hook of the body, in order: what it refused to send the model's actor and why (the model reads them as `body.blocked` at its next turn). */
   bodyBlocked: Array<{ atMs: number; actor: string; code: string; detail?: string }>;
+  /** The sheet when the config had one: what became of its climax and beats, and what the stage hooks were asked (blocking, props, faces, camera, silence) with when. */
+  sheet?: { sheet: BeatSheet; summary: SheetSummary; stage: Array<{ atMs: number; kind: string; beat: string; detail?: string }>; reports: Array<{ atMs: number; beat: string; kind: string; outcome: string; why: string; late?: boolean }> };
   /** Acts that held: started, and how each ended. */
   stats: { started: number; blocked: number; aborted: number; done: number };
   /** The body's own counters, as a run's summary carries them (`grievance_raised`, `act_blocked_notes`, `spine_unlock_*`, ...): only the ones that are not zero. */
@@ -431,7 +443,7 @@ export function runDramaSim(config: SimConfig): SimResult {
   let spineScene: SceneSpine | undefined;
   let escalation: SpineEscalation | undefined;
   const spineLang = config.spine?.language ?? "pt-BR";
-  if (dramaOn && config.spine && (config.beats?.length ?? 0) === 0 && !runDrama.off) {
+  if (dramaOn && config.spine && (config.beats?.length ?? 0) === 0 && config.sheet === undefined && !runDrama.off) {
     const built = buildSceneSpine({
       language: spineLang,
       cast: config.actors.map((a) => ({ id: a.ref, name: a.name, ...(config.spine?.cast?.find((c) => c.ref === a.ref)?.objective ? { objective: config.spine.cast.find((c) => c.ref === a.ref)!.objective! } : {}) })),
@@ -530,7 +542,8 @@ export function runDramaSim(config: SimConfig): SimResult {
       else if (d.kind === "initiate") proposals.push({ atMs: now - startMs, actor: ref, verb: d.verb, ...(d.with !== undefined ? { with: space.refOfAvatar(d.with) } : {}), ...fate });
     }
     send(cmds);
-    const line = act && !sweep ? lineFor(ref, act.verb, targetRef, n) : undefined;
+    // An authored pause (a sheet's `pause` beat): nobody speaks.
+    const line = act && !sweep && grid.now() >= silentUntil ? lineFor(ref, act.verb, targetRef, n) : undefined;
     if (line && !body.isDead(ref)) {
       speech.push({ atMs: now - startMs, actor: ref, text: line });
       log("in", { t: "actor_cmd", cid: ++cid, run: RUN, lease: LEASE, actor: slotOf.get(ref)!, cmd: { k: "chat", mode: act && ["insult", "slap", "punch", "kill"].includes(act.verb) ? "shout" : "say", text: line, ...(targetRef ? { to: slotOf.get(targetRef) ?? space.avatarId(targetRef) } : {}) } });
@@ -587,6 +600,72 @@ export function runDramaSim(config: SimConfig): SimResult {
     : undefined;
   script?.start();
 
+  // The beat sheet (Contract A), on the sim's clock: the same player a run builds, its stage hooks answered by the grid.
+  const stage: NonNullable<SimResult["sheet"]>["stage"] = [];
+  const sheetReports: NonNullable<SimResult["sheet"]>["reports"] = [];
+  let silentUntil = 0;
+  const sheetCtx = (actor: string, beat: string) => {
+    const view = space.view(actor, grid.now());
+    const room = view?.room;
+    if (!room || body.isDead(actor)) return undefined;
+    return { room, self: actor, rng, tileOf: (ref: string) => room.occupants.find((p) => p.ref === ref)?.tile, isPerson: (ref: string) => actorRefs.includes(ref), now: grid.now(), plan: `drama:sheet:${beat}` };
+  };
+  const sheet = dramaOn && config.sheet && (config.beats?.length ?? 0) === 0
+    ? new SheetPlayer({
+        clock,
+        port: () => port,
+        sheet: config.sheet,
+        drama: resolveRunDrama({ ...(config.drama ? { drama: config.drama } : {}), ...(config.dramaMode ? { drama_mode: config.dramaMode } : {}) }),
+        ...(config.tuning ? { tuning: config.tuning.beats } : {}),
+        wireOf: (ref) => space.avatarId(ref),
+        walkCloser: (actor, target) => {
+          const cmds = body.approach(actor, target, space.view(actor, grid.now())?.room, rng);
+          if (cmds.length > 0) send(cmds);
+          return cmds.length > 0;
+        },
+        stage: {
+          block: (b) => {
+            const ctx = sheetCtx(b.actor, b.id);
+            const cmds = ctx ? planBlock(b.to, b.how, ctx) : undefined;
+            stage.push({ atMs: grid.now() - startMs, kind: "block", beat: b.id, detail: cmds === undefined ? "nowhere" : `${cmds.length} cmd` });
+            if (cmds === undefined) return false;
+            if (cmds.length > 0) send(cmds);
+            return true;
+          },
+          prop: (b) => {
+            const ctx = sheetCtx(b.actor, b.id);
+            const cmds = ctx ? planProp(b.op, b.prop, b.to, ctx) : undefined;
+            stage.push({ atMs: grid.now() - startMs, kind: "prop", beat: b.id, detail: `${b.op} ${b.prop}` });
+            if (cmds === undefined) return false;
+            if (cmds.length > 0) send(cmds);
+            return true;
+          },
+          expression: (actor, face) => {
+            if (body.isDead(actor)) return false;
+            stage.push({ atMs: grid.now() - startMs, kind: "expression", beat: actor, detail: face });
+            send(planFace(actor, face));
+            return true;
+          },
+          camera: (intent, b) => void stage.push({ atMs: grid.now() - startMs, kind: "camera", beat: b.id, detail: `${intent.shot}${intent.move ? `+${intent.move}` : ""}` }),
+          pause: (ms, b) => {
+            silentUntil = Math.max(silentUntil, grid.now() + ms);
+            stage.push({ atMs: grid.now() - startMs, kind: "pause", beat: b.id, detail: `${ms} ms` });
+          },
+        },
+        onReport: (r) => {
+          sheetReports.push({ atMs: r.at - startMs, beat: r.beat.id, kind: r.beat.kind, outcome: r.outcome, why: r.why, ...(r.late ? { late: true } : {}) });
+          const rep = r.report;
+          if (rep && r.beat.kind === "act") {
+            const decision = rep.outcome === "played" ? `authored:${rep.decision?.kind ?? "cut"}` : `authored:${rep.decision?.kind ?? "dropped"}`;
+            const detail = rep.detail ?? (rep.decision?.kind === "veto" ? rep.decision.detail : undefined);
+            const veto = rep.decision?.kind === "veto" ? { reason: rep.decision.reason, ...(detail !== undefined ? { detail } : {}) } : { reason: rep.why };
+            proposals.push({ atMs: r.at - startMs, actor: r.beat.actor, verb: r.beat.verb, ...(r.beat.with ? { with: r.beat.with } : {}), decision, ...(rep.outcome === "dropped" ? veto : {}) });
+          } else if (rep && r.beat.kind === "cut") cuts.push({ atMs: r.at - startMs, outcome: rep.outcome, why: rep.why });
+        },
+      })
+    : undefined;
+  sheet?.start();
+
   const talk = [...(config.dialogue ?? [])].sort((a, b) => a.atMs - b.atMs);
   /** One line of the seam: on the wire as chat, and in the ledger as a committed line (names found in the words are who it is about). */
   function say(l: NonNullable<SimConfig["dialogue"]>[number]): void {
@@ -622,6 +701,7 @@ export function runDramaSim(config: SimConfig): SimResult {
       if (c.optIn) acts.setOptIn(c.optIn.human, c.optIn.on);
     }
     if (script && now >= end) script.stop();
+    if (sheet && now >= end) sheet.stop();
     while (talk.length > 0 && startMs + talk[0]!.atMs <= now && now < end) say(talk.shift()!);
     if (config.wander && now >= wanderAt && now < end) {
       const w = config.wander;
@@ -655,5 +735,5 @@ export function runDramaSim(config: SimConfig): SimResult {
   const events = extractDramaEvents(frames);
   const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs, ...(config.humansTargetable === true ? { chiplessHumans: true } : {}) });
   dramaLog.close();
-  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters(), dramaLog: dramaLines.map((l) => JSON.parse(l) as DramaLogLine), ...(spineScene ? { spine: { step: spineScene.step, advances: spineScene.advances.map((a) => ({ step: a.step, atMs: a.atMs, via: a.via })), ...(escalation ? { unlocks: escalation.manifest(startMs) } : {}) } } : {}) };
+  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters(), dramaLog: dramaLines.map((l) => JSON.parse(l) as DramaLogLine), ...(sheet && config.sheet ? { sheet: { sheet: config.sheet, summary: sheet.summary(), stage, reports: sheetReports } } : {}), ...(spineScene ? { spine: { step: spineScene.step, advances: spineScene.advances.map((a) => ({ step: a.step, atMs: a.atMs, via: a.via })), ...(escalation ? { unlocks: escalation.manifest(startMs) } : {}) } } : {}) };
 }

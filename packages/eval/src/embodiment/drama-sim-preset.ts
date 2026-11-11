@@ -1,11 +1,12 @@
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { compileSceneBeats, compileSceneDrama, countCuts, defaultSceneDrama } from "@perfectman/hotel/drama";
+import { compileBeatSheet, compileSceneBeats, compileSceneDrama, countCuts, defaultSceneDrama, settleSheetDrama } from "@perfectman/hotel/drama";
 import type { DramaMode, DramaTuning, ScenarioDrama } from "@perfectman/hotel/drama";
 import { appraise, compileRunInputs, loadPresets, parseMarkdown } from "@perfectman/server/hotel";
 import type { PriorEvent } from "@perfectman/server/hotel";
 import type { LLMConfig } from "@perfectman/server/hotel";
-import type { AgentState } from "@perfectman/shared";
+import { mockBeatSheet } from "@perfectman/shared";
+import type { ActVerb, AgentState, BeatSheet } from "@perfectman/shared";
 import type { SimConfig } from "./drama-sim.js";
 import { seedState } from "./sim-states.js";
 
@@ -89,5 +90,37 @@ export async function presetSimConfig(sceneId: string, o: PresetSimOptions = {})
     ...(beats.length > 0 ? { beats } : {}),
     ...(o.dramaOn === false ? { dramaOn: false } : {}),
     ...(o.tuning ? { tuning: o.tuning } : {}),
+  };
+}
+
+export type SheetSimOptions = PresetSimOptions & {
+  /** A sheet as a model or an author wrote it (cast names or refs). Absent: the deterministic one (`mockBeatSheet`). */
+  sheet?: unknown;
+  /** The mock sheet's climax verb and second. Defaults: a slap at 170 s. */
+  climax?: ActVerb;
+  climaxAtMs?: number;
+};
+
+/**
+ * A scene preset played from a beat sheet (Contract A) in place of its `beats`: the preset's cast, feelings and grievances, the sheet's whole script. The sheet is read as the
+ * authoring service reads it (names to refs, the ladder, the 20 s, the 4:00); the preset's own drama block and script are left behind (they were for another scene) and the
+ * conservative default is widened just enough to cover the sheet's acts, as a compile does. Runs to 280 s by
+ * default so the aftermath is on screen. Throws with the validator's rows when the sheet does not hold.
+ */
+export async function sheetSimConfig(sceneId: string, o: SheetSimOptions = {}): Promise<SimConfig> {
+  const base = await presetSimConfig(sceneId, o);
+  const people = base.actors.map((a) => ({ id: a.ref, displayName: a.name }));
+  const raw = o.sheet ?? mockBeatSheet({ cast: base.actors.map((a) => ({ id: a.ref, name: a.name })), language: "pt-BR", ...(o.climax ? { climax: o.climax } : {}), ...(o.climaxAtMs ? { climaxAtMs: o.climaxAtMs } : {}) });
+  // The preset's own block (and its script) belonged to its own scene: the sheet is a different script, so the scene starts from the conservative default and the sheet widens it, as a compile does.
+  const def = defaultSceneDrama(base.actors.map((a) => a.ref));
+  const read = compileBeatSheet(raw, people, { drama: "derive" });
+  if (!read.sheet) throw new Error(`the sheet for ${sceneId} does not hold: ${read.errors.map((e) => `${e.path}: ${e.message}`).join("; ")}`);
+  const settled = settleSheetDrama(read.sheet, def, "default");
+  const { beats: _beats, drama: _drama, dramaMode: _mode, ...rest } = base;
+  return {
+    ...rest,
+    durationMs: o.durationMs ?? 280_000,
+    sheet: read.sheet as BeatSheet,
+    ...(settled ? { drama: settled.drama, ...(settled.drama_mode ? { dramaMode: settled.drama_mode } : {}) } : {}),
   };
 }

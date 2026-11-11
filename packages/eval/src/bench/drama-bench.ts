@@ -5,7 +5,9 @@ import { seedState } from "../embodiment/sim-states.js";
 import type { SeedRelations } from "../embodiment/sim-states.js";
 import type { ScenarioBeat } from "@perfectman/hotel/drama";
 import type { ActStartedEvent, DramaEvent } from "../drama/index.js";
-import type { SocialEmotions, CoreMood } from "@perfectman/shared";
+import { deriveSheetDrama, mockBeatSheet } from "@perfectman/shared";
+import type { ActVerb, BeatSheet, SocialEmotions, CoreMood } from "@perfectman/shared";
+import { sheetProbes } from "../probes/sheet.js";
 
 /**
  * The drama bench: the scenarios the act contract makes checkable, each run offline on the fake grid hotel with the mock model and the real
@@ -71,7 +73,7 @@ const block = (max_rung: number, may_target: Array<[string, string]> = [], may_d
 
 // ---- the scenarios --------------------------------------------------------------------------------------------
 
-export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
+const CORE_SCENARIOS: readonly DramaScenario[] = [
   {
     id: "drama_ladder_full",
     name: "The full ladder: glare, insult, shove, slap, punch, each one rung after the last",
@@ -333,6 +335,110 @@ export const DRAMA_SCENARIOS: readonly DramaScenario[] = [
     },
   },
 ];
+
+
+// ---- the beat sheet (Contract A): a scene played from its sheet reaches a physical climax by 4:00 through every gate -----------------------------------
+
+const CAST4 = REFS.map((ref) => ({ id: ref, name: NAMES[ref]! }));
+/** The deterministic sheet of the bench cast, with the block that covers it (what a compile widens the default block to). */
+function sheetScene(title: string, o: { climax?: ActVerb; climaxAtMs?: number; edit?: (b: BeatSheet["beats"]) => BeatSheet["beats"]; block?: ReturnType<typeof block>; durationMs?: number } = {}): SimConfig {
+  const made = mockBeatSheet({ cast: CAST4, language: "pt-BR", ...(o.climax ? { climax: o.climax } : {}), ...(o.climaxAtMs ? { climaxAtMs: o.climaxAtMs } : {}) });
+  const sheet: BeatSheet = o.edit ? { ...made, beats: o.edit(made.beats) } : made;
+  const covering = deriveSheetDrama(sheet, { max_rung: 4, may_target: REFS.flatMap((a) => REFS.filter((b) => b !== a).map((b): [string, string] => [a, b])), may_die: [], permadeath: false });
+  return base(title, { durationMs: o.durationMs ?? 270_000, states: CALM(), sheet, drama: o.block ?? covering });
+}
+const sheetOf = (r: SimResult): BeatSheet => {
+  if (!r.sheet) throw new Error("no sheet for this result");
+  return r.sheet.sheet;
+};
+const probeOk = (r: SimResult, name: string): DramaCheck => {
+  const p = sheetProbes(r, sheetOf(r)).find((x) => x.probe === name)!;
+  return ok(`${name}: ${p.label}`, p.passed, `${p.measured} (band ${p.bound.join("..")})`);
+};
+
+const SHEET_SCENARIOS: readonly DramaScenario[] = [
+  {
+    id: "sheet_climax_by_240",
+    name: "A beat sheet: the physical climax is started by 4:00, once, through the ladder, the spacing and the director's gates, and the quiet beats play",
+    build: () => sheetScene("sheet-climax"),
+    check: (r) => {
+      const sheet = sheetOf(r);
+      const verbs = pairVerbs(r, "ana", "bia");
+      const physical = started(r).filter((a) => ["shove", "slap", "punch", "kill"].includes(a.verb)).map((a) => a.atMs);
+      const climax = started(r).find((a) => a.verb === "slap" && a.origin === "scenario");
+      return [
+        ok("the slap, the sheet's climax, started as a scenario act by 240 s", climax !== undefined && climax.atMs <= 240_000, String(climax?.atMs)),
+        ok("it came at the second the sheet says (within 2 s)", climax !== undefined && Math.abs(climax.atMs - sheet.arc.climax_at_ms) <= 2_000, `${climax?.atMs} vs ${sheet.arc.climax_at_ms}`),
+        ok("the ladder was climbed one rung at a time to it: glare, insult, shove, slap", isSubsequence(["glare", "insult", "shove", "slap"], verbs), verbs.join(" ")),
+        ok("physical beats are 20 s apart", physical.every((t, i) => i === 0 || t - physical[i - 1]! >= 20_000), physical.join(", ")),
+        ok("the sheet's player says the climax played", r.sheet?.summary.climax.outcome === "played" && (r.sheet.summary.climax.at_ms ?? Infinity) <= 240_000, JSON.stringify(r.sheet?.summary.climax)),
+        ok("nothing was released late (no beat was missed)", (r.sheet?.summary.late ?? 1) === 0, JSON.stringify(r.sheet?.summary.dropped)),
+        ...sheetProbes(r, sheet).map((p) => ok(`${p.probe}: ${p.label}`, p.passed, `${p.measured}`)),
+        ok("the ladder, budget and death probes are clean", r.probes.filter((p) => ["ladder-compliance", "dead-speech", "single-act-done", "owed-missed-empty"].includes(p.probe)).every((p) => p.passed)),
+      ];
+    },
+  },
+  {
+    id: "sheet_climax_forced_over_skipped_ladder",
+    name: "A forced climax: the improvised arc never climbed, and the slap still comes by 4:00 with the authored skip the gates allow",
+    build: () => sheetScene("sheet-forced", { edit: (beats) => beats.filter((b) => !(b.kind === "act" && ["glare", "insult", "shove"].includes(b.verb))), climaxAtMs: 200_000 }),
+    check: (r) => {
+      const slap = started(r).find((a) => a.verb === "slap" && a.origin === "scenario");
+      return [
+        ok("the slap started by 240 s as a scenario act", slap !== undefined && slap.atMs <= 240_000, String(slap?.atMs)),
+        ok("it carried the authored skip (the rungs below it were never climbed)", slap?.authoredSkip === true && (slap.skippedRungs?.length ?? 0) > 0, JSON.stringify(slap?.skippedRungs)),
+        ok("no other act skipped the ladder", started(r).filter((a) => a.authoredSkip === true).length === 1),
+        probeOk(r, "sheet-climax-by-240s"),
+        probeOk(r, "sheet-skip-only-peak"),
+        ok("the ladder probe lets the one authored skip through", r.probes.find((p) => p.probe === "ladder-compliance")?.passed === true),
+      ];
+    },
+  },
+  {
+    id: "sheet_climax_waits_for_spacing",
+    name: "A forced climax waits out the 20 s between physical beats (GATE-9) and still comes by 4:00",
+    build: () => sheetScene("sheet-spacing", { climaxAtMs: 215_000, edit: (beats) => beats.map((b) => (b.kind === "act" && b.verb === "shove" ? { ...b, at_ms: 211_000, phase: "reversal" as const } : b)) }),
+    check: (r) => {
+      const shove = started(r).find((a) => a.verb === "shove");
+      const slap = started(r).find((a) => a.verb === "slap" && a.origin === "scenario");
+      return [
+        ok("the slap did not come at its own second (215 s): the spacing held it back, and the player asked again each second", slap !== undefined && slap.atMs - 215_000 >= 5_000, `${slap?.atMs}`),
+        ok("then it started, at least 20 s after the shove, and by 4:00", shove !== undefined && slap !== undefined && slap.atMs - shove.atMs >= 20_000 && slap.atMs <= 240_000, `${shove?.atMs} -> ${slap?.atMs}`),
+        probeOk(r, "sheet-climax-by-240s"),
+        probeOk(r, "sheet-one-climax"),
+      ];
+    },
+  },
+  {
+    id: "sheet_kill_climax_then_cut",
+    name: "A kill climax: one kill, the scene is cut after it, the dead stay silent and the next scene revives them",
+    build: () => sheetScene("sheet-kill", { climax: "kill", climaxAtMs: 150_000 }),
+    check: (r) => {
+      const kill = started(r).find((a) => a.verb === "kill");
+      const deaths = of(r, "actor_death");
+      return [
+        ok("the kill started as a scenario act by 240 s", kill !== undefined && kill.origin === "scenario" && kill.atMs <= 240_000, String(kill?.atMs)),
+        ok("exactly one kill and one death in the scene", started(r).filter((a) => a.verb === "kill").length === 1 && deaths.length === 1),
+        ok("the sheet's cut came after it and the scene changed", r.cuts.some((c) => c.outcome === "played") && of(r, "scene_cut").length >= 1, JSON.stringify(r.cuts)),
+        probeOk(r, "sheet-climax-by-240s"),
+        ok("the death probes are clean (scene-cut-revive, kill-victim-die-reaction, dead-speech)", r.probes.filter((p) => ["scene-cut-revive", "kill-victim-die-reaction", "dead-speech", "ladder-compliance"].includes(p.probe)).every((p) => p.passed)),
+      ];
+    },
+  },
+  {
+    id: "sheet_gates_hold",
+    name: "The gates are not the sheet's to open: a kill climax in a scene where nobody may die is refused, and nothing dies",
+    build: () => sheetScene("sheet-gate", { climax: "kill", climaxAtMs: 150_000, block: block(6, REFS.flatMap((a) => REFS.filter((b) => b !== a).map((b): [string, string] => [a, b])), []) }),
+    check: (r) => [
+      ok("the kill was refused before it started (may_die)", r.proposals.some((p) => p.verb === "kill" && p.reason === "may_die") && !started(r).some((a) => a.verb === "kill")),
+      ok("nobody died", of(r, "actor_death").length === 0),
+      ok("the climax probe sees no climax (the bench's own tripwire)", sheetProbes(r, sheetOf(r)).find((p) => p.probe === "sheet-climax-by-240s")?.passed === false),
+    ],
+  },
+];
+
+/** The act contract's nine scenarios, then the beat sheet's five (Contract A). */
+export const DRAMA_SCENARIOS: readonly DramaScenario[] = [...CORE_SCENARIOS, ...SHEET_SCENARIOS];
 
 // ---- running them ------------------------------------------------------------------------------------------
 

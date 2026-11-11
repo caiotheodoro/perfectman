@@ -59,7 +59,7 @@ export class AuthoringServer {
       const svc = this.o.service;
       const route = `${method} ${url.pathname}`;
       if (route === "POST /authoring/v1/validate") return send(res, 200, svc.validate((await readJson(req)) as Parameters<AuthoringService["validate"]>[0]));
-      if (route === "POST /authoring/v1/compile") return send(res, 200, svc.compile((await readJson(req)) as { source?: unknown }));
+      if (route === "POST /authoring/v1/compile") return send(res, 200, await svc.compileWithSheet((await readJson(req)) as { source?: unknown }));
       if (route === "POST /authoring/v1/draft") return send(res, 200, await svc.draft((await readJson(req)) as Parameters<AuthoringService["draft"]>[0]));
       if (route === "POST /authoring/v1/autolook") return send(res, 200, svc.autolook((await readJson(req)) as Parameters<AuthoringService["autolook"]>[0]));
       if (route === "GET /authoring/v1/presets") return send(res, 200, await svc.presets());

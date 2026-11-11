@@ -142,6 +142,16 @@ export const PROBE_BANDS: Record<string, ProbeBound> = {
   // FRM-1 (one act_done per act) and DEATH-1 (a kill's victim is shown dying): promises, so the band is zero.
   "single-act-done": [0, 0],
   "kill-victim-die-reaction": [0, 0],
+  // Beat sheet probes (probes/sheet.ts, Contract A). Promises of the sheet, so the bands are the promises: the climax by 4:00 (240 000 ms), a physical verb, nothing the
+  // sheet did not write, no skip beyond its own, the sheet throws the climax at most once (0 when the improvised arc had already thrown it), silence kept, not all talk (3 or more blocking, prop or camera beats), nearly every quiet beat played.
+  "sheet-climax-by-240s": [0, 240_000],
+  "sheet-climax-physical": [1, 1],
+  "sheet-no-stray-scenario-acts": [0, 0],
+  "sheet-skip-only-peak": [0, 0],
+  "sheet-one-climax": [0, 1],
+  "sheet-silence-kept": [0, 0],
+  "sheet-not-all-talk": [3, 1e9],
+  "sheet-beats-played": [0.9, 1],
 };
 
 export type ProbeInput = {
