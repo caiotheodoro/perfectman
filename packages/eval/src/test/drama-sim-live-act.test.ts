@@ -184,6 +184,45 @@ describe("a note the model does not act on is not told again and again", () => {
   });
 });
 
+describe("what else stops a blow the spine opened, and what the log says of it", () => {
+  const climbOf = (r: SimResult) => between(r, RENATO, OTAVIO, 334, 560).map((e) => e.verb);
+  const first = { grants: GRANTS.slice(0, 2), durationMs: 560_000 };
+
+  it("the pair is a candidate even when the engine has no relational state for it: the unlock is read from the ledger, not from the engine", () => {
+    const states = new Map(REFS.map((ref) => [ref, seedState(ref, { simulationId: "run-62", others: [] })]));
+    expect(climbOf(runDramaSim(live({ ...first, states })))).toEqual(["glare", "insult", "shove", "slap"]);
+  });
+
+  it("a passive model consulted every 21 s and no idle sweep still carries the unlock out inside its 90 s: the climb watch asks again 25 s after each rung", () => {
+    const run = runDramaSim(live({ ...first, model: () => undefined, sweep: undefined }));
+    const climb = between(run, RENATO, OTAVIO, 334, 560);
+    expect(climb.map((e) => e.verb)).toEqual(["glare", "insult", "shove", "slap"]);
+    expect(climb[2]!.atMs / 1000, "the shove").toBeLessThan(334 + 90);
+  });
+
+  it("a target that walks off every 8 s is followed: the shove still comes inside the hold, through `far` consults that walk the aggressor up", () => {
+    const run = runDramaSim(live({ ...first, wander: { actor: OTAVIO, everyMs: 8000, tiles: [[1, 1], [10, 8], [1, 8], [10, 1]] } }));
+    const shove = between(run, RENATO, OTAVIO, 334, 560).find((e) => e.verb === "shove");
+    expect(shove, "a shove").toBeDefined();
+    expect(shove!.atMs / 1000).toBeLessThan(334 + 90);
+    expect(run.dramaLog.some((l) => l.actor === RENATO && l.result === "far")).toBe(true);
+  });
+
+  it("a calm room (the hotel's own switch) stops the shove and the slap whatever the spine opened, and the log says so: `blocked:calm_room`, GATE-2", () => {
+    const run = runDramaSim(live({ ...first, controls: [{ atMs: 300_000, calm: true }] }));
+    expect(climbOf(run).filter((v) => PHYSICAL.includes(v))).toEqual([]);
+    expect(run.dramaLog.find((l) => l.actor === RENATO && l.unlock !== undefined && l.result === "blocked:calm_room")).toMatchObject({ pair: "person-3>person-2", verb: "shove", unlocked: 3, reason: "GATE-2" });
+  });
+
+  it("nobody within earshot stops the slap (LAD-11) and not the shove, and the log says so: `blocked:ladder/zero_witness`", () => {
+    const apart = live({ ...first, ownWalk: undefined, actors: [{ ref: HELOISA, name: "Heloísa", tile: [1, 1] }, { ref: OTAVIO, name: "Otávio", tile: [9, 7] }, { ref: RENATO, name: "Renato", tile: [10, 7] }] });
+    const run = runDramaSim(apart);
+    expect(climbOf(run).slice(0, 3)).toEqual(["glare", "insult", "shove"]);
+    expect(climbOf(run)).not.toContain("slap");
+    expect(run.dramaLog.find((l) => l.actor === RENATO && l.result === "blocked:ladder/zero_witness")).toMatchObject({ verb: "slap", unlocked: 4, reason: "LAD-11" });
+  });
+});
+
 describe("what did not change", () => {
   it("the five presets start the acts they started before, in 180 s at the default pace: 6, 9, 9, 6, 9", async () => {
     const counts: number[] = [];
