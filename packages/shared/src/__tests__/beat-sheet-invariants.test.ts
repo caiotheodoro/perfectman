@@ -67,6 +67,13 @@ describe("validateBeatSheet: Contract A, invariants", () => {
     const sheet = raw();
     const insult = (sheet["beats"] as Array<Record<string, unknown>>).find((b) => b["verb"] === "insult")!;
     insult["verb"] = "punch";
+    // a small skip (three rungs or fewer) is the sheet's own choice: it passes, marked authored_skip, with a warning
+    const small = validateBeatSheet(sheet, ctx);
+    expect(small.errors.filter((e) => /ladder/.test(e.message))).toEqual([]);
+    expect(small.warnings.map((w) => w.message).join(" | ")).toMatch(/skip_implied/);
+    expect(small.sheet?.beats.some((b) => b.kind === "act" && b.verb === "punch" && b.authored_skip === true)).toBe(true);
+    // a bigger one is still thrown back, until the author marks the peak
+    insult["verb"] = "kill";
     expect(messages(validateBeatSheet(sheet, ctx))).toMatch(/skips the ladder/);
     insult["authored_skip"] = true;
     expect(validateBeatSheet(sheet, ctx).errors.filter((e) => /ladder/.test(e.message))).toEqual([]);

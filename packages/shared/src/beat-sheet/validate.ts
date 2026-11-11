@@ -46,6 +46,8 @@ export type SheetCompile = { sheet?: BeatSheet; errors: SheetIssue[]; warnings: 
 
 export const SHEET_SAME_VERB_COOLDOWN_MS = 60_000;
 const HUMAN_REF = "@human";
+/** How many rungs of the ladder a sheet act may skip before it is thrown back: the sheet is its own author, so a small skip is marked `authored_skip` for it. */
+const SHEET_IMPLIED_SKIP_MAX = 3;
 const TOP_KEYS = ["version", "premise", "stakes", "arc", "beats", "generated_by"] as const;
 const ARC_KEYS = ["inciting_at_ms", "reversal_at_ms", "climax_at_ms", "aftermath_until_ms"] as const;
 const BASE_KEYS = ["id", "at_ms", "phase", "kind", "gist"] as const;
@@ -395,7 +397,14 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
     const key = `${b.actor}>${b.with ?? ""}`;
     if (rung !== undefined && b.with !== undefined) {
       const cur = rungs.get(key) ?? 0;
-      if (rung > Math.max(cur, 1) + 1 && b.authored_skip !== true) err(where, `beat_sheet.ladder: ${b.verb} (rung ${rung}) skips the ladder, one rung per beat (LAD-1); climb, or mark the one peak authored_skip`);
+      const jump = rung - (Math.max(cur, 1) + 1);
+      if (jump > 0 && b.authored_skip !== true) {
+        // A sheet is its own author: a small skip (up to three rungs) is read as the skip the model meant and marked so the hotel accepts it; a bigger one is still thrown back.
+        if (jump <= SHEET_IMPLIED_SKIP_MAX) {
+          (b as { authored_skip?: true }).authored_skip = true;
+          warn(where, "beat_sheet.skip_implied", `${b.verb} (rung ${rung}) skips ${jump} rung${jump === 1 ? "" : "s"} of the ladder, so it is marked authored_skip`);
+        } else err(where, `beat_sheet.ladder: ${b.verb} (rung ${rung}) skips the ladder, one rung per beat (LAD-1); climb, or mark the one peak authored_skip`);
+      }
       rungs.set(key, Math.max(cur, rung));
     }
     if (b.authored_skip === true) {
