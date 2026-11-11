@@ -26,6 +26,10 @@ export { runDramaJudgeCli } from "./cli/drama-judge.js";
 export * from "./script-likeness/index.js";
 export { runScriptLikenessCli } from "./cli/script-likeness.js";
 
+// Cinematic score: arc, dialogue, embodiment, camera, engagement (docs/eval/cinematic-score.md)
+export * from "./cinematic/index.js";
+export { runCinematicCli } from "./cli/cinematic.js";
+
 // Drama grading core (axes, labels, agreement, events)
 export * from "./drama/index.js";
 
