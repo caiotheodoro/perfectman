@@ -43,3 +43,6 @@ export { narrateScene, narrateTranscript, ruleNarrationFromTranscript } from "./
 export type { Narration } from "./narrator/narrator.js";
 export { renderHtmlPage } from "./render/html.js";
 export type { BenchReport } from "./cli/bench.js";
+
+export * from "./humanlike/index.js";
+export { runHumanlikeCli } from "./cli/humanlike.js";

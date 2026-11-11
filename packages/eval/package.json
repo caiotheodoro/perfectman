@@ -21,6 +21,7 @@
     "hotel": "node dist/cli/hotel.js",
     "script-likeness": "node dist/cli/script-likeness.js",
     "cinematic": "node dist/cli/cinematic.js",
+    "humanlike": "node dist/cli/humanlike.js",
     "drama-judge": "node dist/cli/drama-judge.js",
     "narrate": "node dist/cli/narrate.js",
     "sweep:repetition": "node dist/cli/sweep-repetition.js",

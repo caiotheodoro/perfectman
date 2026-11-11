@@ -16,6 +16,10 @@
  *    `minShotMs`.
  */
 import { readingSeconds } from "@perfectman/shared";
+import { cineLead, cineThinkMs, cutLine, feelOf, interrupts } from "../../embodiment/human/turn.js";
+import { hbetween } from "../../embodiment/human/rng.js";
+import { readHostility } from "../drama/hostility.js";
+import { HT } from "../../embodiment/human/tuning.js";
 import type { CutFxKind, PerfectmanUi, Shot, ShotTarget, ShotZoom } from "../generated.js";
 import { canonicalSfx } from "./cue-vocab.js";
 import { DEFAULT_CINE } from "./types.js";
@@ -148,6 +152,12 @@ export class ShotPlanner {
   /** Every shot the film cut to, on the playback clock: the variety and cut-rate rules read it. */
   private readonly shotLog: Array<{ at: number; shot: Shot }> = [];
 
+  /** The next item the director would play, if it is a line (the director sets it; the human layer's turn-taking looks ahead one line). */
+  peek: (() => LineItem | undefined) | undefined;
+  /** Lines whose speaker already has the typing bubble up (started inside the line before): the item id, and how long it has been typing when the line's program starts. */
+  private readonly pretyped = new Map<string, { ref: string; typedMs: number }>();
+  private lastInterruptAt: number | undefined;
+
   constructor(private readonly cfg: CineConfig = DEFAULT_CINE) {}
 
   get currentRoom(): number | undefined {
@@ -271,6 +281,12 @@ export class ShotPlanner {
     if (!canStage(item, world)) return undefined;
     this.fillers = 0;
     const b = new Builder();
+    // A bubble started for a line that did not come next (another item took its turn) is put down.
+    for (const [id, p] of [...this.pretyped]) {
+      if (id === item.id) continue;
+      this.pretyped.delete(id);
+      b.add({ at: 0, k: "typing", ref: p.ref, on: false });
+    }
     let t = 0;
     if (this.room !== item.room) t = this.transition(b, now, item.room, world, nar);
     let body: number | undefined;
@@ -427,19 +443,50 @@ export class ShotPlanner {
     const upgrade = high || (item.salience >= 0.35 && this.wantsKind("close_up", now + t0));
     // A salient line inside a two-shot earns its close-up once the shot has been up long enough.
     const climax = covered && upgrade && cam?.shot === "two_shot" && this.minShotWait(now + t0) === 0;
+    // The human layer's turn-taking (B5): the bubble before the line follows its length; a speaker whose bubble came up inside the line before has less left to type.
+    const hum = this.cfg.human && this.cfg.human.likeness > 0 ? this.cfg.human : undefined;
+    const lead = hum ? cineLead({ chars: text.length, baseMs: this.cfg.typingLeadMs, h: hum.likeness, seed: hum.seed, actor: item.ref, n: item.seq }) : undefined;
+    const pre = this.pretyped.get(item.id);
+    this.pretyped.delete(item.id);
+    const leadMs = lead ? Math.max(0, lead.leadMs - (pre?.typedMs ?? 0)) : this.cfg.typingLeadMs;
+    // A speaker walking up to the person it is about to address (the human layer sent the walk): the bubble comes up when the walk ends.
+    const walkMs = item.walkMs ?? 0;
     let shotAt = 0;
     if (!covered || climax) {
       const withPartner = !climax && !upgrade && partner?.exchange ? partner.ref : undefined;
-      shotAt = this.frame(b, t0, now, item.room, item.ref, world, ms + this.cfg.typingLeadMs, withPartner) - t0;
+      shotAt = this.frame(b, t0, now, item.room, item.ref, world, ms + leadMs, withPartner) - t0;
     }
-    const lineAt = t0 + Math.max(shotAt, this.cfg.typingLeadMs);
-    b.add({ at: lineAt - this.cfg.typingLeadMs, k: "typing", ref: item.ref });
+    const lineAt = t0 + Math.max(shotAt, leadMs, walkMs + (walkMs > 0 ? leadMs : 0));
+    if (!pre) {
+      b.add({ at: lineAt - leadMs, k: "typing", ref: item.ref });
+      if (lead?.hesitate && lead.hesitate.afterMs + lead.hesitate.forMs < leadMs) {
+        b.add({ at: lineAt - leadMs + lead.hesitate.afterMs, k: "typing", ref: item.ref, on: false });
+        b.add({ at: lineAt - leadMs + lead.hesitate.afterMs + lead.hesitate.forMs, k: "typing", ref: item.ref });
+      }
+    }
+    const next = hum ? this.peek?.() : undefined;
     b.add({ at: lineAt, k: "release", item });
     this.speakerExtras(b, lineAt, now + lineAt, item, world, ms);
     this.lastSpeaker = { ref: item.ref, room: item.room };
     this.storyMoves(b, lineAt, now + lineAt, ms, story && high);
 
     let end = lineAt + ms;
+    // The next speaker starts typing inside this line (people type while the other talks), after a pause by feeling; a slow feeling holds the floor a moment longer.
+    if (hum && next && next.ref !== item.ref && next.room === item.room) {
+      const nextLead = cineLead({ chars: clip(next.text).length, baseMs: this.cfg.typingLeadMs, h: hum.likeness, seed: hum.seed, actor: next.ref, n: next.seq });
+      const m = world.moodOf(next.ref);
+      const think = cineThinkMs({ feel: m ? feelOf({ arousal: m.arousal, valence: m.valence, ...(m.shame !== undefined ? { shame: m.shame } : {}) }) : "neutral", h: hum.likeness, seed: hum.seed, actor: next.ref, n: next.seq });
+      const start = Math.max(lineAt + HT.turn.cineAfterLandMs + think, end - nextLead.leadMs);
+      // The bubble cannot start after this program ends: a long pause stretches the program to the moment the bubble comes up.
+      end = Math.max(end, start);
+      const typed = Math.max(0, end - start);
+      b.add({ at: start, k: "typing", ref: next.ref, for: next.id });
+      if (nextLead.hesitate && nextLead.hesitate.afterMs + nextLead.hesitate.forMs < typed) {
+        b.add({ at: start + nextLead.hesitate.afterMs, k: "typing", ref: next.ref, on: false, for: next.id });
+        b.add({ at: start + nextLead.hesitate.afterMs + nextLead.hesitate.forMs, k: "typing", ref: next.ref, for: next.id });
+      }
+      this.pretyped.set(next.id, { ref: next.ref, typedMs: typed });
+    }
     // Reaction: the listener's face for the tail of a long line, when they feel something.
     const listener = partner?.ref;
     // A film with no reaction shot in its window cuts to the listener on a long enough line even if they hide what they feel.
@@ -456,6 +503,37 @@ export class ShotPlanner {
     }
     end += this.cfg.beatGapMs;
     return end - t0;
+  }
+
+  /**
+   * The human layer's talk-over (B5), asked when a line is about to play: if the next line waiting on the film is from a heated speaker who has an answer ready, this
+   * line trails off in a dash and the program ends early so the answer lands on top of it. Decided at the last moment because the answer is rarely queued when the line
+   * is planned. Returns the part the room sees and how long the line holds the stage (its cut share of the reading time plus the overlap gap).
+   */
+  /** Whether `id` is still waiting to be pre-typed: a step that started its bubble early is skipped when this is false (the line was planned, or talked over and typed afresh). */
+  stillPretyped(id: string): boolean {
+    return this.pretyped.has(id);
+  }
+
+  talkOver(item: LineItem, nowRel: number, world: CineWorld): { cut: string; holdMs: number } | undefined {
+    const hum = this.cfg.human;
+    const next = this.peek?.();
+    if (!hum || hum.likeness <= 0 || !next || next.ref === item.ref || next.room !== item.room || next.mode !== "say" || item.mode !== "say" || item.cut !== undefined) return undefined;
+    const text = clip(item.text);
+    const a = world.moodOf(item.ref);
+    const o = world.moodOf(next.ref);
+    if (!a || !o) return undefined;
+    // What the two lines themselves carry heats the speakers before their feelings have caught up with them: a hostile word, a shout.
+    const heatOf = (t: string): number => (readHostility(t).own ? 0.25 : 0) + Math.min(0.15, (t.match(/!/g)?.length ?? 0) * 0.05);
+    const yes = interrupts({ h: hum.likeness, seed: hum.seed, n: item.seq, speaker: { actor: item.ref, arousal: a.arousal + heatOf(text), words: text.split(/\s+/).length }, other: { actor: next.ref, arousal: o.arousal + heatOf(next.text) }, now: nowRel, ...(this.lastInterruptAt !== undefined ? { lastInterruptAt: this.lastInterruptAt } : {}) });
+    if (!yes) return undefined;
+    const cut = cutLine(text, hum.seed, item.ref, item.seq);
+    if (!cut) return undefined;
+    this.lastInterruptAt = nowRel;
+    // The answer plays next, earlier than this program planned: its bubble starts in its own program, not in a step of this one that would now fire too late.
+    this.pretyped.delete(next.id);
+    const holdMs = Math.round(readingMs(text, this.cfg) * (cut.length / Math.max(text.length, 1))) + Math.round(hbetween(hum.seed, HT.turn.overlapGapMs, "cine-overlap", item.ref, item.seq));
+    return { cut, holdMs };
   }
 
   private lastVignetteAt = Number.NEGATIVE_INFINITY;

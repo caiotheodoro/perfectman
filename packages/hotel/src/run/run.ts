@@ -57,6 +57,8 @@ import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
 import { DRAMA_LOG_FILE, GUARD_LOG_FILE, NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
 import { RunDramaLog, dramaLogEnabled } from "./drama-log.js";
+import { BODY_LOG_FILE, RunBodyLog, bodyLogEnabled } from "./body-log.js";
+import { HUMAN_PLAN_PREFIX, HumanBody, resolveHumanLikeness, seedOf } from "../embodiment/human/index.js";
 import { GuardLog, guardLogEnabled } from "./guard-log.js";
 import type { ReplayManifest } from "./artifacts.js";
 import { MEMORY_ID_PREFIX, PlayerMemory } from "./player-memory.js";
@@ -275,6 +277,12 @@ export class Run {
   private guardLog: GuardLog | undefined;
   /** What the drama planner saw at each consult, streamed to `drama-log.jsonl` (drama-log.ts, errata P9); absent when `PERFECTMAN_DRAMA_LOG=0`. */
   private dramaLog: RunDramaLog | undefined;
+  /** The human layer (cinematic revamp B5): gaze, gesture, backchannel, turn-taking, conversation distance. Built at launch; `human_likeness` 0 makes it inert. */
+  private human: HumanBody | undefined;
+  /** What the human layer decided at each moment, streamed to `body-log.jsonl` (body-log.ts); absent at human_likeness 0 or with `PERFECTMAN_BODY_LOG=0`. */
+  private bodyLog: RunBodyLog | undefined;
+  /** The latest feelings of each actor from the commit seam, for the human layer's reaction latency, interruptions and reactions. */
+  private readonly agentStates = new Map<string, AgentState>();
   /** The actors' lines and moves as the script-likeness metrics read them: the run's score at the end, and the progress the scene spine gates on. */
   private scene: SceneRecorder | undefined;
   /** The spine of a scene with no authored beats (scene-recorder.ts); absent when the scene has beats, drama is off, or the cast is one. */
@@ -475,6 +483,12 @@ export class Run {
       this.dramaLog = new RunDramaLog(join(hotel.dataDir, "runs", String(this.id), DRAMA_LOG_FILE), () => clock.now() - this.startedAt, (err) =>
         this.d.logger.warn("drama log write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
     }
+    // `human_likeness`: the scene's value (a scenario body key, when the authoring side has one), else PERFECTMAN_HUMAN_LIKENESS, else the default 0.6.
+    const likeness = resolveHumanLikeness((this.body as unknown as { human_likeness?: unknown }).human_likeness as number | undefined);
+    if (likeness > 0 && bodyLogEnabled()) {
+      this.bodyLog = new RunBodyLog(join(hotel.dataDir, "runs", String(this.id), BODY_LOG_FILE), (at) => at - this.startedAt, (err) =>
+        this.d.logger.warn("body log write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
+    }
     link.trackRun(this.id);
 
     this.executor = new BodyExecutor({
@@ -502,6 +516,22 @@ export class Run {
       },
     });
 
+    this.human = new HumanBody({
+      clock,
+      likeness,
+      seed: seedOf(`run-${this.id}`),
+      view: (ref, now) => mirror.view(ref, now),
+      refOfAvatar: (id) => mirror.refOfAvatar(id),
+      isOwn: (ref) => this.agents.has(ref),
+      names: () => new Map([...this.agents].map(([ref, a]) => [ref, a.name])),
+      stateOf: (ref) => this.agentStates.get(ref),
+      send: (cmds) => this.out.send([...cmds]),
+      memory: { get: (ref) => this.memory.get(ref), set: (ref, m) => void this.memory.set(ref, m) },
+      isDead: (ref) => this.dramaSink.isDead(ref),
+      isLocked: (ref) => this.dramaSink.ledger.lockOf(ref) !== undefined,
+      holdMove: (ref) => this.dramaSink.ledger.lockOf(ref) !== undefined,
+      ...(this.bodyLog ? { log: this.bodyLog.write } : {}),
+    });
     this.startDrama();
     this.out = this.executor;
     if (this.params.mode === "cinematic") this.out = this.startCinematic(this.out);
@@ -526,6 +556,8 @@ export class Run {
         return !!va && !!vb && mirror.roomOfRef(a) === mirror.roomOfRef(b) && Math.max(Math.abs(va.tile[0] - vb.tile[0]), Math.abs(va.tile[1] - vb.tile[1])) <= 2;
       },
       onLine: (line) => this.noteLine(line),
+      // A film serializes speech on its own clock, so its turn-taking is the planner's (cine/planner.ts); the gateway's applies to a live room.
+      ...(this.human && this.human.likeness > 0 && this.params.mode !== "cinematic" ? { human: this.human } : {}),
       timing: this.d.timing?.gateway ?? {},
       // The scenario's own ending (goal_end_offered) stops the runtime; the run follows it.
       onStopped: (_id, reason) => {
@@ -552,7 +584,7 @@ export class Run {
     const onConsult: OnConsult = (info) => {
       if (info.addressed) this.waitingOn.add(info.agentId);
       else this.waitingOn.delete(info.agentId);
-      this.gateway.noteConsult(info.agentId, clock.now());
+      this.gateway.noteConsult(info.agentId, clock.now(), info.addressed === true);
     };
     // The runtime's own hotel mode (ADR-0020 to 0025): split pulse with a reserved focus slot, the
     // room speech arbiter, bounded reads, the mirror as the source of each actor's `SpaceView`, and
@@ -680,7 +712,7 @@ export class Run {
       record: this.frames.record,
     });
     // One mechanism: the hub hands every frame of this run to the director first, then to the planner side (ledger, reactions, memory of acts).
-    host.hub.attach(this.id, composeDramaSinks(this.director, this.dramaSink));
+    host.hub.attach(this.id, composeDramaSinks(...(this.human && this.human.likeness > 0 ? [this.director, this.dramaSink, this.human.sink] : [this.director, this.dramaSink])));
   }
 
   /**
@@ -1132,9 +1164,19 @@ export class Run {
       narrator,
       send: (m) => link.send(m),
       logger: this.d.logger,
-      config: { ...this.d.timing?.cine, language },
+      config: { ...this.d.timing?.cine, language, ...(this.human && this.human.likeness > 0 ? { human: { likeness: this.human.likeness, seed: seedOf(`cine-${this.id}`) } } : {}) },
       premise: this.body.title,
       trackSink: this.trackSink.write,
+      // The audience sees the line now: the people in the room react now (not when the line left the gateway, which may be seconds earlier).
+      onLine: (l) => this.onFilmedLine(l),
+      // Approach, then speak: a first line to someone across the room is said at the end of a walk up to them (the walk goes straight to the hotel, not behind the film).
+      beforeLine: (l) => {
+        const to = l.to ?? this.filmAddressees.get(l.ref)?.find((q) => q.text === l.text)?.to;
+        const ap = this.human?.approach(l.ref, to);
+        if (!ap) return undefined;
+        this.executor.send(ap.cmds);
+        return ap.delayMs;
+      },
     });
     return this.cine.wrapExecutor(executor);
   }
@@ -1200,6 +1242,11 @@ export class Run {
     const space = this.space.view(ref, now);
     if (!space) return;
     const mem = noteExchange(this.memory.get(ref) ?? {}, otherRef, now);
+    // With the human layer on, the turn to the other person is made by its reactions (a latency, a glance away on a lie), not at the instant of the line.
+    if (this.human?.on && !otherRef.startsWith("h:") && !ref.startsWith("h:")) {
+      this.memory.set(ref, mem);
+      return;
+    }
     const cmds = planFacing({ space, now }, otherRef, maxTiles);
     this.memory.set(ref, cmds.length > 0 ? updateMemory(mem, cmds, now, space.self?.tile ?? [0, 0]) : mem);
     if (cmds.length > 0) this.out.send(cmds);
@@ -1209,7 +1256,7 @@ export class Run {
    * An addressed line reached the wire: log who it was for, whether they share the room and how far
    * away they stood, so the earshot and facing probes have something to measure (embodiment.md 10).
    */
-  private noteLine(line: { agentId: string; mode: SpeechMode; eventId?: string; room: string }): void {
+  private noteLine(line: { agentId: string; mode: SpeechMode; eventId?: string; room: string; text?: string; cut?: boolean }): void {
     const eventId = line.eventId;
     if (!eventId) return;
     const to = this.addressees.get(eventId);
@@ -1225,6 +1272,14 @@ export class Run {
       // Both turn to each other: the listener (if one of the cast) and the speaker.
       this.faceInterlocutor(to, line.agentId);
       this.faceInterlocutor(line.agentId, to, to.startsWith("h:") ? Number.POSITIVE_INFINITY : undefined);
+      if (line.text !== undefined) {
+        // A film plays the line later, and the reactions wait for it; otherwise they start at the wire.
+        if (this.cine) {
+          const q = this.filmAddressees.get(line.agentId) ?? [];
+          q.push({ text: line.text, to });
+          this.filmAddressees.set(line.agentId, q.slice(-12));
+        } else this.human?.onLine({ speaker: line.agentId, to, text: line.text, mode: line.mode, ...(line.cut ? { cut: true } : {}) });
+      }
     }
     const room = this.space.view(line.agentId, this.d.clock.now())?.room;
     const me = room?.occupants.find((o) => o.ref === line.agentId);
@@ -1237,6 +1292,19 @@ export class Run {
       sameRoom,
       distance: me && them ? Math.max(Math.abs(me.tile[0] - them.tile[0]), Math.abs(me.tile[1] - them.tile[1])) : -1,
     });
+  }
+
+  /** Who each line still waiting to play in the film was for, by speaker: the film's line item does not carry its addressee, the gateway's release did. */
+  private readonly filmAddressees = new Map<string, Array<{ text: string; to: string }>>();
+
+  /** A line played on screen in a cinematic run: the human layer's reactions start here, with the addressee the gateway noted when the line left the queue. */
+  private onFilmedLine(l: { ref: string; to?: string; text: string; mode: SpeechMode; cut: boolean }): void {
+    const queue = this.filmAddressees.get(l.ref) ?? [];
+    const stem = l.cut ? l.text.replace(/[—\s]+$/u, "") : l.text;
+    const i = queue.findIndex((q) => q.text === l.text || (l.cut && q.text.startsWith(stem)));
+    const to = l.to ?? (i >= 0 ? queue[i]!.to : undefined);
+    if (i >= 0) queue.splice(i, 1);
+    this.human?.onLine({ speaker: l.ref, ...(to ? { to } : {}), text: l.text, mode: l.mode, ...(l.cut ? { cut: true } : {}) });
   }
 
   private chooseMode(agentId: string, content: string, committed: SpeechMode): SpeechMode {
@@ -1312,6 +1380,7 @@ export class Run {
     if (mine.some((e) => e.type === "message_sent" || e.type === "reply_sent")) this.noOpStreak.set(ref, 0);
     else if (mine.some((e) => e.type === "no_op_recorded")) this.noOpStreak.set(ref, (this.noOpStreak.get(ref) ?? 0) + 1);
     this.arousal.set(ref, info.agentState.coreMood.arousal);
+    this.agentStates.set(ref, info.agentState);
     if (info.actionEmotions) this.tendencies.set(ref, info.actionEmotions);
     // A paused run commits nothing new to the body: no planning until it resumes.
     if (this.state === "paused") return;
@@ -1348,6 +1417,7 @@ export class Run {
       memory: mem,
       noOpStreak: this.noOpStreak.get(ref) ?? 0,
       drives: { goalText: this.goalText(ref), ...(motive ? { motive } : {}), homeRoom: this.home },
+      ...optional("human", this.human?.planCtx(ref)),
       ...optional("actionEmotions", this.tendencies.get(ref)),
       ...(carried ?? {}),
     });
@@ -1377,6 +1447,7 @@ export class Run {
       const space = this.space.view(ref, now);
       if (!state || !space) continue;
       this.arousal.set(ref, state.coreMood.arousal);
+      this.agentStates.set(ref, state);
       this.planFor(ref, state, [], space);
     }
     this.plannedThisPulse.clear();
@@ -1536,7 +1607,7 @@ export class Run {
     if (!held) return;
     // Typing again, so the line lands after the persona's delay, as any other reply.
     // The walk already cost the time a typing bubble would: the line lands right away.
-    this.gateway.noteConsult(ref, this.d.clock.now() - DEFERRED_TYPING_HEAD_START_MS);
+    this.gateway.noteConsult(ref, this.d.clock.now() - DEFERRED_TYPING_HEAD_START_MS, true);
     try {
       const resolved = await this.port.resolveDeferred(ref, held.intent);
       if (resolved.committedEvents.some((e) => e.type === "repetition_blocked")) this.guardHits.set("held_repeat", (this.guardHits.get("held_repeat") ?? 0) + 1);
@@ -1582,6 +1653,8 @@ export class Run {
       await this.releaseSpeech(agentId);
       return;
     }
+    // The human layer's own walks (a step back, a pace, a ring of people) are not worth a model call.
+    if (planId.startsWith(HUMAN_PLAN_PREFIX)) return;
     // A salient wake: the actor looks around on arrival (reason body_arrived).
     this.requestFocused([agentId], "body_arrived");
   }
@@ -1858,6 +1931,8 @@ export class Run {
       await this.trackSink?.flush();
       await this.guardLog?.flush();
       await this.dramaLog?.flush();
+      this.human?.dispose();
+      await this.bodyLog?.flush();
 
       // Walk-out (bounded). When the hotel ended the run it walks them out itself; a dead link cannot.
       if (!opts.byHotel && link.connected) await this.walkOut();

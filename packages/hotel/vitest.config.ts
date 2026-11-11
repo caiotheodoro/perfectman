@@ -6,6 +6,8 @@ export default defineConfig({
     name: "hotel",
     include: ["src/**/*.test.ts", "scripts/**/*.test.ts"],
     environment: "node",
+    // The suite pins the body as it was before the human layer (cinematic revamp B5): a test that wants the layer builds it, or stubs this variable.
+    env: { PERFECTMAN_HUMAN_LIKENESS: "0" },
   },
   resolve: {
     alias: {

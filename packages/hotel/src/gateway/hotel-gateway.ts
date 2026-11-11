@@ -2,6 +2,7 @@ import type { BodyCommand, ChannelType, EndReason, EndingOffer, OperatorEvent, R
 import { isEngineAuthoredMotive } from "@perfectman/shared";
 import type { DeliveryMessage, IBodyGateway, IDeliveryGateway } from "@perfectman/server/hotel";
 import type { Clock, TimerHandle } from "../clock/clock.js";
+import type { GatewayHuman } from "../embodiment/human/human-body.js";
 import type { PlannedCommand } from "../embodiment/types.js";
 import { stripBotOutput } from "../util/text.js";
 
@@ -60,8 +61,13 @@ export type GatewayDeps = {
   onStopped?(simulationId: string, reason?: EndReason, offer?: EndingOffer): void;
   /** A body command was blocked at delivery (`not_in_earshot`). */
   onBlocked?(agentId: string, code: "not_in_earshot"): void;
-  /** A line left the room queue for the wire: the frame log notes who it was aimed at and how far away they stood. */
-  onLine?(line: { agentId: string; mode: SpeechMode; eventId?: string; room: RoomId }): void;
+  /** A line left the room queue for the wire: the frame log notes who it was aimed at and how far away they stood. `text` is what the room saw (a line cut by an interruption ends in a dash). */
+  onLine?(line: { agentId: string; mode: SpeechMode; eventId?: string; room: RoomId; text?: string; cut?: boolean }): void;
+  /**
+   * The human layer's turn-taking (cinematic revamp B5): a reaction latency before the typing bubble comes up, typing time in proportion to the line with jitter and a
+   * hesitation, a line talked over, a walk up to a far addressee before a first line. Absent or at h = 0 the gateway is what it was.
+   */
+  human?: GatewayHuman;
 };
 
 type Item = {
@@ -77,6 +83,8 @@ type Item = {
   landAt: number;
   room: RoomId;
   eventId?: string;
+  /** The line was queued under the human layer's timing (the typing bubble is its own to start and stop). */
+  humanTyped?: boolean;
 };
 
 type RoomQueue = { items: Item[]; lastLineAt: number; timer: TimerHandle | null };
@@ -102,6 +110,9 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
   private readonly timing: GatewayTiming;
   private readonly consultAt = new Map<string, number>();
   private readonly typing = new Set<string>();
+  /** The human layer's reaction latency of the consult in flight, and the timers that bring the bubble up (and drop it for a hesitation). */
+  private readonly think = new Map<string, number>();
+  private readonly typingTimers = new Map<string, TimerHandle[]>();
   private readonly huddles = new Map<string, Set<string>>();
   private readonly queues = new Map<RoomId, RoomQueue>();
   private pulseStartedAt: number | undefined;
@@ -139,11 +150,41 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     this.pulseStartedAt = at;
   }
 
-  /** `onConsult`: a generate task took its slot. Typing starts here, so it overlaps model latency. */
-  noteConsult(agentId: string, at: number): void {
+  /**
+   * `onConsult`: a generate task took its slot. Typing starts here, so it overlaps model latency. Under the human layer a cast-to-cast turn first spends a
+   * reaction latency (by feeling) before the bubble comes up; an addressed consult (a person is waiting) shows it at once, as it always did.
+   */
+  noteConsult(agentId: string, at: number, addressed = false): void {
     if (this.closed) return;
     this.consultAt.set(agentId, at);
+    this.clearTypingTimers(agentId);
+    this.think.delete(agentId);
+    const h = this.deps.human;
+    if (h && h.likeness > 0 && !addressed) {
+      const cast = this.deps.cast.get(agentId);
+      const [lo, hi] = cast?.responseDelayMs ?? [600, 2500];
+      const think = h.think(agentId, lo + this.deps.rng() * Math.max(0, hi - lo));
+      if (think !== undefined) {
+        this.think.set(agentId, think);
+        this.timerFor(agentId, think, () => this.bubble(agentId, true));
+        return;
+      }
+    }
     this.setTyping(agentId, true);
+  }
+
+  private timerFor(agentId: string, ms: number, fn: () => void): void {
+    const handle = this.deps.clock.setTimer(() => {
+      const list = this.typingTimers.get(agentId);
+      if (list) this.typingTimers.set(agentId, list.filter((t) => t !== handle));
+      fn();
+    }, Math.max(0, ms));
+    this.typingTimers.set(agentId, [...(this.typingTimers.get(agentId) ?? []), handle]);
+  }
+
+  private clearTypingTimers(agentId: string): void {
+    for (const t of this.typingTimers.get(agentId) ?? []) t.cancel();
+    this.typingTimers.delete(agentId);
   }
 
   /** Typing off now: the line was held back (a deferral) or dropped. */
@@ -151,7 +192,13 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     this.setTyping(agentId, false);
   }
 
+  /** Typing on or off. Off also cancels the bubble's pending timers (a think time still running, a hesitation's return): the line it was for is gone. */
   private setTyping(agentId: string, on: boolean): void {
+    if (!on) this.clearTypingTimers(agentId);
+    this.bubble(agentId, on);
+  }
+
+  private bubble(agentId: string, on: boolean): void {
     if (on === this.typing.has(agentId)) return;
     if (on) this.typing.add(agentId);
     else this.typing.delete(agentId);
@@ -159,7 +206,10 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
   }
 
   private endTypingSoon(agentId: string): void {
-    if (!this.typing.has(agentId)) return;
+    if (!this.typing.has(agentId)) {
+      this.clearTypingTimers(agentId);
+      return;
+    }
     const now = this.deps.clock.now();
     const at = (this.consultAt.get(agentId) ?? now) + this.timing.minTypingMs;
     if (at <= now) return this.setTyping(agentId, false);
@@ -222,9 +272,40 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
     // A whisper back to the person who whispered is an answer: somebody is waiting, so it jumps ambient talk.
     const answer = mode === "whisper" && message.whisperTo !== undefined && message.whisperTo === to;
     const priority: 0 | 1 = answer || message.kind === "reply" || message.salience === "high" || message.salience === "critical" ? 1 : 0;
-    const landAt = Math.max(now, base + Math.min(priority === 1 ? Math.min(this.timing.addressedCapMs, this.timing.capMs) : this.timing.capMs, sampled + this.timing.perCharMs * text.length));
+    let landAt = Math.max(now, base + Math.min(priority === 1 ? Math.min(this.timing.addressedCapMs, this.timing.capMs) : this.timing.capMs, sampled + this.timing.perCharMs * text.length));
+    // The human layer's timing: only for a cast-to-cast line that was queued under its think time (an addressed reply keeps the old pace).
+    const human = this.deps.human;
+    const think = this.think.get(message.agentId);
+    this.think.delete(message.agentId);
+    let humanTyped = false;
+    if (human && human.likeness > 0 && priority === 0 && think !== undefined && !huddle) {
+      const plan = human.typing(message.agentId, text, think, to);
+      if (plan) {
+        humanTyped = true;
+        landAt = Math.max(now, base + plan.totalMs);
+        const start = base + plan.thinkMs;
+        this.clearTypingTimers(message.agentId);
+        if (start > now) this.timerFor(message.agentId, start - now, () => this.bubble(message.agentId, true));
+        else this.bubble(message.agentId, true);
+        if (plan.hesitate) {
+          const off = start + plan.hesitate.afterMs;
+          if (off > now) {
+            this.timerFor(message.agentId, off - now, () => this.bubble(message.agentId, false));
+            this.timerFor(message.agentId, off + plan.hesitate.forMs - now, () => this.bubble(message.agentId, true));
+          }
+        }
+      }
+    }
+    // Walk up before a first line to someone across the room.
+    if (human && human.likeness > 0 && !huddle && mode === "say") {
+      const ap = human.approach(message.agentId, to);
+      if (ap) {
+        this.deps.executor.send(ap.cmds);
+        landAt = Math.max(landAt, now + Math.min(ap.delayMs, 4500));
+      }
+    }
     const q = this.queue(roomId);
-    q.items.push({ seq: ++this.seq, huddle, agentId: message.agentId, text, mode, ...(to ? { to } : {}), priority, landAt, room: roomId, ...(message.eventId ? { eventId: message.eventId } : {}) });
+    q.items.push({ seq: ++this.seq, huddle, agentId: message.agentId, text, mode, ...(to ? { to } : {}), priority, landAt, room: roomId, ...(humanTyped ? { humanTyped } : {}), ...(message.eventId ? { eventId: message.eventId } : {}) });
     // Overflow: the oldest ambient line first, then (as a last resort) the oldest of anything.
     while (q.items.length > this.timing.roomQueueCap) {
       const ambient = q.items.filter((i) => i.priority === 0).sort((a, b) => a.seq - b.seq)[0];
@@ -300,16 +381,32 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
   private release(q: RoomQueue, item: Item, now: number): void {
     q.items = q.items.filter((i) => i !== item);
     q.lastLineAt = now;
+    this.clearTypingTimers(item.agentId);
     this.typing.delete(item.agentId);
     this.deps.executor.send([{ agentId: item.agentId, cmd: "typing", on: false }]);
-    const chat = { agentId: item.agentId, cmd: "chat" as const, mode: item.mode, text: item.text, ...(item.to ? { to: item.to } : {}) };
+    // A heated line another heated actor already has an answer ready for is talked over: it trails off in a dash and the answer lands on top of it.
+    let shown = item.text;
+    let cutShort = false;
+    const human = this.deps.human;
+    if (human && human.likeness > 0 && item.mode === "say" && !item.huddle) {
+      const other = q.items.filter((i) => i.agentId !== item.agentId && i.mode === "say" && !i.huddle && i.landAt <= now + 2000).sort((a, b) => a.landAt - b.landAt || a.seq - b.seq)[0];
+      const cut = other ? human.interrupt({ agentId: item.agentId, text: item.text, ...(item.to ? { to: item.to } : {}) }, { agentId: other.agentId, ...(other.to ? { to: other.to } : {}) }, now) : undefined;
+      if (other && cut) {
+        shown = cut.text;
+        cutShort = true;
+        // The spacing rule would hold the interrupter for the rest of the window: it lands after the overlap gap instead.
+        other.landAt = Math.min(other.landAt, now + cut.gapMs);
+        q.lastLineAt = now - this.timing.roomSpacingMs + cut.gapMs;
+      }
+    }
+    const chat = { agentId: item.agentId, cmd: "chat" as const, mode: item.mode, text: shown, ...(item.to ? { to: item.to } : {}) };
     let sent = true;
     if (this.deps.executor.sendChat) sent = this.deps.executor.sendChat(chat);
     else this.deps.executor.send([chat]);
     // A line the hotel never received is not a delivered line.
     if (sent) {
       this.stats.delivered++;
-      this.deps.onLine?.({ agentId: item.agentId, mode: item.mode, room: item.room, ...(item.eventId ? { eventId: item.eventId } : {}) });
+      this.deps.onLine?.({ agentId: item.agentId, mode: item.mode, room: item.room, text: shown, ...(cutShort ? { cut: true } : {}), ...(item.eventId ? { eventId: item.eventId } : {}) });
     }
     else this.stats.undeliveredCommitted++;
   }
@@ -357,6 +454,7 @@ export class HotelGateway implements IDeliveryGateway, IBodyGateway {
   /** Drops everything queued; lines already released are with the hotel. */
   dispose(): void {
     this.closed = true;
+    for (const id of [...this.typingTimers.keys()]) this.clearTypingTimers(id);
     for (const q of this.queues.values()) q.timer?.cancel();
     this.queues.clear();
     for (const agentId of [...this.typing]) this.deps.executor.send([{ agentId, cmd: "typing", on: false }]);

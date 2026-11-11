@@ -4,6 +4,7 @@ import {
   DramaBody,
   DramaLog,
   DramaDirector,
+  HumanBody,
   MockActMemory,
   SceneRecorder,
   SceneSpine,
@@ -14,16 +15,18 @@ import {
   isDramaFrame,
   mirrorWorld,
   mockAct,
+  moodOfState,
   plan,
   planBlock,
   planFace,
   planProp,
+  readHostility,
   resolveRunDrama,
   routeDramaFrame,
   updateMemory,
   validateActCmd,
 } from "@perfectman/hotel/drama";
-import type { ActSend, Clock, DramaDecision, SheetSummary, DramaLogLine, DramaFrame, DramaFrameSink, DramaLink, DramaMode, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
+import type { ActSend, Clock, DramaDecision, SheetSummary, HumanLogEntry, HumanProp, DramaLogLine, DramaFrame, DramaFrameSink, DramaLink, DramaMode, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
 import { BodyIntentSchema } from "@perfectman/shared";
 import type { ActVerb, AgentState, BeatSheet, BlockedReason, BodyCommand, BodyHandleMap, BodyIntent, SpineObjective, Tile } from "@perfectman/shared";
 import { extractDramaEvents } from "../drama/index.js";
@@ -35,6 +38,10 @@ import { FakeActHotel } from "./fake-act-hotel.js";
 import type { ActFrame, ActWire, ChipAnswer, ChipQuestion } from "./fake-act-hotel.js";
 import { FakeGridHotel } from "./fake-grid-hotel.js";
 import { LOUNGE } from "./layouts.js";
+import type { RoomLayout } from "./layouts.js";
+import { SimFilm } from "../humanlike/sim-film.js";
+import type { SimFilmDeps } from "../humanlike/sim-film.js";
+import type { HumanTrace, TraceEvent } from "../humanlike/trace.js";
 import { GridActorSpace } from "./grid-actor-space.js";
 
 /**
@@ -135,7 +142,23 @@ export type SimConfig = {
     to?: string;
     /** `false`: the line is spoken (on the grid, in the recorder the spine reads) but the grievance ledger and the spine's look at the evidence never see it (errata P9: a live run's talk whose addressees are not on record). Default: read. */
     read?: boolean;
+    /** Authored (a beat sheet's note): the speaker is lying in this line, or the line reveals something. The human layer's gaze and witnesses read them. */
+    lie?: boolean;
+    reveal?: boolean;
   }>;
+  /** The room, in place of the lounge (the Terraço of run 63, for the human-likeness preview). The actors' `tile`s are in it. */
+  layout?: RoomLayout;
+  /** Actors that start seated, by ref: the furniture id they sit on (a `sit` is sent at the start). */
+  seated?: Readonly<Record<string, number>>;
+  /**
+   * The human layer (cinematic revamp B5): `likeness` is `human_likeness` (0 = the body as it was). The dialogue then plays on a film (the real shot planner), with typing
+   * time by line length, a pause by feeling and talk-over, and the people react to each line (gaze, gesture, silent answers). Absent: the sim as it was. `props` are things the
+   * lines point at; `appraise` stands in for the engine's chat-driven mood update (a hostile line heats the one it is for), which the sim does not have.
+   * `film: true` with `likeness` 0 plays the same film at the old timing: the baseline arm.
+   */
+  humanLike?: { likeness: number; seed?: number; props?: readonly HumanProp[]; film?: boolean; appraise?: boolean; cine?: Partial<import("@perfectman/hotel/drama").CineConfig> };
+  /** Records where everyone is and faces, every 100 ms, into the result's trace (the human-likeness metrics read it). */
+  trace?: boolean;
   /**
    * The scene spine of a run with no authored beats (errata P8), as a run builds it: four steps, the turn and the decision opening the ladder for a cast that was heard
    * heating up (`SpineEscalation`, the run's own class on the sim's clock). Absent: no spine, the sim as it was. `cast` gives an actor's private objective (people who share
@@ -203,6 +226,12 @@ export type SimResult = {
   dramaLog: DramaLogLine[];
   /** The scene spine when the config had one (errata P8): the step it ended on, each advance (ms on the sim clock, `progress` or `released`) and what it opened of the ladder. */
   spine?: { step: number; advances: Array<{ step: number; atMs: number; via: string }>; unlocks?: ReturnType<SpineEscalation["manifest"]> };
+  /** What the run looked like, for the human-likeness metrics (`SimConfig.trace`). */
+  trace?: HumanTrace;
+  /** The human layer's decisions (`body-log.jsonl`), when it was on. */
+  bodyLog: Array<HumanLogEntry & { t_ms: number }>;
+  /** The film's programs: when each line's typing came up and when it played, in sim ms from the start. */
+  film?: Array<{ id: string; ref: string; startedAt: number; releasedAt?: number; typingAt?: number; cut: boolean }>;
 };
 
 /** Timers on the sim's own clock. */
@@ -253,7 +282,8 @@ function defaultTiles(n: number): Tile[] {
 
 export function runDramaSim(config: SimConfig): SimResult {
   const dramaOn = config.dramaOn !== false;
-  const grid = new FakeGridHotel({ startMs: 1_000_000, snapshotEveryMs: 60_000, layouts: [PARTY] });
+  const party: RoomLayout = config.layout ? { ...config.layout, id: String(ROOM), exits: {} } : PARTY;
+  const grid = new FakeGridHotel({ startMs: 1_000_000, snapshotEveryMs: 60_000, layouts: [party] });
   const clock = new SimClock(grid);
   const space = new GridActorSpace(grid, RUN);
   const lines: FrameLine[] = [];
@@ -289,6 +319,7 @@ export function runDramaSim(config: SimConfig): SimResult {
     const ref = grid.humanEnter(String(h.id), h.name, String(ROOM), h.tile);
     space.assign(ref, h.id);
   }
+  for (const [ref, furniId] of Object.entries(config.seated ?? {})) void grid.dispatch([{ agentId: ref, cmd: "sit", furniId }]);
   log("out", { t: "run_start", run: RUN, room: ROOM, scenario_version: 31, lease: LEASE, mode: "default", cap_actors: 12, admin: { id: 27, name: "a" } }, startMs - 100);
   config.actors.forEach((a, i) => {
     const t = grid.model().rooms.get(String(ROOM))?.occupants.get(a.ref)?.tile ?? [0, 0];
@@ -432,7 +463,48 @@ export function runDramaSim(config: SimConfig): SimResult {
     ...(config.tuning ? { assist: config.tuning.origination.askAfterRefusal } : {}),
     ...(config.tuning ? { follow: { windowMs: config.tuning.origination.climb.followWindowMs, everyMs: config.tuning.origination.climb.followEveryMs, gapMs: config.tuning.origination.climb.gapMs, maxRung: config.tuning.origination.climb.maxRung } } : {}),
   });
-  sinkRef.current = composeDramaSinks(director, body);
+  // ---- the human layer (cinematic revamp B5): absent at likeness 0, so that arm is the sim as it was ----
+  const hl = config.humanLike;
+  const bodyLog: SimResult["bodyLog"] = [];
+  const heat = new Map<string, Array<{ at: number; ar: number; val: number; shame: number }>>();
+  const clamp01 = (n: number): number => Math.min(1, Math.max(0, n));
+  /** The actor's feelings with what has been said to it lately (a stand-in for the engine's chat-driven update, which the sim does not have). */
+  const appraised = (ref: string): AgentState | undefined => {
+    const st = states.get(ref);
+    if (!st || !hl?.appraise) return st;
+    const now = grid.now();
+    let ar = 0;
+    let val = 0;
+    let shame = 0;
+    for (const h of heat.get(ref) ?? []) {
+      const k = Math.exp(-(now - h.at) / 25_000);
+      ar += h.ar * k;
+      val += h.val * k;
+      shame += h.shame * k;
+    }
+    return { ...st, coreMood: { ...st.coreMood, arousal: clamp01(st.coreMood.arousal + ar), valence: Math.min(1, Math.max(-1, st.coreMood.valence + val)) }, socialEmotions: { ...st.socialEmotions, shame: clamp01(st.socialEmotions.shame + shame) } };
+  };
+  const hb =
+    hl && hl.likeness > 0
+      ? new HumanBody({
+          clock,
+          likeness: hl.likeness,
+          seed: hl.seed ?? config.seed,
+          view: (ref, now) => space.view(ref, now),
+          refOfAvatar: (id) => space.refOfAvatar(id),
+          isOwn: (ref) => slotOf.has(ref),
+          names: () => new Map(config.actors.map((a) => [a.ref, a.name])),
+          stateOf: (ref) => appraised(ref),
+          send: (cmds) => send(cmds),
+          memory: { get: (ref) => plannerMemory.get(ref), set: (ref, m) => void plannerMemory.set(ref, m) },
+          isDead: (ref) => body.isDead(ref),
+          isLocked: (ref) => body.ledger.lockOf(ref) !== undefined,
+          holdMove: (ref) => body.ledger.lockOf(ref) !== undefined,
+          ...(hl.props ? { props: () => hl.props! } : {}),
+          log: ({ at, ...e }) => void bodyLog.push({ ...e, t_ms: at - startMs }),
+        })
+      : undefined;
+  sinkRef.current = composeDramaSinks(...(hb ? [director, body, hb.sink] : [director, body]));
   if (dramaOn) {
     sinkRef.current.onSession(SESSION);
     space.setDrama(true);
@@ -520,6 +592,7 @@ export function runDramaSim(config: SimConfig): SimResult {
       rng,
       handles,
       memory: plannerMemory.get(ref) ?? plannerMemory.set(ref, {}).get(ref)!,
+      ...(hb ? { human: hb.planCtx(ref) } : {}),
       // An own-walk turn carries no feelings, so the body does not ask the director on it (the director's passive consult is the model's committed turn, not every walk).
       ...(own ? {} : { actionEmotions: computeActionEmotions(state.coreMood, state.socialEmotions, state.relationalStates) }),
     };
@@ -668,20 +741,66 @@ export function runDramaSim(config: SimConfig): SimResult {
 
   const talk = [...(config.dialogue ?? [])].sort((a, b) => a.atMs - b.atMs);
   /** One line of the seam: on the wire as chat, and in the ledger as a committed line (names found in the words are who it is about). */
-  function say(l: NonNullable<SimConfig["dialogue"]>[number]): void {
+  function say(l: NonNullable<SimConfig["dialogue"]>[number], cut = false, shown: string = l.text): void {
     if (body.isDead(l.actor)) return;
     const folded = (t: string): string => t.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
     const text = folded(l.text);
     const mentioned = actorRefs.filter((r) => r !== l.actor && new RegExp(`(^|[^a-z0-9])${folded(nameOf(r))}($|[^a-z0-9])`).test(text));
-    speech.push({ atMs: grid.now() - startMs, actor: l.actor, text: l.text });
-    log("in", { t: "actor_cmd", cid: ++cid, run: RUN, lease: LEASE, actor: slotOf.get(l.actor)!, cmd: { k: "chat", mode: "say", text: l.text, ...(l.to ? { to: slotOf.get(l.to) ?? space.avatarId(l.to) } : {}) } });
-    void grid.dispatch([{ agentId: l.actor, cmd: "chat", mode: "say", text: l.text, ...(l.to ? { to: l.to } : {}) }]);
+    speech.push({ atMs: grid.now() - startMs, actor: l.actor, text: shown });
+    log("in", { t: "actor_cmd", cid: ++cid, run: RUN, lease: LEASE, actor: slotOf.get(l.actor)!, cmd: { k: "chat", mode: "say", text: shown, ...(l.to ? { to: slotOf.get(l.to) ?? space.avatarId(l.to) } : {}) } });
+    void grid.dispatch([{ agentId: l.actor, cmd: "chat", mode: "say", text: shown, ...(l.to ? { to: l.to } : {}) }]);
+    if (hl?.appraise) {
+      const kind = readHostility(l.text).own;
+      if (kind) {
+        const at = grid.now();
+        heat.set(l.actor, [...(heat.get(l.actor) ?? []), { at, ar: 0.25, val: -0.15, shame: 0 }]);
+        if (l.to) heat.set(l.to, [...(heat.get(l.to) ?? []), { at, ar: 0.35, val: -0.35, shame: kind === "accusation" || kind === "blackmail" ? 0.35 : 0.1 }]);
+      }
+    }
+    hb?.onLine({ speaker: l.actor, ...(l.to ? { to: l.to } : {}), text: shown, ...(l.lie !== undefined ? { lie: l.lie } : {}), ...(l.reveal !== undefined ? { reveal: l.reveal } : {}), ...(cut ? { cut: true } : {}) });
     recorder.say(nameOf(l.actor), l.text, grid.now() - startMs);
     if (dramaOn && l.read !== false) body.noteSpoken({ speaker: l.actor, content: l.text, addressees: l.to ? [l.to] : [], mentioned });
     if (l.read !== false) escalation?.onLine(grid.now());
     if (!escalation) spineScene?.advance(grid.now());
   }
 
+  // The dialogue plays on a film when asked: the real shot planner times each line's typing bubble and its release.
+  const flagsOf = new Map<string, NonNullable<SimConfig["dialogue"]>[number]>();
+  const film = hl?.film
+    ? new SimFilm({
+        now: () => grid.now(),
+        setTimer: (fn, ms) => clock.setTimer(fn, ms),
+        room: ROOM,
+        world: {
+          avatarId: (ref) => space.avatarId(ref),
+          nameOf: (ref) => nameOf(ref),
+          roleOf: () => undefined,
+          tileOf: (ref) => grid.model().rooms.get(String(ROOM))?.occupants.get(ref)?.tile,
+          roomOf: () => ROOM,
+          occupants: () => actorRefs,
+          members: () => actorRefs,
+          roomName: () => party.name,
+          moodOf: (ref) => {
+            const st = appraised(ref);
+            return st ? moodOfState(st) : undefined;
+          },
+        },
+        config: { ...(hl.likeness > 0 ? { human: { likeness: hl.likeness, seed: hl.seed ?? config.seed } } : {}), ...hl.cine },
+        typing: (ref, on) => void grid.dispatch([{ agentId: ref, cmd: "typing", on }]),
+        beforeLine: (l) => {
+          const ap = hb?.approach(l.ref, l.to);
+          if (!ap) return undefined;
+          send(ap.cmds);
+          return ap.delayMs;
+        },
+        release: (r) => {
+          const src = flagsOf.get(`${r.ref}\u0000${r.full}`);
+          say({ atMs: 0, actor: r.ref, text: r.full, ...(r.to ? { to: r.to } : {}), ...(src?.read !== undefined ? { read: src.read } : {}), ...(src?.lie !== undefined ? { lie: src.lie } : {}), ...(src?.reveal !== undefined ? { reveal: src.reveal } : {}) }, r.cut, r.text);
+        },
+      } satisfies SimFilmDeps)
+    : undefined;
+  /** Lines reach the film this long before they would have landed: the engine finishes a line before the audience sees it. */
+  const FILM_LEAD_MS = 1000;
   const lastTurnAt = new Map<string, number>();
   const sweepEvery = config.sweep?.everyMs ?? 0;
   let sweepAt = sweepEvery > 0 ? startMs + 1000 + sweepEvery : Infinity;
@@ -689,9 +808,20 @@ export function runDramaSim(config: SimConfig): SimResult {
 
   const settleMs = 12_000;
   const stopAt = end + settleMs;
+  const traceEvents: TraceEvent[] = [];
+  const lastPos = new Map<string, string>();
+  const sampleTrace = (): void => {
+    for (const p of grid.model().rooms.get(String(ROOM))?.occupants.values() ?? []) {
+      const key = `${p.tile[0]},${p.tile[1]},${p.dir},${p.state}`;
+      if (lastPos.get(p.ref) === key) continue;
+      lastPos.set(p.ref, key);
+      traceEvents.push({ t: grid.now() - startMs, kind: "pos", ref: p.ref, tile: [p.tile[0], p.tile[1]], dir: p.dir, state: p.state });
+    }
+  };
   while (grid.now() < stopAt) {
     grid.advance(50);
     const now = grid.now();
+    if (config.trace) sampleTrace();
     clock.runDue();
     acts.advanceTo(now);
     while (controls.length > 0 && startMs + controls[0]!.atMs <= now) {
@@ -702,7 +832,15 @@ export function runDramaSim(config: SimConfig): SimResult {
     }
     if (script && now >= end) script.stop();
     if (sheet && now >= end) sheet.stop();
-    while (talk.length > 0 && startMs + talk[0]!.atMs <= now && now < end) say(talk.shift()!);
+    while (talk.length > 0 && startMs + talk[0]!.atMs - (film ? FILM_LEAD_MS : 0) <= now && now < end) {
+      const l = talk.shift()!;
+      if (!film) {
+        say(l);
+        continue;
+      }
+      flagsOf.set(`${l.actor}\u0000${l.text}`, l);
+      film.enqueue({ ref: l.actor, ...(l.to ? { to: l.to } : {}), text: l.text });
+    }
     if (config.wander && now >= wanderAt && now < end) {
       const w = config.wander;
       wanderAt = now + w.everyMs;
@@ -735,5 +873,36 @@ export function runDramaSim(config: SimConfig): SimResult {
   const events = extractDramaEvents(frames);
   const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs, ...(config.humansTargetable === true ? { chiplessHumans: true } : {}) });
   dramaLog.close();
-  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters(), dramaLog: dramaLines.map((l) => JSON.parse(l) as DramaLogLine), ...(sheet && config.sheet ? { sheet: { sheet: config.sheet, summary: sheet.summary(), stage, reports: sheetReports } } : {}), ...(spineScene ? { spine: { step: spineScene.step, advances: spineScene.advances.map((a) => ({ step: a.step, atMs: a.atMs, via: a.via })), ...(escalation ? { unlocks: escalation.manifest(startMs) } : {}) } } : {}) };
+  hb?.dispose();
+  let trace: HumanTrace | undefined;
+  if (config.trace) {
+    const events: TraceEvent[] = [...traceEvents];
+    for (const f of grid.frameLog().frames) {
+      const t = f.atMs - startMs;
+      const d = f.data;
+      if (f.kind === "typing" && f.dir === "in") events.push({ t, kind: "typing", ref: String(d["ref"]), on: d["on"] === true });
+      else if (f.kind === "chat" && f.dir === "in") events.push({ t, kind: "chat", ref: String(d["agentId"]), text: String(d["text"] ?? ""), mode: String(d["mode"] ?? "say"), ...(typeof d["toRef"] === "string" ? { to: d["toRef"] as string } : {}) });
+      else if (f.kind === "avatar_action" && f.dir === "in") {
+        const a = String(d["a"] ?? "");
+        if (a.startsWith("face:")) events.push({ t, kind: "expression", ref: String(d["agentId"]), face: a.slice(5) });
+        else if (["wave", "thumbs", "laugh", "sign", "blow", "dance"].includes(a)) events.push({ t, kind: "gesture", ref: String(d["agentId"]), a, ...(typeof d["style"] === "number" ? { style: d["style"] as number } : {}) });
+      } else if (f.kind === "actor_cmd" && f.dir === "out") {
+        const cmd = String(d["cmd"] ?? "");
+        events.push({ t, kind: "cmd", ref: String(d["agentId"]), cmd: cmd === "gesture" ? `action:${String(d["a"])}` : cmd });
+      }
+    }
+    events.sort((a, b) => a.t - b.t);
+    const firstChat = events.find((e) => e.kind === "chat")?.t ?? 0;
+    const lastAt = events.reduce((m, e) => Math.max(m, e.t), 0);
+    trace = {
+      run: config.title,
+      source: "sim",
+      sceneStartMs: firstChat,
+      durationMs: Math.max(0, lastAt - firstChat),
+      actors: config.actors.map((a) => ({ ref: a.ref, name: a.name, human: false })),
+      events,
+      arm: `h=${hl?.likeness ?? 0}`,
+    };
+  }
+  return { bodyLog, ...(trace ? { trace } : {}), ...(film ? { film: film.played } : {}), title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters(), dramaLog: dramaLines.map((l) => JSON.parse(l) as DramaLogLine), ...(sheet && config.sheet ? { sheet: { sheet: config.sheet, summary: sheet.summary(), stage, reports: sheetReports } } : {}), ...(spineScene ? { spine: { step: spineScene.step, advances: spineScene.advances.map((a) => ({ step: a.step, atMs: a.atMs, via: a.via })), ...(escalation ? { unlocks: escalation.manifest(startMs) } : {}) } } : {}) };
 }
