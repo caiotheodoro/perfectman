@@ -189,7 +189,7 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
         let target: string | undefined;
         if (given === undefined) {
           if (needs) err(`${at}.with`, `${verb} needs a target`);
-        } else if (!needs) err(`${at}.with`, `${verb} has no target`);
+        } else if (!needs) warn(`${at}.with`, "beat_sheet.target_dropped", `${verb} takes no target, so "${String(given)}" is ignored`);
         else if (given === HUMAN_REF) {
           if (ctx.mayTargetHumans === true) target = HUMAN_REF;
           else err(`${at}.with`, `${HUMAN_REF} is nobody in particular: a sheet names actors (the humans are the director's to aim at)`);

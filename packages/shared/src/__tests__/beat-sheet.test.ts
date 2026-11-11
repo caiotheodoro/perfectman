@@ -19,6 +19,20 @@ const at = (sheet: Record<string, unknown>, id: string): Record<string, unknown>
 const list = (v: unknown): unknown[] => (Array.isArray(v) ? v : []);
 const messages = (r: { errors: Array<{ message: string }> }): string => r.errors.map((e) => e.message).join(" | ");
 
+describe("a target on a verb that takes none", () => {
+  it("is ignored with a warning, not a failed sheet (a model gives kneel a target; the vocabulary says kneel is self-only)", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "k1", at_ms: 100_000, phase: "escalation", kind: "act", actor: "Renato", verb: "kneel", with: "Otávio" });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    const r = validateBeatSheet(sheet, ctx);
+    expect(messages(r)).not.toContain("kneel has no target");
+    const kneel = r.sheet?.beats.find((b) => b.id === "k1");
+    expect(kneel && "with" in kneel ? kneel.with : undefined).toBeUndefined();
+    expect(r.warnings.map((w) => w.message).join(" | ")).toContain("beat_sheet.target_dropped");
+  });
+});
+
 describe("mockBeatSheet", () => {
   it("is deterministic and passes the validator for a cast of two, three and five", () => {
     for (const n of [2, 3, 5]) {

@@ -229,6 +229,13 @@ describe("buildSheetPrompt", () => {
     expect(p.system).toMatch(/JSON/);
   });
 
+  it("lists the verbs that take a target from the vocabulary, so a self-only verb (kneel, slump, flee) is never offered a \"with\"", () => {
+    const line = p.user.split("\n").find((l) => l.startsWith("Verbs (act):")) ?? "";
+    const takes = line.split('Verbs that take "with": ')[1] ?? "";
+    for (const v of ["kneel", "slump", "flee", "die", "cry"]) expect(takes.split(" (every")[0]!.split(", ")).not.toContain(v);
+    for (const v of ["slap", "hug", "point", "grab"]) expect(takes.split(" (every")[0]!.split(", ")).toContain(v);
+  });
+
   it("says what the scene allows when it wrote a block, and a room it knows", () => {
     const withBlock = buildSheetPrompt({ ...BRIEF, drama: { max_rung: 4, may_target: [["person-1", "person-2"]], may_die: [] , permadeath: false }, room: { furni: [{ label: "mesa" }, { label: "cofre" }], zones: [{ label: "varanda" }] } });
     expect(withBlock.user).toContain("up to rung 4");

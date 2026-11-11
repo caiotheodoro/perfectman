@@ -1,4 +1,4 @@
-import { CLIMAX_MAX_MS, INCITING_MAX_MS, SHEET_COST_CAP_USD, SHEET_TIMEOUT_MS, SHEET_VERSION, ACT_VERBS, mockBeatSheet } from "@perfectman/shared";
+import { CLIMAX_MAX_MS, INCITING_MAX_MS, SHEET_COST_CAP_USD, SHEET_TIMEOUT_MS, SHEET_VERSION, ACT_VERBS, ACT_TARGET_MODE, mockBeatSheet } from "@perfectman/shared";
 import type { ActVerb, BeatSheet, RoomBrief, SheetIssue, SlimKb } from "@perfectman/shared";
 import { draftReferences, referenceCopy } from "@perfectman/server/hotel";
 import type { DraftReferences } from "@perfectman/server/hotel";
@@ -140,7 +140,7 @@ export function buildSheetPrompt(brief: SheetBrief, references?: string): { syst
       '- pause: {"ms":number, 500 to 15000} (authored silence: nobody speaks)',
       '- expression: {"actor":NAME,"face":"neutral"|"smile"|"angry"|"sad"|"surprised"|"sleepy"|"fear"|"disgust"|"smug","ms":number}',
       '- camera: {"intent":{"shot":"establishing"|"two_shot"|"close_up"|"tracking"|"reaction"|"insert","on":NAME or [NAME,NAME],"zoom":number,"move":"dolly_in"|"dolly_out"|"shake"|"slowmo"|"vignette"|"hitstop","amount":0..1,"ms":number}}',
-      `Verbs (act): ${ACT_VERBS.join(", ")}. Verbs that take "with": ${ACT_VERBS.filter((v) => !["die", "recoil", "freeze_gasp", "cry", "storm_off", "tableau", "faint"].includes(v)).join(", ")}.`,
+      `Verbs (act): ${ACT_VERBS.join(", ")}. Verbs that take "with": ${ACT_VERBS.filter((v) => ACT_TARGET_MODE[v] === "required").join(", ")} (every other verb takes no "with").`,
       `Tactics (note): ${TACTICS}.`,
       "",
       "Hard rules (a sheet that breaks one is thrown back to you):",
