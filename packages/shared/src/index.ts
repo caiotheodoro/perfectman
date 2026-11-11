@@ -133,3 +133,6 @@ export * from "./beat-sheet/index.js";
 
 // Script-likeness: dialogue metrics measured against real plays, the norms they are read against, and the score (docs/plans/script-likeness.md).
 export * from "./script-likeness/index.js";
+
+// Cinema norms: the reference shape of real scenes over time (silence, interruption, reversals, escalation, climax), numbers only (packages/kb/src/cinema).
+export * from "./cinema-norms/index.js";

@@ -38,6 +38,22 @@ node dist/cli.js stats
 
 `queryReferenceBeats(store, embedder, tactic, actionTag, castSize, opts)` is the library call. `createReferenceQuery(store, embedder)` binds it to the three-argument shape `(tactic, actionTag, castSize)`. `toPlanRefs()` turns results into the pointers that go into `plan.json` `reference_beats`: ids, titles, labels and scores, never the text. Beat text is returned only with `includeText`, for prompt injection at generation time.
 
+## Cinema norms (what "cinematic" measures against)
+
+`src/cinema/` turns plays, screenplays, TV transcripts and subtitle files (pt-BR and English) into one neutral scene shape and measures each scene: turn length, short replies, interruptions and trailing off, written and timed silence, direction and act rate, a conflict-intensity curve over scene time, inciting beat and climax as fractions of the scene, aftermath, reversals, reveals, accusations, commitments, dialogue-vs-action. The feature code itself lives in `@perfectman/shared` (`measureScene`, so the scorer measures a run with the exact code that measured the corpus); this package holds the parsers, the pipeline and the aggregation.
+
+```bash
+pnpm --filter "@perfectman/kb..." build
+cd packages/kb
+node dist/cli.js cinema-features            # corpus/ + corpus/cinema/ -> index/cinema/{features,sources}.jsonl, provenance.json, stats.json (numbers only, gitignored)
+node dist/cli.js cinema-validate            # intensity proxy and act lexicon against the tagged beats (index/beats.jsonl + tags.jsonl)
+node dist/cli.js cinema-norms --built YYYY-MM-DD [--reliability file.json]   # -> packages/shared/src/cinema-norms/cinema-norms.json + .generated.ts
+node dist/cli.js cinema-sources --built YYYY-MM-DD                           # -> cinema-sources.json (provenance, no text)
+node dist/cli.js cinema-sample --per 5 --min-turns 18 --seed 3               # hand-check view: LOCAL ONLY, prints text, never commit
+```
+
+Raw material goes under `corpus/cinema/` (gitignored like `corpus/` and `index/`): `moviesum/*.jsonl` (HF `rohitsaxena/MovieSum`), `summscreen/*.json` and `tms_*.jsonl` (HF `YuanPJ/summ_screen`), `opus-ptbr/` and `opus-en/` (OPUS OpenSubtitles v2018 raw XML, drawn at random with `scripts/cinema/fetch_opus_sample.py`, which reads the zip by HTTP range so the 8-13 GB archives are never downloaded), `imdb/title.basics.tsv.gz` (title type, running time and genres), `br-scripts/` (pdftotext -layout of public Brazilian pilot scripts, with a manifest). The 75 stage texts are the existing `corpus/<dir>/manifest.json` folders. Only numbers are committed. See `docs/plans/cinema-norms.md` for definitions, buckets, reliability and biases.
+
 ## Script norms
 
 `export-norms` turns the index into percentile ladders of how real plays read: words per turn, share of long and short turns, lexical novelty, motif and progress rates by size of beat, and the status-delta and tactic transitions of the tagged beats. Numbers only, and a test checks that no line of any (invented) beat reaches the file. 200 beats are held out for the eval benchmark's check. What the numbers are used for, and what they measured, is in `docs/plans/script-likeness.md`.

@@ -6,6 +6,11 @@ import { buildBeats } from "./ingest/index.js";
 import { makeEmbedder } from "./embed.js";
 import { queryReferenceBeats, toPlanRefs } from "./query.js";
 import { exportNorms } from "./norms.js";
+import { createWriteStream } from "node:fs";
+import { runPipeline } from "./cinema/pipeline.js";
+import { exportCinemaNorms } from "./cinema/norms-build.js";
+import { buildSources } from "./cinema/sources.js";
+import { validateOnTaggedBeats } from "./cinema/validate.js";
 import { buildSlim } from "./slim/build.js";
 import { Store } from "./store.js";
 import { agreement, importTagLines, sampleIds, selectForTagging, splitHeldOut, writeTaggingBatches } from "./tags.js";
@@ -208,8 +213,86 @@ async function main(): Promise<void> {
       store.close();
       return;
     }
+    case "cinema-features": {
+      // corpus + corpus/cinema -> index/cinema/features.jsonl (numbers only) and index/cinema/provenance.json
+      const outFile = path.resolve(typeof flags["out"] === "string" ? flags["out"] : path.join(idx, "cinema", "features.jsonl"));
+      mkdirSync(path.dirname(outFile), { recursive: true });
+      const out = createWriteStream(outFile);
+      const limit: Record<string, number> = {};
+      for (const kv of typeof flags["limit"] === "string" ? flags["limit"].split(",") : []) { const [g, n] = kv.split("="); if (g && n) limit[g] = Number(n); }
+      const srcOut = createWriteStream(path.join(path.dirname(outFile), "sources.jsonl"));
+      const r = await runPipeline(
+        { corpus, cinema: path.join(corpus, "cinema"), ...(typeof flags["groups"] === "string" ? { groups: flags["groups"].split(",") } : {}), limit, log: (m) => console.error(m) },
+        (f) => void out.write(`${JSON.stringify(f)}\n`),
+        (s) => void srcOut.write(`${JSON.stringify(s)}\n`),
+      );
+      await new Promise((res) => out.end(res));
+      await new Promise((res) => srcOut.end(res));
+      writeFileSync(path.join(path.dirname(outFile), "provenance.json"), JSON.stringify(r.provenance));
+      writeFileSync(path.join(path.dirname(outFile), "stats.json"), JSON.stringify(r.stats));
+      console.log(JSON.stringify({ out: outFile, sources: r.stats.sources, scenes: r.stats.scenes, byGroup: r.stats.byGroup, skipped: r.stats.skipped }, null, 2));
+      return;
+    }
+    case "cinema-sample": {
+      // Hand-check view: n scenes per form, each event cut to its first words with its intensity and the scene's arc figures. LOCAL ONLY, never commit the output.
+      const { turnIntensity, directionIntensity } = await import("./cinema/features.js");
+      const per = Number(typeof flags["per"] === "string" ? flags["per"] : 5);
+      const minTurns = Number(typeof flags["min-turns"] === "string" ? flags["min-turns"] : 20);
+      const seed = Number(typeof flags["seed"] === "string" ? flags["seed"] : 1);
+      const keep = new Map<string, Array<{ k: number; text: string }>>();
+      let ctr = 0;
+      const rng = (n: number): number => { const x = Math.sin(n * 12.9898 + seed * 78.233) * 43758.5453; return x - Math.floor(x); };
+      await runPipeline(
+        { corpus, cinema: path.join(corpus, "cinema"), ...(typeof flags["groups"] === "string" ? { groups: flags["groups"].split(",") } : {}), limit: {}, log: () => {},
+          onScene: (sc, info, f) => {
+            if (f.turns < minTurns) return;
+            ctr += 1;
+            const key = `${info.lang}/${info.form}`;
+            const lines = sc.events.map((e) => (e.kind === "speech" ? `${(e.speaker ?? "-").slice(0, 8).padEnd(8)} ${turnIntensity(e.text, info.lang).toFixed(2)} ${e.text.split(/\s+/).slice(0, 8).join(" ")}` : `   [dir] ${directionIntensity(e.text, info.lang).v.toFixed(2)} ${e.text.split(/\s+/).slice(0, 9).join(" ")}`));
+            const head = `### ${info.id} #${sc.index} ${key} turns=${f.turns} dur=${Math.round(f.durSec)}s peak=${f.peak} inc=${f.tInciting} climax=${f.tClimax} aftermath=${f.aftermathShare} reversals=${f.reversals} curve=${f.curve.map((x) => x.toFixed(1)).join(",")}`;
+            const arr = keep.get(key) ?? [];
+            const item = { k: rng(ctr), text: `${head}\n${lines.slice(0, 34).join("\n")}${lines.length > 34 ? `\n... (${lines.length - 34} more)` : ""}` };
+            arr.push(item);
+            arr.sort((a, b) => a.k - b.k);
+            keep.set(key, arr.slice(0, per));
+          } },
+        () => {},
+      );
+      const outFile = path.resolve(typeof flags["out"] === "string" ? flags["out"] : path.join(idx, "cinema", "handcheck.txt"));
+      writeFileSync(outFile, [...keep.entries()].map(([k, v]) => `=== ${k}\n${v.map((x) => x.text).join("\n\n")}`).join("\n\n"));
+      console.log(outFile, [...keep.entries()].map(([k, v]) => `${k}:${v.length}`).join(" "));
+      return;
+    }
+    case "cinema-sources": {
+      const dir = path.join(idx, "cinema");
+      const s = buildSources({
+        corpus, provenance: JSON.parse(readFileSync(path.join(dir, "provenance.json"), "utf8")), stats: JSON.parse(readFileSync(path.join(dir, "stats.json"), "utf8")),
+        ...(typeof flags["built"] === "string" ? { built: flags["built"] } : {}),
+      });
+      const out = path.resolve(typeof flags["out"] === "string" ? flags["out"] : path.join(root, "cinema-sources.json"));
+      writeFileSync(out, `${JSON.stringify(s, null, 1)}\n`);
+      console.log(out, Buffer.byteLength(JSON.stringify(s)));
+      return;
+    }
+    case "cinema-validate": {
+      console.log(JSON.stringify(validateOnTaggedBeats(path.join(idx, "beats.jsonl"), path.join(idx, "tags.jsonl")), null, 1));
+      return;
+    }
+    case "cinema-norms": {
+      // index/cinema/{features,sources}.jsonl + stats.json -> packages/shared/src/cinema-norms/cinema-norms.json + .generated.ts (numbers only)
+      const dir = path.join(idx, "cinema");
+      const relFile = typeof flags["reliability"] === "string" ? path.resolve(flags["reliability"]) : null;
+      const r = exportCinemaNorms({
+        featuresFile: path.join(dir, "features.jsonl"), sourcesFile: path.join(dir, "sources.jsonl"), statsFile: path.join(dir, "stats.json"),
+        outDir: path.resolve(typeof flags["out"] === "string" ? flags["out"] : path.join(root, "..", "shared", "src", "cinema-norms")),
+        ...(typeof flags["built"] === "string" ? { built: flags["built"] } : {}),
+        ...(relFile && existsSync(relFile) ? { reliability: JSON.parse(readFileSync(relFile, "utf8")) as Record<string, unknown> } : {}),
+      });
+      console.log(JSON.stringify({ files: r.files, buckets: Object.keys(r.norms.buckets).length, scenes: r.norms.source.scenes, sources: r.norms.source.sources }, null, 2));
+      return;
+    }
     default:
-      console.error("commands: build-beats | export-tags | import-tags | sample | agreement | embed | query | export-slim | export-norms | stats");
+      console.error("commands: cinema-features | cinema-norms | build-beats | export-tags | import-tags | sample | agreement | embed | query | export-slim | export-norms | stats");
       process.exitCode = cmd ? 1 : 0;
   }
 }
