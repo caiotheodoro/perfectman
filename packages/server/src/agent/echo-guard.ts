@@ -8,6 +8,10 @@
  *
  * Lines are folded before they are compared: case, accents, punctuation, stage directions ("*sorri*", "(rindo)"),
  * laughter runs ("KKKK", "hahaha", "rsrs") and letter elongation ("siiiim") do not make two lines different.
+ *
+ * Short lines (a median turn is 13 words) are compared a second way, on what they SAY: names and forms of address ("Otávio, meu bem,",
+ * "rapaz", "minha cara") are taken off the ends of each clause, then the opening words and the set of topic words are compared. The
+ * sequence thresholds above are unchanged for long lines; the short-line rules are in the "short lines" section below.
  */
 
 /** A word of a line: how it was written, and the folded form it is compared by. */
@@ -101,7 +105,11 @@ const OWN_RULE: EchoRule = { prefix: 6, run: 6, runShare: 0.6, shingle: 0.6, shi
 /** Another actor's line: only a near-verbatim copy counts, since answering in the other's words is half of talking. */
 const ROOM_RULE: EchoRule = { prefix: Number.POSITIVE_INFINITY, run: 5, runShare: 0.7, shingle: 0.7, shingleMinWords: 6 };
 
-export type EchoKind = "exact" | "prefix" | "run" | "shingle";
+/**
+ * How a line repeats another: "exact", "prefix", "run" and "shingle" read the words as written; "lead", "open", "set" and "frame" are the short-line
+ * rules, which read what a line says with names and forms of address taken off (see `shortEcho`).
+ */
+export type EchoKind = "exact" | "prefix" | "run" | "shingle" | "lead" | "open" | "set" | "frame";
 export type EchoHit = { kind: EchoKind; prior: string };
 
 function echoKind(c: readonly string[], p: readonly string[], rule: EchoRule): EchoKind | undefined {
@@ -125,9 +133,14 @@ function firstEcho(candidate: string, priors: readonly string[], rule: EchoRule)
   return undefined;
 }
 
-/** The candidate repeats, in whole or with a changed tail or a word dropped in, one of the actor's own last lines. */
-export function findOwnEcho(candidate: string, ownPriors: readonly string[], window: number = OWN_ECHO_WINDOW): EchoHit | undefined {
-  return firstEcho(candidate, ownPriors.slice(-window), OWN_RULE);
+/**
+ * The candidate repeats, in whole or with a changed tail or a word dropped in, one of the actor's own last lines. Long lines are judged by their word
+ * sequences; a short one is also judged by what it says, with the names in `names` (folded, the people in the room) and forms of address taken off
+ * (`short` false leaves that out: the sequence rules alone, as before the short-line rules).
+ */
+export function findOwnEcho(candidate: string, ownPriors: readonly string[], window: number = OWN_ECHO_WINDOW, names: ReadonlySet<string> = NO_NAMES, short = true): EchoHit | undefined {
+  const priors = ownPriors.slice(-window);
+  return firstEcho(candidate, priors, OWN_RULE) ?? (short ? shortEcho(candidate, priors, names) : undefined);
 }
 
 /** The candidate is a verbatim or near-verbatim copy of one of the other actors' last lines. */
@@ -217,6 +230,425 @@ export function findPhraseLoop(candidate: string, ownPriors: readonly string[]):
     }
   }
   return undefined;
+}
+
+// ---- short lines ---------------------------------------------------------------
+
+/**
+ * Forms of address, folded. "Otávio, meu bem, sente-se." and "Renato, querido, sente-se." say the same thing, and so do "Vinho não, minha cara."
+ * and "Vinho não." So names of the room's people and these forms are taken off the ends of every clause before two lines are compared, and the
+ * ones that are not names are what a vocative tic is made of.
+ */
+const ADDRESS_WORDS = new Set(
+  ("rapaz rapazes moco moca cara caro mano mana manos manas mina bicho amigo amiga amigos amigas parceiro parceira parca chefe colega querido querida queridos queridas amor amorzinho " +
+    "anjo benzinho nego nega senhor senhora senhores dona doutor doutora patrao patroa irmao irma irmaos gente pessoal galera " +
+    "man dude buddy pal sir madam honey dear darling mate bro sweetie friend friends folks guys boys girls").split(" "),
+);
+/** "meu", "minha" or "my" followed by one of these is one form of address ("meu bem", "minha cara", "my dear"). */
+const ADDRESS_POSSESSIVE = new Set(["meu", "minha", "my"]);
+const ADDRESS_AFTER_POSSESSIVE = new Set(
+  ("bem cara caro amor querido querida anjo filho filha amigo amiga irmao irma velho velha linda lindo rapaz senhor senhora chapa parceiro mano mana bicho " +
+    "dear friend love lord lady boy girl man").split(" "),
+);
+/** Interjections at the edge of a clause that say nothing ("Pô, ...", "..., né?"). */
+const EDGE_FILLERS = new Set("po ue uai ah oh hm hmm hum ne ei eh vish nossa puxa ixi ok okay hein well".split(" "));
+/** Connectors a line may open with that are not its subject: skipped when the first words of two lines are compared ("Mas vinho não" opens like "Vinho não"). */
+const CONNECTORS = new Set("mas e entao ai pois bom olha ta and but so".split(" "));
+/** One word that ends a tag question ("..., né?", "..., certo?"); "não" and a verb is the other kind ("..., não pode?"). */
+const TAG_WORDS = new Set("ne certo hein ta entende entendeu sabe viu ok okay right".split(" "));
+
+const NO_NAMES: ReadonlySet<string> = new Set();
+
+/** Function words `STOP` leaves out, so the topic words of a short line are the ones that name something. */
+const MORE_STOP = new Set(
+  ("pode podem quer quero faz fazer disse diz tudo nada algo todo toda todos todas cada outro outra qualquer mesmo mesma tanto entre sobre desde pois porque num numa pro nem dele dela deles delas " +
+    "nosso nossa voces vcs sei sabe tinha tinham havia seja sido pelo pela pelos pelas aquilo ate dar deu dei vem vim vir ficar fica ficou ver vejo veja olha olhe vou vai vamos ir fui " +
+    "mim ti si comigo contigo consigo dois ainda depois antes agora hoje seu sua seus suas").split(" "),
+);
+
+/** A folded word that names something: not a function word, 3 letters or more. */
+const isTopicWord = (k: string): boolean => k.length >= 3 && !STOP.has(k) && !MORE_STOP.has(k);
+/** One stem for a word and its plural ("carta", "cartas"). */
+const stem = (k: string): string => (k.length > 4 && k.endsWith("s") ? k.slice(0, -1) : k);
+
+type AddressAt = { len: number; /** The form of address as folded words, "" for a name or a filler. */ term: string };
+
+/** The form of address, name or filler at the start of `keys`, if there is one. */
+function addressAtStart(keys: readonly string[], names: ReadonlySet<string>): AddressAt | undefined {
+  const k = keys[0];
+  if (k === undefined) return undefined;
+  const next = keys[1];
+  if (ADDRESS_POSSESSIVE.has(k) && next !== undefined && ADDRESS_AFTER_POSSESSIVE.has(next)) return { len: 2, term: `${k} ${next}` };
+  if (names.has(k)) return { len: 1, term: "" };
+  if (ADDRESS_WORDS.has(k)) return { len: 1, term: k };
+  if (EDGE_FILLERS.has(k)) return { len: 1, term: "" };
+  return undefined;
+}
+
+/** The same at the end of `keys`. */
+function addressAtEnd(keys: readonly string[], names: ReadonlySet<string>): AddressAt | undefined {
+  const n = keys.length;
+  const k = keys[n - 1];
+  if (k === undefined) return undefined;
+  const before = keys[n - 2];
+  if (before !== undefined && ADDRESS_POSSESSIVE.has(before) && ADDRESS_AFTER_POSSESSIVE.has(k)) return { len: 2, term: `${before} ${k}` };
+  if (names.has(k)) return { len: 1, term: "" };
+  if (ADDRESS_WORDS.has(k)) return { len: 1, term: k };
+  if (EDGE_FILLERS.has(k)) return { len: 1, term: "" };
+  return undefined;
+}
+
+const CLAUSE = /([^.,;:!?…"“”()[\]{}<>–—]+)([.,;:!?…"“”()[\]{}<>–—]*)/gu;
+
+/** One clause of a line: its written words, the folded key of each ("" for a word that is only laughter or decoration) and the punctuation after it. */
+type Clause = {
+  words: string[];
+  keys: string[];
+  sep: string;
+  /** Indexes into `words` of the words that carry a key. */
+  at: number[];
+  /** The forms of address, names and fillers on the left edge (in order, `from`..`to` in `at` positions) and on the right edge. */
+  left: Array<{ term: string; from: number; to: number }>;
+  right: Array<{ term: string; from: number; to: number }>;
+  /** Everything in the clause is address: it is a vocative on its own ("Rapaz.", "minha cara,"). */
+  addressOnly: boolean;
+};
+
+function clausesOf(text: string, names: ReadonlySet<string>): Clause[] {
+  let t = text;
+  for (const re of STAGE_DIRECTIONS) t = t.replace(re, " ");
+  const out: Clause[] = [];
+  for (const m of t.matchAll(CLAUSE)) {
+    const words = (m[1] ?? "").trim().split(/\s+/u).filter((w) => w !== "");
+    if (words.length === 0) continue;
+    const keys = words.map((w) => {
+      const toks = tokenize(w);
+      return toks.length === 0 ? "" : toks.map((x) => x.key).join(" ");
+    });
+    const at = keys.flatMap((k, i) => (k === "" ? [] : [i]));
+    if (at.length === 0) continue;
+    const ck = at.map((i) => keys[i]!);
+    const left: Clause["left"] = [];
+    let lo = 0;
+    for (let a = addressAtStart(ck.slice(lo), names); a !== undefined; a = addressAtStart(ck.slice(lo), names)) {
+      left.push({ term: a.term, from: lo, to: lo + a.len });
+      lo += a.len;
+    }
+    const right: Clause["right"] = [];
+    let hi = ck.length;
+    for (let a = hi > lo ? addressAtEnd(ck.slice(lo, hi), names) : undefined; a !== undefined; a = hi > lo ? addressAtEnd(ck.slice(lo, hi), names) : undefined) {
+      right.push({ term: a.term, from: hi - a.len, to: hi });
+      hi -= a.len;
+    }
+    out.push({ words, keys, sep: m[2] ?? "", at, left, right, addressOnly: lo >= ck.length });
+  }
+  return out;
+}
+
+/** A line read for what it says: address taken off, then its words, its topic words and how it opens and closes. */
+export type Voice = {
+  /** Folded words without names, forms of address and edge fillers. */
+  keys: string[];
+  /** Topic words in order, one stem each, no name. */
+  topics: string[];
+  /** The forms of address (not names) the line opens with and ends with, folded: "querido", "minha cara". */
+  leadTerms: string[];
+  trailTerms: string[];
+  /** The line ends with a tag question ("..., não pode?", "..., né?"). */
+  tag: boolean;
+};
+
+/** The words of a clause that say something: those between its address edges. */
+function sayingKeys(c: Clause): string[] {
+  const from = c.left.length === 0 ? 0 : c.left[c.left.length - 1]!.to;
+  const to = c.right.length === 0 ? c.at.length : c.right[c.right.length - 1]!.from;
+  return c.at.slice(from, to).flatMap((i) => c.keys[i]!.split(" "));
+}
+
+/** A line read for what it says (see {@link Voice}). `names` are the folded names of the people in the room. */
+export function voiceOf(text: string, names: ReadonlySet<string> = NO_NAMES): Voice {
+  const clauses = clausesOf(text, names);
+  const kept = clauses.filter((c) => !c.addressOnly);
+  const keys = kept.flatMap(sayingKeys);
+  const topics: string[] = [];
+  for (const k of keys) {
+    const s = stem(k);
+    if (isTopicWord(k) && !names.has(k) && !topics.includes(s)) topics.push(s);
+  }
+  const leadTerms: string[] = [];
+  for (const c of clauses) {
+    leadTerms.push(...c.left.map((e) => e.term).filter((x) => x !== ""));
+    if (!c.addressOnly) break;
+  }
+  const trailTerms: string[] = [];
+  for (let i = clauses.length - 1; i >= 0; i--) {
+    const c = clauses[i]!;
+    trailTerms.push(...(c.addressOnly ? c.left : c.right).map((e) => e.term).filter((x) => x !== ""));
+    if (!c.addressOnly) break;
+  }
+  // A tag question is the last clause of the line, a comma after the one before it: "..., não pode?", "..., né?" (the filler "né" is a clause of its own here).
+  const last = clauses[clauses.length - 1];
+  const before = clauses[clauses.length - 2];
+  const tail = last === undefined ? [] : last.at.map((i) => last.keys[i]!);
+  const tag =
+    last !== undefined &&
+    before !== undefined &&
+    !before.addressOnly &&
+    last.sep.includes("?") &&
+    before.sep.includes(",") &&
+    tail.length >= 1 &&
+    tail.length <= 3 &&
+    (tail[0] === "nao" || (tail.length === 1 && TAG_WORDS.has(tail[0]!)));
+  return { keys, topics, leadTerms, trailTerms, tag };
+}
+
+/** First `n` folded words of a voice, a leading connector ("mas", "e", "então") skipped. */
+function opening(v: Voice, n: number): string[] {
+  let from = 0;
+  while (from < v.keys.length - n && CONNECTORS.has(v.keys[from]!)) from++;
+  return v.keys.slice(from, from + n);
+}
+
+const sharedCount = (a: readonly string[], b: readonly string[]): number => a.filter((k) => b.includes(k)).length;
+
+/** Topic words each line needs before the "open" and "set" rules apply: "Vinho não." has one, and a line of one is never a repeat of another. */
+export const SHORT_MIN_TOPICS = 3;
+/** The share of the shorter line's topic words the other holds, when both open with the same 3 words ("Bêbado, sim. Mas viu o que você escondeu" and "Bêbado, sim. Mas o que ele viu"). */
+export const SHORT_OPEN_SHARE = 0.5;
+/** The share of topic words two lines hold in common, in any order (Jaccard). */
+export const SHORT_SET_SHARE = 0.6;
+/** Own lines before the candidate that count toward a shared opening: 2 of these 5 plus the candidate is 3 of the last 6 turns. */
+export const FRAME_PRIORS = 5;
+/** Words of a written opening (names and address included) two lines of the actor may share: "Otávio, meu bem, sente-se." is 5 of them. */
+export const LEAD_WORDS = 4;
+
+/** Written words at the start of a line that are names, forms of address or fillers ("Otávio, meu bem," is 3). */
+function leadingAddress(keys: readonly string[], names: ReadonlySet<string>): number {
+  let at = 0;
+  for (let a = addressAtStart(keys, names); a !== undefined; a = addressAtStart(keys.slice(at), names)) at += a.len;
+  return at;
+}
+
+function shortKind(cand: string, prior: string, c: Voice, p: Voice, names: ReadonlySet<string>): EchoKind | undefined {
+  if (c.keys.length >= 2 && c.keys.length === p.keys.length && c.keys.every((k, i) => k === p.keys[i])) return "exact";
+  const ck = keysOf(cand);
+  const run = commonPrefix(ck, keysOf(prior));
+  if (run >= LEAD_WORDS) {
+    // The same address and then the same words ("Otávio, meu bem, sente-se"): the vocative is what makes a stock opening ("eu acho que você") a tic of this actor.
+    const addr = leadingAddress(ck, names);
+    if (addr > 0 && run - addr >= 2 && ck.slice(addr, run).some((k) => isTopicWord(k) && !names.has(k))) return "lead";
+  }
+  if (c.topics.length < SHORT_MIN_TOPICS || p.topics.length < SHORT_MIN_TOPICS) return undefined;
+  const shared = sharedCount(c.topics, p.topics);
+  const co = opening(c, 3);
+  const po = opening(p, 3);
+  if (co.length === 3 && co.every((k, i) => k === po[i]) && shared >= SHORT_OPEN_SHARE * Math.min(c.topics.length, p.topics.length)) return "open";
+  if (shared / (c.topics.length + p.topics.length - shared) >= SHORT_SET_SHARE) return "set";
+  return undefined;
+}
+
+/**
+ * Short lines: the candidate against the actor's own last lines, by what it says. Flagged when, with names and forms of address taken off (so
+ * "Otávio, meu bem, sente-se." compares by "sente-se"): the two say the same words ("exact"); they open with the same names, address and 4 words
+ * or more ("lead"); they open with the same 3 words and the shorter one has half its topic words in the other ("open"); they share 60% of their
+ * topic words in any order ("set"); or the same first 2 words open the candidate and 2 of the actor's previous 5 lines ("frame"). "open" and "set"
+ * need 3 topic words in each line. The prior returned is the line that matched (for "frame", the newest).
+ */
+function shortEcho(candidate: string, priors: readonly string[], names: ReadonlySet<string>): EchoHit | undefined {
+  const c = voiceOf(candidate, names);
+  if (c.keys.length < 2) return undefined;
+  const voices = priors.map((p) => voiceOf(p, names));
+  for (let i = priors.length - 1; i >= 0; i--) {
+    const kind = shortKind(candidate, priors[i]!, c, voices[i]!, names);
+    if (kind) return { kind, prior: priors[i]! };
+  }
+  const head = opening(c, 2);
+  if (head.length === 2 && head.some(isTopicWord)) {
+    const same: string[] = [];
+    for (let i = Math.max(0, priors.length - FRAME_PRIORS); i < priors.length; i++) {
+      const h = opening(voices[i]!, 2);
+      if (h[0] === head[0] && h[1] === head[1]) same.push(priors[i]!);
+    }
+    if (same.length >= 2) return { kind: "frame", prior: same[same.length - 1]! };
+  }
+  return undefined;
+}
+
+// ---- tics ------------------------------------------------------------------------
+
+/** Own lines before the candidate a tic is counted in: with the candidate, the actor's last 6 turns. */
+export const TIC_PRIORS = 5;
+/** Turns of those 6 (the candidate included) that must carry the same opener or form of address for it to be a tic. */
+export const TIC_MIN = 4;
+
+export type TicKind = "address" | "tag" | "opener";
+export type TicHit = {
+  kind: TicKind;
+  /** The form of address ("querido", "minha cara"), "não pode?" for a tag question, or the word every line opens with. */
+  term: string;
+  /** Turns among the actor's last 6 (the candidate included) that carry it. */
+  count: number;
+};
+
+/**
+ * What the actor keeps starting or ending its lines with: a form of address (not a name: a name said in three lines is address, not a tic) on the
+ * left or right edge of the line in 4 of its last 6 turns, a tag question ("..., não pode?") ending 4 of them, or one word (not a function word)
+ * opening 4. Only the candidate's own opener or ending counts, so a line that already dropped it is clean.
+ */
+export function findTics(candidate: string, ownPriors: readonly string[], names: ReadonlySet<string> = NO_NAMES): TicHit[] {
+  const c = voiceOf(candidate, names);
+  // A line of fewer than 3 words ("Rapaz.", "Vinho não.") has nothing to take the tic off of.
+  if (c.keys.length < 3) return [];
+  const priors = ownPriors.slice(-TIC_PRIORS).map((p) => voiceOf(p, names));
+  const hits: TicHit[] = [];
+  for (const term of new Set([...c.leadTerms, ...c.trailTerms])) {
+    const count = 1 + priors.filter((p) => p.leadTerms.includes(term) || p.trailTerms.includes(term)).length;
+    if (count >= TIC_MIN) hits.push({ kind: "address", term, count });
+  }
+  if (c.tag) {
+    const count = 1 + priors.filter((p) => p.tag).length;
+    if (count >= TIC_MIN) hits.push({ kind: "tag", term: "tag", count });
+  }
+  const first = opening(c, 1)[0];
+  if (first !== undefined && isTopicWord(first)) {
+    const count = 1 + priors.filter((p) => opening(p, 1)[0] === first).length;
+    if (count >= TIC_MIN) hits.push({ kind: "opener", term: first, count });
+  }
+  return hits;
+}
+
+// ---- deterministic repairs -------------------------------------------------------------
+
+/** The text of a line with clauses taken out: what is left of each clause's words, the punctuation fixed, a capital on the new first word. */
+function rebuild(clauses: readonly Clause[], drop: ReadonlyMap<number, ReadonlySet<number>>, endAs?: string): string {
+  const kept: Array<{ words: string[]; sep: string; source: number }> = [];
+  clauses.forEach((c, ci) => {
+    const gone = drop.get(ci);
+    const words = c.words.filter((_, i) => !gone?.has(i));
+    if (words.length > 0) kept.push({ words, sep: c.sep, source: ci });
+  });
+  const last = kept[kept.length - 1];
+  if (last === undefined) return "";
+  const finalSep = endAs ?? clauses[clauses.length - 1]!.sep;
+  if (endAs !== undefined || !/[.!?…]/u.test(last.sep)) last.sep = /[.!?…]/u.test(finalSep) ? finalSep : ".";
+  let text = kept.map((k) => `${k.words.join(" ")}${k.sep}`).join(" ").replace(/\s+/gu, " ").trim();
+  const firstKept = kept[0]!;
+  if (firstKept.source !== 0 || drop.get(0)?.has(0)) text = text.replace(/\p{L}/u, (ch) => ch.toUpperCase());
+  return text;
+}
+
+/** Word indexes (into a clause's `words`) of the address items in `edge`, restricted to those whose term is wanted. */
+function edgeWords(c: Clause, edge: Clause["left"], wanted: ReadonlySet<string>): number[] {
+  return edge.filter((e) => wanted.has(e.term)).flatMap((e) => c.at.slice(e.from, e.to));
+}
+
+/** A line is quoted or has brackets: it is not cut apart, because its punctuation is not clause punctuation. */
+const NO_CUT = /["“”()[\]{}<>*]/u;
+
+/**
+ * The line without the forms of address (and the tag question) it keeps ending its lines with: the vocative at the start or the end is taken off
+ * ("Rapaz, ela escondeu o caixa." is "Ela escondeu o caixa."), names and everything else stay. Undefined when nothing was taken off, when the
+ * line has quotes or brackets, or when fewer than 3 words would be left.
+ */
+export function stripTics(text: string, hits: readonly TicHit[], names: ReadonlySet<string> = NO_NAMES): string | undefined {
+  if (NO_CUT.test(text)) return undefined;
+  const wanted = new Set(hits.filter((h) => h.kind === "address").map((h) => h.term));
+  const dropTag = hits.some((h) => h.kind === "tag");
+  if (wanted.size === 0 && !dropTag) return undefined;
+  const clauses = clausesOf(text, names);
+  const drop = new Map<number, Set<number>>();
+  const mark = (ci: number, words: Iterable<number>): void => {
+    const set = drop.get(ci) ?? new Set<number>();
+    for (const w of words) set.add(w);
+    drop.set(ci, set);
+  };
+  for (let ci = 0; ci < clauses.length; ci++) {
+    const c = clauses[ci]!;
+    mark(ci, edgeWords(c, c.left, wanted));
+    if (!c.addressOnly) break;
+  }
+  for (let ci = clauses.length - 1; ci >= 0; ci--) {
+    const c = clauses[ci]!;
+    mark(ci, edgeWords(c, c.addressOnly ? c.left : c.right, wanted));
+    if (!c.addressOnly) break;
+  }
+  let endAs: string | undefined;
+  if (dropTag && voiceOf(text, names).tag) {
+    const keptIdx = clauses.map((c, i) => (c.addressOnly ? -1 : i)).filter((i) => i >= 0);
+    const tagAt = keptIdx[keptIdx.length - 1]!;
+    mark(tagAt, clauses[tagAt]!.words.keys());
+    endAs = ".";
+  }
+  if ([...drop.values()].every((s) => s.size === 0)) return undefined;
+  const out = rebuild(clauses, drop, endAs);
+  return tokenize(out).length >= 3 && out !== text ? out : undefined;
+}
+
+/** Fresh words a repaired line must still have, besides what the actor already said ("4 words of new content"). */
+export const REPAIR_MIN_FRESH = 4;
+
+/** Share of a clause's topic words that were already said for it to be struck as a repeat (the scene's own topic words do not count either way). */
+export const STALE_SHARE = 0.75;
+
+const staleTopics = (topics: readonly string[], seen: ReadonlySet<string>, skip: ReadonlySet<string>): boolean => {
+  const considered = topics.filter((t) => !skip.has(t));
+  return considered.length > 0 && considered.filter((t) => seen.has(t)).length >= STALE_SHARE * considered.length;
+};
+
+/**
+ * A line that repeats the actor's own recent lines, repaired instead of dropped: the sentences three quarters of whose topic words the actor already used in its last 8 lines are
+ * struck, and so are stale clauses at the start or the end of a sentence that has fresh ones; a vocative left at the start or the end goes with them, and the
+ * rest is kept. Returns what is left, or undefined when nothing was struck or fewer than 4 words of what is left are new (the line says nothing the actor had not
+ * said, so there is nothing to keep). `ignore` are folded words that never count as already said (the scene's own topic: "cofre" in a scene about a safe).
+ */
+export function strikeEcho(text: string, ownPriors: readonly string[], names: ReadonlySet<string> = NO_NAMES, ignore: ReadonlySet<string> = NO_NAMES): string | undefined {
+  if (NO_CUT.test(text)) return undefined;
+  const priors = ownPriors.slice(-OWN_ECHO_WINDOW).map((p) => voiceOf(p, names));
+  const skip = new Set([...ignore].map(stem));
+  const seenTopics = new Set(priors.flatMap((p) => p.topics));
+  const seenWords = new Set(priors.flatMap((p) => p.keys));
+  const clauses = clausesOf(text, names);
+  const drop = new Map<number, Set<number>>();
+  const strike = (ci: number): void => void drop.set(ci, new Set(clauses[ci]!.words.keys()));
+  const topicsOf = (ci: number): string[] => voiceOf(clauses[ci]!.words.join(" "), names).topics;
+  // The sentences: runs of clauses up to the one that ends with . ! ? or …
+  const sentences: number[][] = [];
+  let run: number[] = [];
+  clauses.forEach((c, ci) => {
+    run.push(ci);
+    if (/[.!?…]/u.test(c.sep) || ci === clauses.length - 1) {
+      sentences.push(run);
+      run = [];
+    }
+  });
+  for (const sentence of sentences) {
+    const said = sentence.filter((ci) => !clauses[ci]!.addressOnly);
+    if (said.length === 0) continue;
+    if (staleTopics(said.flatMap(topicsOf).filter((t, i, all) => all.indexOf(t) === i), seenTopics, skip)) {
+      for (const ci of sentence) strike(ci);
+      continue;
+    }
+    // A stale clause at the start or the end of a sentence that says something new elsewhere, and a short clause with no topic word next to it ("sim").
+    if (said.length < 2) continue;
+    const stale = said.map((ci) => staleTopics(topicsOf(ci), seenTopics, skip));
+    const bare = said.map((ci) => topicsOf(ci).length === 0 && voiceOf(clauses[ci]!.words.join(" "), names).keys.length <= 2);
+    let from = 0;
+    while (from < said.length && (stale[from] || bare[from])) from++;
+    if (from > 0 && from < said.length && stale.slice(0, from).some(Boolean)) for (let m = 0; m < from; m++) strike(said[m]!);
+    let to = said.length;
+    while (to > 0 && (stale[to - 1] || bare[to - 1])) to--;
+    if (to > 0 && to < said.length && stale.slice(to).some(Boolean)) for (let m = to; m < said.length; m++) strike(said[m]!);
+  }
+  if (drop.size === 0) return undefined;
+  // A vocative left before what was struck (or after it) goes with it: "Otávio, meu bem," before a sentence that is no longer there.
+  const firstSaid = clauses.findIndex((c) => !c.addressOnly);
+  const lastSaid = clauses.length - 1 - [...clauses].reverse().findIndex((c) => !c.addressOnly);
+  if (drop.has(firstSaid)) for (let i = 0; i < firstSaid; i++) strike(i);
+  if (drop.has(lastSaid)) for (let i = lastSaid + 1; i < clauses.length; i++) strike(i);
+  const out = rebuild(clauses, drop);
+  const v = voiceOf(out, names);
+  if (v.keys.filter((k) => !seenWords.has(k)).length < REPAIR_MIN_FRESH) return undefined;
+  return out;
 }
 
 // ---- garbled text ----------------------------------------------------------
