@@ -127,7 +127,7 @@ describe("generateBeatSheet", () => {
     const r = await run();
     // first call: 3000 in + 2500 out = 0.015 + 0.15 = 0.165 spent; the retry's prompt is larger and what is left cannot pay for a sheet
     expect(calls.length).toBeLessThanOrEqual(2);
-    expect(calls[0]!.body.max_tokens).toBeLessThanOrEqual(3600);
+    expect(calls[0]!.body.max_tokens).toBeLessThanOrEqual(2600);
     expect(r.ok).toBe(false);
     expect(r.cost_usd).toBeLessThanOrEqual(SHEET_COST_CAP_USD + 0.2);
     if (calls.length === 2) expect(calls[1]!.body.max_tokens).toBeLessThan(calls[0]!.body.max_tokens);

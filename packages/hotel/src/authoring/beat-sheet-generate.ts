@@ -66,7 +66,7 @@ export type SheetResult =
 
 /** USD per million tokens assumed for a model with no listed price: high enough that the cap is a cap, not a hope. */
 export const ASSUMED_PRICE = { inUsdPerMTok: 3, outUsdPerMTok: 15 } as const;
-export const SHEET_MAX_TOKENS = 3600;
+export const SHEET_MAX_TOKENS = 2600;
 /** The whole compile-time step by default: a model that cannot write a sheet in this fails fast and the scene falls back to the spine, instead of holding the Save button for a minute. */
 export const SHEET_DEADLINE_MS = 35_000;
 /** One call may use nearly all of it: the first model is the one chosen for speed, and a failover with a few seconds left could not finish anyway. */
@@ -150,7 +150,7 @@ export function buildSheetPrompt(brief: SheetBrief, references?: string): { syst
       "4. At least one reveal or note with phase \"reversal\" before the climax: who has the power changes. Then the climax follows from it.",
       "5. Before the first act, at least one note or reveal. After the climax, at least one beat with phase \"aftermath\" (a reaction, a face, a pause, a note about what each wants now, a cut).",
       "6. At least 4 block, prop or camera beats in total, spread through the scene, so it is not all talk. Props and places use the labels given above.",
-      "7. 18 to 34 beats in all, sorted by time, phases in order (setup, inciting, escalation, reversal, climax, aftermath). Unique ids.",
+      "7. 12 to 20 beats in all, sorted by time, phases in order (setup, inciting, escalation, reversal, climax, aftermath). Unique ids. Be brief: every gist, objective, subtext and fact under 12 words. Reply with the JSON object only, no prose and no markdown.",
       "8. NO DIALOGUE. Never write what a person says, no quoted lines, no keys named text, say or line. gist, objective, subtext and fact describe intent and information; the actors find the words.",
       "9. Give each person a different objective and a hidden fact they can use. Make the goals collide and let the power change hands before the blow.",
       "10. Do not copy any reference scene's lines or names.",
@@ -255,6 +255,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
   let attempts = 0;
   let lastErrors: SheetIssue[] = [];
   let lastFail: { reason: SheetFailure; detail: string; model?: string } = { reason: "http", detail: "no model answered" };
+  let firstFail: { reason: SheetFailure; detail: string; model?: string } | undefined;
   const secrets = deps.links.map((l) => l.apiKey).filter(Boolean);
   const scrub = (s: string): string => secrets.reduce((t, secret) => t.split(secret).join("[key]"), s);
 
@@ -264,6 +265,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
       const left = deadline - now();
       if (left < (round === 0 ? 3_000 : RETRY_MIN_MS)) {
         lastFail = { reason: "timeout", detail: `${round === 0 ? "no time left" : "no time left for a second try"} (${Math.round(left / 100) / 10} s)`, model: link.model };
+        firstFail ??= lastFail;
         break;
       }
       const promptChars = messages.reduce((n, m) => n + m.content.length, 0);
@@ -274,6 +276,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
       const callTokens = Math.min(maxTokens, allowance);
       if (callTokens < 1_800) {
         lastFail = { reason: "cost", detail: `a call would cost up to $${worst.toFixed(3)} against the $${SHEET_COST_CAP_USD.toFixed(2)} cap ($${cost.toFixed(3)} spent)`, model: link.model };
+        firstFail ??= lastFail;
         break;
       }
       attempts += 1;
@@ -296,6 +299,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
         if (!response.ok) {
           const said = await response.text().catch(() => "");
           lastFail = { reason: "http", detail: scrub(`${link.name}: ${response.status} ${said.replace(/\s+/g, " ").slice(0, 120)}`), model: link.model };
+          firstFail ??= lastFail;
           break;
         }
         const payload = (await response.json()) as { choices?: Array<{ message?: { content?: string | null } }>; usage?: { prompt_tokens?: number; completion_tokens?: number } };
@@ -308,10 +312,12 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
         // A call that timed out was still billed for its prompt: count the prompt so a loop of timeouts cannot walk past the cap.
         cost += costOf(link, Math.ceil(promptChars / CHARS_PER_TOKEN), 0);
         lastFail = { reason: timedOut ? "timeout" : "http", detail: scrub(`${link.name}: ${timedOut ? `timed out after ${Math.round(Math.min(SHEET_CALL_CAP_MS, left) / 1000)} s` : "could not be reached"}`), model: link.model };
+        firstFail ??= lastFail;
         break;
       }
       if (reply.trim() === "") {
         lastFail = { reason: "invalid", detail: `${link.name}: empty reply`, model: link.model };
+        firstFail ??= lastFail;
         break;
       }
       let errors: SheetIssue[];
@@ -336,6 +342,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
       }
       lastErrors = errors;
       lastFail = { reason: "invalid", detail: `${link.name}: ${errors.slice(0, 3).map((e) => e.message.replace(/^beat_sheet\.\w+: /, "")).join("; ")}`.slice(0, 300), model: link.model };
+      firstFail ??= lastFail;
       // Told once what was wrong, with the sheet it wrote, and asked for the whole sheet again.
       messages = [
         ...messages.slice(0, 2),
@@ -344,5 +351,6 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
       ];
     }
   }
-  return { ok: false, reason: lastFail.reason, detail: lastFail.detail, errors: lastErrors, attempts, cost_usd: usd(cost), ms: now() - started, ...(lastFail.model ? { model: lastFail.model } : {}) };
+  const shown = firstFail && firstFail.detail !== lastFail.detail ? { ...lastFail, reason: firstFail.reason, detail: `${firstFail.detail}; then ${lastFail.detail}` } : lastFail;
+  return { ok: false, reason: shown.reason, detail: shown.detail, errors: lastErrors, attempts, cost_usd: usd(cost), ms: now() - started, ...(lastFail.model ? { model: lastFail.model } : {}) };
 }
