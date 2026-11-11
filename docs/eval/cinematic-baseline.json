@@ -1,51 +1,53 @@
 {
-  "version": "cinematic-baseline-v1",
-  "norms": "fallback (priors + script-norms)",
+  "version": "cinematic-baseline-v2",
+  "norms": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+  "genre": null,
   "judge": null,
   "runs": [
     {
       "run": "55",
       "durationS": 94.5,
-      "score": 36.4,
-      "deterministic": 36.4,
+      "score": 40,
+      "deterministic": 40,
+      "deterministicRaw": 40,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 18.8,
+          "score": 25,
           "readings": [
             {
-              "metric": "timeToIncitingS",
+              "metric": "incitingPos",
               "value": null,
-              "score": 0,
-              "weight": 0.15,
+              "score": null,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "nothing in the run was a real disturbance (no insult, accusation, threat, reveal or physical act)"
+              "note": "the intensity proxy finds no strong arc here (peak 0.225, rise 0.094; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "reversals",
-              "value": 0,
-              "score": 0,
+              "value": null,
+              "score": null,
               "weight": 0.15,
               "band": {
-                "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "lo": 2,
+                "hi": 6,
+                "floor": 1,
+                "ceil": 10,
+                "source": "cinema-norms"
               },
-              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+              "note": "the intensity proxy finds no strong arc here (peak 0.225, rise 0.094; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "escalationShape",
               "value": 1,
               "score": 100,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -79,23 +81,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
               "note": "no physical act reached the screen"
             },
             {
-              "metric": "aftermathShare",
-              "value": 0.692,
-              "score": 0,
+              "metric": "climaxPos",
+              "value": null,
+              "score": null,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "55.8 s and 4 lines after the peak at 24.9 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.225, rise 0.094; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
+            },
+            {
+              "metric": "aftermathShare",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.09755,
+                "hi": 0.58925,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "the intensity proxy finds no strong arc here (peak 0.225, rise 0.094; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "stakesChange",
@@ -113,6 +129,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": false,
+              "peak": 0.225,
+              "rise": 0.0944,
+              "tInciting": 0.2019,
+              "tClimax": 0.2019,
+              "aftermathShare": 0.7911,
+              "reversals": 0,
+              "turns": 8,
+              "durSec": 76.9,
+              "curve": [
+                0.1521,
+                0.1521,
+                0.1759,
+                0.0926,
+                0.0926,
+                0.0926,
+                0.0333,
+                0,
+                0,
+                0
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.401,
+                "inBandShare": 0.4
+              }
+            },
             "beats": 4,
             "incitingAtS": null,
             "incitingKind": null,
@@ -125,26 +168,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 58,
+          "score": 64,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 25,
               "score": 25,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 8 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 8 lines (the engine speaks one line at a time)"
             },
@@ -152,7 +195,7 @@
               "metric": "deadAirShare",
               "value": 0,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -166,7 +209,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 1.27,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -175,6 +218,48 @@
                 "source": "prior"
               },
               "note": "2 silences of 2-10 s with business in them (an act, a face, a walk) in 1.6 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 6.24,
+              "score": 28.6,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "8 spoken turns in 76.9 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.218,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.218 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "0 of 8 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -194,7 +279,7 @@
               "metric": "replyAdherence",
               "value": 0.833,
               "score": 100,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -247,6 +332,12 @@
               "gaps": 7,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 6.2,
+              "silenceShare": 0.218,
+              "shortShare": 0,
+              "spanS": 76.9
+            },
             "subtext": {
               "deflection": 0,
               "figurative": 0,
@@ -264,21 +355,35 @@
         },
         "embodiment": {
           "name": "embodiment",
-          "score": 17.6,
+          "score": 17.2,
           "readings": [
             {
               "metric": "actsPerMin",
               "value": 0,
               "score": 0,
-              "weight": 0.2,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "0 acts on screen in 1.6 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 0,
+              "score": 0,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 3,
+                "floor": 1,
+                "ceil": 3,
+                "source": "cinema-norms"
+              },
+              "note": "0 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 8 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -436,6 +541,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 0,
             "actsNotPlayed": 0,
             "verbs": {},
@@ -577,7 +683,7 @@
       "acts": 0,
       "lines": 8,
       "scriptLikeness": 25,
-      "raw": 36.4,
+      "raw": 40,
       "capped": false,
       "invariants": {
         "climaxByDeadline": {
@@ -593,51 +699,59 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     },
     {
       "run": "56",
       "durationS": 205,
-      "score": 39.3,
-      "deterministic": 39.3,
+      "score": 56.8,
+      "deterministic": 56.8,
+      "deterministicRaw": 56.8,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 9.6,
+          "score": 52.6,
           "readings": [
             {
-              "metric": "timeToIncitingS",
-              "value": null,
-              "score": 0,
-              "weight": 0.15,
+              "metric": "incitingPos",
+              "value": 0.163,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "nothing in the run was a real disturbance (no insult, accusation, threat, reveal or physical act)"
+              "note": "the corpus's reader puts the inciting beat at 0.163 of the scene (32.1 s of 197.3 s)"
             },
             {
               "metric": "reversals",
-              "value": 0,
-              "score": 0,
+              "value": 1,
+              "score": 100,
               "weight": 0.15,
               "band": {
                 "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "hi": 1.5,
+                "floor": 1,
+                "ceil": 2.5,
+                "source": "cinema-norms"
               },
-              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+              "note": "1 turning point(s) of the intensity curve in 17 turns (beat-based: 0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes: 0)"
             },
             {
               "metric": "escalationShape",
               "value": 0.556,
               "score": 38.9,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -671,23 +785,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
               "note": "no physical act reached the screen"
             },
             {
-              "metric": "aftermathShare",
-              "value": null,
-              "score": 0,
+              "metric": "climaxPos",
+              "value": 0.691,
+              "score": 100,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "the scene ends within 2 lines of the peak (0 after it)"
+              "note": "the corpus's reader puts the peak at 0.691 of the scene (the corpus median for strong arcs is ~0.58)"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.256,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.09755,
+                "hi": 0.58925,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "0.256 of the scene after the intensity last held 70% of its rise"
             },
             {
               "metric": "stakesChange",
@@ -705,6 +833,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": true,
+              "peak": 0.6363,
+              "rise": 0.4537,
+              "tInciting": 0.1625,
+              "tClimax": 0.6909,
+              "aftermathShare": 0.2562,
+              "reversals": 1,
+              "turns": 17,
+              "durSec": 197.3,
+              "curve": [
+                0.1992,
+                0.3826,
+                0.4138,
+                0.3975,
+                0.3975,
+                0.4985,
+                0.5559,
+                0.4755,
+                0.3327,
+                0.2653
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.343,
+                "inBandShare": 0.4
+              }
+            },
             "beats": 1,
             "incitingAtS": null,
             "incitingKind": null,
@@ -717,26 +872,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 68.8,
+          "score": 71.1,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 53.6,
               "score": 53.6,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 17 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 17 lines (the engine speaks one line at a time)"
             },
@@ -744,7 +899,7 @@
               "metric": "deadAirShare",
               "value": 0.007,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -758,7 +913,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 1.463,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -767,6 +922,48 @@
                 "source": "prior"
               },
               "note": "5 silences of 2-10 s with business in them (an act, a face, a walk) in 3.4 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 5.17,
+              "score": 0,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "17 spoken turns in 197.3 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.328,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.328 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "0 of 17 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -786,7 +983,7 @@
               "metric": "replyAdherence",
               "value": 0.75,
               "score": 100,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -839,6 +1036,12 @@
               "gaps": 15,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 5.2,
+              "silenceShare": 0.328,
+              "shortShare": 0,
+              "spanS": 197.3
+            },
             "subtext": {
               "deflection": 0.75,
               "figurative": 0,
@@ -856,21 +1059,35 @@
         },
         "embodiment": {
           "name": "embodiment",
-          "score": 31.5,
+          "score": 30.8,
           "readings": [
             {
               "metric": "actsPerMin",
               "value": 0,
               "score": 0,
-              "weight": 0.2,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "0 acts on screen in 3.4 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 0,
+              "score": 0,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 3,
+                "floor": 1,
+                "ceil": 3,
+                "source": "cinema-norms"
+              },
+              "note": "0 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 17 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -1028,6 +1245,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 0,
             "actsNotPlayed": 0,
             "verbs": {},
@@ -1170,7 +1388,7 @@
       "acts": 0,
       "lines": 17,
       "scriptLikeness": 53.6,
-      "raw": 39.3,
+      "raw": 56.8,
       "capped": false,
       "invariants": {
         "climaxByDeadline": {
@@ -1186,51 +1404,59 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     },
     {
       "run": "57",
       "durationS": 185.7,
-      "score": 41.9,
-      "deterministic": 41.9,
+      "score": 38.6,
+      "deterministic": 38.6,
+      "deterministicRaw": 38.6,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 21.7,
+          "score": 12.1,
           "readings": [
             {
-              "metric": "timeToIncitingS",
-              "value": 8.198,
-              "score": 100,
-              "weight": 0.15,
+              "metric": "incitingPos",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "first real disturbance (line threat) at 8.2 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.38, rise 0.119; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "reversals",
-              "value": 0,
-              "score": 0,
+              "value": null,
+              "score": null,
               "weight": 0.15,
               "band": {
-                "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "lo": 2,
+                "hi": 6,
+                "floor": 1,
+                "ceil": 10,
+                "source": "cinema-norms"
               },
-              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+              "note": "the intensity proxy finds no strong arc here (peak 0.38, rise 0.119; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "escalationShape",
               "value": 0,
               "score": 0,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -1264,23 +1490,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
               "note": "no physical act reached the screen"
             },
             {
-              "metric": "aftermathShare",
-              "value": 0.944,
-              "score": 0,
+              "metric": "climaxPos",
+              "value": null,
+              "score": null,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "139.3 s and 11 lines after the peak at 8.2 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.38, rise 0.119; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
+            },
+            {
+              "metric": "aftermathShare",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.09755,
+                "hi": 0.58925,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "the intensity proxy finds no strong arc here (peak 0.38, rise 0.119; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "stakesChange",
@@ -1298,6 +1538,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": false,
+              "peak": 0.3801,
+              "rise": 0.1189,
+              "tInciting": 0.1284,
+              "tClimax": 0.8681,
+              "aftermathShare": 0.1319,
+              "reversals": 1,
+              "turns": 14,
+              "durSec": 194,
+              "curve": [
+                0.2503,
+                0.2495,
+                0.1336,
+                0.1336,
+                0.2101,
+                0.2198,
+                0.1956,
+                0.2301,
+                0.3299,
+                0.3299
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.319,
+                "inBandShare": 0.4
+              }
+            },
             "beats": 4,
             "incitingAtS": 8.2,
             "incitingKind": "threat",
@@ -1310,26 +1577,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 58.8,
+          "score": 62.5,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 25,
               "score": 25,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 14 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 14 lines (the engine speaks one line at a time)"
             },
@@ -1337,7 +1604,7 @@
               "metric": "deadAirShare",
               "value": 0,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -1351,7 +1618,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 1.615,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -1360,6 +1627,48 @@
                 "source": "prior"
               },
               "note": "5 silences of 2-10 s with business in them (an act, a face, a walk) in 3.1 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 4.33,
+              "score": 0,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "14 spoken turns in 194 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.257,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.257 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "0 of 14 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -1379,7 +1688,7 @@
               "metric": "replyAdherence",
               "value": 1,
               "score": 100,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -1432,6 +1741,12 @@
               "gaps": 12,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 4.3,
+              "silenceShare": 0.257,
+              "shortShare": 0,
+              "spanS": 194
+            },
             "subtext": {
               "deflection": 0.75,
               "figurative": 0.14285714285714285,
@@ -1449,21 +1764,35 @@
         },
         "embodiment": {
           "name": "embodiment",
-          "score": 30.5,
+          "score": 29.8,
           "readings": [
             {
               "metric": "actsPerMin",
               "value": 0,
               "score": 0,
-              "weight": 0.2,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "0 acts on screen in 3.1 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 0,
+              "score": 0,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 3,
+                "floor": 1,
+                "ceil": 3,
+                "source": "cinema-norms"
+              },
+              "note": "0 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 14 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -1621,6 +1950,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 0,
             "actsNotPlayed": 0,
             "verbs": {},
@@ -1764,7 +2094,7 @@
       "acts": 0,
       "lines": 14,
       "scriptLikeness": 25,
-      "raw": 41.9,
+      "raw": 38.6,
       "capped": false,
       "invariants": {
         "climaxByDeadline": {
@@ -1780,51 +2110,59 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     },
     {
       "run": "58",
       "durationS": 137.8,
-      "score": 56.4,
-      "deterministic": 56.4,
+      "score": 57,
+      "deterministic": 57,
+      "deterministicRaw": 57,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 32,
+          "score": 34.4,
           "readings": [
             {
-              "metric": "timeToIncitingS",
-              "value": 60.262,
-              "score": 79.7,
-              "weight": 0.15,
+              "metric": "incitingPos",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "first real disturbance (act insult) at 60.3 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.284, rise 0.059; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "reversals",
-              "value": 0,
-              "score": 0,
+              "value": null,
+              "score": null,
               "weight": 0.15,
               "band": {
-                "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "lo": 2,
+                "hi": 6,
+                "floor": 1,
+                "ceil": 10,
+                "source": "cinema-norms"
               },
-              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+              "note": "the intensity proxy finds no strong arc here (peak 0.284, rise 0.059; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "escalationShape",
               "value": 0.489,
               "score": 22.3,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -1858,23 +2196,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
               "note": "no physical act reached the screen"
             },
             {
-              "metric": "aftermathShare",
+              "metric": "climaxPos",
               "value": null,
-              "score": 0,
+              "score": null,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "the scene ends within 2 lines of the peak (0 after it)"
+              "note": "the intensity proxy finds no strong arc here (peak 0.284, rise 0.059; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
+            },
+            {
+              "metric": "aftermathShare",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.09755,
+                "hi": 0.58925,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "the intensity proxy finds no strong arc here (peak 0.284, rise 0.059; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "stakesChange",
@@ -1892,6 +2244,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": false,
+              "peak": 0.2836,
+              "rise": 0.0591,
+              "tInciting": null,
+              "tClimax": null,
+              "aftermathShare": null,
+              "reversals": 0,
+              "turns": 14,
+              "durSec": 147.3,
+              "curve": [
+                0.2136,
+                0.1424,
+                0.0908,
+                0.1013,
+                0.1013,
+                0.1249,
+                0.0692,
+                0.0692,
+                0.0397,
+                0.0771
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.242,
+                "inBandShare": 0.7
+              }
+            },
             "beats": 6,
             "incitingAtS": 60.3,
             "incitingKind": "insult",
@@ -1904,26 +2283,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 58.8,
+          "score": 62.5,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 25,
               "score": 25,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 14 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 14 lines (the engine speaks one line at a time)"
             },
@@ -1931,7 +2310,7 @@
               "metric": "deadAirShare",
               "value": 0,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -1945,7 +2324,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 1.307,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -1954,6 +2333,48 @@
                 "source": "prior"
               },
               "note": "3 silences of 2-10 s with business in them (an act, a face, a walk) in 2.3 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 5.704,
+              "score": 0,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "14 spoken turns in 147.3 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.284,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.284 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0,
+              "score": 0,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "0 of 14 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -1973,7 +2394,7 @@
               "metric": "replyAdherence",
               "value": 0.923,
               "score": 100,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -2026,6 +2447,12 @@
               "gaps": 10,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 5.7,
+              "silenceShare": 0.284,
+              "shortShare": 0,
+              "spanS": 147.3
+            },
             "subtext": {
               "deflection": 0.6,
               "figurative": 0.42857142857142855,
@@ -2043,21 +2470,35 @@
         },
         "embodiment": {
           "name": "embodiment",
-          "score": 70.4,
+          "score": 66.2,
           "readings": [
             {
               "metric": "actsPerMin",
               "value": 0.871,
-              "score": 87.1,
-              "weight": 0.2,
+              "score": 90.9,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "2 acts on screen in 2.3 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 0,
+              "score": 0,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 3,
+                "floor": 1,
+                "ceil": 3,
+                "source": "cinema-norms"
+              },
+              "note": "0 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 14 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -2215,6 +2656,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 2,
             "actsNotPlayed": 0,
             "verbs": {
@@ -2360,7 +2802,7 @@
       "acts": 2,
       "lines": 14,
       "scriptLikeness": 25,
-      "raw": 56.4,
+      "raw": 57,
       "capped": false,
       "invariants": {
         "climaxByDeadline": {
@@ -2376,51 +2818,59 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     },
     {
       "run": "59",
       "durationS": 336.9,
-      "score": 52.8,
-      "deterministic": 52.8,
+      "score": 59,
+      "deterministic": 59,
+      "deterministicRaw": 67.8,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 23.4,
+          "score": 53.4,
           "readings": [
             {
-              "metric": "timeToIncitingS",
-              "value": 53.493,
-              "score": 88.7,
-              "weight": 0.15,
+              "metric": "incitingPos",
+              "value": 0.455,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "first real disturbance (line accusation) at 53.5 s"
+              "note": "the corpus's reader puts the inciting beat at 0.455 of the scene (156.5 s of 344.1 s)"
             },
             {
               "metric": "reversals",
-              "value": 0,
-              "score": 0,
+              "value": 2,
+              "score": 100,
               "weight": 0.15,
               "band": {
                 "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "hi": 3.5,
+                "floor": 1,
+                "ceil": 5.5,
+                "source": "cinema-norms"
               },
-              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+              "note": "2 turning point(s) of the intensity curve in 38 turns (beat-based: 0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes: 0)"
             },
             {
               "metric": "escalationShape",
               "value": 0.535,
               "score": 33.8,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -2454,23 +2904,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
               "note": "no physical act reached the screen"
             },
             {
-              "metric": "aftermathShare",
-              "value": 0.84,
-              "score": 0,
+              "metric": "climaxPos",
+              "value": 0.455,
+              "score": 100,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "280.4 s and 30 lines after the peak at 53.5 s"
+              "note": "the corpus's reader puts the peak at 0.455 of the scene (the corpus median for strong arcs is ~0.58)"
+            },
+            {
+              "metric": "aftermathShare",
+              "value": 0.507,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.09755,
+                "hi": 0.58925,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "0.507 of the scene after the intensity last held 70% of its rise"
             },
             {
               "metric": "stakesChange",
@@ -2488,6 +2952,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": true,
+              "peak": 0.3099,
+              "rise": 0.2357,
+              "tInciting": 0.4548,
+              "tClimax": 0.4548,
+              "aftermathShare": 0.5075,
+              "reversals": 2,
+              "turns": 38,
+              "durSec": 344.1,
+              "curve": [
+                0.0834,
+                0.0281,
+                0.0758,
+                0.0621,
+                0.1344,
+                0.0987,
+                0.0601,
+                0.0523,
+                0.0352,
+                0.0033
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.281,
+                "inBandShare": 0.5
+              }
+            },
             "beats": 10,
             "incitingAtS": 53.5,
             "incitingKind": "accusation",
@@ -2500,26 +2991,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 52.7,
+          "score": 68.9,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 25,
               "score": 25,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 38 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 38 lines (the engine speaks one line at a time)"
             },
@@ -2527,7 +3018,7 @@
               "metric": "deadAirShare",
               "value": 0,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -2541,7 +3032,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 1.781,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -2550,6 +3041,48 @@
                 "source": "prior"
               },
               "note": "10 silences of 2-10 s with business in them (an act, a face, a walk) in 5.6 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 6.625,
+              "score": 50.1,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "38 spoken turns in 344.1 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.453,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.453 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0.289,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "11 of 38 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -2569,7 +3102,7 @@
               "metric": "replyAdherence",
               "value": 0.478,
               "score": 69.6,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -2622,6 +3155,12 @@
               "gaps": 35,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 6.6,
+              "silenceShare": 0.453,
+              "shortShare": 0.289,
+              "spanS": 344.1
+            },
             "subtext": {
               "deflection": 0.7142857142857143,
               "figurative": 0.02631578947368421,
@@ -2639,21 +3178,35 @@
         },
         "embodiment": {
           "name": "embodiment",
-          "score": 73.3,
+          "score": 72.3,
           "readings": [
             {
               "metric": "actsPerMin",
               "value": 0.89,
-              "score": 89,
-              "weight": 0.2,
+              "score": 92.9,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "5 acts on screen in 5.6 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 0,
+              "score": 0,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 4,
+                "floor": 1,
+                "ceil": 4,
+                "source": "cinema-norms"
+              },
+              "note": "0 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 38 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -2811,6 +3364,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 5,
             "actsNotPlayed": 0,
             "verbs": {
@@ -2830,8 +3384,7 @@
             ],
             "owedReactions": 4,
             "missedReactions": 0,
-            "walks": 4,
-            "coreCap": 73.3
+            "walks": 4
           }
         },
         "camera": {
@@ -2960,8 +3513,8 @@
       "acts": 5,
       "lines": 38,
       "scriptLikeness": 25,
-      "raw": 52.8,
-      "capped": false,
+      "raw": 67.8,
+      "capped": true,
       "invariants": {
         "climaxByDeadline": {
           "pass": false,
@@ -2976,51 +3529,59 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     },
     {
       "run": "60",
       "durationS": 416.3,
-      "score": 48.7,
-      "deterministic": 48.7,
+      "score": 44.8,
+      "deterministic": 44.8,
+      "deterministicRaw": 44.8,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 40,
+          "score": 22.2,
           "readings": [
             {
-              "metric": "timeToIncitingS",
-              "value": 10.042,
-              "score": 100,
-              "weight": 0.15,
+              "metric": "incitingPos",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "first real disturbance (line accusation) at 10 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.275, rise 0.256; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "reversals",
-              "value": 0,
-              "score": 0,
+              "value": null,
+              "score": null,
               "weight": 0.15,
               "band": {
-                "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "lo": 2,
+                "hi": 6,
+                "floor": 1,
+                "ceil": 10,
+                "source": "cinema-norms"
               },
-              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+              "note": "the intensity proxy finds no strong arc here (peak 0.275, rise 0.256; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "escalationShape",
               "value": 0.622,
               "score": 55.6,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -3054,23 +3615,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
               "note": "no physical act reached the screen"
             },
             {
-              "metric": "aftermathShare",
-              "value": 0.266,
-              "score": 100,
+              "metric": "climaxPos",
+              "value": null,
+              "score": null,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "109.7 s and 9 lines after the peak at 303.2 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.275, rise 0.256; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
+            },
+            {
+              "metric": "aftermathShare",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.09755,
+                "hi": 0.58925,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "the intensity proxy finds no strong arc here (peak 0.275, rise 0.256; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "stakesChange",
@@ -3088,6 +3663,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": false,
+              "peak": 0.275,
+              "rise": 0.2556,
+              "tInciting": 0.5317,
+              "tClimax": 0.6108,
+              "aftermathShare": 0.3671,
+              "reversals": 3,
+              "turns": 43,
+              "durSec": 416.4,
+              "curve": [
+                0.0161,
+                0.0222,
+                0,
+                0.037,
+                0.0574,
+                0.1074,
+                0.1089,
+                0.0222,
+                0.0156,
+                0.0458
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.246,
+                "inBandShare": 0.7
+              }
+            },
             "beats": 12,
             "incitingAtS": 10,
             "incitingKind": "accusation",
@@ -3100,26 +3702,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 50.2,
+          "score": 66.4,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 25,
               "score": 25,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 43 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 43 lines (the engine speaks one line at a time)"
             },
@@ -3127,7 +3729,7 @@
               "metric": "deadAirShare",
               "value": 0.133,
               "score": 58.6,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -3141,7 +3743,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 0.432,
               "score": 86.5,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -3150,6 +3752,48 @@
                 "source": "prior"
               },
               "note": "3 silences of 2-10 s with business in them (an act, a face, a walk) in 6.9 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 6.197,
+              "score": 26.2,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "43 spoken turns in 416.4 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.456,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.456 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0.209,
+              "score": 97.9,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "9 of 43 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -3169,7 +3813,7 @@
               "metric": "replyAdherence",
               "value": 0.538,
               "score": 84.6,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -3222,6 +3866,12 @@
               "gaps": 37,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 6.2,
+              "silenceShare": 0.456,
+              "shortShare": 0.209,
+              "spanS": 416.4
+            },
             "subtext": {
               "deflection": 0.375,
               "figurative": 0,
@@ -3245,15 +3895,29 @@
               "metric": "actsPerMin",
               "value": 0,
               "score": 0,
-              "weight": 0.2,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "0 acts on screen in 6.9 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 0,
+              "score": 0,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 7,
+                "floor": 1,
+                "ceil": 7,
+                "source": "cinema-norms"
+              },
+              "note": "0 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 43 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -3411,6 +4075,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 0,
             "actsNotPlayed": 0,
             "verbs": {},
@@ -3554,7 +4219,7 @@
       "acts": 0,
       "lines": 43,
       "scriptLikeness": 25,
-      "raw": 48.7,
+      "raw": 44.8,
       "capped": false,
       "invariants": {
         "climaxByDeadline": {
@@ -3570,51 +4235,59 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     },
     {
       "run": "61",
       "durationS": 467,
-      "score": 45.9,
-      "deterministic": 45.9,
+      "score": 47.5,
+      "deterministic": 47.5,
+      "deterministicRaw": 47.5,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 32.7,
+          "score": 27.4,
           "readings": [
             {
-              "metric": "timeToIncitingS",
-              "value": 91.475,
-              "score": 38,
-              "weight": 0.15,
+              "metric": "incitingPos",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "first real disturbance (line threat) at 91.5 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.2, rise 0.156; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "reversals",
-              "value": 0.514,
-              "score": 51.4,
+              "value": null,
+              "score": null,
               "weight": 0.15,
               "band": {
-                "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "lo": 2,
+                "hi": 6,
+                "floor": 1,
+                "ceil": 10,
+                "source": "cinema-norms"
               },
-              "note": "0 initiative swap(s) + 1 rise(s) after a lull, per 4 minutes of run"
+              "note": "the intensity proxy finds no strong arc here (peak 0.2, rise 0.156; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "escalationShape",
               "value": 0.736,
               "score": 84.1,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -3648,23 +4321,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
               "note": "no physical act reached the screen"
             },
             {
-              "metric": "aftermathShare",
-              "value": 0.802,
-              "score": 0,
+              "metric": "climaxPos",
+              "value": null,
+              "score": null,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "371.5 s and 46 lines after the peak at 91.5 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.2, rise 0.156; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
+            },
+            {
+              "metric": "aftermathShare",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.09755,
+                "hi": 0.58925,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "the intensity proxy finds no strong arc here (peak 0.2, rise 0.156; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "stakesChange",
@@ -3682,6 +4369,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": false,
+              "peak": 0.2,
+              "rise": 0.1563,
+              "tInciting": 0.0649,
+              "tClimax": 0.5128,
+              "aftermathShare": 0.0796,
+              "reversals": 3,
+              "turns": 58,
+              "durSec": 458.9,
+              "curve": [
+                0.0375,
+                0.0333,
+                0.0933,
+                0.0444,
+                0.0492,
+                0.1067,
+                0.0381,
+                0.0133,
+                0.0296,
+                0.0609
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.243,
+                "inBandShare": 0.7
+              }
+            },
             "beats": 11,
             "incitingAtS": 91.5,
             "incitingKind": "threat",
@@ -3694,26 +4408,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 53.1,
+          "score": 73.2,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 25,
               "score": 25,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 58 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 58 lines (the engine speaks one line at a time)"
             },
@@ -3721,7 +4435,7 @@
               "metric": "deadAirShare",
               "value": 0.001,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -3735,7 +4449,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 0.514,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -3744,6 +4458,48 @@
                 "source": "prior"
               },
               "note": "4 silences of 2-10 s with business in them (an act, a face, a walk) in 7.8 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 7.583,
+              "score": 100,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "58 spoken turns in 458.9 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.371,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.371 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0.293,
+              "score": 100,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "17 of 58 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -3763,7 +4519,7 @@
               "metric": "replyAdherence",
               "value": 0.486,
               "score": 71.6,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -3816,6 +4572,12 @@
               "gaps": 56,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 7.6,
+              "silenceShare": 0.371,
+              "shortShare": 0.293,
+              "spanS": 458.9
+            },
             "subtext": {
               "deflection": 0.7777777777777778,
               "figurative": 0,
@@ -3833,21 +4595,35 @@
         },
         "embodiment": {
           "name": "embodiment",
-          "score": 35.1,
+          "score": 34.3,
           "readings": [
             {
               "metric": "actsPerMin",
               "value": 0,
               "score": 0,
-              "weight": 0.2,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "0 acts on screen in 7.8 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 0,
+              "score": 0,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 7,
+                "floor": 1,
+                "ceil": 7,
+                "source": "cinema-norms"
+              },
+              "note": "0 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 58 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -4005,6 +4781,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 0,
             "actsNotPlayed": 0,
             "verbs": {},
@@ -4147,7 +4924,7 @@
       "acts": 0,
       "lines": 58,
       "scriptLikeness": 25,
-      "raw": 45.9,
+      "raw": 47.5,
       "capped": false,
       "invariants": {
         "climaxByDeadline": {
@@ -4163,6 +4940,13 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     },
     {
@@ -4170,44 +4954,45 @@
       "durationS": 2724.6,
       "score": 59,
       "deterministic": 59,
+      "deterministicRaw": 63.6,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 43.1,
+          "score": 36.6,
           "readings": [
             {
-              "metric": "timeToIncitingS",
-              "value": 56.345,
-              "score": 84.9,
-              "weight": 0.15,
+              "metric": "incitingPos",
+              "value": 0.134,
+              "score": 89,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "first real disturbance (line threat) at 56.3 s"
+              "note": "the corpus's reader puts the inciting beat at 0.134 of the scene (361.6 s of 2702.8 s)"
             },
             {
               "metric": "reversals",
-              "value": 0.881,
-              "score": 88.1,
+              "value": 13,
+              "score": 30,
               "weight": 0.15,
               "band": {
-                "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "lo": 3.5,
+                "hi": 9.5,
+                "floor": 1,
+                "ceil": 14.5,
+                "source": "cinema-norms"
               },
-              "note": "3 initiative swap(s) + 7 rise(s) after a lull, per 4 minutes of run"
+              "note": "13 turning point(s) of the intensity curve in 377 turns (beat-based: 3 initiative swap(s) + 7 rise(s) after a lull, per 4 minutes: 0.9)"
             },
             {
               "metric": "escalationShape",
               "value": 0.571,
               "score": 42.9,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -4241,23 +5026,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
-              "note": "physical climax (shove) at 390.1 s; the invariant is 240 s"
+              "note": "physical climax (shove) at 390.1 s; the invariant is 240 s (a product requirement, not a corpus statistic)"
+            },
+            {
+              "metric": "climaxPos",
+              "value": 0.14,
+              "score": 48,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "the corpus's reader puts the peak at 0.14 of the scene (the corpus median for strong arcs is ~0.58)"
             },
             {
               "metric": "aftermathShare",
-              "value": 0.856,
-              "score": 0,
+              "value": 0.86,
+              "score": 34.1,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.09755,
+                "hi": 0.58925,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "2318.3 s and 319 lines after the peak at 390.1 s"
+              "note": "0.86 of the scene after the intensity last held 70% of its rise"
             },
             {
               "metric": "stakesChange",
@@ -4275,6 +5074,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": true,
+              "peak": 0.4375,
+              "rise": 0.3931,
+              "tInciting": 0.1338,
+              "tClimax": 0.1402,
+              "aftermathShare": 0.8598,
+              "reversals": 13,
+              "turns": 377,
+              "durSec": 2702.8,
+              "curve": [
+                0.034,
+                0.0465,
+                0.0426,
+                0.0249,
+                0.0611,
+                0.0286,
+                0.0417,
+                0.0226,
+                0.0391,
+                0.051
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.298,
+                "inBandShare": 0.6
+              }
+            },
             "beats": 76,
             "incitingAtS": 56.3,
             "incitingKind": "threat",
@@ -4293,26 +5119,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 40.6,
+          "score": 60,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 25,
               "score": 25,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 377 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 377 lines (the engine speaks one line at a time)"
             },
@@ -4320,7 +5146,7 @@
               "metric": "deadAirShare",
               "value": 0.31,
               "score": 0,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -4334,7 +5160,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 0.374,
               "score": 74.9,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -4343,6 +5169,48 @@
                 "source": "prior"
               },
               "note": "17 silences of 2-10 s with business in them (an act, a face, a walk) in 45.4 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 8.369,
+              "score": 100,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "377 spoken turns in 2702.8 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.431,
+              "score": 100,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.431 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0.016,
+              "score": 0,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "6 of 377 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -4362,7 +5230,7 @@
               "metric": "replyAdherence",
               "value": 0.487,
               "score": 71.8,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -4415,6 +5283,12 @@
               "gaps": 207,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 8.4,
+              "silenceShare": 0.431,
+              "shortShare": 0.016,
+              "spanS": 2702.8
+            },
             "subtext": {
               "deflection": 0.5903614457831325,
               "figurative": 0.005305039787798408,
@@ -4432,21 +5306,35 @@
         },
         "embodiment": {
           "name": "embodiment",
-          "score": 87.2,
+          "score": 89.7,
           "readings": [
             {
               "metric": "actsPerMin",
               "value": 0.529,
-              "score": 52.9,
-              "weight": 0.2,
+              "score": 55.1,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "24 acts on screen in 45.4 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 1,
+              "score": 100,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 7,
+                "floor": 1,
+                "ceil": 7,
+                "source": "cinema-norms"
+              },
+              "note": "1 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 377 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -4604,6 +5492,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 24,
             "actsNotPlayed": 0,
             "verbs": {
@@ -4757,7 +5646,7 @@
       "acts": 24,
       "lines": 377,
       "scriptLikeness": 25,
-      "raw": 61.7,
+      "raw": 63.6,
       "capped": true,
       "invariants": {
         "climaxByDeadline": {
@@ -4773,51 +5662,59 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     },
     {
       "run": "63",
       "durationS": 448.2,
-      "score": 46.9,
-      "deterministic": 46.9,
+      "score": 41.7,
+      "deterministic": 41.7,
+      "deterministicRaw": 41.7,
       "groups": {
         "arc": {
           "name": "arc",
-          "score": 36.4,
+          "score": 21.4,
           "readings": [
             {
-              "metric": "timeToIncitingS",
-              "value": 22.076,
-              "score": 100,
-              "weight": 0.15,
+              "metric": "incitingPos",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
               "band": {
-                "lo": 0,
-                "hi": 45,
+                "lo": 0.1503,
+                "hi": 0.6003000000000001,
                 "floor": 0,
-                "ceil": 120,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "first real disturbance (line reveal) at 22.1 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.125, rise 0.107; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "reversals",
-              "value": 0,
-              "score": 0,
+              "value": null,
+              "score": null,
               "weight": 0.15,
               "band": {
-                "lo": 1,
-                "hi": 4,
-                "floor": 0,
-                "ceil": 8,
-                "source": "prior"
+                "lo": 2,
+                "hi": 6,
+                "floor": 1,
+                "ceil": 10,
+                "source": "cinema-norms"
               },
-              "note": "0 initiative swap(s) + 0 rise(s) after a lull, per 4 minutes of run"
+              "note": "the intensity proxy finds no strong arc here (peak 0.125, rise 0.107; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "escalationShape",
               "value": 0.557,
               "score": 39.2,
-              "weight": 0.15,
+              "weight": 0.1,
               "band": {
                 "lo": 0.8,
                 "hi": null,
@@ -4851,23 +5748,37 @@
                 "hi": 210,
                 "floor": 0,
                 "ceil": 300,
-                "source": "prior"
+                "source": "product"
               },
               "note": "no physical act reached the screen"
             },
             {
-              "metric": "aftermathShare",
-              "value": 0.371,
-              "score": 76.4,
+              "metric": "climaxPos",
+              "value": null,
+              "score": null,
               "weight": 0.1,
               "band": {
-                "lo": 0.08,
-                "hi": 0.3,
+                "lo": 0.29215,
+                "hi": 0.8454999999999999,
                 "floor": 0,
-                "ceil": 0.6,
-                "source": "prior"
+                "ceil": 1,
+                "source": "cinema-norms"
               },
-              "note": "162.1 s and 15 lines after the peak at 275.1 s"
+              "note": "the intensity proxy finds no strong arc here (peak 0.125, rise 0.107; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
+            },
+            {
+              "metric": "aftermathShare",
+              "value": null,
+              "score": null,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.09755,
+                "hi": 0.58925,
+                "floor": 0,
+                "ceil": 1,
+                "source": "cinema-norms"
+              },
+              "note": "the intensity proxy finds no strong arc here (peak 0.125, rise 0.107; needs 0.3 and 0.15); it is near-blind to cold or afraid conflict, so this is not read as \"no arc\""
             },
             {
               "metric": "stakesChange",
@@ -4885,6 +5796,33 @@
             }
           ],
           "detail": {
+            "corpus": {
+              "strongArc": false,
+              "peak": 0.125,
+              "rise": 0.1068,
+              "tInciting": null,
+              "tClimax": null,
+              "aftermathShare": null,
+              "reversals": 0,
+              "turns": 54,
+              "durSec": 436.3,
+              "curve": [
+                0.0201,
+                0,
+                0.0259,
+                0.0093,
+                0.0603,
+                0,
+                0.0083,
+                0,
+                0,
+                0.0145
+              ],
+              "shapeFit": {
+                "meanAbsDist": 0.249,
+                "inBandShare": 0.5
+              }
+            },
             "beats": 11,
             "incitingAtS": 22.1,
             "incitingKind": "reveal",
@@ -4897,26 +5835,26 @@
         },
         "dialogue": {
           "name": "dialogue",
-          "score": 50.4,
+          "score": 54.5,
           "readings": [
             {
               "metric": "scriptLikeness",
               "value": 25,
               "score": 25,
-              "weight": 0.35,
+              "weight": 0.3,
               "note": "existing script-likeness benchmark, 54 speech turns, read next to THEATRE norms (no cinema block yet)"
             },
             {
               "metric": "interruptionShare",
               "value": 0,
-              "score": 0,
-              "weight": 0.15,
+              "score": 100,
+              "weight": 0.1,
               "band": {
-                "lo": 0.03,
-                "hi": 0.2,
+                "lo": 0,
+                "hi": 0.09720000000000001,
                 "floor": 0,
-                "ceil": 0.5,
-                "source": "prior"
+                "ceil": 0.18059999999999998,
+                "source": "cinema-norms"
               },
               "note": "PROXY: 0 cut-off lines and 0 staged overlaps out of 54 lines (the engine speaks one line at a time)"
             },
@@ -4924,7 +5862,7 @@
               "metric": "deadAirShare",
               "value": 0.106,
               "score": 72,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0,
                 "hi": 0.05,
@@ -4938,7 +5876,7 @@
               "metric": "pauseBeatsPerMin",
               "value": 1.205,
               "score": 100,
-              "weight": 0.1,
+              "weight": 0.05,
               "band": {
                 "lo": 0.5,
                 "hi": 4,
@@ -4947,6 +5885,48 @@
                 "source": "prior"
               },
               "note": "9 silences of 2-10 s with business in them (an act, a face, a walk) in 7.5 min"
+            },
+            {
+              "metric": "turnsPerMin",
+              "value": 7.426,
+              "score": 94.9,
+              "weight": 0.08,
+              "band": {
+                "lo": 7.516691130887325,
+                "hi": 14.49514268551778,
+                "floor": 5.728645664018276,
+                "ceil": 17.321974013627425,
+                "source": "cinema-norms"
+              },
+              "note": "54 spoken turns in 436.3 s between the first line and the last"
+            },
+            {
+              "metric": "silenceShare",
+              "value": 0.595,
+              "score": 0,
+              "weight": 0.1,
+              "band": {
+                "lo": 0.11115,
+                "hi": 0.46,
+                "floor": 0.04225000000000001,
+                "ceil": 0.5763,
+                "source": "cinema-norms"
+              },
+              "note": "nobody talking for 0.595 of the span (a line is assumed to take 0.45 s + words / 2.7 s to say); subtitle scenes are cut at 12 s of silence, so a longer dead stretch is not in the norm"
+            },
+            {
+              "metric": "shortReplyShare",
+              "value": 0.037,
+              "score": 0,
+              "weight": 0.07,
+              "band": {
+                "lo": 0.21220000000000003,
+                "hi": 0.64275,
+                "floor": 0.07680000000000001,
+                "ceil": 0.7855500000000001,
+                "source": "cinema-norms"
+              },
+              "note": "2 of 54 lines are 5 words or fewer"
             },
             {
               "metric": "subtext",
@@ -4966,7 +5946,7 @@
               "metric": "replyAdherence",
               "value": 0.488,
               "score": 72,
-              "weight": 0.2,
+              "weight": 0.15,
               "band": {
                 "lo": 0.6,
                 "hi": null,
@@ -5019,6 +5999,12 @@
               "gaps": 53,
               "basis": "track"
             },
+            "rhythm": {
+              "turnsPerMin": 7.4,
+              "silenceShare": 0.595,
+              "shortShare": 0.037,
+              "spanS": 436.3
+            },
             "subtext": {
               "deflection": 0.8,
               "figurative": 0.018518518518518517,
@@ -5041,16 +6027,30 @@
             {
               "metric": "actsPerMin",
               "value": 0.134,
-              "score": 13.4,
-              "weight": 0.2,
+              "score": 14,
+              "weight": 0.16,
               "band": {
-                "lo": 1,
-                "hi": 6,
+                "lo": 0.9584,
+                "hi": 3.4588,
                 "floor": 0,
-                "ceil": 15,
-                "source": "prior"
+                "ceil": 4.736000000000001,
+                "source": "cinema-norms"
               },
               "note": "1 acts on screen in 7.5 min (0 more never played out)"
+            },
+            {
+              "metric": "hardActs",
+              "value": 0,
+              "score": 0,
+              "weight": 0.06,
+              "band": {
+                "lo": 1,
+                "hi": 7,
+                "floor": 1,
+                "ceil": 7,
+                "source": "cinema-norms"
+              },
+              "note": "0 hard physical act(s) (a strike, shove, grab, kill, collapse, kiss or embrace) in 54 turns"
             },
             {
               "metric": "distinctVerbs",
@@ -5208,6 +6208,7 @@
             }
           ],
           "detail": {
+            "humanLike": "off",
             "acts": 1,
             "actsNotPlayed": 0,
             "verbs": {
@@ -5355,7 +6356,7 @@
       "acts": 1,
       "lines": 54,
       "scriptLikeness": 25,
-      "raw": 46.9,
+      "raw": 41.7,
       "capped": false,
       "invariants": {
         "climaxByDeadline": {
@@ -5371,6 +6372,13 @@
         "dialogue": 20,
         "embodiment": 26.7,
         "camera": 13.3
+      },
+      "norms": {
+        "origin": "cinema-norms (E1 corpus): rhythm pt/film/subtitle + pt/series/subtitle; structure en/film/screenplay + en/series/transcript; action en/film/screenplay",
+        "fromCinemaNorms": 10,
+        "priors": 25,
+        "product": 1,
+        "note": "10 of 36 bands measured on the corpus; the rest are priors (and the 4:00 climax, a product requirement)"
       }
     }
   ]
