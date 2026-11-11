@@ -50,6 +50,21 @@ export type ReplayManifest = {
     unanswered_questions: number;
     norms_built?: string;
   };
+  /**
+   * The cinematic score (docs/eval/cinematic-score.md): written by `pnpm --filter @perfectman/eval cinematic --run <dir> --write-replay`, not by the run.
+   * `groups` are 0-100 or null when a group was not scored (engagement needs the judge); `deterministic` is the mean of the four measured groups.
+   */
+  cinematic_score?: {
+    version: string;
+    score: number | null;
+    deterministic: number | null;
+    partial: boolean;
+    capped: boolean;
+    groups: Record<string, number | null>;
+    climax_by_deadline: { pass: boolean; at_s: number | null; verb: string | null; deadline_s: number };
+    engagement?: { judge: string; mock: boolean; mean: number };
+    norms: string;
+  };
   /** The scene spine of a run with no authored beats: the step it ended on and when each step began, and whether the progress gate or the hold released it. */
   scene_spine?: {
     step: number;
