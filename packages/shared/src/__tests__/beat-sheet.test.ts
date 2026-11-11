@@ -46,12 +46,32 @@ describe("a camera beat's polish fields", () => {
     expect(r.warnings.filter((w) => w.message.includes("beat_sheet.camera_detail_dropped")).length).toBe(4);
   });
 
-  it("still fails a camera beat with no usable shot", () => {
+  it("leaves out a camera beat with no usable shot, with a warning, and the sheet stays valid", () => {
     const sheet = raw();
     const beats = sheet["beats"] as Array<Record<string, unknown>>;
     beats.push({ id: "c8", at_ms: 500, phase: "setup", kind: "camera", intent: { shot: "drone" } });
+    beats.push({ id: "c7", at_ms: 600, phase: "setup", kind: "camera" });
     beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
-    expect(messages(validateBeatSheet(sheet, ctx))).toContain("shot is one of");
+    const r = validateBeatSheet(sheet, ctx);
+    expect(messages(r)).toBe("");
+    expect(r.sheet?.beats.find((b) => b.id === "c8" || b.id === "c7")).toBeUndefined();
+    expect(r.warnings.filter((w) => w.message.includes("beat_sheet.camera_beat_dropped")).length).toBe(2);
+  });
+
+  it("reads the shot from a string or from the top of the beat, with a few common names (close, wide)", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "c6", at_ms: 500, phase: "setup", kind: "camera", intent: "close-up" });
+    beats.push({ id: "c5", at_ms: 600, phase: "setup", kind: "camera", shot: "wide" });
+    beats.push({ id: "c4", at_ms: 700, phase: "setup", kind: "camera", intent: { shot: "close" } });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    const r = validateBeatSheet(sheet, ctx);
+    expect(messages(r)).toBe("");
+    const shot = (id: string): unknown => {
+      const b = r.sheet?.beats.find((x) => x.id === id);
+      return b && b.kind === "camera" ? b.intent.shot : undefined;
+    };
+    expect([shot("c6"), shot("c5"), shot("c4")]).toEqual(["close_up", "establishing", "close_up"]);
   });
 });
 

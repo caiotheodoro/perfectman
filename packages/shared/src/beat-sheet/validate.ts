@@ -300,7 +300,17 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
         break;
       }
       case "camera": {
-        const intent = readCamera(entry["intent"], `${at}.intent`, err, idOf, (path, message) => warn(path, "beat_sheet.camera_detail_dropped", message));
+        // A camera beat is polish: a model that writes the shot as a string ("close"), at the top of the beat, or not at all costs that one beat, never the sheet.
+        let rawIntent: unknown = entry["intent"];
+        const SHOT_ALIAS: Record<string, string> = { close: "close_up", closeup: "close_up", wide: "establishing", master: "establishing", twoshot: "two_shot", track: "tracking", cutaway: "insert" };
+        const shotName = (v: unknown): unknown => (typeof v === "string" ? (SHOT_ALIAS[v.trim().toLowerCase().replace(/[\s-]+/g, "_")] ?? v.trim().toLowerCase().replace(/[\s-]+/g, "_")) : v);
+        if (typeof rawIntent === "string") rawIntent = { shot: shotName(rawIntent) };
+        else if (rawIntent === undefined && entry["shot"] !== undefined) rawIntent = entry;
+        if (!isRecord(rawIntent) || !(SHEET_SHOTS as readonly unknown[]).includes(shotName(rawIntent["shot"]))) {
+          warn(`${at}.intent`, "beat_sheet.camera_beat_dropped", `a camera beat needs an intent with a shot (one of ${SHEET_SHOTS.join(", ")}), so this beat is left out`);
+          break;
+        }
+        const intent = readCamera({ ...rawIntent, shot: shotName(rawIntent["shot"]) }, `${at}.intent`, err, idOf, (path, message) => warn(path, "beat_sheet.camera_detail_dropped", message));
         if (errors.length > before || intent === undefined) break;
         beat = { ...base, kind: "camera", intent };
         break;
