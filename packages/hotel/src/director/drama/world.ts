@@ -15,6 +15,8 @@ export interface DramaWorld {
   avatarsIn(room: number): WorldAvatar[];
   /** The run's cast, for the contagion cap (LAD-10). */
   castSize(): number;
+  /** The player's Block: true when the human `human` blocked the actor `actor`, so the actor never targets them (GATE-6). Absent: nothing is known to be blocked. */
+  blocks?(human: number, actor: number): boolean;
 }
 
 /** The mirror's window on one run as a `DramaWorld`. `refs` are the run's actors. */

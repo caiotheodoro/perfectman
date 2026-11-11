@@ -41,7 +41,7 @@ export type ActRecord = {
   seq: number;
 };
 
-export type NewRecord = Pick<ActRecord, "actId" | "actor" | "target" | "room" | "verb" | "origin" | "scene" | "humanTarget"> & { at: number };
+export type NewRecord = Pick<ActRecord, "actId" | "actor" | "target" | "room" | "verb" | "origin" | "scene" | "humanTarget"> & { at: number; /** The scene lets a human who did not opt in be the target: no chip will be shown for this act. */ chipless?: boolean };
 
 /** What a resumed director could not read back from the hotel and assumes (act-contract.md NEG-9 carries only the scene id). */
 export type Assumed = { physicalAt?: number; killUsed?: boolean };
@@ -72,12 +72,13 @@ export class ActLedger {
   /** RSV-1: the act was sent, so it counts now, whatever comes of it. */
   reserve(n: NewRecord): ActRecord {
     const rung = ladderRung(n.verb);
+    const { chipless, ...rest } = n;
     const rec: ActRecord = {
-      ...n,
+      ...rest,
       rung,
       phase: "sent",
-      chip: n.humanTarget && HAS_CHIP(n.verb),
-      chipOpen: n.humanTarget && HAS_CHIP(n.verb),
+      chip: n.humanTarget && HAS_CHIP(n.verb) && chipless !== true,
+      chipOpen: n.humanTarget && HAS_CHIP(n.verb) && chipless !== true,
       harm: n.humanTarget && HARM_VERBS.has(n.verb),
       seq: ++this.seq,
     };
@@ -193,9 +194,10 @@ export class ActLedger {
     return cur;
   }
 
-  /** The actors holding a rung of `min` or more in this scene (LAD-10). */
-  actorsAtOrAbove(min: number, actors: Iterable<number>): number[] {
-    return [...new Set(actors)].filter((a) => this.rungOfActor(a) >= min);
+  /** The actors holding a rung of `min` or more in this scene (LAD-10); with `since`, only a rung started at or after it counts, so an old blow ages out of the cap. */
+  actorsAtOrAbove(min: number, actors: Iterable<number>, since?: number): number[] {
+    const rung = (a: number): number => (since === undefined ? this.rungOfActor(a) : this.fold((r) => r.actor === a && r.at >= since, (c) => c.actor === a));
+    return [...new Set(actors)].filter((a) => rung(a) >= min);
   }
 
   /** LAD-3: when the last physical beat of this scene started (a resume assumes one just did). */

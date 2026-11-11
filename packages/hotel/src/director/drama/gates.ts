@@ -41,6 +41,13 @@ export type GateInput = {
   harm: { count: number; max: number };
   /** GATE-6: human ids in the room whose session opted in. */
   optIn: ReadonlySet<number>;
+  /**
+   * GATE-6 for a human target: the scene lets a human be the target of an act without the per-act consent chip (`RunDrama.humansTargetable`, default true; the owner's call, 2026-11).
+   * An act at a human who did not opt in is not refused for want of the chip. `false` is the old gate.
+   */
+  humansTargetable: boolean;
+  /** The player's Block: true when the human `human` blocked the actor `actor`. A blocked actor never targets the blocker, with or without the chip (GATE-6 `blocked`). Absent: nobody blocked anyone. */
+  blocks?: (human: number, actor: number) => boolean;
   /** GATE-5. */
   scenario: RunDrama;
   /** The `person-N` refs of the principals, for `may_target` and `may_die`; undefined for a human. */
@@ -74,8 +81,9 @@ export function reviewGates(i: GateInput): GateVerdict {
   // GATE-5
   const scenario = scenarioGate(i, rung);
   if (scenario) return scenario;
-  // GATE-6
-  if (targetHuman && (gate.consent === "violent_chip" || gate.consent === "violent_chip_noncontact") && i.target !== undefined && !i.optIn.has(i.target)) return block("consent_off", "GATE-6");
+  // GATE-6: the player's Block always holds; the chip only while the scene asks for one.
+  if (targetHuman && i.target !== undefined && i.blocks?.(i.target, i.actor) === true) return block("consent_off", "GATE-6", "blocked");
+  if (targetHuman && !i.humansTargetable && (gate.consent === "violent_chip" || gate.consent === "violent_chip_noncontact") && i.target !== undefined && !i.optIn.has(i.target)) return block("consent_off", "GATE-6");
   // GATE-7
   const far = distanceGate(i, gate, target);
   if (far) return far;
@@ -93,7 +101,7 @@ export function reviewGates(i: GateInput): GateVerdict {
     const last = i.ladder.lastSameVerbAt(i.actor, i.verb, i.target);
     if (last !== undefined && i.now - last < LIMITS.sameVerbCooldownMs) return block("cooldown", "GATE-10", "verb");
   }
-  if (targetHuman && gate.consent !== null && i.target !== undefined) {
+  if (targetHuman && gate.consent !== null && i.target !== undefined && (!i.humansTargetable || i.optIn.has(i.target))) {
     const until = i.ladder.chipCooldownUntil(i.target);
     if (until !== undefined && i.now < until) return block("cooldown", "GATE-10", "chip_cooldown");
     if (i.ladder.chipBusy(i.target)) return block("cooldown", "GATE-10", "chip_busy");

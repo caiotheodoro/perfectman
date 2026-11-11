@@ -118,7 +118,7 @@ describe("the drama block in the compiled body", () => {
   });
 
   it("[SCN-1] a run with no block resolves to free play: max rung 3, no pairs, no deaths, no authored skips", () => {
-    expect(resolveRunDrama({})).toEqual({ block: undefined, effective: FREE_PLAY_DRAMA, freePlay: true, canSkip: false, mode: "free_play", off: false });
+    expect(resolveRunDrama({}, {})).toEqual({ block: undefined, effective: FREE_PLAY_DRAMA, freePlay: true, canSkip: false, mode: "free_play", off: false, humansTargetable: true });
     expect(cleanDrama(undefined, ["person-1"])).toEqual({});
   });
 

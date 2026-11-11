@@ -58,14 +58,23 @@ export type DramaTuning = {
      * volition of the unlocked rungs and below `volition` (the one dialogue-driven reading the slap has) and opens their grievance: the climb itself is the director's
      * (one rung per beat, `origination.climb`, the witness rule, the spacing and the cooldown). Never the punch or the kill, never a human.
      */
-    unlock: { windowMs: number; holdMs: number; shoveEvents: number; slapEvents: number; provocation: number; volition: number };
+    unlock: { windowMs: number; holdMs: number; shoveEvents: number; slapEvents: number; provocation: number; volition: number; climbExtendMs: number };
   };
+  /**
+   * A floor under every ladder verb's volition that rises with the scene's age, on only for a scene that carries a climax deadline (`RunDrama.pressure`: a beat sheet, or a
+   * `drama.pressure_floor` of the author's), never in free play. From `startFrac` of the deadline it grows linearly to `max` at the deadline, so a cast whose model only talks
+   * (volition 0.36 against a theta of 0.52, run 63) is still pushed up the ladder in time for the climax. It reaches only the pairs with heat (a live grievance from what was said,
+   * an open unlock, or a resentment of `heat`) and only the rungs up to `maxRung`; from `grievanceAt` the floor also stands in for the grievance LAD-6 asks the rungs from
+   * `grievance.minRung`. The ladder is still one rung per beat, 25 s apart, with the witness rule and the spacing: the floor moves the motive gate, no other.
+   */
+  pressure: { floor: { startFrac: number; max: number; heat: number; maxRung: number; grievanceAt: number } };
   /**
    * LAD-10: at most `maxActors` actors, or `castFraction` of the cast if that is fewer (never fewer than one), hold a rung of `minRung` or more at once. `answer` (errata P9): an
    * actor the scene spine opened a pair for may answer a blow of `minRung` or more that person threw at it, beyond the cap: a fight of two is not a spread to a third. A third person is
-   * still capped. Off restores the cap as it was (one actor per scene in a cast of 3 to 5).
+   * still capped. Off restores the cap as it was (one actor per scene in a cast of 3 to 5). `ageMs` (run 63): a rung of `minRung` or more
+   * started longer ago than this no longer counts toward the cap, so a shove in the first minute does not shut out the slap of the climax for the rest of the scene; 0 keeps it all scene.
    */
-  contagion: { minRung: number; maxActors: number; castFraction: number; answer: boolean };
+  contagion: { minRung: number; maxActors: number; castFraction: number; answer: boolean; ageMs: number };
   /** Which tendencies drive which verb. A verb with no driver is never started by emotion alone: `kill` is authored (LAD-5). */
   drivers: Readonly<Partial<Record<ActVerb, readonly Driver[]>>>;
   /**
@@ -76,6 +85,12 @@ export type DramaTuning = {
   origination: {
     verbs: readonly ActVerb[];
     minGapMs: number;
+    /**
+     * Whether the director is also asked to originate when the model proposed something and none of it went through (run 63: the model proposed a glare on every consult, the
+     * ladder refused 13 of them on the motive, and the 12 originations the director was asked for found nothing; the ones it was not asked for are the other cases). The same
+     * gates and the same pace apply, and a proposal that was approved still keeps the director out. false restores the old rule: asked only when the model proposed nothing.
+     */
+    askAfterRefusal: boolean;
     /** Off-ladder verbs have no rung, so no theta: a beat of one needs a volition of at least this. */
     offLadderTheta: number;
     /**
@@ -101,6 +116,12 @@ export type DramaTuning = {
    * is exempt (the script is the author's pace). A verb that is not listed has no window.
    */
   repeatMs: Readonly<Partial<Record<ActVerb, number>>>;
+  /**
+   * Acts at a human in the room (the scene's `may_target_humans`, which drops the consent chip). The director's own beats (no model proposal, no author) go no higher than
+   * `directorMaxRung` at a human: a glare or an insult, never a blow, and the scene spine never unlocks one (`ProvocationLedger.allow`). A blow at a human is the model's
+   * or the author's, through every gate (`max_rung`, `may_target`, the rate limit), and the hotel keeps it cosmetic.
+   */
+  humanTargets: { directorMaxRung: number };
   /** A `scene_advance` carries no `cid` here, so a refusal is silent: ask again only after this long without a `scene_cut` (SCENE-4). */
   sceneAdvancePendingMs: number;
   /**
@@ -150,9 +171,10 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
     grievanceAt: 0.3,
     maxRung: 3,
     reportedGain: 0.15,
-    unlock: { windowMs: 90_000, holdMs: 90_000, shoveEvents: 2, slapEvents: 3, provocation: 0.85, volition: 0.95 },
+    unlock: { windowMs: 90_000, holdMs: 120_000, shoveEvents: 2, slapEvents: 3, provocation: 0.85, volition: 0.95, climbExtendMs: 60_000 },
   },
-  contagion: { minRung: 3, maxActors: 2, castFraction: 1 / 3, answer: true },
+  pressure: { floor: { startFrac: 0.2, max: 0.8, heat: 0.1, maxRung: 4, grievanceAt: 0.45 } },
+  contagion: { minRung: 3, maxActors: 2, castFraction: 1 / 3, answer: true, ageMs: 90_000 },
   drivers: {
     glare: [d("act.jealousInspection"), d("act.resentfulColdness"), d("social.jealousy"), d("social.envy"), d("rel.envy"), d("rel.provocation")],
     insult: [d("act.impulsiveProvocation"), d("act.contemptuousDismissal"), d("social.contempt"), d("rel.provocation")],
@@ -163,7 +185,8 @@ export const DEFAULT_DRAMA_TUNING: DramaTuning = {
     turn_back: [d("act.resentfulColdness"), d("act.contemptuousDismissal"), d("act.shameWithdrawal")],
   },
   repeatMs: { turn_back: 60_000, storm_off: 120_000, cry: 90_000, faint: 300_000, recoil: 20_000, freeze_gasp: 30_000, tend_fallen: 60_000, restrain: 30_000, tableau: 60_000 },
-  origination: { verbs: ["glare", "insult", "shove", "slap", "punch", "turn_back"], minGapMs: 75_000, offLadderTheta: 0.6, climb: { gapMs: 25_000, maxRung: 4, followWindowMs: 30_000, followEveryMs: 3000 } },
+  origination: { verbs: ["glare", "insult", "shove", "slap", "punch", "turn_back"], minGapMs: 75_000, askAfterRefusal: true, offLadderTheta: 0.6, climb: { gapMs: 25_000, maxRung: 4, followWindowMs: 30_000, followEveryMs: 3000 } },
+  humanTargets: { directorMaxRung: 2 },
   sceneAdvancePendingMs: 3000,
   resumeAssumes: { physicalBeatJustStarted: true, killUsed: true },
   keepDoneMs: 60_000,

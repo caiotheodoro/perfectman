@@ -68,20 +68,21 @@ describe("an actor holding an unlock is asked to carry it out, whatever its mode
     expect(asked(r.port!)).toBe(before + 1);
   });
 
-  it("with no unlock the model's proposal is all there is: no beat of the director's own on that consult", () => {
+  it("with no unlock a refused proposal still gets the director asked once for a beat of its own (run 63: the model proposed on every consult, the director was never asked)", () => {
     const r = rig({ allow: (a, b) => a !== b });
     r.port!.next = veto;
     r.body.planFor("duda", r.input(glare));
-    expect(asked(r.port!)).toBe(0);
+    expect(r.port!.turns.filter((t) => t.proposal !== undefined)).toHaveLength(1);
+    expect(asked(r.port!)).toBe(1);
   });
 
-  it("an actor that holds an unlock for someone else is not asked on another actor's consult", () => {
+  it("an actor that holds an unlock for someone else is asked on its own consult only: another actor's refused proposal asks the director for that actor, once", () => {
     const r = rig({ allow: (a, b) => a !== b });
     r.body.grant("duda", "gabi", "shove", "test");
     const before = asked(r.port!);
     r.port!.next = veto;
     r.body.planFor("rafa", r.input({ ...glare, handles: { p1: { kind: "person", ref: "duda" } } }, "rafa"));
-    expect(asked(r.port!)).toBe(before);
+    expect(asked(r.port!)).toBe(before + 1);
   });
 
   it("a proposal the director approved holds the actor: it is not given a second beat on the same consult", () => {
@@ -120,11 +121,11 @@ describe("the director is looked at the moment an unlock is granted", () => {
   });
 });
 
-describe("a refusal the model does not act on is told three times, not seventy-nine", () => {
+describe("a refusal the model does not act on is told once, not seventy-nine times", () => {
   const veto = { kind: "veto", reason: "ladder", rule: "LAD-6", detail: "motive" } as const;
   const asks = (r: ReturnType<typeof rig>, who = "duda", target = "p1") => r.body.planFor(who, r.input({ bodyIntent: intent({ act: { verb: "glare", target } }), handles: { p1: { kind: "person", ref: "rafa" }, p2: { kind: "person", ref: "gabi" } } }, who));
 
-  it("the same actor, verb, target and reason: the first three are in the prompt, the rest are not; every refusal is still in the log", async () => {
+  it("the same actor, verb, target and reason: the first is in the prompt, the rest are not; every refusal is still in the log", async () => {
     const noted: string[] = [];
     const r = rig({ note: (a, reasons) => noted.push(`${a}:${reasons[0]!.detail}`) });
     r.port!.next = veto;
@@ -132,12 +133,12 @@ describe("a refusal the model does not act on is told three times, not seventy-n
       asks(r);
       await r.clock.advance(100_000);
     }
-    expect(noted).toHaveLength(3);
+    expect(noted).toHaveLength(1);
     expect(r.blocked.filter(([, reasons]) => reasons[0]?.code === "ladder")).toHaveLength(7);
-    expect(r.body.counters()).toEqual({ act_blocked_notes: 3, act_blocked_notes_silenced: 4 });
+    expect(r.body.counters()).toEqual({ act_blocked_notes: 1, act_blocked_notes_silenced: 6 });
   });
 
-  it("a quiet stretch of 120 s starts the count over: the next one is told again, and so are two more", async () => {
+  it("a quiet stretch of 240 s starts the count over: the next one is told again", async () => {
     const noted: string[] = [];
     const r = rig({ note: (a) => noted.push(a) });
     r.port!.next = veto;
@@ -145,16 +146,16 @@ describe("a refusal the model does not act on is told three times, not seventy-n
       asks(r);
       await r.clock.advance(60_000);
     }
-    expect(noted).toHaveLength(3);
-    await r.clock.advance(125_000);
+    expect(noted).toHaveLength(1);
+    await r.clock.advance(245_000);
     for (let i = 0; i < 4; i++) {
       asks(r);
       await r.clock.advance(60_000);
     }
-    expect(noted).toHaveLength(6);
+    expect(noted).toHaveLength(2);
   });
 
-  it("another target, another actor, another reason is another refusal: each has its own three", () => {
+  it("another target, another actor, another reason is another refusal: each has its own one", () => {
     const noted: string[] = [];
     const r = rig({ note: (a, reasons) => noted.push(`${a}:${reasons[0]!.target}:${reasons[0]!.detail}`) });
     r.port!.next = veto;
@@ -163,8 +164,8 @@ describe("a refusal the model does not act on is told three times, not seventy-n
     for (let i = 0; i < 4; i++) asks(r, "gabi", "p1");
     r.port!.next = { ...veto, detail: "grievance" };
     for (let i = 0; i < 4; i++) asks(r, "duda", "p1");
-    expect(noted).toHaveLength(12);
-    expect(r.body.counters()["act_blocked_notes_silenced"]).toBe(4);
+    expect(noted).toHaveLength(4);
+    expect(r.body.counters()["act_blocked_notes_silenced"]).toBe(12);
   });
 
   it("a blow of the actor's own starts the count over: what it was refused for has changed", () => {
@@ -172,10 +173,10 @@ describe("a refusal the model does not act on is told three times, not seventy-n
     const r = rig({ note: (a) => noted.push(a) });
     r.port!.next = veto;
     for (let i = 0; i < 5; i++) asks(r);
-    expect(noted).toHaveLength(3);
+    expect(noted).toHaveLength(1);
     feedFrames(r.body, actFrames({ actId: "d1", verb: "glare", actor: -701, with: -702, origin: "director", outcome: "landed", scene: "7.1", at: 1 }));
     for (let i = 0; i < 5; i++) asks(r);
-    expect(noted).toHaveLength(6);
+    expect(noted).toHaveLength(2);
   });
 
   it("only the notes: the ceiling and every other refusal are as before, and no counter appears when nothing was silenced", () => {

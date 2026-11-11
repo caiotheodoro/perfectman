@@ -200,7 +200,7 @@ export class ProvocationLedger {
   /**
    * The scene spine opens a rung toward `offender` for `observer` (errata P8). `level` is the top rung: `shove` (3) or `slap` (4); never more. Only a pair `allow` lets
    * (both of the run's actors, `may_target`, drama not off, never a human). It writes the pair's grievance at `unlock.provocation` (so the director considers the pair at
-   * all) and an unlock that lasts `unlock.holdMs`, renewed by a later call while the evidence stands. `granted` when the pair had no unlock this high yet, `refreshed`
+   * all) and an unlock that lasts `unlock.holdMs`, renewed by a later call while the evidence stands and by every rung the aggressor climbs under it (`unlock.climbExtendMs`). `granted` when the pair had no unlock this high yet, `refreshed`
    * when it only renewed one, `skipped` when the pair is not allowed. It starts no act.
    */
   unlock(observer: string, offender: string, level: UnlockLevel): UnlockResult {
@@ -219,7 +219,10 @@ export class ProvocationLedger {
   consume(observer: string, offender: string, rung: number): void {
     const key = `${observer}>${offender}`;
     const u = this.unlocks.get(key);
-    if (u !== undefined && rung >= u.rung) this.unlocks.delete(key);
+    if (u === undefined) return;
+    if (rung >= u.rung) this.unlocks.delete(key);
+    // A rung below the unlocked one is the climb making progress (run 63: a 90 s hold against a climb of 25 s a rung): the hold runs on while it goes on.
+    else if (u.until > this.now()) u.until = Math.max(u.until, this.now() + this.tuning().unlock.climbExtendMs);
   }
 
   /** The top rung the spine has opened for `observer` toward `offender` and not yet let lapse, or undefined. */

@@ -103,7 +103,7 @@ describe("the authored script inside a run", () => {
     await new Promise((r) => setTimeout(r, 2500));
     expect(hotel.received.filter((f) => f.t === "actor_cmd" && f.cmd.k === "act")).toEqual([]);
     const done = await summary(hotel, cfg);
-    expect(done.drama).toEqual({ source: "off", max_rung: 0, may_target_pairs: 0, may_die: 0, permadeath: false });
+    expect(done.drama).toEqual({ source: "off", max_rung: 0, may_target_pairs: 0, may_die: 0, permadeath: false, humans_targetable: false });
     expect(done.counters).toMatchObject({ beats_played: 0, beats_dropped: 1, beats_dropped_inert: 1 });
   }, 20_000);
 });
