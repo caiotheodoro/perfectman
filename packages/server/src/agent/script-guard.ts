@@ -249,6 +249,22 @@ export function freeTrimEnabled(): boolean {
   return process.env["PERFECTMAN_FREE_TRIM"] !== "0";
 }
 
+/**
+ * `PERFECTMAN_FREE_TRIM_RAMBLE=0` sends a candidate that ran on (over the cap by more than a quarter) to a retry again; anything else cuts it to its first sentences with no
+ * model call, up to 8 times the cap, as long as the cut keeps 5 words (see `freeTrimRambleLimit`).
+ */
+export function freeTrimRambleEnabled(): boolean {
+  return process.env["PERFECTMAN_FREE_TRIM_RAMBLE"] !== "0";
+}
+
+/**
+ * `PERFECTMAN_REPAIR_FIRST=0` sends a stale line or an echo of the actor's own to a retry before any repair, as before; anything else repairs it with no model call first
+ * (the clauses that say something new, `strikeEcho`) whenever the repair leaves a line the same guards accept, and retries only when it does not.
+ */
+export function repairFirstEnabled(): boolean {
+  return process.env["PERFECTMAN_REPAIR_FIRST"] !== "0";
+}
+
 /** The no-op motive of a turn the guard silenced. It starts with the output-guard marker, so every reader that skips engine-written motives skips it. */
 export function silenceMotive(why: string): string {
   return `${OUTPUT_GUARD_MARKER}: no fresh line (${why}); staying quiet.`;

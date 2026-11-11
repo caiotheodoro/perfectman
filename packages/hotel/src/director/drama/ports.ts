@@ -164,4 +164,6 @@ export interface DramaDecisionPort {
   busyActId(actor: number): string | undefined;
   /** What the last `decide` looked at and why it answered as it did, for the run's decision log (errata P9); undefined before the first one. Optional: a port with nothing to say leaves it out. */
   trace?(): DecisionTrace | undefined;
+  /** The scene's pressure floor now, 0 to 1 (`DramaTuning.pressure`): above 0 only in a scene with a climax deadline, once it is near enough. Optional: a port without one is always 0. */
+  pressure?(): number;
 }

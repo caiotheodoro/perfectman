@@ -57,6 +57,7 @@ type Avatar = WorldAvatar & { ref?: string; room: number };
 export class ScriptWorld implements DramaWorld {
   readonly avatars = new Map<number, Avatar>();
   cast = 6;
+  blocks?: (human: number, actor: number) => boolean;
 
   constructor() {
     this.put(A, { ref: "person-1", tile: [5, 5] });
@@ -118,17 +119,19 @@ export type Rig = {
   recorded: Array<{ dir: string; room: string | undefined; kind: string; data: Record<string, unknown> }>;
 };
 
-export function makeRig(o: { block?: ScenarioDrama; mode?: DramaMode; tuning?: DramaTuning; resumed?: boolean; session?: DramaSession | null; noState?: boolean; deps?: Partial<DramaDirectorDeps> } = {}): Rig {
+export function makeRig(o: { block?: ScenarioDrama; mode?: DramaMode; humans?: boolean; climaxAtMs?: number; blocks?: (human: number, actor: number) => boolean; tuning?: DramaTuning; resumed?: boolean; session?: DramaSession | null; noState?: boolean; deps?: Partial<DramaDirectorDeps> } = {}): Rig {
   const clock = new ManualClock();
   const link = new FakeLink();
   const world = new ScriptWorld();
+  if (o.blocks) world.blocks = o.blocks;
   const recorded: Rig["recorded"] = [];
   const dir = new DramaDirector({
     run: RUN,
     clock,
     link,
     world,
-    scenario: resolveRunDrama({ ...(o.block ? { drama: o.block } : {}), ...(o.mode ? { drama_mode: o.mode } : {}) }),
+    // The suite's default is the hotel's own gate (a violent act at a human needs the chip); a test of the owner's decision asks for `humans: true`.
+    scenario: resolveRunDrama({ ...(o.block ? { drama: o.block } : {}), ...(o.mode ? { drama_mode: o.mode } : {}), drama_ext: { may_target_humans: o.humans === true, ...(o.climaxAtMs ? { pressure_floor: { climax_at_ms: o.climaxAtMs } } : {}) } }, {}),
     session: o.session === undefined ? SESSION : o.session,
     record: (d, room, kind, data) => void recorded.push({ dir: d, room, kind, data }),
     ...(o.tuning ? { tuning: o.tuning } : {}),

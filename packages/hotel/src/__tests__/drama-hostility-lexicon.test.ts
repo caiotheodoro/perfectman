@@ -158,7 +158,7 @@ const heard = (...refs: string[]): Listener[] => refs.map((ref) => ({ ref, heard
 describe("ProvocationLedger with the new kinds", () => {
   const T = DEFAULT_DRAMA_TUNING.provocation;
 
-  it("blackmail counts as a threat (0.5) and an accusation a little less (0.4), against the speaker", () => {
+  it("blackmail counts as a threat (0.5) and an accusation a little less (0.45), against the speaker", () => {
     const a = ledger();
     // person-3 is Renato, person-1 Heloísa: his blackmail names her.
     expect(a.l.note(line("person-3", RUN_60.blackmail1, { mentioned: ["person-1"], addressees: ["person-1"] }), heard("person-1", "person-2"))).toBe("blackmail");
@@ -166,7 +166,7 @@ describe("ProvocationLedger with the new kinds", () => {
     expect(T.gain.blackmail).toBe(T.gain.threat);
     const b = ledger();
     expect(b.l.note(line("person-3", RUN_60.accusation, { mentioned: ["person-1"] }), heard("person-1"))).toBe("accusation");
-    expect(b.l.levelOf("person-1", "person-3")).toBe(0.4);
+    expect(b.l.levelOf("person-1", "person-3")).toBe(0.45);
     expect(b.l.raised.accusation).toBe(1);
     expect(b.l.total).toBe(1);
   });

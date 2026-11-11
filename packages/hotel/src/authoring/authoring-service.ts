@@ -21,7 +21,7 @@ import { draftToFiles } from "./draft-to-files.js";
 import { compileSceneBeats, countCuts } from "./scenario-beats.js";
 import type { ScenarioBeat } from "./scenario-beats.js";
 import { FREE_PLAY_DRAMA, compileDramaForm, compileSceneDrama, defaultSceneDrama } from "./scenario-drama.js";
-import type { DramaCompile, DramaMode, SceneCastMember, ScenarioDrama } from "./scenario-drama.js";
+import type { DramaCompile, DramaExt, DramaMode, SceneCastMember, ScenarioDrama } from "./scenario-drama.js";
 import { formArrivals, formStage, formToDraft, parseForm } from "./scenario-form.js";
 import type { FormLooks, ScenarioStage } from "./scenario-form.js";
 
@@ -48,7 +48,7 @@ export type AuthoringDeps = {
 };
 
 /** What the scene's `drama` block and `beats` leave after compile, the body's `drama_mode`, and the warnings of both. */
-type DramaPart = { drama?: ScenarioDrama | undefined; dramaMode?: DramaMode | undefined; beats?: ScenarioBeat[] | undefined; dramaWarnings: PathMessage[] };
+type DramaPart = { drama?: ScenarioDrama | undefined; dramaMode?: DramaMode | undefined; dramaExt?: DramaExt | undefined; beats?: ScenarioBeat[] | undefined; dramaWarnings: PathMessage[] };
 
 const toRows = (diagnostics: readonly Diagnostic[], level: "error" | "warning"): PathMessage[] =>
   diagnostics
@@ -105,12 +105,12 @@ export class AuthoringService {
   }
 
   /** The block and the script as the body keeps them, with the warnings of both. */
-  private dramaPart(result: { drama?: ScenarioDrama; warnings: PathMessage[] } | undefined, script: { beats: ScenarioBeat[]; warnings: PathMessage[] } | undefined): DramaPart {
-    return { ...(result?.drama ? { drama: result.drama } : {}), ...(script && script.beats.length > 0 ? { beats: script.beats } : {}), dramaWarnings: [...(result?.warnings ?? []), ...(script?.warnings ?? [])] };
+  private dramaPart(result: { drama?: ScenarioDrama; ext?: DramaExt; warnings: PathMessage[] } | undefined, script: { beats: ScenarioBeat[]; warnings: PathMessage[] } | undefined): DramaPart {
+    return { ...(result?.drama ? { drama: result.drama } : {}), ...(result?.ext ? { dramaExt: result.ext } : {}), ...(script && script.beats.length > 0 ? { beats: script.beats } : {}), dramaWarnings: [...(result?.warnings ?? []), ...(script?.warnings ?? [])] };
   }
 
   private compileSource(source: string): { result: CompileResult; delays: Record<string, [number, number]>; looks: FormLooks; arrivals: Record<string, number>; stage?: ScenarioStage } & DramaPart {
-    const { bundle, looks, arrivals, stage, drama, dramaMode, beats, dramaWarnings } = this.resolveSource(source);
+    const { bundle, looks, arrivals, stage, drama, dramaMode, dramaExt, beats, dramaWarnings } = this.resolveSource(source);
     if (!bundle.scenario) throw new AuthoringError(400, "bad_request", "source has no scenario file");
     const result = compileRunInputs(
       { kind: "markdown", scenario: bundle.scenario, personas: bundle.personas },
@@ -128,8 +128,8 @@ export class AuthoringService {
     }
     // A markdown scenario (a preset) carries its `drama` block and `beats` in the frontmatter, or none: it is settled here. A form was settled already.
     const scene = drama === undefined && beats === undefined && result.ok && result.summary ? this.sceneScript(bundle.scenario.text, result.summary.agents) : undefined;
-    const part = scene ?? { drama, dramaMode, beats, dramaWarnings: [] };
-    return { result, delays, looks, arrivals, dramaWarnings: [...dramaWarnings, ...part.dramaWarnings], ...(stage ? { stage } : {}), ...(part.drama ? { drama: part.drama } : {}), ...(part.dramaMode ? { dramaMode: part.dramaMode } : {}), ...(part.beats ? { beats: part.beats } : {}) };
+    const part = scene ?? { drama, dramaMode, dramaExt, beats, dramaWarnings: [] };
+    return { result, delays, looks, arrivals, dramaWarnings: [...dramaWarnings, ...part.dramaWarnings], ...(stage ? { stage } : {}), ...(part.drama ? { drama: part.drama } : {}), ...(part.dramaMode ? { dramaMode: part.dramaMode } : {}), ...(part.dramaExt ? { dramaExt: part.dramaExt } : {}), ...(part.beats ? { beats: part.beats } : {}) };
   }
 
   /** SCN-5 for a markdown scenario's frontmatter `drama` and `beats`; the beats that cut the scene are the cuts SCN-6 asks for. Errors fail the compile, as a form's do. */
@@ -158,7 +158,7 @@ export class AuthoringService {
 
   compile(req: { source?: unknown }): CompileResponse {
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "compile needs source");
-    const { result, delays, looks, arrivals, stage, drama, dramaMode, beats } = this.compileSource(req.source);
+    const { result, delays, looks, arrivals, stage, drama, dramaMode, dramaExt, beats } = this.compileSource(req.source);
     if (!result.ok || !result.config || !result.summary) {
       throw new AuthoringError(422, "bad_scenario", "scenario did not compile", toRows(result.diagnostics, "error"));
     }
@@ -174,6 +174,7 @@ export class AuthoringService {
       ...(stage ? { stage } : {}),
       ...(drama ? { drama } : {}),
       ...(dramaMode ? { drama_mode: dramaMode } : {}),
+      ...(dramaExt ? { drama_ext: dramaExt } : {}),
       ...(beats ? { beats } : {}),
     };
     if (Buffer.byteLength(JSON.stringify(body)) > MAX_BODY_BYTES) {

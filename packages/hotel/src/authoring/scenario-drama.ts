@@ -1,4 +1,5 @@
-import { LADDER_VERBS } from "@perfectman/shared";
+import { LADDER_VERBS, ladderRung } from "@perfectman/shared";
+import type { ActVerb } from "@perfectman/shared";
 
 /**
  * The scenario `drama` block (docs/drama/act-contract.md section 7). `max_rung` is the highest ladder rung any act in the
@@ -23,6 +24,21 @@ export type ScenarioFormDrama = {
 };
 
 export const HUMAN_REF = "@human";
+
+/**
+ * What the sidecar reads beside the hotel's `drama` block and the hotel never sees (the hotel reads that block strictly: an unknown key makes the whole block invalid, so these
+ * ride in the body as `drama_ext`). `may_target_humans` (default true): a human in the room can be the target of an act without the per-act consent chip (GATE-6 is dropped for
+ * them; the scene's `max_rung`, `may_target`, `may_die`, the player's Block and the rate limit still apply, and an act at a human stays cosmetic). `false` restores the chip.
+ * `pressure_floor`: the scene has a climax deadline (`climax_at_ms` on the scene clock, a beat sheet's `arc.climax_at_ms`), so the ladder's volition gets a floor that rises
+ * toward it (`DramaTuning.pressure`); absent is free play, no floor. `max` caps the floor (default `DramaTuning.pressure.floor.max`).
+ */
+export type PressureFloor = { climax_at_ms: number; max?: number };
+export type DramaExt = { may_target_humans?: boolean; pressure_floor?: PressureFloor };
+
+/** The env switch that turns acts at humans without a chip off for the whole process (`PERFECTMAN_HUMAN_TARGETS=0`); anything else leaves the scene's flag in charge. */
+export const HUMAN_TARGETS_ENV = "PERFECTMAN_HUMAN_TARGETS";
+
+const MAX_CLIMAX_MS = 900_000;
 
 /** No block (free play) and `drama:{}` read the same keys the same way (SCN-1, SCN-2): rungs 1 to 3 between actors, no kills. */
 export const FREE_PLAY_DRAMA: ScenarioDrama = { max_rung: 3, may_target: [], may_die: [], permadeath: false };
@@ -56,6 +72,29 @@ export function defaultSceneDrama(actorIds: readonly string[]): ScenarioDrama | 
   return { max_rung: DEFAULT_SCENE_MAX_RUNG, may_target, may_die: [], permadeath: false };
 }
 
+/** An act a script authors, as the block has to know it: who does it, the verb, and to whom (cast names or agent ids, whatever the block's refs are). */
+export type AuthoredAct = { actor: string; verb: ActVerb; with?: string };
+
+/**
+ * The block a script of authored acts needs (GATE-5, SCN-3): `block` widened just enough that every one of `acts` passes the scenario gate and nothing else is looser. `max_rung`
+ * rises to the highest ladder rung among them, a blow of rung 4 or more adds its `[actor, with]` pair to `may_target`, a `kill` adds its victim and a `die` its actor to `may_die`.
+ * Never narrower than `block`; nothing is added for the verbs off the ladder (they need no block), and a pair or a victim already there is not repeated. The beat sheet's compile calls
+ * it so a sheet-authored punch, kill or die is not refused by the hotel's own read of the same block for want of a pair the sheet implies.
+ */
+export function dramaForAuthoredActs(block: ScenarioDrama, acts: readonly AuthoredAct[]): ScenarioDrama {
+  let max_rung = block.max_rung;
+  const may_target = block.may_target.map(([a, v]): [string, string] => [a, v]);
+  const may_die = [...block.may_die];
+  for (const act of acts) {
+    const rung = ladderRung(act.verb);
+    if (rung !== undefined) max_rung = Math.max(max_rung, rung);
+    if (rung !== undefined && rung >= 4 && act.with !== undefined && !may_target.some(([a, v]) => a === act.actor && v === act.with)) may_target.push([act.actor, act.with]);
+    const victim = act.verb === "kill" ? act.with : act.verb === "die" ? act.actor : undefined;
+    if (victim !== undefined && !may_die.includes(victim)) may_die.push(victim);
+  }
+  return { max_rung, may_target, may_die, permadeath: block.permadeath };
+}
+
 /** `drama: off` as an author or a body may write it: the word, any case, or `false`. */
 export function isDramaOff(raw: unknown): boolean {
   return raw === false || (typeof raw === "string" && raw.trim().toLowerCase() === "off");
@@ -65,9 +104,28 @@ export function isDramaOff(raw: unknown): boolean {
 export type DramaMode = "default" | "off";
 
 export type DramaRow = { path: string; message: string };
-export type DramaCompile = { drama?: ScenarioDrama; mode?: "off"; errors: DramaRow[]; warnings: DramaRow[] };
+export type DramaCompile = { drama?: ScenarioDrama; mode?: "off"; ext?: DramaExt; errors: DramaRow[]; warnings: DramaRow[] };
+
+const isFiniteNumber = (v: unknown): v is number => typeof v === "number" && Number.isFinite(v);
+
+/** `pressure_floor` as an author or a body writes it; undefined when it is not one. */
+function pressureOf(v: unknown): PressureFloor | undefined {
+  if (!isRecord(v) || !isFiniteNumber(v["climax_at_ms"]) || v["climax_at_ms"] <= 0 || v["climax_at_ms"] > MAX_CLIMAX_MS) return undefined;
+  const max = isFiniteNumber(v["max"]) && v["max"] > 0 && v["max"] <= 1 ? v["max"] : undefined;
+  return { climax_at_ms: Math.round(v["climax_at_ms"]), ...(max !== undefined ? { max } : {}) };
+}
+
+/** `drama_ext` of a body, read strictly: a bad key is dropped, never a reason to loosen anything (an unreadable `may_target_humans` reads as the default). */
+export function cleanDramaExt(raw: unknown): DramaExt | undefined {
+  if (!isRecord(raw)) return undefined;
+  const pressure = pressureOf(raw["pressure_floor"]);
+  const ext: DramaExt = { ...(typeof raw["may_target_humans"] === "boolean" ? { may_target_humans: raw["may_target_humans"] } : {}), ...(pressure ? { pressure_floor: pressure } : {}) };
+  return Object.keys(ext).length > 0 ? ext : undefined;
+}
 
 const KEYS = ["max_rung", "may_target", "may_die", "permadeath"] as const;
+/** The keys of the authoring form's `drama` that are not the hotel's block: they leave it for `drama_ext`. */
+const EXT_KEYS = ["may_target_humans", "pressure_floor"] as const;
 const isRecord = (v: unknown): v is Record<string, unknown> => v !== null && typeof v === "object" && !Array.isArray(v);
 const norm = (s: string): string => s.replace(/\s+/g, " ").trim().toLowerCase();
 
@@ -92,7 +150,17 @@ export function compileDramaForm(raw: unknown, cast: { names: readonly string[];
   const warnings: DramaRow[] = [];
   if (isDramaOff(raw)) return { drama: DRAMA_OFF, mode: "off", errors, warnings };
   if (!isRecord(raw)) return { errors: [{ path: "drama", message: 'drama must be an object, or "off"' }], warnings };
-  for (const key of Object.keys(raw)) if (!(KEYS as readonly string[]).includes(key)) errors.push({ path: `drama.${key}`, message: `unknown key "${key}"` });
+  for (const key of Object.keys(raw)) if (!(KEYS as readonly string[]).includes(key) && !(EXT_KEYS as readonly string[]).includes(key)) errors.push({ path: `drama.${key}`, message: `unknown key "${key}"` });
+  const ext: DramaExt = {};
+  if (raw["may_target_humans"] !== undefined) {
+    if (typeof raw["may_target_humans"] === "boolean") ext.may_target_humans = raw["may_target_humans"];
+    else errors.push({ path: "drama.may_target_humans", message: "may_target_humans must be true or false" });
+  }
+  if (raw["pressure_floor"] !== undefined) {
+    const pressure = pressureOf(raw["pressure_floor"]);
+    if (pressure) ext.pressure_floor = pressure;
+    else errors.push({ path: "drama.pressure_floor", message: `pressure_floor must be {climax_at_ms: 1 to ${MAX_CLIMAX_MS}, max?: 0 to 1}` });
+  }
 
   const idOf = (name: unknown, path: string, allowHuman: boolean, humanHint: string): string | undefined => {
     if (typeof name !== "string") {
@@ -152,7 +220,7 @@ export function compileDramaForm(raw: unknown, cast: { names: readonly string[];
   if (may_die.length > 0 && (opts.sceneCuts ?? 0) === 0) {
     warnings.push({ path: "drama.may_die", message: "drama.no_scene_cut: may_die is not empty but the scenario authors no scene cut, so a body stays until the run ends (SCN-6)" });
   }
-  return { drama: { max_rung, may_target, may_die, permadeath }, errors, warnings };
+  return { drama: { max_rung, may_target, may_die, permadeath }, ...(Object.keys(ext).length > 0 ? { ext } : {}), errors, warnings };
 }
 
 /**
@@ -194,20 +262,33 @@ export function cleanDrama(raw: unknown, agentIds: readonly string[]): { drama?:
  * `mode` says where the block came from (`authored` by the scenario, `default` derived at compile, `off`, or `free_play` for a body that has none: one
  * saved before the default existed). `off` shuts the director: nothing is originated, approved or played.
  */
-export type RunDrama = { block: ScenarioDrama | undefined; effective: ScenarioDrama; freePlay: boolean; canSkip: boolean; mode: "authored" | "default" | "off" | "free_play"; off: boolean };
+export type RunDrama = {
+  block: ScenarioDrama | undefined;
+  effective: ScenarioDrama;
+  freePlay: boolean;
+  canSkip: boolean;
+  mode: "authored" | "default" | "off" | "free_play";
+  off: boolean;
+  /** A human can be the target of an act without the consent chip (`DramaExt.may_target_humans`, default true; `PERFECTMAN_HUMAN_TARGETS=0` and `drama off` turn it off). */
+  humansTargetable: boolean;
+  /** The scene's climax deadline on its own clock (`DramaExt.pressure_floor`): the ladder's volition gets a floor that rises toward it. Absent: no floor. */
+  pressure?: PressureFloor;
+};
 
-export function resolveRunDrama(body: { drama?: ScenarioDrama; drama_mode?: DramaMode }): RunDrama {
+export function resolveRunDrama(body: { drama?: ScenarioDrama; drama_mode?: DramaMode; drama_ext?: DramaExt }, env: NodeJS.ProcessEnv = process.env): RunDrama {
   const off = body.drama_mode === "off";
   const block = off ? DRAMA_OFF : body.drama;
   const mode = off ? "off" : block === undefined ? "free_play" : body.drama_mode === "default" ? "default" : "authored";
-  return { block, effective: block ?? FREE_PLAY_DRAMA, freePlay: block === undefined, canSkip: block !== undefined && !off, mode, off };
+  const humansTargetable = !off && env[HUMAN_TARGETS_ENV]?.trim() !== "0" && body.drama_ext?.may_target_humans !== false;
+  const pressure = off ? undefined : pressureOf(body.drama_ext?.pressure_floor);
+  return { block, effective: block ?? FREE_PLAY_DRAMA, freePlay: block === undefined, canSkip: block !== undefined && !off, mode, off, humansTargetable, ...(pressure ? { pressure } : {}) };
 }
 
 /** The run summary's line for the scenario's drama: where the block came from and what it allows. Numbers only, no names (`replay.json` `drama`). */
-export type DramaSummary = { source: RunDrama["mode"]; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean };
+export type DramaSummary = { source: RunDrama["mode"]; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean; humans_targetable?: false; climax_at_ms?: number };
 
 export function summarizeRunDrama(run: RunDrama): DramaSummary {
-  return { source: run.mode, max_rung: run.effective.max_rung, may_target_pairs: run.effective.may_target.length, may_die: run.effective.may_die.length, permadeath: run.effective.permadeath };
+  return { source: run.mode, max_rung: run.effective.max_rung, may_target_pairs: run.effective.may_target.length, may_die: run.effective.may_die.length, permadeath: run.effective.permadeath, ...(run.humansTargetable ? {} : { humans_targetable: false as const }), ...(run.pressure ? { climax_at_ms: run.pressure.climax_at_ms } : {}) };
 }
 
 /** A cast member as the compiled scenario names it: the agent id the run's refs use and the name a form would write. */

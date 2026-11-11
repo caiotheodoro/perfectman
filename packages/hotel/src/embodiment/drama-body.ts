@@ -65,6 +65,8 @@ export type DramaBodyDeps = {
   log?: () => DramaLog | undefined;
   /** Test seam: where the planner's own act ids start. */
   idPrefix?: string;
+  /** `DramaTuning.origination.askAfterRefusal`: ask the director to originate after the model's proposals all came to nothing, and look at it on a heat watch. Absent: the sidecar's default (on). */
+  assist?: boolean;
   /** How long and how often a climb's actor follows a target that keeps moving (`DramaTuning.origination.climb`); absent: the sidecar's default. */
   follow?: { windowMs: number; everyMs: number; gapMs?: number; maxRung?: number };
 };
@@ -80,9 +82,13 @@ const FOLLOW_PLAN_PREFIX = "drama:";
 const FOLLOW_SUPPRESSED = "follow_suppressed_walk";
 /** The `detail`s of a `ladder` refusal the model is told about in its next prompt (`blockedReasonLine` has a line for each); the ceiling (`max_rung`) stays unshown. */
 const TOLD_LADDER: ReadonlySet<string> = new Set(["motive", "grievance", "rung", "contagion", "zero_witness"]);
-/** The same refusal (actor, verb, target, detail) is noted at most this many times in a row, each within `NOTE_REPEAT_MS` of the one before (errata P9). */
-const NOTE_REPEAT_MAX = 3;
-const NOTE_REPEAT_MS = 120_000;
+/** The same refusal (actor, verb, target, detail) is noted once, and again only after `NOTE_REPEAT_MS` without one or a blow of the actor's own (errata P9; run 63: 13 proposals refused on the motive, a note for each). */
+const NOTE_REPEAT_MAX = 1;
+const NOTE_REPEAT_MS = 240_000;
+/** How often an actor with heat (a grievance from what was said, or the scene's pressure floor) takes a look at its director when its own model has not been consulted (run 63: the model proposed on every consult and the director was never asked). */
+const HEAT_WATCH_MS = 8000;
+/** The first look after a hostile line was said at an actor: it answers the provocation before the next consult. */
+const HEAT_FIRST_MS = 1500;
 const VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["insult", "shove", "slap", "punch", "kill"]);
 const PHYSICAL_VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch"]);
 
@@ -108,9 +114,14 @@ export class DramaBody implements DramaFrameSink {
   private readonly writes = new Map<string, Promise<void>>();
   /** An actor following the person its next blow is for (issue #262): who, until when, and the timer of its next look. */
   private readonly following = new Map<string, { target: string; until: number; rng: () => number; timer: TimerHandle }>();
+  private get assist(): boolean {
+    return this.d.assist ?? DEFAULT_DRAMA_TUNING.origination.askAfterRefusal;
+  }
   private readonly followCfg: { windowMs: number; everyMs: number; gapMs: number; maxRung: number };
   /** The look a climb's actor takes at its director once the climb's gap is over, one per actor, armed by the actor's own director beat (issue #262). */
   private readonly climbWatch = new Map<string, TimerHandle>();
+  /** The look a heated actor takes at its director on a timer of its own (`HEAT_WATCH_MS`), one per actor, armed by its consults and by a hostile line said at it. */
+  private readonly heatWatch = new Map<string, TimerHandle>();
   private ids = 0;
   /** The planner's own walks a follow window did not send, since the body was made (issue #262). */
   suppressedWalks = 0;
@@ -219,17 +230,21 @@ export class DramaBody implements DramaFrameSink {
       }
       // 2. nothing proposed: the emotion state may drive a beat of the director's own. An actor the scene spine has opened a rung for is asked even when its model proposed
       // something the director refused (a glare at someone else, run 62: 79 times): the unlock is for the director to carry out, not for the model to ask for (errata P9).
-      if ((queue.length === 0 || this.provocation.unlockOf(ref) !== undefined) && !hold && base.actionEmotions) {
+      // A model that proposes on every consult (run 63: 13 glares refused on the motive, 12 originations never asked) must not leave the director idle: when nothing the model
+      // proposed was approved the director is asked as for a passive turn, the same gates and the same pace. Only a proposal that went through (`hold`) keeps it out.
+      const ask = queue.length === 0 || this.provocation.unlockOf(ref) !== undefined || this.assist;
+      if (ask && !hold && base.actionEmotions) {
         const out = this.passive(ref, wire, base, port);
         hold = out.hold;
         approach.push(...out.approach);
       } else if (queue.length > 0) {
-        // The director is not asked to originate while the model proposes (unless an unlock is open and nothing was approved): what the log would otherwise not say.
+        // The director is not asked to originate while the model's proposal goes through (or while askAfterRefusal is off): what the log would otherwise not say.
         this.logConsult(ref, "skip", { result: "not_asked", reason: hold ? "held" : "model_proposed" }, { queue: queue.length, hold });
       } else if (!base.actionEmotions) {
         this.logConsult(ref, "skip", { result: "no_emotion", reason: "no_feelings" }, { queue: 0, hold });
       }
     }
+    if (!hold && wire !== undefined && port?.active && this.assist) this.armHeatWatch(ref, HEAT_WATCH_MS);
     if (hold) return [];
 
     const drama = this.dramaInput(ref, port, wire);
@@ -323,6 +338,7 @@ export class DramaBody implements DramaFrameSink {
     this.noteRuns.clear();
     this.stopFollows();
     this.stopClimbWatches();
+    this.stopHeatWatches();
     this.retry.clear();
     this.rescue.clear();
   }
@@ -336,6 +352,7 @@ export class DramaBody implements DramaFrameSink {
     this.ledger.onGone(ref);
     this.stopFollow(ref);
     this.stopClimbWatch(ref);
+    this.stopHeatWatch(ref);
     if (wasDead) this.d.pool.retire(ref);
   }
 
@@ -344,6 +361,7 @@ export class DramaBody implements DramaFrameSink {
     this.ledger.onGone(ref, false);
     this.stopFollow(ref);
     this.stopClimbWatch(ref);
+    this.stopHeatWatch(ref);
   }
 
   /** Resolves when every memory write started so far has finished. */
@@ -354,6 +372,7 @@ export class DramaBody implements DramaFrameSink {
   dispose(): void {
     this.stopFollows();
     this.stopClimbWatches();
+    this.stopHeatWatches();
     this.reactions.dispose();
   }
 
@@ -531,7 +550,10 @@ export class DramaBody implements DramaFrameSink {
       .peopleIn(room, this.d.clock.now())
       .filter((p) => p.ref !== line.speaker && this.d.isOwn(p.ref))
       .map((p) => ({ ref: p.ref, heard: chebyshev(p.tile, me.tile) <= SAY_CLEAR_TILES }));
+    const before = this.provocation.total;
     this.provocation.note(line, listeners);
+    // The ones the line was about answer it soon, not at their next consult.
+    if (this.assist && this.provocation.total > before) for (const who of new Set([...line.mentioned, ...line.addressees])) if (who !== line.speaker && this.d.isOwn(who) && this.provocation.offenders(who).length > 0) this.armHeatWatch(who, HEAT_FIRST_MS);
   }
 
   /** The run summary's flat counters for what this body did on its own: grievance raised from talk, and the refusals it told the model about. */
@@ -773,6 +795,53 @@ export class DramaBody implements DramaFrameSink {
     if (cmds.length > 0) this.d.executor.send(cmds);
   }
 
+  /** Arms the heated actor's look at its director in `inMs` unless one is already armed (an earlier one is kept, a later one is not pushed back). */
+  private armHeatWatch(ref: string, inMs: number): void {
+    if (this.heatWatch.has(ref) || !this.d.isOwn(ref)) return;
+    this.heatWatch.set(ref, this.d.clock.setTimer(() => this.heatTick(ref), inMs));
+  }
+
+  /** Whether the actor has something the director could act on: a grievance from what was said or an open unlock, or the scene's pressure floor is up. */
+  private heated(ref: string, port: DramaDecisionPort): boolean {
+    return this.provocation.offenders(ref).length > 0 || (port.pressure?.() ?? 0) > 0;
+  }
+
+  /**
+   * One look of a heat watch, off the actor's own timer: the plain `decide` of a passive turn with the feelings the actor last planned with, so a model that proposes on every
+   * consult or is slow to answer (9 timeouts in run 63) does not leave a heated actor unlooked at. Every gate and the pace are the director's. A busy, locked or dead actor is
+   * not asked; the watch goes on while the actor is heated and stops when it is not (the next consult arms it again).
+   */
+  private heatTick(ref: string): void {
+    this.heatWatch.delete(ref);
+    const wire = this.d.mirror.avatarId(ref);
+    const port = this.d.port?.();
+    if (!this.active || !port?.active || wire === undefined || this.ledger.isDead(ref) || !this.heated(ref, port)) return;
+    const now = this.d.clock.now();
+    const seen = this.latest.get(ref);
+    const emotion = seen ? this.emotionOf(ref, seen) : undefined;
+    const idle = !this.ledger.lockOf(ref) && port.busyActId(wire) === undefined && (this.following.get(ref)?.until ?? 0) <= now;
+    if (seen && emotion && idle) {
+      const res = port.decide({ actor: wire, emotion });
+      if (res.kind !== "pass" || res.approach !== undefined) this.logDecision(ref, port, "continue", { queue: 0, hold: res.kind === "initiate" });
+      if (res.kind === "pass" && res.approach !== undefined) {
+        this.startFollow(ref, res.approach, seen.rng);
+        const target = this.d.mirror.refOfAvatar(res.approach);
+        const cmds = target ? this.approach(ref, target, this.d.mirror.view(ref, now)?.room, seen.rng) : [];
+        if (cmds.length > 0) this.d.executor.send(cmds);
+      }
+    }
+    this.armHeatWatch(ref, HEAT_WATCH_MS);
+  }
+
+  private stopHeatWatch(ref: string): void {
+    this.heatWatch.get(ref)?.cancel();
+    this.heatWatch.delete(ref);
+  }
+
+  private stopHeatWatches(): void {
+    for (const ref of [...this.heatWatch.keys()]) this.stopHeatWatch(ref);
+  }
+
   private stopClimbWatch(ref: string): void {
     this.climbWatch.get(ref)?.cancel();
     this.climbWatch.delete(ref);
@@ -796,6 +865,7 @@ export class DramaBody implements DramaFrameSink {
   private onDead(ref: string, f: Frame<"actor_death"> | undefined): void {
     this.stopFollow(ref);
     this.stopClimbWatch(ref);
+    this.stopHeatWatch(ref);
     if (this.d.isOwn(ref) && !this.d.ghostVoice) this.d.pool.defer(ref);
     if (!f) return;
     const witnesses = (this.beats.get(f.act_id)?.witnesses ?? []).filter((w) => w !== ref);

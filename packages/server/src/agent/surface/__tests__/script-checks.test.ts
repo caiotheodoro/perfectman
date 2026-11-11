@@ -1,7 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { isEngineAuthoredMotive, lengthOf } from "@perfectman/shared";
 import { lengthTargetOf } from "../../script-guard.js";
 import { HOTEL, LONG, QUIET, input, line, profileOf, run } from "./script-step-harness.js";
+
+// These test the retry arm itself (a line over the cap is retried once, a retry still over is cut); the cut with no retry has its own tests (`free-trim-step.test.ts`).
+beforeEach(() => {
+  process.env["PERFECTMAN_FREE_TRIM_RAMBLE"] = "0";
+  process.env["PERFECTMAN_REPAIR_FIRST"] = "0";
+});
+afterEach(() => {
+  delete process.env["PERFECTMAN_FREE_TRIM_RAMBLE"];
+  delete process.env["PERFECTMAN_REPAIR_FIRST"];
+});
 
 describe("length", () => {
   it("retries a line over the cap once, naming its word count, and sends the short one", async () => {

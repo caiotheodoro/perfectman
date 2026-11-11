@@ -46,7 +46,11 @@ const BLACKMAIL = word([
   "vou contar (?:pra|para|a) (?:todos|todo mundo|toda a mesa|a mesa|mesa|a policia|a imprensa|todo o mundo)", "conto (?:pra|para|a) (?:todos|todo mundo|toda a mesa|a mesa|mesa|a policia|a imprensa|todo o mundo)",
   "cofre hoje", "cofre ou", "ou voce (?:paga|me paga|vai pagar|se arrepende|me da|me entrega|devolve|assina|sai daqui)", "(?:pague|paga) ou", "ou paga",
   "(?:nao )?quer escandalo", "(?:vou|vai|vamos|faco|armo|dou) (?:fazer |armar |dar |ter |virar )?(?:um )?escandalo", "(?:vira|virar|virou) escandalo", "escandalo (?:nao )?(?:interessa|vai)",
-  "or i(?:'ll| will)? (?:tell|talk|expose|reveal|spill|go to)", "or else", "pay up or", "or you(?:'ll| will)? (?:pay|regret)", "i(?:'ll| will) tell (?:everyone|the (?:whole )?table|them all|the police)", "open my mouth",
+  // A price on silence or a demand with the safe in it (run 63): the thing asked for is named, so a bare "dinheiro", "envelope" or "cofre" stays ordinary.
+  "(?:eu )?esqueco (?:o que|tudo|que) (?:eu )?vi", "(?:meu )?silencio (?:custa|tem preco|nao (?:sai|e) de graca|tem valor)",
+  "quero (?:o |um |meu |minha )?(?:cofre aberto|dobro (?:do que|do valor|do preco|ou|hoje|agora)|dobro(?=[.!?,;]|$)|minha parte|metade (?:da|do|de) (?:firma|heranca|empresa|cofre|dinheiro|casa))", "abr[ae] (?:o )?cofre (?:agora|hoje|ja|po|ai|na frente)",
+  "o envelope (?:e|eh) (?:o )?dobro",
+  "or i(?:'ll| will)? (?:tell|talk|expose|reveal|spill|go to)", "or else", "hush money", "pay up or", "or you(?:'ll| will)? (?:pay|regret)", "i(?:'ll| will) tell (?:everyone|the (?:whole )?table|them all|the police)", "open my mouth",
 ]);
 
 /** A charge of a lie, a forgery, a theft, a betrayal, or of having done it (P8). */
@@ -55,15 +59,20 @@ const ACCUSATION = word([
   "(?:voce|tu|ele|ela|vc) mente", "mentiu", "mentiram", "falsificou", "falsificaram", "forjou", "forjaram",
   "(?:voce|tu|ele|ela|vc|voces|eles|elas) (?:(?:me|te|nos|a gente|todos|todo mundo) )?enganou", "enganou (?:a )?(?:todo mundo|todos|a gente|a mim)", "roubou(?! a cena)", "roubaram",
   `foi (?:voce|ela|ele|tu) (?:que|quem) (?:${DEED})`, "a mao que (?:apertou|assinou|segurou|empurrou|bateu|roubou|escreveu|forjou|matou|puxou|derrubou|plantou|disparou)",
-  "assinatura (?:falsa|forjada|falsificada)", "falsa assinatura", "(?:documento|carta|letra) (?:falso|falsa|forjado|forjada|falsificado|falsificada)",
-  "eu vi (?:tudo|o que voce fez)", "eu vi voce (?:roubar|roubando|mexer|mexendo|esconder|escondendo|plantar|plantando|assinar|assinando|segurar|segurando|apertar|apertando|mentir|mentindo|forjar|forjando)",
+  "assinatura (?:(?:e|esta|ta|foi|era|saiu|ficou) )?(?:falsa|forjada|falsificada)", "(?:essa|sua|tua|vi|viu) assinatura (?:ai )?torta", "falsa assinatura", "assinatura (?:[a-z]+ ){0,2}?nao (?:e|foi|era) d[oae]s?(?! mesa)",
+  "(?:a )?(?:caneta|letra) que (?:assinou|forjou|falsificou)", "vi tudo(?=[.!?,;]|$)", "(?:eu )?vi (?:a )?(?:tua|sua) mao (?:na|no|em|sobre|a)(?![a-z])",
+  "tremendo e de medo", "(?:voce|tu|vc|ela|ele) (?:(?:esta|ta|tava|estava) )?tremendo de medo", "todo mundo (?:aqui )?sabe (?:de que|o que (?:voce|tu|ela|ele) fez)",
+  "voce (?:e|eh) (?:um |uma )?(?:falsario|falsaria|golpista|estelionatario)", "fez (?:uma )?assinatura (?:falsa|igual)", "(?:documento|carta|letra) (?:falso|falsa|forjado|forjada|falsificado|falsificada)",
+  "eu vi (?:tudo|o que voce fez)", "eu vi voce (?:roubar|roubando|mexer|mexendo|esconder|escondendo|plantar|plantando|assinar|assinando|segurar|segurando|apertar|apertando|mentir|mentindo|forjar|forjando|guardar|guardando|pegar|pegando|trocar|trocando|copiar|copiando|queimar|queimando|rasgar|rasgando)",
   "sei (?:o que|tudo o que|tudo que|de tudo o que|de tudo que) (?:voce|tu|ela|ele|voces) (?:fez|escondeu|tramou|aprontou|fizeram)",
-  "you(?:'ve| have)? (?:forged|lied|stolen|stole|cheated|betrayed|framed)", "you(?:'re| are) lying", "i saw what you did", "i know what you did", "it(?:'s| is| was) you who",
+  "you(?:'ve| have)? (?:forged|faked|lied|stolen|stole|cheated|betrayed|framed)", "you(?:'re| are) lying", "i saw what you did", "(?:fake|forged|false) signature", "signature (?:is|was) (?:fake|forged|false)",
+  "that(?:'s| is) not (?:his|her) signature", "that signature (?:is not|isn't|isnt) (?:his|hers|her)", "everyone (?:here )?knows what you", "you(?:'re| are) (?:a )?(?:forger|thief|fraud|crook)", "i know what you did", "it(?:'s| is| was) you who",
 ]);
 
 const CHALLENGE = word([
   "duvido", "aposto", "aposta", "apostar", "apostei", "quero ver", "nao tem coragem", "tem coragem", "te desafio", "desafio voce", "paga a aposta", "cade o dinheiro",
-  "i bet", "bet you", "dare you", "i dare", "prove it", "put your money", "double or nothing",
+  "entao (?:prova|abre o cofre|mostra (?:a|o) (?:assinatura|carta|papel|prova))", "prova (?:isso|ai)", "vai (?:dizer|contar|falar) (?:pra|para) (?:a )?mesa o que (?:viu|sabe|voce viu)",
+  "i bet", "bet you",
 ]);
 
 const MOCKERY = word([

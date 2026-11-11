@@ -180,13 +180,13 @@ describe("what the body writes at each consult", () => {
     return { log: new DramaLog((l) => out.push(JSON.parse(l) as DramaLogLine), () => now), lines: out, at: (ms: number) => void (now = ms) };
   };
 
-  it("a proposal: one `propose` line with the director's reading and the queue; the consult is not asked to originate, and says so", () => {
+  it("a refused proposal: one `propose` line with the director's reading and the queue, then the director is asked to originate (run 63: it never was) and that is a line of its own", () => {
     const { log, lines: out } = make();
     const r = rig({ log });
     r.port!.next = { kind: "veto", reason: "ladder", rule: "LAD-6", detail: "motive" };
     r.port!.traced = { actor: "person-1", kind: "propose", pair: "person-1>person-2", verb: "glare", rung: 1, v: 0.11, theta: 0.42, unlocked: 0, grievance: 0.08, provocation: 0, dist: 1, result: "blocked:ladder/motive", reason: "LAD-6" };
     r.body.planFor("duda", r.input({ bodyIntent: intent({ act: { verb: "glare", target: "p1" } }), handles }));
-    expect(out.map((l) => `${l.kind}/${l.result}/${l.reason ?? ""}/${l.queue}/${l.hold}`)).toEqual(["propose/blocked:ladder/motive/LAD-6/1/false", "skip/not_asked/model_proposed/1/false"]);
+    expect(out.map((l) => `${l.kind}/${l.result}/${l.reason ?? ""}/${l.queue}/${l.hold}`)).toEqual(["propose/blocked:ladder/motive/LAD-6/1/false", "propose/blocked:ladder/motive/LAD-6/0/false"]);
     expect(out[0]).toMatchObject({ actor: "duda", pair: "person-1>person-2", verb: "glare", v: 0.11, theta: 0.42 });
     expect(lines({ lines: out })).toHaveLength(2);
   });

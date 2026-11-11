@@ -48,6 +48,8 @@ export type FakeActOptions = {
   humanDownMs?: number;
   /** Humans whose drama opt-in is on. */
   optIn?: readonly number[];
+  /** The scene lets a human be the target of an act without the consent chip (`may_target_humans`): a human who did not opt in is struck, or not, with no question asked. Default: the chip (GATE-6). */
+  chiplessHumans?: boolean;
   harmMax?: number;
   harmWindowMs?: number;
   pauseMs?: number;
@@ -268,7 +270,7 @@ export class FakeActHotel {
     if (target && wire.verb !== "tend_fallen" && this.isFallen(target.id)) return { reason: "dead_target" };
     const scenario = this.scenarioGate(me, target, wire, entry);
     if (scenario) return scenario;
-    if (humanTarget && g.consent !== null && g.consent.startsWith("violent") && !this.optIn.has(target.id)) return { reason: "consent_off" };
+    if (humanTarget && g.consent !== null && g.consent.startsWith("violent") && !this.optIn.has(target.id) && this.o.chiplessHumans !== true) return { reason: "consent_off" };
     if (target && g.max_dist !== null) {
       const d = cheb(me.tile, target.tile);
       if (d > g.max_dist) return { reason: "too_far", detail: "distance" };
@@ -325,7 +327,7 @@ export class FakeActHotel {
     const intensity = wire.intensity ?? entry.intensity.default;
     const origin = wire.origin ?? "director";
     const humanTarget = target?.human === true;
-    const chip = humanTarget && entry.gates.consent !== null;
+    const chip = humanTarget && entry.gates.consent !== null && (this.o.chiplessHumans !== true || this.optIn.has(target.id));
     const act: Open = { id: wire.act_id, verb, actor: me.id, target: target?.id, intensity, origin, entry, scene: this.sceneId, t0: now, chip, human: humanTarget, steps: new Set(), reactors: new Map(), harm: entry.violent && humanTarget };
     this.acts.set(act.id, act);
     this.stats.started += 1;
@@ -419,7 +421,7 @@ export class FakeActHotel {
     if (this.paused && act.human && act.entry.violent) return "paused";
     if (target) {
       if (this.gone.has(target.id)) return "target_gone";
-      if (target.human && act.entry.gates.consent?.startsWith("violent") && !this.optIn.has(target.id)) return "opt_out";
+      if (target.human && act.entry.gates.consent?.startsWith("violent") && !this.optIn.has(target.id) && this.o.chiplessHumans !== true) return "opt_out";
       if (act.entry.contact && act.entry.gates.max_dist !== null && (cheb(actor.tile, target.tile) > act.entry.gates.max_dist || target.state === "walk")) return "target_moved";
     }
     return undefined;

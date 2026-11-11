@@ -106,8 +106,11 @@ export const DEFAULT_MAX_INPUT_TOKENS = 6000;
 export const DEFAULT_LINK_TIMEOUT_MS = 5000;
 /** A link with no `timeoutMs` of its own waits this many times its recent p95 (never less than the default). */
 export const ADAPTIVE_TIMEOUT_FACTOR = 1.5;
-/** The most an adaptive timeout can be: the 13 s chain deadline has to leave room for a link behind it. */
-export const ADAPTIVE_TIMEOUT_CAP_MS = 9000;
+/**
+ * The most an adaptive timeout can be: the chain deadline has to leave room for the links behind it. Run 63: the link in front waited 9 s (1.5 times a p95 of 6 s), timed out on
+ * 9 of its 37 calls, and the 13 s deadline left the third link under its 1.5 s minimum 9 times, so those turns got no line at all. 6.5 s twice and a third link fits in 16 s.
+ */
+export const ADAPTIVE_TIMEOUT_CAP_MS = 6500;
 /** Successful calls a link needs before its p95 moves the timeout. */
 export const ADAPTIVE_MIN_SAMPLES = 10;
 

@@ -116,6 +116,16 @@ export const FREE_TRIM_MIN_WORDS = 5;
 /** The most words a candidate may have for {@link trimFree} to cut it (27 for a cap of 22). */
 export const freeTrimLimit = (cap: number): number => Math.floor(cap * (1 + FREE_TRIM_SHARE));
 
+/**
+ * A candidate that ran on (run 63: 23 of the 48 spoken turns came back at 500 to 940 characters, a first sentence or two and then the same few words until the model's token
+ * cap) is cut to the cap too, up to this many times it (308 words for a cap of 22, more than the token cap lets through): its first sentences are the line the model meant, and a second call for it
+ * cost a turn and, on a slow link, a timeout. A longer answer is an essay with nothing to pick out of it, and the model is asked again.
+ */
+export const FREE_TRIM_RAMBLE_TIMES = 14;
+
+/** The most words a rambling candidate may have for {@link trimFree} to cut it (308 for a cap of 22). */
+export const freeTrimRambleLimit = (cap: number): number => cap * FREE_TRIM_RAMBLE_TIMES;
+
 const WH_WORDS: ReadonlySet<string> = new Set("que quem onde quando como qual quais quanto quantos quantas cade porque sera what who where when how why which".split(" "));
 
 /**

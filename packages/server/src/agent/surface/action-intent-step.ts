@@ -26,7 +26,7 @@ import {
   type GuardInfo,
   type GuardKind,
 } from "../repetition-guard.js";
-import { OUTPUT_GUARD_MARKER, SCRIPT_NORMS, answersFirst, falseQuotes, freeTrimLimit, lengthOf, lowNovelty, motifRepeat, noveltyFloor, sharedTopicWords, splitAfter, stripNarration, trimFree, trimToCap, withoutFalseQuotes, withoutQuestions } from "@perfectman/shared";
+import { OUTPUT_GUARD_MARKER, SCRIPT_NORMS, answersFirst, falseQuotes, freeTrimLimit, freeTrimRambleLimit, lengthOf, lowNovelty, motifRepeat, noveltyFloor, sharedTopicWords, splitAfter, stripNarration, trimFree, trimToCap, withoutFalseQuotes, withoutQuestions } from "@perfectman/shared";
 import type { OwedLine } from "@perfectman/shared";
 import { OWN_ECHO_WINDOW, findGarble, findOwnEcho, findPhraseLoop, findRoomEcho, findTics, strikeEcho, stripTics, type GarbleHit, type LoopHit, type TicHit } from "../echo-guard.js";
 import {
@@ -34,6 +34,8 @@ import {
   expressionFor,
   fillerSilenceEnabled,
   freeTrimEnabled,
+  freeTrimRambleEnabled,
+  repairFirstEnabled,
   lengthRetryNote,
   mergeRetryNotes,
   motifRetryNote,
@@ -425,13 +427,13 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       narrationOnly.set(speechless, before);
       return { ...parsed, intent: speechless as typeof parsed.intent };
     };
-    // A candidate over the cap by a quarter or less is cut at its last sentence or clause boundary before any check reads it, with no model call; one that is
-    // further over (or whose cut would keep fewer than 5 words) goes to the retry arm as before.
+    // A candidate over the cap is cut at its last sentence or clause boundary before any check reads it, with no model call: one over by a quarter or less, and one that ran on
+    // (up to 14 times the cap, run 63's token-cap ramblers) to its first sentences. One whose cut would keep fewer than 5 words goes to the retry arm as before.
     const withFreeTrim = (parsed: typeof parseResult): typeof parseResult => {
       if (!script || !target || !freeTrimEnabled() || parsed.fallbackApplied || !speaks(parsed.intent)) return parsed;
       const before = parsed.intent.visibleContent!;
       const words = lengthOf(before);
-      if (words <= target.cap || words > freeTrimLimit(target.cap)) return parsed;
+      if (words <= target.cap || words > (freeTrimRambleEnabled() ? freeTrimRambleLimit(target.cap) : freeTrimLimit(target.cap))) return parsed;
       const cut = trimFree(before, target.cap, target.sentences);
       if (cut === undefined) return parsed;
       tell("len_trim_free", before, cut);
@@ -481,8 +483,49 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
         (unfixableTic(candidateIntent) && !ticRetried) ||
         (quotesOf(candidateIntent).length > 0 && !quoteRetried) ||
         (narrationOnly.has(candidateIntent) && !narrationRetried));
+    const asked = askedByPerson(input, agentId);
+    // What a stale or motif-bearing line is repaired to with no model call: the sentences of it that bring nothing the room had just heard, else the clauses that say something new
+    // (4 words of them left). undefined when nothing usable is left, which is a retry's job or, after it, silence.
+    const staleRepair = (text: string, withMotif: boolean): { text: string; fresh: boolean } | undefined => {
+      const kept = splitAfter(text, ".!?…")
+        .filter((sentence) => motifRepeat(sentence, spoken, roomNamesSet) === undefined)
+        .join(" ")
+        .trim();
+      const usable = kept !== "" && normalizeWords(kept).length >= 2 && noveltyOf(kept) === undefined;
+      if (usable) return { text: kept, fresh: false };
+      if (withMotif) return undefined;
+      const fixed = strikeEcho(text, seenForNovelty, echoNames, topicIgnore());
+      const fresh = fixed !== undefined && noveltyOf(fixed) === undefined && motifRepeat(fixed, spoken, roomNamesSet) === undefined ? fixed : undefined;
+      return fresh === undefined ? undefined : { text: fresh, fresh: true };
+    };
+    // Repair before asking again (run 63: 11 retries for a stale line, 9 for an echo of the actor's own, each a second call that a cut of the line would have saved): a line the
+    // guards would retry is first repaired when the repair leaves a line the same guards accept; otherwise it is retried as before. A person who asked this actor
+    // something gets the line as it is. `PERFECTMAN_REPAIR_FIRST=0` restores retry-first.
+    const repairFirst = (parsed: typeof parseResult): typeof parseResult => {
+      if (!script || !repairFirstEnabled() || parsed.fallbackApplied || !speaks(parsed.intent) || asked || narrationOnly.has(parsed.intent)) return parsed;
+      const before = parsed.intent.visibleContent!;
+      let text = before;
+      const as = (t: string): typeof parsed.intent => ({ ...parsed.intent, visibleContent: t });
+      if (isOwnRepeat(parsed.intent) || isRoomRepeat(parsed.intent) || loopOf(parsed.intent) !== undefined) {
+        const fixed = strikeEcho(text, isOwnRepeat(parsed.intent) || loopOf(parsed.intent) ? ownLines : roomLines, echoNames, topicIgnore());
+        if (fixed === undefined || isRepeat(as(fixed)) || loopOf(as(fixed)) !== undefined) return parsed;
+        text = fixed;
+        tell("echo_repaired", before, fixed);
+      }
+      const candidate = as(text);
+      if (motifOf(candidate) !== undefined || staleOf(candidate) !== undefined) {
+        const fix = staleRepair(text, motifOf(candidate) !== undefined);
+        if (fix === undefined) return text === before ? parsed : { ...parsed, intent: candidate };
+        text = fix.text;
+        tell("echo_repaired", before, text);
+      }
+      return text === before ? parsed : { ...parsed, intent: as(text) };
+    };
+
     // A line the guards refuse: a repeat, a signature phrase the actor keeps coming back to, or corrupt text.
     const isBad = (candidateIntent: typeof intent): boolean => isRepeat(candidateIntent) || loopOf(candidateIntent) !== undefined || garbleOf(candidateIntent) !== undefined;
+    parseResult = repairFirst(parseResult);
+    intent = parseResult.intent;
     // One count per flagged candidate, by what it is first: corrupt, an echo of the actor, of the room, a signature phrase.
     const tally = (candidateIntent: typeof intent): void => {
       if (!policy.onGuard) return;
@@ -499,7 +542,6 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
 
     // A person asked this actor something. An invalid output (which would fall back to a no-op) or an answer aimed at
     // somebody else leaves them without one, so both get the retry arm too.
-    const asked = askedByPerson(input, agentId);
     const aimedElsewhere = (candidateIntent: typeof intent): boolean =>
       asked &&
       speaks(candidateIntent) &&
@@ -642,7 +684,7 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
             latencyMs: retryResult.latencyMs,
             promptVersion: retryPrompt.version,
           });
-          const retryParse = withFreeTrim(withoutNarration(IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext)));
+          const retryParse = repairFirst(withFreeTrim(withoutNarration(IntentParser.parse(retryResult.content, agentId, input.availableActions, "no_op", targetContext))));
           if (!retryParse.fallbackApplied) tally(retryParse.intent);
           if (!retryParse.fallbackApplied && !isBad(retryParse.intent) && !retryParse.unresolvedTarget && !aimedElsewhere(retryParse.intent) && !scriptBlocking(retryParse.intent)) {
             parseResult = retryParse;
@@ -739,20 +781,12 @@ export class ActionIntentStep implements LLMStep<AgentRuntimeInput, AgentRuntime
       }
       if (!silenced && !asked && (motifOf(intent) !== undefined || staleOf(intent) !== undefined)) {
         const before = text;
-        const kept = splitAfter(text, ".!?…")
-          .filter((sentence) => motifRepeat(sentence, spoken, roomNamesSet) === undefined)
-          .join(" ")
-          .trim();
-        const usable = kept !== "" && normalizeWords(kept).length >= 2 && noveltyOf(kept) === undefined;
-        // A line stale against the actor's own lines (not a motif the room carries) keeps the clauses that say something new when 4 words of them remain.
-        const fixed = usable || motifOf(intent) !== undefined ? undefined : strikeEcho(text, seenForNovelty, echoNames, topicIgnore());
-        const fresh = fixed !== undefined && noveltyOf(fixed) === undefined && motifRepeat(fixed, spoken, roomNamesSet) === undefined ? fixed : undefined;
-        if (usable) text = kept;
-        else if (fresh !== undefined) {
-          text = fresh;
-          tell("echo_repaired", before, text);
+        const fix = staleRepair(text, motifOf(intent) !== undefined);
+        if (fix !== undefined) {
+          text = fix.text;
+          if (fix.fresh) tell("echo_repaired", before, text);
         } else giveUp("nothing the room had not just heard");
-        if (!silenced && fresh === undefined) tell("motif_reaction", before, text);
+        if (!silenced && !(fix?.fresh ?? false)) tell("motif_reaction", before, text);
       }
       if (!silenced && owedQuestionNow && !asked && !answersFirst(text)) {
         const before = text;

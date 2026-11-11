@@ -22,6 +22,11 @@ export type DramaProbeInput = {
   humanIds?: readonly string[];
   /** Length of the run in ms. Default: the span of the events. */
   durationMs?: number;
+  /**
+   * The scene lets a human be the target of an act with no consent chip (`may_target_humans`, act-contract 7.4 HUM-2; the run summary's `drama.humans_targetable` is absent when it is
+   * on). An act at a human that started with no chip is then not a consent violation and needs no `take`; one that did show a chip still does. Default false: the chip.
+   */
+  chiplessHumans?: boolean;
   /** SAFE-4's N (`PERFECTMAN_DRAMA_HARM_MAX`): landed violent acts on humans allowed per room per window. Default 3. */
   harmMax?: number;
   /** SAFE-4's window in ms (`PERFECTMAN_DRAMA_HARM_WINDOW_SECS`). Default 300 000. */

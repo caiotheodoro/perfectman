@@ -31,15 +31,15 @@ function judge(id: string, r: SimResult, edit: (events: DramaEvent[]) => DramaEv
 }
 
 describe("the drama bench on the stack as it is", () => {
-  it("runs the nine scenarios of the act contract and every one passes, with every check and every probe", async () => {
+  it("runs the eleven scenarios of the act contract and the cinematic revamp and every one passes, with every check and every probe", async () => {
     const report = await runDramaBench();
     expect(report.perScenario.map((e) => e.id)).toEqual(DRAMA_SCENARIOS.map((s) => s.id));
     expect(report.perScenario.filter((e) => !e.passed).map((e) => ({ id: e.id, failed: e.failed, probes: e.probesFailed, checks: e.checks.filter((c) => !c.ok).map((c) => c.name) }))).toEqual([]);
-    expect({ run: report.scenariosRun, failed: report.scenariosFailed, rate: report.passRate }).toEqual({ run: 9, failed: 0, rate: 1 });
+    expect({ run: report.scenariosRun, failed: report.scenariosFailed, rate: report.passRate }).toEqual({ run: 11, failed: 0, rate: 1 });
     expect(report.checksFailed).toBe(0);
   });
 
-  it("covers what the contract asks of it: the ladder, a veto, budget spacing, one kill a scene, reaction obligations, the dead, consent, calm, drama off", () => {
+  it("covers what the contract asks of it: the ladder, a veto, budget spacing, one kill a scene, reaction obligations, the dead, consent, calm, the climax pressure floor, humans without the chip, drama off", () => {
     expect(DRAMA_SCENARIOS.map((s) => s.id)).toEqual([
       "drama_ladder_full",
       "drama_veto_skipped_rung",
@@ -49,6 +49,8 @@ describe("the drama bench on the stack as it is", () => {
       "drama_dead_silent_until_revive",
       "drama_consent_human_target",
       "drama_calm_room",
+      "drama_pressure_floor_climax",
+      "drama_humans_no_chip",
       "drama_off_unchanged",
     ]);
   });

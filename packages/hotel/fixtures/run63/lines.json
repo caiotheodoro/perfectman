@@ -1,0 +1,346 @@
+[
+ {
+  "i": 0,
+  "t_s": 3,
+  "speaker": "Otávio",
+  "text": "Minha cara, essa assinatura aí não é do Henrique.",
+  "hostile": "accusation"
+ },
+ {
+  "i": 1,
+  "t_s": 16,
+  "speaker": "Heloísa",
+  "text": "Otávio, meu bem, o vinho subiu? Assinatura é coisa séria."
+ },
+ {
+  "i": 2,
+  "t_s": 16,
+  "speaker": "Heloísa",
+  "text": "Otávio, querido, sente-se aqui. Aceita um cafezinho?"
+ },
+ {
+  "i": 3,
+  "t_s": 20,
+  "speaker": "Otávio",
+  "text": "Rapaz, chega aqui. O senhor viu o que eu vi naquele papel?"
+ },
+ {
+  "i": 4,
+  "t_s": 24,
+  "speaker": "Renato",
+  "text": "Pô, Otávio, fala logo o número e a gente resolve."
+ },
+ {
+  "i": 5,
+  "t_s": 27,
+  "speaker": "Renato",
+  "text": "Vi, mano, vi tudo. Assinatura torta que dói.",
+  "hostile": "accusation"
+ },
+ {
+  "i": 6,
+  "t_s": 34,
+  "speaker": "Heloísa",
+  "text": "Otávio, querido, o senhor está cansado. Já tomou seu café?"
+ },
+ {
+  "i": 7,
+  "t_s": 35,
+  "speaker": "Otávio",
+  "text": "Rapaz, o número não é o problema. A sua assinatura, sim.",
+  "soft": "accusation"
+ },
+ {
+  "i": 8,
+  "t_s": 43,
+  "speaker": "Otávio",
+  "text": "Renato, rapaz, fala logo o que tu viu aí."
+ },
+ {
+  "i": 9,
+  "t_s": 44,
+  "speaker": "Renato",
+  "text": "Heloísa, o café tá bom, mas o Otávio quer falar de papel. Deixa ele falar."
+ },
+ {
+  "i": 10,
+  "t_s": 45,
+  "speaker": "Heloísa",
+  "text": "Otávio, querido, papel de noite é papel de cansaço. O senhor tomou seu remédio?"
+ },
+ {
+  "i": 11,
+  "t_s": 48,
+  "speaker": "Otávio",
+  "text": "Renato, O senhor vai dizer pra mesa o que viu, ou vai ficar de café?",
+  "soft": "challenge"
+ },
+ {
+  "i": 12,
+  "t_s": 49,
+  "speaker": "Renato",
+  "text": "Ó, Otávio, eu vi assinatura torta. Mas antes: quanto é que tá em jogo, hein?",
+  "soft": "accusation"
+ },
+ {
+  "i": 13,
+  "t_s": 96,
+  "speaker": "Renato",
+  "text": "Heloísa, por que a tua mão tá tremendo assim, hein?",
+  "soft": "accusation"
+ },
+ {
+  "i": 14,
+  "t_s": 97,
+  "speaker": "Heloísa",
+  "text": "Assinatura torta, Otávio? O senhor não cansou do café, meu bem?"
+ },
+ {
+  "i": 15,
+  "t_s": 111,
+  "speaker": "Renato",
+  "text": "Heloísa, tá na cara que a assinatura é falsa. Abre o cofre, pô.",
+  "hostile": "accusation"
+ },
+ {
+  "i": 16,
+  "t_s": 116,
+  "speaker": "Heloísa",
+  "text": "Renato, meu bem, é o frio da noite. O senhor também tomaria um café?"
+ },
+ {
+  "i": 17,
+  "t_s": 122,
+  "speaker": "Otávio",
+  "text": "Café eu já tomei. O que o Renato viu no papel, a senhora não quer ouvir.",
+  "soft": "accusation"
+ },
+ {
+  "i": 18,
+  "t_s": 124,
+  "speaker": "Renato",
+  "text": "Frio nada, Heloísa. Você tá tremendo é de medo, e todo mundo aqui sabe de quê.",
+  "hostile": "accusation"
+ },
+ {
+  "i": 19,
+  "t_s": 134,
+  "speaker": "Heloísa",
+  "text": "É a idade, Renato."
+ },
+ {
+  "i": 20,
+  "t_s": 136,
+  "speaker": "Heloísa",
+  "text": "Tremendo de frio, Renato. Mas o senhor e o Otávio parecem tão certos do papel…"
+ },
+ {
+  "i": 21,
+  "t_s": 147,
+  "speaker": "Otávio",
+  "text": "Café não apaga firma, minha cara. E o Renato viu a mesma coisa que eu.",
+  "soft": "accusation"
+ },
+ {
+  "i": 22,
+  "t_s": 150,
+  "speaker": "Renato",
+  "text": "A caneta que assinou tá na tua gaveta, Heloísa. Eu vi você guardar.",
+  "hostile": "accusation"
+ },
+ {
+  "i": 23,
+  "t_s": 151,
+  "speaker": "Renato",
+  "text": "Café não, Heloísa. Quero o cofre aberto e um envelope, hoje.",
+  "hostile": "blackmail"
+ },
+ {
+  "i": 24,
+  "t_s": 165,
+  "speaker": "Heloísa",
+  "text": "A caneta da farmácia, Renato? A mesma que o senhor levou no bolso, querido?",
+  "soft": "accusation"
+ },
+ {
+  "i": 25,
+  "t_s": 176,
+  "speaker": "Heloísa",
+  "text": "Renato, meu bem, o senhor viu mesmo? E o que mais viu, querido?"
+ },
+ {
+  "i": 26,
+  "t_s": 186,
+  "speaker": "Renato",
+  "text": "Heloísa, chega de café. Me dá um envelope e eu esqueço o que vi.",
+  "hostile": "blackmail"
+ },
+ {
+  "i": 27,
+  "t_s": 189,
+  "speaker": "Otávio",
+  "text": "Renato, rapaz: a caneta era da farmácia ou não? Diga agora, sem medo.",
+  "soft": "challenge"
+ },
+ {
+  "i": 28,
+  "t_s": 205,
+  "speaker": "Renato",
+  "text": "Farmácia, Otávio, e quem levou fui eu, tá? Não é crime."
+ },
+ {
+  "i": 29,
+  "t_s": 205,
+  "speaker": "Renato",
+  "text": "Eu?! Tá me queimando, Heloísa? Então abre o cofre e prova.",
+  "hostile": "challenge"
+ },
+ {
+  "i": 30,
+  "t_s": 217,
+  "speaker": "Otávio",
+  "text": "Eu tenho um melhor: metade do que a firma vale."
+ },
+ {
+  "i": 31,
+  "t_s": 217,
+  "speaker": "Heloísa",
+  "text": "Envelope, Renato? E o senhor abriria na frente do Otávio, querido?"
+ },
+ {
+  "i": 32,
+  "t_s": 233,
+  "speaker": "Renato",
+  "text": "Envelope fechado, na frente do Otávio, e eu confirmo que a caneta é da farmácia. Fechado?"
+ },
+ {
+  "i": 33,
+  "t_s": 233,
+  "speaker": "Renato",
+  "text": "Da farmácia, Otávio. Mas eu tô pensando é no meu envelope, não na caneta."
+ },
+ {
+  "i": 34,
+  "t_s": 235,
+  "speaker": "Otávio",
+  "text": "Envelope fechado, rapaz? Então o senhor não viu nada.",
+  "soft": "accusation"
+ },
+ {
+  "i": 35,
+  "t_s": 252,
+  "speaker": "Heloísa",
+  "text": "Fechado, Renato. Mas o envelope fica na minha mão até segunda, meu bem."
+ },
+ {
+  "i": 36,
+  "t_s": 253,
+  "speaker": "Renato",
+  "text": "Vi sim, Otávio. E é por isso que eu quero o dobro do que você ofereceu.",
+  "hostile": "blackmail"
+ },
+ {
+  "i": 37,
+  "t_s": 264,
+  "speaker": "Otávio",
+  "text": "Fechado. A firma paga com o que ela assinar hoje."
+ },
+ {
+  "i": 38,
+  "t_s": 273,
+  "speaker": "Renato",
+  "text": "Mas o envelope é o dobro, Otávio, senão eu conto tudo.",
+  "hostile": "blackmail"
+ },
+ {
+  "i": 39,
+  "t_s": 292,
+  "speaker": "Otávio",
+  "text": "O envelope que virou preço não existe no papel. Confirma a caneta e eu vejo o resto amanhã."
+ },
+ {
+  "i": 40,
+  "t_s": 294,
+  "speaker": "Heloísa",
+  "text": "Fechado, Renato. Mas a caneta só sai da minha mão amanhã, meu bem."
+ },
+ {
+  "i": 41,
+  "t_s": 295,
+  "speaker": "Renato",
+  "text": "Mas o envelope, Heloísa, é antes da segunda."
+ },
+ {
+  "i": 42,
+  "t_s": 314,
+  "speaker": "Renato",
+  "text": "Amém, Heloísa, mas às sete eu tô aqui com o saco de dinheiro na mão. Sem saco, sem caneta."
+ },
+ {
+  "i": 43,
+  "t_s": 317,
+  "speaker": "Renato",
+  "text": "Abriria sim, na frente de Deus. Mas amanhã não, mana. Hoje."
+ },
+ {
+  "i": 44,
+  "t_s": 319,
+  "speaker": "Heloísa",
+  "text": "Antes da segunda, sim."
+ },
+ {
+  "i": 45,
+  "t_s": 357,
+  "speaker": "Renato",
+  "text": "Abriria, sim. Mas quero o Otávio vendo o envelope cheio, não vazio."
+ },
+ {
+  "i": 46,
+  "t_s": 379,
+  "speaker": "Renato",
+  "text": "Okay, Heloísa. Mas abrir o cofre com o curto prazo é mais seguro para todos."
+ },
+ {
+  "i": 47,
+  "t_s": 400,
+  "speaker": "Heloísa",
+  "text": "Amanhã, às sete, eu abro o cofre. Hoje, não."
+ },
+ {
+  "i": 48,
+  "t_s": 401,
+  "speaker": "Otávio",
+  "text": "Renato, rapaz. O envelope eu cubro. A caneta é o senhor que segura."
+ },
+ {
+  "i": 49,
+  "t_s": 402,
+  "speaker": "Renato",
+  "text": "Heloísa, dois minutos aqui no escritório. Só você e eu."
+ },
+ {
+  "i": 50,
+  "t_s": 406,
+  "speaker": "Heloísa",
+  "text": "Otávio, querido, o senhor já jantou? Porque essa pressa toda de caneta amanhã não me parece fome."
+ },
+ {
+  "i": 51,
+  "t_s": 406,
+  "speaker": "Renato",
+  "text": "Cubro quanto, Otávio? Fala o número, pô, sem mistério."
+ },
+ {
+  "i": 52,
+  "t_s": 422,
+  "speaker": "Otávio",
+  "text": "Renato, rapaz: caneta na mão, e o senhor janta com a consciência.",
+  "soft": "mockery"
+ },
+ {
+  "i": 53,
+  "t_s": 435,
+  "speaker": "Renato",
+  "text": "Janto sim, Otávio, mas com o envelope na mesa. Fala o número."
+ }
+]

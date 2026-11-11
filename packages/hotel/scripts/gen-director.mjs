@@ -15,6 +15,7 @@ const cuePath = resolve(root, "schema/cue-vocab.json");
 const cueOutPath = resolve(root, "src/director/cue-vocab.generated.ts");
 const vocabPath = resolve(root, "schema/verb-vocab.json");
 const vocabOutPath = resolve(root, "src/director/verb-vocab.generated.ts");
+const sharedVerbsPath = resolve(root, "../shared/src/space/act-verbs.generated.ts");
 
 const BANNER = `/* eslint-disable */
 /**
@@ -98,10 +99,22 @@ export const VOCAB_ENUMS = ${lit(vocab.enums)} as const;
 export const VOCAB_CONSTANTS = ${lit(vocab.constants)} as const;
 `;
 
+// The ids the verb table carries, for `@perfectman/shared`: `ACT_VERBS` (the verbs a run may propose, validate and offer a model) is this list, so a verb the hotel's table
+// does not have yet is never offered, and one it adds is live the moment this file is regenerated (the types and per-verb tables of `act-verbs.ts` know it already).
+const sharedVerbsOut = `/* eslint-disable */
+/**
+ * GENERATED, DO NOT EDIT.
+ * Source: packages/hotel/schema/verb-vocab.json (the hotel's published verb table, see packages/hotel/schema/SOURCE.md).
+ * Regenerate: pnpm --filter @perfectman/hotel gen:director
+ */
+export const VOCAB_ACT_VERBS = ${lit(vocab.enums.verbs)} as const;
+`;
+
 const targets = [
   [outPath, out, "src/director/generated.ts"],
   [cueOutPath, cueOut, "src/director/cue-vocab.generated.ts"],
   [vocabOutPath, vocabOut, "src/director/verb-vocab.generated.ts"],
+  [sharedVerbsPath, sharedVerbsOut, "../shared/src/space/act-verbs.generated.ts"],
 ];
 
 if (process.argv.includes("--check")) {

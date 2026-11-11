@@ -143,7 +143,8 @@ describe("the second fight: the slap for Otávio at Renato at 1216 s", () => {
   });
 
   it("with the answer switched off (`contagion.answer: false`) the cap is the old one: the log shows Otávio's shove refused as `blocked:ladder/contagion`, LAD-10, and he never gets past the insult", () => {
-    const tuning: DramaTuning = { ...DEFAULT_DRAMA_TUNING, contagion: { ...DEFAULT_DRAMA_TUNING.contagion, answer: false } };
+    // `ageMs: 0` too: the cap as it was held for the whole scene (since run 63 a blow older than 90 s no longer counts toward it).
+    const tuning: DramaTuning = { ...DEFAULT_DRAMA_TUNING, contagion: { ...DEFAULT_DRAMA_TUNING.contagion, answer: false, ageMs: 0 } };
     const run = runDramaSim(live({ tuning }));
     const climb = between(run, OTAVIO, RENATO, 1216, 1216 + 90);
     expect(climb.map((e) => e.verb)).toEqual(["glare", "insult"]);

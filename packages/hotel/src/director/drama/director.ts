@@ -17,7 +17,7 @@ import type { Assumed } from "./ledger.js";
 import { chebyshev } from "../../space/geometry.js";
 import type { DecisionTrace } from "./ports.js";
 import type { ActLifecycleFrame, ActProposal, DramaApproval, DramaDecision, DramaDecisionPort, DramaTurn, DramaVeto, EmotionReading, RelationReading, SceneAdvance } from "./ports.js";
-import { intensityOf, motive, volition } from "./pressure.js";
+import { intensityOf, motive, pressureFloor, volition } from "./pressure.js";
 import { DEFAULT_DRAMA_TUNING, LIMITS, VERB_GATES } from "./tuning.js";
 import type { DramaTuning } from "./tuning.js";
 import type { DramaWorld } from "./world.js";
@@ -235,6 +235,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     const room = this.d.world.roomOf(turn.actor);
     if (room === undefined) return this.noted({ kind: "pass", why: "not_placed" }, turn, undefined, "not_placed");
 
+    const floor = this.floor(now);
     let approach: { target: number; grudge: number } | undefined;
     type Pick = { verb: ActVerb; target: number; margin: number; v: number; theta: number; rung: number; climbing: boolean; continuing: boolean; grudge: number };
     let best: Pick | undefined;
@@ -250,6 +251,11 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
       const cur = this.ledger.rungCur(turn.actor, other.id);
       for (const verb of o.verbs) {
         const rung = ladderRung(verb) ?? 0;
+        // An autonomous beat does not go at a person in the room: a glare or an insult at most (the model's own act and an authored one are the scene's call, and the gates apply to both).
+        if (other.id > 0 && rung > this.tuning.humanTargets.directorMaxRung) {
+          seen.push({ target: other.id, verb, rung, why: "human_target" });
+          continue;
+        }
         if (this.repeating(turn.actor, verb)) {
           seen.push({ target: other.id, verb, rung, why: "repeat_window" });
           continue;
@@ -264,14 +270,14 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
           seen.push({ target: other.id, verb, rung, why: "slow_gap" });
           continue;
         }
-        const m = motive(verb, emotion, emotion.relations?.get(other.id), emotion.at ?? now, this.tuning);
+        const m = motive(verb, emotion, emotion.relations?.get(other.id), emotion.at ?? now, this.tuning, floor);
         if (!m.ok) {
           seen.push({ target: other.id, verb, rung, why: `motive:${m.why}`, v: m.v, theta: m.theta });
           continue;
         }
         const off = rung === 0;
         const theta = off ? o.offLadderTheta : m.theta;
-        const v = off ? volition(verb, emotion, emotion.relations?.get(other.id), this.tuning) : m.v;
+        const v = off ? volition(verb, emotion, emotion.relations?.get(other.id), this.tuning, floor) : m.v;
         if (v < theta) {
           seen.push({ target: other.id, verb, rung, why: "v<theta", v, theta });
           continue;
@@ -311,7 +317,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
    * the spine opened is what the log is read for), then the verb nearest to its threshold.
    */
   private focus(seen: readonly Seen[], emotion: EmotionReading, approach: number | undefined): Seen | undefined {
-    const live = seen.filter((x) => x.why !== "repeat_window" && x.why !== "below_cur" && x.why !== "slow_gap");
+    const live = seen.filter((x) => x.why !== "repeat_window" && x.why !== "below_cur" && x.why !== "slow_gap" && x.why !== "human_target");
     // The blow the director would walk up for: the lowest rung of a verb that needs the two side by side.
     if (approach !== undefined) {
       const near = live.filter((x) => x.target === approach && x.why.startsWith("blocked:too_far") && VERB_GATES[x.verb].maxDist === 1).sort((a, b) => a.rung - b.rung)[0];
@@ -329,7 +335,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     // A pass whose nearest candidate was refused by a gate says that gate (`blocked:ladder/contagion`, LAD-10), not the pace or the lack of a drive it is filed under for the planner.
     const refused = reason === undefined && out.kind === "pass" && out.approach === undefined && focus?.why.startsWith("blocked:") === true;
     this.last = {
-      ...this.detailOf(turn.actor, focus?.verb, focus?.target, turn.emotion),
+      ...this.detailOf(turn.actor, focus?.verb, focus?.target, turn.emotion, this.floor()),
       actor: this.d.world.refOf(turn.actor) ?? String(turn.actor),
       kind: "originate",
       result: reason === "no_emotion" ? "no_emotion" : refused ? focus!.why : result,
@@ -346,18 +352,18 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   }
 
   /** The numbers behind one (person, verb): who it is about, the rung, the volition against its threshold, what the actor holds against that person, and how far away they are. */
-  private detailOf(actor: number, verb: ActVerb | undefined, target: number | undefined, emotion: EmotionReading | undefined): Pick<DecisionTrace, "pair" | "verb" | "rung" | "v" | "theta" | "unlocked" | "grievance" | "provocation" | "dist"> {
+  private detailOf(actor: number, verb: ActVerb | undefined, target: number | undefined, emotion: EmotionReading | undefined, floor = 0): Pick<DecisionTrace, "pair" | "verb" | "rung" | "v" | "theta" | "unlocked" | "grievance" | "provocation" | "dist"> {
     const rel = target !== undefined ? emotion?.relations?.get(target) : undefined;
     const rung = verb === undefined ? undefined : ladderRung(verb);
     let v: number | undefined;
     let theta: number | undefined;
     if (emotion && verb !== undefined && target !== undefined) {
       if (rung !== undefined) {
-        const m = motive(verb, emotion, rel, emotion.at ?? this.d.clock.now(), this.tuning);
+        const m = motive(verb, emotion, rel, emotion.at ?? this.d.clock.now(), this.tuning, floor);
         v = m.v;
         theta = m.theta;
       } else if (this.tuning.drivers[verb] !== undefined) {
-        v = volition(verb, emotion, rel, this.tuning);
+        v = volition(verb, emotion, rel, this.tuning, floor);
       }
     }
     const room = this.d.world.roomOf(actor);
@@ -414,6 +420,8 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
       paused: state.paused,
       harm: { count: this.ledger.harmCount(room, now, this.harmWindowMs()), max: this.session?.harmMax ?? VOCAB_CONSTANTS.harm_max_default },
       optIn: state.optIn,
+      humansTargetable: this.d.scenario.humansTargetable,
+      ...(this.d.world.blocks ? { blocks: (human: number, who: number) => this.d.world.blocks!(human, who) } : {}),
       scenario: this.d.scenario,
       actorRef: this.d.world.refOf(actor),
       targetRef: target === undefined ? undefined : this.d.world.refOf(target),
@@ -425,12 +433,23 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     // LAD-6 and LAD-10 are the director's policy, not the hotel's. An authored beat bypasses the emotion gate (LAD-6) and the contagion cap, which guards the autonomous spiral.
     const rung = ladderRung(verb);
     if (rung !== undefined && origin !== "scenario") {
-      const m = emotion && target !== undefined ? motive(verb, emotion, emotion.relations?.get(target), emotion.at ?? now, this.tuning) : undefined;
+      const m = emotion && target !== undefined ? motive(verb, emotion, emotion.relations?.get(target), emotion.at ?? now, this.tuning, origin === "director" ? this.floor(now) : 0) : undefined;
       if (!m) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-6", detail: "motive" } };
       if (!m.ok) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-6", detail: m.why === "grievance" ? "grievance" : "motive" } };
       if (rung >= this.tuning.contagion.minRung && this.contagious(actor, avatars) && !this.answering(actor, target, emotion)) return { ok: false, veto: { kind: "veto", reason: "ladder", rule: "LAD-10", detail: "contagion" } };
     }
     return { ok: true, rung: verdict.rung, skippedRungs: verdict.skippedRungs };
+  }
+
+  /** The scene's pressure floor now (`DramaTuning.pressure`): 0 for a scene with no climax deadline, which is free play and every scene before a beat sheet. */
+  private floor(now: number = this.d.clock.now()): number {
+    const p = this.d.scenario.pressure;
+    return p === undefined ? 0 : pressureFloor(now - this.ledger.sceneSince, p.climax_at_ms, this.tuning, p.max);
+  }
+
+  /** The pressure floor, for the port's callers (the body decides whether a quiet actor is worth a look). */
+  pressure(): number {
+    return this.active ? this.floor() : 0;
   }
 
   /** The actor started this verb less than its window ago (`DramaTuning.repeatMs`). */
@@ -455,7 +474,9 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   private contagious(actor: number, avatars: readonly GateAvatar[]): boolean {
     const c = this.tuning.contagion;
     const cap = Math.min(c.maxActors, Math.max(1, Math.floor(this.d.world.castSize() * c.castFraction)));
-    const holding = this.ledger.actorsAtOrAbove(c.minRung, avatars.filter((a) => !a.human).map((a) => a.id));
+    // A blow older than `contagion.ageMs` no longer counts: the first shove of a scene does not shut the climax out of it.
+    const since = c.ageMs > 0 ? this.d.clock.now() - c.ageMs : undefined;
+    const holding = this.ledger.actorsAtOrAbove(c.minRung, avatars.filter((a) => !a.human).map((a) => a.id), since);
     return !holding.includes(actor) && holding.length >= cap;
   }
 
@@ -465,7 +486,8 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     return {
       k: "act",
       act_id: this.nextId(),
-      verb,
+      // The wire schema (`generated.ts`) lists the verbs of the hotel's table; `validateActCmd` refuses any other before it is sent.
+      verb: verb as ActCmd["verb"],
       ...(target !== undefined ? { with: target } : {}),
       ...(intensity !== undefined ? { intensity } : {}),
       origin,
@@ -481,7 +503,7 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
     const room = this.d.world.roomOf(actor);
     const target = cmd.with ?? undefined;
     this.startedAt.set(`${actor}|${cmd.verb}`, now);
-    this.ledger.reserve({ actId: cmd.act_id, actor, target, room, verb: cmd.verb, origin: cmd.origin ?? "director", scene: this.ledger.sceneId, humanTarget: target !== undefined && target > 0, at: now });
+    this.ledger.reserve({ actId: cmd.act_id, actor, target, room, verb: cmd.verb, origin: cmd.origin ?? "director", scene: this.ledger.sceneId, humanTarget: target !== undefined && target > 0, chipless: target !== undefined && target > 0 && this.d.scenario.humansTargetable && !this.roomState(actor).optIn.has(target), at: now });
     this.d.record?.("out", room === undefined ? undefined : String(room), "actor_cmd", { actor: this.d.world.refOf(actor) ?? String(actor), cmd: cmd as unknown as Record<string, unknown> });
     const approval: DramaApproval = {
       kind,

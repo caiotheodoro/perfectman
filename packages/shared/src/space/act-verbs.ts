@@ -5,8 +5,13 @@
  * (`verb-vocab: matches the generated ids`), so a drift fails a test, not a run.
  */
 
-/** The 18 verbs. */
-export const ACT_VERBS = [
+import { VOCAB_ACT_VERBS } from "./act-verbs.generated.js";
+
+/**
+ * Every verb id the code knows a table row for: the 18 of the contract and the 7 the next verb table adds (point, grab, push_away, slump, kneel, flee, plead; the verbs of the
+ * cinematic revamp, docs/drama/act-contract.md 5.5). The type `ActVerb` is this list, so the per-verb tables below and in the hotel package are complete for all 25.
+ */
+export const KNOWN_ACT_VERBS = [
   "glare",
   "insult",
   "shove",
@@ -25,9 +30,26 @@ export const ACT_VERBS = [
   "restrain",
   "faint",
   "tend_fallen",
+  "point",
+  "grab",
+  "push_away",
+  "slump",
+  "kneel",
+  "flee",
+  "plead",
 ] as const;
 
-export type ActVerb = (typeof ACT_VERBS)[number];
+export type ActVerb = (typeof KNOWN_ACT_VERBS)[number];
+
+/**
+ * The verbs of the hotel's verb table (`schema/verb-vocab.json`, generated into `act-verbs.generated.ts`): the ones a run may propose, validate, script and offer a model. 18
+ * today. A verb of `KNOWN_ACT_VERBS` the table does not carry yet is not in it, and the director refuses it as unknown; the day the table does, regenerating makes it live with no
+ * other edit. A table verb this file does not know is a type error here, so the tables below are never silently short of a row.
+ */
+export const ACT_VERBS: readonly ActVerb[] = VOCAB_ACT_VERBS;
+
+/** The ids of the hotel's verb table as a union: the verbs the wire schema (`Verb`) takes today. Equal to `ActVerb` once the table carries all 25. */
+export type TableVerb = (typeof VOCAB_ACT_VERBS)[number];
 
 /** Who started the act: the model (a proposal the director approved), the director, or an authored scenario beat. */
 export const ACT_ORIGINS = ["model", "director", "scenario"] as const;
@@ -56,6 +78,13 @@ export const ACT_TARGET_MODE: Readonly<Record<ActVerb, ActTargetMode>> = {
   restrain: "required",
   faint: "none",
   tend_fallen: "required",
+  point: "required",
+  grab: "required",
+  push_away: "required",
+  slump: "none",
+  kneel: "none",
+  flee: "none",
+  plead: "required",
 };
 
 /** The ladder, rung 1 to 6 in order. */
@@ -98,6 +127,13 @@ export const ACT_INTENSITY: Readonly<Record<ActVerb, IntensityEntry>> = {
   restrain: { default: 0.3, class: { min: "L", max: "L" } },
   faint: { default: 0.7, class: null },
   tend_fallen: { default: 0.5, class: null },
+  point: { default: 0.4, class: null },
+  grab: { default: 0.4, class: { min: "L", max: "M" } },
+  push_away: { default: 0.2, class: { min: "L", max: "L" } },
+  slump: { default: 0.5, class: null },
+  kneel: { default: 0.5, class: null },
+  flee: { default: 0.7, class: null },
+  plead: { default: 0.6, class: null },
 };
 
 /**

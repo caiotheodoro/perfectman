@@ -87,4 +87,5 @@ export function rig(o: { port?: FakePort | undefined; log?: DramaLog; drama?: bo
 
 export const handles: BodyHandleMap = { p1: { kind: "person", ref: "rafa" } };
 export const intent = (b: Partial<BodyIntent>): BodyIntent => ({ order: "move_then_speak", ...b });
-export const proposalOf = (p: FakePort | undefined, n = 0): ActProposal | undefined => p?.turns[n]?.proposal;
+/** The `n`th proposal the port was asked about (the passive turns the body asks after a refusal carry none). */
+export const proposalOf = (p: FakePort | undefined, n = 0): ActProposal | undefined => p?.turns.filter((t) => t.proposal)[n]?.proposal;

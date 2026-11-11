@@ -1,6 +1,7 @@
 import { cleanBeats } from "../authoring/scenario-beats.js";
 import type { ScenarioBeat } from "../authoring/scenario-beats.js";
-import { DRAMA_OFF, cleanDrama, defaultSceneDrama, isDramaOff } from "../authoring/scenario-drama.js";
+import { DRAMA_OFF, cleanDrama, cleanDramaExt, defaultSceneDrama, isDramaOff } from "../authoring/scenario-drama.js";
+import type { DramaExt } from "../authoring/scenario-drama.js";
 import type { DramaMode, ScenarioDrama } from "../authoring/scenario-drama.js";
 import { cleanVisit } from "../authoring/scenario-form.js";
 import type { ScenarioStage } from "../authoring/scenario-form.js";
@@ -36,6 +37,11 @@ export type ScenarioBody = {
    * `drama`); the sidecar reads it for the run summary and, for `off`, to start no act at all.
    */
   drama_mode?: DramaMode;
+  /**
+   * What the sidecar reads beside the block and the hotel never sees (`DramaExt`): whether a human can be the target of an act without the consent chip (`may_target_humans`, default true) and
+   * the scene's climax deadline for the ladder's pressure floor (`pressure_floor`). Additive and optional; the hotel reads `drama` strictly, so these cannot ride inside it.
+   */
+  drama_ext?: DramaExt;
   /** The scene's script (errata P4-01): authored acts and scene cuts the sidecar plays on the run's clock. Absent is no script. Additive and optional like `drama`, and the hotel never reads it. */
   beats?: ScenarioBeat[];
 };
@@ -88,6 +94,7 @@ export function parseScenarioBody(raw: unknown): ParsedBody {
       ...(o["arrivals"] && typeof o["arrivals"] === "object" ? { arrivals: cleanArrivals(o["arrivals"] as Record<string, unknown>) } : {}),
       ...cleanStage(o["stage"]),
       ...cleanDramaAndMode(o, config.agents.map((a) => a.id)),
+      ...(cleanDramaExt(o["drama_ext"]) ? { drama_ext: cleanDramaExt(o["drama_ext"]) as DramaExt } : {}),
       ...cleanBeats(o["beats"], config.agents.map((a) => a.id)),
     },
   };
