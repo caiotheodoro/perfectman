@@ -17,6 +17,7 @@ import type { SpokenLine, UnlockLevel } from "../director/drama/provocation.js";
 import { pickEscalation } from "../director/drama/escalation.js";
 import { SAY_CLEAR_TILES } from "../space/hearing.js";
 import type { ActProposal, DramaDecision, DramaDecisionPort, EmotionReading, RelationReading } from "../director/drama/ports.js";
+import type { DramaLog, DramaLogEntry, DramaLogKind } from "../director/drama/decision-log.js";
 import { plan } from "./plan.js";
 import type { BodyExecutor } from "./body-executor.js";
 import type { DramaPlanInput, PlanInput, PlannedCommand } from "./types.js";
@@ -60,6 +61,8 @@ export type DramaBodyDeps = {
   provocation?: { allow(observer: string, offender: string): boolean; tuning?: () => DramaTuning["provocation"] };
   /** The model's next prompt says a refused move is not yet earned (errata P7): called with the reasons worth telling, besides the `blocked` hook that logs them. */
   note?(agentId: string, reasons: BlockedReason[]): void;
+  /** The run's decision log (errata P9), read when needed: the run opens it after the body is built. Absent or undefined: nothing is logged. Only ever written to. */
+  log?: () => DramaLog | undefined;
   /** Test seam: where the planner's own act ids start. */
   idPrefix?: string;
   /** How long and how often a climb's actor follows a target that keeps moving (`DramaTuning.origination.climb`); absent: the sidecar's default. */
@@ -77,6 +80,9 @@ const FOLLOW_PLAN_PREFIX = "drama:";
 const FOLLOW_SUPPRESSED = "follow_suppressed_walk";
 /** The `detail`s of a `ladder` refusal the model is told about in its next prompt (`blockedReasonLine` has a line for each); the ceiling (`max_rung`) stays unshown. */
 const TOLD_LADDER: ReadonlySet<string> = new Set(["motive", "grievance", "rung", "contagion", "zero_witness"]);
+/** The same refusal (actor, verb, target, detail) is noted at most this many times in a row, each within `NOTE_REPEAT_MS` of the one before (errata P9). */
+const NOTE_REPEAT_MAX = 3;
+const NOTE_REPEAT_MS = 120_000;
 const VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["insult", "shove", "slap", "punch", "kill"]);
 const PHYSICAL_VIOLENT: ReadonlySet<ActVerb> = new Set<ActVerb>(["shove", "slap", "punch"]);
 
@@ -112,6 +118,10 @@ export class DramaBody implements DramaFrameSink {
   readonly provocation: ProvocationLedger;
   /** Refusals told to the model as a line in its next prompt (`DramaBodyDeps.note`). */
   private actBlockedNotes = 0;
+  /** Refusals whose note was left out of the prompt because the same one had been told `NOTE_REPEAT_MAX` times in a row (errata P9). */
+  private notesSilenced = 0;
+  /** The run of identical refusals told to each actor: `actor|verb|target|detail`, how many in a row and when the last one was. */
+  private readonly noteRuns = new Map<string, { n: number; at: number }>();
   /** The highest rung each ordered pair has started in this scene, `actor>target` by ref (errata P8: the spine's slap wants a pair that already shoved). */
   private readonly reached = new Map<string, number>();
   /** What the scene spine opened (errata P8): grants by level, the evaluations that found no evidence, and each grant with when and why, for the run's manifest. */
@@ -179,8 +189,14 @@ export class DramaBody implements DramaFrameSink {
     const wire = this.d.mirror.avatarId(ref);
     const port = this.d.port?.();
     const now = this.d.clock.now();
-    if (wire !== undefined && port?.active && port.busyActId(wire) !== undefined) return [];
-    if (this.ledger.lockOf(ref)) return [];
+    if (wire !== undefined && port?.active && port.busyActId(wire) !== undefined) {
+      this.logSkip(ref, base, "busy", "act_busy");
+      return [];
+    }
+    if (this.ledger.lockOf(ref)) {
+      this.logSkip(ref, base, "busy", "locked");
+      return [];
+    }
 
     // 1. what the model proposed, and what a pair would be.
     const proposals = this.proposalsOf(base);
@@ -197,15 +213,21 @@ export class DramaBody implements DramaFrameSink {
         queue.push(again.proposal);
       }
       for (const proposal of queue) {
-        const out = this.decide(ref, wire, proposal, base);
+        const out = this.decide(ref, wire, proposal, base, { queue: queue.length, hold });
         hold ||= out.hold;
         approach.push(...out.approach);
       }
-      // 2. nothing proposed: the emotion state may drive a beat of the director's own.
-      if (queue.length === 0 && !hold && base.actionEmotions) {
+      // 2. nothing proposed: the emotion state may drive a beat of the director's own. An actor the scene spine has opened a rung for is asked even when its model proposed
+      // something the director refused (a glare at someone else, run 62: 79 times): the unlock is for the director to carry out, not for the model to ask for (errata P9).
+      if ((queue.length === 0 || this.provocation.unlockOf(ref) !== undefined) && !hold && base.actionEmotions) {
         const out = this.passive(ref, wire, base, port);
         hold = out.hold;
         approach.push(...out.approach);
+      } else if (queue.length > 0) {
+        // The director is not asked to originate while the model proposes (unless an unlock is open and nothing was approved): what the log would otherwise not say.
+        this.logConsult(ref, "skip", { result: "not_asked", reason: hold ? "held" : "model_proposed" }, { queue: queue.length, hold });
+      } else if (!base.actionEmotions) {
+        this.logConsult(ref, "skip", { result: "no_emotion", reason: "no_feelings" }, { queue: 0, hold });
       }
     }
     if (hold) return [];
@@ -223,7 +245,7 @@ export class DramaBody implements DramaFrameSink {
         continue;
       }
       if (wire === undefined || !port?.active) continue;
-      const res = this.decide(ref, wire, { verb: c.kind, with: this.d.mirror.avatarId(c.with) as number, origin: "model" }, base);
+      const res = this.decide(ref, wire, { verb: c.kind, with: this.d.mirror.avatarId(c.with) as number, origin: "model" }, base, { queue: 1, hold: false });
       out.push(...res.approach);
     }
     return this.withoutOwnWalks(ref, out);
@@ -260,9 +282,11 @@ export class DramaBody implements DramaFrameSink {
     if (!session) this.reactions.dispose();
   }
   onActStarted(f: Frame<"act_started">): void {
+    this.logHotel(f.actor, f.with ?? undefined, f.verb, f.rung ?? undefined, "started");
     // The blow (or any act of its own): the follow has done its job.
     const ref = this.d.mirror.refOfAvatar(f.actor);
     this.stopFollow(ref);
+    for (const key of [...this.noteRuns.keys()]) if (key.startsWith(`${ref}|`)) this.noteRuns.delete(key);
     this.noteReached(ref, f);
     this.ledger.onActStarted(f);
     this.armClimbWatch(ref, f);
@@ -274,6 +298,7 @@ export class DramaBody implements DramaFrameSink {
     this.ledger.onActReaction(f);
   }
   onActDone(f: Frame<"act_done">): void {
+    this.logHotel(f.actor, f.with ?? undefined, f.verb, undefined, f.outcome === "blocked" ? `blocked:${f.reason ?? "?"}${f.detail ? `/${f.detail}` : ""}` : `done:${f.outcome}`);
     this.ledger.onActDone(f);
     this.reactions.close(f.act_id);
   }
@@ -295,6 +320,7 @@ export class DramaBody implements DramaFrameSink {
     // A new scene starts the cast fresh: what was said in the last one is not held against anyone in this one (errata P7).
     this.provocation.clear();
     this.reached.clear();
+    this.noteRuns.clear();
     this.stopFollows();
     this.stopClimbWatches();
     this.retry.clear();
@@ -450,11 +476,34 @@ export class DramaBody implements DramaFrameSink {
       if (countSkip) this.unlocked.skippedNoEvidence++;
       return "none";
     }
-    if (result === "granted") {
-      this.unlocked[level]++;
-      this.unlockLog.push({ at: this.d.clock.now(), level, observer: pick.observer, offender: pick.offender, why: pick.why });
-    }
+    if (result === "granted") this.noteGrant(level, pick.observer, pick.offender, pick.why);
     return result;
+  }
+
+  /**
+   * Opens `level` for `observer` toward `offender` without reading the evidence (`escalate` does that, then does this): the ledger's unlock, and the count and the manifest line of a grant.
+   * For a test that puts a live run's grants back at their seconds. The same refusals as `escalate`: a pair the scenario does not let, a human, drama not in charge.
+   */
+  grant(observer: string, offender: string, level: UnlockLevel, why: string): "granted" | "refreshed" | "none" {
+    const port = this.d.port?.();
+    if (!this.active || !port?.active) return "none";
+    const result = this.provocation.unlock(observer, offender, level);
+    if (result === "skipped") return "none";
+    if (result === "granted") this.noteGrant(level, observer, offender, why);
+    return result;
+  }
+
+  private noteGrant(level: UnlockLevel, observer: string, offender: string, why: string): void {
+    this.unlocked[level]++;
+    this.unlockLog.push({ at: this.d.clock.now(), level, observer, offender, why });
+    // The rung is open for `observer` now: the director is asked at once, as a climb watch's look is, and not at the actor's next turn or the next pulse's sweep (errata P9).
+    this.lookAt(observer);
+  }
+
+  /** One look at the director for `ref`, now: the plain `decide` of a passive turn with the feelings the actor last planned with. Every gate is the director's; it starts the next rung, says `approach` (the follow opens and the actor walks up) or does nothing. */
+  private lookAt(ref: string): void {
+    this.stopClimbWatch(ref);
+    this.climbWatchTick(ref);
   }
 
   /** The line the aggressor of an open unlock reads in its next prompt (errata P8), naming who it is aimed at; undefined for an actor with no open unlock. */
@@ -494,6 +543,7 @@ export class DramaBody implements DramaFrameSink {
       grievance_reported: p.reportedRaised,
       grievance_reported_ignored: p.reportedIgnored,
       act_blocked_notes: this.actBlockedNotes,
+      act_blocked_notes_silenced: this.notesSilenced,
       spine_unlock_shove: this.unlocked.shove,
       spine_unlock_slap: this.unlocked.slap,
       spine_unlock_skipped_no_evidence: this.unlocked.skippedNoEvidence,
@@ -502,11 +552,12 @@ export class DramaBody implements DramaFrameSink {
     return Object.fromEntries(Object.entries(all).filter(([, n]) => n > 0));
   }
 
-  private decide(ref: string, wire: number, proposal: ActProposal, base: PlanInput): { hold: boolean; approach: PlannedCommand[] } {
+  private decide(ref: string, wire: number, proposal: ActProposal, base: PlanInput, ctx: { queue: number; hold: boolean }): { hold: boolean; approach: PlannedCommand[] } {
     const port = this.d.port?.();
     if (!port) return { hold: false, approach: [] };
     const emotion = this.emotionOf(ref, base);
     const res: DramaDecision = port.decide({ actor: wire, proposal, ...(emotion ? { emotion } : {}) });
+    this.logDecision(ref, port, undefined, { queue: ctx.queue, hold: ctx.hold || res.kind === "approve" || res.kind === "initiate" });
     switch (res.kind) {
       case "approve":
       case "initiate":
@@ -519,8 +570,12 @@ export class DramaBody implements DramaFrameSink {
         // An act the ladder refused for want of a motive or a grievance, one rung too many, a witness or a calmer room is not yet earned: the model is told so in its
         // next prompt, with the name it aimed at and what would earn it (errata P7, P8).
         if (res.reason === "ladder" && res.detail !== undefined && TOLD_LADDER.has(res.detail) && targetRef !== undefined && this.d.note) {
-          this.d.note(ref, [{ ...reason, ref: this.d.names(targetRef) ?? targetRef }]);
-          this.actBlockedNotes++;
+          // The same refusal told again and again changes nothing (run 62: 79 refused glares, 80 notes, no uptake): after `NOTE_REPEAT_MAX` of them in a row (each within
+          // `NOTE_REPEAT_MS` of the one before) the note is left out of the prompt. The refusal is still logged; a quiet `NOTE_REPEAT_MS` or a blow of the actor's own starts the count over.
+          if (this.noteAgain(ref, proposal.verb, targetRef, res.detail)) {
+            this.d.note(ref, [{ ...reason, ref: this.d.names(targetRef) ?? targetRef }]);
+            this.actBlockedNotes++;
+          } else this.notesSilenced++;
         }
         return { hold: false, approach: [] };
       }
@@ -569,12 +624,60 @@ export class DramaBody implements DramaFrameSink {
     const emotion = this.emotionOf(ref, base);
     if (!emotion) return { hold: false, approach: [] };
     const res = port.decide({ actor: wire, emotion });
+    this.logDecision(ref, port, undefined, { queue: 0, hold: res.kind === "initiate" });
     if (res.kind === "initiate") return { hold: true, approach: [] };
     if (res.kind === "pass" && res.approach !== undefined) {
       this.startFollow(ref, res.approach, base.rng);
       return { hold: false, approach: this.approachTo(ref, res.approach, base) };
     }
     return { hold: false, approach: [] };
+  }
+
+  /** True while this refusal is still worth a line in the actor's prompt: counts it, and starts the count over after `NOTE_REPEAT_MS` without one. */
+  private noteAgain(ref: string, verb: ActVerb, target: string, detail: string): boolean {
+    const now = this.d.clock.now();
+    const key = `${ref}|${verb}|${target}|${detail}`;
+    const run = this.noteRuns.get(key);
+    const n = run !== undefined && now - run.at <= NOTE_REPEAT_MS ? run.n + 1 : 1;
+    this.noteRuns.set(key, { n, at: now });
+    return n <= NOTE_REPEAT_MAX;
+  }
+
+  // ---- the decision log (errata P9) --------------------------------------------------------------------------------
+
+  /** One line of the log for `ref`, with the unlock the actor holds right now. Writes nothing when the run keeps no log. */
+  private logConsult(ref: string, kind: DramaLogKind, over: Pick<DramaLogEntry, "result"> & Partial<Omit<DramaLogEntry, "actor" | "kind" | "queue" | "hold">>, ctx: { queue: number; hold: boolean }): void {
+    const log = this.d.log?.();
+    if (!log) return;
+    const open = this.provocation.unlockOf(ref);
+    // A line that is not about a person says the unlock the actor holds as its pair (a skip: nobody was looked at); one that is about someone says that person's.
+    const about = over.pair === undefined && open !== undefined;
+    log.record({ ...over, ...(open ? { unlock: `${ref}>${open.offender}@${open.rung}` } : {}), ...(about ? { pair: `${ref}>${open.offender}`, unlocked: open.rung } : { unlocked: over.unlocked ?? 0 }), actor: ref, kind, queue: ctx.queue, hold: ctx.hold });
+  }
+
+  /** The director's own account of its last `decide` as a log line; `kind` overrides it for the timers' looks (`continue`). */
+  private logDecision(ref: string, port: DramaDecisionPort, kind: DramaLogKind | undefined, ctx: { queue: number; hold: boolean }): void {
+    if (!this.d.log?.()) return;
+    const t = port.trace?.();
+    if (!t) return;
+    const { actor: _actor, kind: traced, ...rest } = t;
+    this.logConsult(ref, kind ?? traced, rest, ctx);
+  }
+
+  /** What the hotel said of an act of an own actor: it began, it ended (and how), or it refused it (`blocked:<reason>/<detail>`, the answer the director's own gates did not foresee). */
+  private logHotel(actor: number, target: number | undefined, verb: ActVerb, rung: number | undefined, result: string): void {
+    if (!this.d.log?.()) return;
+    const ref = this.d.mirror.refOfAvatar(actor);
+    if (!this.d.isOwn(ref)) return;
+    const other = target === undefined ? undefined : this.d.mirror.refOfAvatar(target);
+    const r = rung ?? ladderRung(verb);
+    this.logConsult(ref, "hotel", { result, verb, ...(r !== undefined ? { rung: r } : {}), ...(other ? { pair: `${ref}>${other}`, unlocked: this.provocation.unlockedRung(ref, other) ?? 0 } : {}) }, { queue: 0, hold: false });
+  }
+
+  /** A consult the body ended itself, before asking the director anything (the actor holds an act or a lock): `queue` is what the model proposed meanwhile. */
+  private logSkip(ref: string, base: PlanInput, result: string, reason: string): void {
+    if (!this.d.log?.()) return;
+    this.logConsult(ref, "skip", { result, reason }, { queue: this.proposalsOf(base).length, hold: true });
   }
 
   // ---- following a target that keeps moving (issue #262) ------------------------------------------------------------
@@ -619,7 +722,9 @@ export class DramaBody implements DramaFrameSink {
     if (this.adjacent(ref, f.target)) {
       const seen = this.latest.get(ref);
       const emotion = seen ? this.emotionOf(ref, seen) : undefined;
-      if (emotion && port.decide({ actor: wire, emotion }).kind === "initiate") {
+      const res = emotion ? port.decide({ actor: wire, emotion }) : undefined;
+      if (emotion) this.logDecision(ref, port, "continue", { queue: 0, hold: res?.kind === "initiate" });
+      if (res?.kind === "initiate") {
         this.stopFollow(ref);
         return;
       }
@@ -660,6 +765,7 @@ export class DramaBody implements DramaFrameSink {
     if (!seen || !emotion || wire === undefined || !port?.active || !this.active || this.ledger.isDead(ref) || this.ledger.lockOf(ref) || port.busyActId(wire) !== undefined) return;
     if ((this.following.get(ref)?.until ?? 0) > now) return;
     const res = port.decide({ actor: wire, emotion });
+    this.logDecision(ref, port, "continue", { queue: 0, hold: res.kind === "initiate" });
     if (res.kind !== "pass" || res.approach === undefined) return;
     this.startFollow(ref, res.approach, seen.rng);
     const target = this.d.mirror.refOfAvatar(res.approach);

@@ -2,6 +2,7 @@ import { buildBodyPerception, computeActionEmotions, validateBodyIntent } from "
 import {
   BeatPlayer,
   DramaBody,
+  DramaLog,
   DramaDirector,
   MockActMemory,
   SceneRecorder,
@@ -18,7 +19,7 @@ import {
   updateMemory,
   validateActCmd,
 } from "@perfectman/hotel/drama";
-import type { ActSend, Clock, DramaDecision, DramaFrame, DramaFrameSink, DramaLink, DramaMode, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
+import type { ActSend, Clock, DramaDecision, DramaLogLine, DramaFrame, DramaFrameSink, DramaLink, DramaMode, DramaSession, DramaTuning, MockDrama, PlannedCommand, PlanInput, ScenarioBeat, ScenarioDrama } from "@perfectman/hotel/drama";
 import { BodyIntentSchema } from "@perfectman/shared";
 import type { ActVerb, AgentState, BlockedReason, BodyCommand, BodyHandleMap, BodyIntent, SpineObjective, Tile } from "@perfectman/shared";
 import { extractDramaEvents } from "../drama/index.js";
@@ -61,6 +62,9 @@ const MOCK_SPEECH: Record<string, string[]> = {
   tableau: [""],
 };
 
+export type SimOwnWalk = { actor: string; everyMs: readonly [number, number] };
+/** What the scripted model (`SimConfig.model`) is told of a consult. */
+export type SimModelTurn = { ref: string; n: number; atMs: number; handleOf(ref: string): string | undefined; blocked: readonly BlockedReason[] };
 export type SimControl = { atMs: number; calm?: boolean; enabled?: boolean; optIn?: { human: number; on: boolean } };
 export type SimHuman = { id: number; name: string; tile: Tile; optIn: boolean; answer?: ChipAnswer | ((q: ChipQuestion) => ChipAnswer) };
 
@@ -97,12 +101,31 @@ export type SimConfig = {
    * only content is a `go_to` a random piece of furniture or zone in view, through the same `DramaBody.planFor` as a consult (but with no feelings, so the director is not asked on it), so the walk is the planner's own (its plan id
    * is not `drama:`) and meets whatever the body does about it. It is how a live model that keeps sending its actor somewhere else is staged. Absent: no own walks.
    */
-  ownWalk?: { actor: string; everyMs: readonly [number, number] };
+  ownWalk?: SimOwnWalk | readonly SimOwnWalk[];
+  /**
+   * The model's body block for one consult (a test seam, errata P9), in place of the mock: what a live model was seen to do, scripted. It gets the actor, its consult number, the
+   * time and the handle the render gives each person, and answers the block it would send (or none). The block goes through the schema and the engine's validator as the mock's does.
+   * Absent: the mock (`mockAct`), or nothing with `speechOnly`.
+   */
+  model?: (turn: SimModelTurn) => Record<string, unknown> | undefined;
+  /**
+   * Feelings that move (a test seam, errata P9): called at every consult with the actor's state and the time, it returns the state the consult plans with, kept for the next one. The
+   * engine's chat-driven update is not in the sim, so a feelings that drift in a live run (arousal, momentum, what the actor holds against each person) are staged here.
+   * Absent: the state stays what the scenario seeded and what an act's memory made of it.
+   */
+  drift?: (ref: string, state: AgentState, atMs: number) => AgentState;
   /**
    * What the cast says (a test seam, errata P7): at `atMs` after the start `actor` says `text`, to `to` when given. The line goes to the grid as chat and to the body's grievance
    * ledger as a run's committed lines do (`DramaBody.noteSpoken`: who it names, who it is for), so a cast that only talks can be heated, or left cold, by what it says.
    */
-  dialogue?: ReadonlyArray<{ atMs: number; actor: string; text: string; to?: string }>;
+  dialogue?: ReadonlyArray<{
+    atMs: number;
+    actor: string;
+    text: string;
+    to?: string;
+    /** `false`: the line is spoken (on the grid, in the recorder the spine reads) but the grievance ledger and the spine's look at the evidence never see it (errata P9: a live run's talk whose addressees are not on record). Default: read. */
+    read?: boolean;
+  }>;
   /**
    * The scene spine of a run with no authored beats (errata P8), as a run builds it: four steps, the turn and the decision opening the ladder for a cast that was heard
    * heating up (`SpineEscalation`, the run's own class on the sim's clock). Absent: no spine, the sim as it was. `cast` gives an actor's private objective (people who share
@@ -110,6 +133,17 @@ export type SimConfig = {
    * nothing. The spine is inert, as in a run, when the scene has authored beats, drama is off, or fewer than two actors. The notes themselves are not read (the sim has no prompt).
    */
   spine?: { language?: "pt-BR" | "en"; cast?: ReadonlyArray<{ ref: string; objective?: SpineObjective }>; escalate?: boolean };
+  /**
+   * The run's idle sweep (errata P9): after every base pulse (`everyMs`) each actor the model was not consulted for in it is planned with no model block and no proposal, as `Run.sweepIdle`
+   * does, so the director is asked to originate a beat of its own at the pulse's pace and not only at the model's turn. An actor consulted within the last half pulse is skipped (it was planned
+   * this pulse). Absent: only the model's consults plan an actor, the sim as it was.
+   */
+  sweep?: { everyMs: number };
+  /**
+   * Unlocks the scene spine granted (a test seam, errata P9): at `atMs` the body is told to open `level` for `aggressor` toward `target` as `DramaBody.escalate` would have after it read the
+   * evidence. It is how a live run's grants (the manifest's `scene_spine.unlocks`) are put back at their seconds when the talk that earned them is not.
+   */
+  grants?: ReadonlyArray<{ atMs: number; level: "shove" | "slap"; aggressor: string; target: string }>;
   /** The harm limit of the room (SAFE-4). */
   harmMax?: number;
   /** The director's tuning; absent is the sidecar's default. */
@@ -147,6 +181,8 @@ export type SimResult = {
   stats: { started: number; blocked: number; aborted: number; done: number };
   /** The body's own counters, as a run's summary carries them (`grievance_raised`, `act_blocked_notes`, `spine_unlock_*`, ...): only the ones that are not zero. */
   counters: Record<string, number>;
+  /** The drama decision log of the run (errata P9), the lines `drama-log.jsonl` would hold. */
+  dramaLog: DramaLogLine[];
   /** The scene spine when the config had one (errata P8): the step it ended on, each advance (ms on the sim clock, `progress` or `released`) and what it opened of the ladder. */
   spine?: { step: number; advances: Array<{ step: number; atMs: number; via: string }>; unlocks?: ReturnType<SpineEscalation["manifest"]> };
 };
@@ -294,6 +330,8 @@ export function runDramaSim(config: SimConfig): SimResult {
 
   // ---- the sidecar's side: the director and the planner ----------------------------------------------------
   const consumed = new Set<string>();
+  const dramaLines: string[] = [];
+  const dramaLog = new DramaLog((line) => dramaLines.push(line), () => grid.now() - startMs);
   let cid = 100;
   const link: DramaLink = {
     dialect: 2,
@@ -332,6 +370,7 @@ export function runDramaSim(config: SimConfig): SimResult {
     feed: (f: Parameters<DramaDirector["feed"]>[0]) => director.feed(f),
     advanceScene: (reason: string) => director.advanceScene(reason),
     busyActId: (actor: number) => director.busyActId(actor),
+    trace: () => director.trace(),
   };
 
   const body = new DramaBody({
@@ -351,6 +390,7 @@ export function runDramaSim(config: SimConfig): SimResult {
         return Promise.resolve();
       },
     },
+    log: () => dramaLog,
     hooks: {
       blocked: (agentId, reasons) => {
         blocked.set(agentId, [...reasons]);
@@ -414,17 +454,21 @@ export function runDramaSim(config: SimConfig): SimResult {
     return place === undefined ? undefined : { move: { kind: "go_to", place }, order: "move_then_speak" };
   }
 
-  function consult(ref: string, own = false): void {
+  function consult(ref: string, own = false, sweep = false): void {
     const now = grid.now();
-    const state = states.get(ref);
+    const state0 = states.get(ref);
     const view = space.view(ref, now);
-    if (!state || !view?.room || body.isDead(ref)) return;
-    const n = own ? (consults.get(ref) ?? 0) : (consults.get(ref) ?? 0) + 1;
-    if (!own) consults.set(ref, n);
+    if (!state0 || !view?.room || body.isDead(ref)) return;
+    const state = !own && config.drift ? config.drift(ref, state0, now - startMs) : state0;
+    if (state !== state0) states.set(ref, state);
+    const n = own || sweep ? (consults.get(ref) ?? 0) : (consults.get(ref) ?? 0) + 1;
+    if (!own && !sweep) consults.set(ref, n);
     const built = buildBodyPerception({ view, relational: state.relationalStates, language: "pt-BR" });
     const perceived = { ...built.body, blocked: blocked.get(ref) ?? [], ...(dramaOn ? { drama: true as const } : {}) };
-    blocked.delete(ref);
-    const proposed = own ? ownWalkIntent(built.handles) : config.speechOnly === true ? undefined : mockAct({ agentId: ref, perceptionPacket: { body: perceived, bodyHandles: built.handles }, emotionalState: { socialEmotions: state.socialEmotions, relationalStates: state.relationalStates } }, n, drama, mock);
+    // A sweep is not a turn of the model: it reads nothing, so what the body refused is still there for the actor's next turn.
+    if (!sweep) blocked.delete(ref);
+    const handleOf = (target: string): string | undefined => Object.entries(built.handles).find(([, t]) => t.kind === "person" && t.ref === target)?.[0];
+    const proposed = own ? ownWalkIntent(built.handles) : sweep ? undefined : config.model ? config.model({ ref, n, atMs: now - startMs, handleOf, blocked: perceived.blocked }) : config.speechOnly === true ? undefined : mockAct({ agentId: ref, perceptionPacket: { body: perceived, bodyHandles: built.handles }, emotionalState: { socialEmotions: state.socialEmotions, relationalStates: state.relationalStates } }, n, drama, mock);
     // The model's block, the way a run takes it: the schema first (a malformed block is dropped, the speech stays), then the engine's validator,
     // which drops an `act` that needs a target it does not have and names what it refused (`body.blocked` at the next consult).
     let bodyIntent: BodyIntent | undefined;
@@ -475,7 +519,7 @@ export function runDramaSim(config: SimConfig): SimResult {
       else if (d.kind === "initiate") proposals.push({ atMs: now - startMs, actor: ref, verb: d.verb, ...(d.with !== undefined ? { with: space.refOfAvatar(d.with) } : {}), ...fate });
     }
     send(cmds);
-    const line = act ? lineFor(ref, act.verb, targetRef, n) : undefined;
+    const line = act && !sweep ? lineFor(ref, act.verb, targetRef, n) : undefined;
     if (line && !body.isDead(ref)) {
       speech.push({ atMs: now - startMs, actor: ref, text: line });
       log("in", { t: "actor_cmd", cid: ++cid, run: RUN, lease: LEASE, actor: slotOf.get(ref)!, cmd: { k: "chat", mode: act && ["insult", "slap", "punch", "kill"].includes(act.verb) ? "shout" : "say", text: line, ...(targetRef ? { to: slotOf.get(targetRef) ?? space.avatarId(targetRef) } : {}) } });
@@ -497,11 +541,12 @@ export function runDramaSim(config: SimConfig): SimResult {
   const end = startMs + config.durationMs;
   let wanderAt = config.wander ? startMs + config.wander.everyMs : Infinity;
   let wanderStep = 0;
-  const ownGap = (): number => {
-    const [lo, hi] = config.ownWalk?.everyMs ?? [0, 0];
+  const ownGap = (w: SimOwnWalk): number => {
+    const [lo, hi] = w.everyMs;
     return lo + Math.floor(ownRng() * (hi - lo + 1));
   };
-  let ownAt = config.ownWalk ? startMs + ownGap() : Infinity;
+  const walkers = config.ownWalk === undefined ? [] : Array.isArray(config.ownWalk) ? [...config.ownWalk] : [config.ownWalk as SimOwnWalk];
+  const ownAt = walkers.map((w) => startMs + ownGap(w));
   if (dramaOn) acts.announce();
 
   // The production player, on the sim's clock: it counts the script's seconds from here, as a run's does once its cast is in.
@@ -542,10 +587,15 @@ export function runDramaSim(config: SimConfig): SimResult {
     log("in", { t: "actor_cmd", cid: ++cid, run: RUN, lease: LEASE, actor: slotOf.get(l.actor)!, cmd: { k: "chat", mode: "say", text: l.text, ...(l.to ? { to: slotOf.get(l.to) ?? space.avatarId(l.to) } : {}) } });
     void grid.dispatch([{ agentId: l.actor, cmd: "chat", mode: "say", text: l.text, ...(l.to ? { to: l.to } : {}) }]);
     recorder.say(nameOf(l.actor), l.text, grid.now() - startMs);
-    if (dramaOn) body.noteSpoken({ speaker: l.actor, content: l.text, addressees: l.to ? [l.to] : [], mentioned });
-    escalation?.onLine(grid.now());
+    if (dramaOn && l.read !== false) body.noteSpoken({ speaker: l.actor, content: l.text, addressees: l.to ? [l.to] : [], mentioned });
+    if (l.read !== false) escalation?.onLine(grid.now());
     if (!escalation) spineScene?.advance(grid.now());
   }
+
+  const lastTurnAt = new Map<string, number>();
+  const sweepEvery = config.sweep?.everyMs ?? 0;
+  let sweepAt = sweepEvery > 0 ? startMs + 1000 + sweepEvery : Infinity;
+  const grants = [...(config.grants ?? [])].sort((a, b) => a.atMs - b.atMs);
 
   const settleMs = 12_000;
   const stopAt = end + settleMs;
@@ -568,13 +618,24 @@ export function runDramaSim(config: SimConfig): SimResult {
       const to = w.tiles[wanderStep++ % w.tiles.length]!;
       if (!body.isDead(w.actor)) void grid.dispatch([{ agentId: w.actor, cmd: "walk", to, plan: `wander:${wanderStep}` }]);
     }
-    if (config.ownWalk && now >= ownAt && now < end) {
-      ownAt = now + ownGap();
-      consult(config.ownWalk.actor, true);
+    walkers.forEach((w, i) => {
+      if (now >= ownAt[i]! && now < end) {
+        ownAt[i] = now + ownGap(w);
+        consult(w.actor, true);
+      }
+    });
+    while (grants.length > 0 && startMs + grants[0]!.atMs <= now && now < end) {
+      const g = grants.shift()!;
+      body.grant(g.aggressor, g.target, g.level, `grant at ${g.atMs / 1000} s`);
     }
     if (now < end) for (const ref of actorRefs) if ((next.get(ref) ?? Infinity) <= now) {
       next.set(ref, now + consultMs);
+      lastTurnAt.set(ref, now);
       consult(ref);
+    }
+    if (now >= sweepAt && now < end) {
+      sweepAt += sweepEvery;
+      for (const ref of actorRefs) if (now - (lastTurnAt.get(ref) ?? -Infinity) >= sweepEvery / 2) consult(ref, false, true);
     }
   }
 
@@ -582,5 +643,6 @@ export function runDramaSim(config: SimConfig): SimResult {
   const frames = lines.map((l) => normalizeFrame(l)).flatMap((f) => (f ? [f] : []));
   const events = extractDramaEvents(frames);
   const probes = runDramaProbes({ events, actorIds: actorRefs, durationMs: stopAt - startMs });
-  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters(), ...(spineScene ? { spine: { step: spineScene.step, advances: spineScene.advances.map((a) => ({ step: a.step, atMs: a.atMs, via: a.via })), ...(escalation ? { unlocks: escalation.manifest(startMs) } : {}) } } : {}) };
+  dramaLog.close();
+  return { title: config.title, seed: config.seed, run: RUN, durationMs: stopAt - startMs, actors: actorRefs, lines, events, probes, proposals, speech, offDeviations, droppedBodies, droppedActs, cuts, bodyBlocked, stats: { ...acts.stats }, counters: body.counters(), dramaLog: dramaLines.map((l) => JSON.parse(l) as DramaLogLine), ...(spineScene ? { spine: { step: spineScene.step, advances: spineScene.advances.map((a) => ({ step: a.step, atMs: a.atMs, via: a.via })), ...(escalation ? { unlocks: escalation.manifest(startMs) } : {}) } } : {}) };
 }

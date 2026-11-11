@@ -7,6 +7,8 @@
  */
 export { DramaBody } from "./embodiment/drama-body.js";
 export type { ActorPool, AgentStateStore, DramaBodyDeps } from "./embodiment/drama-body.js";
+export { DramaLog, dramaLogLine, DRAMA_LOG_CAP } from "./director/drama/decision-log.js";
+export type { DramaLogEntry, DramaLogLine } from "./director/drama/decision-log.js";
 export { plan, updateMemory } from "./embodiment/plan.js";
 export type { PlanInput, PlannedCommand } from "./embodiment/types.js";
 export { BeatPlayer, DramaDirector, composeDramaSinks, mirrorWorld, DEFAULT_DRAMA_TUNING } from "./director/drama/index.js";

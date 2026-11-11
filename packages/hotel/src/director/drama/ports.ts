@@ -1,6 +1,7 @@
 import type { ActionEmotions, ActOrigin, ActVerb, CoreMood, RelationalState, SocialEmotions } from "@perfectman/shared";
 import type { ActCmdError } from "../act-cmd.js";
 import type { BlockedReason, HotelFrame } from "../index.js";
+import type { DramaLogEntry } from "./decision-log.js";
 
 /**
  * The port between the drama director (packet P2) and the planner and engine (packet P3).
@@ -145,6 +146,9 @@ export type SceneAdvance =
   /** `too_young`: the scene is not yet `scene_min_age_ms` old (SCENE-5). `pending`: a `scene_advance` is out and no `scene_cut` has come (SCENE-4). */
   | { kind: "refused"; why: "inert" | "too_young" | "pending" | "unsent"; retryInMs?: number };
 
+/** What the director saw in its last `decide`, as a decision-log line without the body's own fields (`queue`, `hold`, `unlock`): errata P9. */
+export type DecisionTrace = Omit<DramaLogEntry, "queue" | "hold" | "unlock">;
+
 export interface DramaDecisionPort {
   /**
    * True while drama is negotiated for this run (dialect 2 link, a `drama_state` read). False makes every `decide` a `pass` of
@@ -158,4 +162,6 @@ export interface DramaDecisionPort {
   advanceScene(reason: string): SceneAdvance;
   /** The `act_id` that keeps this actor busy (it started an open act, or is its locked target, TGT-1), else undefined (ACT-12). */
   busyActId(actor: number): string | undefined;
+  /** What the last `decide` looked at and why it answered as it did, for the run's decision log (errata P9); undefined before the first one. Optional: a port with nothing to say leaves it out. */
+  trace?(): DecisionTrace | undefined;
 }
