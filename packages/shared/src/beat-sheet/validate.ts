@@ -63,7 +63,7 @@ const KIND_KEYS: Record<string, readonly string[]> = {
   camera: ["intent"],
 };
 /** Keys that would carry a spoken line. A sheet that has one is refused, not trimmed (invariant 7). */
-const SOFT_KINDS = new Set(["note", "reveal", "expression", "camera", "pause"]);
+const SOFT_KINDS = new Set(["note", "reveal", "expression", "camera", "pause", "block", "prop"]);
 const DIALOGUE_KEYS = new Set(["text", "say", "line", "lines", "dialogue", "speech", "quote", "utterance", "reply"]);
 const QUOTED = /["“«]([^"“”«»]{18,})["”»]/u;
 
@@ -172,8 +172,10 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
     const id = typeof entry["id"] === "string" && entry["id"].trim() !== "" ? entry["id"].trim().slice(0, 32) : `s${index + 1}`;
     const gist = entry["gist"] === undefined ? undefined : prose(`${at}.gist`, entry["gist"], 180, false);
     const actorOf = (key: string): string => {
-      const v = idOf(entry[key]);
-      if (v === undefined) err(`${at}.${key}`, `"${String(entry[key])}" is not in the cast`);
+      // A model that names the person "who", "character" or "person" instead of "actor" is read, not refused.
+      const given = entry[key] ?? (key === "actor" ? (entry["who"] ?? entry["character"] ?? entry["person"]) : undefined);
+      const v = idOf(given);
+      if (v === undefined) err(`${at}.${key}`, `"${String(given)}" is not in the cast`);
       return v ?? "";
     };
     const base = { id, at_ms: isNum(at_ms) ? Math.round(at_ms) : 0, phase: phase as Phase, ...(gist ? { gist } : {}) };
@@ -317,8 +319,8 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
         break;
       }
     }
-    // Colour, not structure: a note, reveal, face, pause or camera beat a model gets wrong (a name that is not in the cast, an objective that is not text) is left out with a
-    // warning. Acts, cuts, blocks and props carry the arc and stay strict, and so does a line of dialogue, which is never trimmed (invariant 7).
+    // Colour, not structure: a note, reveal, face, pause, camera, block or prop beat a model gets wrong (a name that is not in the cast, an objective that is not text) is left out with a
+    // warning. Acts and cuts carry the arc and stay strict (the sheet still needs three physical, block, prop or camera beats in all), and so does a line of dialogue, which is never trimmed (invariant 7).
     if (errors.length > before && SOFT_KINDS.has(kind)) {
       const added = errors.splice(before);
       const hard = added.filter((e) => e.message.includes("beat_sheet.dialogue"));

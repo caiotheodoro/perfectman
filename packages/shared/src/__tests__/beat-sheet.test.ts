@@ -89,6 +89,20 @@ describe("colour beats a model gets wrong", () => {
     expect(r.warnings.filter((w) => w.message.includes("beat_sheet.beat_dropped")).length).toBe(3);
   });
 
+  it("a block with a bad destination and a prop with no actor are left out, and 'who' is read as the actor", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "k9", at_ms: 710, phase: "setup", kind: "block", actor: "Heloísa", to: "somewhere nice" });
+    beats.push({ id: "p9", at_ms: 720, phase: "setup", kind: "prop", prop: "glass", op: "pick_up" });
+    beats.push({ id: "w9", at_ms: 730, phase: "setup", kind: "note", who: "Otávio", objective: "keep calm", tactic: "stall" });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    const r = validateBeatSheet(sheet, ctx);
+    expect(messages(r)).toBe("");
+    expect(r.sheet?.beats.some((b) => b.id === "k9" || b.id === "p9")).toBe(false);
+    const note = r.sheet?.beats.find((b) => b.id === "w9");
+    expect(note && note.kind === "note" ? note.actor : undefined).toBeTruthy();
+  });
+
   it("dialogue in a note is still refused, never trimmed", () => {
     const sheet = raw();
     const beats = sheet["beats"] as Array<Record<string, unknown>>;
