@@ -2,7 +2,8 @@ import type { ActionEmotions, AgentState, BlockedReason, BodyHandleMap, BodyInte
 import { BodyExecutor } from "../embodiment/body-executor.js";
 import { DramaBody } from "../embodiment/drama-body.js";
 import type { ActorPool, AgentStateStore } from "../embodiment/drama-body.js";
-import type { ActProposal, DramaDecision, DramaDecisionPort, DramaTurn } from "../director/drama/ports.js";
+import type { DramaLog } from "../director/drama/decision-log.js";
+import type { ActProposal, DecisionTrace, DramaDecision, DramaDecisionPort, DramaTurn } from "../director/drama/ports.js";
 import type { PlanInput } from "../embodiment/types.js";
 import type { SidecarMsg } from "../director/index.js";
 import { HotelSpaceMirror } from "../space/space-mirror.js";
@@ -26,6 +27,11 @@ export class FakePort implements DramaDecisionPort {
   turns: DramaTurn[] = [];
   next: DramaDecision = { kind: "pass", why: "no_drive" };
   busy = new Map<number, string>();
+  /** What the port says it saw in its last `decide` (the decision log, errata P9); absent: the port says nothing. */
+  traced: DecisionTrace | undefined;
+  trace(): DecisionTrace | undefined {
+    return this.traced;
+  }
   decide(turn: DramaTurn): DramaDecision {
     this.turns.push(turn);
     return this.next;
@@ -39,7 +45,7 @@ export class FakePort implements DramaDecisionPort {
   }
 }
 
-export function rig(o: { port?: FakePort | undefined; drama?: boolean; ghost?: boolean; allow?: (observer: string, offender: string) => boolean; note?: (agentId: string, reasons: BlockedReason[]) => void } = {}) {
+export function rig(o: { port?: FakePort | undefined; log?: DramaLog; drama?: boolean; ghost?: boolean; allow?: (observer: string, offender: string) => boolean; note?: (agentId: string, reasons: BlockedReason[]) => void } = {}) {
   const clock = new ManualClock(50_000);
   const mirror = new HotelSpaceMirror();
   const refresh = (): void => mirror.applySnapshot(snapshot(12, 1, [avatar(-701, "Duda", 4, 4), avatar(-702, "Rafa", 6, 4), avatar(-703, "Gabi", 8, 6), avatar(-704, "Leo", 2, 2), avatar(9, "ana", 7, 5)]), clock.now());
@@ -65,6 +71,7 @@ export function rig(o: { port?: FakePort | undefined; drama?: boolean; ghost?: b
     hooks: { blocked: (a, r) => blocked.push([a, r]) },
     ...(o.allow ? { provocation: { allow: o.allow } } : {}),
     ...(o.note ? { note: o.note } : {}),
+    ...(o.log ? { log: () => o.log } : {}),
   });
   if (o.drama !== false) {
     body.onSession({ enabled: true, chipTtlMs: 4000, harmMax: 3, harmWindowS: 300, dead: [] });

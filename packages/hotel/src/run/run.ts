@@ -55,7 +55,8 @@ import type { HotelSpaceMirror } from "../space/space-mirror.js";
 import type { ScopedMirror } from "../space/scoped-mirror.js";
 import type { Logger } from "../util/log.js";
 import { bodyDigest } from "../authoring/authoring-service.js";
-import { GUARD_LOG_FILE, NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
+import { DRAMA_LOG_FILE, GUARD_LOG_FILE, NdjsonEventSink, TRACK_FILE, writeRunArtifacts } from "./artifacts.js";
+import { RunDramaLog, dramaLogEnabled } from "./drama-log.js";
 import { GuardLog, guardLogEnabled } from "./guard-log.js";
 import type { ReplayManifest } from "./artifacts.js";
 import { MEMORY_ID_PREFIX, PlayerMemory } from "./player-memory.js";
@@ -264,6 +265,8 @@ export class Run {
   private readonly guardHits = new Map<GuardKind, number>();
   /** What the guards did to which line, streamed to `guard-log.jsonl` (guard-log.ts); absent when `PERFECTMAN_GUARD_LOG=0`. */
   private guardLog: GuardLog | undefined;
+  /** What the drama planner saw at each consult, streamed to `drama-log.jsonl` (drama-log.ts, errata P9); absent when `PERFECTMAN_DRAMA_LOG=0`. */
+  private dramaLog: RunDramaLog | undefined;
   /** The actors' lines and moves as the script-likeness metrics read them: the run's score at the end, and the progress the scene spine gates on. */
   private scene: SceneRecorder | undefined;
   /** The spine of a scene with no authored beats (scene-recorder.ts); absent when the scene has beats, drama is off, or the cast is one. */
@@ -337,6 +340,7 @@ export class Run {
       ghostVoice: d.hotel.dramaGhostVoice === true && params.mode === "cinematic",
       hooks: { blocked: (agentId, reasons) => void this.appendBodyEvent("body_blocked", agentId, { reasons: reasons as unknown as never }, false) },
       provocation: { allow: (observer, offender) => this.mayProvoke(observer, offender) },
+      log: () => this.dramaLog?.log,
       // The model's next prompt says a refused move is not yet earned (errata P7): the body's `lastBlocked` is what the prompt's blocked line reads.
       note: (agentId, reasons) => {
         this.space.bodyOf(agentId, this.d.clock.now()).lastBlocked = [...reasons];
@@ -455,6 +459,10 @@ export class Run {
     if (guardLogEnabled()) {
       this.guardLog = new GuardLog(join(hotel.dataDir, "runs", String(this.id), GUARD_LOG_FILE), () => clock.now() - this.startedAt, (err) =>
         this.d.logger.warn("guard log write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
+    }
+    if (dramaLogEnabled()) {
+      this.dramaLog = new RunDramaLog(join(hotel.dataDir, "runs", String(this.id), DRAMA_LOG_FILE), () => clock.now() - this.startedAt, (err) =>
+        this.d.logger.warn("drama log write failed", { run: this.id, error: err instanceof Error ? err.message : String(err) }));
     }
     link.trackRun(this.id);
 
@@ -1763,6 +1771,7 @@ export class Run {
       else await this.cine?.stop(reason, false);
       await this.trackSink?.flush();
       await this.guardLog?.flush();
+      await this.dramaLog?.flush();
 
       // Walk-out (bounded). When the hotel ended the run it walks them out itself; a dead link cannot.
       if (!opts.byHotel && link.connected) await this.walkOut();

@@ -14,6 +14,8 @@ import { reviewGates } from "./gates.js";
 import type { GateAvatar } from "./gates.js";
 import { ActLedger } from "./ledger.js";
 import type { Assumed } from "./ledger.js";
+import { chebyshev } from "../../space/geometry.js";
+import type { DecisionTrace } from "./ports.js";
 import type { ActLifecycleFrame, ActProposal, DramaApproval, DramaDecision, DramaDecisionPort, DramaTurn, DramaVeto, EmotionReading, RelationReading, SceneAdvance } from "./ports.js";
 import { intensityOf, motive, volition } from "./pressure.js";
 import { DEFAULT_DRAMA_TUNING, LIMITS, VERB_GATES } from "./tuning.js";
@@ -58,6 +60,32 @@ function grudgeOf(r: RelationReading | undefined): number {
   return r ? Math.round(Math.max(r.resentment, r.envy, r.suspicion * 0.8) * 100) / 100 : 0;
 }
 
+/** What one (person, verb) came to in `originate`, for the decision log (errata P9): never read by the choice. */
+type Seen = { target: number; verb: ActVerb; rung: number; why: string; rule?: string; v?: number; theta?: number };
+
+/** The decision log's `result` and `reason` for an answer (errata P9). */
+function resultOf(d: DramaDecision, kind: "originate" | "propose"): { result: string; reason?: string } {
+  switch (d.kind) {
+    case "approve":
+    case "initiate":
+      return { result: "act" };
+    case "veto":
+      return { result: `blocked:${d.reason}${d.detail !== undefined ? `/${d.detail}` : ""}`, reason: d.rule };
+    case "unsent":
+      return { result: `blocked:unsent/${d.cause}` };
+    case "pass":
+      if (d.why === "pace") return { result: "pace" };
+      if (d.why === "actor_busy" || d.why === "actor_dead") return { result: "busy", reason: d.why };
+      if (d.approach !== undefined) return { result: "far", reason: "approach" };
+      if (kind === "originate" && d.why === "no_drive") return { result: "no_candidates" };
+      return { result: `blocked:pass/${d.why}` };
+    default: {
+      const unhandled: never = d;
+      return unhandled;
+    }
+  }
+}
+
 /** `d1`, `d2`, ...: unique within a run (ACT-5) and inside the `act_id` pattern. A retry always takes a new one. */
 export function makeActIds(prefix = "d"): () => string {
   let n = 0;
@@ -93,6 +121,8 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   private readonly offered = new Map<number, { at: number; target: number; rung: number }>();
   /** When each actor last started each verb (`<actor>|<verb>`), for the repeat window of `DramaTuning.repeatMs`. */
   private readonly startedAt = new Map<string, number>();
+  /** What the last `decide` saw (errata P9). */
+  private last: DecisionTrace | undefined;
 
   constructor(private readonly d: DramaDirectorDeps) {
     this.tuning = d.tuning ?? DEFAULT_DRAMA_TUNING;
@@ -135,6 +165,18 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
   }
 
   decide(turn: DramaTurn): DramaDecision {
+    this.last = undefined;
+    const out = this.decideNow(turn);
+    this.last ??= this.traceOf(turn, out);
+    return out;
+  }
+
+  /** What the last `decide` looked at and why it answered as it did (errata P9): for the run's decision log, never read by the director. */
+  trace(): DecisionTrace | undefined {
+    return this.last;
+  }
+
+  private decideNow(turn: DramaTurn): DramaDecision {
     if (!this.active) return { kind: "pass", why: "inert" };
     if (this.isFallen(turn.actor)) return { kind: "pass", why: "actor_dead" };
     if (this.ledger.busyActId(turn.actor) !== undefined) return { kind: "pass", why: "actor_busy" };
@@ -181,56 +223,158 @@ export class DramaDirector implements DramaDecisionPort, DramaFrameSink {
 
   private originate(turn: DramaTurn): DramaDecision {
     const emotion = turn.emotion;
-    if (!emotion || !this.roomState(turn.actor).enabled) return { kind: "pass", why: "no_drive" };
+    if (!emotion || !this.roomState(turn.actor).enabled) return this.noted({ kind: "pass", why: "no_drive" }, turn, undefined, !emotion ? "no_emotion" : "room_disabled");
     const now = this.d.clock.now();
     const o = this.tuning.origination;
     const last = this.offered.get(turn.actor);
     const since = last === undefined ? Infinity : now - last.at;
     // A climb is never slower than the base pace: a tuning with a shorter gap has no longer one for a climb.
-    if (since < Math.min(o.climb.gapMs, o.minGapMs)) return { kind: "pass", why: "pace" };
+    if (since < Math.min(o.climb.gapMs, o.minGapMs)) return this.noted({ kind: "pass", why: "pace" }, turn, undefined, `since_last ${Math.round(since / 1000)}s < ${Math.round(Math.min(o.climb.gapMs, o.minGapMs) / 1000)}s`);
     // Before the slow gap is over only the next rung of a climb in progress may go: the same person, a rung above the last one, up to the climb's ceiling.
     const slow = since < o.minGapMs;
     const room = this.d.world.roomOf(turn.actor);
-    if (room === undefined) return { kind: "pass", why: "not_placed" };
+    if (room === undefined) return this.noted({ kind: "pass", why: "not_placed" }, turn, undefined, "not_placed");
 
     let approach: { target: number; grudge: number } | undefined;
     type Pick = { verb: ActVerb; target: number; margin: number; v: number; theta: number; rung: number; climbing: boolean; continuing: boolean; grudge: number };
     let best: Pick | undefined;
+    // What each (person, verb) came to, so a pass can say which one was nearest (errata P9). Not read by the choice.
+    const seen: Seen[] = [];
+    let others = 0;
+    let known = 0;
     for (const other of this.d.world.avatarsIn(room)) {
       if (other.id === turn.actor || other.id === this.narrator() || this.isFallen(other.id)) continue;
+      others++;
       if (!emotion.relations?.has(other.id)) continue;
+      known++;
       const cur = this.ledger.rungCur(turn.actor, other.id);
       for (const verb of o.verbs) {
-        if (this.repeating(turn.actor, verb)) continue;
         const rung = ladderRung(verb) ?? 0;
+        if (this.repeating(turn.actor, verb)) {
+          seen.push({ target: other.id, verb, rung, why: "repeat_window" });
+          continue;
+        }
         // A ladder verb below the pair's rung is the way back down, which is the actors' to choose (turn_back, restrain, hug), not a beat to repeat for pace.
-        if (rung >= 1 && rung < cur) continue;
+        if (rung >= 1 && rung < cur) {
+          seen.push({ target: other.id, verb, rung, why: "below_cur" });
+          continue;
+        }
         const continuing = last !== undefined && last.rung >= 1 && last.target === other.id && rung > last.rung && rung <= o.climb.maxRung;
-        if (slow && !continuing) continue;
+        if (slow && !continuing) {
+          seen.push({ target: other.id, verb, rung, why: "slow_gap" });
+          continue;
+        }
         const m = motive(verb, emotion, emotion.relations?.get(other.id), emotion.at ?? now, this.tuning);
-        if (!m.ok) continue;
+        if (!m.ok) {
+          seen.push({ target: other.id, verb, rung, why: `motive:${m.why}`, v: m.v, theta: m.theta });
+          continue;
+        }
         const off = rung === 0;
         const theta = off ? o.offLadderTheta : m.theta;
         const v = off ? volition(verb, emotion, emotion.relations?.get(other.id), this.tuning) : m.v;
-        if (v < theta) continue;
+        if (v < theta) {
+          seen.push({ target: other.id, verb, rung, why: "v<theta", v, theta });
+          continue;
+        }
         const a = this.assess(turn.actor, verb, other.id, "director", false, emotion);
         if (!("pass" in a) && !a.ok && a.veto.reason === "too_far" && a.veto.detail === "distance" && VERB_GATES[verb].maxDist === 1 && rung > cur) {
           // A blow that needs the two beside each other and is motivated, in time, and a step up: only the walk is missing.
           const grudge = grudgeOf(emotion.relations?.get(other.id));
           if (!approach || grudge > approach.grudge || (grudge === approach.grudge && other.id < approach.target)) approach = { target: other.id, grudge };
         }
-        if ("pass" in a || !a.ok) continue;
+        if ("pass" in a || !a.ok) {
+          seen.push({ target: other.id, verb, rung, why: "pass" in a ? `pass:${a.pass.kind === "pass" ? a.pass.why : a.pass.kind}` : `blocked:${a.veto.reason}${a.veto.detail ? `/${a.veto.detail}` : ""}`, ...("pass" in a ? {} : { rule: a.veto.rule }), v, theta });
+          continue;
+        }
+        seen.push({ target: other.id, verb, rung, why: "ok", v, theta });
         const pick: Pick = { verb, target: other.id, margin: v - theta, v, theta, rung, climbing: rung > cur, continuing, grudge: grudgeOf(emotion.relations?.get(other.id)) };
         if (!best || this.better(pick, best)) best = pick;
       }
     }
-    if (!best) return approach ? { kind: "pass", why: "no_drive", approach: approach.target } : { kind: "pass", why: slow ? "pace" : "no_drive" };
+    if (!best) {
+      const out: DramaDecision = approach ? { kind: "pass", why: "no_drive", approach: approach.target } : { kind: "pass", why: slow ? "pace" : "no_drive" };
+      return this.noted(out, turn, this.focus(seen, emotion, approach?.target), others === 0 ? "none_in_room" : known === 0 ? `not_in_relations(${others} in room)` : undefined);
+    }
     const wire = this.wireOf(turn.actor, best.verb, best.target, "director", intensityOf(emotion), undefined, false);
     const a = this.assess(turn.actor, best.verb, best.target, "director", false, emotion);
-    if ("pass" in a || !a.ok) return { kind: "pass", why: "no_drive" };
+    if ("pass" in a || !a.ok) return this.noted({ kind: "pass", why: "no_drive" }, turn, { target: best.target, verb: best.verb, why: "reassess_failed", v: best.v, theta: best.theta }, "reassess_failed");
     const out = this.dispatch("initiate", turn.actor, wire, a.rung, a.skippedRungs, { v: best.v, theta: best.theta });
     if (out.kind === "initiate") this.offered.set(turn.actor, { at: now, target: best.target, rung: best.rung });
+    return this.noted(out, turn, { target: best.target, verb: best.verb, why: "ok", v: best.v, theta: best.theta });
+  }
+
+  // ---- the decision log's reading (errata P9) --------------------------------------------------------------------
+
+  /**
+   * The (person, verb) a pass should be explained by. The candidates the pace and the ladder only filtered out (`repeat_window`, `below_cur`, `slow_gap`) say nothing about why no blow
+   * came, so they are left aside. Of the rest: the blow the director would walk up for (why the actor is walking and not striking), then an unlocked person's lowest ladder rung (what
+   * the spine opened is what the log is read for), then the verb nearest to its threshold.
+   */
+  private focus(seen: readonly Seen[], emotion: EmotionReading, approach: number | undefined): Seen | undefined {
+    const live = seen.filter((x) => x.why !== "repeat_window" && x.why !== "below_cur" && x.why !== "slow_gap");
+    // The blow the director would walk up for: the lowest rung of a verb that needs the two side by side.
+    if (approach !== undefined) {
+      const near = live.filter((x) => x.target === approach && x.why.startsWith("blocked:too_far") && VERB_GATES[x.verb].maxDist === 1).sort((a, b) => a.rung - b.rung)[0];
+      if (near) return near;
+    }
+    const unlocked = live.filter((x) => (emotion.relations?.get(x.target)?.unlocked ?? 0) > 0).sort((a, b) => (a.rung === 0 ? 99 : a.rung) - (b.rung === 0 ? 99 : b.rung));
+    if (unlocked[0]) return unlocked[0];
+    const scored = live.filter((x) => x.v !== undefined && x.theta !== undefined).sort((a, b) => b.v! - b.theta! - (a.v! - a.theta!));
+    return scored[0] ?? live[0] ?? seen[0];
+  }
+
+  /** Records what `originate` came to and hands the decision back. `reason` overrides the focus's own `why` when the cause is not a candidate (nobody to aim at, no feelings). */
+  private noted(out: DramaDecision, turn: DramaTurn, focus: { target: number; verb: ActVerb; why: string; rule?: string; v?: number; theta?: number } | undefined, reason?: string): DramaDecision {
+    const { result, reason: why } = resultOf(out, "originate");
+    // A pass whose nearest candidate was refused by a gate says that gate (`blocked:ladder/contagion`, LAD-10), not the pace or the lack of a drive it is filed under for the planner.
+    const refused = reason === undefined && out.kind === "pass" && out.approach === undefined && focus?.why.startsWith("blocked:") === true;
+    this.last = {
+      ...this.detailOf(turn.actor, focus?.verb, focus?.target, turn.emotion),
+      actor: this.d.world.refOf(turn.actor) ?? String(turn.actor),
+      kind: "originate",
+      result: reason === "no_emotion" ? "no_emotion" : refused ? focus!.why : result,
+      ...(reason !== undefined ? { reason } : refused && focus?.rule !== undefined ? { reason: focus.rule } : focus && focus.why !== "ok" ? { reason: focus.why } : why !== undefined ? { reason: why } : {}),
+    };
     return out;
+  }
+
+  /** The trace of a decision that did not note itself (a proposal, or an exit before the director looked). */
+  private traceOf(turn: DramaTurn, out: DramaDecision): DecisionTrace {
+    const p = turn.proposal;
+    const { result, reason } = resultOf(out, p ? "propose" : "originate");
+    return { ...this.detailOf(turn.actor, p?.verb, p?.with, turn.emotion), actor: this.d.world.refOf(turn.actor) ?? String(turn.actor), kind: p ? "propose" : "originate", result, ...(reason !== undefined ? { reason } : {}) };
+  }
+
+  /** The numbers behind one (person, verb): who it is about, the rung, the volition against its threshold, what the actor holds against that person, and how far away they are. */
+  private detailOf(actor: number, verb: ActVerb | undefined, target: number | undefined, emotion: EmotionReading | undefined): Pick<DecisionTrace, "pair" | "verb" | "rung" | "v" | "theta" | "unlocked" | "grievance" | "provocation" | "dist"> {
+    const rel = target !== undefined ? emotion?.relations?.get(target) : undefined;
+    const rung = verb === undefined ? undefined : ladderRung(verb);
+    let v: number | undefined;
+    let theta: number | undefined;
+    if (emotion && verb !== undefined && target !== undefined) {
+      if (rung !== undefined) {
+        const m = motive(verb, emotion, rel, emotion.at ?? this.d.clock.now(), this.tuning);
+        v = m.v;
+        theta = m.theta;
+      } else if (this.tuning.drivers[verb] !== undefined) {
+        v = volition(verb, emotion, rel, this.tuning);
+      }
+    }
+    const room = this.d.world.roomOf(actor);
+    const here = room === undefined ? [] : this.d.world.avatarsIn(room);
+    const a = here.find((x) => x.id === actor);
+    const t = target === undefined ? undefined : here.find((x) => x.id === target);
+    const refOf = (id: number): string => this.d.world.refOf(id) ?? String(id);
+    return {
+      ...(target !== undefined ? { pair: `${refOf(actor)}>${refOf(target)}` } : {}),
+      ...(verb !== undefined ? { verb } : {}),
+      ...(rung !== undefined ? { rung } : {}),
+      ...(v !== undefined ? { v } : {}),
+      ...(theta !== undefined ? { theta } : {}),
+      unlocked: rel?.unlocked ?? 0,
+      ...(rel ? { grievance: grudgeOf(rel), provocation: rel.provocation ?? 0 } : {}),
+      ...(a && t ? { dist: chebyshev(a.tile, t.tile) } : {}),
+    };
   }
 
   /**
