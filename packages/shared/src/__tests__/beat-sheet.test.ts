@@ -136,6 +136,20 @@ describe("colour beats a model gets wrong", () => {
     expect(r.warnings.some((w) => w.message.includes("beat_sheet.phase_fixed"))).toBe(true);
   });
 
+  it("an act nested under an act key is read as if its fields were on the beat", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    const first = beats.find((b) => b["kind"] === "act");
+    if (!first) throw new Error("the mock has an act");
+    const { actor, verb, with: target } = first;
+    for (const k of ["actor", "verb", "with"]) delete first[k];
+    first["act"] = { actor, verb, with: target };
+    const r = validateBeatSheet(sheet, ctx);
+    const read = r.sheet?.beats.find((b) => b.id === first["id"]);
+    expect(messages(r)).toBe("");
+    expect(read && read.kind === "act" ? read.verb : undefined).toBe(verb);
+  });
+
   it("dialogue in a note is still refused, never trimmed", () => {
     const sheet = raw();
     const beats = sheet["beats"] as Array<Record<string, unknown>>;

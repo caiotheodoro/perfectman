@@ -155,9 +155,12 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
   const known = (name: string): boolean => inRoom(furni, name) || inRoom(zones, name) || inRoom(places, name);
   const roomKnown = furni.size + zones.size + places.size > 0;
 
-  rawBeats.forEach((entry: unknown, index) => {
+  rawBeats.forEach((entryRaw: unknown, index) => {
     const at = `beat_sheet.beats[${index}]`;
-    if (!isRecord(entry)) return err(at, "a beat is an object");
+    if (!isRecord(entryRaw)) return err(at, "a beat is an object");
+    // A model that nests the act ("act": {"actor", "verb", "with"}) is read as if it had written the fields on the beat itself; what the beat wrote itself wins.
+    const nested = isRecord(entryRaw["act"]) ? entryRaw["act"] : isRecord(entryRaw["action"]) ? entryRaw["action"] : undefined;
+    const entry: Record<string, unknown> = nested === undefined ? entryRaw : { ...nested, ...Object.fromEntries(Object.entries(entryRaw).filter(([k]) => k !== "act" && k !== "action")) };
     const before = errors.length;
     const kind = entry["kind"];
     if (typeof kind !== "string" || !(kind in KIND_KEYS)) return err(`${at}.kind`, `kind is one of ${Object.keys(KIND_KEYS).join(", ")}`);
