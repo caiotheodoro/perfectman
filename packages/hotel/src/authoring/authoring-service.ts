@@ -71,7 +71,13 @@ const toRows = (diagnostics: readonly Diagnostic[], level: "error" | "warning"):
  * pipeline (hotel-package.md 14). Pure JSON in and out; the HTTP listener is
  * `AuthoringServer`. Authoring needs no Director connection.
  */
+/** Sheets this process wrote lately, by what they were written from: the hotel may compile one source more than once (preview, save, start) and a model call is money. */
+const SHEET_CACHE_MS = 30 * 60_000;
+const SHEET_CACHE_MAX = 32;
+
 export class AuthoringService {
+  private readonly sheetCache = new Map<string, { at: number; sheet: BeatSheet }>();
+
   constructor(private readonly deps: AuthoringDeps) {}
 
   /** A builder form (JSON) becomes the file bundle with `roomFiles`; a markdown bundle is read as is. */
@@ -166,6 +172,8 @@ export class AuthoringService {
     if (!result.ok || !result.summary || !result.config || result.config.agents.length < 2) return { warnings: [] };
     const brief = this.sheetBrief(result, part, source);
     if (raw === undefined || raw === null) return { warnings: [], brief };
+    // `beat_sheet: "regenerate"` is the author asking for a new roll without changing the scenario.
+    if (raw === "regenerate") return { stale: true, warnings: [], brief };
     if ((part.beats?.length ?? 0) > 0) throw new AuthoringError(422, "bad_scenario", "scenario did not compile", [{ path: "beat_sheet", message: "beat_sheet and beats are two scripts for the same scene: write one" }]);
     if (part.dramaMode === "off") throw new AuthoringError(422, "bad_scenario", "scenario did not compile", [{ path: "beat_sheet", message: "drama is off, so the scene has no acts to sheet" }]);
     const people = result.summary.agents.map((a) => ({ id: a.id, displayName: a.displayName }));
@@ -231,7 +239,7 @@ export class AuthoringService {
     return this.compileCore(req).response;
   }
 
-  private compileCore(req: { source?: unknown }): { response: CompileResponse; body: ScenarioBody; brief?: SheetBrief; stale: boolean } {
+  private compileCore(req: { source?: unknown }): { response: CompileResponse; body: ScenarioBody; brief?: SheetBrief; stale: boolean; regenerate: boolean } {
     if (typeof req.source !== "string") throw new AuthoringError(400, "bad_request", "compile needs source");
     const { result, delays, looks, arrivals, stage, drama, dramaMode, beats, sheet, sheetStale, brief } = this.compileSource(req.source);
     if (!result.ok || !result.config || !result.summary) {
@@ -253,7 +261,7 @@ export class AuthoringService {
       ...(sheet ? { beat_sheet: sheet } : {}),
     };
     this.checkSize(body);
-    return { response: { body, schema_version: SCENARIO_BODY_VERSION }, body, ...(brief ? { brief } : {}), stale: sheetStale === true };
+    return { response: { body, schema_version: SCENARIO_BODY_VERSION }, body, ...(brief ? { brief } : {}), stale: sheetStale === true, regenerate: parseForm(req.source)?.beat_sheet === "regenerate" };
   }
 
   private checkSize(body: ScenarioBody): void {
@@ -273,13 +281,23 @@ export class AuthoringService {
     const { body, brief } = core;
     const mode = this.sheetMode();
     if (!brief || body.beat_sheet || mode === "off" || (body.beats?.length ?? 0) > 0 || body.drama_mode === "off") return core.response;
-    const generated = await generateBeatSheet(brief, { links: mode === "mock" ? [] : this.sheetLinks(), mock: mode === "mock", kb: this.sheetKb(), ...(this.deps.fetchImpl ? { fetchImpl: this.deps.fetchImpl } : {}), ...(this.deps.sheet?.deadlineMs !== undefined ? { deadlineMs: this.deps.sheet.deadlineMs } : {}) });
-    if (!generated.ok) {
-      body.beat_sheet_error = `${generated.reason}: ${generated.detail}`.slice(0, 200);
-      return { body, schema_version: SCENARIO_BODY_VERSION };
+    // The same source compiled again within half an hour keeps the sheet it got (a new roll is `beat_sheet: "regenerate"`).
+    const key = `${mode}|${this.env("PERFECTMAN_BEATSHEET_MODEL") ?? ""}|${sheetInputHashOf(brief)}`;
+    const cached = core.regenerate ? undefined : this.sheetCache.get(key);
+    let sheet: BeatSheet;
+    if (cached && Date.now() - cached.at < SHEET_CACHE_MS) sheet = cached.sheet;
+    else {
+      const generated = await generateBeatSheet(brief, { links: mode === "mock" ? [] : this.sheetLinks(), mock: mode === "mock", kb: this.sheetKb(), ...(this.deps.fetchImpl ? { fetchImpl: this.deps.fetchImpl } : {}), ...(this.deps.sheet?.deadlineMs !== undefined ? { deadlineMs: this.deps.sheet.deadlineMs } : {}) });
+      if (!generated.ok) {
+        body.beat_sheet_error = `${generated.reason}: ${generated.detail}`.slice(0, 200);
+        return { body, schema_version: SCENARIO_BODY_VERSION };
+      }
+      sheet = generated.sheet;
+      this.sheetCache.set(key, { at: Date.now(), sheet });
+      for (const [k, v] of this.sheetCache) if (this.sheetCache.size > SHEET_CACHE_MAX || Date.now() - v.at > SHEET_CACHE_MS) this.sheetCache.delete(k);
     }
-    body.beat_sheet = generated.sheet;
-    const settled = settleSheetDrama(generated.sheet, body.drama, body.drama_mode);
+    body.beat_sheet = sheet;
+    const settled = settleSheetDrama(sheet, body.drama, body.drama_mode);
     if (settled) {
       body.drama = settled.drama;
       if (settled.drama_mode) body.drama_mode = settled.drama_mode;

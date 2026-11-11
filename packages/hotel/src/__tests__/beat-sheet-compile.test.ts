@@ -155,6 +155,21 @@ describe("compileWithSheet: the director step at Save and start", () => {
     expect(parsed.ok && parsed.body.beat_sheet?.beats.length).toBeGreaterThan(20);
   });
 
+  it("the same source compiled again keeps its sheet (one model call), and beat_sheet: \"regenerate\" asks for a new roll", async () => {
+    const reply = JSON.stringify(byName(mockBeatSheet({ cast, language: "pt-BR" })));
+    const fetchImpl = vi.fn<typeof fetch>(async () => new Response(JSON.stringify({ choices: [{ message: { content: reply } }], usage: { prompt_tokens: 2000, completion_tokens: 2000 } }), { status: 200 }));
+    const chain: LlmLink[] = [{ name: "main", baseUrl: "https://llm.test/v1", apiKeyEnv: "K", model: "m" }];
+    const service = new AuthoringService({ llm: { ...llm("openai-compatible", chain), prices: { m: { inUsdPerMTok: 1, outUsdPerMTok: 2 } } }, apiKey: undefined, fetchImpl, env: (n) => (n === "K" ? "sk-1" : undefined), sheet: { kb: null } });
+    const first = (await service.compileWithSheet({ source: form() })).body as Body;
+    const second = (await service.compileWithSheet({ source: form() })).body as Body;
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
+    expect(JSON.stringify(second.beat_sheet)).toBe(JSON.stringify(first.beat_sheet));
+    await service.compileWithSheet({ source: form({ beat_sheet: "regenerate" }) });
+    expect(fetchImpl).toHaveBeenCalledTimes(2);
+    await service.compileWithSheet({ source: form({}, "Outra situação, outro enterro.") });
+    expect(fetchImpl).toHaveBeenCalledTimes(3);
+  });
+
   it("a model that fails never fails the compile: no sheet, and the reason is in the body for the run's beat_sheet_fallback", async () => {
     const fetchImpl = vi.fn<typeof fetch>(async () => new Response("down", { status: 503 }));
     const chain: LlmLink[] = [{ name: "main", baseUrl: "https://llm.test/v1", apiKeyEnv: "K", model: "m" }];
