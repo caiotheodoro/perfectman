@@ -150,7 +150,7 @@ describe("idle life", () => {
   it("paces when anxious, a few legs a minute and no more", () => {
     const st = agentState({ social: { socialAnxiety: 0.9 } });
     const first = run({}, { agentState: st, human: human({ h: 1 }) });
-    expect(first.find((c) => c.cmd === "walk" && c.humanTag === "pace")).toBeDefined();
+    expect(first.find((c) => c.humanTag === "pace")).toMatchObject({ cmd: "walk", humanTag: "pace" });
     const legs = [NOW - 50_000, NOW - 30_000, NOW - 10_000];
     const capped = run({}, { agentState: st, human: human({ h: 1 }), memory: { humanPace: legs, humanAt: { pace: NOW - 20_000 } } });
     expect(capped.some((c) => c.humanTag === "pace")).toBe(false);
