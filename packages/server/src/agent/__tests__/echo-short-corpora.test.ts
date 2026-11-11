@@ -99,12 +99,12 @@ describe("the whole of run 62, line by line, as candidates", () => {
     const tics = rows.filter((r) => r.tics.length > 0);
     const any = rows.filter((r) => r.echo || r.tics.length > 0 || r.old);
     expect(echoes.length).toBe(19);
-    expect(tics.length).toBe(125);
-    expect(any.length).toBe(129);
+    expect(tics.length).toBe(148);
+    expect(any.length).toBe(151);
     const byRule = (kind: EchoKind): number => echoes.filter((r) => r.echo === kind).length;
     expect({ lead: byRule("lead"), open: byRule("open"), set: byRule("set"), frame: byRule("frame"), exact: byRule("exact") }).toEqual({ lead: 15, open: 2, set: 1, frame: 1, exact: 0 });
     const ticKinds = (prefix: string): number => tics.filter((r) => r.tics.some((t) => t.startsWith(prefix))).length;
-    expect({ address: ticKinds("address"), tag: ticKinds("tag"), opener: ticKinds("opener") }).toEqual({ address: 123, tag: 3, opener: 1 });
+    expect({ address: ticKinds("address"), tag: ticKinds("tag"), opener: ticKinds("opener") }).toEqual({ address: 146, tag: 3, opener: 1 });
   });
 
   it("the three lines the brief names are among them: Heloísa 27 s, Otávio 189 s and 255 s", () => {
@@ -120,7 +120,7 @@ describe("the whole of run 62, line by line, as candidates", () => {
     const firstTic = (name: string, term: string): number => rows.find((r) => r.name === name && r.tics.includes(`address:${term}`))!.t;
     expect(firstTic("Otávio", "rapaz")).toBe(304);
     expect(firstTic("Heloísa", "querido")).toBe(106);
-    expect(firstTic("Renato", "mana")).toBe(673);
+    expect(firstTic("Renato", "mana")).toBe(229);
     expect(rows.filter((r) => r.name === "Otávio" && r.tics.includes("address:rapaz")).length).toBeGreaterThanOrEqual(22);
   });
 
@@ -128,7 +128,7 @@ describe("the whole of run 62, line by line, as candidates", () => {
     const say = replay().filter((r) => r.kind === "say");
     expect(say).toHaveLength(63);
     const flagged = say.filter((r) => r.echo || r.tics.length > 0 || r.old);
-    expect(flagged.length).toBe(23);
+    expect(flagged.length).toBe(26);
     expect(say.filter((r) => r.echo)).toHaveLength(6);
   });
 

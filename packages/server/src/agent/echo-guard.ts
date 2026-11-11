@@ -354,6 +354,8 @@ export type Voice = {
   /** The forms of address (not names) the line opens with and ends with, folded: "querido", "minha cara". */
   leadTerms: string[];
   trailTerms: string[];
+  /** Every form of address on the edge of any clause, the middle of the line included ("E você, mana, abre isso"). */
+  anyTerms: string[];
   /** The line ends with a tag question ("..., não pode?", "..., né?"). */
   tag: boolean;
 };
@@ -386,6 +388,7 @@ export function voiceOf(text: string, names: ReadonlySet<string> = NO_NAMES): Vo
     trailTerms.push(...(c.addressOnly ? c.left : c.right).map((e) => e.term).filter((x) => x !== ""));
     if (!c.addressOnly) break;
   }
+  const anyTerms = clauses.flatMap((c) => [...c.left, ...c.right].map((e) => e.term).filter((x) => x !== ""));
   // A tag question is the last clause of the line, a comma after the one before it: "..., não pode?", "..., né?" (the filler "né" is a clause of its own here).
   const last = clauses[clauses.length - 1];
   const before = clauses[clauses.length - 2];
@@ -399,7 +402,7 @@ export function voiceOf(text: string, names: ReadonlySet<string> = NO_NAMES): Vo
     tail.length >= 1 &&
     tail.length <= 3 &&
     (tail[0] === "nao" || (tail.length === 1 && TAG_WORDS.has(tail[0]!)));
-  return { keys, topics, leadTerms, trailTerms, tag };
+  return { keys, topics, leadTerms, trailTerms, anyTerms, tag };
 }
 
 /** First `n` folded words of a voice, a leading connector ("mas", "e", "então") skipped. */
@@ -501,8 +504,9 @@ export function findTics(candidate: string, ownPriors: readonly string[], names:
   if (c.keys.length < 3) return [];
   const priors = ownPriors.slice(-TIC_PRIORS).map((p) => voiceOf(p, names));
   const hits: TicHit[] = [];
-  for (const term of new Set([...c.leadTerms, ...c.trailTerms])) {
-    const count = 1 + priors.filter((p) => p.leadTerms.includes(term) || p.trailTerms.includes(term)).length;
+  // A vocative in the middle of a line ("E você, mana, abre isso") is the same tic as one at the edge.
+  for (const term of new Set([...c.leadTerms, ...c.trailTerms, ...c.anyTerms])) {
+    const count = 1 + priors.filter((p) => p.leadTerms.includes(term) || p.trailTerms.includes(term) || p.anyTerms.includes(term)).length;
     if (count >= TIC_MIN) hits.push({ kind: "address", term, count });
   }
   if (c.tag) {
@@ -572,6 +576,10 @@ export function stripTics(text: string, hits: readonly TicHit[], names: Readonly
     mark(ci, edgeWords(c, c.addressOnly ? c.left : c.right, wanted));
     if (!c.addressOnly) break;
   }
+  // A vocative set off in the middle ("E você, mana, abre isso") is a clause of address on its own: it goes too.
+  clauses.forEach((c, ci) => {
+    if (c.addressOnly) mark(ci, edgeWords(c, c.left, wanted));
+  });
   let endAs: string | undefined;
   if (dropTag && voiceOf(text, names).tag) {
     const keptIdx = clauses.map((c, i) => (c.addressOnly ? -1 : i)).filter((i) => i >= 0);

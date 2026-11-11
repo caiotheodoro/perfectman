@@ -27,6 +27,12 @@ describe("tics: a form of address or an opening word in 4 of the actor's last 6 
     expect(findTics("Fecha comigo antes da meia-noite, minha cara.", priors, NAMES)).toEqual([{ kind: "address", term: "minha cara", count: 4 }]);
   });
 
+  it("a vocative set off in the middle of the line counts too (Renato's 'mana')", () => {
+    const priors = ["Fala logo, mana, quanto vale isso?", "Você aí, mana, abre o cofre.", "Eu sei de tudo, mana, não me teste.", "Sem conversa fiada."];
+    expect(findTics("E você, mana, abre esse cofre agora.", priors, NAMES)).toEqual([{ kind: "address", term: "mana", count: 4 }]);
+    expect(stripTics("E você, mana, abre esse cofre agora.", [{ kind: "address", term: "mana", count: 4 }], NAMES)).toBe("E você, abre esse cofre agora.");
+  });
+
   it("a name is address, not a tic", () => {
     const priors = Array.from({ length: 5 }, (_, i) => `Otávio, ${["a carta", "o vinho", "a firma", "o cofre", "a pasta"][i]} está aqui na mesa.`);
     expect(findTics("Otávio, a chave está no vaso da sala.", priors, NAMES)).toEqual([]);
