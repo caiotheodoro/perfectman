@@ -62,6 +62,14 @@ export function humanRules(c: HumanRuleCtx): HumanCand[] {
 
   // A walk the model, the director or a beat started is theirs: nothing here overrides it.
   if (self.state === "walk") return out;
+  // No loops: after a walk of this layer's own, a pause; and the last move is not undone inside the lock.
+  const WALK_TAGS = ["prox", "group", "space", "reposition", "avoid", "pace", "first"];
+  const settling = WALK_TAGS.some((t) => cool(t, HT.prox.walkSettleMs / Math.max(h, 0.3)));
+  const reverses = (to: Tile): boolean => {
+    const last = mem.lastMove;
+    if (!last || now - last.at >= HT.prox.reversalLockMs) return false;
+    return (to[0] - self.tile[0]) * last.dx + (to[1] - self.tile[1]) * last.dy < 0;
+  };
 
   // ---- never on top of somebody else ----
   if (mustUnstack(self, room) && !cool("unstack", HT.prox.unstackCooldownMs)) {
@@ -77,7 +85,7 @@ export function humanRules(c: HumanRuleCtx): HumanCand[] {
   const latest = lines[0];
   const otherRef = latest ? (latest.speaker === self.ref ? latest.to : latest.speaker) : mem.interlocutor && mem.interlocutor.until > now ? mem.interlocutor.ref : undefined;
   const other = otherRef ? room.occupants.find((p) => p.ref === otherRef && p.fallen === undefined) : undefined;
-  const exchangeOn = latest !== undefined && now - latest.atMs <= 12_000;
+  const exchangeOn = latest !== undefined && now - latest.atMs <= HT.idle.engagedMs;
   const mood = input.agentState.coreMood;
   const social = input.agentState.socialEmotions;
 
@@ -95,10 +103,10 @@ export function humanRules(c: HumanRuleCtx): HumanCand[] {
     const waited = latest !== undefined && now - latest.atMs >= HT.prox.settleMs;
     const comingMyWay = other.walkGoal !== undefined && chebyshev(other.walkGoal, self.tile) <= w.max;
     const mover = !comingMyWay && (iSpokeLast || waited || latest === undefined || (hit && dist < w.min));
-    if (outside && mover && draw("prox", bucket) < chance(HT.prox.moveChance, h) && !cool("prox", 3500)) {
+    if (outside && mover && draw("prox", bucket) < chance(HT.prox.moveChance, h) && !cool("prox", 3500) && (hit || !settling)) {
       const reserved = new Set(room.occupants.filter((p) => p.ref !== self.ref && p.walkGoal).map((p) => tileKey(p.walkGoal!)));
       const to = pickTile({ room, self: self.ref, near: other.tile, radius: w.ideal + 2, awayFrom: { tile: other.tile, ideal: w.ideal }, rng, avoid: reserved });
-      if (to && chebyshev(to, self.tile) > 0 && chebyshev(to, other.tile) >= w.min) {
+      if (to && chebyshev(to, self.tile) > 0 && chebyshev(to, other.tile) >= w.min && (hit || !reverses(to))) {
         walk(hit ? KEEP_HIT : KEEP_PROX, to, hit ? "step_back" : dist > w.max ? `approach:${cls}` : `give_way:${cls}`, "prox", { to: other.ref, dist, detail: `window ${w.min}-${w.max} ideal ${w.ideal}` });
         return out;
       }
@@ -106,7 +114,7 @@ export function humanRules(c: HumanRuleCtx): HumanCand[] {
   }
 
   // ---- 2. a group is a ring, not a line ----
-  if (self.state === "stand" && !cool("group", HT.prox.groupAdjustCooldownMs)) {
+  if (self.state === "stand" && !settling && !cool("group", HT.prox.groupAdjustCooldownMs)) {
     const talk = human.lines.filter((l) => now - l.atMs <= 30_000);
     const members = new Set<string>();
     for (const l of talk) {
@@ -118,7 +126,7 @@ export function humanRules(c: HumanRuleCtx): HumanCand[] {
     if (others.length >= HT.prox.groupMinSize - 1 && draw("group", bucket) < chance(0.7, h)) {
       const reserved = new Set(room.occupants.filter((p) => p.ref !== self.ref && p.walkGoal).map((p) => tileKey(p.walkGoal!)));
       const to = groupSpot(self, room, others.map((p) => p.tile), reserved);
-      if (to) {
+      if (to && !reverses(to)) {
         walk(KEEP_GROUP, to, "group_ring", "group", { detail: `${others.length + 1} in the group` });
         return out;
       }
@@ -127,12 +135,12 @@ export function humanRules(c: HumanRuleCtx): HumanCand[] {
 
   // ---- 3. give space to whoever holds the floor ----
   const floor = last(human.lines.filter((l) => now - l.atMs <= 5000 && l.speaker !== self.ref));
-  if (floor && floor.to !== self.ref && self.state === "stand" && !cool("space", HT.prox.speakerSpaceCooldownMs)) {
+  if (floor && floor.to !== self.ref && self.state === "stand" && !settling && !cool("space", HT.prox.speakerSpaceCooldownMs)) {
     const speaker = room.occupants.find((p) => p.ref === floor.speaker);
     if (speaker && chebyshev(speaker.tile, self.tile) < HT.prox.speakerSpace && draw("space", bucket) < chance(0.8, h)) {
       const reserved = new Set(room.occupants.filter((p) => p.ref !== self.ref && p.walkGoal).map((p) => tileKey(p.walkGoal!)));
       const to = pickTile({ room, self: self.ref, near: self.tile, radius: 3, awayFrom: { tile: speaker.tile, ideal: HT.prox.speakerSpace + 1 }, rng, avoid: reserved });
-      if (to && chebyshev(to, self.tile) > 0) {
+      if (to && chebyshev(to, self.tile) > 0 && !reverses(to)) {
         walk(KEEP_SPACE, to, "give_space", "space", { to: speaker.ref });
         return out;
       }
@@ -140,7 +148,7 @@ export function humanRules(c: HumanRuleCtx): HumanCand[] {
   }
 
   // ---- 4. idle life, only when nobody is talking to the actor ----
-  if (!exchangeOn && !input.bodyIntent?.posture && !input.bodyIntent?.move) idleLife(c, out, { rng, draw, cool, walk, bucket, other });
+  if (!exchangeOn && !input.bodyIntent?.posture && !input.bodyIntent?.move) idleLife(c, out, { rng, draw, cool, walk, bucket, other, settling, reverses });
   return out;
 }
 
@@ -151,6 +159,8 @@ type IdleKit = {
   walk: (keep: number, to: Tile, rule: string, tag: string, extra?: Partial<HumanLogEntry>) => void;
   bucket: number;
   other: Presence | undefined;
+  settling: boolean;
+  reverses: (to: Tile) => boolean;
 };
 
 function freeSeat(room: RoomView, near: Tile, within: number): RoomView["furni"][number] | undefined {
@@ -191,12 +201,12 @@ function idleLife(c: HumanRuleCtx, out: HumanCand[], k: IdleKit): void {
 
   // Avoid: a window, a rail or the door, away from the one who shames or presses them.
   const avoids = Math.max(social.shame, social.humiliation) >= HT.idle.avoidShame || (k.other !== undefined && (input.agentState.relationalStates.get(k.other.ref)?.desireForDistance ?? 0) >= HT.idle.avoidDistance);
-  if (standing && avoids && !k.cool("avoid", HT.idle.avoidCooldownMs) && k.draw("avoid", k.bucket) < chance(0.6, h)) {
+  if (standing && avoids && !k.settling && !k.cool("avoid", HT.idle.avoidCooldownMs) && k.draw("avoid", k.bucket) < chance(0.6, h)) {
     const from = k.other?.tile;
     const spots = avoidSpots(room).filter((t) => (from === undefined || chebyshev(t, from) >= 3) && chebyshev(t, self.tile) >= 3);
     const spot = spots.sort((a, b) => chebyshev(a, self.tile) - chebyshev(b, self.tile) || tileKey(a).localeCompare(tileKey(b)))[0];
     const to = spot ? pickTile({ room, self: self.ref, near: spot, radius: 1, rng: k.rng }) : undefined;
-    if (to && chebyshev(to, self.tile) > 1) {
+    if (to && chebyshev(to, self.tile) > 1 && !k.reverses(to)) {
       k.walk(KEEP_IDLE, to, "avoid:to_window", "avoid");
       return;
     }
@@ -220,7 +230,7 @@ function idleLife(c: HumanRuleCtx, out: HumanCand[], k: IdleKit): void {
   // Pace when anxious: short legs back and forth, not more than a few a minute.
   const anxious = social.socialAnxiety >= HT.idle.paceAnxiety || (mood.arousal >= HT.idle.paceArousal && mood.valence < -0.1);
   const legs = (mem.humanPace ?? []).filter((t) => now - t < 60_000);
-  if (standing && anxious && legs.length < HT.idle.paceLegsPerMin && !k.cool("pace", mix(HT.idle.paceEveryMs[1], HT.idle.paceEveryMs[0], h))) {
+  if (standing && anxious && !k.settling && legs.length < HT.idle.paceLegsPerMin && !k.cool("pace", mix(HT.idle.paceEveryMs[1], HT.idle.paceEveryMs[0], h))) {
     const len = Math.round(hbetween(human.seed, HT.idle.paceLegTiles, "pace-len", self.ref, legs.length, k.bucket));
     const back = mem.lastMove ? [-Math.sign(mem.lastMove.dx), -Math.sign(mem.lastMove.dy)] : [Math.sign(hrand(human.seed, "pdx", self.ref) - 0.5), 0];
     const dx = back[0] === 0 && back[1] === 0 ? 1 : back[0]!;
@@ -231,6 +241,22 @@ function idleLife(c: HumanRuleCtx, out: HumanCand[], k: IdleKit): void {
     const to = isFree(room, blocked, want, occupied) ? want : pickTile({ room, self: self.ref, near: want, radius: 1, rng: k.rng });
     if (to && chebyshev(to, self.tile) >= 2) {
       k.walk(KEEP_IDLE - 0.1, to, "pace:anxious", "pace");
+      return;
+    }
+  }
+
+  // Reposition: a small step to another tile (a sidestep, a half-turn of the group), so a standing person is not rooted for minutes. Never straight back to where it was.
+  const stepEvery = HT.idle.repositionEveryMs / Math.max(0.2, h);
+  if (standing && !k.settling && !k.cool("reposition", stepEvery * (0.75 + 0.5 * hrand(human.seed, "rp", self.ref, Math.floor(now / 10_000))))) {
+    const here = self.tile;
+    const back = mem.lastMove ? { dx: -Math.sign(mem.lastMove.dx), dy: -Math.sign(mem.lastMove.dy) } : undefined;
+    const spots: Tile[] = [[1, 0], [-1, 0], [0, 1], [0, -1], [1, 1], [-1, -1], [1, -1], [-1, 1]]
+      .filter(([dx, dy]) => !(back && dx === back.dx && dy === back.dy))
+      .map(([dx, dy]) => [here[0] + dx!, here[1] + dy!] as Tile)
+      .filter((t) => isFree(room, blockedTiles(room), t, occupiedTiles(room, self.ref)) && (k.other === undefined || (chebyshev(t, k.other.tile) >= 1 && chebyshev(t, k.other.tile) <= HT.prox.earshotMax)));
+    const pick = spots[Math.floor(hrand(human.seed, "rp-pick", self.ref, Math.floor(now / 10_000)) * spots.length)];
+    if (pick && !k.reverses(pick)) {
+      k.walk(KEEP_IDLE - 0.3, pick, "reposition", "reposition");
       return;
     }
   }

@@ -11,7 +11,7 @@ export type Lang = "pt-BR" | "en";
 export type Tile = readonly [x: number, y: number];
 
 /** What the planner knows about how someone feels; absent means neutral. */
-export type CineMood = { valence: number; arousal: number; affection?: number };
+export type CineMood = { valence: number; arousal: number; affection?: number; shame?: number };
 
 type ItemBase = {
   id: string;
@@ -31,6 +31,13 @@ export type LineItem = ItemBase & {
   to?: string;
   /** 0..1. How much this line deserves the camera. */
   salience: number;
+  /**
+   * What the room sees when the line is talked over (cinematic revamp B5): the first part of `text`, ending in a dash. Set by the planner when the next speaker
+   * interrupts; the held chat command reads it when the line plays. `text` stays whole, for the event log and the narrator.
+   */
+  cut?: string;
+  /** How long the speaker walks before the line (the human layer sent it up to the addressee first): the bubble comes up when the walk ends. */
+  walkMs?: number;
 };
 export type ThoughtItem = ItemBase & { kind: "thought"; text: string; salience: number };
 /** A gated gesture (laugh, wave, ...): released to the hotel when it plays. */
@@ -102,7 +109,8 @@ export interface NarrationSource {
 export type Step =
   | { at: number; k: "ui"; ui: PerfectmanUi }
   | { at: number; k: "release"; item: LineItem | GestureItem | WalkItem | HopItem | PairItem }
-  | { at: number; k: "typing"; ref: string }
+  /** The typing bubble of `ref` up (default) or down: a hesitation drops it for a moment. `for` is the line (item id) a bubble started early is for: it is skipped when that line no longer waits to be pre-typed. */
+  | { at: number; k: "typing"; ref: string; on?: boolean; for?: string }
   | { at: number; k: "next_room"; room: number }
   | { at: number; k: "cut"; room: number; from: number };
 
@@ -165,6 +173,11 @@ export type CineConfig = {
   /** Cues that take in_ms go this much early so socket latency does not eat the ease. */
   cueLeadMs: number;
   typingLeadMs: number;
+  /**
+   * The human layer's turn-taking in the film (cinematic revamp B5): `likeness` (0..1, 0 = the film as it was) and the run's seed. The typing bubble before a line
+   * grows with the line, the next speaker starts typing while the line before is still on screen, a pause by feeling comes before it, and a heated line is talked over.
+   */
+  human?: { likeness: number; seed: number };
   closeUpSalience: number;
   reactionIntensity: number;
   emotionCueIntensity: number;

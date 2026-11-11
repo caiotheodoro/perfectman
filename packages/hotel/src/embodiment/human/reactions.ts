@@ -119,7 +119,7 @@ export function reactToLine(c: ReactCtx): TimedCmd[] {
 
   // ---- speaker: emphasis gesture on a stressed line; the face of the feeling; laughter ----
   if (speaker.own && speaker.presence.state !== "walk" && speaker.presence.fallen === undefined) {
-    const strength = clamp(line.stress + (sMood.arousal - 0.4) * 0.8 + (line.hostile ? 0.3 : 0) + (line.question ? 0.1 : 0), 0, 1);
+    const strength = clamp(HT.gesture.baseStrength + line.stress + (sMood.arousal - 0.4) * 0.8 + (line.hostile ? 0.3 : 0) + (line.question ? 0.15 : 0) + (line.words >= 12 ? 0.1 : 0), 0, 1);
     const mem = c.memOf(speaker.ref);
     const lastG = c.lastGestureAt(speaker.ref);
     const free = (a: string): boolean => lastG[a] === undefined || (c.line.atMs - lastG[a]!) >= GESTURE_COOLDOWN_MS;
@@ -171,6 +171,20 @@ export function reactToLine(c: ReactCtx): TimedCmd[] {
       const side = draw("bc-side", p.ref) < 0.5 ? HT.gesture.headTurnSectors : -HT.gesture.headTurnSectors;
       push({ ref: p.ref, atMs: at, cmd: { cmd: "face", dir: offBy(base, side) }, tag: "backchannel", keep: SOFT_KEEP, log: { kind: "backchannel", rule: `backchannel:${form}`, line: line.n, to: speaker.ref } });
       push({ ref: p.ref, atMs: at + lag(HT.gesture.headTurnBackMs, "bc-back", p.ref), cmd: { cmd: "face", targetTile: speaker.presence.tile }, tag: "backchannel", keep: SOFT_KEEP, log: { kind: "backchannel", rule: "backchannel:back", line: line.n, to: speaker.ref } });
+    }
+  }
+
+  // ---- while listening to a long line, a glance away from the speaker (the room, a thing, a third person) and back ----
+  if (line.words >= HT.idle.glanceAwayMinWords) {
+    for (const p of c.people.values()) {
+      if (!p.own || p.ref === speaker.ref || !idle(p) || dist(p, speaker) > HT.prox.earshotMax + 1) continue;
+      const bystander = p.ref !== addressee?.ref;
+      if (draw("glance-away", p.ref) >= chance(bystander ? HT.idle.glanceAwayBystander : HT.idle.glanceAwayChance, h)) continue;
+      const base = ang(p.presence.tile, speaker.presence.tile);
+      const side = draw("glance-side", p.ref) < 0.5 ? 2 : -2;
+      const at = lag(HT.idle.glanceAwayLagMs, "gal", p.ref);
+      push({ ref: p.ref, atMs: at, cmd: { cmd: "face", dir: offBy(base, side) }, tag: "glance", keep: SOFT_KEEP, log: { kind: "gaze", rule: "glance:away", line: line.n, to: speaker.ref } });
+      push({ ref: p.ref, atMs: at + lag(HT.idle.glanceAwayHoldMs, "gah", p.ref), cmd: { cmd: "face", targetTile: speaker.presence.tile }, tag: "gaze_return", keep: SOFT_KEEP, log: { kind: "gaze", rule: "return", line: line.n, to: speaker.ref } });
     }
   }
 

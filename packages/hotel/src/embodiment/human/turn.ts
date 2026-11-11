@@ -101,3 +101,28 @@ export function cutLine(text: string, seed: number, actor: string, n: number): s
   const head = words.slice(0, keep).join(" ").replace(/[\s,;:.!?…—–-]+$/u, "");
   return head.length > 0 ? `${head}—` : undefined;
 }
+
+
+export type CineLead = { leadMs: number; hesitate?: { afterMs: number; forMs: number } };
+
+/**
+ * The typing bubble before a line plays in a film (the cinematic director's `typingLeadMs`, 500 ms): proportional to the line with human jitter and
+ * a chance of a hesitation. At h = 0 it is `baseMs` exactly; at h = 1 it is `45 ms * chars` (jittered, 0.7 to 5.2 s).
+ */
+export function cineLead(o: { chars: number; baseMs: number; h: number; seed: number; actor: string; n: number }): CineLead {
+  if (o.h <= 0) return { leadMs: o.baseMs };
+  const jitter = Math.exp(HT.turn.typingSigma * o.h * hnormal(o.seed, "cine-typing", o.actor, o.n));
+  const proportional = clamp(o.chars * HT.turn.cinePerCharMs * jitter, HT.turn.cineLeadMinMs, HT.turn.cineLeadMaxMs);
+  const leadMs = Math.round(mix(o.baseMs, proportional, o.h));
+  const hesitates = leadMs >= 2500 && hrand(o.seed, "cine-hesitate", o.actor, o.n) < chance(HT.turn.hesitateChance, o.h);
+  return {
+    leadMs,
+    ...(hesitates ? { hesitate: { afterMs: Math.round(leadMs * hbetween(o.seed, [0.35, 0.65], "cine-hesitate-at", o.actor, o.n)), forMs: Math.round(hbetween(o.seed, HT.turn.hesitatePauseMs, "cine-hesitate-ms", o.actor, o.n)) } } : {}),
+  };
+}
+
+/** The pause between the line before landing and this actor's first key press, by how it feels: a draw from the feeling's band, scaled by the dial (0 at h = 0). */
+export function cineThinkMs(o: { feel: Feel; h: number; seed: number; actor: string; n: number }): number {
+  if (o.h <= 0) return 0;
+  return Math.round(o.h * hbetween(o.seed, HT.turn.latencyMs[o.feel], "cine-think", o.actor, o.n));
+}

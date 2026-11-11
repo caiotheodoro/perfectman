@@ -41,3 +41,5 @@ export * from "./embodiment/human/index.js";
 export { HotelGateway } from "./gateway/hotel-gateway.js";
 export type { GatewayDeps, CastEntry } from "./gateway/hotel-gateway.js";
 export { namedIn } from "./embodiment/plan.js";
+export { ShotPlanner, DEFAULT_CINE, moodOfState, lineSalience } from "./director/cine/index.js";
+export type { CineConfig, CineItem, CineMood, CineWorld, LineItem, NarrationSource, Program, Step } from "./director/cine/index.js";

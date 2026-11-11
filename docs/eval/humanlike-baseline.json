@@ -1,0 +1,2657 @@
+[
+  {
+    "metrics": {
+      "run": "55",
+      "source": "run",
+      "durationS": 75.9,
+      "cast": 3,
+      "lines": 8,
+      "addressedLines": 2,
+      "distance": {
+        "n": 2,
+        "hist": {
+          "0": 2
+        },
+        "bandShare": {
+          "intimate": 1,
+          "personal": 0,
+          "social": 0,
+          "public": 0
+        },
+        "inEarshotShare": 1,
+        "conversationalShare": 0,
+        "median": 0,
+        "p90": 0,
+        "sameTile": 2
+      },
+      "stacking": {
+        "events": 2,
+        "ms": 152000,
+        "perActorHour": 31.62
+      },
+      "gaze": {
+        "n": 2,
+        "speakerRate": 0,
+        "listenerRate": 0,
+        "mutualRate": 0,
+        "breakReturnRate": 0
+      },
+      "latency": {
+        "startTyping": {
+          "n": 1,
+          "p25": 8825,
+          "p50": 8825,
+          "p75": 8825,
+          "mean": 8825
+        },
+        "lineToLine": {
+          "n": 1,
+          "p25": 9326,
+          "p50": 9326,
+          "p75": 9326,
+          "mean": 9326
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 3,
+        "rate": 0.429
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 8,
+        "medianMs": 500,
+        "medianMsPer100Chars": 354.6,
+        "lengthCorrelation": -0.517,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0,
+        "perActorMin": 0.53,
+        "byKind": {
+          "laugh": 1,
+          "wave": 1
+        }
+      },
+      "backchannel": {
+        "n": 2,
+        "rate": 0
+      },
+      "idle": {
+        "motionPerActorMin": 2.79,
+        "frozenShare": 0.524,
+        "reversalsPerActorHour": 0
+      },
+      "walks": {
+        "total": 0,
+        "perActorMin": 0
+      },
+      "expression": {
+        "changesPerActorMin": 2.37
+      }
+    },
+    "score": {
+      "score": 29.4,
+      "groups": {
+        "proxemics": 37.5,
+        "gaze": 14.3,
+        "turns": 14.1,
+        "gesture": 16.7,
+        "idle": 61.1
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": 1,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": 0,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 31.62,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 0,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": 0,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 0,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": 0,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 0,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": 0,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": 0.7142857142857143,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": 8825,
+          "lo": 600,
+          "hi": 6000,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0.429,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": -0.517,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 2.37,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 0,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 0.6923076923076923,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 2.79,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.524,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 0,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 17,
+      "total": 17
+    }
+  },
+  {
+    "metrics": {
+      "run": "56",
+      "source": "run",
+      "durationS": 195.4,
+      "cast": 3,
+      "lines": 16,
+      "addressedLines": 0,
+      "distance": {
+        "n": 0,
+        "hist": {},
+        "bandShare": null,
+        "inEarshotShare": null,
+        "conversationalShare": null,
+        "median": null,
+        "p90": null,
+        "sameTile": 0
+      },
+      "stacking": {
+        "events": 1,
+        "ms": 1750,
+        "perActorHour": 6.14
+      },
+      "gaze": {
+        "n": 0,
+        "speakerRate": null,
+        "listenerRate": null,
+        "mutualRate": null,
+        "breakReturnRate": null
+      },
+      "latency": {
+        "startTyping": {
+          "n": 0,
+          "p25": null,
+          "p50": null,
+          "p75": null,
+          "mean": null
+        },
+        "lineToLine": {
+          "n": 0,
+          "p25": null,
+          "p50": null,
+          "p75": null,
+          "mean": null
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 6,
+        "rate": 0.4
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 16,
+        "medianMs": 501,
+        "medianMsPer100Chars": 357.5,
+        "lengthCorrelation": -0.539,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0,
+        "perActorMin": 0.51,
+        "byKind": {
+          "laugh": 3,
+          "thumbs": 1,
+          "wave": 1
+        }
+      },
+      "backchannel": {
+        "n": 0,
+        "rate": null
+      },
+      "idle": {
+        "motionPerActorMin": 2.57,
+        "frozenShare": 0.614,
+        "reversalsPerActorHour": 0
+      },
+      "walks": {
+        "total": 4,
+        "perActorMin": 0.41
+      },
+      "expression": {
+        "changesPerActorMin": 1.02
+      }
+    },
+    "score": {
+      "score": 38.6,
+      "groups": {
+        "proxemics": 0,
+        "gaze": null,
+        "turns": 24.6,
+        "gesture": 28.6,
+        "idle": 68.8
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": null,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": null,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": null,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 6.14,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 0,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": null,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": null,
+          "lo": 600,
+          "hi": 6000,
+          "sub": null,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0.4,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 0.19999999999999973,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": -0.539,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": null,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": null,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 1.02,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 0.41,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 1,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 2.57,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.614,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 0,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 10,
+      "total": 17
+    }
+  },
+  {
+    "metrics": {
+      "run": "57",
+      "source": "run",
+      "durationS": 174.6,
+      "cast": 4,
+      "lines": 13,
+      "addressedLines": 0,
+      "distance": {
+        "n": 0,
+        "hist": {},
+        "bandShare": null,
+        "inEarshotShare": null,
+        "conversationalShare": null,
+        "median": null,
+        "p90": null,
+        "sameTile": 0
+      },
+      "stacking": {
+        "events": 3,
+        "ms": 4750,
+        "perActorHour": 15.46
+      },
+      "gaze": {
+        "n": 0,
+        "speakerRate": null,
+        "listenerRate": null,
+        "mutualRate": null,
+        "breakReturnRate": null
+      },
+      "latency": {
+        "startTyping": {
+          "n": 0,
+          "p25": null,
+          "p50": null,
+          "p75": null,
+          "mean": null
+        },
+        "lineToLine": {
+          "n": 0,
+          "p25": null,
+          "p50": null,
+          "p75": null,
+          "mean": null
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 6,
+        "rate": 0.5
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 13,
+        "medianMs": 501,
+        "medianMsPer100Chars": 267.9,
+        "lengthCorrelation": 0.207,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0,
+        "perActorMin": 0.69,
+        "byKind": {
+          "sign": 1,
+          "wave": 2,
+          "laugh": 5
+        }
+      },
+      "backchannel": {
+        "n": 0,
+        "rate": null
+      },
+      "idle": {
+        "motionPerActorMin": 3.54,
+        "frozenShare": 0.529,
+        "reversalsPerActorHour": 0
+      },
+      "walks": {
+        "total": 3,
+        "perActorMin": 0.26
+      },
+      "expression": {
+        "changesPerActorMin": 2.06
+      }
+    },
+    "score": {
+      "score": 39.9,
+      "groups": {
+        "proxemics": 0,
+        "gaze": null,
+        "turns": 32.2,
+        "gesture": 28.6,
+        "idle": 66.1
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": null,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": null,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": null,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 15.46,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 0,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": null,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": null,
+          "lo": 600,
+          "hi": 6000,
+          "sub": null,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0.5,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": 0.207,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0.3566666666666666,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": null,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": null,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 2.06,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 0.26,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 0.8923076923076922,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 3.54,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.529,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 0,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 10,
+      "total": 17
+    }
+  },
+  {
+    "metrics": {
+      "run": "58",
+      "source": "run",
+      "durationS": 130.6,
+      "cast": 4,
+      "lines": 11,
+      "addressedLines": 0,
+      "distance": {
+        "n": 0,
+        "hist": {},
+        "bandShare": null,
+        "inEarshotShare": null,
+        "conversationalShare": null,
+        "median": null,
+        "p90": null,
+        "sameTile": 0
+      },
+      "stacking": {
+        "events": 0,
+        "ms": 0,
+        "perActorHour": 0
+      },
+      "gaze": {
+        "n": 0,
+        "speakerRate": null,
+        "listenerRate": null,
+        "mutualRate": null,
+        "breakReturnRate": null
+      },
+      "latency": {
+        "startTyping": {
+          "n": 0,
+          "p25": null,
+          "p50": null,
+          "p75": null,
+          "mean": null
+        },
+        "lineToLine": {
+          "n": 0,
+          "p25": null,
+          "p50": null,
+          "p75": null,
+          "mean": null
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 6,
+        "rate": 0.6
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 11,
+        "medianMs": 501,
+        "medianMsPer100Chars": 298.2,
+        "lengthCorrelation": -0.287,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0,
+        "perActorMin": 0.69,
+        "byKind": {
+          "sign": 4,
+          "laugh": 3
+        }
+      },
+      "backchannel": {
+        "n": 0,
+        "rate": null
+      },
+      "idle": {
+        "motionPerActorMin": 5.47,
+        "frozenShare": 0.442,
+        "reversalsPerActorHour": 0
+      },
+      "walks": {
+        "total": 5,
+        "perActorMin": 0.57
+      },
+      "expression": {
+        "changesPerActorMin": 2.18
+      }
+    },
+    "score": {
+      "score": 51.6,
+      "groups": {
+        "proxemics": 100,
+        "gaze": null,
+        "turns": 18.5,
+        "gesture": 28.6,
+        "idle": 70.4
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": null,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": null,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": null,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 0,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": null,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": null,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": null,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": null,
+          "lo": 600,
+          "hi": 6000,
+          "sub": null,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0.6,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": -0.287,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": null,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": null,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 2.18,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 0.57,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 1,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 5.47,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.442,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0.05333333333333323,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 0,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 10,
+      "total": 17
+    }
+  },
+  {
+    "metrics": {
+      "run": "59",
+      "source": "run",
+      "durationS": 329.2,
+      "cast": 4,
+      "lines": 37,
+      "addressedLines": 9,
+      "distance": {
+        "n": 9,
+        "hist": {
+          "4": 6,
+          "5": 3
+        },
+        "bandShare": {
+          "intimate": 0,
+          "personal": 0,
+          "social": 1,
+          "public": 0
+        },
+        "inEarshotShare": 1,
+        "conversationalShare": 0.667,
+        "median": 4,
+        "p90": 5,
+        "sameTile": 0
+      },
+      "stacking": {
+        "events": 0,
+        "ms": 0,
+        "perActorHour": 0
+      },
+      "gaze": {
+        "n": 9,
+        "speakerRate": 0.889,
+        "listenerRate": 0.889,
+        "mutualRate": 0.778,
+        "breakReturnRate": 0
+      },
+      "latency": {
+        "startTyping": {
+          "n": 8,
+          "p25": 6520.5,
+          "p50": 15451.5,
+          "p75": 17155.3,
+          "mean": 12710.9
+        },
+        "lineToLine": {
+          "n": 8,
+          "p25": 7021.5,
+          "p50": 15952,
+          "p75": 17654.5,
+          "mean": 13211.1
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 11,
+        "rate": 0.306
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 36,
+        "medianMs": 500.5,
+        "medianMsPer100Chars": 463.8,
+        "lengthCorrelation": -0.009,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0.027,
+        "perActorMin": 0.59,
+        "byKind": {
+          "laugh": 3,
+          "wave": 2,
+          "thumbs": 3,
+          "sign": 5
+        }
+      },
+      "backchannel": {
+        "n": 5,
+        "rate": 0
+      },
+      "idle": {
+        "motionPerActorMin": 3.61,
+        "frozenShare": 0.602,
+        "reversalsPerActorHour": 0
+      },
+      "walks": {
+        "total": 8,
+        "perActorMin": 0.36
+      },
+      "expression": {
+        "changesPerActorMin": 1.87
+      }
+    },
+    "score": {
+      "score": 65.7,
+      "groups": {
+        "proxemics": 100,
+        "gaze": 94.3,
+        "turns": 36.5,
+        "gesture": 22.3,
+        "idle": 68
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": 1,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": 0.667,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 0,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": 0.889,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": 0.889,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": 0,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": 0.7142857142857143,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": 15451.5,
+          "lo": 600,
+          "hi": 6000,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0.306,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 0.952,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": -0.009,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0.027,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0.1349999999999999,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 1.87,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 0.36,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 0.9692307692307692,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 3.61,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.602,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 0,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 17,
+      "total": 17
+    }
+  },
+  {
+    "metrics": {
+      "run": "60",
+      "source": "run",
+      "durationS": 407.3,
+      "cast": 3,
+      "lines": 38,
+      "addressedLines": 7,
+      "distance": {
+        "n": 7,
+        "hist": {
+          "2": 5,
+          "3": 1,
+          "7": 1
+        },
+        "bandShare": {
+          "intimate": 0,
+          "personal": 0.714,
+          "social": 0.143,
+          "public": 0.143
+        },
+        "inEarshotShare": 0.857,
+        "conversationalShare": 0.857,
+        "median": 2,
+        "p90": 7,
+        "sameTile": 0
+      },
+      "stacking": {
+        "events": 2,
+        "ms": 14750,
+        "perActorHour": 5.89
+      },
+      "gaze": {
+        "n": 7,
+        "speakerRate": 0.857,
+        "listenerRate": 0.857,
+        "mutualRate": 0.857,
+        "breakReturnRate": 0
+      },
+      "latency": {
+        "startTyping": {
+          "n": 4,
+          "p25": 7610,
+          "p50": 8038,
+          "p75": 9029.3,
+          "mean": 8601.3
+        },
+        "lineToLine": {
+          "n": 4,
+          "p25": 8111.5,
+          "p50": 8539,
+          "p75": 9529.3,
+          "mean": 9101.8
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 11,
+        "rate": 0.297
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 38,
+        "medianMs": 501,
+        "medianMsPer100Chars": 510.8,
+        "lengthCorrelation": 0.207,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0,
+        "perActorMin": 0.05,
+        "byKind": {
+          "laugh": 1
+        }
+      },
+      "backchannel": {
+        "n": 7,
+        "rate": 0.286
+      },
+      "idle": {
+        "motionPerActorMin": 3.71,
+        "frozenShare": 0.542,
+        "reversalsPerActorHour": 0
+      },
+      "walks": {
+        "total": 17,
+        "perActorMin": 0.83
+      },
+      "expression": {
+        "changesPerActorMin": 1.28
+      }
+    },
+    "score": {
+      "score": 64.1,
+      "groups": {
+        "proxemics": 46.4,
+        "gaze": 94.3,
+        "turns": 53.9,
+        "gesture": 58.3,
+        "idle": 68.8
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": 0.857,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": 0.5699999999999996,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": 0.857,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 5.89,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 0,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": 0.857,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": 0.857,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": 0,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": 0.7142857142857143,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": 8038,
+          "lo": 600,
+          "hi": 6000,
+          "sub": 0.24518518518518517,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0.297,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": 0.207,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0.3566666666666666,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": 0.286,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": 1,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 1.28,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 0.83,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 1,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 3.71,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.542,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 0,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 17,
+      "total": 17
+    }
+  },
+  {
+    "metrics": {
+      "run": "61",
+      "source": "run",
+      "durationS": 458.1,
+      "cast": 3,
+      "lines": 57,
+      "addressedLines": 11,
+      "distance": {
+        "n": 11,
+        "hist": {
+          "1": 4,
+          "2": 7
+        },
+        "bandShare": {
+          "intimate": 0.364,
+          "personal": 0.636,
+          "social": 0,
+          "public": 0
+        },
+        "inEarshotShare": 1,
+        "conversationalShare": 1,
+        "median": 2,
+        "p90": 2,
+        "sameTile": 0
+      },
+      "stacking": {
+        "events": 1,
+        "ms": 1000,
+        "perActorHour": 2.62
+      },
+      "gaze": {
+        "n": 11,
+        "speakerRate": 0.818,
+        "listenerRate": 0.909,
+        "mutualRate": 0.727,
+        "breakReturnRate": 0
+      },
+      "latency": {
+        "startTyping": {
+          "n": 8,
+          "p25": 8170,
+          "p50": 9007,
+          "p75": 10188.5,
+          "mean": 9488.9
+        },
+        "lineToLine": {
+          "n": 8,
+          "p25": 8670.3,
+          "p50": 9507.5,
+          "p75": 10689.5,
+          "mean": 9989.3
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 22,
+        "rate": 0.393
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 57,
+        "medianMs": 500,
+        "medianMsPer100Chars": 495,
+        "lengthCorrelation": -0.066,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0,
+        "perActorMin": 0.09,
+        "byKind": {
+          "laugh": 2
+        }
+      },
+      "backchannel": {
+        "n": 9,
+        "rate": 0
+      },
+      "idle": {
+        "motionPerActorMin": 3.26,
+        "frozenShare": 0.607,
+        "reversalsPerActorHour": 0
+      },
+      "walks": {
+        "total": 9,
+        "perActorMin": 0.39
+      },
+      "expression": {
+        "changesPerActorMin": 1.53
+      }
+    },
+    "score": {
+      "score": 53.3,
+      "groups": {
+        "proxemics": 62.5,
+        "gaze": 94.3,
+        "turns": 20.1,
+        "gesture": 16.7,
+        "idle": 68.6
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": 1,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": 1,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 2.62,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 0,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": 0.818,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": 0.909,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": 0,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": 0.7142857142857143,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": 9007,
+          "lo": 600,
+          "hi": 6000,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0.393,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 0.2559999999999998,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": -0.066,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 1.53,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 0.39,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 0.9923076923076923,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 3.26,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.607,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 0,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 17,
+      "total": 17
+    }
+  },
+  {
+    "metrics": {
+      "run": "62",
+      "source": "run",
+      "durationS": 2711.7,
+      "cast": 3,
+      "lines": 63,
+      "addressedLines": 4,
+      "distance": {
+        "n": 4,
+        "hist": {
+          "2": 3,
+          "4": 1
+        },
+        "bandShare": {
+          "intimate": 0,
+          "personal": 0.75,
+          "social": 0.25,
+          "public": 0
+        },
+        "inEarshotShare": 1,
+        "conversationalShare": 1,
+        "median": 2,
+        "p90": 4,
+        "sameTile": 0
+      },
+      "stacking": {
+        "events": 1,
+        "ms": 78500,
+        "perActorHour": 0.44
+      },
+      "gaze": {
+        "n": 4,
+        "speakerRate": 1,
+        "listenerRate": 1,
+        "mutualRate": 1,
+        "breakReturnRate": 0
+      },
+      "latency": {
+        "startTyping": {
+          "n": 3,
+          "p25": 8109,
+          "p50": 10592,
+          "p75": 14617,
+          "mean": 11620
+        },
+        "lineToLine": {
+          "n": 3,
+          "p25": 8609.5,
+          "p50": 11092,
+          "p75": 15117.5,
+          "mean": 12120.7
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 1,
+        "rate": 0.016
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 63,
+        "medianMs": 500,
+        "medianMsPer100Chars": 806.5,
+        "lengthCorrelation": -0.009,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0,
+        "perActorMin": 0.26,
+        "byKind": {
+          "sign": 23,
+          "laugh": 4,
+          "wave": 8
+        }
+      },
+      "backchannel": {
+        "n": 4,
+        "rate": 0.25
+      },
+      "idle": {
+        "motionPerActorMin": 3.61,
+        "frozenShare": 0.59,
+        "reversalsPerActorHour": 3.1
+      },
+      "walks": {
+        "total": 75,
+        "perActorMin": 0.55
+      },
+      "expression": {
+        "changesPerActorMin": 2.07
+      }
+    },
+    "score": {
+      "score": 64,
+      "groups": {
+        "proxemics": 100,
+        "gaze": 62.3,
+        "turns": 31.2,
+        "gesture": 58.3,
+        "idle": 68.8
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": 1,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": 1,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 0.44,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": 1,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 0.5999999999999996,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": 1,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 0.5999999999999996,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": 0,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": 0.7142857142857143,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": 10592,
+          "lo": 600,
+          "hi": 6000,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0.016,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 0.728,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": -0.009,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": 0.25,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": 1,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 2.07,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 0.55,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 1,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 3.61,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.59,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 3.1,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 17,
+      "total": 17
+    }
+  },
+  {
+    "metrics": {
+      "run": "63",
+      "source": "run",
+      "durationS": 438.9,
+      "cast": 3,
+      "lines": 54,
+      "addressedLines": 13,
+      "distance": {
+        "n": 13,
+        "hist": {
+          "0": 1,
+          "2": 3,
+          "3": 7,
+          "4": 1,
+          "7": 1
+        },
+        "bandShare": {
+          "intimate": 0.077,
+          "personal": 0.231,
+          "social": 0.615,
+          "public": 0.077
+        },
+        "inEarshotShare": 0.923,
+        "conversationalShare": 0.846,
+        "median": 3,
+        "p90": 4,
+        "sameTile": 1
+      },
+      "stacking": {
+        "events": 1,
+        "ms": 7000,
+        "perActorHour": 2.73
+      },
+      "gaze": {
+        "n": 13,
+        "speakerRate": 0.846,
+        "listenerRate": 0.692,
+        "mutualRate": 0.615,
+        "breakReturnRate": 0
+      },
+      "latency": {
+        "startTyping": {
+          "n": 12,
+          "p25": 6802,
+          "p50": 11978,
+          "p75": 14742.5,
+          "mean": 11617.3
+        },
+        "lineToLine": {
+          "n": 12,
+          "p25": 7302,
+          "p50": 12478.5,
+          "p75": 15243.3,
+          "mean": 12117.9
+        },
+        "overlapStarts": 0
+      },
+      "overlap": {
+        "n": 0,
+        "rate": 0
+      },
+      "interruption": {
+        "n": 0,
+        "rate": 0
+      },
+      "typing": {
+        "lines": 54,
+        "medianMs": 500,
+        "medianMsPer100Chars": 793.7,
+        "lengthCorrelation": 0.043,
+        "togglesPerLine": 1
+      },
+      "gesture": {
+        "perLine": 0,
+        "perActorMin": 0.14,
+        "byKind": {
+          "sign": 3,
+          "thumbs": 1
+        }
+      },
+      "backchannel": {
+        "n": 13,
+        "rate": 0.385
+      },
+      "idle": {
+        "motionPerActorMin": 6.74,
+        "frozenShare": 0.388,
+        "reversalsPerActorHour": 2.73
+      },
+      "walks": {
+        "total": 42,
+        "perActorMin": 1.91
+      },
+      "expression": {
+        "changesPerActorMin": 1.91
+      }
+    },
+    "score": {
+      "score": 62.4,
+      "groups": {
+        "proxemics": 62.5,
+        "gaze": 91.7,
+        "turns": 28.2,
+        "gesture": 58.3,
+        "idle": 74.3
+      },
+      "bands": [
+        {
+          "key": "distance.inEarshotShare",
+          "label": "lines said within earshot (5 tiles)",
+          "group": "proxemics",
+          "value": 0.923,
+          "lo": 0.9,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "distance.conversationalShare",
+          "label": "lines said at 1-4 tiles",
+          "group": "proxemics",
+          "value": 0.846,
+          "lo": 0.6,
+          "hi": 1,
+          "sub": 1,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "stacking.perActorHour",
+          "label": "stacked on one tile (events per actor-hour)",
+          "group": "proxemics",
+          "value": 2.73,
+          "lo": 0,
+          "hi": 0.5,
+          "sub": 0,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.speakerRate",
+          "label": "speaker faces the addressee",
+          "group": "gaze",
+          "value": 0.846,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 1,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.listenerRate",
+          "label": "listener faces the speaker",
+          "group": "gaze",
+          "value": 0.692,
+          "lo": 0.7,
+          "hi": 0.95,
+          "sub": 0.9359999999999999,
+          "weight": 1.5,
+          "src": "prior"
+        },
+        {
+          "key": "gaze.breakReturnRate",
+          "label": "speaker looks away and comes back",
+          "group": "gaze",
+          "value": 0,
+          "lo": 0.05,
+          "hi": 0.4,
+          "sub": 0.7142857142857143,
+          "weight": 0.75,
+          "src": "prior"
+        },
+        {
+          "key": "latency.startTyping.p50",
+          "label": "median ms from a line to the reply's first key press",
+          "group": "turns",
+          "value": 11978,
+          "lo": 600,
+          "hi": 6000,
+          "sub": 0,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "overlap.rate",
+          "label": "a line lands while the last one is still on screen",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.05,
+          "hi": 0.3,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "interruption.rate",
+          "label": "lines cut off by a dash",
+          "group": "turns",
+          "value": 0,
+          "lo": 0.01,
+          "hi": 0.06,
+          "sub": 0.6,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "typing.lengthCorrelation",
+          "label": "bubble time follows the length of the line (r)",
+          "group": "turns",
+          "value": 0.043,
+          "lo": 0.4,
+          "hi": 1,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "gesture.perLine",
+          "label": "lines carrying a gesture",
+          "group": "gesture",
+          "value": 0,
+          "lo": 0.2,
+          "hi": 0.6,
+          "sub": 0,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "backchannel.rate",
+          "label": "heard lines answered by a silent signal",
+          "group": "gesture",
+          "value": 0.385,
+          "lo": 0.25,
+          "hi": 0.7,
+          "sub": 1,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "expression.changesPerActorMin",
+          "label": "face changes per actor-minute",
+          "group": "gesture",
+          "value": 1.91,
+          "lo": 1,
+          "hi": 6,
+          "sub": 1,
+          "weight": 0.5,
+          "src": "prior"
+        },
+        {
+          "key": "walks.perActorMin",
+          "label": "walks per actor-minute",
+          "group": "idle",
+          "value": 1.91,
+          "lo": 0.4,
+          "hi": 3,
+          "sub": 1,
+          "weight": 1,
+          "src": "corpus"
+        },
+        {
+          "key": "idle.motionPerActorMin",
+          "label": "idle motion per actor-minute",
+          "group": "idle",
+          "value": 6.74,
+          "lo": 1,
+          "hi": 6,
+          "sub": 0.704,
+          "weight": 1,
+          "src": "prior"
+        },
+        {
+          "key": "idle.frozenShare",
+          "label": "10 s windows with no visible change",
+          "group": "idle",
+          "value": 0.388,
+          "lo": 0,
+          "hi": 0.3,
+          "sub": 0.4133333333333331,
+          "weight": 1.25,
+          "src": "prior"
+        },
+        {
+          "key": "idle.reversalsPerActorHour",
+          "label": "back-and-forth walks (jitter) per actor-hour",
+          "group": "idle",
+          "value": 2.73,
+          "lo": 0,
+          "hi": 4,
+          "sub": 1,
+          "weight": 0.75,
+          "src": "prior"
+        }
+      ],
+      "scored": 17,
+      "total": 17
+    }
+  }
+]

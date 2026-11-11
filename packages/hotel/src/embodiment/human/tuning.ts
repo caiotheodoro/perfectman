@@ -68,6 +68,9 @@ export const HT = {
     /** Chance per planner look that a person who is too far or too near (by this many tiles beyond the window) actually moves: never certain, people drift. */
     moveChance: 0.85,
     unstackCooldownMs: 4000,
+    /** After any walk this layer started, no other walk of its own for this long at h = 1 (longer below): no loops. A reversal of the last move is refused for REVERSAL_LOCK_MS. */
+    walkSettleMs: 14_000,
+    reversalLockMs: 30_000,
     /** Planner looks are model-paced (6-12 s); a window violation shorter than this is tolerated, the person was passing by. */
     settleMs: 2500,
   },
@@ -119,9 +122,15 @@ export const HT = {
       sad: [1400, 2800],
       ashamed: [1800, 3600],
     },
+    /** In a film the typing bubble is the lead before a line plays (500 ms at h = 0): ms per character at h = 1, and its bounds. */
+    cinePerCharMs: 30,
+    cineLeadMinMs: 700,
+    cineLeadMaxMs: 3200,
+    /** The typing of the next speaker starts this long after the line it answers has landed, at the earliest. */
+    cineAfterLandMs: 500,
     /** Interruption: the chance a heated line is talked over, per line, at h = 1; both must be this aroused, the line this long. */
-    interruptChance: 0.4,
-    interruptArousal: 0.6,
+    interruptChance: 0.6,
+    interruptArousal: 0.55,
     interruptMinWords: 7,
     interruptCooldownMs: 40_000,
     /** The interrupter lands this long after the cut line, ms. */
@@ -139,7 +148,7 @@ export const HT = {
   /** Gesture and expression with speech. */
   gesture: {
     /** Emphasis gesture on a stressed line, chance at h = 1 times the stress (0..1). */
-    emphasisChance: 0.45,
+    emphasisChance: 0.9,
     emphasisLagMs: [250, 900],
     emphasisCooldownMs: 6000,
     /** A heated line may carry the exclamation sign; at most this often per actor. */
@@ -147,6 +156,8 @@ export const HT = {
     signStyleExclaim: 13,
     /** The face that follows an emotion, how long it stays before it decays to neutral, ms. */
     faceHoldMs: { smile: 5000, angry: 6500, sad: 8000, surprised: 1800, sleepy: 5000 },
+    /** Every spoken line carries this much energy before its stress is counted (people speak with their hands a little even when calm). */
+    baseStrength: 0.3,
     /** Reaction to what was just said: laugh on amusement, sigh, head-shake. Chance at h = 1. */
     laughChance: 0.5,
     reactChance: 0.45,
@@ -163,6 +174,16 @@ export const HT = {
 
   /** Idle life. */
   idle: {
+    /** While listening, a glance away from the speaker (to the room, a thing, a third person) and back: chance per long line at h = 1, for the addressee and for a bystander. */
+    glanceAwayChance: 0.4,
+    glanceAwayBystander: 0.6,
+    glanceAwayMinWords: 9,
+    glanceAwayLagMs: [1500, 3200],
+    glanceAwayHoldMs: [1000, 1900],
+    /** A line involving the actor within this long means it is in the conversation: no walking off, no pacing. */
+    engagedMs: 8000,
+    /** A small step to another tile while standing in a conversation (people do not stand rooted): every this long, at h = 1. */
+    repositionEveryMs: 40_000,
     /** Stand/sit shift with nobody talking to the actor: every this long (+- jitter), at h = 1; infinite at h = 0. */
     weightShiftEveryMs: 55_000,
     weightShiftJitter: 0.4,
@@ -213,10 +234,13 @@ export const HT_SOURCES: readonly SourceNote[] = [
   { key: "prox.move", src: "prior", note: "judgement" },
   { key: "prox.unstack", src: "prior", note: "judgement" },
   { key: "prox.settle", src: "prior", note: "judgement" },
+  { key: "prox.walkSettle", src: "prior", note: "judgement: a person who has just moved stays put a while; with the reversal lock this is what keeps the layer from loops" },
+  { key: "prox.reversalLock", src: "prior", note: "the planner's own reversal lock is 30 s (DWELL_ZONE_MS)" },
   { key: "gaze", src: "prior", note: "Argyle & Cook 1976, Kendon 1967: speakers look at the listener about 40% of the time and away at the start of a turn, listeners about 75%; aversion on shame/deceit is folk-psychological (DePaulo 2003 finds weak evidence for lies, so it is applied to shame and being stung, and to authored lies only)" },
   { key: "turn.perCharMs", src: "prior", note: "h = 0 is the gateway's own 55 ms; 80 ms/char is about 12 chars/s, fast typing, so a 100-char line shows 8 s of bubble before the cap" },
   { key: "turn.typing", src: "prior", note: "typing times vary roughly lognormally across people (Dhakal et al. 2018: mean 52 wpm, sd 20)" },
   { key: "turn.cap", src: "prior", note: "the old 4 s cap kept slow personas inside a 10 s p95; cinematic cast-only lines have no human waiting, so the cap rises" },
+  { key: "turn.cine", src: "prior", note: "in a film the typing bubble is the lead before the line plays; 45 ms per character keeps a 100-character line near 4.5 s, and the next speaker types inside the line before so the film does not slow down" },
   { key: "turn.hesitate", src: "prior", note: "judgement" },
   { key: "turn.latencyMs", src: "prior", note: "Stivers et al. 2009: median gap between turns is about 200 ms in 10 languages, faster for preferred answers, slower for dispreferred; Heldner & Edlund 2010. Chat adds reading time, so these are larger. Cinema subtitle gaps (corpus, pt film drama p50 0.64 s, pt series drama p50 0.21 s) bracket the low end" },
   { key: "turn.interruptChance", src: "prior", note: "judgement, bounded by the corpus: share of turns that end cut off by a dash is p75 0.03-0.05 in screenplays (cinema-norms interruptShare), p50 0.017-0.033 in plays" },
@@ -227,6 +251,7 @@ export const HT_SOURCES: readonly SourceNote[] = [
   { key: "turn.cut", src: "prior", note: "judgement" },
   { key: "turn.backchannel", src: "prior", note: "Yngve 1970, Heldner et al. 2013: listeners give a feedback signal every few seconds of talk; here one per heard line, bounded by a cooldown, because the wire has no nod" },
   { key: "gesture.emphasis", src: "prior", note: "McNeill 1992: gesture accompanies most animated speech; chat bubbles carry far less, so 0.45 of stressed lines" },
+  { key: "gesture.baseStrength", src: "prior", note: "judgement: a spoken line carries some energy even when calm; with emphasisChance it puts about 20% of lines on a gesture at h = 0.6, the middle of the prior band" },
   { key: "gesture.sign", src: "prior", note: "judgement" },
   { key: "gesture.faceHoldMs", src: "prior", note: "facial expressions of emotion last 0.5-4 s (Ekman 2003), stretched for a stylized client" },
   { key: "gesture.laugh", src: "prior", note: "Provine 2000: laughter is mostly social punctuation after statements" },

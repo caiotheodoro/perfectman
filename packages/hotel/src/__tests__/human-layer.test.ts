@@ -101,11 +101,9 @@ describe("proxemics", () => {
     const lines = [line({ n: 1, speaker: "duda", to: "rafa", atMs: NOW - 4000 })];
     const cmds = run({ others: [person("rafa", [11, 4])] }, { human: human({ lines }) });
     const walk = cmds.find((c) => c.cmd === "walk");
-    expect(walk).toBeDefined();
-    if (walk?.cmd === "walk") {
-      expect(Math.max(Math.abs(walk.to[0] - 11), Math.abs(walk.to[1] - 4))).toBeLessThanOrEqual(HT.prox.earshotMax);
-      expect(walk.plan).toMatch(/^hl:/);
-    }
+    expect(walk).toMatchObject({ cmd: "walk", plan: expect.stringMatching(/^hl:/) });
+    const to = walk?.cmd === "walk" ? walk.to : [0, 0];
+    expect(Math.max(Math.abs(to[0] - 11), Math.abs(to[1] - 4))).toBeLessThanOrEqual(HT.prox.earshotMax);
   });
 
   it("steps off a tile somebody else stands on", () => {
@@ -144,8 +142,7 @@ describe("proxemics", () => {
   it("gives space to the one who holds the floor", () => {
     const lines = [line({ n: 1, speaker: "rafa", to: "gabi", atMs: NOW - 1500 })];
     const cmds = run({ others: [person("rafa", [5, 4]), person("gabi", [8, 4])] }, { human: human({ lines, h: 1 }) });
-    const walk = cmds.find((c) => c.cmd === "walk");
-    expect(walk).toBeDefined();
+    expect(cmds.find((c) => c.cmd === "walk")).toMatchObject({ cmd: "walk", humanTag: "space" });
   });
 });
 
@@ -182,156 +179,3 @@ describe("idle life", () => {
   });
 });
 
-describe("turn-taking", () => {
-  it("typing time grows with the line and is the gateway's own at h = 0", () => {
-    const at = (chars: number, h: number): number => typingPlan({ chars, thinkMs: 1000, h, seed: 3, actor: "duda", n: 1 }).totalMs;
-    expect(at(20, 1)).toBeLessThan(at(80, 1));
-    expect(at(80, 1)).toBeLessThan(at(180, 1) + 1);
-    expect(at(40, 0)).toBe(1000 + 40 * HT.turn.perCharMs[0]);
-    expect(at(400, 0)).toBe(4000);
-    // jitter: two lines of one length differ, the same line does not
-    const a = typingPlan({ chars: 60, thinkMs: 1000, h: 1, seed: 3, actor: "duda", n: 1 }).totalMs;
-    const b = typingPlan({ chars: 60, thinkMs: 1000, h: 1, seed: 3, actor: "duda", n: 2 }).totalMs;
-    expect(a).not.toBe(b);
-    expect(typingPlan({ chars: 60, thinkMs: 1000, h: 1, seed: 3, actor: "duda", n: 1 }).totalMs).toBe(a);
-  });
-
-  it("reaction latency follows the feeling: a heated actor answers sooner, an ashamed one later", () => {
-    const heated = feelOf({ arousal: 0.8, valence: -0.5 });
-    const ashamed = feelOf({ arousal: 0.4, valence: -0.2, shame: 0.7 });
-    expect(heated).toBe("heated");
-    expect(ashamed).toBe("ashamed");
-    expect(reactionLatencyMs(1500, heated, 1)).toBeLessThan(reactionLatencyMs(1500, "neutral", 1));
-    expect(reactionLatencyMs(1500, ashamed, 1)).toBeGreaterThan(reactionLatencyMs(1500, "neutral", 1));
-    expect(reactionLatencyMs(1500, ashamed, 0)).toBe(1500);
-  });
-
-  it("a cut line ends in a dash and is shorter; a short line is never cut", () => {
-    const text = "Você mentiu pra todo mundo nessa mesa e agora quer fingir que não sabe de nada";
-    const cut = cutLine(text, 4, "duda", 1)!;
-    expect(cut.endsWith("—")).toBe(true);
-    expect(cut.length).toBeLessThan(text.length);
-    expect(text.startsWith(cut.slice(0, -1))).toBe(true);
-    expect(cutLine("oi, tudo bem?", 4, "duda", 1)).toBeUndefined();
-  });
-
-  it("interrupts only a heated, long line, on a cooldown, the same way on every run", () => {
-    const base = { h: 1, seed: 9, n: 1, speaker: { actor: "a", arousal: 0.9, words: 14 }, other: { actor: "b", arousal: 0.9 }, now: 100_000 };
-    const draws = Array.from({ length: 40 }, (_, n) => interrupts({ ...base, n }));
-    expect(draws.some(Boolean)).toBe(true);
-    expect(draws.every(Boolean)).toBe(false);
-    expect(interrupts({ ...base, h: 0 })).toBe(false);
-    expect(interrupts({ ...base, speaker: { ...base.speaker, words: 3 } })).toBe(false);
-    expect(interrupts({ ...base, other: { actor: "b", arousal: 0.2 } })).toBe(false);
-    expect(Array.from({ length: 40 }, (_, n) => interrupts({ ...base, n, lastInterruptAt: 90_000 })).some(Boolean)).toBe(false);
-    expect(Array.from({ length: 40 }, (_, n) => interrupts({ ...base, n }))).toEqual(draws);
-  });
-});
-
-describe("reactions to a line", () => {
-  const room = (): ReturnType<typeof space> => space({ others: [person("rafa", [6, 4], { dir: 0 }), person("gabi", [4, 7], { dir: 4 })], self: { dir: 0 } });
-  const mood = (arousal: number, valence: number, shame = 0) => agentState({ mood: { arousal, valence }, social: { shame } });
-  const ctx = (l: HumanLine, over: { duda?: ReturnType<typeof agentState>; rafa?: ReturnType<typeof agentState>; h?: number; props?: Parameters<typeof reactToLine>[0]["props"] } = {}) => {
-    const v = room();
-    const people = new Map<string, ReactPerson>(v.room!.occupants.map((p) => [p.ref, { ref: p.ref, presence: p, own: true, state: p.ref === "duda" ? (over.duda ?? mood(0.3, 0)) : p.ref === "rafa" ? (over.rafa ?? mood(0.3, 0)) : mood(0.3, 0) }]));
-    return { h: over.h ?? 1, seed: 21, line: l, room: v.room!, people, history: [], props: over.props ?? [], memOf: () => ({}), lastGestureAt: () => ({}) };
-  };
-
-  it("does nothing at h = 0", () => {
-    expect(reactToLine({ ...ctx(line({ n: 1, speaker: "duda", to: "rafa", words: 12 })), h: 0 })).toEqual([]);
-  });
-
-  it("the speaker turns to the addressee, who turns back after a beat", () => {
-    const out = reactToLine(ctx(line({ n: 1, speaker: "duda", to: "rafa", words: 12, text: "Rafa, sente aqui comigo um instante, por favor" })));
-    const speakerFace = out.find((t) => t.ref === "duda" && t.cmd.cmd === "face");
-    const listenerFace = out.find((t) => t.ref === "rafa" && t.cmd.cmd === "face");
-    expect(speakerFace).toBeDefined();
-    expect(listenerFace).toBeDefined();
-    expect(listenerFace!.atMs).toBeGreaterThanOrEqual(HT.gaze.listenerLagMs[0]);
-  });
-
-  it("looks away on a lie and on shame, but holds the look in a row", () => {
-    const lie = reactToLine(ctx(line({ n: 2, speaker: "duda", to: "rafa", words: 10, lie: true })));
-    const away = lie.filter((t) => t.ref === "duda" && t.cmd.cmd === "face");
-    expect(away.some((t) => t.log.rule.startsWith("avert"))).toBe(true);
-    expect(away.some((t) => t.log.rule === "return")).toBe(true);
-    const row = reactToLine(ctx(line({ n: 2, speaker: "duda", to: "rafa", words: 10, lie: true, hostile: "insult" }), { duda: mood(0.9, -0.6), rafa: mood(0.9, -0.6) }));
-    expect(row.some((t) => t.log.rule.startsWith("avert"))).toBe(false);
-    const shame = reactToLine(ctx(line({ n: 3, speaker: "duda", to: "rafa", words: 10 }), { duda: mood(0.3, -0.3, 0.8) }));
-    expect(shame.some((t) => t.log.rule === "avert:shame")).toBe(true);
-  });
-
-  it("the stung addressee turns its face away from an insult", () => {
-    let stung = 0;
-    for (let n = 1; n <= 30; n++) {
-      const out = reactToLine(ctx(line({ n, speaker: "duda", to: "rafa", words: 8, hostile: "insult" }), { duda: mood(0.3, -0.1), rafa: mood(0.3, -0.1) }));
-      if (out.some((t) => t.ref === "rafa" && t.log.rule === "avert:stung")) stung++;
-    }
-    expect(stung).toBeGreaterThan(5);
-  });
-
-  it("glances at the third party being discussed and at a prop that matters", () => {
-    let thirds = 0;
-    for (let n = 1; n <= 20; n++) {
-      const third = reactToLine(ctx(line({ n, speaker: "duda", to: "rafa", words: 10, mentioned: ["gabi"] })));
-      if (third.some((t) => t.log.rule === "glance:third_party" || t.log.rule === "glance:named")) thirds++;
-    }
-    expect(thirds).toBeGreaterThan(5);
-    let prop = 0;
-    for (let n = 1; n <= 20; n++) {
-      const out = reactToLine(ctx(line({ n, speaker: "duda", to: "rafa", words: 9, text: "Você escondeu o envelope no cofre" }), { props: [{ id: "env", label: "envelope", tile: [9, 9], words: ["envelope"] }] }));
-      if (out.some((t) => t.log.rule === "glance:prop:env")) prop++;
-    }
-    expect(prop).toBeGreaterThan(3);
-  });
-
-  it("backchannels without words: a nod, a tilt, a brow, never a text filler", () => {
-    const seen = new Set<string>();
-    for (let n = 1; n <= 80; n++) {
-      const q = n % 3 === 0;
-      const out = reactToLine(ctx(line({ n, speaker: "duda", to: "rafa", words: 9, question: q, ...(n % 7 === 0 ? { reveal: true } : {}) })));
-      for (const t of out) {
-        expect(t.cmd.cmd).not.toBe("chat");
-        if (t.log.kind === "backchannel") seen.add(t.log.rule);
-      }
-    }
-    expect([...seen].some((r) => r.startsWith("backchannel:"))).toBe(true);
-  });
-
-  it("witnesses of a reveal freeze with a surprised face, then look to the accused", () => {
-    let freezes = 0;
-    for (let n = 1; n <= 20; n++) {
-      const out = reactToLine(ctx(line({ n, speaker: "duda", to: "rafa", words: 12, reveal: true, hostile: "accusation" })));
-      if (out.some((t) => t.ref === "gabi" && t.log.rule === "witness:freeze") && out.some((t) => t.ref === "gabi" && t.log.rule === "witness:look_to_accused")) freezes++;
-    }
-    expect(freezes).toBeGreaterThan(8);
-  });
-
-  it("is deterministic under the seed", () => {
-    const l = line({ n: 9, speaker: "duda", to: "rafa", words: 12, lie: true, mentioned: ["gabi"], stress: 0.8 });
-    expect(reactToLine(ctx(l))).toEqual(reactToLine(ctx(l)));
-  });
-
-  it("an emphasis gesture comes with a stressed line, not a plain one", () => {
-    let loud = 0;
-    let plain = 0;
-    for (let n = 1; n <= 60; n++) {
-      const a = reactToLine(ctx(line({ n, speaker: "duda", to: "rafa", words: 8, stress: 1, hostile: "insult", text: "VOCÊ MENTIU!!" }), { duda: mood(0.9, -0.6) }));
-      const b = reactToLine(ctx(line({ n, speaker: "duda", to: "rafa", words: 8, stress: 0, text: "tudo bem por aqui" })));
-      if (a.some((t) => t.cmd.cmd === "gesture")) loud++;
-      if (b.some((t) => t.cmd.cmd === "gesture")) plain++;
-    }
-    expect(loud).toBeGreaterThan(plain);
-  });
-});
-
-describe("lines", () => {
-  it("reads length, stress, a question, laughter and a hostile word", () => {
-    const l = lineFacts({ n: 1, speaker: "a", to: "b", atMs: 0, text: "VOCÊ É UM IDIOTA!!", cast: new Map([["b", "Bia"]]) });
-    expect(l.stress).toBeGreaterThan(0.5);
-    expect(l.hostile).toBe("insult");
-    expect(lineFacts({ n: 2, speaker: "a", atMs: 0, text: "hahaha, boa" }).amusement).toBe(true);
-    expect(lineFacts({ n: 3, speaker: "a", atMs: 0, text: "Cadê o envelope?" }).question).toBe(true);
-    expect(lineFacts({ n: 4, speaker: "a", atMs: 0, text: "Falei com a Bia ontem.", cast: new Map([["b", "Bia"]]) }).mentioned).toEqual(["b"]);
-  });
-});

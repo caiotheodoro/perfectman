@@ -143,7 +143,11 @@ export class HumanBody implements GatewayHuman {
       ...(l.lie !== undefined ? { lie: l.lie } : {}),
       ...(l.reveal !== undefined ? { reveal: l.reveal } : {}),
     });
-    if (l.cut) line.cut = true;
+    if (l.cut) {
+      line.cut = true;
+      // A film talked this line over (cine/planner.ts `talkOver`): the cut is the layer's decision, so it is in the body log with what the room saw.
+      this.d.log?.({ actor: l.speaker, kind: "interrupt", rule: "interrupt:cut", line: line.n, ...(l.to ? { to: l.to } : {}), detail: `shown "${line.text}"`, at: now });
+    }
     const history = [...this.lines];
     this.lines.push(line);
     if (this.lines.length > RING) this.lines.shift();

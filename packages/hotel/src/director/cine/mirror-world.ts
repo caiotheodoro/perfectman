@@ -13,7 +13,7 @@ export type CastInfo = { name: string; role?: string };
 export function moodOfState(state: AgentState): CineMood {
   let affection = 0;
   for (const rel of state.relationalStates.values()) affection = Math.max(affection, rel.affection);
-  return { valence: state.coreMood.valence, arousal: state.coreMood.arousal, affection };
+  return { valence: state.coreMood.valence, arousal: state.coreMood.arousal, affection, shame: Math.max(state.socialEmotions.shame, state.socialEmotions.humiliation) };
 }
 
 export class MirrorCineWorld implements CineWorld {

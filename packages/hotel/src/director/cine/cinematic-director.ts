@@ -48,6 +48,13 @@ export type CinematicOptions = {
   premise?: string;
   /** One line per track entry, e.g. a file sink. */
   trackSink?: (line: string) => void;
+  /** A line played on screen (cinematic revamp B5): what the audience saw, which is the cut text when the line was talked over. The human layer's reactions key off this moment. */
+  onLine?: (line: { ref: string; to?: string; text: string; mode: LineItem["mode"]; cut: boolean }) => void;
+  /**
+   * A line is about to be planned (cinematic revamp B5): the human layer may send its speaker up to the person it addresses first, and says how long the walk takes
+   * (ms; 0 or undefined for none). The line's bubble then comes up when the walk ends.
+   */
+  beforeLine?: (line: { ref: string; text: string; to?: string }) => number | undefined;
 };
 
 /** 0..1: how much a line deserves a close-up. Deterministic from the text and the speaker's mood. */
@@ -85,6 +92,11 @@ export class CinematicDirector {
   constructor(private readonly o: CinematicOptions) {
     this.cfg = { ...DEFAULT_CINE, ...o.config };
     this.planner = new ShotPlanner(this.cfg);
+    // The planner looks one line ahead for the human layer's turn-taking: who types while the line before is on screen, and who talks over whom.
+    this.planner.peek = () => {
+      const next = selectNext(this.queue, o.clock.now(), { now: this.t(), room: this.planner.currentRoom, roomSince: this.planner.roomSince, followRef: undefined, cfg: this.cfg, held: new Set(this.heldActs.keys()) });
+      return next?.kind === "line" ? next : undefined;
+    };
     this.track = new TrackRecorder(o.trackSink);
   }
 
@@ -205,7 +217,7 @@ export class CinematicDirector {
         case "chat": {
           const mode = c.mode;
           const mood = this.o.world.moodOf(c.agentId);
-          this.enqueue({ kind: "line", ref: c.agentId, text: c.text, mode, ...(c.to ? { to: c.to } : {}), room: this.roomOf(c.agentId), salience: lineSalience(c.text, mode, mood) }, () => inner.send([c]));
+          this.enqueue({ kind: "line", ref: c.agentId, text: c.text, mode, ...(c.to ? { to: c.to } : {}), room: this.roomOf(c.agentId), salience: lineSalience(c.text, mode, mood) }, (it) => inner.send([it.kind === "line" && it.cut !== undefined ? { ...c, text: it.cut } : c]));
           break;
         }
         case "typing":
@@ -323,12 +335,13 @@ export class CinematicDirector {
   }
 
   /** Adds an item to the buffer; returns its id, or undefined when the film is over and nothing is queued. */
-  enqueue(item: DistributiveOmit<CineItem, "id" | "seq" | "at">, hold?: () => void): string | undefined {
+  enqueue(item: DistributiveOmit<CineItem, "id" | "seq" | "at">, hold?: (full: CineItem) => void): string | undefined {
     if (this.phase === "ended") return undefined;
     const seq = ++this.seq;
     const full = { ...item, id: `b${seq}`, seq, at: this.o.clock.now() } as CineItem;
-    // Registered before the item can play: a covered shot releases at program time 0, inside the advance below.
-    if (hold) this.held.set(full.id, hold);
+    // Registered before the item can play: a covered shot releases at program time 0, inside the advance below. The item itself goes to the command,
+    // so a line the planner cut short (a talked-over line) is sent as the part the room saw.
+    if (hold) this.held.set(full.id, () => hold(full));
     this.queue.push(full);
     this.beginScene(full);
     if (this.started && !this.busy && !this.paused) {
@@ -413,6 +426,10 @@ export class CinematicDirector {
         this.busy = false;
         return;
       }
+      if (item.kind === "line" && this.cfg.human && this.cfg.human.likeness > 0) {
+        const walk = this.o.beforeLine?.({ ref: item.ref, text: item.text, ...(item.to ? { to: item.to } : {}) });
+        if (walk !== undefined && walk > 0) item.walkMs = walk;
+      }
       const program = this.planner.plan(item, this.t(), world, narrator);
       if (!program) {
         this.drop(item, "unstageable");
@@ -450,10 +467,23 @@ export class CinematicDirector {
     if (upcoming && upcoming.room !== program.room && this.planner.lastActivityIn(upcoming.room) === undefined) {
       this.emit({ at: 0, k: "next_room", room: upcoming.room }, program, 0);
     }
+    this.programStartT = this.t();
     this.current = this.o.clock.setTimer(() => {
       this.busy = false;
       this.kick();
     }, program.durationMs);
+  }
+
+  private programStartT = 0;
+
+  /** The program ends `holdMs` after the line plays, not at its planned end (a line talked over: the answer lands on top of it). */
+  private endProgramAfter(playedAtT: number, holdMs: number): void {
+    const remaining = playedAtT + holdMs - this.t();
+    this.current?.cancel();
+    this.current = this.o.clock.setTimer(() => {
+      this.busy = false;
+      this.kick();
+    }, Math.max(50, remaining));
   }
 
   private schedule(program: Program, item?: CineItem): void {
@@ -500,13 +530,23 @@ export class CinematicDirector {
         this.track.add({ t: planned, k: "cut", room: step.room, from: step.from });
         return;
       case "typing":
-        this.inner?.send([{ agentId: step.ref, cmd: "typing", on: true }]);
+        // A bubble started early for the next line: only while that line still waits to be pre-typed.
+        if (step.for !== undefined && !this.planner.stillPretyped(step.for)) return;
+        this.inner?.send([{ agentId: step.ref, cmd: "typing", on: step.on !== false }]);
         return;
       case "release": {
+        // Talked over at the last moment: the answer is queued by now and the line trails off in a dash.
+        const line = (item ?? step.item).kind === "line" ? ((item ?? step.item) as LineItem) : undefined;
+        const over = line ? this.planner.talkOver(line, this.t(), this.o.world) : undefined;
+        if (line && over) {
+          line.cut = over.cut;
+          this.endProgramAfter(this.t(), over.holdMs);
+        }
         this.release(step.item.id);
         const it = item ?? step.item;
         if (it.kind === "line") {
-          this.track.add({ t: planned, k: "line", room: it.room, beat: it.id, ref: it.ref, avatar: this.o.world.avatarId(it.ref) ?? null, mode: it.mode, text: it.text, ms: Math.max(0, program.durationMs - step.at - this.cfg.beatGapMs) });
+          this.track.add({ t: planned, k: "line", room: it.room, beat: it.id, ref: it.ref, avatar: this.o.world.avatarId(it.ref) ?? null, mode: it.mode, text: it.cut ?? it.text, ms: Math.max(0, program.durationMs - step.at - this.cfg.beatGapMs) });
+          this.o.onLine?.({ ref: it.ref, ...(it.to ? { to: it.to } : {}), text: it.cut ?? it.text, mode: it.mode, cut: it.cut !== undefined });
         }
         return;
       }

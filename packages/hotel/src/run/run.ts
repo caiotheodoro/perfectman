@@ -540,7 +540,8 @@ export class Run {
         return !!va && !!vb && mirror.roomOfRef(a) === mirror.roomOfRef(b) && Math.max(Math.abs(va.tile[0] - vb.tile[0]), Math.abs(va.tile[1] - vb.tile[1])) <= 2;
       },
       onLine: (line) => this.noteLine(line),
-      ...(this.human && this.human.likeness > 0 ? { human: this.human } : {}),
+      // A film serializes speech on its own clock, so its turn-taking is the planner's (cine/planner.ts); the gateway's applies to a live room.
+      ...(this.human && this.human.likeness > 0 && this.params.mode !== "cinematic" ? { human: this.human } : {}),
       timing: this.d.timing?.gateway ?? {},
       // The scenario's own ending (goal_end_offered) stops the runtime; the run follows it.
       onStopped: (_id, reason) => {
@@ -1084,9 +1085,19 @@ export class Run {
       narrator,
       send: (m) => link.send(m),
       logger: this.d.logger,
-      config: { ...this.d.timing?.cine, language },
+      config: { ...this.d.timing?.cine, language, ...(this.human && this.human.likeness > 0 ? { human: { likeness: this.human.likeness, seed: seedOf(`cine-${this.id}`) } } : {}) },
       premise: this.body.title,
       trackSink: this.trackSink.write,
+      // The audience sees the line now: the people in the room react now (not when the line left the gateway, which may be seconds earlier).
+      onLine: (l) => this.onFilmedLine(l),
+      // Approach, then speak: a first line to someone across the room is said at the end of a walk up to them (the walk goes straight to the hotel, not behind the film).
+      beforeLine: (l) => {
+        const to = l.to ?? this.filmAddressees.get(l.ref)?.find((q) => q.text === l.text)?.to;
+        const ap = this.human?.approach(l.ref, to);
+        if (!ap) return undefined;
+        this.executor.send(ap.cmds);
+        return ap.delayMs;
+      },
     });
     return this.cine.wrapExecutor(executor);
   }
@@ -1182,7 +1193,14 @@ export class Run {
       // Both turn to each other: the listener (if one of the cast) and the speaker.
       this.faceInterlocutor(to, line.agentId);
       this.faceInterlocutor(line.agentId, to, to.startsWith("h:") ? Number.POSITIVE_INFINITY : undefined);
-      if (line.text !== undefined) this.human?.onLine({ speaker: line.agentId, to, text: line.text, mode: line.mode, ...(line.cut ? { cut: true } : {}) });
+      if (line.text !== undefined) {
+        // A film plays the line later, and the reactions wait for it; otherwise they start at the wire.
+        if (this.cine) {
+          const q = this.filmAddressees.get(line.agentId) ?? [];
+          q.push({ text: line.text, to });
+          this.filmAddressees.set(line.agentId, q.slice(-12));
+        } else this.human?.onLine({ speaker: line.agentId, to, text: line.text, mode: line.mode, ...(line.cut ? { cut: true } : {}) });
+      }
     }
     const room = this.space.view(line.agentId, this.d.clock.now())?.room;
     const me = room?.occupants.find((o) => o.ref === line.agentId);
@@ -1195,6 +1213,19 @@ export class Run {
       sameRoom,
       distance: me && them ? Math.max(Math.abs(me.tile[0] - them.tile[0]), Math.abs(me.tile[1] - them.tile[1])) : -1,
     });
+  }
+
+  /** Who each line still waiting to play in the film was for, by speaker: the film's line item does not carry its addressee, the gateway's release did. */
+  private readonly filmAddressees = new Map<string, Array<{ text: string; to: string }>>();
+
+  /** A line played on screen in a cinematic run: the human layer's reactions start here, with the addressee the gateway noted when the line left the queue. */
+  private onFilmedLine(l: { ref: string; to?: string; text: string; mode: SpeechMode; cut: boolean }): void {
+    const queue = this.filmAddressees.get(l.ref) ?? [];
+    const stem = l.cut ? l.text.replace(/[—\s]+$/u, "") : l.text;
+    const i = queue.findIndex((q) => q.text === l.text || (l.cut && q.text.startsWith(stem)));
+    const to = l.to ?? (i >= 0 ? queue[i]!.to : undefined);
+    if (i >= 0) queue.splice(i, 1);
+    this.human?.onLine({ speaker: l.ref, ...(to ? { to } : {}), text: l.text, mode: l.mode, ...(l.cut ? { cut: true } : {}) });
   }
 
   private chooseMode(agentId: string, content: string, committed: SpeechMode): SpeechMode {
