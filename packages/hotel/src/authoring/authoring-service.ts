@@ -291,7 +291,7 @@ export class AuthoringService {
     else {
       const generated = await generateBeatSheet(brief, { links: mode === "mock" ? [] : this.sheetLinks(), mock: mode === "mock", kb: this.sheetKb(), ...(this.deps.fetchImpl ? { fetchImpl: this.deps.fetchImpl } : {}), ...(this.deps.sheet?.deadlineMs !== undefined ? { deadlineMs: this.deps.sheet.deadlineMs } : {}) });
       if (!generated.ok) {
-        body.beat_sheet_error = `${generated.reason}: ${generated.detail}`.slice(0, 200);
+        body.beat_sheet_error = `${generated.reason}: ${generated.detail}`.slice(0, 700);
         return { body, schema_version: SCENARIO_BODY_VERSION };
       }
       sheet = generated.sheet;

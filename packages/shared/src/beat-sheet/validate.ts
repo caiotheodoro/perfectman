@@ -183,6 +183,13 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
 
     switch (kind) {
       case "act": {
+        // An act with neither a person nor a verb is a note that got the wrong kind: it is left out with a warning, not a failed sheet.
+        const hasActor = [entry["actor"], entry["who"], entry["character"], entry["person"], entry["by"], entry["agent"]].some((v) => v !== undefined);
+        const hasVerb = [entry["verb"], entry["action"], entry["act"]].some((v) => v !== undefined);
+        if (!hasActor && !hasVerb) {
+          warn(at, "beat_sheet.beat_dropped", "act beat left out: it names neither an actor nor a verb");
+          break;
+        }
         const actor = actorOf("actor");
         const verb = entry["verb"] ?? entry["action"] ?? entry["act"];
         if (!isVerb(verb)) {

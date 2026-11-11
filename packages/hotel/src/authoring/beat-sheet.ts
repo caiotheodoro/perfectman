@@ -38,7 +38,7 @@ export function cleanBeatSheet(raw: unknown, cast: readonly SceneCastMember[], c
   if (ctx.off === true) return { beat_sheet_error: "drama is off" };
   if (ctx.hasBeats === true) return { beat_sheet_error: "the scene has authored beats" };
   const r = compileBeatSheet(raw, cast, { drama: ctx.drama });
-  if (!r.sheet) return { beat_sheet_error: `invalid: ${r.errors.slice(0, 3).map((e) => e.message.replace(/^beat_sheet\.\w+: /, "")).join("; ")}`.slice(0, 200) };
+  if (!r.sheet) return { beat_sheet_error: `invalid: ${r.errors.slice(0, 3).map((e) => e.message.replace(/^beat_sheet\.\w+: /, "")).join("; ")}`.slice(0, 700) };
   return { beat_sheet: r.sheet };
 }
 

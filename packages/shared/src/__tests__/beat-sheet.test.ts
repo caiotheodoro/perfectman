@@ -113,6 +113,16 @@ describe("colour beats a model gets wrong", () => {
     expect(messages(r)).not.toMatch(/is not in the cast|is not one of the \d+ verbs|needs a target/);
   });
 
+  it("an act with neither actor nor verb is left out with a warning", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "e9", at_ms: 745, phase: "escalation", kind: "act", gist: "Otávio shows the letter" });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    const r = validateBeatSheet(sheet, ctx);
+    expect(r.sheet?.beats.some((b) => b.id === "e9")).toBe(false);
+    expect(r.warnings.some((w) => w.message.includes("act beat left out"))).toBe(true);
+  });
+
   it("dialogue in a note is still refused, never trimmed", () => {
     const sheet = raw();
     const beats = sheet["beats"] as Array<Record<string, unknown>>;

@@ -343,7 +343,7 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
         return { ok: true, sheet, warnings: made.warnings, attempts, cost_usd: usd(cost), ms, model: link.model, promptChars: prompt.user.length + prompt.system.length };
       }
       lastErrors = errors;
-      lastFail = { reason: "invalid", detail: `${link.name}: ${errors.slice(0, 3).map((e) => e.message.replace(/^beat_sheet\.\w+: /, "")).join("; ")}${offendingBeat(errors, sheetRaw)}`.slice(0, 520), model: link.model };
+      lastFail = { reason: "invalid", detail: `${link.name}${offendingBeat(errors, sheetRaw)}: ${errors.slice(0, 3).map((e) => e.message.replace(/^beat_sheet\.\w+: /, "")).join("; ")}`.slice(0, 700), model: link.model };
       firstFail ??= lastFail;
       // Told once what was wrong, with the sheet it wrote, and asked for the whole sheet again.
       messages = [
