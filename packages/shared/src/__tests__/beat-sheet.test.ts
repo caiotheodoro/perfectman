@@ -33,6 +33,28 @@ describe("a target on a verb that takes none", () => {
   });
 });
 
+describe("a camera beat's polish fields", () => {
+  it("are dropped with a warning when a model gets them wrong (three names in on, a zoom of 9), and the shot stays", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "c9", at_ms: 500, phase: "setup", kind: "camera", intent: { shot: "two_shot", on: ["Heloísa", "Otávio", "Renato"], zoom: 9, amount: 3, move: "teleport" } });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    const r = validateBeatSheet(sheet, ctx);
+    expect(messages(r)).toBe("");
+    const cam = r.sheet?.beats.find((b) => b.id === "c9");
+    expect(cam && cam.kind === "camera" ? cam.intent : undefined).toEqual({ shot: "two_shot" });
+    expect(r.warnings.filter((w) => w.message.includes("beat_sheet.camera_detail_dropped")).length).toBe(4);
+  });
+
+  it("still fails a camera beat with no usable shot", () => {
+    const sheet = raw();
+    const beats = sheet["beats"] as Array<Record<string, unknown>>;
+    beats.push({ id: "c8", at_ms: 500, phase: "setup", kind: "camera", intent: { shot: "drone" } });
+    beats.sort((a, b) => Number(a["at_ms"]) - Number(b["at_ms"]));
+    expect(messages(validateBeatSheet(sheet, ctx))).toContain("shot is one of");
+  });
+});
+
 describe("mockBeatSheet", () => {
   it("is deterministic and passes the validator for a cast of two, three and five", () => {
     for (const n of [2, 3, 5]) {

@@ -298,7 +298,7 @@ export function validateBeatSheet(raw: unknown, ctx: SheetContext): SheetCompile
         break;
       }
       case "camera": {
-        const intent = readCamera(entry["intent"], `${at}.intent`, err, idOf);
+        const intent = readCamera(entry["intent"], `${at}.intent`, err, idOf, (path, message) => warn(path, "beat_sheet.camera_detail_dropped", message));
         if (errors.length > before || intent === undefined) break;
         beat = { ...base, kind: "camera", intent };
         break;
@@ -510,7 +510,8 @@ function readPlace(raw: unknown, path: string, err: (p: string, m: string) => vo
   return out;
 }
 
-function readCamera(raw: unknown, path: string, err: (p: string, m: string) => void, idOf: (v: unknown) => string | undefined): CameraIntent | undefined {
+/** A camera beat's shot is its point; `on`, `zoom`, `amount`, `ms` and `move` are polish, so a bad one is dropped with a warning (`soft`) and never sinks the sheet. */
+function readCamera(raw: unknown, path: string, err: (p: string, m: string) => void, idOf: (v: unknown) => string | undefined, soft: (p: string, m: string) => void): CameraIntent | undefined {
   if (!isRecord(raw)) {
     err(path, "intent is {shot, on?, zoom?, move?, amount?, ms?}");
     return undefined;
@@ -527,22 +528,22 @@ function readCamera(raw: unknown, path: string, err: (p: string, m: string) => v
     if (Array.isArray(on)) {
       const a = ref(on[0]);
       const b = ref(on[1]);
-      if (on.length !== 2 || a === undefined || b === undefined) err(`${path}.on`, "on is a name or a pair of names");
+      if (on.length !== 2 || a === undefined || b === undefined) soft(`${path}.on`, "on is a name or a pair of names, so it is ignored");
       else out.on = [a, b];
-    } else if (ref(on) === undefined) err(`${path}.on`, "on is a name or a pair of names");
+    } else if (ref(on) === undefined) soft(`${path}.on`, "on is a name or a pair of names, so it is ignored");
     else out.on = ref(on) as string;
   }
   const num = (key: "zoom" | "amount" | "ms", lo: number, hi: number): void => {
     const v = raw[key];
     if (v === undefined) return;
-    if (!isNum(v) || v < lo || v > hi) err(`${path}.${key}`, `${key} is a number from ${lo} to ${hi}`);
+    if (!isNum(v) || v < lo || v > hi) soft(`${path}.${key}`, `${key} is a number from ${lo} to ${hi}, so it is ignored`);
     else out[key] = key === "ms" ? Math.round(v) : v;
   };
   num("zoom", 0.25, 4);
   num("amount", 0, 1);
   num("ms", 0, 10_000);
   if (raw["move"] !== undefined) {
-    if (!(SHEET_MOVES as readonly unknown[]).includes(raw["move"])) err(`${path}.move`, `move is one of ${SHEET_MOVES.join(", ")}`);
+    if (!(SHEET_MOVES as readonly unknown[]).includes(raw["move"])) soft(`${path}.move`, `move is one of ${SHEET_MOVES.join(", ")}, so it is ignored`);
     else out.move = raw["move"] as NonNullable<CameraIntent["move"]>;
   }
   return out;
