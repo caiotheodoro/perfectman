@@ -115,7 +115,8 @@ describe("what one attempt on a link may take", () => {
   });
 
   it("is 1.5 times the link's p95 once it has the samples, never under the default and never over the cap", () => {
-    expect(linkTimeoutMs({}, 5900, ADAPTIVE_MIN_SAMPLES, 13_000)).toBe(8850);
+    expect(linkTimeoutMs({}, 4000, ADAPTIVE_MIN_SAMPLES, 16_000)).toBe(6000);
+    expect(linkTimeoutMs({}, 5900, ADAPTIVE_MIN_SAMPLES, 16_000)).toBe(ADAPTIVE_TIMEOUT_CAP_MS);
     expect(linkTimeoutMs({}, 2000, 50, 13_000)).toBe(D);
     expect(linkTimeoutMs({}, 3300, 50, 13_000)).toBe(D);
     expect(linkTimeoutMs({}, 3400, 50, 13_000)).toBe(5100);

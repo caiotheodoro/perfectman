@@ -107,8 +107,12 @@ describe("the conflict scene: run 60's lines, cold cast, spine on", () => {
     expect(run.spine?.unlocks?.grants.find((g) => g.level === "slap")).toMatchObject({ aggressor: HELOISA, target: RENATO });
   });
 
-  it("the aggressor is the holder the lines were about, the victim the one who said them: never Renato at Heloísa, never anyone at Otávio", () => {
-    for (const e of startedOf(run.events)) expect({ actor: e.actor, with: e.with }).toEqual({ actor: HELOISA, with: RENATO });
+  it("the aggressor is the holder the lines were about, the victim the one who said them: the climb is Heloísa's, never a blow at Heloísa, never anyone at Otávio; Renato answers Heloísa's charge at 110 s with one glare", () => {
+    const others = startedOf(run.events).filter((e) => !(e.actor === HELOISA && e.with === RENATO));
+    // A charge said at Renato ("você mentiu e falsificou a assinatura") is answered, since a charge counts for a glare (accusation gain 0.45): a look, once, and nothing above it.
+    expect(others.map((e) => `${e.actor}>${e.with} ${e.verb}`)).toEqual([`${RENATO}>${HELOISA} glare`]);
+    expect(secs(others[0]!)).toBeGreaterThanOrEqual(110);
+    expect(secs(others[0]!)).toBeLessThanOrEqual(112);
   });
 
   it("the physical beats keep the contract's spacing, the probes pass, no act is aimed at a human, none was blocked by the hotel", () => {
