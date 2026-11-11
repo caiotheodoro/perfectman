@@ -100,7 +100,7 @@ describe("colour beats a model gets wrong", () => {
     expect(messages(r)).toBe("");
     expect(r.sheet?.beats.some((b) => b.id === "k9" || b.id === "p9")).toBe(false);
     const note = r.sheet?.beats.find((b) => b.id === "w9");
-    expect(note && note.kind === "note" ? note.actor : undefined).toBeTruthy();
+    expect(note && note.kind === "note" ? note.actor : undefined).toBe(CAST.find((c) => c.displayName === "Otávio")?.id);
   });
 
   it("dialogue in a note is still refused, never trimmed", () => {
