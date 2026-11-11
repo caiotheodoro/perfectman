@@ -68,7 +68,7 @@ export type ReplayManifest = {
     played: number;
     late: number;
     dropped: Record<string, number>;
-    climax: { id: string; planned_ms: number; outcome: "pending" | "played" | "dropped"; at_ms?: number; why?: string };
+    climax: { id: string; planned_ms: number; outcome: "pending" | "played" | "dropped" | "organic"; at_ms?: number; why?: string };
   };
   /** The scenario's drama as the run enforced it: where the block came from (`authored`, `default`, `off`, `free_play`) and what it allowed. */
   drama?: { source: string; max_rung: number; may_target_pairs: number; may_die: number; permadeath: boolean };

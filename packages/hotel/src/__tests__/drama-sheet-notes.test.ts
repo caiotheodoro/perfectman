@@ -88,18 +88,16 @@ describe("SheetNotes", () => {
 function room(): RoomView {
   const w = 12;
   const h = 12;
+  const person = (ref: string, name: string, tile: [number, number]) => ({ ref, name, kind: "actor" as const, tile, dir: 2 as const, state: "stand" as const, since: 0, lastMovedAt: 0 });
   return {
     id: "12", name: "Terraço", template: "t", w, h, rev: 1, syncedAtWall: 0, door: [0, 5], doorDir: 2, heights: new Uint8Array(w * h).fill(1), stale: false, adjacency: [], degraded: false,
     furni: [
-      { id: 1, defId: "table", label: "mesa", kinds: ["surface"], tiles: [[6, 6], [7, 6]], front: [[6, 5]], state: 0 },
+      { id: 1, defId: "table", label: "mesa", kinds: ["table"], tiles: [[6, 6], [7, 6]], front: [[6, 5]], state: 0 },
       { id: 2, defId: "safe", label: "cofre", kinds: ["decor"], tiles: [[10, 2]], front: [[10, 3]], state: 0 },
     ],
     zones: [{ id: "z1", kind: "window", label: "janela", center: [2, 9], radius: 2, furniIds: [], tags: [], source: "keyword" }],
-    occupants: [
-      { ref: "person-1", name: "Heloísa", kind: "actor", tile: [3, 3], dir: 2, state: "stand" },
-      { ref: "person-2", name: "Otávio", kind: "actor", tile: [8, 8], dir: 2, state: "stand" },
-    ],
-  } as unknown as RoomView;
+    occupants: [person("person-1", "Heloísa", [3, 3]), person("person-2", "Otávio", [8, 8])],
+  };
 }
 const ctx = (self = "person-1"): StageCtx => ({ room: room(), self, rng: () => 0.5, tileOf: (ref) => room().occupants.find((p) => p.ref === ref)?.tile, isPerson: (ref) => ref.startsWith("person-"), now: 1, plan: "drama:sheet:x" });
 const chebyshev = (a: readonly number[], b: readonly number[]): number => Math.max(Math.abs(a[0]! - b[0]!), Math.abs(a[1]! - b[1]!));
@@ -124,7 +122,7 @@ describe("planBlock, planProp, planFace", () => {
   it("a name the room does not have is 'nowhere to go' (the player may release it late), and a person already there is nothing to do", () => {
     expect(planBlock({ near: "lareira" }, "walk", ctx())).toBeUndefined();
     expect(planBlock({ zone: "piscina" }, "walk", ctx())).toBeUndefined();
-    expect(planBlock({ tile: [3, 3] }, "walk", { ...ctx(), rng: () => 0 })).toBeDefined();
+    expect(planBlock({ tile: [3, 3] }, "walk", { ...ctx(), rng: () => 0 })).toEqual([]);
   });
 
   it("exit goes out through the door", () => {
@@ -143,7 +141,7 @@ describe("planBlock, planProp, planFace", () => {
   it("a face the wire lacks is the nearest old one", () => {
     expect(planFace("person-1", "fear")).toEqual([{ agentId: "person-1", cmd: "expression", face: "surprised" }]);
     expect(planFace("person-1", "smug", ["smug"])).toEqual([{ agentId: "person-1", cmd: "expression", face: "smug" }]);
-    expect(placeToTile({ zone: "janela" }, ctx())).toBeDefined();
+    expect(chebyshev(placeToTile({ zone: "janela" }, ctx()) ?? [99, 99], [2, 9])).toBeLessThanOrEqual(2);
   });
 });
 

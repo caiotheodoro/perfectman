@@ -28,7 +28,7 @@ const byName = (sheet: BeatSheet): Record<string, unknown> => {
   const nameOf = (id: unknown): unknown => cast.find((c) => c.id === id)?.name ?? id;
   for (const b of raw.beats) {
     for (const k of ["actor", "with", "from"]) if (k in b) b[k] = nameOf(b[k]);
-    if (b["kind"] === "reveal") b["to"] = (b["to"] as unknown[]).map(nameOf);
+    if (b["kind"] === "reveal" && Array.isArray(b["to"])) b["to"] = b["to"].map(nameOf);
   }
   return raw;
 };
@@ -130,7 +130,7 @@ describe("compileWithSheet: the director step at Save and start", () => {
     // a sheet with no generated_by is the author's and stays whatever else changes
     const hand = written();
     const handBody = (await mocked().compileWithSheet({ source: form({ beat_sheet: hand }, "Outra situação inteira.") })).body as Body;
-    expect(handBody.beat_sheet?.beats).toHaveLength((hand["beats"] as unknown[]).length);
+    expect(handBody.beat_sheet?.beats).toHaveLength(Array.isArray(hand["beats"]) ? hand["beats"].length : -1);
   });
 
   it("does not write one for a scene with authored beats or drama: off", async () => {
@@ -152,7 +152,7 @@ describe("compileWithSheet: the director step at Save and start", () => {
     expect(body.drama_mode).toBeUndefined();
     expect(parseScenarioBody(JSON.parse(JSON.stringify(body))).ok).toBe(true);
     const parsed = parseScenarioBody(JSON.parse(JSON.stringify(body)));
-    expect(parsed.ok && parsed.body.beat_sheet).toBeDefined();
+    expect(parsed.ok && parsed.body.beat_sheet?.beats.length).toBeGreaterThan(20);
   });
 
   it("a model that fails never fails the compile: no sheet, and the reason is in the body for the run's beat_sheet_fallback", async () => {

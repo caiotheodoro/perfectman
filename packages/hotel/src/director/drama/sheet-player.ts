@@ -65,7 +65,8 @@ export type SheetSummary = {
   played: number;
   late: number;
   dropped: Record<string, number>;
-  climax: { id: string; planned_ms: number; outcome: "pending" | "played" | "dropped"; at_ms?: number; why?: string };
+  /** `organic`: the sheet's climax was refused only because the improvised arc had already thrown that same blow at that same person within the minute (GATE-10): the scene has its physical climax, from another origin. */
+  climax: { id: string; planned_ms: number; outcome: "pending" | "played" | "dropped" | "organic"; at_ms?: number; why?: string };
 };
 
 /** `face` held `ms` before it returns to neutral: long enough to read, short enough not to stick. */
@@ -212,7 +213,8 @@ export class SheetPlayer {
       return;
     }
     if (beat.id === this.climax?.id) {
-      this.climaxOutcome = { ...this.climaxOutcome, outcome: r.outcome, at_ms: r.at - this.startedAt, why: r.why };
+      const organic = r.outcome === "dropped" && r.why === "veto:cooldown";
+      this.climaxOutcome = { ...this.climaxOutcome, outcome: organic ? "organic" : r.outcome, at_ms: r.at - this.startedAt, why: r.why };
     }
     this.settle(beat, r.outcome, r.why, late, r);
   }

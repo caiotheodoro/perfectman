@@ -31,11 +31,11 @@ function judge(id: string, r: SimResult, edit: (events: DramaEvent[]) => DramaEv
 }
 
 describe("the drama bench on the stack as it is", () => {
-  it("runs the nine scenarios of the act contract and every one passes, with every check and every probe", async () => {
+  it("runs the nine scenarios of the act contract and the five of the beat sheet, and every one passes, with every check and every probe", async () => {
     const report = await runDramaBench();
     expect(report.perScenario.map((e) => e.id)).toEqual(DRAMA_SCENARIOS.map((s) => s.id));
     expect(report.perScenario.filter((e) => !e.passed).map((e) => ({ id: e.id, failed: e.failed, probes: e.probesFailed, checks: e.checks.filter((c) => !c.ok).map((c) => c.name) }))).toEqual([]);
-    expect({ run: report.scenariosRun, failed: report.scenariosFailed, rate: report.passRate }).toEqual({ run: 9, failed: 0, rate: 1 });
+    expect({ run: report.scenariosRun, failed: report.scenariosFailed, rate: report.passRate }).toEqual({ run: 14, failed: 0, rate: 1 });
     expect(report.checksFailed).toBe(0);
   });
 
@@ -50,6 +50,11 @@ describe("the drama bench on the stack as it is", () => {
       "drama_consent_human_target",
       "drama_calm_room",
       "drama_off_unchanged",
+      "sheet_climax_by_240",
+      "sheet_climax_forced_over_skipped_ladder",
+      "sheet_climax_waits_for_spacing",
+      "sheet_kill_climax_then_cut",
+      "sheet_gates_hold",
     ]);
   });
 
@@ -178,5 +183,53 @@ describe("the bench gate (scripts/ci/check-bench-gate.mjs)", () => {
 
   it("the roleplay gate still stands on its own: a signal below 100% fails whatever the drama bench says", () => {
     expect(gate({ ...base, signalPassRate: 0.98, drama: { scenariosRun: 9, scenariosFailed: 0, passRate: 1, perScenario: [] } }).code).toBe(1);
+  });
+
+  it("[Contract A] the sheet's climax: a slap that never started, or that came after 4:00, or twice, is a miss in the scenario and in the sheet probes", async () => {
+    const r = await result("sheet_climax_by_240");
+    expect(judge("sheet_climax_by_240", r)).toEqual({ checks: [], probes: [] });
+    const never = judge("sheet_climax_by_240", r, (e) => e.filter((x) => !(x.kind === "act_started" && x.verb === "slap")));
+    expect(never.checks).toContain("the slap, the sheet's climax, started as a scenario act by 240 s");
+    expect(never.checks.some((c) => c.startsWith("sheet-climax-by-240s"))).toBe(true);
+    const late = judge("sheet_climax_by_240", r, (e) => e.map((x) => (x.kind === "act_started" && x.verb === "slap" ? { ...x, atMs: 250_000 } : x)));
+    expect(late.checks).toContain("the slap, the sheet's climax, started as a scenario act by 240 s");
+    const twice = judge("sheet_climax_by_240", r, (e) => [...e, { ...e.find((x) => x.kind === "act_started" && x.verb === "slap")!, atMs: 270_000, actId: "again" } as DramaEvent]);
+    expect(twice.checks.some((c) => c.startsWith("sheet-one-climax"))).toBe(true);
+  });
+
+  it("[Contract A] the sheet is the whole script: a scenario act it did not write, or a skip beyond its own, is a miss", async () => {
+    const r = await result("sheet_climax_by_240");
+    const stray = judge("sheet_climax_by_240", r, (e) => [...e, { kind: "act_started", atMs: 60_000, actId: "stray", verb: "insult", actor: "caio", with: "duda", origin: "scenario" } as DramaEvent].sort((a, b) => a.atMs - b.atMs));
+    expect(stray.checks.some((c) => c.startsWith("sheet-no-stray-scenario-acts"))).toBe(true);
+    const skip = judge("sheet_climax_by_240", r, (e) => e.map((x) => (x.kind === "act_started" && x.verb === "insult" ? { ...x, authoredSkip: true } : x)));
+    expect(skip.checks.some((c) => c.startsWith("sheet-skip-only-peak"))).toBe(true);
+  });
+
+  it("[Contract A] the authored silence: a line said during a pause is a miss", async () => {
+    const r = await result("sheet_climax_by_240");
+    const pause = r.sheet!.stage.find((s) => s.kind === "pause")!;
+    const spoke: SimResult = { ...r, speech: [...r.speech, { atMs: pause.atMs + 1000, actor: "ana", text: "oi" }] };
+    expect(byId("sheet_climax_by_240").check(spoke).filter((c) => !c.ok).map((c) => c.name).some((n) => n.startsWith("sheet-silence-kept"))).toBe(true);
+  });
+
+  it("[Contract A] a sheet that is all talk is a miss: no blocking, no prop, no camera reached the stage", async () => {
+    const r = await result("sheet_climax_by_240");
+    const talky: SimResult = { ...r, sheet: { ...r.sheet!, stage: r.sheet!.stage.filter((s) => s.kind === "pause" || s.kind === "expression") } };
+    expect(byId("sheet_climax_by_240").check(talky).filter((c) => !c.ok).map((c) => c.name).some((n) => n.startsWith("sheet-not-all-talk"))).toBe(true);
+  });
+
+  it("[GATE-9] the forced climax waits: a slap 5 s after the shove is a miss in the spacing scenario", async () => {
+    const r = await result("sheet_climax_waits_for_spacing");
+    expect(judge("sheet_climax_waits_for_spacing", r)).toEqual({ checks: [], probes: [] });
+    const shove = r.events.find((e) => e.kind === "act_started" && e.verb === "shove")!;
+    const verdict = judge("sheet_climax_waits_for_spacing", r, (e) => e.map((x) => (x.kind === "act_started" && x.verb === "slap" && x.origin === "scenario" ? { ...x, atMs: shove.atMs + 5_000, hotelAt: (shove.kind === "act_started" ? shove.hotelAt ?? 0 : 0) + 5_000 } : x)));
+    expect(verdict.checks.length + verdict.probes.length).toBeGreaterThan(0);
+  });
+
+  it("[GATE-5] the gates are not the sheet's to open: a kill that started in a scene where nobody may die is a miss", async () => {
+    const r = await result("sheet_gates_hold");
+    expect(judge("sheet_gates_hold", r)).toEqual({ checks: [], probes: [] });
+    const verdict = judge("sheet_gates_hold", r, (e) => [...e, { kind: "act_started", atMs: 150_000, actId: "mut", verb: "kill", actor: "ana", with: "bia", origin: "scenario" } as DramaEvent]);
+    expect(verdict.checks).toContain("the kill was refused before it started (may_die)");
   });
 });

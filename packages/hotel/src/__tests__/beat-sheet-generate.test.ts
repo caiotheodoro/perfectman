@@ -29,7 +29,7 @@ const sheetByName = (o: Parameters<typeof mockBeatSheet>[0]["climax"] = "slap"):
   delete raw.generated_by;
   const nameOf = (id: unknown): unknown => NAMES.find((n) => n.id === id)?.name ?? id;
   for (const b of raw.beats) for (const k of ["actor", "with", "from"]) if (k in b) b[k] = nameOf(b[k]);
-  for (const b of raw.beats) if (Array.isArray(b["to"]) && b["kind"] === "reveal") b["to"] = (b["to"] as unknown[]).map(nameOf);
+  for (const b of raw.beats) if (Array.isArray(b["to"]) && b["kind"] === "reveal") b["to"] = b["to"].map(nameOf);
   return raw;
 };
 
