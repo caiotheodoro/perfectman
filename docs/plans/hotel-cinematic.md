@@ -47,6 +47,19 @@ Taxonomy and cue shapes are the hotel's; the rules that pick them:
 | insert | a kiss or hug (kiss/hug SFX, romance sting, `love` cues), or an object / injected world event |
 | transition | `cut_fx` + `cut` + an establishing shot of the new room. `door` right after someone walked through it, `meanwhile` (label "Enquanto isso...", "Meanwhile...") when the room being left was active in the last 20 s, `fade` otherwise. First visit of a room: a scene card and a narrator aside; `next_room` is sent one shot ahead. The room the film opens in gets its aside too, right after the title card (the opening card names the whole cast, since nobody has walked in yet), so a film that never leaves it still has a caption |
 
+Story-aware framing (B4; the beat sheet's `phase` comes in through `setPhase`, camera beats through `playIntent`):
+
+| When | What |
+|---|---|
+| phase `escalation` | each line pushes the shot in a little (`camera_fx` dolly, linear over the line, `escalationDolly` 18% a step, ceiling two steps), with the tension sting once per `stingGapMs` |
+| phase `reversal` or `climax`, any line | close-up on the speaker whatever its salience; the edges close in once per 12 s (`vignette` 0.35 reversal, 0.55 climax, held `climaxVignetteMs`) |
+| an `act` command with a body (shove, slap, punch, restrain, kill, faint, die) | moves at the table's contact time, on their own clock and not behind the current program: stop the room (60 to 140 ms), shake (4, 6, 9, 3, 10 px), a kill drops to 0.35 speed for 1.5 s with a vignette and a `#5a0d0d` grade. The table's own shots and contact sounds are left alone; the camera is forgotten so the next line frames afresh. `ACT_FX` holds the numbers |
+| someone comes in (a walk whose plan ends `:enter`) | an establishing shot with a door sound |
+| a beat sheet camera beat | `planIntent`: the shot it names, then the move after the ease: `dolly_in`/`dolly_out` (amount = share of zoom, 0.3), `shake` (px), `slowmo` (speed), `vignette` (intensity), `hitstop` (ms). Not held by anti-jitter, only by a cut-rate ceiling. Insert shots on props still come from `noteObject` |
+| variety and cut rate | until `cinema-norms` is published: at least `minShotKinds` (4) kinds of shot in every `varietyWindowMs` (4 min) and at most `maxCutsPerMin` (6). A window short of a kind earns one at the next fitting moment (a wide shot before a line, a close-up on a line with salience >= 0.35, a reaction on a long line), never closer than `varietyGapMs` (6 s) to the last cut |
+
+Stale items: an item whose command the executor holds (a long walk, a door, a pair act) has not happened yet, so it waits for the film up to `heldMaxAgeMs` (20 s) and goes next once overdue (half of it); only an observed item (it already happened) uses the short per-kind limit. Run 63 lost 32 of its 88 cues to the short limit on held walks while lines kept the stage.
+
 Shot on the speaker before the line: if the current framing already covers the speaker nothing moves; otherwise the camera cue goes out first and the line is released after the shot has eased in. Anti-jitter: a new camera cue waits until the last one has been up `minShotMs` (1.8 s); the line waits with it. Cues that take `in_ms` are sent `cueLeadMs` (300 ms) early with `in_ms` set, to absorb socket latency; `cut` and `next_room` have no `in_ms` and go out on a timer.
 
 Extras: a lower-third on each character's first line; an overhead `cue` (love / anger / sad / joy) on charged speakers, 15 s per person; stings (sad, tension, romance, comedy) 20 s apart; a looping `murmur` in a room of three or more people, one room at a time; `laugh` on a laugh gesture.
@@ -77,7 +90,10 @@ The reply is one JSON object `{title, subtitle, captions[], idle[]}`. Anything u
 |---|---|---|
 | dead air | stretches with no line, card, caption, thought, lower-third or transition effect; paused time removed | 0 gaps over 10 s |
 | shot-on-speaker | lines whose camera (close-up, two-shot containing them, tracking, reaction) had finished easing before the line | >= 90% |
-| cut rate | camera changes and room cuts per minute, shot lengths within a room, shots shorter than `minShotMs` | 0 short shots |
+| cut rate | camera changes and room cuts per minute, shot lengths within a room, shots shorter than `minShotMs` | 0 short shots; 2 to 6 camera changes a minute |
+| shot variety | distinct shot kinds in the leanest 4-minute window (`variety.minWindowKinds`) | >= 4 |
+| stale drops | `staleDrops.rate` = stale / (stale + shots) | 0 for held items |
+| camera moves | `fx.byMove`: the `camera_fx` cues played | informational |
 
 Scripted scene (`__tests__/cinematic-e2e.test.ts`: 2 rooms, 4 actors, 13 lines, a thought, a laugh, a door, a hug), engine pulsing every 6 s: shot-on-speaker 13/13, max gap 2.5 s, 12 shots (9.0/min, none under 1.8 s, mean 3.8 s), 3 room cuts (2.3/min). With a model that answers once every 30 s: 13/13, max gap 5.1 s, 2 fillers, 21 shots, 5 room cuts. Thresholds are seeds, calibrated after real runs.
 
