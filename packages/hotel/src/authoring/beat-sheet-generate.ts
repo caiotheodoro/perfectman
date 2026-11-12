@@ -75,6 +75,11 @@ export const SHEET_CALL_CAP_MS = 32_000;
 const CHARS_PER_TOKEN = 3.2;
 const RETRY_MIN_MS = 8_000;
 
+/** True for a link on Anthropic's own API, whose OpenAI-compatible endpoint refuses the sampling and JSON-mode fields the other links take. */
+export function isAnthropicApi(baseUrl: string): boolean {
+  return /^https?:\/\/api\.anthropic\.com(\/|$)/i.test(baseUrl.trim());
+}
+
 const TACTICS = "to accuse, to press, to demand, to threaten, to plead, to confess, to expose, to stall, to deflect, to evade, to bargain, to humiliate, to provoke, to confront, to seduce, to comfort, to refuse, to propose";
 const ladderLine = "glare (1), insult (2), shove (3), slap (4), punch (5), kill (6)";
 
@@ -283,9 +288,10 @@ export async function generateBeatSheet(brief: SheetBrief, deps: SheetDeps): Pro
       const body = {
         model: link.model,
         messages,
-        temperature: 0.8,
+        // Anthropic's OpenAI-compatible endpoint answers 400 to a temperature under 1 and to response_format json_object (only json_schema is taken), so a
+        // link on api.anthropic.com sends neither; the prompt asks for bare JSON and extractSheetJson reads it either way.
+        ...(isAnthropicApi(link.baseUrl) ? {} : { temperature: 0.8, response_format: { type: "json_object" } }),
         max_tokens: callTokens,
-        response_format: { type: "json_object" },
         ...(link.extraBody ?? {}),
       };
       let reply = "";

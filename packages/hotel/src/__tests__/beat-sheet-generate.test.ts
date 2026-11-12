@@ -115,6 +115,17 @@ describe("generateBeatSheet", () => {
     expect(r.detail).toContain('"action":"slap"');
   });
 
+  it("[anthropic] a link on api.anthropic.com sends no temperature and no json_object (its compatible endpoint 400s on both); any other link still sends them", async () => {
+    const claude: SheetLink = { name: "claude", baseUrl: "https://api.anthropic.com/v1/", model: "claude-haiku-5-5", apiKey: "sk-ant-SECRET", price: { inUsdPerMTok: 0.1, outUsdPerMTok: 0.5 } };
+    const onClaude = rig([good()], [claude]);
+    expect((await onClaude.run()).ok).toBe(true);
+    expect(onClaude.calls[0]!.url).toBe("https://api.anthropic.com/v1/chat/completions");
+    expect(Object.keys(onClaude.calls[0]!.body)).toEqual(["model", "messages", "max_tokens"]);
+    const other = rig([good()]);
+    await other.run();
+    expect(other.calls[0]!.body).toMatchObject({ temperature: 0.8, response_format: { type: "json_object" } });
+  });
+
   it("refuses a sheet that writes dialogue", async () => {
     const talky = sheetByName();
     ((talky["beats"] as Array<Record<string, unknown>>)[0]!)["text"] = "Otávio, venha sentar e tomar um café comigo.";
