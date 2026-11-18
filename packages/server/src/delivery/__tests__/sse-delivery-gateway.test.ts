@@ -26,7 +26,7 @@ describe("SseDeliveryGateway channels", () => {
     await gateway.addMember("dm", "vasco");
     const last = channels().at(-1);
     expect(last?.id).toBe("dm");
-    expect(last?.memberAgentIds.sort()).toEqual(["vasco", "kiko"]);
+    expect(last?.memberAgentIds.sort()).toEqual(["kiko", "vasco"]);
   });
 
   it("tells the viewer when someone leaves", async () => {
@@ -40,7 +40,7 @@ describe("SseDeliveryGateway channels", () => {
     const { gateway, channels } = harness();
     await gateway.createChannel("dm", "private_channel", ["kiko"]);
     await gateway.createChannel("dm", "private_channel", ["vasco"]);
-    expect(channels().at(-1)?.memberAgentIds.sort()).toEqual(["vasco", "kiko"]);
+    expect(channels().at(-1)?.memberAgentIds.sort()).toEqual(["kiko", "vasco"]);
   });
 
   it("does not repeat a room whose members did not change", async () => {

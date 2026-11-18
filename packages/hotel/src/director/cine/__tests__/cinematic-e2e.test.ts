@@ -77,7 +77,7 @@ describe("a scripted cinematic scene: 2 rooms, 4 actors", () => {
     await film(r);
     const said = r.spoken().map((d) => (d.cmd.cmd === "chat" ? `${d.cmd.agentId}:${d.cmd.text.slice(0, 6)}` : ""));
     expect(said).toHaveLength(13);
-    expect(said.filter((s) => s.startsWith("duda:"))).toEqual(["duda:Rafa, ", "duda:Será q", "duda:Renan, p", "duda:Obriga"]);
+    expect(said.filter((s) => s.startsWith("duda:"))).toEqual(["duda:Rafa, ", "duda:Será q", "duda:Renan,", "duda:Obriga"]);
 
     const track = r.director.track.sorted();
     const cuts = track.filter((e): e is Extract<TrackEntry, { k: "cut" }> => e.k === "cut");
@@ -121,7 +121,7 @@ describe("a scripted cinematic scene: 2 rooms, 4 actors", () => {
     for (const k of ["thought", "lower_third", "sfx", "cut_fx", "caption", "card"]) expect(kinds.has(k as never)).toBe(true);
     const lowers = r.frames().flatMap((f) => (f.ui.k === "lower_third" ? [f.ui.name] : []));
     expect(new Set(lowers).size).toBe(lowers.length);
-    expect(lowers.sort()).toEqual(["Duda", "Gabi", "Renan", "Rafa"]);
+    expect(lowers.sort()).toEqual(["Duda", "Gabi", "Rafa", "Renan"]);
   });
 
   it("is replayable: the JSONL track gives back the same metrics (D39)", async () => {

@@ -118,7 +118,7 @@ describe("HTML Snapshot: 4-persona simulation", () => {
         perPulseEventSummary: Array<{ byActor: Record<string, unknown[]> }>;
       };
       for (const p of trajectory.emotionalTrajectory) {
-        expect(Object.keys(p.agentMoods).sort()).toEqual(["ana", "dario", "carla", "diego"]);
+        expect(Object.keys(p.agentMoods).sort()).toEqual(["ana", "carla", "dario", "diego"]);
       }
       // At least one agent must act across the entire run
       const anyAgentActed = trajectory.perPulseEventSummary.some(

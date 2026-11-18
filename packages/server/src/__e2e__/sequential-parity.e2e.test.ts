@@ -13,7 +13,9 @@ import { SimulationHarness } from "./harness.js";
 
 const PULSES = 8;
 /** sha256 of the digest lines of the pre-integration run. */
-const PRE_INTEGRATION_DIGEST = "5d8425e5b02a9623e25a507fc4de5ad54c34302f82871e690364afe95b5c94de";
+// Retaken after the persona rename (goulart -> vasco, etc.). The mock voices and the prompt examples are picked by a hash of the agent id,
+// so renaming the fixture ids changes the committed events; the scenario, seed and provider are otherwise unchanged.
+const PRE_INTEGRATION_DIGEST = "299d36678192d813b4d89d80d97c0ef174dd51fc8e23da162b452976ae450ab8";
 const PRE_INTEGRATION_EVENT_COUNT = 41;
 
 describe("sequential pulse parity (no hotel options)", () => {

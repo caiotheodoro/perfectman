@@ -1,55 +1,55 @@
 {
   "prompts": {
     "pt-BR/full/quiet": {
-      "system": "e24633b094b04a24e491387cedd9493163dc54ee700c057acd7a2bc9b9fe2e44",
+      "system": "fcd729edc9a392579c3d392e7fef14e5c01c9ed0995066f646238cd5b90a4c59",
       "user": "17290249b4c251badd6e4ac21fb36725f2b67acc9725f5e9c6558aa2358cd7f6",
       "templateVersion": "1dkl6l2",
-      "tokens": 2850
+      "tokens": 2838
     },
     "pt-BR/full/busy": {
-      "system": "6e75b8824f899951d2a3d47bbc37e74b52059024dd493609336684a1beddadf0",
+      "system": "dcc33995647c77bbf137247d669ed4d45d39f63b43e115af5f86c24cdb38e1a6",
       "user": "611f51f1bccf004b5db168d6326a1f80cf31635df9149e5483967ac8e630cf22",
       "templateVersion": "1dkl6l2",
-      "tokens": 3072
+      "tokens": 3074
     },
     "pt-BR/compact/quiet": {
-      "system": "fe3530cd2d8ff1d47a2c2c8a494e03781ee459eff4496fa78272841cd2a47e6c",
-      "user": "83ec2b4b75a3a48901f3ebedbac318715dd94aae964e87392b58a7bbf0f5e94f",
+      "system": "3a90f17e256d19682d80df5de6c0d41a1271c7a16016f7973521487daa1f85eb",
+      "user": "028ce28a4857dcafaa1eb7313cb47f391a03fccf8b3865cc152bc588e544a44f",
       "templateVersion": "3jajez",
-      "tokens": 1116
+      "tokens": 1103
     },
     "pt-BR/compact/busy": {
-      "system": "aefcde6f9f503e3d27bbe1f747e92c187683a4e5bec2e549c4ce5d523c908962",
-      "user": "a86206e542fabac5a4080b3178ac13110dede741f3875bcc2a9787af39c3f112",
+      "system": "36a73ed50dddaf783827e8d7e50102657edd6e443cac2989585018e87f81d8fc",
+      "user": "fd3089b0d6a4408e2befb65df74d3cee3940d465ae83e7c20227aedea30aaf7b",
       "templateVersion": "3jajez",
-      "tokens": 1244
+      "tokens": 1238
     },
     "en/full/quiet": {
-      "system": "837a1a2c6265c84a63300549eedf6fb8624764b0d208ac9050f6ad3a10b7f67f",
+      "system": "918687e7eef890b6a1c6f55e507fd08c0ec9ce4d73f428fa326a8fe6d4539b8e",
       "user": "451f83dbe3e06896b5965c95cd76311e7644fa7c645686a8aee156f6a956b538",
       "templateVersion": "1dkl6l2",
-      "tokens": 2775
+      "tokens": 2762
     },
     "en/full/busy": {
-      "system": "127e762d46c9c62e305f18ba1e09e0b60fce578acb8780e51c14f75b47cf4935",
+      "system": "1a9f396c6aaed5b827762adb0673f3cc47a521d1131b7659d4fce92aa35a991c",
       "user": "7bb41e5ca8ed3c043851d1601a3fe56c46314c5c00670cc872ec9c7efdb8bafe",
       "templateVersion": "1dkl6l2",
-      "tokens": 2998
+      "tokens": 3000
     },
     "en/compact/quiet": {
-      "system": "014e0170059cacebba7cf64b0b8233decd3682203ade7ea9a741eee6e7714671",
-      "user": "c235fef1c30db0ea14f89179e03c7e06d3e2107a9e7acc193928b49c041fb007",
+      "system": "9f6b7987853bec231070419a056b20c63f10aa39dcc8942354f52223776c22f2",
+      "user": "5d060d61083e00742576c2d32b511fce6c6572e5c37972c171bca66d679a0b9f",
       "templateVersion": "3jajez",
-      "tokens": 1087
+      "tokens": 1071
     },
     "en/compact/busy": {
-      "system": "cb7ff6461f37b9104e108da7c75a437cb2d41bda486675bdb5512d4bb83a13f9",
-      "user": "10d3104c4a88fa3e8931b867b74b4984672b16f6935802072dfa81fc32ae071f",
+      "system": "022f36bdb95215c51b1d57592209936c17890afdd7c745a3d7c570d1ab9951e3",
+      "user": "15676b624e4dfe89f8a75b73278a9beb60953e2f1ef26c73bb3cafb873eb924e",
       "templateVersion": "3jajez",
-      "tokens": 1213
+      "tokens": 1208
     },
     "non-hotel": {
-      "system": "b2e7923c9eb62c4f6d8e42df3ffac3b2327b89f8a9d141d513546012f849f04a",
+      "system": "caf224135536e45e4f273e9556fed1ac4af462e683950ac748b7d3776504e19b",
       "user": "935e1f86ef46848b18da8c018f4abb3150f28bc5dd08a1c5e982c91133baa242",
       "templateVersion": "fjq17d"
     }
